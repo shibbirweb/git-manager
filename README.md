@@ -191,3 +191,7 @@ scripts/                 versioning, wiki build, screenshots and demo repositori
 ```
 
 The [Project Layout page](https://github.com/shibbirweb/git-manager/wiki/Project-Layout) explains every folder.
+
+## License
+
+[MIT](LICENSE) © 2026 [MD. Shibbir Ahmed](https://github.com/shibbirweb)

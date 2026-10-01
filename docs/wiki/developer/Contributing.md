@@ -72,7 +72,7 @@ Why does the type matter so much? The release tools read it. `feat` and `fix` de
 
 ### Other commit rules
 
-- **Author identity.** For this repository, the maintainer commits as `Md. Shibbir Ahmed <shibbirweb@gmail.com>`, set in the repository's local git config. If you commit on the maintainer's behalf, and that config is missing, pass `-c user.name="Md. Shibbir Ahmed" -c user.email="shibbirweb@gmail.com"`. Never commit with some other global identity by accident: check `git config user.email` first.
+- **Author identity.** For this repository, the maintainer commits as `MD. Shibbir Ahmed <shibbirweb@gmail.com>`, set in the repository's local git config. If you commit on the maintainer's behalf, and that config is missing, pass `-c user.name="MD. Shibbir Ahmed" -c user.email="shibbirweb@gmail.com"`. Never commit with some other global identity by accident: check `git config user.email` first.
 - **No `Co-Authored-By` lines.** Keep the message to the format above.
 - **User-visible changes add a changelog line** under `## [Unreleased]` in `CHANGELOG.md`, in the same commit.
 - **Never commit build output:** `node_modules`, `build`, `.svelte-kit`, `src-tauri/target`, `src-tauri/gen`.

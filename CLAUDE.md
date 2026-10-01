@@ -53,10 +53,11 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 
 ## Git and PRs
 
-- Commit author for this repository: name `Md. Shibbir Ahmed`, email `shibbirweb@gmail.com`. Commit with this identity (it is set in the repo-local git config; if it is missing, pass `-c user.name="Md. Shibbir Ahmed" -c user.email="shibbirweb@gmail.com"`), never with another global identity.
+- Commit author for this repository: name `MD. Shibbir Ahmed`, email `shibbirweb@gmail.com`. Commit with this identity (it is set in the repo-local git config; if it is missing, pass `-c user.name="MD. Shibbir Ahmed" -c user.email="shibbirweb@gmail.com"`), never with another global identity.
 - Commit messages: `feat:[TICKET] summary` for features, `fix:[TICKET] summary` for fixes; the ticket in square brackets right after the colon, then a one-line summary. This repository's ticket key is `GM` (`bun scripts/version.ts next-ticket` prints the next free number). `feat!:` marks a breaking change and makes the next release major.
 - No `Co-Authored-By` lines.
-- Commit or push only when the user asks.
+- **Do not commit until the user says so.** Never run `git commit` (or create a branch for it) until the user explicitly says "commit" for that change. Make the changes, show what changed, and ask; describing a constraint (such as "we need PRs for develop") is not permission to commit.
+- **Never push until the user says so.** Never run `git push` (or anything else that sends to GitHub, such as deleting a remote branch) until the user explicitly says "push" for it. Permission to commit is not permission to push.
 - PR test plans are plain bullet points, no checkboxes.
 - Never commit build output (`node_modules`, `build`, `.svelte-kit`, `src-tauri/target`, `src-tauri/gen`).
 

@@ -2,7 +2,10 @@
 name = "git-manager"
 version = "0.1.0-beta.2"
 description = "Native Git GUI with a JetBrains-style 3-way merge tool"
-authors = ["Shibbir"]
+authors = ["MD. Shibbir Ahmed"]
+homepage = "https://github.com/shibbirweb/git-manager"
+repository = "https://github.com/shibbirweb/git-manager"
+license = "MIT"
 edition = "2021"
 
 [lib]
