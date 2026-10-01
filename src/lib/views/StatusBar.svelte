@@ -2,6 +2,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { api } from "$lib/api";
+  import { isCommitTab, parseCommitTabPath } from "$lib/stores/commitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { MemoryUsage } from "$lib/types";
@@ -23,6 +24,10 @@
   const shownView = $derived(changesSelection.shownView);
   const contextRepo = $derived.by(() => {
     if (shownView === "file" && repoStore.openFilePath) {
+      const commit = parseCommitTabPath(repoStore.openFilePath);
+      if (commit) {
+        return repoStore.repos.find((repo) => repo.root === commit.repoRoot) ?? null;
+      }
       return locateAbsolute(repoStore.repos, repoStore.openFilePath)?.repo ?? null;
     }
     if (shownView === "diff" && changesSelection.selected) {
@@ -38,7 +43,9 @@
   const conflicts = $derived(contextStatus?.files.filter((file) => file.conflicted).length ?? 0);
   const op = $derived(contextStatus?.op ?? null);
   /** A file tab is on screen and outside every repository. */
-  const fileWithoutRepo = $derived(shownView === "file" && repoStore.openFilePath !== null && contextRepo === null);
+  const fileWithoutRepo = $derived(
+    shownView === "file" && repoStore.openFilePath !== null && !isCommitTab(repoStore.openFilePath) && contextRepo === null,
+  );
   const fileInfo = $derived(
     shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
   );

@@ -21,6 +21,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Editor tabs with preview tabs, git status letters in the Files panel, breadcrumbs, change markers on the scrollbar and next or previous change navigation.
 - Git blame for the current line and a blame gutter, with click-through to the commit in the Log.
 - Log with a branch graph, commit details and per-file diffs; cherry-pick, revert, reset and checkout.
+- Open a commit in its own editor tab, like VS Code, so its diff gets the whole editor area: double-click it in the Log, press Enter, use Open in Tab, or double-click one of its files.
 - Branches, tags and stashes sidebar; fetch, pull and push with progress.
 - Back and Forward navigation across files, diffs and commits.
 - Settings saved in `~/.gitmanager`: theme, fonts, ligatures, tab size, word wrap, blame, zoom with Ctrl + mouse wheel.

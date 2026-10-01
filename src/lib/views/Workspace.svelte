@@ -11,6 +11,8 @@
   import { changesSelection } from "./changes/selection.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import FileExplorer from "./files/FileExplorer.svelte";
+  import CommitTab from "$lib/log/CommitTab.svelte";
+  import { isCommitTab } from "$lib/stores/commitTabs";
   import FileView from "./files/FileView.svelte";
   import ChangesView from "./ChangesView.svelte";
   import Header from "./Header.svelte";
@@ -154,7 +156,11 @@
       <!-- Every tab keeps its editor mounted, so unsaved edits, cursor and scroll survive switching. -->
       {#each repoStore.tabs as tab (tab.path)}
         <div class="file-host" class:hidden={shownView !== "file" || repoStore.openFilePath !== tab.path}>
-          <FileView filePath={tab.path} />
+          {#if isCommitTab(tab.path)}
+            <CommitTab tabPath={tab.path} />
+          {:else}
+            <FileView filePath={tab.path} />
+          {/if}
         </div>
       {/each}
     </main>

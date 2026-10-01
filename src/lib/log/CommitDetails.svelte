@@ -25,9 +25,14 @@
       lineText?: string | null;
       token: number;
     } | null;
+    /**
+     * Shows "Open in Tab" and makes a double-click on a changed file open the
+     * commit in its own editor tab on that file. Left out inside the tab itself.
+     */
+    onOpenInTab?: ((filePath: string | null) => void) | null;
   }
 
-  let { repoPath, commitId, loadedShortId, onSelectCommit, preferredFile = null }: Props = $props();
+  let { repoPath, commitId, loadedShortId, onSelectCommit, preferredFile = null, onOpenInTab = null }: Props = $props();
 
   let details = $state<CommitDetails | null>(null);
   let detailsError = $state<string | null>(null);
@@ -216,7 +221,19 @@
       <div class="state dim">Loading commit...</div>
     {:else}
       <section class="info">
-        <div class="subject selectable">{body.subject || "(no message)"}</div>
+        <div class="subject-row">
+          <div class="subject selectable">{body.subject || "(no message)"}</div>
+          {#if onOpenInTab}
+            <button
+              class="btn small open-tab"
+              onclick={() => onOpenInTab?.(selectedPath)}
+              title="Open this commit in an editor tab, with the diff in the whole editor area (or double-click the commit or a file)"
+            >
+              <Icon name="commit" size={13} />
+              Open in Tab
+            </button>
+          {/if}
+        </div>
         {#if body.rest}
           <pre class="message selectable">{body.rest}</pre>
         {/if}
@@ -270,7 +287,8 @@
             aria-selected={file.path === selectedPath}
             data-index={index}
             onmousedown={() => (selectedPath = file.path)}
-            title={file.origPath ? `${file.origPath} -> ${file.path}` : file.path}
+            ondblclick={() => onOpenInTab?.(file.path)}
+            title={`${file.origPath ? `${file.origPath} -> ${file.path}` : file.path}${onOpenInTab ? "\nDouble-click to open in a tab" : ""}`}
           >
             <span class="status status-{file.status}">{statusLetter(file.status)}</span>
             <span class="name truncate" class:deleted={file.status === "deleted"}>{fileName(file.path)}</span>
@@ -369,6 +387,22 @@
     overflow: auto;
     padding: 10px 12px;
     border-bottom: 1px solid var(--border-strong);
+  }
+
+  .subject-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .subject-row .subject {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .open-tab {
+    flex: none;
+    gap: 5px;
   }
 
   .subject {

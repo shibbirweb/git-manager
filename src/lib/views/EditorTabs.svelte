@@ -1,6 +1,7 @@
 <!-- Tab bar above the editor area: the Diff tab plus every open file. -->
 <script lang="ts">
   import { errorMessage } from "$lib/api";
+  import { parseCommitTabPath } from "$lib/stores/commitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { tabLabels } from "$lib/stores/tabs";
   import { folderFor, relativeTo } from "$lib/stores/workspacePaths";
@@ -52,8 +53,20 @@
     }
   }
 
+  /** A commit tab's tooltip: the hash, the subject and the repository. */
+  function commitTitle(tabPath: string): string {
+    const ref = parseCommitTabPath(tabPath);
+    if (!ref) {
+      return tabPath;
+    }
+    const summary = repoStore.commitTabs[tabPath]?.summary;
+    const repoName = ref.repoRoot.slice(ref.repoRoot.lastIndexOf("/") + 1);
+    return `Commit ${ref.commitId.slice(0, 8)}${summary ? `: ${summary}` : ""} (${repoName})`;
+  }
+
   function openMenu(event: MouseEvent, filePath: string, preview: boolean): void {
     const index = repoStore.tabs.findIndex((tab) => tab.path === filePath);
+    const commit = parseCommitTabPath(filePath);
     contextMenu.open(event, [
       ...(preview ? [{ label: "Keep Open", action: () => repoStore.pinFile(filePath) }, { separator: true as const }] : []),
       { label: "Close", action: () => void repoStore.closeTab(filePath) },
@@ -65,14 +78,18 @@
       },
       { label: "Close All", action: () => void repoStore.closeAllTabs() },
       { separator: true },
-      { label: "Copy Path", action: () => void copy(filePath) },
-      {
-        label: "Copy Relative Path",
-        action: () => {
-          const folder = folderFor(repoStore.workspace?.folders ?? [], filePath);
-          void copy(folder ? relativeTo(folder.root, filePath) : filePath);
-        },
-      },
+      ...(commit
+        ? [{ label: "Copy Commit Hash", action: () => void copy(commit.commitId) }]
+        : [
+            { label: "Copy Path", action: () => void copy(filePath) },
+            {
+              label: "Copy Relative Path",
+              action: () => {
+                const folder = folderFor(repoStore.workspace?.folders ?? [], filePath);
+                void copy(folder ? relativeTo(folder.root, filePath) : filePath);
+              },
+            },
+          ]),
     ]);
   }
 
@@ -100,13 +117,14 @@
   {#each repoStore.tabs as tab (tab.path)}
     {@const label = labels.get(tab.path)}
     {@const active = shownView === "file" && repoStore.openFilePath === tab.path}
+    {@const commit = parseCommitTabPath(tab.path) !== null}
     <div
       class="tab"
       class:active
       class:preview={tab.preview}
       class:dirty={tab.dirty}
       data-path={tab.path}
-      title="{tab.path}{tab.preview ? ' (preview: double-click to keep open)' : ''}"
+      title={commit ? commitTitle(tab.path) : `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`}
       role="presentation"
       onauxclick={(event) => onAuxClick(event, tab.path)}
       oncontextmenu={(event) => openMenu(event, tab.path, tab.preview)}
@@ -118,8 +136,8 @@
         onclick={() => activate(tab.path)}
         ondblclick={() => repoStore.pinFile(tab.path)}
       >
-        <Icon name="file" size={13} />
-        <span class="name">{label?.name ?? tab.path}</span>
+        <Icon name={commit ? "commit" : "file"} size={13} />
+        <span class="name" class:mono={commit}>{label?.name ?? tab.path}</span>
         {#if label?.hint}
           <span class="hint">{label.hint}</span>
         {/if}

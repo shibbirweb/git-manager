@@ -58,6 +58,21 @@ On the right is the diff of the selected file: **Parent** on the left, the commi
 
 When you open a commit from blame, the Log loads more history until it finds it, and the diff opens on the line you clicked. If it is not there, a note says **Commit is not in the loaded history**; with **All branches** off, try turning it on.
 
+## Open a commit in a tab
+
+The details pane is handy for a quick look, but a big change is easier to read with the whole editor area. Like in VS Code, you can open a commit in its own tab:
+
+- Double-click the commit in the list (or select it and press Enter).
+- Click **Open in Tab** next to the commit message.
+- Double-click a file under the changed files, to open the tab on that file.
+- Right-click the commit and choose **Open in Tab**.
+
+![A commit open in its own tab](../images/commit-tab.png)
+
+*The commit in a tab: the same details and changed files, with the diff using the whole editor area.*
+
+The tab shows the commit's short hash and sits next to your file tabs; hover it for the message. It stays open until you close it, and opening the same commit again goes back to its tab. Clicking a **Parent** opens that commit in a tab too. Right-click the tab for **Copy Commit Hash**. To get back to the list, click the Log button.
+
 ## Right-click a commit
 
 ![Log context menu](../images/log-context-menu.png)
@@ -90,3 +105,4 @@ Example: you committed "WIP" twice on `main` and want to redo them as one commit
 - [Diffs](Diffs.md)
 - [Navigation](Navigation.md)
 - [How the log works (developer)](../developer/How-the-Log-Works.md)
+- [How commit tabs work (developer)](../developer/How-Commit-Tabs-Work.md)

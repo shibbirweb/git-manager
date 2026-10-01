@@ -11,6 +11,7 @@ import type { OpOutcome, Refs, RepoInfo, RepoStatus, StashEntry } from "$lib/typ
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import { settings } from "./settings.svelte";
+import { commitTabPath, commitTabsInFolder } from "./commitTabs";
 import { closeTabs, type FileTab, openTab, otherPaths, pathsToRight, pinTab, setTabDirty, type TabsState } from "./tabs";
 
 /** "none" is the empty main area shown when the Log is toggled off and nothing else is open. */
@@ -79,6 +80,13 @@ function unionRepos(lists: RepoInfo[][]): RepoInfo[] {
 
 export type MainView = "diff" | "log" | "file" | "none";
 
+export interface CommitTabInfo {
+  /** The commit subject, for the tab tooltip. */
+  summary: string | null;
+  /** The file to show; `token` changes on every request so the same file can be asked for again. */
+  focus: { path: string; token: number } | null;
+}
+
 /** Wait after the last `.git` appearing or disappearing before rescanning, so a clone is scanned once. */
 const RESCAN_DELAY_MS = 1000;
 
@@ -117,6 +125,8 @@ class RepoStore {
   tabs = $state.raw<FileTab[]>([]);
   /** Absolute path of the active file tab. */
   openFilePath = $state<string | null>(null);
+  /** What a commit tab shows besides its commit, keyed by tab path (see commitTabs.ts). */
+  commitTabs = $state.raw<Record<string, CommitTabInfo>>({});
   /** A commit the Log view should select, e.g. after clicking a blame note. */
   logFocus = $state<{
     repoRoot: string;
@@ -263,7 +273,13 @@ class RepoStore {
       return;
     }
     const prefix = folderRoot.endsWith("/") ? folderRoot : `${folderRoot}/`;
-    const tabsInFolder = this.tabs.filter((tab) => tab.path.startsWith(prefix)).map((tab) => tab.path);
+    const tabsInFolder = [
+      ...this.tabs.filter((tab) => tab.path.startsWith(prefix)).map((tab) => tab.path),
+      ...commitTabsInFolder(
+        this.tabs.map((tab) => tab.path),
+        folderRoot,
+      ),
+    ];
     if (tabsInFolder.length > 0 && !(await this.closeTabs(tabsInFolder))) {
       return;
     }
@@ -417,6 +433,7 @@ class RepoStore {
     this.conflictsOpen = false;
     this.openFilePath = null;
     this.tabs = [];
+    this.commitTabs = {};
     if (this.view === "file") {
       this.view = "diff";
     }
@@ -678,6 +695,30 @@ class RepoStore {
     if (!next.active && this.view === "file") {
       this.view = "diff";
     }
+    // Forget what closed commit tabs showed.
+    const open = new Set(next.tabs.map((tab) => tab.path));
+    if (Object.keys(this.commitTabs).some((tabPath) => !open.has(tabPath))) {
+      this.commitTabs = Object.fromEntries(Object.entries(this.commitTabs).filter(([tabPath]) => open.has(tabPath)));
+    }
+  }
+
+  /**
+   * Opens a commit in its own editor tab, like VS Code, so its diff gets the
+   * whole editor area. `filePath` (repo-relative) picks the file to show; an
+   * open tab for the same commit is reused and switched to that file.
+   */
+  openCommitTab(repoRoot: string, commitId: string, options: { summary?: string | null; filePath?: string | null } = {}): void {
+    const tabPath = commitTabPath(repoRoot, commitId);
+    const previous = this.commitTabs[tabPath];
+    this.commitTabs = {
+      ...this.commitTabs,
+      [tabPath]: {
+        summary: options.summary ?? previous?.summary ?? null,
+        focus: options.filePath ? { path: options.filePath, token: (previous?.focus?.token ?? 0) + 1 } : (previous?.focus ?? null),
+      },
+    };
+    this.applyTabs(openTab(this.tabsState, tabPath, true));
+    this.view = "file";
   }
 
   /**

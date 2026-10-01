@@ -37,6 +37,7 @@ src/
     ├── api.ts              one typed wrapper per Tauri command, plus event listeners
     ├── types.ts            TypeScript mirrors of the Rust DTOs (camelCase)
     ├── stores/             app state: repo, settings, tabs, navigation, paths
+    │   ├── commitTabs.ts   pseudo tab paths for commits opened in a tab
     │   └── settingsData.ts pure settings validation, what may be saved, session steps
     ├── views/              the main window: header, sidebars, Changes, Log, Files, Settings
     │   ├── workspaceShortcuts.ts   which window shortcut a key means
@@ -46,7 +47,7 @@ src/
     ├── merge/              3-way merge tool: model.ts, extensions.ts, MergeEditor.svelte
     ├── diff/               2-way diff view on @codemirror/merge
     ├── editor/             shared CodeMirror setup, blame, conflict markers, change markers
-    ├── log/                commit graph layout (graph.ts), commit details, lineMatch.ts
+    ├── log/                commit graph layout (graph.ts), commit details, CommitTab, lineMatch.ts
     ├── update/             update check, changelog parser, What's New
     ├── ui/                 dialogs, toasts, context menu, icons, resize handle
     └── dev/ipcBridge.ts    dev-only relay used by the screenshot script

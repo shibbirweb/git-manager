@@ -827,6 +827,17 @@ define("commit-details", async (shot) => {
   await shot.save();
 }, logScenario);
 
+define("commit-tab", async (shot) => {
+  await shot.showLog();
+  await commitRow(shot, "Cart: discount codes and totals").dblclick();
+  const tab = shot.page.locator(".commit-tab");
+  await tab.getByRole("listbox", { name: "Changed files" }).waitFor();
+  await tab.locator(".cm-editor").first().waitFor();
+  await shot.settle(500);
+  await shot.page.mouse.move(640, 790);
+  await shot.save();
+}, logScenario);
+
 define("log-context-menu", async (shot) => {
   await shot.showLog();
   await commitRow(shot, "Cart: discount codes and totals").click({ button: "right" });

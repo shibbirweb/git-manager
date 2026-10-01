@@ -102,6 +102,13 @@
       "screenshots": ["log-graph.png", "commit-details.png", "log-context-menu.png"]
     },
     {
+      "id": "commit-tabs",
+      "title": "Commit tabs",
+      "usage": "usage/History-and-Log.md",
+      "developer": "developer/How-Commit-Tabs-Work.md",
+      "screenshots": ["commit-tab.png"]
+    },
+    {
       "id": "branches",
       "title": "Branches and tags",
       "usage": "usage/Branches-and-Tags.md",

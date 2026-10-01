@@ -12,6 +12,8 @@ Histories can be huge, and a big repository must still open quickly without hold
 
 `LogView.svelte` fills the main area. The Log button in the activity bar, the empty main area and Shift+Cmd+L all call `changesSelection.toggleLog()`, which remembers the view you came from, so a second click returns you there.
 
+Double-clicking a commit opens it in its own editor tab instead; see [How commit tabs work](How-Commit-Tabs-Work.md).
+
 Loading a page goes through the usual bridge:
 
 ```mermaid
