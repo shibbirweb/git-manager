@@ -17,6 +17,7 @@
 # the matching env lines below: APPLE_CERTIFICATE (base64 .p12), APPLE_CERTIFICATE_PASSWORD,
 # APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD (app-specific), APPLE_TEAM_ID.
 name: Release
+run-name: Release ${{ inputs.tag || github.event.release.tag_name }}
 
 on:
   release:
