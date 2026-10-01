@@ -30,6 +30,8 @@
       "dmg"
     ],
     "category": "DeveloperTool",
+    "publisher": "MD. Shibbir Ahmed",
+    "copyright": "Copyright 2026 MD. Shibbir Ahmed",
     "shortDescription": "Git GUI with a 3-way merge tool",
     "icon": [
       "icons/32x32.png",

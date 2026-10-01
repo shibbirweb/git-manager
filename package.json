@@ -2,6 +2,18 @@
   "name": "git-manager",
   "version": "0.1.0-beta.2",
   "description": "Native Git GUI with a JetBrains-style 3-way merge tool",
+  "author": {
+    "name": "MD. Shibbir Ahmed",
+    "url": "https://github.com/shibbirweb"
+  },
+  "homepage": "https://github.com/shibbirweb/git-manager",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shibbirweb/git-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shibbirweb/git-manager/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "bun --bun vite dev",
