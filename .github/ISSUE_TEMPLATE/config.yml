@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Releases and release notes
+    url: https://github.com/shibbirweb/git-manager/releases
+    about: What changed in each version.

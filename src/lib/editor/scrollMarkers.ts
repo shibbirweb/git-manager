@@ -1,0 +1,230 @@
+// Overview ruler next to the scrollbar: one colored tick per change, placed
+// proportionally to the document, clickable to jump there. Plus a matching
+// change gutter for plain editors.
+
+import { type EditorState, type Extension, RangeSet, StateEffect, StateField } from "@codemirror/state";
+import { EditorView, GutterMarker, gutter, ViewPlugin, type ViewUpdate } from "@codemirror/view";
+import type { ChangeMark } from "./lineDiff";
+
+export const setChangeMarks = StateEffect.define<ChangeMark[]>();
+
+/** Change marks pushed into an editor from outside (e.g. a diff against HEAD). */
+export const changeMarkField = StateField.define<ChangeMark[]>({
+  create: () => [],
+  update(value, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setChangeMarks)) {
+        return effect.value;
+      }
+    }
+    return value;
+  },
+});
+
+export type MarkSource = (state: EditorState) => readonly ChangeMark[];
+
+export const fieldSource: MarkSource = (state) => state.field(changeMarkField, false) ?? [];
+
+export interface Tick {
+  top: number;
+  height: number;
+  kind: ChangeMark["kind"];
+  line: number;
+}
+
+const MIN_TICK = 3;
+
+/**
+ * Converts line marks to strip coordinates. `view` supplies line heights and
+ * `trackHeight` is the strip's height in pixels.
+ */
+export function layoutTicks(view: EditorView, marks: readonly ChangeMark[], trackHeight: number): Tick[] {
+  const doc = view.state.doc;
+  const total = Math.max(1, view.contentHeight);
+  const scale = trackHeight / total;
+  const ticks: Tick[] = [];
+  for (const mark of marks) {
+    const firstLine = Math.min(mark.from, doc.lines - 1);
+    const top = view.lineBlockAt(doc.line(firstLine + 1).from).top;
+    let bottom = top;
+    if (mark.to > mark.from) {
+      const lastLine = Math.min(mark.to, doc.lines) - 1;
+      bottom = view.lineBlockAt(doc.line(lastLine + 1).from).bottom;
+    }
+    const tick: Tick = {
+      top: top * scale,
+      height: Math.max(MIN_TICK, (bottom - top) * scale),
+      kind: mark.kind,
+      line: firstLine,
+    };
+    // Merge ticks of the same kind that would overlap on screen.
+    const last = ticks[ticks.length - 1];
+    if (last && last.kind === tick.kind && tick.top <= last.top + last.height + 1) {
+      last.height = Math.max(last.height, tick.top + tick.height - last.top);
+    } else {
+      ticks.push(tick);
+    }
+  }
+  return ticks;
+}
+
+export function renderTicks(strip: HTMLElement, ticks: Tick[]): void {
+  strip.replaceChildren(
+    ...ticks.map((tick) => {
+      const element = document.createElement("div");
+      element.className = `cm-scroll-mark cm-scroll-mark-${tick.kind}`;
+      element.style.top = `${tick.top}px`;
+      element.style.height = `${tick.height}px`;
+      element.dataset.line = String(tick.line);
+      element.title = `${tick.kind.charAt(0).toUpperCase()}${tick.kind.slice(1)} at line ${tick.line + 1}`;
+      return element;
+    }),
+  );
+}
+
+/** Scrolls `view` so the 0-based `line` is centered and puts the cursor there. */
+export function jumpToLine(view: EditorView, line: number): void {
+  const doc = view.state.doc;
+  const position = doc.line(Math.min(line + 1, doc.lines)).from;
+  view.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
+}
+
+export function createStrip(onJump: (line: number) => void): HTMLDivElement {
+  const strip = document.createElement("div");
+  strip.className = "cm-scroll-markers";
+  strip.setAttribute("aria-hidden", "true");
+  strip.addEventListener("mousedown", (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>(".cm-scroll-mark");
+    if (target?.dataset.line) {
+      event.preventDefault();
+      onJump(Number(target.dataset.line));
+    }
+  });
+  return strip;
+}
+
+// Strip and tick styles live in app.css so the diff view can reuse them outside an editor.
+const stripTheme = EditorView.theme({
+  "&.cm-with-scroll-markers .cm-scroller": { marginRight: "12px" },
+});
+
+/** Overview ruler for an editor that scrolls itself. */
+export function scrollMarkers(source: MarkSource = fieldSource): Extension {
+  const plugin = ViewPlugin.fromClass(
+    class {
+      strip: HTMLDivElement;
+      marks: readonly ChangeMark[];
+
+      constructor(readonly view: EditorView) {
+        this.strip = createStrip((line) => jumpToLine(view, line));
+        view.dom.appendChild(this.strip);
+        this.marks = source(view.state);
+        this.schedule();
+      }
+
+      update(update: ViewUpdate): void {
+        const next = source(update.state);
+        if (next !== this.marks || update.docChanged || update.geometryChanged || update.heightChanged) {
+          this.marks = next;
+          this.schedule();
+        }
+      }
+
+      schedule(): void {
+        this.view.requestMeasure({
+          key: this,
+          read: (view) => layoutTicks(view, this.marks, this.strip.clientHeight),
+          write: (ticks) => renderTicks(this.strip, ticks),
+        });
+      }
+
+      destroy(): void {
+        this.strip.remove();
+      }
+    },
+  );
+  return [plugin, stripTheme, EditorView.editorAttributes.of({ class: "cm-with-scroll-markers" })];
+}
+
+class ChangeGutterMarker extends GutterMarker {
+  constructor(readonly kind: ChangeMark["kind"], readonly atEnd = false) {
+    super();
+  }
+
+  eq(other: ChangeGutterMarker): boolean {
+    return other.kind === this.kind && other.atEnd === this.atEnd;
+  }
+
+  toDOM(): Node {
+    const element = document.createElement("div");
+    element.className = `cm-change-bar cm-change-bar-${this.kind}${this.atEnd ? " at-end" : ""}`;
+    return element;
+  }
+}
+
+const gutterMarkers = {
+  added: new ChangeGutterMarker("added"),
+  modified: new ChangeGutterMarker("modified"),
+  deleted: new ChangeGutterMarker("deleted"),
+  deletedAtEnd: new ChangeGutterMarker("deleted", true),
+  conflict: new ChangeGutterMarker("conflict"),
+};
+
+const gutterTheme = EditorView.theme({
+  ".cm-change-gutter": { width: "5px" },
+  ".cm-change-gutter .cm-gutterElement": { position: "relative", padding: "0" },
+  ".cm-change-bar": { position: "absolute", left: "0", width: "3px", top: "0", bottom: "0" },
+  ".cm-change-bar-added": { background: "var(--diff-added-edge)" },
+  ".cm-change-bar-modified": { background: "var(--diff-modified-edge)" },
+  ".cm-change-bar-conflict": { background: "var(--danger)" },
+  // Deletions sit between lines: a small wedge on the next line's top edge.
+  ".cm-change-bar-deleted": {
+    bottom: "auto",
+    height: "0",
+    width: "0",
+    top: "-4px",
+    borderTop: "4px solid transparent",
+    borderBottom: "4px solid transparent",
+    borderLeft: "5px solid var(--danger)",
+  },
+  ".cm-change-bar-deleted.at-end": { top: "auto", bottom: "-4px" },
+});
+
+function buildGutterSet(doc: EditorState["doc"], marks: readonly ChangeMark[]): RangeSet<GutterMarker> {
+  const ranges = [];
+  const sorted = [...marks].sort((a, b) => a.from - b.from);
+  for (const mark of sorted) {
+    if (mark.to > mark.from) {
+      const marker =
+        mark.kind === "conflict" ? gutterMarkers.conflict : mark.kind === "added" ? gutterMarkers.added : gutterMarkers.modified;
+      for (let line = mark.from; line < Math.min(mark.to, doc.lines); line++) {
+        ranges.push(marker.range(doc.line(line + 1).from));
+      }
+    } else if (mark.from < doc.lines) {
+      ranges.push(gutterMarkers.deleted.range(doc.line(mark.from + 1).from));
+    } else {
+      ranges.push(gutterMarkers.deletedAtEnd.range(doc.line(doc.lines).from));
+    }
+  }
+  return RangeSet.of(ranges, true);
+}
+
+/** Colored bars beside the line numbers for each changed line. */
+export function changeGutter(source: MarkSource = fieldSource): Extension {
+  // The gutter asks for markers on every update; rebuild only when needed.
+  let cached: { marks: readonly ChangeMark[]; doc: EditorState["doc"]; set: RangeSet<GutterMarker> } | null = null;
+  return [
+    gutter({
+      class: "cm-change-gutter",
+      markers: (view) => {
+        const marks = source(view.state);
+        const doc = view.state.doc;
+        if (!cached || cached.marks !== marks || cached.doc !== doc) {
+          cached = { marks, doc, set: buildGutterSet(doc, marks) };
+        }
+        return cached.set;
+      },
+    }),
+    gutterTheme,
+  ];
+}

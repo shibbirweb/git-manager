@@ -1,0 +1,37 @@
+[package]
+name = "git-manager"
+version = "0.1.0-beta.1"
+description = "Native Git GUI with a JetBrains-style 3-way merge tool"
+authors = ["Shibbir"]
+edition = "2021"
+
+[lib]
+# The `_lib` suffix keeps the lib name distinct from the bin name (cargo#8519).
+name = "git_manager_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2.0.21"
+imara-diff = "0.2.0"
+notify-debouncer-full = "0.7.0"
+# Reads only: network/auth features are unnecessary because writes go through the git CLI.
+git2 = { version = "0.21.0", default-features = false }
+tauri-plugin-opener = "2"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+# Small, fast binary: https://tauri.app/concept/size/#cargo-configuration
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

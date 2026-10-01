@@ -1,0 +1,38 @@
+// Ctrl/Cmd + mouse wheel over an editor changes the editor font size, like
+// VS Code's `editor.mouseWheelZoom`. Trackpad pinches arrive as ctrl+wheel too.
+
+import { FONT_SIZE_RANGE } from "$lib/stores/settings.svelte";
+
+/** Wheel distance (pixels) per size step; one mouse notch is about 100. */
+const DELTA_PER_STEP = 50;
+export const ZOOM_STEP = 0.5;
+
+/**
+ * Turns wheel deltas into font size steps, accumulating small trackpad
+ * deltas so a gentle pinch still changes the size. Returns the new size.
+ */
+export class WheelZoom {
+  private pending = 0;
+
+  apply(currentSize: number, deltaY: number, deltaMode = 0): number {
+    // Line-based deltas (some mice) count as roughly 40 pixels per line.
+    this.pending += deltaMode === 1 ? deltaY * 40 : deltaY;
+    let size = currentSize;
+    while (Math.abs(this.pending) >= DELTA_PER_STEP) {
+      // Scrolling up (negative delta) makes the text bigger.
+      size += this.pending < 0 ? ZOOM_STEP : -ZOOM_STEP;
+      this.pending += this.pending < 0 ? DELTA_PER_STEP : -DELTA_PER_STEP;
+    }
+    const [min, max] = FONT_SIZE_RANGE.editor;
+    const clamped = Math.min(max, Math.max(min, size));
+    if (clamped !== size) {
+      // Do not keep winding up past the limit.
+      this.pending = 0;
+    }
+    return clamped;
+  }
+
+  reset(): void {
+    this.pending = 0;
+  }
+}

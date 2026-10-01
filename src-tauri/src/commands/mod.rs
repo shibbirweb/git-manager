@@ -1,0 +1,85 @@
+pub mod branch;
+pub mod config;
+pub mod files;
+pub mod history;
+pub mod merge;
+pub mod remote;
+pub mod repo;
+pub mod stash;
+pub mod status;
+pub mod workspace;
+
+#[cfg(test)]
+mod tests;
+
+use std::path::{Component, Path, PathBuf};
+
+use serde::Serialize;
+
+use crate::error::{AppError, AppResult};
+use crate::git::{cli, repo as git_repo};
+
+/// Runs blocking git work off the main thread so the UI never stalls.
+pub async fn blocking<T, F>(work: F) -> AppResult<T>
+where
+    T: Send + 'static,
+    F: FnOnce() -> AppResult<T> + Send + 'static,
+{
+    tauri::async_runtime::spawn_blocking(work)
+        .await
+        .map_err(|err| AppError::invalid(format!("Background task failed: {err}")))?
+}
+
+/// Result of an operation that may stop on conflicts (merge, rebase, pull...).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpOutcome {
+    pub output: String,
+    pub conflicts: bool,
+}
+
+fn has_conflicts(repo_path: &str) -> bool {
+    git_repo::open(repo_path)
+        .and_then(|repo| Ok(repo.index()?.has_conflicts()))
+        .unwrap_or(false)
+}
+
+/// A failed command that left conflicts behind is a normal outcome, not an error.
+pub fn outcome(repo_path: &str, result: AppResult<cli::GitOutput>) -> AppResult<OpOutcome> {
+    match result {
+        Ok(output) => Ok(OpOutcome {
+            output: output.text(),
+            conflicts: has_conflicts(repo_path),
+        }),
+        Err(AppError::Command { message }) if has_conflicts(repo_path) => Ok(OpOutcome {
+            output: message,
+            conflicts: true,
+        }),
+        Err(err) => Err(err),
+    }
+}
+
+pub fn run_op(repo_path: &str, args: &[&str]) -> AppResult<OpOutcome> {
+    outcome(repo_path, cli::run(Path::new(repo_path), args))
+}
+
+/// Joins a repo-relative path from the UI, refusing anything that escapes the work tree.
+pub fn safe_join(repo_path: &str, file_path: &str) -> AppResult<PathBuf> {
+    let relative = Path::new(file_path);
+    let escapes = relative.is_absolute()
+        || relative
+            .components()
+            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_)));
+    if escapes || file_path.is_empty() {
+        return Err(AppError::invalid(format!("Invalid path: {file_path}")));
+    }
+    Ok(Path::new(repo_path).join(relative))
+}
+
+/// Builds `git <args...> -- <paths...>`.
+pub fn with_paths<'a>(args: &[&'a str], paths: &'a [String]) -> Vec<&'a str> {
+    let mut all: Vec<&str> = args.to_vec();
+    all.push("--");
+    all.extend(paths.iter().map(String::as_str));
+    all
+}

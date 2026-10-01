@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in Git Manager does not work as expected.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! The more precise the steps, the faster it gets fixed.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a repository with a merge conflict
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  # Filled in by Settings > About > Report a Bug in the app.
+  - type: input
+    id: version
+    attributes:
+      label: Git Manager version
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5"
+  - type: input
+    id: git-version
+    attributes:
+      label: git version
+      description: The output of `git --version`.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, logs or anything else

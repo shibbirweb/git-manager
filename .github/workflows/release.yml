@@ -1,0 +1,160 @@
+# Builds the macOS app and attaches it to a published release.
+#
+# Releases are not cut by hand. "Beta release" (beta.yml) and "Stable release" (stable.yml) work out the
+# version and open a release pull request; once it is merged and CI passes, beta-publish.yml or
+# stable-publish.yml publishes the GitHub release and calls this to build it. See README.md, Releases.
+#
+# It also still runs for a release somebody publishes by hand, and "Run workflow" rebuilds an existing
+# release (for example after a failed build) from its tag.
+#
+# A beta is a pre-release, so GitHub never calls it the latest release and the app only offers it to
+# installs on the beta channel. Stable users keep getting stable releases.
+#
+# The version comes from src-tauri/Cargo.toml, never from the tag: a tag that disagreed with the code
+# would ship an app reporting the wrong version. So the tag, the pre-release flag and the code must agree.
+#
+# Code signing and notarization are optional. To enable them, add these repository secrets and uncomment
+# the matching env lines below: APPLE_CERTIFICATE (base64 .p12), APPLE_CERTIFICATE_PASSWORD,
+# APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD (app-specific), APPLE_TEAM_ID.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release to (re)build, for example v0.2.0 or v0.2.0-beta.1
+        required: true
+  # How beta-publish.yml and stable-publish.yml hand over the release they just published. They have to
+  # call this rather than wait for the "published" event, because GitHub starts no workflow for anything
+  # done with the built in token, which is what they publish with.
+  workflow_call:
+    inputs:
+      tag:
+        description: The already published release to build and attach files to, like v0.2.0-beta.1
+        type: string
+        required: true
+      tested:
+        description: CI already passed on the tag's commit, so the tests are not run again
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Check version and notes
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      version: ${{ steps.resolve.outputs.version }}
+    env:
+      TAG: ${{ inputs.tag || github.event.release.tag_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Every file agrees on the version
+        run: bun scripts/version.ts check
+
+      - name: Tag, pre-release flag and code agree
+        id: resolve
+        run: |
+          version="$(bun scripts/version.ts show)"
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::The release tag is $TAG but src-tauri/Cargo.toml says $version. Tag the release v$version, or run 'bun scripts/version.ts set' and commit."
+            exit 1
+          fi
+          prerelease="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)"
+          case "$version" in
+            *-*) expected=true ;;
+            *) expected=false ;;
+          esac
+          if [ "$prerelease" != "$expected" ]; then
+            if [ "$expected" = true ]; then
+              echo "::error::$version is a beta, so its release must be marked 'Set as a pre-release'. Edit the release and tick it."
+            else
+              echo "::error::$version is a stable version, so its release must not be a pre-release. Edit the release and untick it."
+            fi
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # Notes written on GitHub are kept. Empty or generated notes are replaced with the changelog, which
+      # is also what the app shows as What's New: the version's section for a stable release, the
+      # Unreleased section for a beta.
+      - name: Release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          body="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body)"
+          if bun -e 'import { isPlaceholderNotes } from "./scripts/versioning"; process.exit(isPlaceholderNotes(process.argv[1]) ? 0 : 1)' "$body"; then
+            case "$VERSION" in
+              *-*) bun scripts/version.ts notes > "$RUNNER_TEMP/notes.md" ;;
+              *) bun scripts/version.ts notes "$VERSION" > "$RUNNER_TEMP/notes.md" ;;
+            esac
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file "$RUNNER_TEMP/notes.md"
+            echo "Release notes taken from CHANGELOG.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Kept the notes written on the release" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  test:
+    needs: version
+    if: ${{ !inputs.tested }}
+    uses: ./.github/workflows/ci.yml
+
+  build-macos:
+    name: Build and attach the macOS app
+    needs: [version, test]
+    # Also when the tests were skipped because the caller's CI already passed on this commit.
+    if: ${{ !cancelled() && needs.version.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.test.result) }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Universal build (Apple Silicon + Intel); files are uploaded to the release that started this.
+      - name: Build and upload
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          tauriScript: bun run tauri
+          args: --target universal-apple-darwin
+          tagName: ${{ needs.version.outputs.tag }}

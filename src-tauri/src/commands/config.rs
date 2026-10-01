@@ -1,0 +1,140 @@
+use serde::Serialize;
+use serde_json::Value;
+
+use super::blocking;
+use crate::config;
+use crate::error::AppResult;
+
+/// Reads `~/.gitmanager/<config_name>.json`; None when it does not exist yet.
+#[tauri::command]
+pub async fn load_config(config_name: String) -> AppResult<Option<Value>> {
+    blocking(move || config::load_in(&config::config_dir_in(&config::home_dir()?), &config_name)).await
+}
+
+#[tauri::command]
+pub async fn save_config(config_name: String, value: Value) -> AppResult<()> {
+    blocking(move || config::save_in(&config::config_dir_in(&config::home_dir()?), &config_name, &value)).await
+}
+
+/// Memory of the app and its web view helper processes, for the status bar.
+#[tauri::command]
+pub async fn memory_usage() -> AppResult<crate::memory::MemoryUsage> {
+    blocking(|| Ok(crate::memory::usage())).await
+}
+
+/// The config folder, for showing in the settings dialog.
+#[tauri::command]
+pub fn config_dir() -> AppResult<String> {
+    Ok(config::config_dir_in(&config::home_dir()?).to_string_lossy().into_owned())
+}
+
+/// The operating system for bug reports. The web view cannot tell: WebKit
+/// freezes the macOS version in its user agent at 10.15.7.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct OsInfo {
+    /// "macOS", "Windows", or the Linux distribution name.
+    pub name: String,
+    /// "15.4.1", "24.04"; None when it could not be read.
+    pub version: Option<String>,
+}
+
+#[tauri::command]
+pub async fn os_info() -> AppResult<OsInfo> {
+    blocking(|| Ok(current_os())).await
+}
+
+fn current_os() -> OsInfo {
+    match std::env::consts::OS {
+        "macos" => OsInfo {
+            name: "macOS".to_string(),
+            version: std::process::Command::new("/usr/bin/sw_vers")
+                .arg("-productVersion")
+                .output()
+                .ok()
+                .filter(|output| output.status.success())
+                .and_then(|output| parse_product_version(&String::from_utf8_lossy(&output.stdout))),
+        },
+        "linux" => parse_os_release(
+            &std::fs::read_to_string("/etc/os-release")
+                .or_else(|_| std::fs::read_to_string("/usr/lib/os-release"))
+                .unwrap_or_default(),
+        ),
+        "windows" => OsInfo {
+            name: "Windows".to_string(),
+            version: None,
+        },
+        other => OsInfo {
+            name: other.to_string(),
+            version: None,
+        },
+    }
+}
+
+/// `sw_vers -productVersion` output, e.g. "15.4.1\n".
+fn parse_product_version(output: &str) -> Option<String> {
+    let version = output.trim();
+    let valid = !version.is_empty()
+        && version.split('.').all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()));
+    valid.then(|| version.to_string())
+}
+
+/// NAME and VERSION_ID from `/etc/os-release`, falling back to plain "Linux".
+fn parse_os_release(text: &str) -> OsInfo {
+    let value = |key: &str| {
+        text.lines()
+            .filter_map(|line| line.trim().strip_prefix(key)?.strip_prefix('='))
+            .map(|raw| raw.trim().trim_matches(|c| c == '"' || c == '\'').trim().to_string())
+            .find(|value| !value.is_empty())
+    };
+    OsInfo {
+        name: value("NAME").unwrap_or_else(|| "Linux".to_string()),
+        version: value("VERSION_ID"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reads_the_macos_product_version() {
+        assert_eq!(parse_product_version("15.4.1\n").as_deref(), Some("15.4.1"));
+        assert_eq!(parse_product_version("  26.0 ").as_deref(), Some("26.0"));
+        assert_eq!(parse_product_version(""), None);
+        assert_eq!(parse_product_version("sw_vers: unknown option"), None);
+        assert_eq!(parse_product_version("15..1"), None);
+    }
+
+    #[test]
+    fn reads_the_linux_distribution() {
+        let ubuntu = "PRETTY_NAME=\"Ubuntu 24.04.1 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.1 LTS\"\n";
+        assert_eq!(
+            parse_os_release(ubuntu),
+            OsInfo {
+                name: "Ubuntu".to_string(),
+                version: Some("24.04".to_string()),
+            }
+        );
+        let arch = "NAME='Arch Linux'\nID=arch\n";
+        assert_eq!(parse_os_release(arch).name, "Arch Linux");
+        assert_eq!(parse_os_release(arch).version, None);
+        assert_eq!(
+            parse_os_release(""),
+            OsInfo {
+                name: "Linux".to_string(),
+                version: None,
+            }
+        );
+    }
+
+    #[test]
+    fn this_machine_has_a_name() {
+        let os = current_os();
+        assert!(!os.name.is_empty());
+        if cfg!(target_os = "macos") {
+            assert_eq!(os.name, "macOS");
+            assert!(os.version.is_some(), "{os:?}");
+        }
+    }
+}
