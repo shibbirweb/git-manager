@@ -1307,7 +1307,7 @@ dependencies = [
 
 [[package]]
 name = "git-manager"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 dependencies = [
  "git2",
  "imara-diff",
