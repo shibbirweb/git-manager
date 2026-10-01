@@ -40,6 +40,10 @@ jobs:
       - name: Unit tests (Vitest)
         run: bun run test
 
+      # Every feature has its usage page, developer chapter and screenshots, and every link works.
+      - name: Wiki docs are complete
+        run: bun scripts/build-wiki.ts --check
+
   rust:
     name: Rust (cargo test + clippy)
     # The backend has macOS-only code (memory readout) and the app targets macOS.

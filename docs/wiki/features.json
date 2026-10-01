@@ -1,0 +1,161 @@
+{
+  "$comment": "The map of the wiki. Every feature has a usage page, a developer chapter and its screenshots; scripts/build-wiki.ts fails CI when a page, a screenshot or a link is missing, so a feature cannot land without its docs. Order here is the order in the sidebar.",
+  "usage": [
+    { "page": "usage/Getting-Started.md", "summary": "Install Git Manager, open your first folder and find your way around the window." },
+    { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
+    { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
+    { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
+    { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
+    { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
+    { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
+    { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
+    { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
+    { "page": "usage/History-and-Log.md", "summary": "Browse the commit graph, read commits and undo or copy them." },
+    { "page": "usage/Branches-and-Tags.md", "summary": "Create, switch, merge, rebase, rename and delete branches, and browse tags." },
+    { "page": "usage/Remotes.md", "summary": "Fetch, pull and push, and what the ahead and behind numbers mean." },
+    { "page": "usage/Stashes.md", "summary": "Put work aside and bring it back later." },
+    { "page": "usage/Navigation.md", "summary": "Back and Forward across files, diffs and commits." },
+    { "page": "usage/Settings.md", "summary": "Every setting, where it is saved, and the light and dark themes." },
+    { "page": "usage/Updates.md", "summary": "How Git Manager tells you about new versions, and the beta channel." },
+    { "page": "usage/Status-Bar-and-Help.md", "summary": "The status bar, memory use, and how to report a bug or ask for a feature." },
+    { "page": "usage/Git-Mergetool.md", "summary": "Use Git Manager as the merge tool for git on the command line." },
+    { "page": "usage/Keyboard-Shortcuts.md", "summary": "Every keyboard shortcut on one page." },
+    { "page": "usage/Troubleshooting.md", "summary": "Common problems and how to fix them." }
+  ],
+  "developer": [
+    { "page": "developer/Developer-Guide.md", "summary": "Start here: set up the project, run it, and find your way around these pages." },
+    { "page": "developer/Architecture.md", "summary": "How the Rust backend, the Svelte frontend and git fit together." },
+    { "page": "developer/Project-Layout.md", "summary": "What lives in which folder and file." },
+    { "page": "developer/Backend.md", "summary": "Tauri commands, the git read and write split, errors and the file watcher." },
+    { "page": "developer/Frontend.md", "summary": "Stores, Svelte 5 runes, the API bridge and CodeMirror patterns." },
+    { "page": "developer/Commands-and-Events.md", "summary": "Every backend command and event: what it does, its arguments and what it returns." },
+    { "page": "developer/Testing.md", "summary": "The Rust and Vitest suites, test repositories and what to test." },
+    { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
+    { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
+    { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
+    { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
+    { "page": "developer/Docs-and-Screenshots.md", "summary": "How this wiki is built, how screenshots are taken, and keeping docs in sync." },
+    { "page": "developer/Contributing.md", "summary": "Code style, commits, pull requests and the docs checklist." }
+  ],
+  "features": [
+    {
+      "id": "workspaces",
+      "title": "Workspaces and folders",
+      "usage": "usage/Workspaces.md",
+      "developer": "developer/How-Workspaces-Work.md",
+      "screenshots": ["welcome.png", "window-overview.png", "workspace-folders.png", "repository-switcher.png", "init-repository.png", "scan-repositories.png", "unsaved-changes-close.png"]
+    },
+    {
+      "id": "files-panel",
+      "title": "Files panel",
+      "usage": "usage/Files-Panel.md",
+      "developer": "developer/How-the-Files-Panel-Works.md",
+      "screenshots": ["files-panel.png", "files-context-menu.png"]
+    },
+    {
+      "id": "editor",
+      "title": "Editor and tabs",
+      "usage": "usage/Editor-and-Tabs.md",
+      "developer": "developer/How-the-Editor-Works.md",
+      "screenshots": ["editor-tabs.png", "editor-change-markers.png", "empty-main.png"]
+    },
+    {
+      "id": "changes",
+      "title": "Changes and commits",
+      "usage": "usage/Changes-and-Commits.md",
+      "developer": "developer/How-Changes-and-Commits-Work.md",
+      "screenshots": ["changes-sidebar.png", "commit-box.png"]
+    },
+    {
+      "id": "diffs",
+      "title": "Diffs",
+      "usage": "usage/Diffs.md",
+      "developer": "developer/How-Diffs-Work.md",
+      "screenshots": ["diff-view.png", "diff-hunk-staging.png"]
+    },
+    {
+      "id": "conflicts",
+      "title": "Resolving conflicts",
+      "usage": "usage/Resolving-Conflicts.md",
+      "developer": "developer/How-Conflict-Resolution-Works.md",
+      "screenshots": ["operation-banner.png", "conflicts-dialog.png", "inline-conflict-actions.png", "editor-conflict-toolbar.png"]
+    },
+    {
+      "id": "merge-tool",
+      "title": "Merge tool",
+      "usage": "usage/Merge-Tool.md",
+      "developer": "developer/How-the-Merge-Tool-Works.md",
+      "screenshots": ["merge-tool.png", "merge-tool-resolved.png"]
+    },
+    {
+      "id": "blame",
+      "title": "Blame",
+      "usage": "usage/Blame.md",
+      "developer": "developer/How-Blame-Works.md",
+      "screenshots": ["blame-inline.png", "blame-gutter.png"]
+    },
+    {
+      "id": "log",
+      "title": "History and log",
+      "usage": "usage/History-and-Log.md",
+      "developer": "developer/How-the-Log-Works.md",
+      "screenshots": ["log-graph.png", "commit-details.png", "log-context-menu.png"]
+    },
+    {
+      "id": "branches",
+      "title": "Branches and tags",
+      "usage": "usage/Branches-and-Tags.md",
+      "developer": "developer/How-Branches-and-Tags-Work.md",
+      "screenshots": ["branches-panel.png", "branch-context-menu.png"]
+    },
+    {
+      "id": "remotes",
+      "title": "Remotes",
+      "usage": "usage/Remotes.md",
+      "developer": "developer/How-Remotes-Work.md",
+      "screenshots": ["remote-buttons.png", "git-progress.png"]
+    },
+    {
+      "id": "stashes",
+      "title": "Stashes",
+      "usage": "usage/Stashes.md",
+      "developer": "developer/How-Stashes-Work.md",
+      "screenshots": ["stashes.png"]
+    },
+    {
+      "id": "navigation",
+      "title": "Back and Forward",
+      "usage": "usage/Navigation.md",
+      "developer": "developer/How-Navigation-Works.md",
+      "screenshots": ["back-forward.png"]
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "usage": "usage/Settings.md",
+      "developer": "developer/How-Settings-Work.md",
+      "screenshots": ["settings-appearance.png", "settings-editor.png", "settings-merge.png", "settings-layout.png", "settings-files.png", "settings-editor-more.png", "settings-state-error.png", "dark-theme.png"]
+    },
+    {
+      "id": "updates",
+      "title": "Updates and release channels",
+      "usage": "usage/Updates.md",
+      "developer": "developer/How-Updates-Work.md",
+      "screenshots": ["settings-updates.png", "update-dialog.png", "update-dialog-skipped.png", "whats-new.png"]
+    },
+    {
+      "id": "status-bar",
+      "title": "Status bar and help links",
+      "usage": "usage/Status-Bar-and-Help.md",
+      "developer": "developer/How-the-Status-Bar-Works.md",
+      "screenshots": ["status-bar.png", "help-menu.png", "settings-about.png"]
+    },
+    {
+      "id": "mergetool",
+      "title": "git mergetool mode",
+      "usage": "usage/Git-Mergetool.md",
+      "developer": "developer/How-Mergetool-Mode-Works.md",
+      "screenshots": ["mergetool-mode.png"]
+    }
+  ]
+}
