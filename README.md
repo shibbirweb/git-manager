@@ -1,17 +1,46 @@
 # Git Manager
 
-A native desktop Git client with a JetBrains-style 3-way merge tool. Built with Rust (Tauri 2) and a small Svelte 5 UI running in the system web view, so it starts fast and stays light on memory.
+A native desktop Git client with a JetBrains-style 3-way merge tool, VS Code-style workspaces, tabs, blame and history. Built with Rust (Tauri 2) and a small Svelte 5 UI running in the system web view, so it starts fast and stays light on memory.
+
+![Git Manager: Changes, the editor with blame, and the Files panel](docs/wiki/images/window-overview.png)
+
+**[Download the latest release](https://github.com/shibbirweb/git-manager/releases)** (macOS, Apple Silicon and Intel) · **[User guide and developer docs](https://github.com/shibbirweb/git-manager/wiki)** · **[Report a bug or request a feature](https://github.com/shibbirweb/git-manager/issues/new/choose)**
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/wiki/images/merge-tool.png" alt="Three pane merge tool"><br><b>Merge tool</b>: Yours, Result and Theirs with per-change arrows</td>
+    <td width="50%"><img src="docs/wiki/images/inline-conflict-actions.png" alt="Inline conflict actions"><br><b>Conflicts in the editor</b>: Accept Current, Incoming or Both</td>
+  </tr>
+  <tr>
+    <td><img src="docs/wiki/images/log-graph.png" alt="Log with branch graph"><br><b>Log</b>: branch graph, tags and commit details</td>
+    <td><img src="docs/wiki/images/commit-tab.png" alt="A commit open in a tab"><br><b>Commit tabs</b>: a commit's diff in the whole editor area</td>
+  </tr>
+  <tr>
+    <td><img src="docs/wiki/images/changes-sidebar.png" alt="Changes sidebar"><br><b>Changes</b>: grouped by repository, stage and commit</td>
+    <td><img src="docs/wiki/images/blame-gutter.png" alt="Blame gutter"><br><b>Blame</b>: who changed each line, click to see the commit</td>
+  </tr>
+  <tr>
+    <td><img src="docs/wiki/images/workspace-folders.png" alt="Workspace with two folders"><br><b>Workspaces</b>: many folders and repositories in one window</td>
+    <td><img src="docs/wiki/images/dark-theme.png" alt="Dark theme"><br><b>Light and dark themes</b>, following the system by default</td>
+  </tr>
+</table>
+
+Every feature has its own page with screenshots in the [wiki](https://github.com/shibbirweb/git-manager/wiki).
 
 ## Features
 
-- **Multi-folder workspaces**, like VS Code's multi-root workspaces: add more folders with *Add Folder to Workspace...* (folder menu, or the + in the Files panel). Every folder's repositories appear together; the folder set is restored on the next start and listed under recent workspaces. *Save Workspace to File...* writes a `.gitmanager-workspace` file (`{"folders": [{"path": "apps/web"}]}`, paths relative to the file); *Open Workspace from File...* opens it or a VS Code `.code-workspace` file. A linked file is updated when folders are added or removed, keeping its other keys.
-- **Open any folder**, like VS Code: a single repository, a folder with many repositories (nested ones included), or a folder with no git at all (initialize one from the app). Changes are grouped per repository; one active repository drives branches, the log and pull/push, and you can switch it from the header, the Changes view or the Files panel.
-- **3-way merge resolver**: Yours | Result | Theirs panes with curved connectors, per-change `>>` / `<<` apply and `x` ignore buttons, "apply both" for conflicts (the second apply appends), one-click *Apply non-conflicting changes*, word-level highlights, synchronized scrolling, F7 / Shift+F7 navigation, full undo/redo, ignore-whitespace mode, and Accept Left / Accept Right for whole files.
-- **Conflicts dialog**: every conflicted file with its state on each side, Accept Yours / Accept Theirs (also for binary and modify/delete conflicts), then Continue or Abort the merge, rebase, cherry-pick or revert.
-- **Changes**: staged/unstaged/untracked files, side-by-side diffs, stage/unstage whole files or single hunks, discard, commit and amend.
-- **Branches**: local, remote and tags, with checkout, create, rename, delete, merge into current and rebase onto.
-- **Log**: paged history of all branches with a lane graph, commit details and per-file diffs; cherry-pick, revert, reset and checkout from the context menu.
-- **Remote and stash**: fetch, pull and push with live progress; stash, apply, pop and drop.
+- **Workspaces like VS Code**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.gitmanager-workspace` file, or open a VS Code `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own.
+- **3-way merge tool**: Yours | Result | Theirs panes with connectors, per-change apply and ignore buttons, "apply both" for conflicts, one-click *Apply non-conflicting*, word-level highlights, synchronized scrolling, F7 navigation, full undo and an ignore-whitespace mode.
+- **Conflicts made easy**: a Conflicts dialog to take Yours or Theirs for whole files (binary and deleted files too), inline *Accept Current / Incoming / Both* actions in the editor, and Continue or Abort for merge, rebase, cherry-pick and revert.
+- **Editor and tabs**: preview tabs (italic, like VS Code), breadcrumbs, change markers in the gutter and on the scrollbar, next and previous change, syntax highlighting, font ligatures and zoom with Ctrl + mouse wheel.
+- **Changes**: staged and unstaged files grouped by repository, side-by-side diffs, stage or unstage whole files or single hunks, discard, commit and amend.
+- **Blame**: GitLens-style blame for the current line and a blame gutter; click it to open that commit in the Log on the same line.
+- **Log**: paged history with a branch graph, commit details and per-file diffs. Double-click a commit (or use *Open in Tab*) to read it full size in its own tab. Cherry-pick, revert, reset and checkout from the right-click menu.
+- **Branches, tags, remotes and stashes**: checkout, create, rename, delete, merge and rebase; fetch, pull and push with live progress; stash, apply, pop and drop.
+- **Back and Forward** across files, diffs and commits, like a browser.
+- **Settings** saved in `~/.gitmanager` like VS Code's folder, a status bar with the app's memory use, and update checks with a stable and a beta channel.
 - **Works as `git mergetool`** (see below).
 
 ## How it works
@@ -94,8 +123,6 @@ The [wiki](https://github.com/shibbirweb/git-manager/wiki) has a user guide with
 - Optionally protect `develop` and `master` (pull requests only, CI required). The release branches get their CI run started by the workflow, so the checks show on the release pull request.
 - The repository must be public for the in-app update check to see releases.
 
-The first push of `develop` (at `0.1.0-beta.1`, untagged) publishes that first beta as soon as CI passes.
-
 ### Beta and stable channels
 
 - A beta is a GitHub pre-release. GitHub never counts it as the latest release, and the app only offers it to installs on the **beta channel**, so stable users are never moved to a beta.
@@ -117,7 +144,7 @@ git config --global mergetool.gitmanager.trustExitCode true
 git config --global merge.tool gitmanager
 ```
 
-Then `git mergetool` opens each conflicted file. **Apply** writes the result and exits with status 0 (git marks the file resolved). **Cancel** or closing the window exits with status 1 (the file stays unresolved).
+Then `git mergetool` opens each conflicted file. **Apply** (or Cmd+Enter) writes the result and exits with status 0, so git marks the file resolved. **Cancel**, Esc or closing the window asks first if you changed the result, then exits with status 1 and the file stays unresolved. Cmd+Q quits with status 1 without asking.
 
 ## Settings
 
@@ -129,7 +156,7 @@ Open **Settings** with the gear button in the header or **Cmd+,**. Changes apply
   state.json      recent folders, active repository per folder, sidebar layout and widths
 ```
 
-The folder is created the first time a setting is saved. If `settings.json` contains invalid JSON, the app uses defaults, shows the error in Settings, and does not overwrite your file.
+The folder is created the first time a setting is saved. If `settings.json` or `state.json` contains invalid JSON, the app uses defaults for that file only, shows the error in Settings, and never overwrites it: fix it and click **Try Again**, or **Reset** it. The [Settings page](https://github.com/shibbirweb/git-manager/wiki/Settings) lists every setting.
 
 ## Keyboard shortcuts (merge view)
 
@@ -137,8 +164,10 @@ The folder is created the first time a setting is saved. If `settings.json` cont
 | --- | --- |
 | F7 / Shift+F7 | Next / previous unresolved change |
 | Cmd+Z / Shift+Cmd+Z | Undo / redo in the result (also restores chunk state) |
-| Cmd+Enter | Apply (save the result and mark resolved) |
-| Esc | Cancel |
+| Cmd+Enter | Apply (save the result and mark resolved), from any pane |
+| Esc | Cancel (asks first if you changed the result) |
+
+Every other shortcut is on the [Keyboard Shortcuts page](https://github.com/shibbirweb/git-manager/wiki/Keyboard-Shortcuts).
 
 ## Project layout
 
@@ -146,12 +175,19 @@ The folder is created the first time a setting is saved. If `settings.json` cont
 src/                     Svelte UI
   lib/merge/             3-way merge view: model.ts (pure logic), extensions.ts (CodeMirror), MergeEditor.svelte
   lib/diff/              2-way diff view
-  lib/log/               commit graph layout and log UI
-  lib/views/             workspace, header, sidebar, changes, log
+  lib/log/               commit graph, commit details and commit tabs
+  lib/editor/            CodeMirror setup, blame, conflict markers, change markers
+  lib/stores/            app state: repositories, tabs, settings, navigation
+  lib/views/             workspace, header, sidebars, changes, files, settings
+  lib/update/            update check and What's New
   lib/api.ts, types.ts   typed bridge to the Rust commands
 src-tauri/src/
   merge/                 3-way merge engine
   git/                   git2 readers and the git CLI runner
   commands/              Tauri commands
   watcher.rs             repository file watcher
+docs/wiki/               the wiki: user guide, developer docs and screenshots
+scripts/                 versioning, wiki build, screenshots and demo repositories
 ```
+
+The [Project Layout page](https://github.com/shibbirweb/git-manager/wiki/Project-Layout) explains every folder.

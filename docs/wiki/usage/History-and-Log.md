@@ -60,18 +60,17 @@ When you open a commit from blame, the Log loads more history until it finds it,
 
 ## Open a commit in a tab
 
-The details pane is handy for a quick look, but a big change is easier to read with the whole editor area. Like in VS Code, you can open a commit in its own tab:
+A big change is easier to read with the whole editor area. Like in VS Code, open a commit in its own tab:
 
-- Double-click the commit in the list (or select it and press Enter).
-- Click **Open in Tab** next to the commit message.
-- Double-click a file under the changed files, to open the tab on that file.
-- Right-click the commit and choose **Open in Tab**.
+- Double-click it in the list, or select it and press Enter.
+- Click **Open in Tab** next to the message, or choose it in the right-click menu.
+- Double-click one of its changed files to open the tab on that file.
 
 ![A commit open in its own tab](../images/commit-tab.png)
 
 *The commit in a tab: the same details and changed files, with the diff using the whole editor area.*
 
-The tab shows the commit's short hash and sits next to your file tabs; hover it for the message. It stays open until you close it, and opening the same commit again goes back to its tab. Clicking a **Parent** opens that commit in a tab too. Right-click the tab for **Copy Commit Hash**. To get back to the list, click the Log button.
+The tab shows the short hash; hover it for the message. Opening the same commit again goes back to its tab, and a **Parent** opens in a tab too. Right-click the tab for **Copy Commit Hash**. Click the Log button to get back to the list.
 
 ## Right-click a commit
 
@@ -79,6 +78,7 @@ The tab shows the commit's short hash and sits next to your file tabs; hover it 
 
 *Everything you can do with a commit.*
 
+- **Open in Tab** opens the commit in its own tab (the same as a double-click).
 - **Copy Revision Hash** copies the full hash.
 - **New Branch Here...** creates a branch that starts at this commit. **Checkout branch** is ticked, so you switch to it right away.
 - **Checkout Revision** checks out the commit itself. This is a "detached HEAD": you are not on any branch, so create a branch if you want to keep new commits made there. You are asked first.
