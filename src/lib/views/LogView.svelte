@@ -384,10 +384,25 @@
     return index === undefined ? null : (commits[index]?.shortId ?? null);
   }
 
+  /** Opens a commit in its own editor tab, on `filePath` when given. */
+  function openInTab(commitId: string, filePath: string | null = null): void {
+    if (!repoPath) {
+      return;
+    }
+    const index = indexById.get(commitId);
+    const summary = index === undefined ? null : (commits[index]?.summary ?? null);
+    repoStore.openCommitTab(repoPath, commitId, { summary, filePath });
+  }
+
   function onListKeydown(event: KeyboardEvent): void {
     const page = Math.max(1, Math.floor(viewportHeight / ROW_HEIGHT) - 1);
     const current = selectedPosition;
     let next: number;
+    if (event.key === "Enter" && selectedId) {
+      event.preventDefault();
+      openInTab(selectedId);
+      return;
+    }
     switch (event.key) {
       case "ArrowDown":
         next = current + 1;
@@ -555,6 +570,7 @@
     const busy = repoStore.busy !== null;
     const isMerge = commit.parents.length > 1;
     const items: MenuItem[] = [
+      { label: "Open in Tab", hint: "double-click", action: () => openInTab(commit.id) },
       { label: "Copy Revision Hash", action: () => void copyHash(commit) },
       { separator: true },
       { label: "New Branch Here...", disabled: busy, action: () => void newBranchAt(commit) },
@@ -689,6 +705,7 @@
                 aria-selected={commit.id === selectedId}
                 style="transform: translateY({item.position * ROW_HEIGHT}px); height: {ROW_HEIGHT}px"
                 onmousedown={(event) => onRowMouseDown(event, commit)}
+                ondblclick={() => openInTab(commit.id)}
                 oncontextmenu={(event) => openCommitMenu(event, commit)}
               >
                 <div class="col-graph" style="width: {graphWidth}px">
@@ -713,7 +730,7 @@
                       +{refs.length - MAX_BADGES}
                     </span>
                   {/if}
-                  <span class="summary truncate" title={commit.summary}>{commit.summary}</span>
+                  <span class="summary truncate" title={`${commit.summary}\nDouble-click to open in a tab`}>{commit.summary}</span>
                 </div>
                 <div class="col-author truncate" title={commit.authorEmail}>{commit.authorName}</div>
                 <div class="col-date truncate" title={fullDate(commit.time)}>{relativeTime(commit.time, now)}</div>
@@ -733,7 +750,14 @@
     {#if selectedId && repoPath}
       <div class="split" role="separator" aria-orientation="horizontal" onpointerdown={startSplit}></div>
       <div class="details-pane">
-        <CommitDetails {repoPath} commitId={selectedId} {loadedShortId} onSelectCommit={selectCommit} preferredFile={focusFile} />
+        <CommitDetails
+          {repoPath}
+          commitId={selectedId}
+          {loadedShortId}
+          onSelectCommit={selectCommit}
+          preferredFile={focusFile}
+          onOpenInTab={(filePath) => selectedId && openInTab(selectedId, filePath)}
+        />
       </div>
     {/if}
   </div>

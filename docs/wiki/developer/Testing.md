@@ -86,6 +86,7 @@ Run them with `bun run test`, one file with `bun run test src/lib/stores/tabs.te
 | `src/lib/stores/navHistory.test.ts` | Back and Forward across files, diffs and the Log, skipping stops that are gone |
 | `src/lib/stores/workspacePaths.test.ts` | path joins, deepest repository, folder lookup |
 | `src/lib/stores/fontFamily.test.ts` | cleaning user-typed font lists |
+| `src/lib/stores/commitTabs.test.ts` | commit tab pseudo paths, closing them with a folder, their labels |
 | `src/lib/stores/settingsData.test.ts` | settings validation, what may be saved, migration, session steps |
 | `src/lib/update/releases.test.ts` | which releases each channel is offered, the safe Markdown renderer, issue links |
 | `src/lib/update/update.test.ts` | changelog parsing and semver ordering |

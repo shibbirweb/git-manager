@@ -27,7 +27,7 @@ stateDiagram-v2
   Closed --> [*]
 ```
 
-`openTab` reuses the preview tab only when it has no unsaved edits. `setTabDirty` pins a preview tab when you type. `closeTabs` moves focus to the right neighbour, else the left, and `repoStore.closeTabs` asks before discarding unsaved work. `tabLabels` adds the folder name when two tabs share a file name.
+`openTab` reuses the preview tab only when it has no unsaved edits. `setTabDirty` pins a preview tab when you type. `closeTabs` moves focus to the right neighbour, else the left, and `repoStore.closeTabs` asks before discarding unsaved work. `tabLabels` adds the folder name when two tabs share a file name. A tab can also hold a commit ([How commit tabs work](How-Commit-Tabs-Work.md)).
 
 `EditorTabs.svelte` draws the strip: the Diff tab (only while a change is selected in Changes), then the file tabs, with middle click to close and a context menu (Keep Open, Close, Close Others, Close to the Right, Close All, Copy Path, Copy Relative Path).
 

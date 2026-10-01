@@ -13,6 +13,8 @@ Git Manager has a light code editor for quick fixes. Open files in tabs, edit an
 
 A preview tab becomes a normal tab when you double-click the tab, start editing, or choose **Keep Open** in its right-click menu.
 
+A commit from the Log can open as a tab too, next to your files, with its diff in the whole editor area. See [History and Log](History-and-Log.md#open-a-commit-in-a-tab).
+
 Files larger than 4 MB and binary files (such as images) are not opened. The tab shows a short note with the file size instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
 
 ## When nothing is open

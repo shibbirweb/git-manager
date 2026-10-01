@@ -1,6 +1,8 @@
 // Editor tabs with a VS Code / JetBrains style preview tab: a single click
 // opens (or replaces) the one preview tab; double-clicking or editing pins it.
 
+import { parseCommitTabPath } from "./commitTabs";
+
 export interface FileTab {
   /** Absolute path (see workspacePaths.ts). */
   path: string;
@@ -81,7 +83,10 @@ export function otherPaths(state: TabsState, path: string): string[] {
   return state.tabs.filter((tab) => tab.path !== path).map((tab) => tab.path);
 }
 
-/** Tab labels: the file name, plus its folder when another tab has the same name. */
+/**
+ * Tab labels: the file name, plus its folder when another tab has the same
+ * name. A commit tab (see commitTabs.ts) is labelled with its short hash.
+ */
 export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: string | null }> {
   const counts = new Map<string, number>();
   const nameOf = (path: string) => path.slice(path.lastIndexOf("/") + 1);
@@ -90,6 +95,10 @@ export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: st
   }
   return new Map(
     tabs.map((tab) => {
+      const commit = parseCommitTabPath(tab.path);
+      if (commit) {
+        return [tab.path, { name: commit.commitId.slice(0, 8), hint: null }];
+      }
       const name = nameOf(tab.path);
       const folder = tab.path.includes("/") ? tab.path.slice(0, tab.path.lastIndexOf("/")) : "";
       const duplicate = (counts.get(name) ?? 0) > 1;

@@ -58,12 +58,27 @@ On the right is the diff of the selected file: **Parent** on the left, the commi
 
 When you open a commit from blame, the Log loads more history until it finds it, and the diff opens on the line you clicked. If it is not there, a note says **Commit is not in the loaded history**; with **All branches** off, try turning it on.
 
+## Open a commit in a tab
+
+A big change is easier to read with the whole editor area. Like in VS Code, open a commit in its own tab:
+
+- Double-click it in the list, or select it and press Enter.
+- Click **Open in Tab** next to the message, or choose it in the right-click menu.
+- Double-click one of its changed files to open the tab on that file.
+
+![A commit open in its own tab](../images/commit-tab.png)
+
+*The commit in a tab: the same details and changed files, with the diff using the whole editor area.*
+
+The tab shows the short hash; hover it for the message. Opening the same commit again goes back to its tab, and a **Parent** opens in a tab too. Right-click the tab for **Copy Commit Hash**. Click the Log button to get back to the list.
+
 ## Right-click a commit
 
 ![Log context menu](../images/log-context-menu.png)
 
 *Everything you can do with a commit.*
 
+- **Open in Tab** opens the commit in its own tab (the same as a double-click).
 - **Copy Revision Hash** copies the full hash.
 - **New Branch Here...** creates a branch that starts at this commit. **Checkout branch** is ticked, so you switch to it right away.
 - **Checkout Revision** checks out the commit itself. This is a "detached HEAD": you are not on any branch, so create a branch if you want to keep new commits made there. You are asked first.
@@ -90,3 +105,4 @@ Example: you committed "WIP" twice on `main` and want to redo them as one commit
 - [Diffs](Diffs.md)
 - [Navigation](Navigation.md)
 - [How the log works (developer)](../developer/How-the-Log-Works.md)
+- [How commit tabs work (developer)](../developer/How-Commit-Tabs-Work.md)

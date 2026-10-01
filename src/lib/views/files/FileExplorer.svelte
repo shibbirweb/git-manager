@@ -1,6 +1,7 @@
 <!-- Right sidebar: the work tree, loaded one folder at a time. -->
 <script lang="ts">
   import { api, errorMessage } from "$lib/api";
+  import { isCommitTab } from "$lib/stores/commitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { baseName, folderFor, joinPath, locateAbsolute, parentOf, relativeTo } from "$lib/stores/workspacePaths";
@@ -174,7 +175,7 @@
   // Follow the file opened in the editor tab.
   $effect(() => {
     const openPath = repoStore.openFilePath;
-    if (openPath) {
+    if (openPath && !isCommitTab(openPath)) {
       selectedPath = openPath;
     }
   });

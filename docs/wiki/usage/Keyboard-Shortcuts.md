@@ -30,6 +30,8 @@ Ctrl+- really is Control, not Command, as in VS Code on the Mac. These keys wait
 | Click a blame note or gutter block | Open that commit in the Log |
 | Option-click a blame note or gutter block | Copy the commit hash |
 | Double-click a file in Changes | Stage or unstage it (a conflicted file opens in the merge tool) |
+| Double-click a commit in the Log | Open it in a tab |
+| Double-click a changed file of a commit | Open the commit in a tab on that file |
 | Double-click a branch or tag | Check it out |
 | Double-click a file in the Files panel | Open it in a tab that stays open |
 | Double-click a tab | Keep a preview tab open |
@@ -165,6 +167,7 @@ Click in the list first.
 | Keys | Action |
 | --- | --- |
 | Up and Down | Select the previous or next commit |
+| Enter | Open the selected commit in a tab |
 | Page Up and Page Down | Move a page at a time |
 | Home and End | First or last loaded commit |
 | Esc (in the filter box) | Clear the filter |
