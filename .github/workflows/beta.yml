@@ -17,6 +17,7 @@
 # Stable releases have their own three: stable.yml opens the release pull request, stable-promote.yml the
 # develop to master one, and stable-publish.yml publishes from master.
 name: Beta release
+run-name: Beta release${{ inputs.dry_run && ' (dry run)' || '' }}
 
 on:
   workflow_dispatch:

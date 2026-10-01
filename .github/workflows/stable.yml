@@ -17,6 +17,7 @@
 # Tick "dry run" to see the version, commit and notes it would use, with nothing pushed or opened. Needs
 # the same repository setting as beta.yml: "Allow GitHub Actions to create and approve pull requests".
 name: Stable release
+run-name: Stable release${{ inputs.dry_run && ' (dry run)' || '' }}
 
 on:
   workflow_dispatch:

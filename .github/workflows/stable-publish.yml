@@ -8,6 +8,7 @@
 # Publishing here rather than by hand is what makes a release impossible to cut from a master that has
 # not got the new version yet: this only ever acts on the version master actually holds.
 name: Publish stable
+run-name: Publish stable from ${{ github.event.workflow_run.head_sha }}
 
 on:
   workflow_run:

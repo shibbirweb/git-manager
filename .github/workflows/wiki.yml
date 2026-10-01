@@ -10,6 +10,7 @@
 # CI checks the docs on every push and pull request (bun scripts/build-wiki.ts --check), so by the time
 # they reach master every page, screenshot and link is known to be there.
 name: Wiki
+run-name: Publish the wiki from ${{ github.ref_name }}
 
 on:
   push:
