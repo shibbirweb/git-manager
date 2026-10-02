@@ -1,6 +1,7 @@
 mod commands;
 mod config;
 mod error;
+mod file_ops;
 mod file_search;
 mod git;
 mod git_console;
@@ -149,6 +150,11 @@ pub fn run() {
             commands::files::read_worktree_file,
             commands::files::read_image_data_url,
             commands::files::read_preview_file,
+            commands::file_ops::file_create,
+            commands::file_ops::file_rename,
+            commands::file_ops::file_copy,
+            commands::file_ops::file_move,
+            commands::file_ops::file_trash,
             commands::search::file_search_open,
             commands::search::file_search_query,
             commands::search::file_search_close,

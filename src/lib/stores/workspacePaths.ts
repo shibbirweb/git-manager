@@ -107,3 +107,30 @@ export function normalizePath(absolute: string): string {
   }
   return `/${parts.join("/")}`;
 }
+
+export interface PathMove {
+  from: string;
+  to: string;
+}
+
+/**
+ * Where an absolute path is after renames or moves: a moved entry itself, or anything
+ * inside a moved folder, takes the new location. Other paths come back unchanged.
+ */
+export function movedPath(absolute: string, moves: PathMove[]): string {
+  for (const move of moves) {
+    if (absolute === move.from) {
+      return move.to;
+    }
+    const prefix = move.from.endsWith("/") ? move.from : `${move.from}/`;
+    if (absolute.startsWith(prefix)) {
+      return joinPath(move.to, absolute.slice(prefix.length));
+    }
+  }
+  return absolute;
+}
+
+/** The paths that are `entries` themselves or lie inside one of them. */
+export function pathsUnder(paths: string[], entries: string[]): string[] {
+  return paths.filter((path) => entries.some((entry) => isInside(entry, path)));
+}

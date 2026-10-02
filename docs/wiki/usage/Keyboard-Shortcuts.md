@@ -20,6 +20,7 @@ The focused part of the window sees a key before the menu bar. So when two actio
 - **Shift+Cmd+L** selects every match of the selection in an editor with text selected, and shows the Log everywhere else.
 - **Cmd+K** makes a link in a Markdown file and clears a terminal, and opens Commit everywhere else.
 - **Cmd+B** makes text bold in a Markdown file, and hides or shows the sidebar everywhere else.
+- **Cmd+C**, **Cmd+X** and **Cmd+V** copy, cut and paste files while the Files panel has the keyboard, and text everywhere else.
 
 Window shortcuts do nothing while a dialog or the merge tool is open: the key is dropped, not kept for later. Window shortcuts that use Cmd also accept Ctrl. How keys are routed between the page and the menu bar is in [Menu keys and routing](../developer/Menu-Keys-and-Routing.md).
 
@@ -87,6 +88,19 @@ Ctrl+- really is Control, not Command, as in VS Code on the Mac. See [Search Eve
 
 These Ctrl+` keys work even from inside a terminal. Every other key goes to the shell, except Cmd keys, which stay app shortcuts. Ctrl+Cmd keys go to the shell too. See [Terminal](Terminal.md) and [Scripts](Scripts.md).
 
+## Files panel
+
+Click in the Files panel first. See [File Operations](File-Operations.md).
+
+| Keys | Action |
+| --- | --- |
+| Cmd+C, Cmd+X, Cmd+V | Copy, cut and paste the selected files and folders |
+| Cmd+D | Duplicate |
+| F2 or Shift+F6 | Rename |
+| Cmd+Backspace or Delete | Move to Trash (asks first) |
+| Shift+Up and Shift+Down | Select more rows |
+| Esc | Forget a pending cut |
+
 ## Mouse shortcuts
 
 | Action | Result |
@@ -102,6 +116,8 @@ These Ctrl+` keys work even from inside a terminal. Every other key goes to the 
 | Double-click a changed file of a commit | Open the commit in a tab on that file |
 | Double-click a branch or tag | Check it out |
 | Double-click a file in the Files panel | Open it in a tab that stays open |
+| Cmd-click or Shift-click in the Files panel | Select several rows |
+| Drag rows in the Files panel | Move them into a folder; hold Option to copy |
 | Double-click a tab | Keep a preview tab open |
 | Middle-click a tab | Close the tab |
 | Double-click a sidebar or panel edge | Reset its size |

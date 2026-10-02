@@ -67,6 +67,14 @@ describe("shortcutSections", () => {
     });
   });
 
+  it("lists the Files panel keys per platform", () => {
+    const files = (platform: "macos" | "windows") => shortcutSections(platform).find((section) => section.title === "Files panel");
+    expect(files("macos")?.rows.find((entry) => entry.label === "Move to Trash")?.keys).toEqual(["⌘⌫", "⌦"]);
+    expect(files("windows")?.rows.find((entry) => entry.label === "Move to Trash")?.keys).toEqual(["Delete"]);
+    expect(files("windows")?.rows.find((entry) => entry.label === "Duplicate")?.keys).toEqual(["Ctrl+D"]);
+    expect(files("macos")?.rows.find((entry) => entry.label === "Rename")?.keys).toEqual(["F2", "⇧F6"]);
+  });
+
   it("filters by label, keys or place, by every word", () => {
     const all = shortcutSections("macos");
     const terminal = filterShortcuts(all, "terminal new");

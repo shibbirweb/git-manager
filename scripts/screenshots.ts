@@ -907,6 +907,32 @@ define("files-context-menu", async (shot) => {
   await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
 });
 
+// The same menu, showing the file operations (New File... to Move to Trash) with their keys.
+define("file-ops-menu", async (shot) => {
+  await shot.expand(storefront, join(storefront, "src"));
+  await shot.fileRow(cartTs()).click({ button: "right" });
+  await shot.menu().waitFor();
+  await shot.menu().getByRole("menuitem", { name: /^Rename\.\.\./ }).hover();
+  const explorer = shot.page.locator("aside.explorer");
+  const panel = await shot.clipPanel(explorer, [shot.menu(), explorer.locator('[role="treeitem"]').last()], 24);
+  const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
+  await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
+});
+
+define("file-ops-rename", async (shot) => {
+  await shot.expand(storefront, join(storefront, "src"));
+  await shot.fileRow(cartTs()).click({ button: "right" });
+  await shot.menu().getByRole("menuitem", { name: /^Rename\.\.\./ }).click();
+  const dialog = shot.page.getByRole("dialog", { name: "Rename File" });
+  await dialog.waitFor();
+  // The name is preselected without its extension ("cart" of cart.ts).
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+  // Leave the demo as it was.
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+  await dialog.waitFor({ state: "hidden" });
+});
+
 define("editor-tabs", async (shot) => {
   await shot.openFile(join(storefront, "README.md"));
   await shot.openFile(join(storefront, "src/catalog.ts"));

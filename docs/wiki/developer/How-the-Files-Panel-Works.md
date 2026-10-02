@@ -57,9 +57,10 @@ flowchart TD
 
 An effect watches `repoStore.statuses`, `repoStore.workspaceVersion` and `repoStore.repos`, and after 250 ms `refreshLoaded` reloads the roots and every expanded folder. For the watcher events, see [How folder watching works](How-Folder-Watching-Works.md).
 
-A single click calls `repoStore.openFile(path)`, which opens a preview tab. A double click passes `{ pin: true }`. Arrow keys and Enter move through the tree. The context menu (`openMenu`) builds its items from the row:
+A single click calls `repoStore.openFile(path)`, which opens a preview tab. A double click passes `{ pin: true }`. Arrow keys and Enter move through the tree; Cmd-click, Shift-click and Shift+arrows select several rows (`selection.ts`). The context menu (`openMenu`) builds its items from the row:
 
 - Open, Open Preview and Resolve Conflict (`repoStore.openMerge`) on files; Expand, Set as Active Repository, Initialize Repository Here and Add or Remove Folder on folders.
+- New File, Cut, Copy, Paste, Rename, Move to Trash and the rest from `fileOpGroups`, plus drag and drop. See [How file operations work](How-File-Operations-Work.md).
 - **Add to .gitignore** from `ignoreMenu` (`src/lib/ignore/ignoreActions.ts`), for anything inside a repository except its root.
 - **Reveal in Finder** calls the opener plugin's `revealItemInDir`. `revealLabel` in `reveal.ts` names it per platform, like VS Code: Reveal in File Explorer on Windows, Open Containing Folder on Linux.
 - **Open in Integrated Terminal** calls `terminalStore.create({ folderPath })` with `terminalFolderFor`: the folder itself, or a file's parent folder.

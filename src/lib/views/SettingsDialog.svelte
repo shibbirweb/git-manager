@@ -874,6 +874,18 @@
             </div>
             <input type="checkbox" class="switch" checked={settings.explorerOpen} onchange={() => settings.toggleExplorer()} />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Confirm drag and drop</span>
+              <span class="hint">Ask before dragging files or folders in the Files panel moves them.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.confirmDragAndDrop}
+              onchange={(event) => set("confirmDragAndDrop", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Left sidebar</span>

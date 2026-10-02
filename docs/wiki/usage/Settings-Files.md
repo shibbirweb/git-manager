@@ -30,6 +30,8 @@ Each key matches a setting in the dialog. Values in quotes must be one of the ch
 
 **Automation**: `mcpEnabled`, `mcpPort`, `mcpTools` (tool names switched away from their default, each `true` or `false`), `cliEnabled`, `memoryLogEnabled`, `memoryLogIntervalMs`, `memoryLogThresholdMb`.
 
+**Layout**: `confirmDragAndDrop` (ask before a drag in the Files panel moves files). The other Layout choices live in `state.json`.
+
 **Updates**: `checkForUpdates`, `updateChannel` (`"auto"`, `"stable"`, `"beta"`).
 
 For example:

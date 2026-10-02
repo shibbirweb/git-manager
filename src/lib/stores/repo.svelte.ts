@@ -13,14 +13,16 @@ import { toast } from "$lib/ui/toast.svelte";
 import { settings } from "./settings.svelte";
 import { commitTabPath } from "./commitTabs";
 import { baseName, openFailure, openingTitle } from "./openingProgress";
-import { locateAbsolute } from "./workspacePaths";
+import { locateAbsolute, type PathMove } from "./workspacePaths";
 import {
   closeTabs,
   type FileTab,
+  fileTabsUnder,
   openTab,
   otherPaths,
   pathsToRight,
   pinTab,
+  retargetTabs,
   setTabDirty,
   tabsInFolder,
   type TabsState,
@@ -896,6 +898,45 @@ class RepoStore {
       confirmLabel: "Discard",
       danger: true,
     });
+  }
+
+  /**
+   * Before renaming, moving or trashing `entryPaths`: false, with a toast, when an open file
+   * there (or inside one of those folders) has unsaved edits, since they would be lost or
+   * saved to the old path.
+   */
+  checkUnsaved(entryPaths: string[]): boolean {
+    const dirty = fileTabsUnder(this.dirtyPaths, entryPaths);
+    if (dirty.length === 0) {
+      return true;
+    }
+    const names = dirty.map((tabPath) => baseName(tabPath));
+    if (dirty.length === 1) {
+      toast.info(`Save or revert ${names[0]} first`, "It has unsaved changes.");
+    } else {
+      toast.info(`Save or revert ${dirty.length} files first`, names.join(", "));
+    }
+    return false;
+  }
+
+  /** Files were renamed or moved on disk: their tabs (and tabs inside moved folders) follow them. */
+  retargetTabs(moves: PathMove[]): void {
+    const state = this.tabsState;
+    const next = retargetTabs(state, moves);
+    if (next !== state) {
+      this.applyTabs(next);
+    }
+  }
+
+  /** Closes the tabs of files that were just moved to the Trash, without asking (none had unsaved edits). */
+  closeTabsUnder(entryPaths: string[]): void {
+    const closing = fileTabsUnder(
+      this.tabs.map((tab) => tab.path),
+      entryPaths,
+    );
+    if (closing.length > 0) {
+      this.applyTabs(closeTabs(this.tabsState, closing));
+    }
   }
 
   closeTab(filePath: string): Promise<boolean> {

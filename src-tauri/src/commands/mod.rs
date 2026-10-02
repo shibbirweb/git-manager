@@ -3,6 +3,7 @@ pub mod branch_actions;
 pub mod commit_options;
 pub mod config;
 pub mod console;
+pub mod file_ops;
 pub mod files;
 pub mod history;
 pub mod ignore;

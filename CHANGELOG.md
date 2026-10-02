@@ -66,6 +66,7 @@ GitHub release notes, and the app shows it as "What's New".
 - A progress card while a folder opens, and "Reading changes N of M" in the status bar.
 - MCP server and command line tool (`git-manager cli`) so AI tools such as Claude Code can use the app, off by default and only on 127.0.0.1 (Settings > Automation, Help > Available MCP Tools).
 - Debug memory log (Settings > Automation) that writes memory changes to `~/.gitmanager/logs/memory.log`.
+- File operations in the Files panel, like VS Code and JetBrains: New File, New Folder, Cut, Copy, Paste, Duplicate, Rename and Move to Trash from the right-click menu or the keys (Cmd+C, Cmd+X, Cmd+V, Cmd+D, F2, Cmd+Backspace), multi-select with Cmd-click and Shift-click, drag and drop to move (Option to copy), and files dragged in from the Finder are copied. Open tabs follow renames and moves; a move by drag asks first (Settings > Layout > Confirm drag and drop).
 
 ### Changed
 

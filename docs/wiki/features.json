@@ -4,6 +4,7 @@
     { "page": "usage/Getting-Started.md", "summary": "Install Git Manager, open your first folder and find your way around the window." },
     { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
+    { "page": "usage/File-Operations.md", "summary": "Create, rename, copy, move and trash files and folders right in the Files panel." },
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
     { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
@@ -94,6 +95,13 @@
       "usage": "usage/Files-Panel.md",
       "developer": "developer/How-the-Files-Panel-Works.md",
       "screenshots": ["files-panel.png", "files-context-menu.png"]
+    },
+    {
+      "id": "file-operations",
+      "title": "File operations",
+      "usage": "usage/File-Operations.md",
+      "developer": "developer/How-File-Operations-Work.md",
+      "screenshots": ["file-ops-menu.png", "file-ops-rename.png"]
     },
     {
       "id": "editor",

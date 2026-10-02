@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { adjacentTab, closeTabs, openTab, otherPaths, pathsToRight, pinTab, setTabDirty, tabLabels, type TabsState } from "./tabs";
+import {
+  adjacentTab,
+  closeTabs,
+  fileTabsUnder,
+  openTab,
+  otherPaths,
+  pathsToRight,
+  pinTab,
+  retargetTabs,
+  setTabDirty,
+  tabLabels,
+  type TabsState,
+} from "./tabs";
+import { commitTabPath } from "./commitTabs";
 
 const empty: TabsState = { tabs: [], active: null };
 
@@ -112,5 +125,51 @@ describe("adjacentTab", () => {
 
   it("has nothing to switch to without tabs", () => {
     expect(adjacentTab([], null, 1)).toBeNull();
+  });
+});
+
+describe("retargetTabs", () => {
+  const state: TabsState = {
+    tabs: [
+      { path: "/w/src/cart.ts", preview: false, dirty: false },
+      { path: "/w/lib/a.ts", preview: true, dirty: false },
+      { path: "/w/README.md", preview: false, dirty: true },
+    ],
+    active: "/w/lib/a.ts",
+  };
+
+  it("points renamed files and files inside moved folders at their new paths", () => {
+    const next = retargetTabs(state, [
+      { from: "/w/src/cart.ts", to: "/w/src/basket.ts" },
+      { from: "/w/lib", to: "/w/src/lib" },
+    ]);
+    expect(paths(next)).toEqual(["/w/src/basket.ts", "/w/src/lib/a.ts*", "/w/README.md!"]);
+    expect(next.active).toBe("/w/src/lib/a.ts");
+  });
+
+  it("returns the same state when nothing open moved", () => {
+    expect(retargetTabs(state, [{ from: "/w/docs", to: "/w/guide" }])).toBe(state);
+  });
+
+  it("folds a moved tab into one already open on the new path", () => {
+    const next = retargetTabs(
+      { tabs: [...state.tabs, { path: "/w/src/basket.ts", preview: false, dirty: false }], active: "/w/src/cart.ts" },
+      [{ from: "/w/src/cart.ts", to: "/w/src/basket.ts" }],
+    );
+    expect(paths(next)).toEqual(["/w/src/basket.ts", "/w/lib/a.ts*", "/w/README.md!"]);
+    expect(next.active).toBe("/w/src/basket.ts");
+  });
+
+  it("never touches commit tabs", () => {
+    const commit = commitTabPath("/w", "abc123");
+    const next = retargetTabs({ tabs: [{ path: commit, preview: false, dirty: false }], active: commit }, [{ from: "/w", to: "/x" }]);
+    expect(next.tabs[0].path).toBe(commit);
+  });
+});
+
+describe("fileTabsUnder", () => {
+  it("lists file tabs of the entries and inside folders, never pseudo tabs", () => {
+    const commit = commitTabPath("/w/src", "abc123");
+    expect(fileTabsUnder(["/w/src/a.ts", "/w/srcx/b.ts", commit, "/w/c.ts"], ["/w/src", "/w/c.ts"])).toEqual(["/w/src/a.ts", "/w/c.ts"]);
   });
 });

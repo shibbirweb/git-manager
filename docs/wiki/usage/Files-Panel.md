@@ -51,6 +51,7 @@ The tree refreshes on its own when files change on disk or in git, so you rarely
 - **Click** a file to open it in a preview tab. A preview tab (its name is in italics) is reused by the next file you click, so browsing does not pile up tabs.
 - **Double-click** a file to open it in a tab that stays open.
 - **Click** a folder to expand or collapse it.
+- **Cmd-click** and **Shift-click** select several rows, for the [file operations](File-Operations.md).
 
 The file shown in the editor is highlighted in the tree, so you always know where you are. See [Editor and Tabs](Editor-and-Tabs.md) for editing and saving.
 
@@ -61,12 +62,16 @@ Click in the tree first, then:
 - Up and Down arrows move the selection.
 - Right arrow opens a folder. Left arrow closes it, or jumps to the parent folder.
 - Enter opens the selected file or toggles the selected folder.
+- Shift+Up and Shift+Down select more rows.
+- Cmd+C, Cmd+X, Cmd+V, Cmd+D, F2 and Cmd+Backspace copy, cut, paste, duplicate, rename and trash files. See [File Operations](File-Operations.md).
 
 ## Right-click menu
 
 ![Files panel context menu](../images/files-context-menu.png)
 
-*Right-click a file for more actions: open it, ignore it, reveal it in the Finder, open a terminal there or copy its path.*
+*Right-click a file for more actions: open it, create, rename, copy or trash files, ignore it, reveal it in the Finder, open a terminal there or copy its path.*
+
+**New File...**, **New Folder...**, **Cut**, **Copy**, **Paste**, **Duplicate**, **Rename...** and **Move to Trash** are explained in [File Operations](File-Operations.md), with drag and drop.
 
 On a file:
 
@@ -107,6 +112,7 @@ At the top of the panel, next to the workspace name (hover it to see the full fo
 ## Related
 
 - [Workspaces](Workspaces.md)
+- [File Operations](File-Operations.md)
 - [Editor and Tabs](Editor-and-Tabs.md)
 - [Changes and Commits](Changes-and-Commits.md)
 - [How the Files panel works (developer)](../developer/How-the-Files-Panel-Works.md)

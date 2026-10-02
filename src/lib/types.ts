@@ -451,6 +451,12 @@ export interface DirListing {
   truncated: boolean;
 }
 
+/** One entry moved by `file_move`: absolute paths before and after. */
+export interface FileMove {
+  from: string;
+  to: string;
+}
+
 export interface FileContent {
   path: string;
   content: string;

@@ -9,6 +9,13 @@ Commands that are not about one repository's git data: files, config, the memory
 | `list_directory` | `listDirectory(rootPath, dirPath, repoRoots)` | `DirListing` | file | one folder level for the Files panel, the first 5000 in sort order |
 | `read_worktree_file` | `readWorktreeFile(repoPath, filePath)` | `FileContent` | file | a file's text for the editor |
 | `read_image_data_url` | `readImageDataUrl(rootPath, imagePath)` | `string` | file | a local image for the Markdown preview as a `data:` URL, only from inside the workspace folder |
+| `file_create` | `fileCreate(workspaceRoots, parentDir, name, isDir)` | `string` | file | a new file or folder; a `name` with `/` creates the missing folders too |
+| `file_rename` | `fileRename(workspaceRoots, entryPath, newName)` | `string` | file | renames in place; a case-only rename goes through a temporary name |
+| `file_copy` | `fileCopy(workspaceRoots, sourcePaths, targetDir)` | `string[]` | file | copies files and folders, symlinks as links; a taken name becomes `cart copy.ts`, `cart copy 2.ts` |
+| `file_move` | `fileMove(workspaceRoots, sourcePaths, targetDir)` | `FileMove[]` | file | moves into a folder (copy then delete across volumes); any conflict refuses the whole move |
+| `file_trash` | `fileTrash(workspaceRoots, entryPaths)` | `void` | file | Move to Trash with the `trash` crate (NSFileManager on macOS, no automation prompt) |
+
+The file operations take absolute paths and return them in the same form. Each path must be inside one of `workspaceRoots`, and never a workspace folder itself or inside `.git`; symlinks are never followed out of the workspace. `FileMove` is `{ from: string, to: string }`. The code is in `src-tauri/src/file_ops.rs`.
 
 ## Config and memory
 

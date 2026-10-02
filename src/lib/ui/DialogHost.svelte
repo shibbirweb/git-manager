@@ -31,10 +31,15 @@
       value = "";
       pickIndex = initialPick(pickRows(current.options.items, ""), "");
     }
+    const range = current.type === "prompt" ? current.options.selection : undefined;
     tick().then(() => {
       if (inputEl) {
         inputEl.focus();
-        inputEl.select();
+        if (range) {
+          inputEl.setSelectionRange(range[0], range[1]);
+        } else {
+          inputEl.select();
+        }
       } else {
         confirmEl?.focus();
       }
