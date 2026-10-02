@@ -9,7 +9,7 @@ Files are `<name>.test.ts` next to the module they test. Folders are under `src/
 | Folder | Test files | What they cover |
 | --- | --- | --- |
 | `merge/` | `model`, `inline`, `extensions` | line replacement and chunk actions, word highlights, the Cmd+Enter keymap |
-| `editor/` | `lineDiff`, `conflictMarkers`, `blameModel`, `navigation`, `wheelZoom`, `languageName`, `findModel`, `textCommands`, `editorShortcuts`, `whitespace`, `activeLine`, `selectionInfo` | change markers, conflict markers, blame mapping, next change, zoom, the find bar's options and counter, Duplicate, Join Lines, Sort Lines and Go to Line, menu keys, Render whitespace, the current-line highlight, selection counts |
+| `editor/` | `lineDiff`, `conflictMarkers`, `blameModel`, `navigation`, `wheelZoom`, `languageName`, `findModel`, `textCommands`, `editorShortcuts`, `whitespace`, `activeLine`, `selectionInfo`, `featurePlan`, `indentGuides`, `ruler` | change markers, conflict markers, blame mapping, next change, zoom, language names and grammars, the find bar's options and counter, Duplicate, Join Lines, Sort Lines and Go to Line, menu keys, Render whitespace, the current-line highlight, selection counts, which editor features apply where, indent guides, the margin line |
 | `diff/` | `split`, `binaryPreview` | the resizable split ratio and its limits, the side by side image and PDF preview: sides, shared zoom and scroll |
 | `log/` | `graph`, `lineMatch` | graph lanes and merges, finding the blamed line |
 | `stores/` | `tabs`, `navHistory`, `workspacePaths`, `fontFamily`, `commitTabs`, `gitTabs`, `branchTabs`, `settingsData`, `openingProgress` | preview tabs, Back and Forward, path helpers, font lists, pseudo tab paths, settings validation and migration, the opening progress text |

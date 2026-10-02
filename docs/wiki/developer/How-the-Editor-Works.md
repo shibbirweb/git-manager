@@ -1,6 +1,6 @@
 # How the editor works
 
-Every file you open gets a tab with a CodeMirror 6 editor, with change markers against the last commit, inline conflict actions, blame, and next or previous change navigation. The user side is in [Editor and Tabs](../usage/Editor-and-Tabs.md). Commands, keys and the look of the text are in [How editing code works](How-Editing-Code-Works.md), and the Markdown preview in [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md).
+Every file you open gets a tab with a CodeMirror 6 editor, with change markers against the last commit, inline conflict actions, blame, and next or previous change navigation. The user side is in [Editor and Tabs](../usage/Editor-and-Tabs.md). Commands, keys and the look of the text are in [How editing code works](How-Editing-Code-Works.md), the bar above the code in [How the path bar works](How-the-Path-Bar-Works.md), and the Markdown preview in [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md).
 
 ## Why we need it
 
@@ -30,6 +30,8 @@ stateDiagram-v2
 A tab can also hold a commit, a terminal, a Git history or compare view, a shelved file, a branch comparison or a branch against the working tree. Each has a pseudo path that never starts with `/`, checked by `isPseudoTab` (`stores/pseudoTabs.ts`). See [How commit tabs work](How-Commit-Tabs-Work.md#other-tabs-that-are-not-files) and [How the terminal works](How-the-Terminal-Works.md).
 
 `EditorTabs.svelte` draws the strip: the Diff tab (while a change is selected), then the tabs. `Workspace.svelte` renders one `FileView` per file tab and hides the inactive ones, so each keeps its state.
+
+Right under the strip, each `FileView` draws one slim bar, like JetBrains: the breadcrumbs and badges, then icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch. How it collapses when narrow, and why it replaced two rows, is in [How the path bar works](How-the-Path-Bar-Works.md).
 
 ### Opening a file and its markers
 
@@ -64,7 +66,7 @@ The editor is built from `baseExtensions` in `src/lib/editor/setup.ts` (the them
 
 ### Saving and reverting
 
-The toolbar has no Save or Revert buttons any more. Each `FileView` registers `save` and `revert` with `fileCommands` (`stores/fileCommands.svelte.ts`), keyed by its path, and the File menu handlers in `menuActions.ts` call the active tab's entry: **Save** (Cmd+S, also in the editor's keymap), **Save All** (Option+Cmd+S, every dirty tab, one toast) and **Revert File**, which asks first when there are unsaved edits.
+There are no Save or Revert buttons. Each `FileView` registers `save` and `revert` with `fileCommands` (`stores/fileCommands.svelte.ts`), keyed by its path, and the File menu handlers in `menuActions.ts` call the active tab's entry: **Save** (Cmd+S, also in the editor's keymap), **Save All** (Option+Cmd+S, every dirty tab, one toast) and **Revert File**, which asks first when there are unsaved edits.
 
 Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshes the repository's status. A tab without unsaved edits reloads when that status changes.
 
@@ -72,14 +74,15 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileView.svelte` | One editor tab: load, save, markers, navigation, breadcrumbs, actions |
+| `src/lib/views/files/FileView.svelte` | One editor tab: load, save, markers, navigation, the path bar |
 | `src/lib/views/EditorTabs.svelte` | The tab strip and its menu |
 | `src/lib/views/workspaceShortcuts.ts` | Which window shortcut a key means |
 | `src/lib/stores/tabs.ts` | Pure tab rules |
 | `src/lib/stores/pseudoTabs.ts` | `isPseudoTab` for tabs that are not files |
 | `src/lib/stores/fileCommands.svelte.ts` | Save and Revert of each open editor, for the menus |
 | `src/lib/stores/repo.svelte.ts` | `openFile`, `pinFile`, `setDirty`, `closeTabs` |
-| `src/lib/editor/setup.ts` | Theme, `baseExtensions`, lazy `languageFor` |
+| `src/lib/editor/setup.ts` | Theme, `baseExtensions` (with the [editor features](How-Editor-Features-Work.md)) |
+| `src/lib/editor/languages.ts` | Language names and lazy `languageFor` |
 | `src/lib/editor/activeLine.ts` | The current line highlight |
 | `src/lib/editor/lineDiff.ts` | `diffLines` and `changeMarks` |
 | `src/lib/editor/scrollMarkers.ts`, `navigation.ts` | Ruler, gutter, next and previous section |
@@ -91,7 +94,7 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 
 **Diff against HEAD in the UI.** The committed text is fetched once and a small line diff runs as you type, instead of asking git on every keystroke.
 
-**Save and Revert in the File menu.** The native menu bar has Save, Save All and Revert File, like other Mac editors, so the toolbar keeps only the actions that live nowhere else.
+**Save and Revert in the File menu.** The native menu bar has Save, Save All and Revert File, like other Mac editors, so the path bar keeps only the actions that live nowhere else.
 
 **Word wrap only in the file editor.** In diffs and the merge tool, wrapping would misalign the panes. `editor/wordWrap.ts` keeps `lineWrapping` in a compartment, so View > Word Wrap and Option+Z (`toggleWordWrap`, matched by `event.code`) reach open editors at once.
 
@@ -102,15 +105,7 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 - **Why it happened:** CodeMirror draws the selection behind the text, and the opaque current line background on the cursor's line covered it.
 - **The fix and why we chose it:** `activeLine.ts` highlights the current line only while nothing is selected, like VS Code and JetBrains, tested in `activeLine.test.ts`. It was found with the MCP `inspect_elements` tool in the real app.
 
-**Toolbar buttons overlapped.**
-- **The issue:** with many buttons and the Files panel open, the buttons overlapped.
-- **Why it happened:** all actions shared one fixed row.
-- **The fix and why we chose it:** menus were tried, but the user wanted every option visible, so a separate `.actions` row wraps and the editor shrinks to fit.
-
-**Breadcrumbs hidden by a wide right sidebar.**
-- **The issue:** with the Files panel wide, part of the path disappeared.
-- **Why it happened:** the crumbs scrolled sideways on one line.
-- **The fix and why we chose it:** `.crumbs` wraps too, with each chevron inside the segment after it, so no line ends with a separator.
+The toolbar and breadcrumb bugs moved with the bar to [How the path bar works](How-the-Path-Bar-Works.md#bugs-we-fixed).
 
 **The Diff tab could not be closed.**
 - **The issue:** the Diff tab always showed a file and had no close button.
@@ -129,7 +124,7 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 - `src/lib/views/workspaceShortcuts.test.ts`: the window shortcuts and the keys they skip.
 - `src-tauri/src/commands/tests.rs`: `read_worktree_file_normalizes_crlf_and_detects_binary`, `write_worktree_file_applies_eol` and `worktree_file_commands_work_in_a_plain_folder`.
 
-Put new rules in the pure modules, with tests. Header wrapping needs a visual check at narrow widths. See [Testing](Testing.md).
+Put new rules in the pure modules, with tests. The path bar needs a visual check at narrow widths ([How the path bar works](How-the-Path-Bar-Works.md#tests)). See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

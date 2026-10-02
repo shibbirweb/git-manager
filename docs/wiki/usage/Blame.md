@@ -32,7 +32,7 @@ The colored bar on the left of each block hints at its age: newer commits are st
 
 Turn the gutter on or off in any of these ways:
 
-- Click **Blame** in the editor toolbar.
+- Click **Blame** (the clock button) in the editor's path bar.
 - Click **Blame** in the diff toolbar.
 - Use **Blame gutter** in Settings, Editor.
 

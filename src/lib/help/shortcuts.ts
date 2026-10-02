@@ -141,6 +141,8 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
       title: "Editor",
       rows: [
         { label: "Add a cursor", keys: [mac ? "⌥⇧ click" : "Alt+Shift+click"], context: "In a text editor" },
+        { label: "Column selection", keys: [mac ? "⌥ drag" : "Alt+drag"], context: "In a text editor" },
+        { label: "Code completion", keys: keys("Ctrl+Space"), context: "In the file editor" },
         { label: "Undo / Redo", keys: keys("CmdOrCtrl+Z", "Shift+CmdOrCtrl+Z") },
         { label: "Save", keys: keys("CmdOrCtrl+S") },
         { label: "Change the font size", keys: [mac ? "⌘ + scroll" : "Ctrl + scroll"], context: "When turned on in Settings > Editor" },

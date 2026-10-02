@@ -6,6 +6,8 @@
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
   import { WheelZoom } from "$lib/editor/wheelZoom";
   import { cursorOptions, setEditorCursor } from "$lib/editor/cursor";
+  import { featureOptions } from "$lib/editor/featurePlan";
+  import { setEditorFeatures } from "$lib/editor/features";
   import { setRenderWhitespace } from "$lib/editor/whitespace";
   import { setWordWrap } from "$lib/editor/wordWrap";
   import { appMenu } from "$lib/menu/appMenu.svelte";
@@ -140,6 +142,11 @@
   // And word wrap (View > Word Wrap, Option+Z).
   $effect(() => {
     setWordWrap(settings.wordWrap);
+  });
+
+  // And the editor features (auto-close, completion, folding, guides...); a feature turned off leaves the editors.
+  $effect(() => {
+    setEditorFeatures(featureOptions(settings));
   });
 
   onMount(() => {

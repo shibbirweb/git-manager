@@ -33,6 +33,7 @@
   import type { FileContent } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
+  import type { IconName } from "$lib/ui/icons";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import MarkdownPreview from "./MarkdownPreview.svelte";
@@ -625,7 +626,9 @@
     }
   }
 
-  // Breadcrumbs: every folder of the path, marking repository roots.
+  // Breadcrumbs: every folder of the path, marking repository roots. When the bar is narrow the
+  // folders farthest from the file shrink first (much larger flex-shrink), so the file name and
+  // its parent stay readable longest.
   const crumbs = $derived.by(() => {
     const root = folder?.root ?? "";
     const repoRoots = new Set(repoStore.repos.map((repo) => repo.root));
@@ -633,11 +636,29 @@
     const segments = parts.map((part, index) => {
       const path = parts.slice(0, index + 1).join("/");
       const isFile = index === parts.length - 1;
-      return { name: part, path, isRepo: !isFile && repoRoots.has(joinPath(root, path)) };
+      return {
+        name: part,
+        path,
+        isFile,
+        isRepo: !isFile && repoRoots.has(joinPath(root, path)),
+        shrink: isFile ? 1 : crumbShrink(parts.length - 1 - index),
+      };
     });
-    return { rootIsRepo: repoRoots.has(root), segments };
+    return { rootIsRepo: repoRoots.has(root), rootShrink: crumbShrink(parts.length), segments };
   });
 
+  /** Shrink weight of a breadcrumb `distance` folders above the file. */
+  function crumbShrink(distance: number): number {
+    return 10 ** Math.min(Math.max(distance, 1), 6);
+  }
+
+  const conflictText = $derived(`${conflictCount} ${conflictCount === 1 ? "conflict" : "conflicts"}`);
+
+  const MARKDOWN_MODES: { value: MarkdownViewMode; icon: IconName; label: string }[] = [
+    { value: "editor", icon: "editor-only", label: "Editor Only" },
+    { value: "split", icon: "split-view", label: "Editor and Preview" },
+    { value: "preview", icon: "eye", label: "Preview Only" },
+  ];
 
   async function copyPath(): Promise<void> {
     try {
@@ -676,45 +697,45 @@
 </script>
 
 <div class="file-view">
-  <div class="title-row" title={filePath}>
-    <div class="crumbs">
-      <span class="crumb root">
+  <!-- One slim bar, like JetBrains: the path and badges on the left, compact actions on the right. -->
+  <div class="file-bar">
+    <div class="crumbs" title={filePath}>
+      <span class="crumb root has-icon" style:flex-shrink={crumbs.rootShrink}>
         <Icon name={crumbs.rootIsRepo ? "folder-git" : "folder"} size={12} />
-        {folder?.name ?? ""}
+        <span class="crumb-name">{folder?.name ?? ""}</span>
       </span>
-      {#each crumbs.segments as segment, index (segment.path)}
-        <!-- The separator travels with its segment so wrapped lines never end in a chevron. -->
-        <span class="crumb" class:repo={segment.isRepo} class:file={index === crumbs.segments.length - 1}>
-          <span class="sep"><Icon name="chevron-right" size={11} /></span>
+      {#each crumbs.segments as segment (segment.path)}
+        <span class="sep" aria-hidden="true"><Icon name="chevron-right" size={11} /></span>
+        <span
+          class="crumb"
+          class:repo={segment.isRepo}
+          class:file={segment.isFile}
+          class:has-icon={segment.isRepo || segment.isFile}
+          style:flex-shrink={segment.shrink}
+        >
           {#if segment.isRepo}
             <Icon name="folder-git" size={12} />
-          {:else if index === crumbs.segments.length - 1}
+          {:else if segment.isFile}
             <Icon name="file" size={12} />
           {/if}
-          {segment.name}
+          <span class="crumb-name">{segment.name}</span>
         </span>
       {/each}
     </div>
     {#if dirty}
-      <span class="badge unsaved" title="Unsaved changes">Unsaved</span>
+      <span class="badge unsaved" title="Unsaved changes"><span class="badge-text">Unsaved</span></span>
     {/if}
     {#if toneLabel}
-      <span class="badge {tone}">{toneLabel}</span>
+      <span class="badge {tone}" title={toneLabel}><span class="badge-text">{toneLabel}</span></span>
     {/if}
     {#if conflictCount > 0}
-      <span class="badge conflict">{conflictCount} {conflictCount === 1 ? "conflict" : "conflicts"}</span>
+      <span class="badge conflict" title={conflictText}><span class="badge-text">{conflictText}</span></span>
     {/if}
-    <button class="copy-path" onclick={() => void copyPath()} title="Copy relative path" aria-label="Copy relative path">
-      <Icon name="copy" size={12} />
-    </button>
-  </div>
 
-  <!-- Actions wrap onto more lines instead of hiding when the editor is narrow. -->
-  <div class="actions" role="toolbar" aria-label="File actions">
-    {#if location && editable}
-      <div class="group nav">
+    <div class="actions" role="toolbar" aria-label="File actions">
+      {#if location && editable}
         <button
-          class="btn small icon-only"
+          class="tool"
           onclick={() => goToSection(-1)}
           disabled={navMarks.length === 0}
           title="Previous change or conflict (Shift+F7)"
@@ -723,7 +744,7 @@
           <Icon name="arrow-up" size={13} />
         </button>
         <button
-          class="btn small icon-only"
+          class="tool"
           onclick={() => goToSection(1)}
           disabled={navMarks.length === 0}
           title="Next change or conflict (F7)"
@@ -732,53 +753,72 @@
           <Icon name="arrow-down" size={13} />
         </button>
         <span class="nav-label">{navLabel}</span>
-      </div>
-    {/if}
-    {#if conflictCount > 0 || tone === "conflict"}
-      <div class="group">
-        {#if conflictCount > 0}
-          <button class="btn small" onclick={() => acceptAll("current")} disabled={saving} title="Resolve every conflict with the current side">
-            Accept All Current
-          </button>
-          <button class="btn small" onclick={() => acceptAll("incoming")} disabled={saving} title="Resolve every conflict with the incoming side">
-            Accept All Incoming
-          </button>
-        {/if}
-        {#if tone === "conflict"}
-          <button class="btn small" onclick={() => void openMergeTool()} disabled={saving}>
-            <Icon name="merge" size={13} />
-            Resolve in Merge Tool
-          </button>
-          {#if conflictCount === 0 && editable}
-            <button class="btn small primary" onclick={markResolved} disabled={saving} title="Save the file and stage it">
-              <Icon name="check" size={13} />
-              Mark as Resolved
-            </button>
-          {/if}
-        {/if}
-      </div>
-    {/if}
-    <div class="group end">
-      {#if location && editable}
+        <span class="divider" aria-hidden="true"></span>
         <button
-          class="btn small"
-          class:toggled={settings.blameGutter}
+          class="tool"
+          class:on={settings.blameGutter}
           onclick={() => settings.setPreference("blameGutter", !settings.blameGutter)}
-          title="Show who changed each line and when (git blame)"
+          title="Blame: show who changed each line and when"
+          aria-label="Blame"
           aria-pressed={settings.blameGutter}
         >
           <Icon name="history" size={13} />
-          Blame
         </button>
       {/if}
-      <!-- Save and Revert live in the File menu (Cmd+S), not on the toolbar. -->
+      <!-- Save and Revert live in the File menu (Cmd+S), not here. -->
+      <button class="tool" onclick={() => void copyPath()} title="Copy relative path" aria-label="Copy relative path">
+        <Icon name="copy" size={12} />
+      </button>
+      {#if isMarkdown && editable && loadError === null}
+        <span class="divider" aria-hidden="true"></span>
+        <div class="modes" role="radiogroup" aria-label="Markdown view">
+          {#each MARKDOWN_MODES as mode (mode.value)}
+            <button
+              role="radio"
+              aria-checked={viewMode === mode.value}
+              class:on={viewMode === mode.value}
+              onclick={() => void setViewMode(mode.value)}
+              title={mode.label}
+              aria-label={mode.label}
+            >
+              <Icon name={mode.icon} size={13} />
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
   </div>
+
+  <!-- Conflict actions are a tool for this file, so they get their own strip while it has conflicts. -->
+  {#if conflictCount > 0 || tone === "conflict"}
+    <div class="conflict-bar" role="toolbar" aria-label="Conflict actions">
+      <span class="conflict-icon" aria-hidden="true"><Icon name="alert" size={13} /></span>
+      {#if conflictCount > 0}
+        <button class="btn small" onclick={() => acceptAll("current")} disabled={saving} title="Resolve every conflict with the current side">
+          Accept All Current
+        </button>
+        <button class="btn small" onclick={() => acceptAll("incoming")} disabled={saving} title="Resolve every conflict with the incoming side">
+          Accept All Incoming
+        </button>
+      {/if}
+      {#if tone === "conflict"}
+        <button class="btn small" onclick={() => void openMergeTool()} disabled={saving}>
+          <Icon name="merge" size={13} />
+          Resolve in Merge Tool
+        </button>
+        {#if conflictCount === 0 && editable}
+          <button class="btn small primary" onclick={markResolved} disabled={saving} title="Save the file and stage it">
+            <Icon name="check" size={13} />
+            Mark as Resolved
+          </button>
+        {/if}
+      {/if}
+    </div>
+  {/if}
 
   {#if isMarkdown && editable && loadError === null}
     <MarkdownToolbar
       {viewMode}
-      onViewMode={(next) => void setViewMode(next)}
       onFormat={applyFormat}
       onRichFormat={(action) => richRef?.format(action)}
       onRichLink={() => void richRef?.link()}
@@ -869,41 +909,38 @@
     background: var(--editor-bg);
   }
 
-  .title-row {
+  /* About 28 px, like JetBrains' editor breadcrumbs, so the code starts right under the tabs. */
+  .file-bar {
     flex: none;
+    /* Container queries below collapse the bar's contents as the editor gets narrow. */
+    container-type: inline-size;
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    min-height: 32px;
-    min-width: 0;
-    padding: 4px 6px 4px 12px;
-    background: var(--panel);
-    color: var(--text-faint);
-    font-size: 12.5px;
-  }
-
-  .title-row > :global(*) {
-    flex: none;
-  }
-
-  .title-row > .badge,
-  .title-row > .copy-path,
-  .title-row > .close {
-    margin-top: 1px;
-  }
-
-  .crumbs {
-    flex: 1 1 auto !important;
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 2px 3px;
-    padding-top: 3px;
-    line-height: 18px;
+    gap: 6px;
+    height: 29px;
+    min-width: 0;
+    padding: 0 6px 0 10px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-strong);
+    background: var(--panel);
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  /* Overflow goes off the left edge, so the file name is the last thing to disappear. */
+  .crumbs {
+    flex: 0 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .sep {
+    flex: none;
     display: inline-flex;
     color: var(--text-faint);
   }
@@ -912,11 +949,26 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    min-width: 0;
-    max-width: 100%;
+    /* flex-shrink comes from the markup; a folder keeps room for an ellipsis. */
+    flex-grow: 0;
+    flex-basis: auto;
+    min-width: 1.4em;
+    overflow: hidden;
     color: var(--text-dim);
-    /* A single very long folder or file name still breaks instead of overflowing. */
-    overflow-wrap: anywhere;
+  }
+
+  .crumb.has-icon {
+    min-width: calc(16px + 1.4em);
+  }
+
+  .crumb :global(svg) {
+    flex: none;
+  }
+
+  .crumb-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .crumb.repo {
@@ -928,79 +980,13 @@
     font-weight: 600;
   }
 
-
-
-
-
-  .copy-path {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-faint);
-    cursor: pointer;
-  }
-
-  .copy-path:hover {
-    background: var(--hover);
-    color: var(--text);
-  }
-
-  .close {
-    height: 24px;
-    min-width: 24px;
-  }
-
-  .actions {
-    flex: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 12px;
-    padding: 5px 10px 6px 12px;
-    border-bottom: 1px solid var(--border-strong);
-    background: var(--panel);
-  }
-
-  .group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-  }
-
-  /* Save and friends sit on the right, and move to their own line when needed. */
-  .group.end {
-    margin-left: auto;
-  }
-
-  .actions :global(.btn) {
-    white-space: nowrap;
-  }
-
-  .btn.icon-only {
-    width: 26px;
-    padding: 0;
-    justify-content: center;
-  }
-
-  .nav-label {
-    min-width: 64px;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
   .badge {
     flex: none;
-    padding: 0 7px;
-    border-radius: 9px;
+    padding: 0 6px;
+    border-radius: 8px;
     font-size: 11px;
-    line-height: 18px;
+    line-height: 16px;
+    white-space: nowrap;
     background: var(--hover);
     color: var(--text-dim);
   }
@@ -1022,6 +1008,151 @@
 
   .badge.conflict {
     background: color-mix(in srgb, var(--danger) 15%, transparent);
+    color: var(--danger);
+  }
+
+  .actions {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+  }
+
+  .tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .tool:hover:not(:disabled) {
+    background: var(--hover);
+    color: var(--text);
+  }
+
+  .tool:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .tool.on {
+    background: var(--selected-inactive);
+    color: var(--text);
+  }
+
+  .nav-label {
+    min-width: 58px;
+    padding: 0 4px;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--text-dim);
+  }
+
+  .divider {
+    flex: none;
+    width: 1px;
+    height: 14px;
+    margin: 0 4px;
+    background: var(--border-strong);
+  }
+
+  .modes {
+    flex: none;
+    display: flex;
+    padding: 1px;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    background: var(--panel-alt);
+  }
+
+  .modes button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .modes button:hover:not(.on) {
+    color: var(--text);
+  }
+
+  .modes button.on {
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 18%, transparent);
+  }
+
+  /* Narrow editor: the counter goes first (still read by screen readers), then badges become dots, then dividers. */
+  @container (max-width: 600px) {
+    .nav-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      min-width: 0;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+  }
+
+  @container (max-width: 480px) {
+    .badge {
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .badge-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+  }
+
+  @container (max-width: 320px) {
+    .actions .divider {
+      display: none;
+    }
+  }
+
+  .conflict-bar {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    min-height: 30px;
+    padding: 3px 8px 3px 10px;
+    border-bottom: 1px solid var(--border-strong);
+    background: color-mix(in srgb, var(--danger) 7%, var(--panel));
+  }
+
+  .conflict-bar .btn.small {
+    height: 22px;
+  }
+
+  .conflict-icon {
+    display: inline-flex;
     color: var(--danger);
   }
 

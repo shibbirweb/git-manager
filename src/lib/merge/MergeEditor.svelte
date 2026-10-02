@@ -188,7 +188,7 @@
           extensions: [
             applyKeys,
             onSideGeometry,
-            baseExtensions({ readOnly: true }),
+            baseExtensions({ readOnly: true, kind: "merge" }),
             language,
             sideExtensions(),
             changeMarkField,
@@ -205,7 +205,7 @@
         doc: doc.base,
         extensions: [
           applyKeys,
-          baseExtensions({ readOnly: false }),
+          baseExtensions({ readOnly: false, kind: "merge" }),
           language,
           resultExtensions(initialChunks(doc.chunks)),
           scrollMarkers(resultMarkSource),

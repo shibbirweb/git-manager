@@ -108,6 +108,7 @@ Click in the Files panel first. See [File Operations](File-Operations.md).
 | Mouse back and forward buttons | Go Back and Go Forward |
 | Ctrl or Cmd + scroll, or pinch, over code | Change the editor font size (turn it on in Settings, Editor) |
 | Option+Shift-click in an editor | Add a cursor |
+| Option-drag in an editor | Select a rectangle of text (column selection) |
 | Click a blame note or gutter block | Open that commit in the Log |
 | Option-click a blame note or gutter block | Copy the commit hash |
 | Cmd-click a link in Markdown Preview Only | Open it |

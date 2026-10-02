@@ -4,7 +4,7 @@ Markdown files open with a formatting toolbar and three views: the text, the tex
 
 ## Why we need it
 
-Most repositories keep their README and docs in Markdown. Raw text is tiring to read, and switching to a browser to check a table or a diagram breaks the flow. JetBrains IDEs and VS Code show a preview next to the text. Previewing cloned files is also a security surface, since Markdown may carry raw HTML.
+Most repositories keep their README and docs in Markdown. Raw text is tiring to read, and checking a table or a diagram in a browser breaks the flow. JetBrains IDEs and VS Code show a preview next to the text. Previewing cloned files is also a security surface, since Markdown may carry raw HTML.
 
 ## How it works
 
@@ -30,7 +30,7 @@ The text editor always exists, hidden in Preview Only, so save, undo, dirty stat
 
 ### The toolbar and keys
 
-`MarkdownToolbar.svelte` runs pure commands from `markdown/format.ts` (`toggleInline`, `toggleLink`, `setHeading`, `toggleLinePrefix`, `toggleCodeBlock`, `insertTable`). Each returns one `TransactionSpec`: one undo step, every cursor. In Preview mode the buttons call `onRichFormat` instead. A Markdown editor adds Cmd+B (bold), Cmd+I (italic, in place of Select Parent Syntax) and Cmd+K (link).
+`MarkdownToolbar.svelte` runs pure commands from `markdown/format.ts` (`toggleInline`, `toggleLink`, `setHeading`, `toggleLinePrefix`, `toggleCodeBlock`, `insertTable`). Each returns one `TransactionSpec`: one undo step, every cursor. In Preview mode the buttons call `onRichFormat` instead. The view switch sits in FileView's path bar. A Markdown editor adds Cmd+B (bold), Cmd+I (italic, in place of Select Parent Syntax) and Cmd+K (link).
 
 ### The preview pipeline
 
@@ -63,15 +63,15 @@ sequenceDiagram
 
 ### Diagrams
 
-`mermaid.ts` loads mermaid only for documents with a diagram and renders one at a time (it is not reentrant), with `securityLevel: "strict"` and a `secure` list so `%%{init}%%` cannot loosen it. Results are cached by theme and source. Built-in themes use mermaid's own looks, other color themes pass CSS variables (`themeVariables`). Every SVG goes through `sanitizeSvg`, a second DOMPurify instance. `watchTheme` redraws shown diagrams after a theme change.
+`mermaid.ts` loads mermaid only for documents with a diagram and renders one at a time (it is not reentrant), with `securityLevel: "strict"` and a `secure` list so `%%{init}%%` cannot loosen it. Results are cached by theme and source. Built-in themes use mermaid's looks, other themes pass CSS variables (`themeVariables`). Every SVG goes through `sanitizeSvg`, a second DOMPurify instance. `watchTheme` redraws shown diagrams after a theme change.
 
 ### Scroll sync
 
-`scrollSync.ts` interpolates between the `data-line` blocks, with the document start and end as fixed points; `editorScroll.ts` reads and sets the editor position as a fractional line. The side the user scrolls leads for 150 ms, so the other side never echoes back.
+`scrollSync.ts` interpolates between the `data-line` blocks, with the document start and end as fixed points; `editorScroll.ts` reads and sets the editor position as a fractional line. The side the user scrolls leads for 150 ms, so nothing echoes back.
 
 ## Memory
 
-Memory follows the screen, not the length of the file:
+Memory follows the screen, not the file length:
 
 - **Hidden tabs free their preview.** `FileView` mounts `MarkdownPreview` or `RichMarkdownView` only while `isActive`, and keeps the place (`onLeave`, `initialLine`, `richScroll`).
 - **Diagrams and images draw near the screen only.** `nearScreen.ts` has a `NearScreen` class: each preview or rich editor makes one, with one `IntersectionObserver` and a margin of one screen. Far diagrams are freed by `releaseDiagram`, which keeps their height; unused image data URLs are dropped.
@@ -84,7 +84,7 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileView.svelte` | Mode, split size, mounting, keys |
+| `src/lib/views/files/FileView.svelte` | Mode and its switch, split size, mounting, keys |
 | `src/lib/views/files/MarkdownToolbar.svelte`, `MarkdownPreview.svelte` | Toolbar; preview timing, scroll sync, clicks |
 | `src/lib/markdown/format.ts` | Text formatting commands |
 | `src/lib/markdown/render.ts`, `engine.ts`, `previewDom.ts`, `sanitize.ts` | Rendering, the lazy chunk, segment updates, DOMPurify |

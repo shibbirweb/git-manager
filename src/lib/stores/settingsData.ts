@@ -114,8 +114,8 @@ export const DEFAULT_TERMINAL_LIST_WIDTH = 180;
 export const MIN_TERMINAL_LIST_WIDTH = 120;
 export const MAX_RECENT = 12;
 
-/** VS Code's default editor font on macOS. */
-export const DEFAULT_EDITOR_FONT = "Menlo, Monaco, 'Courier New', monospace";
+/** JetBrains Mono when it is installed, else VS Code's default editor font on macOS. */
+export const DEFAULT_EDITOR_FONT = "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace";
 
 export const MONOSPACE_FONTS = [
   "Menlo",
@@ -133,17 +133,26 @@ export const MONOSPACE_FONTS = [
 
 /**
  * Cleans a user-typed font list: drops characters that could escape the CSS
- * value and makes sure a generic monospace fallback comes last.
+ * value, drops repeated families and makes sure a generic monospace fallback comes last.
  */
 export function normalizeFontFamily(value: string): string {
   const cleaned = value.replace(/[;{}<>\\]/g, "").trim().slice(0, 200);
   if (!cleaned) {
     return DEFAULT_EDITOR_FONT;
   }
+  const seen = new Set<string>();
   const families = cleaned
     .split(",")
     .map((family) => family.trim())
-    .filter(Boolean);
+    .filter((family) => {
+      // Picking a font adds it in front of the default list, which may name it already.
+      const key = family.replace(/["']/g, "").toLowerCase();
+      if (!key || seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   if (!families.some((family) => family.toLowerCase() === "monospace")) {
     families.push("monospace");
   }
@@ -177,6 +186,24 @@ export interface Preferences {
   editorCaretExtraTop: number;
   /** Pixels the cursor reaches below the text (Sublime Text's caret_extra_bottom). */
   editorCaretExtraBottom: number;
+  /** Type the closing bracket or quote with the opening one (VS Code's editor.autoClosingBrackets). */
+  editorAutoCloseBrackets: boolean;
+  /** Code completion from the words of the file and the language's own lists. */
+  editorCompletion: boolean;
+  /** The completion list opens while typing; off, only Ctrl+Space opens it. */
+  editorCompletionOnTyping: boolean;
+  /** Fold arrows beside the line numbers in the file editor. */
+  editorFoldGutter: boolean;
+  /** Faint vertical lines at each indent level (VS Code's editor.guides.indentation). */
+  editorIndentGuides: boolean;
+  /** Highlight other uses of the word at the cursor, like JetBrains. */
+  editorHighlightWord: boolean;
+  /** Scroll the last line up to the top of the file editor (VS Code's editor.scrollBeyondLastLine). */
+  editorScrollPastEnd: boolean;
+  /** Option+drag selects a rectangle (column selection). */
+  editorColumnSelection: boolean;
+  /** Column of the right margin line (VS Code's editor.rulers); 0 hides it. */
+  editorRulerColumn: number;
   /** Author, date and commit at the end of the cursor line. */
   currentLineBlame: boolean;
   /** Blame column beside the line numbers. */
@@ -242,13 +269,18 @@ export interface Preferences {
 export const MEMORY_LOG_INTERVAL_RANGE = [100, 10_000] as const;
 export const MEMORY_LOG_THRESHOLD_RANGE = [0, 500] as const;
 
+/** Right margin columns; 0 means no margin line. */
+export const EDITOR_RULER_RANGE = [1, 500] as const;
+/** The column the margin line starts at when it is switched on, like JetBrains. */
+export const DEFAULT_RULER_COLUMN = 120;
+
 export const defaultPreferences: Preferences = {
   theme: "system",
   lightColorTheme: DEFAULT_LIGHT_THEME,
   darkColorTheme: DEFAULT_DARK_THEME,
   uiFontSize: 13,
-  editorFontSize: 12.5,
-  editorLineHeight: 1.55,
+  editorFontSize: 13,
+  editorLineHeight: 1.25,
   editorFontFamily: DEFAULT_EDITOR_FONT,
   fontLigatures: false,
   tabSize: 4,
@@ -260,6 +292,15 @@ export const defaultPreferences: Preferences = {
   editorCursorSmoothCaret: false,
   editorCaretExtraTop: 0,
   editorCaretExtraBottom: 0,
+  editorAutoCloseBrackets: true,
+  editorCompletion: true,
+  editorCompletionOnTyping: true,
+  editorFoldGutter: true,
+  editorIndentGuides: true,
+  editorHighlightWord: true,
+  editorScrollPastEnd: true,
+  editorColumnSelection: true,
+  editorRulerColumn: 0,
   currentLineBlame: true,
   blameGutter: false,
   mouseWheelZoom: false,
@@ -384,6 +425,14 @@ function pickTenths(value: unknown, fallback: number, min: number, max: number):
   return pickNumber(typeof value === "number" ? Math.round(value * 10) / 10 : value, fallback, min, max);
 }
 
+/** A margin column from Settings or settings.json: a whole column in range, or 0 (off) for anything else. */
+export function pickRulerColumn(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || Math.round(value) <= 0) {
+    return 0;
+  }
+  return pickInteger(value, 0, ...EDITOR_RULER_RANGE);
+}
+
 /** A scrollback typed in Settings or found in settings.json: whole lines, clamped; anything else is the default. */
 export function clampTerminalScrollback(value: unknown): number {
   return pickInteger(value, defaultPreferences.terminalScrollback, ...TERMINAL_SCROLLBACK_RANGE);
@@ -479,6 +528,15 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     editorCursorSmoothCaret: pickBoolean(data.editorCursorSmoothCaret, defaultPreferences.editorCursorSmoothCaret),
     editorCaretExtraTop: pickInteger(data.editorCaretExtraTop, defaultPreferences.editorCaretExtraTop, ...CARET_EXTRA_RANGE),
     editorCaretExtraBottom: pickInteger(data.editorCaretExtraBottom, defaultPreferences.editorCaretExtraBottom, ...CARET_EXTRA_RANGE),
+    editorAutoCloseBrackets: pickBoolean(data.editorAutoCloseBrackets, defaultPreferences.editorAutoCloseBrackets),
+    editorCompletion: pickBoolean(data.editorCompletion, defaultPreferences.editorCompletion),
+    editorCompletionOnTyping: pickBoolean(data.editorCompletionOnTyping, defaultPreferences.editorCompletionOnTyping),
+    editorFoldGutter: pickBoolean(data.editorFoldGutter, defaultPreferences.editorFoldGutter),
+    editorIndentGuides: pickBoolean(data.editorIndentGuides, defaultPreferences.editorIndentGuides),
+    editorHighlightWord: pickBoolean(data.editorHighlightWord, defaultPreferences.editorHighlightWord),
+    editorScrollPastEnd: pickBoolean(data.editorScrollPastEnd, defaultPreferences.editorScrollPastEnd),
+    editorColumnSelection: pickBoolean(data.editorColumnSelection, defaultPreferences.editorColumnSelection),
+    editorRulerColumn: pickRulerColumn(data.editorRulerColumn),
     currentLineBlame: pickBoolean(data.currentLineBlame, defaultPreferences.currentLineBlame),
     blameGutter: pickBoolean(data.blameGutter, defaultPreferences.blameGutter),
     mouseWheelZoom: pickBoolean(data.mouseWheelZoom, defaultPreferences.mouseWheelZoom),

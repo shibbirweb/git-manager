@@ -69,6 +69,8 @@ GitHub release notes, and the app shows it as "What's New".
 - Debug memory log (Settings > Automation) that writes memory changes to `~/.gitmanager/logs/memory.log`.
 - File operations in the Files panel, like VS Code and JetBrains: New File, New Folder, Cut, Copy, Paste, Duplicate, Rename and Move to Trash from the right-click menu or the keys (Cmd+C, Cmd+X, Cmd+V, Cmd+D, F2, Cmd+Backspace), multi-select with Cmd-click and Shift-click, drag and drop to move (Option to copy), and files dragged in from the Finder are copied. Open tabs follow renames and moves; a move by drag asks first (Settings > Layout > Confirm drag and drop).
 - MCP and command line tools for the Files panel operations: `create_file`, `create_folder`, `copy_paths`, and `rename_path`, `move_paths` and `trash_paths` (off by default), with the same unsaved-edit checks and tab follow-ups as the panel.
+- IDE editing features, each with a switch in Settings > Editor > Editing features that frees its memory when off: auto-close brackets and quotes, code completion from the file's words and the language's keywords (Ctrl+Space, Enter or Tab to accept, optionally only on Ctrl+Space), fold arrows beside the line numbers, indent guides, highlighting the word at the cursor, scrolling past the end, column selection with Option+drag and a right margin line at a chosen column.
+- Syntax colors for Go, Java, Kotlin, Swift, Ruby, shell scripts, TOML, XML, Dockerfile, C, C++ and C#, in the editor and in Markdown code blocks.
 
 ### Changed
 
@@ -77,6 +79,8 @@ GitHub release notes, and the app shows it as "What's New".
 - Go to Line is now Cmd+L (it was Option+Cmd+G).
 - The "Merge and Log" settings section is now called "Git", and also holds the commit options and the Git Console switch.
 - The hover-only buttons on a repository in the Changes sidebar became an always visible actions row with a ... menu.
+- The file editor header is one slim bar, like JetBrains: the path, its badges and icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch, so the code starts right under the tabs. Conflict actions get their own strip only while a file has conflicts, and the bar shortens the path instead of wrapping when the editor is narrow.
+- New editor defaults, like JetBrains: JetBrains Mono when it is installed (else Menlo) at 13 px, with line spacing 1.25. An existing settings.json keeps its saved values; Reset to Defaults picks up the new ones.
 
 ### Fixed
 

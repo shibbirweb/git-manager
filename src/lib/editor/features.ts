@@ -1,0 +1,311 @@
+// The IDE features of the editors: auto-close brackets, code completion, the fold gutter,
+// indent guides, highlighting the word at the cursor, scrolling past the end, column
+// selection and the right margin line. Each one sits in its own compartment, like the
+// cursor and whitespace settings, so a changed setting reaches the open editors without
+// rebuilding them. A feature that is off leaves an empty compartment, so nothing of it stays
+// in memory, and the autocomplete package is only imported the first time it is needed.
+
+import type * as Autocomplete from "@codemirror/autocomplete";
+import { foldGutter, language } from "@codemirror/language";
+import { highlightSelectionMatches } from "@codemirror/search";
+import { Compartment, EditorState, type Extension, Facet, Prec } from "@codemirror/state";
+import { crosshairCursor, EditorView, keymap, rectangularSelection, scrollPastEnd, ViewPlugin } from "@codemirror/view";
+import {
+  EDITOR_FEATURES,
+  type EditorFeature,
+  type EditorFeatureOptions,
+  type EditorKind,
+  changedFeatures,
+  featureApplies,
+  needsAutocomplete,
+  wordsWhileTyping,
+} from "./featurePlan";
+import { indentGuides } from "./indentGuides";
+import { rulerLine } from "./ruler";
+
+type AutocompleteModule = typeof Autocomplete;
+
+const compartments = Object.fromEntries(EDITOR_FEATURES.map((feature) => [feature, new Compartment()])) as Record<
+  EditorFeature,
+  Compartment
+>;
+
+const kindFacet = Facet.define<EditorKind, EditorKind>({
+  combine: (values) => values[0] ?? "file",
+});
+
+const views = new Set<EditorView>();
+
+/** Remembers each editor so a changed setting reaches the ones already open. */
+const registry = ViewPlugin.define((view) => {
+  views.add(view);
+  return {
+    destroy() {
+      views.delete(view);
+    },
+  };
+});
+
+/** The options the open editors were last given. */
+let current: EditorFeatureOptions | null = null;
+let autocomplete: AutocompleteModule | null = null;
+let autocompleteLoading = false;
+
+/** Imports the autocomplete package once, then gives it to the editors that wait for it. */
+function loadAutocomplete(): void {
+  if (autocomplete || autocompleteLoading) {
+    return;
+  }
+  autocompleteLoading = true;
+  import("@codemirror/autocomplete")
+    .then((module) => {
+      autocomplete = module;
+      reconfigure(EDITOR_FEATURES.filter(needsAutocomplete));
+    })
+    .catch(() => {
+      // The features stay off; the next editor tries again.
+    })
+    .finally(() => {
+      autocompleteLoading = false;
+    });
+}
+
+// Without "highlight the word", a selection still highlights its other matches, as before.
+const selectionMatches = highlightSelectionMatches();
+const wordMatches = highlightSelectionMatches({ highlightWordAroundCursor: true });
+
+const columnSelection: Extension = [
+  // Option+Shift+click keeps adding a cursor (setup.ts), so Shift is left out here.
+  rectangularSelection({ eventFilter: (event) => event.altKey && !event.shiftKey && event.button === 0 }),
+  crosshairCursor({ key: "Alt" }),
+];
+
+function foldMarker(open: boolean): HTMLElement {
+  const marker = document.createElement("span");
+  marker.className = open ? "cm-gm-fold cm-gm-fold-open" : "cm-gm-fold cm-gm-fold-closed";
+  return marker;
+}
+
+const chevron = `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M2 3.5L5 6.5L8 3.5" fill="none" stroke="black" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>') center / 100% 100% no-repeat`;
+
+const foldTheme = EditorView.baseTheme({
+  ".cm-foldGutter .cm-gutterElement": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "14px",
+    cursor: "pointer",
+  },
+  // Like JetBrains: open blocks show their arrow while the pointer is over the gutter, folded ones always.
+  ".cm-gm-fold": {
+    width: "10px",
+    height: "10px",
+    backgroundColor: "var(--text-faint)",
+    mask: chevron,
+  },
+  ".cm-gm-fold-open": {
+    opacity: "0",
+    transition: "opacity 120ms",
+  },
+  ".cm-gutters:hover .cm-gm-fold-open": {
+    opacity: "1",
+  },
+  ".cm-gm-fold-closed": {
+    transform: "rotate(-90deg)",
+  },
+  ".cm-foldGutter .cm-gutterElement:hover .cm-gm-fold": {
+    backgroundColor: "var(--text)",
+  },
+  ".cm-foldPlaceholder": {
+    backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+    border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
+    color: "var(--text-dim)",
+    borderRadius: "3px",
+    padding: "0 4px",
+    margin: "0 2px",
+  },
+});
+
+// Low precedence puts the fold gutter after the change and blame gutters, next to the text.
+const folding: Extension = [Prec.low(foldGutter({ markerDOM: foldMarker })), foldTheme];
+
+/** Badge letter and color token by completion type; keywords and words get none. */
+const BADGES: Record<string, [string, string]> = {
+  function: ["f", "--warning"],
+  method: ["m", "--warning"],
+  property: ["p", "--warning"],
+  class: ["c", "--accent"],
+  variable: ["v", "--accent"],
+  namespace: ["n", "--accent"],
+  interface: ["i", "--success"],
+  type: ["t", "--success"],
+  enum: ["e", "--success"],
+  constant: ["c", "--danger"],
+  keyword: ["", ""],
+  text: ["", ""],
+};
+
+function completionBadges(): Record<string, Record<string, string | Record<string, string>>> {
+  return Object.fromEntries(
+    Object.entries(BADGES).map(([type, [letter, token]]) => [
+      `.cm-completionIcon-${type}`,
+      {
+        backgroundColor: token ? `color-mix(in srgb, var(${token}) 18%, transparent)` : "transparent",
+        color: token ? `var(${token})` : "var(--text-faint)",
+        "&:after": { content: `'${letter}'`, fontSize: "100%", verticalAlign: "baseline" },
+      },
+    ]),
+  );
+}
+
+const completionTheme = EditorView.baseTheme({
+  ".cm-tooltip.cm-tooltip-autocomplete": {
+    backgroundColor: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border-strong)",
+    borderRadius: "6px",
+    boxShadow: "var(--shadow)",
+    overflow: "hidden",
+  },
+  ".cm-tooltip.cm-tooltip-autocomplete > ul": {
+    fontFamily: "var(--font-mono)",
+    fontSize: "var(--code-size)",
+    maxHeight: "16em",
+    minWidth: "240px",
+    padding: "3px 0",
+  },
+  ".cm-tooltip.cm-tooltip-autocomplete > ul > li": {
+    padding: "1px 10px 1px 6px",
+    lineHeight: "1.6",
+  },
+  ".cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected]": {
+    backgroundColor: "var(--selected)",
+    color: "var(--text)",
+  },
+  ".cm-completionMatchedText": {
+    textDecoration: "none",
+    color: "var(--accent)",
+    fontWeight: "600",
+  },
+  ".cm-completionDetail": {
+    color: "var(--text-faint)",
+    fontStyle: "normal",
+    marginLeft: "1.2em",
+  },
+  // Letter badges like JetBrains instead of CodeMirror's symbols and emoji.
+  ".cm-completionIcon": {
+    width: "1.35em",
+    height: "1.35em",
+    lineHeight: "1.35em",
+    padding: "0",
+    marginRight: "0.6em",
+    borderRadius: "50%",
+    fontFamily: "var(--font-ui)",
+    fontSize: "72%",
+    fontWeight: "600",
+    textAlign: "center",
+    verticalAlign: "middle",
+    opacity: "1",
+  },
+  ...completionBadges(),
+  ".cm-tooltip.cm-completionInfo": {
+    backgroundColor: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border-strong)",
+    borderRadius: "6px",
+    boxShadow: "var(--shadow)",
+  },
+});
+
+function completionExtension(module: AutocompleteModule, onTyping: boolean): Extension {
+  const words: Autocomplete.CompletionSource = (context) => {
+    if (!context.explicit && !wordsWhileTyping(context.state.facet(language)?.name ?? null)) {
+      return null;
+    }
+    const result = module.completeAnyWord(context);
+    if (!result || result instanceof Promise) {
+      return result;
+    }
+    // Without a type, a word that is also a keyword or a variable of the language is listed once.
+    return { ...result, options: result.options.map((option) => ({ label: option.label })) };
+  };
+  const wordData = [{ autocomplete: words }];
+  return [
+    // Ahead of the package's own theme, so these styles win.
+    completionTheme,
+    // The language's own sources (keywords, properties, tags) come from its language data.
+    module.autocompletion({ activateOnTyping: onTyping, defaultKeymap: false }),
+    EditorState.languageData.of(() => wordData),
+    // CodeMirror's keys minus Option+` and Option+I, which type characters on a Mac; Tab accepts like Enter.
+    Prec.highest(
+      keymap.of([
+        { key: "Ctrl-Space", run: module.startCompletion },
+        { key: "Escape", run: module.closeCompletion },
+        { key: "ArrowDown", run: module.moveCompletionSelection(true) },
+        { key: "ArrowUp", run: module.moveCompletionSelection(false) },
+        { key: "PageDown", run: module.moveCompletionSelection(true, "page") },
+        { key: "PageUp", run: module.moveCompletionSelection(false, "page") },
+        { key: "Enter", run: module.acceptCompletion },
+        { key: "Tab", run: module.acceptCompletion },
+      ]),
+    ),
+  ];
+}
+
+function extensionFor(feature: EditorFeature, kind: EditorKind, options: EditorFeatureOptions): Extension {
+  if (!featureApplies(feature, kind, options)) {
+    return feature === "highlightWord" ? selectionMatches : [];
+  }
+  if (needsAutocomplete(feature) && !autocomplete) {
+    loadAutocomplete();
+    return [];
+  }
+  switch (feature) {
+    case "autoCloseBrackets":
+      return autocomplete ? [autocomplete.closeBrackets(), Prec.high(keymap.of(autocomplete.closeBracketsKeymap))] : [];
+    case "completion":
+      return autocomplete ? completionExtension(autocomplete, options.completionOnTyping) : [];
+    case "foldGutter":
+      return folding;
+    case "indentGuides":
+      return indentGuides();
+    case "highlightWord":
+      return wordMatches;
+    case "scrollPastEnd":
+      return scrollPastEnd();
+    case "columnSelection":
+      return columnSelection;
+    case "ruler":
+      return rulerLine(options.rulerColumn);
+  }
+}
+
+function reconfigure(features: EditorFeature[]): void {
+  if (!current || features.length === 0) {
+    return;
+  }
+  const options = current;
+  for (const view of views) {
+    const kind = view.state.facet(kindFacet);
+    view.dispatch({ effects: features.map((feature) => compartments[feature].reconfigure(extensionFor(feature, kind, options))) });
+  }
+}
+
+/** The feature extensions for a new editor of `kind`. */
+export function editorFeatures(kind: EditorKind, options: EditorFeatureOptions): Extension {
+  current ??= options;
+  return [
+    kindFacet.of(kind),
+    registry,
+    EDITOR_FEATURES.map((feature) => compartments[feature].of(extensionFor(feature, kind, options))),
+  ];
+}
+
+/** Applies changed settings to every open editor, rebuilding only the features that changed. */
+export function setEditorFeatures(options: EditorFeatureOptions): void {
+  const previous = current;
+  current = options;
+  if (previous) {
+    reconfigure(changedFeatures(previous, options));
+  }
+}

@@ -45,18 +45,19 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Editor font family | A comma-separated list, like VS Code's `editor.fontFamily`. The first installed font is used; `monospace` is always added last. | Menlo, Monaco, 'Courier New', monospace |
-| Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. | 12.5 px |
-| Line spacing | Space between lines of code, 1.0 to 2.5 times the font size in 0.05 steps. Double-click the slider to reset it. | 1.55 |
-| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane to zoom. A trackpad pinch works too. | Off |
+| Editor font family | A comma-separated list, like VS Code's `editor.fontFamily`. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
+| Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. | 13 px |
+| Line spacing | Space between lines of code, 1.0 to 2.5 times the font size in 0.05 steps. Double-click the slider to reset it. | 1.25 |
+| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane to zoom, or pinch. | Off |
 | Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them (Fira Code, JetBrains Mono, Cascadia Code). | Off |
 | Tab size | Spaces per indent level: 2, 4 or 8. Applies to files opened afterwards. | 4 |
-| Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary** (all but single spaces between words), **Selection** (only in selected text), **Trailing** (end of lines) or **All**. | Selection |
-| Word wrap | Wraps long lines in the file editor, also with View > Word Wrap (Option+Z). Open files change at once. Diffs and the merge tool never wrap. | Off |
+| Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Editing-Code.md#render-whitespace). | Selection |
+| Word wrap | Wraps long lines in the file editor, also with View > Word Wrap (Option+Z). Diffs and the merge tool never wrap. | Off |
 | Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Editing-Code.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
+| Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. Off frees memory. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
 | Current line blame | Author, age and commit at the end of the cursor line. Click it to open the commit in the Log; Option-click copies the hash. See [Blame](Blame.md). | On |
-| Blame gutter | A blame column beside the line numbers. Also the **Blame** button in the editor and diff toolbars. | Off |
+| Blame gutter | A blame column beside the line numbers. Also the **Blame** button in the editor path bar and the diff toolbar. | Off |
 
 ![More editor settings](../images/settings-editor-more.png)
 

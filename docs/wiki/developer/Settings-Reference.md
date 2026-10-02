@@ -19,9 +19,9 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | --- | --- | --- | --- |
 | `lightColorTheme` | `"gm-light"` | a light theme id | `themes/apply.ts` |
 | `darkColorTheme` | `"gm-dark"` | a dark theme id | `themes/apply.ts` |
-| `editorFontFamily` | `DEFAULT_EDITOR_FONT` | `normalizeFontFamily` | `--font-mono` |
-| `editorFontSize` | 12.5 | 10 to 20 | `--code-size`, View > Zoom |
-| `editorLineHeight` | 1.55 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
+| `editorFontFamily` | `DEFAULT_EDITOR_FONT` (`'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace`) | `normalizeFontFamily` (drops repeats) | `--font-mono` |
+| `editorFontSize` | 13 | 10 to 20 | `--code-size`, View > Zoom |
+| `editorLineHeight` | 1.25 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
 | `mouseWheelZoom` | false | boolean | `App.svelte`, `editor/wheelZoom.ts` |
 | `fontLigatures` | false | boolean | `data-ligatures` |
 | `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `editor/setup.ts` |
@@ -31,6 +31,15 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `editorCursorBlinking` | `"blink"` | `EDITOR_CURSOR_BLINKING_CHOICES` | `editor/cursor.ts` |
 | `editorCursorSmoothCaret` | false | `pickBoolean` | `editor/cursor.ts` |
 | `editorCaretExtraTop`, `editorCaretExtraBottom` | 0 | `pickInteger`, 0 to 10 (`CARET_EXTRA_RANGE`) | `editor/cursor.ts` |
+| `editorAutoCloseBrackets` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorCompletion` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorCompletionOnTyping` | true | `pickBoolean` | `editor/features.ts`; off, only Ctrl+Space opens the list |
+| `editorFoldGutter` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorIndentGuides` | true | `pickBoolean` | `editor/indentGuides.ts` (all panes) |
+| `editorHighlightWord` | true | `pickBoolean` | `editor/features.ts` (all panes) |
+| `editorScrollPastEnd` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorColumnSelection` | true | `pickBoolean` | `editor/features.ts` (all panes) |
+| `editorRulerColumn` | 0 (off) | `pickRulerColumn`: whole, 1 to 500 (`EDITOR_RULER_RANGE`), else 0 | `editor/ruler.ts` (all panes) |
 | `wordWrap` | false | boolean | `FileView.svelte`, `App.svelte`, `editor/wordWrap.ts`, View > Word Wrap |
 | `markdownViewMode` | `"split"` | `editor`, `split`, `preview` | `FileView.svelte` (`sessionViewMode`) |
 | `currentLineBlame` | true | boolean | `FileView.svelte`, `DiffView.svelte` |

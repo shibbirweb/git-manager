@@ -4,10 +4,10 @@
    from one generated <style> element. */
 :root {
   --font-ui: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
-  /* VS Code's default; the Settings dialog can change it. */
-  --font-mono: Menlo, Monaco, "Courier New", monospace;
+  /* JetBrains Mono when installed, else VS Code's default; the Settings dialog can change it. */
+  --font-mono: "JetBrains Mono", Menlo, Monaco, "Courier New", monospace;
   --ui-size: 13px;
-  --code-size: 12.5px;
+  --code-size: 13px;
   --radius: 6px;
 
   --bg: #f7f8fa;

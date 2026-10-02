@@ -65,6 +65,8 @@
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
+    { "page": "developer/How-Editor-Features-Work.md", "summary": "Auto-close, completion, folding, indent guides, the margin line and the languages, each switchable and lazy." },
+    { "page": "developer/How-the-Path-Bar-Works.md", "summary": "The slim bar above the code: breadcrumbs, badges and icon actions, and how it collapses when narrow." },
     { "page": "developer/Commands-and-Events.md", "summary": "Index of the backend commands, plus every event and channel." },
     { "page": "developer/Settings-Reference.md", "summary": "Every settings.json and state.json key with its default, range and where it is used." },
     { "page": "developer/Commands-Workspace-and-Changes.md", "summary": "Commands for folders, status, staging, commits, diffs, conflicts, stashes, the shelf and ignore files." },
@@ -116,7 +118,7 @@
       "title": "Editing code",
       "usage": "usage/Editing-Code.md",
       "developer": "developer/How-Editing-Code-Works.md",
-      "screenshots": ["editor-whitespace.png"]
+      "screenshots": ["editor-features.png", "editor-whitespace.png"]
     },
     {
       "id": "markdown",

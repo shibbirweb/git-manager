@@ -12,6 +12,7 @@ These work in the file editor. Search, selection and cursor keys also work in th
 | F7 and Shift+F7 | Next and previous change or conflict |
 | Cmd+Z and Shift+Cmd+Z | Undo and redo |
 | Cmd+U | Undo the last cursor move |
+| Ctrl+Space | Open the completion list; Enter or Tab accepts |
 | Tab and Shift+Tab | Indent and outdent |
 | Option+Cmd+\ | Fix the indentation of the selection |
 | Option+Shift+Up and Option+Shift+Down | Copy the line up or down |
@@ -21,6 +22,7 @@ These work in the file editor. Search, selection and cursor keys also work in th
 | Ctrl+L | Select the line |
 | Cmd+I | Grow the selection to the enclosing code block |
 | Shift+Cmd+\ | Jump to the matching bracket |
+| Option+drag | Select a rectangle (column selection) |
 | Esc | Go back to a single cursor |
 | Option+Shift+M | Let Tab move the focus instead of indenting (again to undo) |
 

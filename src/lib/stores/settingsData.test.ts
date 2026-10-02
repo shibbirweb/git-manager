@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   EDITOR_LINE_HEIGHT_RANGE,
+  EDITOR_RULER_RANGE,
   changedPreferenceKeys,
   clampTerminalScrollback,
   DEFAULT_EDITOR_FONT,
@@ -16,6 +17,7 @@ import {
   parseMcpPort,
   parsePreferences,
   parseState,
+  pickRulerColumn,
   pickToolStates,
   sessionSteps,
   shouldMigrateLegacy,
@@ -111,13 +113,54 @@ describe("parsePreferences", () => {
   });
 
   it("validates the editor line spacing", () => {
-    expect(parsePreferences({}).preferences.editorLineHeight).toBe(1.55);
+    expect(parsePreferences({}).preferences.editorLineHeight).toBe(1.25);
     expect(parsePreferences({ editorLineHeight: 1.8 }).preferences.editorLineHeight).toBe(1.8);
     expect(parsePreferences({ editorLineHeight: 0.5 }).preferences.editorLineHeight).toBe(EDITOR_LINE_HEIGHT_RANGE[0]);
     expect(parsePreferences({ editorLineHeight: 9 }).preferences.editorLineHeight).toBe(EDITOR_LINE_HEIGHT_RANGE[1]);
     expect(parsePreferences({ editorLineHeight: 1.5499999 }).preferences.editorLineHeight).toBe(1.55);
-    expect(parsePreferences({ editorLineHeight: "loose" }).preferences.editorLineHeight).toBe(1.55);
+    expect(parsePreferences({ editorLineHeight: "loose" }).preferences.editorLineHeight).toBe(1.25);
     expect(parsePreferences({ editorLineHeight: 1.8 }).extra).toEqual({});
+  });
+
+  it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo", () => {
+    expect(defaultPreferences.editorFontSize).toBe(13);
+    expect(DEFAULT_EDITOR_FONT).toBe("'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace");
+    // A saved value is kept, so changing a default never touches what the user picked.
+    expect(parsePreferences({ editorFontSize: 12.5, editorLineHeight: 1.55 }).preferences).toMatchObject({
+      editorFontSize: 12.5,
+      editorLineHeight: 1.55,
+    });
+  });
+
+  it("turns the editor features on by default and keeps hand-edited switches", () => {
+    const { preferences } = parsePreferences({});
+    expect(preferences).toMatchObject({
+      editorAutoCloseBrackets: true,
+      editorCompletion: true,
+      editorCompletionOnTyping: true,
+      editorFoldGutter: true,
+      editorIndentGuides: true,
+      editorHighlightWord: true,
+      editorScrollPastEnd: true,
+      editorColumnSelection: true,
+      editorRulerColumn: 0,
+    });
+    const edited = parsePreferences({ editorCompletion: false, editorFoldGutter: "no", editorIndentGuides: false }).preferences;
+    expect(edited.editorCompletion).toBe(false);
+    expect(edited.editorFoldGutter).toBe(true);
+    expect(edited.editorIndentGuides).toBe(false);
+  });
+
+  it("keeps the margin column whole and in range, 0 for off", () => {
+    expect(pickRulerColumn(120)).toBe(120);
+    expect(pickRulerColumn(80.4)).toBe(80);
+    expect(pickRulerColumn(9999)).toBe(EDITOR_RULER_RANGE[1]);
+    expect(pickRulerColumn(0)).toBe(0);
+    expect(pickRulerColumn(-5)).toBe(0);
+    expect(pickRulerColumn(0.3)).toBe(0);
+    expect(pickRulerColumn("120")).toBe(0);
+    expect(pickRulerColumn(Number.NaN)).toBe(0);
+    expect(parsePreferences({ editorRulerColumn: 100 }).preferences.editorRulerColumn).toBe(100);
   });
 
   it("falls back to defaults for missing or invalid values", () => {

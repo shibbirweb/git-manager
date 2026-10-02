@@ -1,6 +1,6 @@
 # How editing code works
 
-This chapter covers what happens inside a CodeMirror editor once a file is open: the Edit and Code menu commands and their keys, multiple cursors, Go to Line, and the settings that change how code looks (line spacing, render whitespace, the current line, zoom). Tabs, loading and saving are in [How the editor works](How-the-Editor-Works.md). The user side is in [Editing Code](../usage/Editing-Code.md).
+This chapter covers what happens inside a CodeMirror editor once a file is open: the Edit and Code menu commands and their keys, multiple cursors, Go to Line, and the settings that change how code looks (line spacing, render whitespace, the current line, zoom). Tabs, loading and saving are in [How the editor works](How-the-Editor-Works.md); completion, folding, guides and the languages are in [How Editor Features Work](How-Editor-Features-Work.md). The user side is in [Editing Code](../usage/Editing-Code.md).
 
 ## Why we need it
 
@@ -48,7 +48,7 @@ Most commands are CodeMirror's own (`toggleComment`, `deleteLine`, `moveLineUp`,
 
 ### How code looks
 
-**Line spacing.** `settings.editorLineHeight` (default 1.55, from 1.0 to 2.5) is validated by `pickNumber` and rounded in `settingsData.ts`. `applyAppearance` writes it to `--code-line-height` on the root element, and `editorTheme` reads it for `.cm-scroller`. Every editor, diff side and merge pane uses `editorTheme`, and Markdown code blocks read the same variable, so one CSS variable changes them all without rebuilding a view.
+**Line spacing.** `settings.editorLineHeight` (default 1.25, from 1.0 to 2.5) is validated by `pickNumber` and rounded in `settingsData.ts`. `applyAppearance` writes it to `--code-line-height` on the root element, and `editorTheme` reads it for `.cm-scroller`. Every editor, diff side and merge pane uses `editorTheme`, and Markdown code blocks read the same variable, so one CSS variable changes them all without rebuilding a view.
 
 **Render whitespace.** `whitespace.ts` has a pure part and a view part. `whitespaceRuns(text, mode)` finds the stretches of spaces and the tabs one line draws for a mode (`none`, `boundary`, `selection`, `trailing`, `all`), and `clipRuns` cuts them to the selection. A ViewPlugin decorates only `view.visibleRanges` with mark decorations: a dotted background for spaces and a drawn arrow for tabs. The text itself never changes, so copying gives real spaces. With `none` the extension adds nothing at all.
 

@@ -62,7 +62,7 @@ sequenceDiagram
 
 `src/lib/editor/conflictDecorations.ts` keeps the regions in `conflictField`, a StateField recomputed when the document changes. `EditorView.decorations.compute` turns it into colored lines, "(Current Change)" and "(Incoming Change)" labels, and a block widget with the action links above each region. `barWidth` caps the row at the visible width so it wraps, keeping the "Conflict 1 of 2" counter in view. Clicking a link dispatches the edit, so Cmd+Z undoes it.
 
-In `FileView.svelte`, for a file git lists as conflicted, the actions row adds Accept All Current and Accept All Incoming, Resolve in Merge Tool (asking first about unsaved edits, since the merge tool starts from git's versions), and Mark as Resolved once no markers are left. Mark as Resolved calls `saveResolution`, which writes the file and runs `git add`.
+In `FileView.svelte`, a file with markers or one git lists as conflicted gets a tinted strip under the path bar (toolbar "Conflict actions") with Accept All Current and Accept All Incoming, Resolve in Merge Tool (asking first about unsaved edits, since the merge tool starts from git's versions), and Mark as Resolved once no markers are left. Mark as Resolved calls `saveResolution`, which writes the file and runs `git add`.
 
 ## Where the code lives
 

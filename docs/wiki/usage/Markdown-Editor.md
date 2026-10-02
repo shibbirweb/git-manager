@@ -6,11 +6,11 @@ This works for files ending in `.md`, `.markdown` and `.mdx` (MDX is shown as pl
 
 ![A Markdown file in Editor and Preview mode](../images/markdown-split.png)
 
-*Editor and Preview: the text on the left, the preview on the right, the toolbar above both.*
+*Editor and Preview: the text on the left, the preview on the right, the path bar and the formatting toolbar above both.*
 
 ## Three ways to look at a file
 
-The three buttons at the top right of the editor switch the view:
+The three buttons at the right end of the path bar (the slim bar under the tabs, see [Editor and Tabs](Editor-and-Tabs.md#the-path-bar)) switch the view:
 
 | Button | What you see |
 | --- | --- |
@@ -28,9 +28,9 @@ In Editor and Preview, drag the line between the two sides to give the preview m
 
 ![The Markdown toolbar with the Heading menu open](../images/markdown-toolbar.png)
 
-*The formatting buttons, the Heading menu and the view switch.*
+*The formatting row with the Heading menu open, and the view switch in the path bar above it.*
 
-From left to right:
+The formatting buttons sit in a low row of their own under the path bar, in every view. From left to right:
 
 - **Bold**, **Italic**, **Strikethrough**, **Inline code** and **Link**.
 - **Heading**: a menu with **Heading 1**, **Heading 2**, **Heading 3** and **Normal text**.
