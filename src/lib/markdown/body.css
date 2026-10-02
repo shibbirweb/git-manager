@@ -1,0 +1,243 @@
+/* Rendered Markdown, shared by the read-only preview (MarkdownPreview.svelte) and the rich
+   text editor (RichMarkdownView.svelte), so both look the same. Colors come from app.css. */
+
+.md-body {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px 32px 48px;
+  font-family: var(--font-ui);
+  font-size: calc(var(--ui-size) + 1px);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+.md-body .md-block {
+  display: contents;
+}
+
+.md-body > .md-block:first-child > :first-child {
+  margin-top: 0;
+}
+
+.md-body :is(p, ul, ol, blockquote, table, pre, details, hr, .md-mermaid) {
+  margin: 0 0 16px;
+}
+
+.md-body :is(h1, h2, h3, h4, h5, h6) {
+  margin: 24px 0 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.md-body h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.md-body h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.md-body h3 {
+  font-size: 1.25em;
+}
+
+.md-body h4 {
+  font-size: 1em;
+}
+
+.md-body h5 {
+  font-size: 0.875em;
+}
+
+.md-body h6 {
+  font-size: 0.85em;
+  color: var(--text-dim);
+}
+
+.md-body a {
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.md-body a:hover {
+  text-decoration: underline;
+}
+
+.md-body :is(ul, ol) {
+  padding-left: 2em;
+}
+
+.md-body li + li,
+.md-body li > :is(ul, ol) {
+  margin-top: 0.25em;
+}
+
+.md-body li > :is(ul, ol) {
+  margin-bottom: 0;
+}
+
+.md-body li > p {
+  margin-bottom: 0.5em;
+}
+
+.md-body .contains-task-list {
+  padding-left: 1.4em;
+}
+
+.md-body .task-list-item {
+  list-style: none;
+}
+
+.md-body .task-list-item-checkbox {
+  margin: 0 0.35em 0.2em -1.4em;
+  vertical-align: middle;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.md-body blockquote {
+  padding: 0 1em;
+  color: var(--text-dim);
+  border-left: 0.25em solid var(--border-strong);
+}
+
+.md-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.md-body hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  border: 0;
+  background: var(--border-strong);
+}
+
+.md-body :is(code, kbd, samp) {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+.md-body :not(pre) > code {
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--panel-alt);
+}
+
+.md-body kbd {
+  padding: 0.1em 0.4em;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--panel-alt);
+}
+
+.md-body pre {
+  padding: 12px 16px;
+  overflow: auto;
+  border-radius: var(--radius);
+  background: var(--panel-alt);
+  font-size: var(--code-size);
+  line-height: var(--code-line-height, 1.55);
+}
+
+.md-body pre code {
+  font-size: inherit;
+  white-space: pre;
+}
+
+.md-body table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+  border-collapse: collapse;
+}
+
+.md-body :is(th, td) {
+  padding: 6px 13px;
+  border: 1px solid var(--border-strong);
+}
+
+.md-body th {
+  font-weight: 600;
+  background: var(--panel-alt);
+}
+
+.md-body tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--panel-alt) 50%, transparent);
+}
+
+.md-body img {
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.md-body img:not([src]) {
+  display: inline-block;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 4px;
+  background: var(--panel-alt);
+}
+
+.md-body .md-image-placeholder {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 4px;
+  background: var(--panel-alt);
+  color: var(--text-dim);
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+.md-body details {
+  padding: 0 0 0 1em;
+}
+
+.md-body summary {
+  margin-left: -1em;
+  cursor: pointer;
+}
+
+.md-body .md-mermaid {
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+}
+
+.md-body .md-mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.md-body .md-mermaid-source {
+  width: 100%;
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.md-body .md-mermaid.loading {
+  opacity: 0.6;
+}
+
+.md-body .md-mermaid-error {
+  width: 100%;
+  margin: 0;
+  color: var(--danger);
+  white-space: pre-wrap;
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+/* Blocks far off screen are not drawn: WebKit then paints only what is near the view while
+   scrolling fast, instead of the whole document. "auto" keeps each block's last height. */
+.md-body > .md-block > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}

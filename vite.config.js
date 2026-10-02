@@ -20,8 +20,14 @@ function ipcBridge() {
       if (process.env.GM_IPC_BRIDGE !== "1") {
         return;
       }
-      for (const event of ["gm-ipc:call", "gm-ipc:result"]) {
-        server.ws.on(event, (/** @type {unknown} */ data) => server.ws.send(event, data));
+      for (const event of ["gm-ipc:call", "gm-ipc:result", "gm-ipc:channel", "gm-ipc:event", "gm-ipc:subscribe", "gm-ipc:hello", "gm-ipc:here"]) {
+        server.ws.on(event, (/** @type {unknown} */ data) => {
+          if (process.env.GM_IPC_DEBUG === "1") {
+            const d = /** @type {any} */ (data);
+            server.config.logger.info(`[bridge] ${event} ${d?.cmd ?? d?.callId ?? d?.channelId ?? ""} ${JSON.stringify(data)?.length ?? 0}B clients=${server.ws.clients.size}`);
+          }
+          server.ws.send(event, data);
+        });
       }
       server.config.logger.info("IPC bridge on: pages opened with ?ipc-bridge use the app's backend");
     },
@@ -32,8 +38,34 @@ function ipcBridge() {
 export default defineConfig(() => ({
   plugins: [sveltekit(), ipcBridge()],
 
+  // xterm and the Markdown preview's libraries are imported lazily, so Vite would find them only
+  // when first used and then pre-bundle them and reload the window in dev. Listing them here
+  // bundles them at start.
+  optimizeDeps: {
+    include: [
+      "@xterm/xterm",
+      "@xterm/addon-fit",
+      "@xterm/addon-web-links",
+      "markdown-it",
+      "dompurify",
+      "mermaid",
+      "@milkdown/kit/core",
+      "@milkdown/kit/ctx",
+      "@milkdown/kit/plugin/clipboard",
+      "@milkdown/kit/plugin/history",
+      "@milkdown/kit/preset/commonmark",
+      "@milkdown/kit/preset/gfm",
+      "@milkdown/kit/prose/model",
+      "@milkdown/kit/prose/state",
+      "@milkdown/kit/prose/view",
+      "@milkdown/kit/utils",
+    ],
+  },
+
   test: {
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+    // Vitest blanks CSS by default; the theme tests read app.css's tokens (?raw).
+    css: { include: [/src\/app\.css/] },
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

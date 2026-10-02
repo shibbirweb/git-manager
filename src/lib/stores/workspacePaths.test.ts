@@ -1,12 +1,29 @@
 import { describe, expect, it } from "vitest";
 import type { RepoInfo } from "$lib/types";
-import { baseName, folderFor, joinPath, locate, locateAbsolute, parentOf, repoForPath, toWorkspacePath } from "./workspacePaths";
+import {
+  baseName,
+  folderFor,
+  joinPath,
+  locate,
+  locateAbsolute,
+  normalizePath,
+  parentOf,
+  repoForPath,
+  toWorkspacePath,
+} from "./workspacePaths";
 
 const repo = (root: string, relativePath = ""): RepoInfo => ({ root, name: root.split("/").pop() ?? root, relativePath });
 
 const repos = [repo("/work", ""), repo("/work/apps/web", "apps/web"), repo("/work/apps/webhooks", "apps/webhooks")];
 
 describe("workspace paths", () => {
+  it("normalizes dot segments without leaving the root", () => {
+    expect(normalizePath("/work/docs/../img/./a.png")).toBe("/work/img/a.png");
+    expect(normalizePath("/work//docs/")).toBe("/work/docs");
+    expect(normalizePath("/../../etc")).toBe("/etc");
+    expect(normalizePath("/")).toBe("/");
+  });
+
   it("joins without doubling slashes", () => {
     expect(joinPath("/work", "a/b")).toBe("/work/a/b");
     expect(joinPath("/", "a")).toBe("/a");

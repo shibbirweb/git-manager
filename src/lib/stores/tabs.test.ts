@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { closeTabs, openTab, otherPaths, pathsToRight, pinTab, setTabDirty, tabLabels, type TabsState } from "./tabs";
+import { adjacentTab, closeTabs, openTab, otherPaths, pathsToRight, pinTab, setTabDirty, tabLabels, type TabsState } from "./tabs";
 
 const empty: TabsState = { tabs: [], active: null };
 
@@ -92,5 +92,25 @@ describe("tabLabels", () => {
     expect(labels.get("apps/web/index.ts")).toEqual({ name: "index.ts", hint: "web" });
     expect(labels.get("apps/api/index.ts")).toEqual({ name: "index.ts", hint: "api" });
     expect(labels.get("README.md")).toEqual({ name: "README.md", hint: null });
+  });
+});
+
+describe("adjacentTab", () => {
+  const tabs = ["/w/a.ts", "/w/b.ts", "/w/c.ts"].map((path) => ({ path, preview: false, dirty: false }));
+
+  it("steps to the next and previous tab, wrapping around", () => {
+    expect(adjacentTab(tabs, "/w/a.ts", 1)).toBe("/w/b.ts");
+    expect(adjacentTab(tabs, "/w/c.ts", 1)).toBe("/w/a.ts");
+    expect(adjacentTab(tabs, "/w/a.ts", -1)).toBe("/w/c.ts");
+  });
+
+  it("starts at an end when no tab is on screen", () => {
+    expect(adjacentTab(tabs, null, 1)).toBe("/w/a.ts");
+    expect(adjacentTab(tabs, null, -1)).toBe("/w/c.ts");
+    expect(adjacentTab(tabs, "/w/gone.ts", 1)).toBe("/w/a.ts");
+  });
+
+  it("has nothing to switch to without tabs", () => {
+    expect(adjacentTab([], null, 1)).toBeNull();
   });
 });

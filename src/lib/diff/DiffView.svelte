@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type Chunk, MergeView } from "@codemirror/merge";
   import type { Extension } from "@codemirror/state";
-  import { EditorView, keymap } from "@codemirror/view";
+  import { EditorView, keymap, panels } from "@codemirror/view";
   import type { ChangeMark } from "$lib/editor/lineDiff";
   import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/scrollMarkers";
   import { baseExtensions, languageFor } from "$lib/editor/setup";
@@ -10,7 +10,11 @@
   import { chunkKinds, diffTheme, revertButton } from "./mergeExtensions";
   import { diffPrefs } from "./prefs.svelte";
   import { type BlameTarget, blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
+  import { navigation } from "$lib/stores/navigation.svelte";
   import { settings } from "$lib/stores/settings.svelte";
+  import { toast } from "$lib/ui/toast.svelte";
+  import { clampDiffSplit, DEFAULT_DIFF_SPLIT, splitFromPointer } from "./split";
+  import { lfsContentChanged, lfsSizeText } from "$lib/views/git/lfs/lfsModel";
 
   export type DiffMode = "unstaged" | "staged" | "readonly";
 
@@ -32,9 +36,14 @@
     blame?: BlameTarget | null;
     /** Scroll the right side to this 0-based line (Back / Forward); a new token repeats it. */
     revealLine?: { line: number; token: number } | null;
+    /**
+     * The file in the work tree (absolute path), for the Open File button. `sameLines` when the
+     * right side is the work tree itself, so the file opens at the line you are on.
+     */
+    workingFile?: { filePath: string; sameLines: boolean } | null;
   }
 
-  let { diff, path, mode, leftLabel, rightLabel, onChange, blame = null, revealLine = null }: Props = $props();
+  let { diff, path, mode, leftLabel, rightLabel, onChange, blame = null, revealLine = null, workingFile = null }: Props = $props();
 
   let revealedToken = -1;
 
@@ -66,6 +75,16 @@
   });
 
   let host = $state<HTMLDivElement | null>(null);
+  /** Where the line between the two sides is, for the drag handle; null until the diff is drawn. */
+  let handleLeft = $state<number | null>(null);
+  let splitDragging = $state(false);
+  const split = $derived(clampDiffSplit(settings.diffSplitRatio));
+  /**
+   * Each side's find bar sits above the diff: both sides share one scroller, so a bar inside
+   * an editor would scroll away and push its side out of line with the other.
+   */
+  let findHostA = $state<HTMLDivElement | null>(null);
+  let findHostB = $state<HTMLDivElement | null>(null);
   let chunkCount = $state(0);
   let current = $state(-1);
 
@@ -78,9 +97,36 @@
   /** Scroll position of the last view, restored when the same file is rebuilt. */
   let lastScroll: { key: string; top: number } | null = null;
 
-  const textual = $derived(!diff.binary && !diff.tooLarge);
+  /** A Git LFS file: its sizes replace the pointer text. */
+  const lfs = $derived(diff.lfs ?? null);
+  const textual = $derived(!diff.binary && !diff.tooLarge && lfs === null);
   const identical = $derived(textual && diff.original === diff.modified);
   const fileName = $derived(path.split("/").pop() ?? path);
+
+  /** The right side's line to open the file at: the cursor line when it is on screen, else the top line. */
+  function lineOnScreen(merge: MergeView): number {
+    const editor = merge.b;
+    const head = editor.state.selection.main.head;
+    if (editor.hasFocus || editor.visibleRanges.some((range) => head >= range.from && head <= range.to)) {
+      return editor.state.doc.lineAt(head).number - 1;
+    }
+    const top = editor.lineBlockAtHeight(editor.scrollDOM.scrollTop);
+    return editor.state.doc.lineAt(top.from).number - 1;
+  }
+
+  /** Opens the real file in an editor tab, at the same line when the right side is the work tree. */
+  async function openWorkingFile(): Promise<void> {
+    const target = workingFile;
+    if (!target) {
+      return;
+    }
+    if (!(await navigation.fileExists(target.filePath))) {
+      toast.info(`${fileName} is not in the work tree`, "It was deleted or never existed there, so there is no file to open.");
+      return;
+    }
+    const line = target.sameLines && view ? lineOnScreen(view) : null;
+    await navigation.openFileAt(target.filePath, line, null, { pin: true });
+  }
   const directory = $derived(path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
   const counterLabel = $derived.by(() => {
     if (chunkCount === 0) {
@@ -154,18 +200,26 @@
         scheduleStrip();
       }
     });
-    const sideExtensions = (changes: boolean): Extension[] =>
+    const sideExtensions = (changes: boolean, findHost: HTMLElement | null): Extension[] =>
       baseExtensions({
         readOnly: true,
-        extensions: [language, diffTheme, chunkKinds, navigation, geometry, changes ? listener : []],
+        extensions: [
+          language,
+          diffTheme,
+          chunkKinds,
+          navigation,
+          geometry,
+          changes ? listener : [],
+          findHost ? panels({ topContainer: findHost }) : [],
+        ],
       });
 
     const merge = new MergeView({
-      a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged") },
+      a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged", findHostA) },
       b: {
         doc: fileDiff.modified,
         extensions: [
-          sideExtensions(diffMode === "staged"),
+          sideExtensions(diffMode === "staged", findHostB),
           blame ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }) : [],
         ],
       },
@@ -187,7 +241,10 @@
     current = -1;
     strip = createStrip((line) => jumpToLine(merge.b, line));
     target.appendChild(strip);
-    stripObserver = new ResizeObserver(() => scheduleStrip());
+    stripObserver = new ResizeObserver(() => {
+      scheduleStrip();
+      placeSplitHandle();
+    });
     stripObserver.observe(target);
     scheduleStrip();
 
@@ -196,6 +253,7 @@
       if (view !== merge) {
         return;
       }
+      placeSplitHandle();
       if (applyReveal(merge)) {
         return;
       }
@@ -219,6 +277,63 @@
       const last = doc.lineAt(Math.max(chunk.fromB, Math.min(chunk.toB - 1, doc.length))).number;
       return { from, to: last, kind: chunk.fromA === chunk.toA ? "added" : "modified" };
     });
+  }
+
+  // The editors change width with the split; keep the handle on the line between them.
+  $effect(() => {
+    void split;
+    const frame = requestAnimationFrame(placeSplitHandle);
+    return () => cancelAnimationFrame(frame);
+  });
+
+  function placeSplitHandle(): void {
+    const first = host?.querySelector<HTMLElement>(".cm-mergeViewEditor");
+    if (!host || !first) {
+      handleLeft = null;
+      return;
+    }
+    handleLeft = first.getBoundingClientRect().right - host.getBoundingClientRect().left;
+  }
+
+  function startSplitDrag(event: PointerEvent): void {
+    const editors = host?.querySelector<HTMLElement>(".cm-mergeViewEditors");
+    if (event.button !== 0 || !editors) {
+      return;
+    }
+    event.preventDefault();
+    const handle = event.currentTarget as HTMLElement;
+    handle.setPointerCapture(event.pointerId);
+    // The change arrows between the sides keep their width.
+    const gutter = editors.querySelector<HTMLElement>(".cm-merge-revert")?.offsetWidth ?? 0;
+    splitDragging = true;
+    document.body.classList.add("resizing-columns");
+    const move = (moveEvent: PointerEvent): void => {
+      const rect = editors.getBoundingClientRect();
+      settings.diffSplitRatio = splitFromPointer(moveEvent.clientX, rect.left, rect.width, gutter);
+    };
+    const stop = (): void => {
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", stop);
+      handle.removeEventListener("pointercancel", stop);
+      splitDragging = false;
+      document.body.classList.remove("resizing-columns");
+      settings.save();
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", stop);
+    handle.addEventListener("pointercancel", stop);
+  }
+
+  function setSplit(ratio: number): void {
+    settings.diffSplitRatio = clampDiffSplit(ratio);
+    settings.save();
+  }
+
+  function onSplitKeydown(event: KeyboardEvent): void {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      setSplit(split + (event.key === "ArrowRight" ? 0.02 : -0.02) * (event.shiftKey ? 3 : 1));
+    }
   }
 
   function scheduleStrip(): void {
@@ -256,7 +371,7 @@
   }
 </script>
 
-<div class="diff-view">
+<div class="diff-view" style="--diff-left: {split}; --diff-right: {1 - split}">
   <div class="toolbar">
     <button
       class="icon-btn small"
@@ -301,6 +416,12 @@
         Blame
       </button>
     {/if}
+    {#if workingFile}
+      <button class="toggle" onclick={() => void openWorkingFile()} title="Open the file itself in an editor tab">
+        <Icon name="external-link" size={13} />
+        Open File
+      </button>
+    {/if}
     <span class="path truncate" title={path}>
       <span class="name">{fileName}</span>
       {#if directory}
@@ -310,7 +431,14 @@
   </div>
 
   {#if !textual}
-    <div class="message dim">{diff.tooLarge ? "File too large to diff" : "Binary file, no text diff"}</div>
+    {#if lfs}
+      <div class="message lfs-message">
+        <span class="lfs-title">Stored in Git LFS</span>
+        <span class="dim">{lfsSizeText(lfs)}{lfsContentChanged(lfs) ? "" : ", same content"}</span>
+      </div>
+    {:else}
+      <div class="message dim">{diff.tooLarge ? "File too large to diff" : "Binary file, no text diff"}</div>
+    {/if}
   {:else if identical}
     <div class="message dim">No content changes</div>
   {:else}
@@ -319,7 +447,32 @@
       <span class="gap"></span>
       <span class="label truncate" title={rightLabel}>{rightLabel}</span>
     </div>
-    <div class="body" bind:this={host}></div>
+    <div class="find-bars" class:with-controls={mode !== "readonly"}>
+      <div class="find-host" bind:this={findHostA}></div>
+      <span class="gap"></span>
+      <div class="find-host" bind:this={findHostB}></div>
+    </div>
+    <div class="body" bind:this={host}>
+      {#if handleLeft !== null}
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+        <div
+          class="split-handle"
+          class:dragging={splitDragging}
+          style="left: {handleLeft}px"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize the two sides of the diff"
+          aria-valuenow={Math.round(split * 100)}
+          aria-valuemin={15}
+          aria-valuemax={85}
+          tabindex="0"
+          title="Drag to resize the two sides, double-click to make them equal"
+          onpointerdown={startSplitDrag}
+          ondblclick={() => setSplit(DEFAULT_DIFF_SPLIT)}
+          onkeydown={onSplitKeydown}
+        ></div>
+      {/if}
+    </div>
   {/if}
 </div>
 
@@ -423,6 +576,47 @@
     padding: 0 12px;
   }
 
+  /* The labels, find bars and editors share the split, so they stay lined up. */
+  .label:first-child,
+  .find-host:first-child,
+  .body :global(.cm-mergeViewEditor:first-child) {
+    flex-grow: var(--diff-left, 1);
+  }
+
+  .label:last-child,
+  .find-host:last-child,
+  .body :global(.cm-mergeViewEditor:last-child) {
+    flex-grow: var(--diff-right, 1);
+  }
+
+  .split-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 7px;
+    margin-left: -3px;
+    z-index: 5;
+    cursor: col-resize;
+    outline: none;
+  }
+
+  .split-handle::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 2px;
+    width: 3px;
+    background: transparent;
+    transition: background 0.12s;
+  }
+
+  .split-handle:hover::after,
+  .split-handle:focus-visible::after,
+  .split-handle.dragging::after {
+    background: var(--accent);
+  }
+
   .gap {
     flex: none;
     width: 1px;
@@ -435,6 +629,40 @@
     background: transparent;
     border-left: 1px solid var(--border-strong);
     border-right: 1px solid var(--border-strong);
+  }
+
+  /* Shown only while a side's find bar is open. */
+  .find-bars {
+    flex: none;
+    display: flex;
+    background: var(--panel);
+  }
+
+  .find-bars:not(:has(.cm-panels)) {
+    display: none;
+  }
+
+  .find-host {
+    flex: 1 1 0;
+    min-width: 0;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .find-host:empty {
+    border-bottom-color: transparent;
+  }
+
+  .find-host :global(.cm-find-bar) {
+    border-bottom: none;
+  }
+
+  .find-bars .gap {
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .find-bars.with-controls .gap {
+    width: 24px;
+    background: transparent;
   }
 
   .body {
@@ -488,5 +716,14 @@
 
   .body :global(.cm-merge-revert .diff-revert svg) {
     pointer-events: none;
+  }
+
+  .lfs-message {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .lfs-title {
+    font-weight: 600;
   }
 </style>

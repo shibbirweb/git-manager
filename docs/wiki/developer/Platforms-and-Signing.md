@@ -53,16 +53,30 @@ flowchart LR
 
 | Where | What | On other platforms |
 | --- | --- | --- |
-| `src-tauri/src/memory.rs` | the memory readout, using macOS process APIs (`proc_pid_rusage`, the "responsible" process) behind `#[cfg(target_os = "macos")]` | a stub returns an empty, approximate report |
+| `src-tauri/src/memory.rs` | the memory readout, using macOS process APIs (`proc_pid_rusage`, the "responsible" process) behind `#[cfg(target_os = "macos")]` | a stub returns zero bytes (marked approximate), so the status bar hides the item |
 | `src-tauri/src/git/cli.rs` | the git binary search (`/opt/homebrew/bin/git`, `/usr/local/bin/git`, `/usr/bin/git`) and the login shell `PATH` (`$SHELL -l -c`, default `/bin/zsh`, `:` separators) | falls back to `git` on the current `PATH`; the shell step needs its own Windows version |
 | `src/lib/stores/workspacePaths.ts` and the Rust path helpers | paths use `/` separators | Windows paths use `\` and drive letters |
 | `src/lib/update/releases.ts` | `parseReleases` takes the first `.dmg` asset as the download | needs a per-platform asset |
 | `src-tauri/tauri.conf.json` | bundle targets `app` and `dmg` | needs Windows and Linux targets |
-| `.github/workflows/ci.yml`, `release.yml` | every job runs on `macos-latest` | needs a matrix |
+| `.github/workflows/ci.yml`, `release.yml` | the test and build jobs run on `macos-latest` (release's `version` job and the release, publish and wiki workflows use `ubuntu-latest`) | needs a matrix |
 | `scripts/*.sh` | bash demo scripts | need Git Bash or WSL on Windows |
 | Keyboard shortcuts | Cmd (`metaKey`), usually with Ctrl too | check each shortcut |
 
 A few pieces are already ready: `main.rs` hides the console window on Windows release builds, `os_info` in `commands/config.rs` names the OS for bug reports on macOS, Linux and Windows (with `platformName` in `releases.ts` as the fallback), and `tauri.conf.json` already lists an `icon.ico`.
+
+## Windows code that is written but never built
+
+The terminal, the Scripts panel and the command line tool already have Windows paths behind `cfg(windows)` or runtime checks. CI does not compile them yet, so expect small fixes on the first Windows build.
+
+| Where | On Windows |
+| --- | --- |
+| `src-tauri/src/terminal.rs` | Shells: PowerShell (`pwsh.exe` on `PATH` or in `Program Files\PowerShell\7`), Windows PowerShell, Command Prompt (`%ComSpec%`, always listed) and Git Bash (`Git\bin\bash.exe` under Program Files or `%LOCALAPPDATA%\Programs`, never from `PATH`, where `bash.exe` is WSL). The first found is the default. Killing uses `TerminateProcess`. |
+| `src-tauri/src/node_versions.rs` | nvm-windows (`NVM_HOME` or `%APPDATA%\nvm`), fnm, Volta and Scoop, with `node.exe` right in each version folder. |
+| `src-tauri/src/run_process.rs` | No login shell is read (Explorer gives apps the full environment). Programs are found with `PATHEXT`, and `.cmd` files such as `npm.cmd` start through `cmd.exe /d /c`. |
+| `src/lib/terminal/keys.ts`, `src/lib/views/files/reveal.ts` | Ctrl+Shift+C and Ctrl+Shift+V copy and paste; "Reveal in File Explorer". |
+| `src-tauri/src/mcp/cli.rs`, `install.rs` | `git-manager cli` prints nothing in a release build, which has no console; installing the command link is Unix only. |
+
+For Linux, the Linuxbrew prefix is checked for Node and added to the fallback `PATH` of script runs. See [How the terminal works](How-the-Terminal-Works.md) and [How scripts work](How-Scripts-Work.md).
 
 ## The plan for Windows and Linux
 

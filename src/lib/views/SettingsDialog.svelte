@@ -2,20 +2,49 @@
 <script lang="ts">
   import { errorMessage } from "$lib/api";
   import {
+    CARET_EXTRA_RANGE,
+    clampTerminalScrollback,
     DEFAULT_EDITOR_FONT,
+    defaultPreferences,
+    EDITOR_CURSOR_BLINKING_CHOICES,
+    EDITOR_CURSOR_STYLE_CHOICES,
+    EDITOR_CURSOR_WIDTH_RANGE,
+    type EditorCursorBlinking,
+    type EditorCursorStyle,
+    EDITOR_LINE_HEIGHT_RANGE,
     FONT_SIZE_RANGE,
+    type MarkdownViewMode,
     MONOSPACE_FONTS,
     normalizeFontFamily,
+    normalizeTerminalFontFamily,
     type Preferences,
+    RENDER_WHITESPACE_CHOICES,
     settings,
     type SettingsSection,
     TAB_SIZES,
+    TERMINAL_LETTER_SPACING_RANGE,
+    TERMINAL_LINE_HEIGHT_RANGE,
+    TERMINAL_SCROLLBACK_RANGE,
+    type TerminalCursorStyle,
+    type TerminalFontWeight,
     type ThemeSetting,
   } from "$lib/stores/settings.svelte";
+  import { repoStore } from "$lib/stores/repo.svelte";
+  import { buildTerminalFontFamily, TERMINAL_FONT_PICKS, xtermFontWeight } from "$lib/terminal/fonts";
+  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { updates } from "$lib/update/updates.svelte";
+  import { claudeAddCommand, cliExamples, cliPrefix, LOCAL_BIN_PATH_LINE, maskToken, mcpJsonConfig } from "$lib/mcp/connect";
+  import { mcpStore } from "$lib/mcp/mcpStore.svelte";
+  import { memoryLog } from "$lib/debug/memoryLog.svelte";
+  import { revealItemInDir } from "@tauri-apps/plugin-opener";
+  import { MCP_PORT_RANGE, parseMcpPort } from "$lib/stores/settingsData";
+  import GitHubSignInForm from "./github/GitHubSignInForm.svelte";
+  import ColorThemePicker from "./settings/ColorThemePicker.svelte";
+  import type { GpgSign } from "$lib/types";
+  import { GPG_SIGN_CHOICES } from "./changes/commitOptions";
 
   const channels: { value: "auto" | "stable" | "beta"; label: string }[] = [
     { value: "auto", label: "Automatic" },
@@ -44,8 +73,11 @@
   const sections: { id: SettingsSection; label: string }[] = [
     { id: "appearance", label: "Appearance" },
     { id: "editor", label: "Editor" },
-    { id: "merge", label: "Merge and Log" },
+    { id: "merge", label: "Git" },
     { id: "layout", label: "Layout" },
+    { id: "terminal", label: "Terminal" },
+    { id: "github", label: "GitHub" },
+    { id: "automation", label: "Automation" },
     { id: "updates", label: "Updates" },
     { id: "files", label: "Settings Files" },
     { id: "about", label: "About" },
@@ -57,7 +89,39 @@
     { value: "dark", label: "Dark" },
   ];
 
+  const fontWeights: { value: TerminalFontWeight; label: string }[] = [
+    { value: "normal", label: "Normal" },
+    { value: "medium", label: "Medium" },
+    { value: "bold", label: "Bold" },
+  ];
+
+  const markdownModes: { value: MarkdownViewMode; label: string }[] = [
+    { value: "editor", label: "Editor only" },
+    { value: "split", label: "Editor and preview" },
+    { value: "preview", label: "Preview only" },
+  ];
+
+  const cursorStyles: { value: TerminalCursorStyle; label: string }[] = [
+    { value: "block", label: "Block" },
+    { value: "bar", label: "Bar" },
+    { value: "underline", label: "Underline" },
+  ];
+
   let section = $state<SettingsSection>(settings.dialogSection);
+
+  /** The shell list is asked for the first time the Terminal section shows. */
+  let shellsLoaded = $state(false);
+  $effect(() => {
+    if (section === "terminal" && !shellsLoaded) {
+      void terminalStore.loadShells().then(() => {
+        shellsLoaded = true;
+      });
+    }
+  });
+  const loginShell = $derived(terminalStore.shells.find((shell) => shell.isDefault) ?? null);
+  const savedShellMissing = $derived(
+    settings.terminalShell !== null && !terminalStore.shells.some((shell) => shell.id === settings.terminalShell),
+  );
 
   // Dragging by the title areas. The offset is relative to the centered position.
   const KEEP_VISIBLE = 60;
@@ -134,12 +198,134 @@
     applyFont();
   }
 
+  /** Terminal font list being typed; empty means the editor font. */
+  let terminalFontDraft = $state(settings.terminalFontFamily);
+
+  function applyTerminalFont(): void {
+    const next = normalizeTerminalFontFamily(terminalFontDraft);
+    terminalFontDraft = next;
+    if (next !== settings.terminalFontFamily) {
+      set("terminalFontFamily", next);
+    }
+  }
+
+  function addTerminalFont(family: string): void {
+    const quoted = /\s/.test(family) ? `'${family}'` : family;
+    terminalFontDraft = normalizeFontFamily(`${quoted}, ${DEFAULT_EDITOR_FONT}`);
+    applyTerminalFont();
+  }
+
+  /** What the terminal would render with, for the preview. */
+  const terminalPreviewFont = $derived(
+    buildTerminalFontFamily({
+      terminalFontFamily: normalizeTerminalFontFamily(terminalFontDraft),
+      editorFontFamily: settings.editorFontFamily,
+      nerdFontIcons: settings.terminalNerdFontIcons,
+    }),
+  );
+
+  /** Typed scrollback (null while the field is empty), kept until the field is committed. */
+  let scrollbackDraft = $state<number | null>(settings.terminalScrollback);
+
+  function applyScrollback(): void {
+    const next = typeof scrollbackDraft === "number" ? clampTerminalScrollback(scrollbackDraft) : settings.terminalScrollback;
+    scrollbackDraft = next;
+    if (next !== settings.terminalScrollback) {
+      set("terminalScrollback", next);
+    }
+  }
+
+  // Reset to Defaults and Try Again change the settings under the fields.
+  $effect(() => {
+    terminalFontDraft = settings.terminalFontFamily;
+  });
+  $effect(() => {
+    scrollbackDraft = settings.terminalScrollback;
+  });
+
+  // Automation: the MCP server and the command line tool.
+  let showToken = $state(false);
+  let portDraft = $state(String(settings.mcpPort));
+  let portError = $state<string | null>(null);
+  $effect(() => {
+    if (section === "automation") {
+      void mcpStore.refreshStatus();
+    }
+  });
+  $effect(() => {
+    portDraft = String(settings.mcpPort);
+  });
+  const mcpStatus = $derived(mcpStore.status);
+  const mcpToken = $derived(mcpStatus?.token ?? null);
+  const mcpUrl = $derived(mcpStatus?.url || `http://127.0.0.1:${settings.mcpPort}/mcp`);
+  const serverWanted = $derived(settings.mcpEnabled || settings.cliEnabled);
+  const mcpStatusLine = $derived.by(() => {
+    if (mcpStore.statusError) {
+      return `Not available in this build: ${mcpStore.statusError}`;
+    }
+    if (!mcpStatus) {
+      return serverWanted ? "Starting..." : "Off";
+    }
+    if (mcpStatus.error) {
+      return mcpStatus.error;
+    }
+    return mcpStatus.running ? `Running at ${mcpUrl}` : "Off";
+  });
+  const mcpStatusFailed = $derived(!!mcpStore.statusError || !!mcpStatus?.error);
+  const cliCommandPrefix = $derived(mcpStatus ? cliPrefix(mcpStatus) : "git-manager cli");
+
+  function applyPort(): void {
+    const port = parseMcpPort(portDraft);
+    if (port === null) {
+      portError = `Use a whole number from ${MCP_PORT_RANGE[0]} to ${MCP_PORT_RANGE[1]}.`;
+      return;
+    }
+    portError = null;
+    portDraft = String(port);
+    if (port !== settings.mcpPort) {
+      set("mcpPort", port);
+    }
+  }
+
+  function showMcpTools(): void {
+    close();
+    mcpStore.openToolsDialog();
+  }
+
+  /** Sublime Text's caret_extra_top and caret_extra_bottom. */
+  const caretExtras: { key: "editorCaretExtraTop" | "editorCaretExtraBottom"; label: string; hint: string }[] = [
+    { key: "editorCaretExtraTop", label: "Caret extra top", hint: "Pixels the cursor reaches above the text, so it is easier to see, like Sublime Text." },
+    { key: "editorCaretExtraBottom", label: "Caret extra bottom", hint: "Pixels the cursor reaches below the text." },
+  ];
+
   function set<K extends keyof Preferences>(key: K, value: Preferences[K]): void {
     settings.setPreference(key, value);
   }
 
+  async function revealMemoryLog(): Promise<void> {
+    const logPath = memoryLog.status?.path;
+    if (!logPath) {
+      return;
+    }
+    try {
+      await revealItemInDir(logPath);
+    } catch (error) {
+      toast.info("The log file is not there yet", errorMessage(error));
+    }
+  }
+
   function close(): void {
     settings.dialogOpen = false;
+  }
+
+  /** Records (the MCP tool switches) show as JSON. */
+  function preferenceText(value: unknown): string {
+    return typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
+  }
+
+  function showGitConsole(): void {
+    close();
+    terminalStore.showTab("gitConsole");
   }
 
   async function reset(): Promise<void> {
@@ -265,7 +451,10 @@
           <div class="row">
             <div class="label">
               <span>Theme</span>
-              <span class="hint">System follows the macOS appearance.</span>
+              <span class="hint">
+                System follows the macOS appearance. Color themes are in
+                <button class="inline-link" onclick={() => (section = "editor")}>Editor</button>.
+              </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Theme">
               {#each themes as theme (theme.value)}
@@ -299,6 +488,29 @@
             </div>
           </div>
         {:else if section === "editor"}
+          <div class="row stacked">
+            <div class="label">
+              <span>Color theme</span>
+              <span class="hint">
+                One for light and one for dark mode. Light, Dark or System is set in
+                <button class="inline-link" onclick={() => (section = "appearance")}>Appearance</button>.
+              </span>
+            </div>
+            <div class="theme-pickers">
+              <ColorThemePicker
+                mode="light"
+                selectedId={settings.lightColorTheme}
+                active={settings.colorMode === "light"}
+                onSelect={(themeId) => settings.setColorTheme("light", themeId)}
+              />
+              <ColorThemePicker
+                mode="dark"
+                selectedId={settings.darkColorTheme}
+                active={settings.colorMode === "dark"}
+                onSelect={(themeId) => settings.setColorTheme("dark", themeId)}
+              />
+            </div>
+          </div>
           <div class="row stacked">
             <div class="label">
               <span>Editor font family</span>
@@ -347,7 +559,7 @@
                 </button>
               {/each}
             </div>
-            <pre class="font-preview code-ligatures" style="font-family: {normalizeFontFamily(fontDraft)}; font-size: {settings.editorFontSize}px">function greet(name: string) &#123;
+            <pre class="font-preview code-ligatures" style="font-family: {normalizeFontFamily(fontDraft)}; font-size: {settings.editorFontSize}px; line-height: {settings.editorLineHeight}">function greet(name: string) &#123;
   return `Hello, $&#123;name&#125;!`; // 0O 1lI =&gt; != ===
 &#125;</pre>
           </div>
@@ -367,6 +579,26 @@
                 aria-label="Editor font size"
               />
               <span class="value">{settings.editorFontSize}px</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Line spacing</span>
+              <span class="hint">Space between lines of code, as a multiple of the font size. The default is 1.55.</span>
+            </div>
+            <div class="range">
+              <input
+                type="range"
+                min={EDITOR_LINE_HEIGHT_RANGE[0]}
+                max={EDITOR_LINE_HEIGHT_RANGE[1]}
+                step="0.05"
+                value={settings.editorLineHeight}
+                oninput={(event) => set("editorLineHeight", Math.round(Number(event.currentTarget.value) * 100) / 100)}
+                ondblclick={() => set("editorLineHeight", defaultPreferences.editorLineHeight)}
+                title="Double-click to reset to 1.55"
+                aria-label="Line spacing"
+              />
+              <span class="value">{settings.editorLineHeight.toFixed(2)}</span>
             </div>
           </div>
           <label class="row toggle-row">
@@ -412,6 +644,27 @@
               {/each}
             </div>
           </div>
+          <div class="row">
+            <div class="label">
+              <span>Render whitespace</span>
+              <span class="hint">
+                {RENDER_WHITESPACE_CHOICES.find((choice) => choice.value === settings.renderWhitespace)?.hint ?? ""}
+                Spaces show as dots and tabs as arrows, in editors, diffs and the merge tool.
+              </span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Render whitespace">
+              {#each RENDER_WHITESPACE_CHOICES as choice (choice.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.renderWhitespace === choice.value}
+                  class:on={settings.renderWhitespace === choice.value}
+                  onclick={() => set("renderWhitespace", choice.value)}
+                >
+                  {choice.label}
+                </button>
+              {/each}
+            </div>
+          </div>
           <label class="row toggle-row">
             <div class="label">
               <span>Word wrap</span>
@@ -419,6 +672,115 @@
             </div>
             <input type="checkbox" class="switch" checked={settings.wordWrap} onchange={(event) => set("wordWrap", event.currentTarget.checked)} />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Cursor style</span>
+              <span class="hint">The shape of the cursor in editors, diffs and the merge tool, like VS Code.</span>
+            </div>
+            <select
+              class="input select"
+              value={settings.editorCursorStyle}
+              onchange={(event) => set("editorCursorStyle", event.currentTarget.value as EditorCursorStyle)}
+              aria-label="Cursor style"
+            >
+              {#each EDITOR_CURSOR_STYLE_CHOICES as choice (choice.value)}
+                <option value={choice.value}>{choice.label}</option>
+              {/each}
+            </select>
+          </label>
+          {#if settings.editorCursorStyle === "line"}
+            <div class="row">
+              <div class="label">
+                <span>Cursor width</span>
+                <span class="hint">How thick the Line cursor is, in pixels. The default is 2.</span>
+              </div>
+              <div class="range">
+                <input
+                  type="range"
+                  min={EDITOR_CURSOR_WIDTH_RANGE[0]}
+                  max={EDITOR_CURSOR_WIDTH_RANGE[1]}
+                  step="1"
+                  value={settings.editorCursorWidth}
+                  oninput={(event) => set("editorCursorWidth", Number(event.currentTarget.value))}
+                  ondblclick={() => set("editorCursorWidth", defaultPreferences.editorCursorWidth)}
+                  title="Double-click to reset to 2"
+                  aria-label="Cursor width"
+                />
+                <span class="value">{settings.editorCursorWidth} px</span>
+              </div>
+            </div>
+          {/if}
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Cursor blinking</span>
+              <span class="hint">
+                {EDITOR_CURSOR_BLINKING_CHOICES.find((choice) => choice.value === settings.editorCursorBlinking)?.hint ?? ""}
+                The cursor stays visible while you type.
+              </span>
+            </div>
+            <select
+              class="input select"
+              value={settings.editorCursorBlinking}
+              onchange={(event) => set("editorCursorBlinking", event.currentTarget.value as EditorCursorBlinking)}
+              aria-label="Cursor blinking"
+            >
+              {#each EDITOR_CURSOR_BLINKING_CHOICES as choice (choice.value)}
+                <option value={choice.value}>{choice.label}</option>
+              {/each}
+            </select>
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Smooth caret animation</span>
+              <span class="hint">The cursor glides to its new place instead of jumping.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.editorCursorSmoothCaret}
+              onchange={(event) => set("editorCursorSmoothCaret", event.currentTarget.checked)}
+            />
+          </label>
+          {#each caretExtras as extra (extra.key)}
+            <div class="row">
+              <div class="label">
+                <span>{extra.label}</span>
+                <span class="hint">{extra.hint}</span>
+              </div>
+              <div class="range">
+                <input
+                  type="range"
+                  min={CARET_EXTRA_RANGE[0]}
+                  max={CARET_EXTRA_RANGE[1]}
+                  step="1"
+                  value={settings[extra.key]}
+                  oninput={(event) => set(extra.key, Number(event.currentTarget.value))}
+                  ondblclick={() => set(extra.key, 0)}
+                  title="Double-click to reset to 0"
+                  aria-label={extra.label}
+                />
+                <span class="value">{settings[extra.key]} px</span>
+              </div>
+            </div>
+          {/each}
+          <div class="row">
+            <div class="label">
+              <span>Markdown preview</span>
+              <span class="hint">How Markdown files open. Each file can switch with the buttons at the top right of its editor and keeps its choice until the app restarts.</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Markdown preview">
+              {#each markdownModes as mode (mode.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.markdownViewMode === mode.value}
+                  class:on={settings.markdownViewMode === mode.value}
+                  onclick={() => set("markdownViewMode", mode.value)}
+                >
+                  {mode.label}
+                </button>
+              {/each}
+            </div>
+          </div>
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
@@ -463,6 +825,47 @@
             </div>
             <input type="checkbox" class="switch" checked={settings.logAllRefs} onchange={(event) => set("logAllRefs", event.currentTarget.checked)} />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Sign off commits</span>
+              <span class="hint">Add a Signed-off-by trailer to every commit (<code>--signoff</code>). Also in Commit Options.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.commitSignOff}
+              onchange={(event) => set("commitSignOff", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>GPG sign commits</span>
+              <span class="hint">Default follows <code>commit.gpgSign</code>; Sign adds <code>-S</code>, Do not sign adds <code>--no-gpg-sign</code>.</span>
+            </div>
+            <select
+              class="input select"
+              value={settings.commitGpgSign}
+              onchange={(event) => set("commitGpgSign", event.currentTarget.value as GpgSign)}
+              aria-label="GPG sign commits"
+            >
+              {#each GPG_SIGN_CHOICES as choice (choice.value)}
+                <option value={choice.value}>{choice.label}</option>
+              {/each}
+            </select>
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Git Console</span>
+              <span class="hint">
+                Keep a list of the git commands the app runs, with their output. It shows as the Git Console tab in the bottom
+                panel, next to Terminal (View &gt; Git Console). Off, nothing is recorded or loaded.
+              </span>
+              {#if settings.gitConsole && repoStore.workspace}
+                <button class="btn small show-console" onclick={showGitConsole}>Show Git Console</button>
+              {/if}
+            </div>
+            <input type="checkbox" class="switch" checked={settings.gitConsole} onchange={(event) => set("gitConsole", event.currentTarget.checked)} />
+          </label>
         {:else if section === "layout"}
           <label class="row toggle-row">
             <div class="label">
@@ -489,6 +892,506 @@
               {/each}
             </div>
           </div>
+        {:else if section === "terminal"}
+          <h4 class="group-title">Shell</h4>
+          <div class="row">
+            <div class="label">
+              <span>Default shell</span>
+              <span class="hint">
+                New terminals start this shell. The arrow next to + in the terminal panel starts any other one.
+              </span>
+            </div>
+            <select
+              class="input select"
+              value={settings.terminalShell ?? ""}
+              onchange={(event) => set("terminalShell", event.currentTarget.value || null)}
+              aria-label="Default shell"
+            >
+              <option value="">{loginShell ? `Login shell (${loginShell.name})` : "Login shell"}</option>
+              {#each terminalStore.shells as shell (shell.id)}
+                <option value={shell.id}>{shell.name} ({shell.path})</option>
+              {/each}
+              {#if settings.terminalShell && savedShellMissing}
+                <option value={settings.terminalShell}>
+                  {settings.terminalShell}{shellsLoaded ? " (not found, the login shell is used)" : ""}
+                </option>
+              {/if}
+            </select>
+          </div>
+
+          <h4 class="group-title">Font</h4>
+          <div class="row stacked">
+            <div class="label">
+              <span>Font family</span>
+              <span class="hint">
+                A comma-separated list, like VS Code's <code>terminal.integrated.fontFamily</code>. Leave it empty to use
+                the editor font.
+              </span>
+            </div>
+            <div class="font-row">
+              <input
+                class="input font-input"
+                list="terminal-fonts"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="Same as the editor font"
+                bind:value={terminalFontDraft}
+                onchange={applyTerminalFont}
+                onkeydown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    applyTerminalFont();
+                  }
+                }}
+                aria-label="Terminal font family"
+              />
+              <datalist id="terminal-fonts">
+                {#each TERMINAL_FONT_PICKS as family (family)}
+                  <option value={family}></option>
+                {/each}
+              </datalist>
+              {#if settings.terminalFontFamily}
+                <button
+                  class="btn small"
+                  onclick={() => {
+                    terminalFontDraft = "";
+                    applyTerminalFont();
+                  }}
+                >
+                  Use the Editor Font
+                </button>
+              {/if}
+            </div>
+            <div class="font-picks">
+              {#each TERMINAL_FONT_PICKS as family (family)}
+                <button
+                  class="font-pick"
+                  style="font-family: '{family}', monospace"
+                  onclick={() => addTerminalFont(family)}
+                  title="Use {family}"
+                >
+                  {family}
+                </button>
+              {/each}
+            </div>
+            <pre
+              class="font-preview terminal-preview"
+              class:liga-on={settings.terminalLigatures}
+              style:font-family={terminalPreviewFont}
+              style:font-size="{settings.terminalFontSize}px"
+              style:font-weight={xtermFontWeight(settings.terminalFontWeight)}
+              style:letter-spacing="{settings.terminalLetterSpacing / (window.devicePixelRatio || 1)}px"
+              style:--term-line-height={settings.terminalLineHeight}><div><span class="dim">&#xf07b; ~/git-manager &#xe0b0; &#xe0a0; main</span> &#x276f; git log --oneline</div><div><span style:font-weight={xtermFontWeight(settings.terminalFontWeightBold)}>a1b2c3d</span> fix: a =&gt; b != c === d -&gt; e</div><div>0O 1lI {"{ }"} [ ] | &amp;&amp; ||</div></pre>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Font size</span>
+            </div>
+            <div class="range">
+              <input
+                type="range"
+                min={FONT_SIZE_RANGE.terminal[0]}
+                max={FONT_SIZE_RANGE.terminal[1]}
+                step="0.5"
+                value={settings.terminalFontSize}
+                oninput={(event) => set("terminalFontSize", Number(event.currentTarget.value))}
+                aria-label="Terminal font size"
+              />
+              <span class="value">{settings.terminalFontSize}px</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Line height</span>
+              <span class="hint">A multiple of the font's own line height.</span>
+            </div>
+            <div class="range">
+              <input
+                type="range"
+                min={TERMINAL_LINE_HEIGHT_RANGE[0]}
+                max={TERMINAL_LINE_HEIGHT_RANGE[1]}
+                step="0.1"
+                value={settings.terminalLineHeight}
+                oninput={(event) => set("terminalLineHeight", Math.round(Number(event.currentTarget.value) * 10) / 10)}
+                aria-label="Terminal line height"
+              />
+              <span class="value">{settings.terminalLineHeight.toFixed(1)}</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Letter spacing</span>
+              <span class="hint">Extra pixels between characters.</span>
+            </div>
+            <div class="range">
+              <input
+                type="range"
+                min={TERMINAL_LETTER_SPACING_RANGE[0]}
+                max={TERMINAL_LETTER_SPACING_RANGE[1]}
+                step="1"
+                value={settings.terminalLetterSpacing}
+                oninput={(event) => set("terminalLetterSpacing", Number(event.currentTarget.value))}
+                aria-label="Terminal letter spacing"
+              />
+              <span class="value">{settings.terminalLetterSpacing}px</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Font weight</span>
+              <span class="hint">Medium needs a font that has it, such as SF Mono or JetBrains Mono.</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Terminal font weight">
+              {#each fontWeights as weight (weight.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.terminalFontWeight === weight.value}
+                  class:on={settings.terminalFontWeight === weight.value}
+                  onclick={() => set("terminalFontWeight", weight.value)}
+                >
+                  {weight.label}
+                </button>
+              {/each}
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Bold text weight</span>
+              <span class="hint">For text that programs print in bold.</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Terminal bold text weight">
+              {#each fontWeights as weight (weight.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.terminalFontWeightBold === weight.value}
+                  class:on={settings.terminalFontWeightBold === weight.value}
+                  onclick={() => set("terminalFontWeightBold", weight.value)}
+                >
+                  {weight.label}
+                </button>
+              {/each}
+            </div>
+          </div>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Font ligatures</span>
+              <span class="hint">
+                Draw <code>=&gt;</code>, <code>!=</code> and similar as single glyphs with fonts such as Fira Code or
+                JetBrains Mono. A ligature splits where colors change or under the cursor, and fonts whose ligatures
+                change the text width can misalign columns.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalLigatures}
+              onchange={(event) => set("terminalLigatures", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Icons from patched fonts</span>
+              <span class="hint">
+                Nerd Font and Powerline symbols used by prompts like Powerlevel10k, Starship and oh-my-posh. Install a
+                Nerd Font such as MesloLGS NF, then pick it above, or install Symbols Nerd Font Mono to keep any font.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalNerdFontIcons}
+              onchange={(event) => set("terminalNerdFontIcons", event.currentTarget.checked)}
+            />
+          </label>
+
+          <h4 class="group-title">Cursor</h4>
+          <div class="row">
+            <div class="label">
+              <span>Cursor style</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Terminal cursor style">
+              {#each cursorStyles as style (style.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.terminalCursorStyle === style.value}
+                  class:on={settings.terminalCursorStyle === style.value}
+                  onclick={() => set("terminalCursorStyle", style.value)}
+                >
+                  {style.label}
+                </button>
+              {/each}
+            </div>
+          </div>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Cursor blink</span>
+              <span class="hint">Blinks while the terminal has focus.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalCursorBlink}
+              onchange={(event) => set("terminalCursorBlink", event.currentTarget.checked)}
+            />
+          </label>
+
+          <h4 class="group-title">Behavior</h4>
+          <div class="row">
+            <div class="label">
+              <span>Scrollback</span>
+              <span class="hint">
+                Lines kept for scrolling back, {TERMINAL_SCROLLBACK_RANGE[0].toLocaleString()} to
+                {TERMINAL_SCROLLBACK_RANGE[1].toLocaleString()}. More lines use more memory.
+              </span>
+            </div>
+            <input
+              class="input number-input"
+              type="number"
+              inputmode="numeric"
+              min={TERMINAL_SCROLLBACK_RANGE[0]}
+              max={TERMINAL_SCROLLBACK_RANGE[1]}
+              step="1000"
+              bind:value={scrollbackDraft}
+              onchange={applyScrollback}
+              onkeydown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  applyScrollback();
+                }
+              }}
+              aria-label="Terminal scrollback lines"
+            />
+          </div>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Copy on selection</span>
+              <span class="hint">Selecting text copies it to the clipboard.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalCopyOnSelect}
+              onchange={(event) => set("terminalCopyOnSelect", event.currentTarget.checked)}
+            />
+          </label>
+          <div class="row">
+            <div class="label">
+              <span>Keyboard</span>
+              <span class="hint">
+                Ctrl+` shows or hides the terminal, Ctrl+Shift+` opens a new one. In a terminal, Cmd+C copies the
+                selection, Cmd+V pastes and Cmd+K clears; other Cmd shortcuts still work.
+              </span>
+            </div>
+          </div>
+        {:else if section === "github"}
+          <div class="row stacked">
+            <div class="label">
+              <span>GitHub account</span>
+              <span class="hint">
+                Used by Git &gt; GitHub: Share Project on GitHub, Sync Fork and Create Gist. Pushing and pulling keep
+                using git's own credentials.
+              </span>
+            </div>
+            <GitHubSignInForm />
+          </div>
+        {:else if section === "automation"}
+          <h4 class="group-title">MCP server</h4>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>MCP server</span>
+              <span class="hint">
+                MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor use Git Manager: read what it shows,
+                run its features and measure its performance. Off by default. When on, it only listens on this Mac and every
+                request needs the secret token below.
+              </span>
+            </div>
+            <input type="checkbox" class="switch" checked={settings.mcpEnabled} onchange={(event) => set("mcpEnabled", event.currentTarget.checked)} />
+          </label>
+          <div class="row">
+            <div class="label">
+              <span>Status</span>
+              <span class="hint selectable" class:status-error={mcpStatusFailed}>{mcpStatusLine}</span>
+            </div>
+            <button class="btn small" onclick={showMcpTools}>Available MCP Tools...</button>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Port</span>
+              <span class="hint" class:status-error={portError !== null}>
+                {portError ?? "On 127.0.0.1, shared with the command line tool. A change restarts the server."}
+              </span>
+            </div>
+            <input
+              class="input number-input"
+              inputmode="numeric"
+              bind:value={portDraft}
+              onchange={applyPort}
+              onkeydown={(event) => {
+                if (event.key === "Enter") {
+                  applyPort();
+                }
+              }}
+              aria-label="MCP server port"
+            />
+          </div>
+          {#if mcpToken}
+            <div class="row stacked">
+              <div class="label">
+                <span>Secret token</span>
+                <span class="hint">Connected tools send it with every request. Keep it private.</span>
+              </div>
+              <div class="path-row">
+                <code class="path selectable">{showToken ? mcpToken : maskToken(mcpToken)}</code>
+                <button class="btn small" onclick={() => (showToken = !showToken)}>{showToken ? "Hide" : "Show"}</button>
+                <button class="btn small" onclick={() => void copy(mcpToken)}>Copy</button>
+                <button class="btn small danger" onclick={() => void mcpStore.regenerateToken()} disabled={mcpStore.working}>New Token</button>
+              </div>
+            </div>
+            <div class="row stacked">
+              <div class="label">
+                <span>Connect Claude Code</span>
+                <span class="hint">Run this once in a terminal.</span>
+              </div>
+              <div class="snippet">
+                <pre class="command selectable">{claudeAddCommand(mcpUrl, showToken ? mcpToken : maskToken(mcpToken))}</pre>
+                <button class="btn small" onclick={() => void copy(claudeAddCommand(mcpUrl, mcpToken))}>Copy</button>
+              </div>
+            </div>
+            <div class="row stacked">
+              <div class="label">
+                <span>Other MCP clients</span>
+                <span class="hint">Most clients (Cursor, VS Code, Windsurf...) read a config like this one.</span>
+              </div>
+              <div class="snippet">
+                <pre class="command selectable">{mcpJsonConfig(mcpUrl, showToken ? mcpToken : maskToken(mcpToken))}</pre>
+                <button class="btn small" onclick={() => void copy(mcpJsonConfig(mcpUrl, mcpToken))}>Copy</button>
+              </div>
+            </div>
+          {:else if serverWanted}
+            <div class="row">
+              <div class="label">
+                <span>Secret token</span>
+                <span class="hint">Made when the server first starts.</span>
+              </div>
+            </div>
+          {/if}
+
+          <h4 class="group-title">Command line tool</h4>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Command line tool</span>
+              <span class="hint">
+                Lets scripts and AI agents in a terminal use the same tools, for example <code>git-manager cli tools</code> or
+                <code>git-manager cli call git_status repoPath=...</code>. Git Manager must be running.
+              </span>
+            </div>
+            <input type="checkbox" class="switch" checked={settings.cliEnabled} onchange={(event) => set("cliEnabled", event.currentTarget.checked)} />
+          </label>
+          {#if mcpStatus}
+            <div class="row">
+              <div class="label">
+                <span>Install</span>
+                <span class="hint selectable">
+                  {mcpStatus.cliInstalledPath
+                    ? `Installed at ${mcpStatus.cliInstalledPath}.`
+                    : "Adds git-manager to ~/.local/bin, so you can type it in any folder."}
+                </span>
+              </div>
+              {#if mcpStatus.cliInstalledPath}
+                <button class="btn small" onclick={() => void mcpStore.uninstallCli()} disabled={mcpStore.working}>Remove</button>
+              {:else}
+                <button class="btn small" onclick={() => void mcpStore.installCli()} disabled={mcpStore.working}>Install in ~/.local/bin</button>
+              {/if}
+            </div>
+            {#if !mcpStatus.cliOnPath}
+              <div class="row stacked">
+                <div class="label">
+                  <span>~/.local/bin is not on your PATH</span>
+                  <span class="hint">Add this line to <code>~/.zshrc</code>, then open a new terminal, to type <code>git-manager</code> anywhere.</span>
+                </div>
+                <div class="snippet">
+                  <pre class="command selectable">{LOCAL_BIN_PATH_LINE}</pre>
+                  <button class="btn small" onclick={() => void copy(LOCAL_BIN_PATH_LINE)}>Copy</button>
+                </div>
+              </div>
+            {/if}
+            <div class="row stacked">
+              <div class="label">
+                <span>Examples</span>
+                <span class="hint">The tool switches in Help &gt; Available MCP Tools apply here too.</span>
+              </div>
+              {#each cliExamples(cliCommandPrefix) as example (example.command)}
+                <div class="snippet">
+                  <div class="example">
+                    <pre class="command selectable">{example.command}</pre>
+                    <span class="hint">{example.hint}</span>
+                  </div>
+                  <button class="btn small" onclick={() => void copy(example.command)}>Copy</button>
+                </div>
+              {/each}
+            </div>
+          {/if}
+
+          <h4 class="group-title">Memory log</h4>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Log memory changes</span>
+              <span class="hint">
+                For finding what uses memory: writes a line whenever the app's memory changes, next to what was on
+                screen and when scrolling started and stopped. AI tools can read it with <code>read_memory_log</code>.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.memoryLogEnabled}
+              onchange={(event) => set("memoryLogEnabled", event.currentTarget.checked)}
+            />
+          </label>
+          <div class="row">
+            <div class="label">
+              <span>Read memory every</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Memory log interval">
+              {#each [250, 500, 1000, 2000] as intervalMs (intervalMs)}
+                <button
+                  role="radio"
+                  aria-checked={settings.memoryLogIntervalMs === intervalMs}
+                  class:on={settings.memoryLogIntervalMs === intervalMs}
+                  onclick={() => set("memoryLogIntervalMs", intervalMs)}
+                >
+                  {intervalMs < 1000 ? `${intervalMs} ms` : `${intervalMs / 1000} s`}
+                </button>
+              {/each}
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Write a line when it changes by</span>
+              <span class="hint">0 MB writes every reading.</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Memory log threshold">
+              {#each [0, 1, 5, 20] as thresholdMb (thresholdMb)}
+                <button
+                  role="radio"
+                  aria-checked={settings.memoryLogThresholdMb === thresholdMb}
+                  class:on={settings.memoryLogThresholdMb === thresholdMb}
+                  onclick={() => set("memoryLogThresholdMb", thresholdMb)}
+                >
+                  {thresholdMb} MB
+                </button>
+              {/each}
+            </div>
+          </div>
+          {#if memoryLog.status}
+            <div class="row">
+              <div class="label">
+                <span>Log file</span>
+                <code class="path selectable">{memoryLog.status.path}</code>
+              </div>
+              <button class="btn small" onclick={() => void revealMemoryLog()}>Reveal in Finder</button>
+            </div>
+          {/if}
         {:else if section === "updates"}
           <div class="row">
             <div class="label">
@@ -615,7 +1518,7 @@
             </div>
             <ul class="changed">
               {#each settings.changedPreferences() as key (key)}
-                <li><code>{key}</code>: {String(settings.preferences()[key])}</li>
+                <li><code>{key}</code>: {preferenceText(settings.preferences()[key])}</li>
               {:else}
                 <li class="dim">Nothing yet</li>
               {/each}
@@ -759,6 +1662,11 @@
     min-width: 0;
   }
 
+  .show-console {
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
   .label > span:first-child {
     font-weight: 500;
   }
@@ -851,9 +1759,32 @@
     outline-offset: 2px;
   }
 
+  .select {
+    flex: none;
+    max-width: 280px;
+  }
+
   .font-row {
     display: flex;
     gap: 8px;
+  }
+
+  .theme-pickers {
+    display: flex;
+    gap: 14px;
+  }
+
+  .inline-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-size: inherit;
+    cursor: pointer;
+  }
+
+  .inline-link:hover {
+    text-decoration: underline;
   }
 
   .font-input {
@@ -891,6 +1822,52 @@
     line-height: 1.55;
     white-space: pre;
     overflow-x: auto;
+  }
+
+  .terminal-preview {
+    line-height: normal;
+  }
+
+  /* Each line is as tall as xterm's row: the font's normal line height times the setting. */
+  .terminal-preview > div {
+    line-height: calc(var(--term-line-height, 1) * 1lh);
+  }
+
+  .terminal-preview,
+  .terminal-preview > div {
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+  }
+
+  .terminal-preview.liga-on,
+  .terminal-preview.liga-on > div {
+    font-variant-ligatures: common-ligatures contextual;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+
+  .terminal-preview .dim {
+    color: var(--text-dim);
+  }
+
+  .group-title {
+    margin: 18px 0 0;
+    padding-bottom: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+  }
+
+  .group-title:first-child {
+    margin-top: 6px;
+  }
+
+  .number-input {
+    flex: none;
+    width: 110px;
+    font-family: var(--font-mono);
+    font-size: 12px;
   }
 
   .about {
@@ -1002,6 +1979,41 @@
   .error-banner > div {
     flex: 1;
     min-width: 0;
+  }
+
+  .status-error {
+    color: var(--danger);
+  }
+
+  .snippet {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .snippet > .btn {
+    flex: none;
+  }
+
+  .example {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .command {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 5px;
+    background: var(--panel-alt);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   .error-banner > .banner-actions {

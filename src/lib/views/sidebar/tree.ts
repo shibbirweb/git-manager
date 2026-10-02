@@ -1,9 +1,9 @@
 // Flattened row model for the sidebar tree. Only rows inside expanded
 // sections and folders are produced, so collapsed content never hits the DOM.
 
-import type { LocalBranch, Refs, RemoteBranch, StashEntry } from "$lib/types";
+import type { LocalBranch, Refs, RemoteBranch, StashEntry, WorktreeInfo } from "$lib/types";
 
-export type SectionId = "local" | "remote" | "tags" | "stashes";
+export type SectionId = "local" | "remote" | "tags" | "stashes" | "worktrees";
 
 interface RowBase {
   key: string;
@@ -18,6 +18,7 @@ export type SidebarRow =
   | (RowBase & { kind: "remote"; label: string; branch: RemoteBranch })
   | (RowBase & { kind: "tag"; label: string; tagName: string })
   | (RowBase & { kind: "stash"; stash: StashEntry })
+  | (RowBase & { kind: "worktree"; worktree: WorktreeInfo })
   | (RowBase & { kind: "empty"; label: string });
 
 export type CollapsibleRow = Extract<SidebarRow, { kind: "section" | "group" }>;
@@ -33,6 +34,8 @@ export function sectionKey(section: SectionId): string {
 export interface BuildRowsInput {
   refs: Refs | null;
   stashes: StashEntry[];
+  /** Worktrees of the repository; the section is left out while unknown (undefined). */
+  worktrees?: WorktreeInfo[];
   filter: string;
   isExpanded: (key: string) => boolean;
 }
@@ -111,6 +114,9 @@ export function buildRows(input: BuildRowsInput): SidebarRow[] {
   const remote = (input.refs?.remote ?? []).filter((branch) => matches(branch.name));
   const tags = (input.refs?.tags ?? []).filter((tagName) => matches(tagName));
   const stashes = (input.stashes ?? []).filter((stash) => matches(stash.message));
+  const worktrees = (input.worktrees ?? []).filter(
+    (worktree) => matches(worktree.path) || matches(worktree.branch ?? ""),
+  );
 
   const rows: SidebarRow[] = [];
 
@@ -221,6 +227,18 @@ export function buildRows(input: BuildRowsInput): SidebarRow[] {
       }
       for (const stash of stashes) {
         rows.push({ kind: "stash", key: `stash:${stash.index}`, depth: 1, parentKey, stash });
+      }
+    }
+  }
+
+  if (input.worktrees !== undefined && (!filtering || worktrees.length > 0)) {
+    const parentKey = sectionKey("worktrees");
+    if (pushSection("worktrees", "Worktrees", worktrees.length)) {
+      if (worktrees.length === 0) {
+        pushEmpty(parentKey, "No worktrees");
+      }
+      for (const worktree of worktrees) {
+        rows.push({ kind: "worktree", key: `worktree:${worktree.path}`, depth: 1, parentKey, worktree });
       }
     }
   }

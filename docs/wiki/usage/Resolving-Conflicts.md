@@ -4,13 +4,14 @@ A conflict happens when two branches changed the same lines, and git cannot tell
 
 ## When it happens
 
-Any of these can stop on conflicts: merging a branch, rebasing, cherry-picking or reverting a commit, pulling, and applying or popping a stash.
+Any of these can stop on conflicts: merging a branch, rebasing (also an [interactive rebase](Interactive-Rebase.md)), cherry-picking or reverting a commit, pulling (also through Sync Changes or Update Project), applying or popping a stash, and applying a patch or a shelf.
 
 When that happens, Git Manager shows a note ("Merge stopped with conflicts. Resolve them to continue.") and opens the **Conflicts** dialog for you. You can also find conflicts from:
 
 - The red badge on the Changes icon.
 - The **Conflicts** group in [Changes](Changes-and-Commits.md).
 - The red **conflicts** item in the status bar.
+- **Git > Resolve Conflicts...** in the menu bar.
 
 Commits are blocked while any file is still in conflict.
 
@@ -45,6 +46,8 @@ While an operation is in progress, a banner under the header says what is going 
 - **Skip Commit** (rebase only) drops the commit being replayed and moves on.
 - **Abort** cancels the whole operation and puts your branch back as it was before it started. You are asked to confirm.
 
+While an operation runs, the [Git menu](Git-Menu.md) shows the same actions, named after it: **Resolve Conflicts...**, **Continue Merge** (or Rebase, Cherry-Pick, Revert), **Abort Merge** and, for a rebase, **Skip Commit**. They do exactly what the banner buttons do.
+
 The banner belongs to the active repository. In a workspace with several repositories, clicking the conflicts item in the status bar or in Changes switches to the right one.
 
 ## The Conflicts dialog
@@ -69,7 +72,7 @@ When the list is empty the dialog says **All conflicts are resolved.** and offer
 
 ## Fix conflicts in the editor
 
-If you open a conflicted file in the editor, the conflict blocks between the `<<<<<<<`, `=======` and `>>>>>>>` markers are colored: your side green with **(Current Change)**, the other side blue with **(Incoming Change)**. A common ancestor part (from git's `diff3` style) is grey. A row of links sits above each block.
+If you open a conflicted file in the editor, the conflict blocks between the `<<<<<<<`, `=======` and `>>>>>>>` markers are colored: your side green with **(Current Change)**, the other side blue with **(Incoming Change)**. A common ancestor part is grey: the lines as they were before both sides changed them. Git writes it when its `diff3` conflict style is on. A row of links sits above each block.
 
 ![Inline conflict actions](../images/inline-conflict-actions.png)
 

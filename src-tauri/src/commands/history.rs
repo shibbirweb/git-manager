@@ -1,10 +1,11 @@
 use std::path::Path;
 
-use super::{blocking, run_op, OpOutcome};
+use super::{blocking, reject_option, run_op, safe_join, OpOutcome};
 use crate::error::{AppError, AppResult};
 use crate::git::blame::{self, BlameInfo};
 use crate::git::cli;
-use crate::git::diff::{self, FileDiff};
+use crate::git::diff::{self, FileDiff, RevisionDiff};
+use crate::git::history::{self as file_log, FileHistoryEntry, LineHistoryEntry};
 use crate::git::log::{self, CommitDetails, CommitSummary};
 use crate::git::repo as git_repo;
 
@@ -56,19 +57,79 @@ pub async fn revert_commit(repo_path: String, commit_id: String) -> AppResult<Op
     blocking(move || run_op(&repo_path, &["revert", "--no-edit", &commit_id])).await
 }
 
+fn run_reset(repo_path: &str, revision: &str, mode: &str) -> AppResult<()> {
+    let flag = match mode {
+        "soft" => "--soft",
+        "mixed" => "--mixed",
+        "hard" => "--hard",
+        "keep" => "--keep",
+        _ => return Err(AppError::invalid(format!("Unknown reset mode: {mode}"))),
+    };
+    let revision = revision.trim();
+    reject_option(revision, "A revision")?;
+    if revision.is_empty() {
+        return Err(AppError::invalid("Enter a revision to reset to"));
+    }
+    // The trailing "--" keeps a revision that looks like a file from being read as one.
+    cli::run(Path::new(repo_path), &["reset", flag, revision, "--"])?;
+    Ok(())
+}
+
+/// `git reset` of the current branch to any revision: soft, mixed, hard or keep.
 #[tauri::command]
 pub async fn reset_to(repo_path: String, commit_id: String, mode: String) -> AppResult<()> {
+    blocking(move || run_reset(&repo_path, &commit_id, &mode)).await
+}
+
+fn run_resolve(repo_path: &str, revision: &str) -> AppResult<String> {
+    let repo = git_repo::open(repo_path)?;
+    let commit_id = git_repo::resolve_commit(&repo, revision)?.id().to_string();
+    Ok(commit_id)
+}
+
+#[tauri::command]
+pub async fn resolve_revision(repo_path: String, revision: String) -> AppResult<String> {
+    blocking(move || run_resolve(&repo_path, &revision)).await
+}
+
+#[tauri::command]
+pub async fn file_history(
+    repo_path: String,
+    file_path: String,
+    offset: usize,
+    limit: usize,
+) -> AppResult<Vec<FileHistoryEntry>> {
     blocking(move || {
-        let flag = match mode.as_str() {
-            "soft" => "--soft",
-            "mixed" => "--mixed",
-            "hard" => "--hard",
-            _ => return Err(AppError::invalid(format!("Unknown reset mode: {mode}"))),
-        };
-        cli::run(Path::new(&repo_path), &["reset", flag, &commit_id])?;
-        Ok(())
+        safe_join(&repo_path, &file_path)?;
+        file_log::file_history(Path::new(&repo_path), &file_path, offset, limit)
     })
     .await
+}
+
+#[tauri::command]
+pub async fn line_history(
+    repo_path: String,
+    file_path: String,
+    start_line: usize,
+    end_line: usize,
+    limit: usize,
+) -> AppResult<Vec<LineHistoryEntry>> {
+    blocking(move || {
+        safe_join(&repo_path, &file_path)?;
+        file_log::line_history(Path::new(&repo_path), &file_path, start_line, end_line, limit)
+    })
+    .await
+}
+
+fn run_compare(repo_path: &str, file_path: &str, revision: &str) -> AppResult<RevisionDiff> {
+    safe_join(repo_path, file_path)?;
+    diff::against_revision(&git_repo::open(repo_path)?, file_path, revision)
+}
+
+/// The file at `revision` against its work tree copy (Compare with Revision / Branch).
+#[tauri::command]
+pub async fn compare_with_revision(repo_path: String, file_path: String, revision: String) -> AppResult<RevisionDiff> {
+    blocking(move || run_compare(&repo_path, &file_path, &revision)).await
 }
 
 #[tauri::command]
@@ -78,4 +139,135 @@ pub async fn checkout_commit(repo_path: String, commit_id: String) -> AppResult<
         Ok(())
     })
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::{image_bytes, TestRepo};
+
+    #[test]
+    fn reset_keep_moves_the_branch_and_keeps_local_changes() {
+        let repo = TestRepo::new();
+        repo.write("a.txt", "one\n");
+        let first = repo.commit_all("one");
+        repo.write("b.txt", "two\n");
+        repo.commit_all("two");
+        repo.write("a.txt", "local edit\n");
+        run_reset(&repo.path_string(), &first, "keep").unwrap();
+        assert_eq!(repo.head(), first);
+        assert_eq!(repo.read_text("a.txt"), "local edit\n");
+        assert!(!repo.exists("b.txt"));
+
+        assert!(matches!(run_reset(&repo.path_string(), "--hard", "soft"), Err(AppError::Invalid(_))));
+        assert!(matches!(run_reset(&repo.path_string(), "HEAD", "merge"), Err(AppError::Invalid(_))));
+        run_reset(&repo.path_string(), "HEAD", "hard").unwrap();
+        assert_eq!(repo.read_text("a.txt"), "one\n");
+    }
+
+    #[test]
+    fn resolve_revision_finds_branches_tags_and_hashes() {
+        let repo = TestRepo::new();
+        repo.write("a.txt", "one\n");
+        let head = repo.commit_all("one");
+        repo.git(&["tag", "v1"]);
+        let repo_path = repo.path_string();
+        assert_eq!(run_resolve(&repo_path, "HEAD").unwrap(), head);
+        assert_eq!(run_resolve(&repo_path, "main").unwrap(), head);
+        assert_eq!(run_resolve(&repo_path, "v1").unwrap(), head);
+        assert_eq!(run_resolve(&repo_path, &head[..8]).unwrap(), head);
+        let unknown = run_resolve(&repo_path, "nope").unwrap_err();
+        assert_eq!(unknown.to_string(), "Unknown revision: nope");
+    }
+
+    #[test]
+    fn file_history_follows_renames_page_by_page() {
+        let repo = TestRepo::new();
+        repo.write("old name.txt", "one\n");
+        repo.commit_all("add");
+        repo.write("other.txt", "other\n");
+        repo.commit_all("unrelated");
+        std::fs::create_dir_all(repo.file("dir")).unwrap();
+        repo.git(&["mv", "old name.txt", "dir/new.txt"]);
+        repo.commit_all("rename");
+        repo.write("dir/new.txt", "one\ntwo\n");
+        repo.commit_all("edit");
+
+        let all = file_log::file_history(&repo.path, "dir/new.txt", 0, 50).unwrap();
+        let summary: Vec<(&str, &str, &str)> = all
+            .iter()
+            .map(|entry| (entry.commit.summary.as_str(), entry.status.as_str(), entry.path.as_str()))
+            .collect();
+        assert_eq!(
+            summary,
+            [
+                ("edit", "modified", "dir/new.txt"),
+                ("rename", "renamed", "dir/new.txt"),
+                ("add", "added", "old name.txt"),
+            ]
+        );
+        assert_eq!(all[1].orig_path.as_deref(), Some("old name.txt"));
+        assert_eq!(all[0].commit.id, repo.head());
+        assert_eq!(all[0].commit.parents.len(), 1);
+        assert_eq!(all[0].commit.author_name, "Test User");
+
+        let second_page = file_log::file_history(&repo.path, "dir/new.txt", 1, 1).unwrap();
+        assert_eq!(second_page.len(), 1);
+        assert_eq!(second_page[0].commit.summary, "rename");
+        assert!(file_log::file_history(&repo.path, "dir/new.txt", 3, 10).unwrap().is_empty());
+    }
+
+    #[test]
+    fn line_history_traces_a_range() {
+        let repo = TestRepo::new();
+        repo.write("f.txt", "a\nb\nc\n");
+        repo.commit_all("add");
+        repo.write("f.txt", "a\nB\nc\n");
+        repo.commit_all("change b");
+        repo.write("f.txt", "a\nB\nc\nd\n");
+        repo.commit_all("append d");
+
+        let entries = file_log::line_history(&repo.path, "f.txt", 2, 2, 50).unwrap();
+        let subjects: Vec<&str> = entries.iter().map(|entry| entry.commit.summary.as_str()).collect();
+        assert_eq!(subjects, ["change b", "add"]);
+        assert!(entries[0].patch.contains("-b\n+B"));
+        assert!(!entries[0].truncated);
+
+        assert!(matches!(
+            file_log::line_history(&repo.path, "f.txt", 3, 2, 50),
+            Err(AppError::Invalid(_))
+        ));
+        let missing = file_log::line_history(&repo.path, "nope.txt", 1, 1, 50).unwrap_err();
+        assert!(missing.to_string().contains("nope.txt"));
+    }
+
+    #[test]
+    fn compare_with_revision_reads_the_old_version() {
+        let repo = TestRepo::new();
+        repo.write("f.txt", "old\n");
+        let first = repo.commit_all("one");
+        repo.write("f.txt", "new\n");
+        repo.commit_all("two");
+        repo.write("f.txt", "work\n");
+        repo.write("later.txt", "later\n");
+        repo.write("image.bin", image_bytes(&[1, 2]));
+        repo.commit_all("three");
+        let repo_path = repo.path_string();
+
+        let compared = run_compare(&repo_path, "f.txt", &first).unwrap();
+        assert!(compared.exists_in_revision);
+        assert_eq!(compared.commit_id, first);
+        assert_eq!(compared.diff.original, "old\n");
+        assert_eq!(compared.diff.modified, "work\n");
+
+        let missing = run_compare(&repo_path, "later.txt", "HEAD~2").unwrap();
+        assert!(!missing.exists_in_revision);
+        assert_eq!(missing.diff.original, "");
+        assert_eq!(missing.diff.modified, "later\n");
+
+        let binary = run_compare(&repo_path, "image.bin", "main").unwrap();
+        assert!(binary.diff.binary);
+        assert!(run_compare(&repo_path, "../f.txt", "HEAD").is_err());
+        assert!(run_compare(&repo_path, "f.txt", "-x").is_err());
+    }
 }

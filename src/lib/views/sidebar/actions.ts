@@ -2,16 +2,37 @@
 
 import { api, errorMessage } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
-import type { LocalBranch, RemoteBranch, StashEntry } from "$lib/types";
+import type { LocalBranch, Refs, RemoteBranch, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import type { MenuItem } from "$lib/ui/menu.svelte";
 
-function currentBranchName(): string | null {
-  return repoStore.status?.head.branch ?? repoStore.refs?.local.find((branch) => branch.isHead)?.name ?? null;
+/**
+ * The repository a branch or stash action runs in, with its branches for
+ * validation. The sidebar acts on the active repository; the Changes view
+ * passes the repository of the row the action came from.
+ */
+export interface RepoTarget {
+  /** Undefined means the active repository. */
+  repoRoot: string | undefined;
+  refs: Refs | null;
 }
 
-function headLabel(): string {
-  return currentBranchName() ?? "HEAD";
+export function activeTarget(): RepoTarget {
+  return { repoRoot: repoStore.repo?.root, refs: repoStore.refs };
+}
+
+export function repoTarget(repoRoot: string, refs: Refs | null): RepoTarget {
+  return repoRoot === repoStore.repo?.root ? { repoRoot, refs: refs ?? repoStore.refs } : { repoRoot, refs };
+}
+
+function currentBranchName(target: RepoTarget = activeTarget()): string | null {
+  const repoRoot = target.repoRoot ?? repoStore.repo?.root;
+  const status = repoRoot ? repoStore.statuses[repoRoot] : null;
+  return status?.head.branch ?? target.refs?.local.find((branch) => branch.isHead)?.name ?? null;
+}
+
+function headLabel(target: RepoTarget = activeTarget()): string {
+  return currentBranchName(target) ?? "HEAD";
 }
 
 function isBusy(): boolean {
@@ -22,11 +43,15 @@ function operationInProgress(): boolean {
   return (repoStore.status?.op.kind ?? "none") !== "none";
 }
 
-function localBranchExists(branchName: string): boolean {
-  return (repoStore.refs?.local ?? []).some((branch) => branch.name === branchName);
+function localBranchExists(branchName: string, target: RepoTarget = activeTarget()): boolean {
+  return (target.refs?.local ?? []).some((branch) => branch.name === branchName);
 }
 
-export function validateBranchName(branchName: string, allowExisting: string | null = null): string | null {
+export function validateBranchName(
+  branchName: string,
+  allowExisting: string | null = null,
+  target: RepoTarget = activeTarget(),
+): string | null {
   const invalid =
     /\s|\.\.|[~^:?*[\\]|@\{|\/\//.test(branchName) ||
     branchName.startsWith("-") ||
@@ -37,29 +62,31 @@ export function validateBranchName(branchName: string, allowExisting: string | n
   if (invalid) {
     return "Not a valid branch name";
   }
-  if (branchName !== allowExisting && localBranchExists(branchName)) {
+  if (branchName !== allowExisting && localBranchExists(branchName, target)) {
     return "A branch with this name already exists";
   }
   return null;
 }
 
-export function checkoutLocalBranch(branchName: string): void {
+export function checkoutLocalBranch(branchName: string, target: RepoTarget = activeTarget()): void {
   void repoStore.run("Checkout", (repoPath) => api.checkoutBranch(repoPath, branchName), {
     success: `Switched to ${branchName}`,
+    repoPath: target.repoRoot,
   });
 }
 
-export function checkoutRemoteBranch(remoteBranch: RemoteBranch): void {
+export function checkoutRemoteBranch(remoteBranch: RemoteBranch, target: RepoTarget = activeTarget()): void {
   const localName = remoteBranch.branch;
-  const message = localBranchExists(localName)
+  const message = localBranchExists(localName, target)
     ? `Switched to ${localName}`
     : `Created ${localName} tracking ${remoteBranch.name}`;
   void repoStore.run("Checkout", (repoPath) => api.checkoutRemoteBranch(repoPath, remoteBranch.name, localName), {
     success: message,
+    repoPath: target.repoRoot,
   });
 }
 
-export async function checkoutTag(tagName: string): Promise<void> {
+export async function checkoutTag(tagName: string, target: RepoTarget = activeTarget()): Promise<void> {
   const confirmed = await dialogs.confirm({
     title: "Checkout Tag",
     message: `Check out tag '${tagName}'? HEAD will be detached; create a branch to keep new commits.`,
@@ -70,10 +97,15 @@ export async function checkoutTag(tagName: string): Promise<void> {
   }
   await repoStore.run("Checkout", (repoPath) => api.checkoutCommit(repoPath, `refs/tags/${tagName}`), {
     success: `HEAD detached at ${tagName}`,
+    repoPath: target.repoRoot,
   });
 }
 
-export async function newBranchFrom(startPoint: string | null, initialName = ""): Promise<void> {
+export async function newBranchFrom(
+  startPoint: string | null,
+  initialName = "",
+  target: RepoTarget = activeTarget(),
+): Promise<void> {
   const result = await dialogs.prompt({
     title: startPoint ? `New Branch from '${startPoint}'` : "Create New Branch",
     label: "Branch name",
@@ -81,44 +113,56 @@ export async function newBranchFrom(startPoint: string | null, initialName = "")
     initial: initialName,
     confirmLabel: "Create",
     checkbox: { label: "Checkout branch", checked: true },
-    validate: (value) => validateBranchName(value.trim()),
+    validate: (value) => validateBranchName(value.trim(), null, target),
   });
   if (!result) {
     return;
   }
   await repoStore.run("Create branch", (repoPath) => api.createBranch(repoPath, result.value, startPoint, result.checked), {
     success: result.checked ? `Created and switched to ${result.value}` : `Created ${result.value}`,
+    repoPath: target.repoRoot,
   });
 }
 
-export function mergeIntoCurrent(refName: string): void {
-  const target = headLabel();
-  void repoStore.runOp("Merge", (repoPath) => api.mergeBranch(repoPath, refName), `Merged ${refName} into ${target}`);
+export function mergeIntoCurrent(refName: string, target: RepoTarget = activeTarget()): void {
+  const head = headLabel(target);
+  void repoStore.runOp(
+    "Merge",
+    (repoPath) => api.mergeBranch(repoPath, refName),
+    `Merged ${refName} into ${head}`,
+    target.repoRoot,
+  );
 }
 
-export function rebaseCurrentOnto(refName: string): void {
-  const target = headLabel();
-  void repoStore.runOp("Rebase", (repoPath) => api.rebaseOnto(repoPath, refName), `Rebased ${target} onto ${refName}`);
+export function rebaseCurrentOnto(refName: string, target: RepoTarget = activeTarget()): void {
+  const head = headLabel(target);
+  void repoStore.runOp(
+    "Rebase",
+    (repoPath) => api.rebaseOnto(repoPath, refName),
+    `Rebased ${head} onto ${refName}`,
+    target.repoRoot,
+  );
 }
 
-export async function renameLocalBranch(branchName: string): Promise<void> {
+export async function renameLocalBranch(branchName: string, target: RepoTarget = activeTarget()): Promise<void> {
   const result = await dialogs.prompt({
     title: `Rename Branch '${branchName}'`,
     label: "New name",
     initial: branchName,
     confirmLabel: "Rename",
-    validate: (value) => validateBranchName(value.trim(), branchName),
+    validate: (value) => validateBranchName(value.trim(), branchName, target),
   });
   if (!result || result.value === branchName) {
     return;
   }
   await repoStore.run("Rename branch", (repoPath) => api.renameBranch(repoPath, branchName, result.value), {
     success: `Renamed ${branchName} to ${result.value}`,
+    repoPath: target.repoRoot,
   });
 }
 
-export async function deleteLocalBranch(branchName: string): Promise<void> {
-  if (branchName === currentBranchName()) {
+export async function deleteLocalBranch(branchName: string, target: RepoTarget = activeTarget()): Promise<void> {
+  if (branchName === currentBranchName(target)) {
     return;
   }
   const confirmed = await dialogs.confirm({
@@ -145,7 +189,7 @@ export async function deleteLocalBranch(branchName: string): Promise<void> {
         throw error;
       }
     },
-    { success: (deleted) => (deleted ? `Deleted ${branchName}` : null) },
+    { success: (deleted) => (deleted ? `Deleted ${branchName}` : null), repoPath: target.repoRoot },
   );
   if (!notFullyMerged) {
     return;
@@ -161,16 +205,18 @@ export async function deleteLocalBranch(branchName: string): Promise<void> {
   }
   await repoStore.run("Delete branch", (repoPath) => api.deleteBranch(repoPath, branchName, true), {
     success: `Deleted ${branchName}`,
+    repoPath: target.repoRoot,
   });
 }
 
-export function applyStash(stashIndex: number, pop: boolean): void {
+/** `repoRoot` undefined: the active repository. */
+export function applyStash(stashIndex: number, pop: boolean, repoRoot?: string): Promise<unknown> {
   const label = pop ? "Pop stash" : "Apply stash";
   const message = pop ? `Popped stash@{${stashIndex}}` : `Applied stash@{${stashIndex}}`;
-  void repoStore.runOp(label, (repoPath) => api.stashApply(repoPath, stashIndex, pop), message);
+  return repoStore.runOp(label, (repoPath) => api.stashApply(repoPath, stashIndex, pop), message, repoRoot);
 }
 
-export async function dropStash(stash: StashEntry): Promise<void> {
+export async function dropStash(stash: StashEntry, repoRoot?: string): Promise<void> {
   const confirmed = await dialogs.confirm({
     title: "Drop Stash",
     message: `Drop stash@{${stash.index}} (${stash.message})? This cannot be undone.`,
@@ -182,6 +228,7 @@ export async function dropStash(stash: StashEntry): Promise<void> {
   }
   await repoStore.run("Drop stash", (repoPath) => api.stashDrop(repoPath, stash.index), {
     success: `Dropped stash@{${stash.index}}`,
+    repoPath: repoRoot,
   });
 }
 
@@ -258,8 +305,8 @@ export function tagMenu(tagName: string): MenuItem[] {
 export function stashMenu(stash: StashEntry): MenuItem[] {
   const busy = isBusy();
   return [
-    { label: "Apply", disabled: busy, action: () => applyStash(stash.index, false) },
-    { label: "Pop", disabled: busy, action: () => applyStash(stash.index, true) },
+    { label: "Apply", disabled: busy, action: () => void applyStash(stash.index, false) },
+    { label: "Pop", disabled: busy, action: () => void applyStash(stash.index, true) },
     { separator: true },
     { label: "Drop...", danger: true, disabled: busy, action: () => void dropStash(stash) },
   ];

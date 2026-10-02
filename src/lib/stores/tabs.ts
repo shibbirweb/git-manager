@@ -1,7 +1,11 @@
 // Editor tabs with a VS Code / JetBrains style preview tab: a single click
 // opens (or replaces) the one preview tab; double-clicking or editing pins it.
 
-import { parseCommitTabPath } from "./commitTabs";
+import { isTerminalTab } from "$lib/terminal/terminalTabs";
+import { commitTabsInFolder, parseCommitTabPath } from "./commitTabs";
+import { branchTabsInFolder, branchTabTitle, parseBranchTabPath } from "./branchTabs";
+import { gitTabsInFolder, gitTabTitle, parseGitTabPath } from "./gitTabs";
+import { isPseudoTab } from "./pseudoTabs";
 
 export interface FileTab {
   /** Absolute path (see workspacePaths.ts). */
@@ -84,14 +88,35 @@ export function otherPaths(state: TabsState, path: string): string[] {
 }
 
 /**
+ * Next Tab (step 1) / Previous Tab (step -1), wrapping around. With no tab on screen
+ * (`activePath` null) it starts from the first or the last tab.
+ */
+export function adjacentTab(tabs: FileTab[], activePath: string | null, step: 1 | -1): string | null {
+  if (tabs.length === 0) {
+    return null;
+  }
+  const index = activePath === null ? -1 : tabs.findIndex((tab) => tab.path === activePath);
+  if (index < 0) {
+    return tabs[step === 1 ? 0 : tabs.length - 1].path;
+  }
+  return tabs[(index + step + tabs.length) % tabs.length].path;
+}
+
+/** Name of a terminal tab whose terminal is not known (any more); the tab strip shows the terminal's own name. */
+export const TERMINAL_TAB_LABEL = "Terminal";
+
+/**
  * Tab labels: the file name, plus its folder when another tab has the same
- * name. A commit tab (see commitTabs.ts) is labelled with its short hash.
+ * name. A commit tab (see commitTabs.ts) is labelled with its short hash; a
+ * terminal tab gets a placeholder, since only the terminal store knows its name.
  */
 export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: string | null }> {
   const counts = new Map<string, number>();
   const nameOf = (path: string) => path.slice(path.lastIndexOf("/") + 1);
   for (const tab of tabs) {
-    counts.set(nameOf(tab.path), (counts.get(nameOf(tab.path)) ?? 0) + 1);
+    if (!isPseudoTab(tab.path)) {
+      counts.set(nameOf(tab.path), (counts.get(nameOf(tab.path)) ?? 0) + 1);
+    }
   }
   return new Map(
     tabs.map((tab) => {
@@ -99,10 +124,35 @@ export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: st
       if (commit) {
         return [tab.path, { name: commit.commitId.slice(0, 8), hint: null }];
       }
+      const gitTab = parseGitTabPath(tab.path);
+      if (gitTab) {
+        return [tab.path, { name: gitTabTitle(gitTab).name, hint: null }];
+      }
+      const branchTab = parseBranchTabPath(tab.path);
+      if (branchTab) {
+        return [tab.path, { name: branchTabTitle(branchTab).name, hint: null }];
+      }
+      if (isTerminalTab(tab.path)) {
+        return [tab.path, { name: TERMINAL_TAB_LABEL, hint: null }];
+      }
       const name = nameOf(tab.path);
       const folder = tab.path.includes("/") ? tab.path.slice(0, tab.path.lastIndexOf("/")) : "";
       const duplicate = (counts.get(name) ?? 0) > 1;
       return [tab.path, { name, hint: duplicate ? folder.split("/").pop() || folder || null : null }];
     }),
   );
+}
+
+/**
+ * Tabs that close with a workspace folder: its files and the commit and Git
+ * tabs of its repositories. Terminal tabs stay, like terminals in the panel.
+ */
+export function tabsInFolder(tabPaths: string[], folderRoot: string): string[] {
+  const prefix = folderRoot.endsWith("/") ? folderRoot : `${folderRoot}/`;
+  const commits = new Set([
+    ...commitTabsInFolder(tabPaths, folderRoot),
+    ...gitTabsInFolder(tabPaths, folderRoot),
+    ...branchTabsInFolder(tabPaths, folderRoot),
+  ]);
+  return tabPaths.filter((tabPath) => commits.has(tabPath) || (!isPseudoTab(tabPath) && tabPath.startsWith(prefix)));
 }

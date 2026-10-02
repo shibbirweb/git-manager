@@ -43,7 +43,7 @@ To install, open the downloaded `.dmg` and drag Git Manager into Applications, r
 
 *The version, the automatic check and the update channel.*
 
-- **Version** shows the version you run and when it last checked: "Not checked yet", "Checking...", "Checked 5 min ago: up to date" or "Last check failed" with the reason. **Check Now** checks right away. If there is a newer version, the update window opens (for a version you skipped, it says so and offers **Stop Skipping**); otherwise a note says **Git Manager is up to date**. If the newest version is one you skipped, the Version line says **(skipped)** after it.
+- **Version** shows the version you run and when it last checked: "Not checked yet", "Checking...", "Checked 5 min ago: up to date" or "Last check failed" with the reason. **Check Now** (or **Git Manager > Check for Updates...** in the menu bar) checks right away. If there is a newer version, the update window opens (for a version you skipped, it says so and offers **Stop Skipping**); otherwise a note says **Git Manager is up to date**. If the newest version is one you skipped, the Version line says **(skipped)** after it.
 - **Check for updates automatically** (on by default) turns the regular check on or off. **Check Now** still works when it is off.
 - **Update channel** picks which releases you hear about (see below). The default is **Automatic**. Changing it checks again at once, quietly.
 - **Release notes**: **What's New** shows the notes for your version, **All Releases** opens the list on GitHub.
@@ -81,7 +81,7 @@ After you update, **What's New in Git Manager** and the version opens once, the 
 - **All releases on GitHub** opens the full list.
 - **Got It** (or Esc) closes the window.
 
-You can open it again any time from Settings, Updates (**What's New**) or Settings, About (**Release Notes**).
+You can open it again any time with **Help > What's New**, from Settings, Updates (**What's New**) or Settings, About (**Release Notes**). **Help > Release Notes** opens the list of releases on GitHub.
 
 ## If the check fails
 

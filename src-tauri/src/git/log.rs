@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use git2::{DiffFindOptions, Delta, Oid, Repository, Sort};
+use git2::{Commit, DiffFindOptions, Delta, Oid, Repository, Sort};
 use serde::Serialize;
 
 use super::repo::{path_text, short_id};
@@ -123,22 +123,51 @@ pub fn page(repo: &Repository, offset: usize, limit: usize, all_refs: bool) -> A
     for oid in walk.skip(offset).take(limit) {
         let oid = oid?;
         let commit = repo.find_commit(oid)?;
-        let author = commit.author();
-        commits.push(CommitSummary {
-            id: oid.to_string(),
-            short_id: short_id(oid),
-            summary: commit.summary().ok().flatten().unwrap_or_default().to_string(),
-            author_name: author.name().unwrap_or_default().to_string(),
-            author_email: author.email().unwrap_or_default().to_string(),
-            time: author.when().seconds(),
-            parents: commit.parent_ids().map(|parent| parent.to_string()).collect(),
-            refs: labels.remove(&oid).unwrap_or_default(),
-        });
+        commits.push(summarize(&commit, labels.remove(&oid).unwrap_or_default()));
     }
     Ok(commits)
 }
 
-fn delta_status(delta: Delta) -> &'static str {
+pub fn summarize(commit: &Commit, refs: Vec<RefLabel>) -> CommitSummary {
+    let author = commit.author();
+    CommitSummary {
+        id: commit.id().to_string(),
+        short_id: short_id(commit.id()),
+        summary: commit.summary().ok().flatten().unwrap_or_default().to_string(),
+        author_name: author.name().unwrap_or_default().to_string(),
+        author_email: author.email().unwrap_or_default().to_string(),
+        time: author.when().seconds(),
+        parents: commit.parent_ids().map(|parent| parent.to_string()).collect(),
+        refs,
+    }
+}
+
+/// `--format` of the CLI logs read by `parse_cli_commit`: fields split by 0x1f.
+pub const CLI_COMMIT_FORMAT: &str = "%H%x1f%P%x1f%an%x1f%ae%x1f%at%x1f%s";
+
+/// One commit header printed with `CLI_COMMIT_FORMAT`; None for anything else.
+pub fn parse_cli_commit(header: &str) -> Option<CommitSummary> {
+    let fields: Vec<&str> = header.trim_start_matches('\n').split('\u{1f}').collect();
+    if fields.len() < 6 {
+        return None;
+    }
+    let id = fields[0].trim();
+    if id.len() < 4 || !id.chars().all(|character| character.is_ascii_hexdigit()) {
+        return None;
+    }
+    Some(CommitSummary {
+        id: id.to_string(),
+        short_id: id[..8.min(id.len())].to_string(),
+        summary: fields[5..].join("\u{1f}"),
+        author_name: fields[2].to_string(),
+        author_email: fields[3].to_string(),
+        time: fields[4].trim().parse().unwrap_or_default(),
+        parents: fields[1].split_whitespace().map(str::to_string).collect(),
+        refs: Vec::new(),
+    })
+}
+
+pub fn delta_status(delta: Delta) -> &'static str {
     match delta {
         Delta::Added => "added",
         Delta::Deleted => "deleted",

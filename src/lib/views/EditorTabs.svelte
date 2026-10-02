@@ -1,12 +1,17 @@
-<!-- Tab bar above the editor area: the Diff tab plus every open file. -->
+<!-- Tab bar above the editor area: the Diff tab plus every open file, commit and terminal tab. -->
 <script lang="ts">
   import { errorMessage } from "$lib/api";
   import { parseCommitTabPath } from "$lib/stores/commitTabs";
+  import { gitTabTitle, parseGitTabPath } from "$lib/stores/gitTabs";
+  import { branchTabTitle, parseBranchTabPath } from "$lib/stores/branchTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { tabLabels } from "$lib/stores/tabs";
+  import { shellNameFor } from "$lib/terminal/terminals";
+  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
+  import { parseTerminalTabPath } from "$lib/terminal/terminalTabs";
   import { folderFor, relativeTo } from "$lib/stores/workspacePaths";
   import Icon from "$lib/ui/Icon.svelte";
-  import { contextMenu } from "$lib/ui/menu.svelte";
+  import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { changesSelection } from "./changes/selection.svelte";
 
@@ -64,9 +69,46 @@
     return `Commit ${ref.commitId.slice(0, 8)}${summary ? `: ${summary}` : ""} (${repoName})`;
   }
 
+  /** A terminal tab's tooltip: its name, shell and folder. */
+  function terminalTitle(terminalKey: number): string {
+    const entry = terminalStore.find(terminalKey);
+    if (!entry) {
+      return "Terminal";
+    }
+    return [entry.name, `Shell: ${shellNameFor(entry.shellId, terminalStore.shells)}`, `Folder: ${entry.cwd ?? "~"}`].join("\n");
+  }
+
+  /** The items after the Close ones: what to copy, or what to do with a terminal. */
+  function tabItems(filePath: string): MenuItem[] {
+    const terminalKey = parseTerminalTabPath(filePath);
+    if (terminalKey !== null) {
+      return terminalStore.tabMenuItems(terminalKey);
+    }
+    const commit = parseCommitTabPath(filePath);
+    if (commit) {
+      return [{ label: "Copy Commit Hash", action: () => void copy(commit.commitId) }];
+    }
+    if (parseBranchTabPath(filePath)) {
+      return [];
+    }
+    const gitTab = parseGitTabPath(filePath);
+    if (gitTab) {
+      return [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
+    }
+    return [
+      { label: "Copy Path", action: () => void copy(filePath) },
+      {
+        label: "Copy Relative Path",
+        action: () => {
+          const folder = folderFor(repoStore.workspace?.folders ?? [], filePath);
+          void copy(folder ? relativeTo(folder.root, filePath) : filePath);
+        },
+      },
+    ];
+  }
+
   function openMenu(event: MouseEvent, filePath: string, preview: boolean): void {
     const index = repoStore.tabs.findIndex((tab) => tab.path === filePath);
-    const commit = parseCommitTabPath(filePath);
     contextMenu.open(event, [
       ...(preview ? [{ label: "Keep Open", action: () => repoStore.pinFile(filePath) }, { separator: true as const }] : []),
       { label: "Close", action: () => void repoStore.closeTab(filePath) },
@@ -78,18 +120,7 @@
       },
       { label: "Close All", action: () => void repoStore.closeAllTabs() },
       { separator: true },
-      ...(commit
-        ? [{ label: "Copy Commit Hash", action: () => void copy(commit.commitId) }]
-        : [
-            { label: "Copy Path", action: () => void copy(filePath) },
-            {
-              label: "Copy Relative Path",
-              action: () => {
-                const folder = folderFor(repoStore.workspace?.folders ?? [], filePath);
-                void copy(folder ? relativeTo(folder.root, filePath) : filePath);
-              },
-            },
-          ]),
+      ...tabItems(filePath),
     ]);
   }
 
@@ -118,13 +149,25 @@
     {@const label = labels.get(tab.path)}
     {@const active = shownView === "file" && repoStore.openFilePath === tab.path}
     {@const commit = parseCommitTabPath(tab.path) !== null}
+    {@const gitTab = parseGitTabPath(tab.path)}
+    {@const branchTab = parseBranchTabPath(tab.path)}
+    {@const terminalKey = parseTerminalTabPath(tab.path)}
+    {@const terminal = terminalKey !== null ? terminalStore.find(terminalKey) : null}
     <div
       class="tab"
       class:active
       class:preview={tab.preview}
       class:dirty={tab.dirty}
       data-path={tab.path}
-      title={commit ? commitTitle(tab.path) : `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`}
+      title={terminalKey !== null
+        ? terminalTitle(terminalKey)
+        : commit
+          ? commitTitle(tab.path)
+          : gitTab
+            ? gitTabTitle(gitTab).title
+            : branchTab
+              ? branchTabTitle(branchTab).title
+              : `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`}
       role="presentation"
       onauxclick={(event) => onAuxClick(event, tab.path)}
       oncontextmenu={(event) => openMenu(event, tab.path, tab.preview)}
@@ -136,8 +179,21 @@
         onclick={() => activate(tab.path)}
         ondblclick={() => repoStore.pinFile(tab.path)}
       >
-        <Icon name={commit ? "commit" : "file"} size={13} />
-        <span class="name" class:mono={commit}>{label?.name ?? tab.path}</span>
+        <Icon
+          name={terminalKey !== null
+            ? "terminal"
+            : commit
+              ? "commit"
+              : gitTab
+                ? gitTab.kind === "compare"
+                  ? "git-compare"
+                  : "history"
+                : branchTab
+                  ? "git-compare"
+                  : "file"}
+          size={13}
+        />
+        <span class="name" class:mono={commit}>{terminal?.name ?? label?.name ?? tab.path}</span>
         {#if label?.hint}
           <span class="hint">{label.hint}</span>
         {/if}

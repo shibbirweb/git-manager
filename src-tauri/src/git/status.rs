@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use super::opstate::{self, OpState};
 use super::repo::{path_text, short_id};
+use super::submodule::{self, SubmoduleChange};
 use crate::error::AppResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -25,6 +26,8 @@ pub struct FileStatus {
     pub staged: Option<ChangeKind>,
     pub unstaged: Option<ChangeKind>,
     pub conflicted: bool,
+    /// Set for a submodule: what changed in it, like `git status`.
+    pub submodule: Option<SubmoduleChange>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -149,6 +152,10 @@ pub fn read(repo: &Repository) -> AppResult<RepoStatus> {
         .recurse_untracked_dirs(true)
         .renames_head_to_index(true)
         .include_ignored(false);
+    // Submodules get one entry each from a cheaper pass below, so the walk
+    // never scans their work trees.
+    let with_submodules = submodule::has_submodules(repo);
+    options.exclude_submodules(with_submodules);
 
     let statuses = repo.statuses(Some(&mut options))?;
     let workdir = repo.workdir().map(std::path::Path::to_path_buf);
@@ -167,6 +174,7 @@ pub fn read(repo: &Repository) -> AppResult<RepoStatus> {
                 staged: None,
                 unstaged: None,
                 conflicted: true,
+                submodule: None,
             });
             continue;
         }
@@ -189,7 +197,13 @@ pub fn read(repo: &Repository) -> AppResult<RepoStatus> {
             staged,
             unstaged,
             conflicted: false,
+            submodule: None,
         });
+    }
+    if with_submodules {
+        let (entries, submodule_paths) = submodule::status_entries(repo);
+        files.retain(|file| file.conflicted || !submodule_paths.contains(&file.path));
+        files.extend(entries);
     }
     files.sort_by(|a, b| a.path.cmp(&b.path));
 

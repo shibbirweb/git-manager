@@ -8,6 +8,8 @@
 #     notes/                           plain folder, no git
 #   <target>/design-system/            a second folder to add to the workspace (its own repository)
 #   <target>/remotes/storefront.git    storefront's "origin"
+#   <target>/extras/shop-app/          a submodule themes/acme with new commits and changes
+#   <target>/extras/media-site/        images stored with Git LFS (pointer files)
 #
 # Dates are relative to now, so blame and the log read "2 days ago" whenever it is run.
 #
@@ -71,9 +73,17 @@ cat >"$repo/package.json" <<'EOF'
 {
   "name": "storefront",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "packageManager": "bun@1.2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "lint": "eslint src"
+  }
 }
 EOF
+printf '20\n' >"$repo/.nvmrc"
 cat >"$repo/src/cart.ts" <<'EOF'
 import type { Product } from "./catalog";
 
@@ -294,6 +304,56 @@ cat >"$repo/docs/cart-api.md" <<'EOF'
 - `useDiscount(code)` applies a discount code to the total.
 - `total()` is what the customer pays, rounded to cents.
 EOF
+mkdir -p "$repo/docs/images"
+cat >"$repo/docs/checkout.md" <<'EOF'
+# Checkout
+
+Checkout turns a cart into an order. It reads the totals from [the cart API](cart-api.md) and asks for an address.
+
+## Steps
+
+- [x] Cart totals rounded to cents
+- [ ] Discount codes
+- [ ] Free shipping from 50
+
+## Prices
+
+| Item | Price | Note |
+| --- | --- | --- |
+| Acme Mug | 12.50 | Ceramic |
+| Acme T-shirt | 24.00 | Organic cotton |
+| Acme Cap | 18.00 | One size |
+
+```ts
+export function shippingCost(subtotal: number): number {
+  const freeFrom = 50;
+  return subtotal >= freeFrom ? 0 : 4.95;
+}
+```
+
+## Flow
+
+```mermaid
+flowchart LR
+  Cart --> Checkout --> Payment --> Done
+```
+
+![Checkout screen](images/checkout.svg)
+EOF
+cat >"$repo/docs/images/checkout.svg" <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="200" viewBox="0 0 360 200">
+  <rect x="1" y="1" width="358" height="198" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="1" y="1" width="358" height="40" rx="12" fill="#2563eb"/>
+  <rect x="1" y="28" width="358" height="13" fill="#2563eb"/>
+  <text x="20" y="27" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff">Checkout</text>
+  <rect x="20" y="60" width="200" height="16" rx="4" fill="#e2e8f0"/>
+  <rect x="20" y="88" width="160" height="16" rx="4" fill="#e2e8f0"/>
+  <rect x="20" y="116" width="180" height="16" rx="4" fill="#e2e8f0"/>
+  <text x="240" y="74" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#334155">Total 54.50</text>
+  <rect x="220" y="150" width="120" height="32" rx="8" fill="#16a34a"/>
+  <text x="248" y="171" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#ffffff">Pay now</text>
+</svg>
+EOF
 commit_as "Maya Chen" 6 "Docs: explain the cart API"
 
 # The remote has everything so far; the next commit is only local (1 ahead).
@@ -349,9 +409,80 @@ git -C "$design" config commit.gpgsign false
 git -C "$design" config core.hooksPath /dev/null
 printf ':root {\n  --acme-blue: #2563eb;\n  --acme-radius: 8px;\n}\n' >"$design/tokens/colors.css"
 printf '# Design system\n\nShared colors and spacing for Acme apps.\n' >"$design/README.md"
+# Recipes are indented with tabs, the rest with spaces (the render whitespace shot shows both).
+cat >"$design/Makefile" <<'EOF'
+# Builds and checks the design tokens.
+TOKENS = tokens/colors.css
+
+.PHONY: tokens check
+
+tokens:
+	@echo "Building tokens"
+
+check:
+	@echo "Checking tokens..."
+	@echo "All 12 tokens are valid."
+EOF
 git -C "$design" add -A
 git -C "$design" commit -q -m "Design tokens"
 printf ':root {\n  --acme-blue: #1d4ed8;\n  --acme-radius: 8px;\n  --acme-gap: 12px;\n}\n' >"$design/tokens/colors.css"
+
+# Extras, each opened on its own by the submodule and Git LFS shots so the shop workspace stays as it is.
+extras="$target/extras"
+# extra_repo <dir>: a new repository with the demo identity.
+extra_repo() {
+  mkdir -p "$1"
+  git -C "$1" init -q -b main
+  git -C "$1" config user.name "Demo User"
+  git -C "$1" config user.email "demo@example.com"
+  git -C "$1" config commit.gpgsign false
+  git -C "$1" config core.hooksPath /dev/null
+}
+# extra_commit <dir> <author> <days ago> <message>
+extra_commit() {
+  local dir="$1" author="$2" days="$3" message="$4"
+  local email
+  email="$(printf '%s' "$author" | tr 'A-Z ' 'a-z.')@acme.example"
+  local when="$((now - days * 86400)) +0000"
+  git -C "$dir" add -A
+  GIT_AUTHOR_NAME="$author" GIT_AUTHOR_EMAIL="$email" GIT_AUTHOR_DATE="$when" \
+    GIT_COMMITTER_NAME="$author" GIT_COMMITTER_EMAIL="$email" GIT_COMMITTER_DATE="$when" \
+    git -C "$dir" commit -q -m "$message"
+}
+
+# extras/shop-app: a submodule themes/acme with new commits and modified content.
+theme_src="$target/remotes/acme-theme-src"
+extra_repo "$theme_src"
+printf ':root {\n  --theme-accent: #2563eb;\n}\n' >"$theme_src/theme.css"
+extra_commit "$theme_src" "Leo Park" 20 "Theme: accent color"
+first_theme="$(git -C "$theme_src" rev-parse HEAD)"
+printf ':root {\n  --theme-accent: #1d4ed8;\n  --theme-radius: 6px;\n}\n' >"$theme_src/theme.css"
+extra_commit "$theme_src" "Leo Park" 10 "Theme: rounder corners"
+git clone -q --bare "$theme_src" "$target/remotes/acme-theme.git"
+rm -rf "$theme_src"
+
+shop="$extras/shop-app"
+extra_repo "$shop"
+printf '# Shop app\n\nThe Acme shop, themed by the acme theme.\n' >"$shop/README.md"
+extra_commit "$shop" "Maya Chen" 15 "Shop app skeleton"
+# A local path as the URL needs file transport, which git turns off for submodules by default.
+git -C "$shop" -c protocol.file.allow=always submodule add -q "$target/remotes/acme-theme.git" themes/acme >/dev/null 2>&1
+extra_commit "$shop" "Maya Chen" 9 "Add the acme theme as a submodule"
+git -C "$shop/themes/acme" checkout -q "$first_theme"
+printf '\nbody {\n  margin: 0;\n}\n' >>"$shop/themes/acme/theme.css"
+
+# extras/media-site: images stored with Git LFS as pointer files, so git-lfs need not be installed.
+media="$extras/media-site"
+extra_repo "$media"
+mkdir -p "$media/assets"
+printf '*.png filter=lfs diff=lfs merge=lfs -text\n' >"$media/.gitattributes"
+printf '# Media site\n\nBig images live in Git LFS.\n' >"$media/README.md"
+printf 'version https://git-lfs.github.com/spec/v1\noid sha256:%s\nsize 1536\n' \
+  "4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393" >"$media/assets/hero.png"
+extra_commit "$media" "Priya Nair" 5 "Hero image in LFS"
+printf 'version https://git-lfs.github.com/spec/v1\noid sha256:%s\nsize 2097152\n' \
+  "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" >"$media/assets/hero.png"
+git -C "$media" add assets/hero.png
 
 cat <<EOF
 
@@ -359,5 +490,6 @@ Created $workspace:
   storefront     $(g rev-list --count HEAD) commits, 1 ahead of origin, $(g status --short | wc -l | tr -d ' ') changes, 1 stash
   payments-api   stopped in a merge with conflicts
   notes          no git
-Also $design, a separate repository to add as a second workspace folder.
+Also $design, a separate repository to add as a second workspace folder,
+and $extras: shop-app (with a submodule) and media-site (Git LFS).
 EOF

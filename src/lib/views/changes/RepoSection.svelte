@@ -7,7 +7,15 @@
   import { kindIn, rowElementId, sameSelection, type FileSelection, type GroupId, type RowAction } from "./fileStatus";
   import { changesLayout } from "./layout.svelte";
   import { activate, copyText, discard, stage, unstage } from "./mutations";
+  import RepoActions from "./RepoActions.svelte";
+  import { repoMenuFor } from "./repoActions";
+  import { ignoreMenu } from "$lib/ignore/ignoreActions";
+  import { openShelveDialog } from "$lib/shelf/shelfActions.svelte";
   import { branchLabel, opLabel, showRelativePath, type RepoSection } from "./sections";
+  import { lfsFileSet } from "../git/lfs/lfsModel";
+  import { lfsStore } from "../git/lfs/lfsStore.svelte";
+  import { submoduleEntryItems } from "../git/submodules/submoduleActions";
+  import { describeSubmoduleChange, isSubmoduleEntry } from "../git/submodules/submoduleModel";
 
   interface Props {
     section: RepoSection;
@@ -30,6 +38,23 @@
   const collapsed = $derived(multiRepo && changesLayout.isRepoCollapsed(repoRoot));
   /** Repository named in dialogs when several are shown. */
   const dialogName = $derived(multiRepo ? repo.name : null);
+  const lfsFiles = $derived(lfsFileSet(lfsStore.statuses[repoRoot]));
+
+  // LFS files are read once per status refresh, for the "LFS" badges.
+  $effect(() => {
+    lfsStore.follow(repoRoot, section.status);
+  });
+
+  function rowBadge(file: FileStatus): string | null {
+    if (isSubmoduleEntry(file)) {
+      return "submodule";
+    }
+    return lfsFiles.has(file.path) ? "LFS" : null;
+  }
+
+  function rowNote(file: FileStatus, group: GroupId): string | null {
+    return group === "unstaged" ? describeSubmoduleChange(file.submodule) || null : null;
+  }
 
   function rowSelection(file: FileStatus, group: GroupId): FileSelection {
     return { repoRoot, path: file.path, area: group === "staged" ? "staged" : "unstaged" };
@@ -43,6 +68,10 @@
     }
     if (group === "staged") {
       return [{ icon: "minus", title: "Unstage", run: () => unstage(repoRoot, [file]) }];
+    }
+    // Discarding does not apply to a submodule: Update (in its menu) checks out the recorded commit.
+    if (isSubmoduleEntry(file)) {
+      return [{ icon: "plus", title: "Stage", run: () => stage(repoRoot, [file]) }];
     }
     return [
       {
@@ -75,29 +104,26 @@
         },
       ];
     }
+    if (isSubmoduleEntry(file) && group !== "conflicts") {
+      items = group === "staged" ? items : items.filter((item) => !("label" in item) || item.label !== "Discard Changes...");
+      items.push({ separator: true }, ...submoduleEntryItems(repoRoot, file.path));
+    }
+    const ignoreItem = group === "conflicts" ? null : ignoreMenu(repoRoot, file.path, file.path.endsWith("/"));
+    if (ignoreItem) {
+      items.push({ separator: true }, ignoreItem);
+    }
+    if (group !== "conflicts" && !file.submodule) {
+      items.push({ label: "Shelve Changes...", disabled: busy, action: () => openShelveDialog(repoRoot, [file.path]) });
+    }
     items.push({ separator: true }, { label: "Copy Path", action: () => copyText(file.path) });
     contextMenu.open(event, items);
   }
 
-  function headerMenu(event: MouseEvent): void {
-    const items: MenuItem[] = [
-      {
-        label: "Stage All",
-        action: () => stage(repoRoot, section.unstaged),
-        disabled: busy || section.unstaged.length === 0,
-      },
-      {
-        label: "Unstage All",
-        action: () => unstage(repoRoot, section.staged),
-        disabled: busy || section.staged.length === 0,
-      },
-      {
-        label: "Discard All Changes...",
-        action: () => void discard(repoRoot, section.unstaged, repo.name),
-        danger: true,
-        disabled: busy || section.unstaged.length === 0,
-      },
-    ];
+  /** Right click: the "..." menu, plus the repository items. */
+  async function headerMenu(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    const items: MenuItem[] = await repoMenuFor(repoRoot);
     if (section.conflicts.length > 0) {
       items.push({ label: "Resolve Conflicts...", action: () => void repoStore.openConflicts(repoRoot) });
     }
@@ -171,6 +197,8 @@
             selected={group !== "conflicts" && sameSelection(selection, selected)}
             id={group === "conflicts" ? undefined : rowElementId(selection)}
             actions={rowActions(file, group)}
+            badge={rowBadge(file)}
+            note={rowNote(file, group)}
             onselect={() => {
               if (group === "conflicts") {
                 void repoStore.openMerge(file.path, repoRoot);
@@ -189,7 +217,7 @@
 
 <div class="repo-section" role="group" aria-label={repo.name}>
   {#if multiRepo}
-    <div class="repo-header" class:active oncontextmenu={headerMenu} role="presentation">
+    <div class="repo-header" class:active oncontextmenu={(event) => void headerMenu(event)} role="presentation">
       <button
         class="repo-toggle"
         onclick={() => changesLayout.toggleRepo(repoRoot)}
@@ -198,71 +226,22 @@
       >
         <Icon name={collapsed ? "chevron-right" : "chevron-down"} size={13} />
         <span class="repo-name">{repo.name}</span>
+        {#if repo.submodule}
+          <span class="kind-badge" title="A submodule of the repository around it">submodule</span>
+        {:else if repo.worktree}
+          <span class="kind-badge" title="A linked worktree">worktree</span>
+        {/if}
         {#if showRelativePath(repo)}
           <span class="repo-path truncate">{repo.relativePath}</span>
         {/if}
-        {#if branch}
-          <span class="repo-branch truncate" class:detached={!head?.branch}>
-            <Icon name="branch" size={11} />
-            {branch}
-          </span>
-        {/if}
-        {#if (head?.ahead ?? 0) > 0}
-          <span class="sync" title="{head?.ahead} ahead of upstream">
-            <Icon name="arrow-up" size={10} />{head?.ahead}
-          </span>
-        {/if}
-        {#if (head?.behind ?? 0) > 0}
-          <span class="sync" title="{head?.behind} behind upstream">
-            <Icon name="arrow-down" size={10} />{head?.behind}
-          </span>
-        {/if}
+        <span class="badge" title="{section.changeCount} changed {section.changeCount === 1 ? 'file' : 'files'}">
+          {section.changeCount}
+        </span>
         {#if operation}
           <span class="op-badge" title={section.status?.op?.description ?? operation}>{operation}</span>
         {/if}
       </button>
-      <span class="repo-actions">
-        {#if !active}
-          <button
-            class="action"
-            onclick={() => void repoStore.setActiveRepo(repoRoot)}
-            title="Set as active repository"
-            aria-label="Set as active repository"
-          >
-            <Icon name="folder-git" size={13} />
-          </button>
-        {/if}
-        <button
-          class="action danger"
-          onclick={() => void discard(repoRoot, section.unstaged, repo.name)}
-          disabled={busy || section.unstaged.length === 0}
-          title="Discard all changes"
-          aria-label="Discard all changes"
-        >
-          <Icon name="discard" size={13} />
-        </button>
-        <button
-          class="action"
-          onclick={() => unstage(repoRoot, section.staged)}
-          disabled={busy || section.staged.length === 0}
-          title="Unstage all"
-          aria-label="Unstage all"
-        >
-          <Icon name="minus" size={13} />
-        </button>
-        <button
-          class="action"
-          onclick={() => stage(repoRoot, section.unstaged)}
-          disabled={busy || section.unstaged.length === 0}
-          title="Stage all"
-          aria-label="Stage all"
-        >
-          <Icon name="plus" size={13} />
-        </button>
-      </span>
-      <span class="badge" title="{section.changeCount} changed {section.changeCount === 1 ? 'file' : 'files'}">
-        {section.changeCount}
-      </span>
+      <RepoActions {section} />
     </div>
   {/if}
   {#if !collapsed}
@@ -284,6 +263,8 @@
     gap: 4px;
     height: 28px;
     padding: 0 6px 0 4px;
+    /* RepoActions hides the branch name first when this row gets narrow. */
+    container: repo-row / inline-size;
   }
 
   .repo-header:hover {
@@ -303,7 +284,7 @@
 
   .repo-toggle {
     flex: 1;
-    min-width: 0;
+    min-width: 72px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -333,27 +314,15 @@
     font-size: 12px;
   }
 
-  .repo-branch {
-    min-width: 30px;
-    flex: 0 1 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: var(--text-dim);
-    font-size: 12px;
-  }
-
-  .repo-branch.detached {
-    font-style: italic;
-  }
-
-  .sync {
+  .kind-badge {
     flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
+    padding: 0 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
     color: var(--text-dim);
-    font-size: 11.5px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 14px;
   }
 
   .op-badge {
@@ -365,18 +334,6 @@
     font-size: 11px;
     font-weight: 600;
     line-height: 16px;
-  }
-
-  .repo-actions {
-    flex: none;
-    display: none;
-    align-items: center;
-    gap: 1px;
-  }
-
-  .repo-header:hover .repo-actions,
-  .repo-header:focus-within .repo-actions {
-    display: flex;
   }
 
   .badge {

@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { api, errorMessage } from "$lib/api";
+  import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import { toast } from "$lib/ui/toast.svelte";
+  import LayoutToggleIcon from "./LayoutToggleIcon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
-  import { pickAndAddFolder, pickAndOpenRepo, pickAndOpenWorkspaceFile, pickAndSaveWorkspace } from "./repoPicker";
+  import { recentEntries, shortPath } from "./recentEntries";
+  import { openRecent, pickAndAddFolder, pickAndOpenRepo, pickAndOpenWorkspaceFile, pickAndSaveWorkspace } from "./repoPicker";
   import { newBranchFrom } from "./sidebar/actions";
   import { navigation } from "$lib/stores/navigation.svelte";
-  import type { AppError } from "$lib/types";
 
   const head = $derived(repoStore.status?.head);
   const branchLabel = $derived(
@@ -26,45 +25,11 @@
     return repoStore.statuses[repoRoot]?.files.length ?? 0;
   }
 
-  function shortPath(folderPath: string): string {
-    return folderPath.replace(/^\/Users\/[^/]+/, "~");
-  }
-
-  function folderName(folderPath: string): string {
-    return folderPath.split("/").filter(Boolean).pop() ?? folderPath;
-  }
-
   function workspaceMenu(event: MouseEvent): void {
     const openRoots = repoStore.workspace?.folders.map((folder) => folder.root) ?? [];
-    const openKey = openRoots.join("\n");
-    const items: MenuItem[] = [];
-    // Recent workspace files, then multi-folder workspaces, then single folders.
-    for (const file of settings.recentWorkspaceFiles) {
-      if (file === repoStore.workspace?.file) {
-        continue;
-      }
-      items.push({
-        label: file.slice(file.lastIndexOf("/") + 1).replace(/\.(gitmanager|code)-workspace$/, ""),
-        hint: "workspace file",
-        action: () => void repoStore.openWorkspaceFile(file),
-      });
-    }
-    for (const folders of settings.recentWorkspaces) {
-      if (folders.join("\n") === openKey) {
-        continue;
-      }
-      items.push({
-        label: `${folders.map(folderName).slice(0, 3).join(", ")}${folders.length > 3 ? ` +${folders.length - 3}` : ""}`,
-        hint: `${folders.length} folders`,
-        action: () => void repoStore.openFolders(folders),
-      });
-    }
-    for (const folderPath of settings.recentRepos) {
-      if (openRoots.length === 1 && folderPath === openRoots[0]) {
-        continue;
-      }
-      items.push({ label: folderName(folderPath), hint: shortPath(folderPath), action: () => void repoStore.open(folderPath) });
-    }
+    const items: MenuItem[] = recentEntries(settings, { file: repoStore.workspace?.file ?? null, folderRoots: openRoots }).map(
+      (entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecent(entry) }),
+    );
     if (items.length > 0) {
       items.push({ separator: true });
     }
@@ -130,65 +95,6 @@
 
   function newBranch(): Promise<void> {
     return newBranchFrom(null);
-  }
-
-  function fetchAll(): void {
-    void repoStore.runOp("Fetch", (repoPath) => api.fetchAll(repoPath), "Fetched all remotes");
-  }
-
-  function pull(): void {
-    void repoStore.runOp("Pull", (repoPath) => api.pull(repoPath), "Pulled");
-  }
-
-  async function push(event: MouseEvent): Promise<void> {
-    let force = false;
-    if (event.altKey) {
-      force = await dialogs.confirm({
-        title: "Force Push",
-        message: `Force push ${head?.branch ?? "this branch"} with --force-with-lease?`,
-        confirmLabel: "Force Push",
-        danger: true,
-      });
-      if (!force) {
-        return;
-      }
-    }
-    void repoStore.runOp("Push", (repoPath) => api.push(repoPath, force), "Pushed");
-  }
-
-  async function stash(): Promise<void> {
-    const result = await dialogs.prompt({
-      title: "Stash Changes",
-      label: "Message",
-      placeholder: "WIP",
-      initial: "WIP",
-      confirmLabel: "Stash",
-      checkbox: { label: "Include untracked files", checked: true },
-    });
-    if (!result) {
-      return;
-    }
-    // Nothing to stash comes back as an "invalid" error: a note, not a failure.
-    let nothingToStash: string | null = null;
-    await repoStore.run(
-      "Stash",
-      async (repoPath) => {
-        try {
-          await api.stashPush(repoPath, result.value, result.checked);
-          return true;
-        } catch (error) {
-          if ((error as Partial<AppError> | null)?.kind === "invalid") {
-            nothingToStash = errorMessage(error);
-            return false;
-          }
-          throw error;
-        }
-      },
-      { success: (stashed) => (stashed ? "Changes stashed" : null) },
-    );
-    if (nothingToStash) {
-      toast.info(nothingToStash);
-    }
   }
 
   function toggleTheme(): void {
@@ -262,19 +168,25 @@
         <span class="truncate">{repoStore.progress || `${repoStore.busy}...`}</span>
       </div>
     {/if}
-    <button class="icon-btn" onclick={fetchAll} disabled={busy} title="Fetch all remotes">
-      <Icon name="refresh" size={15} />
+    <!-- Fetch, Pull, Push and Stash are in the Git menu. -->
+    <!-- Like VS Code's layout controls: the filled side shows which edge bar is visible. -->
+    <button
+      class="icon-btn"
+      onclick={() => settings.toggleActivityBar("left")}
+      title="{settings.leftBarVisible ? 'Hide' : 'Show'} Left Activity Bar"
+      aria-label="Toggle left activity bar"
+      aria-pressed={settings.leftBarVisible}
+    >
+      <LayoutToggleIcon side="left" visible={settings.leftBarVisible} />
     </button>
-    <button class="icon-btn" onclick={pull} disabled={busy} title="Pull">
-      <Icon name="arrow-down" size={15} />
-      {#if head && head.behind > 0}<span class="count">{head.behind}</span>{/if}
-    </button>
-    <button class="icon-btn" onclick={push} disabled={busy} title="Push (Option-click to force push)">
-      <Icon name="arrow-up" size={15} />
-      {#if head && head.ahead > 0}<span class="count">{head.ahead}</span>{/if}
-    </button>
-    <button class="icon-btn" onclick={stash} disabled={busy} title="Stash changes">
-      <Icon name="stash" size={15} />
+    <button
+      class="icon-btn"
+      onclick={() => settings.toggleActivityBar("right")}
+      title="{settings.rightBarVisible ? 'Hide' : 'Show'} Right Activity Bar"
+      aria-label="Toggle right activity bar"
+      aria-pressed={settings.rightBarVisible}
+    >
+      <LayoutToggleIcon side="right" visible={settings.rightBarVisible} />
     </button>
     <div class="divider"></div>
     <button class="icon-btn" onclick={toggleTheme} title="Toggle light/dark theme">
@@ -396,10 +308,6 @@
 
 
 
-
-  .count {
-    font-size: 11px;
-  }
 
   .busy {
     display: flex;

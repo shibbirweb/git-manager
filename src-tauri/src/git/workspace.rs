@@ -16,7 +16,7 @@ const MAX_SCAN_DEPTH: usize = 6;
 /// Upper bound on directories read per scan, so huge folders stay fast.
 const MAX_SCAN_DIRS: usize = 50_000;
 /// Dependency, build and tool folders that never hold repositories worth showing.
-const SKIPPED_DIRS: &[&str] = &[
+pub const SKIPPED_DIRS: &[&str] = &[
     ".git",
     "node_modules",
     "bower_components",
@@ -84,6 +84,8 @@ pub fn repo_info(workspace_root: &Path, repo_root: &Path) -> RepoInfo {
         root: strip_trailing_slash(repo_root),
         name: last_component(repo_root),
         relative_path: relative_slash_path(workspace_root, repo_root),
+        submodule: false,
+        worktree: Repository::open(repo_root).map(|repo| repo.is_worktree()).unwrap_or(false),
     }
 }
 
@@ -162,6 +164,7 @@ fn find_repos(workspace_root: &Path) -> Vec<RepoInfo> {
     let mut repos: Vec<RepoInfo> = roots.iter().map(|root| repo_info(workspace_root, root)).collect();
     repos.sort_by(|a, b| a.root.cmp(&b.root));
     repos.dedup_by(|a, b| a.root == b.root);
+    super::submodule::mark_submodules(&mut repos);
     repos
 }
 

@@ -91,3 +91,19 @@ export function parentOf(absolute: string): string {
 export function baseName(absolute: string): string {
   return absolute.slice(absolute.lastIndexOf("/") + 1);
 }
+
+/** Resolves "." and ".." segments and repeated slashes of an absolute path; ".." never goes above "/". */
+export function normalizePath(absolute: string): string {
+  const parts: string[] = [];
+  for (const part of absolute.split("/")) {
+    if (part === "" || part === ".") {
+      continue;
+    }
+    if (part === "..") {
+      parts.pop();
+    } else {
+      parts.push(part);
+    }
+  }
+  return `/${parts.join("/")}`;
+}

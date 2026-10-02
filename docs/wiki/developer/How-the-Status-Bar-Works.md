@@ -1,6 +1,6 @@
 # How the status bar works
 
-The status bar runs along the bottom of the window: on the left the repository of whatever is on screen, on the right the open file's cursor and format, update news, the running operation, help links and memory use. For the user side, see [Status Bar and Help](../usage/Status-Bar-and-Help.md).
+The status bar runs along the bottom of the window: on the left the repository of whatever is on screen, on the right the open file's cursor and format, update news, the running operation, help links and memory use. This page also covers the in-app Help > Keyboard Shortcuts window. For the user side, see [Status Bar and Help](../usage/Status-Bar-and-Help.md).
 
 ## Why we need it
 
@@ -24,7 +24,7 @@ flowchart LR
     subgraph Right
         F["Ln, Col, Spaces, LF or CRLF, language"]
         U["Update available"]
-        W["Busy label"]
+        W["Busy label or Reading changes N of M"]
         S["Star and bug buttons"]
         M["Memory"]
     end
@@ -42,7 +42,10 @@ flowchart LR
 ```mermaid
 flowchart TD
     A["changesSelection.shownView"] --> B{"Which view?"}
-    B -->|"file"| C["locateAbsolute(repos, openFilePath)"]
+    B -->|"file"| T{"Which tab?"}
+    T -->|"commit, history or branch tab"| R2["The tab's repoRoot"]
+    T -->|"terminal tab"| R3["Repository of the terminal's folder,<br/>else the active one"]
+    T -->|"file"| C["locateAbsolute(repos, openFilePath)"]
     C --> C2{"Inside a repository?"}
     C2 -->|"yes"| R1["That repository"]
     C2 -->|"no"| R0["Show No repository"]
@@ -50,39 +53,34 @@ flowchart TD
     B -->|"log or none"| E["The active repository"]
 ```
 
-Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the repository or branch makes that repository active and opens Branches. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
+Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the repository or branch makes that repository active and opens Branches. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`). Tabs that are not files (commit, history, branch and terminal tabs) are recognized with `parseCommitTabPath`, `parseGitTabPath`, `parseBranchTabPath` and `parseTerminalTabPath`, and `isPseudoTab` keeps them from showing "No repository".
+
+While nothing else is busy, `repoStore.loadingChanges` shows "Reading changes 2 of 5" with a spinner (text from `loadingChangesText` in `stores/openingProgress.ts`), right after a folder opens. See [How workspaces work](How-Workspaces-Work.md).
 
 The file details come from `editorStatus` (`stores/editorStatus.svelte.ts`). The visible `FileView` calls `editorStatus.report(info)` with line, column, selection, line endings, tab size and language (from `languageName` in `editor/setup.ts`). `report` ignores unchanged info, so the bar does not re-render, and the bar shows it only when its `filePath` matches the open tab.
 
 ### Memory
 
-```mermaid
-sequenceDiagram
-    participant SB as StatusBar
-    participant API as api.ts
-    participant CMD as commands/config.rs
-    participant MEM as memory.rs
-    participant OS as macOS libproc
-    loop every 5 s while the window is visible
-        SB->>API: memoryUsage()
-        API->>CMD: invoke memory_usage
-        CMD->>MEM: usage()
-        MEM->>OS: responsible pid of this app
-        MEM->>OS: list all pids, keep com.apple.WebKit helpers with the same responsible pid
-        MEM->>OS: proc_pid_rusage, phys_footprint of each
-        MEM-->>SB: MemoryUsage total, processes, approximate
-    end
-```
-
-On macOS the UI runs in WebKit helper processes, which Activity Monitor charges to the app, so we do too. `memory.rs` calls `responsibility_get_pid_responsible_for_pid` for our own process, then keeps every `com.apple.WebKit*` process with the same responsible process, and sums `phys_footprint` from `proc_pid_rusage`. That is Activity Monitor's "Memory" column.
-
-When the app is started from a terminal (as `bun tauri dev` does), macOS makes the **terminal** the responsible process, so its other WebKit helpers would match too. In that case `approximate` is set and a helper must also have started after our process (`proc_start_abstime`). The details popover says so.
-
-Polling stops on `visibilitychange` when the window is hidden. On other platforms `usage()` returns zero and the memory item is hidden.
+The memory item calls `memory_usage` every 5 seconds while the window is visible and shows the total, as Activity Monitor counts it, with a breakdown popover. How the number is measured, the debug memory log and the live recorder are in [How memory is measured](How-Memory-Is-Measured.md).
 
 ### Help links
 
 The star button calls `updates.openRepository()`. The bug button opens a small menu with **Report a Bug** and **Request a Feature**. `bugReportUrl(version, platform)` in `update/releases.ts` builds a GitHub new-issue link for the `bug_report.yml` form with `version` and `platform` filled in. `updates.reportBug()` asks the backend with `api.osInfo()` (`os_info`: `sw_vers -productVersion` on macOS, `/etc/os-release` on Linux, "Windows" on Windows) and `osLabel` makes "macOS 15.4.1". WebKit freezes the macOS version in the user agent at 10.15.7, so `platformName(navigator.userAgent)` is only a fallback and gives just the family name, such as "macOS". The field ids in `.github/ISSUE_TEMPLATE/bug_report.yml` must match those parameter names. The same links are in Settings, About.
+
+### The Keyboard Shortcuts window
+
+Help > Keyboard Shortcuts sets `helpDialogs.shortcutsOpen`, and `App.svelte` loads `ShortcutsDialog.svelte` only then. Its rows come from `shortcutSections` in `help/shortcuts.ts`:
+
+```mermaid
+flowchart LR
+  Spec["menuSpec(platform, 'app')"] --> Menu["menuShortcuts: every item<br/>with an accelerator"]
+  Extra["extraShortcuts: double Shift,<br/>F7, terminal, Markdown..."] --> All["shortcutSections"]
+  Menu --> All
+  All --> Filter["filterShortcuts(filter)"]
+  Filter --> Dialog["ShortcutsDialog.svelte"]
+```
+
+Menu rows are read from the menu bar's own data, so they cannot drift from the real keys. `formatKeys` writes an accelerator the platform's way ("⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere). Shortcuts no menu shows are listed by hand in `extraShortcuts`, and nothing checks them against the handlers. Two rows are off today: Bold (Cmd+B) says "In the Markdown editor and Preview" but works only in Preview Only, and Ctrl+PageDown and Ctrl+PageUp are listed on macOS, where nothing handles them. **Open Online Version** opens `SHORTCUTS_URL`, the wiki's [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md) page.
 
 ## Where the code lives
 
@@ -93,27 +91,21 @@ The star button calls `updates.openRepository()`. The bug button opens a small m
 | `src/lib/views/files/FileView.svelte` | Reports cursor details while it is the visible tab |
 | `src/lib/editor/setup.ts` | `languageName` |
 | `src/lib/stores/workspacePaths.ts` | `locateAbsolute` |
-| `src-tauri/src/memory.rs` | macOS process memory, WebKit helper matching |
+| `src/lib/stores/openingProgress.ts` | `loadingChangesText` |
+| `src/lib/help/shortcuts.ts`, `ShortcutsDialog.svelte`, `helpDialogs.svelte.ts` | The Keyboard Shortcuts window |
 | `src-tauri/src/commands/config.rs` | `memory_usage`, and `os_info`: the OS name and version |
 | `src/lib/update/releases.ts` | `bugReportUrl`, `featureRequestUrl`, `osLabel`, `platformName` |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | The bug form whose fields are pre-filled |
 
 ## Design decisions
 
-**Count the WebKit helpers.** Showing only our own process would be misleading, since most memory is the web view. Matching Activity Monitor lets users check the number.
-
-**Poll, but only while visible.** A 5 second poll is cheap, and skipping it in the background keeps idle CPU at zero.
+**Build the shortcuts list from the menu.** A hand-written list goes stale; the menu's data is the truth.
 
 **Reuse statuses, do not query.** The status of every repository is already in memory, so following the screen is only a `$derived`.
 
 **Pre-fill, do not collect.** The bug link carries the version and OS in the URL, and the user sees and sends the form themselves. The app gathers no other data.
 
 ## Bugs we fixed
-
-**The dev build found no WebKit helpers.**
-- **The issue:** the first memory probe found no WebKit helpers for the dev build, so only the app process was counted.
-- **Why it happened:** the dev build starts from a terminal, and macOS made the terminal the responsible process, so no helper pointed at our pid.
-- **The fix and why we chose it:** match helpers on whatever process is responsible for us, and when that is not us, also require a later start time and mark the result approximate. A Finder launch, what users run, stays exact.
 
 **The bar ignored the file on screen.**
 - **The issue:** the status bar always showed the active repository, even while you read a file from another one.
@@ -132,7 +124,8 @@ The star button calls `updates.openRepository()`. The bug button opens a small m
 
 ## Tests
 
-- `src-tauri/src/memory.rs`: `labels_web_kit_helpers` checks the role names; `measures_the_current_process` (macOS only) checks that our pid comes first and has memory.
+- `src/lib/help/shortcuts.test.ts`: macOS and other key spelling, every menu accelerator listed, the extra shortcuts and the filter.
+- `src/lib/stores/openingProgress.test.ts`: the Reading changes text.
 - `src/lib/editor/languageName.test.ts`: language names for common files, `Dockerfile` and unknown extensions.
 - `src/lib/update/releases.test.ts`: the pre-filled bug link, `osLabel` and the user agent fallback.
 - `src-tauri/src/commands/config.rs`: `reads_the_macos_product_version`, `reads_the_linux_distribution`.
@@ -141,7 +134,8 @@ The star button calls `updates.openRepository()`. The bug button opens a small m
 
 ## Keeping this page in sync
 
-- Update this page when `StatusBar.svelte`, `memory.rs` or the issue link helpers change.
+- Update this page when `StatusBar.svelte`, the shortcuts window or the issue link helpers change.
 - Update [Status Bar and Help](../usage/Status-Bar-and-Help.md) for new items or clicks.
-- Retake `status-bar.png`, `help-menu.png` and `settings-about.png` when they change.
+- Retake `status-bar.png`, `help-menu.png`, `settings-about.png` and `memory-log-settings.png` when they change (the shortcuts window shot, `menus-shortcuts-window.png`, belongs to [Menus](../usage/Menus.md)).
+- A shortcut no menu shows goes in `extraShortcuts`, and on [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md).
 - Related: [How Updates Work](How-Updates-Work.md), [How Workspaces Work](How-Workspaces-Work.md).

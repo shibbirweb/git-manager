@@ -3,8 +3,13 @@ use std::path::PathBuf;
 use std::sync::atomic::AtomicI32;
 use std::sync::Mutex;
 
-use notify_debouncer_full::{notify::RecommendedWatcher, Debouncer, RecommendedCache};
+use notify_debouncer_full::{notify::RecommendedWatcher, Debouncer, NoCache};
 use serde::Serialize;
+
+use crate::file_search::FileSearch;
+use crate::git_console::{self, GitConsole};
+use crate::mcp::Mcp;
+use crate::terminal::TerminalRegistry;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "mode", rename_all = "camelCase")]
@@ -51,7 +56,11 @@ impl LaunchMode {
     }
 }
 
-pub type RepoWatcher = Debouncer<RecommendedWatcher, RecommendedCache>;
+/// Without a file id cache: on macOS and Windows the default cache walks every
+/// file under the folder when watching starts (seconds on a big checkout) and
+/// keeps all their paths in memory. It only matters for pairing renames, which
+/// the watcher does not need: it only asks which repository changed.
+pub type RepoWatcher = Debouncer<RecommendedWatcher, NoCache>;
 
 pub struct AppState {
     pub launch: LaunchMode,
@@ -59,6 +68,17 @@ pub struct AppState {
     pub mergetool_exit_code: AtomicI32,
     /// Keyed by workspace root; one watcher per workspace folder.
     pub watchers: Mutex<HashMap<String, RepoWatcher>>,
+    /// Integrated terminal shells, killed at app exit.
+    pub terminals: TerminalRegistry,
+    /// The Search Everywhere indexes (files, then symbols on first use) and
+    /// Find in Files, alive only while the popup is used.
+    pub file_search: FileSearch,
+    /// The Git Console's ring buffer of recent git commands (shared with git/cli.rs).
+    pub git_console: &'static GitConsole,
+    /// The MCP server; nothing runs until a switch turns it on.
+    pub mcp: Mcp,
+    /// The debug memory log (memory_log.rs), off unless the setting turns it on.
+    pub memory_log: crate::memory_log::MemoryLog,
 }
 
 impl AppState {
@@ -67,6 +87,11 @@ impl AppState {
             launch,
             mergetool_exit_code: AtomicI32::new(1),
             watchers: Mutex::new(HashMap::new()),
+            terminals: TerminalRegistry::default(),
+            file_search: FileSearch::default(),
+            git_console: git_console::global(),
+            mcp: Mcp::default(),
+            memory_log: crate::memory_log::MemoryLog::default(),
         }
     }
 }

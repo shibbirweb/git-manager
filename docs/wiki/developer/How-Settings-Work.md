@@ -1,18 +1,12 @@
 # How settings work
 
-Settings live in `~/.gitmanager/`, much like VS Code's own folder: one file for preferences, one for app state. For the user side, see [Settings](../usage/Settings.md).
+Settings live in `~/.gitmanager/`, much like VS Code's own folder: one file for preferences, one for app state. For the user side, see [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md). Every key with its default and range is in [Settings Reference](Settings-Reference.md).
 
 ## Why we need it
 
-People expect a desktop app to remember their theme, fonts, layout and folders, and power users want to edit, back up or copy settings by hand. Browser storage in the web view would be invisible and tied to the bundle id; a plain JSON file in a known place is honest and easy to fix. A hand-edited file can contain anything, so every value is checked on load, and a file we could not parse is not overwritten while you fix it.
+People expect a desktop app to remember their theme, fonts, layout and folders, and power users want to edit or copy settings by hand. Browser storage in the web view would be invisible; a plain JSON file in a known place is honest and easy to fix. A hand-edited file can contain anything, so every value is checked on load.
 
 ## How it works
-
-```text
-~/.gitmanager/
-  settings.json   preferences shown in the Settings dialog
-  state.json      recent folders, workspaces, session, layout, update state
-```
 
 `config.rs` only knows two names, `settings` and `state`, in its `FILES` list. Any other name is an error, so the frontend can never read or write other paths (a test tries `../secrets`).
 
@@ -35,11 +29,11 @@ sequenceDiagram
     CFG->>FS: write .settings.json.tmp, then rename
 ```
 
-`load_in` returns `None` for a missing or empty file and `AppError::Invalid` for invalid JSON. `save_in` creates the folder on first save, pretty-prints, writes a temporary file and renames it, so a crash never leaves half a file.
+`load_in` returns `None` for a missing or empty file and `AppError::Invalid` for invalid JSON. `save_in` writes a temporary file and renames it, so a crash never leaves half a file.
 
 ### The store
 
-`src/lib/stores/settings.svelte.ts` exports `settings`, a `SettingsStore` with one `$state` field per value. The pure load, validate and save decisions live in `src/lib/stores/settingsData.ts`, with `defaultPreferences` for every preference.
+`src/lib/stores/settings.svelte.ts` exports `settings`, a `SettingsStore` with one `$state` field per value (`$state.raw` for the `mcpTools` record). The pure load, validate and save decisions live in `src/lib/stores/settingsData.ts`, with `defaultPreferences` for every preference.
 
 ```mermaid
 stateDiagram-v2
@@ -58,42 +52,53 @@ stateDiagram-v2
 
 Validation lives in the pure functions `parsePreferences` and `parseState`:
 
-- `pickBoolean` and `pickNumber` fall back to the default for a wrong type, and `pickNumber` clamps to a range (`FONT_SIZE_RANGE`).
-- Enums such as `theme`, `updateChannel` and `tabSize` (`TAB_SIZES`) must match a known value.
-- `normalizeFontFamily` removes characters that could break out of the CSS value and adds a `monospace` fallback.
+- Pickers per type: `pickBoolean`, `pickNumber` (clamped), `pickInteger`, `pickTenths`, `roundTo` and `pickOneOf` for enums.
+- Special values have their own: `normalizeFontFamily` (nothing that could break out of the CSS value), `pickThemeId`, `parseMcpPort`, `pickToolStates` and `clampTerminalScrollback`.
 - Unknown keys are kept and written back, so hand-added keys and keys from newer versions survive.
 
-`init()` loads each file on its own. If one is invalid JSON, only that file falls back to defaults and `loadError` (settings.json) or `stateLoadError` (state.json) is set, and a toast says so. `save()` debounces writes by `SAVE_DELAY_MS` (200 ms). `flush()` writes only the files `writableConfigs` allows, so a file that failed to parse is never overwritten automatically. Try Again rereads that file (`reload()` or `reloadState()`). Reset to Defaults clears `loadError`, and Reset in the state.json banner (`resetState()`, confirmed) writes a fresh state.json.
+`init()` loads each file on its own; an invalid one falls back to defaults alone and sets `loadError` or `stateLoadError`. `save()` debounces writes by 200 ms, and `flush()` writes only the files `writableConfigs` allows.
 
-`applyAppearance()` pushes the look into the document (`data-theme`, `--ui-size`, `--code-size`, `--font-mono`, `data-ligatures`), so a change applies everywhere at once.
+### Applying a change
+
+`setPreference(key, value)` sets the field, calls `applyAppearance()` and saves. `applyAppearance()` pushes the look into the document: the color theme (`applyColorTheme`, see [How Color Themes Work](How-Color-Themes-Work.md)), `--ui-size`, `--code-size`, `--code-line-height`, `--font-mono` and `data-ligatures`. `data-theme` is now always set, also for System, which is watched with `matchMedia` (`systemDark`, `colorMode`).
+
+Settings that need the backend or a running service are applied by `$effect`s in `App.svelte` once settings have loaded:
+
+- `gitConsole` calls `gitConsoleSetEnabled` (see [How the Git Console Works](How-the-Git-Console-Works.md)).
+- `mcpEnabled`, `cliEnabled`, `mcpPort` and `mcpTools` go to `mcpStore.configure`, and the memory log keys to `memoryLog.configure`, only in the main window, since a `git mergetool` window would compete for the port.
+- `renderWhitespace` goes to `setRenderWhitespace` in `editor/whitespace.ts`, which updates open editors.
+
+Others are read where they are used, such as `terminal/options.ts`.
 
 ### The dialog
 
-`SettingsDialog.svelte` has the tabs Appearance, Editor, Merge and Log, Layout, Updates, Settings Files and About. It opens from the header gear, Cmd+, (in `App.svelte`), the welcome screen and the Spaces item in the status bar. `settings.openDialog(section)` picks the starting section; Spaces opens Editor. You can drag it by its title areas, and a double-click re-centers it. Changed from defaults lists `changedPreferences()`, or "Nothing yet".
+`SettingsDialog.svelte` lists the sections of `SETTINGS_SECTIONS`: Appearance, Editor, Git (id `merge`), Layout, Terminal, GitHub, Automation, Updates, Settings Files and About. `settings.openDialog(section)` picks the start: Editor from the status bar's Spaces item, Terminal from Default Shell..., Automation from the MCP tools dialog, About from Git Manager > About, any section from the MCP tool `open_settings`.
 
-`editorFontFamily` defaults to `DEFAULT_EDITOR_FONT`, VS Code's macOS default. `mouseWheelZoom` turns on Ctrl or Cmd plus wheel over an editor; `WheelZoom` in `editor/wheelZoom.ts` turns every 50 px of scrolling into a `ZOOM_STEP` (0.5 px).
+Terminal loads the shell list when first shown; Automation refreshes the server status. Changed from defaults lists `changedPreferenceKeys()`, which compares records such as `mcpTools` by content.
 
 ## Where the code lives
 
 | File | What it does |
 | --- | --- |
-| `src-tauri/src/config.rs` | Allowed files, `load_in`, atomic `save_in`, `home_dir` |
-| `src-tauri/src/commands/config.rs` | `load_config`, `save_config`, `config_dir` |
+| `src-tauri/src/config.rs`, `commands/config.rs` | Allowed files, `load_in`, atomic `save_in`; the commands |
 | `src/lib/stores/settings.svelte.ts` | The store: load errors, debounced save, migration, `openDialog`, appearance |
 | `src/lib/stores/settingsData.ts` | Pure validation, JSON shape, what may be saved, session steps |
-| `src/lib/views/SettingsDialog.svelte` | The dialog, its tabs, dragging, Reset, Try Again, the state.json banner |
-| `src/lib/editor/wheelZoom.ts` | Ctrl plus wheel font size steps |
-| `src/app.css` | The light and dark color tokens that `data-theme` selects |
+| `src/lib/views/SettingsDialog.svelte` | The dialog and its sections, Reset, Try Again, the state.json banner |
+| `src/lib/views/settings/ColorThemePicker.svelte` | The color theme lists |
+| `src/lib/App.svelte` | Effects that pass settings to the backend |
+| `src/app.css` | The built-in color tokens |
 
 ## Design decisions
 
-**Two files, split by owner.** `settings.json` is what users edit; `state.json` is what the app remembers (recent folders, session, panel widths, `skippedVersion`). Mixing them would make hand edits risky.
+**Two files, split by owner.** `settings.json` is what users edit; `state.json` is what the app remembers (recent folders, session, panel sizes, `skippedVersion`). Mixing them would make hand edits risky.
 
 **Validate on load, not on use.** Every value is correct once `init()` returns, so no component needs guards.
 
 **Never overwrite a file that failed to parse.** Resetting it would silently destroy settings or history. The guard covers both files.
 
-**Migrate once from browser storage.** Settings used to live in `localStorage` under `git-merger:settings`, from before the rename to Git Manager. `shouldMigrateLegacy` copies it only on a real first run.
+**Migrate once from browser storage.** Settings used to live in `localStorage` under `git-merger:settings`. `shouldMigrateLegacy` copies them only on a real first run.
+
+**Section ids outlive labels.** "Merge and Log" became **Git** when commit and console settings joined it, but its id stays `merge`, so code, screenshots and the MCP tool did not change.
 
 ## Bugs we fixed
 
@@ -105,29 +110,26 @@ Validation lives in the pure functions `parsePreferences` and `parseState`:
 **The Settings dialog could not be moved.**
 - **The issue:** the dialog was fixed in the middle of the window.
 - **Why it happened:** it was a plain centered modal.
-- **The fix and why we chose it:** at the user's request it became draggable, clamped so it can always be grabbed again.
+- **The fix and why we chose it:** it became draggable by its title areas, clamped so it can always be grabbed again; a double-click re-centers it.
 
 **A typo in one settings file wiped the other.**
-- **The issue:** when settings.json or state.json was not valid JSON, both fell back to defaults. The next save, often right at start, rewrote state.json, so recent folders, the session and panel sizes were lost.
-- **Why it happened:** `init()` loaded both files in one `Promise.all` with a single `loadError`, and `flush()` always wrote state.json.
-- **The fix and why we chose it:** each file loads on its own with its own error, so a typo only affects that file. `writableConfigs` never writes a file that failed to parse, the rule settings.json already had. A toast, a banner in Settings (Try Again, Reset) and a Welcome screen note explain what happened. The decisions moved into `settingsData.ts` so they are tested.
+- **The issue:** when settings.json or state.json was not valid JSON, both fell back to defaults, and the next save rewrote state.json, losing recent folders and panel sizes.
+- **Why it happened:** `init()` loaded both files with a single `loadError`, and `flush()` always wrote state.json.
+- **The fix and why we chose it:** each file loads on its own, and `writableConfigs` never writes a file that failed to parse. A toast, a banner (Try Again, Reset) and a Welcome note explain it; the decisions moved into tested `settingsData.ts`.
 
 **Settings hints did not match what the app does.**
-- **The issue:** the Current line blame hint said a click copies the hash, the Ignore whitespace hint said you could toggle it per file, and "Nothing yet" under Changed from defaults never showed.
-- **Why it happened:** the blame click later started opening the Log, the merge tool toggle writes the global setting, and the list looped over every key, so its empty branch could never run.
-- **The fix and why we chose it:** the hints now say a click opens the commit in the Log and Option-click copies its hash, and that the merge tool's Ignore whitespace button changes this setting too. The list loops over `changedPreferences()`, so the empty state works. Honest hints are cheaper than surprised users.
+- **The issue:** the Current line blame hint said a click copies the hash, the Ignore whitespace hint said you could toggle it per file, and "Nothing yet" never showed.
+- **Why it happened:** the blame click later started opening the Log, the merge tool toggle writes the global setting, and the list looped over every key.
+- **The fix and why we chose it:** the hints now say what the app does, and the list loops over the changed keys. Honest hints are cheaper than surprised users.
 
 ## Tests
 
 - `src-tauri/src/config.rs`: `missing_files_load_as_none_and_the_folder_is_created_on_save`, `files_are_pretty_printed_and_kept_separate`, `unknown_names_and_bad_json_are_errors`.
-- `src/lib/stores/settingsData.test.ts`: validation, `stateToJson`, `writableConfigs`, `shouldMigrateLegacy` and `sessionSteps`.
+- `src/lib/stores/settingsData.test.ts`: every validator, `parseState`, `stateToJson`, `writableConfigs`, `shouldMigrateLegacy`, `sessionSteps` and `changedPreferenceKeys`.
 - `src/lib/stores/fontFamily.test.ts` and `src/lib/editor/wheelZoom.test.ts`.
-
-When you add a setting, add it to `Preferences`, `defaultPreferences`, `parsePreferences` and `preferences()`.
 
 ## Keeping this page in sync
 
-- Update this page when a setting is added or removed, or when `config.rs` changes how files are read or written.
-- Update [Settings](../usage/Settings.md) with every new option and its default.
-- Retake `settings-appearance.png`, `settings-editor.png`, `settings-editor-more.png`, `settings-merge.png`, `settings-layout.png`, `settings-files.png`, `settings-state-error.png` and `dark-theme.png` when a tab changes.
+- Adding a setting: follow the checklist in [Settings Reference](Settings-Reference.md), and describe it in [Settings](../usage/Settings.md) or [Terminal, GitHub and Automation Settings](../usage/Settings-Terminal-and-Automation.md).
+- Update this page when `config.rs` changes or a section is added, and retake the `settings-*.png` screenshots and `dark-theme.png` when a section changes.
 - Related: [How Updates Work](How-Updates-Work.md), [Frontend](Frontend.md).

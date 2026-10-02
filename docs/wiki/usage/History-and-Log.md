@@ -1,13 +1,14 @@
 # History and Log
 
-The Log shows the history of the active repository: every commit, drawn as a graph so you can see where branches split and join. Select a commit to read it and see what it changed. Right-click it to copy, undo or reuse it.
+The Log shows the history of the active repository as a graph, so you can see where branches split and join. Select a commit to read it; right-click it to copy, undo or reuse it.
 
 ## Open the Log
 
 - Click the Log icon (the clock) in the left activity bar, below the Changes and Branches icons.
-- Or press Shift+Cmd+L.
+- Or press Shift+Cmd+L (**View > Log**), or choose **Git > Show Git Log** (Cmd+9).
+- Or choose **Show Log** in a repository's **...** menu in [Changes](Repository-Actions.md), which makes that repository active first.
 
-The Log opens in the middle of the window. Click the icon or press the shortcut again to hide it. It always shows the **active repository**; switch repositories from the header (see [Workspaces](Workspaces.md)).
+The Log opens in the middle of the window. Click the icon or press Shift+Cmd+L again to hide it. It always shows the **active repository**; switch repositories from the header (see [Workspaces](Workspaces.md)).
 
 ![Log with the branch graph](../images/log-graph.png)
 
@@ -17,26 +18,19 @@ The Log opens in the middle of the window. Click the icon or press the shortcut 
 
 Each row is one commit (a saved snapshot with a message):
 
-- **Graph**: colored lanes show branches. A dot is a commit; a line splitting or joining is a branch or a merge. The commit you have checked out (HEAD) is highlighted.
-- **Subject**: the first line of the commit message, with labels for branches and tags that point at it, such as `main`, `origin/main` or `v1.1.0`. When there are more than three, a **+2** label lists the rest on hover.
-- **Author**, **Date** and the short **Hash**. Recent dates read "2 h ago", "yesterday" or "6 d ago"; older ones show the day, such as "Sep 22, 2026". Hover the author for the email, or the date for the exact time.
+- **Graph**: colored lanes show branches; a line splitting or joining is a branch or a merge. The commit you have checked out (HEAD) is highlighted.
+- **Subject**: the first line of the message, with labels for the branches and tags that point at it, such as `origin/main` or `v1.1.0`. Past three, a **+2** label lists the rest on hover.
+- **Author**, **Date** and the short **Hash**. Recent dates read "2 h ago" or "yesterday"; older ones show the day. Hover the author for the email, or the date for the exact time.
 
-History loads 300 commits at a time and more as you scroll, so even huge repositories open quickly. The count on the right of the toolbar reads, for example, **13 commits**, or **300+ commits** while there is more to load.
+History loads 300 commits at a time and more as you scroll, so even huge repositories open quickly. The toolbar count reads, for example, **300+ commits** while there is more to load.
 
-The toolbar also has:
-
-- **All branches**: on by default, it shows commits from every local and remote branch (like `git log --all`). Turn it off to see only the history of what you have checked out. The same switch is in Settings, Merge and Log.
-- The circular arrow refreshes the history. It also refreshes on its own after commits, checkouts, fetches and similar.
+**All branches** in the toolbar, on by default, shows commits from every local and remote branch (tags and stashes are not followed); off, only the history of what you have checked out. It is the same as **Show all branches in the log** in Settings > Git. The history refreshes by itself after commits, checkouts and fetches, and the circular arrow refreshes it by hand.
 
 ## Find a commit
 
-Type in **Filter by message, author or hash**. The list narrows to commits whose subject (the first line of the message), author name or email contains the text, or whose hash starts with it. The count changes to, for example, **4 of 300+ loaded commits**.
+Type in **Filter by message, author or hash**. The list keeps commits whose subject, author name or email contains the text, or whose hash starts with it, and the count reads, for example, **4 of 300+ loaded commits**.
 
-The filter only searches commits that are already loaded. While there is more history, a **Load more** button appears next to the count: click it to search further back. Press Esc or click the x in the box to clear the filter.
-
-## Keyboard
-
-Click in the list, then use Up and Down, Page Up and Page Down, Home and End to move the selection. In the filter box, Down or Enter jumps into the list.
+The filter only searches loaded commits; **Load more** next to the count searches further back. Press Esc to clear it. In the list, Up, Down, Page Up, Page Down, Home and End move the selection; in the filter box, Down or Enter jumps into the list.
 
 ## Commit details
 
@@ -44,23 +38,23 @@ Click in the list, then use Up and Down, Page Up and Page Down, Home and End to 
 
 *The selected commit: message, author, date, hash, parents, changed files and the diff.*
 
-Selecting a commit opens its details under the list. Drag the bar between them to give either more room, and drag the line between the details and the diff to widen either side.
+Selecting a commit opens its details under the list. Drag the bars between the list, the details and the diff to resize them.
 
 On the left:
 
 - The full commit message.
-- **Author** with email, and **Date**. **Committer** (with its own date) is shown too when someone else committed it, for example after a rebase or a cherry-pick.
+- **Author** and **Date**, and the **Committer** when someone else committed it, for example after a rebase.
 - **Hash**, with a button to copy it.
-- **Parent** (or **Parents** for a merge). Click one to jump to it. A parent that is not loaded yet is greyed out; scroll down to load it.
-- **1 changed file** (or more), each with its status letter: **M** modified, **A** added, **D** deleted, **R** renamed, **C** copied, **T** type changed. Hover a file for its full path. Use Up and Down to step through them.
+- **Parent** (or **Parents** for a merge). Click one to jump to it; one not loaded yet is greyed out.
+- **1 changed file** (or more), each with its status letter (**M** modified, **A** added, **D** deleted, **R** renamed, **C** copied, **T** type changed). Use Up and Down to step through them.
 
-On the right is the diff of the selected file: **Parent** on the left, the commit's short hash on the right. It is read-only and works like the [Diffs](Diffs.md) view, with the change arrows, **Collapse unchanged** and [Blame](Blame.md) for the file as it was at that commit.
+On the right is the read-only diff of the selected file, **Parent** against the commit. It works like the [Diffs](Diffs.md) view, with **Collapse unchanged** and [Blame](Blame.md) of the file at that commit.
 
-When you open a commit from blame, the Log loads more history until it finds it, and the diff opens on the line you clicked. If it is not there, a note says **Commit is not in the loaded history**; with **All branches** off, try turning it on.
+When you open a commit from blame, the Log loads history until it finds it, and the diff opens on the line you clicked. If it is not there, a note says **Commit is not in the loaded history**; try turning **All branches** on.
 
 ## Open a commit in a tab
 
-A big change is easier to read with the whole editor area. Like in VS Code, open a commit in its own tab:
+Open a commit in its own tab to read a big change with the whole editor area:
 
 - Double-click it in the list, or select it and press Enter.
 - Click **Open in Tab** next to the message, or choose it in the right-click menu.
@@ -70,7 +64,7 @@ A big change is easier to read with the whole editor area. Like in VS Code, open
 
 *The commit in a tab: the same details and changed files, with the diff using the whole editor area.*
 
-The tab shows the short hash; hover it for the message. Opening the same commit again goes back to its tab, and a **Parent** opens in a tab too. Right-click the tab for **Copy Commit Hash**. Click the Log button to get back to the list.
+The tab shows the short hash; hover it for the message. Opening the same commit again goes back to its tab. Right-click the tab for **Copy Commit Hash**.
 
 ## Right-click a commit
 
@@ -78,15 +72,15 @@ The tab shows the short hash; hover it for the message. Opening the same commit 
 
 *Everything you can do with a commit.*
 
-- **Open in Tab** opens the commit in its own tab (the same as a double-click).
-- **Copy Revision Hash** copies the full hash.
-- **New Branch Here...** creates a branch that starts at this commit. **Checkout branch** is ticked, so you switch to it right away.
-- **Checkout Revision** checks out the commit itself. This is a "detached HEAD": you are not on any branch, so create a branch if you want to keep new commits made there. You are asked first.
+- **Open in Tab** (the same as a double-click) and **Copy Revision Hash**.
+- **New Branch Here...** creates a branch at this commit and, with **Checkout branch** ticked, switches to it.
+- **Checkout Revision** checks out the commit itself, after asking. This is a "detached HEAD": you are on no branch, so create one to keep new commits made there.
 - **Cherry-Pick** copies this commit's change onto your current branch as a new commit.
 - **Revert Commit** makes a new commit that undoes this one. The history stays as it is, which makes it safe for commits you already pushed.
+- **Interactively Rebase from Here...** opens the [Interactive Rebase](Interactive-Rebase.md) dialog for this commit and the ones after it, to reorder, squash, reword or drop them.
 - **Reset Current Branch to Here...** moves your current branch back (or forward) to this commit.
 
-Cherry-Pick and Revert are disabled for merge commits (the menu says **merge commit**). Everything except Copy is disabled while another operation runs. If Cherry-Pick or Revert stops on conflicts, Git Manager opens the Conflicts dialog; see [Resolving Conflicts](Resolving-Conflicts.md).
+Cherry-Pick, Revert and Interactive Rebase are disabled for merge commits (the menu says **merge commit**). Interactive Rebase also needs a branch and no other operation in progress. Everything except Copy is disabled while another operation runs. If Cherry-Pick or Revert stops on conflicts, Git Manager opens the Conflicts dialog; see [Resolving Conflicts](Resolving-Conflicts.md).
 
 ### Reset modes
 
@@ -95,6 +89,9 @@ Reset opens a dialog such as **Reset main to a9f492b** that asks how to treat th
 - **Soft**: move the branch only. Those changes stay staged.
 - **Mixed**: move the branch and reset the index (the staging area). The changes stay in your files, unstaged.
 - **Hard**: move the branch and throw away all changes in the index and your files. Git Manager asks once more (**Hard Reset**), because this cannot be undone.
+- **Keep**: move the branch and update the files the move changes, but keep your uncommitted changes. For example, an uncommitted fix in `README.md` stays while the branch moves back. Git refuses if one of your changed files would be overwritten.
+
+**Git > Reset HEAD...** resets to any revision you type, with the same modes. The Reset HEAD dialog is described in [Git Dialogs](Git-Dialogs.md#reset-head). With a commit selected in the Log, **Git > Patch > Create Patch from Commit...** saves it as a patch file (see [Git Menu](Git-Menu.md)).
 
 Example: you committed "WIP" twice on `main` and want to redo them as one commit. Right-click the commit before them, choose Reset, pick **Soft**, then commit again from [Changes](Changes-and-Commits.md).
 

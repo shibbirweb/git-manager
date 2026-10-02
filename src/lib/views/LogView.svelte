@@ -2,6 +2,8 @@
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import CommitDetails from "$lib/log/CommitDetails.svelte";
+  import { logSelection } from "$lib/log/logSelection.svelte";
+  import { startInteractiveRebase } from "./git/gitMenuActions";
   import { fullDate, relativeTime, sortRefs } from "$lib/log/format";
   import { GraphBuilder, type GraphRow } from "$lib/log/graph";
   import GraphCell, { LANE_COLORS, graphColumnWidth } from "$lib/log/GraphCell.svelte";
@@ -136,6 +138,20 @@
     if (initialLoaded && hasMore && !loading && !query && !loadError && nearEnd) {
       untrack(() => void loadMore());
     }
+  });
+
+  // The Git menu's Create Patch from Commit and Interactive Rebase start from the selected commit.
+  $effect(() => {
+    void version;
+    const commitId = selectedId;
+    const index = commitId ? indexById.get(commitId) : undefined;
+    const commit = index === undefined ? null : (commits[index] ?? null);
+    logSelection.current =
+      commit && repoPath ? { repoRoot: repoPath, commitId: commit.id, shortId: commit.shortId, summary: commit.summary } : null;
+  });
+
+  $effect(() => () => {
+    logSelection.current = null;
   });
 
   $effect(() => {
@@ -544,6 +560,11 @@
           description: "Move the branch and discard all changes in the index and working tree.",
           danger: true,
         },
+        {
+          value: "keep",
+          label: "Keep",
+          description: "Move the branch and reset the files it changes, keeping your local changes.",
+        },
       ],
     });
     if (!mode) {
@@ -569,6 +590,8 @@
     selectedId = commit.id;
     const busy = repoStore.busy !== null;
     const isMerge = commit.parents.length > 1;
+    const onBranch = repoStore.status?.head.branch != null;
+    const operation = (repoStore.status?.op.kind ?? "none") !== "none";
     const items: MenuItem[] = [
       { label: "Open in Tab", hint: "double-click", action: () => openInTab(commit.id) },
       { label: "Copy Revision Hash", action: () => void copyHash(commit) },
@@ -587,6 +610,16 @@
         disabled: busy || isMerge,
         hint: isMerge ? "merge commit" : undefined,
         action: () => revert(commit),
+      },
+      {
+        label: "Interactively Rebase from Here...",
+        disabled: busy || isMerge || !onBranch || operation,
+        hint: isMerge ? "merge commit" : undefined,
+        action: () => {
+          if (repoPath) {
+            void startInteractiveRebase(repoPath, commit.id);
+          }
+        },
       },
       { separator: true },
       { label: "Reset Current Branch to Here...", disabled: busy, action: () => void resetHere(commit) },

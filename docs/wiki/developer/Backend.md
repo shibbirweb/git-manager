@@ -1,6 +1,6 @@
 # Backend
 
-The backend is the Rust crate in `src-tauri/`. It owns everything that touches git and the disk. For the big picture, read [Architecture](Architecture.md) first.
+The backend is the Rust crate in `src-tauri/`. It owns everything that touches git and the disk. Read [Architecture](Architecture.md) first; the terminal, search, scripts, GitHub, MCP and other services are on [Backend Services](Backend-Services.md).
 
 ## Reads and writes take different roads
 
@@ -11,19 +11,20 @@ flowchart TB
   Open --> G2["git2 0.21<br/>status, diff, log, refs, stash"]
   G2 --> DTO["serde DTO<br/>camelCase"]
   Cmd -->|"write"| Cli["git::cli::run<br/>run_with_stdin, run_streaming"]
+  Cli --> Console["git_console::record<br/>only while the setting is on"]
   Cli --> Bin["your git binary<br/>hooks, credentials, signing"]
   Bin --> Out["GitOutput<br/>or AppError::Command"]
-  Cmd -->|"blame"| Porc["git blame --porcelain<br/>--contents - for unsaved text"]
+  Cmd -->|"blame, file history"| Porc["git blame --porcelain<br/>git log --follow, -L"]
   DTO --> Back["back to the UI"]
   Out --> Back
   Porc --> Back
 ```
 
-Why two roads? git2 reads are fast and typed. A write through libgit2 would skip your hooks, credential helpers, signing and config, so writes use the CLI, exactly like your terminal.
+Why two roads? git2 reads are fast and typed. A write through libgit2 would skip your hooks, credential helpers, signing and config, so writes use the CLI. A few reads use it too: blame (much faster in git), and file and line history, which libgit2 cannot do.
 
 ## Commands
 
-Every command lives in `src-tauri/src/commands/<area>.rs` and is listed in the `tauri::generate_handler!` block in `src-tauri/src/lib.rs`. Unlisted commands do not exist for the UI.
+Every command lives in `src-tauri/src/commands/<area>.rs` (the GitHub ones in `github/commands.rs`) and is listed in the `tauri::generate_handler!` block in `src-tauri/src/lib.rs`. Unlisted commands do not exist for the UI. The full list is in [Commands and Events](Commands-and-Events.md).
 
 A typical command:
 
@@ -34,26 +35,29 @@ pub async fn get_status(repo_path: String) -> AppResult<RepoStatus> {
 }
 ```
 
-**Naming.** Arguments are snake_case in Rust and camelCase in JS (`repo_path` is `repoPath`); Tauri converts them. DTOs use `#[serde(rename_all = "camelCase")]`. Name arguments after what they hold (`commit_id`, `stash_index`), never just `id` or `path`.
+**Naming.** Arguments are snake_case in Rust and camelCase in JS (`repo_path` is `repoPath`); Tauri converts them. DTOs use `#[serde(rename_all = "camelCase")]`. Name arguments after what they hold (`commit_id`, `stash_index`, `terminal_id`), never just `id` or `path`.
 
 **Adding a command, step by step:**
 
-1. Write it in the right `commands/*.rs` file, doing the work inside `blocking`.
+1. Write it in the right `commands/*.rs` file as an `async fn`, doing the work inside `blocking`.
 2. Register it in `lib.rs`.
 3. Add a typed wrapper in `src/lib/api.ts` and any DTO mirror in `src/lib/types.ts`.
-4. Add a test in `commands/tests.rs` or `git/tests.rs` (see [Testing](Testing.md)).
+4. Add a test next to it or in `commands/tests.rs` (see [Testing](Testing.md)).
+5. Add its row to the right Commands page.
 
-### Why `commands::blocking`
+### Why `async` and `commands::blocking`
 
-Git work blocks on files or child processes. `blocking` runs the closure on Tauri's blocking thread pool (`spawn_blocking`), so the IPC runtime stays free and the UI never stalls while a push runs. If the background task cannot finish, the UI gets an `AppError::Invalid` ("Background task failed").
+A Tauri command without `async` runs on the main thread, where anything slow freezes the window. So every command that does real work is `async`, and `blocking` runs the closure on Tauri's blocking thread pool (`spawn_blocking`); if it cannot finish, the UI gets "Background task failed". Only tiny commands stay synchronous, such as `get_launch_mode` and `terminal_write`, which only queues bytes so keystrokes keep their order.
 
 ### Operations that may stop on conflicts
 
-Merge, rebase, pull, cherry-pick and revert return `OpOutcome { output, conflicts }`. `commands::outcome` treats a failed git command that left conflicts behind as a normal result, so the UI opens the conflicts dialog instead of a red toast. Use `run_op` for these.
+Merge, rebase, pull, cherry-pick, revert, unshelve and apply patch return `OpOutcome { output, conflicts }`. `commands::outcome` treats a failed command that left conflicts as a normal result, so the UI opens the conflicts dialog instead of a toast. Use `run_op` for these.
 
-### Paths from the UI
+### Input from the UI
 
-`commands::safe_join(repo_path, file_path)` joins a repo-relative path onto the root and refuses empty or absolute paths and any `..` part. Use it for every path from the UI. `with_paths` builds `git <args> -- <paths>`, so a file name is never read as an option.
+- `commands::safe_join(repo_path, file_path)` refuses empty or absolute paths and any `..` part. Use it for every path from the UI.
+- `with_paths` builds `git <args> -- <paths>`, so a file name is never read as an option.
+- `reject_option(value, what)` refuses a name or revision starting with `-` where it cannot go after `--`.
 
 ## Errors: `AppError`
 
@@ -72,59 +76,44 @@ It serializes as `{ kind, message }`, mirrored in `types.ts`. Use `?` for git2 a
 
 `src-tauri/src/state.rs` holds the little state the backend keeps between calls:
 
-- `launch`: `LaunchMode::App { repo_path }` or `LaunchMode::MergeTool { base, local, remote, merged }`, parsed from the command line (Finder's `-psn_` argument is ignored).
-- `mergetool_exit_code`: starts at 1 (unresolved) and becomes 0 only after an explicit save, because `git mergetool` trusts the exit code. See [How Mergetool Mode Works](How-Mergetool-Mode-Works.md).
-- `watchers`: one file watcher per workspace folder, keyed by folder root.
+- `launch`: `LaunchMode::App { repo_path }` or `LaunchMode::MergeTool { base, local, remote, merged }`, from the command line.
+- `mergetool_exit_code`: 1 (unresolved) until an explicit save, because `git mergetool` trusts it.
+- `watchers`: one file watcher per workspace folder.
+- `terminals`, `file_search`, `git_console`, `mcp` and `memory_log`: the services on [Backend Services](Backend-Services.md), each empty until its feature is used.
 
-There is no repository cache on purpose.
+There is no repository cache on purpose. On exit, `lib.rs` stops the terminals, the MCP server and the memory log.
 
 ## The git CLI runner: `git/cli.rs`
 
 `cli::command(repo_path)` builds every git process the app starts:
 
 - **The git binary** is the first of `/opt/homebrew/bin/git`, `/usr/local/bin/git` and `/usr/bin/git` that exists, or `git`.
-- **`PATH` comes from your login shell.** Apps started from Finder get a tiny `PATH`, which breaks hooks that need `node` or `husky`, so the runner asks `$SHELL -l -c` once for the real `PATH` (3 second limit, Homebrew fallback) and caches it.
-- **`GIT_TERMINAL_PROMPT=0`**, so git never waits for a password prompt that a GUI cannot answer. It fails with a message instead.
-- **`GIT_EDITOR=true` and `GIT_SEQUENCE_EDITOR=true`**, so `--continue` and similar accept the prepared message instead of opening an editor.
+- **`PATH` comes from your login shell** (`$SHELL -l -c`, asked once with a 3 second limit), because apps started from Finder get a tiny `PATH` that breaks hooks needing `node` or `husky`.
+- **`GIT_TERMINAL_PROMPT=0`**, so git never waits for a password prompt a GUI cannot answer, and **`GIT_EDITOR=true`, `GIT_SEQUENCE_EDITOR=true`**, so `--continue` never opens an editor.
 - **stdin is closed** unless the command sends input.
 
-Three ways to run it: `run` (error on non-zero exit), `run_with_stdin` (for example a commit message) and `run_streaming`, which reports each progress line through a callback. `fetch_all`, `pull` and `push` forward those lines as `git-progress` events.
+It runs as `run`, `run_with_stdin`, `run_raw` (no error on a non-zero exit), `run_bytes` (binary output, for patches), the `*_with_env` variants and `run_streaming` (each progress line to a callback). All of them call `git_console::record`, which records nothing while the Git Console is off. Cancellable commands like clone go through `git/cancel.rs`.
 
 ## git2 notes
 
-- The crate uses git2 0.21 with `default-features = false`. Network and auth features are not needed, because fetch, pull and push go through the CLI.
-- Open with `git::repo::open` (exactly that work tree); `git::repo::discover` is only for a path somewhere inside one.
-- In 0.21 many accessors return a `Result`, often of an `Option`. The pattern here is `.ok().flatten()` with a default, for example `commit.summary().ok().flatten().unwrap_or_default()`.
+- git2 0.21 with `default-features = false`: no network or auth features, because the network goes through the CLI.
+- Open with `git::repo::open` (exactly that work tree); `git::repo::discover` is only for a path inside one.
+- Many accessors return a `Result` of an `Option`; the pattern is `.ok().flatten()` with a default.
 
 ## The watcher: `watcher.rs`
 
-`watch_workspace(workspaceRoot, repoRoots)` starts one recursive watcher per workspace folder and replaces that folder's old one. `unwatch_workspace` drops it when a folder is removed. It uses `notify-debouncer-full` with a 300 ms debounce. For each batch it:
-
-- drops noise inside `.git`: `objects/`, `logs/`, `lfs/` and `*.lock` files;
-- drops work tree paths that the repository ignores (`status_should_ignore`);
-- gives each path to the deepest repository that contains it;
-- emits `repo-changed { repoPath, gitDir, workTree }` per repository, and `workspace-changed` when visible files or any `.git` folder appear or vanish, with `reposChanged` when a repository may have appeared or disappeared.
-
-A repository enclosing the folder gets its `.git` watched too. The attribution logic is a pure, tested function, `attribute`.
+`watch_workspace` starts one recursive watcher per workspace folder (`notify-debouncer-full`, 300 ms debounce) on a blocking thread, and `unwatch_workspace` stops it off the main thread too, because stopping waits for the watcher's threads. It uses `NoCache`: the default file id cache walked every file under the folder when watching started. Each batch drops noise inside `.git` and ignored work tree paths, maps worktree and submodule git folders back to their repository, gives each path to the deepest repository, emits `repo-changed` and `workspace-changed`, and marks the search indexes stale. The attribution logic is a pure, tested function, `attribute`. See [How Folder Watching Works](How-Folder-Watching-Works.md).
 
 ## Config files: `config.rs`
 
-`load_config` and `save_config` read and write `~/.gitmanager/settings.json` and `state.json`, and no other names. A missing or empty file loads as `None`, and invalid JSON in either file is an error, not a silent reset. The frontend reports a broken file and leaves it alone until you fix it or reset it (see [How settings work](How-Settings-Work.md)). Writes go to `.settings.json.tmp` first and are renamed over the real file, so a crash never leaves half a file. `commands/config.rs` also has `memory_usage` and `os_info` (the OS name and version for bug reports).
+`load_config` and `save_config` read and write `~/.gitmanager/settings.json` and `state.json`, and no other names. A missing file loads as `None`; invalid JSON is an error, not a silent reset (see [How Settings Work](How-Settings-Work.md)). Writes go through a temporary file. `github.json`, `mcp.json` and `logs/memory.log` belong to their features.
 
-## Workspace files: `workspace_file.rs`
-
-Reads `.gitmanager-workspace` and VS Code `.code-workspace` files (JSON with comments), returning the folders that exist plus the `missing` ones. Writing stores paths relative to the file, keeps other keys, folder entries and comments, and goes through a temporary file. See [How Workspaces Work](How-Workspaces-Work.md).
-
-## Memory readout: `memory.rs`
-
-Reports memory like Activity Monitor: the physical footprint of the app plus its WebKit helpers. Started from a terminal, the terminal is the macOS "responsible" process, so helpers are also matched by start time and the result is `approximate`. Other platforms get a stub behind `cfg`. See [How the Status Bar Works](How-the-Status-Bar-Works.md).
-
-## Test support
-
-`test_support.rs` builds real temporary repositories with an isolated git config. See [Testing](Testing.md).
+`workspace_file.rs` reads and writes workspace files, `memory.rs` reports memory like Activity Monitor (see [How the Status Bar Works](How-the-Status-Bar-Works.md)), and `test_support.rs` builds temporary repositories for the tests.
 
 ## Lessons learned
 
-**git2 0.21 changed its accessors.** After upgrading, accessors like `commit.summary()` returned a `Result` instead of an `Option<&str>`. We handled each with `.ok()`, `.flatten()` and `filter_map`, not `unwrap`, so a strange ref name or a non UTF-8 summary shows as empty instead of crashing.
+**git2 0.21 changed its accessors.** `commit.summary()` and others started returning a `Result`. We handled each with `.ok()` and `.flatten()`, not `unwrap`, so a strange ref name shows as empty instead of crashing.
 
-**A capability file broke the build.** When the opener plugin was removed for a while, `capabilities/default.json` still listed its permission. `tauri-build` checks capabilities at compile time and failed with "Permission opener:default not found". Keep capabilities in step with the plugins in `lib.rs` and `Cargo.toml`: remove the permission in the same change as the plugin.
+**A capability file broke the build.** With the opener plugin removed, `capabilities/default.json` still listed its permission and `tauri-build` failed ("Permission opener:default not found"). Change a permission in the same commit as its plugin.
+
+**A command without `async` froze the window.** `watch_workspace` was a plain `fn`, so it ran on the main thread, and watching a big folder blocked the UI for seconds. Commands that do real work are now `async` with the slow part in `blocking` (details in [How Workspaces Work](How-Workspaces-Work.md)).

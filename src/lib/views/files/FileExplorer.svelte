@@ -1,16 +1,24 @@
 <!-- Right sidebar: the work tree, loaded one folder at a time. -->
 <script lang="ts">
+  import { revealItemInDir } from "@tauri-apps/plugin-opener";
+  import { tick } from "svelte";
   import { api, errorMessage } from "$lib/api";
-  import { isCommitTab } from "$lib/stores/commitTabs";
+  import { isPseudoTab } from "$lib/stores/pseudoTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
+  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { baseName, folderFor, joinPath, locateAbsolute, parentOf, relativeTo } from "$lib/stores/workspacePaths";
   import type { FileStatus } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { platformName } from "$lib/update/releases";
   import { pickAndAddFolder } from "../repoPicker";
+  import { ignoreMenu } from "$lib/ignore/ignoreActions";
+  import { centeredScrollTop, foldersToOpen } from "./locate";
+  import { revealLabel, terminalFolderFor } from "./reveal";
   import { deletedByFolder, type FileTone, marksByPath, tonesByPath } from "./tones";
+  import { lfsStore } from "../git/lfs/lfsStore.svelte";
 
   // Every path in the tree is absolute, so several workspace folders never collide.
   interface TreeEntry {
@@ -32,6 +40,7 @@
   }
 
   const ROW_HEIGHT = 24;
+  const REVEAL_LABEL = revealLabel(platformName(navigator.userAgent));
   const OVERSCAN = 10;
 
   /** Loaded directory contents keyed by absolute directory path. */
@@ -70,6 +79,24 @@
   const deleted = $derived(deletedByFolder(workspaceFiles));
   const repoRoots = $derived(repoStore.repos.map((repo) => repo.root));
   const repoRootSet = $derived(new Set(repoRoots));
+
+  // LFS files, read once per status refresh while the panel is open, for the "LFS" badges.
+  $effect(() => {
+    for (const repo of repoStore.repos) {
+      lfsStore.follow(repo.root, repoStore.statuses[repo.root] ?? null);
+    }
+    lfsStore.retain(repoRoots);
+  });
+  /** Absolute paths of the files stored in Git LFS. */
+  const lfsPaths = $derived.by(() => {
+    const paths = new Set<string>();
+    for (const [repoRoot, status] of Object.entries(lfsStore.statuses)) {
+      for (const filePath of status.files ?? []) {
+        paths.add(joinPath(repoRoot, filePath));
+      }
+    }
+    return paths;
+  });
 
   /** Branch shown next to a repository folder. */
   function branchOf(dirPath: string): string | null {
@@ -172,10 +199,19 @@
     }
   });
 
+  /** The file in the editor, when it is a real file inside the workspace. */
+  const openedFile = $derived.by(() => {
+    const openPath = repoStore.openFilePath;
+    if (!openPath || isPseudoTab(openPath) || !folderFor(folders, openPath)) {
+      return null;
+    }
+    return openPath;
+  });
+
   // Follow the file opened in the editor tab.
   $effect(() => {
     const openPath = repoStore.openFilePath;
-    if (openPath && !isCommitTab(openPath)) {
+    if (openPath && !isPseudoTab(openPath)) {
       selectedPath = openPath;
     }
   });
@@ -284,6 +320,36 @@
     }
   }
 
+  /** Opens the folders down to the file in the editor, selects it and scrolls to it. */
+  async function selectOpenedFile(): Promise<void> {
+    const filePath = openedFile;
+    const folder = filePath ? folderFor(folders, filePath) : null;
+    if (!filePath || !folder) {
+      return;
+    }
+    const dirPaths = foldersToOpen(folder.root, filePath);
+    expanded = new Set([...expanded, ...dirPaths]);
+    await Promise.all(dirPaths.filter((dirPath) => !children.has(dirPath)).map((dirPath) => loadDir(dirPath)));
+    selectedPath = filePath;
+    // Wait for the list to grow, or the new scroll position would be cut short.
+    await tick();
+    const index = rows.findIndex((row) => row.entry.path === filePath);
+    if (index < 0) {
+      const reason = truncated.has(parentOf(filePath))
+        ? "Its folder has more than 5000 entries, and only the first 5000 are shown."
+        : "Its folder could not be read.";
+      toast.info(`${baseName(filePath)} is not in the list`, reason);
+      return;
+    }
+    if (listEl) {
+      const target = centeredScrollTop(index, ROW_HEIGHT, listEl.scrollTop, listEl.clientHeight);
+      if (target !== null) {
+        listEl.scrollTop = target;
+      }
+      listEl.focus();
+    }
+  }
+
   function scrollIntoView(index: number): void {
     if (!listEl) {
       return;
@@ -338,6 +404,14 @@
     }
   }
 
+  async function reveal(absolutePath: string): Promise<void> {
+    try {
+      await revealItemInDir(absolutePath);
+    } catch (error) {
+      toast.error(`${REVEAL_LABEL} failed`, errorMessage(error));
+    }
+  }
+
   function openMenu(event: MouseEvent, row: Row): void {
     selectedPath = row.entry.path;
     const absolute = row.entry.path;
@@ -379,6 +453,20 @@
         });
       }
     }
+    const ignoreItem = location && !row.entry.deleted ? ignoreMenu(location.repo.root, location.repoPath, row.entry.isDir) : null;
+    if (ignoreItem) {
+      items.push({ separator: true }, ignoreItem);
+    }
+    if (!row.entry.deleted) {
+      items.push(
+        { separator: true },
+        { label: REVEAL_LABEL, action: () => void reveal(absolute) },
+        {
+          label: "Open in Integrated Terminal",
+          action: () => void terminalStore.create({ folderPath: terminalFolderFor(absolute, row.entry.isDir) }),
+        },
+      );
+    }
     items.push(
       { separator: true },
       { label: "Copy Path", action: () => void copy(absolute) },
@@ -406,6 +494,15 @@
     <div class="spacer"></div>
     <button class="icon-btn small" onclick={() => void pickAndAddFolder()} title="Add Folder to Workspace..." aria-label="Add folder to workspace">
       <Icon name="plus" size={14} />
+    </button>
+    <button
+      class="icon-btn small"
+      onclick={() => void selectOpenedFile()}
+      disabled={!openedFile}
+      title={openedFile ? "Select Opened File" : "Select Opened File (open a file first)"}
+      aria-label="Select opened file"
+    >
+      <Icon name="locate" size={14} />
     </button>
     <button class="icon-btn small" onclick={collapseAll} title="Collapse all" aria-label="Collapse all">
       <Icon name="chevron-up" size={14} />
@@ -471,6 +568,9 @@
                 <span class="branch truncate" title="Repository on branch {branch}">{branch}</span>
               {/if}
             {/if}
+            {#if !row.entry.isDir && lfsPaths.has(row.entry.path)}
+              <span class="lfs-tag" title="Stored in Git LFS">LFS</span>
+            {/if}
             {#if row.entry.isDir && truncated.has(row.entry.path)}
               <span class="dim more" title="Only the first 5000 entries are shown">5000+</span>
             {/if}
@@ -493,6 +593,17 @@
 </div>
 
 <style>
+  .lfs-tag {
+    flex: none;
+    padding: 0 4px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 13px;
+  }
+
   .explorer {
     display: flex;
     flex-direction: column;

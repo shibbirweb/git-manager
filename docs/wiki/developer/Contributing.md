@@ -96,7 +96,7 @@ When you triage a bug, first reproduce it with a demo script (see [Debugging](De
 - Keep each one focused on one change. Small pull requests get reviewed faster and are easier to undo.
 - Fill in the three sections of `.github/pull_request_template.md`: **What and why**, **Test plan** (it starts with one empty bullet) and **Docs**, the checklist below.
 - Write the test plan as plain bullet points, never checkboxes. Say what you ran and what you checked by hand, and say plainly what you could not check, such as a visual detail.
-- CI must pass. Run the checks locally first: `bun run check`, `bun run test`, `cargo test` and `cargo clippy --all-targets`, all clean.
+- CI must pass. Run the checks in [Testing](Testing.md#what-done-means) locally first, all clean.
 
 A good test plan looks like this:
 

@@ -4,11 +4,7 @@ When a merge, rebase, cherry-pick or revert stops on conflicts, Git Manager show
 
 ## Why we need it
 
-Resolving conflicts is the reason this app exists. Different conflicts need different tools, so we offer three levels:
-
-- **Whole files**: take yours or theirs for one or many files, the only option for binary files and "deleted on one side" conflicts.
-- **Inline markers**: quick fixes right in the editor with Accept Current, Accept Incoming, Accept Both and Resolve in Merge Tool, like VS Code.
-- **The merge tool**: for real conflicts in a file.
+Resolving conflicts is the reason this app exists, and different conflicts need different tools: **whole files** (yours or theirs, the only option for binary and "deleted on one side" conflicts), **inline markers** in the editor, like VS Code, and **the merge tool** for real conflicts in a file.
 
 Git stays in charge: we read its state and run its own `--continue`, `--abort` and `--skip`, so the result matches the terminal.
 
@@ -34,6 +30,8 @@ stateDiagram-v2
 ```
 
 `OpBanner.svelte` shows the description and conflicted file count, with Resolve Conflicts, Continue (once nothing is left), Skip Commit (rebase only) and Abort. Abort asks first. For an `other` state, such as `git am` or a bisect, it offers neither Continue nor Abort. The banner acts on the active repository.
+
+The three actions live in `views/git/operationActions.ts` (`continueOperation`, `abortOperation`, `skipRebaseCommit`), shared by the banner and the Git menu. `menuState.ts` shows the menu items only while they apply and names them after the operation, such as "Continue Merge". After `--continue`, `--abort` or `--skip`, the backend calls `cleanup_rebase_files`, which removes the message files of an [interactive rebase](How-Interactive-Rebase-Works.md) once no rebase is in progress.
 
 ### The Conflicts dialog
 
@@ -75,6 +73,7 @@ In `FileView.svelte`, for a file git lists as conflicted, the actions row adds A
 | `src-tauri/src/commands/merge.rs` | `list_conflicts`, `accept_side`, `save_resolution`, `continue_operation`, `abort_operation`, `skip_rebase_commit` |
 | `src-tauri/src/commands/mod.rs` | `outcome` and `run_op` |
 | `src/lib/views/OpBanner.svelte` | The banner and its buttons |
+| `src/lib/views/git/operationActions.ts` | Continue, Abort and Skip Commit, shared with the Git menu |
 | `src/lib/merge/ConflictsDialog.svelte` | The file list, Accept Yours or Theirs, Merge, and Continue once all are resolved |
 | `src/lib/editor/conflictMarkers.ts` | Pure marker parser and resolution edits |
 | `src/lib/editor/conflictDecorations.ts` | CodeMirror field, decorations, action widgets, `barWidth` |
@@ -101,8 +100,8 @@ In `FileView.svelte`, for a file git lists as conflicted, the actions row adds A
 
 **The conflict counter was hidden.**
 - **The issue:** in a file with several conflicts, the "Conflict 1 of 2" counter at the end of the inline actions row never showed at normal window sizes.
-- **Why it happened:** the actions row is a block inside the editor content, and that content is as wide as its longest line. So the row was always wide enough on paper, never wrapped, and the counter at its end sat past the visible edge.
-- **The fix and why we chose it:** the small ViewPlugin `barWidth` in `conflictDecorations.ts` measures the visible editor width (the scroller minus the gutters) on every geometry change and sets `--cm-conflict-bar-width`. The row is capped at that width and wraps, so the counter moves to a second line when space is short instead of disappearing. It uses the `--text-dim` token, readable in light and dark themes.
+- **Why it happened:** the actions row is a block inside the editor content, which is as wide as its longest line, so the row never wrapped and the counter sat past the visible edge.
+- **The fix and why we chose it:** the ViewPlugin `barWidth` in `conflictDecorations.ts` measures the visible editor width on every geometry change and sets `--cm-conflict-bar-width`. The row is capped at that width and wraps, so the counter moves to a second line instead of disappearing.
 
 ## Tests
 
@@ -114,6 +113,6 @@ In `FileView.svelte`, for a file git lists as conflicted, the actions row adds A
 
 ## Keeping this page in sync
 
-- Update this page when an operation kind, a side label, the banner actions or the marker parser change.
+- Update this page when an operation kind, a side label, the banner or Git menu actions or the marker parser change.
 - Update [Resolving Conflicts](../usage/Resolving-Conflicts.md) for visible changes.
 - Retake `operation-banner.png`, `conflicts-dialog.png`, `inline-conflict-actions.png` and `editor-conflict-toolbar.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

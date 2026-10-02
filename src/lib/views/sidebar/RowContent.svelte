@@ -2,6 +2,8 @@
   import Icon from "$lib/ui/Icon.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { applyStash, dropStash, newBranchFrom } from "./actions";
+  import { openNewWorktreeDialog } from "../git/worktrees/worktreeActions";
+  import { worktreeLabel, worktreeTooltip } from "../git/worktrees/worktreeModel";
   import type { SidebarRow } from "./tree";
 
   let { row }: { row: SidebarRow } = $props();
@@ -50,6 +52,19 @@
     >
       <Icon name="plus" size={13} />
     </button>
+  {:else if row.section === "worktrees"}
+    <button
+      class="icon-btn row-btn"
+      title="New worktree"
+      disabled={busy}
+      onclick={(event) => {
+        stop(event);
+        openNewWorktreeDialog();
+      }}
+      ondblclick={stop}
+    >
+      <Icon name="plus" size={13} />
+    </button>
   {/if}
 {:else if row.kind === "group"}
   <span class="chevron"><Icon name={row.expanded ? "chevron-down" : "chevron-right"} size={12} /></span>
@@ -88,7 +103,7 @@
       disabled={busy}
       onclick={(event) => {
         stop(event);
-        applyStash(row.stash.index, false);
+        void applyStash(row.stash.index, false);
       }}
       ondblclick={stop}
     >
@@ -100,7 +115,7 @@
       disabled={busy}
       onclick={(event) => {
         stop(event);
-        applyStash(row.stash.index, true);
+        void applyStash(row.stash.index, true);
       }}
       ondblclick={stop}
     >
@@ -119,6 +134,21 @@
       <Icon name="x" size={13} />
     </button>
   </span>
+{:else if row.kind === "worktree"}
+  <span class="icon" class:current={row.worktree.isCurrent} class:dim={!row.worktree.isCurrent}>
+    <Icon name={row.worktree.isCurrent ? "check" : "folder-git"} size={14} />
+  </span>
+  <span class="label truncate" class:strong={row.worktree.isCurrent} class:gone={row.worktree.prunable} title={worktreeTooltip(row.worktree)}>
+    {worktreeLabel(row.worktree)}
+    <span class="worktree-path dim">{row.worktree.path}</span>
+  </span>
+  {#if row.worktree.locked}
+    <span class="wt-tag dim" title={row.worktree.lockReason ?? "Locked"}>locked</span>
+  {:else if row.worktree.prunable}
+    <span class="wt-tag dim" title={row.worktree.prunableReason ?? "Its folder is gone"}>prunable</span>
+  {:else if row.worktree.isMain}
+    <span class="wt-tag dim">main</span>
+  {/if}
 {:else}
   <span class="empty dim">{row.label}</span>
 {/if}
@@ -213,6 +243,21 @@
 
   .row-btn.danger:hover:not(:disabled) {
     color: var(--danger);
+  }
+
+  .wt-tag {
+    flex: none;
+    font-size: 11px;
+  }
+
+  .worktree-path {
+    margin-left: 6px;
+    font-size: 11.5px;
+  }
+
+  .gone {
+    text-decoration: line-through;
+    text-decoration-color: var(--text-faint);
   }
 
   .empty {

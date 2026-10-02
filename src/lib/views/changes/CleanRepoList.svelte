@@ -4,7 +4,9 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { changesLayout } from "./layout.svelte";
   import { copyText } from "./mutations";
-  import { branchLabel, opLabel, showRelativePath, type RepoSection } from "./sections";
+  import RepoActions from "./RepoActions.svelte";
+  import { repoMenuFor } from "./repoActions";
+  import { opLabel, showRelativePath, type RepoSection } from "./sections";
 
   interface Props {
     /** Repositories without changes (or whose status is still loading). */
@@ -16,9 +18,15 @@
 
   const collapsed = $derived(changesLayout.isCleanCollapsed(sections.length));
 
-  function repoMenu(event: MouseEvent, section: RepoSection): void {
+  /** Right click: the "..." menu, plus the repository items. */
+  async function repoMenu(event: MouseEvent, section: RepoSection): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
     const repoRoot = section.repo.root;
-    const items: MenuItem[] = [];
+    const items: MenuItem[] = section.status ? await repoMenuFor(repoRoot) : [];
+    if (items.length > 0) {
+      items.push({ separator: true });
+    }
     if (repoRoot !== activeRoot) {
       items.push({ label: "Set as Active Repository", action: () => void repoStore.setActiveRepo(repoRoot) });
     }
@@ -48,14 +56,18 @@
         class:active
         role="presentation"
         title="{section.repo.root}{active ? ', active repository' : ''}"
-        oncontextmenu={(event) => repoMenu(event, section)}
+        oncontextmenu={(event) => void repoMenu(event, section)}
       >
         <span class="icon"><Icon name="folder-git" size={13} /></span>
         <span class="name truncate">{section.repo.name}</span>
+        {#if section.repo.submodule}
+          <span class="kind-badge" title="A submodule of the repository around it">submodule</span>
+        {:else if section.repo.worktree}
+          <span class="kind-badge" title="A linked worktree">worktree</span>
+        {/if}
         {#if showRelativePath(section.repo)}
           <span class="path truncate">{section.repo.relativePath}</span>
         {/if}
-        <span class="branch truncate">{branchLabel(section.status?.head)}</span>
         {#if operation}
           <span class="op-badge">{operation}</span>
         {/if}
@@ -70,7 +82,11 @@
             <Icon name="folder-git" size={13} />
           </button>
         {/if}
-        <span class="note">{section.status ? "no changes" : "reading status"}</span>
+        {#if section.status}
+          <RepoActions {section} showCommit={false} />
+        {:else}
+          <span class="note">reading status</span>
+        {/if}
       </div>
     {/each}
   {/if}
@@ -123,6 +139,17 @@
     height: 24px;
     padding: 0 6px 0 24px;
     color: var(--text-dim);
+    container: repo-row / inline-size;
+  }
+
+  .kind-badge {
+    flex: none;
+    padding: 0 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 14px;
   }
 
   .clean-row:hover {
@@ -152,8 +179,7 @@
     color: var(--text);
   }
 
-  .path,
-  .branch {
+  .path {
     flex: 0 1 auto;
     min-width: 20px;
     font-size: 12px;

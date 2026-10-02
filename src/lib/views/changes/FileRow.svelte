@@ -13,18 +13,23 @@
     /** Indented one level, under a repository header. */
     nested?: boolean;
     actions: RowAction[];
+    /** A small tag after the name, e.g. "LFS" or "submodule". */
+    badge?: string | null;
+    /** Dim text after the path, e.g. a submodule's "new commits". */
+    note?: string | null;
     onselect: () => void;
     onactivate: () => void;
     oncontextmenu: (event: MouseEvent) => void;
   }
 
-  let { file, kind, selected, id, nested = false, actions, onselect, onactivate, oncontextmenu }: Props = $props();
+  let { file, kind, selected, id, nested = false, actions, badge = null, note = null, onselect, onactivate, oncontextmenu }: Props =
+    $props();
 
   const parts = $derived(splitPath(file.path));
   const title = $derived(
-    file.origPath && kind === "renamed"
+    (file.origPath && kind === "renamed"
       ? `${statusTitle(kind)}: ${file.origPath} -> ${file.path}`
-      : `${statusTitle(kind)}: ${file.path}`,
+      : `${statusTitle(kind)}: ${file.path}`) + (note ? ` (${note})` : ""),
   );
 
   function runAction(event: MouseEvent, action: RowAction): void {
@@ -66,7 +71,13 @@
     {#if parts.directory}
       <span class="directory">{parts.directory}</span>
     {/if}
+    {#if note}
+      <span class="directory">({note})</span>
+    {/if}
   </span>
+  {#if badge}
+    <span class="tag">{badge}</span>
+  {/if}
   {#if actions.length > 0}
     <span class="actions">
       {#each actions as action (action.title)}
@@ -166,6 +177,17 @@
     margin-left: 6px;
     color: var(--text-dim);
     font-size: 12px;
+  }
+
+  .tag {
+    flex: none;
+    padding: 0 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 14px;
   }
 
   .actions {

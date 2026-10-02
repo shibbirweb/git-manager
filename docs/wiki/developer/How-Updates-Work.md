@@ -52,7 +52,7 @@ sequenceDiagram
     U->>SB: available is newer[0] unless it or a newer version was skipped
 ```
 
-`check(manual)` uses the web view's `fetch`. The CSP in `tauri.conf.json` allows it with `connect-src ... https://api.github.com`. A 403 becomes "GitHub rate limit reached". An automatic check that fails stays quiet: it only sets `updates.error`, which Settings, Updates shows as "Last check failed". A manual check shows a toast or opens the dialog.
+`check(manual)` uses the web view's `fetch`. The CSP in `tauri.conf.json` allows it with `connect-src ... https://api.github.com`. A 403 becomes "GitHub rate limit reached". An automatic check that fails stays quiet: it only sets `updates.error`, which Settings, Updates shows as "Last check failed". A manual check shows a toast or opens the dialog. Check Now and the menu item Git Manager > Check for Updates... (`app.checkForUpdates` in `menu/menuActions.ts`) both call `updates.check(true)`; Help > What's New sets `updates.whatsNewOpen`.
 
 ### Channels
 

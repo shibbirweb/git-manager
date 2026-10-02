@@ -2,6 +2,8 @@
 // Forward. Small cursor moves update the current location in place; opening
 // another file or jumping far records a new entry.
 
+import { isPseudoTab } from "./pseudoTabs";
+
 /** A spot in a file tab. */
 export interface FileLocation {
   kind?: "file";
@@ -101,6 +103,10 @@ export class NavigationHistory {
 
   /** Records the cursor position; returns true when a new entry was created. */
   record(location: NavLocation): boolean {
+    // A tab that is not a file (a commit or a terminal) is never a stop to go back to.
+    if (location.kind !== "log" && location.kind !== "diff" && isPseudoTab(location.filePath)) {
+      return false;
+    }
     const current = this.current;
     if (current && sameSpot(current, location)) {
       this.current = refine(current, location);
@@ -170,6 +176,18 @@ export class NavigationHistory {
         this.forget(target.filePath);
       }
     }
+  }
+
+  /** Files visited, most recent first, each once: the current one, forward, then back. */
+  recentFilePaths(): string[] {
+    const seen = new Set<string>();
+    const stops = [this.current, ...this.forward.slice().reverse(), ...this.back.slice().reverse()];
+    for (const stop of stops) {
+      if (stop && isFile(stop)) {
+        seen.add(stop.filePath);
+      }
+    }
+    return [...seen];
   }
 
   /** Drops entries for a file that no longer exists. */

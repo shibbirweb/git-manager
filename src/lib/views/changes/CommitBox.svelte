@@ -2,8 +2,15 @@
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { RepoInfo } from "$lib/types";
+  import Icon from "$lib/ui/Icon.svelte";
+  import { contextMenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { syncRepo } from "../gitActions";
   import { commitDraft } from "./commitDraft.svelte";
+  import CommitOptionsPopover from "./CommitOptionsPopover.svelte";
+  import { commitRepo } from "./repoActions";
+  import { type CommitChoice, commitChoiceSpec, commitDropdownItems } from "./repoMenu";
+  import { syncPlan, syncTooltip } from "./sync";
   import { branchLabel, showRelativePath, type RepoSection } from "./sections";
 
   interface Props {
@@ -52,6 +59,9 @@
     }
     return stagedCount === 1 ? "1 file staged" : `${stagedCount} files staged`;
   });
+  const operation = $derived((status?.op?.kind ?? "none") !== "none");
+  const canAmend = $derived(!unborn && conflictCount === 0 && !operation && !loadingMessage);
+  const sync = $derived(syncPlan(status?.head));
   const commitHint = $derived(multiRepo ? `Commit to ${repo.name} (Cmd+Enter)` : "Commit (Cmd+Enter)");
 
   function choiceLabel(choice: RepoSection): string {
@@ -95,16 +105,32 @@
     if (!canCommit) {
       return;
     }
-    const target = draft;
-    const message = target.message;
-    const amend = target.amend;
-    const result = await repoStore.run("Commit", (repoPath) => api.commit(repoPath, message, amend), {
-      repoPath: repo.root,
-      success: amend ? "Commit amended" : "Committed",
-    });
-    if (result !== undefined) {
-      target.clear();
+    await commitRepo(repo.root, { mode: "staged", amend: draft.amend, followUp: "none" });
+  }
+
+  /** The dropdown: Commit, Commit & Push, Commit & Sync, Commit (Amend). */
+  function runChoice(choice: CommitChoice): void {
+    const spec = commitChoiceSpec(choice);
+    if (choice !== "amend" && !canCommit) {
+      return;
     }
+    const amend = spec.amend || draft.amend;
+    void commitRepo(repo.root, { mode: "staged", amend, followUp: spec.followUp });
+  }
+
+  function openCommitMenu(event: MouseEvent): void {
+    const anchor = event.currentTarget as HTMLElement;
+    const items = commitDropdownItems(
+      {
+        busy,
+        canCommit,
+        canAmend,
+        canPush: !!status?.head?.branch && !unborn,
+        amendChecked: draft.amend,
+      },
+      runChoice,
+    );
+    contextMenu.openBelow(anchor, items, { keyboard: event.detail === 0, alignEnd: true });
   }
 
   function onKeydown(event: KeyboardEvent): void {
@@ -153,13 +179,60 @@
       Amend
     </label>
     <span class="summary dim truncate">{summary}</span>
-    <button class="btn primary" onclick={commit} disabled={!canCommit} title={disabledReason ?? commitHint}>
-      {draft.amend ? "Amend Commit" : "Commit"}
-    </button>
+    <CommitOptionsPopover repoRoot={repo.root} disabled={busy} />
+    <span class="split" role="group" aria-label="Commit">
+      <button class="btn primary main" onclick={commit} disabled={!canCommit} title={disabledReason ?? commitHint}>
+        {draft.amend ? "Amend Commit" : "Commit"}
+      </button>
+      <button
+        class="btn primary chevron"
+        onclick={openCommitMenu}
+        disabled={busy}
+        title="More commit actions"
+        aria-label="More commit actions"
+        aria-haspopup="menu"
+      >
+        <Icon name="chevron-down" size={13} />
+      </button>
+    </span>
   </div>
+  {#if sync.kind !== "none"}
+    <!-- Like VS Code's Sync Changes: pull, then push; or publish a branch that has no upstream yet. -->
+    <button class="btn sync" onclick={() => void syncRepo(repo.root)} disabled={busy} title={syncTooltip(sync)}>
+      <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={13} />
+      {#if sync.kind === "publish"}
+        Publish Branch
+      {:else}
+        Sync Changes
+        <span class="counts">
+          {#if sync.pull > 0}<span class="count" aria-label="{sync.pull} to pull">{sync.pull}<Icon name="arrow-down" size={11} /></span>{/if}
+          {#if sync.push > 0}<span class="count" aria-label="{sync.push} to push">{sync.push}<Icon name="arrow-up" size={11} /></span>{/if}
+        </span>
+      {/if}
+    </button>
+  {/if}
 </div>
 
 <style>
+  .sync {
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .counts {
+    display: inline-flex;
+    gap: 6px;
+    margin-left: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .count {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+  }
+
   .commit-box {
     flex: none;
     display: flex;
@@ -231,5 +304,22 @@
     flex: 1;
     min-width: 0;
     font-size: 12px;
+  }
+
+  .split {
+    flex: none;
+    display: inline-flex;
+  }
+
+  .split .main {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .split .chevron {
+    padding: 0 5px;
+    margin-left: 1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
   }
 </style>

@@ -27,23 +27,47 @@ pub async fn init_repository(folder_path: String) -> AppResult<RepoInfo> {
 /// Starts watching one workspace folder for changes in `repo_roots`, replacing
 /// the previous watcher of that folder. A multi-root workspace watches each of
 /// its folders; the frontend unwatches folders it removes.
+///
+/// Async on purpose: a command without `async` runs on the main thread, and
+/// starting a watcher on a big folder there froze the window.
 #[tauri::command]
-pub fn watch_workspace(
+pub async fn watch_workspace(
     app: AppHandle,
     state: State<'_, AppState>,
     workspace_root: String,
     repo_roots: Vec<String>,
 ) -> AppResult<()> {
-    let workspace_watcher = watcher::watch(app, &workspace_root, &repo_roots)?;
-    let mut watchers = state.watchers.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
-    watchers.insert(workspace_root, workspace_watcher);
+    let root = workspace_root.clone();
+    let workspace_watcher = blocking(move || watcher::watch(app, &root, &repo_roots)).await?;
+    let previous = state
+        .watchers
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .insert(workspace_root, workspace_watcher);
+    stop_watcher(previous).await;
     Ok(())
 }
 
 #[tauri::command]
-pub fn unwatch_workspace(state: State<'_, AppState>, workspace_root: String) {
-    let mut watchers = state.watchers.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
-    watchers.remove(&workspace_root);
+pub async fn unwatch_workspace(state: State<'_, AppState>, workspace_root: String) -> AppResult<()> {
+    let previous = state
+        .watchers
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .remove(&workspace_root);
+    stop_watcher(previous).await;
+    Ok(())
+}
+
+/// Stopping a watcher waits for its threads, so it happens off the main thread too.
+async fn stop_watcher(previous: Option<crate::state::RepoWatcher>) {
+    if let Some(previous) = previous {
+        let _ = blocking(move || {
+            drop(previous);
+            Ok(())
+        })
+        .await;
+    }
 }
 
 /// Reads a `.gitmanager-workspace` or VS Code `.code-workspace` file.

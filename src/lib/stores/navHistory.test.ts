@@ -2,6 +2,15 @@ import { describe, expect, it } from "vitest";
 import { isMissingFileError, MAX_ENTRIES, NavigationHistory } from "./navHistory";
 
 describe("NavigationHistory", () => {
+  it("never records a terminal or commit tab as a stop", () => {
+    const history = new NavigationHistory();
+    expect(history.record({ filePath: "/work/a.ts", line: 0 })).toBe(true);
+    expect(history.record({ filePath: "terminal:3", line: 0 })).toBe(false);
+    expect(history.record({ filePath: "commit:a9f492bf@/work", line: 0 })).toBe(false);
+    expect(history.current).toEqual({ filePath: "/work/a.ts", line: 0 });
+    expect(history.back).toEqual([]);
+  });
+
   it("keeps small moves in one entry and records jumps", () => {
     const history = new NavigationHistory();
     expect(history.record({ filePath: "a.ts", line: 0 })).toBe(true);
@@ -108,6 +117,22 @@ describe("NavigationHistory", () => {
     history.record({ kind: "log", repoRoot: "/repo", commitId: "abc", filePath: null });
     history.record({ kind: "log", repoRoot: "/repo", commitId: "abc", filePath: "a.ts", line: 8 });
     expect(history.current).toEqual({ kind: "log", repoRoot: "/repo", commitId: "abc", filePath: "a.ts", line: 8 });
+  });
+});
+
+describe("NavigationHistory.recentFilePaths", () => {
+  it("lists visited files most recent first, once each, without Log or diff stops", () => {
+    const history = new NavigationHistory();
+    history.record({ filePath: "/w/a.ts", line: 0 });
+    history.record({ filePath: "/w/b.ts", line: 0 });
+    history.record({ kind: "diff", repoRoot: "/w", path: "c.ts", area: "unstaged", line: 0 });
+    history.record({ filePath: "/w/a.ts", line: 100 });
+    history.record({ filePath: "/w/d.ts", line: 0 });
+    expect(history.recentFilePaths()).toEqual(["/w/d.ts", "/w/a.ts", "/w/b.ts"]);
+    history.goBack();
+    // Forward stops were visited after the back ones.
+    expect(history.recentFilePaths()).toEqual(["/w/a.ts", "/w/d.ts", "/w/b.ts"]);
+    expect(new NavigationHistory().recentFilePaths()).toEqual([]);
   });
 });
 

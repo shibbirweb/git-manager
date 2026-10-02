@@ -17,7 +17,12 @@ import { folderFor, relativeTo } from "./workspacePaths";
 
 export interface RevealRequest {
   filePath: string;
-  line: number;
+  /** 0-based line; null only focuses the editor. */
+  line: number | null;
+  /** 0-based column on that line. */
+  column?: number;
+  /** Focus the editor even when it opens for this request. */
+  focus?: boolean;
   token: number;
 }
 
@@ -123,7 +128,7 @@ class NavigationStore {
    * Whether a file stop can still be opened. An open tab watches its own file
    * (and calls `forget` when it disappears); other files are read once.
    */
-  private async fileExists(filePath: string): Promise<boolean> {
+  async fileExists(filePath: string): Promise<boolean> {
     if (repoStore.tabs.some((tab) => tab.path === filePath)) {
       return true;
     }
@@ -137,6 +142,18 @@ class NavigationStore {
     } catch (error) {
       // Other errors (e.g. permissions) are shown by the tab itself.
       return !isMissingFileError(error);
+    }
+  }
+
+  /**
+   * Opens a file and focuses its editor, with the cursor on a 0-based `line`
+   * and `column` when given (Go to File with "name:42").
+   */
+  async openFileAt(filePath: string, line: number | null, column: number | null, options: { pin?: boolean } = {}): Promise<void> {
+    this.reveal = { filePath, line, column: column ?? 0, focus: true, token: ++this.token };
+    await repoStore.openFile(filePath, options);
+    if (repoStore.openFilePath !== filePath) {
+      this.reveal = null;
     }
   }
 
@@ -158,6 +175,11 @@ class NavigationStore {
     }
     this.diffReveal = null;
     return { line: request.line, token: request.token };
+  }
+
+  /** Files visited, most recent first (Go to File's Recent Files). */
+  recentFilePaths(): string[] {
+    return this.history.recentFilePaths();
   }
 
   /** Drops the Back / Forward stops of a file that no longer exists. */

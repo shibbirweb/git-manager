@@ -4,6 +4,7 @@ use std::sync::atomic::Ordering;
 use serde::Deserialize;
 use tauri::{AppHandle, State};
 
+use super::rebase::cleanup_rebase_files;
 use super::{blocking, run_op, safe_join, with_paths, OpOutcome};
 use crate::error::{AppError, AppResult};
 use crate::git::cli;
@@ -100,7 +101,9 @@ fn operation_subcommand(repo_path: &str) -> AppResult<&'static str> {
 pub async fn continue_operation(repo_path: String) -> AppResult<OpOutcome> {
     blocking(move || {
         let subcommand = operation_subcommand(&repo_path)?;
-        run_op(&repo_path, &[subcommand, "--continue"])
+        let finished = run_op(&repo_path, &[subcommand, "--continue"]);
+        cleanup_rebase_files(&repo_path);
+        finished
     })
     .await
 }
@@ -109,14 +112,21 @@ pub async fn continue_operation(repo_path: String) -> AppResult<OpOutcome> {
 pub async fn abort_operation(repo_path: String) -> AppResult<OpOutcome> {
     blocking(move || {
         let subcommand = operation_subcommand(&repo_path)?;
-        run_op(&repo_path, &[subcommand, "--abort"])
+        let finished = run_op(&repo_path, &[subcommand, "--abort"]);
+        cleanup_rebase_files(&repo_path);
+        finished
     })
     .await
 }
 
 #[tauri::command]
 pub async fn skip_rebase_commit(repo_path: String) -> AppResult<OpOutcome> {
-    blocking(move || run_op(&repo_path, &["rebase", "--skip"])).await
+    blocking(move || {
+        let finished = run_op(&repo_path, &["rebase", "--skip"]);
+        cleanup_rebase_files(&repo_path);
+        finished
+    })
+    .await
 }
 
 #[tauri::command]

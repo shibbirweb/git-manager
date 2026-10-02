@@ -36,3 +36,10 @@ export class WheelZoom {
     this.pending = 0;
   }
 }
+
+/** View > Zoom In / Zoom Out: one pixel per step, on the half-pixel grid the wheel uses, within the allowed sizes. */
+export function steppedFontSize(currentSize: number, step: 1 | -1): number {
+  const [min, max] = FONT_SIZE_RANGE.editor;
+  const next = Math.round((currentSize + step) / ZOOM_STEP) * ZOOM_STEP;
+  return Math.min(max, Math.max(min, next));
+}
