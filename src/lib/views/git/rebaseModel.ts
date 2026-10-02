@@ -281,6 +281,17 @@ export function moveRow(rows: RebaseRow[], from: number, to: number): RebaseRow[
   return next;
 }
 
+/**
+ * Where the row being dragged (`from`) lands when dropped on row `over`, or null when that
+ * changes nothing: no drag, off the rows, the same row or another run.
+ */
+export function dropTarget(rows: RebaseRow[], from: number | null, over: number | null): number | null {
+  if (from === null || over === null) {
+    return null;
+  }
+  return moveRow(rows, from, over) === rows ? null : over;
+}
+
 /** Anything differs from the list the dialog opened with. */
 export function rowsChanged(rows: RebaseRow[], original: RebaseRow[]): boolean {
   if (rows.length !== original.length) {

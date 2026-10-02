@@ -3,19 +3,21 @@
      reword and squash messages edited in place, and Reset to start over. With merge commits
      the rows follow the --rebase-merges todo, grouped by branch (see rebaseModel.ts). -->
 <script lang="ts">
-  import { tick, untrack } from "svelte";
+  import { onDestroy, tick, untrack } from "svelte";
   import { api } from "$lib/api";
   import { relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { RebaseAction, RebasePlan } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { autoScrollStep, pastDragThreshold } from "../files/dragDrop";
   import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import {
     actionForKey,
     allowedActions,
     deadCommits,
+    dropTarget,
     initialRows,
     isMessageSquash,
     moveRow,
@@ -102,36 +104,91 @@
     }
   }
 
-  function onDragStart(event: DragEvent, index: number): void {
-    dragIndex = index;
-    event.dataTransfer?.setData("text/plain", String(index));
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = "move";
-    }
+  // Reordering by drag uses mouse events, not HTML5 drag and drop: Tauri's window answers
+  // every native drag itself (to report Finder files), so HTML5 drop events never reach the
+  // page there. Listeners live only from a press on a row until the button goes up.
+  let pending: { index: number; x: number; y: number } | null = null;
+  let pointerY: number | null = null;
+  let scrollFrame = 0;
+
+  /** The row under the pointer, by its wrapper (which also holds a message box). */
+  function rowAt(x: number, y: number): number | null {
+    const element = document.elementFromPoint(x, y);
+    const wrap = element && listEl?.contains(element) ? element.closest<HTMLElement>("[data-drop]") : null;
+    return wrap ? Number(wrap.dataset.drop) : null;
   }
 
-  function onDragOver(event: DragEvent, index: number): void {
-    if (dragIndex === null) {
+  function onRowMouseDown(event: MouseEvent, index: number): void {
+    // The action menu keeps its own clicks.
+    const control = (event.target as Element | null)?.closest("select, textarea, input, button");
+    if (event.button !== 0 || control) {
       return;
     }
-    event.preventDefault();
-    dropIndex = index;
+    pending = { index, x: event.clientX, y: event.clientY };
+    window.addEventListener("mousemove", onDragMove);
+    window.addEventListener("mouseup", onDragEnd);
+    window.addEventListener("keydown", onDragKey, true);
   }
 
-  function onDrop(event: DragEvent, index: number): void {
-    event.preventDefault();
-    const from = dragIndex;
-    dragIndex = null;
-    dropIndex = null;
-    if (from !== null) {
-      void move(from, index);
+  function onDragMove(event: MouseEvent): void {
+    if (dragIndex === null) {
+      if (!pending || !pastDragThreshold(pending, { x: event.clientX, y: event.clientY })) {
+        return;
+      }
+      dragIndex = pending.index;
     }
+    pointerY = event.clientY;
+    dropIndex = dropTarget(rows, dragIndex, rowAt(event.clientX, event.clientY));
+    if (!scrollFrame) {
+      scrollFrame = requestAnimationFrame(autoScroll);
+    }
+  }
+
+  /** Scrolls the list while the pointer is near its top or bottom edge. */
+  function autoScroll(): void {
+    scrollFrame = 0;
+    if (dragIndex === null || pointerY === null || !listEl) {
+      return;
+    }
+    const rect = listEl.getBoundingClientRect();
+    const step = autoScrollStep(pointerY, rect.top, rect.bottom);
+    if (step !== 0) {
+      listEl.scrollTop += step;
+    }
+    scrollFrame = requestAnimationFrame(autoScroll);
   }
 
   function onDragEnd(): void {
+    const from = dragIndex;
+    const to = dropIndex;
+    stopDrag();
+    if (from !== null && to !== null) {
+      void move(from, to);
+    }
+  }
+
+  /** Escape cancels the drag without closing the dialog. */
+  function onDragKey(event: KeyboardEvent): void {
+    if (dragIndex !== null && event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      stopDrag();
+    }
+  }
+
+  function stopDrag(): void {
+    pending = null;
     dragIndex = null;
     dropIndex = null;
+    pointerY = null;
+    cancelAnimationFrame(scrollFrame);
+    scrollFrame = 0;
+    window.removeEventListener("mousemove", onDragMove);
+    window.removeEventListener("mouseup", onDragEnd);
+    window.removeEventListener("keydown", onDragKey, true);
   }
+
+  onDestroy(stopDrag);
 
   function reset(): void {
     rows = original;
@@ -194,7 +251,7 @@
       Commits move only within their part of a branch.
     </div>
   {/if}
-  <div class="rows" bind:this={listEl} role="list" aria-label="Commits to rebase">
+  <div class="rows" class:dragging={dragIndex !== null} bind:this={listEl} role="list" aria-label="Commits to rebase">
     {#each rows as row, index (row.commit.id)}
       {@const messageBox = !dead.has(row.commit.id) && (row.action === "reword" || isMessageSquash(rows, index))}
       {@const unused = dead.has(row.commit.id)}
@@ -203,10 +260,9 @@
       {/if}
       <div
         class="row-wrap"
-        class:drop-target={dropIndex === index && dragIndex !== index}
+        class:drop-target={dropIndex === index}
         role="listitem"
-        ondragover={(event) => onDragOver(event, index)}
-        ondrop={(event) => onDrop(event, index)}
+        data-drop={index}
       >
         <div
           class="commit"
@@ -218,9 +274,7 @@
           tabindex="0"
           role="button"
           aria-label="{row.action} {row.commit.shortId} {row.commit.summary}"
-          draggable="true"
-          ondragstart={(event) => onDragStart(event, index)}
-          ondragend={onDragEnd}
+          onmousedown={(event) => onRowMouseDown(event, index)}
           onkeydown={(event) => onRowKeydown(event, index)}
         >
           <span class="grip" aria-hidden="true">&#8942;&#8942;</span>
@@ -307,6 +361,11 @@
 
   .commit.dragging {
     opacity: 0.5;
+  }
+
+  .rows.dragging,
+  .rows.dragging .commit {
+    cursor: grabbing;
   }
 
   .grip {
