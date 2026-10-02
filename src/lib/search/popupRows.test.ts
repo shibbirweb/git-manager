@@ -1,0 +1,112 @@
+import { describe, expect, it } from "vitest";
+import type { SearchRow } from "./fileSearchModel";
+import {
+  emptySource,
+  firstSelectable,
+  keepSelectedKey,
+  moveSelectable,
+  type PopupResults,
+  scrollToShow,
+  SECTION_LIMIT,
+  tabRows,
+  visibleRange,
+} from "./popupRows";
+import type { SymbolRow } from "./symbolSearchModel";
+import { KIND_INFO } from "./symbolSearchModel";
+import { EMPTY_TEXT } from "./textSearchModel";
+
+function file(path: string): SearchRow {
+  return { path, name: path.slice(path.lastIndexOf("/") + 1), nameParts: [], folderParts: [] };
+}
+
+function symbol(name: string): SymbolRow {
+  return {
+    key: `/w/a.ts:1:1:${name}`,
+    path: "/w/a.ts",
+    line: 1,
+    column: 1,
+    kind: KIND_INFO.class,
+    nameParts: [{ text: name, match: false }],
+    containerParts: [],
+    location: "a.ts:1",
+    title: "a.ts:1",
+  };
+}
+
+function results(overrides: Partial<PopupResults> = {}): PopupResults {
+  return {
+    hasQuery: true,
+    recent: [],
+    files: emptySource(),
+    classes: emptySource(),
+    members: emptySource(),
+    symbols: emptySource(),
+    text: EMPTY_TEXT,
+    ...overrides,
+  };
+}
+
+const many = Array.from({ length: 10 }, (_, index) => symbol(`Cart${index}`));
+
+describe("tabRows", () => {
+  it("lists sections in the All tab with a few rows each and a more row", () => {
+    const rows = tabRows("all", results({ classes: { rows: many, matched: 40 }, files: { rows: [file("/w/cart.ts")], matched: 1 } }));
+    expect(rows[0]).toMatchObject({ kind: "header", label: "Classes" });
+    expect(rows.slice(1, 1 + SECTION_LIMIT).every((row) => row.kind === "symbol")).toBe(true);
+    expect(rows[1 + SECTION_LIMIT]).toMatchObject({ kind: "more", tab: "classes", label: "34 more" });
+    expect(rows.slice(2 + SECTION_LIMIT).map((row) => row.kind)).toEqual(["header", "file"]);
+    // Symbols with nothing found leave no empty section.
+    expect(rows.some((row) => row.kind === "header" && row.label === "Symbols")).toBe(false);
+  });
+
+  it("shows recent files without a query in All and Files, nothing in the symbol tabs", () => {
+    const empty = results({ hasQuery: false, recent: [file("/w/a.ts")] });
+    expect(tabRows("all", empty).map((row) => row.kind)).toEqual(["header", "file"]);
+    expect(tabRows("files", empty).map((row) => row.key)).toEqual(["h:recent", "r:/w/a.ts"]);
+    expect(tabRows("classes", empty)).toEqual([]);
+    expect(tabRows("symbols", empty)).toEqual([]);
+  });
+
+  it("gives every row a unique key", () => {
+    const rows = tabRows("all", results({ classes: { rows: many, matched: 10 }, members: { rows: many, matched: 10 } }));
+    expect(new Set(rows.map((row) => row.key)).size).toBe(rows.length);
+  });
+});
+
+describe("selection", () => {
+  const rows = tabRows("all", results({ classes: { rows: many.slice(0, 2), matched: 2 }, files: { rows: [file("/w/x.ts")], matched: 1 } }));
+  // [header, c0, c1, header, file]
+
+  it("skips headings and wraps single steps", () => {
+    expect(firstSelectable(rows)).toBe(1);
+    expect(moveSelectable(rows, 1, 1)).toBe(2);
+    expect(moveSelectable(rows, 2, 1)).toBe(4);
+    expect(moveSelectable(rows, 4, 1)).toBe(1);
+    expect(moveSelectable(rows, 1, -1)).toBe(4);
+    expect(moveSelectable(rows, 1, 10)).toBe(4);
+    expect(moveSelectable([], 0, 1)).toBe(0);
+  });
+
+  it("keeps the selected row by key when rows refresh", () => {
+    const next = tabRows("all", results({ classes: { rows: many.slice(1, 3), matched: 2 } }));
+    expect(keepSelectedKey(rows, 2, next)).toBe(1);
+    expect(keepSelectedKey(rows, 4, next)).toBe(1);
+    expect(keepSelectedKey([], 0, next)).toBe(1);
+  });
+});
+
+describe("virtual list", () => {
+  it("renders the visible rows plus some overscan", () => {
+    expect(visibleRange(0, 260, 26, 1000)).toEqual({ start: 0, end: 17 });
+    expect(visibleRange(2600, 260, 26, 1000)).toEqual({ start: 94, end: 117 });
+    expect(visibleRange(2600, 260, 26, 20)).toEqual({ start: 20, end: 20 });
+    expect(visibleRange(0, 0, 26, 1000).end).toBeGreaterThan(16);
+  });
+
+  it("scrolls just enough to show the selected row", () => {
+    expect(scrollToShow(1, 500, 260, 26, 1)).toBe(0);
+    expect(scrollToShow(5, 0, 260, 26, 1)).toBe(0);
+    expect(scrollToShow(20, 0, 260, 26, 1)).toBe(20 * 26 + 26 - 260);
+    expect(scrollToShow(3, 200, 260, 26, 1)).toBe(78);
+  });
+});
