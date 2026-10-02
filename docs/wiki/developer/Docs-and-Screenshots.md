@@ -49,7 +49,7 @@ flowchart LR
 
 ## How screenshots are taken
 
-Screenshots show the real app, because a mocked backend drifts from the truth. So `scripts/screenshots.ts` drives a WebKit page (Playwright) that talks to the real Rust backend of a running `bun tauri dev`, through the dev-only IPC bridge explained in [Architecture](Architecture.md).
+Screenshots show the real app, because a mocked backend drifts from the truth. So `scripts/screenshots.ts` drives a WebKit page (Playwright) that talks to the real Rust backend of a running `bun tauri dev`, through the dev-only IPC bridge explained in [Architecture](Architecture.md). The bridge relays commands, Channel messages (terminal output, search progress) and a few backend events, so terminal, Run tab and search shots show real output.
 
 What the script does, and why:
 
@@ -64,7 +64,7 @@ You need, once, `bunx --bun playwright install webkit`.
 
 ### Retake one screenshot
 
-1. Start the app with the bridge on and leave it running: `GM_IPC_BRIDGE=1 bun tauri dev`. Vite prints "IPC bridge on" when it works.
+1. Start the app with the bridge on and leave it running: `GM_IPC_BRIDGE=1 bun tauri dev`. Vite prints "IPC bridge on" when it works. Keep the app window visible, not minimized or behind a full-screen app: macOS pauses a hidden web view, and every shot then fails with "No app window answered".
 2. In a second terminal, find the name: `bun scripts/screenshots.ts --list`. Names are the image file names without `.png`.
 3. Take it: `bun scripts/screenshots.ts merge-tool`. You can pass several names, with or without `.png`. With no names, it retakes all of them.
 4. Look at the new image before you commit: a script can say "done" for a picture of the wrong thing.

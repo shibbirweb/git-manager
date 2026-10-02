@@ -47,7 +47,7 @@ interface Here {
   pid: number | null;
 }
 
-/** Raw bytes do not survive JSON, so they travel as base64. */
+/** Raw bytes (Channel messages and raw command results) do not survive JSON, so they travel as base64. */
 interface EncodedBytes {
   __gmBytes: string;
 }
@@ -130,7 +130,7 @@ function relayFromPage(hot: NonNullable<ImportMeta["hot"]>): void {
     }
     pending.delete(result.callId);
     if (result.ok) {
-      waiter.resolve(result.value);
+      waiter.resolve(decodeMessage(result.value));
     } else {
       waiter.reject(result.value);
     }
@@ -189,7 +189,7 @@ function serveFromApp(hot: NonNullable<ImportMeta["hot"]>): void {
     }
     let result: Result;
     try {
-      result = { serverId, callId: call.callId, ok: true, value: await invoke(call.cmd, withChannels(hot, serverId, call.args)) };
+      result = { serverId, callId: call.callId, ok: true, value: encodeMessage(await invoke(call.cmd, withChannels(hot, serverId, call.args))) };
     } catch (error) {
       result = { serverId, callId: call.callId, ok: false, value: error };
     }

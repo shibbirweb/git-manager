@@ -53,7 +53,7 @@ Streams that belong to one call use a Tauri `Channel` argument instead of a glob
 | `symbol_search_open` | `progress: Channel<SymbolSearchProgress>` | files and symbols indexed so far |
 | `text_search` | `results: Channel<TextSearchBatch>` | matches in small batches; the last one has `done: true` |
 
-The dev-only IPC bridge does not relay channel messages yet, so screenshots cannot show live terminal output (see [Docs and Screenshots](Docs-and-Screenshots.md)).
+The dev-only IPC bridge relays channel messages too, so screenshots can show live terminal output and search progress (see [Architecture](Architecture.md#the-dev-only-ipc-bridge)).
 
 ## Not in `lib.rs`
 

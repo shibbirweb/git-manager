@@ -33,14 +33,16 @@ flowchart LR
 
 ### The view
 
-`DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, an optional `onChange`, an optional `blame` target and an optional `revealLine` for Back and Forward. Its `build` function:
+`DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, an optional `onChange`, an optional `blame` target, an optional `revealLine` for Back and Forward, and an optional `workingFile` for the Open File button. Its `build` function:
 
-- loads the language with `languageFor`, then creates a `MergeView` with two read-only editors from `baseExtensions`,
+- loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`,
 - collapses unchanged lines (`margin: 3`, `minSize: 4`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
 - adds `chunkKinds` and `diffTheme` from `mergeExtensions.ts`, so pure additions, pure deletions and mixed chunks get their own `--diff-*` colors from `src/app.css`,
 - adds revert controls: `b-to-a` with a "Stage this change" button in unstaged mode, `a-to-b` with "Unstage this change" in staged mode, none when read-only,
 - draws the overview ruler with `createStrip`, `layoutTicks` and `renderTicks` from `scrollMarkers.ts`, next to the merge view's scroll container,
-- binds F7 and Shift+F7 to `goToChunk`, and restores the scroll position when the same file is rebuilt.
+- binds F7 and Shift+F7 to `goToChunk` and restores the scroll position on a rebuild.
+
+**Open File** gets `workingFile` from every diff view: the work tree path, with `sameLines` when the right side is the work tree. `openWorkingFile` checks `navigation.fileExists`, then opens it with `navigation.openFileAt`, at the cursor or top visible line (`lineOnScreen`) when `sameLines` is set.
 
 The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)).
 
@@ -106,7 +108,7 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 **Stage by writing the whole new index text.** The alternative was to build a patch and run `git apply --cached`. Patches break on context mismatches, whitespace and line endings. Writing the exact text the user sees is simple and always correct.
 
-**Hash from stdin without `--path`.** Without a path, `git hash-object` applies no clean filters, so the stored bytes are exactly the index content we computed.
+**Hash from stdin without `--path`.** Without a path, `git hash-object` applies no clean filters, so the stored bytes are exactly the computed index content.
 
 **Queue hunk stages.** `applyDiffChange` chains each stage on `stageQueue`, so fast clicks reach the index in order instead of racing.
 
@@ -124,10 +126,9 @@ None are recorded for the diff view itself yet. The Diff tab that could not be c
 
 - `src-tauri/src/git/tests.rs`: `diff_working_file_staged_and_unstaged`, `diff_working_file_staged_in_unborn_repo` and `diff_commit_file_sides`.
 - `src-tauri/src/commands/tests.rs`: `stage_content_updates_index_for_tracked_file`, `stage_content_adds_new_file_and_keeps_executable_mode` and `get_status_and_file_diff_commands`.
-
 - `src/lib/diff/split.test.ts`: the range, and the pointer math that leaves out the buttons column.
 
-New logic in the Svelte view belongs in a pure `.ts` module with a Vitest test. Hunk buttons and the drag need a manual check in the running app. See [Testing](Testing.md).
+Hunk buttons, the drag and Open File need a manual check in the app. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 
