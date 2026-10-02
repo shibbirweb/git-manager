@@ -1,6 +1,7 @@
 <!-- Main-area view showing the diff of the change selected in the Changes sidebar. -->
 <script lang="ts">
   import DiffView from "$lib/diff/DiffView.svelte";
+  import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
@@ -56,6 +57,7 @@
         origin: (line) => ({ kind: "diff", repoRoot: selected.repoRoot, path: selected.path, area: selected.area, line }),
       }}
       revealLine={reveal}
+      workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
     />
   {:else if selected && changesSelection.diffError}
     <div class="placeholder">
