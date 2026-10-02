@@ -3,12 +3,11 @@
 
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { bracketMatching, indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language";
-import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+import { highlightSelectionMatches } from "@codemirror/search";
 import { EditorState, type Extension } from "@codemirror/state";
 import {
   drawSelection,
   EditorView,
-  highlightActiveLine,
   highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
@@ -16,6 +15,11 @@ import {
 } from "@codemirror/view";
 import { classHighlighter } from "@lezer/highlight";
 import { settings } from "$lib/stores/settings.svelte";
+import { codeKeymap } from "./editorCommands";
+import { findBar } from "./findPanel.svelte";
+import { highlightActiveLineWhenEmpty } from "./activeLine";
+import { cursorOptions, editorCursor } from "./cursor";
+import { renderWhitespace } from "./whitespace";
 
 export const editorTheme = EditorView.theme({
   "&": {
@@ -29,13 +33,13 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-scroller": {
     fontFamily: "var(--font-mono)",
-    lineHeight: "1.55",
+    lineHeight: "var(--code-line-height, 1.55)",
   },
   ".cm-content": {
-    caretColor: "var(--text)",
+    caretColor: "var(--editor-cursor)",
   },
   ".cm-cursor, .cm-dropCursor": {
-    borderLeftColor: "var(--text)",
+    borderLeftColor: "var(--editor-cursor)",
   },
   ".cm-gutters": {
     backgroundColor: "var(--editor-gutter)",
@@ -58,6 +62,11 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-searchMatch": {
     backgroundColor: "color-mix(in srgb, var(--warning) 30%, transparent)",
+    outline: "none",
+  },
+  ".cm-searchMatch.cm-searchMatch-selected": {
+    backgroundColor: "color-mix(in srgb, var(--warning) 62%, transparent)",
+    outline: "1px solid color-mix(in srgb, var(--warning) 85%, transparent)",
   },
   ".cm-selectionMatch": {
     backgroundColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
@@ -69,6 +78,10 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-panels input, .cm-panels button": {
     fontFamily: "var(--font-ui)",
+  },
+  // The find bar draws its own bottom border.
+  ".cm-panels.cm-panels-top": {
+    borderBottom: "none",
   },
 });
 
@@ -86,11 +99,19 @@ export function baseExtensions({ readOnly = false, extensions = [] }: EditorOpti
     syntaxHighlighting(classHighlighter),
     bracketMatching(),
     highlightSelectionMatches(),
+    // Select All Occurrences and Cmd+D add carets; Option+Shift+click adds one (JetBrains).
+    EditorState.allowMultipleSelections.of(true),
+    EditorView.clickAddsSelectionRange.of((event) => event.altKey && event.shiftKey),
+    findBar(),
+    renderWhitespace(settings.renderWhitespace),
+    editorCursor(cursorOptions(settings)),
     editorTheme,
     // Read when the editor is created; open editors keep their values.
     EditorState.tabSize.of(settings.tabSize),
     indentUnit.of(" ".repeat(settings.tabSize)),
-    keymap.of([...searchKeymap, ...defaultKeymap]),
+    // The Code menu's keys (Duplicate, Join Lines, Toggle Case...), ahead of the defaults.
+    keymap.of(codeKeymap),
+    keymap.of(defaultKeymap),
   ];
   if (readOnly) {
     return [...common, EditorState.readOnly.of(true), ...extensions];
@@ -99,7 +120,7 @@ export function baseExtensions({ readOnly = false, extensions = [] }: EditorOpti
     ...common,
     history(),
     indentOnInput(),
-    highlightActiveLine(),
+    highlightActiveLineWhenEmpty(),
     highlightActiveLineGutter(),
     keymap.of([...historyKeymap, indentWithTab]),
     ...extensions,
