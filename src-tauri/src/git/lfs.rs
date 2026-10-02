@@ -2,6 +2,7 @@
 //! detection for diffs, and its commands through the git CLI.
 
 use std::path::Path;
+use std::sync::{Mutex, PoisonError};
 
 use git2::Repository;
 use serde::Serialize;
@@ -96,7 +97,7 @@ fn attribute_texts(repo: &Repository) -> Vec<String> {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LfsStatus {
-    /// `git lfs version` output, or None when git-lfs is not installed.
+    /// `git lfs version` output, or None when git-lfs is not installed or was not checked yet.
     pub version: Option<String>,
     /// Some attributes file routes paths through LFS.
     pub used: bool,
@@ -116,7 +117,45 @@ pub fn version(repo_path: &Path) -> Option<String> {
     (!text.is_empty()).then_some(text)
 }
 
-pub fn status(repo_path: &str) -> AppResult<LfsStatus> {
+/// What `git lfs version` said, kept for the app run so status refreshes cost no process for it.
+struct InstallCache(Mutex<Option<Option<String>>>);
+
+impl InstallCache {
+    const fn new() -> Self {
+        Self(Mutex::new(None))
+    }
+
+    /// The installed version. `probe` runs only when the answer is `needed` and still unknown,
+    /// or on `recheck` while git-lfs is not known to be installed (it may have been installed since).
+    fn get(&self, needed: bool, recheck: bool, probe: impl FnOnce() -> Option<String>) -> Option<String> {
+        let mut known = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        let stale = match known.as_ref() {
+            None => needed || recheck,
+            Some(None) => recheck,
+            Some(Some(_)) => false,
+        };
+        if stale {
+            *known = Some(probe());
+        }
+        known.clone().flatten()
+    }
+}
+
+static INSTALLED: InstallCache = InstallCache::new();
+
+/// The LFS state of a repository. The install check only runs for a repository that uses LFS
+/// (once per app run) or with `check_install` (an LFS action is about to run).
+pub fn status(repo_path: &str, check_install: bool) -> AppResult<LfsStatus> {
+    let root = Path::new(repo_path);
+    status_with(repo_path, check_install, &INSTALLED, || version(root))
+}
+
+fn status_with(
+    repo_path: &str,
+    check_install: bool,
+    installed: &InstallCache,
+    probe: impl FnOnce() -> Option<String>,
+) -> AppResult<LfsStatus> {
     let repo = Repository::open(repo_path)?;
     let texts = attribute_texts(&repo);
     let used = texts.iter().any(|text| !lfs_patterns(text).is_empty());
@@ -127,7 +166,7 @@ pub fn status(repo_path: &str) -> AppResult<LfsStatus> {
         .unwrap_or_default();
     drop(repo);
     let root = Path::new(repo_path);
-    let version = version(root);
+    let version = installed.get(used, check_install, probe);
     let files = if version.is_some() && used { ls_files(root).unwrap_or_default() } else { Vec::new() };
     Ok(LfsStatus {
         version,
@@ -190,6 +229,8 @@ pub fn install(repo_path: &str) -> AppResult<String> {
 
 #[cfg(test)]
 mod tests {
+    use std::cell::Cell;
+
     use super::*;
     use crate::test_support::TestRepo;
 
@@ -233,16 +274,53 @@ mod tests {
         let repo = TestRepo::new();
         repo.write("a.txt", "a\n");
         repo.commit_all("base");
-        let plain = status(&repo.path_string()).unwrap();
+        let installed = InstallCache::new();
+        let probes = Cell::new(0);
+        let missing = || {
+            probes.set(probes.get() + 1);
+            None
+        };
+        let plain = status_with(&repo.path_string(), false, &installed, missing).unwrap();
         assert!(!plain.used);
         assert!(plain.patterns.is_empty());
+        // A repository without LFS runs no git process for the install check.
+        assert_eq!(probes.get(), 0);
 
         repo.write("art/.gitattributes", "*.psd filter=lfs diff=lfs merge=lfs -text\n");
         repo.commit_all("lfs in a folder");
-        let nested = status(&repo.path_string()).unwrap();
+        let nested = status_with(&repo.path_string(), false, &installed, missing).unwrap();
         assert!(nested.used);
+        assert_eq!(nested.version, None);
         // Only the root file's patterns are the ones Track and Untrack edit.
         assert!(nested.patterns.is_empty());
+        assert_eq!(probes.get(), 1);
+
+        // Later refreshes reuse the answer, so the not-installed notice still has it.
+        let again = status_with(&repo.path_string(), false, &installed, missing).unwrap();
+        assert!(again.used && again.version.is_none());
+        assert_eq!(probes.get(), 1);
+    }
+
+    #[test]
+    fn install_check_runs_once_and_again_only_on_request_while_missing() {
+        let installed = InstallCache::new();
+        let probes = Cell::new(0);
+        let answer = |result: Option<&str>| {
+            probes.set(probes.get() + 1);
+            result.map(str::to_string)
+        };
+        assert_eq!(installed.get(false, false, || answer(None)), None);
+        assert_eq!(probes.get(), 0);
+        assert_eq!(installed.get(true, false, || answer(None)), None);
+        assert_eq!(installed.get(true, false, || answer(None)), None);
+        assert_eq!(probes.get(), 1);
+
+        // An LFS action asks again: git-lfs may have been installed since.
+        assert_eq!(installed.get(false, true, || answer(Some("git-lfs/3.5.1"))).as_deref(), Some("git-lfs/3.5.1"));
+        assert_eq!(probes.get(), 2);
+        assert_eq!(installed.get(true, true, || answer(None)).as_deref(), Some("git-lfs/3.5.1"));
+        assert_eq!(installed.get(false, false, || answer(None)).as_deref(), Some("git-lfs/3.5.1"));
+        assert_eq!(probes.get(), 2);
     }
 
     fn lfs_installed() -> bool {
@@ -262,13 +340,13 @@ mod tests {
         install(&root).unwrap();
         track(&root, "*.psd").unwrap();
         assert!(repo.read_text(".gitattributes").contains("*.psd filter=lfs"));
-        let tracked = status(&root).unwrap();
+        let tracked = status(&root, true).unwrap();
         assert!(tracked.used);
         assert_eq!(tracked.patterns, vec!["*.psd".to_string()]);
 
         repo.write("art.psd", vec![0u8, 1, 2, 3, 255]);
         repo.commit_all("art");
-        assert_eq!(status(&root).unwrap().files, vec!["art.psd".to_string()]);
+        assert_eq!(status(&root, false).unwrap().files, vec!["art.psd".to_string()]);
         let pointer = parse_pointer(&repo.index_bytes("art.psd")).expect("the index holds a pointer");
         assert_eq!(pointer.size, 5);
 

@@ -18,3 +18,22 @@ export function openingTitle(folderPaths: string[]): string {
 export function loadingChangesText(done: number, total: number): string {
   return total === 1 ? "Reading changes" : `Reading changes ${Math.min(done + 1, total)} of ${total}`;
 }
+
+/**
+ * The toast for a folder or workspace that failed to open: the folder in the title, and the
+ * full path with the error below it. The path is left out of the detail when the error already names it.
+ */
+export function openFailure(folderPaths: string[], message: string): { title: string; detail: string } {
+  const reason = message.trim() || "Unknown error";
+  if (folderPaths.length === 1) {
+    const folderPath = folderPaths[0];
+    return {
+      title: `Could not open ${baseName(folderPath)}`,
+      detail: reason.includes(folderPath) ? reason : `${folderPath}\n${reason}`,
+    };
+  }
+  return {
+    title: folderPaths.length === 0 ? "Could not open the workspace" : `Could not open ${folderPaths.length} folders`,
+    detail: [...folderPaths, reason].join("\n"),
+  };
+}

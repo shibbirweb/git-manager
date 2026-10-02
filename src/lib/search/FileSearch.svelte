@@ -23,6 +23,7 @@
     TextSearchOptions,
   } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
+  import { countLabel } from "./countLabel";
   import { fileSearch } from "./fileSearchStore.svelte";
   import { pathRows, recentFiles, resultRows, type SearchRow, splitLocation } from "./fileSearchModel";
   import {
@@ -33,6 +34,7 @@
     moveSelectable,
     type PopupRow,
     scrollToShow,
+    shownLabel,
     type SourceResults,
     tabRows,
     visibleRange,
@@ -562,17 +564,6 @@
     }
   }
 
-  function count(value: number, word: string): string {
-    return `${value.toLocaleString()} ${word}${value === 1 ? "" : "s"}`;
-  }
-
-  function shownOf(source: SourceResults<unknown>, word: string): string {
-    if (source.matched > source.rows.length) {
-      return `Showing the first ${source.rows.length} of ${source.matched.toLocaleString()}`;
-    }
-    return count(source.matched, word);
-  }
-
   const fileIndexing = $derived(fileIndex !== null && !fileIndex.done);
   const symbolIndexing = $derived(symbolIndex !== null && !symbolIndex.done);
 
@@ -587,22 +578,22 @@
       return error;
     }
     if ((tab === "files" || tab === "all") && fileIndexing) {
-      return `Indexing ${count(fileIndex?.indexed ?? 0, "file")}...`;
+      return `Indexing ${countLabel(fileIndex?.indexed ?? 0, "file")}...`;
     }
     if (usesSymbols(tab) && symbolIndexing) {
-      return `Indexing symbols in ${count(symbolIndex?.files ?? 0, "file")}...`;
+      return `Indexing symbols in ${countLabel(symbolIndex?.files ?? 0, "file")}...`;
     }
     if (!hasQuery) {
       return "";
     }
     if (tab === "files") {
-      return shownOf(files, "file");
+      return shownLabel(files, "file");
     }
     if (tab === "classes") {
-      return shownOf(classes, "class");
+      return shownLabel(classes, "class");
     }
     if (tab === "symbols") {
-      return shownOf(symbols, "symbol");
+      return shownLabel(symbols, "symbol");
     }
     return "";
   });

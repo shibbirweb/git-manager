@@ -100,7 +100,7 @@
     <div class="placeholder">
       <div>Could not trace these lines</div>
       <div class="dim selectable">{loadError}</div>
-      <div class="hint dim">Line numbers are those of the last commit; uncommitted edits can shift them.</div>
+      <div class="hint dim">Line numbers are those of the last commit when the tab opened; newer commits can shift them.</div>
     </div>
   {:else}
     <div class="list" bind:this={listEl} role="listbox" tabindex="0" aria-label="Commits" onkeydown={onKeydown}>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MENU_ACTIONS } from "$lib/menu/menuIds";
+import registrySource from "../../../src-tauri/src/mcp/registry.rs?raw";
 import handlersSource from "./handlers.ts?raw";
 import { defaultToolEnabled, MCP_CATEGORIES, UI_TOOLS } from "./toolDefs";
 
@@ -89,5 +90,12 @@ describe("UI tools", () => {
     for (const tool of UI_TOOLS) {
       expect(handlersSource, tool.name).toMatch(new RegExp(`^  ${tool.name}: `, "m"));
     }
+  });
+
+  it("are all in the backend's clash check (FRONTEND_TOOLS in registry.rs)", () => {
+    const list = /const FRONTEND_TOOLS: &\[&str\] = &\[([^\]]*)\];/.exec(registrySource);
+    expect(list, "FRONTEND_TOOLS in src-tauri/src/mcp/registry.rs").not.toBeNull();
+    const rustNames = [...(list?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+    expect([...rustNames].sort()).toEqual(UI_TOOLS.map((tool) => tool.name).sort());
   });
 });

@@ -80,7 +80,7 @@ flowchart LR
   Filter --> Dialog["ShortcutsDialog.svelte"]
 ```
 
-Menu rows are read from the menu bar's own data, so they cannot drift from the real keys. `formatKeys` writes an accelerator the platform's way ("⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere). Shortcuts no menu shows are listed by hand in `extraShortcuts`, and nothing checks them against the handlers. Two rows are off today: Bold (Cmd+B) says "In the Markdown editor and Preview" but works only in Preview Only, and Ctrl+PageDown and Ctrl+PageUp are listed on macOS, where nothing handles them. **Open Online Version** opens `SHORTCUTS_URL`, the wiki's [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md) page.
+Menu rows are read from the menu bar's own data, so they cannot drift from the real keys. `formatKeys` writes an accelerator the platform's way ("⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere). Shortcuts no menu shows are listed by hand in `extraShortcuts`, per platform where keys differ. **Open Online Version** opens `SHORTCUTS_URL`, the wiki's [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md) page.
 
 ## Where the code lives
 
@@ -117,6 +117,11 @@ Menu rows are read from the menu bar's own data, so they cannot drift from the r
 - **Why it happened:** the Settings dialog always started on Appearance, and callers could only open it, not pick a section.
 - **The fix and why we chose it:** `settings.openDialog(section)` records the section to show, and the dialog starts there. Spaces opens the Editor section, and every other way in still opens Appearance. One small entry point keeps all callers consistent.
 
+**Two shortcut rows were wrong.**
+- **The issue:** Bold (Cmd+B) claimed the Markdown text editor, where Cmd+B hid the sidebar, and macOS listed Ctrl+PageDown and Ctrl+PageUp for tabs, which do nothing there.
+- **Why it happened:** `extraShortcuts` is hand-written, with one set of tab keys for all platforms.
+- **The fix and why we chose it:** the text editor now binds Cmd+B for bold, so the row is true, and the tab rows use the Window menu's keys per platform. Tests pin both.
+
 **Bug reports named the wrong macOS version.**
 - **The issue:** Report a Bug always filled in "macOS 10.15.7", whatever macOS you ran.
 - **Why it happened:** the platform came from the web view's user agent, and WebKit freezes the macOS version there at 10.15.7.
@@ -124,7 +129,7 @@ Menu rows are read from the menu bar's own data, so they cannot drift from the r
 
 ## Tests
 
-- `src/lib/help/shortcuts.test.ts`: macOS and other key spelling, every menu accelerator listed, the extra shortcuts and the filter.
+- `src/lib/help/shortcuts.test.ts`: macOS and other key spelling, every menu accelerator listed, the extra shortcuts, the tab keys per platform, the Bold row and the filter.
 - `src/lib/stores/openingProgress.test.ts`: the Reading changes text.
 - `src/lib/editor/languageName.test.ts`: language names for common files, `Dockerfile` and unknown extensions.
 - `src/lib/update/releases.test.ts`: the pre-filled bug link, `osLabel` and the user agent fallback.

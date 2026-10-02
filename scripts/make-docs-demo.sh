@@ -5,7 +5,7 @@
 #     storefront/                      history by four people over six weeks: branches, a merge,
 #                                      tags, a stash, one commit not pushed, and everyday changes
 #     payments-api/                    stopped in a merge with conflicts (make-conflict-repo.sh)
-#     notes/                           plain folder, no git
+#     notes/                           plain folder, no git, with an image and a PDF for the preview
 #   <target>/design-system/            a second folder to add to the workspace (its own repository)
 #   <target>/remotes/storefront.git    storefront's "origin"
 #   <target>/extras/shop-app/          a submodule themes/acme with new commits and changes
@@ -399,6 +399,9 @@ rm "$repo/src/legacy-coupons.ts"
 
 mkdir -p "$workspace/notes"
 printf '# Team notes\n\nThis folder is not a git repository.\n' >"$workspace/notes/meeting.md"
+# An image and a PDF for the image and PDF preview, outside git so no other shot changes.
+cp "$script_dir/../src-tauri/icons/icon.png" "$workspace/notes/logo.png"
+bun "$script_dir/make-demo-pdf.ts" "$workspace/notes/lorem-ipsum.pdf"
 
 design="$target/design-system"
 mkdir -p "$design/tokens"

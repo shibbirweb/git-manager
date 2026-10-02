@@ -8,6 +8,7 @@ import {
   type PopupResults,
   scrollToShow,
   SECTION_LIMIT,
+  shownLabel,
   tabRows,
   visibleRange,
 } from "./popupRows";
@@ -108,5 +109,19 @@ describe("virtual list", () => {
     expect(scrollToShow(5, 0, 260, 26, 1)).toBe(0);
     expect(scrollToShow(20, 0, 260, 26, 1)).toBe(20 * 26 + 26 - 260);
     expect(scrollToShow(3, 200, 260, 26, 1)).toBe(78);
+  });
+});
+
+describe("shownLabel", () => {
+  it("counts each tab's results with the right plural", () => {
+    expect(shownLabel({ rows: ["a", "b"], matched: 2 }, "class")).toBe("2 classes");
+    expect(shownLabel({ rows: ["a"], matched: 1 }, "class")).toBe("1 class");
+    expect(shownLabel({ rows: ["a", "b", "c"], matched: 3 }, "file")).toBe("3 files");
+    expect(shownLabel({ rows: ["a", "b"], matched: 2 }, "symbol")).toBe("2 symbols");
+    expect(shownLabel({ rows: [], matched: 0 }, "symbol")).toBe("0 symbols");
+  });
+
+  it("says how many are shown when the list is cut", () => {
+    expect(shownLabel({ rows: ["a", "b"], matched: 50 }, "class")).toBe("Showing the first 2 of 50");
   });
 });

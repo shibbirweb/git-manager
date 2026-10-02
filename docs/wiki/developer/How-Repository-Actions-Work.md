@@ -134,4 +134,7 @@ New for these menus: `commit_all` (`commit --all`), `undo_last_commit`, `fetch` 
 
 ## Bugs we fixed
 
-None yet.
+**The Merging badge was cut off.**
+- **The issue:** at 260 and 360 px, a merging repository showed "Mergin".
+- **Why it happened:** the header button clipped its overflow, its name and badges never shrank, and the actions kept their full width.
+- **The fix and why we chose it:** only the repository and branch names shrink (`minmax(0, max-content)` grid tracks), and the actions wrap below when not even four letters fit. Hiding the badge would hide the state.

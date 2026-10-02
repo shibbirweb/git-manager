@@ -100,10 +100,13 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 ## Keeping this page in sync
 
 - A new feature that people use from the menus is reachable through `run_menu_command` already. Add a dedicated tool when an agent needs data back, in `tools/` (backend) or `toolDefs.ts` plus `handlers.ts` (UI).
-- Keep `FRONTEND_TOOLS` in `registry.rs` (the test list of UI tool names no backend tool may take) in step with `toolDefs.ts`; today it lists 23 and misses `inspect_elements`. Keep the tool counts here and on the usage page right too.
+- `FRONTEND_TOOLS` in `registry.rs` (the test list of UI tool names no backend tool may take) must match `UI_TOOLS` in `toolDefs.ts`; `toolDefs.test.ts` fails when they differ. Keep the tool counts here and on the usage page right too.
 - New commands go in [Commands and Events](Commands-and-Events.md); settings in [How Settings Work](How-Settings-Work.md).
 - Retake `mcp-settings.png`, `mcp-tools-dialog.png` and `mcp-cli-settings.png` when Settings, Automation or the dialog change.
 
 ## Bugs we fixed
 
-None yet.
+**The clash check missed `inspect_elements`.**
+- **The issue:** a backend tool could have taken the name `inspect_elements` without a test failing.
+- **Why it happened:** `FRONTEND_TOOLS`, the list the Rust clash test checks, was typed by hand with a fixed length of 23, and nobody added the 24th UI tool to it.
+- **The fix and why we chose it:** the list is now a slice with every UI tool, and a Vitest test in `toolDefs.test.ts` reads `registry.rs` and compares it with the real `UI_TOOLS` names. Reading the Rust file from TypeScript checks the list the app actually registers, not a parse of `toolDefs.ts`.

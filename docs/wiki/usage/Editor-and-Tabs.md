@@ -14,7 +14,7 @@ Git Manager has a light code editor for quick fixes. Open files in tabs, edit an
 
 A preview tab becomes a normal tab when you double-click the tab, start editing, or choose **Keep Open** in its right-click menu.
 
-Markdown files open with a toolbar and a live preview; see [Markdown Editor](Markdown-Editor.md).
+Markdown files open with a toolbar and a live preview; see [Markdown Editor](Markdown-Editor.md). Images and PDFs open in a preview; see [Image and PDF Preview](Image-and-PDF-Preview.md).
 
 Files larger than 4 MB and binary files (such as images) are not opened; the tab shows a short note instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
 

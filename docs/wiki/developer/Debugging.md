@@ -77,7 +77,7 @@ GM_IPC_BRIDGE=1 bun tauri dev
 # keep the app window open, then visit http://127.0.0.1:1420/?ipc-bridge in a browser
 ```
 
-Be careful: every command the page sends runs in the app for real, with your own `~/.gitmanager` settings unless `scripts/screenshots.ts` overrides them. Open only demo repositories, and stop the app when you are done. Backend events such as `repo-changed` do not reach the page, so reload it after changes on disk. How the bridge works is in [Architecture](Architecture.md).
+Be careful: every command the page sends runs in the app for real, with your own `~/.gitmanager` settings unless `scripts/screenshots.ts` overrides them. Open only demo repositories, and stop the app when you are done. Only `terminal-exited` and `git-command` reach the page; other backend events such as `repo-changed` do not, so reload it after changes on disk. How the bridge works is in [Architecture](Architecture.md).
 
 ## Common dead ends
 

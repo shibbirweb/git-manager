@@ -5,10 +5,11 @@ use super::submodule::progress_emitter;
 use crate::error::AppResult;
 use crate::git::lfs::{self, LfsStatus};
 
-/// Whether git-lfs is installed, whether the repository uses it, and its files.
+/// Whether git-lfs is installed, whether the repository uses it, and its files. The install
+/// check runs once per app run for repositories that use LFS, or again with `check_install`.
 #[tauri::command]
-pub async fn lfs_status(repo_path: String) -> AppResult<LfsStatus> {
-    blocking(move || lfs::status(&repo_path)).await
+pub async fn lfs_status(repo_path: String, check_install: Option<bool>) -> AppResult<LfsStatus> {
+    blocking(move || lfs::status(&repo_path, check_install.unwrap_or_default())).await
 }
 
 #[tauri::command]

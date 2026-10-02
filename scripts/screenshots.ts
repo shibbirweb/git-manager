@@ -527,6 +527,14 @@ class Shot {
 
   /** Opens a file from the Files panel: double-click keeps it, a single click previews it. */
   async openFile(absolutePath: string, options: { preview?: boolean } = {}): Promise<void> {
+    // Shots that hide the Files panel open the file the way the panel would.
+    if (!(await this.page.locator("aside.explorer").isVisible())) {
+      await this.page.evaluate(
+        `(async () => { const { repoStore } = await import("/src/lib/stores/repo.svelte.ts"); await repoStore.openFile(${JSON.stringify(absolutePath)}, { pin: ${options.preview ? "false" : "true"} }); })()`,
+      );
+      await this.editorReady();
+      return;
+    }
     const root = absolutePath.startsWith(`${designSystem}/`) ? designSystem : acme;
     const segments = absolutePath.slice(root.length + 1).split("/");
     const folders = segments.slice(0, -1).map((_, index) => join(root, ...segments.slice(0, index + 1)));
@@ -542,7 +550,12 @@ class Shot {
 
   /** The visible editor has rendered its text. */
   async editorReady(): Promise<void> {
-    await this.page.locator(".file-host:not(.hidden) .cm-content .cm-line").first().waitFor();
+    // A Markdown file opened in preview mode shows the rich editor instead of CodeMirror.
+    await this.page
+      .locator(".file-host:not(.hidden) .cm-content .cm-line, .file-host:not(.hidden) .rich-markdown")
+      .filter({ visible: true })
+      .first()
+      .waitFor();
     await this.settle();
   }
 
@@ -1131,9 +1144,8 @@ for (const [name, section] of [
 // The Editor section scrolls; this is its lower half (ligatures, tab size, word wrap, blame).
 define("settings-editor-more", async (shot) => {
   const dialog = await openSettings(shot, "Editor");
-  await dialog.locator(".rows").evaluate((rows) => {
-    rows.scrollTop = rows.scrollHeight;
-  });
+  // Word wrap and the cursor rows below it; the fonts shot covers the rows above.
+  await scrollSettingsTo(dialog, "Word wrap");
   await shot.page.mouse.move(5, 790);
   await shot.save(dialog);
 });
@@ -1633,6 +1645,30 @@ define("editor-whitespace", async (shot) => {
   await shot.save({ x: box.x, y: box.y, width: Math.min(box.width, 620), height: Math.min(box.height, 300) });
 }, () => twoFolderScenario({ settings: { renderWhitespace: "all", currentLineBlame: false } }));
 
+/** Opens an image or PDF from notes/ in the preview and returns the tab's area. */
+async function openPreview(shot: Shot, fileName: string, ready: string): Promise<{ x: number; y: number; width: number; height: number }> {
+  await shot.expand(notes);
+  await shot.fileRow(join(notes, fileName)).dblclick();
+  await shot.page.locator(`.file-host:not(.hidden) .media ${ready}`).waitFor();
+  await shot.settle(1200);
+  await shot.page.mouse.move(640, 790);
+  const box = await shot.page.locator(".file-host:not(.hidden)").boundingBox();
+  if (!box) {
+    throw new Error(`${fileName}: no preview`);
+  }
+  return box;
+}
+
+define("media-preview-image", async (shot) => {
+  const box = await openPreview(shot, "logo.png", "img");
+  await shot.save(box);
+}, () => twoFolderScenario({ state: { explorerOpen: true }, viewport: { width: 1280, height: 760 } }));
+
+// media-preview-pdf.png is taken by hand: Playwright's WebKit has no PDF viewer, so this page would
+// show an empty frame. Open notes/lorem-ipsum.pdf of the demo in the real app window and capture it
+// (git-manager cli screenshot, or Cmd+Shift+4 then Space), then crop to the document. See
+// docs/wiki/developer/How-the-Image-and-PDF-Preview-Works.md.
+
 define("diff-split-resize", async (shot) => {
   await collapseRepo(shot, "payments-api");
   await shot.page.getByRole("button", { name: "Hide files" }).click();
@@ -1712,7 +1748,15 @@ define("markdown-rich-editor", async (shot) => {
     await intro.click({ position: { x: box.width - 2, y: box.height - 6 } });
     await shot.page.keyboard.press("End");
   }
-  await shot.settle();
+  // The preview follows the source position, which can leave it scrolled down: show the top.
+  await shot.page.evaluate(() => {
+    let element: HTMLElement | null = document.querySelector<HTMLElement>(".file-host:not(.hidden) .rich-markdown");
+    while (element) {
+      element.scrollTop = 0;
+      element = element.parentElement;
+    }
+  });
+  await shot.settle(400);
   await shot.page.mouse.move(640, 790);
   await shot.save(shot.page.locator("main.main"));
 }, () => markdownScenario({ settings: { markdownViewMode: "preview" } }));
@@ -1881,7 +1925,7 @@ define("menus-shortcuts-window", async (shot) => {
 
 define("git-menu-create-patch", async (shot) => {
   const dialog = await gitDialog(shot, "git.patch.create");
-  await dialog.getByText("Staged changes").waitFor();
+  await dialog.getByText("Staged changes", { exact: true }).waitFor();
   await saveDialog(shot, dialog);
   await shot.page.keyboard.press("Escape");
 });
@@ -1905,8 +1949,8 @@ define("git-menu-file-history", async (shot) => {
 
 define("git-menu-line-history", async (shot) => {
   await shot.openFile(cartTs());
-  // Select the useDiscount method, three lines.
-  await clickLine(shot, "useDiscount(code");
+  // Three lines above the uncommitted insert, so the working copy and HEAD number them alike.
+  await clickLine(shot, "export class Cart");
   await shot.page.keyboard.press("Home");
   await shot.page.keyboard.press("Shift+ArrowDown");
   await shot.page.keyboard.press("Shift+ArrowDown");
@@ -2048,26 +2092,36 @@ define("repo-actions-row", async (shot) => {
   const header = repoHeader(shot, "storefront");
   const staged = shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Staged" }).locator(".group-header, button").first();
   const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
-  const down = await shot.clipAround([header, staged], { top: 10, bottom: 10 });
+  const down = await shot.clipAround([header, staged], { top: 4, bottom: 4 });
   if (!sidebar) {
     throw new Error("repo-actions-row: no sidebar");
   }
   await shot.save({ x: sidebar.x, width: sidebar.width, y: down.y, height: down.height });
 }, () => wideSidebar());
 
+/** Starts a clip at the sidebar's left edge, so it does not cut through the activity bar. */
+async function fromSidebarEdge(shot: Shot, clip: { x: number; y: number; width: number; height: number }) {
+  const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+  if (!sidebar) {
+    return clip;
+  }
+  const left = Math.floor(sidebar.x);
+  return { ...clip, x: left, width: clip.x + clip.width - left };
+}
+
 define("repo-actions-menu", async (shot) => {
   await collapseRepo(shot, "payments-api");
   const menu = await openRepoMenu(shot, "storefront");
   const submenu = await openSubmenu(shot, 0, "Branch");
-  const top = shot.page.locator("aside.sidebar .sidebar-header, aside.sidebar header").first();
-  await shot.save(await shot.clipAround([top, repoHeader(shot, "storefront"), menu, submenu], 16));
+  const top = shot.page.locator("aside.sidebar .head").first();
+  await shot.save(await fromSidebarEdge(shot, await shot.clipAround([top, repoHeader(shot, "storefront"), menu, submenu], { top: 0, right: 16, bottom: 16 })));
 }, () => wideSidebar());
 
 define("remotes-pull-push-menu", async (shot) => {
   await collapseRepo(shot, "payments-api");
   const menu = await openRepoMenu(shot, "storefront");
   const submenu = await openSubmenu(shot, 0, "Pull, Push");
-  await shot.save(await shot.clipAround([repoHeader(shot, "storefront"), menu, submenu], 16));
+  await shot.save(await fromSidebarEdge(shot, await shot.clipAround([repoHeader(shot, "storefront"), menu, submenu], { top: 4, right: 16, bottom: 16 })));
 }, () => wideSidebar());
 
 async function typeCommitMessage(shot: Shot): Promise<void> {
@@ -2105,7 +2159,7 @@ define("gitignore-menu", async (shot) => {
 
 async function openBranchesPopup(shot: Shot): Promise<Locator> {
   await collapseRepo(shot, "payments-api");
-  await shot.page.getByRole("button", { name: /^Checkout branch or tag, current main/ }).first().click();
+  await repoHeader(shot, "storefront").getByRole("button", { name: /^Checkout branch or tag, current main/ }).first().click();
   const dialog = topDialog(shot);
   await dialog.getByRole("listbox", { name: "Branches" }).getByRole("option").first().waitFor();
   await shot.settle(300);

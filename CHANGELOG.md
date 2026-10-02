@@ -48,6 +48,7 @@ GitHub release notes, and the app shows it as "What's New".
 - GitHub account (Settings > GitHub) with a token kept only in the system keychain, or the GitHub CLI: Share Project on GitHub, Sync Fork, Create Gist, and links to open the repository, create a pull request or copy a GitHub link.
 - Integrated terminal in the bottom panel: several terminals, a shell picker, Ctrl+` to show or hide it and Ctrl+Shift+` for a new one, terminals moved into the editor area and back, and Settings > Terminal for fonts, cursor, scrollback and copy on selection.
 - Files panel: Open in Integrated Terminal and Reveal in Finder.
+- Image and PDF preview: images (PNG, JPEG, GIF, WebP, BMP, ICO, AVIF) open fitted with zoom, and PDFs open in the built-in viewer; a preview frees its memory when its tab is hidden or closed.
 - Open File button in the diff toolbar, after Blame: opens the real file in an editor tab, at the same line when the right side is the working tree.
 - View > Word Wrap (Option+Z) turns word wrap on or off in every open file at once, like VS Code.
 - Editor cursor settings like VS Code (style: line, line thin, block, block outline, underline, underline thin; width; blinking: blink, smooth, phase, expand, solid; smooth caret animation) and Sublime Text's caret extra top and bottom, in Settings > Editor.
@@ -78,3 +79,5 @@ GitHub release notes, and the app shows it as "What's New".
 
 - Opening or adding a big folder no longer freezes the window for a moment.
 - A selection inside one line is visible again; the current line highlight hid it.
+- A folder or workspace that fails to open, at start or later, now shows an error naming the folder instead of silently showing the welcome screen.
+- The Show all branches setting no longer claims to work like `git log --all`: the Log follows local and remote branches, not tags or stashes.

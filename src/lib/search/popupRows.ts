@@ -1,6 +1,7 @@
 // The rows of the Search Everywhere popup (FileSearch.svelte) for each tab, keyboard
 // selection over the selectable ones, and the window of rows the virtual list renders.
 
+import { countLabel, type CountWord } from "./countLabel";
 import { moveSelection, type SearchRow } from "./fileSearchModel";
 import type { SearchTab } from "./searchTabs";
 import type { SymbolRow } from "./symbolSearchModel";
@@ -24,6 +25,14 @@ export interface SourceResults<T> {
 
 export function emptySource<T>(): SourceResults<T> {
   return { rows: [], matched: 0 };
+}
+
+/** The status line of the Files, Classes and Symbols tabs: "2 classes", or how many of them are shown. */
+export function shownLabel(source: SourceResults<unknown>, word: CountWord): string {
+  if (source.matched > source.rows.length) {
+    return `Showing the first ${source.rows.length} of ${source.matched.toLocaleString()}`;
+  }
+  return countLabel(source.matched, word);
 }
 
 export interface PopupResults {

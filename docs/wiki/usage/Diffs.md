@@ -78,6 +78,10 @@ After each click the lists in Changes update, so the file may appear in both Sta
 
 The **Blame** button in the diff toolbar shows who last changed each line on the right side, and when. See [Blame](Blame.md). It uses the same setting as the Blame button in the editor.
 
+## Open the file itself
+
+**Open File**, after Blame in the toolbar, opens the real file from your working tree in an editor tab, so you can edit it. When the right side is the working tree (unstaged changes, Compare with Working Copy, Show Diff with Working Tree), the file opens at the line your cursor is on, or at the top line you were looking at. In other diffs, such as a commit in the Log or a branch comparison, it opens at the top. If the file no longer exists in the working tree, a message says so.
+
 ## Special cases
 
 - **No content changes**: the file changed in a way that is not text, for example only its permissions.

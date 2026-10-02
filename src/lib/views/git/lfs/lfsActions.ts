@@ -16,7 +16,7 @@ function activeRoot(): string | null {
 
 /** The LFS state, read now; null (after telling the user) when git-lfs is missing. */
 async function requireLfs(repoRoot: string): Promise<LfsStatus | null> {
-  const status = await lfsStore.refresh(repoRoot);
+  const status = await lfsStore.refresh(repoRoot, true);
   if (status?.version) {
     return status;
   }

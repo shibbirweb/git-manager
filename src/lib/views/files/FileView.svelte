@@ -39,6 +39,7 @@
   import MarkdownToolbar from "./MarkdownToolbar.svelte";
   import RichMarkdownView from "./RichMarkdownView.svelte";
   import { tonesByPath } from "./tones";
+  import { previewOf } from "./mediaPreview";
 
   let { filePath }: { filePath: string } = $props();
 
@@ -106,6 +107,10 @@
     tone === "conflict" ? "Conflicted" : tone === "added" ? "New file" : tone === "modified" ? "Modified" : null,
   );
   const editable = $derived(file !== null && !file.binary && !file.tooLarge);
+  /** Images and PDFs open in the preview instead of the editor. */
+  const preview = $derived(previewOf(filePath));
+  /** Bumped when the previewed file may have changed on disk. */
+  let previewToken = $state(0);
 
   // Markdown: source, preview or both, like JetBrains. Each file keeps its mode for the session.
   const isMarkdown = $derived(isMarkdownPath(filePath));
@@ -229,6 +234,11 @@
   async function load(quiet: boolean): Promise<void> {
     const root = folder?.root;
     if (!root) {
+      return;
+    }
+    if (preview) {
+      // The preview reads the file itself; nothing here holds its bytes.
+      previewToken++;
       return;
     }
     const relative = relativeTo(root, filePath);
@@ -444,9 +454,19 @@
         navigation.record({ filePath, line: update.state.doc.lineAt(update.state.selection.main.head).number - 1 });
       }
     });
-    // Cmd+B stays the sidebar toggle; Cmd+I replaces Select Parent Syntax and Cmd+K is free.
+    // Cmd+B makes text bold here, like the rich editor: CodeMirror prevents the key's default,
+    // so the window's sidebar toggle and the View > Sidebar item skip it. Cmd+I replaces Select
+    // Parent Syntax and Cmd+K (Git > Commit elsewhere) is seen here first.
     const markdownKeys = isMarkdown
       ? keymap.of([
+          {
+            key: "Mod-b",
+            preventDefault: true,
+            run: (target) => {
+              target.dispatch(toggleInline(target.state, "bold"));
+              return true;
+            },
+          },
           {
             key: "Mod-i",
             preventDefault: true,
@@ -765,7 +785,14 @@
     />
   {/if}
 
-  {#if loadError}
+  {#if preview}
+    <!-- Only while the tab is on screen, so a hidden or closed tab frees the picture or document. -->
+    {#if isActive && folder}
+      {#await import("./MediaPreview.svelte") then media}
+        <media.default {filePath} rootPath={folder.root} relativePath={folderPath} {preview} reloadToken={previewToken} />
+      {/await}
+    {/if}
+  {:else if loadError}
     <div class="message">
       <p>{loadError}</p>
       <button class="btn" onclick={() => void repoStore.closeTab(filePath)}>Close</button>

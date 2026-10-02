@@ -52,7 +52,7 @@ Git LFS (Large File Storage) keeps big files outside the repository. See [How Gi
 
 | Command | Wrapper | Returns | Kind | What it does |
 | --- | --- | --- | --- | --- |
-| `lfs_status` | `lfsStatus(repoPath)` | `LfsStatus` | CLI | whether git-lfs is installed and used, its patterns and files |
+| `lfs_status` | `lfsStatus(repoPath, checkInstall)` | `LfsStatus` | CLI | whether git-lfs is installed (checked once per app run, only when used or with `checkInstall`) and used, its patterns and files |
 | `lfs_track` | `lfsTrack(repoPath, pattern)` | `string` | CLI | `git lfs track <pattern>` |
 | `lfs_untrack` | `lfsUntrack(repoPath, pattern)` | `string` | CLI | `git lfs untrack <pattern>` |
 | `lfs_transfer` | `lfsTransfer(repoPath, pull)` | `string` | CLI | `git lfs pull` (`pull` true) or `git lfs fetch`, with `git-progress` |

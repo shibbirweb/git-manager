@@ -6,6 +6,7 @@ mod git;
 mod git_console;
 mod github;
 mod images;
+mod media;
 mod mcp;
 mod memory;
 mod memory_log;
@@ -147,6 +148,7 @@ pub fn run() {
             commands::files::list_directory,
             commands::files::read_worktree_file,
             commands::files::read_image_data_url,
+            commands::files::read_preview_file,
             commands::search::file_search_open,
             commands::search::file_search_query,
             commands::search::file_search_close,

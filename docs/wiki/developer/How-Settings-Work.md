@@ -122,6 +122,11 @@ Terminal loads the shell list when first shown; Automation refreshes the server 
 - **Why it happened:** the blame click later started opening the Log, the merge tool toggle writes the global setting, and the list looped over every key.
 - **The fix and why we chose it:** the hints now say what the app does, and the list loops over the changed keys. Honest hints are cheaper than surprised users.
 
+**The Show all branches hint said `git log --all`.**
+- **The issue:** the hint promised the Log works like `git log --all`, which also follows tags and stashes.
+- **Why it happened:** `log::page` pushes HEAD, `refs/heads` and `refs/remotes` only, and the hint was written loosely.
+- **The fix and why we chose it:** the hint (and the MCP `git_log` description) now say `git log --branches --remotes` and that tags and stashes are not followed. Walking stashes would fill the graph with stash commits, so the hint changed, not the walk.
+
 ## Tests
 
 - `src-tauri/src/config.rs`: `missing_files_load_as_none_and_the_folder_is_created_on_save`, `files_are_pretty_printed_and_kept_separate`, `unknown_names_and_bad_json_are_errors`.

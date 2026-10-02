@@ -69,7 +69,7 @@ These items need a file editor tab on screen, for a file inside a repository.
 - **Show Diff** opens the file's diff in Changes.
 - **Compare with Revision...** lets you pick a commit that changed the file. A tab opens with the file at that commit on the left and your working copy on the right, read-only. **Compare with Branch...** does the same with a branch or tag.
 - **Show History** opens a tab with every commit that changed the file, following renames. Click a commit to see its details and diff; right-click for **Open Commit in Tab**, **Compare with Working Copy**, **Show in Log** and **Copy Revision Hash**.
-- **Show History for Selection** opens a tab with the commits that changed the selected lines (or the cursor line), each with its diff of those lines.
+- **Show History for Selection** opens a tab with the commits that changed the selected lines (or the cursor line), each with its diff of those lines. Uncommitted lines above the selection do not throw it off; the tab names the lines as they are numbered in the last commit. If you select only new lines, a message says they are not committed yet.
 - **Rollback File...** asks first, then throws away the file's staged and unstaged changes. A newly added file is removed from git but stays on disk.
 
 ![Show History for a file](../images/git-menu-file-history.png)

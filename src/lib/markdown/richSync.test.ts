@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyEdit, blockEdit, type SourceBlock, splitFrontMatter } from "./richSync";
+import { applyEdit, blockEdit, dropNullImageFields, type MarkdownTreeNode, type SourceBlock, splitFrontMatter } from "./richSync";
 
 /** Blocks of a source written with blank lines between them, with their ranges. */
 function blocksOf(source: string): { ranges: SourceBlock[]; texts: string[] } {
@@ -68,5 +68,35 @@ describe("splitFrontMatter", () => {
     expect(splitFrontMatter("---\ntitle: Notes\ntags: [a]\n---\n# Hi\n")).toEqual({ frontMatter: "---\ntitle: Notes\ntags: [a]\n---\n", body: "# Hi\n" });
     expect(splitFrontMatter("# Hi\n\n---\n")).toEqual({ frontMatter: "", body: "# Hi\n\n---\n" });
     expect(splitFrontMatter("---\nnot closed\n")).toEqual({ frontMatter: "", body: "---\nnot closed\n" });
+  });
+});
+
+describe("dropNullImageFields", () => {
+  it("drops an image's null title so the editor's default applies", () => {
+    // What remark gives for "![alt](a.png)": no title is null, which the image node rejects.
+    const image: MarkdownTreeNode = { type: "image", url: "a.png", alt: "alt", title: null };
+    const tree: MarkdownTreeNode = { type: "root", children: [{ type: "paragraph", children: [image] }] };
+    dropNullImageFields(tree);
+    expect(image).toEqual({ type: "image", url: "a.png", alt: "alt" });
+    expect("title" in image).toBe(false);
+  });
+
+  it("keeps real titles and fields of other nodes, in nested blocks too", () => {
+    const titled: MarkdownTreeNode = { type: "image", url: "c.png", alt: "", title: "The checkout screen" };
+    const nested: MarkdownTreeNode = { type: "image", url: null, alt: null, title: null };
+    const link: MarkdownTreeNode = { type: "link", url: "b", title: null, children: [{ type: "text", value: "b" }] };
+    const tree: MarkdownTreeNode = {
+      type: "root",
+      children: [
+        { type: "paragraph", children: [titled, link] },
+        { type: "blockquote", children: [{ type: "list", children: [{ type: "listItem", checked: null, children: [{ type: "paragraph", children: [nested] }] }] }] },
+      ],
+    };
+    dropNullImageFields(tree);
+    expect(titled).toEqual({ type: "image", url: "c.png", alt: "", title: "The checkout screen" });
+    expect(nested).toEqual({ type: "image" });
+    // A link may have a null title; a task's `checked: null` means "not a task".
+    expect(link.title).toBeNull();
+    expect(tree.children?.[1].children?.[0].children?.[0].checked).toBeNull();
   });
 });

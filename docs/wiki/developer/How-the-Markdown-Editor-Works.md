@@ -30,7 +30,7 @@ The text editor always exists, hidden in Preview Only, so save, undo, dirty stat
 
 ### The toolbar and keys
 
-`MarkdownToolbar.svelte` runs pure commands from `markdown/format.ts` (`toggleInline`, `toggleLink`, `setHeading`, `toggleLinePrefix`, `toggleCodeBlock`, `insertTable`). Each returns one `TransactionSpec`: one undo step, every cursor. In Preview mode the buttons call `onRichFormat` instead. A Markdown editor adds Cmd+I (italic, in place of Select Parent Syntax) and Cmd+K (link); Cmd+B stays the sidebar toggle.
+`MarkdownToolbar.svelte` runs pure commands from `markdown/format.ts` (`toggleInline`, `toggleLink`, `setHeading`, `toggleLinePrefix`, `toggleCodeBlock`, `insertTable`). Each returns one `TransactionSpec`: one undo step, every cursor. In Preview mode the buttons call `onRichFormat` instead. A Markdown editor adds Cmd+B (bold), Cmd+I (italic, in place of Select Parent Syntax) and Cmd+K (link).
 
 ### The preview pipeline
 
@@ -78,7 +78,7 @@ Memory follows the screen, not the length of the file:
 - **The mermaid cache is capped** at 24 entries and 2,000,000 characters, and mermaid's temporary render elements are removed (`removeLeftovers`).
 - **Off-screen blocks are not painted:** `content-visibility: auto` in `body.css` and `RichMarkdownView`.
 
-Measured in headless Chrome on a file with 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 SVGs and 8,562 elements.
+Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 SVGs and 8,562 elements.
 
 ## Where the code lives
 
@@ -101,7 +101,7 @@ Measured in headless Chrome on a file with 40 diagrams: 1 to 2 SVGs and 442 to 6
 
 **What stays after first use.** The libraries keep their heap until the app quits: markdown-it about 2 MB, mermaid about 30 MB, Milkdown about 8 MB. We tried mermaid in a disposable iframe and rejected it: the UMD build is 73 MB and Chrome did not free it when the iframe was removed.
 
-**Fast scrolling in WebKit.** WebKit's WebContent process peaks at 400 to 650 MB while a 35 KB README is scrolled fast, and settles at 60 to 200 MB after. Plain HTML without our code does the same, and runs are noisy (98 MB and 444 MB for one setup), so it looks like WebKit's own behavior. `content-visibility: auto` is a candidate fix still under test; re-measure in the real app with the MCP tools `scroll_view` and `sample_memory` or the memory log ([Debugging](Debugging.md)).
+**Fast scrolling in WebKit.** WebKit's WebContent process peaks at 400 to 650 MB while a 35 KB README is scrolled fast, and settles at 60 to 200 MB after. Plain HTML without our code does the same (runs are noisy: 98 MB and 444 MB for one setup), so it looks like WebKit's own. `content-visibility: auto` is a candidate fix still under test; re-measure in the real app with the MCP tools `scroll_view` and `sample_memory` or the memory log ([Debugging](Debugging.md)).
 
 ## Tests
 
@@ -116,7 +116,12 @@ Measured in headless Chrome on a file with 40 diagrams: 1 to 2 SVGs and 442 to 6
 
 ## Bugs we fixed
 
+**Cmd+B hid the sidebar instead of making text bold.**
+- **The issue:** the Bold tooltip says Cmd+B, but in the text editor it hid the sidebar.
+- **Why it happened:** the Markdown keymap bound only Cmd+I and Cmd+K.
+- **The fix and why we chose it:** it binds Cmd+B and prevents the default, so the sidebar key skips it ([Menu Keys and Routing](Menu-Keys-and-Routing.md)). One bold key in both editors, like VS Code, beats a tooltip per mode.
+
 **Memory grew with long Markdown files and open Markdown tabs.**
 - **The issue:** the memory readout kept climbing while a long file with many mermaid diagrams was open, and every open Markdown tab added more.
 - **Why it happened:** every diagram was drawn and kept as SVG, every local image was loaded as a data URL, hidden tabs kept their whole rendered document, the mermaid cache had no limit, and mermaid left its temporary render elements in the page.
-- **The fix and why we chose it:** the changes in [Memory](#memory) above, so memory depends on what is on screen. A disposable iframe for mermaid was tried and rejected, because it cost more than it saved.
+- **The fix and why we chose it:** the changes in [Memory](#memory) above, so memory depends on what is on screen.

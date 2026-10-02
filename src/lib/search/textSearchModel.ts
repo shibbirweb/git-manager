@@ -4,6 +4,7 @@
 
 import { type FolderRef } from "$lib/stores/workspacePaths";
 import type { TextSearchBatch, TextSearchOptions } from "$lib/types";
+import { countLabel } from "./countLabel";
 import type { TextPart } from "./fileSearchModel";
 
 /** Fewer characters match nearly every line; the backend ignores them too. */
@@ -126,23 +127,19 @@ export function appendBatch(results: TextResults, batch: TextSearchBatch, folder
   };
 }
 
-function plural(count: number, word: string): string {
-  return `${count.toLocaleString()} ${word}${count === 1 ? "" : "es"}`;
-}
-
 /** The status line of the Text tab. */
 export function textStatus(results: TextResults, running: boolean): string {
   if (results.error) {
     return results.error;
   }
-  const files = `${results.filesMatched.toLocaleString()} ${results.filesMatched === 1 ? "file" : "files"}`;
+  const files = countLabel(results.filesMatched, "file");
   if (running) {
-    return results.matches > 0 ? `Searching... ${plural(results.matches, "match")} in ${files}` : "Searching...";
+    return results.matches > 0 ? `Searching... ${countLabel(results.matches, "match")} in ${files}` : "Searching...";
   }
   if (results.more) {
-    return `Showing the first ${plural(results.matches, "match")} in ${files}`;
+    return `Showing the first ${countLabel(results.matches, "match")} in ${files}`;
   }
-  return results.matches > 0 ? `${plural(results.matches, "match")} in ${files}` : "";
+  return results.matches > 0 ? `${countLabel(results.matches, "match")} in ${files}` : "";
 }
 
 let lastSearchId = 0;

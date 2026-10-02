@@ -21,6 +21,7 @@ import { applyStash, newBranchFrom, repoTarget } from "../sidebar/actions";
 import { gitDialogs } from "./gitDialogs.svelte";
 import { currentGitFile, fileStatusOf } from "./gitMenuInputs";
 import { rollbackPaths, updatePlan, updateProgressText } from "./gitOptions";
+import { headLineRange } from "./lineHistoryRange";
 import { gitHubCompareUrl, gitHubFileUrl, gitHubPullsUrl, type LineRange, linkRevision, pickGitHubRemote } from "./github";
 
 /** How many recent commits the commit pickers list. */
@@ -501,13 +502,40 @@ export function showCurrentFileHistory(): void {
   }
 }
 
-export function showSelectionHistory(): void {
+/**
+ * The selected lines as numbered in HEAD, which `git log -L` reads, so uncommitted lines above
+ * the selection do not shift it. Null when every selected line is new. When the committed text
+ * cannot be read, the editor's numbers are kept and git reports any problem.
+ */
+async function committedSelection(repoRoot: string, filePath: string, lines: LineRange): Promise<LineRange | null> {
+  const view = activeEditorView();
+  if (!view) {
+    return lines;
+  }
+  const origPath = fileStatusOf(repoRoot, filePath)?.origPath ?? null;
+  try {
+    const committed = await api.getFileDiff(repoRoot, filePath, origPath, "staged");
+    if (committed.binary || committed.tooLarge) {
+      return lines;
+    }
+    return headLineRange(committed.original.split("\n"), view.state.doc.toJSON(), lines);
+  } catch {
+    return lines;
+  }
+}
+
+export async function showSelectionHistory(): Promise<void> {
   const file = currentFile();
   const lines = selectedLines();
   if (!file || !lines) {
     return;
   }
-  openGitTab({ kind: "lineHistory", repoRoot: file.repoRoot, filePath: file.filePath, startLine: lines.start, endLine: lines.end });
+  const committed = await committedSelection(file.repoRoot, file.filePath, lines);
+  if (!committed) {
+    toast.info("No history for these lines", "They are not committed yet. Select lines that are in the last commit.");
+    return;
+  }
+  openGitTab({ kind: "lineHistory", repoRoot: file.repoRoot, filePath: file.filePath, startLine: committed.start, endLine: committed.end });
 }
 
 export async function rollbackCurrentFile(): Promise<void> {

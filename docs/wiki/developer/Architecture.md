@@ -149,7 +149,8 @@ The wiki screenshots need the real app, but a script cannot click inside a Tauri
 
 - **`src/lib/dev/ipcBridge.ts`** runs on both sides. In a page opened with `?ipc-bridge`, it replaces Tauri's IPC with `mockIPC` and sends each command over Vite's hot reload socket. In the app window, it listens for those commands, runs them with the real `invoke` and sends the result back. The page can answer some commands itself through `window.__GM_IPC_OVERRIDES__`.
 - **`src/hooks.client.ts`** starts the bridge only when `import.meta.env.DEV` is true, so a release build never contains it.
-- **The `gm-ipc-bridge` plugin in `vite.config.js`** relays the `gm-ipc:call` and `gm-ipc:result` messages. It exists only for the dev server (`apply: "serve"`) and does nothing unless `GM_IPC_BRIDGE=1` is set.
+- **The `gm-ipc-bridge` plugin in `vite.config.js`** relays the `gm-ipc:*` messages: commands and results, Channel messages, backend events, and `hello` and `here` to find an app window. It exists only for the dev server (`apply: "serve"`) and does nothing unless `GM_IPC_BRIDGE=1` is set.
+- **One app window answers.** If an older `bun tauri dev` window is still connected, the page says hello and talks to the app whose process id the URL names (`?ipc-bridge=<pid>`; `scripts/screenshots.ts` finds the newest one), else to the first that answers.
 
 ```mermaid
 sequenceDiagram
@@ -170,7 +171,7 @@ sequenceDiagram
   PW->>Page: take the screenshot
 ```
 
-Events are mocked inside the page, so backend events such as `repo-changed` never reach it, and channel messages (terminal output, search progress) are not relayed yet.
+**Channels and events.** A Tauri Channel in the arguments, such as terminal output or search progress, gets a real Channel in the app window, and each of its messages travels back as `gm-ipc:channel` to the page's Channel. Raw bytes go as base64, since they do not survive JSON. The backend events the page needs, `terminal-exited` and `git-command` (`RELAYED_EVENTS`), are relayed as `gm-ipc:event` once the page subscribes. Other events, such as `repo-changed`, stay inside the app window.
 
 **Why it is off by default.** With the relay on, any page open on the dev server can run git commands on your repositories and change your settings. So it needs an explicit `GM_IPC_BRIDGE=1`. How the screenshot script stays inside a demo folder is in [Docs and Screenshots](Docs-and-Screenshots.md).
 

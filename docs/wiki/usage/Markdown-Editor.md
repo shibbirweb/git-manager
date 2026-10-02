@@ -38,7 +38,7 @@ From left to right:
 
 In the text editor, press a button again to remove the style (**Bold** on bold text removes the stars). With no selection, a style applies to the word under the cursor. Each press is one Undo step, on every cursor at once. **Table** adds three columns, a header and two rows, and selects "Column 1" so you can type its name.
 
-Keys in a Markdown text editor: Cmd+I for italic and Cmd+K for a link. Cmd+B stays the sidebar toggle there, as in the rest of the app, even though the **Bold** button's tooltip shows Cmd+B.
+Keys in a Markdown text editor: Cmd+B for bold, Cmd+I for italic and Cmd+K for a link, as the buttons' tooltips show. While you type in the file, Cmd+B makes text bold instead of hiding the sidebar.
 
 ## Editor and Preview
 
