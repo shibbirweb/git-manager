@@ -30,7 +30,7 @@ Next time you start the app, it reopens the folders you had open when you quit. 
 
 ![The main window](../images/window-overview.png)
 
-*The main window: Changes on the left, a file in the editor, the terminal below it, the Files panel on the right and the status bar at the bottom.*
+*The main window: Changes on the left, a file in the editor with its path bar, the Files panel on the right and the status bar at the bottom.*
 
 From top to bottom and left to right:
 

@@ -25,7 +25,7 @@
   );
   const visible = $derived(
     placement === "panel"
-      ? terminalStore.panelOpen && terminalStore.panelTab === "terminal" && terminalStore.activeKey === terminal.key
+      ? terminalStore.panelOpen && terminalStore.panelTab === "terminal" && terminalStore.paneSlots[terminal.key] !== undefined
       : placement === "run"
         ? terminalStore.panelOpen && terminalStore.panelTab === "run" && terminalStore.runActiveKey === terminal.key
         : tabShown,
@@ -54,7 +54,8 @@
 </script>
 
 <div class="parking" bind:this={parking}>
-  <div class="frame" bind:this={frame}>
+  <!-- Hidden frames must not cover the pane that shows another terminal. -->
+  <div class="frame" class:hidden={!visible} bind:this={frame}>
     <TerminalView {terminal} {visible} {placement} />
   </div>
 </div>
@@ -63,5 +64,9 @@
   .frame {
     position: absolute;
     inset: 0;
+  }
+
+  .frame.hidden {
+    display: none;
   }
 </style>

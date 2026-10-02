@@ -1,6 +1,7 @@
 <!--
-  The terminal panel below the editor, like VS Code's: a header with actions, the terminals and, with several, a list
-  to switch between them. The terminals are mounted by TerminalHost and moved into the view area.
+  The terminal panel below the editor, like VS Code's: a slim header with actions, the shown group of terminals (split
+  side by side) and, with several, a list to switch between them that shows split groups together. The terminals are
+  mounted by TerminalHost and moved into their panes.
 -->
 <script lang="ts">
   import { untrack } from "svelte";
@@ -10,16 +11,22 @@
   import Icon from "$lib/ui/Icon.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
+  import { platformName } from "$lib/update/releases";
+  import { groupRowPosition, MIN_PANE_WIDTH } from "./splitPanes";
   import { type PanelTab, terminalStore } from "./terminalStore.svelte";
-  import { folderLabel, maxListWidth } from "./terminals";
+  import { folderLabel, maxListWidth, validateTerminalName } from "./terminals";
 
   let { height }: { height: number } = $props();
 
+  const isMac = platformName(navigator.userAgent) === "macOS";
   const terminals = $derived(terminalStore.panelTerminals);
   const active = $derived(terminalStore.active);
   const several = $derived(terminals.length > 1);
   const tab = $derived(terminalStore.panelTab);
   const onTerminal = $derived(tab === "terminal");
+  const paneKeys = $derived(terminalStore.activeGroupKeys);
+  const split = $derived(paneKeys.length > 1);
+  const paneSizes = $derived(active ? terminalStore.paneSizes(active.group, paneKeys.length) : []);
   const ALL_TABS: { tab: PanelTab; label: string }[] = [
     { tab: "terminal", label: "Terminal" },
     { tab: "run", label: "Run" },
@@ -36,11 +43,16 @@
   const loadGitConsole = () => import("$lib/console/GitConsoleView.svelte");
   let viewsEl = $state<HTMLDivElement | null>(null);
   let bodyWidth = $state(0);
+  let panesWidth = $state(0);
+  /** The terminal whose name is being edited in place (double-click), and the text typed so far. */
+  let renamingKey = $state<number | null>(null);
+  let renameDraft = $state("");
 
   const listMax = $derived(maxListWidth(bodyWidth, MIN_TERMINAL_LIST_WIDTH));
   const listWidth = $derived(Math.min(listMax, Math.max(MIN_TERMINAL_LIST_WIDTH, settings.terminalListWidth)));
+  const splitHint = isMac ? "Cmd+\\" : "Ctrl+Shift+5";
 
-  // The panel's terminals are moved into the view area (see TerminalHost).
+  // Terminals of the other groups wait, hidden, in the view area (see TerminalHost).
   $effect(() => {
     const element = viewsEl;
     if (!element) {
@@ -55,6 +67,24 @@
       });
     };
   });
+
+  /** A pane of the shown group: its terminal is moved in here. */
+  function paneSlot(element: HTMLElement, terminalKey: number) {
+    let key = terminalKey;
+    untrack(() => terminalStore.setPaneSlot(key, element));
+    return {
+      update(nextKey: number) {
+        untrack(() => {
+          terminalStore.clearPaneSlot(key, element);
+          key = nextKey;
+          terminalStore.setPaneSlot(key, element);
+        });
+      },
+      destroy() {
+        untrack(() => terminalStore.clearPaneSlot(key, element));
+      },
+    };
+  }
 
   /** The chevron next to "+": every shell found, then the default shell setting. */
   async function openShellMenu(event: MouseEvent): Promise<void> {
@@ -92,7 +122,65 @@
       terminalStore.moveToEditor(active.key);
     }
   }
+
+  function splitActive(): void {
+    if (active) {
+      void terminalStore.split(active.key);
+    }
+  }
+
+  function startRename(terminalKey: number, name: string): void {
+    renamingKey = terminalKey;
+    renameDraft = name;
+  }
+
+  /** Enter or leaving the field keeps a valid name; Esc keeps the old one. */
+  function finishRename(keep: boolean): void {
+    const terminalKey = renamingKey;
+    if (terminalKey === null) {
+      return;
+    }
+    renamingKey = null;
+    if (keep && validateTerminalName(renameDraft) === null) {
+      terminalStore.rename(terminalKey, renameDraft);
+    }
+    terminalStore.requestFocus(terminalKey);
+  }
+
+  function onRenameKey(event: KeyboardEvent): void {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      finishRename(true);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      finishRename(false);
+    }
+  }
+
+  function focusAndSelect(element: HTMLInputElement): void {
+    requestAnimationFrame(() => {
+      element.focus();
+      element.select();
+    });
+  }
 </script>
+
+{#snippet renameField(name: string)}
+  <input
+    class="rename"
+    class:invalid={validateTerminalName(renameDraft) !== null}
+    bind:value={renameDraft}
+    use:focusAndSelect
+    spellcheck="false"
+    autocomplete="off"
+    aria-label="Rename {name}"
+    onkeydown={onRenameKey}
+    onblur={() => finishRename(true)}
+    onclick={(event) => event.stopPropagation()}
+    ondblclick={(event) => event.stopPropagation()}
+  />
+{/snippet}
 
 <section class="panel" class:hidden={!terminalStore.panelOpen} style="height: {height}px" aria-label="Bottom panel">
   <header class="head">
@@ -112,17 +200,25 @@
     {#if onTerminal && active && !several}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <span
-        class="single truncate"
-        title="{active.name}{active.cwd ? `\n${active.cwd}` : ''}"
+        class="single"
+        title="{active.name}{active.cwd ? `\n${active.cwd}` : ''}\nDouble-click to rename"
         oncontextmenu={(event) => openTerminalMenu(event, active.key)}
+        ondblclick={() => startRename(active.key, active.name)}
       >
-        {active.name}
-        <span class="folder">{folderLabel(active.cwd)}</span>
+        {#if renamingKey === active.key}
+          {@render renameField(active.name)}
+        {:else}
+          <span class="name truncate">{active.name}</span>
+          <span class="folder truncate">{folderLabel(active.cwd)}</span>
+        {/if}
+        {#if active.bell}
+          <span class="bell" title="The bell rang"></span>
+        {/if}
       </span>
     {/if}
     <div class="spacer"></div>
     {#if onTerminal}
-      <div class="split">
+      <div class="new">
         <button
           class="icon-btn small"
           onclick={() => void terminalStore.create()}
@@ -142,6 +238,15 @@
       </div>
       <button
         class="icon-btn small"
+        onclick={splitActive}
+        disabled={!active}
+        title="Split Terminal ({splitHint})"
+        aria-label="Split Terminal"
+      >
+        <Icon name="split-view" size={14} />
+      </button>
+      <button
+        class="icon-btn small"
         onclick={moveActiveToEditor}
         disabled={!active}
         title="Move Terminal into Editor Area"
@@ -152,6 +257,7 @@
       <button class="icon-btn small" onclick={killActive} disabled={!active} title="Kill Terminal" aria-label="Kill Terminal">
         <Icon name="trash" size={14} />
       </button>
+      <span class="divider" aria-hidden="true"></span>
     {/if}
     <button class="icon-btn small" onclick={() => terminalStore.hide()} title="Hide Panel (Ctrl+`)" aria-label="Hide panel">
       <Icon name="x" size={15} />
@@ -159,8 +265,36 @@
   </header>
 
   <div class="body" bind:clientWidth={bodyWidth}>
-    <!-- TerminalHost moves the panel's terminals in here; each stays mounted so its scrollback survives switching. -->
-    <div class="views" class:hidden={!onTerminal} bind:this={viewsEl}></div>
+    <!-- The shown group's panes; terminals of other groups are parked, hidden, in here too. -->
+    <div class="views" class:hidden={!onTerminal} bind:this={viewsEl}>
+      <div class="panes" bind:clientWidth={panesWidth}>
+        {#each paneKeys as terminalKey, index (terminalKey)}
+          {#if index > 0 && active && panesWidth > 0}
+            {@const pair = (paneSizes[index - 1] ?? 0) + (paneSizes[index] ?? 0)}
+            <ResizeHandle
+              label="Resize split terminals"
+              panel="left"
+              size={(paneSizes[index - 1] ?? 0) * panesWidth}
+              min={MIN_PANE_WIDTH}
+              max={Math.max(MIN_PANE_WIDTH, pair * panesWidth - MIN_PANE_WIDTH)}
+              defaultSize={(pair * panesWidth) / 2}
+              onResize={(width) => {
+                if (active) {
+                  terminalStore.resizePane(active.group, index - 1, width / panesWidth, MIN_PANE_WIDTH / panesWidth);
+                }
+              }}
+            />
+          {/if}
+          <div
+            class="pane"
+            class:focused={split && terminalKey === terminalStore.activeKey}
+            class:after-first={index > 0}
+            style="flex: {paneSizes[index] ?? 1} 1 0px"
+            use:paneSlot={terminalKey}
+          ></div>
+        {/each}
+      </div>
+    </div>
     {#if !onTerminal && terminalStore.panelOpen}
       <div class="tool-view">
         {#if tab === "run"}
@@ -186,35 +320,53 @@
         onCommit={() => settings.save()}
       />
       <ul class="list" role="listbox" aria-label="Terminals" style="width: {listWidth}px">
-        {#each terminals as terminal (terminal.key)}
-          {@const isActive = terminal.key === terminalStore.activeKey}
-          <li
-            class="item"
-            class:active={isActive}
-            class:exited={terminal.exited}
-            role="option"
-            aria-selected={isActive}
-            tabindex="-1"
-            title="{terminal.name}{terminal.cwd ? `\n${terminal.cwd}` : ''}{terminal.exited ? '\nExited' : ''}"
-            onclick={() => terminalStore.select(terminal.key)}
-            onkeydown={() => undefined}
-            oncontextmenu={(event) => openTerminalMenu(event, terminal.key)}
-          >
-            <Icon name="terminal" size={14} />
-            <span class="name truncate">{terminal.name}</span>
-            <span class="folder truncate">{folderLabel(terminal.cwd)}</span>
-            <button
-              class="kill"
-              onclick={(event) => {
-                event.stopPropagation();
-                terminalStore.close(terminal.key);
-              }}
-              title="Kill Terminal"
-              aria-label="Kill {terminal.name}"
-            >
-              <Icon name="trash" size={13} />
-            </button>
-          </li>
+        {#each terminalStore.panelGroups as group (group.group)}
+          {#each group.terminalKeys as terminalKey (terminalKey)}
+            {@const terminal = terminals.find((entry) => entry.key === terminalKey)}
+            {#if terminal}
+              {@const isActive = terminal.key === terminalStore.activeKey}
+              {@const position = groupRowPosition(group, terminal.key)}
+              <li
+                class="item"
+                class:active={isActive}
+                class:shown={!isActive && paneKeys.includes(terminal.key)}
+                class:exited={terminal.exited}
+                role="option"
+                aria-selected={isActive}
+                tabindex="-1"
+                title="{terminal.name}{terminal.cwd ? `\n${terminal.cwd}` : ''}{terminal.exited ? '\nExited' : ''}"
+                onclick={() => terminalStore.select(terminal.key)}
+                ondblclick={() => startRename(terminal.key, terminal.name)}
+                onkeydown={() => undefined}
+                oncontextmenu={(event) => openTerminalMenu(event, terminal.key)}
+              >
+                {#if position !== "single"}
+                  <span class="tree {position}" aria-hidden="true"></span>
+                {/if}
+                <Icon name="terminal" size={14} />
+                {#if renamingKey === terminal.key}
+                  {@render renameField(terminal.name)}
+                {:else}
+                  <span class="name truncate">{terminal.name}</span>
+                  <span class="folder truncate">{folderLabel(terminal.cwd)}</span>
+                {/if}
+                {#if terminal.bell}
+                  <span class="bell" title="The bell rang"></span>
+                {/if}
+                <button
+                  class="kill"
+                  onclick={(event) => {
+                    event.stopPropagation();
+                    terminalStore.close(terminal.key);
+                  }}
+                  title="Kill Terminal"
+                  aria-label="Kill {terminal.name}"
+                >
+                  <Icon name="trash" size={13} />
+                </button>
+              </li>
+            {/if}
+          {/each}
         {/each}
       </ul>
     {/if}
@@ -235,14 +387,17 @@
     display: none;
   }
 
+  /* About 29 px, like the editor's slim path bar. */
   .head {
     flex: none;
     display: flex;
     align-items: center;
-    gap: 2px;
-    height: 32px;
-    padding: 0 6px 0 12px;
+    gap: 1px;
+    height: 29px;
+    padding: 0 6px 0 10px;
+    border-bottom: 1px solid var(--border-strong);
     background: var(--panel);
+    font-size: 12px;
   }
 
   .tabs {
@@ -302,14 +457,15 @@
   }
 
   .single {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     min-width: 0;
     margin-left: 14px;
-    font-size: 12px;
   }
 
   .folder {
     color: var(--text-dim);
-    margin-left: 6px;
   }
 
   .spacer {
@@ -326,7 +482,7 @@
     color: var(--text);
   }
 
-  .split {
+  .new {
     display: flex;
     align-items: center;
   }
@@ -334,6 +490,14 @@
   .icon-btn.small.chevron {
     min-width: 16px;
     padding: 0 2px;
+  }
+
+  .divider {
+    flex: none;
+    width: 1px;
+    height: 14px;
+    margin: 0 4px;
+    background: var(--border-strong);
   }
 
   .body {
@@ -348,10 +512,39 @@
     min-width: 0;
   }
 
+  .panes {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+
+  .pane {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .pane.after-first {
+    border-left: 1px solid var(--border-strong);
+  }
+
+  /* The focused one of split terminals, like VS Code's active pane. */
+  .pane.focused::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    z-index: 2;
+    background: var(--accent);
+    pointer-events: none;
+  }
+
   .list {
     flex: none;
     margin: 0;
-    padding: 4px 0;
+    padding: 2px 0;
     list-style: none;
     overflow-y: auto;
     background: var(--panel);
@@ -363,9 +556,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    height: 24px;
-    padding: 0 6px 0 10px;
+    height: 26px;
+    padding: 0 4px 0 10px;
     color: var(--text-dim);
+    font-size: 12px;
     cursor: default;
     white-space: nowrap;
   }
@@ -380,12 +574,16 @@
     color: var(--text);
   }
 
+  .item.shown {
+    color: var(--text);
+  }
+
   .item.active::before {
     content: "";
     position: absolute;
     left: 0;
-    top: 4px;
-    bottom: 4px;
+    top: 5px;
+    bottom: 5px;
     width: 2px;
     border-radius: 2px;
     background: var(--accent);
@@ -393,6 +591,41 @@
 
   .item.exited .name {
     color: var(--text-faint);
+  }
+
+  /* Tree lines that join the rows of one split group, like VS Code's terminal list. */
+  .tree {
+    flex: none;
+    position: relative;
+    align-self: stretch;
+    width: 6px;
+    margin-right: -2px;
+  }
+
+  .tree::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-left: 1px solid var(--border-strong);
+  }
+
+  .tree.first::before {
+    top: 50%;
+  }
+
+  .tree.last::before {
+    bottom: 50%;
+  }
+
+  .tree::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 6px;
+    border-top: 1px solid var(--border-strong);
   }
 
   .name {
@@ -403,8 +636,32 @@
   .item .folder {
     flex: 1 1 auto;
     min-width: 0;
-    margin-left: 0;
     font-size: 11px;
+  }
+
+  .rename {
+    flex: 1;
+    min-width: 0;
+    height: 20px;
+    padding: 0 4px;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    outline: none;
+    background: var(--editor-bg);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .rename.invalid {
+    border-color: var(--danger);
+  }
+
+  .bell {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--warning);
   }
 
   .kill {

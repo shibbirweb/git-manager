@@ -6,16 +6,32 @@
   import { Channel } from "@tauri-apps/api/core";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import type { FitAddon } from "@xterm/addon-fit";
-  import type { Terminal } from "@xterm/xterm";
-  import { onMount, untrack } from "svelte";
+  import type { IBufferCell, IDisposable, ILink, ILinkDecorations, Terminal } from "@xterm/xterm";
+  import { onMount, tick, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
+  import { navigation } from "$lib/stores/navigation.svelte";
+  import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import { contextMenu } from "$lib/ui/menu.svelte";
+  import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { platformName } from "$lib/update/releases";
+  import type { TerminalAddons } from "./addons";
+  import { dropText, TERMINAL_DRAG_EVENT, TERMINAL_DROP_EVENT, type TerminalDragDetail, type TerminalDropDetail } from "./dropPaths";
+  import { type CellText, FileExistenceCache, type FileLink, fileLinksForLine, lineCells, parseOsc7 } from "./fileLinks";
+  import {
+    DEFAULT_FIND_OPTIONS,
+    findCounterText,
+    findDecorations,
+    findQueryError,
+    type FindResults,
+    searchOptions,
+    type TerminalFindOptions,
+  } from "./find";
+  import TerminalFindBar from "./TerminalFindBar.svelte";
   import { terminalKeyAction } from "./keys";
-  import { applyChangedOptions, changesMetrics, terminalDisplayOptions } from "./options";
+  import { gpuRenderers } from "./gpuRenderers.svelte";
+  import { applyChangedOptions, changesMetrics, terminalAddonPlan, terminalDisplayOptions } from "./options";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { runFinishedMessage, runHeader } from "./runs";
   import { exitMessage, QUIET_SHELL_MS, shellNameFor, startupFailureTitle, startupLabel, type StartupPhase } from "./terminals";
@@ -33,6 +49,8 @@
   let { terminal, visible, placement }: Props = $props();
 
   const RESIZE_DELAY_MS = 40;
+  /** How long the visual bell flashes. */
+  const BELL_FLASH_MS = 180;
   /** Lets output that is still on its way land before the exit note. */
   const EXIT_NOTE_DELAY_MS = 200;
   const isMac = platformName(navigator.userAgent) === "macOS";
@@ -61,17 +79,50 @@
   let stopTheme: (() => void) | null = null;
   /** Output of the current shell; a retry gets a new one. */
   let channel: Channel<ArrayBuffer> | null = null;
+  /** Search, WebGL and Unicode 11, each loaded only while its setting is on. */
+  let addons: TerminalAddons | null = null;
+  /** The file path link provider and what it knows about the files on screen. */
+  let linkProvider: IDisposable | null = null;
+  let linkScroll: IDisposable | null = null;
+  let linkCache: FileExistenceCache | null = null;
+  /** The decorations of the file link under the pointer: underlined only while Cmd (Ctrl) is held, like VS Code. */
+  let hoveredLink: ILinkDecorations | null = null;
+  /** The folder the shell last reported with OSC 7; null until it does. */
+  let reportedFolder: string | null = null;
+
+  let findBar = $state<ReturnType<typeof TerminalFindBar> | null>(null);
+  let findOpen = $state(false);
+  let findQuery = $state("");
+  let findOptions = $state<TerminalFindOptions>({ ...DEFAULT_FIND_OPTIONS });
+  let findResults = $state.raw<FindResults | null>(null);
+  let bellFlash = $state(false);
+  let bellTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Files from Finder are being dragged over this terminal. */
+  let dropOver = $state(false);
 
   const displayOptions = $derived(terminalDisplayOptions(settings, terminal.exited));
   const shellName = $derived(terminal.run ? terminal.run.program : shellNameFor(terminal.shellId, terminalStore.shells));
   const statusLabel = $derived(startupLabel(phase, shellName));
+  const addonPlan = $derived(terminalAddonPlan(settings));
+  const findError = $derived(findQueryError(findQuery, findOptions));
+  const findCounter = $derived(findCounterText(findQuery, findResults, findError));
+  const findProblem = $derived(findError !== null || (findQuery !== "" && findResults?.resultCount === 0));
 
   onMount(() => {
+    root?.addEventListener(TERMINAL_DROP_EVENT, onDrop);
+    root?.addEventListener(TERMINAL_DRAG_EVENT, onDragOver);
     void startTerminal();
     return () => {
       disposed = true;
       clearTimeout(resizeTimer);
       clearTimeout(readyTimer);
+      clearTimeout(bellTimer);
+      root?.removeEventListener(TERMINAL_DROP_EVENT, onDrop);
+      root?.removeEventListener(TERMINAL_DRAG_EVENT, onDragOver);
+      setFileLinks(null, false);
+      addons?.dispose();
+      addons = null;
+      gpuRenderers.forget(terminal.key);
       observer?.disconnect();
       stopTheme?.();
       host?.removeEventListener("mousedown", onMouseDown);
@@ -132,8 +183,18 @@
       theme: currentTerminalTheme(),
       // VS Code's default: keeps colored output readable in both themes.
       minimumContrastRatio: 4.5,
-      macOptionIsMeta: false,
+      // Unicode versions and the search highlights are xterm's proposed API, as in VS Code.
+      allowProposedApi: true,
     });
+    const drawingKey = terminal.key;
+    gpuRenderers.set(drawingKey, "normal");
+    addons = new xterm.TerminalAddons(
+      instance,
+      (results) => {
+        findResults = results;
+      },
+      (drawing) => gpuRenderers.set(drawingKey, drawing),
+    );
     fit = new xterm.FitAddon();
     instance.loadAddon(fit);
     // Cmd+click (Ctrl+click elsewhere) opens a link, like VS Code.
@@ -145,6 +206,12 @@
       }),
     );
     instance.attachCustomKeyEventHandler((event) => handleKey(instance, event));
+    instance.onBell(() => ringBell());
+    // Shells with integration report their folder after each cd (OSC 7); file links resolve against it.
+    instance.parser.registerOscHandler(7, (data) => {
+      reportedFolder = parseOsc7(data) ?? reportedFolder;
+      return true;
+    });
     instance.onData((data) => sendInput(data));
     instance.onSelectionChange(() => {
       // Keyboard and double-click selections copy now; a drag copies on mouseup.
@@ -235,6 +302,7 @@
     }
     terminalStore.restart(terminal.key);
     exitShown = false;
+    reportedFolder = null;
     failure = null;
     terminalId = null;
     const instance = term;
@@ -266,7 +334,12 @@
    * alone and they bubble to the window shortcuts unhandled.
    */
   function handleKey(instance: Terminal, event: KeyboardEvent): boolean {
-    const action = terminalKeyAction(event, { isMac, hasSelection: instance.hasSelection() });
+    const action = terminalKeyAction(event, {
+      isMac,
+      hasSelection: instance.hasSelection(),
+      findEnabled: settings.terminalFind,
+      canSplit: terminal.location === "panel",
+    });
     if (action === "shell") {
       return true;
     }
@@ -282,8 +355,213 @@
       instance.clear();
     } else if (action === "selectAll") {
       instance.selectAll();
+    } else if (action === "find") {
+      void openFind(instance);
+    } else if (action === "split") {
+      void terminalStore.split(terminal.key);
     }
     return false;
+  }
+
+  /** Cmd+F: opens the find bar with a one-line selection as the query, loading the search addon the first time. */
+  async function openFind(instance: Terminal): Promise<void> {
+    if (!settings.terminalFind || !addons) {
+      return;
+    }
+    const selection = instance.hasSelection() ? instance.getSelection() : "";
+    if (selection && !selection.includes("\n") && selection.length <= 200) {
+      findQuery = selection;
+    }
+    findOpen = true;
+    await tick();
+    findBar?.focus();
+    const addon = await addons.loadSearch();
+    if (addon && findOpen && findQuery) {
+      runFind("previous", true);
+    }
+  }
+
+  function readToken(token: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(token);
+  }
+
+  /** Searches up ("previous", toward older output) or down; typing searches again from the current match. */
+  function runFind(direction: "previous" | "next", incremental = false): void {
+    const addon = addons?.searchAddon ?? null;
+    if (!addon) {
+      return;
+    }
+    if (!findQuery || findQueryError(findQuery, findOptions)) {
+      addon.clearDecorations();
+      findResults = null;
+      return;
+    }
+    const options = searchOptions(findOptions, findDecorations(readToken), incremental);
+    if (direction === "previous") {
+      addon.findPrevious(findQuery, options);
+    } else {
+      addon.findNext(findQuery, options);
+    }
+  }
+
+  function setFindQuery(query: string): void {
+    findQuery = query;
+    runFind("previous", true);
+  }
+
+  function toggleFindOption(option: keyof TerminalFindOptions): void {
+    findOptions = { ...findOptions, [option]: !findOptions[option] };
+    runFind("previous", true);
+  }
+
+  /** Esc or x: the highlights go and the terminal takes the keys again. */
+  function closeFind(refocus = true): void {
+    if (!findOpen) {
+      return;
+    }
+    findOpen = false;
+    findResults = null;
+    addons?.searchAddon?.clearDecorations();
+    if (refocus) {
+      term?.focus();
+    }
+  }
+
+  /** The visual bell: a flash when on screen, else a dot on the terminal's row until it shows. */
+  function ringBell(): void {
+    if (!settings.terminalVisualBell) {
+      return;
+    }
+    if (!visible) {
+      terminalStore.ring(terminal.key);
+      return;
+    }
+    clearTimeout(bellTimer);
+    bellFlash = false;
+    requestAnimationFrame(() => {
+      bellFlash = true;
+      bellTimer = setTimeout(() => (bellFlash = false), BELL_FLASH_MS);
+    });
+  }
+
+  /** Paths dropped from Finder (see TerminalHost): typed at the prompt, quoted for the shell. */
+  function onDrop(event: Event): void {
+    dropOver = false;
+    const detail = (event as CustomEvent<TerminalDropDetail>).detail;
+    const instance = term;
+    if (!instance || terminal.exited || !detail) {
+      return;
+    }
+    const text = dropText(detail.filePaths ?? [], platformName(navigator.userAgent) === "Windows" ? "windows" : "posix");
+    if (text) {
+      instance.paste(text);
+      instance.focus();
+    }
+  }
+
+  function onDragOver(event: Event): void {
+    dropOver = (event as CustomEvent<TerminalDragDetail>).detail?.over === true;
+  }
+
+  function workspaceRoots(): string[] {
+    return (repoStore.workspace?.folders ?? []).map((folder) => folder.root);
+  }
+
+  function modifierHeld(event: MouseEvent | KeyboardEvent): boolean {
+    return isMac ? event.metaKey : event.ctrlKey;
+  }
+
+  /** While a file link is hovered, pressing or releasing Cmd (Ctrl) shows or hides its underline. */
+  function onLinkModifier(event: KeyboardEvent): void {
+    if (hoveredLink) {
+      const held = modifierHeld(event);
+      hoveredLink.underline = held;
+      hoveredLink.pointerCursor = held;
+    }
+  }
+
+  function stopLinkHover(): void {
+    hoveredLink = null;
+    window.removeEventListener("keydown", onLinkModifier, true);
+    window.removeEventListener("keyup", onLinkModifier, true);
+  }
+
+  /** Registers the file link provider on `instance`, or (null) removes it with its cache. */
+  function setFileLinks(instance: Terminal | null, enabled: boolean): void {
+    if (!instance || !enabled) {
+      linkProvider?.dispose();
+      linkProvider = null;
+      linkScroll?.dispose();
+      linkScroll = null;
+      linkCache = null;
+      stopLinkHover();
+      return;
+    }
+    if (linkProvider) {
+      return;
+    }
+    const cache = new FileExistenceCache((filePaths) => api.filesExist(workspaceRoots(), filePaths));
+    linkCache = cache;
+    // The cache only covers the lines on screen: scrolling shows others.
+    linkScroll = instance.onScroll(() => cache.clear());
+    linkProvider = instance.registerLinkProvider({
+      provideLinks: (bufferLine, callback) => {
+        void provideFileLinks(instance, cache, bufferLine).then(callback, () => callback(undefined));
+      },
+    });
+  }
+
+  async function provideFileLinks(instance: Terminal, cache: FileExistenceCache, bufferLine: number): Promise<ILink[] | undefined> {
+    const line = instance.buffer.active.getLine(bufferLine - 1);
+    if (!line) {
+      return undefined;
+    }
+    const cells: CellText[] = [];
+    let scratch: IBufferCell | undefined;
+    for (let x = 0; x < line.length; x += 1) {
+      scratch = line.getCell(x, scratch);
+      cells.push({ chars: scratch?.getChars() ?? "", width: scratch?.getWidth() ?? 1 });
+    }
+    const { text, cellAt } = lineCells(cells);
+    const links = await fileLinksForLine(text, {
+      folderPath: reportedFolder ?? terminal.cwd,
+      workspaceFolders: repoStore.workspace?.folders ?? [],
+      cache,
+    });
+    if (links.length === 0 || linkCache !== cache) {
+      return undefined;
+    }
+    return links.map((link) => xtermLink(link, bufferLine, cellAt));
+  }
+
+  function xtermLink(link: FileLink, bufferLine: number, cellAt: number[]): ILink {
+    const startCell = cellAt[link.start] ?? 0;
+    const endCell = cellAt[link.end - 1] ?? startCell;
+    const decorations: ILinkDecorations = { underline: false, pointerCursor: false };
+    return {
+      range: { start: { x: startCell + 1, y: bufferLine }, end: { x: endCell + 1, y: bufferLine } },
+      text: link.text,
+      decorations,
+      activate: (event) => {
+        if (modifierHeld(event)) {
+          const line = link.line === null ? null : link.line - 1;
+          const column = link.column === null ? null : link.column - 1;
+          void navigation.openFileAt(link.filePath, line, column, { pin: true });
+        }
+      },
+      hover: (event) => {
+        hoveredLink = decorations;
+        decorations.underline = modifierHeld(event);
+        decorations.pointerCursor = modifierHeld(event);
+        window.addEventListener("keydown", onLinkModifier, true);
+        window.addEventListener("keyup", onLinkModifier, true);
+      },
+      leave: () => {
+        decorations.underline = false;
+        decorations.pointerCursor = false;
+        stopLinkHover();
+      },
+    };
   }
 
   async function copySelection(instance: Terminal): Promise<void> {
@@ -388,6 +666,40 @@
     });
   });
 
+  // Optional parts follow their settings at once. Turning one off disposes it
+  // even while hidden, to free its memory; WebGL waits until the terminal
+  // shows, since its renderer measures the cells as it starts.
+  $effect(() => {
+    const plan = addonPlan;
+    const instance = term;
+    const shown = visible;
+    if (!instance) {
+      return;
+    }
+    untrack(() => {
+      const current = addons;
+      if (!current) {
+        return;
+      }
+      if (!plan.webgl || shown) {
+        void current.setWebgl(plan.webgl);
+      }
+      void current.setUnicode11(plan.unicode11);
+      if (!plan.search) {
+        closeFind(false);
+        current.disposeSearch();
+      }
+      setFileLinks(instance, plan.fileLinks);
+    });
+  });
+
+  // A bell that rang out of sight is seen once the terminal shows.
+  $effect(() => {
+    if (visible && terminal.bell) {
+      untrack(() => terminalStore.clearBell(terminal.key));
+    }
+  });
+
   // Fit when shown or moved between the panel and the editor. The move happens
   // in TerminalHost's effect, so the grid is measured on the next frame, once
   // the element sits in its new place with its new size; the rows are redrawn
@@ -454,20 +766,62 @@
     if (!instance) {
       return;
     }
-    const copyHint = isMac ? "Cmd+C" : "Ctrl+Shift+C";
-    contextMenu.open(event, [
-      { label: "Copy", hint: copyHint, disabled: !instance.hasSelection(), action: () => void copySelection(instance) },
+    const items: MenuItem[] = [
+      {
+        label: "Copy",
+        hint: isMac ? "Cmd+C" : "Ctrl+Shift+C",
+        disabled: !instance.hasSelection(),
+        action: () => void copySelection(instance),
+      },
+      {
+        label: "Paste",
+        hint: isMac ? "Cmd+V" : "Ctrl+Shift+V",
+        disabled: terminal.exited,
+        action: () => void pasteClipboard(instance),
+      },
       { label: "Select All", hint: isMac ? "Cmd+A" : undefined, action: () => instance.selectAll() },
       { label: "Clear", hint: isMac ? "Cmd+K" : undefined, action: () => instance.clear() },
-      { separator: true },
-      ...terminalStore.menuItems(terminal.key),
-    ]);
+    ];
+    if (settings.terminalFind) {
+      items.push(
+        { separator: true },
+        { label: "Find...", hint: isMac ? "Cmd+F" : "Ctrl+Shift+F", action: () => void openFind(instance) },
+      );
+    }
+    items.push({ separator: true }, ...terminalStore.menuItems(terminal.key));
+    contextMenu.open(event, items);
   }
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div bind:this={root} class="terminal-view" class:hidden={!visible} class:ligatures={settings.terminalLigatures} oncontextmenu={openMenu}>
+<div
+  bind:this={root}
+  class="terminal-view"
+  class:hidden={!visible}
+  class:ligatures={settings.terminalLigatures}
+  class:drop-over={dropOver}
+  data-terminal-key={terminal.key}
+  oncontextmenu={openMenu}
+  onfocusin={() => terminalStore.focusPane(terminal.key)}
+>
   <div class="xterm-host" bind:this={host}></div>
+  {#if bellFlash}
+    <div class="bell-flash" aria-hidden="true"></div>
+  {/if}
+  {#if findOpen}
+    <TerminalFindBar
+      bind:this={findBar}
+      query={findQuery}
+      options={findOptions}
+      counter={findCounter}
+      problem={findProblem}
+      onQuery={setFindQuery}
+      onToggle={toggleFindOption}
+      onPrevious={() => runFind("previous")}
+      onNext={() => runFind("next")}
+      onClose={() => closeFind()}
+    />
+  {/if}
   {#if phase === "failed"}
     <div class="status failed" role="alert">
       <Icon name="alert" size={16} />
@@ -493,9 +847,11 @@
     overflow: hidden;
   }
 
+  /* Its own stacking context, so xterm's layers (search highlights, the WebGL canvas) stay under the find bar. */
   .xterm-host {
     position: absolute;
     inset: 0;
+    z-index: 0;
     padding: 4px 0 2px 12px;
     overflow: hidden;
   }
@@ -554,6 +910,36 @@
 
   .terminal-view.hidden {
     display: none;
+  }
+
+  /* Files from Finder over the terminal: an inset outline, like the Files panel's drop target. */
+  .terminal-view.drop-over::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    pointer-events: none;
+  }
+
+  .bell-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--text);
+    opacity: 0;
+    pointer-events: none;
+    animation: bell 180ms ease-out;
+  }
+
+  @keyframes bell {
+    from {
+      opacity: 0.12;
+    }
+    to {
+      opacity: 0;
+    }
   }
 
   .terminal-view :global(.xterm) {

@@ -245,6 +245,22 @@ export interface Preferences {
   terminalScrollback: number;
   /** Selecting text copies it, like VS Code's terminal.integrated.copyOnSelection. */
   terminalCopyOnSelect: boolean;
+  /** Find in the terminal (Cmd+F). Off, the search addon is never loaded. */
+  terminalFind: boolean;
+  /** Cmd+click opens file paths printed in the terminal, such as `src/app.ts:12:5`. */
+  terminalFileLinks: boolean;
+  /** Draw with WebGL (xterm's GPU renderer), falling back to the DOM renderer. */
+  terminalGpuAcceleration: boolean;
+  /** Unicode 11 character widths, so emoji and wide characters line up. */
+  terminalUnicode11: boolean;
+  /** macOS: Option works as Meta (xterm's macOptionIsMeta) for word jumps and emacs keys. */
+  terminalOptionAsMeta: boolean;
+  /** A short flash, or a dot on a hidden terminal, when the shell rings the bell. */
+  terminalVisualBell: boolean;
+  /** Animate scrolling (xterm's smoothScrollDuration). */
+  terminalSmoothScrolling: boolean;
+  /** Dropping files from Finder on a terminal types their quoted paths. */
+  terminalDropPaths: boolean;
   /** How Markdown files open; each file then remembers its own mode for the session. */
   markdownViewMode: MarkdownViewMode;
   /** Files panel: ask before a drag and drop moves files or folders. */
@@ -314,8 +330,8 @@ export const defaultPreferences: Preferences = {
   gitConsole: false,
   terminalShell: null,
   terminalFontFamily: "",
-  terminalFontSize: 12.5,
-  terminalLineHeight: 1,
+  terminalFontSize: 13,
+  terminalLineHeight: 1.2,
   terminalLetterSpacing: 0,
   terminalFontWeight: "normal",
   terminalFontWeightBold: "bold",
@@ -325,6 +341,14 @@ export const defaultPreferences: Preferences = {
   terminalCursorBlink: true,
   terminalScrollback: 5000,
   terminalCopyOnSelect: false,
+  terminalFind: true,
+  terminalFileLinks: true,
+  terminalGpuAcceleration: true,
+  terminalUnicode11: true,
+  terminalOptionAsMeta: false,
+  terminalVisualBell: true,
+  terminalSmoothScrolling: false,
+  terminalDropPaths: true,
   markdownViewMode: "split",
   confirmDragAndDrop: true,
   mcpEnabled: false,
@@ -565,6 +589,14 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     terminalCursorBlink: pickBoolean(data.terminalCursorBlink, defaultPreferences.terminalCursorBlink),
     terminalScrollback: clampTerminalScrollback(data.terminalScrollback),
     terminalCopyOnSelect: pickBoolean(data.terminalCopyOnSelect, defaultPreferences.terminalCopyOnSelect),
+    terminalFind: pickBoolean(data.terminalFind, defaultPreferences.terminalFind),
+    terminalFileLinks: pickBoolean(data.terminalFileLinks, defaultPreferences.terminalFileLinks),
+    terminalGpuAcceleration: pickBoolean(data.terminalGpuAcceleration, defaultPreferences.terminalGpuAcceleration),
+    terminalUnicode11: pickBoolean(data.terminalUnicode11, defaultPreferences.terminalUnicode11),
+    terminalOptionAsMeta: pickBoolean(data.terminalOptionAsMeta, defaultPreferences.terminalOptionAsMeta),
+    terminalVisualBell: pickBoolean(data.terminalVisualBell, defaultPreferences.terminalVisualBell),
+    terminalSmoothScrolling: pickBoolean(data.terminalSmoothScrolling, defaultPreferences.terminalSmoothScrolling),
+    terminalDropPaths: pickBoolean(data.terminalDropPaths, defaultPreferences.terminalDropPaths),
     markdownViewMode: pickOneOf(data.markdownViewMode, MARKDOWN_VIEW_MODES, defaultPreferences.markdownViewMode),
     confirmDragAndDrop: pickBoolean(data.confirmDragAndDrop, defaultPreferences.confirmDragAndDrop),
     mcpEnabled: pickBoolean(data.mcpEnabled, defaultPreferences.mcpEnabled),

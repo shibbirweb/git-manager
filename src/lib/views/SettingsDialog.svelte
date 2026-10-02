@@ -1199,7 +1199,7 @@
               <span class="hint">
                 Draw <code>=&gt;</code>, <code>!=</code> and similar as single glyphs with fonts such as Fira Code or
                 JetBrains Mono. A ligature splits where colors change or under the cursor, and fonts whose ligatures
-                change the text width can misalign columns.
+                change the text width can misalign columns. Ligatures draw without GPU acceleration.
               </span>
             </div>
             <input
@@ -1295,6 +1295,78 @@
               onchange={(event) => set("terminalCopyOnSelect", event.currentTarget.checked)}
             />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Find in terminal</span>
+              <span class="hint">Cmd+F searches the output. Off, the search code is never loaded.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalFind}
+              onchange={(event) => set("terminalFind", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Clickable file paths</span>
+              <span class="hint">Cmd+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalFileLinks}
+              onchange={(event) => set("terminalFileLinks", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Drop files to type their paths</span>
+              <span class="hint">Dropping files from Finder on a terminal types their paths, quoted for the shell.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalDropPaths}
+              onchange={(event) => set("terminalDropPaths", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Visual bell</span>
+              <span class="hint">A short flash when the shell rings the bell, or a dot on a terminal that is out of sight.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalVisualBell}
+              onchange={(event) => set("terminalVisualBell", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Smooth scrolling</span>
+              <span class="hint">Animates scrolling with the mouse wheel.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalSmoothScrolling}
+              onchange={(event) => set("terminalSmoothScrolling", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Option as Meta key</span>
+              <span class="hint">macOS: Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as å.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalOptionAsMeta}
+              onchange={(event) => set("terminalOptionAsMeta", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Keyboard</span>
@@ -1304,6 +1376,32 @@
               </span>
             </div>
           </div>
+
+          <h4 class="group-title">Rendering</h4>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>GPU acceleration</span>
+              <span class="hint">Recommended. Draws with WebGL, which keeps busy output smooth and uses less CPU. Off saves a few MB of GPU memory per terminal. With font ligatures on, the regular renderer is used.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalGpuAcceleration}
+              onchange={(event) => set("terminalGpuAcceleration", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Unicode 11 widths</span>
+              <span class="hint">Emoji and wide characters take the right number of columns. Applies to output printed after the change.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalUnicode11}
+              onchange={(event) => set("terminalUnicode11", event.currentTarget.checked)}
+            />
+          </label>
         {:else if section === "github"}
           <div class="row stacked">
             <div class="label">

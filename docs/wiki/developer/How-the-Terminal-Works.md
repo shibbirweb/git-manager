@@ -1,6 +1,6 @@
 # How the terminal works
 
-The integrated terminal runs real shells in pseudo terminals (PTYs: the kernel device that makes a program think it talks to a terminal window) and draws them with xterm.js, like VS Code. The user side is in [Terminal](../usage/Terminal.md).
+The integrated terminal runs real shells in pseudo terminals (PTYs: the kernel device that makes a program think it talks to a terminal window) and draws them with xterm.js, like VS Code. The user side is in [Terminal](../usage/Terminal.md). Split terminals, find, file links, dropped files and the optional addons are in [How terminal features work](How-Terminal-Features-Work.md).
 
 ## Why we need it
 
@@ -47,13 +47,13 @@ The commands are `terminal_shells`, `terminal_spawn`, `terminal_write`, `termina
 
 `terminalStore.svelte.ts` keeps the `TerminalEntry` list (backend id, name, shell, folder, exit state and `location`: `"panel"`, `"editor"` or `"run"`) and the panel state, never xterm objects.
 
-`TerminalHost.svelte` mounts every terminal's `TerminalView` once, for its whole life. Its `TerminalFrame` moves the element with `appendChild` into the place that shows it, so moving a terminal never restarts the shell or loses the scrollback.
+`TerminalHost.svelte` mounts every terminal's `TerminalView` once, for its whole life. Its `TerminalFrame` moves the element with `appendChild` into the place that shows it, so moving a terminal never restarts the shell or loses the scrollback. In the panel that place is one pane per terminal of the shown split group (`paneSlots`); terminals of other groups wait, hidden, in the panel's view area.
 
 ```mermaid
 flowchart LR
   Store["terminalStore<br/>entries with location"] --> Host["TerminalHost<br/>one TerminalFrame each"]
   Host --> Frame["TerminalFrame<br/>moves its element"]
-  Frame -->|"panel"| Panel["TerminalPanel view area"]
+  Frame -->|"panel"| Panel["TerminalPanel pane<br/>of the shown group"]
   Frame -->|"editor"| Tab["TerminalSlot in the<br/>terminal: tab"]
   Frame -->|"run"| Run["RunView slot"]
   Frame -->|"no slot on screen"| Parked["parked in the host"]
@@ -95,14 +95,14 @@ flowchart LR
 ## Tests
 
 - `src-tauri/src/terminal.rs`: shell detection, start folder, environment, real processes (output, exit code, input, resize), killing, registry cleanup and shutdown.
-- `src/lib/terminal/terminals.test.ts`, `terminalTabs.test.ts`, `keys.test.ts`, `options.test.ts`, `fonts.test.ts`, `theme.test.ts`, `src/lib/views/files/reveal.test.ts` and `src/lib/views/workspaceShortcuts.test.ts`.
+- `src/lib/terminal/terminals.test.ts`, `terminalTabs.test.ts`, `keys.test.ts`, `options.test.ts`, `fonts.test.ts`, `theme.test.ts`, `src/lib/views/files/reveal.test.ts` and `src/lib/views/workspaceShortcuts.test.ts`. The feature tests are listed in [How terminal features work](How-Terminal-Features-Work.md#tests).
 
 Typing, colors and Cmd+V need a manual check.
 
 ## Keeping this page in sync
 
 - Update this page and [Commands and Events](Commands-and-Events.md) when a command, the event, the store or the placing of views changes.
-- Update [Terminal](../usage/Terminal.md) for visible changes and retake `terminal-panel.png`, `terminal-shell-menu.png`, `terminal-list.png`, `terminal-editor-tab.png` and `terminal-settings.png` ([Docs and Screenshots](Docs-and-Screenshots.md)).
+- Update [Terminal](../usage/Terminal.md) and [Terminal Features](../usage/Terminal-Features.md) for visible changes and retake `terminal-panel.png`, `terminal-shell-menu.png`, `terminal-list.png`, `terminal-editor-tab.png`, `terminal-settings.png`, `terminal-find.png` and `terminal-split.png` ([Docs and Screenshots](Docs-and-Screenshots.md)).
 
 ## Bugs we fixed
 

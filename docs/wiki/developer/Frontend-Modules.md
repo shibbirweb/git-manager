@@ -16,6 +16,7 @@ Most folders look the same:
 ```mermaid
 flowchart LR
   App["App start<br/>shell, stores, CodeMirror core"] -->|"first terminal"| Xterm["terminal/xterm.ts<br/>xterm.js and addons"]
+  Xterm -->|"setting on, first use"| Addons["@xterm/addon-search, -webgl, -unicode11<br/>(terminal/addons.ts)"]
   App -->|"first Markdown preview"| Md["markdown/engine.ts<br/>markdown-it, DOMPurify"]
   Md -->|"a mermaid block"| Mermaid["markdown/mermaid.ts"]
   App -->|"Preview only mode"| Rich["markdown/richEditor.ts<br/>Milkdown"]

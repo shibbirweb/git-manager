@@ -101,3 +101,28 @@ describe("terminalPlacement", () => {
     expect(terminalPlacement("editor", false)).toBe("parked");
   });
 });
+
+describe("panelAfterLeave with split terminals", () => {
+  const split: PlacedTerminal[] = [
+    { key: 1, location: "panel", group: 1 },
+    { key: 2, location: "panel", group: 2 },
+    { key: 3, location: "panel", group: 2 },
+    { key: 4, location: "panel", group: 2 },
+    { key: 5, location: "panel", group: 3 },
+  ];
+
+  it("hands over to the pane beside it, so the group stays on screen", () => {
+    expect(panelAfterLeave(split, 4, { activeKey: 4, panelOpen: true })).toEqual({ activeKey: 3, panelOpen: true });
+    expect(panelAfterLeave(split, 2, { activeKey: 2, panelOpen: true })).toEqual({ activeKey: 3, panelOpen: true });
+    expect(panelAfterLeave(split, 3, { activeKey: 3, panelOpen: true })).toEqual({ activeKey: 4, panelOpen: true });
+  });
+
+  it("uses the usual rule for a terminal alone in its group", () => {
+    expect(panelAfterLeave(split, 5, { activeKey: 5, panelOpen: true })).toEqual({ activeKey: 4, panelOpen: true });
+    expect(panelAfterLeave(split, 1, { activeKey: 1, panelOpen: true })).toEqual({ activeKey: 2, panelOpen: true });
+  });
+
+  it("keeps the shown terminal when another pane leaves", () => {
+    expect(panelAfterLeave(split, 3, { activeKey: 1, panelOpen: true })).toEqual({ activeKey: 1, panelOpen: true });
+  });
+});

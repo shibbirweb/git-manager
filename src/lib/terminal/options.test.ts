@@ -1,21 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { defaultPreferences } from "$lib/stores/settingsData";
-import { applyChangedOptions, changesMetrics, terminalDisplayOptions } from "./options";
+import { applyChangedOptions, changesMetrics, SMOOTH_SCROLL_MS, terminalAddonPlan, terminalDisplayOptions } from "./options";
 
 describe("terminalDisplayOptions", () => {
   it("maps the defaults to xterm options", () => {
     const options = terminalDisplayOptions(defaultPreferences);
-    expect(options.fontFamily.startsWith("Menlo, Monaco, 'Courier New', 'Symbols Nerd Font Mono'")).toBe(true);
+    expect(options.fontFamily.startsWith("'JetBrains Mono', Menlo, Monaco, 'Courier New', 'Symbols Nerd Font Mono'")).toBe(true);
     expect(options.fontFamily.endsWith(", monospace")).toBe(true);
     expect(options).toMatchObject({
-      fontSize: 12.5,
-      lineHeight: 1,
+      fontSize: 13,
+      lineHeight: 1.2,
       letterSpacing: 0,
       fontWeight: "normal",
       fontWeightBold: "bold",
       cursorStyle: "block",
       cursorBlink: true,
       scrollback: 5000,
+      macOptionIsMeta: false,
+      smoothScrollDuration: 0,
     });
   });
 
@@ -32,6 +34,8 @@ describe("terminalDisplayOptions", () => {
       terminalCursorStyle: "bar",
       terminalCursorBlink: false,
       terminalScrollback: 20000,
+      terminalOptionAsMeta: true,
+      terminalSmoothScrolling: true,
     });
     expect(options).toEqual({
       fontFamily: "Hack, monospace",
@@ -43,6 +47,8 @@ describe("terminalDisplayOptions", () => {
       cursorStyle: "bar",
       cursorBlink: false,
       scrollback: 20000,
+      macOptionIsMeta: true,
+      smoothScrollDuration: SMOOTH_SCROLL_MS,
     });
   });
 
@@ -69,6 +75,29 @@ describe("changesMetrics", () => {
     expect(changesMetrics(["lineHeight", "cursorBlink"])).toBe(true);
     expect(changesMetrics(["letterSpacing"])).toBe(true);
     expect(changesMetrics(["cursorStyle", "cursorBlink", "scrollback"])).toBe(false);
+    expect(changesMetrics(["macOptionIsMeta", "smoothScrollDuration"])).toBe(false);
     expect(changesMetrics([])).toBe(false);
+  });
+});
+
+describe("terminalAddonPlan", () => {
+  it("loads the default parts", () => {
+    expect(terminalAddonPlan(defaultPreferences)).toEqual({ webgl: true, unicode11: true, search: true, fileLinks: true });
+  });
+
+  it("leaves out every part that is off", () => {
+    expect(
+      terminalAddonPlan({
+        ...defaultPreferences,
+        terminalGpuAcceleration: false,
+        terminalUnicode11: false,
+        terminalFind: false,
+        terminalFileLinks: false,
+      }),
+    ).toEqual({ webgl: false, unicode11: false, search: false, fileLinks: false });
+  });
+
+  it("draws ligatures with the DOM renderer, since they are CSS", () => {
+    expect(terminalAddonPlan({ ...defaultPreferences, terminalLigatures: true }).webgl).toBe(false);
   });
 });

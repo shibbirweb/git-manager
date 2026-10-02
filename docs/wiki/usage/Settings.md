@@ -77,7 +77,7 @@ Type a font list and press Enter (or click outside the box), or click a font nam
 | Show all branches in the log | Includes every local and remote branch in the [Log](History-and-Log.md). | On |
 | Sign off commits | Adds a `Signed-off-by` line to every commit (`--signoff`). Also in Commit Options. | Off |
 | GPG sign commits | **Default** follows git's `commit.gpgSign`, **Sign** adds `-S`, **Do not sign** adds `--no-gpg-sign`. | Default |
-| Git Console | Keeps a list of the git commands the app runs, in a **Git Console** tab next to Terminal. While it is off, nothing is recorded. While it is on and a folder is open, a **Show Git Console** button appears here. See [Git Console](Git-Console.md). | Off |
+| Git Console | Keeps a list of the git commands the app runs, in a **Git Console** tab next to Terminal. While it is off, nothing is recorded. See [Git Console](Git-Console.md). | Off |
 
 See [Commit Options](Commit-Options.md) for signing and the other per-commit choices.
 

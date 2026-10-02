@@ -152,6 +152,14 @@ class SettingsStore {
   terminalCursorBlink = $state(initialPreferences.terminalCursorBlink);
   terminalScrollback = $state(initialPreferences.terminalScrollback);
   terminalCopyOnSelect = $state(initialPreferences.terminalCopyOnSelect);
+  terminalFind = $state(initialPreferences.terminalFind);
+  terminalFileLinks = $state(initialPreferences.terminalFileLinks);
+  terminalGpuAcceleration = $state(initialPreferences.terminalGpuAcceleration);
+  terminalUnicode11 = $state(initialPreferences.terminalUnicode11);
+  terminalOptionAsMeta = $state(initialPreferences.terminalOptionAsMeta);
+  terminalVisualBell = $state(initialPreferences.terminalVisualBell);
+  terminalSmoothScrolling = $state(initialPreferences.terminalSmoothScrolling);
+  terminalDropPaths = $state(initialPreferences.terminalDropPaths);
   markdownViewMode = $state<MarkdownViewMode>(initialPreferences.markdownViewMode);
   confirmDragAndDrop = $state(initialPreferences.confirmDragAndDrop);
   mcpEnabled = $state(initialPreferences.mcpEnabled);
@@ -327,6 +335,14 @@ class SettingsStore {
       terminalCursorBlink: this.terminalCursorBlink,
       terminalScrollback: this.terminalScrollback,
       terminalCopyOnSelect: this.terminalCopyOnSelect,
+      terminalFind: this.terminalFind,
+      terminalFileLinks: this.terminalFileLinks,
+      terminalGpuAcceleration: this.terminalGpuAcceleration,
+      terminalUnicode11: this.terminalUnicode11,
+      terminalOptionAsMeta: this.terminalOptionAsMeta,
+      terminalVisualBell: this.terminalVisualBell,
+      terminalSmoothScrolling: this.terminalSmoothScrolling,
+      terminalDropPaths: this.terminalDropPaths,
       markdownViewMode: this.markdownViewMode,
       confirmDragAndDrop: this.confirmDragAndDrop,
       mcpEnabled: this.mcpEnabled,

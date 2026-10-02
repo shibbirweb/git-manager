@@ -40,7 +40,7 @@ Always on the right:
 
 Git Manager is built to stay light, and the memory readout lets you see that for yourself. It shows physical memory as Activity Monitor counts it. That includes the helper processes macOS runs for the app's web view, which draws the interface.
 
-Click **Memory** for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphics** and **Networking**, each with its size and a bar. Opening it measures again at once. Press Esc or click elsewhere to close it.
+Click **Memory** for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphics** and **Networking**, each with its size and a bar. Below them, **GPU acceleration** answers two questions. **Terminals use the GPU** says yes (and in how many terminals) or no with the reason: turned off in Settings, font ligatures on, or the GPU failed and the terminal fell back to normal drawing. **WebGL support** says whether the web view can use the GPU for that at all, and names the graphics chip. The window itself always draws with the GPU through macOS; that is the Graphics row. GPU drawing in terminals is smoother and lighter on the CPU with a lot of output, at a few MB of GPU memory per terminal; turn it off in Settings, Terminal if you see drawing glitches or want font ligatures. Opening it measures again at once. Press Esc or click elsewhere to close it.
 
 The number updates every few seconds while the window is visible, and stops while it is hidden. When the app was started from a Terminal, the helpers are matched by their start time, and the breakdown says so.
 

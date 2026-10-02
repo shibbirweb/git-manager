@@ -12,6 +12,7 @@ import { settings } from "$lib/stores/settings.svelte";
 import type { ShellProfile, TerminalExitedEvent, TerminalInfo } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import type { MenuItem } from "$lib/ui/menu.svelte";
+import { platformName } from "$lib/update/releases";
 import {
   resolveShellId,
   shellNameFor,
@@ -21,6 +22,18 @@ import {
 } from "./terminals";
 import { runAfterClose, type RunSpec } from "./runs";
 import { panelAfterLeave, type TerminalLocation, terminalKeysOf, terminalTabPath } from "./terminalTabs";
+import {
+  groupMembers,
+  normalizeSizes,
+  resizePanes,
+  sizesAfterClose,
+  sizesAfterSplit,
+  terminalGroups,
+} from "./splitPanes";
+
+function isMacPlatform(): boolean {
+  return typeof navigator !== "undefined" && platformName(navigator.userAgent) === "macOS";
+}
 
 export interface TerminalEntry {
   /** Frontend id, known before the shell has started. */
@@ -41,6 +54,10 @@ export interface TerminalEntry {
   location: TerminalLocation;
   /** Run sessions only: the script it starts instead of a shell. */
   run?: RunSpec | null;
+  /** Split group in the panel: terminals of one group sit side by side (splitPanes.ts). */
+  group: number;
+  /** The shell rang the bell while the terminal was out of sight. */
+  bell: boolean;
 }
 
 /** Asks one terminal to take keyboard focus as soon as it is on screen. */
@@ -64,14 +81,24 @@ export interface NewTerminalOptions {
   folderPath?: string | null;
   /** "editor" opens it in an editor tab (New Terminal in Editor Area); the panel by default. */
   location?: Exclude<TerminalLocation, "run">;
+  /** Split Terminal: the panel terminal the new one sits beside, in the same group. */
+  splitFrom?: number | null;
 }
 
 class TerminalStore {
   terminals = $state.raw<TerminalEntry[]>([]);
   /** Terminals in the panel, in list order. */
   panelTerminals = $derived(this.terminals.filter((terminal) => terminal.location === "panel"));
-  /** The terminal the panel shows: always one of the panel's own, or null. */
+  /** The terminal the panel shows (the focused pane of its group): always one of the panel's own, or null. */
   activeKey = $state<number | null>(null);
+  /** The terminals of the shown group, side by side, in pane order. */
+  activeGroupKeys = $derived(this.activeKey === null ? [] : groupMembers(this.panelTerminals, this.activeKey));
+  /** The panel's groups, in list order. */
+  panelGroups = $derived(terminalGroups(this.panelTerminals));
+  /** Pane widths of each split group as fractions (session only); see splitPanes.ts. */
+  groupSizes = $state.raw<Record<number, number[]>>({});
+  /** The pane of each terminal of the shown group, by terminal key (registered by TerminalPanel). */
+  paneSlots = $state.raw<Record<number, HTMLElement>>({});
   /** Run sessions, in tab order. */
   runSessions = $derived(this.terminals.filter((terminal) => terminal.location === "run"));
   /** The run session the Run tab shows. */
@@ -93,6 +120,7 @@ class TerminalStore {
   editorSlots = $state.raw<Record<number, HTMLElement>>({});
 
   private nextKey = 1;
+  private nextGroup = 1;
   private focusToken = 0;
   private shellsLoad: Promise<ShellProfile[]> | null = null;
   private listening: Promise<void> | null = null;
@@ -118,7 +146,8 @@ class TerminalStore {
   /** The element that shows a terminal now, or null while nothing on screen does. */
   slotFor(terminal: TerminalEntry): HTMLElement | null {
     if (terminal.location === "panel") {
-      return this.panelSlot;
+      // Terminals of other groups wait hidden in the panel's view area.
+      return this.paneSlots[terminal.key] ?? this.panelSlot;
     }
     if (terminal.location === "run") {
       return this.runSlot;
@@ -132,6 +161,56 @@ class TerminalStore {
 
   setRunSlot(element: HTMLElement | null): void {
     this.runSlot = element;
+  }
+
+  setPaneSlot(terminalKey: number, element: HTMLElement): void {
+    this.paneSlots = { ...this.paneSlots, [terminalKey]: element };
+  }
+
+  /** Forgets a pane, unless a newer one replaced it already. */
+  clearPaneSlot(terminalKey: number, element: HTMLElement): void {
+    if (this.paneSlots[terminalKey] !== element) {
+      return;
+    }
+    this.paneSlots = Object.fromEntries(Object.entries(this.paneSlots).filter(([slotKey]) => Number(slotKey) !== terminalKey));
+  }
+
+  /** The pane widths of a group with `count` panes. */
+  paneSizes(group: number, count: number): number[] {
+    return normalizeSizes(this.groupSizes[group], count);
+  }
+
+  /** Dragging a divider: pane `index` of `group` takes `fraction` of the width, its right neighbor the rest of their share. */
+  resizePane(group: number, index: number, fraction: number, minFraction: number): void {
+    const members = this.panelTerminals.filter((terminal) => terminal.group === group).length;
+    const sizes = this.paneSizes(group, members);
+    if (index < 0 || index >= sizes.length - 1) {
+      return;
+    }
+    this.groupSizes = { ...this.groupSizes, [group]: resizePanes(sizes, index, fraction - sizes[index], minFraction) };
+  }
+
+  /** Clicking into a pane makes it the panel's terminal, so the header and Kill act on it. */
+  focusPane(terminalKey: number): void {
+    const entry = this.find(terminalKey);
+    if (!entry || entry.location !== "panel" || this.activeKey === terminalKey) {
+      return;
+    }
+    this.activeKey = terminalKey;
+  }
+
+  /** The bell rang in a terminal that is out of sight: its row gets a dot until it shows. */
+  ring(terminalKey: number): void {
+    const entry = this.find(terminalKey);
+    if (entry && !entry.bell) {
+      this.update(terminalKey, { bell: true });
+    }
+  }
+
+  clearBell(terminalKey: number): void {
+    if (this.find(terminalKey)?.bell) {
+      this.update(terminalKey, { bell: false });
+    }
   }
 
   setEditorSlot(terminalKey: number, element: HTMLElement): void {
@@ -252,6 +331,8 @@ class TerminalStore {
     if (generation !== this.generation) {
       return;
     }
+    const source = options.splitFrom ? this.find(options.splitFrom) : null;
+    const splitSource = source && source.location === "panel" && location === "panel" ? source : null;
     const shellId = resolveShellId(options.shellId ?? null, settings.terminalShell, shells);
     const cwd = startFolder({
       requestedFolder: options.folderPath ?? null,
@@ -271,8 +352,14 @@ class TerminalStore {
       exited: false,
       exitCode: null,
       location,
+      group: splitSource ? splitSource.group : this.nextGroup++,
+      bell: false,
     };
-    this.terminals = [...this.terminals, entry];
+    if (splitSource) {
+      this.addToGroup(entry, splitSource);
+    } else {
+      this.terminals = [...this.terminals, entry];
+    }
     if (location === "panel") {
       this.activeKey = entry.key;
     } else {
@@ -313,6 +400,8 @@ class TerminalStore {
       exitCode: null,
       location: "run",
       run: spec,
+      group: this.nextGroup++,
+      bell: false,
     };
     const current = existing ? this.find(existing.key) : null;
     if (current) {
@@ -425,7 +514,8 @@ class TerminalStore {
       return;
     }
     const next = panelAfterLeave(this.terminals, terminalKey, { activeKey: this.activeKey, panelOpen: this.panelOpen });
-    this.update(terminalKey, { location: "editor" });
+    this.leaveGroup(entry);
+    this.update(terminalKey, { location: "editor", group: this.nextGroup++ });
     this.activeKey = next.activeKey;
     this.panelOpen = next.panelOpen;
     repoStore.openPseudoTab(terminalTabPath(terminalKey));
@@ -438,7 +528,10 @@ class TerminalStore {
     if (!entry || entry.location !== "editor") {
       return;
     }
-    this.terminals = [...this.terminals.filter((terminal) => terminal.key !== terminalKey), { ...entry, location: "panel" }];
+    this.terminals = [
+      ...this.terminals.filter((terminal) => terminal.key !== terminalKey),
+      { ...entry, location: "panel", group: this.nextGroup++ },
+    ];
     this.activeKey = terminalKey;
     this.panelOpen = true;
     this.started = true;
@@ -485,9 +578,10 @@ class TerminalStore {
     this.update(terminalKey, { terminalId: null, exited: false, exitCode: null });
   }
 
+  /** Names are kept for the session only, like VS Code's. An invalid name is ignored. */
   rename(terminalKey: number, name: string): void {
     const trimmed = name.trim();
-    if (trimmed) {
+    if (trimmed && validateTerminalName(trimmed) === null) {
       this.update(terminalKey, { name: trimmed, renamed: true });
     }
   }
@@ -527,6 +621,9 @@ class TerminalStore {
         hint: "same shell and folder",
         action: () => void this.create({ shellId: entry.shellId, folderPath: entry.cwd, location }),
       },
+      ...(location === "panel"
+        ? [{ label: "Split Terminal", hint: isMacPlatform() ? "Cmd+\\" : "Ctrl+Shift+5", action: () => void this.split(terminalKey) }]
+        : []),
       { label: "Rename...", action: () => void this.promptRename(terminalKey) },
       { separator: true },
       this.moveItem(entry),
@@ -551,6 +648,42 @@ class TerminalStore {
     return { label: "Move Terminal into Editor Area", action: () => this.moveToEditor(entry.key) };
   }
 
+  /** Split Terminal: a new terminal with the same shell and folder, beside this one in the panel. */
+  async split(terminalKey: number): Promise<void> {
+    const entry = this.find(terminalKey);
+    if (!entry || entry.location !== "panel") {
+      return;
+    }
+    await this.create({ shellId: entry.shellId, folderPath: entry.cwd, splitFrom: terminalKey });
+  }
+
+  /** Puts a split's new terminal right of its source, and halves the source's pane for it. */
+  private addToGroup(entry: TerminalEntry, source: TerminalEntry): void {
+    const members = groupMembers(this.panelTerminals, source.key);
+    const sizes = this.paneSizes(source.group, members.length);
+    // Right after the source, so the group's members stay together in the list.
+    const at = this.terminals.findIndex((terminal) => terminal.key === source.key) + 1;
+    this.terminals = [...this.terminals.slice(0, at), entry, ...this.terminals.slice(at)];
+    this.groupSizes = { ...this.groupSizes, [source.group]: sizesAfterSplit(sizes, members.indexOf(source.key)) };
+  }
+
+  /** A panel terminal leaves its group (killed, exited or moved): its pane's width goes to a neighbor. */
+  private leaveGroup(entry: TerminalEntry): void {
+    if (entry.location !== "panel") {
+      return;
+    }
+    const members = groupMembers(this.panelTerminals, entry.key);
+    const sizes = this.paneSizes(entry.group, members.length);
+    const rest = sizesAfterClose(sizes, members.indexOf(entry.key));
+    const next = { ...this.groupSizes };
+    if (rest.length > 1) {
+      next[entry.group] = rest;
+    } else {
+      delete next[entry.group];
+    }
+    this.groupSizes = next;
+  }
+
   /** Kill Terminal: stops the shell and removes the terminal. */
   close(terminalKey: number): void {
     const entry = this.terminals.find((terminal) => terminal.key === terminalKey);
@@ -573,6 +706,7 @@ class TerminalStore {
     }
     this.generation += 1;
     this.terminals = [];
+    this.groupSizes = {};
     this.activeKey = null;
     this.runActiveKey = null;
     this.panelOpen = false;
@@ -607,6 +741,7 @@ class TerminalStore {
     }
     // Like VS Code, the panel hides with its last terminal.
     const next = panelAfterLeave(this.terminals, terminalKey, { activeKey: this.activeKey, panelOpen: this.panelOpen });
+    this.leaveGroup(entry);
     this.terminals = this.terminals.filter((terminal) => terminal.key !== terminalKey);
     this.activeKey = next.activeKey;
     // The Git Console and the Shelf stay on screen when the last terminal goes.

@@ -8,7 +8,7 @@ This page lists the options in three sections of [Settings](Settings.md): **Term
 
 *The Terminal section: the shell, the font with a live preview, the cursor and the behavior options.*
 
-The section has four groups. A preview under the font box shows a prompt, a commit line and tricky characters (`0O 1lI`) with your choices. Open terminals pick up the changes at once. How the terminal itself works is in [Terminal](Terminal.md).
+The section has five groups. A preview under the font box shows a prompt, a commit line and tricky characters (`0O 1lI`) with your choices. Open terminals pick up the changes at once. How the terminal itself works is in [Terminal](Terminal.md).
 
 **Shell**
 
@@ -23,12 +23,12 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Font family | A comma-separated list, like VS Code's `terminal.integrated.fontFamily`. Leave it empty to use the editor font. **Use the Editor Font** clears it. Click a font name below the box to use it. | Empty (the editor font) |
-| Font size | 9 to 24 px in half steps. | 12.5 px |
-| Line height | A multiple of the font's own line height, 1.0 to 2.0. | 1.0 |
+| Font size | 9 to 24 px in half steps. | 13 px (a size you saved earlier stays) |
+| Line height | A multiple of the font's own line height, 1.0 to 2.0. | 1.2 |
 | Letter spacing | Extra pixels between characters, 0 to 5. | 0 px |
 | Font weight | **Normal**, **Medium** or **Bold**. Medium needs a font that has it, such as SF Mono or JetBrains Mono. | Normal |
 | Bold text weight | The weight of text that programs print in bold. | Bold |
-| Font ligatures | Draws `=>` and `!=` as single symbols with fonts such as Fira Code. A ligature splits where colors change or under the cursor. | Off |
+| Font ligatures | Draws `=>` and `!=` as single symbols with fonts such as Fira Code. A ligature splits where colors change or under the cursor. Ligatures draw without GPU acceleration. | Off |
 | Icons from patched fonts | Patched fonts (Nerd Fonts, Powerline fonts) are fonts with extra icon symbols added. This adds them as fallbacks, for prompts like Powerlevel10k, Starship and oh-my-posh. Install a Nerd Font such as MesloLGS NF, or Symbols Nerd Font Mono to keep your own font. | On |
 
 **Cursor**
@@ -44,8 +44,23 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 | --- | --- | --- |
 | Scrollback | Lines kept for scrolling back, 1,000 to 100,000. More lines use more memory. Type a number and press Enter. | 5,000 |
 | Copy on selection | Selecting text copies it to the clipboard. | Off |
+| Find in terminal | Cmd+F searches the output. Off, the search code is never loaded. | On |
+| Clickable file paths | Cmd+click a path such as `src/app.ts:12:5` to open it at that line. Only files inside an open folder become links. | On |
+| Drop files to type their paths | Dropping files from Finder on a terminal types their paths, quoted for the shell. | On |
+| Visual bell | A short flash when the shell rings the bell, or a dot on a terminal that is out of sight. | On |
+| Smooth scrolling | Animates scrolling with the mouse wheel. | Off |
+| Option as Meta key | Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as å. | Off |
 
-The last row, **Keyboard**, is a reminder: Ctrl+` shows or hides the terminal, Ctrl+Shift+` opens a new one, and in a terminal Cmd+C copies, Cmd+V pastes and Cmd+K clears.
+The **Keyboard** row is a reminder: Ctrl+` shows or hides the terminal, Ctrl+Shift+` opens a new one, and in a terminal Cmd+C copies, Cmd+V pastes, Cmd+K clears, Cmd+F finds and Cmd+\\ splits.
+
+**Rendering**
+
+| Setting | What it does | Default |
+| --- | --- | --- |
+| GPU acceleration | Draws with WebGL (the graphics card), which keeps busy output smooth, and falls back to normal drawing when WebGL is missing or fails. Off saves graphics memory. | On |
+| Unicode 11 widths | Emoji and wide characters take the right number of columns. Applies to output printed after the change. | On |
+
+Every switch applies to open terminals at once. What each part does is on [Terminal Features](Terminal-Features.md).
 
 ## GitHub
 

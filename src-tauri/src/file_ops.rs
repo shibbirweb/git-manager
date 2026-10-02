@@ -606,6 +606,35 @@ pub fn trash_entries(
     remove(entries.into_iter().map(|entry| entry.real).collect())
 }
 
+/// At most this many paths are checked per call; the terminal asks for one line at a time.
+pub const MAX_EXISTS_CHECKS: usize = 64;
+
+/// Which of `file_paths` are regular files inside an open workspace folder (not inside
+/// `.git`), for the terminal's clickable paths. Symlinks are followed, so a link that
+/// leads out of the workspace counts as missing. Never fails: anything odd is `false`,
+/// and paths past `MAX_EXISTS_CHECKS` are not looked at.
+pub fn existing_files(workspace_roots: &[String], file_paths: &[String]) -> Vec<bool> {
+    let Ok(workspace) = WorkspaceRoots::new(workspace_roots) else {
+        return vec![false; file_paths.len()];
+    };
+    file_paths
+        .iter()
+        .enumerate()
+        .map(|(index, file_path)| {
+            if index >= MAX_EXISTS_CHECKS {
+                return false;
+            }
+            let Ok(given) = checked_absolute(file_path) else {
+                return false;
+            };
+            let Ok(real) = given.canonicalize() else {
+                return false;
+            };
+            workspace.check_inside(&real, file_path).is_ok() && real.is_file()
+        })
+        .collect()
+}
+
 /// The system Trash. On macOS this is NSFileManager: the Finder method runs AppleScript,
 /// which asks for automation permission and plays a sound.
 pub fn move_to_trash(real_paths: Vec<PathBuf>) -> AppResult<()> {

@@ -6,3 +6,5 @@ import "@xterm/xterm/css/xterm.css";
 export { FitAddon } from "@xterm/addon-fit";
 export { WebLinksAddon } from "@xterm/addon-web-links";
 export { Terminal } from "@xterm/xterm";
+// The optional addons load on their own, later, from inside this class.
+export { TerminalAddons } from "./addons";

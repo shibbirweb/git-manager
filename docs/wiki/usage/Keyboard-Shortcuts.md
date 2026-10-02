@@ -84,7 +84,10 @@ Ctrl+- really is Control, not Command, as in VS Code on the Mac. See [Search Eve
 | Cmd+K | Clear the terminal |
 | Cmd+A | Select everything in the terminal |
 | Ctrl+C | Stop the running command, in a terminal or the Run tab |
-| Cmd-click a link | Open the link, in a terminal |
+| Cmd-click a link or file path | Open the link, or the file at its line, in a terminal |
+| Cmd+F | Find in the terminal |
+| Enter and Shift+Enter | Previous (older) and next match, in the terminal's find bar |
+| Cmd+\ | Split the terminal, in the panel |
 
 These Ctrl+` keys work even from inside a terminal. Every other key goes to the shell, except Cmd keys, which stay app shortcuts. Ctrl+Cmd keys go to the shell too. See [Terminal](Terminal.md) and [Scripts](Scripts.md).
 

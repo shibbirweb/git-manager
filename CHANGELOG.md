@@ -48,6 +48,7 @@ GitHub release notes, and the app shows it as "What's New".
 - GitHub account (Settings > GitHub) with a token kept only in the system keychain, or the GitHub CLI: Share Project on GitHub, Sync Fork, Create Gist, and links to open the repository, create a pull request or copy a GitHub link.
 - Integrated terminal in the bottom panel: several terminals, a shell picker, Ctrl+` to show or hide it and Ctrl+Shift+` for a new one, terminals moved into the editor area and back, and Settings > Terminal for fonts, cursor, scrollback and copy on selection.
 - Files panel: Open in Integrated Terminal and Reveal in Finder.
+- The memory popup in the status bar has a GPU acceleration section: whether the terminals use the GPU (or why not), and whether the web view supports WebGL; the window itself always draws with the GPU.
 - Image and PDF preview: images (PNG, JPEG, GIF, WebP, BMP, ICO, AVIF) open fitted with zoom, and PDFs open in the built-in viewer; a preview frees its memory when its tab is hidden or closed.
 - Binary images and PDFs in every diff show their old and new version side by side, with one zoom for both images, and big PDFs load in pieces instead of all at once.
 - Open File button in the diff toolbar, after Blame: opens the real file in an editor tab, at the same line when the right side is the working tree.
@@ -71,6 +72,7 @@ GitHub release notes, and the app shows it as "What's New".
 - MCP and command line tools for the Files panel operations: `create_file`, `create_folder`, `copy_paths`, and `rename_path`, `move_paths` and `trash_paths` (off by default), with the same unsaved-edit checks and tab follow-ups as the panel.
 - IDE editing features, each with a switch in Settings > Editor > Editing features that frees its memory when off: auto-close brackets and quotes, code completion from the file's words and the language's keywords (Ctrl+Space, Enter or Tab to accept, optionally only on Ctrl+Space), fold arrows beside the line numbers, indent guides, highlighting the word at the cursor, scrolling past the end, column selection with Option+drag and a right margin line at a chosen column.
 - Syntax colors for Go, Java, Kotlin, Swift, Ruby, shell scripts, TOML, XML, Dockerfile, C, C++ and C#, in the editor and in Markdown code blocks.
+- Terminal polish like VS Code and JetBrains: split terminals side by side (Cmd+\\) with a draggable divider and split groups in the list, find in the terminal (Cmd+F) with Match Case, Words and Regex, Cmd+click file paths such as `src/app.ts:12:5` to open them at that line, drop files from Finder to type their quoted paths, rename a terminal by double-clicking its name, Paste, Find... and Split Terminal in the right-click menu, a visual bell, and GPU drawing (WebGL), Unicode 11 widths, smooth scrolling and Option as Meta, each with its own switch in Settings > Terminal.
 
 ### Changed
 
@@ -81,6 +83,7 @@ GitHub release notes, and the app shows it as "What's New".
 - The hover-only buttons on a repository in the Changes sidebar became an always visible actions row with a ... menu.
 - The file editor header is one slim bar, like JetBrains: the path, its badges and icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch, so the code starts right under the tabs. Conflict actions get their own strip only while a file has conflicts, and the bar shortens the path instead of wrapping when the editor is narrow.
 - New editor defaults, like JetBrains: JetBrains Mono when it is installed (else Menlo) at 13 px, with line spacing 1.25. An existing settings.json keeps its saved values; Reset to Defaults picks up the new ones.
+- The terminal starts at 13 px with a line height of 1.2 (it was 12.5 px and 1.0); sizes you saved stay. The terminal panel header and list are slimmer, and the header has a Split Terminal button.
 
 ### Fixed
 

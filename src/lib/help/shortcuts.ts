@@ -183,6 +183,9 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
         { label: "New terminal", keys: keys("Ctrl+Shift+`") },
         { label: "Copy / Paste", keys: mac ? keys("Cmd+C", "Cmd+V") : keys("Ctrl+Shift+C", "Ctrl+Shift+V"), context: "In a terminal" },
         { label: "Stop the running command", keys: keys("Ctrl+C"), context: "In a terminal or the Run tab" },
+        { label: "Find in the terminal", keys: mac ? keys("Cmd+F") : keys("Ctrl+Shift+F"), context: "In a terminal" },
+        { label: "Split the terminal", keys: mac ? keys("Cmd+\\") : keys("Ctrl+Shift+5"), context: "In a panel terminal" },
+        { label: "Open a file path or link", keys: [mac ? "⌘ click" : "Ctrl+click"], context: "In a terminal" },
       ],
     },
     {

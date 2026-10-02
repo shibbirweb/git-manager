@@ -2,6 +2,8 @@
 
 Git Manager has a terminal built in, like VS Code. Run git commands, a dev server or your tests without leaving the window. Each terminal runs a real shell (the program that reads your commands, such as zsh), with your usual prompt, colors and aliases.
 
+This page covers the panel and its terminals. Split terminals, find, clickable file paths, dropping files and the keys are on [Terminal Features](Terminal-Features.md).
+
 ![The terminal panel below the editor](../images/terminal-panel.png)
 
 *The terminal panel below the editor, with a shell in the shop repository showing its recent commits.*
@@ -28,6 +30,7 @@ On the right of the Terminal tab you find:
 
 - **+** (New Terminal, **Ctrl+Shift+`**): starts another terminal with your default shell.
 - **The arrow next to +** (New Terminal With Shell...): a menu with every shell found on your Mac and its path. Below them are **New Terminal in Editor Area** and **Default Shell...**, which opens the Terminal section of Settings.
+- **Split Terminal** (**Cmd+\\**): opens a second terminal beside the shown one (see [Terminal Features](Terminal-Features.md#split-terminals)).
 - **Move Terminal into Editor Area**: moves the shown terminal into an editor tab (see below).
 - **Kill Terminal** (trash icon): stops the shown terminal and closes it.
 - **x** (Hide Panel, **Ctrl+`**): hides the panel.
@@ -38,26 +41,15 @@ On the right of the Terminal tab you find:
 
 ## Several terminals
 
-With two or more terminals, a list appears on the right of the panel. Each row shows the terminal's name and the folder it started in. Click a row to show that terminal. Hover a row for its trash button, which kills it.
+With two or more terminals, a list appears on the right of the panel. Each row shows the terminal's name and the folder it started in. Click a row to show that terminal. Hover a row for its trash button, which kills it. Split terminals are joined by a thin line in the list, and a small dot means the shell rang its bell while you were not looking.
 
 ![Several terminals in the list](../images/terminal-list.png)
 
 *Three terminals: the list shows each name and folder, and marks the active one.*
 
-Names follow the shell, like VS Code: the first zsh is "zsh", the next one "zsh (2)", and so on. When a terminal closes, its number is free again.
+Names follow the shell, like VS Code: the first zsh is "zsh", the next one "zsh (2)", and so on. When a terminal closes, its number is free again. Double-click a name to rename the terminal.
 
 Drag the line between the terminal and the list to change the list's width, or double-click it to reset. The terminal always keeps enough room, and the width is remembered.
-
-## Right-click menus
-
-Right-click a row in the list, or the terminal name in the header when there is only one, for:
-
-- **New Terminal Here**: a new terminal with the same shell and folder.
-- **Rename...**: give the terminal a name of your own (up to 60 characters). It keeps that name.
-- **Move Terminal into Editor Area** or **Move Terminal into Panel**.
-- **Kill Terminal**.
-
-Right-click inside a terminal for **Copy**, **Select All** and **Clear** first, then the same items.
 
 ## Terminals in editor tabs
 
@@ -70,17 +62,6 @@ Choose **Move Terminal into Editor Area** to move a terminal into its own editor
 The tab shows a terminal icon and the terminal's name. Right-click the tab for the usual Close items, **Move Terminal into Panel** and **Rename...**. Move Terminal into Panel puts it back at the end of the panel's list, still running.
 
 Closing a terminal tab (with x, Close Others, Close All and so on) kills that terminal, like in VS Code.
-
-## Keys, copy and paste
-
-On a Mac:
-
-- **Cmd+C** copies the selection. With nothing selected it does nothing.
-- **Cmd+V** pastes, **Cmd+A** selects everything and **Cmd+K** clears the terminal.
-- **Cmd+click** a web link to open it in your browser.
-- Other Cmd shortcuts, such as Cmd+B, still work in the app. Everything else goes to the shell, so Ctrl+C stops a command as usual.
-
-On Windows and Linux, copy and paste are **Ctrl+Shift+C** and **Ctrl+Shift+V**, and links open with Ctrl+click.
 
 ## When a shell ends
 
@@ -100,7 +81,7 @@ New terminals use your login shell (the one Terminal.app uses) unless you pick a
 
 *Settings, Terminal: the default shell and the font options, with a live preview.*
 
-The same section sets the font, the cursor, the scrollback length (how many lines you can scroll back) and **Copy on selection** (copy text as soon as you select it). Changes apply to open terminals right away, and the terminal follows your color theme. Every option is explained in [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md#terminal).
+The same section sets the font (13 px with a line height of 1.2 unless you changed it), the cursor, the scrollback length (how many lines you can scroll back), **Copy on selection** (copy text as soon as you select it) and a switch for each optional part, such as find and GPU drawing. Changes apply to open terminals right away, and the terminal follows your color theme. Every option is explained in [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md#terminal).
 
 ## Open a terminal from the Files panel
 
@@ -108,6 +89,7 @@ Right-click a folder or a file in the [Files panel](Files-Panel.md) and choose *
 
 ## Related
 
+- [Terminal Features](Terminal-Features.md)
 - [Scripts](Scripts.md)
 - [Keyboard Shortcuts](Keyboard-Shortcuts.md)
 - [Editor and Tabs](Editor-and-Tabs.md)

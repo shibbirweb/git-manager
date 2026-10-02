@@ -34,6 +34,7 @@
     { "page": "usage/GitHub.md", "summary": "Sign in to GitHub to share a project, sync a fork and create gists." },
     { "page": "usage/Git-Console.md", "summary": "Every git command the app ran, with its output (off by default)." },
     { "page": "usage/Terminal.md", "summary": "Run shells below the editor or in a tab, with several terminals and your own shell and font." },
+    { "page": "usage/Terminal-Features.md", "summary": "Split terminals, find in the output, Cmd+click file paths, drop files, rename, and the optional parts." },
     { "page": "usage/Scripts.md", "summary": "Run npm, Composer, Make, Deno and just scripts with one click, with the right Node version." },
     { "page": "usage/Navigation.md", "summary": "Back and Forward across files, diffs and commits." },
     { "page": "usage/Menus.md", "summary": "The menu bar: what is in each menu, and how its keys work." },
@@ -59,6 +60,7 @@
     { "page": "developer/How-Workspace-Files-Work.md", "summary": "Workspace files, VS Code compatibility and which folders reopen at start." },
     { "page": "developer/How-the-Preview-Scheme-Works.md", "summary": "The gmpreview URL scheme: how previews stream images and PDFs to the web view, safely and in pieces." },
     { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
+    { "page": "developer/How-Terminal-Features-Work.md", "summary": "Split groups, find, file links, drops and the terminal addons, each lazy and switchable." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
@@ -321,7 +323,7 @@
       "title": "Integrated terminal",
       "usage": "usage/Terminal.md",
       "developer": "developer/How-the-Terminal-Works.md",
-      "screenshots": ["terminal-panel.png", "terminal-shell-menu.png", "terminal-list.png", "terminal-editor-tab.png", "terminal-settings.png"]
+      "screenshots": ["terminal-panel.png", "terminal-shell-menu.png", "terminal-list.png", "terminal-editor-tab.png", "terminal-settings.png", "terminal-find.png", "terminal-split.png"]
     },
     {
       "id": "scripts",

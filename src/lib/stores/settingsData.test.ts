@@ -196,9 +196,9 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ confirmDragAndDrop: false }).extra).toEqual({});
   });
 
-  it("defaults the terminal to the login shell and the editor's default size", () => {
+  it("defaults the terminal to the login shell and 12.5 px", () => {
     expect(defaultPreferences.terminalShell).toBeNull();
-    expect(defaultPreferences.terminalFontSize).toBe(12.5);
+    expect(defaultPreferences.terminalFontSize).toBe(13);
     expect(parsePreferences({}).preferences.terminalShell).toBeNull();
   });
 
@@ -213,13 +213,15 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ terminalFontSize: 14 }).preferences.terminalFontSize).toBe(14);
     expect(parsePreferences({ terminalFontSize: 99 }).preferences.terminalFontSize).toBe(24);
     expect(parsePreferences({ terminalFontSize: 2 }).preferences.terminalFontSize).toBe(9);
-    expect(parsePreferences({ terminalFontSize: "big" }).preferences.terminalFontSize).toBe(12.5);
+    expect(parsePreferences({ terminalFontSize: "big" }).preferences.terminalFontSize).toBe(13);
+    // A saved size stays, so people who never changed it keep what they had.
+    expect(parsePreferences({ terminalFontSize: 12.5 }).preferences.terminalFontSize).toBe(12.5);
   });
 
   it("defaults the terminal display settings like VS Code", () => {
     const { preferences } = parsePreferences({});
     expect(preferences.terminalFontFamily).toBe("");
-    expect(preferences.terminalLineHeight).toBe(1);
+    expect(preferences.terminalLineHeight).toBe(1.2);
     expect(preferences.terminalLetterSpacing).toBe(0);
     expect(preferences.terminalFontWeight).toBe("normal");
     expect(preferences.terminalFontWeightBold).toBe("bold");
@@ -250,8 +252,9 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ terminalLineHeight: 1.234 }).preferences.terminalLineHeight).toBe(1.2);
     expect(parsePreferences({ terminalLineHeight: 0.5 }).preferences.terminalLineHeight).toBe(1);
     expect(parsePreferences({ terminalLineHeight: 9 }).preferences.terminalLineHeight).toBe(2);
-    expect(parsePreferences({ terminalLineHeight: "tall" }).preferences.terminalLineHeight).toBe(1);
-    expect(parsePreferences({ terminalLineHeight: Number.NaN }).preferences.terminalLineHeight).toBe(1);
+    expect(parsePreferences({ terminalLineHeight: "tall" }).preferences.terminalLineHeight).toBe(1.2);
+    expect(parsePreferences({ terminalLineHeight: Number.NaN }).preferences.terminalLineHeight).toBe(1.2);
+    expect(parsePreferences({ terminalLineHeight: 1 }).preferences.terminalLineHeight).toBe(1);
     expect(parsePreferences({ terminalLetterSpacing: 2 }).preferences.terminalLetterSpacing).toBe(2);
     expect(parsePreferences({ terminalLetterSpacing: 1.6 }).preferences.terminalLetterSpacing).toBe(2);
     expect(parsePreferences({ terminalLetterSpacing: -3 }).preferences.terminalLetterSpacing).toBe(0);
@@ -294,6 +297,43 @@ describe("parsePreferences", () => {
     expect(invalid.terminalNerdFontIcons).toBe(true);
     expect(invalid.terminalCursorBlink).toBe(true);
     expect(invalid.terminalCopyOnSelect).toBe(false);
+  });
+
+  it("defaults the optional terminal parts and validates them", () => {
+    const defaults = parsePreferences({}).preferences;
+    expect(defaults.terminalFind).toBe(true);
+    expect(defaults.terminalFileLinks).toBe(true);
+    expect(defaults.terminalGpuAcceleration).toBe(true);
+    expect(defaults.terminalUnicode11).toBe(true);
+    expect(defaults.terminalOptionAsMeta).toBe(false);
+    expect(defaults.terminalVisualBell).toBe(true);
+    expect(defaults.terminalSmoothScrolling).toBe(false);
+    expect(defaults.terminalDropPaths).toBe(true);
+    const flipped = parsePreferences({
+      terminalFind: false,
+      terminalFileLinks: false,
+      terminalGpuAcceleration: false,
+      terminalUnicode11: false,
+      terminalOptionAsMeta: true,
+      terminalVisualBell: false,
+      terminalSmoothScrolling: true,
+      terminalDropPaths: false,
+    });
+    expect(flipped.preferences).toMatchObject({
+      terminalFind: false,
+      terminalFileLinks: false,
+      terminalGpuAcceleration: false,
+      terminalUnicode11: false,
+      terminalOptionAsMeta: true,
+      terminalVisualBell: false,
+      terminalSmoothScrolling: true,
+      terminalDropPaths: false,
+    });
+    expect(flipped.extra).toEqual({});
+    const invalid = parsePreferences({ terminalFind: "off", terminalOptionAsMeta: 1, terminalSmoothScrolling: "yes" }).preferences;
+    expect(invalid.terminalFind).toBe(true);
+    expect(invalid.terminalOptionAsMeta).toBe(false);
+    expect(invalid.terminalSmoothScrolling).toBe(false);
   });
 
   it("clamps the terminal scrollback to whole lines", () => {

@@ -64,17 +64,27 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | --- | --- | --- | --- |
 | `terminalShell` | null | a trimmed path up to 1024 characters, else null | `terminalStore.svelte.ts` |
 | `terminalFontFamily` | `""` | `normalizeTerminalFontFamily` (empty means the editor font) | `terminal/options.ts`, `fonts.ts` |
-| `terminalFontSize` | 12.5 | 9 to 24 | `terminal/options.ts` |
-| `terminalLineHeight` | 1 | 1 to 2, tenths | `terminal/options.ts` |
+| `terminalFontSize` | 13 | 9 to 24 | `terminal/options.ts` |
+| `terminalLineHeight` | 1.2 | 1 to 2, tenths | `terminal/options.ts` |
 | `terminalLetterSpacing` | 0 | 0 to 5, whole | `terminal/options.ts` |
 | `terminalFontWeight` | `"normal"` | `normal`, `medium`, `bold` | `terminal/options.ts` |
 | `terminalFontWeightBold` | `"bold"` | same | `terminal/options.ts` |
-| `terminalLigatures` | false | boolean | `TerminalView.svelte` |
+| `terminalLigatures` | false | boolean | `TerminalView.svelte`, `terminalAddonPlan` (no WebGL with ligatures) |
 | `terminalNerdFontIcons` | true | boolean | `terminal/options.ts` |
 | `terminalCursorStyle` | `"block"` | `block`, `bar`, `underline` | `terminal/options.ts` |
 | `terminalCursorBlink` | true | boolean | `terminal/options.ts` |
 | `terminalScrollback` | 5000 | 1000 to 100000, whole (`clampTerminalScrollback`) | `terminal/options.ts` |
 | `terminalCopyOnSelect` | false | boolean | `TerminalView.svelte` |
+| `terminalFind` | true | boolean | `terminalAddonPlan`, `keys.ts` (Cmd+F) |
+| `terminalFileLinks` | true | boolean | `terminalAddonPlan`, `TerminalView.svelte` |
+| `terminalGpuAcceleration` | true | boolean | `terminalAddonPlan`, `addons.ts` |
+| `terminalUnicode11` | true | boolean | `terminalAddonPlan`, `addons.ts` |
+| `terminalOptionAsMeta` | false | boolean | `terminal/options.ts` (`macOptionIsMeta`) |
+| `terminalVisualBell` | true | boolean | `TerminalView.svelte` |
+| `terminalSmoothScrolling` | false | boolean | `terminal/options.ts` (`smoothScrollDuration` 125 ms) |
+| `terminalDropPaths` | true | boolean | `TerminalHost.svelte` |
+
+The two defaults changed from 12.5 and 1 to 13 and 1.2. Saved values are read as they are, so only people who never saved settings see the new ones. What each switch loads is in [How terminal features work](How-Terminal-Features-Work.md).
 
 ### Automation
 
