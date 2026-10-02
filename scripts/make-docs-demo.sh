@@ -401,7 +401,7 @@ mkdir -p "$workspace/notes"
 printf '# Team notes\n\nThis folder is not a git repository.\n' >"$workspace/notes/meeting.md"
 # An image and a PDF for the image and PDF preview, outside git so no other shot changes.
 cp "$script_dir/../src-tauri/icons/icon.png" "$workspace/notes/logo.png"
-bun "$script_dir/make-demo-pdf.ts" "$workspace/notes/handbook.pdf"
+bun "$script_dir/make-demo-pdf.ts" "$workspace/notes/lorem-ipsum.pdf"
 
 design="$target/design-system"
 mkdir -p "$design/tokens"

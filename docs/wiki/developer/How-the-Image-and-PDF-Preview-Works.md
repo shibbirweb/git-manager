@@ -49,7 +49,7 @@ sequenceDiagram
 
 ## Design decisions
 
-**WebKit's PDF viewer, not pdf.js.** pdf.js would add megabytes of code and a worker, and keep rendering state in the page. The built-in viewer costs nothing until a PDF opens and pages through the document natively. The catch is other platforms: WebView2 on Windows has its own viewer, but WebKitGTK on Linux may show nothing. Reveal in File Explorer or Open Containing Folder stays as the way out.
+**WebKit's PDF viewer, not pdf.js.** pdf.js would add megabytes of code and a worker, and keep rendering state in the page. The built-in viewer costs nothing until a PDF opens and pages through the document natively. It is checked on macOS, where WebKit draws the pages inside the frame. The catch is other platforms: WebView2 on Windows has its own viewer, but WebKitGTK on Linux may show nothing. Reveal in File Explorer or Open Containing Folder stays as the way out.
 
 **Unmount on hide, not only on close.** Reading a file again when you come back is cheap; keeping a few decoded 20-megapixel photos in background tabs is not.
 
@@ -71,6 +71,7 @@ How the viewer looks and that memory goes down after closing a tab need a check 
 
 - Keep the extension list in `mediaPreview.ts` and `preview_mime` in `media.rs` the same.
 - Update [Image and PDF Preview](../usage/Image-and-PDF-Preview.md) and retake `media-preview-image.png` and `media-preview-pdf.png` when the viewer changes.
+- `media-preview-pdf.png` is taken by hand, since Playwright's WebKit has no PDF viewer and `scripts/screenshots.ts` would get an empty frame. Open `notes/lorem-ipsum.pdf` of the demo (`scripts/make-docs-demo.sh`, made by `scripts/make-demo-pdf.ts`) in the real app, capture the window (`git-manager cli screenshot`, or Cmd+Shift+4 then Space) and crop it to the document, so no tooltip or real path shows.
 
 ## Bugs we fixed
 

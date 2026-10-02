@@ -1664,10 +1664,10 @@ define("media-preview-image", async (shot) => {
   await shot.save(box);
 }, () => twoFolderScenario({ state: { explorerOpen: true }, viewport: { width: 1280, height: 760 } }));
 
-define("media-preview-pdf", async (shot) => {
-  const box = await openPreview(shot, "handbook.pdf", "iframe");
-  await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 620) });
-}, () => twoFolderScenario({ state: { explorerOpen: true } }));
+// media-preview-pdf.png is taken by hand: Playwright's WebKit has no PDF viewer, so this page would
+// show an empty frame. Open notes/lorem-ipsum.pdf of the demo in the real app window and capture it
+// (git-manager cli screenshot, or Cmd+Shift+4 then Space), then crop to the document. See
+// docs/wiki/developer/How-the-Image-and-PDF-Preview-Works.md.
 
 define("diff-split-resize", async (shot) => {
   await collapseRepo(shot, "payments-api");
