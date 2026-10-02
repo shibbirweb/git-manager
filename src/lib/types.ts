@@ -769,7 +769,7 @@ export interface SubmoduleInfo {
 }
 
 export interface LfsStatus {
-  /** `git lfs version` output; null when git-lfs is not installed. */
+  /** `git lfs version` output; null when git-lfs is not installed or was not checked yet. */
   version: string | null;
   /** Some attributes file routes paths through LFS. */
   used: boolean;

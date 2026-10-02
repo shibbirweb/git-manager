@@ -107,7 +107,8 @@ fn ref_labels(repo: &Repository) -> HashMap<Oid, Vec<RefLabel>> {
 }
 
 /// One page of history in topological + date order. When `all_refs` is set,
-/// every local and remote branch is included, like `git log --all`.
+/// every local and remote branch is included, like `git log HEAD --branches --remotes`.
+/// Unlike `git log --all`, tags and stashes are not followed.
 pub fn page(repo: &Repository, offset: usize, limit: usize, all_refs: bool) -> AppResult<Vec<CommitSummary>> {
     let mut walk = repo.revwalk()?;
     walk.set_sorting(Sort::TOPOLOGICAL | Sort::TIME)?;

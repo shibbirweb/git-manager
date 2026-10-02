@@ -1,7 +1,7 @@
 // Rich Markdown editing writes back into the source text block by block: a block that was
 // not edited keeps its exact original text, so typing in the rich editor never reformats
 // the rest of the file (list markers, emphasis style, table padding, blank lines...).
-// Kept free of the editor so it can be tested directly.
+// Kept free of the editor so it can be tested directly, like the parse fix-up below.
 
 /** A top-level block's place in the source text (end exclusive). */
 export interface SourceBlock {
@@ -84,4 +84,36 @@ export function blockEdit(source: string, ranges: SourceBlock[], oldBlocks: stri
 
 export function applyEdit(source: string, edit: SourceEdit): string {
   return source.slice(0, edit.from) + edit.insert + source.slice(edit.to);
+}
+
+/** The parts of a remark (mdast) node the parse fix-up reads. */
+export interface MarkdownTreeNode {
+  type: string;
+  children?: MarkdownTreeNode[];
+  [field: string]: unknown;
+}
+
+const IMAGE_FIELDS = ["url", "alt", "title"];
+
+/**
+ * remark gives an image without a title `title: null`, but the editor's image node only takes
+ * strings, so ProseMirror rejected the node and the image dropped out of the document. A
+ * missing field instead gets the schema's default (""), which is written back as no title.
+ */
+export function dropNullImageFields(tree: MarkdownTreeNode): void {
+  const pending: MarkdownTreeNode[] = [tree];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (!node) {
+      break;
+    }
+    if (node.type === "image") {
+      for (const field of IMAGE_FIELDS) {
+        if (node[field] === null) {
+          delete node[field];
+        }
+      }
+    }
+    pending.push(...(node.children ?? []));
+  }
 }

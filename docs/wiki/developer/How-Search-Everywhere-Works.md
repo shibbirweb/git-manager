@@ -105,7 +105,7 @@ The MCP tools (see [How MCP and the CLI work](How-MCP-and-CLI-Work.md)) use `bui
 - `src-tauri/src/file_search.rs` (module tests): skip rules, the cap, ranking, folder segments, `:LINE:COL`, partial indexes, superseded queries and the session lifecycle.
 - `src-tauri/src/symbols/tests.rs` and `extract_tests.rs`: skipped files, positions, ranking, scopes, compact storage, rebuilds and each language's scanner.
 - `src-tauri/src/text_search/tests.rs`: options, ranges, skips, caps, batches, cancelling and the newest id.
-- Vitest: `doubleShift.test.ts`, `searchTabs.test.ts`, `fileSearchModel.test.ts`, `popupRows.test.ts`, `symbolSearchModel.test.ts` and `textSearchModel.test.ts` in `src/lib/search/`.
+- Vitest: `countLabel.test.ts`, `doubleShift.test.ts`, `searchTabs.test.ts`, `fileSearchModel.test.ts`, `popupRows.test.ts`, `symbolSearchModel.test.ts` and `textSearchModel.test.ts` in `src/lib/search/`.
 
 ## Keeping this page in sync
 
@@ -115,4 +115,7 @@ The MCP tools (see [How MCP and the CLI work](How-MCP-and-CLI-Work.md)) use `bui
 
 ## Bugs we fixed
 
-None yet.
+**The Classes tab said "2 classs".**
+- **The issue:** the count read "classs".
+- **Why it happened:** the popup's plural helper always added "s".
+- **The fix and why we chose it:** `countLabel.ts` names each word's plural (tested); every tab uses it.

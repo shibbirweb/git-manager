@@ -79,7 +79,7 @@ While a dialog in the app asks you something, most menu items do nothing. Typing
 
 The part of the window you are working in sees a key first. When it uses the key, the menu item does not run as well, so one press never does two things.
 
-That is why a few keys depend on where you are. Cmd+K is **Commit...** in the Git menu, but it makes a link in the Markdown editor and clears the screen in the terminal. Cmd+B toggles the sidebar, also in the Markdown text editor; only in Preview Only does it make text bold.
+That is why a few keys depend on where you are. Cmd+K is **Commit...** in the Git menu, but it makes a link in the Markdown editor and clears the screen in the terminal. Cmd+B is **Sidebar** in the View menu, but it makes text bold in a Markdown file.
 
 The Git menu keys (Cmd+K, Cmd+T, Cmd+9 and Option+Cmd+A) are Mac only, because Ctrl+K and Ctrl+T belong to the shell in a terminal on Windows and Linux.
 

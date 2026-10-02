@@ -37,6 +37,8 @@ sequenceDiagram
 - After an edit, `blockEdit` drops the equal blocks at the start and the end. Only the stretch in between is replaced (`applyEdit`), written in `STRINGIFY_OPTIONS` (the common GitHub style: `-` bullets, `*` emphasis, backtick fences). New blocks are joined with a blank line; removed blocks take their blank lines with them.
 - After writing, the ranges are measured again. If a written block now reads back as more or fewer blocks, the editor reloads from the text.
 
+On every parse, the remark plugin `gmImageDefaults` runs `dropNullImageFields` (`richSync.ts`): remark gives an image without a title `title: null`, which Milkdown's image node rejects, so the field is dropped and the default `""` applies. An empty title is written as none.
+
 `splitFrontMatter` keeps a `---` YAML block at the top exactly as written and out of the editor, so it is never shown or rewritten.
 
 ### When it cannot keep the text
@@ -68,7 +70,7 @@ Custom node views (`$view`):
 | File | What it does |
 | --- | --- |
 | `src/lib/markdown/richEditor.ts` | Milkdown setup, sync, actions, node views |
-| `src/lib/markdown/richSync.ts` | Block by block edits, front matter |
+| `src/lib/markdown/richSync.ts` | Block by block edits, front matter, the image parse fix-up |
 | `src/lib/views/files/RichMarkdownView.svelte` | Mounting, link prompt, clicks, keys, notices |
 | `src/lib/views/files/FileView.svelte` | `applyRichEdit`, `richScroll`, mode switches |
 | `src/lib/markdown/body.css` | Page styles shared with the preview |
@@ -91,7 +93,7 @@ Custom node views (`$view`):
 
 ## Tests
 
-- `src/lib/markdown/richSync.test.ts`: untouched blocks keep their text, edited blocks use the serializer's spelling, whole blocks are inserted and deleted with their blank lines, nothing changes when the blocks are equal, an empty file is filled, and front matter is split off.
+- `src/lib/markdown/richSync.test.ts`: untouched blocks keep their text, edited blocks use the serializer's spelling, whole blocks are inserted and deleted with their blank lines, nothing changes when the blocks are equal, an empty file is filled, front matter is split off, and `dropNullImageFields` drops only an image's null fields.
 
 The Milkdown glue in `richEditor.ts` needs a real DOM and is checked in the app.
 
@@ -101,6 +103,11 @@ The Milkdown glue in `richEditor.ts` needs a real DOM and is checked in the app.
 - Retake `markdown-rich-editor.png` when the look changes.
 
 ## Bugs we fixed
+
+**An image without a title made the editor read-only.**
+- **The issue:** in Preview Only, any image like `![alt](a.png)` showed "This file uses Markdown the rich editor cannot keep exactly." and the page could not be edited.
+- **Why it happened:** remark gives such an image `title: null`. Milkdown passes it to ProseMirror's `createAndFill`, which rejects it ("Expected value of type string for attribute title on type image, got null"). Milkdown logs the error and drops the image, so the editor has fewer blocks than the text.
+- **The fix and why we chose it:** the `gmImageDefaults` remark plugin removes null image fields before parsing, so the schema default (`""`) applies. It also covers pasting, and write-back stays exact. Patching Milkdown's image runner would mean copying its code.
 
 **Rich editor diagrams were not sanitized.**
 - **The issue:** a mermaid diagram in Preview Only was inserted as raw SVG, while the split preview cleaned it.

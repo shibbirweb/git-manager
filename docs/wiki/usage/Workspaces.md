@@ -31,7 +31,7 @@ Then the window opens and the changes fill in while the status bar counts: **Rea
 
 *A workspace open in the main window. Changes are grouped by repository.*
 
-When you quit, the open folders are remembered and reopened on the next start. After **Close Folder**, the next start shows the welcome screen.
+When you quit, the open folders are remembered and reopened on the next start. After **Close Folder**, the next start shows the welcome screen. If a folder cannot be opened (for example, it was moved), a message names the folder and says why.
 
 ## The folder menu
 

@@ -36,11 +36,19 @@ import { gfm, insertTableCommand, toggleStrikethroughCommand } from "@milkdown/k
 import type { Node as ProseNode } from "@milkdown/kit/prose/model";
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
 import type { NodeView } from "@milkdown/kit/prose/view";
-import { $prose, $view, callCommand } from "@milkdown/kit/utils";
+import { $prose, $remark, $view, callCommand } from "@milkdown/kit/utils";
 import { classifyImage, type LinkContext } from "./links";
 import { renderMermaid } from "./mermaid";
 import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
-import { applyEdit, blockEdit, type SourceBlock, type SourceEdit, splitFrontMatter } from "./richSync";
+import {
+  applyEdit,
+  blockEdit,
+  dropNullImageFields,
+  type MarkdownTreeNode,
+  type SourceBlock,
+  type SourceEdit,
+  splitFrontMatter,
+} from "./richSync";
 import { sanitizeSvg } from "./sanitize";
 
 /** What the toolbar asks the rich editor to do. */
@@ -123,6 +131,10 @@ export class RichMarkdownEditor {
           }),
         }),
     );
+    // Runs on every parse (loading, pasting) before the tree becomes editor nodes.
+    const imageDefaults = $remark("gmImageDefaults", () => () => (tree) => {
+      dropNullImageFields(tree as unknown as MarkdownTreeNode);
+    });
     const imageView = $view(imageSchema.node, () => (node) => this.imageView(node));
     const codeView = $view(codeBlockSchema.node, () => (node) => this.codeView(node));
     this.editor = await Editor.make()
@@ -135,6 +147,7 @@ export class RichMarkdownEditor {
       .use(gfm)
       .use(history)
       .use(clipboard)
+      .use(imageDefaults)
       .use(watcher)
       .use(imageView)
       .use(codeView)

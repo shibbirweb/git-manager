@@ -225,15 +225,20 @@
         title={headerTitle()}
       >
         <Icon name={collapsed ? "chevron-right" : "chevron-down"} size={13} />
-        <span class="repo-name">{repo.name}</span>
-        {#if repo.submodule}
-          <span class="kind-badge" title="A submodule of the repository around it">submodule</span>
-        {:else if repo.worktree}
-          <span class="kind-badge" title="A linked worktree">worktree</span>
-        {/if}
-        {#if showRelativePath(repo)}
-          <span class="repo-path truncate">{repo.relativePath}</span>
-        {/if}
+        <!-- Keeps a few letters of the name before the actions wrap; a short name needs less. -->
+        <span class="repo-label" style:--name-min="{Math.min(repo.name.length, 4)}ch">
+          <span class="repo-label-row">
+            <span class="repo-name">{repo.name}</span>
+            {#if repo.submodule}
+              <span class="kind-badge" title="A submodule of the repository around it">submodule</span>
+            {:else if repo.worktree}
+              <span class="kind-badge" title="A linked worktree">worktree</span>
+            {/if}
+            {#if showRelativePath(repo)}
+              <span class="repo-path truncate">{repo.relativePath}</span>
+            {/if}
+          </span>
+        </span>
         <span class="badge" title="{section.changeCount} changed {section.changeCount === 1 ? 'file' : 'files'}">
           {section.changeCount}
         </span>
@@ -256,15 +261,30 @@
     margin-top: 2px;
   }
 
+  /*
+   * One line when it fits: the branch name and the repository name truncate, the badges never
+   * do. When not even a few letters of the name fit, the actions wrap to a second line.
+   */
   .repo-header {
     position: relative;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
-    height: 28px;
+    gap: 0 4px;
+    min-height: 28px;
     padding: 0 6px 0 4px;
     /* RepoActions hides the branch name first when this row gets narrow. */
     container: repo-row / inline-size;
+  }
+
+  /* Starts from its smallest width and shares the rest with the name, up to its full width. */
+  .repo-header > :global(.repo-row-actions) {
+    flex: 1 1 0;
+    min-width: auto;
+    max-width: max-content;
+    min-height: 24px;
+    margin-left: auto;
+    justify-content: flex-end;
   }
 
   .repo-header:hover {
@@ -282,34 +302,58 @@
     background: var(--accent);
   }
 
+  /*
+   * Never narrower than its badges (its own min-content), so they are never cut off. It takes
+   * two thirds of the free space and the actions one third (the name matters more than the
+   * branch); what either cannot use goes to the other.
+   */
   .repo-toggle {
-    flex: 1;
-    min-width: 72px;
+    flex: 2 1 0;
+    max-width: max-content;
     display: flex;
     align-items: center;
     gap: 6px;
-    height: 100%;
+    height: 28px;
     padding: 0 4px;
     border: none;
     background: transparent;
     color: var(--text);
     cursor: pointer;
     text-align: left;
+  }
+
+  /*
+   * A grid track of minmax(0, max-content) gives the label a min-content of 0 (plus
+   * --name-min), so the row can shrink the name; a flex item would count its full text.
+   */
+  .repo-label {
+    flex: 0 1 auto;
+    display: grid;
+    grid-template-columns: minmax(0, max-content);
+    min-width: var(--name-min, 0);
+  }
+
+  .repo-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
     overflow: hidden;
   }
 
   .repo-name {
-    flex: none;
-    max-width: 60%;
+    flex: 0 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
   }
 
+  /* Gives way before the name. */
   .repo-path {
-    min-width: 24px;
-    flex: 0 1 auto;
+    min-width: 0;
+    flex: 0 1000 auto;
     color: var(--text-faint);
     font-size: 12px;
   }
@@ -347,6 +391,17 @@
     font-weight: 600;
     line-height: 17px;
     text-align: center;
+  }
+
+  /* A very narrow sidebar drops the change count, then lets the name go. */
+  @container repo-row (max-width: 200px) {
+    .badge {
+      display: none;
+    }
+
+    .repo-label {
+      min-width: 0;
+    }
   }
 
   .group-header {

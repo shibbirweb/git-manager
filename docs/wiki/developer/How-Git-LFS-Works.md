@@ -22,7 +22,7 @@ A diff of two pointers is three lines of noise, and when `git-lfs` is not instal
 
 - `used`: some attributes file routes paths through LFS (`filter=lfs`). It reads the root `.gitattributes`, `.git/info/attributes` and every tracked `*/.gitattributes` from the index, with plain file reads.
 - `patterns`: the LFS patterns of the root `.gitattributes`, which is what Track and Untrack change.
-- `version`: the output of `git lfs version`, or `None` when `git-lfs` is missing.
+- `version`: the output of `git lfs version`, or `None` when `git-lfs` is missing or was not checked yet. The answer is kept in memory (`InstallCache`) for the app run, and it is only asked for when the repository uses LFS, so a repository without LFS costs no git process. With `checkInstall` (`requireLfs`, before an LFS action) it asks again while `git-lfs` is not known to be installed, since you may have installed it since.
 - `files`: `git lfs ls-files --name-only`, only when it is installed and used.
 
 ```mermaid
@@ -37,7 +37,9 @@ sequenceDiagram
     else status changed
         LS->>CMD: lfsStatus(repoRoot)
         CMD->>CMD: read attributes files
-        CMD->>Git: git lfs version
+        opt used or checkInstall, and not known yet
+            CMD->>Git: git lfs version (kept for the app run)
+        end
         opt installed and used
             CMD->>Git: git lfs ls-files --name-only
         end
@@ -82,7 +84,7 @@ stateDiagram-v2
     Unknown --> Missing: used, no version
     Missing --> Notice: notice not shown yet
     Notice --> Missing: Get Git LFS or Not Now
-    Missing --> Ready: git-lfs installed, next refresh
+    Missing --> Ready: git-lfs installed, next LFS action
 ```
 
 ## Where the code lives
@@ -103,7 +105,7 @@ stateDiagram-v2
 
 **Use `git-lfs`, do not reimplement it.** The pointer parser is only for display. Every transfer goes through the real tool, so the LFS server, credentials and hooks behave like the terminal.
 
-**Read per refresh, not per file.** One `lfs_status` per status refresh of an on-screen repository keeps the badges right without a process per row. `ls-files` only runs when the repository uses LFS.
+**Read per refresh, not per file.** One `lfs_status` per status refresh of an on-screen repository keeps the badges right without a process per row. It reads plain files; `ls-files` only runs when the repository uses LFS, and `git lfs version` at most once per app run.
 
 **Sizes instead of pointer text.** The size change is the useful information; the object id says whether content changed.
 
@@ -113,7 +115,7 @@ stateDiagram-v2
 
 ## Tests
 
-- `src-tauri/src/git/lfs.rs`: `detects_lfs_pointers` (valid, extended and legacy pointers; text, bad sizes, bad ids and big files refused); `reads_lfs_patterns_from_attributes`; `status_finds_lfs_use_in_nested_attributes_without_git_lfs`; `tracks_and_untracks_patterns_with_git_lfs` (skips when `git-lfs` is not installed); `diffs_of_pointer_files_carry_the_lfs_sizes`.
+- `src-tauri/src/git/lfs.rs`: `detects_lfs_pointers` (valid, extended and legacy pointers; text, bad sizes, bad ids and big files refused); `reads_lfs_patterns_from_attributes`; `status_finds_lfs_use_in_nested_attributes_without_git_lfs` (no install check without LFS, one with it); `install_check_runs_once_and_again_only_on_request_while_missing`; `tracks_and_untracks_patterns_with_git_lfs` (skips when `git-lfs` is not installed); `diffs_of_pointer_files_carry_the_lfs_sizes`.
 - `src/lib/views/git/lfs/lfsModel.test.ts`: sizes, the diff text, pattern checks, file lookups and `needsLfsInstall`.
 
 ## Keeping this page in sync
@@ -124,4 +126,7 @@ stateDiagram-v2
 
 ## Bugs we fixed
 
-None yet.
+**`git lfs version` ran for every repository on every refresh.**
+- **The issue:** each status refresh started a `git lfs version` process per repository on screen, even without LFS.
+- **Why it happened:** `lfs::status` always asked for the version, though only repositories that use LFS need it.
+- **The fix and why we chose it:** the version is asked for only when the repository uses LFS or an LFS action is about to run, and kept in memory for the app run. A missing `git-lfs` is asked again before an action, so installing it while the app runs still works without a restart.

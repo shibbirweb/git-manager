@@ -6,7 +6,7 @@ Every repository in the [Changes](Changes-and-Commits.md) sidebar has its own ro
 
 *The storefront row: the branch main with its marks, Sync with 1 commit to push, Commit, Refresh and the ... button.*
 
-With several repositories the buttons sit on each repository header. With one repository they sit in the sidebar title. Repositories under **No Changes** have them too, without Commit. When the sidebar gets narrow, the branch name hides first, then the sync counts.
+With several repositories the buttons sit on each repository header. With one repository they sit in the sidebar title. Repositories under **No Changes** have them too, without Commit. When the sidebar gets narrow, the branch name hides first, then the sync counts. If not even a few letters of the repository name fit, the buttons move to a second line, so badges such as **Merging** stay whole.
 
 ## The branch button
 

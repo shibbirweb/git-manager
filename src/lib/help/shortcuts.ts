@@ -131,8 +131,9 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
         { label: "Go to File", keys: keys("CmdOrCtrl+P", "CmdOrCtrl+Shift+O") },
         { label: "Go Back", keys: keys("Ctrl+-") },
         { label: "Go Forward", keys: keys("Ctrl+Shift+-") },
-        { label: "Next Tab", keys: keys("CmdOrCtrl+Shift+]", "Ctrl+PageDown") },
-        { label: "Previous Tab", keys: keys("CmdOrCtrl+Shift+[", "Ctrl+PageUp") },
+        // As Window > Next Tab / Previous Tab has them: Ctrl+PageDown / PageUp do nothing on macOS.
+        { label: "Next Tab", keys: mac ? keys("Cmd+Shift+]") : keys("Ctrl+PageDown") },
+        { label: "Previous Tab", keys: mac ? keys("Cmd+Shift+[") : keys("Ctrl+PageUp") },
         { label: "Show Changes", keys: keys("CmdOrCtrl+Shift+G"), context: "Outside a text editor" },
       ],
     },

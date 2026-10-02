@@ -12,7 +12,7 @@ import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import { settings } from "./settings.svelte";
 import { commitTabPath } from "./commitTabs";
-import { baseName, openingTitle } from "./openingProgress";
+import { baseName, openFailure, openingTitle } from "./openingProgress";
 import { locateAbsolute } from "./workspacePaths";
 import {
   closeTabs,
@@ -184,8 +184,22 @@ class RepoStore {
     return this.openFolders([folderPath]);
   }
 
-  /** Opens several folders as one workspace, replacing the current one. */
+  /**
+   * Opens several folders as one workspace, replacing the current one. Never throws: every
+   * failure is a toast naming the folder, so a failed start cannot fall back to the welcome screen silently.
+   */
   async openFolders(folderPaths: string[], workspaceFile: string | null = null): Promise<boolean> {
+    try {
+      return await this.replaceWorkspace(folderPaths, workspaceFile);
+    } catch (error) {
+      const failure = openFailure(folderPaths, errorMessage(error));
+      toast.error(failure.title, failure.detail);
+      // A failure after the workspace is on screen (watching, listening) still leaves it usable.
+      return this.workspace !== null;
+    }
+  }
+
+  private async replaceWorkspace(folderPaths: string[], workspaceFile: string | null): Promise<boolean> {
     // Opening replaces the workspace and its tabs, so ask before anything changes.
     if (!(await this.confirmDiscardAll())) {
       return false;
@@ -200,7 +214,8 @@ class RepoStore {
         try {
           infos.push(await api.openWorkspace(folderPath));
         } catch (error) {
-          toast.error(`Could not open ${folderPath}`, errorMessage(error));
+          const failure = openFailure([folderPath], errorMessage(error));
+          toast.error(failure.title, failure.detail);
         }
       }
     } finally {
@@ -337,7 +352,8 @@ class RepoStore {
     try {
       saved = await api.readWorkspaceFile(filePath);
     } catch (error) {
-      toast.error("Could not open workspace file", errorMessage(error));
+      const failure = openFailure([filePath], errorMessage(error));
+      toast.error(failure.title, failure.detail);
       return false;
     }
     if (saved.missing.length > 0) {

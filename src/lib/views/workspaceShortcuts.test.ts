@@ -19,6 +19,8 @@ function press(key: string, code: string, modifiers: Partial<ShortcutKey> = {}):
 describe("workspaceShortcut", () => {
   it("maps the Cmd shortcuts", () => {
     expect(workspaceShortcut(press("b", "KeyB", { metaKey: true }), idle)).toBe("toggleSidebar");
+    // The Markdown editors make text bold with Cmd+B and handle it first.
+    expect(workspaceShortcut(press("b", "KeyB", { metaKey: true, defaultPrevented: true }), idle)).toBeNull();
     expect(workspaceShortcut(press("G", "KeyG", { metaKey: true, shiftKey: true }), idle)).toBe("showChanges");
     expect(workspaceShortcut(press("E", "KeyE", { metaKey: true, shiftKey: true }), idle)).toBe("showBranches");
     expect(workspaceShortcut(press("L", "KeyL", { metaKey: true, shiftKey: true }), idle)).toBe("toggleLog");

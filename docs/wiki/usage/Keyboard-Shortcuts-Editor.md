@@ -84,11 +84,11 @@ See [Find and Replace](Find-and-Replace.md).
 | --- | --- |
 | Cmd+I | Italic, in the source editor and in Preview Only |
 | Cmd+K | Link, in the source editor and in Preview Only |
-| Cmd+B | Bold, in Preview Only |
+| Cmd+B | Bold, in the source editor and in Preview Only |
 | Cmd+S | Save, also from either preview |
 | Cmd-click a link | Open it, in Preview Only (in the split preview a plain click opens it) |
 
-Preview Only is a rich text editor, which takes Cmd+B itself. In the source editor Cmd+B still hides the sidebar, so use the toolbar's Bold button there. See [Markdown Editor](Markdown-Editor.md).
+While you type in a Markdown file, Cmd+B makes text bold instead of hiding the sidebar. Click outside the text, for example on the file tree, and Cmd+B hides the sidebar again. See [Markdown Editor](Markdown-Editor.md).
 
 ## Diffs and the merge tool
 

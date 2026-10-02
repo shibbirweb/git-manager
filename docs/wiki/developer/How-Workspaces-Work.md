@@ -94,6 +94,11 @@ The workspace window has an icon strip at each edge, the activity bars. Two head
 - **Why it happened:** `watch_workspace` was a plain Tauri command, and a command without `async` runs on the main thread. On top of that, the watcher's default file id cache (`RecommendedCache`) walks every file under the folder when watching starts and keeps all their paths in memory.
 - **The fix and why we chose it:** the watcher uses `NoCache` (see [How folder watching works](How-Folder-Watching-Works.md)), and `watch_workspace` and `unwatch_workspace` are `async`: they set up and drop watchers through `blocking`, so the main thread never waits on them. We measured the stall going from 516 ms to 9 ms. The progress card covers the time that is left.
 
+**A failed open showed the welcome screen with no message.**
+- **The issue:** when restoring the session or opening a folder failed (seen with a broken dev IPC bridge), the welcome screen came up silently.
+- **Why it happened:** `openFolders` caught errors only around `api.openWorkspace`. Anything that threw later, such as a bad reply, rejected a promise nobody caught.
+- **The fix and why we chose it:** `openFolders` never throws: any error is a toast from the pure `openFailure` (`openingProgress.ts`) naming the folder and the error. One catch in the store covers every caller.
+
 **Option+Cmd+B did not match.**
 - **The issue:** a check on `event.key` never fired, so the Files panel did not toggle.
 - **Why it happened:** on macOS, Option changes the typed character, so `event.key` is not `b`.

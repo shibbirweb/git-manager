@@ -108,4 +108,7 @@ The bar itself is Svelte glue: check it by hand in an editor, a diff (both sides
 
 ## Bugs we fixed
 
-None yet.
+**A replace test failed under load.**
+- **The issue:** `skips_links_and_read_only_files` failed once in a busy run.
+- **Why it happened:** its link pointed at a replaced file. Parallel workers sometimes rewrote the target first, leaving the link no matches.
+- **The fix and why we chose it:** the target now sits outside the searched folder, so timing cannot matter.

@@ -298,7 +298,8 @@ export const api = {
   removeSubmodule: (repoPath: string, submodulePath: string) => invoke<void>("remove_submodule", { repoPath, submodulePath }),
 
   // Git LFS
-  lfsStatus: (repoPath: string) => invoke<LfsStatus>("lfs_status", { repoPath }),
+  /** `checkInstall` runs `git lfs version` again unless git-lfs is already known to be installed. */
+  lfsStatus: (repoPath: string, checkInstall: boolean) => invoke<LfsStatus>("lfs_status", { repoPath, checkInstall }),
   lfsTrack: (repoPath: string, pattern: string) => invoke<string>("lfs_track", { repoPath, pattern }),
   lfsUntrack: (repoPath: string, pattern: string) => invoke<string>("lfs_untrack", { repoPath, pattern }),
   /** `git lfs pull` (`pull` true) or `git lfs fetch`; progress arrives as git-progress events. */

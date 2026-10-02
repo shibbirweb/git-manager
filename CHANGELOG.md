@@ -78,3 +78,5 @@ GitHub release notes, and the app shows it as "What's New".
 
 - Opening or adding a big folder no longer freezes the window for a moment.
 - A selection inside one line is visible again; the current line highlight hid it.
+- A folder or workspace that fails to open, at start or later, now shows an error naming the folder instead of silently showing the welcome screen.
+- The Show all branches setting no longer claims to work like `git log --all`: the Log follows local and remote branches, not tags or stashes.

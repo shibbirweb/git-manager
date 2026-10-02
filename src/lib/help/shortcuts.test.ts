@@ -40,6 +40,33 @@ describe("shortcutSections", () => {
     expect(search?.keys).toEqual(["⇧ ⇧"]);
   });
 
+  it("lists the tab keys only where they work, as the Window menu has them", () => {
+    const row = (platform: "macos" | "windows", label: string) =>
+      shortcutSections(platform)
+        .find((section) => section.title === "Search and navigation")
+        ?.rows.find((entry) => entry.label === label);
+    expect(row("macos", "Next Tab")?.keys).toEqual(["⇧⌘]"]);
+    expect(row("macos", "Previous Tab")?.keys).toEqual(["⇧⌘["]);
+    expect(row("windows", "Next Tab")?.keys).toEqual(["Ctrl+PageDown"]);
+    expect(row("windows", "Previous Tab")?.keys).toEqual(["Ctrl+PageUp"]);
+    const all = shortcutSections("macos").flatMap((section) => section.rows);
+    expect(all.some((entry) => entry.keys.some((keys) => keys.includes("PgDn") || keys.includes("PgUp")))).toBe(false);
+    for (const platform of ["macos", "windows"] as const) {
+      const windowMenu = menuShortcuts(platform).find((section) => section.title === "Window menu");
+      expect(windowMenu?.rows.find((entry) => entry.label === "Next Tab")?.keys).toEqual(row(platform, "Next Tab")?.keys);
+      expect(windowMenu?.rows.find((entry) => entry.label === "Previous Tab")?.keys).toEqual(row(platform, "Previous Tab")?.keys);
+    }
+  });
+
+  it("lists Cmd+B as Bold in both Markdown editors", () => {
+    const markdown = shortcutSections("macos").find((section) => section.title === "Markdown");
+    expect(markdown?.rows.find((entry) => entry.label === "Bold")).toEqual({
+      label: "Bold",
+      keys: ["⌘B"],
+      context: "In the Markdown editor and Preview",
+    });
+  });
+
   it("filters by label, keys or place, by every word", () => {
     const all = shortcutSections("macos");
     const terminal = filterShortcuts(all, "terminal new");

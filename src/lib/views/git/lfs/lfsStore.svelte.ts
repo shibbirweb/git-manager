@@ -1,6 +1,7 @@
 // Git LFS state per repository: installed, used, and its files, read once per status
 // refresh of a repository on screen (never per file). The Changes list and the Files panel
-// ask for it with `follow`; repositories that do not use LFS cost no git process.
+// ask for it with `follow`; repositories that do not use LFS cost no git process, and the
+// backend checks that git-lfs is installed once per app run (again only before an LFS action).
 
 import { untrack } from "svelte";
 import { api } from "$lib/api";
@@ -32,8 +33,10 @@ class LfsStore {
   statuses = $state.raw<Record<string, LfsStatus>>({});
   /** The repository status each LFS state was read for. */
   private readFor = new Map<string, RepoStatus | null>();
-  private running = new Set<string>();
+  private running = new Map<string, Promise<void>>();
   private queued = new Set<string>();
+  /** Repositories whose next read also checks that git-lfs is installed. */
+  private installChecks = new Set<string>();
   private noticePending = false;
 
   /** Reads `repoRoot`'s LFS state again when its status object changed since the last read. */
@@ -46,27 +49,42 @@ class LfsStore {
     untrack(() => void this.refresh(repoRoot));
   }
 
-  async refresh(repoRoot: string): Promise<LfsStatus | null> {
-    if (this.running.has(repoRoot)) {
+  /** `checkInstall` asks again whether git-lfs is installed, before an LFS action. */
+  async refresh(repoRoot: string, checkInstall = false): Promise<LfsStatus | null> {
+    if (checkInstall) {
+      this.installChecks.add(repoRoot);
+    }
+    const pending = this.running.get(repoRoot);
+    if (pending) {
       this.queued.add(repoRoot);
+      // An LFS action needs the answer of the read it queued, not the state from before.
+      if (checkInstall) {
+        await pending;
+      }
       return this.statuses[repoRoot] ?? null;
     }
-    this.running.add(repoRoot);
+    const reads = this.readLoop(repoRoot);
+    this.running.set(repoRoot, reads);
     try {
-      do {
-        this.queued.delete(repoRoot);
-        const status = await api.lfsStatus(repoRoot).catch(() => null);
-        if (status) {
-          this.statuses = { ...this.statuses, [repoRoot]: status };
-          if (needsLfsInstall(status)) {
-            this.offerInstall();
-          }
-        }
-      } while (this.queued.has(repoRoot));
+      await reads;
     } finally {
       this.running.delete(repoRoot);
     }
     return this.statuses[repoRoot] ?? null;
+  }
+
+  private async readLoop(repoRoot: string): Promise<void> {
+    do {
+      this.queued.delete(repoRoot);
+      const check = this.installChecks.delete(repoRoot);
+      const status = await api.lfsStatus(repoRoot, check).catch(() => null);
+      if (status) {
+        this.statuses = { ...this.statuses, [repoRoot]: status };
+        if (needsLfsInstall(status)) {
+          this.offerInstall();
+        }
+      }
+    } while (this.queued.has(repoRoot));
   }
 
   /** Forgets repositories that left the workspace. */

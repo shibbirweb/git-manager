@@ -108,8 +108,9 @@ mod tests {
         }
     }
 
-    /// The names the frontend registers (src/lib/mcp): none may be a backend tool.
-    const FRONTEND_TOOLS: [&str; 23] = [
+    /// The names the frontend registers (src/lib/mcp/toolDefs.ts): none may be a backend tool.
+    /// src/lib/mcp/toolDefs.test.ts reads this list and fails when it and UI_TOOLS differ.
+    const FRONTEND_TOOLS: &[&str] = &[
         "get_app_state",
         "list_menu_commands",
         "run_menu_command",
@@ -132,12 +133,13 @@ mod tests {
         "new_terminal",
         "send_terminal_text",
         "get_ui_performance",
+        "inspect_elements",
         "scroll_view",
     ];
 
     #[test]
     fn backend_tools_leave_the_frontend_names_free() {
-        for tool_name in FRONTEND_TOOLS {
+        for &tool_name in FRONTEND_TOOLS {
             assert!(tools::find(tool_name).is_none(), "{tool_name} clashes with a backend tool");
         }
     }

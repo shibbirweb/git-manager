@@ -444,9 +444,19 @@
         navigation.record({ filePath, line: update.state.doc.lineAt(update.state.selection.main.head).number - 1 });
       }
     });
-    // Cmd+B stays the sidebar toggle; Cmd+I replaces Select Parent Syntax and Cmd+K is free.
+    // Cmd+B makes text bold here, like the rich editor: CodeMirror prevents the key's default,
+    // so the window's sidebar toggle and the View > Sidebar item skip it. Cmd+I replaces Select
+    // Parent Syntax and Cmd+K (Git > Commit elsewhere) is seen here first.
     const markdownKeys = isMarkdown
       ? keymap.of([
+          {
+            key: "Mod-b",
+            preventDefault: true,
+            run: (target) => {
+              target.dispatch(toggleInline(target.state, "bold"));
+              return true;
+            },
+          },
           {
             key: "Mod-i",
             preventDefault: true,

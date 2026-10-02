@@ -203,12 +203,17 @@ fn skips_links_and_read_only_files() {
     use std::os::unix::fs::PermissionsExt;
 
     let dir = TestDir::new();
-    dir.write("target.txt", "cart\n");
-    std::os::unix::fs::symlink(dir.file("target.txt"), dir.file("link.txt")).unwrap();
+    dir.write("plain.txt", "cart\n");
+    // The link's target sits outside the searched folder. A target inside it may be
+    // rewritten by another worker before the link is read, and then the link has no
+    // matches left to report: that order depends on thread timing.
+    let outside = dir.path.parent().unwrap().join("outside.txt");
+    std::fs::write(&outside, "cart\n").unwrap();
+    std::os::unix::fs::symlink(&outside, dir.file("link.txt")).unwrap();
     dir.write("locked.txt", "cart\n");
     std::fs::set_permissions(dir.file("locked.txt"), std::fs::Permissions::from_mode(0o444)).unwrap();
     let outcome = run(&dir, &request("cart", "basket", TextSearchOptions::default()));
-    assert_eq!(counts(&outcome), ["target.txt:1"]);
+    assert_eq!(counts(&outcome), ["plain.txt:1"]);
     let skipped: Vec<(String, SkipReason)> = outcome
         .skipped
         .iter()
@@ -219,6 +224,7 @@ fn skips_links_and_read_only_files() {
         [("link.txt".to_string(), SkipReason::Link), ("locked.txt".to_string(), SkipReason::ReadOnly)]
     );
     assert!(std::fs::symlink_metadata(dir.file("link.txt")).unwrap().file_type().is_symlink());
+    assert_eq!(std::fs::read_to_string(&outside).unwrap(), "cart\n");
     assert_eq!(read(&dir, "locked.txt"), "cart\n");
 }
 

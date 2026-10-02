@@ -26,7 +26,7 @@ On macOS the web view sees a key equivalent first and passes it to the menu only
 - **An accelerator only the menu knows still works everywhere.** Cmd+W, Option+Cmd+S and Cmd+= reach the menu from the editor, the terminal or a text field, because nothing in the page claims them.
 - **Both routes call the same function.** The View and Edit items call `runWorkspaceShortcut`, the Code items call `runEditorCommand`, File > Save calls `fileCommands.save`. So it does not matter which route fires.
 
-This is also why one key can mean different things by place. Cmd+K is Git > Commit..., but the Markdown editor makes a link with it and the terminal clears its screen; they see it first.
+This is also why one key can mean different things by place. Cmd+K is Git > Commit..., but the Markdown editor makes a link with it and the terminal clears its screen; they see it first. Cmd+B is View > Sidebar, but both Markdown editors make text bold with it: their keymaps (`markdownKeys` in `FileView.svelte`, Milkdown's own) prevent the default, so `workspaceShortcut` skips the key and the menu never gets it.
 
 ## Editor keys in one table
 
@@ -59,7 +59,7 @@ The Windows and Linux builds are not out yet, so the order of page and menu ther
 
 **Left out on purpose.** JetBrains keys that clash with macOS or the editor, such as Cmd+Backspace for Delete Line (it deletes to the line start on macOS) and Cmd+- and Cmd+= for folding (they zoom the editor font).
 
-**One list for the shortcuts window.** Help > Keyboard Shortcuts builds its menu sections from `menuSpec`, so a menu key is always listed as the menu has it. The keys no menu shows are written by hand in `src/lib/help/shortcuts.ts` and must be kept in step with their handlers.
+**One list for the shortcuts window.** Help > Keyboard Shortcuts builds its menu sections from `menuSpec`, so a menu key is always listed as the menu has it. The keys no menu shows are written by hand in `src/lib/help/shortcuts.ts` and must be kept in step with their handlers; keys that differ by platform (Next Tab, Previous Tab) follow the Window menu, and `shortcuts.test.ts` checks that.
 
 ## Tests
 

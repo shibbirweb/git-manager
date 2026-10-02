@@ -10,10 +10,7 @@ Every shortcut in Git Manager, grouped by where it works. Keys are written as on
 
 Choose **Help > Keyboard Shortcuts** in the menu bar to see every shortcut inside the app. It lists the keys of each menu (one section per menu), then the shortcuts no menu shows. Type in the filter box to narrow the list, for example `terminal`, `commit` or `F7`. The keys use the macOS symbols (⌘ Cmd, ⌥ Option, ⇧ Shift, ⌃ Ctrl). **Open Online Version** opens this page in your browser. Esc closes the window.
 
-The menu sections are built from the menu bar's own definition, so they always match the real keys. The other sections are written by hand, and two rows there are off:
-
-- **Bold** (Cmd+B) says it works in the Markdown editor and Preview. It works only in Preview Only; in the text editor Cmd+B toggles the sidebar.
-- **Next Tab** and **Previous Tab** also list Ctrl+PageDown and Ctrl+PageUp. On macOS those do nothing; use Shift+Cmd+] and Shift+Cmd+[.
+The menu sections are built from the menu bar's own definition, so they always match the real keys. The other sections list the keys no menu shows, for the platform you are on.
 
 ## Who gets a key first
 
@@ -22,6 +19,7 @@ The focused part of the window sees a key before the menu bar. So when two actio
 - **Shift+Cmd+G** is Find Previous in an editor, and shows Changes everywhere else.
 - **Shift+Cmd+L** selects every match of the selection in an editor with text selected, and shows the Log everywhere else.
 - **Cmd+K** makes a link in a Markdown file and clears a terminal, and opens Commit everywhere else.
+- **Cmd+B** makes text bold in a Markdown file, and hides or shows the sidebar everywhere else.
 
 Window shortcuts do nothing while a dialog or the merge tool is open: the key is dropped, not kept for later. Window shortcuts that use Cmd also accept Ctrl. How keys are routed between the page and the menu bar is in [Menu keys and routing](../developer/Menu-Keys-and-Routing.md).
 

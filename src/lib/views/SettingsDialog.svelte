@@ -821,7 +821,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Show all branches in the log</span>
-              <span class="hint">Include every local and remote branch, like <code>git log --all</code>.</span>
+              <span class="hint">Include every local and remote branch, like <code>git log --branches --remotes</code>. Tags and stashes are not followed.</span>
             </div>
             <input type="checkbox" class="switch" checked={settings.logAllRefs} onchange={(event) => set("logAllRefs", event.currentTarget.checked)} />
           </label>
