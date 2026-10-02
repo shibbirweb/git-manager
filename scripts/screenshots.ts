@@ -190,6 +190,16 @@ function installOverrides(config: PageConfig): void {
   type Handler = (args: unknown) => unknown;
   type Invoke = (cmd: string, args?: unknown, options?: unknown) => Promise<unknown>;
   const store: Record<string, unknown> = { settings: config.settings, state: config.state };
+  // Vite serves a module edited since the dev server started as `path?t=...`, and a plain import of
+  // the path would load a second copy with its own stores. __gmImport loads the copy the app uses.
+  performance.setResourceTimingBufferSize(20000);
+  (window as unknown as { __gmImport: (modulePath: string) => Promise<unknown> }).__gmImport = (modulePath: string) => {
+    const loaded = performance
+      .getEntriesByType("resource")
+      .map((entry) => entry.name)
+      .find((name) => new URL(name).pathname === modulePath);
+    return import(loaded ?? modulePath);
+  };
   const blocked = (cmd: string) => () => {
     throw { kind: "blocked", message: `screenshots.ts does not run ${cmd}` };
   };
@@ -562,7 +572,7 @@ class Shot {
     // Shots that hide the Files panel open the file the way the panel would.
     if (!(await this.page.locator("aside.explorer").isVisible())) {
       await this.page.evaluate(
-        `(async () => { const { repoStore } = await import("/src/lib/stores/repo.svelte.ts"); await repoStore.openFile(${JSON.stringify(absolutePath)}, { pin: ${options.preview ? "false" : "true"} }); })()`,
+        `(async () => { const { repoStore } = await window.__gmImport("/src/lib/stores/repo.svelte.ts"); await repoStore.openFile(${JSON.stringify(absolutePath)}, { pin: ${options.preview ? "false" : "true"} }); })()`,
       );
       await this.editorReady();
       return;
@@ -1200,11 +1210,10 @@ for (const [name, section] of [
   }, () => (name === "settings-files" ? { settings: { tabSize: 2, wordWrap: true } } : {}));
 }
 
-// The Editor section scrolls; this is its lower half (ligatures, tab size, word wrap, blame).
+// The Editor section scrolls; this is its lower part, from the Editing features group down.
 define("settings-editor-more", async (shot) => {
   const dialog = await openSettings(shot, "Editor");
-  // Word wrap and the cursor rows below it; the fonts shot covers the rows above.
-  await scrollSettingsTo(dialog, "Word wrap");
+  await scrollSettingsTo(dialog, "Editing features");
   await shot.page.mouse.move(5, 790);
   await shot.save(dialog);
 });
@@ -1226,7 +1235,7 @@ define("editor-conflict-toolbar", async (shot) => {
   await shot.page.locator(".cm-conflict-actions").first().waitFor();
   await shot.page.mouse.move(640, 790);
   const host = shot.page.locator(".file-host:not(.hidden)");
-  await shot.save(await shot.clipAround([host.locator(".title-row"), host.getByRole("toolbar", { name: "File actions" })], { bottom: 4 }));
+  await shot.save(await shot.clipAround([host.locator(".file-bar"), host.getByRole("toolbar", { name: "Conflict actions" })], { bottom: 4 }));
 }, () => ({ settings: { currentLineBlame: false } }));
 
 define("diff-hunk-staging", async (shot) => {
@@ -1358,7 +1367,7 @@ define("mergetool-mode", async (shot) => {
  * shots open dialogs through the functions the menu items call.
  */
 async function inApp<T = unknown>(shot: Shot, body: string): Promise<T> {
-  return (await shot.page.evaluate(`(async () => { const imp = (path) => import(path); ${body} })()`)) as T;
+  return (await shot.page.evaluate(`(async () => { const imp = (path) => window.__gmImport(path); ${body} })()`)) as T;
 }
 
 /** What a native menu item does (src/lib/menu/menuActions.ts). */
@@ -1421,8 +1430,10 @@ async function newTerminal(shot: Shot, options: Record<string, unknown> = {}): P
   const key = await inApp<number>(
     shot,
     `const { terminalStore } = await imp(${JSON.stringify(TERMINAL_STORE)});
+     const before = new Set(terminalStore.terminals.map((terminal) => terminal.key));
      await terminalStore.create(${JSON.stringify(options)});
-     return terminalStore.terminals[terminalStore.terminals.length - 1].key;`,
+     // A split terminal sits beside its source, not always last.
+     return terminalStore.terminals.find((terminal) => !before.has(terminal.key)).key;`,
   );
   await waitForTerminalId(shot, key);
   // A short prompt with the folder name, and no pager, so output reads like a plain terminal.
@@ -1469,9 +1480,9 @@ async function terminalShows(shot: Shot, text: string): Promise<void> {
 async function closeTerminals(page: Page): Promise<void> {
   await page
     .evaluate(
-      `(async () => { const { terminalStore } = await import(${JSON.stringify(TERMINAL_STORE)});
+      `(async () => { const { terminalStore } = await window.__gmImport(${JSON.stringify(TERMINAL_STORE)});
         for (const terminal of [...terminalStore.terminals]) { terminalStore.close(terminal.key); }
-        (await import("/src/lib/search/fileSearchStore.svelte.ts")).fileSearch.close(); })()`,
+        (await window.__gmImport("/src/lib/search/fileSearchStore.svelte.ts")).fileSearch.close(); })()`,
     )
     .catch(() => undefined);
   await page.waitForTimeout(150).catch(() => undefined);
@@ -1540,6 +1551,36 @@ define("terminal-settings", async (shot) => {
   await shot.page.mouse.move(5, 790);
   await shot.save(dialog);
 });
+
+define("terminal-find", async (shot) => {
+  await shot.openFile(cartTs());
+  const key = await newTerminal(shot);
+  await terminalType(shot, key, "git log --oneline -8\r");
+  await terminalShows(shot, "lazy load product images");
+  // Cmd+F inside the terminal opens its find bar, as a person would.
+  await bottomPanel(shot).locator(".terminal-view:not(.hidden) .xterm-helper-textarea").focus();
+  await shot.page.keyboard.press("Meta+f");
+  const field = bottomPanel(shot).getByRole("textbox", { name: "Find in terminal" });
+  await field.fill("product");
+  await bottomPanel(shot).locator(".find-bar .counter", { hasText: " of " }).waitFor();
+  await shot.page.mouse.move(640, 200);
+  await shot.settle();
+  await shot.save(await clipEditorAndPanel(shot, 120));
+}, terminalScenario);
+
+define("terminal-split", async (shot) => {
+  const first = await newTerminal(shot);
+  await terminalType(shot, first, "git status --short\r");
+  const second = await newTerminal(shot, { splitFrom: first });
+  await terminalType(shot, second, "ls\r");
+  await terminalShows(shot, "package.json");
+  const server = await newTerminal(shot, { folderPath: designSystem });
+  // The split pair on screen, the third terminal alone in the list below it.
+  await inApp(shot, `const { terminalStore } = await imp(${JSON.stringify(TERMINAL_STORE)}); terminalStore.rename(${server}, "server"); terminalStore.select(${second});`);
+  await shot.page.mouse.move(640, 200);
+  await shot.settle();
+  await shot.save(bottomPanel(shot));
+}, () => terminalScenario(twoFolderScenario()));
 
 function scriptsScenario(): Scenario {
   return twoFolderScenario({ state: { leftPanel: "scripts", explorerOpen: false, sidebarWidth: 400 }, viewport: { width: 1280, height: 520 } });
@@ -1704,6 +1745,33 @@ define("editor-whitespace", async (shot) => {
   await shot.save({ x: box.x, y: box.y, width: Math.min(box.width, 620), height: Math.min(box.height, 300) });
 }, () => twoFolderScenario({ settings: { renderWhitespace: "all", currentLineBlame: false } }));
 
+// Completion, indent guides and fold arrows (one block folded, the pointer over the gutter).
+define("editor-features", async (shot) => {
+  await shot.openFile(cartTs());
+  await clickLine(shot, "useDiscount(code");
+  await menuAction(shot, "code.collapse");
+  await clickLine(shot, "line.quantity = quantity;");
+  await shot.page.keyboard.press("End");
+  await shot.page.keyboard.press("Enter");
+  await shot.page.keyboard.type("this.disc");
+  const completion = shot.page.locator(".file-host:not(.hidden) .cm-tooltip-autocomplete");
+  await completion.waitFor();
+  await shot.settle(300);
+  const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+  const box = await editor.boundingBox();
+  const gutter = await shot.page.locator(".file-host:not(.hidden) .cm-gutters").boundingBox();
+  if (!box || !gutter) {
+    throw new Error("editor-features: no editor");
+  }
+  // The gutter is as tall as the file: point at its visible part so the open arrows show.
+  await shot.page.mouse.move(gutter.x + gutter.width - 7, box.y + 60);
+  await shot.settle(300);
+  // End on a whole line.
+  const last = await shot.editorLine("get count(): number").boundingBox();
+  const bottom = last ? last.y + last.height : box.y + 560;
+  await shot.save({ x: box.x, y: box.y, width: Math.min(box.width, 760), height: Math.min(box.height, bottom - box.y) });
+}, () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false, tabSize: 2 } }));
+
 /** Opens an image or PDF from notes/ in the preview and returns the tab's area. */
 async function openPreview(shot: Shot, fileName: string, ready: string): Promise<{ x: number; y: number; width: number; height: number }> {
   await shot.expand(notes);
@@ -1803,7 +1871,9 @@ define("markdown-toolbar", async (shot) => {
   await shot.menu().waitFor();
   await shot.settle();
   await shot.page.mouse.move(640, 790);
-  await shot.save(await shot.clipAround([toolbar, shot.menu()], 10));
+  // The view switch sits in the path bar above the formatting row.
+  const modes = shot.page.locator('.file-host:not(.hidden) [role="radiogroup"][aria-label="Markdown view"]');
+  await shot.save(await shot.clipAround([toolbar, modes, shot.menu()], 10));
 }, () => markdownScenario());
 
 define("markdown-rich-editor", async (shot) => {
