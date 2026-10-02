@@ -110,7 +110,7 @@ Click in the list first.
 | --- | --- |
 | Changes | Up and Down select a file (its diff opens); Space or Enter stages or unstages it; Delete or Backspace discards an unstaged file (asks first) |
 | Commit message | Cmd+Enter commits |
-| Files panel | Up and Down move; Right opens a folder; Left closes it or goes to its parent; Enter opens the file or toggles the folder |
+| Files panel | Up and Down move; Shift+Up and Shift+Down select more; Right opens a folder; Left closes it or goes to its parent; Enter opens the file or toggles the folder; file keys are on [File Operations](File-Operations.md#keys) |
 | Branches sidebar | Up, Down, Home, End move; Right and Left open and close sections and folders; Space folds |
 | Branches sidebar, on a branch | Enter checks out the branch or tag; Delete removes a local branch (asks first) |
 | Log | Up and Down select a commit; Enter opens it in a tab; Page Up, Page Down, Home and End jump; Up and Down in the changed files select another file |

@@ -65,7 +65,7 @@ src/
     ├── mcp/                UI side of the MCP server: tool definitions, bridge, handlers
     ├── debug/              UI events for the debug memory log
     ├── merge/              3-way merge tool: model.ts, extensions.ts, MergeEditor.svelte
-    ├── diff/               2-way diff view on @codemirror/merge, resizable split (split.ts)
+    ├── diff/               2-way diff view on @codemirror/merge, resizable split (split.ts), binary preview
     ├── editor/             CodeMirror setup, blame, conflict and change markers, find bar, editor commands
     ├── log/                commit graph layout (graph.ts), commit details, CommitTab, lineMatch.ts
     ├── update/             update check, changelog parser, What's New
@@ -126,6 +126,8 @@ src-tauri/
     ├── mcp/                MCP server, its tools, the UI bridge and the cli client
     ├── memory_log.rs       debug memory log in ~/.gitmanager/logs
     ├── images.rs           local images for the Markdown preview as data URLs
+    ├── media.rs            image and PDF types and size limits for the previews
+    ├── preview_scheme.rs   the gmpreview URL scheme that streams previews to the web view
     ├── watcher.rs          debounced file watching, repo-changed and workspace-changed
     ├── config.rs           ~/.gitmanager/settings.json and state.json, atomic writes
     ├── workspace_file.rs   .gitmanager-workspace and .code-workspace files

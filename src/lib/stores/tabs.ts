@@ -6,6 +6,7 @@ import { commitTabsInFolder, parseCommitTabPath } from "./commitTabs";
 import { branchTabsInFolder, branchTabTitle, parseBranchTabPath } from "./branchTabs";
 import { gitTabsInFolder, gitTabTitle, parseGitTabPath } from "./gitTabs";
 import { isPseudoTab } from "./pseudoTabs";
+import { movedPath, pathsUnder, type PathMove } from "./workspacePaths";
 
 export interface FileTab {
   /** Absolute path (see workspacePaths.ts). */
@@ -155,4 +156,35 @@ export function tabsInFolder(tabPaths: string[], folderRoot: string): string[] {
     ...branchTabsInFolder(tabPaths, folderRoot),
   ]);
   return tabPaths.filter((tabPath) => commits.has(tabPath) || (!isPseudoTab(tabPath) && tabPath.startsWith(prefix)));
+}
+
+/** File tabs (never pseudo tabs) of `entryPaths` or of files inside those folders. */
+export function fileTabsUnder(tabPaths: string[], entryPaths: string[]): string[] {
+  return pathsUnder(
+    tabPaths.filter((tabPath) => !isPseudoTab(tabPath)),
+    entryPaths,
+  );
+}
+
+/**
+ * Files were renamed or moved: their tabs, and the tabs of files inside a moved folder,
+ * point at the new paths in place, keeping order, preview and dirty state. Returns `state`
+ * itself when no tab moved.
+ */
+export function retargetTabs(state: TabsState, moves: PathMove[]): TabsState {
+  const target = (tabPath: string) => (isPseudoTab(tabPath) ? tabPath : movedPath(tabPath, moves));
+  if (!state.tabs.some((tab) => target(tab.path) !== tab.path)) {
+    return state;
+  }
+  const seen = new Set<string>();
+  const tabs: FileTab[] = [];
+  for (const tab of state.tabs) {
+    const path = target(tab.path);
+    // A tab already open on the new path wins; the moved one folds into it.
+    if (!seen.has(path)) {
+      seen.add(path);
+      tabs.push(path === tab.path ? tab : { ...tab, path });
+    }
+  }
+  return { tabs, active: state.active === null ? null : target(state.active) };
 }

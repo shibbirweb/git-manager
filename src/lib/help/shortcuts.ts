@@ -156,6 +156,18 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
       ],
     },
     {
+      // FileExplorer.svelte, with the keys from fileOps.ts (fileKeyOp).
+      title: "Files panel",
+      rows: [
+        { label: "Cut / Copy / Paste files", keys: keys("CmdOrCtrl+X", "CmdOrCtrl+C", "CmdOrCtrl+V"), context: "In the Files panel" },
+        { label: "Duplicate", keys: keys("CmdOrCtrl+D"), context: "In the Files panel" },
+        { label: "Rename", keys: keys("F2", "Shift+F6"), context: "In the Files panel" },
+        { label: "Move to Trash", keys: mac ? keys("Cmd+Backspace", "Delete") : keys("Delete"), context: "In the Files panel" },
+        { label: "Select more rows", keys: [mac ? "⌘ click" : "Ctrl+click", mac ? "⇧ click" : "Shift+click", ...keys("Shift+Up", "Shift+Down")], context: "In the Files panel" },
+        { label: "Copy instead of move", keys: [mac ? "⌥ drag" : "Alt+drag"], context: "Dragging in the Files panel" },
+      ],
+    },
+    {
       title: "Merge tool and diffs",
       rows: [
         { label: "Next change or conflict", keys: keys("F7") },

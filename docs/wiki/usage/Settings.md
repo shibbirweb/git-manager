@@ -12,7 +12,7 @@ Settings opens on **Appearance**. A few places open another section: the **Space
 
 The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, **Terminal**, **GitHub**, **Automation**, **Updates**, **Settings Files** and **About**. Press Esc or click the x to close. Drag the dialog by its title to move it; double-click the title to center it again.
 
-**Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). The Layout choices and panel sizes are kept, because they live in `state.json`.
+**Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). The panel choices and sizes are kept, because they live in `state.json`.
 
 ## Appearance
 
@@ -91,9 +91,10 @@ See [Commit Options](Commit-Options.md) for signing and the other per-commit cho
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Files panel | Shows the file tree on the right (also Option+Cmd+B). | On |
+| Confirm drag and drop | Asks before a drag in the Files panel moves files (see [File Operations](File-Operations.md)). | On |
 | Left sidebar | **Changes**, **Branches** or **Hidden** (also Cmd+B and the activity bar). | Changes |
 
-The two header buttons left of the sun and the gear show or hide the **activity bars**, the icon strips at the window edges (also **View > Left Activity Bar** and **Right Activity Bar**). Drag a panel's edge to resize it; double-click the edge to reset it. All of this is saved in `state.json`.
+The two header buttons left of the sun and the gear show or hide the **activity bars**, the icon strips at the window edges (also **View > Left Activity Bar** and **Right Activity Bar**). Drag a panel's edge to resize it; double-click the edge to reset it. All of this is saved in `state.json`, except **Confirm drag and drop**, which is in `settings.json`.
 
 ## Terminal, GitHub and Automation
 

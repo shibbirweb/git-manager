@@ -1,31 +1,29 @@
 <!--
-  An image or PDF from the work tree, loaded lazily by FileView. The bytes become a blob URL
-  that is revoked when the tab closes or goes to the background, so the picture or document
-  leaves memory with it. PDFs use WebKit's own viewer: no PDF library is loaded.
+  An image or PDF from the work tree, loaded lazily by FileView. The img or iframe loads it from
+  the gmpreview scheme, so its bytes never enter JavaScript; unmounting (tab hidden or closed)
+  removes the element, and WebKit frees the picture or document. PDFs use WebKit's own viewer.
 -->
 <script lang="ts">
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
   import { onDestroy, untrack } from "svelte";
-  import { api, errorMessage } from "$lib/api";
+  import { errorMessage } from "$lib/api";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { platformName } from "$lib/update/releases";
   import { formatSize } from "../git/lfs/lfsModel";
-  import { fitZoom, nextZoom, type PreviewInfo, zoomLabel } from "./mediaPreview";
+  import { fitZoom, nextZoom, type PreviewInfo, tooLargeText, zoomLabel } from "./mediaPreview";
+  import { openPreview } from "./previewScheme";
   import { revealLabel } from "./reveal";
 
   interface Props {
-    /** Absolute path, for Reveal and the image's alt text. */
+    /** Absolute path, inside a workspace folder. */
     filePath: string;
-    /** The workspace folder holding the file, and the file's path inside it. */
-    rootPath: string;
-    relativePath: string;
     preview: PreviewInfo;
     /** Bumped by FileView when the file may have changed on disk. */
     reloadToken: number;
   }
 
-  let { filePath, rootPath, relativePath, preview, reloadToken }: Props = $props();
+  let { filePath, preview, reloadToken }: Props = $props();
 
   const REVEAL_LABEL = revealLabel(platformName(navigator.userAgent));
   const name = $derived(filePath.slice(filePath.lastIndexOf("/") + 1));
@@ -39,43 +37,42 @@
   let boxWidth = $state(0);
   let boxHeight = $state(0);
   let frame = $state<HTMLIFrameElement | null>(null);
+  let image = $state<HTMLImageElement | null>(null);
   let request = 0;
 
   const fitted = $derived(natural ? fitZoom(natural.width, natural.height, boxWidth - 32, boxHeight - 32) : 1);
   const shownZoom = $derived(zoom ?? fitted);
 
-  function release(): void {
-    if (url) {
-      URL.revokeObjectURL(url);
-      url = null;
-    }
-  }
-
-  async function load(): Promise<void> {
+  async function load(version: number): Promise<void> {
     const current = ++request;
     try {
-      const bytes = await api.readPreviewFile(rootPath, relativePath);
+      const opened = await openPreview({ kind: "worktree", filePath }, version);
       if (current !== request) {
         return;
       }
-      // The blob keeps its own copy, so the array buffer can be collected right away.
-      const blob = new Blob([bytes], { type: preview.mime });
-      release();
-      size = blob.size;
-      url = URL.createObjectURL(blob);
-      error = null;
+      size = opened.stat.size;
+      if (!opened.stat.exists) {
+        url = null;
+        error = "The file is not there any more.";
+      } else if (opened.stat.limit !== null) {
+        url = null;
+        error = tooLargeText(opened.stat.limit);
+      } else {
+        url = opened.url;
+        error = null;
+      }
     } catch (cause) {
       if (current === request) {
-        release();
+        url = null;
         error = errorMessage(cause);
       }
     }
   }
 
   $effect(() => {
-    void reloadToken;
-    void relativePath;
-    untrack(() => void load());
+    const version = reloadToken;
+    void filePath;
+    untrack(() => void load(version));
   });
 
   onDestroy(() => {
@@ -84,7 +81,7 @@
     if (frame) {
       frame.src = "about:blank";
     }
-    release();
+    image?.removeAttribute("src");
   });
 
   function onImageLoad(event: Event): void {
@@ -145,6 +142,7 @@
   {:else if preview.kind === "image"}
     <div class="canvas" bind:clientWidth={boxWidth} bind:clientHeight={boxHeight} onwheel={onWheel}>
       <img
+        bind:this={image}
         src={url}
         alt={name}
         draggable="false"

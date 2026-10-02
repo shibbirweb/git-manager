@@ -141,6 +141,7 @@ class SettingsStore {
   terminalScrollback = $state(initialPreferences.terminalScrollback);
   terminalCopyOnSelect = $state(initialPreferences.terminalCopyOnSelect);
   markdownViewMode = $state<MarkdownViewMode>(initialPreferences.markdownViewMode);
+  confirmDragAndDrop = $state(initialPreferences.confirmDragAndDrop);
   mcpEnabled = $state(initialPreferences.mcpEnabled);
   cliEnabled = $state(initialPreferences.cliEnabled);
   memoryLogEnabled = $state(initialPreferences.memoryLogEnabled);
@@ -306,6 +307,7 @@ class SettingsStore {
       terminalScrollback: this.terminalScrollback,
       terminalCopyOnSelect: this.terminalCopyOnSelect,
       markdownViewMode: this.markdownViewMode,
+      confirmDragAndDrop: this.confirmDragAndDrop,
       mcpEnabled: this.mcpEnabled,
       cliEnabled: this.cliEnabled,
       memoryLogEnabled: this.memoryLogEnabled,

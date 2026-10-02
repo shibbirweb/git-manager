@@ -34,7 +34,7 @@ Pick an action for each row:
 Working with the list:
 
 - Click a row (or Tab to it) and press a letter to set its action.
-- Up and Down move between rows. **Option+Up** and **Option+Down** move the row itself, and so does dragging it by its grip.
+- Up and Down move between rows. **Option+Up** and **Option+Down** move the row itself, and so does dragging it by its grip. Press Esc while dragging to put it back.
 - **Reword** opens a box with the commit's message, ready to edit.
 - **Squash** joins the nearest kept commit above it. The last squash of a group gets a box with all their messages one after another, like git does; edit it into one good message. Fixup adds nothing to the message.
 - Dropped rows are greyed out.

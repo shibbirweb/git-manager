@@ -75,6 +75,9 @@ describe("UI tools", () => {
     const destructive = UI_TOOLS.filter((tool) => tool.destructive).map((tool) => tool.name);
     expect(destructive).toContain("send_terminal_text");
     expect(destructive).toContain("run_script");
+    expect(destructive).toEqual(expect.arrayContaining(["rename_path", "move_paths", "trash_paths"]));
+    const writing = UI_TOOLS.filter((tool) => !tool.readOnly && !tool.destructive).map((tool) => tool.name);
+    expect(writing).toEqual(expect.arrayContaining(["create_file", "create_folder", "copy_paths"]));
     const readOnly = UI_TOOLS.filter((tool) => tool.readOnly).map((tool) => tool.name);
     expect(readOnly).toContain("get_app_state");
     expect(readOnly).toContain("get_ui_performance");

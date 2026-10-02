@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fitZoom, nextZoom, previewOf, ZOOM_STEPS, zoomLabel } from "./mediaPreview";
+import { fitZoom, nextZoom, previewOf, tooLargeText, ZOOM_STEPS, zoomLabel } from "./mediaPreview";
 
 describe("previewOf", () => {
   it("opens images and PDFs in the preview, whatever the case of the extension", () => {
@@ -52,5 +52,11 @@ describe("zoomLabel", () => {
   it("shows a whole percentage", () => {
     expect(zoomLabel(1)).toBe("100%");
     expect(zoomLabel(0.333)).toBe("33%");
+  });
+});
+
+describe("tooLargeText", () => {
+  it("names the limit in megabytes", () => {
+    expect(tooLargeText(50 * 1024 * 1024)).toBe("The file is larger than 50 MB, too big to preview.");
   });
 });

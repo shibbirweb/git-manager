@@ -73,6 +73,10 @@ git runs the sequence editor through its own shell, so `cp` copies the prepared 
 
 With merges in the range, `rebase_merges::layout` lays out the todo like git's `--rebase-merges`: `label onto`, then one segment per branch that starts with `reset`, holds `pick` lines, labels the commits other segments need (`gm-` plus 12 hex digits) and recreates merges with `merge -C <commit> <labels>`. The dialog's rows follow those steps: picks move and meld only inside a run (between two label, reset or merge lines), a merge is picked or dropped as a unit, and `deadCommits` greys the segments that only fed a dropped merge. `rebase_merges::validate` checks the same rules in Rust. A range from the root with merges is refused (`ROOT_REFUSAL`).
 
+### Reordering by drag
+
+Rows drag with mouse events, like the Files panel (see [How file operations work](How-File-Operations-Work.md#drag-and-drop)). A press outside the action menu and message box becomes a drag after `DRAG_THRESHOLD_PX`; `elementFromPoint` finds the row under the pointer (`data-drop`), and `dropTarget` (`rebaseModel.ts`) says whether a drop there changes anything. Mouseup calls `moveRow`, and Esc cancels.
+
 ## Where the code lives
 
 | File | What it does |
@@ -99,15 +103,18 @@ With merges in the range, `rebase_merges::layout` lays out the todo like git's `
 
 ## Bugs we fixed
 
-None yet.
+**Dragging a commit did nothing in the app window.**
+- **The issue:** a dragged row never moved; Option+Up and Option+Down worked.
+- **Why it happened:** the rows used HTML5 drag and drop. Tauri's native drag handling (for Finder drops) answers every native drag itself on macOS, without passing it to WKWebView, so the page never gets `dragover` or `drop`.
+- **The fix and why we chose it:** mouse events, like the Files panel. Turning off Tauri's drag handling would cost Finder drops, and mouse events always reach the page.
 
 ## Tests
 
 - `src-tauri/src/commands/rebase.rs`: `reorders_and_drops`, `squash_takes_the_edited_message_and_fixup_keeps_the_target`, `reword_keeps_hash_lines_and_blank_lines_exactly`, `edit_stops_at_its_commit`, `a_conflict_stops_and_abort_cleans_up`, `autostash_keeps_local_changes`, `refuses_bad_plans`, `plan_lists_the_range_and_where_it_was_pushed`, `plan_onto_takes_the_commits_missing_from_the_upstream`, `rebases_from_the_root`, `todo_puts_group_messages_at_the_end_of_the_group`, and the merge tests (`plan_lays_out_merges_like_rebase_merges`, `keeps_merges_reorders_within_a_run_and_rewords`, `dropping_a_merge_drops_the_branch_it_brought_in`, `a_branch_point_inside_the_range_keeps_both_branches_on_it`, `merge_rows_only_pick_or_drop_and_squashes_need_a_commit_above`).
-- `src/lib/views/git/rebaseModel.test.ts`: rows, keys, combined messages, reorder, validation, entries, and runs and merges.
+- `src/lib/views/git/rebaseModel.test.ts`: rows, keys, combined messages, reorder and drop targets, validation, entries, and runs and merges.
 - `src/lib/views/git/integrateOptions.test.ts`: `--interactive` kept apart from the options it does not take.
 
-Drag and drop and the keys need a manual check. See [Testing](Testing.md).
+Dragging and the keys need a check in the real app. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

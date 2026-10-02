@@ -54,19 +54,20 @@ Open **Help > Available MCP Tools...** (or the button next to the Status line). 
 
 - **read only**: it only looks.
 - **can change files**: for example staging or committing.
-- **destructive**: it can lose work or run commands, such as discarding changes, pushing, resetting a branch, writing files, running scripts or typing in a terminal. These start **off**.
+- **destructive**: it can lose work or run commands, such as discarding changes, pushing, resetting a branch, writing, renaming, moving or trashing files, running scripts or typing in a terminal. These start **off**.
 
-Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. A single switch turns its tool on right away. The header says how many tools are on, for example "71 of 80 tools on".
+Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. A single switch turns its tool on right away. The header says how many tools are on, for example "74 of 86 tools on".
 
 **Recent calls** shows the last calls as they happen: the tool, **MCP** or **CLI**, the time, how long it took and any error.
 
 ## What the tools can do
 
-There are about 80 tools. Some highlights:
+There are about 86 tools. Some highlights:
 
 - **Workspace and app**: `list_workspace` (start here), `get_app_state`, `list_menu_commands` and `run_menu_command` (any menu bar item), `show_panel`, `open_settings`.
 - **Git**: `git_status`, `git_diff`, `git_log`, `git_blame`, `git_branches`, and actions such as `git_stage`, `git_commit`, `git_pull`, `git_push`, `git_merge`, `git_rebase` and the stash tools.
 - **Files and search**: `read_file`, `open_file`, `get_editor_text`, `search_files`, `search_text`, `search_symbols`.
+- **File operations**: `create_file`, `create_folder`, `copy_paths`, and `rename_path`, `move_paths` and `trash_paths`, which work like the [Files panel](File-Operations.md): open tabs follow, a file with unsaved edits is refused and nothing is ever replaced. Rename, move and trash start off; trash only moves to the system Trash.
 - **Scripts and terminal**: `list_scripts`, `run_script` and `stop_run` (the Run tab), `list_terminals`, `new_terminal` and `send_terminal_text`. `run_script` and `send_terminal_text` can run any command, so they start off.
 - **Performance**: `get_memory_usage`, `sample_memory`, a live memory recording, `get_ui_performance`, `inspect_elements`, `scroll_view` and `take_screenshot`.
 
@@ -85,11 +86,12 @@ git-manager cli status                     # is the app running, which switches 
 git-manager cli tools                      # the tools that are on (--all lists every tool)
 git-manager cli describe git_log           # what a tool does and its arguments
 git-manager cli call git_log repoPath="$PWD" limit=5
+git-manager cli call copy_paths paths='["/Users/me/shop/src/cart.ts"]' targetFolder=/Users/me/shop/lib
 git-manager cli screenshot ~/Desktop/gm.png
 git-manager cli memory --duration 10       # live memory, then the minimum, average and peak
 ```
 
-Arguments go as `name=value`. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
+Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
 
 The exit code is the number a command hands back to the shell or script that ran it:
 

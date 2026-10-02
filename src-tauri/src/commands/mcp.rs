@@ -42,11 +42,14 @@ pub fn mcp_register_ui_tools(state: State<'_, AppState>, tools: Vec<McpUiToolDef
     state.mcp.register_ui_tools(tools)
 }
 
+/// The open workspace folders: the only ones MCP tools and the `gmpreview` scheme reach.
 #[tauri::command]
 pub async fn mcp_set_workspace(state: State<'_, AppState>, folder_paths: Vec<String>) -> AppResult<()> {
     let mcp = state.mcp.clone();
+    let preview_folders = state.preview_folders.clone();
     blocking(move || {
         mcp.set_workspace(&folder_paths);
+        preview_folders.set(&folder_paths);
         Ok(())
     })
     .await

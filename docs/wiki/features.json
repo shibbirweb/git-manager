@@ -4,10 +4,11 @@
     { "page": "usage/Getting-Started.md", "summary": "Install Git Manager, open your first folder and find your way around the window." },
     { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
+    { "page": "usage/File-Operations.md", "summary": "Create, rename, copy, move and trash files and folders right in the Files panel." },
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
     { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
-    { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs from your files in a preview tab that frees its memory when closed." },
+    { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
@@ -56,6 +57,7 @@
     { "page": "developer/Backend.md", "summary": "Tauri commands, the git read and write split, errors, the CLI runner and the file watcher." },
     { "page": "developer/How-Folder-Watching-Works.md", "summary": "The file watcher: how each file event becomes a repository or folder refresh." },
     { "page": "developer/How-Workspace-Files-Work.md", "summary": "Workspace files, VS Code compatibility and which folders reopen at start." },
+    { "page": "developer/How-the-Preview-Scheme-Works.md", "summary": "The gmpreview URL scheme: how previews stream images and PDFs to the web view, safely and in pieces." },
     { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
@@ -94,6 +96,13 @@
       "usage": "usage/Files-Panel.md",
       "developer": "developer/How-the-Files-Panel-Works.md",
       "screenshots": ["files-panel.png", "files-context-menu.png"]
+    },
+    {
+      "id": "file-operations",
+      "title": "File operations",
+      "usage": "usage/File-Operations.md",
+      "developer": "developer/How-File-Operations-Work.md",
+      "screenshots": ["file-ops-menu.png", "file-ops-rename.png"]
     },
     {
       "id": "editor",
@@ -170,7 +179,7 @@
       "title": "Diffs",
       "usage": "usage/Diffs.md",
       "developer": "developer/How-Diffs-Work.md",
-      "screenshots": ["diff-view.png", "diff-hunk-staging.png", "diff-split-resize.png"]
+      "screenshots": ["diff-view.png", "diff-hunk-staging.png", "diff-split-resize.png", "diff-binary-image.png"]
     },
     {
       "id": "conflicts",

@@ -1,14 +1,28 @@
 <!-- Right sidebar: the work tree, loaded one folder at a time. -->
 <script lang="ts">
+  import { getCurrentWebview, type DragDropEvent } from "@tauri-apps/api/webview";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
-  import { tick } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
+  import { formatKeys } from "$lib/help/shortcuts";
+  import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { isPseudoTab } from "$lib/stores/pseudoTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
-  import { baseName, folderFor, joinPath, locateAbsolute, parentOf, relativeTo } from "$lib/stores/workspacePaths";
+  import {
+    baseName,
+    folderFor,
+    isInside,
+    joinPath,
+    locateAbsolute,
+    movedPath,
+    parentOf,
+    type PathMove,
+    relativeTo,
+  } from "$lib/stores/workspacePaths";
   import type { FileStatus } from "$lib/types";
+  import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
@@ -19,6 +33,42 @@
   import { revealLabel, terminalFolderFor } from "./reveal";
   import { deletedByFolder, type FileTone, marksByPath, tonesByPath } from "./tones";
   import { lfsStore } from "../git/lfs/lfsStore.svelte";
+  import {
+    autoScrollStep,
+    checkDrop,
+    dragLabel,
+    dropFolder,
+    dropPointToCss,
+    type DropMode,
+    HOVER_EXPAND_MS,
+    moveClash,
+    pastDragThreshold,
+  } from "./dragDrop";
+  import { fileClipboard } from "./fileClipboard.svelte";
+  import { nameProblem, renameSelection } from "./fileNames";
+  import {
+    FILE_OP_LABELS,
+    fileKeyOp,
+    fileOpAccelerator,
+    fileOpGroups,
+    type FileOp,
+    type FileOpTarget,
+    movableTargets,
+    targetFolder,
+  } from "./fileOps";
+  import {
+    EMPTY_SELECTION,
+    extendSelection,
+    retargetSelection,
+    rowAfterRemoval,
+    selectAll,
+    selectedInOrder,
+    selectOnly,
+    selectRange,
+    toggleSelected,
+    topLevel,
+    type TreeSelection,
+  } from "./selection";
 
   // Every path in the tree is absolute, so several workspace folders never collide.
   interface TreeEntry {
@@ -39,22 +89,38 @@
     expanded: boolean;
   }
 
+  /** A row drag in progress (pointer events, so it works however the window handles native drags). */
+  interface RowDrag {
+    sourcePaths: string[];
+    names: string[];
+    mode: DropMode;
+    x: number;
+    y: number;
+  }
+
   const ROW_HEIGHT = 24;
   const REVEAL_LABEL = revealLabel(platformName(navigator.userAgent));
+  const PLATFORM = platformFromUserAgent(navigator.userAgent);
   const OVERSCAN = 10;
 
   /** Loaded directory contents keyed by absolute directory path. */
   let children = $state.raw<Map<string, TreeEntry[]>>(new Map());
   let expanded = $state.raw<Set<string>>(new Set());
   let truncated = $state.raw<Set<string>>(new Set());
-  let selectedPath = $state<string | null>(null);
+  let selection = $state.raw<TreeSelection>(EMPTY_SELECTION);
   let rootErrors = $state.raw<Map<string, string>>(new Map());
   let scrollTop = $state(0);
   let viewportHeight = $state(0);
   let listEl = $state<HTMLDivElement | null>(null);
+  let emptyEl = $state<HTMLDivElement | null>(null);
+  /** The folder a drag would drop into, highlighted. */
+  let dropDir = $state<string | null>(null);
+  let drag = $state.raw<RowDrag | null>(null);
 
   const folders = $derived(repoStore.workspace?.folders ?? []);
   const multiRoot = $derived(folders.length > 1);
+  /** The workspace folder that takes drops and new files off the rows; none with several folders. */
+  const singleRoot = $derived(!multiRoot && folders[0] ? folders[0].root : null);
 
   /** Changed files of every repository, with absolute paths. */
   const workspaceFiles = $derived.by(() => {
@@ -170,6 +236,10 @@
     }
     return out;
   });
+  /** Visible paths, top down: the order Shift ranges and Shift+arrows follow. */
+  const order = $derived(rows.map((row) => row.entry.path));
+  const rowByPath = $derived(new Map(rows.map((row) => [row.entry.path, row])));
+  const cutPaths = $derived(fileClipboard.mode === "cut" ? new Set(fileClipboard.paths) : null);
 
   const firstVisible = $derived(Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN));
   const lastVisible = $derived(Math.min(rows.length, Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN));
@@ -195,7 +265,7 @@
       }
     }
     if (current.size === 0) {
-      selectedPath = null;
+      selection = EMPTY_SELECTION;
     }
   });
 
@@ -208,11 +278,16 @@
     return openPath;
   });
 
-  // Follow the file opened in the editor tab.
+  // Follow the file opened in the editor tab, unless it is already part of the selection
+  // (a tab that followed a rename or move keeps the moved rows selected).
   $effect(() => {
     const openPath = repoStore.openFilePath;
     if (openPath && !isPseudoTab(openPath)) {
-      selectedPath = openPath;
+      untrack(() => {
+        if (!selection.paths.has(openPath)) {
+          selection = selectOnly(openPath);
+        }
+      });
     }
   });
 
@@ -308,7 +383,7 @@
   }
 
   function activate(row: Row): void {
-    selectedPath = row.entry.path;
+    selection = selectOnly(row.entry.path);
     if (row.entry.deleted) {
       toast.info(`${row.entry.name} was deleted`, "Restore or stage the deletion from the Changes view.");
       return;
@@ -318,6 +393,24 @@
     } else {
       void repoStore.openFile(row.entry.path);
     }
+  }
+
+  /** A click: Cmd-click (Ctrl-click elsewhere) toggles a row, Shift-click selects a range, a plain click opens. */
+  function onRowClick(event: MouseEvent, row: Row): void {
+    // The click that ends a drag is not a click on the row.
+    if (suppressClick) {
+      suppressClick = false;
+      return;
+    }
+    if (event.shiftKey) {
+      selection = selectRange(selection, order, row.entry.path);
+      return;
+    }
+    if (PLATFORM === "macos" ? event.metaKey : event.ctrlKey) {
+      selection = toggleSelected(selection, row.entry.path);
+      return;
+    }
+    activate(row);
   }
 
   /** Opens the folders down to the file in the editor, selects it and scrolls to it. */
@@ -330,7 +423,7 @@
     const dirPaths = foldersToOpen(folder.root, filePath);
     expanded = new Set([...expanded, ...dirPaths]);
     await Promise.all(dirPaths.filter((dirPath) => !children.has(dirPath)).map((dirPath) => loadDir(dirPath)));
-    selectedPath = filePath;
+    selection = selectOnly(filePath);
     // Wait for the list to grow, or the new scroll position would be cut short.
     await tick();
     const index = rows.findIndex((row) => row.entry.path === filePath);
@@ -362,12 +455,54 @@
     }
   }
 
+  /** The selected rows that are visible, top down. */
+  function selectedEntries(): TreeEntry[] {
+    return selectedInOrder(selection, order)
+      .map((path) => rowByPath.get(path)?.entry)
+      .filter((entry) => entry !== undefined);
+  }
+
+  function focusedEntry(): TreeEntry | null {
+    return selection.focus === null ? null : (rowByPath.get(selection.focus)?.entry ?? null);
+  }
+
   function onKeydown(event: KeyboardEvent): void {
+    if (drag) {
+      return;
+    }
+    const op = fileKeyOp(event, PLATFORM);
+    if (op === "clearCut") {
+      if (fileClipboard.mode === "cut") {
+        event.preventDefault();
+        fileClipboard.clear();
+      }
+      return;
+    }
+    if (op) {
+      // The Edit menu has Cut, Copy and Paste too; preventing the default keeps it from running as well.
+      event.preventDefault();
+      const focused = focusedEntry();
+      if (op === "paste") {
+        void runOp("paste", focused ? [focused] : []);
+      } else if (op === "rename") {
+        void runOp("rename", focused ? [focused] : []);
+      } else {
+        void runOp(op, selectedEntries());
+      }
+      return;
+    }
     if (rows.length === 0) {
       return;
     }
-    const index = Math.max(0, rows.findIndex((row) => row.entry.path === selectedPath));
+    const index = Math.max(0, rows.findIndex((row) => row.entry.path === selection.focus));
     const row = rows[index];
+    const modified = event.metaKey || event.ctrlKey || event.altKey;
+    if (event.shiftKey && !modified && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      event.preventDefault();
+      selection = extendSelection(selection, order, event.key === "ArrowDown" ? 1 : -1);
+      scrollIntoView(Math.max(0, order.indexOf(selection.focus ?? "")));
+      return;
+    }
     let next = index;
     if (event.key === "ArrowDown") {
       next = Math.min(rows.length - 1, index + 1);
@@ -391,7 +526,7 @@
       return;
     }
     event.preventDefault();
-    selectedPath = rows[next].entry.path;
+    selection = selectOnly(rows[next].entry.path);
     scrollIntoView(next);
   }
 
@@ -412,8 +547,375 @@
     }
   }
 
+  // File operations. The backend refuses anything outside the workspace folders, so every
+  // call passes them; results come back as absolute paths.
+
+  function workspaceRoots(): string[] {
+    return folders.map((folder) => folder.root);
+  }
+
+  /** A folder as messages name it: its path inside the workspace folder, or the folder's name. */
+  function folderLabel(dirPath: string): string {
+    const folder = folderFor(folders, dirPath);
+    if (!folder) {
+      return baseName(dirPath);
+    }
+    return relativeTo(folder.root, dirPath) || folder.name;
+  }
+
+  function namesIn(dirPath: string): Set<string> {
+    return new Set((children.get(dirPath) ?? []).map((entry) => entry.name));
+  }
+
+  /** Names in a folder: its loaded listing, or a fresh one (kept nowhere) for a folder that is not open. */
+  async function namesOnDisk(dirPath: string): Promise<Set<string>> {
+    if (children.has(dirPath)) {
+      return namesIn(dirPath);
+    }
+    const folder = folderFor(folders, dirPath);
+    if (!folder) {
+      return new Set();
+    }
+    try {
+      const listing = await api.listDirectory(folder.root, relativeTo(folder.root, dirPath), repoRoots);
+      return new Set(listing.entries.map((entry) => entry.name));
+    } catch {
+      // The backend checks again before anything moves.
+      return new Set();
+    }
+  }
+
+  /** "a.ts, b.ts and 3 more" for messages about many entries. */
+  function listNames(paths: string[]): string {
+    const names = paths.slice(0, 5).map((path) => baseName(path));
+    return paths.length > 5 ? `${names.join(", ")} and ${paths.length - 5} more` : names.join(", ");
+  }
+
+  async function reloadDirs(dirPaths: string[]): Promise<void> {
+    const shown = [...new Set(dirPaths)].filter((dirPath) => children.has(dirPath) || expanded.has(dirPath));
+    await Promise.all(shown.map((dirPath) => loadDir(dirPath)));
+  }
+
+  /** After a write: reload the touched folders now, and let git and the open tabs catch up. */
+  async function afterWrite(changedPaths: string[], dirPaths: string[]): Promise<void> {
+    await reloadDirs(dirPaths);
+    void repoStore.filesWritten(changedPaths);
+  }
+
+  /** Opens the folders down to `entryPaths` (and `alsoOpen`), selects the entries and scrolls to the last one. */
+  async function showEntries(entryPaths: string[], alsoOpen: string[] = []): Promise<void> {
+    const dirPaths = new Set<string>(alsoOpen);
+    for (const entryPath of entryPaths) {
+      const folder = folderFor(folders, entryPath);
+      for (const dirPath of folder ? foldersToOpen(folder.root, entryPath) : []) {
+        dirPaths.add(dirPath);
+      }
+    }
+    expanded = new Set([...expanded, ...dirPaths]);
+    await Promise.all([...dirPaths].map((dirPath) => loadDir(dirPath)));
+    selection = selectAll(entryPaths);
+    await tick();
+    const index = order.indexOf(entryPaths[entryPaths.length - 1] ?? "");
+    if (index >= 0) {
+      scrollIntoView(index);
+    }
+    listEl?.focus();
+  }
+
+  /** Renames and moves: tabs, the clipboard, open folders and the selection follow the new paths. */
+  function applyMoves(moves: PathMove[]): void {
+    if (moves.length === 0) {
+      return;
+    }
+    repoStore.retargetTabs(moves);
+    fileClipboard.follow(moves);
+    const isMoved = (path: string) => moves.some((move) => isInside(move.from, path));
+    const reopened = [...expanded].filter(isMoved).map((path) => movedPath(path, moves));
+    expanded = new Set([...[...expanded].filter((path) => !isMoved(path)), ...reopened]);
+    // Listings under the old paths are stale; open folders load again under their new paths.
+    children = new Map([...children].filter(([path]) => !isMoved(path)));
+    selection = retargetSelection(selection, moves);
+    for (const dirPath of reopened) {
+      void loadDir(dirPath);
+    }
+  }
+
+  async function createEntry(parentDir: string, isDir: boolean): Promise<void> {
+    const taken = namesIn(parentDir);
+    const label = folderLabel(parentDir);
+    const result = await dialogs.prompt({
+      title: isDir ? "New Folder" : "New File",
+      label: `In ${label}`,
+      placeholder: isDir ? "Folder name, or a/b for nested folders" : "File name, or folder/file.ts",
+      confirmLabel: "Create",
+      validate: (value) => nameProblem(value, { nested: true, taken, folderLabel: label }),
+    });
+    if (!result) {
+      listEl?.focus();
+      return;
+    }
+    let created: string;
+    try {
+      created = await api.fileCreate(workspaceRoots(), parentDir, result.value, isDir);
+    } catch (error) {
+      toast.error(isDir ? "Could not create the folder" : "Could not create the file", errorMessage(error));
+      return;
+    }
+    await showEntries([created], isDir ? [created] : []);
+    void repoStore.filesWritten([created]);
+    if (!isDir) {
+      await repoStore.openFile(created, { pin: true });
+    }
+  }
+
+  async function renameEntry(target: FileOpTarget): Promise<void> {
+    if (target.isFolderRoot || target.deleted || !repoStore.checkUnsaved([target.path])) {
+      return;
+    }
+    const name = baseName(target.path);
+    const parentDir = parentOf(target.path);
+    const taken = namesIn(parentDir);
+    const label = folderLabel(parentDir);
+    const result = await dialogs.prompt({
+      title: target.isDir ? "Rename Folder" : "Rename File",
+      label: "New name",
+      initial: name,
+      selection: renameSelection(name, target.isDir),
+      confirmLabel: "Rename",
+      validate: (value) => nameProblem(value, { nested: false, taken, folderLabel: label, current: name }),
+    });
+    if (!result || result.value === name) {
+      listEl?.focus();
+      return;
+    }
+    try {
+      const renamed = await api.fileRename(workspaceRoots(), target.path, result.value);
+      applyMoves([{ from: target.path, to: renamed }]);
+      await afterWrite([target.path, renamed], [parentDir]);
+      listEl?.focus();
+    } catch (error) {
+      toast.error(`Could not rename ${name}`, errorMessage(error));
+    }
+  }
+
+  /** Moves into `targetDir`; true when done or nothing had to move. `ask` is for drag and drop. */
+  async function moveEntries(sourcePaths: string[], targetDir: string, ask: boolean): Promise<boolean> {
+    const sources = topLevel(sourcePaths);
+    const check = checkDrop(sources, targetDir, "move");
+    if (check === "noop") {
+      return true;
+    }
+    if (check === "intoItself") {
+      toast.info("A folder cannot move into itself");
+      return false;
+    }
+    if (!repoStore.checkUnsaved(sources)) {
+      return false;
+    }
+    // Refuse a taken name before asking: the backend would refuse it after the question.
+    const clash = moveClash(sources, targetDir, await namesOnDisk(targetDir), PLATFORM !== "linux");
+    if (clash) {
+      toast.error("Could not move", `${clash} already exists in ${folderLabel(targetDir)}`);
+      return false;
+    }
+    if (ask && settings.confirmDragAndDrop) {
+      const what = sources.length === 1 ? baseName(sources[0]) : `${sources.length} items`;
+      const confirmed = await dialogs.confirm({
+        title: "Move",
+        message: `Move ${what} into ${folderLabel(targetDir)}?\n\nTurn this question off in Settings, Layout.`,
+        confirmLabel: "Move",
+      });
+      if (!confirmed) {
+        listEl?.focus();
+        return false;
+      }
+    }
+    let moves: PathMove[];
+    try {
+      moves = await api.fileMove(workspaceRoots(), sources, targetDir);
+    } catch (error) {
+      toast.error("Could not move", errorMessage(error));
+      return false;
+    }
+    if (moves.length === 0) {
+      return true;
+    }
+    applyMoves(moves);
+    await showEntries(moves.map((move) => move.to));
+    await afterWrite(
+      moves.flatMap((move) => [move.from, move.to]),
+      sources.map((sourcePath) => parentOf(sourcePath)),
+    );
+    return true;
+  }
+
+  async function copyEntries(sourcePaths: string[], targetDir: string): Promise<void> {
+    const sources = topLevel(sourcePaths);
+    if (checkDrop(sources, targetDir, "copy") === "intoItself") {
+      toast.info("A folder cannot be copied into itself");
+      return;
+    }
+    let created: string[];
+    try {
+      created = await api.fileCopy(workspaceRoots(), sources, targetDir);
+    } catch (error) {
+      toast.error("Could not copy", errorMessage(error));
+      return;
+    }
+    if (created.length === 0) {
+      return;
+    }
+    await showEntries(created);
+    void repoStore.filesWritten(created);
+  }
+
+  /** Copies each entry next to itself ("cart copy.ts"). */
+  async function duplicate(targets: FileOpTarget[]): Promise<void> {
+    const byParent = new Map<string, string[]>();
+    for (const sourcePath of topLevel(movableTargets(targets).map((target) => target.path))) {
+      byParent.set(parentOf(sourcePath), [...(byParent.get(parentOf(sourcePath)) ?? []), sourcePath]);
+    }
+    const created: string[] = [];
+    try {
+      for (const [parentDir, sources] of byParent) {
+        created.push(...(await api.fileCopy(workspaceRoots(), sources, parentDir)));
+      }
+    } catch (error) {
+      toast.error("Could not duplicate", errorMessage(error));
+    }
+    if (created.length > 0) {
+      await showEntries(created);
+      void repoStore.filesWritten(created);
+    }
+  }
+
+  async function paste(targetDir: string | null): Promise<void> {
+    if (!targetDir) {
+      return;
+    }
+    const sources = fileClipboard.paths.filter((path) => folderFor(folders, path) !== null);
+    if (sources.length === 0) {
+      fileClipboard.clear();
+      return;
+    }
+    if (fileClipboard.mode === "cut") {
+      if (await moveEntries(sources, targetDir, false)) {
+        fileClipboard.clear();
+      }
+    } else {
+      await copyEntries(sources, targetDir);
+    }
+  }
+
+  async function trashEntries(targets: FileOpTarget[]): Promise<void> {
+    const movable = movableTargets(targets);
+    const trashPaths = topLevel(movable.map((target) => target.path));
+    if (trashPaths.length === 0 || !repoStore.checkUnsaved(trashPaths)) {
+      return;
+    }
+    const folderInside = movable.some((target) => target.isDir && trashPaths.includes(target.path));
+    const message =
+      trashPaths.length === 1
+        ? `Move ${baseName(trashPaths[0])} to the Trash?`
+        : `Move ${trashPaths.length} items to the Trash? ${listNames(trashPaths)}.`;
+    const confirmed = await dialogs.confirm({
+      title: "Move to Trash",
+      message: `${message}${folderInside ? " Everything inside goes too." : ""} You can put it back from the Trash.`,
+      confirmLabel: "Move to Trash",
+      danger: true,
+    });
+    if (!confirmed) {
+      listEl?.focus();
+      return;
+    }
+    const next = rowAfterRemoval(order, trashPaths);
+    try {
+      await api.fileTrash(workspaceRoots(), trashPaths);
+    } catch (error) {
+      toast.error("Move to Trash failed", errorMessage(error));
+      return;
+    }
+    repoStore.closeTabsUnder(trashPaths);
+    fileClipboard.forget(trashPaths);
+    const isGone = (path: string) => trashPaths.some((trashPath) => isInside(trashPath, path));
+    expanded = new Set([...expanded].filter((path) => !isGone(path)));
+    children = new Map([...children].filter(([path]) => !isGone(path)));
+    selection = selectOnly(next);
+    await afterWrite(
+      trashPaths,
+      trashPaths.map((trashPath) => parentOf(trashPath)),
+    );
+    listEl?.focus();
+  }
+
+  function setClipboard(mode: "cut" | "copy", targets: FileOpTarget[]): void {
+    const paths = topLevel(movableTargets(targets).map((target) => target.path));
+    if (paths.length > 0) {
+      fileClipboard.set(mode, paths);
+    }
+  }
+
+  async function runOp(op: FileOp, targets: FileOpTarget[]): Promise<void> {
+    const first = targets[0] ?? null;
+    switch (op) {
+      case "newFile":
+      case "newFolder": {
+        const parentDir = targetFolder(first, singleRoot);
+        if (parentDir) {
+          await createEntry(parentDir, op === "newFolder");
+        }
+        break;
+      }
+      case "cut":
+      case "copy":
+        setClipboard(op, targets);
+        break;
+      case "paste":
+        await paste(targetFolder(first, singleRoot));
+        break;
+      case "duplicate":
+        await duplicate(targets);
+        break;
+      case "rename":
+        if (first && targets.length === 1) {
+          await renameEntry(first);
+        }
+        break;
+      case "trash":
+        await trashEntries(targets);
+        break;
+      case "copyPaths":
+        await copy(targets.map((target) => target.path).join("\n"));
+        break;
+    }
+  }
+
+  /** The file operation items for `targets`, each group after a separator. */
+  function fileOpMenu(targets: FileOpTarget[]): MenuItem[] {
+    const items: MenuItem[] = [];
+    for (const group of fileOpGroups(targets, fileClipboard.paths.length > 0)) {
+      items.push({ separator: true });
+      for (const item of group) {
+        const accelerator = fileOpAccelerator(item.op, PLATFORM);
+        items.push({
+          label: FILE_OP_LABELS[item.op],
+          disabled: item.disabled,
+          hint: accelerator ? formatKeys(accelerator, PLATFORM) : undefined,
+          action: () => void runOp(item.op, targets),
+        });
+      }
+    }
+    return items;
+  }
+
   function openMenu(event: MouseEvent, row: Row): void {
-    selectedPath = row.entry.path;
+    const selected = selection.paths.has(row.entry.path) ? selectedEntries() : [];
+    const multiItems = selected.length > 1 ? fileOpMenu(selected).slice(1) : [];
+    if (multiItems.length > 0) {
+      contextMenu.open(event, multiItems);
+      return;
+    }
+    selection = selectOnly(row.entry.path);
     const absolute = row.entry.path;
     const folder = folderFor(folders, absolute);
     const relative = folder ? relativeTo(folder.root, absolute) : absolute;
@@ -453,6 +955,7 @@
         });
       }
     }
+    items.push(...fileOpMenu([row.entry]));
     const ignoreItem = location && !row.entry.deleted ? ignoreMenu(location.repo.root, location.repoPath, row.entry.isDir) : null;
     if (ignoreItem) {
       items.push({ separator: true }, ignoreItem);
@@ -475,6 +978,15 @@
     contextMenu.open(event, items);
   }
 
+  /** Right-click below the rows (or in an empty folder): new files and pastes go into the workspace folder. */
+  function openBackgroundMenu(event: MouseEvent): void {
+    if (!singleRoot) {
+      return;
+    }
+    selection = EMPTY_SELECTION;
+    contextMenu.open(event, fileOpMenu([{ path: singleRoot, isDir: true, isFolderRoot: true, deleted: false }]).slice(1));
+  }
+
   function toneClass(entry: TreeEntry): FileTone | "ignored" | "" {
     if (entry.deleted) {
       return "deleted";
@@ -484,6 +996,240 @@
     }
     return tones.get(entry.path) ?? "";
   }
+
+  // Drag and drop. Rows drag with pointer events: a press that moves a few pixels becomes a
+  // drag, Option (Alt) makes it a copy. Files from the Finder arrive through Tauri's
+  // drag-drop events and are copied in. Both share the drop target, hover-expand and
+  // auto-scroll below; listeners and the frame loop live only while a drag does.
+
+  let pendingDrag: { row: Row; x: number; y: number } | null = null;
+  /** Set when a drag ends, so the click the browser sends after the mouseup is ignored. */
+  let suppressClick = false;
+  let hoverPath: string | null = null;
+  let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Pointer position for the auto-scroll loop, in CSS px; null while nothing is dragged over the list. */
+  let pointer: { x: number; y: number } | null = null;
+  /** Sources and mode of the drag the loop updates the target for. */
+  let pointerDrag: { sourcePaths: string[]; mode: DropMode } | null = null;
+  let scrollFrame = 0;
+  /** Paths of the Finder drag over the window, from its "enter" event. */
+  let finderPaths: string[] | null = null;
+
+  interface Hit {
+    /** Over the list (or the empty folder message), not the header or another panel. */
+    inside: boolean;
+    row: Row | null;
+  }
+
+  function hitTest(x: number, y: number): Hit {
+    const element = document.elementFromPoint(x, y);
+    if (!element || !(listEl?.contains(element) || emptyEl?.contains(element))) {
+      return { inside: false, row: null };
+    }
+    const rowEl = element.closest<HTMLElement>("[data-path]");
+    return { inside: true, row: rowEl ? (rowByPath.get(rowEl.dataset.path ?? "") ?? null) : null };
+  }
+
+  /** Highlights the folder a drop would go into, or nothing when the drop cannot happen there. */
+  function updateTarget(x: number, y: number, sourcePaths: string[], mode: DropMode): void {
+    const hit = hitTest(x, y);
+    const targetDir = hit.inside ? dropFolder(hit.row?.entry ?? null, singleRoot) : null;
+    dropDir = targetDir && checkDrop(sourcePaths, targetDir, mode) === "ok" ? targetDir : null;
+    hoverFolder(hit.row && hit.row.entry.isDir && !hit.row.expanded ? hit.row.entry.path : null);
+  }
+
+  /** A closed folder under the pointer opens after a moment. */
+  function hoverFolder(dirPath: string | null): void {
+    if (dirPath === hoverPath) {
+      return;
+    }
+    hoverPath = dirPath;
+    clearTimeout(hoverTimer);
+    if (dirPath) {
+      hoverTimer = setTimeout(() => {
+        if (hoverPath === dirPath && !expanded.has(dirPath)) {
+          expanded = new Set(expanded).add(dirPath);
+          void loadDir(dirPath);
+        }
+      }, HOVER_EXPAND_MS);
+    }
+  }
+
+  /** Runs every frame while something is dragged over the list: scrolls near the edges and keeps the target current. */
+  function autoScrollFrame(): void {
+    scrollFrame = 0;
+    if (!pointer || !pointerDrag) {
+      return;
+    }
+    updateTarget(pointer.x, pointer.y, pointerDrag.sourcePaths, pointerDrag.mode);
+    if (listEl) {
+      const rect = listEl.getBoundingClientRect();
+      const step = pointer.x >= rect.left && pointer.x <= rect.right ? autoScrollStep(pointer.y, rect.top, rect.bottom) : 0;
+      if (step !== 0) {
+        listEl.scrollTop += step;
+      }
+    }
+    scrollFrame = requestAnimationFrame(autoScrollFrame);
+  }
+
+  function trackPointer(x: number, y: number, sourcePaths: string[], mode: DropMode): void {
+    pointer = { x, y };
+    pointerDrag = { sourcePaths, mode };
+    updateTarget(x, y, sourcePaths, mode);
+    if (!scrollFrame) {
+      scrollFrame = requestAnimationFrame(autoScrollFrame);
+    }
+  }
+
+  function clearDropFeedback(): void {
+    pointer = null;
+    pointerDrag = null;
+    dropDir = null;
+    hoverFolder(null);
+    cancelAnimationFrame(scrollFrame);
+    scrollFrame = 0;
+  }
+
+  function onRowMouseDown(event: MouseEvent, row: Row): void {
+    suppressClick = false;
+    if (event.button !== 0 || event.shiftKey || event.metaKey || event.ctrlKey || row.entry.deleted || row.entry.isFolderRoot) {
+      return;
+    }
+    pendingDrag = { row, x: event.clientX, y: event.clientY };
+    window.addEventListener("mousemove", onDragMove);
+    window.addEventListener("mouseup", onDragEnd);
+    window.addEventListener("keydown", onDragKey, true);
+    window.addEventListener("keyup", onDragKey, true);
+  }
+
+  function startDrag(row: Row, x: number, y: number): void {
+    let sourcePaths = [row.entry.path];
+    if (selection.paths.has(row.entry.path)) {
+      const selected = topLevel(movableTargets(selectedEntries()).map((entry) => entry.path));
+      if (selected.length > 0) {
+        sourcePaths = selected;
+      }
+    } else {
+      selection = selectOnly(row.entry.path);
+    }
+    drag = { sourcePaths, names: sourcePaths.map((sourcePath) => baseName(sourcePath)), mode: "move", x, y };
+  }
+
+  function moveDrag(x: number, y: number, copyMode: boolean): void {
+    if (!drag) {
+      return;
+    }
+    const mode: DropMode = copyMode ? "copy" : "move";
+    drag = { ...drag, mode, x, y };
+    trackPointer(x, y, drag.sourcePaths, mode);
+  }
+
+  function onDragMove(event: MouseEvent): void {
+    if (!drag) {
+      const pending = pendingDrag;
+      if (!pending || !pastDragThreshold(pending, { x: event.clientX, y: event.clientY })) {
+        return;
+      }
+      startDrag(pending.row, event.clientX, event.clientY);
+    }
+    moveDrag(event.clientX, event.clientY, event.altKey);
+  }
+
+  function onDragEnd(event: MouseEvent): void {
+    const finished = drag;
+    const targetDir = dropDir;
+    stopDrag();
+    if (!finished) {
+      return;
+    }
+    suppressClick = true;
+    if (!targetDir) {
+      return;
+    }
+    if (event.altKey) {
+      void copyEntries(finished.sourcePaths, targetDir);
+    } else {
+      void moveEntries(finished.sourcePaths, targetDir, true);
+    }
+  }
+
+  /** Escape cancels a drag; pressing or releasing Option switches between move and copy. */
+  function onDragKey(event: KeyboardEvent): void {
+    if (!drag) {
+      return;
+    }
+    if (event.type === "keydown" && event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      stopDrag();
+      suppressClick = true;
+    } else if (event.key === "Alt") {
+      moveDrag(drag.x, drag.y, event.type === "keydown");
+    }
+  }
+
+  function stopDrag(): void {
+    pendingDrag = null;
+    drag = null;
+    clearDropFeedback();
+    window.removeEventListener("mousemove", onDragMove);
+    window.removeEventListener("mouseup", onDragEnd);
+    window.removeEventListener("keydown", onDragKey, true);
+    window.removeEventListener("keyup", onDragKey, true);
+  }
+
+  function onFinderDrag(event: DragDropEvent): void {
+    if (event.type === "leave") {
+      finderPaths = null;
+      clearDropFeedback();
+      return;
+    }
+    if (event.type === "enter") {
+      finderPaths = event.paths;
+    }
+    const point = dropPointToCss(event.position, window.devicePixelRatio, PLATFORM);
+    const paths = event.type === "over" ? (finderPaths ?? []) : event.paths;
+    if (event.type === "drop") {
+      const hit = hitTest(point.x, point.y);
+      const targetDir = hit.inside ? dropFolder(hit.row?.entry ?? null, singleRoot) : null;
+      finderPaths = null;
+      clearDropFeedback();
+      if (targetDir && paths.length > 0) {
+        void copyEntries(paths, targetDir);
+      }
+      return;
+    }
+    if (paths.length === 0 || !hitTest(point.x, point.y).inside) {
+      clearDropFeedback();
+      return;
+    }
+    trackPointer(point.x, point.y, paths, "copy");
+  }
+
+  onMount(() => {
+    let unlisten: (() => void) | null = null;
+    let disposed = false;
+    try {
+      void getCurrentWebview()
+        .onDragDropEvent((event) => onFinderDrag(event.payload))
+        .then((off) => {
+          if (disposed) {
+            off();
+          } else {
+            unlisten = off;
+          }
+        })
+        .catch(() => undefined);
+    } catch {
+      // Not inside Tauri (the screenshot bridge): there are no Finder drops to take.
+    }
+    return () => {
+      disposed = true;
+      unlisten?.();
+      stopDrag();
+      clearTimeout(hoverTimer);
+    };
+  });
 </script>
 
 <div class="explorer">
@@ -518,14 +1264,25 @@
   {#if singleRootError}
     <div class="message dim selectable">{singleRootError}</div>
   {:else if rows.length === 0 && !multiRoot && folders[0] && children.has(folders[0].root)}
-    <div class="message dim">This folder is empty.</div>
+    <div
+      class="message dim empty"
+      class:drop-root={dropDir !== null && dropDir === singleRoot}
+      bind:this={emptyEl}
+      oncontextmenu={openBackgroundMenu}
+      role="presentation"
+    >
+      This folder is empty.
+    </div>
   {:else}
     <div
       class="list"
+      class:drop-root={dropDir !== null && dropDir === singleRoot}
+      class:dragging={drag !== null}
       bind:this={listEl}
       bind:clientHeight={viewportHeight}
       onscroll={() => (scrollTop = listEl?.scrollTop ?? 0)}
       onkeydown={onKeydown}
+      oncontextmenu={openBackgroundMenu}
       tabindex="0"
       role="tree"
       aria-label="Files"
@@ -536,15 +1293,19 @@
             class="row {toneClass(row.entry)}"
             class:repo={row.entry.isRepo}
             class:folder-root={row.entry.isFolderRoot}
-            class:selected={row.entry.path === selectedPath}
+            class:selected={selection.paths.has(row.entry.path)}
             class:open={row.entry.path === repoStore.openFilePath}
+            class:cut={cutPaths?.has(row.entry.path) ?? false}
+            class:drop-target={dropDir !== null && dropDir !== singleRoot && isInside(dropDir, row.entry.path)}
             style="top: {(firstVisible + offset) * ROW_HEIGHT}px; padding-left: {8 + row.depth * 14}px"
             role="treeitem"
-            aria-selected={row.entry.path === selectedPath}
+            aria-selected={selection.paths.has(row.entry.path)}
             aria-expanded={row.entry.isDir ? row.expanded : undefined}
             tabindex="-1"
             title={row.entry.path}
-            onclick={() => activate(row)}
+            data-path={row.entry.path}
+            onmousedown={(event) => onRowMouseDown(event, row)}
+            onclick={(event) => onRowClick(event, row)}
             ondblclick={() => {
               if (!row.entry.isDir && !row.entry.deleted) {
                 void repoStore.openFile(row.entry.path, { pin: true });
@@ -591,6 +1352,10 @@
     </div>
   {/if}
 </div>
+
+{#if drag}
+  <div class="drag-ghost" style="left: {drag.x + 14}px; top: {drag.y + 10}px">{dragLabel(drag.names, drag.mode)}</div>
+{/if}
 
 <style>
   .lfs-tag {
@@ -682,6 +1447,50 @@
 
   .list:focus-within .row.selected {
     background: var(--selected);
+  }
+
+  /* A pending cut, like VS Code. */
+  .row.cut .name,
+  .row.cut .icon {
+    opacity: 0.5;
+  }
+
+  /* The folder a drop goes into, and everything shown inside it. */
+  .row.drop-target,
+  .list:focus-within .row.drop-target {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+
+  .list.drop-root,
+  .message.drop-root {
+    box-shadow: inset 0 0 0 1px var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  .list.dragging,
+  .list.dragging .row {
+    cursor: default;
+  }
+
+  .message.empty {
+    flex: 1;
+  }
+
+  .drag-ghost {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    max-width: 260px;
+    padding: 3px 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .chevron {

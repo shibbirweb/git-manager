@@ -82,10 +82,18 @@ The **Blame** button in the diff toolbar shows who last changed each line on the
 
 **Open File**, after Blame in the toolbar, opens the real file from your working tree in an editor tab, so you can edit it. When the right side is the working tree (unstaged changes, Compare with Working Copy, Show Diff with Working Tree), the file opens at the line your cursor is on, or at the top line you were looking at. In other diffs, such as a commit in the Log or a branch comparison, it opens at the top. If the file no longer exists in the working tree, a message says so.
 
+## Images and PDFs
+
+A changed image or PDF shows its old version on the left and the new one on the right, under the same labels as a text diff. Both images zoom and scroll together. See [Image and PDF Preview](Image-and-PDF-Preview.md#in-a-diff).
+
+![A changed image in a diff](../images/diff-binary-image.png)
+
+*The logo in the last commit on the left and the bigger one in the working tree on the right, with their sizes.*
+
 ## Special cases
 
 - **No content changes**: the file changed in a way that is not text, for example only its permissions.
-- **Binary file, no text diff**: images and other binary files are not compared.
+- **Binary file, no text diff**: binary files that are not images or PDFs are not compared.
 - **File too large to diff**: very large files are skipped to keep the app fast.
 - **Stored in Git LFS**: for a file kept in Git LFS, the diff shows the old and new sizes instead of text. See [Git LFS](Git-LFS.md).
 

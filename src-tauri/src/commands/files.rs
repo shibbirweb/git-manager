@@ -1,11 +1,14 @@
 use std::path::PathBuf;
 
+use tauri::State;
+
 use super::{blocking, safe_join};
 use crate::error::AppResult;
 use crate::git::files::{self, DirListing, FileContent};
 use crate::git::workspace;
 use crate::images;
-use crate::media;
+use crate::preview_scheme::{self, PreviewStat, Target};
+use crate::state::AppState;
 
 /// Lists one directory of the workspace; an empty `dir_path` is the root.
 /// `repo_roots` are the workspace repositories, used for `isRepo` and `ignored`.
@@ -36,14 +39,20 @@ pub async fn read_worktree_file(repo_path: String, file_path: String) -> AppResu
     .await
 }
 
-/// An image or PDF from the work tree for the file preview, as raw bytes. `file_path` is
-/// relative to the workspace folder `root_path` and must stay inside it.
+/// What the preview needs before it loads a `gmpreview` URL: whether the file is there, its
+/// size and, when it is too big, the limit. A work tree file (absolute `file_path`) without
+/// `repo_root`, else a repo-relative `file_path` of `repo_root` at `revision`.
 #[tauri::command]
-pub async fn read_preview_file(root_path: String, file_path: String) -> AppResult<tauri::ipc::Response> {
+pub async fn preview_stat(
+    state: State<'_, AppState>,
+    file_path: String,
+    repo_root: Option<String>,
+    revision: Option<String>,
+) -> AppResult<PreviewStat> {
+    let folders = state.preview_folders.clone();
     blocking(move || {
-        let root = workspace::canonical_dir(&root_path)?;
-        let full_path = safe_join(&root.to_string_lossy(), &file_path)?;
-        media::read_preview(&root, &full_path).map(tauri::ipc::Response::new)
+        let target = Target::from_parts(file_path, repo_root, revision)?;
+        preview_scheme::stat(&folders.get(), &target)
     })
     .await
 }

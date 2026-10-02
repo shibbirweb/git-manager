@@ -10,7 +10,7 @@ Files are `<name>.test.ts` next to the module they test. Folders are under `src/
 | --- | --- | --- |
 | `merge/` | `model`, `inline`, `extensions` | line replacement and chunk actions, word highlights, the Cmd+Enter keymap |
 | `editor/` | `lineDiff`, `conflictMarkers`, `blameModel`, `navigation`, `wheelZoom`, `languageName`, `findModel`, `textCommands`, `editorShortcuts`, `whitespace`, `activeLine`, `selectionInfo` | change markers, conflict markers, blame mapping, next change, zoom, the find bar's options and counter, Duplicate, Join Lines, Sort Lines and Go to Line, menu keys, Render whitespace, the current-line highlight, selection counts |
-| `diff/` | `split` | the resizable split ratio and its limits |
+| `diff/` | `split`, `binaryPreview` | the resizable split ratio and its limits, the side by side image and PDF preview: sides, shared zoom and scroll |
 | `log/` | `graph`, `lineMatch` | graph lanes and merges, finding the blamed line |
 | `stores/` | `tabs`, `navHistory`, `workspacePaths`, `fontFamily`, `commitTabs`, `gitTabs`, `branchTabs`, `settingsData`, `openingProgress` | preview tabs, Back and Forward, path helpers, font lists, pseudo tab paths, settings validation and migration, the opening progress text |
 | `menu/` | `menuSpec`, `menuState` | ids, accelerators and per-platform layout of the menu bar; enabled, checked and renamed items |
@@ -29,7 +29,7 @@ Files are `<name>.test.ts` next to the module they test. Folders are under `src/
 | `update/` | `releases`, `update` | channels, the safe Markdown renderer, issue links, changelog parsing and semver |
 | `views/` | `workspaceShortcuts`, `recentEntries` | window shortcuts, Open Recent entries |
 | `views/changes/` | `sections`, `drafts`, `fileStatus`, `repoMenu`, `repoPickers`, `sync`, `commitOptions` | grouping and selection, drafts, row ids, the repository ... menu and pickers, Sync Changes, commit options |
-| `views/files/` | `tones`, `reveal` | status colors, revealing a file in the tree |
+| `views/files/` | `tones`, `reveal`, `locate`, `mediaPreview`, `previewSource`, `selection`, `fileOps`, `fileNames`, `dragDrop` | status colors, revealing and locating a file, previews and their `gmpreview` URLs, multi-select, file operation menus and keys, names, drag and drop |
 | `views/git/` | `branchPopup`, `gitOptions`, `integrateOptions`, `rebaseModel`, `patchLines`, `github`, `lfs/lfsModel`, `submodules/submoduleModel`, `worktrees/worktreeModel` | Branches popup, dialog options, Merge and Rebase options, the interactive rebase list, patches, GitHub links, LFS, submodules, worktrees |
 | `views/github/` | `githubModel` | GitHub dialogs and results |
 | `scripts/` (repository root) | `versioning`, `wiki` | version and changelog tools, the wiki checks |
@@ -52,6 +52,7 @@ Most modules test themselves in a `#[cfg(test)]` block; the bigger ones have a `
 | `shelf/` | patch sections and the store |
 | `github/tests.rs` | every GitHub path against a fake network, keychain and gh |
 | `mcp/tests.rs` and `mcp/*.rs` | the server over real HTTP, tokens, paths, the tool registry, install, the CLI client |
-| `memory.rs`, `memory_log.rs`, `images.rs`, `config.rs`, `state.rs`, `workspace_file.rs` | the smaller modules |
+| `preview_scheme/tests.rs` | the `gmpreview` scheme: URL decoding, ranges, the folder check, work tree files and revisions of real repositories |
+| `memory.rs`, `memory_log.rs`, `images.rs`, `media.rs`, `config.rs`, `state.rs`, `workspace_file.rs` | the smaller modules |
 
 When you add a test file, add it to this page in the same commit.

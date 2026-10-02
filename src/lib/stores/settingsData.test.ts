@@ -144,6 +144,15 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ markdownViewMode: "preview" }).extra).toEqual({});
   });
 
+  it("asks before drag and drop moves unless turned off", () => {
+    expect(defaultPreferences.confirmDragAndDrop).toBe(true);
+    expect(parsePreferences({}).preferences.confirmDragAndDrop).toBe(true);
+    expect(parsePreferences({ confirmDragAndDrop: false }).preferences.confirmDragAndDrop).toBe(false);
+    expect(parsePreferences({ confirmDragAndDrop: "no" }).preferences.confirmDragAndDrop).toBe(true);
+    expect(parsePreferences({ confirmDragAndDrop: 0 }).preferences.confirmDragAndDrop).toBe(true);
+    expect(parsePreferences({ confirmDragAndDrop: false }).extra).toEqual({});
+  });
+
   it("defaults the terminal to the login shell and the editor's default size", () => {
     expect(defaultPreferences.terminalShell).toBeNull();
     expect(defaultPreferences.terminalFontSize).toBe(12.5);

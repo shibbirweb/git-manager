@@ -5,6 +5,7 @@ import {
   allowedActions,
   combinedMessage,
   deadCommits,
+  dropTarget,
   initialRows,
   isMessageSquash,
   moveRow,
@@ -85,6 +86,10 @@ describe("rebase rows", () => {
     expect(moved.map((row) => row.commit.summary)).toEqual(["Fourth", "First", "Second", "Third"]);
     expect(moveRow(moved, 0, 99).map((row) => row.commit.summary)).toEqual(["First", "Second", "Third", "Fourth"]);
     expect(moveRow(original, 2, 2)).toBe(original);
+    expect(dropTarget(original, 3, 0)).toBe(0);
+    expect(dropTarget(original, 2, 2)).toBeNull();
+    expect(dropTarget(original, null, 1)).toBeNull();
+    expect(dropTarget(original, 1, null)).toBeNull();
     expect(rowsChanged(moved, original)).toBe(true);
     expect(rowsChanged(original, initialRows(commits))).toBe(false);
     expect(rowsChanged(setAction(original, 1, "edit"), original)).toBe(true);
@@ -166,6 +171,8 @@ describe("rebase rows with merges", () => {
     expect(swapped.map((row) => row.commit.summary).slice(0, 2)).toEqual(["s2", "s1"]);
     expect(moveRow(rows, 1, 2)).toBe(rows);
     expect(moveRow(rows, 4, 3)).toBe(rows);
+    expect(dropTarget(rows, 1, 0)).toBe(0);
+    expect(dropTarget(rows, 1, 2)).toBeNull();
     const fixup = setAction(rows, 1, "fixup");
     expect(targetIndex(fixup, 1)).toBe(0);
     expect(validateRows(fixup, steps)).toBeNull();

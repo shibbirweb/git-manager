@@ -79,6 +79,8 @@ pub struct AppState {
     pub mcp: Mcp,
     /// The debug memory log (memory_log.rs), off unless the setting turns it on.
     pub memory_log: crate::memory_log::MemoryLog,
+    /// The workspace folders the `gmpreview` scheme may serve files from.
+    pub preview_folders: crate::preview_scheme::PreviewFolders,
 }
 
 impl AppState {
@@ -92,6 +94,7 @@ impl AppState {
             git_console: git_console::global(),
             mcp: Mcp::default(),
             memory_log: crate::memory_log::MemoryLog::default(),
+            preview_folders: crate::preview_scheme::PreviewFolders::default(),
         }
     }
 }

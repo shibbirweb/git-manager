@@ -81,6 +81,14 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 
 The MCP server and the memory log are driven only by the main window, never by a `git mergetool` window, which would compete for the port.
 
+### Layout
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `confirmDragAndDrop` | true | boolean | `views/files/FileExplorer.svelte` (`moveEntries`) |
+
+The other Layout choices are in `state.json`, below.
+
 ### Updates
 
 | Key | Default | Accepted | Used by |

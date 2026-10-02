@@ -18,6 +18,8 @@ import type {
   Eol,
   FileContent,
   FileDiff,
+  PreviewSource,
+  PreviewStat,
   FileHistoryEntry,
   FileSearchProgress,
   FileSearchResults,
@@ -70,7 +72,7 @@ import type {
   GitHubSharedRepository,
   GitHubSyncForkOutcome,
 } from "./types";
-import type { LfsStatus, SubmoduleInfo, WorktreeBranch, WorktreeInfo } from "./types";
+import type { FileMove, LfsStatus, SubmoduleInfo, WorktreeBranch, WorktreeInfo } from "./types";
 import type { BranchComparison, CommitOptions, MergeOptions, RebaseOptions, WorktreeComparison } from "./types";
 import type { McpActivity, McpStatus, McpToolInfo, McpUiRequest, McpUiResult, McpUiToolDef } from "./types";
 
@@ -321,8 +323,29 @@ export const api = {
     invoke<FileContent>("read_worktree_file", { repoPath, filePath }),
   /** A local image for the Markdown preview as a data URL; `imagePath` is relative to the workspace folder `rootPath`. */
   readImageDataUrl: (rootPath: string, imagePath: string) => invoke<string>("read_image_data_url", { rootPath, imagePath }),
-  /** An image or PDF for the file preview as raw bytes; `filePath` is relative to the workspace folder `rootPath`. */
-  readPreviewFile: (rootPath: string, filePath: string) => invoke<ArrayBuffer>("read_preview_file", { rootPath, filePath }),
+  /** Whether a previewed image or PDF is there, its size, and the limit when it is too big. */
+  previewStat: (source: PreviewSource) =>
+    invoke<PreviewStat>(
+      "preview_stat",
+      source.kind === "worktree"
+        ? { filePath: source.filePath, repoRoot: null, revision: null }
+        : { filePath: source.filePath, repoRoot: source.repoRoot, revision: source.revision },
+    ),
+
+  // File operations in the Files panel: absolute paths, each inside one of `workspaceRoots`.
+  /** `name` may contain "/" to create nested folders; returns the new absolute path. */
+  fileCreate: (workspaceRoots: string[], parentDir: string, name: string, isDir: boolean) =>
+    invoke<string>("file_create", { workspaceRoots, parentDir, name, isDir }),
+  /** Renames in place; `newName` is a single name. Returns the new absolute path. */
+  fileRename: (workspaceRoots: string[], entryPath: string, newName: string) =>
+    invoke<string>("file_rename", { workspaceRoots, entryPath, newName }),
+  /** Copies into `targetDir`, using "name copy" names on conflicts. Returns the new paths in source order. */
+  fileCopy: (workspaceRoots: string[], sourcePaths: string[], targetDir: string) =>
+    invoke<string[]>("file_copy", { workspaceRoots, sourcePaths, targetDir }),
+  /** Moves into `targetDir`; entries already there are skipped. Returns each moved entry. */
+  fileMove: (workspaceRoots: string[], sourcePaths: string[], targetDir: string) =>
+    invoke<FileMove[]>("file_move", { workspaceRoots, sourcePaths, targetDir }),
+  fileTrash: (workspaceRoots: string[], entryPaths: string[]) => invoke<void>("file_trash", { workspaceRoots, entryPaths }),
 
   // Go to File. Indexing progress arrives on `progress` until the popup closes.
   fileSearchOpen: (workspaceRoots: string[], progress: Channel<FileSearchProgress>) =>

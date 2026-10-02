@@ -220,6 +220,8 @@ export interface Preferences {
   terminalCopyOnSelect: boolean;
   /** How Markdown files open; each file then remembers its own mode for the session. */
   markdownViewMode: MarkdownViewMode;
+  /** Files panel: ask before a drag and drop moves files or folders. */
+  confirmDragAndDrop: boolean;
   /** The MCP server for AI tools. Off, nothing listens. */
   mcpEnabled: boolean;
   /** The `git-manager cli` command line tool; it talks to the same local server. */
@@ -283,6 +285,7 @@ export const defaultPreferences: Preferences = {
   terminalScrollback: 5000,
   terminalCopyOnSelect: false,
   markdownViewMode: "split",
+  confirmDragAndDrop: true,
   mcpEnabled: false,
   cliEnabled: false,
   mcpPort: DEFAULT_MCP_PORT,
@@ -505,6 +508,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     terminalScrollback: clampTerminalScrollback(data.terminalScrollback),
     terminalCopyOnSelect: pickBoolean(data.terminalCopyOnSelect, defaultPreferences.terminalCopyOnSelect),
     markdownViewMode: pickOneOf(data.markdownViewMode, MARKDOWN_VIEW_MODES, defaultPreferences.markdownViewMode),
+    confirmDragAndDrop: pickBoolean(data.confirmDragAndDrop, defaultPreferences.confirmDragAndDrop),
     mcpEnabled: pickBoolean(data.mcpEnabled, defaultPreferences.mcpEnabled),
     cliEnabled: pickBoolean(data.cliEnabled, defaultPreferences.cliEnabled),
     mcpPort: parseMcpPort(data.mcpPort) ?? defaultPreferences.mcpPort,

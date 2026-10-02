@@ -16,6 +16,8 @@ export interface PromptOptions {
   title: string;
   label?: string;
   initial?: string;
+  /** Part of `initial` selected at first, e.g. a file name without its extension; default all of it. */
+  selection?: [number, number];
   placeholder?: string;
   confirmLabel?: string;
   /** Optional checkbox shown under the input, e.g. "Checkout branch". */

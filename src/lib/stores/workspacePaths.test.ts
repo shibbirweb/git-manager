@@ -6,8 +6,10 @@ import {
   joinPath,
   locate,
   locateAbsolute,
+  movedPath,
   normalizePath,
   parentOf,
+  pathsUnder,
   repoForPath,
   toWorkspacePath,
 } from "./workspacePaths";
@@ -68,5 +70,33 @@ describe("workspace paths", () => {
     expect(parentOf("/work/apps/web")).toBe("/work/apps");
     expect(parentOf("/work")).toBe("/");
     expect(baseName("/work/apps/web")).toBe("web");
+  });
+});
+
+describe("movedPath", () => {
+  const moves = [
+    { from: "/work/app/src/cart.ts", to: "/work/app/src/basket.ts" },
+    { from: "/work/app/lib", to: "/work/app/src/lib" },
+  ];
+
+  it("follows a renamed file and everything inside a moved folder", () => {
+    expect(movedPath("/work/app/src/cart.ts", moves)).toBe("/work/app/src/basket.ts");
+    expect(movedPath("/work/app/lib", moves)).toBe("/work/app/src/lib");
+    expect(movedPath("/work/app/lib/deep/a.ts", moves)).toBe("/work/app/src/lib/deep/a.ts");
+  });
+
+  it("leaves other paths alone, also ones that only share a prefix", () => {
+    expect(movedPath("/work/app/library/a.ts", moves)).toBe("/work/app/library/a.ts");
+    expect(movedPath("/work/app/src/cart.tsx", moves)).toBe("/work/app/src/cart.tsx");
+    expect(movedPath("/work/app/README.md", [])).toBe("/work/app/README.md");
+  });
+});
+
+describe("pathsUnder", () => {
+  it("keeps the entries themselves and what lies inside them", () => {
+    const paths = ["/w/a/x.ts", "/w/a", "/w/ab/y.ts", "/w/b.ts"];
+    expect(pathsUnder(paths, ["/w/a"])).toEqual(["/w/a/x.ts", "/w/a"]);
+    expect(pathsUnder(paths, ["/w/b.ts", "/w/ab"])).toEqual(["/w/ab/y.ts", "/w/b.ts"]);
+    expect(pathsUnder(paths, [])).toEqual([]);
   });
 });

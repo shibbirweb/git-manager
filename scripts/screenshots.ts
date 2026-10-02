@@ -28,6 +28,7 @@ import { mkdirSync, readFileSync, realpathSync, rmSync, statSync } from "node:fs
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type Browser, type BrowserContext, type Locator, type Page, webkit } from "playwright";
+import { previewOf } from "../src/lib/views/files/mediaPreview";
 
 const PROJECT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = join(PROJECT, "docs/wiki/images");
@@ -45,6 +46,7 @@ let designSystem = "";
 let notes = "";
 let shopApp = "";
 let mediaSite = "";
+let brandKit = "";
 
 const appVersion = /^version\s*=\s*"([^"]+)"/m.exec(readFileSync(join(PROJECT, "src-tauri/Cargo.toml"), "utf8"))?.[1] ?? "0.0.0";
 
@@ -243,7 +245,8 @@ function installOverrides(config: PageConfig): void {
     },
     mcp_activity: () => structuredClone(config.mcpActivity),
     mcp_register_ui_tools: () => null,
-    mcp_set_workspace: () => null,
+    // The real command: it also tells the preview scheme which (demo) folders it may serve.
+    mcp_set_workspace: (args) => internals.invoke("mcp_set_workspace__real", args),
     mcp_ui_respond: () => null,
     mcp_regenerate_token: () => structuredClone(mcpStatus),
     cli_install: blocked("cli_install"),
@@ -421,6 +424,35 @@ function buildDemo(): void {
   designSystem = join(demo, "design-system");
   shopApp = join(demo, "extras/shop-app");
   mediaSite = join(demo, "extras/media-site");
+  brandKit = join(demo, "extras/brand-kit");
+}
+
+/**
+ * The page has no gmpreview scheme (only the app window does), so its URLs, in the form
+ * src/lib/views/files/previewSource.ts builds without Tauri, are answered here from the demo.
+ */
+function previewResponse(url: string): { status: number; body?: Buffer; contentType?: string } {
+  const [kind, ...parts] = new URL(url).pathname.split("/").slice(1).map((part) => decodeURIComponent(part));
+  const inDemo = (path: string) => path.startsWith(`${demo}/`) && !path.split("/").includes("..");
+  const filePath = kind === "worktree" ? parts[0] : parts[2];
+  const contentType = previewOf(filePath ?? "")?.mime;
+  if (!contentType || filePath.split("/").includes("..")) {
+    return { status: 403 };
+  }
+  try {
+    if (kind === "worktree" && parts.length === 1 && inDemo(filePath)) {
+      return { status: 200, body: readFileSync(filePath), contentType };
+    }
+    if (kind === "revision" && parts.length === 3 && inDemo(parts[0])) {
+      const [repoRoot, revision, relativePath] = parts;
+      const spec = revision === "index" ? `:0:${relativePath}` : `${revision}:${relativePath}`;
+      const body = execFileSync("git", ["-C", repoRoot, "show", spec], { stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 });
+      return { status: 200, body, contentType };
+    }
+  } catch {
+    return { status: 404 };
+  }
+  return { status: 403 };
 }
 
 function githubReleases(): unknown[] {
@@ -702,6 +734,7 @@ async function openApp(browser: Browser, name: string, scenario: Scenario): Prom
   });
   const releases = scenario.releases ?? [];
   await context.route("https://api.github.com/**", (route) => route.fulfill({ json: releases }));
+  await context.route("http://gmpreview.localhost/**", (route) => route.fulfill(previewResponse(route.request().url())));
   const page = await context.newPage();
   page.on("pageerror", (error) => console.warn(`  ${name}: page error: ${error.message}`));
   if (scenario.clock) {
@@ -905,6 +938,32 @@ define("files-context-menu", async (shot) => {
   const panel = await shot.clipPanel(explorer, [shot.menu(), explorer.locator('[role="treeitem"]').last()], 24);
   const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
   await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
+});
+
+// The same menu, showing the file operations (New File... to Move to Trash) with their keys.
+define("file-ops-menu", async (shot) => {
+  await shot.expand(storefront, join(storefront, "src"));
+  await shot.fileRow(cartTs()).click({ button: "right" });
+  await shot.menu().waitFor();
+  await shot.menu().getByRole("menuitem", { name: /^Rename\.\.\./ }).hover();
+  const explorer = shot.page.locator("aside.explorer");
+  const panel = await shot.clipPanel(explorer, [shot.menu(), explorer.locator('[role="treeitem"]').last()], 24);
+  const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
+  await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
+});
+
+define("file-ops-rename", async (shot) => {
+  await shot.expand(storefront, join(storefront, "src"));
+  await shot.fileRow(cartTs()).click({ button: "right" });
+  await shot.menu().getByRole("menuitem", { name: /^Rename\.\.\./ }).click();
+  const dialog = shot.page.getByRole("dialog", { name: "Rename File" });
+  await dialog.waitFor();
+  // The name is preselected without its extension ("cart" of cart.ts).
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+  // Leave the demo as it was.
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+  await dialog.waitFor({ state: "hidden" });
 });
 
 define("editor-tabs", async (shot) => {
@@ -1663,6 +1722,18 @@ define("media-preview-image", async (shot) => {
   const box = await openPreview(shot, "logo.png", "img");
   await shot.save(box);
 }, () => twoFolderScenario({ state: { explorerOpen: true }, viewport: { width: 1280, height: 760 } }));
+
+define("diff-binary-image", async (shot) => {
+  const changes = shot.page.getByRole("group", { name: "brand-kit", exact: true }).getByRole("group", { name: "Changes" });
+  await changes.getByText("logo.png").click();
+  await shot.page.waitForFunction(() => {
+    const images = [...document.querySelectorAll<HTMLImageElement>(".diff-view .binary-preview img")];
+    return images.length === 2 && images.every((image) => image.complete && image.naturalWidth > 0);
+  });
+  await shot.settle(500);
+  await shot.page.mouse.move(640, 790);
+  await shot.save(await shot.clipAround([shot.page.locator(".diff-view")], 0));
+}, () => ({ launch: { mode: "app", repoPath: brandKit }, state: { activeRepos: {}, explorerOpen: false } }));
 
 // media-preview-pdf.png is taken by hand: Playwright's WebKit has no PDF viewer, so this page would
 // show an empty frame. Open notes/lorem-ipsum.pdf of the demo in the real app window and capture it

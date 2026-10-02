@@ -49,6 +49,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Integrated terminal in the bottom panel: several terminals, a shell picker, Ctrl+` to show or hide it and Ctrl+Shift+` for a new one, terminals moved into the editor area and back, and Settings > Terminal for fonts, cursor, scrollback and copy on selection.
 - Files panel: Open in Integrated Terminal and Reveal in Finder.
 - Image and PDF preview: images (PNG, JPEG, GIF, WebP, BMP, ICO, AVIF) open fitted with zoom, and PDFs open in the built-in viewer; a preview frees its memory when its tab is hidden or closed.
+- Binary images and PDFs in every diff show their old and new version side by side, with one zoom for both images, and big PDFs load in pieces instead of all at once.
 - Open File button in the diff toolbar, after Blame: opens the real file in an editor tab, at the same line when the right side is the working tree.
 - View > Word Wrap (Option+Z) turns word wrap on or off in every open file at once, like VS Code.
 - Editor cursor settings like VS Code (style: line, line thin, block, block outline, underline, underline thin; width; blinking: blink, smooth, phase, expand, solid; smooth caret animation) and Sublime Text's caret extra top and bottom, in Settings > Editor.
@@ -66,6 +67,8 @@ GitHub release notes, and the app shows it as "What's New".
 - A progress card while a folder opens, and "Reading changes N of M" in the status bar.
 - MCP server and command line tool (`git-manager cli`) so AI tools such as Claude Code can use the app, off by default and only on 127.0.0.1 (Settings > Automation, Help > Available MCP Tools).
 - Debug memory log (Settings > Automation) that writes memory changes to `~/.gitmanager/logs/memory.log`.
+- File operations in the Files panel, like VS Code and JetBrains: New File, New Folder, Cut, Copy, Paste, Duplicate, Rename and Move to Trash from the right-click menu or the keys (Cmd+C, Cmd+X, Cmd+V, Cmd+D, F2, Cmd+Backspace), multi-select with Cmd-click and Shift-click, drag and drop to move (Option to copy), and files dragged in from the Finder are copied. Open tabs follow renames and moves; a move by drag asks first (Settings > Layout > Confirm drag and drop).
+- MCP and command line tools for the Files panel operations: `create_file`, `create_folder`, `copy_paths`, and `rename_path`, `move_paths` and `trash_paths` (off by default), with the same unsaved-edit checks and tab follow-ups as the panel.
 
 ### Changed
 

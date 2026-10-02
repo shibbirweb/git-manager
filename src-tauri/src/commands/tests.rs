@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use super::merge::{self, Side};
-use super::{branch, files, history, repo as repo_commands, safe_join, stash, status, workspace};
+use super::{branch, file_ops, files, history, repo as repo_commands, safe_join, stash, status, workspace};
 use crate::error::AppError;
 use crate::git::conflicts;
 use crate::git::diff::DiffArea;
@@ -757,22 +757,6 @@ fn read_image_data_url_reads_workspace_images_only() {
     assert!(matches!(missing, Err(AppError::Io(_))));
 }
 
-#[test]
-fn read_preview_file_reads_workspace_images_and_pdfs_only() {
-    let repo = TestRepo::new();
-    repo.write("docs/manual.pdf", "%PDF-1.7");
-    repo.write("docs/logo.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"/>");
-
-    assert!(block_on(files::read_preview_file(repo.path_string(), "docs/manual.pdf".to_string())).is_ok());
-    // SVG is text: it opens in the editor, not the preview.
-    let svg = block_on(files::read_preview_file(repo.path_string(), "docs/logo.svg".to_string()));
-    assert!(matches!(svg, Err(AppError::Invalid(_))));
-    let escape = block_on(files::read_preview_file(repo.path_string(), "../manual.pdf".to_string()));
-    assert!(matches!(escape, Err(AppError::Invalid(_))));
-    let missing = block_on(files::read_preview_file(repo.path_string(), "docs/none.png".to_string()));
-    assert!(matches!(missing, Err(AppError::Io(_))));
-}
-
 // Workspaces
 
 fn open_workspace(folder: &Path) -> WorkspaceInfo {
@@ -1001,4 +985,365 @@ fn worktree_file_commands_work_in_a_plain_folder() {
     ))
     .unwrap();
     assert_eq!(std::fs::read_to_string(dir.file("docs/a.txt")).unwrap(), "x\r\n");
+}
+
+// File operations (file_create, file_rename, file_copy, file_move, file_trash)
+
+fn file_error<T: std::fmt::Debug>(result: crate::error::AppResult<T>) -> String {
+    result.expect_err("expected an error").to_string()
+}
+
+fn child_names(dir: &Path) -> Vec<String> {
+    let mut names: Vec<String> = std::fs::read_dir(dir)
+        .unwrap()
+        .map(|child| child.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    names
+}
+
+#[test]
+fn file_create_makes_files_folders_and_nested_names() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    let created = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "a.ts".to_string(), false)).unwrap();
+    assert_eq!(created, dir.file_string("a.ts"));
+    assert_eq!(std::fs::read(dir.file("a.ts")).unwrap(), b"");
+
+    let nested = block_on(file_ops::file_create(
+        roots.clone(),
+        dir.path_string(),
+        "src/lib/cart.ts".to_string(),
+        false,
+    ))
+    .unwrap();
+    assert_eq!(nested, dir.file_string("src/lib/cart.ts"));
+    assert!(dir.file("src/lib/cart.ts").is_file());
+
+    // An existing folder in the name is reused; a new folder can be nested too.
+    let folder = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "src/lib/util/".to_string(), true))
+        .unwrap();
+    assert_eq!(folder, dir.file_string("src/lib/util"));
+    assert!(dir.file("src/lib/util").is_dir());
+
+    let exists = block_on(file_ops::file_create(roots.clone(), dir.file_string("src"), "lib".to_string(), true));
+    assert_eq!(file_error(exists), "lib already exists");
+    let through_file = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "a.ts/b.ts".to_string(), false));
+    assert_eq!(file_error(through_file), "a.ts is not a folder");
+    let bad_name = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "..".to_string(), false));
+    assert_eq!(file_error(bad_name), "A name cannot be . or ..");
+    let git_name = block_on(file_ops::file_create(roots, dir.path_string(), ".git/hooks".to_string(), true));
+    assert_eq!(file_error(git_name), "Files inside .git cannot be changed");
+}
+
+#[test]
+fn file_rename_renames_in_place_including_case_only_renames() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("src/cart.ts", "cart");
+    dir.write("src/other.ts", "other");
+    dir.write("lib/inner/x.ts", "x");
+
+    let renamed = block_on(file_ops::file_rename(roots.clone(), dir.file_string("src/cart.ts"), "basket.ts".to_string()))
+        .unwrap();
+    assert_eq!(renamed, dir.file_string("src/basket.ts"));
+    assert_eq!(child_names(&dir.file("src")), strings(&["basket.ts", "other.ts"]));
+
+    let case_only =
+        block_on(file_ops::file_rename(roots.clone(), dir.file_string("src/basket.ts"), "Basket.ts".to_string()))
+            .unwrap();
+    assert_eq!(case_only, dir.file_string("src/Basket.ts"));
+    assert_eq!(child_names(&dir.file("src")), strings(&["Basket.ts", "other.ts"]));
+    assert_eq!(std::fs::read_to_string(dir.file("src/Basket.ts")).unwrap(), "cart");
+
+    let folder = block_on(file_ops::file_rename(roots.clone(), dir.file_string("lib"), "Lib".to_string())).unwrap();
+    assert_eq!(folder, dir.file_string("Lib"));
+    assert!(child_names(&dir.path).contains(&"Lib".to_string()));
+    assert!(dir.file("Lib/inner/x.ts").is_file());
+
+    let unchanged =
+        block_on(file_ops::file_rename(roots.clone(), dir.file_string("src/other.ts"), "other.ts".to_string())).unwrap();
+    assert_eq!(unchanged, dir.file_string("src/other.ts"));
+
+    let taken = block_on(file_ops::file_rename(roots.clone(), dir.file_string("src/other.ts"), "Basket.ts".to_string()));
+    assert_eq!(file_error(taken), "Basket.ts already exists");
+    let slash = block_on(file_ops::file_rename(roots.clone(), dir.file_string("src/other.ts"), "a/b.ts".to_string()));
+    assert_eq!(file_error(slash), "A name cannot contain /");
+    let missing = block_on(file_ops::file_rename(roots, dir.file_string("src/gone.ts"), "x.ts".to_string()));
+    assert_eq!(file_error(missing), "gone.ts does not exist");
+}
+
+#[test]
+fn file_copy_uses_copy_names_and_copies_folders_and_symlinks() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("src/cart.ts", "cart");
+    dir.write("src/lib/a.ts", "a");
+    dir.write("src/lib/deep/b.ts", "b");
+    dir.mkdir("dest");
+
+    let first = block_on(file_ops::file_copy(roots.clone(), vec![dir.file_string("src/cart.ts")], dir.file_string("src")))
+        .unwrap();
+    let second = block_on(file_ops::file_copy(roots.clone(), vec![dir.file_string("src/cart.ts")], dir.file_string("src")))
+        .unwrap();
+    let of_copy = block_on(file_ops::file_copy(
+        roots.clone(),
+        vec![dir.file_string("src/cart copy.ts")],
+        dir.file_string("src"),
+    ))
+    .unwrap();
+    assert_eq!(first, vec![dir.file_string("src/cart copy.ts")]);
+    assert_eq!(second, vec![dir.file_string("src/cart copy 2.ts")]);
+    assert_eq!(of_copy, vec![dir.file_string("src/cart copy 3.ts")]);
+    assert_eq!(std::fs::read_to_string(dir.file("src/cart copy 2.ts")).unwrap(), "cart");
+
+    // Several sources keep their order; a folder is copied with everything inside.
+    let copied = block_on(file_ops::file_copy(
+        roots.clone(),
+        vec![dir.file_string("src/lib"), dir.file_string("src/cart.ts")],
+        dir.file_string("dest"),
+    ))
+    .unwrap();
+    assert_eq!(copied, vec![dir.file_string("dest/lib"), dir.file_string("dest/cart.ts")]);
+    assert_eq!(std::fs::read_to_string(dir.file("dest/lib/deep/b.ts")).unwrap(), "b");
+    let folder_again =
+        block_on(file_ops::file_copy(roots.clone(), vec![dir.file_string("src/lib")], dir.file_string("dest"))).unwrap();
+    assert_eq!(folder_again, vec![dir.file_string("dest/lib copy")]);
+    assert!(dir.file("src/lib/a.ts").is_file());
+
+    let into_itself =
+        block_on(file_ops::file_copy(roots.clone(), vec![dir.file_string("src")], dir.file_string("src/lib/deep")));
+    assert_eq!(file_error(into_itself), "Cannot copy src into itself");
+
+    #[cfg(unix)]
+    {
+        // A symlink is copied as a link, even one that points out of the workspace.
+        let outside = dir.path.parent().unwrap().join("outside");
+        std::fs::create_dir_all(&outside).unwrap();
+        std::fs::write(outside.join("secret.txt"), "secret").unwrap();
+        std::os::unix::fs::symlink(&outside, dir.file("src/out-link")).unwrap();
+        std::os::unix::fs::symlink("cart.ts", dir.file("src/cart-link")).unwrap();
+        let links = block_on(file_ops::file_copy(
+            roots.clone(),
+            vec![dir.file_string("src/out-link"), dir.file_string("src/cart-link")],
+            dir.file_string("dest"),
+        ))
+        .unwrap();
+        assert_eq!(links, vec![dir.file_string("dest/out-link"), dir.file_string("dest/cart-link")]);
+        assert!(std::fs::symlink_metadata(dir.file("dest/out-link")).unwrap().file_type().is_symlink());
+        assert_eq!(std::fs::read_link(dir.file("dest/out-link")).unwrap(), outside);
+        assert_eq!(std::fs::read_link(dir.file("dest/cart-link")).unwrap(), Path::new("cart.ts"));
+        assert_eq!(child_names(&outside), strings(&["secret.txt"]));
+    }
+}
+
+#[test]
+fn file_move_moves_entries_and_refuses_conflicts_before_moving_anything() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("a/cart.ts", "cart");
+    dir.write("a/lib/x.ts", "x");
+    dir.write("b/lib/x.ts", "other");
+    dir.mkdir("c");
+
+    // The conflict on `lib` refuses the move before `cart.ts` moves.
+    let conflict = block_on(file_ops::file_move(
+        roots.clone(),
+        vec![dir.file_string("a/cart.ts"), dir.file_string("a/lib")],
+        dir.file_string("b"),
+    ));
+    assert_eq!(file_error(conflict), "lib already exists in b");
+    assert!(dir.file("a/cart.ts").is_file());
+
+    let into_itself = block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("a")], dir.file_string("a/lib")));
+    assert_eq!(file_error(into_itself), "Cannot move a into itself");
+
+    // Already in the target: skipped. A file inside a moved folder goes with it.
+    let moved = block_on(file_ops::file_move(
+        roots.clone(),
+        vec![
+            dir.file_string("a/cart.ts"),
+            dir.file_string("a/lib/x.ts"),
+            dir.file_string("a/lib"),
+            dir.file_string("c"),
+        ],
+        dir.file_string("c"),
+    ))
+    .unwrap_err();
+    assert_eq!(moved.to_string(), "Cannot move c into itself");
+
+    let moved = block_on(file_ops::file_move(
+        roots.clone(),
+        vec![dir.file_string("a/cart.ts"), dir.file_string("a/lib/x.ts"), dir.file_string("a/lib")],
+        dir.file_string("c"),
+    ))
+    .unwrap();
+    assert_eq!(
+        moved,
+        vec![
+            crate::file_ops::FileMove {
+                from: dir.file_string("a/cart.ts"),
+                to: dir.file_string("c/cart.ts"),
+            },
+            crate::file_ops::FileMove {
+                from: dir.file_string("a/lib"),
+                to: dir.file_string("c/lib"),
+            },
+        ]
+    );
+    assert_eq!(child_names(&dir.file("a")), Vec::<String>::new());
+    assert_eq!(std::fs::read_to_string(dir.file("c/lib/x.ts")).unwrap(), "x");
+
+    let no_op = block_on(file_ops::file_move(roots, vec![dir.file_string("c/cart.ts")], dir.file_string("c"))).unwrap();
+    assert!(no_op.is_empty());
+    assert!(dir.file("c/cart.ts").is_file());
+}
+
+#[test]
+fn file_move_works_across_the_folders_of_a_two_folder_workspace() {
+    let dir = TestDir::new();
+    dir.write("one/src/cart.ts", "cart");
+    dir.write("two/readme.md", "readme");
+    let roots = vec![dir.file_string("one"), dir.file_string("two")];
+
+    let moved = block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("one/src")], dir.file_string("two")))
+        .unwrap();
+    assert_eq!(moved[0].to, dir.file_string("two/src"));
+    assert!(dir.file("two/src/cart.ts").is_file());
+    assert!(!dir.file("one/src").exists());
+
+    let copied = block_on(file_ops::file_copy(roots, vec![dir.file_string("two/readme.md")], dir.file_string("one")))
+        .unwrap();
+    assert_eq!(copied, vec![dir.file_string("one/readme.md")]);
+}
+
+#[test]
+fn file_operations_refuse_roots_git_folders_and_paths_outside() {
+    let dir = TestDir::new();
+    dir.init_repo("repo");
+    dir.write("repo/a.ts", "a");
+    dir.write("holder/nested/n.ts", "n");
+    let outside = dir.path.parent().unwrap().join("outside");
+    std::fs::create_dir_all(&outside).unwrap();
+    std::fs::write(outside.join("o.ts"), "o").unwrap();
+    let roots = vec![dir.path_string(), dir.file_string("holder/nested")];
+    let outside_dir = outside.to_string_lossy().into_owned();
+    let outside_file = outside.join("o.ts").to_string_lossy().into_owned();
+
+    let rename_root = block_on(file_ops::file_rename(roots.clone(), dir.path_string(), "x".to_string()));
+    assert_eq!(file_error(rename_root), "workspace is a workspace folder");
+    let trash_root = block_on(file_ops::file_trash(roots.clone(), vec![dir.file_string("holder/nested")]));
+    assert_eq!(file_error(trash_root), "nested is a workspace folder");
+    let move_holder =
+        block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("holder")], dir.file_string("repo")));
+    assert_eq!(file_error(move_holder), "holder holds the workspace folder nested");
+    let copy_root = block_on(file_ops::file_copy(roots.clone(), vec![dir.path_string()], dir.file_string("repo")));
+    assert_eq!(file_error(copy_root), "workspace is a workspace folder");
+
+    let git = "Files inside .git cannot be changed";
+    let in_git = block_on(file_ops::file_create(roots.clone(), dir.file_string("repo/.git"), "x".to_string(), false));
+    assert_eq!(file_error(in_git), git);
+    let git_itself = block_on(file_ops::file_rename(roots.clone(), dir.file_string("repo/.git"), "git".to_string()));
+    assert_eq!(file_error(git_itself), git);
+    let rename_to_git = block_on(file_ops::file_rename(roots.clone(), dir.file_string("repo/a.ts"), ".git".to_string()));
+    assert_eq!(file_error(rename_to_git), git);
+    let copy_into_git =
+        block_on(file_ops::file_copy(roots.clone(), vec![dir.file_string("repo/a.ts")], dir.file_string("repo/.git")));
+    assert_eq!(file_error(copy_into_git), git);
+    let trash_git = block_on(file_ops::file_trash(roots.clone(), vec![dir.file_string("repo/.git/HEAD")]));
+    assert_eq!(file_error(trash_git), git);
+
+    let outside_source =
+        block_on(file_ops::file_copy(roots.clone(), vec![outside_file.clone()], dir.file_string("repo")));
+    assert_eq!(file_error(outside_source), format!("{outside_file} is outside the workspace"));
+    let outside_target =
+        block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("repo/a.ts")], outside_dir.clone()));
+    assert_eq!(file_error(outside_target), format!("{outside_dir} is outside the workspace"));
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(&outside, dir.file("repo/out-link")).unwrap();
+        let through_link = block_on(file_ops::file_create(
+            roots.clone(),
+            dir.file_string("repo/out-link"),
+            "x.ts".to_string(),
+            false,
+        ));
+        assert!(file_error(through_link).ends_with("is outside the workspace"));
+        let nested_through_link = block_on(file_ops::file_create(
+            roots.clone(),
+            dir.file_string("repo"),
+            "out-link/x.ts".to_string(),
+            false,
+        ));
+        assert_eq!(file_error(nested_through_link), "out-link is outside the workspace");
+    }
+    let climbing = block_on(file_ops::file_rename(roots.clone(), dir.file_string("repo/../repo/a.ts"), "b.ts".to_string()));
+    assert!(file_error(climbing).starts_with("Invalid path"));
+    let relative = block_on(file_ops::file_trash(roots.clone(), vec!["repo/a.ts".to_string()]));
+    assert!(file_error(relative).starts_with("Invalid path"));
+    let no_workspace = block_on(file_ops::file_trash(Vec::new(), vec![dir.file_string("repo/a.ts")]));
+    assert_eq!(file_error(no_workspace), "Open a workspace folder first");
+
+    // Nothing changed, and the link's target was never touched.
+    assert!(dir.file("repo/a.ts").is_file());
+    assert!(dir.file("holder/nested/n.ts").is_file());
+    assert_eq!(child_names(&outside), strings(&["o.ts"]));
+}
+
+#[test]
+fn file_trash_checks_every_path_and_drops_nested_ones() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("src/a.ts", "a");
+    dir.write("src/lib/b.ts", "b");
+    dir.write("c.ts", "c");
+    dir.write("src-link", "a file named like a link");
+
+    let mut handed: Vec<std::path::PathBuf> = Vec::new();
+    crate::file_ops::trash_entries(
+        &roots,
+        &[
+            dir.file_string("src/lib/b.ts"),
+            dir.file_string("src"),
+            dir.file_string("c.ts"),
+            dir.file_string("src-link"),
+        ],
+        |real_paths| {
+            handed = real_paths;
+            Ok(())
+        },
+    )
+    .unwrap();
+    assert_eq!(handed, vec![dir.file("src"), dir.file("c.ts"), dir.file("src-link")]);
+
+    // One bad path refuses the whole call before anything is handed on.
+    let mut called = false;
+    let refused = crate::file_ops::trash_entries(&roots, &[dir.file_string("c.ts"), dir.path_string()], |_| {
+        called = true;
+        Ok(())
+    });
+    assert_eq!(file_error(refused), "workspace is a workspace folder");
+    assert!(!called);
+}
+
+/// Puts a small file in the real Trash of the user running the tests, so it only runs on request:
+/// `cargo test file_trash_moves_entries_to_the_system_trash -- --ignored`.
+#[cfg(unix)]
+#[test]
+#[ignore = "moves a file to the user's real Trash"]
+fn file_trash_moves_entries_to_the_system_trash() {
+    let dir = TestDir::new();
+    let name = format!("git-manager-trash-test-{}.txt", std::process::id());
+    let link = format!("git-manager-trash-link-{}", std::process::id());
+    dir.write(&name, "trash me");
+    std::os::unix::fs::symlink(&name, dir.file(&link)).unwrap();
+    let roots = vec![dir.path_string()];
+
+    // A link goes to the Trash as a link: its target stays.
+    block_on(file_ops::file_trash(roots.clone(), vec![dir.file_string(&link)])).unwrap();
+    assert!(std::fs::symlink_metadata(dir.file(&link)).is_err());
+    assert!(dir.file(&name).is_file());
+
+    block_on(file_ops::file_trash(roots, vec![dir.file_string(&name)])).unwrap();
+    assert!(!dir.file(&name).exists());
 }

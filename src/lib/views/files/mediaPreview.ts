@@ -51,3 +51,8 @@ export function fitZoom(naturalWidth: number, naturalHeight: number, boxWidth: n
 export function zoomLabel(zoom: number): string {
   return `${Math.round(zoom * 100)}%`;
 }
+
+/** The message for a file over its preview limit (in bytes). */
+export function tooLargeText(limit: number): string {
+  return `The file is larger than ${Math.round(limit / 1024 / 1024)} MB, too big to preview.`;
+}

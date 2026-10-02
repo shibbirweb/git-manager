@@ -136,7 +136,7 @@ Convert between them only with `src/lib/stores/workspacePaths.ts`: `folderFor`, 
 ## Security
 
 - **Capabilities.** `src-tauri/capabilities/default.json` grants the main window a short list: `core:default`, setting the window title, the open, save, ask and message dialogs (ask and message are granted but unused today), opening URLs and revealing a file in Finder. Everything else goes through our own commands.
-- **Content Security Policy.** `src-tauri/tauri.conf.json` sets `default-src 'self'`, allows `data:` images and inline styles, and limits connections to the IPC channel and `https://api.github.com` (the update check). No remote scripts.
+- **Content Security Policy.** `src-tauri/tauri.conf.json` sets `default-src 'self'`, allows `data:` images, inline styles and the `gmpreview` scheme for images and frames ([How the Preview Scheme Works](How-the-Preview-Scheme-Works.md)), and limits connections to IPC and `https://api.github.com`. No remote scripts.
 - **Untrusted Markdown.** The preview sanitizes HTML with DOMPurify and blocks remote images; local images come from `read_image_data_url`, only from the document's workspace folder.
 - **Narrow file access.** `load_config` and `save_config` accept only the names `settings` and `state`. Worktree reads and writes go through `safe_join`.
 - **Secrets.** The GitHub token lives only in the system keychain, and git output in the Git Console is masked before it is stored.

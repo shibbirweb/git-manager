@@ -15,6 +15,7 @@
   import { toast } from "$lib/ui/toast.svelte";
   import { clampDiffSplit, DEFAULT_DIFF_SPLIT, splitFromPointer } from "./split";
   import { lfsContentChanged, lfsSizeText } from "$lib/views/git/lfs/lfsModel";
+  import { type PreviewSides, showsBinaryPreview } from "./binaryPreview";
 
   export type DiffMode = "unstaged" | "staged" | "readonly";
 
@@ -41,9 +42,22 @@
      * right side is the work tree itself, so the file opens at the line you are on.
      */
     workingFile?: { filePath: string; sameLines: boolean } | null;
+    /** Where the two sides come from, so a binary image or PDF shows side by side. */
+    previewSides?: PreviewSides | null;
   }
 
-  let { diff, path, mode, leftLabel, rightLabel, onChange, blame = null, revealLine = null, workingFile = null }: Props = $props();
+  let {
+    diff,
+    path,
+    mode,
+    leftLabel,
+    rightLabel,
+    onChange,
+    blame = null,
+    revealLine = null,
+    workingFile = null,
+    previewSides = null,
+  }: Props = $props();
 
   let revealedToken = -1;
 
@@ -101,6 +115,9 @@
   const lfs = $derived(diff.lfs ?? null);
   const textual = $derived(!diff.binary && !diff.tooLarge && lfs === null);
   const identical = $derived(textual && diff.original === diff.modified);
+  const binaryPreview = $derived(showsBinaryPreview(diff, path, previewSides));
+  /** 0 while the diff is hidden (a background tab), so the preview frees its files. */
+  let previewWidth = $state(0);
   const fileName = $derived(path.split("/").pop() ?? path);
 
   /** The right side's line to open the file at: the cursor line when it is on screen, else the top line. */
@@ -431,7 +448,15 @@
   </div>
 
   {#if !textual}
-    {#if lfs}
+    {#if binaryPreview && previewSides}
+      <div class="preview-host" bind:clientWidth={previewWidth}>
+        {#if previewWidth > 0}
+          {#await import("./BinaryPreview.svelte") then preview}
+            <preview.default sides={previewSides} {leftLabel} {rightLabel} {path} />
+          {/await}
+        {/if}
+      </div>
+    {:else if lfs}
       <div class="message lfs-message">
         <span class="lfs-title">Stored in Git LFS</span>
         <span class="dim">{lfsSizeText(lfs)}{lfsContentChanged(lfs) ? "" : ", same content"}</span>
@@ -716,6 +741,13 @@
 
   .body :global(.cm-merge-revert .diff-revert svg) {
     pointer-events: none;
+  }
+
+  .preview-host {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .lfs-message {

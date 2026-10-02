@@ -789,7 +789,7 @@
     <!-- Only while the tab is on screen, so a hidden or closed tab frees the picture or document. -->
     {#if isActive && folder}
       {#await import("./MediaPreview.svelte") then media}
-        <media.default {filePath} rootPath={folder.root} relativePath={folderPath} {preview} reloadToken={previewToken} />
+        <media.default {filePath} {preview} reloadToken={previewToken} />
       {/await}
     {/if}
   {:else if loadError}
