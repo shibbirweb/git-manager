@@ -321,6 +321,8 @@ export const api = {
     invoke<FileContent>("read_worktree_file", { repoPath, filePath }),
   /** A local image for the Markdown preview as a data URL; `imagePath` is relative to the workspace folder `rootPath`. */
   readImageDataUrl: (rootPath: string, imagePath: string) => invoke<string>("read_image_data_url", { rootPath, imagePath }),
+  /** An image or PDF for the file preview as raw bytes; `filePath` is relative to the workspace folder `rootPath`. */
+  readPreviewFile: (rootPath: string, filePath: string) => invoke<ArrayBuffer>("read_preview_file", { rootPath, filePath }),
 
   // Go to File. Indexing progress arrives on `progress` until the popup closes.
   fileSearchOpen: (workspaceRoots: string[], progress: Channel<FileSearchProgress>) =>

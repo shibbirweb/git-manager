@@ -7,6 +7,7 @@
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
     { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
+    { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs from your files in a preview tab that frees its memory when closed." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
@@ -114,6 +115,13 @@
       "usage": "usage/Markdown-Editor.md",
       "developer": "developer/How-the-Markdown-Editor-Works.md",
       "screenshots": ["markdown-split.png", "markdown-toolbar.png", "markdown-rich-editor.png", "markdown-mermaid.png"]
+    },
+    {
+      "id": "media-preview",
+      "title": "Image and PDF preview",
+      "usage": "usage/Image-and-PDF-Preview.md",
+      "developer": "developer/How-the-Image-and-PDF-Preview-Works.md",
+      "screenshots": ["media-preview-image.png", "media-preview-pdf.png"]
     },
     {
       "id": "search-everywhere",
