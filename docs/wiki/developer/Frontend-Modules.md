@@ -25,6 +25,7 @@ flowchart LR
   App -->|"Help windows"| Help["help/ShortcutsDialog.svelte<br/>mcp/McpToolsDialog.svelte"]
   App -->|"first MCP UI tool call"| Handlers["mcp/handlers.ts"]
   App -->|"a file of that language"| Lang["@codemirror/lang-*"]
+  App -->|"an image or PDF tab or diff"| Media["views/files/MediaPreview.svelte<br/>diff/BinaryPreview.svelte"]
 ```
 
 `vite.config.js` lists xterm, the Markdown libraries and the Milkdown entry points in `optimizeDeps.include`. Without that, Vite in dev found them only when first imported, bundled them and reloaded the window.
@@ -58,6 +59,7 @@ flowchart LR
 - `stores/pseudoTabs.ts`: the one check for tab paths that are not files (commit, Git, branch and terminal tabs), used by folder lookups, the Files panel and Back and Forward.
 - `ui/pickList.ts` and `ui/menuNav.ts`: the filterable pick dialog and keyboard navigation for context menus and submenus.
 - `diff/split.ts`: the resizable split of side-by-side diffs.
+- `diff/binaryPreview.ts`: when a diff shows an image or PDF side by side, with one zoom for both.
 
 ## Adding a feature folder
 

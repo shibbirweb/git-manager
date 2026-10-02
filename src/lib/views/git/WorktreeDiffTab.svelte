@@ -4,6 +4,7 @@
   import { untrack } from "svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
+  import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ChangedFile, RevisionDiff, WorktreeComparison } from "$lib/types";
@@ -24,6 +25,8 @@
   let diffError = $state<string | null>(null);
   let loadToken = 0;
   let diffToken = 0;
+  /** Bumped on every diff load, so a binary preview reads the work tree file again. */
+  let previewVersion = $state(0);
 
   $effect(() => {
     // A new status object means files changed on disk.
@@ -50,6 +53,20 @@
     }
   }
 
+  /** The branch's commit (none when the file is not in it) against the work tree. */
+  const previewSides = $derived.by((): PreviewSides | null => {
+    if (!result || !selected || !comparison) {
+      return null;
+    }
+    return {
+      original: result.existsInRevision
+        ? { kind: "revision", repoRoot, revision: result.commitId, filePath: selected.path }
+        : null,
+      modified: { kind: "worktree", filePath: joinPath(repoRoot, selected.path) },
+      version: previewVersion,
+    };
+  });
+
   async function select(file: ChangedFile | null): Promise<void> {
     selected = file;
     const token = ++diffToken;
@@ -62,6 +79,7 @@
       if (token === diffToken) {
         result = next;
         diffError = null;
+        previewVersion++;
       }
     } catch (error) {
       if (token === diffToken) {
@@ -105,6 +123,7 @@
               leftLabel={revision}
               rightLabel="Working Tree"
               workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: true }}
+              {previewSides}
             />
           {/key}
         {:else}

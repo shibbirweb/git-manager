@@ -10,6 +10,7 @@
 #   <target>/remotes/storefront.git    storefront's "origin"
 #   <target>/extras/shop-app/          a submodule themes/acme with new commits and changes
 #   <target>/extras/media-site/        images stored with Git LFS (pointer files)
+#   <target>/extras/brand-kit/         a logo changed in the work tree (binary image diff)
 #
 # Dates are relative to now, so blame and the log read "2 days ago" whenever it is run.
 #
@@ -487,6 +488,15 @@ printf 'version https://git-lfs.github.com/spec/v1\noid sha256:%s\nsize 2097152\
   "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" >"$media/assets/hero.png"
 git -C "$media" add assets/hero.png
 
+# extras/brand-kit: a committed logo replaced by a bigger one in the work tree, for the binary diff preview.
+brand="$extras/brand-kit"
+extra_repo "$brand"
+mkdir -p "$brand/assets"
+printf '# Brand kit\n\nLogos and icons.\n' >"$brand/README.md"
+cp "$script_dir/../src-tauri/icons/128x128.png" "$brand/assets/logo.png"
+extra_commit "$brand" "Maya Chen" 7 "Add the logo"
+cp "$script_dir/../src-tauri/icons/128x128@2x.png" "$brand/assets/logo.png"
+
 cat <<EOF
 
 Created $workspace:
@@ -494,5 +504,5 @@ Created $workspace:
   payments-api   stopped in a merge with conflicts
   notes          no git
 Also $design, a separate repository to add as a second workspace folder,
-and $extras: shop-app (with a submodule) and media-site (Git LFS).
+and $extras: shop-app (with a submodule), media-site (Git LFS) and brand-kit (a changed image).
 EOF

@@ -18,6 +18,8 @@ import type {
   Eol,
   FileContent,
   FileDiff,
+  PreviewSource,
+  PreviewStat,
   FileHistoryEntry,
   FileSearchProgress,
   FileSearchResults,
@@ -321,8 +323,15 @@ export const api = {
     invoke<FileContent>("read_worktree_file", { repoPath, filePath }),
   /** A local image for the Markdown preview as a data URL; `imagePath` is relative to the workspace folder `rootPath`. */
   readImageDataUrl: (rootPath: string, imagePath: string) => invoke<string>("read_image_data_url", { rootPath, imagePath }),
-  /** An image or PDF for the file preview as raw bytes; `filePath` is relative to the workspace folder `rootPath`. */
-  readPreviewFile: (rootPath: string, filePath: string) => invoke<ArrayBuffer>("read_preview_file", { rootPath, filePath }),
+  /** Whether a previewed image or PDF is there, its size, and the limit when it is too big. */
+  previewStat: (source: PreviewSource) =>
+    invoke<PreviewStat>(
+      "preview_stat",
+      source.kind === "worktree"
+        ? { filePath: source.filePath, repoRoot: null, revision: null }
+        : { filePath: source.filePath, repoRoot: source.repoRoot, revision: source.revision },
+    ),
+
   // File operations in the Files panel: absolute paths, each inside one of `workspaceRoots`.
   /** `name` may contain "/" to create nested folders; returns the new absolute path. */
   fileCreate: (workspaceRoots: string[], parentDir: string, name: string, isDir: boolean) =>

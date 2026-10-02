@@ -466,6 +466,23 @@ export interface FileContent {
   size: number;
 }
 
+// Image and PDF preview (src-tauri/src/preview_scheme.rs)
+
+/**
+ * Where a previewed image or PDF comes from: a work tree file (absolute path), or a file of a
+ * repository (repo-relative path) at a revision: `HEAD`, `index`, a full commit id or `<id>^`.
+ */
+export type PreviewSource =
+  | { kind: "worktree"; filePath: string }
+  | { kind: "revision"; repoRoot: string; revision: string; filePath: string };
+
+export interface PreviewStat {
+  exists: boolean;
+  size: number;
+  /** Set when the file is too big to preview: the limit in bytes. */
+  limit: number | null;
+}
+
 // Go to File
 
 export interface FileSearchProgress {

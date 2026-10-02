@@ -757,22 +757,6 @@ fn read_image_data_url_reads_workspace_images_only() {
     assert!(matches!(missing, Err(AppError::Io(_))));
 }
 
-#[test]
-fn read_preview_file_reads_workspace_images_and_pdfs_only() {
-    let repo = TestRepo::new();
-    repo.write("docs/manual.pdf", "%PDF-1.7");
-    repo.write("docs/logo.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"/>");
-
-    assert!(block_on(files::read_preview_file(repo.path_string(), "docs/manual.pdf".to_string())).is_ok());
-    // SVG is text: it opens in the editor, not the preview.
-    let svg = block_on(files::read_preview_file(repo.path_string(), "docs/logo.svg".to_string()));
-    assert!(matches!(svg, Err(AppError::Invalid(_))));
-    let escape = block_on(files::read_preview_file(repo.path_string(), "../manual.pdf".to_string()));
-    assert!(matches!(escape, Err(AppError::Invalid(_))));
-    let missing = block_on(files::read_preview_file(repo.path_string(), "docs/none.png".to_string()));
-    assert!(matches!(missing, Err(AppError::Io(_))));
-}
-
 // Workspaces
 
 fn open_workspace(folder: &Path) -> WorkspaceInfo {

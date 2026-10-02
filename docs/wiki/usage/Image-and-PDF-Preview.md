@@ -1,6 +1,6 @@
 # Image and PDF Preview
 
-Click an image or a PDF in the [Files panel](Files-Panel.md), or open one with [Search Everywhere](Search-Everywhere.md), and it opens in a preview tab instead of the "Binary file, not shown" message.
+Click an image or a PDF in the [Files panel](Files-Panel.md), or open one with [Search Everywhere](Search-Everywhere.md), and it opens in a preview tab instead of the "Binary file, not shown" message. In a [diff](Diffs.md), a changed image or PDF shows its old and new version side by side.
 
 ![An image in the preview](../images/media-preview-image.png)
 
@@ -32,11 +32,27 @@ PDFs use the viewer that is built into macOS, the same one Safari uses. Scroll t
 
 *A PDF in its tab, shown by the built-in viewer.*
 
+## In a diff
+
+When a diff in Changes, the Log, a commit tab or a compare tab is about an image or a PDF, it shows the old version on the left and the new one on the right, with the diff's labels above them.
+
+- Each side shows its size in pixels and its file size.
+- **Fit**, **100%** and the zoom buttons change both images at once, and so do a pinch or Cmd with the mouse wheel. Fit uses one scale for both, so a bigger image looks bigger.
+- Scrolling one side scrolls the other.
+- A PDF shows in two viewers side by side.
+- A new file says **Not in** and the left label (for example **Not in HEAD**) on the left; a deleted file says **Deleted** on the right.
+
+Shelved changes and files in [Git LFS](Git-LFS.md) keep their usual message: the shelf keeps a binary file only as a patch, and LFS diffs show the two sizes.
+
 ## Memory
 
 A preview only holds the file while its tab is on screen. When you switch to another tab or close it, the picture or document is let go, and Git Manager reads the file again when you come back. So a folder full of big photos or manuals does not fill your memory. The part of the app that shows previews is small and loads the first time you open one.
 
-There are limits so a single file cannot use too much memory: 50 MB for an image and 100 MB for a PDF. Bigger files show a message instead.
+The app hands the file straight to the viewer, so it is never copied into the page. A big PDF is read in pieces as you scroll, where the viewer asks for that.
+
+There are limits so a single file cannot use too much memory: 50 MB for an image, and 100 MB for a PDF that has to be read at once (an older version from git always does). Bigger files show a message instead.
+
+Only files inside the folders open in the window can be previewed.
 
 ## When the file changes
 
@@ -46,3 +62,4 @@ If the file changes on disk, for example after `git pull` or when another app sa
 
 - [Editor and Tabs](Editor-and-Tabs.md)
 - [Files Panel](Files-Panel.md)
+- [Diffs](Diffs.md)

@@ -1,11 +1,13 @@
 <!-- Main-area view showing the diff of the change selected in the Changes sidebar. -->
 <script lang="ts">
+  import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import { buildSections, displayPath, findSection, splitSections } from "./sections";
+  import { HEAD_REVISION, INDEX_REVISION } from "$lib/views/files/previewSource";
+  import { buildSections, displayPath, findFile, findSection, splitSections } from "./sections";
   import { changesSelection } from "./selection.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { untrack } from "svelte";
@@ -35,6 +37,27 @@
   const selectedSection = $derived(selected ? findSection(sections, selected.repoRoot) : null);
   const diffMode = $derived(selected?.area === "staged" ? "staged" : "unstaged");
   const panelHidden = $derived(settings.leftPanel !== "changes");
+
+  /** Bumped when the repository's status changes, so a binary preview loads its files again. */
+  let previewVersion = $state(0);
+  $effect(() => {
+    void repoStore.statuses[selected?.repoRoot ?? ""];
+    untrack(() => previewVersion++);
+  });
+  /** Unstaged: the index against the work tree. Staged: HEAD (the old path of a rename) against the index. */
+  const previewSides = $derived.by((): PreviewSides | null => {
+    if (!selected) {
+      return null;
+    }
+    const index = { kind: "revision", repoRoot: selected.repoRoot, revision: INDEX_REVISION, filePath: selected.path } as const;
+    if (selected.area === "staged") {
+      const oldPath = findFile(sections, selected)?.origPath ?? selected.path;
+      const head = { kind: "revision", repoRoot: selected.repoRoot, revision: HEAD_REVISION, filePath: oldPath } as const;
+      return { original: head, modified: index, version: previewVersion };
+    }
+    const worktree = { kind: "worktree", filePath: joinPath(selected.repoRoot, selected.path) } as const;
+    return { original: index, modified: worktree, version: previewVersion };
+  });
 </script>
 
 <div class="changes-diff">
@@ -58,6 +81,7 @@
       }}
       revealLine={reveal}
       workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
+      {previewSides}
     />
   {:else if selected && changesSelection.diffError}
     <div class="placeholder">

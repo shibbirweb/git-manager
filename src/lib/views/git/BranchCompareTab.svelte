@@ -5,6 +5,7 @@
   import { untrack } from "svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
+  import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
   import { relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -60,6 +61,17 @@
       }
     }
   }
+
+  /** The base branch (the old path of a rename) against the compared branch, both commits. */
+  const previewSides = $derived.by((): PreviewSides | null => {
+    if (!comparison || !selected) {
+      return null;
+    }
+    return {
+      original: { kind: "revision", repoRoot, revision: comparison.baseId, filePath: selected.origPath ?? selected.path },
+      modified: { kind: "revision", repoRoot, revision: comparison.branchId, filePath: selected.path },
+    };
+  });
 
   async function select(file: ChangedFile | null): Promise<void> {
     selected = file;
@@ -143,6 +155,7 @@
               leftLabel={baseName}
               rightLabel={branchName}
               workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: false }}
+              {previewSides}
             />
           {/key}
         {:else}

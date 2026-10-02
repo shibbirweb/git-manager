@@ -4,9 +4,9 @@ The diff view shows one file side by side: the old version on the left, the new 
 
 ## Why we need it
 
-Before you stage or commit, you want to see exactly what changed, and often you want only part of a file in the next commit. Staging single hunks is the feature people miss most in simple git GUIs.
+Before you stage or commit, you want to see exactly what changed, and often only part of a file belongs in the next commit. Staging single hunks is what people miss most in simple git GUIs.
 
-The split of work is deliberate. Rust only loads the two texts of the selected file; the UI computes and draws the diff with `@codemirror/merge`. No patch text crosses the bridge, nothing is parsed twice, and only the file on screen is kept in memory.
+The split of work is deliberate. Rust only loads the two texts of the selected file; the UI computes and draws the diff with `@codemirror/merge`. No patch text crosses the bridge and only the file on screen is kept in memory.
 
 ## How it works
 
@@ -29,11 +29,11 @@ flowchart LR
 
 `working_file` handles the first two and `commit_file` the third. `build` gives up on files over `MAX_DIFF_BYTES` (4 MB), flags binary content, and normalizes CRLF to LF while remembering each side's `Eol`.
 
-`changesSelection.loadDiff` asks `getFileDiff` for the selected row. A token drops answers that arrive after you picked another file, and `sameDiff` skips rebuilding the editors when a refresh returns identical text. The diff reloads only when its own repository's status object changes, so a refresh in another repository leaves it alone.
+`changesSelection.loadDiff` asks `getFileDiff` for the selected row. A token drops answers that arrive after you picked another file, and `sameDiff` skips rebuilding the editors when a refresh returns identical text. The diff reloads only when its own repository's status object changes.
 
 ### The view
 
-`DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, an optional `onChange`, an optional `blame` target, an optional `revealLine` for Back and Forward, and an optional `workingFile` for the Open File button. Its `build` function:
+`DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, and optionally `onChange`, a `blame` target, `revealLine` (Back and Forward), `workingFile` (Open File) and `previewSides` (binary images and PDFs). Its `build` function:
 
 - loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`,
 - collapses unchanged lines (`margin: 3`, `minSize: 4`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
@@ -44,7 +44,7 @@ flowchart LR
 
 **Open File** gets `workingFile` from every diff view: the work tree path, with `sameLines` when the right side is the work tree. `openWorkingFile` checks `navigation.fileExists`, then opens it with `navigation.openFileAt`, at the cursor or top visible line (`lineOnScreen`) when `sameLines` is set.
 
-The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)).
+The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)). With `previewSides`, a binary image or PDF shows both versions side by side ([How the Image and PDF Preview Works](How-the-Image-and-PDF-Preview-Works.md) lists every caller's sides).
 
 ### Resizing the sides
 
@@ -114,9 +114,9 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 **Read-only, not non-editable.** The editors use `readOnly` but not `EditorView.editable.of(false)`, so find, copy and F7 still work.
 
-**Let the UI compute the diff.** One diff engine draws what you see, and the hunk buttons come for free with `@codemirror/merge`. Computing hunks in Rust would mean two diff engines that could disagree.
+**Let the UI compute the diff.** One diff engine draws what you see, and the hunk buttons come free with `@codemirror/merge`. Hunks from Rust would mean two engines that could disagree.
 
-**One split for every diff.** The ratio is layout state, like panel widths, so it lives in `state.json` and every diff shares it. A split per file would be forgotten the moment you pick the next file.
+**One split for every diff.** The ratio is layout state, like panel widths, so it lives in `state.json` and every diff shares it. A split per file would be lost with the next file.
 
 ## Bugs we fixed
 
@@ -134,4 +134,4 @@ Hunk buttons, the drag and Open File need a manual check in the app. See [Testin
 
 - Update this page when a diff area, the size limit, the hunk staging path or the `DiffView` props change.
 - Update [Diffs](../usage/Diffs.md) for visible changes.
-- Retake `diff-view.png`, `diff-hunk-staging.png` and `diff-split-resize.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).
+- Retake `diff-view.png`, `diff-hunk-staging.png`, `diff-split-resize.png` and `diff-binary-image.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

@@ -31,6 +31,7 @@
   import Welcome from "$lib/views/Welcome.svelte";
   import Workspace from "$lib/views/Workspace.svelte";
   import { changesSelection } from "$lib/views/changes/selection.svelte";
+  import { syncWorkspaceFolders } from "$lib/views/files/previewScheme";
 
   let launch = $state<LaunchMode | null>(null);
   /** Font size badge shown briefly while zooming with the mouse wheel. */
@@ -72,14 +73,14 @@
     return untrack(() => startMcpBridge());
   });
 
-  // Tools only reach the folders open now.
+  // Tools and the image and PDF previews only reach the folders open now.
   const workspaceFolderKey = $derived((repoStore.workspace?.folders ?? []).map((folder) => folder.root).join("\n"));
   $effect(() => {
     if (!mainWindow) {
       return;
     }
     const folderPaths = workspaceFolderKey ? workspaceFolderKey.split("\n") : [];
-    api.mcpSetWorkspace(folderPaths).catch(() => undefined);
+    syncWorkspaceFolders(folderPaths);
   });
 
   // The debug memory log (Settings > Automation): the backend reads memory, the window reports

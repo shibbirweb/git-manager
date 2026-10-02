@@ -14,6 +14,7 @@ mod memory_log;
 mod merge;
 mod run_process;
 mod node_versions;
+mod preview_scheme;
 mod scripts;
 mod shelf;
 mod state;
@@ -44,6 +45,13 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(launch))
+        // Images and PDFs for the previews, off the main thread (see preview_scheme.rs).
+        .register_asynchronous_uri_scheme_protocol(preview_scheme::SCHEME, |context, request, responder| {
+            let folders = context.app_handle().state::<AppState>().preview_folders.clone();
+            tauri::async_runtime::spawn_blocking(move || {
+                responder.respond(preview_scheme::http_response(&folders.get(), &request));
+            });
+        })
         .setup(|app| {
             let host = std::sync::Arc::new(mcp::TauriHost::new(app.handle().clone()));
             app.state::<AppState>().mcp.attach_host(host);
@@ -149,7 +157,7 @@ pub fn run() {
             commands::files::list_directory,
             commands::files::read_worktree_file,
             commands::files::read_image_data_url,
-            commands::files::read_preview_file,
+            commands::files::preview_stat,
             commands::file_ops::file_create,
             commands::file_ops::file_rename,
             commands::file_ops::file_copy,

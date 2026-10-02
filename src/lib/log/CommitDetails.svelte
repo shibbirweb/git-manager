@@ -2,10 +2,12 @@
   import { untrack } from "svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
+  import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
   import type { ChangedFile, CommitDetails, FileDiff } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { parentRevision } from "$lib/views/files/previewSource";
   import { fileDir, fileName, fullDate, statusLetter } from "./format";
   import { findLine } from "./lineMatch";
 
@@ -39,7 +41,14 @@
   let detailsError = $state<string | null>(null);
   let selectedPath = $state<string | null>(null);
   /** The diff on screen; kept while the next one loads to avoid flicker. */
-  let shown = $state.raw<{ key: string; path: string; label: string; diff: FileDiff } | null>(null);
+  let shown = $state.raw<{
+    key: string;
+    path: string;
+    label: string;
+    diff: FileDiff;
+    /** Where a binary image or PDF comes from: the first parent (none for a root commit) and the commit. */
+    previewSides: PreviewSides;
+  } | null>(null);
   let diffError = $state<string | null>(null);
   let diffLoading = $state(false);
   let leftWidth = $state(360);
@@ -144,11 +153,20 @@
       if (token !== diffToken) {
         return;
       }
+      // loadDiff runs once these details are loaded; their id is the full one the scheme needs.
+      const commitFullId = details?.id ?? targetCommitId;
+      const hasParent = (details?.parents.length ?? 0) > 0;
       shown = {
         key: `${targetCommitId}:${file.path}`,
         path: file.path,
         label: targetCommitId.slice(0, 8),
         diff: result,
+        previewSides: {
+          original: hasParent
+            ? { kind: "revision", repoRoot: targetRepoPath, revision: parentRevision(commitFullId), filePath: file.origPath ?? file.path }
+            : null,
+          modified: { kind: "revision", repoRoot: targetRepoPath, revision: commitFullId, filePath: file.path },
+        },
       };
     } catch (error) {
       if (token !== diffToken) {
@@ -326,6 +344,7 @@
               }}
           {revealLine}
           workingFile={{ filePath: joinPath(repoPath, shown.path), sameLines: false }}
+          previewSides={shown.previewSides}
         />
       {/key}
     {:else if diffLoading}

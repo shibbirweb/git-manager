@@ -68,7 +68,8 @@ See [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
 ## Small helpers
 
 - **`memory_log.rs`**: the debug memory log (Settings > Automation). While on, a thread writes a line to `~/.gitmanager/logs/memory.log` when memory changes by the threshold, plus the UI events the window reports; past 5 MB it keeps the old file as `memory.log.1`. See [Debugging](Debugging.md).
-- **`images.rs`**: local images for the Markdown preview as data URLs (the CSP allows no other images), only from the document's workspace folder. See [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md).
+- **`images.rs`**: local images for the Markdown preview as data URLs, only from the document's workspace folder. See [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md).
+- **`preview_scheme.rs`** and **`media.rs`**: the `gmpreview` URL scheme that streams images and PDFs to the previews, only from the open workspace folders, idle until a preview asks. See [How the Preview Scheme Works](How-the-Preview-Scheme-Works.md).
 - **`memory.rs`**: the memory readout of the status bar, also used by the memory log and the MCP performance tools.
 
 ## Adding a service

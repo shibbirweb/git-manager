@@ -49,6 +49,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Integrated terminal in the bottom panel: several terminals, a shell picker, Ctrl+` to show or hide it and Ctrl+Shift+` for a new one, terminals moved into the editor area and back, and Settings > Terminal for fonts, cursor, scrollback and copy on selection.
 - Files panel: Open in Integrated Terminal and Reveal in Finder.
 - Image and PDF preview: images (PNG, JPEG, GIF, WebP, BMP, ICO, AVIF) open fitted with zoom, and PDFs open in the built-in viewer; a preview frees its memory when its tab is hidden or closed.
+- Binary images and PDFs in every diff show their old and new version side by side, with one zoom for both images, and big PDFs load in pieces instead of all at once.
 - Open File button in the diff toolbar, after Blame: opens the real file in an editor tab, at the same line when the right side is the working tree.
 - View > Word Wrap (Option+Z) turns word wrap on or off in every open file at once, like VS Code.
 - Editor cursor settings like VS Code (style: line, line thin, block, block outline, underline, underline thin; width; blinking: blink, smooth, phase, expand, solid; smooth caret animation) and Sublime Text's caret extra top and bottom, in Settings > Editor.

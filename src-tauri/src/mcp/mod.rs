@@ -9,7 +9,7 @@ pub mod dto;
 mod host;
 mod http;
 mod install;
-mod paths;
+pub(crate) mod paths;
 mod protocol;
 mod registry;
 mod token;

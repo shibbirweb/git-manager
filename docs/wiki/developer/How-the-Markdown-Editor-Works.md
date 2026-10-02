@@ -4,7 +4,7 @@ Markdown files open with a formatting toolbar and three views: the text, the tex
 
 ## Why we need it
 
-Most repositories keep their README and docs in Markdown. Raw text is tiring to read, and switching to a browser to check a table or a diagram breaks the flow. JetBrains IDEs and VS Code show a preview next to the text, so people expect it. A preview of files from cloned repositories is also a security surface, because Markdown may carry raw HTML.
+Most repositories keep their README and docs in Markdown. Raw text is tiring to read, and switching to a browser to check a table or a diagram breaks the flow. JetBrains IDEs and VS Code show a preview next to the text. Previewing cloned files is also a security surface, since Markdown may carry raw HTML.
 
 ## How it works
 
@@ -59,7 +59,7 @@ sequenceDiagram
 
 ### Links and images
 
-`links.ts` is pure: `classifyLink` gives `external` (http, https, mailto), `anchor`, `file` (inside the workspace, `/path` from the repository root) or `blocked`; `classifyImage` gives `data`, `remote` (never fetched), `local` or `blocked` with a reason. Local images come from the `read_image_data_url` command (`src-tauri/src/commands/files.rs`, with the `read_data_url` helper in `src-tauri/src/images.rs`): inside the workspace folder after resolving symlinks, PNG, JPEG, GIF, WebP or SVG, at most 10 MB. The CSP allows only `'self'` and `data:` images.
+`links.ts` is pure: `classifyLink` gives `external` (http, https, mailto), `anchor`, `file` (inside the workspace, `/path` from the repository root) or `blocked`; `classifyImage` gives `data`, `remote` (never fetched), `local` or `blocked` with a reason. Local images come from the `read_image_data_url` command (`src-tauri/src/commands/files.rs`, with the `read_data_url` helper in `src-tauri/src/images.rs`): inside the workspace folder after resolving symlinks, PNG, JPEG, GIF, WebP or SVG, at most 10 MB. The CSP allows `'self'`, `data:` and the preview scheme for images; this preview uses `data:`.
 
 ### Diagrams
 

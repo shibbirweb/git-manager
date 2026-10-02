@@ -9,6 +9,7 @@ Commands that are not about one repository's git data: files, config, the memory
 | `list_directory` | `listDirectory(rootPath, dirPath, repoRoots)` | `DirListing` | file | one folder level for the Files panel, the first 5000 in sort order |
 | `read_worktree_file` | `readWorktreeFile(repoPath, filePath)` | `FileContent` | file | a file's text for the editor |
 | `read_image_data_url` | `readImageDataUrl(rootPath, imagePath)` | `string` | file | a local image for the Markdown preview as a `data:` URL, only from inside the workspace folder |
+| `preview_stat` | `previewStat(source)` | `PreviewStat` | file | whether an image or PDF for a preview exists, its size, and the limit when too big; the bytes come from the `gmpreview` scheme (see [How the Preview Scheme Works](How-the-Preview-Scheme-Works.md)) |
 | `file_create` | `fileCreate(workspaceRoots, parentDir, name, isDir)` | `string` | file | a new file or folder; a `name` with `/` creates the missing folders too |
 | `file_rename` | `fileRename(workspaceRoots, entryPath, newName)` | `string` | file | renames in place; a case-only rename goes through a temporary name |
 | `file_copy` | `fileCopy(workspaceRoots, sourcePaths, targetDir)` | `string[]` | file | copies files and folders, symlinks as links; a taken name becomes `cart copy.ts`, `cart copy 2.ts` |
@@ -90,7 +91,7 @@ Both switches off: nothing listens and no thread runs. See [How MCP and CLI Work
 | `mcp_status` | `mcpStatus()` | `McpStatus` | app | whether it runs, its port, URL and token, and the command line tool's install state |
 | `mcp_tools` | `mcpTools()` | `McpToolInfo[]` | app | backend and UI tools with their effective on or off state |
 | `mcp_register_ui_tools` | `mcpRegisterUiTools(tools)` | `void` | app | the tools the window runs, sent once at start |
-| `mcp_set_workspace` | `mcpSetWorkspace(folderPaths)` | `void` | app | the folders tools may touch: the workspace folders open now |
+| `mcp_set_workspace` | `mcpSetWorkspace(folderPaths)` | `void` | app | the folders tools and the `gmpreview` scheme may touch: the workspace folders open now |
 | `mcp_ui_respond` | `mcpUiRespond(requestId, result)` | `void` | app | the window's answer to an `mcp-ui-request`; a late answer is dropped |
 | `mcp_regenerate_token` | `mcpRegenerateToken()` | `McpStatus` | file | a new secret token in `~/.gitmanager/mcp.json` |
 | `mcp_activity` | `mcpActivity()` | `McpActivity[]` | app | the last 50 calls, newest last |
