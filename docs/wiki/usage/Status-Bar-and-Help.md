@@ -11,7 +11,7 @@ The status bar is the thin line at the bottom of the window. It tells you where 
 Like in VS Code, the left side follows what is on screen. When a file tab or a diff is showing, it describes that file's repository. A commit, branch or history tab describes its repository, and a terminal tab the repository of its folder. Otherwise it describes the active repository.
 
 - **Repository name**. Hover it for the full path. Click it to make that repository the active one and open the Branches sidebar.
-- **Branch**, with numbers for commits to pull (down arrow) and to push (up arrow), such as **main 1** and an up arrow. A checked-out commit shows as "detached" and its short hash. Click it to open the Branches sidebar.
+- **Branch**, with numbers for commits to pull (down arrow) and to push (up arrow), such as **main 1** and an up arrow. A checked-out commit shows as "detached" and its short hash. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
 - **4 changes**: the number of changed files, hidden when there are none. Click it to open Changes.
 - **2 conflicts**, in red, while files are in conflict. Click it to open the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
 - A note such as **Merging feature into main** while a merge, rebase, cherry-pick or revert is in progress. See [Resolving Conflicts](Resolving-Conflicts.md).

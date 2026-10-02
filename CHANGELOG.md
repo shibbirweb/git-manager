@@ -48,6 +48,7 @@ GitHub release notes, and the app shows it as "What's New".
 - GitHub account (Settings > GitHub) with a token kept only in the system keychain, or the GitHub CLI: Share Project on GitHub, Sync Fork, Create Gist, and links to open the repository, create a pull request or copy a GitHub link.
 - Integrated terminal in the bottom panel: several terminals, a shell picker, Ctrl+` to show or hide it and Ctrl+Shift+` for a new one, terminals moved into the editor area and back, and Settings > Terminal for fonts, cursor, scrollback and copy on selection.
 - Files panel: Open in Integrated Terminal and Reveal in Finder.
+- Clicking the branch in the status bar opens the Branches popup to check out another branch, like JetBrains, instead of the Branches sidebar.
 - The memory popup in the status bar has a GPU acceleration section: whether the terminals use the GPU (or why not), and whether the web view supports WebGL; the window itself always draws with the GPU.
 - Image and PDF preview: images (PNG, JPEG, GIF, WebP, BMP, ICO, AVIF) open fitted with zoom, and PDFs open in the built-in viewer; a preview frees its memory when its tab is hidden or closed.
 - Binary images and PDFs in every diff show their old and new version side by side, with one zoom for both images, and big PDFs load in pieces instead of all at once.

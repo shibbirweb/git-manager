@@ -1,6 +1,7 @@
 <!-- Bottom status bar: repository state on the left, app memory on the right. -->
 <script lang="ts">
   import { onMount } from "svelte";
+  import { openBranchPicker } from "./changes/repoActions";
   import { gpuRenderers } from "$lib/terminal/gpuRenderers.svelte";
   import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
   import { probeWebgl } from "$lib/ui/webglProbe";
@@ -175,7 +176,11 @@
         <span>{contextRepo.name}</span>
       </button>
       {#if branch}
-        <button class="item" onclick={() => void showBranches()} title="Branch {branch} of {contextRepo.name}">
+        <button
+          class="item"
+          onclick={() => openBranchPicker(contextRepo.root)}
+          title="Branch {branch} of {contextRepo.name}. Click to check out another branch."
+        >
           <Icon name="branch" size={12} />
           <span>{branch}</span>
           {#if head && (head.ahead > 0 || head.behind > 0)}
