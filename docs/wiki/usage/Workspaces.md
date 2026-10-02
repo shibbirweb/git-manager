@@ -17,6 +17,16 @@ Git Manager then looks for repositories (folders that git tracks) inside it:
 - Repositories further down, also ones nested inside other repositories, up to six levels deep.
 - Folders such as `node_modules`, `vendor`, `build`, `dist`, `target` and `.venv` are skipped, because they never hold repositories worth showing.
 
+### While a big folder opens
+
+![Opening a folder](../images/workspace-opening.png)
+
+*The progress card while Git Manager looks for repositories in a big folder.*
+
+If looking for repositories takes more than a blink, a card says **Opening** and the folder name, with the step, such as **Looking for repositories...**. After a few seconds it adds "Big folders take a moment. Folders such as node_modules are skipped."
+
+Then the window opens and the changes fill in while the status bar counts: **Reading changes 2 of 5**. You can already work.
+
 ![The whole window](../images/window-overview.png)
 
 *A workspace open in the main window. Changes are grouped by repository.*
@@ -36,7 +46,7 @@ Click the workspace name at the top left of the header. The menu starts with you
 - **Add Folder to Workspace...** adds one more folder next to the ones already open.
 - **Save Workspace to File...** (or **Save Workspace As...** once it is saved) writes the folder list to a file. See "Workspace files" below.
 - **Remove "name" from Workspace**, one entry per folder, when there are several.
-- **Scan for Repositories** looks again. New repositories usually show up on their own (a note says **Found repository** and the name), so you only need it when file watching is unavailable.
+- **Scan for Repositories** looks again. New repositories usually show up on their own (a note says **Found repository**), so you rarely need it.
 - **Close Folder** (or **Close Workspace** with several folders) goes back to the welcome screen.
 
 If a tab has unsaved edits, you are asked first (**Discard** or **Cancel**). Opening another folder or workspace asks the same way.
@@ -61,7 +71,7 @@ Workspaces with more than one folder are listed under **Recent Workspaces** on t
 
 ## The active repository
 
-Many views work on one repository at a time: the Branches sidebar, the Log, the conflict banner, and Fetch, Pull, Push and Stash in the header. That one is the **active repository**.
+Many views work on one repository at a time: the Branches sidebar, the Log, the conflict banner and the **Git** menu (see [Git Menu](Git-Menu.md)). That one is the **active repository**.
 
 ![Repository switcher](../images/repository-switcher.png)
 
@@ -102,7 +112,7 @@ The file is plain JSON. Folder paths are stored relative to the file when they s
 { "folders": [{ "path": "apps/web" }, { "path": "../design-system" }] }
 ```
 
-**Open Workspace from File...** opens these files and also VS Code `.code-workspace` files. While a workspace is linked to a file, adding or removing folders updates the file, and other settings in it, folder names and comments are kept. Folders that were not found stay in the file. If some folders in the file no longer exist, you get a note listing them and the rest open normally.
+**Open Workspace from File...** opens these files and also VS Code `.code-workspace` files. While a workspace is linked to a file, adding or removing folders updates the file and keeps its other settings, folder names and comments. If some folders no longer exist, a note lists them and the rest open.
 
 ## Related
 

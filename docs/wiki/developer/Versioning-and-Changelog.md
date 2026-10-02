@@ -30,14 +30,14 @@ Some examples:
 
 ```sh
 $ bun scripts/version.ts show
-0.1.0-beta.1
+0.1.0-beta.2
 
 $ bun scripts/version.ts check
-  src-tauri/Cargo.toml  0.1.0-beta.1
-  src-tauri/Cargo.lock  0.1.0-beta.1
-  package.json          0.1.0-beta.1
+  src-tauri/Cargo.toml  0.1.0-beta.2
+  src-tauri/Cargo.lock  0.1.0-beta.2
+  package.json          0.1.0-beta.2
 
-all files agree on 0.1.0-beta.1
+all files agree on 0.1.0-beta.2
 
 $ bun scripts/version.ts notes 0.2.0     # the [0.2.0] section, for release notes
 $ bun scripts/version.ts bump beta       # 0.2.0-beta.1 -> 0.2.0-beta.2

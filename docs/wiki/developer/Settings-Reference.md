@@ -1,0 +1,117 @@
+# Settings Reference
+
+Every key in `~/.gitmanager/settings.json` and `state.json`, with its default, what `parsePreferences` or `parseState` accepts (in `src/lib/stores/settingsData.ts`), and where it is used. How loading and saving work is in [How Settings Work](How-Settings-Work.md); the user side is in [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md).
+
+Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite number, clamped), `pickInteger` (rounded, then clamped), `pickTenths` (rounded to 0.1, then clamped), `pickOneOf` (one of a list), `pickThemeId` (a known theme of the right mode).
+
+## settings.json
+
+### Appearance
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `theme` | `"system"` | `system`, `light`, `dark` | `applyAppearance`, `colorMode` |
+| `uiFontSize` | 13 | 11 to 16 | `--ui-size` |
+
+### Editor
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `lightColorTheme` | `"gm-light"` | a light theme id | `themes/apply.ts` |
+| `darkColorTheme` | `"gm-dark"` | a dark theme id | `themes/apply.ts` |
+| `editorFontFamily` | `DEFAULT_EDITOR_FONT` | `normalizeFontFamily` | `--font-mono` |
+| `editorFontSize` | 12.5 | 10 to 20 | `--code-size`, View > Zoom |
+| `editorLineHeight` | 1.55 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
+| `mouseWheelZoom` | false | boolean | `App.svelte`, `editor/wheelZoom.ts` |
+| `fontLigatures` | false | boolean | `data-ligatures` |
+| `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `editor/setup.ts` |
+| `renderWhitespace` | `"selection"` | `RENDER_WHITESPACE_CHOICES` | `App.svelte`, `editor/whitespace.ts` |
+| `editorCursorStyle` | `"line"` | `EDITOR_CURSOR_STYLE_CHOICES` | `App.svelte`, `editor/cursor.ts` |
+| `editorCursorWidth` | 2 | `pickInteger`, 1 to 6 (`EDITOR_CURSOR_WIDTH_RANGE`) | `editor/cursor.ts` |
+| `editorCursorBlinking` | `"blink"` | `EDITOR_CURSOR_BLINKING_CHOICES` | `editor/cursor.ts` |
+| `editorCursorSmoothCaret` | false | `pickBoolean` | `editor/cursor.ts` |
+| `editorCaretExtraTop`, `editorCaretExtraBottom` | 0 | `pickInteger`, 0 to 10 (`CARET_EXTRA_RANGE`) | `editor/cursor.ts` |
+| `wordWrap` | false | boolean | `FileView.svelte`, `App.svelte`, `editor/wordWrap.ts`, View > Word Wrap |
+| `markdownViewMode` | `"split"` | `editor`, `split`, `preview` | `FileView.svelte` (`sessionViewMode`) |
+| `currentLineBlame` | true | boolean | `FileView.svelte`, `DiffView.svelte` |
+| `blameGutter` | false | boolean | `editor/blame.ts`, Blame buttons |
+
+### Git
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `ignoreWhitespace` | false | boolean | `merge/MergeEditor.svelte` |
+| `logAllRefs` | true | boolean | `views/LogView.svelte` |
+| `commitSignOff` | false | boolean | `views/changes/commitOptions.svelte.ts` |
+| `commitGpgSign` | `"default"` | `default`, `sign`, `noSign` | `views/changes/commitOptions.svelte.ts` |
+| `gitConsole` | false | boolean | `App.svelte` (`gitConsoleSetEnabled`), terminal panel |
+| `updateMethod` | `"merge"` | `merge`, `rebase` | `views/git/UpdateProjectDialog.svelte`, `gitMenuActions.ts` |
+
+`updateMethod` has no row in the dialog: Update Project saves its last choice.
+
+### Terminal
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `terminalShell` | null | a trimmed path up to 1024 characters, else null | `terminalStore.svelte.ts` |
+| `terminalFontFamily` | `""` | `normalizeTerminalFontFamily` (empty means the editor font) | `terminal/options.ts`, `fonts.ts` |
+| `terminalFontSize` | 12.5 | 9 to 24 | `terminal/options.ts` |
+| `terminalLineHeight` | 1 | 1 to 2, tenths | `terminal/options.ts` |
+| `terminalLetterSpacing` | 0 | 0 to 5, whole | `terminal/options.ts` |
+| `terminalFontWeight` | `"normal"` | `normal`, `medium`, `bold` | `terminal/options.ts` |
+| `terminalFontWeightBold` | `"bold"` | same | `terminal/options.ts` |
+| `terminalLigatures` | false | boolean | `TerminalView.svelte` |
+| `terminalNerdFontIcons` | true | boolean | `terminal/options.ts` |
+| `terminalCursorStyle` | `"block"` | `block`, `bar`, `underline` | `terminal/options.ts` |
+| `terminalCursorBlink` | true | boolean | `terminal/options.ts` |
+| `terminalScrollback` | 5000 | 1000 to 100000, whole (`clampTerminalScrollback`) | `terminal/options.ts` |
+| `terminalCopyOnSelect` | false | boolean | `TerminalView.svelte` |
+
+### Automation
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `mcpEnabled` | false | boolean | `App.svelte`, `mcpStore.configure` |
+| `cliEnabled` | false | boolean | same |
+| `mcpPort` | 48731 | a whole number 1024 to 65535 (`parseMcpPort`) | same |
+| `mcpTools` | `{}` | tool names (`^[a-z][a-z0-9_]{0,63}$`) to booleans, at most 300 (`pickToolStates`) | same |
+| `memoryLogEnabled` | false | boolean | `App.svelte`, `memoryLog.configure` |
+| `memoryLogIntervalMs` | 500 | 100 to 10000, whole | same |
+| `memoryLogThresholdMb` | 5 | 0 to 500 | same |
+
+The MCP server and the memory log are driven only by the main window, never by a `git mergetool` window, which would compete for the port.
+
+### Updates
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `checkForUpdates` | true | boolean | `update/updates.svelte.ts` |
+| `updateChannel` | `"auto"` | `auto`, `stable`, `beta` | `update/updates.svelte.ts` |
+
+## state.json
+
+| Key | Default | Accepted | Used by |
+| --- | --- | --- | --- |
+| `recentFolders` | `[]` | strings, at most 12 (older files: `recentRepos`) | welcome screen, File > Open Recent |
+| `recentWorkspaces` | `[]` | lists of two or more folders, at most 12 | same |
+| `recentWorkspaceFiles` | `[]` | strings, at most 12 | same |
+| `lastSession`, `lastSessionFile` | `[]`, null | strings | `sessionSteps` |
+| `lastRunVersion`, `skippedVersion` | null | strings | What's New, update check |
+| `activeRepos` | `{}` | folder to repository root | `stores/repo.svelte.ts` |
+| `scriptNodeVersions` | `{}` | `package.json` path to a bin folder or `"default"`, the newest 200 | Scripts panel |
+| `explorerOpen` | true | boolean | Files panel |
+| `leftBarVisible`, `rightBarVisible` | true | boolean | `Workspace.svelte`, `Header.svelte`, View menu |
+| `leftPanel` | `"changes"` | `changes`, `branches`, `scripts` or null | left sidebar |
+| `sidebarWidth`, `explorerWidth` | 260 | 120 to 2000 | side panels |
+| `terminalHeight` | 260 | 80 to 2000 | terminal panel |
+| `terminalListWidth` | 180 | 120 to 1200 | terminal list |
+| `diffSplitRatio` | 0.5 | 0.15 to 0.85 | `diff/DiffView.svelte` |
+| `markdownPreviewRatio` | 0.5 | 0.15 to 0.85 | `FileView.svelte` |
+
+`stateToJson` writes these keys and keeps any others it found. Unknown keys of either file are kept, so a newer version's keys survive an older app.
+
+## Keeping this page in sync
+
+- A new preference goes in `Preferences`, `defaultPreferences`, `parsePreferences`, the store's field and `preferences()`, then in this page, [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md).
+- A new state key goes in `UiState`, `STATE_KEYS`, `parseState`, `stateToJson` and the store's `uiState()`.
+- `settingsData.test.ts` should cover its validation.

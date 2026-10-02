@@ -34,9 +34,9 @@ Leave out `--global` to set it up for one repository only. If the app lives some
 
 *The merge tool in its own window, opened by git mergetool.*
 
-The window has only the merge tool, titled **Merge Revisions for** and the file, such as `src/app.ts`. The left pane is **Local (yours)**, the right pane is **Remote (theirs)**, and the **Result** is in the middle. The top right counts what is left, for example **9 changes left, 2 conflicts**. Everything from the [Merge Tool](Merge-Tool.md) page works here: apply and ignore buttons, **Apply non-conflicting**, F7 navigation, undo and **Ignore whitespace**.
+The window has only the merge tool. Its heading reads **Merge Revisions for** and the file, such as `src/app.ts`; the window's own title bar says **Merge app.ts**. The left pane is **Local (yours)**, the right pane is **Remote (theirs)**, and the **Result** is in the middle. The top right counts what is left, for example **9 changes left, 2 conflicts**. Everything from the [Merge Tool](Merge-Tool.md) page works here: apply and ignore buttons, **Apply non-conflicting**, F7 navigation, undo and **Ignore whitespace**.
 
-Turning **Ignore whitespace** on or off here also saves it as your default (the same switch as in Settings, Merge and Log).
+Turning **Ignore whitespace** on or off here also saves it as your default (the same switch as in Settings > Git).
 
 When you are done with the file:
 
@@ -52,7 +52,7 @@ After the last file, finish the operation in the Terminal as usual, for example 
 - Git keeps a backup of each conflicted file with a `.orig` ending. If you do not want those, run `git config --global mergetool.keepBackup false`.
 - Binary files (such as images) cannot be merged as text. The window says so and offers **Quit**; resolve those with `git checkout --ours` or `git checkout --theirs` instead.
 - If the files git passed cannot be read, the window says **Could not load the files passed by git mergetool** with the reason, and offers **Quit**.
-- The merge window does not check for updates or show What's New.
+- The merge window does not check for updates or show What's New, and it never starts the MCP server. Its menu bar is short: Git Manager (with Settings...), Edit, Window and Help.
 - If git passes an empty or missing ancestor (for example when both sides added the same file), the merge starts from an empty result.
 - Opening the full app is separate: starting Git Manager with a folder or a workspace file instead of `merge` opens it normally, for example `"$APP" ~/code/acme`.
 

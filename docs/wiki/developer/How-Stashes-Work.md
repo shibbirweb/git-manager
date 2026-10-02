@@ -1,10 +1,10 @@
 # How stashes work
 
-A stash puts your uncommitted work aside so you can switch branches or pull, and brings it back later. In Git Manager you stash from the header and apply, pop or drop from the Branches panel, through a stash row's menu or its hover buttons. For the user side, see [Stashes](../usage/Stashes.md).
+A stash puts your uncommitted work aside so you can switch branches or pull, and brings it back later. In Git Manager you stash from the Git menu (Uncommitted Changes) or a repository row's **...** > **Stash** in Changes, and apply, pop or drop from the Branches panel, those menus, or the Git menu's Unstash Changes. For the user side, see [Stashes](../usage/Stashes.md).
 
 ## Why we need it
 
-People are often in the middle of something when they need a clean work tree: a quick fix on another branch, a pull that would touch the same files. Stashing is the safe way out. It has to be fast, it must not lose work, and bringing work back must handle conflicts like any other merge.
+People often need a clean work tree in the middle of something: a quick fix on another branch, a pull that would touch the same files. Stashing must be fast, must not lose work, and bringing work back must handle conflicts like any other merge.
 
 ## How it works
 
@@ -12,7 +12,7 @@ Stashes follow the same pattern as branches: git2 reads the list, the git CLI do
 
 ```mermaid
 sequenceDiagram
-    participant H as Header
+    participant H as gitActions.stash
     participant D as dialogs
     participant RS as repoStore
     participant API as api.ts
@@ -37,12 +37,15 @@ sequenceDiagram
 
 | Action | Where | Command | git |
 | --- | --- | --- | --- |
-| Stash | Header button | `stash_push` | `stash push`, plus `--include-untracked` and `-m <message>` when given; an error when `refs/stash` did not change (nothing to stash) |
+| Stash | Git menu or row menu | `stash_push` | `stash push`, plus `--include-untracked` and `-m <message>` when given; an error when `refs/stash` did not change (nothing to stash) |
 | Apply | Stash menu or row button | `stash_apply` with `pop: false` | `stash apply stash@{N}` |
 | Pop | Stash menu or row button | `stash_apply` with `pop: true` | `stash pop stash@{N}` |
 | Drop | Stash menu or row button | `stash_drop` | `stash drop stash@{N}` |
+| Drop All Stashes | Row menu | `stash_clear` | `stash clear` |
 
-`stash_ref(stash_index)` builds the `stash@{N}` name. The prompt starts with "WIP", so a default stash reads "On main: WIP". If you clear the field, the message is left out and git writes its usual "WIP on main" text.
+`stash_ref(stash_index)` builds the `stash@{N}` name. The prompt starts with "WIP", so a default stash reads "On main: WIP"; an empty field leaves the message out and git writes "WIP on main".
+
+`stash(repoRoot?, includeUntracked?)` in `views/gitActions.ts` is shared. The Git menu passes nothing: the active repository, and the prompt shows the **Include untracked files** checkbox. The row's **Stash** and **Stash (Include Untracked)** pass both, so there is no checkbox. `applyStash` and `dropStash` in `sidebar/actions.ts` take an optional `repoRoot` the same way. The row menu adds Apply and Pop Latest Stash (index 0), pickers built by `stashPickItems` in `repoPickers.ts`, and **Drop All Stashes**, which confirms (danger) and runs `stash_clear` (`git stash clear`). Git > Unstash Changes... picks a stash, then asks Pop or Apply with `dialogs.choose`.
 
 Apply and pop can conflict with changes in the work tree. They run through `run_op`, so conflicts come back as `OpOutcome { conflicts: true }`, not as an error:
 
@@ -67,14 +70,15 @@ Drop asks first with `dialogs.confirm({ danger: true })`, because a dropped stas
 
 | File | What it does |
 | --- | --- |
-| `src-tauri/src/commands/stash.rs` | `get_stashes`, `stash_push`, `stash_apply`, `stash_drop`, `stash_ref` |
+| `src-tauri/src/commands/stash.rs` | `get_stashes`, `stash_push`, `stash_apply`, `stash_drop`, `stash_clear`, `stash_ref` |
 | `src-tauri/src/git/stash.rs` | `StashEntry` and the git2 reader |
-| `src/lib/views/Header.svelte` | The Stash button, its prompt and the "nothing to stash" note |
+| `src/lib/views/gitActions.ts` | `stash`: the prompt and the "nothing to stash" note |
+| `src/lib/views/changes/repoActions.ts`, `views/git/gitMenuActions.ts` | Row stash items, `dropAllStashes`, `unstashFromMenu` |
 | `src/lib/views/sidebar/actions.ts` | `stashMenu`, `applyStash`, `dropStash` |
 | `src/lib/views/sidebar/tree.ts` | Stash rows in the Branches panel |
 | `src/lib/views/sidebar/RowContent.svelte` | The Apply, Pop and Drop hover buttons of a stash row |
 | `src/lib/stores/repo.svelte.ts` | `stashes`, `refreshActive`, `stashErrorRepo`, `run`, `runOp` |
-| `src/lib/api.ts` | `getStashes`, `stashPush`, `stashApply`, `stashDrop` |
+| `src/lib/api.ts` | `getStashes`, `stashPush`, `stashApply`, `stashDrop`, `stashClear` |
 
 ## Design decisions
 
@@ -91,7 +95,7 @@ Drop asks first with `dialogs.confirm({ danger: true })`, because a dropped stas
 **Stash with nothing to stash said "Changes stashed".**
 - **The issue:** stashing a clean repository showed a success note, but no stash appeared.
 - **Why it happened:** `git stash push` prints "No local changes to save" and still exits with 0.
-- **The fix and why we chose it:** `stash_push` compares `refs/stash` before and after and returns "No local changes to stash" as an error when nothing was added. When only new files exist and Include untracked files is off, it says to turn that on. We compare the ref rather than git's message because git translates its messages. The Stash button in `Header.svelte` shows that error as an info note, not a failure.
+- **The fix and why we chose it:** `stash_push` compares `refs/stash` before and after and returns "No local changes to stash" as an error when nothing was added. When only new files exist and Include untracked files is off, it says to turn that on. We compare the ref rather than git's message because git translates its messages. `stash()` in `gitActions.ts` shows that error as an info note, not a failure.
 
 **Stash errors were hidden.**
 - **The issue:** when git could not read the stash list, the Stashes section was just empty, with no hint that something was wrong.
@@ -101,14 +105,15 @@ Drop asks first with `dialogs.confirm({ danger: true })`, because a dropped stas
 ## Tests
 
 - `src-tauri/src/commands/tests.rs`: `stash_push_apply_with_conflict_and_drop` stashes tracked and untracked work, commits a conflicting change, pops and checks that conflicts are reported and the stash is kept, then drops it and checks that applying a missing stash is an error; `stash_apply_clean_reports_no_conflicts` checks the clean path.
-- `src-tauri/src/commands/stash.rs`: `stashing_nothing_is_an_error_not_a_success`.
+- `src-tauri/src/commands/stash.rs`: `stashing_nothing_is_an_error_not_a_success`, `stash_clear_drops_every_stash_and_pop_by_index_keeps_the_rest`.
+- `src/lib/views/changes/repoPickers.test.ts`: stash pick items; `repoMenu.test.ts`: when the Stash items are disabled.
 - `src-tauri/src/git/tests.rs`: `stash_list_newest_first` checks the order and fields of `StashEntry`.
 
-When you add a stash feature (for example stash of selected files, or showing a stash's diff), add a Rust test on a real repository from `test_support.rs`, and cover any new row logic in a `tree.test.ts`.
+When you add a stash feature, add a Rust test on a real repository from `test_support.rs`.
 
 ## Keeping this page in sync
 
-- Update this page when `commands/stash.rs`, `git/stash.rs` or the stash actions in `sidebar/actions.ts` change.
+- Update this page when `commands/stash.rs`, `git/stash.rs` or the stash actions change.
 - Update [Stashes](../usage/Stashes.md) for any change to the prompt or the menu.
 - Retake `stashes.png` when the stash section or menu looks different.
 - Related: [How Branches and Tags Work](How-Branches-and-Tags-Work.md), [How Conflict Resolution Works](How-Conflict-Resolution-Works.md).

@@ -6,7 +6,7 @@ Git Manager is a native macOS Git client. The backend is Rust on [Tauri 2](https
 
 ## What you need
 
-- **macOS.** The app targets macOS today. Some backend code (the memory readout) is macOS only.
+- **macOS.** The app targets macOS today. Some backend code (the memory readout, the MCP screenshot) is macOS only.
 - **Rust (stable)**, installed with [rustup](https://rustup.rs). You also get `cargo` and `clippy`.
 - **Xcode Command Line Tools** (`xcode-select --install`), for the linker and a system git.
 - **[Bun](https://bun.sh)**, the only JavaScript tool in this project.
@@ -46,7 +46,7 @@ You rarely want to test on a real project. Three scripts build throwaway reposit
 | --- | --- |
 | `scripts/make-conflict-repo.sh <dir> [--rebase]` | A repository stopped in a merge (or a rebase) with every conflict type, long files and M, A, U, D and R samples. Use it for the merge tool and the conflicts dialog. |
 | `scripts/make-workspace-demo.sh <dir>` | A folder with several repositories: one nested, one mid-merge, one clean, plus a plain folder with no git. Use it for workspaces. |
-| `scripts/make-docs-demo.sh <dir>` | The workspace the wiki screenshots are taken in: a shop repository with four authors, branches, tags, a stash and a remote, a repository with conflicts and a second folder. See [Docs and Screenshots](Docs-and-Screenshots.md). |
+| `scripts/make-docs-demo.sh <dir>` | The workspace the wiki screenshots are taken in: a shop repository with four authors, branches, tags, a stash and a remote, a repository with conflicts, a plain `notes/` folder, a second folder, and `extras/` with a submodule and Git LFS images. See [Docs and Screenshots](Docs-and-Screenshots.md). |
 
 ```sh
 scripts/make-conflict-repo.sh /tmp/conflict-demo
@@ -57,16 +57,7 @@ The Rust tests run `make-conflict-repo.sh` and check its exact output. If you ch
 
 ## The checks
 
-Run all four before you say a change is done. CI runs the same ones, so a clean local run means a green pull request.
-
-```sh
-bun run check                  # svelte-check + TypeScript: 0 errors and 0 warnings
-bun run test                   # Vitest unit tests
-cd src-tauri && cargo test     # Rust unit and git integration tests
-cd src-tauri && cargo clippy --all-targets   # no warnings
-```
-
-CI also runs `bun scripts/version.ts check` and `bun scripts/build-wiki.ts --check`, so run those too when you touch versions or docs. To build a release app locally, run `bun tauri build --bundles app`; it lands in `src-tauri/target/release/bundle/macos`.
+Before you say a change is done, run the checks listed in [Testing](Testing.md#what-done-means): `bun run check`, `bun run test`, `cargo test` and `cargo clippy --all-targets -- -D warnings`, plus the docs and version checks when you touch those. CI runs the same ones, so a clean local run means a green pull request. To build a release app locally, run `bun tauri build --bundles app`; it lands in `src-tauri/target/release/bundle/macos`.
 
 ## Map of the developer pages
 
@@ -74,16 +65,22 @@ CI also runs `bun scripts/version.ts check` and `bun scripts/build-wiki.ts --che
 
 | Page | What it covers |
 | --- | --- |
-| [Architecture](Architecture.md) | The big picture: UI, IPC, commands, git reads and writes, events, memory and the dev IPC bridge. |
+| [Architecture](Architecture.md) | The big picture: UI, IPC, commands, git reads and writes, events, memory, security and the dev IPC bridge. |
 | [Project Layout](Project-Layout.md) | What lives in which folder and file. |
 | [Backend](Backend.md) | Tauri commands, errors, the git CLI runner, git2, the watcher and config files. |
-| [Frontend](Frontend.md) | Stores, Svelte 5 runes, the API bridge and CodeMirror patterns. |
-| [Commands and Events](Commands-and-Events.md) | Every backend command and event, with its arguments and return type. |
-| [Testing](Testing.md) | Rust tests with real repositories, the Vitest suites and what "done" means. |
-| [Debugging](Debugging.md) | Web view devtools, Rust panics, reading IPC errors and common dead ends. |
+| [Backend Services](Backend-Services.md) | Terminal, search, scripts, Git Console, GitHub, MCP and other Rust services. |
+| [Frontend](Frontend.md) | The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors. |
+| [Menu Keys and Routing](Menu-Keys-and-Routing.md) | How a key reaches the editor, the window or the native menu. |
+| [Frontend Modules](Frontend-Modules.md) | The feature folders in `src/lib` and what loads lazily. |
+| [CodeMirror Patterns](CodeMirror-Patterns.md) | State fields, compartments, widgets and keymaps in every text pane. |
+| [Commands and Events](Commands-and-Events.md) | Every backend command and event, with its arguments and return type, over four pages. |
+| [Testing](Testing.md) | Rust tests with real repositories, Vitest and what "done" means. |
+| [Test Suites](Test-Suites.md) | Every test file and what it covers. |
+| [Settings Reference](Settings-Reference.md) | Every key in `settings.json` and `state.json`. |
+| [Debugging](Debugging.md) | Web view devtools, Rust panics, IPC errors, the memory log and common dead ends. |
 | [Releases and CI](Releases-and-CI.md) | CI, the beta and stable release workflows and the wiki deploy. |
 | [Versioning and Changelog](Versioning-and-Changelog.md) | Where the version lives, `scripts/version.ts` and the changelog rules. |
-| [Platforms and Signing](Platforms-and-Signing.md) | The universal macOS build, signing and notarization, and the Windows and Linux plan. |
+| [Platforms and Signing](Platforms-and-Signing.md) | The universal macOS build, signing, and the Windows and Linux plan. |
 | [Docs and Screenshots](Docs-and-Screenshots.md) | How this wiki is checked, how screenshots are taken, and recipes for keeping docs in sync. |
 | [Contributing](Contributing.md) | Code style, commits, pull requests and the docs checklist. |
 
@@ -91,25 +88,11 @@ CI also runs `bun scripts/version.ts check` and `bun scripts/build-wiki.ts --che
 
 Each chapter explains why a feature exists, how it works, the decisions behind it and the bugs we fixed.
 
-| Chapter | Feature |
-| --- | --- |
-| [How Workspaces Work](How-Workspaces-Work.md) | Folders, nested repositories and workspace files. |
-| [How the Files Panel Works](How-the-Files-Panel-Works.md) | The lazy file tree and its git status colors. |
-| [How the Editor Works](How-the-Editor-Works.md) | Tabs, preview tabs and change markers. |
-| [How Changes and Commits Work](How-Changes-and-Commits-Work.md) | Staging, hunks, discard, commit and amend. |
-| [How Diffs Work](How-Diffs-Work.md) | The side by side diff view. |
-| [How Conflict Resolution Works](How-Conflict-Resolution-Works.md) | The operation banner, conflicts dialog and inline actions. |
-| [How the Merge Tool Works](How-the-Merge-Tool-Works.md) | The three pane merge tool and its engine. |
-| [How Blame Works](How-Blame-Works.md) | Inline blame and the blame gutter. |
-| [How the Log Works](How-the-Log-Works.md) | The paged commit graph and commit details. |
-| [How Branches and Tags Work](How-Branches-and-Tags-Work.md) | The branches sidebar and its actions. |
-| [How Remotes Work](How-Remotes-Work.md) | Fetch, pull and push with progress. |
-| [How Stashes Work](How-Stashes-Work.md) | Stash, apply, pop and drop. |
-| [How Navigation Works](How-Navigation-Works.md) | Back and Forward history. |
-| [How Settings Work](How-Settings-Work.md) | `~/.gitmanager` and validated preferences. |
-| [How Updates Work](How-Updates-Work.md) | The notify-only update check and channels. |
-| [How the Status Bar Works](How-the-Status-Bar-Works.md) | Status bar items and the memory readout. |
-| [How Mergetool Mode Works](How-Mergetool-Mode-Works.md) | Running as `git mergetool`. |
+- **Window and files:** [How Workspaces Work](How-Workspaces-Work.md), [How Workspace Files Work](How-Workspace-Files-Work.md), [How Folder Watching Works](How-Folder-Watching-Works.md), [How the Files Panel Works](How-the-Files-Panel-Works.md), [How the Menus Work](How-the-Menus-Work.md), [How the Status Bar Works](How-the-Status-Bar-Works.md), [How Memory Is Measured](How-Memory-Is-Measured.md), [How Navigation Works](How-Navigation-Works.md), [How Settings Work](How-Settings-Work.md), [How Color Themes Work](How-Color-Themes-Work.md), [How Updates Work](How-Updates-Work.md).
+- **Editing:** [How the Editor Works](How-the-Editor-Works.md), [How Editing Code Works](How-Editing-Code-Works.md), [How Commit Tabs Work](How-Commit-Tabs-Work.md), [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md), [How the Rich Markdown Editor Works](How-the-Rich-Markdown-Editor-Works.md), [How Search Everywhere Works](How-Search-Everywhere-Works.md), [How Find and Replace Works](How-Find-and-Replace-Works.md), [How Diffs Work](How-Diffs-Work.md).
+- **Git:** [How Changes and Commits Work](How-Changes-and-Commits-Work.md), [How Repository Actions Work](How-Repository-Actions-Work.md), [How the Git Menu Works](How-the-Git-Menu-Works.md), [How the Git Dialogs Work](How-the-Git-Dialogs-Work.md), [How Branches and Tags Work](How-Branches-and-Tags-Work.md), [How Remotes Work](How-Remotes-Work.md), [How Stashes Work](How-Stashes-Work.md), [How the Shelf Works](How-the-Shelf-Works.md), [How the Log Works](How-the-Log-Works.md), [How Blame Works](How-Blame-Works.md), [How Interactive Rebase Works](How-Interactive-Rebase-Works.md), [How Worktrees Work](How-Worktrees-Work.md), [How Submodules Work](How-Submodules-Work.md), [How Git LFS Works](How-Git-LFS-Works.md), [How the Git Console Works](How-the-Git-Console-Works.md), [How GitHub Works](How-GitHub-Works.md).
+- **Conflicts:** [How Conflict Resolution Works](How-Conflict-Resolution-Works.md), [How the Merge Tool Works](How-the-Merge-Tool-Works.md), [How Mergetool Mode Works](How-Mergetool-Mode-Works.md).
+- **Tools:** [How the Terminal Works](How-the-Terminal-Works.md), [How Scripts Work](How-Scripts-Work.md), [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
 
 If you want to know how the app looks to its users, start with [Getting Started](../usage/Getting-Started.md).
 

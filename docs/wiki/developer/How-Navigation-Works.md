@@ -4,7 +4,7 @@ Back and Forward take you through places you have been (a file line, a change's 
 
 ## Why we need it
 
-Reading code means jumping around and then going back. The history must record real jumps, not every keystroke, wherever a jump lands.
+Reading code means jumping around and going back. The history must record real jumps, not every keystroke.
 
 ## How it works
 
@@ -44,7 +44,7 @@ classDiagram
 
 ### Recording
 
-`NavigationHistory` keeps a `back` stack, a `current` location and a `forward` stack. `record(location)` asks `sameSpot(current, location)`:
+`NavigationHistory` keeps a `back` stack, a `current` location and a `forward` stack. `record(location)` first refuses a file location whose path is a pseudo tab (`isPseudoTab`: a terminal, commit, Git or branch tab), then asks `sameSpot(current, location)`:
 
 - Same file within `JUMP_LINES` (10) lines: only `current` moves.
 - Same diff (repository, path, area) within 10 lines: same.
@@ -67,6 +67,8 @@ stateDiagram-v2
 ```
 
 Places are recorded by `FileView.svelte` (selection or text changes, and when a file opens), `ChangesView.svelte` (a click in Changes, `kind: "diff"`, line 0) and `editor/blame.ts` (blame clicks).
+
+`recentFilePaths()` lists the visited files, newest first and each once (current, then forward, then back), for Recent Files in [Search Everywhere](How-Search-Everywhere-Works.md). A search result opens through `navigation.openFileAt(filePath, line, column)`: it sets a reveal request with a 0-based line and column and `focus: true`, then opens the file. `FileView` applies it, focuses the editor, and records the new place as usual.
 
 ### Blame jumps
 
@@ -91,7 +93,7 @@ sequenceDiagram
 
 `goBack()` calls `history.travel("back", go)`. `go(target)` returns a `StopOutcome`: "shown", "cancelled" or "gone".
 
-- **file**: checks the file exists (open tabs are trusted; other files are read once, and `isMissingFileError` spots "not found"), sets `reveal` with a token and calls `repoStore.openFile`. `FileView` calls `takeReveal(filePath)` when ready.
+- **file**: checks the file exists (open tabs are trusted; other files are read once, and `isMissingFileError` spots "not found"), sets `reveal` with a token and calls `repoStore.openFile`. `FileView` calls `takeReveal(filePath)` when ready; a request with `line: null` only focuses.
 - **diff**: checks with `buildSections` and `findFile` that the change still exists, sets `diffReveal`, then `changesSelection.pick`. `ChangesDiff.svelte` calls `takeDiffReveal`.
 - **log**: gone when the repository left the workspace, else `repoStore.showCommit(...)`.
 
@@ -126,7 +128,7 @@ The triggers are the arrow buttons in `Header.svelte`, Ctrl+- and Ctrl+Shift+- (
 
 **Back and Forward were hard to find.**
 - **The issue:** the user asked for Back and Forward after they were built.
-- **Why it happened:** the buttons sat in the file editor's title row, invisible without an open file.
+- **Why it happened:** the buttons sat in the file editor's title row.
 - **The fix and why we chose it:** they moved to the top bar, always visible.
 
 **Back did not return to the clicked blame line.**
@@ -145,18 +147,18 @@ The triggers are the arrow buttons in `Header.svelte`, Ctrl+- and Ctrl+Shift+- (
 - **The fix and why we chose it:** they moved to the far left, and long names now shorten with an ellipsis.
 
 **Back went to files that no longer exist.**
-- **The issue:** after deleting a file or committing a change, Back and Forward still stopped there, showing "That change no longer exists" or a tab for a missing file, again and again.
-- **Why it happened:** `forget` existed and was tested, but nothing called it, and a failed step was undone with the dead stop still in the history.
-- **The fix and why we chose it:** the file tab calls `navigation.forget` when its file is gone, and Back and Forward go through `NavigationHistory.travel`, which drops a gone stop (with every other stop of a missing file) and tries the next at once. Only a cancelled step, such as keeping unsaved edits, leaves the history as it was. Browsers skip like this, so one press of Back lands somewhere real.
+- **The issue:** after deleting a file or committing a change, Back and Forward still stopped there, again and again.
+- **Why it happened:** `forget` existed but nothing called it, and a failed step was undone with the dead stop still in the history.
+- **The fix and why we chose it:** the file tab calls `navigation.forget` when its file is gone, and `NavigationHistory.travel` drops a gone stop (with every other stop of a missing file) and tries the next at once, like a browser. Only a cancelled step leaves the history as it was.
 
 **A Log step lost its file.**
-- **The issue:** a later step for the same commit with no file replaced a Log step and forgot its file and line, and the test "keeps the file of a Log step when a later click on the same commit has none" did not test that case.
+- **The issue:** a later step for the same commit with no file replaced a Log step and forgot its file and line, and the test meant to catch it checked another case.
 - **Why it happened:** `record` replaced the current entry whenever `sameSpot` matched, and the test recorded a different file instead of no file.
-- **The fix and why we chose it:** `refine` keeps the existing entry when the new one names no file. The old test got a name that matches what it checks, and a new test covers the real case.
+- **The fix and why we chose it:** `refine` keeps the existing entry when the new one names no file, and a new test covers the real case.
 
 ## Tests
 
-`src/lib/stores/navHistory.test.ts` covers small moves versus jumps, going back and forward across files, dropping forward after a jump, the cap and `forget`, Log steps (exact line, one commit, the file rule), diff steps, `travel` (skipping gone stops, cancelling, all gone) and `isMissingFileError`. Any new location kind or rule needs a case here first.
+`src/lib/stores/navHistory.test.ts` covers small moves versus jumps, back and forward, the cap and `forget`, Log and diff steps, refusing pseudo tabs, `recentFilePaths`, `travel` (skipping gone stops, cancelling) and `isMissingFileError`. Any new location kind or rule needs a case here first.
 
 ## Keeping this page in sync
 

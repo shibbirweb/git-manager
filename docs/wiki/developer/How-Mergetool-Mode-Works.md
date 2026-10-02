@@ -49,15 +49,15 @@ flowchart TD
     E -->|"no"| G["LaunchMode::App with no path"]
 ```
 
-`merge` with fewer than four paths is not mergetool mode, so a typo opens the normal app instead of a broken merge window. `AppState` stores the mode and a `mergetool_exit_code` (`AtomicI32`) that starts at **1**.
+`merge` with fewer than four paths is not mergetool mode, so a typo opens the normal app instead of a broken merge window. (`git-manager cli ...` is caught even earlier, in `lib.rs`, and never opens a window; see [How MCP and CLI Work](How-MCP-and-CLI-Work.md).) `AppState` stores the mode and a `mergetool_exit_code` (`AtomicI32`) that starts at **1**.
 
-On the frontend, `App.svelte` calls `api.getLaunchMode()` after `settings.init()`. For `mode: "mergeTool"` it renders `MergeToolApp.svelte` and nothing else: no workspace, no watcher, no sidebars. The settings still load; the update store sees the mergetool mode and schedules no update check and shows no What's New.
+On the frontend, `App.svelte` calls `api.getLaunchMode()` after `settings.init()`. For `mode: "mergeTool"` it renders `MergeToolApp.svelte` and nothing else: no workspace, no watcher, no sidebars. The settings still load; the update store sees the mergetool mode and schedules no update check and shows no What's New. `appMenu.install("mergeTool")` builds a short menu bar from `menuSpec` (on macOS: Git Manager with Settings, Edit, Window and Help), and the MCP server, memory log and other main window services start only when the mode is `app`, so a mergetool window never competes for the MCP port.
 
 ### Loading the files
 
 `load_mergetool` calls `conflicts::load_files(base, local, remote, merged, ignore_whitespace)`. It reads the three input files directly from the paths git gave, not from a repository index. An empty or missing BASE means both sides added the file, so the kind is `BothAdded`. The panes are labeled "Local (yours)" and "Remote (theirs)". The result goes through the same `build_document` as an in-repo conflict, so the chunks, conflicts and binary check are identical. A binary file shows a notice with a Quit button. Any input file that cannot be read loads as empty text, not only BASE.
 
-`MergeToolApp` sets the window title to `Merge <file name>` and passes the document to `MergeEditor.svelte`, the same component the full app uses. Toggling "ignore whitespace" saves the setting and reloads the document.
+`MergeToolApp` sets the OS window title to `Merge <file name>` (the in-window title bar reads "Merge Revisions for" and the file) and passes the document to `MergeEditor.svelte`, the same component the full app uses. Toggling "ignore whitespace" saves the setting and reloads the document.
 
 ### Exiting with the right code
 
@@ -108,7 +108,10 @@ That last step is what makes quitting safe. The red close button goes through Ca
 - **Why it happened:** nothing listened for the close request, so the window closed and the app exited with the unresolved code.
 - **The fix and why we chose it:** `MergeToolApp` listens with `onCloseRequested`, always keeps the window open, and runs the same cancel as the Cancel button. If you confirm, `cancel_mergetool` exits with code 1 as before. We never destroy the window from the frontend, so no extra window permission is needed.
 
-**Update checks ran in mergetool mode.** Every window git mergetool opened also started the timed update check. `updates.init()` now skips it in this mode; see [How Updates Work](How-Updates-Work.md).
+**Update checks ran in mergetool mode.**
+- **The issue:** every window git mergetool opened for a file also started the timed update check, wasted work in a window that lives for one file.
+- **Why it happened:** `updates.init()` ran the same way in both launch modes.
+- **The fix and why we chose it:** `updates.init()` asks `isMergetoolLaunch()` and skips the check, and leaves `lastRunVersion` alone so the next normal start still shows What's New. The full app still checks on its next start; see [How Updates Work](How-Updates-Work.md).
 
 One change to know about: when the app was renamed from Git Merger to Git Manager, the tool name in the README became `gitmanager` and the binary `git-manager`, so an old `gitmerger` config must be set up again with the new lines.
 

@@ -4,14 +4,14 @@ A stash is a shelf for unfinished work. It takes your uncommitted changes, puts 
 
 ## Stash your changes
 
-1. Click **Stash changes** in the header (the box icon, right of Push).
+1. Choose **Git > Uncommitted Changes > Stash Changes...** in the menu bar.
 2. In the **Stash Changes** dialog, type a **Message** so you can recognise it later. It starts as `WIP` ("work in progress").
 3. Leave **Include untracked files** ticked to also put new files that git does not track yet on the shelf. Untick it to stash only changes to tracked files.
 4. Click **Stash**.
 
 Your files go back to how they were at the last commit, a note says **Changes stashed**, and the stash appears in the sidebar. If there is nothing to stash, a note says **No local changes to stash** instead. When only new files changed and **Include untracked files** is off, it tells you to turn that on.
 
-The stash button works on the **active repository**. With several repositories, switch first (see [Workspaces](Workspaces.md)).
+The Git menu works on the **active repository**. To stash another repository without switching, use its **...** button in [Changes](Changes-and-Commits.md): **Stash** > **Stash** keeps new files where they are, and **Stash (Include Untracked)** stashes them too. Both ask for the message. See [Repository Actions](Repository-Actions.md).
 
 ## See your stashes
 
@@ -34,13 +34,20 @@ Hover a stash to see three buttons in place of its `stash@{0}` name, or right-cl
 - **Drop** (x, or **Drop...** in the menu) deletes the stash without applying it. You are asked first (**Drop Stash**), because this cannot be undone.
 
 A note confirms each one, for example **Popped stash@{0}**. The buttons wait while another operation runs.
+
+You can also bring changes back without the sidebar:
+
+- **Git > Uncommitted Changes > Unstash Changes...** lists the stashes of the active repository. Pick one, then choose **Pop** or **Apply**.
+- A repository's **...** > **Stash** submenu in Changes has **Apply Latest Stash** and **Pop Latest Stash** for `stash@{0}`, and **Apply Stash...**, **Pop Stash...** and **Drop Stash...** with a list to pick from.
+- **Drop All Stashes** in the same submenu deletes every stash of that repository, after asking. This cannot be undone.
+
 If the stashed changes clash with changes in your files, git stops with conflicts (a conflict is a spot where both versions changed the same lines). Git Manager opens the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md). After a pop that stopped on conflicts, git keeps the stash, so nothing is lost; drop it yourself once you are done.
 
 ## Example
 
 You are halfway through a free shipping change on `main` in the `storefront` repository when a bug report comes in.
 
-1. Click **Stash changes**, type `WIP: free shipping threshold`, and click **Stash**.
+1. Choose **Git > Uncommitted Changes > Stash Changes...**, type `WIP: free shipping threshold`, and click **Stash**.
 2. Switch to `fix/tax-rates`, fix the bug, commit and push.
 3. Switch back to `main`.
 4. Hover **On main: WIP: free shipping threshold** in the sidebar and click **Pop**. Your half-done change is back.
@@ -50,6 +57,7 @@ You are halfway through a free shipping change on `main` in the `storefront` rep
 - Give stashes clear messages. `WIP` is fine for a minute, but after a week you will not remember what it was.
 - A stash is local to your computer. It is not pushed to the server.
 - You can apply a stash on a different branch from the one you stashed on.
+- To put aside only some files, use the [Shelf](Shelf.md) instead.
 
 ## Related
 

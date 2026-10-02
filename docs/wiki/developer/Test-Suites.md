@@ -1,0 +1,57 @@
+# Test Suites
+
+This is the list of what the tests cover, folder by folder. How to run them, the helpers and the rules are on [Testing](Testing.md). On 2 October 2026 the Vitest suites held 934 tests in 96 files and the Rust code had 424 `#[test]` functions for `cargo test`; the numbers grow with every feature, so treat them as a rough size, not a target.
+
+## Vitest suites (`bun run test`)
+
+Files are `<name>.test.ts` next to the module they test. Folders are under `src/lib/` unless shown otherwise.
+
+| Folder | Test files | What they cover |
+| --- | --- | --- |
+| `merge/` | `model`, `inline`, `extensions` | line replacement and chunk actions, word highlights, the Cmd+Enter keymap |
+| `editor/` | `lineDiff`, `conflictMarkers`, `blameModel`, `navigation`, `wheelZoom`, `languageName`, `findModel`, `textCommands`, `editorShortcuts`, `whitespace`, `activeLine`, `selectionInfo` | change markers, conflict markers, blame mapping, next change, zoom, the find bar's options and counter, Duplicate, Join Lines, Sort Lines and Go to Line, menu keys, Render whitespace, the current-line highlight, selection counts |
+| `diff/` | `split` | the resizable split ratio and its limits |
+| `log/` | `graph`, `lineMatch` | graph lanes and merges, finding the blamed line |
+| `stores/` | `tabs`, `navHistory`, `workspacePaths`, `fontFamily`, `commitTabs`, `gitTabs`, `branchTabs`, `settingsData`, `openingProgress` | preview tabs, Back and Forward, path helpers, font lists, pseudo tab paths, settings validation and migration, the opening progress text |
+| `menu/` | `menuSpec`, `menuState` | ids, accelerators and per-platform layout of the menu bar; enabled, checked and renamed items |
+| `help/` | `shortcuts` | the Keyboard Shortcuts window lists every menu key plus the others |
+| `terminal/` | `terminals`, `terminalTabs`, `runs`, `keys`, `fonts`, `options`, `theme` | naming and the active terminal after a close, terminals in editor tabs, script runs, key handling, fonts and xterm options, terminal colors |
+| `scripts/` | `scriptsModel`, `scriptRun`, `nodeVersion` | the Scripts tree, the run command, Node version ranges and LTS names |
+| `search/` | `doubleShift`, `searchTabs`, `popupRows`, `fileSearchModel`, `symbolSearchModel`, `textSearchModel`, `replaceModel` | double Shift, the popup tabs and rows, result models, Replace in Files |
+| `markdown/` | `render`, `format`, `links`, `highlight`, `scrollSync`, `richSync`, `slug`, `viewMode` | rendering, toolbar formatting, links and images, code highlight, scroll sync, rich editor write back, heading ids, view modes |
+| `themes/` | `catalog`, `color`, `themeIndex`, `apply` | every theme's tokens and WCAG contrast, color math, the theme list, applying a theme |
+| `console/` | `consoleModel` | merging Git Console entries, the filter and the rows |
+| `shelf/` | `shelfModel` | the Shelf list |
+| `ignore/` | `gitignore` | escaped patterns for files and folders |
+| `mcp/` | `toolDefs`, `toolStates`, `args`, `connect`, `menuCommands`, `perfModel` | UI tool definitions, tool switches, argument checks, connect commands, menu tools, performance sampling |
+| `debug/` | `memoryEvents` | naming the scroll areas for the memory log |
+| `ui/` | `menuNav`, `pickList` | context menu keyboard navigation, the pick dialog's filter |
+| `update/` | `releases`, `update` | channels, the safe Markdown renderer, issue links, changelog parsing and semver |
+| `views/` | `workspaceShortcuts`, `recentEntries` | window shortcuts, Open Recent entries |
+| `views/changes/` | `sections`, `drafts`, `fileStatus`, `repoMenu`, `repoPickers`, `sync`, `commitOptions` | grouping and selection, drafts, row ids, the repository ... menu and pickers, Sync Changes, commit options |
+| `views/files/` | `tones`, `reveal` | status colors, revealing a file in the tree |
+| `views/git/` | `branchPopup`, `gitOptions`, `integrateOptions`, `rebaseModel`, `patchLines`, `github`, `lfs/lfsModel`, `submodules/submoduleModel`, `worktrees/worktreeModel` | Branches popup, dialog options, Merge and Rebase options, the interactive rebase list, patches, GitHub links, LFS, submodules, worktrees |
+| `views/github/` | `githubModel` | GitHub dialogs and results |
+| `scripts/` (repository root) | `versioning`, `wiki` | version and changelog tools, the wiki checks |
+
+## Rust tests (`cargo test`)
+
+Most modules test themselves in a `#[cfg(test)]` block; the bigger ones have a `tests.rs` beside them.
+
+| Module | What the tests cover |
+| --- | --- |
+| `commands/tests.rs` | whole commands against real repositories: staging, commits, conflicts, mergetool |
+| `commands/*.rs` | branch actions, commit options, history, ignore files, Merge and Rebase options, patches, interactive rebase (with merges), remotes, clone and cancel, shelf, stash, status, tags, config |
+| `git/tests.rs` and `git/*.rs` | readers and the CLI runner, the demo script, blame, cancel, files, LFS, submodules, worktrees |
+| `merge/engine.rs` | the 3-way engine and its oracle test against `git merge-file` |
+| `watcher.rs` | attribution, ignored paths, linked git folders, index invalidation |
+| `terminal.rs`, `run_process.rs` | shells, PTYs, hang up and kill, script runs and the login environment |
+| `scripts/`, `node_versions.rs` | each script file format, the wanted Node version, installed versions |
+| `file_search.rs`, `symbols/`, `text_search/` | indexing, matching, caps, cancel, the symbol scanners, Replace in Files |
+| `git_console.rs` | recording, masking secrets, limits, off means nothing |
+| `shelf/` | patch sections and the store |
+| `github/tests.rs` | every GitHub path against a fake network, keychain and gh |
+| `mcp/tests.rs` and `mcp/*.rs` | the server over real HTTP, tokens, paths, the tool registry, install, the CLI client |
+| `memory.rs`, `memory_log.rs`, `images.rs`, `config.rs`, `state.rs`, `workspace_file.rs` | the smaller modules |
+
+When you add a test file, add it to this page in the same commit.

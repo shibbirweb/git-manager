@@ -5,32 +5,74 @@
     { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
+    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
+    { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
+    { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
+    { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
+    { "page": "usage/Repository-Actions.md", "summary": "The buttons and the ... menu of each repository in Changes: branch, Sync, Commit and more." },
+    { "page": "usage/Commit-Options.md", "summary": "Commit and push in one go, and sign-off, author, GPG signing and skipping hooks." },
+    { "page": "usage/Ignoring-Files.md", "summary": "Add files, folders or extensions to .gitignore from a right-click." },
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
     { "page": "usage/History-and-Log.md", "summary": "Browse the commit graph, read commits and undo or copy them." },
     { "page": "usage/Branches-and-Tags.md", "summary": "Create, switch, merge, rebase, rename and delete branches, and browse tags." },
+    { "page": "usage/Branches-Popup.md", "summary": "The JetBrains-style branch list: checkout, compare, update, push and merge any branch." },
     { "page": "usage/Remotes.md", "summary": "Fetch, pull and push, and what the ahead and behind numbers mean." },
     { "page": "usage/Stashes.md", "summary": "Put work aside and bring it back later." },
+    { "page": "usage/Shelf.md", "summary": "Put chosen changes aside as a named patch and bring them back, in full or file by file." },
+    { "page": "usage/Git-Menu.md", "summary": "Every git command in one JetBrains-style menu, including the current file's history." },
+    { "page": "usage/Git-Dialogs.md", "summary": "Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes and Clone, with their options." },
+    { "page": "usage/Interactive-Rebase.md", "summary": "Reorder, reword, squash, edit and drop commits before you share them." },
+    { "page": "usage/Worktrees.md", "summary": "Check out several branches of one repository in separate folders." },
+    { "page": "usage/Submodules.md", "summary": "Repositories inside a repository: see their changes and init, update, add or remove them." },
+    { "page": "usage/Git-LFS.md", "summary": "Large files stored with Git LFS: badges, sizes in diffs, track patterns, pull and prune." },
+    { "page": "usage/GitHub.md", "summary": "Sign in to GitHub to share a project, sync a fork and create gists." },
+    { "page": "usage/Git-Console.md", "summary": "Every git command the app ran, with its output (off by default)." },
+    { "page": "usage/Terminal.md", "summary": "Run shells below the editor or in a tab, with several terminals and your own shell and font." },
+    { "page": "usage/Scripts.md", "summary": "Run npm, Composer, Make, Deno and just scripts with one click, with the right Node version." },
     { "page": "usage/Navigation.md", "summary": "Back and Forward across files, diffs and commits." },
+    { "page": "usage/Menus.md", "summary": "The menu bar: what is in each menu, and how its keys work." },
     { "page": "usage/Settings.md", "summary": "Every setting, where it is saved, and the light and dark themes." },
+    { "page": "usage/Color-Themes.md", "summary": "Pick a light and a dark color theme from 37, including high contrast ones." },
+    { "page": "usage/Settings-Terminal-and-Automation.md", "summary": "Every option of the Terminal, GitHub and Automation sections of Settings." },
+    { "page": "usage/Settings-Files.md", "summary": "What is in ~/.gitmanager, editing settings.json by hand, and fixing a broken file." },
     { "page": "usage/Updates.md", "summary": "How Git Manager tells you about new versions, and the beta channel." },
     { "page": "usage/Status-Bar-and-Help.md", "summary": "The status bar, memory use, and how to report a bug or ask for a feature." },
+    { "page": "usage/MCP-and-CLI.md", "summary": "Let AI tools such as Claude Code, and scripts in a terminal, use Git Manager safely." },
     { "page": "usage/Git-Mergetool.md", "summary": "Use Git Manager as the merge tool for git on the command line." },
     { "page": "usage/Keyboard-Shortcuts.md", "summary": "Every keyboard shortcut on one page." },
-    { "page": "usage/Troubleshooting.md", "summary": "Common problems and how to fix them." }
+    { "page": "usage/Keyboard-Shortcuts-Editor.md", "summary": "The keys of the editor, the find bar, Markdown, the merge tool, lists and dialogs." },
+    { "page": "usage/Troubleshooting.md", "summary": "Common problems and how to fix them." },
+    { "page": "usage/Troubleshooting-Git.md", "summary": "Git not found, failing hooks, signing in and common git errors." }
   ],
   "developer": [
     { "page": "developer/Developer-Guide.md", "summary": "Start here: set up the project, run it, and find your way around these pages." },
     { "page": "developer/Architecture.md", "summary": "How the Rust backend, the Svelte frontend and git fit together." },
     { "page": "developer/Project-Layout.md", "summary": "What lives in which folder and file." },
-    { "page": "developer/Backend.md", "summary": "Tauri commands, the git read and write split, errors and the file watcher." },
-    { "page": "developer/Frontend.md", "summary": "Stores, Svelte 5 runes, the API bridge and CodeMirror patterns." },
-    { "page": "developer/Commands-and-Events.md", "summary": "Every backend command and event: what it does, its arguments and what it returns." },
-    { "page": "developer/Testing.md", "summary": "The Rust and Vitest suites, test repositories and what to test." },
+    { "page": "developer/Backend.md", "summary": "Tauri commands, the git read and write split, errors, the CLI runner and the file watcher." },
+    { "page": "developer/How-Folder-Watching-Works.md", "summary": "The file watcher: how each file event becomes a repository or folder refresh." },
+    { "page": "developer/How-Workspace-Files-Work.md", "summary": "Workspace files, VS Code compatibility and which folders reopen at start." },
+    { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
+    { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
+    { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
+    { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
+    { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
+    { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
+    { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
+    { "page": "developer/Commands-and-Events.md", "summary": "Index of the backend commands, plus every event and channel." },
+    { "page": "developer/Settings-Reference.md", "summary": "Every settings.json and state.json key with its default, range and where it is used." },
+    { "page": "developer/Commands-Workspace-and-Changes.md", "summary": "Commands for folders, status, staging, commits, diffs, conflicts, stashes, the shelf and ignore files." },
+    { "page": "developer/Commands-Branches-and-Remotes.md", "summary": "Commands for branches, merge and rebase dialogs, interactive rebase, fetch, pull, push, remotes, clone, patches and tags." },
+    { "page": "developer/Commands-History-and-Extras.md", "summary": "Commands for the log, blame, file history, reset, worktrees, submodules, Git LFS and GitHub." },
+    { "page": "developer/Commands-App-and-Tools.md", "summary": "Commands for files, config, the memory log, search, scripts, the terminal, the Git Console and the MCP server." },
+    { "page": "developer/Testing.md", "summary": "How the Rust and Vitest suites work, test repositories and what to test." },
+    { "page": "developer/Test-Suites.md", "summary": "Every Vitest and Rust test file, folder by folder, and what it covers." },
     { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
+    { "page": "developer/Debugging-with-MCP.md", "summary": "Inspect, measure and drive the running app with the MCP tools and git-manager cli." },
+    { "page": "developer/How-Memory-Is-Measured.md", "summary": "The memory readout, the debug memory log and the live memory recorder." },
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
     { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
@@ -43,7 +85,7 @@
       "title": "Workspaces and folders",
       "usage": "usage/Workspaces.md",
       "developer": "developer/How-Workspaces-Work.md",
-      "screenshots": ["welcome.png", "window-overview.png", "workspace-folders.png", "repository-switcher.png", "init-repository.png", "scan-repositories.png", "unsaved-changes-close.png"]
+      "screenshots": ["welcome.png", "window-overview.png", "workspace-folders.png", "repository-switcher.png", "init-repository.png", "scan-repositories.png", "unsaved-changes-close.png", "workspace-opening.png"]
     },
     {
       "id": "files-panel",
@@ -60,6 +102,34 @@
       "screenshots": ["editor-tabs.png", "editor-change-markers.png", "empty-main.png"]
     },
     {
+      "id": "code-editing",
+      "title": "Editing code",
+      "usage": "usage/Editing-Code.md",
+      "developer": "developer/How-Editing-Code-Works.md",
+      "screenshots": ["editor-whitespace.png"]
+    },
+    {
+      "id": "markdown",
+      "title": "Markdown editor",
+      "usage": "usage/Markdown-Editor.md",
+      "developer": "developer/How-the-Markdown-Editor-Works.md",
+      "screenshots": ["markdown-split.png", "markdown-toolbar.png", "markdown-rich-editor.png", "markdown-mermaid.png"]
+    },
+    {
+      "id": "search-everywhere",
+      "title": "Search Everywhere",
+      "usage": "usage/Search-Everywhere.md",
+      "developer": "developer/How-Search-Everywhere-Works.md",
+      "screenshots": ["search-everywhere-all.png", "search-everywhere-recent.png", "search-everywhere-files.png", "search-everywhere-classes.png", "search-everywhere-symbols.png", "search-everywhere-text.png"]
+    },
+    {
+      "id": "find-replace",
+      "title": "Find and replace",
+      "usage": "usage/Find-and-Replace.md",
+      "developer": "developer/How-Find-and-Replace-Works.md",
+      "screenshots": ["find-replace-bar.png", "replace-in-files.png"]
+    },
+    {
       "id": "changes",
       "title": "Changes and commits",
       "usage": "usage/Changes-and-Commits.md",
@@ -67,11 +137,32 @@
       "screenshots": ["changes-sidebar.png", "commit-box.png"]
     },
     {
+      "id": "repo-actions",
+      "title": "Repository actions",
+      "usage": "usage/Repository-Actions.md",
+      "developer": "developer/How-Repository-Actions-Work.md",
+      "screenshots": ["repo-actions-row.png", "repo-actions-menu.png"]
+    },
+    {
+      "id": "commit-options",
+      "title": "Commit options",
+      "usage": "usage/Commit-Options.md",
+      "developer": "developer/How-Commit-Options-Work.md",
+      "screenshots": ["commit-dropdown.png", "commit-options.png"]
+    },
+    {
+      "id": "gitignore",
+      "title": "Ignoring files",
+      "usage": "usage/Ignoring-Files.md",
+      "developer": "developer/How-Ignoring-Files-Works.md",
+      "screenshots": ["gitignore-menu.png"]
+    },
+    {
       "id": "diffs",
       "title": "Diffs",
       "usage": "usage/Diffs.md",
       "developer": "developer/How-Diffs-Work.md",
-      "screenshots": ["diff-view.png", "diff-hunk-staging.png"]
+      "screenshots": ["diff-view.png", "diff-hunk-staging.png", "diff-split-resize.png"]
     },
     {
       "id": "conflicts",
@@ -116,11 +207,18 @@
       "screenshots": ["branches-panel.png", "branch-context-menu.png"]
     },
     {
+      "id": "branches-popup",
+      "title": "Branches popup",
+      "usage": "usage/Branches-Popup.md",
+      "developer": "developer/How-the-Branches-Popup-Works.md",
+      "screenshots": ["branches-popup.png", "branches-compare-tab.png"]
+    },
+    {
       "id": "remotes",
       "title": "Remotes",
       "usage": "usage/Remotes.md",
       "developer": "developer/How-Remotes-Work.md",
-      "screenshots": ["remote-buttons.png", "git-progress.png"]
+      "screenshots": ["git-progress.png", "remotes-pull-push-menu.png"]
     },
     {
       "id": "stashes",
@@ -130,6 +228,69 @@
       "screenshots": ["stashes.png"]
     },
     {
+      "id": "shelf",
+      "title": "Shelf",
+      "usage": "usage/Shelf.md",
+      "developer": "developer/How-the-Shelf-Works.md",
+      "screenshots": ["shelf-panel.png", "shelf-shelve-dialog.png"]
+    },
+    {
+      "id": "git-menu",
+      "title": "Git menu",
+      "usage": "usage/Git-Menu.md",
+      "developer": "developer/How-the-Git-Menu-Works.md",
+      "screenshots": ["git-menu-create-patch.png", "git-menu-file-history.png", "git-menu-line-history.png", "git-menu-compare-revision.png"]
+    },
+    {
+      "id": "git-dialogs",
+      "title": "Git dialogs",
+      "usage": "usage/Git-Dialogs.md",
+      "developer": "developer/How-the-Git-Dialogs-Work.md",
+      "screenshots": ["git-push-dialog.png", "git-pull-dialog.png", "git-update-project-dialog.png", "git-merge-dialog.png", "git-rebase-dialog.png", "git-reset-dialog.png", "git-rollback-dialog.png", "git-remotes-dialog.png", "git-clone-dialog.png"]
+    },
+    {
+      "id": "interactive-rebase",
+      "title": "Interactive rebase",
+      "usage": "usage/Interactive-Rebase.md",
+      "developer": "developer/How-Interactive-Rebase-Works.md",
+      "screenshots": ["interactive-rebase-dialog.png", "interactive-rebase-merges.png"]
+    },
+    {
+      "id": "worktrees",
+      "title": "Worktrees",
+      "usage": "usage/Worktrees.md",
+      "developer": "developer/How-Worktrees-Work.md",
+      "screenshots": ["worktrees-section.png", "worktrees-new-dialog.png"]
+    },
+    {
+      "id": "submodules",
+      "title": "Submodules",
+      "usage": "usage/Submodules.md",
+      "developer": "developer/How-Submodules-Work.md",
+      "screenshots": ["submodules-changes.png", "submodules-add-dialog.png"]
+    },
+    {
+      "id": "git-lfs",
+      "title": "Git LFS",
+      "usage": "usage/Git-LFS.md",
+      "developer": "developer/How-Git-LFS-Works.md",
+      "screenshots": ["lfs-diff.png", "lfs-not-installed.png"]
+    },
+    {
+      "id": "github",
+      "title": "GitHub account",
+      "usage": "usage/GitHub.md",
+      "developer": "developer/How-GitHub-Works.md",
+      "screenshots": ["github-sign-in.png", "github-signed-in.png", "github-share-dialog.png", "github-gist-dialog.png"]
+    },
+    {
+      "id": "git-console",
+      "title": "Git Console",
+      "usage": "usage/Git-Console.md",
+      "developer": "developer/How-the-Git-Console-Works.md",
+      "screenshots": ["git-console.png", "git-console-setting.png"]
+    },
+    {
       "id": "navigation",
       "title": "Back and Forward",
       "usage": "usage/Navigation.md",
@@ -137,11 +298,39 @@
       "screenshots": ["back-forward.png"]
     },
     {
+      "id": "terminal",
+      "title": "Integrated terminal",
+      "usage": "usage/Terminal.md",
+      "developer": "developer/How-the-Terminal-Works.md",
+      "screenshots": ["terminal-panel.png", "terminal-shell-menu.png", "terminal-list.png", "terminal-editor-tab.png", "terminal-settings.png"]
+    },
+    {
+      "id": "scripts",
+      "title": "Scripts tool window",
+      "usage": "usage/Scripts.md",
+      "developer": "developer/How-Scripts-Work.md",
+      "screenshots": ["scripts-panel.png", "scripts-node-version.png", "scripts-run-tab.png"]
+    },
+    {
+      "id": "menus",
+      "title": "Menu bar",
+      "usage": "usage/Menus.md",
+      "developer": "developer/How-the-Menus-Work.md",
+      "screenshots": ["menus-shortcuts-window.png"]
+    },
+    {
       "id": "settings",
       "title": "Settings",
       "usage": "usage/Settings.md",
       "developer": "developer/How-Settings-Work.md",
-      "screenshots": ["settings-appearance.png", "settings-editor.png", "settings-merge.png", "settings-layout.png", "settings-files.png", "settings-editor-more.png", "settings-state-error.png", "dark-theme.png"]
+      "screenshots": ["settings-appearance.png", "settings-editor.png", "settings-merge.png", "settings-layout.png", "settings-files.png", "settings-editor-more.png", "settings-state-error.png", "dark-theme.png", "settings-editor-fonts.png", "settings-automation.png"]
+    },
+    {
+      "id": "color-themes",
+      "title": "Color themes",
+      "usage": "usage/Color-Themes.md",
+      "developer": "developer/How-Color-Themes-Work.md",
+      "screenshots": ["color-theme-pickers.png", "color-theme-dracula.png", "color-theme-solarized-light.png", "color-theme-high-contrast.png"]
     },
     {
       "id": "updates",
@@ -155,7 +344,14 @@
       "title": "Status bar and help links",
       "usage": "usage/Status-Bar-and-Help.md",
       "developer": "developer/How-the-Status-Bar-Works.md",
-      "screenshots": ["status-bar.png", "help-menu.png", "settings-about.png"]
+      "screenshots": ["status-bar.png", "help-menu.png", "settings-about.png", "memory-log-settings.png"]
+    },
+    {
+      "id": "mcp",
+      "title": "MCP server and command line tool",
+      "usage": "usage/MCP-and-CLI.md",
+      "developer": "developer/How-MCP-and-CLI-Work.md",
+      "screenshots": ["mcp-settings.png", "mcp-tools-dialog.png", "mcp-cli-settings.png"]
     },
     {
       "id": "mergetool",

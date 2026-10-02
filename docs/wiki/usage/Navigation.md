@@ -21,10 +21,15 @@ The arrows are greyed out when there is nowhere to go. The keys do nothing while
 Git Manager adds a stop to the history when you:
 
 - Open a file in the editor, or move the cursor far in it (ten lines or more). Small moves update the current stop instead of adding new ones, so the history stays useful.
+- Open a file, class, symbol or text match from [Search Everywhere](Search-Everywhere.md). The place you came from is a stop too, so Back returns there.
 - Select a file in [Changes](Changes-and-Commits.md) to see its diff.
 - Click a [blame](Blame.md) note or gutter block to open a commit in the Log. The line you clicked from is saved first, so Back returns to exactly that line. The Log opens the diff on that same line, as it was in that commit.
 
 Selecting commits inside the Log itself, or clicking a parent there, does not add stops. Back from anywhere in the Log returns to where you were before it.
+
+Tabs that are not files, such as a terminal, a commit or a file history tab, are never stops.
+
+The same history feeds **Recent Files** in Search Everywhere: the files you visited, newest first.
 
 Up to 50 stops are kept. Going back and then doing something new clears the forward stops, just like in a browser.
 

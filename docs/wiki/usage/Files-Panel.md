@@ -42,6 +42,7 @@ More details:
 - A folder gets a small colored dot, and its name the same color, when something inside it changed. It takes the strongest color inside, so a conflict anywhere below turns it red.
 - Deleted files stay in the tree, struck through, so you can still see what went away. Clicking one only reminds you that you can restore or stage the deletion from [Changes](Changes-and-Commits.md).
 - Files that your `.gitignore` ignores are shown dimmed.
+- Files stored in Git LFS (large files kept outside the repository) have a small **LFS** tag. See [Git LFS](Git-LFS.md).
 
 The tree refreshes on its own when files change on disk or in git, so you rarely need the Refresh button.
 
@@ -65,7 +66,7 @@ Click in the tree first, then:
 
 ![Files panel context menu](../images/files-context-menu.png)
 
-*Right-click a file or folder for more actions.*
+*Right-click a file for more actions: open it, ignore it, reveal it in the Finder, open a terminal there or copy its path.*
 
 On a file:
 
@@ -80,18 +81,25 @@ On a folder:
 - **Initialize Repository Here** on a plain folder that is not inside any repository.
 - **Add Folder to Workspace...** and **Remove Folder from Workspace** on a top-level workspace folder.
 
+On files and folders inside a repository:
+
+- **Add to .gitignore** offers patterns: this file, its folder, or every file with the same extension. Pick one to add it to the repository's `.gitignore`, or use **Add to .git/info/exclude** to ignore it only on your Mac. **Edit .gitignore** opens the file. See [Ignoring Files](Ignoring-Files.md).
+
 On everything:
 
+- **Reveal in Finder** shows the file or folder in the Finder.
+- **Open in Integrated Terminal** opens a new terminal in that folder, or for a file in the folder that holds it. See [Terminal](Terminal.md).
 - **Copy Path** copies the full path.
 - **Copy Relative Path** copies the path inside the workspace folder.
 
-A deleted file offers **Show in Changes** in place of Open. Copy Relative Path is greyed out on a workspace folder itself.
+A deleted file offers only **Show in Changes** and the copy items. Copy Relative Path is greyed out on a workspace folder itself. On Windows and Linux, Reveal in Finder is called **Reveal in File Explorer** and **Open Containing Folder**.
 
 ## The panel's buttons
 
 At the top of the panel, next to the workspace name (hover it to see the full folder paths):
 
 - **+** adds a folder to the workspace.
+- The crosshair (**Select Opened File**) finds the file you are editing in the tree. It opens every folder down to it, selects it and scrolls to it, so a file you opened with [Search Everywhere](Search-Everywhere.md) is easy to place. It is greyed out while no file is open, or while the tab is not a file, such as a commit tab.
 - The up chevron collapses every folder.
 - The circular arrow refreshes the open folders.
 - **x** hides the panel.

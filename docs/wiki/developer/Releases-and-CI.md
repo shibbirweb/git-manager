@@ -119,7 +119,7 @@ It checks that every file agrees on the version, that the tag is exactly `v` plu
 
 ## Publishing the wiki: `wiki.yml`
 
-A GitHub wiki is its own git repository (`<repo>.wiki.git`), so merging `docs/wiki` does not update it. `wiki.yml` runs on a push to `master` that touches `docs/wiki/**`, `scripts/build-wiki.ts`, `scripts/wiki.ts` or the workflow itself, and on Run workflow from any branch (for example `develop`, to seed the wiki). It:
+A GitHub wiki is its own git repository (`<repo>.wiki.git`), so merging `docs/wiki` does not update it. `wiki.yml` runs on a push to `master` that touches `docs/wiki/**`, `scripts/build-wiki.ts`, `scripts/wiki.ts`, `src/lib/update/releases.ts` (it names the repository) or the workflow itself, and on Run workflow from any branch (for example `develop`, to seed the wiki). It:
 
 1. builds the pages with `bun scripts/build-wiki.ts "$RUNNER_TEMP/wiki-pages"`, which checks everything first;
 2. clones the wiki, and fails with a hint if it does not exist yet;

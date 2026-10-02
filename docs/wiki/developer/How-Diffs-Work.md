@@ -1,6 +1,6 @@
 # How diffs work
 
-The diff view shows one file side by side: the old version on the left, the new one on the right. The Changes sidebar uses it to stage or unstage single hunks, and the Log uses it read-only for commit diffs. The user side is in [Diffs](../usage/Diffs.md).
+The diff view shows one file side by side: the old version on the left, the new one on the right. The Changes sidebar uses it to stage or unstage single hunks; the Log, commit tabs, the Git and branch compare tabs and the shelf use it read-only. The user side is in [Diffs](../usage/Diffs.md).
 
 ## Why we need it
 
@@ -42,7 +42,24 @@ flowchart LR
 - draws the overview ruler with `createStrip`, `layoutTicks` and `renderTicks` from `scrollMarkers.ts`, next to the merge view's scroll container,
 - binds F7 and Shift+F7 to `goToChunk`, and restores the scroll position when the same file is rebuilt.
 
-The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff.
+The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)).
+
+### Resizing the sides
+
+The split is `settings.diffSplitRatio` in `state.json` (default 0.5, kept between 0.15 and 0.85 by `clampDiffSplit` in `split.ts`). `DiffView` sets it as `--diff-left` and `--diff-right`, which the labels, the find bar hosts and both editors use as `flex-grow`, so the rows stay lined up.
+
+```mermaid
+flowchart LR
+  Drag["pointer on .split-handle"] --> Ratio["splitFromPointer(x, left, width, gutter)"]
+  Ratio --> Setting["settings.diffSplitRatio"]
+  Setting --> Vars["--diff-left, --diff-right"]
+  Vars --> Rows["labels, find bars, editors"]
+  Setting -->|"pointer up"| Save["settings.save() to state.json"]
+```
+
+The handle is a `role="separator"` that `placeSplitHandle` puts at the first editor's right edge after each layout. `splitFromPointer` leaves out the change arrows column (`.cm-merge-revert`, 24 px, matched by a 24 px gap in the labels and find bar rows), so it keeps its width. Double-click sets 0.5; Left and Right move 2% (6% with Shift). The setting is saved when the drag ends.
+
+Each side's find bar goes into a host above the diff (`panels({ topContainer })`), since both sides share one scroller. See [How find and replace works](How-Find-and-Replace-Works.md).
 
 ### Staging one hunk
 
@@ -65,7 +82,7 @@ sequenceDiagram
   Store->>Store: refreshRepo, diff reloads
 ```
 
-In unstaged mode the left side is the index, so pulling a chunk into it stages the hunk. In staged mode the right side is the index, so pushing HEAD's lines into it unstages the hunk. Both call `stage_content`, which keeps the file mode of the existing index entry (or `100644` for a new file). The text is written back with that side's one detected line ending (`Eol::detect`, by majority), so staging a hunk of a file with mixed endings stores one ending for the whole file. For the same reason, a change that only touches line endings shows "No content changes".
+In unstaged mode the left side is the index, so pulling a chunk into it stages the hunk; in staged mode the right side is the index, so pushing HEAD's lines into it unstages it. Both call `stage_content`, which keeps the index entry's file mode (or `100644` for a new file). The text is written back with that side's majority line ending (`Eol::detect`), so a file with mixed endings gets one ending, and a change that only touches line endings shows "No content changes".
 
 In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view with `mode="readonly"`. Its blame target uses the commit as the revision, and is skipped when the new side is empty, as after a deletion.
 
@@ -76,6 +93,7 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 | `src/lib/diff/DiffView.svelte` | The side by side view, hunk buttons, ruler, navigation |
 | `src/lib/diff/mergeExtensions.ts` | `chunkKinds`, `diffTheme`, `revertButton` |
 | `src/lib/diff/prefs.svelte.ts` | The Collapse unchanged preference |
+| `src/lib/diff/split.ts` | The split range, `clampDiffSplit`, `splitFromPointer` |
 | `src/lib/views/changes/ChangesDiff.svelte` | The Diff tab for the selected change |
 | `src/lib/views/changes/selection.svelte.ts` | `loadDiff`, `applyDiffChange`, the stage queue |
 | `src/lib/log/CommitDetails.svelte` | Read-only commit diffs |
@@ -96,6 +114,8 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 **Let the UI compute the diff.** One diff engine draws what you see, and the hunk buttons come for free with `@codemirror/merge`. Computing hunks in Rust would mean two diff engines that could disagree.
 
+**One split for every diff.** The ratio is layout state, like panel widths, so it lives in `state.json` and every diff shares it. A split per file would be forgotten the moment you pick the next file.
+
 ## Bugs we fixed
 
 None are recorded for the diff view itself yet. The Diff tab that could not be closed is covered in [How the editor works](How-the-Editor-Works.md), and staged renames in [How changes and commits work](How-Changes-and-Commits-Work.md).
@@ -105,10 +125,12 @@ None are recorded for the diff view itself yet. The Diff tab that could not be c
 - `src-tauri/src/git/tests.rs`: `diff_working_file_staged_and_unstaged`, `diff_working_file_staged_in_unborn_repo` and `diff_commit_file_sides`.
 - `src-tauri/src/commands/tests.rs`: `stage_content_updates_index_for_tracked_file`, `stage_content_adds_new_file_and_keeps_executable_mode` and `get_status_and_file_diff_commands`.
 
-The Svelte view has no unit tests. If you add logic to it (for example new chunk rules), move that logic into a pure `.ts` module and test it with Vitest. Hunk buttons need a manual check in the running app. See [Testing](Testing.md).
+- `src/lib/diff/split.test.ts`: the range, and the pointer math that leaves out the buttons column.
+
+New logic in the Svelte view belongs in a pure `.ts` module with a Vitest test. Hunk buttons and the drag need a manual check in the running app. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 
 - Update this page when a diff area, the size limit, the hunk staging path or the `DiffView` props change.
 - Update [Diffs](../usage/Diffs.md) for visible changes.
-- Retake `diff-view.png` and `diff-hunk-staging.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).
+- Retake `diff-view.png`, `diff-hunk-staging.png` and `diff-split-resize.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

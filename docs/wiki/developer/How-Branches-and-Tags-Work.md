@@ -1,6 +1,6 @@
 # How branches and tags work
 
-The Branches panel lists local branches, remote branches, tags and stashes of the active repository, and every branch action starts from its context menus. For the user side, see [Branches and Tags](../usage/Branches-and-Tags.md).
+The Branches panel lists local branches, remote branches, tags, stashes and worktrees of the active repository, and its branch actions start from context menus. The same actions also run from the [Branches popup](How-the-Branches-Popup-Works.md) and the repository rows in Changes ([How Repository Actions Work](How-Repository-Actions-Work.md)), for any repository. For the user side, see [Branches and Tags](../usage/Branches-and-Tags.md).
 
 ## Why we need it
 
@@ -54,13 +54,15 @@ classDiagram
 
 ### From refs to rows
 
-`buildRows` in `src/lib/views/sidebar/tree.ts` turns `Refs` and stashes into a flat list of `SidebarRow`s: sections, folder groups, branches, tags and stashes. Names are split on `/` into folders. Remote branches are grouped per remote. Only rows inside expanded sections and folders are produced, so collapsed content never reaches the DOM.
+`buildRows` in `src/lib/views/sidebar/tree.ts` turns `Refs`, stashes and worktrees into a flat list of `SidebarRow`s: sections, folder groups, branches, tags, stashes and worktrees. The Worktrees section is left out while its list is unknown (see [How Worktrees Work](How-Worktrees-Work.md)). Names are split on `/` into folders. Remote branches are grouped per remote. Only rows inside expanded sections and folders are produced, so collapsed content never reaches the DOM.
 
 `collapse.svelte.ts` remembers which sections and folders are collapsed (in local storage; Tags start collapsed). While you type in the filter, everything starts expanded and toggles go to a temporary set, so filtering never scrambles your saved layout.
 
 ### Actions
 
-The menus come from `src/lib/views/sidebar/actions.ts`: `localBranchMenu`, `remoteBranchMenu`, `tagMenu` and `stashMenu`. Each item calls `repoStore.run` or `repoStore.runOp`, and each Rust command runs the git CLI:
+The menus come from `src/lib/views/sidebar/actions.ts`: `localBranchMenu`, `remoteBranchMenu`, `tagMenu` and `stashMenu`. Each item calls `repoStore.run` or `repoStore.runOp`, and each Rust command runs the git CLI.
+
+The branch actions (`checkoutLocalBranch`, `newBranchFrom`, `renameLocalBranch`, `deleteLocalBranch`, `mergeIntoCurrent`, `rebaseCurrentOnto`) take an optional `RepoTarget`: the repository root and that repository's refs, used to validate names and to pass `repoPath` to `run`. The sidebar uses `activeTarget()`; the Branches popup and the repository rows pass `repoTarget(repoRoot, refs)`, so one implementation serves every repository. `applyStash` and `dropStash` take an optional `repoRoot` the same way.
 
 | Action | Command | git |
 | --- | --- | --- |
@@ -72,6 +74,11 @@ The menus come from `src/lib/views/sidebar/actions.ts`: `localBranchMenu`, `remo
 | Merge into current | `merge_branch` | `merge --no-edit` |
 | Rebase current onto | `rebase_onto` | `rebase` |
 | Checkout tag | `checkout_commit` | `switch --detach refs/tags/<tag>`, after a confirm that HEAD will be detached |
+| Create tag | `create_tag` | `tag <name>`, or `tag -a -F - <name>` with the message on stdin |
+| Delete tag | `delete_tag` | `tag -d -- <name>` (local only) |
+| Push tags | `push_tags` | `push --tags`, see [How Remotes Work](How-Remotes-Work.md) |
+
+The sidebar's Merge and Rebase run with git's defaults. The Merge and Rebase dialogs of the Git menu add options (`merge_with_options`, `rebase_with_options`; see [How the Git Menu Works](How-the-Git-Menu-Works.md)). Tags are created from Git > New Tag... and the rows' **...** > **Tags**, where `validateTagName` in `repoPickers.ts` checks the name first.
 
 Merge and rebase use `run_op`, which returns an `OpOutcome`. When git stops on conflicts, that is a normal outcome: `runOp` shows a toast, makes that repository active and opens the Conflicts dialog. Both are disabled while any operation (merge, rebase, cherry-pick, revert) is in progress, and on the current branch itself.
 
@@ -101,11 +108,12 @@ New and renamed branch names are checked by `validateBranchName` before git ever
 | `src/lib/views/sidebar/tree.ts` | `buildRows`: flat row model with folder grouping |
 | `src/lib/views/sidebar/collapse.svelte.ts` | Saved and temporary collapse state |
 | `src/lib/views/sidebar/RowContent.svelte` | One row: icon, label, ahead and behind |
-| `src/lib/views/sidebar/actions.ts` | Menus, confirmations, `validateBranchName` |
+| `src/lib/views/sidebar/actions.ts` | Menus, confirmations, `RepoTarget`, `validateBranchName` |
 | `src/lib/ui/menu.svelte.ts`, `src/lib/ui/ContextMenuHost.svelte` | `contextMenu.open` and the right-click menu itself |
 | `src/lib/ui/dialog.svelte.ts`, `src/lib/ui/DialogHost.svelte` | `dialogs.confirm` and `dialogs.prompt`, used for every branch dialog |
 | `src/lib/stores/repo.svelte.ts` | `refs`, `stashes`, `refreshActive`, `run`, `runOp` |
 | `src-tauri/src/commands/branch.rs` | Branch commands |
+| `src-tauri/src/commands/tag.rs` | `create_tag`, `delete_tag` |
 | `src-tauri/src/git/refs.rs` | git2 reader for branches, remotes and tags |
 
 ## Design decisions
@@ -129,12 +137,14 @@ New and renamed branch names are checked by `validateBranchName` before git ever
 
 - `src-tauri/src/commands/tests.rs`: `branch_create_switch_rename_delete`, `checkout_remote_branch_tracks_or_switches`, `merge_branch_reports_conflicts_and_failures`, `rebase_conflict_continue_after_resolution`, `rebase_abort_restores_branch`.
 - `src-tauri/src/git/tests.rs`: `refs_read_local_remote_and_tags`, `status_head_ahead_and_behind_upstream`.
+- `src-tauri/src/commands/tag.rs`: `creates_lightweight_and_annotated_tags`, `tags_a_given_commit_and_refuses_duplicates`, `deletes_a_tag`.
+- `src/lib/views/changes/repoPickers.test.ts`: `validateTagName`.
 
 There are no frontend tests for `tree.ts` or `validateBranchName` yet. Both are pure, so a `tree.test.ts` (folder grouping, filtering, collapsed sections) is the first thing to add when you change them.
 
 ## Keeping this page in sync
 
-- Update this page when `commands/branch.rs`, `git/refs.rs`, `sidebar/tree.ts` or `sidebar/actions.ts` change.
+- Update this page when `commands/branch.rs`, `commands/tag.rs`, `git/refs.rs`, `sidebar/tree.ts` or `sidebar/actions.ts` change.
 - Update [Branches and Tags](../usage/Branches-and-Tags.md) for new menu items or dialogs.
 - Retake `branches-panel.png` and `branch-context-menu.png` when the panel or its menu changes.
 - Related: [How Stashes Work](How-Stashes-Work.md), [How Remotes Work](How-Remotes-Work.md), [Backend](Backend.md).

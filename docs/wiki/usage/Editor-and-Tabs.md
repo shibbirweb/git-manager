@@ -10,12 +10,13 @@ Git Manager has a light code editor for quick fixes. Open files in tabs, edit an
 
 - Click a file in the [Files panel](Files-Panel.md) to open it in a **preview tab**. Its name is shown in italics, and the next file you click replaces it.
 - Double-click a file to open it in a normal tab that stays open.
+- Press Cmd+P (or Shift twice) to find a file by name. See [Search Everywhere](Search-Everywhere.md).
 
 A preview tab becomes a normal tab when you double-click the tab, start editing, or choose **Keep Open** in its right-click menu.
 
-A commit from the Log can open as a tab too, next to your files, with its diff in the whole editor area. See [History and Log](History-and-Log.md#open-a-commit-in-a-tab).
+Markdown files open with a toolbar and a live preview; see [Markdown Editor](Markdown-Editor.md).
 
-Files larger than 4 MB and binary files (such as images) are not opened. The tab shows a short note with the file size instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
+Files larger than 4 MB and binary files (such as images) are not opened; the tab shows a short note instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
 
 ## When nothing is open
 
@@ -32,15 +33,28 @@ With no file, diff or Log open, the editor area shows the workspace name and thr
 ## Tabs
 
 - Click a tab to show it. Every tab keeps its own cursor, scroll position and unsaved edits while you look at another one.
+- **Shift+Cmd+]** and **Shift+Cmd+[** show the next and previous tab (also **Window > Next Tab** and **Previous Tab**).
+- **Cmd+W** closes the tab on screen (**File > Close Tab**).
 - A new tab opens right after the current one.
-- A dot on the tab means unsaved changes. Hover it to see the close button.
-- Middle-click a tab to close it.
+- A dot on the tab means unsaved changes. Hover it to see the close button. Middle-click a tab to close it.
 - Scroll with the mouse wheel over the tab strip to move through many tabs.
 - When two tabs have the same file name, the folder name is shown next to each.
 
 Right-click a tab for **Close**, **Close Others**, **Close to the Right**, **Close All**, **Copy Path** and **Copy Relative Path** (a preview tab also has **Keep Open**). If a tab you close has unsaved changes, you are asked before they are thrown away. Closing or switching the folder asks the same way.
 
 There is also a **Diff** tab, always first, with the file name and the word Diff. It appears when you select a file in Changes and shows that file's [diff](Diffs.md). Its close button clears the selection.
+
+### Tabs that are not files
+
+Some tabs show other things, each with its own icon:
+
+- a **commit** from the Log ([History and Log](History-and-Log.md#open-a-commit-in-a-tab));
+- a **terminal** ([Terminal](Terminal.md));
+- a file's **History**, or a comparison, from the Git menu's **Current File** submenu ([Git Menu](Git-Menu.md));
+- two branches compared, or a branch against your files on disk, from the Branches popup ([Branches Popup](Branches-Popup.md));
+- a shelved file ([Shelf](Shelf.md)).
+
+They close like any other tab; closing a terminal tab stops its shell.
 
 ## Breadcrumbs and badges
 
@@ -60,10 +74,16 @@ Below the breadcrumbs is a row of buttons. It wraps onto more lines when the edi
 - **Accept All Current** and **Accept All Incoming** appear when the file has conflict markers. See [Resolving Conflicts](Resolving-Conflicts.md).
 - **Resolve in Merge Tool** appears for a file git lists as conflicted. **Mark as Resolved** joins it once no conflict blocks are left.
 - **Blame** shows who last changed each line. See [Blame](Blame.md).
-- **Revert** reloads the file from disk and drops your unsaved edits (you are asked first).
-- **Save** writes the file (Cmd+S). It is greyed out until you edit. Line endings (LF or CRLF) are kept as they were.
 
 The arrows and Blame only appear for files inside a git repository.
+
+## Save and revert
+
+Saving lives in the **File** menu, like in other Mac editors:
+
+- **Save** (Cmd+S) writes the file. It is greyed out until you edit. Line endings (LF or CRLF) are kept as they were.
+- **Save All** (Option+Cmd+S) saves every tab with unsaved edits.
+- **Revert File** reloads the file from disk and drops your unsaved edits. You are asked first.
 
 ## Change markers
 
@@ -79,22 +99,11 @@ While you edit, Git Manager compares the text with the last commit:
 
 F7 and Shift+F7 (or the toolbar arrows) move between these changes and conflicts.
 
-## Editing
-
-The editor has the usual basics: line numbers, syntax colors for common languages (JavaScript, TypeScript, JSX, Rust, PHP, HTML, Vue, Svelte, Blade, CSS, SCSS, Less, JSON, Markdown, Python, YAML, SQL), bracket matching, undo and redo, and Tab to indent.
-
-- Cmd+F opens the search bar. Cmd+G or F3 finds the next match.
-- Shift+Cmd+G finds the previous match. In the editor this wins over the window shortcut that shows Changes.
-- Option+Cmd+G goes to a line number.
-- Cmd+D selects the next occurrence of the selected word.
-
-Tab size and word wrap are set in [Settings](Settings.md), Editor. Both apply to files you open afterwards.
-
 Files that change on disk (for example after a checkout, or an edit in another app) reload on their own, as long as you have no unsaved edits in that tab.
 
-## Zoom
+## Editing
 
-Turn on **Change font size with Ctrl + mouse wheel** in Settings, Editor. Then hold Control (or Command) and scroll over an editor, diff or merge pane to make the code bigger or smaller. A trackpad pinch works too. A small badge shows the new size.
+The editor has syntax colors, bracket matching, undo, multiple cursors and the commands of a **Code** menu. How to use them, plus line spacing, visible whitespace and zoom, is on [Editing Code](Editing-Code.md). To find and replace text, see [Find and Replace](Find-and-Replace.md).
 
 ## Status bar
 
@@ -102,6 +111,7 @@ While a file is shown, the right side of the status bar shows the cursor positio
 
 ## Related
 
+- [Editing Code](Editing-Code.md)
 - [Files Panel](Files-Panel.md)
 - [Diffs](Diffs.md)
 - [Blame](Blame.md)

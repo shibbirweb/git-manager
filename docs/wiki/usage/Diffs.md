@@ -20,7 +20,7 @@ Which two versions you see depends on the group you clicked:
 - A file under **Changes**: the left side is the **Index** (what is staged, or the last commit when nothing is staged) and the right side is the **Working Tree** (the file on disk now).
 - A file under **Staged**: the left side is **HEAD** (the last commit) and the right side is **Index (staged)**.
 
-Commits in the [Log](History-and-Log.md) use the same view, read-only, comparing the commit with its parent.
+Commits in the [Log](History-and-Log.md) use the same view, read-only, comparing the commit with its parent. So do commit tabs, the compare tabs of the Git menu and the Branches popup, and shelved changes.
 
 ## Reading the diff
 
@@ -36,6 +36,24 @@ The toolbar above the diff has:
 - A counter such as **1 of 2**, or **2 changes** when none is picked, or **No changes**.
 
 When you open a diff it jumps to the first change.
+
+## Resize the two sides
+
+![Resizing the sides of a diff](../images/diff-split-resize.png)
+
+*The line between the sides, highlighted under the pointer, with the left side made narrower.*
+
+The two sides start equally wide. To give one side more room, drag the line between them (the pointer turns into a resize arrow when you are on it). The labels above the sides and the find bars follow.
+
+- **Double-click** the line to make the sides equal again.
+- With the line focused, the **Left** and **Right** arrow keys move it in small steps, and Shift with an arrow in bigger steps.
+- Each side keeps at least 15% of the width.
+
+The split is remembered and used for every diff, in Changes, the Log and diff tabs alike. The column of change buttons between the sides keeps its width.
+
+## Find text in a diff
+
+Click into one side and press Cmd+F. That side's find bar opens above the diff, so the two sides stay lined up while you search. The sides are read-only, so there is no Replace row. See [Find and Replace](Find-and-Replace.md).
 
 ## Collapse unchanged lines
 
@@ -65,8 +83,9 @@ The **Blame** button in the diff toolbar shows who last changed each line on the
 - **No content changes**: the file changed in a way that is not text, for example only its permissions.
 - **Binary file, no text diff**: images and other binary files are not compared.
 - **File too large to diff**: very large files are skipped to keep the app fast.
+- **Stored in Git LFS**: for a file kept in Git LFS, the diff shows the old and new sizes instead of text. See [Git LFS](Git-LFS.md).
 
-Diffs and the merge tool never wrap long lines, so both sides stay aligned. Scroll sideways for long lines.
+Diffs and the merge tool never wrap long lines, so both sides stay aligned. Scroll sideways for long lines. The **Line spacing** and **Render whitespace** settings apply here too (see [Editing Code](Editing-Code.md#how-text-looks)).
 
 ## Related
 

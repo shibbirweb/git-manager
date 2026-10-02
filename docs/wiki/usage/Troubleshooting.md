@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Common problems and how to fix them. If yours is not here, use **Report a Bug** in the status bar (see [Status Bar and Help](Status-Bar-and-Help.md)).
+Common problems with the app and how to fix them. Problems with git itself (git not found, hooks, signing in, push and checkout errors) are on [Troubleshooting Git](Troubleshooting-Git.md). If yours is not on either page, use **Report a Bug** in the status bar (see [Status Bar and Help](Status-Bar-and-Help.md)).
 
 ## macOS will not open the app
 
@@ -16,39 +16,6 @@ xattr -dr com.apple.quarantine "/Applications/Git Manager.app"
 ```
 
 You only need to do this once per download.
-
-## "Could not start git"
-
-Git Manager runs your own `git` for every change. It looks in `/opt/homebrew/bin`, `/usr/local/bin` and `/usr/bin`, then in your PATH. If git is missing, you may still see your changes, but committing, pushing and similar fail with a note such as **Commit failed** and "Could not start git" followed by the command.
-
-Install git, for example with `xcode-select --install` (Apple's command line tools) or `brew install git`, then try again.
-
-## Hooks fail with "command not found"
-
-Apps started from the Dock get a very short PATH, so tools like `node`, `npx` or `husky` used by hooks go missing. Git Manager asks your login shell for the real PATH the first time it runs git.
-
-A login shell does not read `~/.zshrc`. If you add tools to your PATH only there (common with nvm), move those lines to `~/.zprofile`, then quit and reopen Git Manager.
-
-## Push, pull or fetch fails to sign in
-
-Git Manager never shows a password prompt, because it cannot answer one. You may see git messages like "terminal prompts disabled" or "could not read Username". Set up sign-in so it works without typing:
-
-- **HTTPS**: use a credential helper, for example `git config --global credential.helper osxkeychain`, then push once in the Terminal so the keychain stores your token. For GitHub, `gh auth login` from the GitHub CLI sets this up for you.
-- **SSH**: add your key to the agent and keychain, for example `ssh-add --apple-use-keychain ~/.ssh/id_ed25519`.
-
-Test in the Terminal with `git fetch`. If it works there without asking anything, it works in Git Manager too.
-
-Signed commits have the same catch: a GPG passphrase needs a graphical prompt such as `pinentry-mac`.
-
-## Other git errors
-
-When git refuses something, its own message is shown. A few common ones:
-
-- **Checkout refuses** because your changes would be overwritten: commit or [stash](Stashes.md) them first.
-- **Push rejected** because the server has newer commits: pull first. After a rebase or amend, use a force push (Option-click Push). See [Remotes](Remotes.md).
-- **"Cannot push a detached HEAD"**: create a branch first.
-- **"This repository has no remote to push to"**: add one with `git remote add origin <url>`.
-- **"No local changes to stash"**: there is nothing to put aside. If you only have new files, tick **Include untracked files**.
 
 ## A repository is missing
 
@@ -73,21 +40,9 @@ Files over 4 MB and binary files are not opened in the editor. Folders with more
 
 See [Settings](Settings.md).
 
-## A commit from blame is not found
-
-"Commit is not in the loaded history" means the Log could not find that commit in the history it shows. Turn on **All branches** in the Log toolbar and try again. See [History and Log](History-and-Log.md).
-
 ## The update check fails
 
-Automatic checks fail quietly when you are offline. **Check Now** in Settings, Updates shows the reason in a **Could not check for updates** note:
-
-- **"GitHub rate limit reached, try again later"**: GitHub allows 60 requests an hour per network. Wait a while.
-- **"GitHub answered 404"**: the releases could not be found, for example because the repository is private or moved. Check the Releases page in your browser.
-- **"The update check timed out"**: the network is slow or blocked.
-
-A version you skipped still opens the update window after **Check Now**, marked **You skipped this version.** Click **Stop Skipping** to be told about it again.
-
-See [Updates](Updates.md).
+Automatic checks fail quietly when you are offline. **Check Now** in Settings, Updates shows the reason, such as "GitHub rate limit reached, try again later" (wait a while) or "The update check timed out" (the network is slow or blocked). See [Updates](Updates.md).
 
 ## git mergetool does not open Git Manager
 
@@ -99,14 +54,33 @@ git config --global --get mergetool.gitmanager.cmd
 
 The path must point to `Contents/MacOS/git-manager` inside the app. See [Git Mergetool](Git-Mergetool.md).
 
+## An AI tool or git-manager cannot connect
+
+See [MCP Server and Command Line Tool](MCP-and-CLI.md) for the setup. Common messages:
+
+- **"Git Manager is not running, or its MCP server and command line tool are both off."** Start the app and turn on **Command line tool** (or **MCP server**) in Settings, Automation.
+- **"The command line tool is turned off in Git Manager settings"** or **"The MCP server is turned off..."**: each kind of client needs its own switch.
+- **"Missing or wrong bearer token"**: the token changed, for example after **New Token**. Copy the connect command again.
+- The **Status** line says the port is in use: another program has it. Pick another **Port**, then copy the connect command again.
+- **`git-manager: command not found`**: click **Install in ~/.local/bin**, add the line Settings shows to `~/.zshrc`, and open a new terminal.
+- **"This tool is turned off in Git Manager (Help > Available MCP Tools)."**: turn it on there.
+- **"Not inside an open workspace folder"**: tools only reach the folders open in the app. Open that folder first.
+- A screenshot fails: allow Git Manager in **System Settings, Privacy and Security, Screen Recording**.
+
+## Memory keeps growing
+
+Turn on **Log memory changes** in Settings, Automation, Memory log, do what makes it grow, then turn it off. Attach `~/.gitmanager/logs/memory.log` (**Reveal in Finder** shows it) to your bug report: it shows each change next to what was on screen. See [Status Bar and Help](Status-Bar-and-Help.md).
+
 ## The memory number looks different
 
 When started from a Terminal, macOS counts the app's helper processes differently, so they are matched by start time and the number is approximate.
 
 ## Related
 
+- [Troubleshooting Git](Troubleshooting-Git.md)
 - [Getting Started](Getting-Started.md)
 - [Remotes](Remotes.md)
 - [Settings](Settings.md)
 - [Updates](Updates.md)
+- [MCP Server and Command Line Tool](MCP-and-CLI.md)
 - [Developer Guide](../developer/Developer-Guide.md)

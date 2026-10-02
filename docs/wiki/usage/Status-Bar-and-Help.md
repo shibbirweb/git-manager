@@ -8,7 +8,7 @@ The status bar is the thin line at the bottom of the window. It tells you where 
 
 ## The left side: where you are
 
-Like in VS Code, the left side follows what is on screen. When a file tab or a diff is showing, it describes that file's repository. Otherwise it describes the active repository.
+Like in VS Code, the left side follows what is on screen. When a file tab or a diff is showing, it describes that file's repository. A commit, branch or history tab describes its repository, and a terminal tab the repository of its folder. Otherwise it describes the active repository.
 
 - **Repository name**. Hover it for the full path. Click it to make that repository the active one and open the Branches sidebar.
 - **Branch**, with numbers for commits to pull (down arrow) and to push (up arrow), such as **main 1** and an up arrow. A checked-out commit shows as "detached" and its short hash. Click it to open the Branches sidebar.
@@ -31,6 +31,7 @@ Always on the right:
 
 - **Update available: 1.2.0**, when a new version is out (with **(beta)** for a beta). Click it for the notes and the download. A version you skipped is not shown. See [Updates](Updates.md).
 - A spinner with the running operation, such as **Push...** or **Commit...**.
+- **Reading changes 2 of 5** with a spinner, right after a folder opens, while the changes of each repository load. You can already work. See [Workspaces](Workspaces.md).
 - A star: opens the project on GitHub, where you can star it.
 - A bug icon: the feedback menu (below).
 - **Memory**, such as **Memory 597 MB**: how much memory Git Manager uses right now.
@@ -42,6 +43,30 @@ Git Manager is built to stay light, and the memory readout lets you see that for
 Click **Memory** for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphics** and **Networking**, each with its size and a bar. Opening it measures again at once. Press Esc or click elsewhere to close it.
 
 The number updates every few seconds while the window is visible, and stops while it is hidden. When the app was started from a Terminal, the helpers are matched by their start time, and the breakdown says so.
+
+### The memory log
+
+To find out what makes memory grow, turn on **Settings, Automation, Memory log, Log memory changes**. While it is on, Git Manager reads its memory every **Read memory every** (250 ms, 500 ms, 1 s or 2 s; 500 ms by default) and writes a line whenever the total changed by **Write a line when it changes by** (0, 1, 5 or 20 MB; 5 MB by default; 0 writes every reading). It also notes what was on screen and when scrolling started and stopped.
+
+![Memory log settings](../images/memory-log-settings.png)
+
+*Settings, Automation, Memory log, with the path of the log file.*
+
+The file is `~/.gitmanager/logs/memory.log`. **Reveal in Finder** shows it. A line looks like `2026-10-02T04:20:31.512Z total 400.0 MB (+50.0) | Web content 300.0 | ...`, with times in UTC. Past 5 MB the log starts over and keeps the previous one as `memory.log.1`. AI tools can read it with the `read_memory_log` tool (see [MCP Server and Command Line Tool](MCP-and-CLI.md)). Turn it off when you are done: off, nothing runs.
+
+## The Help menu
+
+![The Keyboard Shortcuts window](../images/menus-shortcuts-window.png)
+
+*Help > Keyboard Shortcuts: every shortcut of the app, with a filter.*
+
+The **Help** menu in the menu bar has:
+
+- **Git Manager Help**: this wiki, in your browser.
+- **Keyboard Shortcuts**: a window inside the app with every shortcut, grouped by menu, and a filter box. **Open Online Version** opens [Keyboard Shortcuts](Keyboard-Shortcuts.md).
+- **What's New** and **Release Notes** (see [Updates](Updates.md)).
+- **Available MCP Tools...**: which tools AI agents may use (see [MCP Server and Command Line Tool](MCP-and-CLI.md)).
+- **Report a Bug...**, **Request a Feature...** and **Star on GitHub**, as below.
 
 ## Report a bug or request a feature
 
@@ -56,7 +81,7 @@ Click the bug icon at the right of the status bar:
 
 Both open in your browser. You need a GitHub account to send them.
 
-A good bug report says what you did, what you expected, and what happened instead. A screenshot helps a lot, and so does the text of any error note.
+A good bug report says what you did, what you expected and what happened. A screenshot or the text of an error note helps a lot.
 
 ## About
 
@@ -70,11 +95,11 @@ A good bug report says what you did, what you expected, and what happened instea
 - **Report a Bug** and **Request a Feature**, as above.
 - **Release Notes**: what changed in this version.
 
-The welcome screen has **Star on GitHub**, **Report a Bug** and **Request a Feature** links too.
+The welcome screen has these links too.
 
 ## Notes and errors
 
-Short notes appear at the bottom right for a few seconds when something finishes, such as "Pushed" or "Committed". When something fails, the note shows what went wrong, usually git's own message, for example "Push failed" followed by the reason. Error notes stay longer (nine seconds), you can select and copy their text, and the x closes any note early. The [Troubleshooting](Troubleshooting.md) page covers the common ones.
+Short notes appear at the bottom right for a few seconds when something finishes, such as "Pushed". When something fails, the note shows what went wrong, usually git's own message. Error notes stay nine seconds, you can copy their text, and the x closes any note early. The [Troubleshooting](Troubleshooting.md) page covers the common ones.
 
 ## Related
 

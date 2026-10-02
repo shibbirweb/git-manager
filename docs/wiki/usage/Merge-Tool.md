@@ -10,7 +10,7 @@ The merge tool fixes a conflicted file line by line. It shows your version, the 
 
 - In the [Conflicts dialog](Resolving-Conflicts.md), select a file and click **Merge...**, or double-click it.
 - In [Changes](Changes-and-Commits.md), click a file in the **Conflicts** group, or use its merge icon or **Resolve in Merge Tool** in its right-click menu.
-- In the editor, click **Resolve in Merge Tool** above a conflict or in the toolbar.
+- In the editor, click **Resolve in Merge Tool** above a conflict or in the toolbar above the file.
 - In the [Files panel](Files-Panel.md), right-click a conflicted file and choose **Resolve Conflict...**.
 
 The tool opens over the main window, titled **Merge Revisions for** and the file path, with a close button at the far right that works like **Cancel**.
@@ -61,11 +61,12 @@ These buttons are greyed out once no such changes are left.
 - **F7** jumps to the next unresolved change, **Shift+F7** to the previous one. The arrow buttons in the toolbar do the same.
 - The status on the right of the toolbar counts what is left, for example **9 changes left, 2 conflicts**, and says **All changes processed** when you are done.
 - The strip beside each scrollbar has a tick for every change. Click one to jump there.
+- Cmd+F opens the find bar in the pane you are in. See [Find and Replace](Find-and-Replace.md).
 
 ## Undo and whitespace
 
 - The **Undo** and **Redo** arrows in the toolbar (or Cmd+Z and Shift+Cmd+Z in the result) step back through every apply, ignore and edit, including the state of the buttons.
-- **Ignore whitespace** hides changes that only differ in spaces or tabs, which helps after someone reformatted the file. Switching it reloads the merge and drops what you did so far, so you are asked first. It is the same switch as **Ignore whitespace in the merge tool** in Settings, Merge and Log, so the next merge starts the same way.
+- **Ignore whitespace** hides changes that only differ in spaces or tabs, which helps after someone reformatted the file. Switching it reloads the merge and drops what you did so far, so you are asked first. It is the same switch as **Ignore whitespace in the merge tool** in Settings > Git, so the next merge starts the same way.
 
 ## Save the result
 

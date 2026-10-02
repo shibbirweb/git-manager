@@ -53,7 +53,7 @@ Screenshots show the real app, because a mocked backend drifts from the truth. S
 
 What the script does, and why:
 
-- **It rebuilds the demo on every run.** It deletes `/tmp/gitmanager-docs` and runs `scripts/make-docs-demo.sh` there: a shop repository with four authors, branches, tags, a stash and a remote, a repository stopped in a merge, a plain folder and a second folder. Dates are relative to today, so blame always reads "2 days ago" and paths never change.
+- **It rebuilds the demo on every run.** It deletes `/tmp/gitmanager-docs` and runs `scripts/make-docs-demo.sh` there: a shop repository with four authors, branches, tags, a stash and a remote, a repository stopped in a merge, a plain folder, a second folder, a repository with a submodule and one with Git LFS images. Dates are relative to today, so blame always reads "2 days ago" and paths never change.
 - **It keeps your own setup out.** The page answers some commands itself: settings and state live in memory, the launch mode points at the demo, and folder pickers return a fixed answer. Dialog, opener and window calls never reach the app, and GitHub's API gets canned releases.
 - **It refuses anything outside the demo.** Any other command with an absolute path argument outside the demo folder fails with a "blocked" error, so a shot can never touch a real repository.
 - **It retries once.** A dev server reload can break a single attempt, so each shot gets a second try before it counts as failed. Any failure makes the script exit with an error.
