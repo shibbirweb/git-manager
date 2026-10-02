@@ -57,7 +57,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 ### The memory recorder
 
-`tools/recorder.rs` keeps one optional recording: a thread that samples `memory::usage()` every `intervalMs` (default 250, at least 100) until `stop_memory_recording` or `maxSeconds` (default 600, at most 3600). It keeps up to 7,200 samples and 200 marks, so a long recording stays small. `read_memory_recording` returns only samples after `sinceMs`, the peak and per-process statistics. Stopping the server stops the recording too.
+`tools/recorder.rs` keeps one optional recording: a thread that samples `memory::usage()` every `intervalMs` (default 250, at least 100) until `stop_memory_recording` or `maxSeconds` (default 600, at most 3600). It keeps up to 7,200 samples and 200 marks. `read_memory_recording` returns only samples after `sinceMs`, the peak and per-process statistics. Stopping the server stops the recording too.
 
 ## Where the code lives
 
@@ -72,9 +72,10 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 | `src-tauri/src/mcp/cli.rs`, `install.rs` | The command line tool and its link |
 | `src-tauri/src/mcp/tools/` | The 56 backend tools, by area, and the recorder |
 | `src-tauri/src/commands/mcp.rs` | `mcp_*` and `cli_install` / `cli_uninstall` commands |
-| `src/lib/mcp/toolDefs.ts` | The 24 UI tools with their schemas |
+| `src/lib/mcp/toolDefs.ts` | The 30 UI tools with their schemas |
 | `src/lib/mcp/bridge.ts`, `handlers.ts` | Answers `mcp-ui-request`; handlers load on the first call |
 | `src/lib/mcp/appState.ts`, `menuCommands.ts`, `perf.ts`, `args.ts` | What the UI tools read, run and check |
+| `src/lib/mcp/fileTools.ts` | The file operation tools |
 | `src/lib/mcp/mcpStore.svelte.ts`, `McpToolsDialog.svelte`, `connect.ts`, `toolStates.ts` | Settings, Automation and Help > Available MCP Tools |
 
 `src/lib/App.svelte` calls `mcpStore.configure` with `mcpEnabled`, `cliEnabled`, `mcpPort` and `mcpTools` whenever they change (it invokes `mcp_configure`), registers the UI tools and sends the workspace folders. Only the main window does this: a git mergetool window would fight over the port.
@@ -87,6 +88,8 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 **UI tools run in the window.** Opening a file or reading the editor text needs the stores, so Rust forwards the call. `run_menu_command` reuses the menu's own handlers, so every menu feature is reachable without one tool per feature.
 
+**File operations are UI tools**, so they refuse unsaved edits and move or close tabs like the Files panel ([details](How-File-Operations-Work.md#ai-agents-and-the-cli)). `file_ops.rs` still checks every path.
+
 **Destructive tools start off.** Settings store only the tools that differ from the default, so new tools get the safe default.
 
 **Two switches.** A user may want scripts in a terminal without giving an AI harness access, or the other way round.
@@ -95,7 +98,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 - `src-tauri/src/mcp/tests.rs`: a real server on a free port: protocol versions, JSON-RPC errors and batches, token and Origin checks, keep-alive, switches per client, `mcp.json`, busy and low ports, UI calls with timeouts and no window, paths outside the workspace, git tools over HTTP, and the CLI against the running server.
 - Unit tests in `token.rs`, `install.rs`, `paths.rs`, `registry.rs`, `tools/recorder.rs` and `tools/performance.rs`.
-- Vitest: `src/lib/mcp/args.test.ts`, `connect.test.ts`, `menuCommands.test.ts`, `perfModel.test.ts`, `toolDefs.test.ts`, `toolStates.test.ts`.
+- Vitest: `src/lib/mcp/args.test.ts`, `connect.test.ts`, `fileTools.test.ts`, `menuCommands.test.ts`, `perfModel.test.ts`, `toolDefs.test.ts`, `toolStates.test.ts`.
 
 ## Keeping this page in sync
 

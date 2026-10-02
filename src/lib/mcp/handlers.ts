@@ -31,6 +31,7 @@ import { gitDialogs } from "$lib/views/git/gitDialogs.svelte";
 import { showLog } from "$lib/views/gitActions";
 import { shortcutsBlocked } from "$lib/views/workspaceActions";
 import { showShelf } from "$lib/shelf/shelfActions.svelte";
+import { fileClipboard } from "$lib/views/files/fileClipboard.svelte";
 import { appState, openDialog, terminalInfo, terminalList } from "./appState";
 import {
   capText,
@@ -48,6 +49,7 @@ import {
   toolArgs,
 } from "./args";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
+import { copyPaths, createFile, createFolder, type FileToolDeps, movePaths, renamePath, trashPaths } from "./fileTools";
 import { mcpStore } from "./mcpStore.svelte";
 import { menuCommands } from "./menuCommands";
 import { findScroller, scrollWalk, uiPerformance } from "./perf";
@@ -508,6 +510,26 @@ async function scrollView(args: ToolArgs): Promise<Structured> {
   return { target, ...outcome };
 }
 
+/** The file tools act through the same api calls and repoStore helpers as the Files panel. */
+const fileToolDeps: FileToolDeps = {
+  folders: () => repoStore.workspace?.folders ?? [],
+  dirtyPaths: () => repoStore.dirtyPaths,
+  fileCreate: api.fileCreate,
+  fileRename: api.fileRename,
+  fileCopy: api.fileCopy,
+  fileMove: api.fileMove,
+  fileTrash: api.fileTrash,
+  openFile: async (filePath) => {
+    await repoStore.openFile(filePath, { pin: true });
+    return repoStore.openFilePath === filePath;
+  },
+  retargetTabs: (moves) => repoStore.retargetTabs(moves),
+  closeTabsUnder: (entryPaths) => repoStore.closeTabsUnder(entryPaths),
+  clipboardFollow: (moves) => fileClipboard.follow(moves),
+  clipboardForget: (removed) => fileClipboard.forget(removed),
+  filesWritten: (changedPaths) => repoStore.filesWritten(changedPaths),
+};
+
 const HANDLERS: Record<string, Handler> = {
   get_app_state: () => appState(),
   list_menu_commands: () => ({ commands: currentMenuCommands() }),
@@ -530,6 +552,12 @@ const HANDLERS: Record<string, Handler> = {
   get_editor_selection: editorSelection,
   set_markdown_mode: setMarkdownMode,
   save_file: saveFile,
+  create_file: (args) => createFile(fileToolDeps, args),
+  create_folder: (args) => createFolder(fileToolDeps, args),
+  rename_path: (args) => renamePath(fileToolDeps, args),
+  copy_paths: (args) => copyPaths(fileToolDeps, args),
+  move_paths: (args) => movePaths(fileToolDeps, args),
+  trash_paths: (args) => trashPaths(fileToolDeps, args),
   show_commit: showCommit,
   show_changes_diff: showChangesDiff,
   list_scripts: () => listScripts(),

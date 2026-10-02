@@ -31,6 +31,8 @@ export const EDITOR_TEXT_DEFAULT_CHARS = 200_000;
 export const EDITOR_TEXT_MAX_CHARS = 1_000_000;
 /** Longest text send_terminal_text types. */
 export const TERMINAL_TEXT_MAX_CHARS = 10_000;
+/** Most paths one copy_paths, move_paths or trash_paths call takes. */
+export const FILE_TOOL_MAX_PATHS = 1000;
 
 type Schema = Record<string, unknown>;
 
@@ -39,6 +41,14 @@ function objectSchema(properties: Record<string, Schema>, required: string[] = [
 }
 
 const absolutePath = (description: string): Schema => ({ type: "string", description, minLength: 1 });
+
+const filePathList = (description: string): Schema => ({
+  type: "array",
+  items: { type: "string", minLength: 1 },
+  minItems: 1,
+  maxItems: FILE_TOOL_MAX_PATHS,
+  description,
+});
 
 const optionalFilePath = absolutePath("Absolute path of an open file tab. Leave out for the file tab on screen.");
 
@@ -197,6 +207,81 @@ export const UI_TOOLS: McpUiToolDef[] = [
     { readOnly: false },
     "Saves the unsaved edits of an open file tab to disk, like File > Save.",
     objectSchema({ filePath: optionalFilePath }),
+  ),
+  tool(
+    "create_file",
+    "Create File",
+    "Files",
+    { readOnly: false },
+    "Creates an empty file like New File in the Files panel, with any missing folders on the way, and opens it in a tab. It never replaces a file that exists.",
+    objectSchema(
+      {
+        filePath: absolutePath("Absolute path of the new file, inside an open workspace folder."),
+        open: { type: "boolean", description: "Open the new file in a tab. Defaults to true.", default: true },
+      },
+      ["filePath"],
+    ),
+  ),
+  tool(
+    "create_folder",
+    "Create Folder",
+    "Files",
+    { readOnly: false },
+    "Creates a folder like New Folder in the Files panel, with any missing folders on the way.",
+    objectSchema({ folderPath: absolutePath("Absolute path of the new folder, inside an open workspace folder.") }, ["folderPath"]),
+  ),
+  tool(
+    "rename_path",
+    "Rename File or Folder",
+    "Files",
+    { readOnly: false, destructive: true },
+    "Renames a file or folder in place like Rename in the Files panel; open tabs follow it, and a file with unsaved edits is refused. Off until the user turns it on.",
+    objectSchema(
+      {
+        entryPath: absolutePath("Absolute path of the file or folder, inside an open workspace folder."),
+        newName: { type: "string", minLength: 1, maxLength: 255, description: "The new name only, without a folder, for example \"basket.ts\"." },
+      },
+      ["entryPath", "newName"],
+    ),
+  ),
+  tool(
+    "copy_paths",
+    "Copy Files",
+    "Files",
+    { readOnly: false },
+    "Copies files and folders into a folder like Copy and Paste in the Files panel. A taken name gets a copy name such as \"cart copy.ts\", so nothing is replaced.",
+    objectSchema(
+      {
+        paths: filePathList("Absolute paths of the files and folders to copy, inside open workspace folders."),
+        targetFolder: absolutePath("Absolute path of the folder to copy into, inside an open workspace folder."),
+      },
+      ["paths", "targetFolder"],
+    ),
+  ),
+  tool(
+    "move_paths",
+    "Move Files",
+    "Files",
+    { readOnly: false, destructive: true },
+    "Moves files and folders into a folder like Cut and Paste in the Files panel; open tabs follow, a taken name stops the move and unsaved edits are refused. Off until the user turns it on.",
+    objectSchema(
+      {
+        paths: filePathList("Absolute paths of the files and folders to move, inside open workspace folders."),
+        targetFolder: absolutePath("Absolute path of the folder to move into, inside an open workspace folder."),
+      },
+      ["paths", "targetFolder"],
+    ),
+  ),
+  tool(
+    "trash_paths",
+    "Move to Trash",
+    "Files",
+    { readOnly: false, destructive: true },
+    "Moves files and folders to the system Trash like Move to Trash in the Files panel (never deletes them) and closes their tabs; unsaved edits are refused. Off until the user turns it on.",
+    objectSchema(
+      { paths: filePathList("Absolute paths of the files and folders to move to the Trash, inside open workspace folders.") },
+      ["paths"],
+    ),
   ),
 
   // Git

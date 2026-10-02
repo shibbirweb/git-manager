@@ -4,6 +4,8 @@ import { filterTools, groupTools, toolBadge, toolCountLabel, toolEnabled, withTo
 const status = { name: "git_status", title: "Git Status", description: "Shows the status.", category: "Git", readOnly: true, destructive: false };
 const send = { name: "send_terminal_text", title: "Send Text", description: "Types into a terminal.", category: "Terminal", readOnly: false, destructive: true };
 const open = { name: "open_file", title: "Open File", description: "Opens a file.", category: "Files", readOnly: true, destructive: false };
+const trash = { name: "trash_paths", title: "Move to Trash", description: "Moves files to the Trash.", category: "Files", readOnly: false, destructive: true };
+const create = { name: "create_file", title: "Create File", description: "Creates a file.", category: "Files", readOnly: false, destructive: false };
 const commit = { name: "git_commit", title: "Commit", description: "Commits.", category: "Git", readOnly: false, destructive: false };
 
 describe("tool switches", () => {
@@ -12,6 +14,9 @@ describe("tool switches", () => {
     expect(toolEnabled(send, {})).toBe(false);
     expect(toolEnabled(status, { git_status: false })).toBe(false);
     expect(toolEnabled(send, { send_terminal_text: true })).toBe(true);
+    expect(toolEnabled(trash, {})).toBe(false);
+    expect(toolEnabled(create, {})).toBe(true);
+    expect(withToolStates({}, [trash, create], true)).toEqual({ trash_paths: true });
   });
 
   it("keep only the choices that differ from the default", () => {
@@ -43,6 +48,8 @@ describe("the tools list", () => {
     expect(toolBadge(status)).toBe("read only");
     expect(toolBadge(commit)).toBe("can change files");
     expect(toolBadge(send)).toBe("destructive");
+    expect(toolBadge(trash)).toBe("destructive");
+    expect(toolBadge(create)).toBe("can change files");
     expect(toolCountLabel(31, 58)).toBe("31 of 58 tools on");
     expect(toolCountLabel(1, 1)).toBe("1 of 1 tool on");
   });
