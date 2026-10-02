@@ -22,6 +22,24 @@ pub async fn memory_usage() -> AppResult<crate::memory::MemoryUsage> {
     blocking(|| Ok(crate::memory::usage())).await
 }
 
+/// The debug memory log (Settings > Automation): on or off, its interval and change threshold.
+#[tauri::command]
+pub async fn memory_log_configure(
+    state: tauri::State<'_, crate::state::AppState>,
+    enabled: bool,
+    interval_ms: u64,
+    threshold_mb: f64,
+) -> AppResult<crate::memory_log::MemoryLogStatus> {
+    let config_dir = crate::config::config_dir_in(&crate::config::home_dir()?);
+    Ok(state.memory_log.configure(&config_dir, enabled, interval_ms, threshold_mb))
+}
+
+/// A UI event (tab, view, scrolling) logged next to the following memory reading.
+#[tauri::command]
+pub fn memory_log_event(state: tauri::State<'_, crate::state::AppState>, label: String) {
+    state.memory_log.event(&label);
+}
+
 /// The config folder, for showing in the settings dialog.
 #[tauri::command]
 pub fn config_dir() -> AppResult<String> {

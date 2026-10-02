@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 
 use crate::error::{AppError, AppResult};
+use crate::git_console;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -48,7 +49,7 @@ fn git_binary() -> &'static PathBuf {
 
 /// GUI apps on macOS start with a minimal PATH, which breaks hooks that need
 /// tools like node or husky. Ask the login shell once for the real PATH.
-fn user_path() -> &'static String {
+pub fn user_path() -> &'static String {
     static PATH: OnceLock<String> = OnceLock::new();
     PATH.get_or_init(|| {
         let fallback = {
@@ -111,18 +112,22 @@ fn describe(args: &[&str]) -> String {
 
 /// Runs git and returns its output regardless of exit status.
 pub fn run_raw(repo_path: &Path, args: &[&str], stdin: Option<&[u8]>) -> AppResult<GitOutput> {
+    let record = git_console::record(repo_path, args);
     let mut command = command(repo_path);
     command.args(args);
     if stdin.is_some() {
         command.stdin(Stdio::piped());
     }
-    let mut child = command.spawn().map_err(|err| AppError::Command {
-        message: format!("Could not start {}: {err}", describe(args)),
+    let mut child = command.spawn().map_err(|err| {
+        record.fail(AppError::Command {
+            message: format!("Could not start {}: {err}", describe(args)),
+        })
     })?;
     if let (Some(input), Some(mut pipe)) = (stdin, child.stdin.take()) {
         pipe.write_all(input)?;
     }
     let output = child.wait_with_output()?;
+    record.finish(output.status.code(), &output.stdout, &output.stderr);
     Ok(GitOutput {
         stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
@@ -133,6 +138,51 @@ pub fn run_raw(repo_path: &Path, args: &[&str], stdin: Option<&[u8]>) -> AppResu
 /// Runs git and turns a non-zero exit into an error carrying git's message.
 pub fn run(repo_path: &Path, args: &[&str]) -> AppResult<GitOutput> {
     let output = run_raw(repo_path, args, None)?;
+    ensure_success(output, args)
+}
+
+/// Runs git and returns its stdout as raw bytes (patches may hold text in any encoding).
+pub fn run_bytes(repo_path: &Path, args: &[&str]) -> AppResult<Vec<u8>> {
+    run_bytes_with_env(repo_path, args, &[])
+}
+
+/// `run_bytes` with extra environment variables for this one call.
+pub fn run_bytes_with_env(repo_path: &Path, args: &[&str], envs: &[(&str, &str)]) -> AppResult<Vec<u8>> {
+    let record = git_console::record(repo_path, args);
+    let output = command(repo_path).args(args).envs(envs.iter().copied()).output().map_err(|err| {
+        record.fail(AppError::Command {
+            message: format!("Could not start {}: {err}", describe(args)),
+        })
+    })?;
+    record.finish(output.status.code(), &output.stdout, &output.stderr);
+    if output.status.success() {
+        return Ok(output.stdout);
+    }
+    let stderr = String::from_utf8_lossy(&output.stderr).trim_end().to_string();
+    let message = if stderr.is_empty() {
+        format!("{} failed", describe(args))
+    } else {
+        stderr
+    };
+    Err(AppError::Command { message })
+}
+
+/// `run` with extra environment variables for this one call.
+pub fn run_with_env(repo_path: &Path, args: &[&str], envs: &[(&str, &str)]) -> AppResult<GitOutput> {
+    let mut command = command(repo_path);
+    command.args(args).envs(envs.iter().copied());
+    let record = git_console::record(repo_path, args);
+    let output = command.output().map_err(|err| {
+        record.fail(AppError::Command {
+            message: format!("Could not start {}: {err}", describe(args)),
+        })
+    })?;
+    record.finish(output.status.code(), &output.stdout, &output.stderr);
+    let output = GitOutput {
+        stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+        stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        success: output.status.success(),
+    };
     ensure_success(output, args)
 }
 
@@ -157,15 +207,24 @@ fn ensure_success(output: GitOutput, args: &[&str]) -> AppResult<GitOutput> {
 
 /// Runs a long network command, reporting each progress line (git uses `\r`
 /// to redraw them) through `on_progress`.
-pub fn run_streaming(
+pub fn run_streaming(repo_path: &Path, args: &[&str], on_progress: impl FnMut(&str)) -> AppResult<GitOutput> {
+    run_streaming_with_env(repo_path, args, &[], on_progress)
+}
+
+/// `run_streaming` with extra environment variables for this one call.
+pub fn run_streaming_with_env(
     repo_path: &Path,
     args: &[&str],
+    envs: &[(&str, &str)],
     mut on_progress: impl FnMut(&str),
 ) -> AppResult<GitOutput> {
     let mut command = command(repo_path);
-    command.args(args);
-    let mut child = command.spawn().map_err(|err| AppError::Command {
-        message: format!("Could not start {}: {err}", describe(args)),
+    command.args(args).envs(envs.iter().copied());
+    let record = git_console::record(repo_path, args);
+    let mut child = command.spawn().map_err(|err| {
+        record.fail(AppError::Command {
+            message: format!("Could not start {}: {err}", describe(args)),
+        })
     })?;
 
     let stdout_pipe = child.stdout.take();
@@ -215,5 +274,6 @@ pub fn run_streaming(
         stderr: stderr_text,
         success: status.success(),
     };
+    record.finish(status.code(), output.stdout.as_bytes(), output.stderr.as_bytes());
     ensure_success(output, args)
 }

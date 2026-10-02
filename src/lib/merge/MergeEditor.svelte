@@ -174,6 +174,12 @@
       }
     });
     const applyKeys = applyKeymap(applyShortcut);
+    // A side's find bar opening or closing moves its text: redraw the connectors.
+    const onSideGeometry = EditorView.updateListener.of((update) => {
+      if (update.geometryChanged) {
+        scheduleDraw();
+      }
+    });
     const sideView = (text: string, parent: HTMLElement) =>
       new EditorView({
         parent,
@@ -181,6 +187,7 @@
           doc: text,
           extensions: [
             applyKeys,
+            onSideGeometry,
             baseExtensions({ readOnly: true }),
             language,
             sideExtensions(),

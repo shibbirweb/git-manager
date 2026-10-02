@@ -27,9 +27,57 @@ notify-debouncer-full = "0.7.0"
 # Reads only: network/auth features are unnecessary because writes go through the git CLI.
 git2 = { version = "0.21.0", default-features = false }
 tauri-plugin-opener = "2"
+portable-pty = "0.9.0"
+# Go to File: the ripgrep walker (respects .gitignore) and Helix's fuzzy matcher.
+ignore = "0.4.33"
+nucleo-matcher = "0.3.1"
+# Find in Files: ripgrep's search libraries over the same file list.
+grep-matcher = "0.1.8"
+grep-regex = "0.1.14"
+grep-searcher = "0.1.16"
+memchr = "2.7.4"
+# GitHub API: a small blocking client on the system TLS stack (Security.framework on macOS),
+# so no async runtime, rustls, ring or bundled root certificates end up in the binary.
+ureq = { version = "3.4.2", default-features = false, features = ["native-tls-no-default"] }
+# MCP server: the HTTP/1.1 request parser ureq already uses. The server loop is ours, so it can cap
+# connections and stop every thread when switched off (tiny_http keeps idle keep-alive threads).
+httparse = "1"
+# The MCP token's random bytes and the screenshot's base64: both already in the tree through tauri.
+getrandom = "0.3"
+base64 = "0.22"
+
+[target.'cfg(unix)'.dependencies]
+# Signals the whole process group of a terminal shell on close.
+libc = "0.2"
+
+# The GitHub token lives only in the system keychain.
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6.3", features = ["apple-native"] }
+# The MCP screenshot reads the window number of the app's NSWindow (already in the tree through tauri).
+objc2 = "0.6"
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3.6.3", features = ["windows-native"] }
 
 [dev-dependencies]
 tempfile = "3.27.0"
+
+# Go to File matches on every keystroke: keep the matcher fast in dev builds too.
+[profile.dev.package.nucleo-matcher]
+opt-level = 3
+
+# Find in Files and the symbol scan read whole trees: keep them fast in dev builds too.
+[profile.dev.package.grep-searcher]
+opt-level = 3
+
+[profile.dev.package.grep-regex]
+opt-level = 3
+
+[profile.dev.package.regex-automata]
+opt-level = 3
+
+[profile.dev.package.memchr]
+opt-level = 3
 
 # Small, fast binary: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
@@ -38,3 +86,4 @@ lto = true
 opt-level = "s"
 panic = "abort"
 strip = true
+

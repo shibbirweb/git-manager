@@ -291,7 +291,7 @@ fn reset_and_checkout_commit() {
     block_on(history::reset_to(repo.path_string(), first.clone(), "hard".to_string())).unwrap();
     assert_eq!(repo.porcelain(), "");
     assert_eq!(repo.read_text("a.txt"), "one\n");
-    let invalid = block_on(history::reset_to(repo.path_string(), first.clone(), "keep".to_string()));
+    let invalid = block_on(history::reset_to(repo.path_string(), first.clone(), "merge".to_string()));
     assert!(matches!(invalid, Err(AppError::Invalid(_))), "{invalid:?}");
 
     block_on(history::checkout_commit(repo.path_string(), first.clone())).unwrap();
@@ -476,27 +476,72 @@ fn commit_with_multiline_message_and_amend() {
     repo.write("a.txt", "a\n");
     repo.git(&["add", "a.txt"]);
     let message = "Subject line\n\nFirst body line\nSecond body line with 'quotes' and \"double\"\n";
-    block_on(status::commit(repo.path_string(), message.to_string(), false)).unwrap();
+    block_on(status::commit(repo.path_string(), message.to_string(), false, None)).unwrap();
     assert_eq!(repo.head_message(), message.to_string() + "\n");
     assert_eq!(block_on(status::get_head_message(repo.path_string())).unwrap(), message);
     let first = repo.head();
 
     repo.write("b.txt", "b\n");
     repo.git(&["add", "b.txt"]);
-    block_on(status::commit(repo.path_string(), "Reworded\n".to_string(), true)).unwrap();
+    block_on(status::commit(repo.path_string(), "Reworded\n".to_string(), true, None)).unwrap();
     assert_ne!(repo.head(), first);
     assert_eq!(repo.parent_count("HEAD"), 0);
     assert_eq!(repo.head_message().trim_end(), "Reworded");
 
     repo.write("c.txt", "c\n");
     repo.git(&["add", "c.txt"]);
-    block_on(status::commit(repo.path_string(), "  \n".to_string(), true)).unwrap();
+    block_on(status::commit(repo.path_string(), "  \n".to_string(), true, None)).unwrap();
     assert_eq!(repo.head_message().trim_end(), "Reworded");
     assert_eq!(repo.git(&["rev-list", "--count", "HEAD"]).trim(), "1");
     assert_eq!(repo.git(&["ls-tree", "--name-only", "HEAD"]), "a.txt\nb.txt\nc.txt\n");
 
-    let empty = block_on(status::commit(repo.path_string(), "".to_string(), false));
+    let empty = block_on(status::commit(repo.path_string(), "".to_string(), false, None));
     assert!(empty.is_err(), "empty non-amend commit must fail: {empty:?}");
+}
+
+#[test]
+fn commit_all_stages_tracked_changes_but_not_untracked_files() {
+    let repo = TestRepo::new();
+    repo.write("tracked.txt", "one\n");
+    repo.write("gone.txt", "bye\n");
+    repo.commit_all("base");
+
+    repo.write("tracked.txt", "two\n");
+    repo.remove("gone.txt");
+    repo.write("new.txt", "new\n");
+    block_on(status::commit_all(repo.path_string(), "All tracked".to_string(), false, None)).unwrap();
+    assert_eq!(repo.head_message().trim_end(), "All tracked");
+    assert_eq!(repo.git(&["ls-tree", "--name-only", "HEAD"]), "tracked.txt\n");
+    assert_eq!(repo.porcelain(), "?? new.txt\n");
+
+    repo.write("tracked.txt", "three\n");
+    block_on(status::commit_all(repo.path_string(), "".to_string(), true, None)).unwrap();
+    assert_eq!(repo.head_message().trim_end(), "All tracked", "amend without a message keeps it");
+    assert_eq!(repo.git(&["show", "HEAD:tracked.txt"]), "three\n");
+}
+
+#[test]
+fn undo_last_commit_keeps_changes_staged_and_refuses_the_first_commit() {
+    let repo = TestRepo::new();
+    repo.write("a.txt", "a\n");
+    repo.commit_all("first");
+    let first = repo.head();
+
+    let only = block_on(status::undo_last_commit(repo.path_string()));
+    assert!(matches!(&only, Err(AppError::Invalid(message)) if message.contains("no parent")), "{only:?}");
+    assert_eq!(repo.head(), first);
+
+    repo.write("a.txt", "changed\n");
+    repo.commit_all("second\n\nwith a body");
+    let message = block_on(status::undo_last_commit(repo.path_string())).unwrap();
+    assert_eq!(message.trim_end(), "second\n\nwith a body");
+    assert_eq!(repo.head(), first);
+    assert_eq!(repo.porcelain(), "M  a.txt\n");
+    assert_eq!(repo.read_text("a.txt"), "changed\n");
+
+    let unborn = TestRepo::new();
+    let nothing = block_on(status::undo_last_commit(unborn.path_string()));
+    assert!(matches!(nothing, Err(AppError::Invalid(_))), "{nothing:?}");
 }
 
 #[test]
@@ -691,6 +736,25 @@ fn read_worktree_file_normalizes_crlf_and_detects_binary() {
     let binary = block_on(files::read_worktree_file(repo.path_string(), "image.bin".to_string())).unwrap();
     assert!(binary.binary);
     assert!(binary.content.is_empty());
+}
+
+#[test]
+fn read_image_data_url_reads_workspace_images_only() {
+    let repo = TestRepo::new();
+    repo.write("docs/logo.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"/>");
+    repo.write("notes.md", "# Notes");
+
+    let url = block_on(files::read_image_data_url(repo.path_string(), "docs/logo.svg".to_string())).unwrap();
+    assert!(url.starts_with("data:image/svg+xml;base64,"));
+
+    let not_image = block_on(files::read_image_data_url(repo.path_string(), "notes.md".to_string()));
+    assert!(matches!(not_image, Err(AppError::Invalid(_))));
+    let escape = block_on(files::read_image_data_url(repo.path_string(), "../logo.png".to_string()));
+    assert!(matches!(escape, Err(AppError::Invalid(_))));
+    let absolute = block_on(files::read_image_data_url(repo.path_string(), "/etc/hosts.png".to_string()));
+    assert!(matches!(absolute, Err(AppError::Invalid(_))));
+    let missing = block_on(files::read_image_data_url(repo.path_string(), "docs/none.png".to_string()));
+    assert!(matches!(missing, Err(AppError::Io(_))));
 }
 
 // Workspaces

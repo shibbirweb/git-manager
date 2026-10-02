@@ -2,6 +2,7 @@
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
+  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import type { IconName } from "$lib/ui/icons";
   import { changesSelection } from "./changes/selection.svelte";
@@ -55,6 +56,29 @@
   >
     <Icon name="history" size={19} strokeWidth={1.8} />
   </button>
+  <div class="spacer"></div>
+  <!-- Scripts of package.json, composer.json, Makefiles and the like, run in a terminal (JetBrains' npm window). -->
+  <button
+    class="item"
+    class:active={settings.leftPanel === "scripts"}
+    onclick={() => settings.toggleLeftPanel("scripts")}
+    title={settings.leftPanel === "scripts" ? "Scripts, click to hide" : "Scripts: run npm, Composer, Make and other project scripts"}
+    aria-label="Scripts"
+    aria-pressed={settings.leftPanel === "scripts"}
+  >
+    <Icon name="play" size={18} strokeWidth={1.8} />
+  </button>
+  <!-- The terminal panel opens below the editor, like VS Code's panel. -->
+  <button
+    class="item"
+    class:active={terminalStore.panelOpen}
+    onclick={() => terminalStore.toggle()}
+    title={terminalStore.panelOpen ? "Terminal (Ctrl+`), click to hide" : "Terminal (Ctrl+`)"}
+    aria-label="Terminal"
+    aria-pressed={terminalStore.panelOpen}
+  >
+    <Icon name="terminal" size={19} strokeWidth={1.8} />
+  </button>
 </nav>
 
 <style>
@@ -65,7 +89,7 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding-top: 6px;
+    padding: 6px 0;
     background: var(--panel-alt);
     border-right: 1px solid var(--border-strong);
   }
@@ -103,6 +127,10 @@
     width: 2px;
     border-radius: 2px;
     background: var(--accent);
+  }
+
+  .spacer {
+    flex: 1;
   }
 
   .separator {

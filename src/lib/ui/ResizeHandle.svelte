@@ -1,27 +1,32 @@
-<!-- Vertical drag handle that resizes the panel next to it. -->
+<!-- Drag handle that resizes the panel next to it: a vertical bar for side panels, a horizontal one for the bottom panel. -->
 <script lang="ts">
   interface Props {
-    /** Current width of the panel being resized. */
-    width: number;
+    /** Current size of the panel being resized: its width, or its height for "bottom". */
+    size: number;
     /** Which side of the handle the panel is on. */
-    panel: "left" | "right";
+    panel: "left" | "right" | "bottom";
     min: number;
     max: number;
-    defaultWidth: number;
-    onResize: (width: number) => void;
-    /** Called once when a drag ends, e.g. to persist the width. */
-    onCommit?: (width: number) => void;
+    defaultSize: number;
+    onResize: (size: number) => void;
+    /** Called once when a drag ends, e.g. to persist the size. */
+    onCommit?: (size: number) => void;
     label: string;
   }
 
-  let { width, panel, min, max, defaultWidth, onResize, onCommit, label }: Props = $props();
+  let { size, panel, min, max, defaultSize, onResize, onCommit, label }: Props = $props();
 
+  const horizontal = $derived(panel === "bottom");
   let dragging = $state(false);
-  let startX = 0;
-  let startWidth = 0;
+  let startPosition = 0;
+  let startSize = 0;
 
   function clamp(value: number): number {
     return Math.round(Math.min(max, Math.max(min, value)));
+  }
+
+  function pointerPosition(event: PointerEvent): number {
+    return horizontal ? event.clientY : event.clientX;
   }
 
   function onPointerDown(event: PointerEvent): void {
@@ -31,17 +36,18 @@
     event.preventDefault();
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
     dragging = true;
-    startX = event.clientX;
-    startWidth = width;
-    document.body.classList.add("resizing-columns");
+    startPosition = pointerPosition(event);
+    startSize = size;
+    document.body.classList.add(horizontal ? "resizing-rows" : "resizing-columns");
   }
 
   function onPointerMove(event: PointerEvent): void {
     if (!dragging) {
       return;
     }
-    const delta = event.clientX - startX;
-    onResize(clamp(panel === "left" ? startWidth + delta : startWidth - delta));
+    const delta = pointerPosition(event) - startPosition;
+    // A left panel grows when dragging right; right and bottom panels grow towards the start.
+    onResize(clamp(panel === "left" ? startSize + delta : startSize - delta));
   }
 
   function finish(event: PointerEvent): void {
@@ -50,22 +56,22 @@
     }
     dragging = false;
     (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
-    document.body.classList.remove("resizing-columns");
-    onCommit?.(width);
+    document.body.classList.remove("resizing-rows", "resizing-columns");
+    onCommit?.(size);
   }
 
   function reset(): void {
-    onResize(defaultWidth);
-    onCommit?.(defaultWidth);
+    onResize(defaultSize);
+    onCommit?.(defaultSize);
   }
 
   function onKeydown(event: KeyboardEvent): void {
     const step = event.shiftKey ? 40 : 10;
-    const grow = panel === "left" ? "ArrowRight" : "ArrowLeft";
-    const shrink = panel === "left" ? "ArrowLeft" : "ArrowRight";
+    const grow = panel === "left" ? "ArrowRight" : panel === "right" ? "ArrowLeft" : "ArrowUp";
+    const shrink = panel === "left" ? "ArrowLeft" : panel === "right" ? "ArrowRight" : "ArrowDown";
     if (event.key === grow || event.key === shrink) {
       event.preventDefault();
-      const next = clamp(width + (event.key === grow ? step : -step));
+      const next = clamp(size + (event.key === grow ? step : -step));
       onResize(next);
       onCommit?.(next);
     }
@@ -76,11 +82,12 @@
 <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 <div
   class="handle"
+  class:horizontal
   class:dragging
   role="separator"
-  aria-orientation="vertical"
+  aria-orientation={horizontal ? "horizontal" : "vertical"}
   aria-label={label}
-  aria-valuenow={width}
+  aria-valuenow={size}
   aria-valuemin={min}
   aria-valuemax={max}
   tabindex="0"
@@ -123,10 +130,41 @@
     background: var(--accent);
   }
 
+  .handle.horizontal {
+    width: auto;
+    height: 5px;
+    margin: -2px 0;
+    cursor: row-resize;
+  }
+
+  .handle.horizontal::after {
+    top: 2px;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 1px;
+  }
+
+  .handle.horizontal:hover::after,
+  .handle.horizontal:focus-visible::after,
+  .handle.horizontal.dragging::after {
+    top: 1px;
+    left: 0;
+    width: auto;
+    height: 3px;
+  }
+
   /* Keep the resize cursor and stop text selection while dragging. */
   :global(body.resizing-columns),
   :global(body.resizing-columns *) {
     cursor: col-resize !important;
+    user-select: none !important;
+  }
+
+  :global(body.resizing-rows),
+  :global(body.resizing-rows *) {
+    cursor: row-resize !important;
     user-select: none !important;
   }
 </style>

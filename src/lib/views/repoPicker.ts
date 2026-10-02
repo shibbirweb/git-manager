@@ -1,5 +1,6 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { repoStore } from "$lib/stores/repo.svelte";
+import type { RecentEntry } from "./recentEntries";
 
 async function pickFolder(title: string): Promise<string | null> {
   const selected = await open({ directory: true, multiple: false, title });
@@ -51,5 +52,16 @@ export async function pickAndSaveWorkspace(): Promise<void> {
   });
   if (target) {
     await repoStore.saveWorkspaceAs(target);
+  }
+}
+
+/** Reopens a recent folder, workspace or workspace file. */
+export async function openRecent(entry: RecentEntry): Promise<void> {
+  if (entry.kind === "workspaceFile") {
+    await repoStore.openWorkspaceFile(entry.filePath);
+  } else if (entry.kind === "workspace") {
+    await repoStore.openFolders(entry.folderPaths);
+  } else {
+    await repoStore.open(entry.folderPath);
   }
 }

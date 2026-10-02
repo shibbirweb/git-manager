@@ -10,13 +10,14 @@ use std::time::Duration;
 
 use git2::Repository;
 use notify_debouncer_full::notify::event::{EventKind, ModifyKind};
-use notify_debouncer_full::{new_debouncer, notify::RecursiveMode, DebounceEventResult};
+use notify_debouncer_full::{new_debouncer_opt, notify, notify::RecursiveMode, DebounceEventResult, NoCache};
 use serde::Serialize;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::error::{AppError, AppResult};
-use crate::git::workspace::deepest_repo_index;
-use crate::state::RepoWatcher;
+use crate::git::workspace::{deepest_repo_index, SKIPPED_DIRS};
+use crate::state::{AppState, RepoWatcher};
+use crate::symbols::language_for;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -151,6 +152,42 @@ pub fn attribute<'a>(
     }
 }
 
+/// Whether a batch created, deleted or renamed anything below `workspace_root`
+/// outside `.git` and the dependency and build folders, so the Go to File
+/// index is out of date. Content changes alone keep it.
+pub fn adds_or_removes_files<'a>(
+    workspace_root: &Path,
+    events: impl IntoIterator<Item = (&'a EventKind, &'a [PathBuf])>,
+) -> bool {
+    events
+        .into_iter()
+        .any(|(kind, paths)| is_structural(kind) && paths.iter().any(|path| is_indexed(workspace_root, path)))
+}
+
+/// Whether a batch changed the contents of a source file the symbol index
+/// reads (Classes and Symbols). Creations and removals are `adds_or_removes_files`.
+pub fn edits_source_files<'a>(
+    workspace_root: &Path,
+    events: impl IntoIterator<Item = (&'a EventKind, &'a [PathBuf])>,
+) -> bool {
+    events.into_iter().any(|(kind, paths)| {
+        matches!(kind, EventKind::Modify(ModifyKind::Data(_) | ModifyKind::Any))
+            && paths
+                .iter()
+                .any(|path| is_indexed(workspace_root, path) && path.to_str().is_some_and(|text| language_for(text).is_some()))
+    })
+}
+
+/// Below `workspace_root`, outside `.git` and the dependency and build folders.
+fn is_indexed(workspace_root: &Path, path: &Path) -> bool {
+    let Ok(relative) = path.strip_prefix(workspace_root) else {
+        return false;
+    };
+    !relative.components().any(|component| {
+        matches!(component, Component::Normal(name) if name.to_str().is_some_and(|name| SKIPPED_DIRS.contains(&name)))
+    })
+}
+
 /// A folder with a `.git` directory or file directly inside, i.e. a repository root.
 fn has_git_entry(path: &Path) -> bool {
     path.join(".git").exists()
@@ -160,12 +197,73 @@ fn canonical_or_given(path: &str) -> PathBuf {
     Path::new(path).canonicalize().unwrap_or_else(|_| PathBuf::from(path))
 }
 
+/// A repository whose git dir is not `<root>/.git`: a linked work tree (its
+/// git dir is in the main repository) or an absorbed submodule (in the
+/// parent's `.git/modules`). `(git dir, <root>/.git)`.
+pub type GitDirLink = (PathBuf, PathBuf);
+
+fn git_dir_links(repo_roots: &[PathBuf]) -> Vec<GitDirLink> {
+    repo_roots
+        .iter()
+        .filter_map(|repo_root| {
+            let repo = Repository::open(repo_root).ok()?;
+            let git_dir = repo.path().canonicalize().ok()?;
+            let own = repo_root.join(".git");
+            (git_dir != own).then_some((git_dir, own))
+        })
+        .collect()
+}
+
+/// `path` inside a linked git dir, rewritten as the same path below its
+/// repository's `.git`, so `attribute` gives the change to that repository.
+pub fn relink(path: &Path, links: &[GitDirLink]) -> Option<PathBuf> {
+    links
+        .iter()
+        .filter(|(git_dir, _)| path.starts_with(git_dir))
+        .max_by_key(|(git_dir, _)| git_dir.components().count())
+        .and_then(|(git_dir, own)| path.strip_prefix(git_dir).ok().map(|rest| own.join(rest)))
+}
+
+/// The repository each submodule-like repository sits in, when that one has a
+/// `.gitmodules`: its status shows the submodule, so it refreshes with it.
+fn submodule_parents(repo_roots: &[PathBuf]) -> Vec<Option<usize>> {
+    repo_roots
+        .iter()
+        .map(|repo_root| {
+            repo_roots
+                .iter()
+                .enumerate()
+                .filter(|(_, candidate)| *candidate != repo_root && repo_root.starts_with(candidate))
+                .max_by_key(|(_, candidate)| candidate.components().count())
+                .map(|(index, _)| index)
+                .filter(|&index| repo_roots[index].join(".gitmodules").is_file())
+        })
+        .collect()
+}
+
+/// Adds a work tree change for the parent of every changed submodule.
+pub fn with_submodule_parents(mut repos: Vec<(usize, bool, bool)>, parents: &[Option<usize>]) -> Vec<(usize, bool, bool)> {
+    let changed: Vec<usize> = repos.iter().map(|(index, _, _)| *index).collect();
+    for index in changed {
+        let Some(parent) = parents.get(index).copied().flatten() else {
+            continue;
+        };
+        match repos.iter_mut().find(|(candidate, _, _)| *candidate == parent) {
+            Some(entry) => entry.2 = true,
+            None => repos.push((parent, false, true)),
+        }
+    }
+    repos.sort_by_key(|(index, _, _)| *index);
+    repos
+}
+
 fn watch_error(err: impl std::fmt::Display) -> AppError {
     AppError::invalid(format!("Could not watch workspace: {err}"))
 }
 
 /// One recursive watcher on the workspace root, plus the `.git` directory of
-/// any repository outside it (a repository enclosing the workspace).
+/// any repository outside it (a repository enclosing the workspace) and the
+/// git dir of a linked work tree whose main repository is elsewhere.
 pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> AppResult<RepoWatcher> {
     let root = canonical_or_given(workspace_root);
     let canonical_roots: Vec<PathBuf> = repo_roots.iter().map(|repo_root| canonical_or_given(repo_root)).collect();
@@ -175,19 +273,41 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
         .map(|repo_root| repo_root.join(".git"))
         .filter(|git_dir| git_dir.is_dir())
         .collect();
+    let links = git_dir_links(&canonical_roots);
+    let parents = submodule_parents(&canonical_roots);
+    // Linked git dirs outside everything else watched (a work tree of a repository elsewhere).
+    let linked_git_dirs: Vec<PathBuf> = links
+        .iter()
+        .map(|(git_dir, _)| git_dir.clone())
+        .filter(|git_dir| !git_dir.starts_with(&root) && !outside_git_dirs.iter().any(|outside| git_dir.starts_with(outside)))
+        .collect();
 
     let workspace_root_owned = workspace_root.to_string();
     let repo_paths = repo_roots.to_vec();
     let roots = canonical_roots.clone();
-    let mut debouncer = new_debouncer(Duration::from_millis(300), None, move |result: DebounceEventResult| {
+    let watched_root = root.clone();
+    let handler = move |result: DebounceEventResult| {
         let Ok(events) = result else {
             return;
         };
+        let changes = || events.iter().map(|event| (&event.kind, event.paths.as_slice()));
+        if adds_or_removes_files(&watched_root, changes()) {
+            app.state::<AppState>().file_search.mark_stale();
+        } else if edits_source_files(&watched_root, changes()) {
+            app.state::<AppState>().file_search.mark_contents_changed();
+        }
+        let relinked: Vec<(EventKind, Vec<PathBuf>)> = events
+            .iter()
+            .map(|event| {
+                let paths = event.paths.iter().map(|path| relink(path, &links).unwrap_or_else(|| path.clone())).collect();
+                (event.kind, paths)
+            })
+            .collect();
         // Opened lazily for this batch only.
         let mut repos: HashMap<usize, Option<Repository>> = HashMap::new();
         let attribution = attribute(
             &roots,
-            events.iter().map(|event| (&event.kind, event.paths.as_slice())),
+            relinked.iter().map(|(kind, paths)| (kind, paths.as_slice())),
             |index, relative| {
                 repos
                     .entry(index)
@@ -198,7 +318,7 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
             },
             has_git_entry,
         );
-        for (index, git_dir, work_tree) in attribution.repos {
+        for (index, git_dir, work_tree) in with_submodule_parents(attribution.repos, &parents) {
             let _ = app.emit(
                 "repo-changed",
                 RepoChanged {
@@ -217,11 +337,12 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
                 },
             );
         }
-    })
-    .map_err(watch_error)?;
+    };
+    let mut debouncer =
+        new_debouncer_opt(Duration::from_millis(300), None, handler, NoCache, notify::Config::default()).map_err(watch_error)?;
 
     debouncer.watch(&root, RecursiveMode::Recursive).map_err(watch_error)?;
-    for git_dir in &outside_git_dirs {
+    for git_dir in outside_git_dirs.iter().chain(&linked_git_dirs) {
         debouncer.watch(git_dir, RecursiveMode::Recursive).map_err(watch_error)?;
     }
     Ok(debouncer)
@@ -233,7 +354,10 @@ mod tests {
 
     use notify_debouncer_full::notify::event::{CreateKind, DataChange, EventKind, ModifyKind, RemoveKind, RenameMode};
 
-    use super::{attribute, has_git_entry, Attribution};
+    use super::{
+        adds_or_removes_files, attribute, edits_source_files, git_dir_links, has_git_entry, relink, submodule_parents,
+        with_submodule_parents, Attribution,
+    };
     use crate::test_support::TestDir;
 
     const MODIFY: EventKind = EventKind::Modify(ModifyKind::Data(DataChange::Content));
@@ -365,6 +489,79 @@ mod tests {
         // Only renames are checked on disk; ordinary creations stay cheap.
         assert!(!run(NESTED, &[(CREATE_DIR, paths(&["/w/libs/new-repo"]))]).repos_changed);
         assert!(!run(NESTED, &[(CREATE_FILE, paths(&["/w/apps/web/src/a.ts"]))]).repos_changed);
+    }
+
+    #[test]
+    fn only_created_removed_or_renamed_files_outdate_the_file_index() {
+        let check = |events: &[(EventKind, Vec<PathBuf>)]| {
+            adds_or_removes_files(Path::new("/w/build/app"), events.iter().map(|(kind, paths)| (kind, paths.as_slice())))
+        };
+        // The workspace itself may live below a folder named like a skipped one.
+        assert!(check(&[(CREATE_FILE, paths(&["/w/build/app/src/new.ts"]))]));
+        assert!(check(&[(REMOVE_DIR, paths(&["/w/build/app/src"]))]));
+        assert!(check(&[(RENAME, paths(&["/w/build/app/a.ts", "/w/build/app/b.ts"]))]));
+        assert!(!check(&[(MODIFY, paths(&["/w/build/app/src/a.ts"]))]));
+        assert!(!check(&[(CREATE_FILE, paths(&["/w/build/app/.git/index.lock"]))]));
+        assert!(!check(&[(CREATE_FILE, paths(&["/w/build/app/node_modules/x/index.js"]))]));
+        assert!(!check(&[(CREATE_FILE, paths(&["/w/build/app/target/debug/out"]))]));
+        assert!(!check(&[(CREATE_FILE, paths(&["/elsewhere/.git/HEAD"]))]));
+    }
+
+    #[test]
+    fn only_edited_source_files_outdate_the_symbol_index() {
+        let check = |events: &[(EventKind, Vec<PathBuf>)]| {
+            edits_source_files(Path::new("/w"), events.iter().map(|(kind, paths)| (kind, paths.as_slice())))
+        };
+        assert!(check(&[(MODIFY, paths(&["/w/src/cart.ts"]))]));
+        assert!(check(&[(MODIFY, paths(&["/w/README.md", "/w/lib/Cart.PHP"]))]));
+        assert!(!check(&[(MODIFY, paths(&["/w/README.md"]))]));
+        assert!(!check(&[(MODIFY, paths(&["/w/node_modules/x/index.js"]))]));
+        assert!(!check(&[(MODIFY, paths(&["/w/.git/index"]))]));
+        assert!(!check(&[(MODIFY, paths(&["/elsewhere/a.ts"]))]));
+        assert!(!check(&[(CREATE_FILE, paths(&["/w/src/new.ts"]))]));
+    }
+
+    #[test]
+    fn linked_git_dirs_are_read_as_their_repository_git_dir() {
+        let links = vec![
+            (PathBuf::from("/main/.git/worktrees/wt"), PathBuf::from("/w/wt/.git")),
+            (PathBuf::from("/w/app/.git/modules/lib"), PathBuf::from("/w/app/lib/.git")),
+        ];
+        assert_eq!(relink(Path::new("/main/.git/worktrees/wt/index"), &links), Some(PathBuf::from("/w/wt/.git/index")));
+        assert_eq!(relink(Path::new("/w/app/.git/modules/lib/HEAD"), &links), Some(PathBuf::from("/w/app/lib/.git/HEAD")));
+        assert_eq!(relink(Path::new("/w/app/.git/index"), &links), None);
+        assert_eq!(relink(Path::new("/main/.git/worktrees/other/HEAD"), &links), None);
+
+        // Relinked, a work tree commit refreshes the work tree, not the main repository.
+        let roots = paths(&["/w/app", "/w/app/lib", "/w/wt"]);
+        let relinked = [relink(Path::new("/main/.git/worktrees/wt/index"), &links).unwrap()];
+        let result = attribute(&roots, [(&MODIFY, &relinked[..])], |_, _| false, |_| false);
+        assert_eq!(result.repos, vec![(2, true, false)]);
+    }
+
+    #[test]
+    fn a_changed_submodule_refreshes_its_parent() {
+        let parents = [None, Some(0), None];
+        assert_eq!(with_submodule_parents(vec![(1, false, true)], &parents), vec![(0, false, true), (1, false, true)]);
+        assert_eq!(with_submodule_parents(vec![(0, true, false), (1, true, false)], &parents), vec![(0, true, true), (1, true, false)]);
+        assert_eq!(with_submodule_parents(vec![(2, true, true)], &parents), vec![(2, true, true)]);
+    }
+
+    #[test]
+    fn finds_links_and_parents_on_disk() {
+        let dir = TestDir::new();
+        let main = dir.init_repo("main");
+        dir.write("main/.gitmodules", "");
+        let plain = dir.init_repo("main/plain");
+        crate::test_support::git_in(&main, &["-c", "user.name=T", "-c", "user.email=t@e", "commit", "-q", "--allow-empty", "-m", "base"]);
+        let worktree = dir.file("wt");
+        crate::test_support::git_in(&main, &["worktree", "add", "-q", "-b", "wt", &worktree.to_string_lossy()]);
+        let roots = vec![main.clone(), plain.clone(), worktree.clone()];
+        let links = git_dir_links(&roots);
+        assert_eq!(links.len(), 1, "{links:?}");
+        assert_eq!(links[0].1, worktree.join(".git"));
+        assert!(links[0].0.ends_with(".git/worktrees/wt"));
+        assert_eq!(submodule_parents(&roots), vec![None, Some(0), None]);
     }
 
     #[test]

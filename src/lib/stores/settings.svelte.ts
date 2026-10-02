@@ -7,39 +7,88 @@
 // in settingsData.ts.
 
 import { api, errorMessage } from "$lib/api";
+import { applyColorTheme } from "$lib/themes/apply";
+import { type ColorMode, effectiveMode, pickThemeId } from "$lib/themes/themeIndex";
 import { toast } from "$lib/ui/toast.svelte";
 import {
   asObject,
+  changedPreferenceKeys,
   type ConfigName,
-  defaultPreferences,
   type Json,
   type LeftPanel,
   type LoadErrors,
+  MARKDOWN_PREVIEW_RATIO_RANGE,
+  type MarkdownViewMode,
   MAX_RECENT,
+  MAX_SCRIPT_NODE_VERSIONS,
+  type EditorCursorBlinking,
+  type EditorCursorStyle,
   parsePreferences,
   parseState,
   type Preferences,
+  type RenderWhitespace,
+  type SettingsSection,
   shouldMigrateLegacy,
   stateToJson,
+  type TerminalCursorStyle,
+  type TerminalFontWeight,
   type ThemeSetting,
   type UiState,
   type UpdateChannelSetting,
+  type UpdateMethod,
   writableConfigs,
 } from "./settingsData";
+import type { CommitGpgSign } from "./settingsData";
 
 export {
+  MEMORY_LOG_INTERVAL_RANGE,
+  MEMORY_LOG_THRESHOLD_RANGE,
+  clampTerminalScrollback,
   DEFAULT_EDITOR_FONT,
+  DEFAULT_MARKDOWN_PREVIEW_RATIO,
+  DEFAULT_MCP_PORT,
   DEFAULT_PANEL_WIDTH,
+  DEFAULT_TERMINAL_HEIGHT,
+  DEFAULT_TERMINAL_LIST_WIDTH,
   defaultPreferences,
+  CARET_EXTRA_RANGE,
+  EDITOR_CURSOR_BLINKING_CHOICES,
+  EDITOR_CURSOR_STYLE_CHOICES,
+  EDITOR_CURSOR_WIDTH_RANGE,
+  EDITOR_LINE_HEIGHT_RANGE,
   FONT_SIZE_RANGE,
+  MARKDOWN_PREVIEW_RATIO_RANGE,
+  MARKDOWN_VIEW_MODES,
+  MCP_PORT_RANGE,
+  MIN_TERMINAL_HEIGHT,
+  MIN_TERMINAL_LIST_WIDTH,
   MONOSPACE_FONTS,
   normalizeFontFamily,
+  normalizeTerminalFontFamily,
+  parseMcpPort,
+  RENDER_WHITESPACE_CHOICES,
+  SETTINGS_SECTIONS,
   TAB_SIZES,
+  TERMINAL_CURSOR_STYLES,
+  TERMINAL_FONT_WEIGHTS,
+  TERMINAL_LETTER_SPACING_RANGE,
+  TERMINAL_LINE_HEIGHT_RANGE,
+  TERMINAL_SCROLLBACK_RANGE,
 } from "./settingsData";
-export type { LeftPanel, Preferences, ThemeSetting, UpdateChannelSetting } from "./settingsData";
-
-/** Sections of the Settings dialog. */
-export type SettingsSection = "appearance" | "editor" | "merge" | "layout" | "updates" | "files" | "about";
+export type {
+  EditorCursorBlinking,
+  EditorCursorStyle,
+  LeftPanel,
+  MarkdownViewMode,
+  Preferences,
+  RenderWhitespace,
+  SettingsSection,
+  TerminalCursorStyle,
+  TerminalFontWeight,
+  ThemeSetting,
+  UpdateChannelSetting,
+  UpdateMethod,
+} from "./settingsData";
 
 const SAVE_DELAY_MS = 200;
 /** Where settings lived before ~/.gitmanager existed; migrated once. */
@@ -51,12 +100,22 @@ const initialState = parseState({}).state;
 class SettingsStore {
   // Preferences (settings.json)
   theme = $state<ThemeSetting>(initialPreferences.theme);
+  lightColorTheme = $state(initialPreferences.lightColorTheme);
+  darkColorTheme = $state(initialPreferences.darkColorTheme);
   uiFontSize = $state(initialPreferences.uiFontSize);
   editorFontSize = $state(initialPreferences.editorFontSize);
+  editorLineHeight = $state(initialPreferences.editorLineHeight);
   editorFontFamily = $state(initialPreferences.editorFontFamily);
   fontLigatures = $state(initialPreferences.fontLigatures);
   tabSize = $state(initialPreferences.tabSize);
   wordWrap = $state(initialPreferences.wordWrap);
+  renderWhitespace = $state<RenderWhitespace>(initialPreferences.renderWhitespace);
+  editorCursorStyle = $state<EditorCursorStyle>(initialPreferences.editorCursorStyle);
+  editorCursorWidth = $state(initialPreferences.editorCursorWidth);
+  editorCursorBlinking = $state<EditorCursorBlinking>(initialPreferences.editorCursorBlinking);
+  editorCursorSmoothCaret = $state(initialPreferences.editorCursorSmoothCaret);
+  editorCaretExtraTop = $state(initialPreferences.editorCaretExtraTop);
+  editorCaretExtraBottom = $state(initialPreferences.editorCaretExtraBottom);
   currentLineBlame = $state(initialPreferences.currentLineBlame);
   blameGutter = $state(initialPreferences.blameGutter);
   mouseWheelZoom = $state(initialPreferences.mouseWheelZoom);
@@ -64,6 +123,31 @@ class SettingsStore {
   updateChannel = $state<UpdateChannelSetting>(initialPreferences.updateChannel);
   ignoreWhitespace = $state(initialPreferences.ignoreWhitespace);
   logAllRefs = $state(initialPreferences.logAllRefs);
+  updateMethod = $state<UpdateMethod>(initialPreferences.updateMethod);
+  commitSignOff = $state(initialPreferences.commitSignOff);
+  commitGpgSign = $state<CommitGpgSign>(initialPreferences.commitGpgSign);
+  gitConsole = $state(initialPreferences.gitConsole);
+  terminalShell = $state<string | null>(initialPreferences.terminalShell);
+  terminalFontFamily = $state(initialPreferences.terminalFontFamily);
+  terminalFontSize = $state(initialPreferences.terminalFontSize);
+  terminalLineHeight = $state(initialPreferences.terminalLineHeight);
+  terminalLetterSpacing = $state(initialPreferences.terminalLetterSpacing);
+  terminalFontWeight = $state<TerminalFontWeight>(initialPreferences.terminalFontWeight);
+  terminalFontWeightBold = $state<TerminalFontWeight>(initialPreferences.terminalFontWeightBold);
+  terminalLigatures = $state(initialPreferences.terminalLigatures);
+  terminalNerdFontIcons = $state(initialPreferences.terminalNerdFontIcons);
+  terminalCursorStyle = $state<TerminalCursorStyle>(initialPreferences.terminalCursorStyle);
+  terminalCursorBlink = $state(initialPreferences.terminalCursorBlink);
+  terminalScrollback = $state(initialPreferences.terminalScrollback);
+  terminalCopyOnSelect = $state(initialPreferences.terminalCopyOnSelect);
+  markdownViewMode = $state<MarkdownViewMode>(initialPreferences.markdownViewMode);
+  mcpEnabled = $state(initialPreferences.mcpEnabled);
+  cliEnabled = $state(initialPreferences.cliEnabled);
+  memoryLogEnabled = $state(initialPreferences.memoryLogEnabled);
+  memoryLogIntervalMs = $state(initialPreferences.memoryLogIntervalMs);
+  memoryLogThresholdMb = $state(initialPreferences.memoryLogThresholdMb);
+  mcpPort = $state(initialPreferences.mcpPort);
+  mcpTools = $state.raw<Record<string, boolean>>(initialPreferences.mcpTools);
 
   // UI state (state.json)
   recentRepos = $state<string[]>(initialState.recentRepos);
@@ -82,10 +166,21 @@ class SettingsStore {
   /** A release the user chose to skip; it is not announced again. */
   skippedVersion = $state<string | null>(initialState.skippedVersion);
   activeRepos = $state<Record<string, string>>(initialState.activeRepos);
+  scriptNodeVersions = $state<Record<string, string>>(initialState.scriptNodeVersions);
   explorerOpen = $state(initialState.explorerOpen);
+  leftBarVisible = $state(initialState.leftBarVisible);
+  rightBarVisible = $state(initialState.rightBarVisible);
+  diffSplitRatio = $state(initialState.diffSplitRatio);
   leftPanel = $state<LeftPanel>(initialState.leftPanel);
   sidebarWidth = $state(initialState.sidebarWidth);
   explorerWidth = $state(initialState.explorerWidth);
+  terminalHeight = $state(initialState.terminalHeight);
+  terminalListWidth = $state(initialState.terminalListWidth);
+  markdownPreviewRatio = $state(initialState.markdownPreviewRatio);
+
+  /** macOS is in dark mode; followed while `theme` is "system". */
+  systemDark = $state(false);
+  private systemMedia: MediaQueryList | null = null;
 
   /** The Settings dialog is open (not saved). */
   dialogOpen = $state(false);
@@ -170,12 +265,22 @@ class SettingsStore {
   preferences(): Preferences {
     return {
       theme: this.theme,
+      lightColorTheme: this.lightColorTheme,
+      darkColorTheme: this.darkColorTheme,
       uiFontSize: this.uiFontSize,
       editorFontSize: this.editorFontSize,
+      editorLineHeight: this.editorLineHeight,
       editorFontFamily: this.editorFontFamily,
       fontLigatures: this.fontLigatures,
       tabSize: this.tabSize,
       wordWrap: this.wordWrap,
+      renderWhitespace: this.renderWhitespace,
+      editorCursorStyle: this.editorCursorStyle,
+      editorCursorWidth: this.editorCursorWidth,
+      editorCursorBlinking: this.editorCursorBlinking,
+      editorCursorSmoothCaret: this.editorCursorSmoothCaret,
+      editorCaretExtraTop: this.editorCaretExtraTop,
+      editorCaretExtraBottom: this.editorCaretExtraBottom,
       currentLineBlame: this.currentLineBlame,
       blameGutter: this.blameGutter,
       mouseWheelZoom: this.mouseWheelZoom,
@@ -183,13 +288,37 @@ class SettingsStore {
       updateChannel: this.updateChannel,
       ignoreWhitespace: this.ignoreWhitespace,
       logAllRefs: this.logAllRefs,
+      updateMethod: this.updateMethod,
+      commitSignOff: this.commitSignOff,
+      commitGpgSign: this.commitGpgSign,
+      gitConsole: this.gitConsole,
+      terminalShell: this.terminalShell,
+      terminalFontFamily: this.terminalFontFamily,
+      terminalFontSize: this.terminalFontSize,
+      terminalLineHeight: this.terminalLineHeight,
+      terminalLetterSpacing: this.terminalLetterSpacing,
+      terminalFontWeight: this.terminalFontWeight,
+      terminalFontWeightBold: this.terminalFontWeightBold,
+      terminalLigatures: this.terminalLigatures,
+      terminalNerdFontIcons: this.terminalNerdFontIcons,
+      terminalCursorStyle: this.terminalCursorStyle,
+      terminalCursorBlink: this.terminalCursorBlink,
+      terminalScrollback: this.terminalScrollback,
+      terminalCopyOnSelect: this.terminalCopyOnSelect,
+      markdownViewMode: this.markdownViewMode,
+      mcpEnabled: this.mcpEnabled,
+      cliEnabled: this.cliEnabled,
+      memoryLogEnabled: this.memoryLogEnabled,
+      memoryLogIntervalMs: this.memoryLogIntervalMs,
+      memoryLogThresholdMb: this.memoryLogThresholdMb,
+      mcpPort: this.mcpPort,
+      mcpTools: this.mcpTools,
     };
   }
 
   /** Preference keys whose value differs from the default, in display order. */
   changedPreferences(): (keyof Preferences)[] {
-    const current = this.preferences();
-    return (Object.keys(defaultPreferences) as (keyof Preferences)[]).filter((key) => current[key] !== defaultPreferences[key]);
+    return changedPreferenceKeys(this.preferences());
   }
 
   private uiState(): UiState {
@@ -203,10 +332,17 @@ class SettingsStore {
       lastRunVersion: this.lastRunVersion,
       skippedVersion: this.skippedVersion,
       activeRepos: this.activeRepos,
+      scriptNodeVersions: this.scriptNodeVersions,
       explorerOpen: this.explorerOpen,
+      leftBarVisible: this.leftBarVisible,
+      rightBarVisible: this.rightBarVisible,
+      diffSplitRatio: this.diffSplitRatio,
       leftPanel: this.leftPanel,
       sidebarWidth: this.sidebarWidth,
       explorerWidth: this.explorerWidth,
+      terminalHeight: this.terminalHeight,
+      terminalListWidth: this.terminalListWidth,
+      markdownPreviewRatio: this.markdownPreviewRatio,
     };
   }
 
@@ -248,6 +384,11 @@ class SettingsStore {
     this.save();
   }
 
+  /** View > Word Wrap and Option+Z, like VS Code; open file editors follow at once. */
+  toggleWordWrap(): void {
+    this.setPreference("wordWrap", !this.wordWrap);
+  }
+
   resetPreferences(): void {
     this.applyPreferences({});
     this.loadError = null;
@@ -283,6 +424,14 @@ class SettingsStore {
     this.flush();
   }
 
+  /** The Node version a package.json's scripts run with; null goes back to Auto. */
+  setScriptNodeVersion(filePath: string, choice: string | null): void {
+    const { [filePath]: _previous, ...rest } = this.scriptNodeVersions;
+    const next = choice === null ? rest : { ...rest, [filePath]: choice };
+    this.scriptNodeVersions = Object.fromEntries(Object.entries(next).slice(-MAX_SCRIPT_NODE_VERSIONS));
+    this.save();
+  }
+
   rememberActiveRepo(workspaceRoot: string, repoRoot: string): void {
     this.activeRepos = { ...this.activeRepos, [workspaceRoot]: repoRoot };
     this.save();
@@ -298,8 +447,27 @@ class SettingsStore {
     this.setLeftPanel(this.leftPanel === panel ? null : panel);
   }
 
+  /** Share of the editor area the Markdown preview takes, clamped; saved with state.json. */
+  setMarkdownPreviewRatio(ratio: number, persist: boolean): void {
+    const [min, max] = MARKDOWN_PREVIEW_RATIO_RANGE;
+    this.markdownPreviewRatio = Number.isFinite(ratio) ? Math.min(max, Math.max(min, ratio)) : this.markdownPreviewRatio;
+    if (persist) {
+      this.save();
+    }
+  }
+
   toggleExplorer(): void {
     this.explorerOpen = !this.explorerOpen;
+    this.save();
+  }
+
+  /** Shows or hides the icon strip at the left or right edge of the window. */
+  toggleActivityBar(side: "left" | "right"): void {
+    if (side === "left") {
+      this.leftBarVisible = !this.leftBarVisible;
+    } else {
+      this.rightBarVisible = !this.rightBarVisible;
+    }
     this.save();
   }
 
@@ -348,24 +516,55 @@ class SettingsStore {
     this.save();
   }
 
+  /** File > Open Recent > Clear Recent: forgets every recent folder, workspace and workspace file. */
+  clearRecent(): void {
+    this.recentRepos = [];
+    this.recentWorkspaces = [];
+    this.recentWorkspaceFiles = [];
+    this.save();
+  }
+
   setTheme(theme: ThemeSetting): void {
     this.setPreference("theme", theme);
+  }
+
+  /** Picks the color theme used in light or dark mode; it applies at once when that mode is in use. */
+  setColorTheme(mode: ColorMode, themeId: string): void {
+    this.setPreference(mode === "dark" ? "darkColorTheme" : "lightColorTheme", pickThemeId(themeId, mode));
+  }
+
+  /** Light or dark, after following macOS for "system". */
+  get colorMode(): ColorMode {
+    return effectiveMode(this.theme, this.systemDark);
   }
 
   applyTheme(): void {
     this.applyAppearance();
   }
 
+  private watchSystemAppearance(): void {
+    if (this.systemMedia) {
+      return;
+    }
+    this.systemMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    this.systemDark = this.systemMedia.matches;
+    this.systemMedia.addEventListener("change", (event) => {
+      this.systemDark = event.matches;
+      this.applyAppearance();
+    });
+  }
+
   /** Pushes theme and font sizes into the document. */
   applyAppearance(): void {
     const root = document.documentElement;
-    if (this.theme === "system") {
-      root.removeAttribute("data-theme");
-    } else {
-      root.setAttribute("data-theme", this.theme);
-    }
+    this.watchSystemAppearance();
+    // data-theme is always set, also when following macOS, so code that branches on light or
+    // dark reads one attribute; the color theme's variables go in before the attributes change.
+    const mode = this.colorMode;
+    void applyColorTheme(mode, mode === "dark" ? this.darkColorTheme : this.lightColorTheme);
     root.style.setProperty("--ui-size", `${this.uiFontSize}px`);
     root.style.setProperty("--code-size", `${this.editorFontSize}px`);
+    root.style.setProperty("--code-line-height", String(this.editorLineHeight));
     root.style.setProperty("--font-mono", this.editorFontFamily);
     root.setAttribute("data-ligatures", this.fontLigatures ? "on" : "off");
   }

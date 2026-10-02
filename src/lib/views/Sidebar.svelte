@@ -17,6 +17,8 @@
   import { collapse } from "./sidebar/collapse.svelte";
   import RowContent from "./sidebar/RowContent.svelte";
   import { buildRows, isCollapsible, type SidebarRow } from "./sidebar/tree";
+  import { worktreeMenu, worktreeSectionMenu } from "./git/worktrees/worktreeActions";
+  import { worktreeStore } from "./git/worktrees/worktreeStore.svelte";
 
   const ROW_ID_PREFIX = "sidebar-row-";
 
@@ -29,10 +31,17 @@
     buildRows({
       refs: repoStore.refs,
       stashes: repoStore.stashes,
+      worktrees: worktreeStore.repoRoot !== null && worktreeStore.repoRoot === repoStore.repo?.root ? worktreeStore.list : undefined,
       filter,
       isExpanded: (key) => collapse.isExpanded(key, filtering),
     }),
   );
+
+  // Worktrees are read again whenever the active repository's branches are (refs is replaced on every refresh).
+  $effect(() => {
+    void repoStore.refs;
+    void worktreeStore.load(repoStore.repo?.root ?? null);
+  });
   const selectedIndex = $derived(rows.findIndex((row) => row.key === selectedKey));
   const hasMatches = $derived(!filtering || rows.length > 0);
 
@@ -85,6 +94,9 @@
   function menuFor(row: SidebarRow): MenuItem[] {
     switch (row.kind) {
       case "section":
+        if (row.section === "worktrees") {
+          return worktreeSectionMenu();
+        }
         return row.section === "local" ? localSectionMenu() : [];
       case "local":
         return localBranchMenu(row.branch);
@@ -94,6 +106,8 @@
         return tagMenu(row.tagName);
       case "stash":
         return stashMenu(row.stash);
+      case "worktree":
+        return worktreeMenu(row.worktree);
       default:
         return [];
     }

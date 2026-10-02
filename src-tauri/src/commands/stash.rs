@@ -77,6 +77,16 @@ pub async fn stash_drop(repo_path: String, stash_index: usize) -> AppResult<()> 
     .await
 }
 
+/// Drops every stash (`git stash clear`); the UI confirms first.
+#[tauri::command]
+pub async fn stash_clear(repo_path: String) -> AppResult<()> {
+    blocking(move || {
+        cli::run(Path::new(&repo_path), &["stash", "clear"])?;
+        Ok(())
+    })
+    .await
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -112,5 +122,30 @@ mod tests {
         let again = push(&repo, true);
         assert!(matches!(again, Err(AppError::Invalid(_))), "{again:?}");
         assert_eq!(block_on(get_stashes(repo.path_string())).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn stash_clear_drops_every_stash_and_pop_by_index_keeps_the_rest() {
+        let repo = TestRepo::new();
+        repo.write("f.txt", "base\n");
+        repo.commit_all("base");
+        repo.write("f.txt", "one\n");
+        push(&repo, false).unwrap();
+        repo.write("f.txt", "two\n");
+        push(&repo, false).unwrap();
+        repo.write("new.txt", "new\n");
+        push(&repo, true).unwrap();
+        assert_eq!(block_on(get_stashes(repo.path_string())).unwrap().len(), 3);
+
+        // stash@{2} is the oldest ("one"); popping it leaves the other two.
+        let popped = block_on(stash_apply(repo.path_string(), 2, true)).unwrap();
+        assert!(!popped.conflicts);
+        assert_eq!(repo.read_text("f.txt"), "one\n");
+        assert_eq!(block_on(get_stashes(repo.path_string())).unwrap().len(), 2);
+
+        block_on(stash_clear(repo.path_string())).unwrap();
+        assert!(block_on(get_stashes(repo.path_string())).unwrap().is_empty());
+        // Clearing with no stashes is not an error.
+        block_on(stash_clear(repo.path_string())).unwrap();
     }
 }

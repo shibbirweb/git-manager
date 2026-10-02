@@ -1,13 +1,30 @@
 pub mod branch;
+pub mod branch_actions;
+pub mod commit_options;
 pub mod config;
+pub mod console;
 pub mod files;
 pub mod history;
+pub mod ignore;
+pub mod integrate;
+pub mod lfs;
+pub mod mcp;
 pub mod merge;
+pub mod patch;
+pub mod rebase;
+pub mod rebase_merges;
 pub mod remote;
 pub mod repo;
+pub mod scripts;
+pub mod search;
+pub mod shelf;
 pub mod stash;
 pub mod status;
+pub mod submodule;
+pub mod tag;
+pub mod terminal;
 pub mod workspace;
+pub mod worktree;
 
 #[cfg(test)]
 mod tests;
@@ -38,7 +55,7 @@ pub struct OpOutcome {
     pub conflicts: bool,
 }
 
-fn has_conflicts(repo_path: &str) -> bool {
+pub fn has_conflicts(repo_path: &str) -> bool {
     git_repo::open(repo_path)
         .and_then(|repo| Ok(repo.index()?.has_conflicts()))
         .unwrap_or(false)
@@ -74,6 +91,14 @@ pub fn safe_join(repo_path: &str, file_path: &str) -> AppResult<PathBuf> {
         return Err(AppError::invalid(format!("Invalid path: {file_path}")));
     }
     Ok(Path::new(repo_path).join(relative))
+}
+
+/// Refuses a user-given name or revision that git would read as an option.
+pub fn reject_option(value: &str, what: &str) -> AppResult<()> {
+    if value.starts_with('-') {
+        return Err(AppError::invalid(format!("{what} cannot start with '-': {value}")));
+    }
+    Ok(())
 }
 
 /// Builds `git <args...> -- <paths...>`.

@@ -31,33 +31,43 @@ Every feature has its own page with screenshots in the [wiki](https://github.com
 
 ## Features
 
-- **Workspaces like VS Code**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.gitmanager-workspace` file, or open a VS Code `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own.
+- **Workspaces like VS Code**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.gitmanager-workspace` file, or open a VS Code `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own, and a progress card shows while a big folder opens.
 - **3-way merge tool**: Yours | Result | Theirs panes with connectors, per-change apply and ignore buttons, "apply both" for conflicts, one-click *Apply non-conflicting*, word-level highlights, synchronized scrolling, F7 navigation, full undo and an ignore-whitespace mode.
-- **Conflicts made easy**: a Conflicts dialog to take Yours or Theirs for whole files (binary and deleted files too), inline *Accept Current / Incoming / Both* actions in the editor, and Continue or Abort for merge, rebase, cherry-pick and revert.
-- **Editor and tabs**: preview tabs (italic, like VS Code), breadcrumbs, change markers in the gutter and on the scrollbar, next and previous change, syntax highlighting, font ligatures and zoom with Ctrl + mouse wheel.
-- **Changes**: staged and unstaged files grouped by repository, side-by-side diffs, stage or unstage whole files or single hunks, discard, commit and amend.
+- **Conflicts made easy**: a Conflicts dialog to take Yours or Theirs for whole files (binary and deleted files too), inline *Accept Current / Incoming / Both* actions in the editor, and Continue, Abort or Skip for merge, rebase, cherry-pick and revert.
+- **Native menu bar** with the Git Manager app menu (macOS), File, Edit, View, Code, Git, Window and Help menus, and **Help > Keyboard Shortcuts**, an in-app list of every shortcut.
+- **JetBrains-style Git menu**: Commit, Push and Pull dialogs, Update Project, Merge and Rebase dialogs with their options, **Interactive Rebase**, Reset HEAD, Branches, tags, patches, Manage Remotes, Clone, and Current File history, blame and compare views.
+- **Changes like VS Code**: staged and unstaged files grouped by repository, each with a branch picker, **Sync Changes** (or **Publish Branch** for a new branch) and a **...** menu of its own actions. Side-by-side diffs (resizable), stage or unstage whole files or single hunks, discard, commit, amend, Commit & Push, Commit & Sync and Commit (Amend), commit options (sign off, author, GPG, skip hooks) and Add to .gitignore.
+- **Shelf, worktrees, submodules and Git LFS** from the Git menu, plus a **Git Console** that shows every git command the app runs (off by default).
+- **GitHub**: sign in with a token kept in the system keychain or with the GitHub CLI, then Share Project on GitHub, Sync Fork, Create Gist, and open its pull request pages on GitHub.
+- **Editor and tabs**: preview tabs (italic, like VS Code), breadcrumbs, change markers in the gutter and on the scrollbar, a find and replace bar, Code menu commands, Render whitespace, line spacing, syntax highlighting, font ligatures and zoom with Ctrl or Cmd + mouse wheel.
+- **Search Everywhere**: double Shift for files, classes, symbols and text in every folder, plus Replace in Files.
+- **Markdown editor** with a live preview, mermaid diagrams, a formatting toolbar and a Preview Only mode you can type in.
+- **Integrated terminal** with several shells, terminals in editor tabs, and a **Scripts** tool window that runs npm, Composer, Make, Deno and just scripts with the right Node version, in a Run tab.
 - **Blame**: GitLens-style blame for the current line and a blame gutter; click it to open that commit in the Log on the same line.
 - **Log**: paged history with a branch graph, commit details and per-file diffs. Double-click a commit (or use *Open in Tab*) to read it full size in its own tab. Cherry-pick, revert, reset and checkout from the right-click menu.
-- **Branches, tags, remotes and stashes**: checkout, create, rename, delete, merge and rebase; fetch, pull and push with live progress; stash, apply, pop and drop.
+- **Branches, tags, remotes and stashes**: checkout, create, rename, delete, merge and rebase from the sidebar or the Branches popup; fetch, pull and push with live progress; stash, apply, pop, drop and clear.
 - **Back and Forward** across files, diffs and commits, like a browser.
-- **Settings** saved in `~/.gitmanager` like VS Code's folder, a status bar with the app's memory use, and update checks with a stable and a beta channel.
+- **37 color themes**, one for light and one for dark mode, following the system by default.
+- **Settings** saved in `~/.gitmanager` like VS Code's folder, header buttons that show or hide the left and right activity bars, a status bar with the app's memory use (plus an optional memory log for debugging), and update checks with a stable and a beta channel.
+- **MCP server and command line tool** (off by default, local only) so AI tools such as Claude Code can use the app.
 - **Works as `git mergetool`** (see below).
 
 ## How it works
 
 ```
-Svelte UI (system WKWebView)  --invoke/events-->  Rust (Tauri commands)
+Svelte UI (system WKWebView)  --invoke/events/channels-->  Rust (Tauri commands)
                                                     git2 (libgit2): fast reads (status, index stages, diff, log, refs)
                                                     git CLI: every write, so hooks, credentials, signing and config behave as in the terminal
                                                     merge engine: 3-way chunking with imara-diff (histogram)
                                                     watcher: debounced file events -> "repo-changed"
+                                                    services: terminals (PTY), search indexes, scripts, GitHub, MCP server
 ```
 
 Memory is kept low by design:
 - No bundled browser engine; the OS web view is used.
 - Rust opens the repository per command and keeps no file contents between calls.
 - Diffs load only for the selected file; CodeMirror renders only the visible lines; the log is paged and virtualized.
-- Language grammars load on demand.
+- Language grammars and big libraries (xterm.js, the Markdown preview, mermaid, color themes) load on first use; features that are off, like the Git Console and the MCP server, cost nothing.
 - The merge tool is an overlay in the main window, not a second web view.
 - Release builds use `opt-level = "s"`, LTO, `panic = "abort"` and stripped symbols.
 
@@ -98,40 +108,12 @@ The [wiki](https://github.com/shibbirweb/git-manager/wiki) has a user guide with
 
 ## Continuous integration and releases
 
-- **Branches**: work merges into `develop` by pull request; `develop` is the beta line and `master` is stable. Nothing is pushed to either directly.
-- **CI** (`.github/workflows/ci.yml`) runs on every push to `develop` and `master` and every pull request, on macOS: the version check, `bun run check`, `bun run test`, `cargo test` and `cargo clippy -D warnings`.
-- **The version** lives in `src-tauri/Cargo.toml` (also mirrored in `package.json` and `Cargo.lock`). Nobody edits it by hand: the release workflows move it. `scripts/version.ts` has `show`, `check`, `set x.y.z`, `notes [x.y.z]`, `pending`, `bump <level>`, `untried` and `next-ticket`.
-- **Release notes** come from `CHANGELOG.md`. Write changes under `## [Unreleased]` as they land, in the same pull request.
+- **Branches**: work merges into `develop` (the beta line) by pull request; `master` is stable.
+- **CI** (`.github/workflows/ci.yml`) runs on every push to `develop` and `master` and every pull request, on macOS: `bun scripts/version.ts check`, `bun run check`, `bun run test`, `bun scripts/build-wiki.ts --check`, `cargo test` and `cargo clippy --all-targets -- -D warnings`.
+- **Versions and notes**: the version lives in `src-tauri/Cargo.toml` and only the release workflows move it. Release notes come from `CHANGELOG.md`, so write each change under `## [Unreleased]` in the same pull request.
+- **Releases** are automated: the "Beta release" and "Stable release" workflows open a release pull request; once it is merged (and, for a stable release, the `develop` to `master` pull request too), the GitHub release is published and the macOS app is built. Builds are unsigned unless the `APPLE_*` secrets are set.
 
-### A beta in two clicks
-
-1. **Actions, Beta release, Run workflow** on `develop` (tick *dry run* to preview). It checks CI passed on `develop` and no release is under way, works out the next version (the first beta of the next minor release, a patch when only fixes landed, or the next `-beta.N`), and opens a release pull request `chore:[GM-N] release x.y.z-beta.N` with the notes in its description.
-2. **Merge it.** Once CI passes on `develop`, **Publish beta** publishes the GitHub pre-release `vx.y.z-beta.N` with the Unreleased notes and builds and attaches the macOS app.
-
-### A stable release in two merges
-
-1. **Actions, Stable release, Run workflow** on `develop`. It only finishes a published beta with nothing untried on top (anything but `docs`, `test` or `chore` commits needs another beta first). It moves `x.y.z-beta.N` to `x.y.z`, dates the changelog, and opens the release pull request.
-2. **Merge it.** Once CI passes on `develop`, **Promote stable** opens the `develop` to `master` pull request.
-3. **Merge that one with a merge commit** (not squash). Once CI passes on `master`, **Publish stable** publishes `vx.y.z` as the latest release and builds and attaches the app.
-
-`release.yml` does the building for both: it checks that the tag, the pre-release flag and the code agree, and builds a universal macOS app (Apple Silicon and Intel), attaching the `.dmg` and zipped `.app`. It also runs for a release published by hand, and **Run workflow** on it rebuilds an existing release from its tag.
-
-### One-time repository setup
-
-- Push `develop` and `master` (both can start at the same commit) and make `develop` the default branch: `workflow_run` workflows only run from the default branch, and **Run workflow** starts there.
-- **Settings, Actions, General, Workflow permissions**: *Read and write permissions* and *Allow GitHub Actions to create and approve pull requests*. Without the second, the release pull requests cannot be opened.
-- Optionally protect `develop` and `master` (pull requests only, CI required). The release branches get their CI run started by the workflow, so the checks show on the release pull request.
-- The repository must be public for the in-app update check to see releases.
-
-### Beta and stable channels
-
-- A beta is a GitHub pre-release. GitHub never counts it as the latest release, and the app only offers it to installs on the **beta channel**, so stable users are never moved to a beta.
-- **Settings, Updates, Update channel**: Automatic (a beta build follows betas, a stable build follows stable), Stable, or Beta to opt in to testing.
-- The app checks GitHub about 30 seconds after start and every 6 hours (Settings can turn this off). An available update shows in the status bar with its notes and a Download button; nothing is installed automatically. After an update, What's New shows the version's changelog, built into the app.
-
-### Signing
-
-Builds are unsigned by default, so macOS shows an "unidentified developer" warning (right-click the app and choose Open). To sign and notarize, add the `APPLE_*` repository secrets listed at the top of `release.yml` and uncomment the matching lines.
+The [Releases and CI](https://github.com/shibbirweb/git-manager/wiki/Releases-and-CI) page has the full flow, every workflow and the one-time repository setup; [Updates](https://github.com/shibbirweb/git-manager/wiki/Updates) explains the stable and beta channels.
 
 ## Using it as `git mergetool`
 
@@ -148,17 +130,37 @@ Then `git mergetool` opens each conflicted file. **Apply** (or Cmd+Enter) writes
 
 ## Settings
 
-Open **Settings** with the gear button in the header or **Cmd+,**. Changes apply immediately and are saved, like VS Code's `~/.vscode`, in a folder in your home directory:
+Open **Settings** with the gear button in the header, **Git Manager > Settings...** or **Cmd+,**. Its sections are Appearance, Editor, Git, Layout, Terminal, GitHub, Automation, Updates, Settings Files and About. Changes apply immediately and are saved, like VS Code's `~/.vscode`, in a folder in your home directory:
 
 ```
 ~/.gitmanager/
-  settings.json   preferences (theme, font sizes, tab size, word wrap, merge and log defaults); safe to edit by hand
-  state.json      recent folders, active repository per folder, sidebar layout and widths
+  settings.json   preferences (theme and color themes, fonts, editor, Git, terminal, automation); safe to edit by hand
+  state.json      recent folders, active repository per folder, panel layout and sizes
+  github.json     the signed-in GitHub login (the token itself stays in the system keychain)
+  mcp.json        the MCP server's secret token, plus its port while it runs
+  logs/memory.log the debug memory log, only while it is on
 ```
 
 The folder is created the first time a setting is saved. If `settings.json` or `state.json` contains invalid JSON, the app uses defaults for that file only, shows the error in Settings, and never overwrites it: fix it and click **Try Again**, or **Reset** it. The [Settings page](https://github.com/shibbirweb/git-manager/wiki/Settings) lists every setting.
 
-## Keyboard shortcuts (merge view)
+## Keyboard shortcuts
+
+A few to start with (macOS keys; Help > Keyboard Shortcuts lists them all):
+
+| Key | Action |
+| --- | --- |
+| Shift Shift | Search Everywhere |
+| Cmd+P / Cmd+O / Option+Cmd+O | Go to File / Class / Symbol |
+| Shift+Cmd+F / Shift+Cmd+R | Find in Files / Replace in Files |
+| Cmd+F / Cmd+R | Find / Replace in the editor |
+| Cmd+S / Option+Cmd+S | Save / Save All |
+| Cmd+K / Cmd+T | Commit / Update Project |
+| Cmd+9 | Show Git Log |
+| Ctrl+` / Ctrl+Shift+` | Show or hide the terminal / New terminal |
+| Cmd+B / Option+Cmd+B | Sidebar / Files panel |
+| Cmd+, | Settings |
+
+In the merge tool:
 
 | Key | Action |
 | --- | --- |
@@ -167,7 +169,7 @@ The folder is created the first time a setting is saved. If `settings.json` or `
 | Cmd+Enter | Apply (save the result and mark resolved), from any pane |
 | Esc | Cancel (asks first if you changed the result) |
 
-Every other shortcut is on the [Keyboard Shortcuts page](https://github.com/shibbirweb/git-manager/wiki/Keyboard-Shortcuts).
+Every shortcut is on the [Keyboard Shortcuts page](https://github.com/shibbirweb/git-manager/wiki/Keyboard-Shortcuts).
 
 ## Project layout
 
@@ -176,15 +178,26 @@ src/                     Svelte UI
   lib/merge/             3-way merge view: model.ts (pure logic), extensions.ts (CodeMirror), MergeEditor.svelte
   lib/diff/              2-way diff view
   lib/log/               commit graph, commit details and commit tabs
-  lib/editor/            CodeMirror setup, blame, conflict markers, change markers
+  lib/editor/            CodeMirror setup, blame, conflict and change markers, find bar, editor commands
+  lib/menu/, lib/help/   native menu bar and the Keyboard Shortcuts window
+  lib/terminal/          integrated terminal and the Run tab
+  lib/scripts/           Scripts tool window
+  lib/search/            Search Everywhere and Replace in Files
+  lib/markdown/          Markdown preview and rich editor
+  lib/themes/            color themes
+  lib/mcp/               UI side of the MCP server
   lib/stores/            app state: repositories, tabs, settings, navigation
-  lib/views/             workspace, header, sidebars, changes, files, settings
+  lib/views/             workspace, header, sidebars, changes, files, Git menu dialogs, GitHub, settings
   lib/update/            update check and What's New
   lib/api.ts, types.ts   typed bridge to the Rust commands
 src-tauri/src/
   merge/                 3-way merge engine
   git/                   git2 readers and the git CLI runner
   commands/              Tauri commands
+  terminal.rs, run_process.rs   terminals and script runs in pseudo terminals
+  file_search.rs, symbols/, text_search/   Search Everywhere and Replace in Files
+  scripts/, node_versions.rs    project scripts and installed Node versions
+  github/, mcp/          GitHub account and the MCP server with its command line tool
   watcher.rs             repository file watcher
 docs/wiki/               the wiki: user guide, developer docs and screenshots
 scripts/                 versioning, wiki build, screenshots and demo repositories

@@ -2,12 +2,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { api } from "$lib/api";
-  import { isCommitTab, parseCommitTabPath } from "$lib/stores/commitTabs";
+  import { parseCommitTabPath } from "$lib/stores/commitTabs";
+  import { parseGitTabPath } from "$lib/stores/gitTabs";
+  import { parseBranchTabPath } from "$lib/stores/branchTabs";
+  import { isPseudoTab } from "$lib/stores/pseudoTabs";
+  import { loadingChangesText } from "$lib/stores/openingProgress";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
-  import { locateAbsolute } from "$lib/stores/workspacePaths";
+  import { locateAbsolute, repoForPath } from "$lib/stores/workspacePaths";
+  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
+  import { parseTerminalTabPath } from "$lib/terminal/terminalTabs";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { changesSelection } from "./changes/selection.svelte";
@@ -24,9 +30,18 @@
   const shownView = $derived(changesSelection.shownView);
   const contextRepo = $derived.by(() => {
     if (shownView === "file" && repoStore.openFilePath) {
-      const commit = parseCommitTabPath(repoStore.openFilePath);
+      const commit =
+        parseCommitTabPath(repoStore.openFilePath) ??
+        parseGitTabPath(repoStore.openFilePath) ??
+        parseBranchTabPath(repoStore.openFilePath);
       if (commit) {
         return repoStore.repos.find((repo) => repo.root === commit.repoRoot) ?? null;
+      }
+      const terminalKey = parseTerminalTabPath(repoStore.openFilePath);
+      if (terminalKey !== null) {
+        // A terminal belongs to the repository of its folder, else the active one.
+        const cwd = terminalStore.find(terminalKey)?.cwd ?? null;
+        return (cwd ? repoForPath(repoStore.repos, cwd) : null) ?? repoStore.repo;
       }
       return locateAbsolute(repoStore.repos, repoStore.openFilePath)?.repo ?? null;
     }
@@ -44,7 +59,7 @@
   const op = $derived(contextStatus?.op ?? null);
   /** A file tab is on screen and outside every repository. */
   const fileWithoutRepo = $derived(
-    shownView === "file" && repoStore.openFilePath !== null && !isCommitTab(repoStore.openFilePath) && contextRepo === null,
+    shownView === "file" && repoStore.openFilePath !== null && !isPseudoTab(repoStore.openFilePath) && contextRepo === null,
   );
   const fileInfo = $derived(
     shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
@@ -202,6 +217,10 @@
     {/if}
     {#if repoStore.busy}
       <span class="item static busy"><span class="spinner"></span>{repoStore.busy}...</span>
+    {:else if repoStore.loadingChanges}
+      <span class="item static busy" title="Reading the changes of each repository; you can already work">
+        <span class="spinner"></span>{loadingChangesText(repoStore.loadingChanges.done, repoStore.loadingChanges.total)}
+      </span>
     {/if}
     <button class="item icon-only" onclick={() => void updates.openRepository()} title="Star Git Manager on GitHub" aria-label="Star on GitHub">
       <Icon name="star" size={12} />

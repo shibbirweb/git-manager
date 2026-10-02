@@ -1,5 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
+  import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
   import DiffView from "$lib/diff/DiffView.svelte";
   import type { ChangedFile, CommitDetails, FileDiff } from "$lib/types";
@@ -324,6 +325,7 @@
                 origin: (line) => ({ kind: "log", repoRoot: repoPath, commitId, filePath: shown?.path ?? null, line }),
               }}
           {revealLine}
+          workingFile={{ filePath: joinPath(repoPath, shown.path), sameLines: false }}
         />
       {/key}
     {:else if diffLoading}

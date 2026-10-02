@@ -1,9 +1,10 @@
 <!-- Editor tab for a work tree file opened from the file explorer. -->
 <script lang="ts">
-  import { EditorState, type Text } from "@codemirror/state";
+  import { EditorState, type Text, type TransactionSpec } from "@codemirror/state";
   import { EditorView, keymap } from "@codemirror/view";
-  import { onMount, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
+  import { wordWrap } from "$lib/editor/wordWrap";
   import { blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
   import { conflictField, conflictMarkers, resolveAllConflicts } from "$lib/editor/conflictDecorations";
   import { type ChangeMark, changeMarks } from "$lib/editor/lineDiff";
@@ -16,17 +17,27 @@
     setChangeMarks,
   } from "$lib/editor/scrollMarkers";
   import { baseExtensions, languageFor, languageName } from "$lib/editor/setup";
+  import { editorTopLine, scrollEditorToLine } from "$lib/markdown/editorScroll";
+  import { toggleInline, toggleLink, toggleTaskAt } from "$lib/markdown/format";
+  import type { SourceEdit } from "$lib/markdown/richSync";
+  import { isMarkdownPath, rememberViewMode, sessionViewMode } from "$lib/markdown/viewMode";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
+  import { fileCommands } from "$lib/stores/fileCommands.svelte";
+  import { selectionInfo } from "$lib/editor/selectionInfo";
   import { changesSelection } from "../changes/selection.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { settings } from "$lib/stores/settings.svelte";
+  import { MARKDOWN_PREVIEW_RATIO_RANGE, type MarkdownViewMode, settings } from "$lib/stores/settings.svelte";
   import { folderFor, joinPath, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { isMissingFileError } from "$lib/stores/navHistory";
   import type { FileContent } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
+  import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import MarkdownPreview from "./MarkdownPreview.svelte";
+  import MarkdownToolbar from "./MarkdownToolbar.svelte";
+  import RichMarkdownView from "./RichMarkdownView.svelte";
   import { tonesByPath } from "./tones";
 
   let { filePath }: { filePath: string } = $props();
@@ -39,6 +50,8 @@
   let conflictCount = $state(0);
 
   let view: EditorView | null = null;
+  /** The same editor, for the Markdown preview's scroll sync. */
+  let editorView = $state.raw<EditorView | null>(null);
   /** The file as of the last commit, split into lines; null when unavailable. */
   let headLines: string[] | null = null;
   let marksTimer: ReturnType<typeof setTimeout> | undefined;
@@ -94,14 +107,112 @@
   );
   const editable = $derived(file !== null && !file.binary && !file.tooLarge);
 
+  // Markdown: source, preview or both, like JetBrains. Each file keeps its mode for the session.
+  const isMarkdown = $derived(isMarkdownPath(filePath));
+  let viewMode = $state<MarkdownViewMode>(initialViewMode());
+  /** Bumped on every edit so the preview knows to render again. */
+  let docVersion = $state(0);
+  /** Source line the preview starts at when it opens. */
+  let initialLine = $state(0);
+  /** Where the rich editor was scrolled when its tab was last on screen. */
+  let richScroll = $state(0);
+  let previewRef = $state<ReturnType<typeof MarkdownPreview> | null>(null);
+  let richRef = $state<ReturnType<typeof RichMarkdownView> | null>(null);
+  let areaWidth = $state(0);
+  const showPreview = $derived(isMarkdown && editable && loadError === null && viewMode !== "editor");
+  const previewWidth = $derived(Math.round(settings.markdownPreviewRatio * areaWidth));
+
+  function initialViewMode(): MarkdownViewMode {
+    return sessionViewMode(filePath, settings.markdownViewMode);
+  }
+
+  async function setViewMode(next: MarkdownViewMode): Promise<void> {
+    if (next === viewMode) {
+      return;
+    }
+    // Stay at the same place in the document across the switch.
+    const fromPreview = viewMode === "preview";
+    if (fromPreview) {
+      // A rich edit still waiting for a pause in typing goes into the text first.
+      richRef?.flush();
+    }
+    const line = fromPreview ? 0 : view ? editorTopLine(view) : 0;
+    initialLine = line;
+    viewMode = next;
+    rememberViewMode(filePath, next);
+    if (fromPreview && view) {
+      await tick();
+      const shown = view;
+      requestAnimationFrame(() => {
+        shown.requestMeasure();
+        scrollEditorToLine(shown, line);
+      });
+    }
+  }
+
+  /** Runs a Markdown toolbar command on the editor as one undoable change. */
+  function applyFormat(command: (state: EditorState) => TransactionSpec): void {
+    if (!view || viewMode === "preview") {
+      return;
+    }
+    view.dispatch(command(view.state));
+    view.focus();
+  }
+
+  /** An edit in the rich text editor (Preview mode), applied to the text so it saves and undoes as usual. */
+  function applyRichEdit(edit: SourceEdit): void {
+    if (!view) {
+      return;
+    }
+    const length = view.state.doc.length;
+    if (edit.from < 0 || edit.to > length || edit.from > edit.to) {
+      return;
+    }
+    view.dispatch({ changes: edit, userEvent: "input.rich" });
+  }
+
+  /** A task box clicked in the preview ticks its line in the source. */
+  function toggleTask(lineIndex: number): void {
+    const spec = view ? toggleTaskAt(view.state, lineIndex) : null;
+    if (view && spec) {
+      view.dispatch(spec);
+    }
+  }
+
+  function resizePreview(size: number, persist: boolean): void {
+    if (areaWidth > 0) {
+      settings.setMarkdownPreviewRatio(size / areaWidth, persist);
+    }
+  }
+
   onMount(() => {
     void load(false);
+    // File > Save / Revert and View > Markdown act on the active tab through this.
+    const unregister = fileCommands.register(filePath, {
+      save: (options) => save(options),
+      revert,
+      setViewMode: (mode) => void setViewMode(mode),
+      text: () => view?.state.doc.toString() ?? null,
+      selection: () => (view ? selectionInfo(view.state) : null),
+      focus: () => view?.focus(),
+    });
     return () => {
+      unregister();
       editorStatus.clear(filePath);
       clearTimeout(marksTimer);
       view?.destroy();
       view = null;
+      editorView = null;
     };
+  });
+
+  // What the File and View menus may offer for this tab.
+  $effect(() => {
+    const state = {
+      editable: editable && loadError === null,
+      markdownMode: isMarkdown && editable && loadError === null ? viewMode : null,
+    };
+    untrack(() => fileCommands.report(filePath, state));
   });
 
   // Pick up changes made outside the app while there are no local edits.
@@ -133,6 +244,7 @@
       if (next.binary || next.tooLarge) {
         view?.destroy();
         view = null;
+        editorView = null;
         return;
       }
       if (view) {
@@ -248,13 +360,14 @@
     navIndex = sectionAt(marks, state.doc.lineAt(state.selection.main.head).number - 1);
   }
 
-  /** Moves the cursor to a 0-based line and centers it. */
-  function revealLine(line: number): void {
+  /** Moves the cursor to a 0-based line (and column) and centers it. */
+  function revealLine(line: number, column = 0): void {
     if (!view) {
       return;
     }
     const doc = view.state.doc;
-    const position = doc.line(Math.max(1, Math.min(line + 1, doc.lines))).from;
+    const target = doc.line(Math.max(1, Math.min(line + 1, doc.lines)));
+    const position = target.from + Math.max(0, Math.min(column, target.length));
     view.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
   }
 
@@ -269,7 +382,12 @@
       untrack(() => {
         const taken = navigation.takeReveal(filePath);
         if (taken) {
-          revealLine(taken.line);
+          if (taken.line !== null) {
+            revealLine(taken.line, taken.column ?? 0);
+            if (viewMode === "preview") {
+              previewRef?.scrollToLine(taken.line);
+            }
+          }
           view?.focus();
         }
       });
@@ -326,6 +444,27 @@
         navigation.record({ filePath, line: update.state.doc.lineAt(update.state.selection.main.head).number - 1 });
       }
     });
+    // Cmd+B stays the sidebar toggle; Cmd+I replaces Select Parent Syntax and Cmd+K is free.
+    const markdownKeys = isMarkdown
+      ? keymap.of([
+          {
+            key: "Mod-i",
+            preventDefault: true,
+            run: (target) => {
+              target.dispatch(toggleInline(target.state, "italic"));
+              return true;
+            },
+          },
+          {
+            key: "Mod-k",
+            preventDefault: true,
+            run: (target) => {
+              target.dispatch(toggleLink(target.state));
+              return true;
+            },
+          },
+        ])
+      : [];
     const navKeys = keymap.of([
       { key: "F7", run: () => goToSection(1) },
       { key: "Shift-F7", run: () => goToSection(-1) },
@@ -337,6 +476,7 @@
       if (update.docChanged) {
         conflictCount = update.state.field(conflictField).length;
         scheduleMarks();
+        docVersion++;
       }
     });
     view = new EditorView({
@@ -345,10 +485,11 @@
         doc: content,
         extensions: [
           saveKeys,
+          markdownKeys,
           navKeys,
           navListener,
           baseExtensions({ readOnly: false }),
-          settings.wordWrap ? EditorView.lineWrapping : [],
+          wordWrap(settings.wordWrap),
           language,
           conflictMarkers({ onOpenMergeTool: () => void openMergeTool() }),
           changeMarkField,
@@ -359,26 +500,36 @@
         ],
       }),
     });
+    editorView = view;
+    // The preview may have mounted before the editor existed; it renders the new text now.
+    docVersion++;
     baseline = view.state.doc;
     conflictCount = view.state.field(conflictField).length;
     updateMarks();
     refreshBlame();
     updateNav(view.state);
     reportStatus();
-    // Opened by Back / Forward: go to the remembered line; otherwise this is a new history entry.
+    // Opened by Back / Forward or Go to File: go to that line; otherwise this is a new history entry.
     const reveal = navigation.takeReveal(filePath);
-    if (reveal) {
-      revealLine(reveal.line);
+    if (reveal?.line != null) {
+      revealLine(reveal.line, reveal.column ?? 0);
+      initialLine = reveal.line;
+    }
+    if (reveal?.focus) {
+      view.focus();
     }
     navigation.record({ filePath, line: cursorLine() });
     repoStore.setDirty(filePath, false);
   }
 
-  async function save(): Promise<void> {
+  /** Writes the editor content; `quiet` skips the toast (Save All shows one for every file). */
+  async function save(options: { quiet?: boolean } = {}): Promise<boolean> {
     const root = folder?.root;
     if (!view || !file || !root || saving) {
-      return;
+      return false;
     }
+    // Preview mode: the rich editor's last keystrokes are in the text before it is written.
+    richRef?.flush();
     const snapshot = view.state.doc;
     const eol = file.eol;
     saving = true;
@@ -386,7 +537,9 @@
     try {
       await api.writeWorktreeFile(root, relativeTo(root, filePath), snapshot.toString(), eol);
       saved = true;
-      toast.success(`Saved ${name}`);
+      if (!options.quiet) {
+        toast.success(`Saved ${name}`);
+      }
       refreshBlame();
       if (location) {
         void repoStore.refreshRepoStatus(location.repo.root);
@@ -399,6 +552,7 @@
       baseline = snapshot;
       repoStore.setDirty(filePath, !view.state.doc.eq(snapshot));
     }
+    return saved;
   }
 
   async function openMergeTool(): Promise<void> {
@@ -597,12 +751,19 @@
           Blame
         </button>
       {/if}
-      <button class="btn small" onclick={revert} disabled={!editable || saving} title="Reload from disk">Revert</button>
-      <button class="btn small primary" onclick={save} disabled={!editable || saving || !dirty} title="Save (Cmd+S)">
-        {saving ? "Saving..." : "Save"}
-      </button>
+      <!-- Save and Revert live in the File menu (Cmd+S), not on the toolbar. -->
     </div>
   </div>
+
+  {#if isMarkdown && editable && loadError === null}
+    <MarkdownToolbar
+      {viewMode}
+      onViewMode={(next) => void setViewMode(next)}
+      onFormat={applyFormat}
+      onRichFormat={(action) => richRef?.format(action)}
+      onRichLink={() => void richRef?.link()}
+    />
+  {/if}
 
   {#if loadError}
     <div class="message">
@@ -616,7 +777,60 @@
   {:else if !file}
     <div class="message dim">Loading...</div>
   {/if}
-  <div class="editor" class:hidden={!editable || loadError !== null} bind:this={host}></div>
+  <div class="editor-area" class:hidden={!editable || loadError !== null} bind:clientWidth={areaWidth}>
+    <div class="editor" class:hidden={showPreview && viewMode === "preview"} bind:this={host}></div>
+    {#if showPreview}
+      {#if viewMode === "split"}
+        <ResizeHandle
+          label="Resize Markdown preview"
+          panel="right"
+          size={previewWidth}
+          min={Math.round(areaWidth * MARKDOWN_PREVIEW_RATIO_RANGE[0])}
+          max={Math.round(areaWidth * MARKDOWN_PREVIEW_RATIO_RANGE[1])}
+          defaultSize={Math.round(areaWidth / 2)}
+          onResize={(size) => resizePreview(size, false)}
+          onCommit={(size) => resizePreview(size, true)}
+        />
+      {/if}
+      <div
+        class="preview-pane"
+        class:full={viewMode === "preview"}
+        style:width={viewMode === "split" ? `${settings.markdownPreviewRatio * 100}%` : null}
+      >
+        <!--
+          Only the tab on screen keeps its rendered document: a hidden tab frees it (with its
+          diagrams and images) and draws it again when shown, at the same place.
+        -->
+        {#if isActive && viewMode === "preview"}
+          <!-- Preview mode is the rendered document, editable in place. -->
+          <RichMarkdownView
+            bind:this={richRef}
+            {filePath}
+            {docVersion}
+            getSource={() => view?.state.doc.toString() ?? ""}
+            initialScroll={richScroll}
+            onLeave={(scrollTop) => (richScroll = scrollTop)}
+            onEdit={applyRichEdit}
+            onSave={() => void save()}
+          />
+        {:else if isActive}
+          <MarkdownPreview
+            bind:this={previewRef}
+            {filePath}
+            {docVersion}
+            getSource={() => view?.state.doc.toString() ?? ""}
+            view={editorView}
+            visible={isActive}
+            syncScroll={viewMode === "split"}
+            {initialLine}
+            onLeave={(topLine) => (initialLine = topLine)}
+            onToggleTask={toggleTask}
+            onSave={() => void save()}
+          />
+        {/if}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -784,14 +998,34 @@
     color: var(--danger);
   }
 
-  .editor {
+  .editor-area {
     flex: 1;
     min-height: 0;
+    display: flex;
+  }
+
+  .editor {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
     overflow: hidden;
   }
 
+  .editor-area.hidden,
   .editor.hidden {
     display: none;
+  }
+
+  .preview-pane {
+    flex: none;
+    min-width: 0;
+    height: 100%;
+    border-left: 1px solid var(--border-strong);
+  }
+
+  .preview-pane.full {
+    flex: 1;
+    border-left: none;
   }
 
   .editor :global(.cm-editor) {

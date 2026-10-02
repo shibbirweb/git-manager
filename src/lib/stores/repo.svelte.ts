@@ -7,12 +7,24 @@
 
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { api, errorMessage, onGitProgress, onRepoChanged, onWorkspaceChanged } from "$lib/api";
-import type { OpOutcome, Refs, RepoInfo, RepoStatus, StashEntry } from "$lib/types";
+import type { OpOutcome, Refs, RemoteInfo, RepoInfo, RepoStatus, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import { settings } from "./settings.svelte";
-import { commitTabPath, commitTabsInFolder } from "./commitTabs";
-import { closeTabs, type FileTab, openTab, otherPaths, pathsToRight, pinTab, setTabDirty, type TabsState } from "./tabs";
+import { commitTabPath } from "./commitTabs";
+import { baseName, openingTitle } from "./openingProgress";
+import { locateAbsolute } from "./workspacePaths";
+import {
+  closeTabs,
+  type FileTab,
+  openTab,
+  otherPaths,
+  pathsToRight,
+  pinTab,
+  setTabDirty,
+  tabsInFolder,
+  type TabsState,
+} from "./tabs";
 
 /** "none" is the empty main area shown when the Log is toggled off and nothing else is open. */
 export interface WorkspaceFolder {
@@ -109,6 +121,8 @@ class RepoStore {
   repo = $state<RepoInfo | null>(null);
   refs = $state<Refs | null>(null);
   stashes = $state<StashEntry[]>([]);
+  /** Remotes of the active repository with their URLs (Manage Remotes, the GitHub submenu). */
+  remotes = $state.raw<RemoteInfo[]>([]);
   /** Label of the running operation, e.g. "Pushing". */
   busy = $state<string | null>(null);
   /** Latest progress line from fetch/pull/push. */
@@ -125,6 +139,10 @@ class RepoStore {
   tabs = $state.raw<FileTab[]>([]);
   /** Absolute path of the active file tab. */
   openFilePath = $state<string | null>(null);
+  /** A folder being opened: shown as a progress card, since there is nothing else to show yet. */
+  opening = $state<{ title: string; step: string } | null>(null);
+  /** Statuses still loading after a folder opened, shown in the status bar without blocking anything. */
+  loadingChanges = $state<{ done: number; total: number } | null>(null);
   /** What a commit tab shows besides its commit, keyed by tab path (see commitTabs.ts). */
   commitTabs = $state.raw<Record<string, CommitTabInfo>>({});
   /** A commit the Log view should select, e.g. after clicking a blame note. */
@@ -140,6 +158,7 @@ class RepoStore {
   private logFocusToken = 0;
 
   private unlisteners: UnlistenFn[] = [];
+  private tabsClosedListeners: Array<(tabPaths: string[]) => void> = [];
   private inflight = new Map<string, Promise<void>>();
   private queued = new Set<string>();
   /** Repository whose stash list last failed to load, so the error shows once, not on every refresh. */
@@ -172,12 +191,20 @@ class RepoStore {
       return false;
     }
     const infos = [];
-    for (const folderPath of folderPaths) {
-      try {
-        infos.push(await api.openWorkspace(folderPath));
-      } catch (error) {
-        toast.error(`Could not open ${folderPath}`, errorMessage(error));
+    this.opening = { title: openingTitle(folderPaths), step: "Looking for repositories..." };
+    try {
+      for (const folderPath of folderPaths) {
+        if (folderPaths.length > 1) {
+          this.opening = { title: openingTitle(folderPaths), step: `Looking for repositories in ${baseName(folderPath)}...` };
+        }
+        try {
+          infos.push(await api.openWorkspace(folderPath));
+        } catch (error) {
+          toast.error(`Could not open ${folderPath}`, errorMessage(error));
+        }
       }
+    } finally {
+      this.opening = null;
     }
     if (infos.length === 0) {
       return false;
@@ -199,7 +226,8 @@ class RepoStore {
       workspaceFile,
     );
     this.repo = this.pickActive(this.workspace, this.repos);
-    await this.refreshAll();
+    // The workspace is on screen now; statuses fill in as they arrive, with a counter in the status bar.
+    await this.loadAllChanges();
     this.historyVersion++;
     await this.watchAll();
     this.unlisteners.push(
@@ -233,11 +261,14 @@ class RepoStore {
       return;
     }
     let info;
+    this.opening = { title: `Adding ${baseName(folderPath)}`, step: "Looking for repositories..." };
     try {
       info = await api.openWorkspace(folderPath);
     } catch (error) {
       toast.error("Could not add folder", errorMessage(error));
       return;
+    } finally {
+      this.opening = null;
     }
     const added = info;
     if (this.workspace.folders.some((folder) => folder.root === added.root)) {
@@ -272,15 +303,11 @@ class RepoStore {
       await this.closeWorkspace();
       return;
     }
-    const prefix = folderRoot.endsWith("/") ? folderRoot : `${folderRoot}/`;
-    const tabsInFolder = [
-      ...this.tabs.filter((tab) => tab.path.startsWith(prefix)).map((tab) => tab.path),
-      ...commitTabsInFolder(
-        this.tabs.map((tab) => tab.path),
-        folderRoot,
-      ),
-    ];
-    if (tabsInFolder.length > 0 && !(await this.closeTabs(tabsInFolder))) {
+    const closing = tabsInFolder(
+      this.tabs.map((tab) => tab.path),
+      folderRoot,
+    );
+    if (closing.length > 0 && !(await this.closeTabs(closing))) {
       return;
     }
     await api.unwatchWorkspace(folderRoot).catch(() => undefined);
@@ -429,11 +456,14 @@ class RepoStore {
     this.repo = null;
     this.refs = null;
     this.stashes = [];
+    this.remotes = [];
     this.mergeTarget = null;
     this.conflictsOpen = false;
+    const closedTabs = this.tabs.map((tab) => tab.path);
     this.openFilePath = null;
     this.tabs = [];
     this.commitTabs = {};
+    this.notifyTabsClosed(closedTabs);
     if (this.view === "file") {
       this.view = "diff";
     }
@@ -447,6 +477,7 @@ class RepoStore {
     this.repo = next;
     this.refs = null;
     this.stashes = [];
+    this.remotes = [];
     this.mergeTarget = null;
     this.conflictsOpen = false;
     if (this.workspace) {
@@ -560,6 +591,27 @@ class RepoStore {
     await Promise.all([...this.repos.map((repo) => this.refreshRepoStatus(repo.root)), this.refreshActive()]);
   }
 
+  /** `refreshAll` with a "Reading changes 2 of 5" counter, for opening a folder. */
+  private async loadAllChanges(): Promise<void> {
+    const roots = this.repos.map((repo) => repo.root);
+    let done = 0;
+    this.loadingChanges = roots.length > 0 ? { done, total: roots.length } : null;
+    try {
+      await Promise.all([
+        ...roots.map(async (repoRoot) => {
+          await this.refreshRepoStatus(repoRoot);
+          done++;
+          if (this.loadingChanges) {
+            this.loadingChanges = { done, total: roots.length };
+          }
+        }),
+        this.refreshActive(),
+      ]);
+    } finally {
+      this.loadingChanges = null;
+    }
+  }
+
   /** Refreshes one repository after a change; the active one also reloads branches and stashes. */
   async refreshRepo(repoRoot: string, gitDirChanged = true): Promise<void> {
     const tasks = [this.refreshRepoStatus(repoRoot)];
@@ -592,9 +644,10 @@ class RepoStore {
       if (!repoRoot) {
         this.refs = null;
         this.stashes = [];
+        this.remotes = [];
         return;
       }
-      const [refs, stashes] = await Promise.all([
+      const [refs, stashes, remotes] = await Promise.all([
         api.getRefs(repoRoot).catch((error) => {
           toast.error("Could not read branches", errorMessage(error));
           return null;
@@ -613,10 +666,13 @@ class RepoStore {
             return [] as StashEntry[];
           },
         ),
+        // Only the GitHub submenu and Manage Remotes read them: quiet on failure.
+        api.listRemotes(repoRoot).catch(() => [] as RemoteInfo[]),
       ]);
       if (this.repo?.root === repoRoot) {
         this.refs = refs;
         this.stashes = stashes;
+        this.remotes = remotes;
       }
     });
   }
@@ -676,6 +732,23 @@ class RepoStore {
     return outcome;
   }
 
+  /** Absolute paths of the file tabs with unsaved edits. */
+  get dirtyPaths(): string[] {
+    return this.tabs.filter((tab) => tab.dirty).map((tab) => tab.path);
+  }
+
+  /**
+   * Files were written outside an editor (Replace in Files): refresh the owning repositories
+   * and the workspace, so open tabs without unsaved edits reload without waiting for the watcher.
+   */
+  async filesWritten(filePaths: string[]): Promise<void> {
+    const repoRoots = new Set(
+      filePaths.map((filePath) => locateAbsolute(this.repos, filePath)?.repo.root ?? null).filter((root) => root !== null),
+    );
+    this.workspaceVersion++;
+    await Promise.all([...repoRoots].map((repoRoot) => this.refreshRepoStatus(repoRoot)));
+  }
+
   /** The active file tab has unsaved edits. */
   get fileDirty(): boolean {
     return this.isDirty(this.openFilePath);
@@ -690,16 +763,48 @@ class RepoStore {
   }
 
   private applyTabs(next: TabsState): void {
+    const open = new Set(next.tabs.map((tab) => tab.path));
+    const closedTabs = this.tabs.filter((tab) => !open.has(tab.path)).map((tab) => tab.path);
     this.tabs = next.tabs;
     this.openFilePath = next.active;
     if (!next.active && this.view === "file") {
       this.view = "diff";
     }
     // Forget what closed commit tabs showed.
-    const open = new Set(next.tabs.map((tab) => tab.path));
     if (Object.keys(this.commitTabs).some((tabPath) => !open.has(tabPath))) {
       this.commitTabs = Object.fromEntries(Object.entries(this.commitTabs).filter(([tabPath]) => open.has(tabPath)));
     }
+    this.notifyTabsClosed(closedTabs);
+  }
+
+  /**
+   * Tells listeners which tabs just closed, however they closed (x, Close
+   * Others, teardown). The terminal store uses it to stop the shell of a closed
+   * terminal tab; it registers itself so this store never imports it.
+   */
+  onTabsClosed(listener: (tabPaths: string[]) => void): () => void {
+    this.tabsClosedListeners.push(listener);
+    return () => {
+      this.tabsClosedListeners = this.tabsClosedListeners.filter((candidate) => candidate !== listener);
+    };
+  }
+
+  private notifyTabsClosed(tabPaths: string[]): void {
+    if (tabPaths.length === 0) {
+      return;
+    }
+    for (const listener of this.tabsClosedListeners) {
+      listener(tabPaths);
+    }
+  }
+
+  /**
+   * Opens a tab that is not a file (see pseudoTabs.ts), such as a terminal in
+   * the editor area. It opens pinned, since it is always a deliberate open.
+   */
+  openPseudoTab(tabPath: string): void {
+    this.applyTabs(openTab(this.tabsState, tabPath, true));
+    this.view = "file";
   }
 
   /**

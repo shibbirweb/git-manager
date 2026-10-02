@@ -9,6 +9,7 @@
   import { rowElementId, sameSelection, type FileSelection, type GroupId } from "./changes/fileStatus";
   import { changesLayout } from "./changes/layout.svelte";
   import { activate, discard } from "./changes/mutations";
+  import RepoActions from "./changes/RepoActions.svelte";
   import RepoSection from "./changes/RepoSection.svelte";
   import { buildSections, commitChoices, findFile, findSection, resolveCommitTarget, selectableRows, splitSections } from "./changes/sections";
   import { changesSelection } from "./changes/selection.svelte";
@@ -118,9 +119,14 @@
       <span class="count">{repoStore.totalChanges}</span>
     {/if}
     <div class="spacer"></div>
-    <button class="icon-btn small" onclick={() => void repoStore.refreshAll()} title="Refresh" aria-label="Refresh">
-      <Icon name="refresh" size={13} />
-    </button>
+    {#if !multiRepo && sections[0]?.status}
+      <!-- One repository: its actions sit in the title bar, like VS Code's Source Control. -->
+      <RepoActions section={sections[0]} />
+    {:else}
+      <button class="icon-btn small" onclick={() => void repoStore.refreshAll()} title="Refresh All" aria-label="Refresh all">
+        <Icon name="refresh" size={13} />
+      </button>
+    {/if}
     <button class="icon-btn small" onclick={() => settings.setLeftPanel(null)} title="Hide (Cmd+B)" aria-label="Hide changes">
       <Icon name="x" size={14} />
     </button>
@@ -213,6 +219,7 @@
     height: 34px;
     padding: 0 6px 0 12px;
     border-bottom: 1px solid var(--border-strong);
+    container: repo-row / inline-size;
   }
 
   .title {

@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use git2::{Oid, Repository};
+use git2::{Commit, Oid, Repository};
 use serde::Serialize;
 
 use crate::error::{AppError, AppResult};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepoInfo {
     pub root: String,
@@ -13,6 +13,10 @@ pub struct RepoInfo {
     /// Repo root relative to the workspace root with `/` separators; "" for
     /// the workspace root itself or a repository enclosing it.
     pub relative_path: String,
+    /// A submodule of the repository enclosing it.
+    pub submodule: bool,
+    /// A linked work tree (`git worktree add`): its `.git` is a file.
+    pub worktree: bool,
 }
 
 /// Opens the repository whose work tree root is `repo_path`. Repositories
@@ -35,6 +39,8 @@ pub fn discover(path: &str) -> AppResult<RepoInfo> {
             .unwrap_or_else(|| root.to_string_lossy().into_owned()),
         root: strip_trailing_slash(&root),
         relative_path: String::new(),
+        submodule: false,
+        worktree: repo.is_worktree(),
     })
 }
 
@@ -84,4 +90,18 @@ pub fn bytes_to_text(bytes: Vec<u8>) -> Option<String> {
 
 pub fn path_text(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).into_owned()
+}
+
+/// The commit a user-given revision (HEAD, a branch, a tag, a hash) points at.
+pub fn resolve_commit<'repo>(repo: &'repo Repository, revision: &str) -> AppResult<Commit<'repo>> {
+    let revision = revision.trim();
+    if revision.is_empty() {
+        return Err(AppError::invalid("Enter a revision"));
+    }
+    if revision.starts_with('-') {
+        return Err(AppError::invalid(format!("Unknown revision: {revision}")));
+    }
+    repo.revparse_single(revision)
+        .and_then(|object| object.peel_to_commit())
+        .map_err(|_| AppError::invalid(format!("Unknown revision: {revision}")))
 }

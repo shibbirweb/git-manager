@@ -1,5 +1,7 @@
-/* Design tokens. Light is the default; dark follows the OS unless the user
-   picks a theme explicitly (data-theme on <html>). */
+/* Design tokens: the built-in Git Manager Light and Dark themes. Light is the
+   default; dark follows the OS unless data-theme on <html> says otherwise.
+   Other color themes (src/lib/themes/catalog.ts) override every color token
+   from one generated <style> element. */
 :root {
   --font-ui: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
   /* VS Code's default; the Settings dialog can change it. */
@@ -33,6 +35,32 @@
   --editor-line-number: #aeb3c2;
   --editor-active-line: #f5f8fe;
   --editor-selection: #a6d2ff;
+  /* These follow other tokens unless a color theme (src/lib/themes) sets them. */
+  --editor-cursor: var(--text);
+
+  --term-background: var(--editor-bg);
+  --term-foreground: var(--text);
+  --term-cursor: var(--text);
+  --term-selection: var(--editor-selection);
+  /* Integrated terminal ANSI colors (VS Code's light palette). */
+  --term-black: #000000;
+  --term-red: #cd3131;
+  --term-green: #00bc00;
+  --term-yellow: #949800;
+  --term-blue: #0451a5;
+  --term-magenta: #bc05bc;
+  --term-cyan: #0598bc;
+  --term-white: #555555;
+  --term-bright-black: #666666;
+  --term-bright-red: #cd3131;
+  --term-bright-green: #14ce14;
+  --term-bright-yellow: #b5ba00;
+  --term-bright-blue: #0451a5;
+  --term-bright-magenta: #bc05bc;
+  --term-bright-cyan: #0598bc;
+  --term-bright-white: #a5a5a5;
+  --term-scrollbar: rgba(108, 112, 126, 0.35);
+  --term-scrollbar-hover: rgba(108, 112, 126, 0.55);
 
   /* Diff and merge colors, JetBrains style. */
   --diff-modified: rgba(53, 116, 240, 0.13);
@@ -84,6 +112,25 @@
     --editor-active-line: #26282e;
     --editor-selection: #214283;
 
+    --term-black: #000000;
+    --term-red: #cd3131;
+    --term-green: #0dbc79;
+    --term-yellow: #e5e510;
+    --term-blue: #2472c8;
+    --term-magenta: #bc3fbc;
+    --term-cyan: #11a8cd;
+    --term-white: #e5e5e5;
+    --term-bright-black: #666666;
+    --term-bright-red: #f14c4c;
+    --term-bright-green: #23d18b;
+    --term-bright-yellow: #f5f543;
+    --term-bright-blue: #3b8eea;
+    --term-bright-magenta: #d670d6;
+    --term-bright-cyan: #29b8db;
+    --term-bright-white: #e5e5e5;
+    --term-scrollbar: rgba(140, 144, 153, 0.35);
+    --term-scrollbar-hover: rgba(140, 144, 153, 0.55);
+
     --diff-modified: rgba(53, 116, 240, 0.2);
     --diff-modified-edge: #4a78d6;
     --diff-added: rgba(84, 170, 84, 0.2);
@@ -132,6 +179,25 @@
   --editor-line-number: #4b5059;
   --editor-active-line: #26282e;
   --editor-selection: #214283;
+
+  --term-black: #000000;
+  --term-red: #cd3131;
+  --term-green: #0dbc79;
+  --term-yellow: #e5e510;
+  --term-blue: #2472c8;
+  --term-magenta: #bc3fbc;
+  --term-cyan: #11a8cd;
+  --term-white: #e5e5e5;
+  --term-bright-black: #666666;
+  --term-bright-red: #f14c4c;
+  --term-bright-green: #23d18b;
+  --term-bright-yellow: #f5f543;
+  --term-bright-blue: #3b8eea;
+  --term-bright-magenta: #d670d6;
+  --term-bright-cyan: #29b8db;
+  --term-bright-white: #e5e5e5;
+  --term-scrollbar: rgba(140, 144, 153, 0.35);
+  --term-scrollbar-hover: rgba(140, 144, 153, 0.55);
 
   --diff-modified: rgba(53, 116, 240, 0.2);
   --diff-modified-edge: #4a78d6;

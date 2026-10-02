@@ -7,6 +7,8 @@ import { compareVersions, isNewer, parseVersion } from "./version";
 export const REPOSITORY = "shibbirweb/git-manager";
 export const REPOSITORY_URL = `https://github.com/${REPOSITORY}`;
 export const RELEASES_URL = `${REPOSITORY_URL}/releases`;
+export const WIKI_URL = `${REPOSITORY_URL}/wiki`;
+export const SHORTCUTS_URL = `${WIKI_URL}/Keyboard-Shortcuts`;
 
 /** A new issue from the bug form, with the app version and platform filled in. */
 export function bugReportUrl(version: string | null, platform: string): string {
