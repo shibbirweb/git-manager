@@ -16,7 +16,8 @@ Everything is in `StatusBar.svelte`, which reads existing stores and one Tauri c
 flowchart LR
     subgraph Left
         R["Repository name"]
-        B["Branch, ahead and behind"]
+        B["Branch"]
+        Y["Sync or Publish"]
         C["Changes count"]
         X["Conflicts"]
         O["Operation in progress"]
@@ -68,7 +69,21 @@ flowchart LR
 
 `followOpenTab()` runs one `$effect`, set up by `Workspace.svelte`. While Auto is on and the screen shows a repository, it makes that repository active. It does not track the active repository itself, so picking one another way (the header menu, Set as Active Repository) holds until the tab changes. It waits while the merge tool or the Conflicts dialog is open, since `setActiveRepo` would close them.
 
-The left side reads the same answer: with Auto it describes the screen's repository (or says **No repository** for `outside`), without Auto it always describes `repoStore.repo`. Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the branch opens the Branches popup for that repository. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
+The left side reads the same answer: with Auto it describes the screen's repository (or says **No repository** for `outside`), without Auto it always describes `repoStore.repo`. Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the branch opens the Branches popup for that repository. The branch name is capped at 200 px with an ellipsis, and its button may shrink, so a long name never pushes the other items out of the bar. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
+
+### Sync
+
+After the branch comes VS Code's Synchronize Changes item. It is the same button as the Sync button of a repository row in Changes, so both use `rowSync`, `rowSyncBadge` and `rowSyncTooltip` from `views/changes/sync.ts` and run `syncFromRow` from `views/changes/repoActions.ts`:
+
+```mermaid
+flowchart TD
+    H["head of the context repository"] --> K{"rowSync(head)"}
+    K -->|"no branch or unborn"| N["Hidden"]
+    K -->|"no upstream"| P["cloud-upload icon:<br/>publishBranch"]
+    K -->|"upstream"| S["sync icon and 1↓ 2↑:<br/>syncRepo, or pull when in step"]
+```
+
+The icon spins while the click runs. The button is disabled while another operation is busy or a merge, rebase, cherry-pick or revert is in progress.
 
 While nothing else is busy, `repoStore.loadingChanges` shows "Reading changes 2 of 5" with a spinner (text from `loadingChangesText` in `stores/openingProgress.ts`), right after a folder opens. See [How workspaces work](How-Workspaces-Work.md).
 
@@ -87,6 +102,7 @@ The star button calls `updates.openRepository()`. The bug button opens a small m
 | File | What it does |
 | --- | --- |
 | `src/lib/views/StatusBar.svelte` | The bar: context repository, file details, update item, links, memory popover |
+| `src/lib/views/changes/sync.ts` | `rowSync`, the badge and tooltip of the Sync item (shared with Changes) |
 | `src/lib/views/repoSelection.ts` | `screenRepo` and `repoPickItems` (pure) |
 | `src/lib/views/repoSelection.svelte.ts` | `currentScreenRepo`, the Auto effect `followOpenTab` and `openRepoPicker` |
 | `src/lib/stores/editorStatus.svelte.ts` | Cursor and file details of the visible editor |
@@ -112,6 +128,7 @@ The status bar and Help bugs and their fixes are in [Status Bar Bugs We Fixed](S
 
 ## Tests
 
+- `src/lib/views/changes/sync.test.ts`: the Sync item's kind, badge and tooltip.
 - `src/lib/views/repoSelection.test.ts`: the screen's repository for file, commit, terminal and diff tabs, outside and active, and the picker items with Auto and the selected mark.
 - `src/lib/stores/settingsData.test.ts`: `activeRepoAuto` is validated and defaults to true.
 - `src/lib/stores/openingProgress.test.ts`: the Reading changes text.

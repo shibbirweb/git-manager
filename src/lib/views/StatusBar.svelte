@@ -1,7 +1,8 @@
 <!-- Bottom status bar: repository state on the left, app memory on the right. -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { openBranchPicker } from "./changes/repoActions";
+  import { openBranchPicker, syncFromRow } from "./changes/repoActions";
+  import { rowSync, rowSyncBadge, rowSyncTooltip } from "./changes/sync";
   import { gpuRenderers } from "$lib/terminal/gpuRenderers.svelte";
   import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
   import { probeWebgl } from "$lib/ui/webglProbe";
@@ -42,11 +43,24 @@
   const changes = $derived(contextStatus?.files.length ?? 0);
   const conflicts = $derived(contextStatus?.files.filter((file) => file.conflicted).length ?? 0);
   const op = $derived(contextStatus?.op ?? null);
+  // VS Code's Synchronize Changes item: sync with the upstream, or publish a branch without one.
+  const sync = $derived(rowSync(head));
+  const syncBadge = $derived(rowSyncBadge(sync));
+  let syncing = $state(false);
   /** A file tab is on screen and outside every repository. */
   const fileWithoutRepo = $derived(settings.activeRepoAuto && screen.kind === "outside");
   const fileInfo = $derived(
     shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
   );
+
+  async function runSync(repoRoot: string): Promise<void> {
+    syncing = true;
+    try {
+      await syncFromRow(repoRoot);
+    } finally {
+      syncing = false;
+    }
+  }
 
   async function showConflicts(): Promise<void> {
     await repoStore.openConflicts(contextRepo?.root);
@@ -148,17 +162,26 @@
       </button>
       {#if branch}
         <button
-          class="item"
+          class="item branch"
           onclick={() => openBranchPicker(contextRepo.root)}
           title="Branch {branch} of {contextRepo.name}. Click to check out another branch."
         >
           <Icon name="branch" size={12} />
-          <span>{branch}</span>
-          {#if head && (head.ahead > 0 || head.behind > 0)}
-            <span class="sync">
-              {#if head.behind > 0}{head.behind}<Icon name="arrow-down" size={10} />{/if}
-              {#if head.ahead > 0}{head.ahead}<Icon name="arrow-up" size={10} />{/if}
-            </span>
+          <span class="branch-name">{branch}</span>
+        </button>
+      {/if}
+      {#if sync.kind !== "hidden"}
+        <button
+          class="item"
+          class:spinning={syncing}
+          onclick={() => void runSync(contextRepo.root)}
+          disabled={repoStore.busy !== null || (op?.kind ?? "none") !== "none"}
+          title={rowSyncTooltip(sync)}
+          aria-label={sync.kind === "publish" ? "Publish Branch" : "Synchronize Changes"}
+        >
+          <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={12} />
+          {#if syncBadge}
+            <span>{syncBadge}</span>
           {/if}
         </button>
       {/if}
@@ -323,14 +346,36 @@
     cursor: pointer;
   }
 
-  button.item:hover,
+  button.item:hover:not(:disabled),
   .item.open {
     background: var(--hover);
     color: var(--text);
   }
 
-  .item.static {
+  .item.static,
+  button.item:disabled {
     cursor: default;
+  }
+
+  button.item:disabled:not(.spinning) {
+    opacity: 0.6;
+  }
+
+  /* A long branch name shrinks first and never pushes the other items away. */
+  .item.branch {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .branch-name {
+    min-width: 0;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .spinning :global(svg) {
+    animation: spin 0.8s linear infinite;
   }
 
   .item.icon-only {
@@ -354,13 +399,6 @@
 
   .gap {
     width: 6px;
-  }
-
-  .sync {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-    margin-left: 2px;
   }
 
   .spinner {

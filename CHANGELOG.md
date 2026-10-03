@@ -86,6 +86,7 @@ GitHub release notes, and the app shows it as "What's New".
 - The file editor header is one slim bar, like JetBrains: the path, its badges and icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch, so the code starts right under the tabs. Conflict actions get their own strip only while a file has conflicts, and the bar shortens the path instead of wrapping when the editor is narrow.
 - New editor defaults, like JetBrains: JetBrains Mono when it is installed (else Menlo) at 13 px, with line spacing 1.25. An existing settings.json keeps its saved values; Reset to Defaults picks up the new ones.
 - The terminal starts at 13 px with a line height of 1.2 (it was 12.5 px and 1.0); sizes you saved stay. The terminal panel header and list are slimmer, and the header has a Split Terminal button.
+- The status bar has a Sync item after the branch, like VS Code: it shows the commits to pull and push (such as 1↓ 2↑) and syncs on click, or publishes a branch that has no upstream. Long branch names are cut short so they no longer push the other items away.
 - Clicking the repository name in the status bar opens a Select a Repository list, like VS Code, instead of the Branches sidebar. Its Auto entry (the default) makes the active repository follow the open tab; picking a repository keeps it active.
 
 ### Fixed

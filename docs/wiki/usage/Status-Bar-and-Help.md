@@ -14,7 +14,8 @@ Like in VS Code, the left side describes the active repository, the one the side
   - **Auto** (the default) makes the active repository follow the open tab. Open a file, a diff, or a commit, branch or history tab, and its repository becomes the active one. A terminal tab picks the repository of its folder. The Log and an empty editor keep the active repository as it is.
   - Pick a repository to keep it active whatever tab is open. Pick **Auto** again to follow the tabs.
   - Each repository shows its branch, and its folder when that differs from its name. The current choice says **selected**.
-- **Branch**, with numbers for commits to pull (down arrow) and to push (up arrow), such as **main 1** and an up arrow. A checked-out commit shows as "detached" and its short hash. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
+- **Branch**. A checked-out commit shows as "detached" and its short hash. A long name is cut short with "..."; hover it for the full name. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
+- **Sync**, right after the branch, like VS Code. It shows the commits to pull and to push, such as **1↓ 2↑**. Click it to pull, then push. When nothing is waiting, a click pulls whatever the remote has. A branch that is not on the remote yet shows a cloud icon instead: click it to publish the branch (push it and track it). Hover it to see what a click will do.
 - **4 changes**: the number of changed files, hidden when there are none. Click it to open Changes.
 - **2 conflicts**, in red, while files are in conflict. Click it to open the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
 - A note such as **Merging feature into main** while a merge, rebase, cherry-pick or revert is in progress. See [Resolving Conflicts](Resolving-Conflicts.md).
