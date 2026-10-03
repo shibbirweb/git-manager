@@ -8,7 +8,7 @@ Every optional part has a switch in Settings, Terminal. A part that is off is no
 
 Split a terminal to see two shells side by side, for example a dev server next to your git commands.
 
-![Two split terminals with the list](../images/terminal-split.png)
+[TODO: screenshot terminal-split.png, two split terminals with the list (`bun scripts/screenshots.ts terminal-split`)]
 
 *Two split terminals side by side. In the list on the right, a thin line joins the split pair; the third terminal stands alone.*
 
@@ -28,7 +28,7 @@ Double-click a name in the terminal list, or the name in the header when there i
 
 Press **Cmd+F** in a terminal (Ctrl+Shift+F on Windows and Linux), or right-click and choose **Find...**. A small bar opens in the top right corner of the terminal.
 
-![The find bar over the terminal](../images/terminal-find.png)
+[TODO: screenshot terminal-find.png, the find bar over the terminal (`bun scripts/screenshots.ts terminal-find`)]
 
 *Find in the terminal: every match is highlighted, the current one stronger, with the count beside the field.*
 

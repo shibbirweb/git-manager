@@ -324,7 +324,7 @@
       "title": "Integrated terminal",
       "usage": "usage/Terminal.md",
       "developer": "developer/How-the-Terminal-Works.md",
-      "screenshots": ["terminal-panel.png", "terminal-shell-menu.png", "terminal-list.png", "terminal-editor-tab.png", "terminal-settings.png", "terminal-find.png", "terminal-split.png"]
+      "screenshots": ["terminal-panel.png", "terminal-shell-menu.png", "terminal-list.png", "terminal-editor-tab.png", "terminal-settings.png"]
     },
     {
       "id": "scripts",
