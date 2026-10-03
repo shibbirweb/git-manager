@@ -1,12 +1,45 @@
 <script lang="ts">
-  import { repoStore } from "$lib/stores/repo.svelte";
+  import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import { pickAndOpenRepo, pickAndOpenWorkspaceFile } from "./repoPicker";
+  import { contextMenu } from "$lib/ui/menu.svelte";
+  import type { RecentEntry } from "./recentEntries";
+  import { openRecent, openRecentInNewWindow, pickAndOpenRepo, pickAndOpenWorkspaceFile } from "./repoPicker";
   import { updates } from "$lib/update/updates.svelte";
+
+  const newWindowKey = platformFromUserAgent(navigator.userAgent) === "macos" ? "Cmd" : "Ctrl";
+  const newWindowHint = `${newWindowKey}+click to open in a new window`;
 
   function displayName(repoPath: string): string {
     return repoPath.split("/").filter(Boolean).pop() ?? repoPath;
+  }
+
+  function fileEntry(filePath: string): RecentEntry {
+    return { kind: "workspaceFile", label: displayName(filePath), hint: filePath, filePath };
+  }
+
+  function workspaceEntry(folderPaths: string[]): RecentEntry {
+    return { kind: "workspace", label: folderPaths.map(displayName).join(", "), hint: "", folderPaths };
+  }
+
+  function folderEntry(folderPath: string): RecentEntry {
+    return { kind: "folder", label: displayName(folderPath), hint: folderPath, folderPath };
+  }
+
+  /** Cmd+click (Ctrl+click outside macOS) opens it in a new window, like a link in a browser. */
+  function openEntry(event: MouseEvent, entry: RecentEntry): void {
+    if (event.metaKey || event.ctrlKey) {
+      void openRecentInNewWindow(entry);
+    } else {
+      void openRecent(entry);
+    }
+  }
+
+  function entryMenu(event: MouseEvent, entry: RecentEntry): void {
+    contextMenu.open(event, [
+      { label: "Open", action: () => void openRecent(entry) },
+      { label: "Open in New Window", action: () => void openRecentInNewWindow(entry) },
+    ]);
   }
 </script>
 
@@ -62,7 +95,12 @@
       <ul class="recent">
         {#each settings.recentWorkspaceFiles as file (file)}
           <li>
-            <button class="recent-item" onclick={() => repoStore.openWorkspaceFile(file)}>
+            <button
+              class="recent-item"
+              title={newWindowHint}
+              onclick={(event) => openEntry(event, fileEntry(file))}
+              oncontextmenu={(event) => entryMenu(event, fileEntry(file))}
+            >
               <span class="name">{displayName(file).replace(/\.(gitmanager|code)-workspace$/, "")}</span>
               <span class="path dim truncate">{file}</span>
             </button>
@@ -78,7 +116,12 @@
         {/each}
         {#each settings.recentWorkspaces as folders (folders.join("\n"))}
           <li>
-            <button class="recent-item" onclick={() => repoStore.openFolders(folders)}>
+            <button
+              class="recent-item"
+              title={newWindowHint}
+              onclick={(event) => openEntry(event, workspaceEntry(folders))}
+              oncontextmenu={(event) => entryMenu(event, workspaceEntry(folders))}
+            >
               <span class="name">{folders.map(displayName).join(", ")}</span>
               <span class="path dim truncate">{folders.length} folders</span>
             </button>
@@ -100,7 +143,12 @@
       <ul class="recent">
         {#each settings.recentRepos as repoPath (repoPath)}
           <li>
-            <button class="recent-item" onclick={() => repoStore.open(repoPath)}>
+            <button
+              class="recent-item"
+              title={newWindowHint}
+              onclick={(event) => openEntry(event, folderEntry(repoPath))}
+              oncontextmenu={(event) => entryMenu(event, folderEntry(repoPath))}
+            >
               <span class="name">{displayName(repoPath)}</span>
               <span class="path dim truncate">{repoPath}</span>
             </button>

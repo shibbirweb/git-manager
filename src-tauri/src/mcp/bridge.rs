@@ -24,10 +24,12 @@ pub struct Bridge {
 }
 
 impl Bridge {
-    /// Emits the request and waits for the answer; the request is forgotten on timeout.
+    /// Emits the request (to `window_label` only, when given) and waits for the answer; the
+    /// request is forgotten on timeout.
     pub fn call(
         &self,
         host: Option<&dyn Host>,
+        window_label: Option<&str>,
         tool_name: &str,
         arguments: &Map<String, Value>,
         timeout: Duration,
@@ -36,10 +38,11 @@ impl Bridge {
         let request_id = self.next_id.fetch_add(1, Ordering::Relaxed) + 1;
         let (sender, receiver) = mpsc::channel();
         lock(&self.pending).insert(request_id, sender);
-        host.emit(
-            "mcp-ui-request",
-            json!({ "requestId": request_id, "tool": tool_name, "arguments": arguments }),
-        );
+        let request = json!({ "requestId": request_id, "tool": tool_name, "arguments": arguments });
+        match window_label {
+            Some(label) => host.emit_to(label, "mcp-ui-request", request),
+            None => host.emit("mcp-ui-request", request),
+        }
         let answer = receiver.recv_timeout(timeout);
         lock(&self.pending).remove(&request_id);
         match answer {

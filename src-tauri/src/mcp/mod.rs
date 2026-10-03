@@ -52,12 +52,45 @@ pub struct Switches {
     pub tool_states: HashMap<String, bool>,
 }
 
+/// An app window as the tools see it: its label, title and canonical workspace folders.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct McpWindow {
+    pub label: String,
+    pub title: String,
+    pub folders: Vec<PathBuf>,
+}
+
+/// The window a UI tool acts on: the one holding a path argument (the deepest folder wins),
+/// else the window focused last, else the first one.
+pub fn pick_window(windows: &[McpWindow], focused: Option<&str>, paths: &[PathBuf]) -> Option<String> {
+    let mut best: Option<(&str, usize)> = None;
+    for path in paths {
+        for window in windows {
+            for folder in &window.folders {
+                let depth = folder.components().count();
+                if path.starts_with(folder) && best.is_none_or(|(_, best_depth)| depth > best_depth) {
+                    best = Some((window.label.as_str(), depth));
+                }
+            }
+        }
+    }
+    best.map(|(label, _)| label.to_string())
+        .or_else(|| focused.filter(|label| windows.iter().any(|window| window.label == *label)).map(str::to_string))
+        .or_else(|| windows.first().map(|window| window.label.clone()))
+}
+
+/// Arguments that name a file or folder; a UI tool goes to the window holding it.
+const PATH_ARGUMENTS: [&str; 4] = ["filePath", "path", "folderPath", "repoPath"];
+
 /// What the request threads share with the commands.
 pub struct Shared {
     host: RwLock<Option<Arc<dyn Host>>>,
     switches: RwLock<Switches>,
     ui_tools: RwLock<Vec<McpUiToolDef>>,
-    folders: RwLock<Vec<PathBuf>>,
+    /// Every open window, in the order they were opened.
+    windows: RwLock<Vec<McpWindow>>,
+    /// The window focused last (the app is rarely the active one while an agent calls it).
+    focused: RwLock<Option<String>>,
     token: RwLock<Option<String>>,
     activity: ActivityLog,
     bridge: Bridge,
@@ -70,7 +103,8 @@ impl Shared {
             host: RwLock::new(None),
             switches: RwLock::new(Switches::default()),
             ui_tools: RwLock::new(Vec::new()),
-            folders: RwLock::new(Vec::new()),
+            windows: RwLock::new(Vec::new()),
+            focused: RwLock::new(None),
             token: RwLock::new(None),
             activity: ActivityLog::default(),
             bridge: Bridge::default(),
@@ -86,8 +120,35 @@ impl Shared {
         read(&self.switches).clone()
     }
 
+    /// The folders of every window: tools may reach any folder open in the app.
     pub fn folders(&self) -> Vec<PathBuf> {
-        read(&self.folders).clone()
+        let mut folders: Vec<PathBuf> = Vec::new();
+        for window in read(&self.windows).iter() {
+            for folder in &window.folders {
+                if !folders.contains(folder) {
+                    folders.push(folder.clone());
+                }
+            }
+        }
+        folders
+    }
+
+    pub fn windows(&self) -> Vec<McpWindow> {
+        read(&self.windows).clone()
+    }
+
+    pub fn focused_window(&self) -> Option<String> {
+        read(&self.focused).clone()
+    }
+
+    /// The window a UI tool call goes to (see `pick_window`).
+    pub fn target_window(&self, arguments: &serde_json::Map<String, serde_json::Value>) -> Option<String> {
+        let paths: Vec<PathBuf> = PATH_ARGUMENTS
+            .iter()
+            .filter_map(|key| arguments.get(*key).and_then(serde_json::Value::as_str))
+            .filter_map(|path| paths::resolve(path).ok())
+            .collect();
+        pick_window(&self.windows(), self.focused_window().as_deref(), &paths)
     }
 
     pub fn ui_tools(&self) -> Vec<McpUiToolDef> {
@@ -328,8 +389,21 @@ impl Mcp {
         }
     }
 
+    /// One window with these folders (the tests).
+    #[cfg(test)]
     pub fn set_workspace(&self, folder_paths: &[String]) {
-        *write(&self.inner.shared.folders) = paths::canonical_folders(folder_paths);
+        let window = McpWindow {
+            label: crate::windows::MAIN_LABEL.to_string(),
+            title: String::new(),
+            folders: paths::canonical_folders(folder_paths),
+        };
+        self.set_windows(vec![window], None);
+    }
+
+    /// The open windows and the one focused last, after any of them changed.
+    pub fn set_windows(&self, windows: Vec<McpWindow>, focused: Option<String>) {
+        *write(&self.inner.shared.windows) = windows;
+        *write(&self.inner.shared.focused) = focused;
     }
 
     /// False when the request is unknown (already answered or timed out).
@@ -375,4 +449,74 @@ fn login_path() -> String {
         return std::env::var("PATH").unwrap_or_default();
     }
     crate::git::cli::user_path().clone()
+}
+
+#[cfg(test)]
+mod window_tests {
+    use std::path::PathBuf;
+    use std::time::Duration;
+
+    use serde_json::{json, Map, Value};
+
+    use super::{pick_window, Mcp, McpWindow};
+    use crate::test_support::TestDir;
+
+    fn window(label: &str, folders: &[&str]) -> McpWindow {
+        McpWindow {
+            label: label.to_string(),
+            title: label.to_string(),
+            folders: folders.iter().map(PathBuf::from).collect(),
+        }
+    }
+
+    #[test]
+    fn a_ui_tool_goes_to_the_window_holding_its_path_else_the_last_focused() {
+        let windows = vec![window("main", &["/work/mono"]), window("window-2", &["/work/mono/web", "/other"])];
+        let pick = |focused: Option<&str>, paths: &[&str]| {
+            let paths: Vec<PathBuf> = paths.iter().map(PathBuf::from).collect();
+            pick_window(&windows, focused, &paths)
+        };
+        assert_eq!(pick(None, &["/work/mono/web/a.ts"]).as_deref(), Some("window-2"), "the deepest folder wins");
+        assert_eq!(pick(Some("window-2"), &["/work/mono/b.ts"]).as_deref(), Some("main"));
+        assert_eq!(pick(Some("window-2"), &["/elsewhere"]).as_deref(), Some("window-2"));
+        assert_eq!(pick(Some("window-2"), &[]).as_deref(), Some("window-2"));
+        assert_eq!(pick(Some("gone"), &[]).as_deref(), Some("main"), "a closed window falls back to the first");
+        assert_eq!(pick_window(&[], Some("main"), &[]), None);
+    }
+
+    #[test]
+    fn tools_reach_the_folders_of_every_window_and_name_their_target() {
+        let config = TestDir::new();
+        let first = TestDir::new();
+        let second = TestDir::new();
+        let mcp = Mcp::for_test(config.path.join(".gitmanager"), Duration::from_secs(1));
+        mcp.set_windows(
+            vec![
+                McpWindow {
+                    label: "main".into(),
+                    title: "first".into(),
+                    folders: vec![first.path.clone()],
+                },
+                McpWindow {
+                    label: "window-2".into(),
+                    title: "second".into(),
+                    folders: vec![second.path.clone(), first.path.clone()],
+                },
+            ],
+            Some("main".into()),
+        );
+        assert_eq!(mcp.shared().folders(), vec![first.path.clone(), second.path.clone()], "the union, once each");
+        let arguments = |value: Value| -> Map<String, Value> { value.as_object().cloned().unwrap_or_default() };
+        let in_second = arguments(json!({ "filePath": second.file_string("new.txt") }));
+        assert_eq!(mcp.shared().target_window(&in_second).as_deref(), Some("window-2"));
+        assert_eq!(mcp.shared().target_window(&arguments(json!({ "line": 3 }))).as_deref(), Some("main"));
+        assert_eq!(
+            mcp.shared().target_window(&arguments(json!({ "filePath": "relative/path.txt" }))).as_deref(),
+            Some("main"),
+            "a relative path names no window"
+        );
+        mcp.set_windows(Vec::new(), None);
+        assert!(mcp.shared().folders().is_empty());
+        assert_eq!(mcp.shared().target_window(&in_second), None);
+    }
 }

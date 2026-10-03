@@ -99,6 +99,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Git > Show Reflog: where HEAD or a branch pointed before, with Show Commit, Checkout Revision, New Branch Here and Reset Current Branch to Here.
 - Git > Undo Last Action, and Undo in the toast after a commit, an amend, a reset or a checkout: takes back the last commit, amend, merge, pull, reset or checkout without losing local changes, and warns when the commit is already pushed. Deleting a branch offers Restore.
 - Git > Bisect: start with a bad and a good commit, mark commits good, bad or skipped from the banner, the menu or the Log, see about how many steps are left, and open the first bad commit once found. The Log marks good, bad and tested commits.
+- More than one window, like VS Code: File > New Window (Shift+Cmd+N), Open Folder in New Window, Cmd+click or right-click a recent folder on the welcome screen, and Close Window (Shift+Cmd+W, asks about unsaved edits). Opening a folder another window shows brings that window to the front. Each window has its own folders, tabs, terminals and menu state, its title is the workspace name (listed in the Window menu), settings changed in one window reach every window, and Settings > Layout > Reopen windows on start (on by default) brings back every window with its folders, size and position.
 - Git > Open Repository in Browser opens the web page of the repository's remote on any host (GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted); with several remotes, a list lets you choose.
 
 ### Changed

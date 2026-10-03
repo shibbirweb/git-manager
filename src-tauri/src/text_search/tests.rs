@@ -214,3 +214,26 @@ fn the_newest_search_id_wins() {
     assert_eq!(late.len(), 1);
     assert!(late[0].done && late[0].files.is_empty());
 }
+
+#[test]
+fn each_window_counts_its_own_search_ids() {
+    let dir = sample();
+    let roots = vec![dir.path_string()];
+    let searches = crate::file_search::WindowSearches::default();
+    assert!(searches.existing("main").is_none(), "nothing is made before a window searches");
+    let busy = Mutex::new(Vec::new());
+    searches
+        .window("main")
+        .search_text(&roots, 40, "cart", &TextSearchOptions::default(), &|batch| lock(&busy).push(batch));
+    // A window whose page counted fewer searches is not refused as "older".
+    let fresh = Mutex::new(Vec::new());
+    searches
+        .window("window-2")
+        .search_text(&roots, 1, "cart", &TextSearchOptions::default(), &|batch| lock(&fresh).push(batch));
+    assert_eq!(hits(&fresh.into_inner().unwrap()).len(), 3);
+    assert_eq!(searches.count(), 2);
+    searches.remove("window-2");
+    assert_eq!(searches.count(), 1);
+    assert!(searches.existing("window-2").is_none());
+    assert!(searches.existing("main").is_some());
+}

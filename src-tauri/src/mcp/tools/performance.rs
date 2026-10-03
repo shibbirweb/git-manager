@@ -34,7 +34,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "take_screenshot",
         title: "Screenshot",
-        description: "A PNG screenshot of the Git Manager window, even when other windows cover it. macOS only; macOS asks for Screen Recording permission the first time.",
+        description: "A PNG screenshot of the Git Manager window focused last, even when other windows cover it. macOS only; macOS asks for Screen Recording permission the first time.",
         category: PERFORMANCE,
         read_only: true,
         destructive: false,
@@ -147,7 +147,10 @@ fn png_size(bytes: &[u8]) -> Option<(u32, u32)> {
 
 fn take_screenshot(ctx: &ToolCtx, _args: &Args) -> ToolResult {
     let host = ctx.host().ok_or("The app window is not ready")?;
-    let png = host.screenshot_png()?;
+    let png = match ctx.shared.focused_window() {
+        Some(window_label) => host.screenshot_window_png(&window_label)?,
+        None => host.screenshot_png()?,
+    };
     let caption = match png_size(&png) {
         Some((width, height)) => format!("Screenshot of the Git Manager window, {width}x{height} pixels."),
         None => "Screenshot of the Git Manager window.".to_string(),
