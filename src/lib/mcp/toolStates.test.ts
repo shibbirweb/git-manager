@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { filterTools, groupTools, toolBadge, toolCountLabel, toolEnabled, withToolStates } from "./toolStates";
+import {
+  changedTools,
+  filterTools,
+  groupTools,
+  toolBadge,
+  toolCountLabel,
+  toolEnabled,
+  withDefaultStates,
+  withToolStates,
+} from "./toolStates";
 
 const status = { name: "git_status", title: "Git Status", description: "Shows the status.", category: "Git", readOnly: true, destructive: false };
 const send = { name: "send_terminal_text", title: "Send Text", description: "Types into a terminal.", category: "Terminal", readOnly: false, destructive: true };
@@ -26,6 +35,20 @@ describe("tool switches", () => {
     expect(withToolStates({}, [send], true)).toEqual({ send_terminal_text: true });
     expect(withToolStates({ send_terminal_text: true }, [send], false)).toEqual({});
     expect(withToolStates({ other: false }, [status, send], false)).toEqual({ other: false, git_status: false });
+  });
+
+  it("restore the defaults of the tools given and keep the rest", () => {
+    const states = { git_status: false, send_terminal_text: true, trash_paths: true, git_commit: false };
+    expect(changedTools(states, [status, send, open, trash]).map((tool) => tool.name)).toEqual([
+      "git_status",
+      "send_terminal_text",
+      "trash_paths",
+    ]);
+    expect(changedTools({ git_status: true, send_terminal_text: false }, [status, send])).toEqual([]);
+    expect(withDefaultStates(states, [status, send, open])).toEqual({ trash_paths: true, git_commit: false });
+    const restored = withDefaultStates(states, [status, send, trash, commit]);
+    expect(restored).toEqual({});
+    expect([status, send, trash, commit].map((tool) => toolEnabled(tool, restored))).toEqual([true, false, false, true]);
   });
 });
 

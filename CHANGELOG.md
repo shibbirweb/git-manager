@@ -101,6 +101,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Git > Bisect: start with a bad and a good commit, mark commits good, bad or skipped from the banner, the menu or the Log, see about how many steps are left, and open the first bad commit once found. The Log marks good, bad and tested commits.
 - More than one window, like VS Code: File > New Window (Shift+Cmd+N), Open Folder in New Window, Cmd+click or right-click a recent folder on the welcome screen, and Close Window (Shift+Cmd+W, asks about unsaved edits). Opening a folder another window shows brings that window to the front. Each window has its own folders, tabs, terminals and menu state, its title is the workspace name (listed in the Window menu), settings changed in one window reach every window, and Settings > Layout > Reopen windows on start (on by default) brings back every window with its folders, size and position.
 - Git > Open Repository in Browser opens the web page of the repository's remote on any host (GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted); with several remotes, a list lets you choose.
+- Restore Defaults in Help > Available MCP Tools puts the tool switches back to how they start: destructive tools off, every other tool on (only the tools the filter shows).
 
 ### Changed
 
