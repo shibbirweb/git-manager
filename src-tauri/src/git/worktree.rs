@@ -1,8 +1,10 @@
-//! Linked work trees (`git worktree`): listed from `git worktree list
-//! --porcelain`, changed through the git CLI.
+//! Linked work trees (`git worktree`): listed by reading the repository's
+//! `worktrees/` folder the way `git worktree list --porcelain` does (no git
+//! process per refresh), changed through the git CLI.
 
 use std::path::{Path, PathBuf};
 
+use git2::{Oid, Repository};
 use serde::Serialize;
 
 use super::cli;
@@ -55,7 +57,8 @@ fn non_empty(text: &str) -> Option<String> {
 
 /// Parses `git worktree list --porcelain`: blank-line separated records of
 /// `worktree <path>`, `HEAD <id>`, `branch <ref>`, `detached`, `bare`,
-/// `locked [reason]` and `prunable [reason]`.
+/// `locked [reason]` and `prunable [reason]`. The tests check `list` against it.
+#[cfg(test)]
 pub fn parse_porcelain(text: &str) -> Vec<WorktreeInfo> {
     let mut list: Vec<WorktreeInfo> = Vec::new();
     for line in text.lines() {
@@ -95,10 +98,79 @@ fn same_path(left: &Path, right: &Path) -> bool {
     canonical(left) == canonical(right)
 }
 
-/// Every work tree of the repository at `repo_path`, the current one marked.
+/// `git worktree list` reasons, word for word.
+const PRUNABLE_MISSING: &str = "gitdir file points to non-existent location";
+
+/// `(head, branch, detached)` from a HEAD file: a branch (born or not) or a detached commit.
+fn read_head(repo: &Repository, head_file: &Path) -> (Option<String>, Option<String>, bool) {
+    let text = std::fs::read_to_string(head_file).unwrap_or_default();
+    let text = text.trim();
+    if let Some(target) = text.strip_prefix("ref:") {
+        let target = target.trim();
+        let head = repo.refname_to_id(target).ok().map(|oid| oid.to_string());
+        return (head, non_empty(target.trim_start_matches("refs/heads/")), false);
+    }
+    let head = Oid::from_str(text).ok().filter(|oid| !oid.is_zero()).map(|oid| oid.to_string());
+    (head, None, true)
+}
+
+/// The main work tree: the common git dir without its `/.git` (the git dir itself when bare).
+fn main_worktree(repo: &Repository, common_dir: &Path) -> WorktreeInfo {
+    let real = common_dir.canonicalize().unwrap_or_else(|_| common_dir.to_path_buf());
+    let path = if real.file_name().is_some_and(|name| name == ".git") {
+        real.parent().map(Path::to_path_buf).unwrap_or(real)
+    } else {
+        real
+    };
+    let mut info = WorktreeInfo::new(&path.to_string_lossy(), true);
+    // Read from a linked work tree, a bare main repository is known from its config.
+    let bare_config = repo.config().ok().and_then(|config| config.get_bool("core.bare").ok()).unwrap_or(false);
+    info.bare = repo.is_bare() || bare_config;
+    if !info.bare {
+        (info.head, info.branch, info.detached) = read_head(repo, &common_dir.join("HEAD"));
+    }
+    info
+}
+
+/// A linked work tree from `<common dir>/worktrees/<name>`; None when its
+/// gitdir file is missing or empty, which git skips too.
+fn linked_worktree(repo: &Repository, admin_dir: &Path) -> Option<WorktreeInfo> {
+    let gitdir = std::fs::read_to_string(admin_dir.join("gitdir")).ok()?;
+    let gitdir = gitdir.trim_end();
+    if gitdir.is_empty() {
+        return None;
+    }
+    // Newer git can write the path relative to the admin folder (worktree.useRelativePaths).
+    let dot_git = if Path::new(gitdir).is_absolute() {
+        PathBuf::from(gitdir)
+    } else {
+        let joined = admin_dir.join(gitdir);
+        joined.canonicalize().unwrap_or(joined)
+    };
+    let dot_git_text = dot_git.to_string_lossy();
+    let path = dot_git_text.strip_suffix("/.git").unwrap_or(&dot_git_text);
+    let mut info = WorktreeInfo::new(path, false);
+    (info.head, info.branch, info.detached) = read_head(repo, &admin_dir.join("HEAD"));
+    if let Ok(reason) = std::fs::read_to_string(admin_dir.join("locked")) {
+        info.locked = true;
+        info.lock_reason = non_empty(&reason);
+    } else if !dot_git.exists() {
+        info.prunable = true;
+        info.prunable_reason = Some(PRUNABLE_MISSING.to_string());
+    }
+    Some(info)
+}
+
+/// Every work tree of the repository at `repo_path`, the current one marked:
+/// the main one first, then the linked ones by name.
 pub fn list(repo_path: &str) -> AppResult<Vec<WorktreeInfo>> {
-    let output = cli::run(Path::new(repo_path), &["worktree", "list", "--porcelain"])?;
-    let mut list = parse_porcelain(&output.stdout);
+    let repo = Repository::open(repo_path)?;
+    let common_dir = repo.commondir().to_path_buf();
+    let mut names: Vec<String> = repo.worktrees()?.iter().flatten().flatten().map(str::to_string).collect();
+    names.sort();
+    let mut list = vec![main_worktree(&repo, &common_dir)];
+    let admin_root = common_dir.join("worktrees");
+    list.extend(names.iter().filter_map(|name| linked_worktree(&repo, &admin_root.join(name))));
     for worktree in &mut list {
         worktree.is_current = same_path(Path::new(&worktree.path), Path::new(repo_path));
     }
@@ -217,7 +289,7 @@ pub fn has_changes(worktree_path: &str) -> AppResult<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_support::{git_in, TestRepo};
+    use crate::test_support::{git_in, BareRemote, TestRepo};
 
     #[test]
     fn parses_every_porcelain_field() {
@@ -300,6 +372,82 @@ mod tests {
         prune(&main).unwrap();
         assert_eq!(super::list(&main).unwrap().len(), 1);
         git_in(&repo.path, &["branch", "-D", "feature"]);
+    }
+
+    /// What `git worktree list --porcelain` says, marked like `list`, the linked ones by path.
+    fn list_from_cli(repo_path: &Path) -> Vec<WorktreeInfo> {
+        let mut list = parse_porcelain(&git_in(repo_path, &["worktree", "list", "--porcelain"]));
+        for worktree in &mut list {
+            worktree.is_current = same_path(Path::new(&worktree.path), repo_path);
+        }
+        list[1..].sort_by(|left, right| left.path.cmp(&right.path));
+        list
+    }
+
+    fn list_sorted(repo_path: &Path) -> Vec<WorktreeInfo> {
+        let mut list = list(&repo_path.to_string_lossy()).unwrap();
+        list[1..].sort_by(|left, right| left.path.cmp(&right.path));
+        list
+    }
+
+    #[test]
+    fn list_matches_git_worktree_list() {
+        let repo = TestRepo::new();
+        repo.write("a.txt", "a\n");
+        repo.commit_all("base");
+        let main = repo.path_string();
+        let feature = add(&main, &sibling(&repo, "wt-feature"), &WorktreeBranch::New { branch_name: "feature".into(), base_ref: "main".into() }).unwrap();
+        let detached = add(&main, &sibling(&repo, "wt-detached"), &WorktreeBranch::Detached { base_ref: "HEAD".into() }).unwrap();
+        let gone = add(&main, &sibling(&repo, "wt-gone"), &WorktreeBranch::New { branch_name: "gone".into(), base_ref: "main".into() }).unwrap();
+        let locked_gone = add(&main, &sibling(&repo, "wt-locked"), &WorktreeBranch::New { branch_name: "locked".into(), base_ref: "main".into() }).unwrap();
+        lock(&main, &feature, Some("on a usb disk")).unwrap();
+        lock(&main, &locked_gone, None).unwrap();
+        std::fs::remove_dir_all(&gone).unwrap();
+        std::fs::remove_dir_all(&locked_gone).unwrap();
+        // An unborn branch checked out in a work tree.
+        git_in(Path::new(&detached), &["checkout", "-q", "--orphan", "fresh"]);
+
+        let expected = list_from_cli(&repo.path);
+        assert_eq!(expected.len(), 5, "{expected:?}");
+        assert_eq!(list_sorted(&repo.path), expected);
+        let by_path = |path: &str| expected.iter().find(|worktree| same_path(Path::new(&worktree.path), Path::new(path))).unwrap();
+        assert!(by_path(&gone).prunable && !by_path(&locked_gone).prunable);
+        assert_eq!(by_path(&feature).lock_reason.as_deref(), Some("on a usb disk"));
+        assert_eq!(by_path(&detached).branch.as_deref(), Some("fresh"));
+        assert!(by_path(&detached).head.is_none());
+
+        // Read from a linked work tree, that one is current.
+        assert_eq!(list_sorted(Path::new(&feature)), list_from_cli(Path::new(&feature)));
+        // A detached HEAD.
+        git_in(Path::new(&feature), &["checkout", "-q", "--detach"]);
+        assert_eq!(list_sorted(&repo.path), list_from_cli(&repo.path));
+    }
+
+    #[test]
+    fn list_matches_git_for_a_bare_repository_and_its_work_trees() {
+        let remote = BareRemote::new();
+        let seed = TestRepo::new();
+        seed.write("a.txt", "a\n");
+        seed.commit_all("base");
+        seed.git(&["push", "-q", &remote.path_string(), "main"]);
+        let linked = remote.path.parent().unwrap().join("bare-linked").to_string_lossy().into_owned();
+        git_in(&remote.path, &["worktree", "add", "-q", &linked, "main"]);
+
+        let from_bare = list_from_cli(&remote.path);
+        assert!(from_bare[0].bare && from_bare[0].head.is_none(), "{from_bare:?}");
+        assert_eq!(list_sorted(&remote.path), from_bare);
+        let from_linked = list_from_cli(Path::new(&linked));
+        assert!(from_linked[0].bare);
+        assert_eq!(list_sorted(Path::new(&linked)), from_linked);
+    }
+
+    #[test]
+    fn list_of_an_unborn_repository_without_work_trees() {
+        let repo = TestRepo::new();
+        let expected = list_from_cli(&repo.path);
+        assert_eq!(expected.len(), 1);
+        assert_eq!(expected[0].branch.as_deref(), Some("main"));
+        assert_eq!(list_sorted(&repo.path), expected);
     }
 
     #[test]

@@ -1,4 +1,8 @@
-use git2::{BranchType, Repository};
+use std::hash::{DefaultHasher, Hash, Hasher};
+use std::path::Path;
+use std::time::UNIX_EPOCH;
+
+use git2::{BranchType, Oid, Repository};
 use serde::Serialize;
 
 use super::repo::short_id;
@@ -32,6 +36,58 @@ pub struct Refs {
     pub remote: Vec<RemoteBranch>,
     pub tags: Vec<String>,
     pub remotes: Vec<String>,
+}
+
+/// A ref's name, direct target and symbolic target, as the fingerprint hashes it.
+type RefTarget = (Vec<u8>, Option<Oid>, Option<Vec<u8>>);
+
+/// Modification time (ns) and size of a file, or None when it is missing.
+fn file_stamp(path: &Path) -> Option<(u128, u64)> {
+    let metadata = std::fs::metadata(path).ok()?;
+    let modified = metadata.modified().ok()?.duration_since(UNIX_EPOCH).ok()?.as_nanos();
+    Some((modified, metadata.len()))
+}
+
+/// A fingerprint of everything the Branches sidebar reads for a repository:
+/// every ref and HEAD (branches, ahead/behind, tags), the stash list, the
+/// config (remotes, upstreams) and the linked work trees. The same
+/// fingerprint means `read`, the stashes, the remotes and the work tree list
+/// are unchanged, so a refresh after staging a file reads none of them.
+pub fn fingerprint(repo: &Repository) -> String {
+    let mut hasher = DefaultHasher::new();
+    let mut targets: Vec<RefTarget> = Vec::new();
+    if let Ok(references) = repo.references() {
+        for reference in references.flatten() {
+            let symbolic = reference.symbolic_target_bytes().map(<[u8]>::to_vec);
+            targets.push((reference.name_bytes().to_vec(), reference.target(), symbolic));
+        }
+    }
+    targets.sort_unstable_by(|left, right| left.0.cmp(&right.0));
+    targets.hash(&mut hasher);
+    if let Ok(head) = repo.find_reference("HEAD") {
+        head.symbolic_target_bytes().hash(&mut hasher);
+        head.target().hash(&mut hasher);
+    }
+    repo.head().ok().and_then(|head| head.target()).hash(&mut hasher);
+    let common_dir = repo.commondir();
+    // Dropping an older stash only rewrites the reflog that lists them.
+    file_stamp(&common_dir.join("logs/refs/stash")).hash(&mut hasher);
+    file_stamp(&common_dir.join("config")).hash(&mut hasher);
+    file_stamp(&repo.path().join("config.worktree")).hash(&mut hasher);
+    let mut admin_dirs: Vec<_> = std::fs::read_dir(common_dir.join("worktrees"))
+        .map(|entries| entries.flatten().map(|entry| entry.path()).collect())
+        .unwrap_or_default();
+    admin_dirs.sort();
+    for admin_dir in admin_dirs {
+        admin_dir.hash(&mut hasher);
+        for name in ["HEAD", "locked", "gitdir"] {
+            std::fs::read(admin_dir.join(name)).ok().hash(&mut hasher);
+        }
+        // A deleted work tree folder makes the entry prunable.
+        let gitdir = std::fs::read_to_string(admin_dir.join("gitdir")).unwrap_or_default();
+        Path::new(gitdir.trim_end()).exists().hash(&mut hasher);
+    }
+    format!("{:016x}", hasher.finish())
 }
 
 pub fn read(repo: &Repository) -> AppResult<Refs> {
