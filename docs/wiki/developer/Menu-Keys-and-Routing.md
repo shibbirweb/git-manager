@@ -49,6 +49,23 @@ The Windows and Linux builds are not out yet, so the order of page and menu ther
 - Undo, Redo and Select All get no accelerator outside macOS, so Ctrl+Z and Ctrl+A stay with the page and the shell in the terminal.
 - The Git menu keys (Cmd+K, Cmd+T, Cmd+9, Option+Cmd+A) are macOS only, because Ctrl+K and Ctrl+T belong to the shell. Next Tab and Previous Tab use Ctrl+PageDown and Ctrl+PageUp there, since Ctrl+Shift+] and [ fold code.
 
+## The Keyboard Shortcuts window
+
+Help > Keyboard Shortcuts sets `helpDialogs.shortcutsOpen`, and `App.svelte` loads `ShortcutsDialog.svelte` only then. Its rows come from `shortcutSections` in `help/shortcuts.ts`:
+
+```mermaid
+flowchart LR
+  Spec["menuSpec(platform, 'app')"] --> Menu["menuShortcuts: every item<br/>with an accelerator"]
+  Extra["extraShortcuts: double Shift,<br/>F7, terminal, Markdown..."] --> All["shortcutSections"]
+  Menu --> All
+  All --> Filter["filterShortcuts(filter)"]
+  Filter --> Dialog["ShortcutsDialog.svelte"]
+```
+
+Menu rows are read from the menu bar's own data, so they cannot drift from the real keys. `formatKeys` writes an accelerator the platform's way ("⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere). Shortcuts no menu shows are listed by hand in `extraShortcuts`, per platform where keys differ. **Open Online Version** opens `SHORTCUTS_URL`, the wiki's [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md) page.
+
+`src/lib/help/shortcuts.test.ts` covers macOS and other key spelling, every menu accelerator listed, the extra shortcuts, the tab keys per platform, the Bold row and the filter. A shortcut no menu shows goes in `extraShortcuts`, and on [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md).
+
 ## Design decisions
 
 **Cmd+W never closes the main window.** It is Close Tab and does nothing without a tab. In the mergetool window, Window > Close Window (Cmd+W) asks before it drops the merge result.

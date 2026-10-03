@@ -39,6 +39,7 @@
   import StatusBar from "./StatusBar.svelte";
   import Sidebar from "./Sidebar.svelte";
   import { openFileSearch, runWorkspaceShortcut } from "./workspaceActions";
+  import { followOpenTab } from "./repoSelection.svelte";
   import { workspaceShortcut } from "./workspaceShortcuts";
 
   const MIN_PANEL = 200;
@@ -77,6 +78,9 @@
     void repoStore.repos;
     untrack(() => changesSelection.sync());
   });
+
+  // With Auto (status bar repository picker), the active repository follows the open tab.
+  followOpenTab();
 
   // A new workspace starts with nothing selected and an empty Back / Forward history.
   $effect(() => {

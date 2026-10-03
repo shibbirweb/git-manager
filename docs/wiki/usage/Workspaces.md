@@ -82,7 +82,7 @@ You can switch it in several places:
 - The repository dropdown in the header. It only appears when the workspace holds more than one repository, or when the repository is not the folder itself. Its last entry is **Scan for Repositories**.
 - In **Changes**, the folder icon on a repository header (also in the **No Changes** list), or right-click the header and choose **Set as Active Repository**.
 - In the **Files panel**, right-click a repository folder and choose **Set as Active Repository**.
-- In the **status bar**, click the repository name of the file you are looking at.
+- In the **status bar**, click the repository name to open **Select a Repository**. Its **Auto** entry (on by default) makes the active repository follow the open tab, so opening a file of another repository makes that one active. Picking a repository there turns Auto off. See [Status Bar and Help](Status-Bar-and-Help.md).
 
 Git Manager remembers the active repository for each workspace. Opening the conflicts of another repository, from Changes or the status bar, makes that one active too.
 

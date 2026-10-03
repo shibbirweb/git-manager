@@ -125,6 +125,7 @@ The other Layout choices are in `state.json`, below.
 | `lastSession`, `lastSessionFile` | `[]`, null | strings | `sessionSteps` |
 | `lastRunVersion`, `skippedVersion` | null | strings | What's New, update check |
 | `activeRepos` | `{}` | folder to repository root | `stores/repo.svelte.ts` |
+| `activeRepoAuto` | true | boolean | Status bar repository picker (`views/repoSelection.svelte.ts`) |
 | `scriptNodeVersions` | `{}` | `package.json` path to a bin folder or `"default"`, the newest 200 | Scripts panel |
 | `explorerOpen` | true | boolean | Files panel |
 | `leftBarVisible`, `rightBarVisible` | true | boolean | `Workspace.svelte`, `Header.svelte`, View menu |

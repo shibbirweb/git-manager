@@ -8,15 +8,18 @@ The status bar is the thin line at the bottom of the window. It tells you where 
 
 ## The left side: where you are
 
-Like in VS Code, the left side follows what is on screen. When a file tab or a diff is showing, it describes that file's repository. A commit, branch or history tab describes its repository, and a terminal tab the repository of its folder. Otherwise it describes the active repository.
+Like in VS Code, the left side describes the active repository, the one the sidebars and the Git menu work on.
 
-- **Repository name**. Hover it for the full path. Click it to make that repository the active one and open the Branches sidebar.
+- **Repository name**. Hover it for the full path. Click it to open **Select a Repository**, a list you can filter by typing:
+  - **Auto** (the default) makes the active repository follow the open tab. Open a file, a diff, or a commit, branch or history tab, and its repository becomes the active one. A terminal tab picks the repository of its folder. The Log and an empty editor keep the active repository as it is.
+  - Pick a repository to keep it active whatever tab is open. Pick **Auto** again to follow the tabs.
+  - Each repository shows its branch, and its folder when that differs from its name. The current choice says **selected**.
 - **Branch**, with numbers for commits to pull (down arrow) and to push (up arrow), such as **main 1** and an up arrow. A checked-out commit shows as "detached" and its short hash. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
 - **4 changes**: the number of changed files, hidden when there are none. Click it to open Changes.
 - **2 conflicts**, in red, while files are in conflict. Click it to open the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
 - A note such as **Merging feature into main** while a merge, rebase, cherry-pick or revert is in progress. See [Resolving Conflicts](Resolving-Conflicts.md).
 
-For a file tab that is outside any repository it says **No repository**. In a folder without git it shows the folder name.
+With Auto, a file tab that is outside any repository says **No repository**; click it to pick a repository. In a folder without git it shows the folder name.
 
 ## The right side: the file and the app
 
@@ -34,25 +37,11 @@ Always on the right:
 - **Reading changes 2 of 5** with a spinner, right after a folder opens, while the changes of each repository load. You can already work. See [Workspaces](Workspaces.md).
 - A star: opens the project on GitHub, where you can star it.
 - A bug icon: the feedback menu (below).
-- **Memory**, such as **Memory 597 MB**: how much memory Git Manager uses right now.
+- **Memory**, such as **Memory 597 MB**: how much memory Git Manager uses right now. See [Memory Use](Memory-Use.md).
 
 ## Memory use
 
-Git Manager is built to stay light, and the memory readout lets you see that for yourself. It shows physical memory as Activity Monitor counts it. That includes the helper processes macOS runs for the app's web view, which draws the interface.
-
-Click **Memory** for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphics** and **Networking**, each with its size and a bar. Below them, **GPU acceleration** answers two questions. **Terminals use the GPU** says yes (and in how many terminals) or no with the reason: turned off in Settings, font ligatures on, or the GPU failed and the terminal fell back to normal drawing. **WebGL support** says whether the web view can use the GPU for that at all, and names the graphics chip. The window itself always draws with the GPU through macOS; that is the Graphics row. GPU drawing in terminals is smoother and lighter on the CPU with a lot of output, at a few MB of GPU memory per terminal; turn it off in Settings, Terminal if you see drawing glitches or want font ligatures. Opening it measures again at once. Press Esc or click elsewhere to close it.
-
-The number updates every few seconds while the window is visible, and stops while it is hidden. When the app was started from a Terminal, the helpers are matched by their start time, and the breakdown says so.
-
-### The memory log
-
-To find out what makes memory grow, turn on **Settings, Automation, Memory log, Log memory changes**. While it is on, Git Manager reads its memory every **Read memory every** (250 ms, 500 ms, 1 s or 2 s; 500 ms by default) and writes a line whenever the total changed by **Write a line when it changes by** (0, 1, 5 or 20 MB; 5 MB by default; 0 writes every reading). It also notes what was on screen and when scrolling started and stopped.
-
-![Memory log settings](../images/memory-log-settings.png)
-
-*Settings, Automation, Memory log, with the path of the log file.*
-
-The file is `~/.gitmanager/logs/memory.log`. **Reveal in Finder** shows it. A line looks like `2026-10-02T04:20:31.512Z total 400.0 MB (+50.0) | Web content 300.0 | ...`, with times in UTC. Past 5 MB the log starts over and keeps the previous one as `memory.log.1`. AI tools can read it with the `read_memory_log` tool (see [MCP Server and Command Line Tool](MCP-and-CLI.md)). Turn it off when you are done: off, nothing runs.
+**Memory** on the right shows how much memory Git Manager uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
 
 ## The Help menu
 
@@ -103,6 +92,7 @@ Short notes appear at the bottom right for a few seconds when something finishes
 
 ## Related
 
+- [Memory Use](Memory-Use.md)
 - [Updates](Updates.md)
 - [Settings](Settings.md)
 - [Troubleshooting](Troubleshooting.md)

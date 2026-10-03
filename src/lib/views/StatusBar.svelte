@@ -6,21 +6,15 @@
   import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
   import { probeWebgl } from "$lib/ui/webglProbe";
   import { api } from "$lib/api";
-  import { parseCommitTabPath } from "$lib/stores/commitTabs";
-  import { parseGitTabPath } from "$lib/stores/gitTabs";
-  import { parseBranchTabPath } from "$lib/stores/branchTabs";
-  import { isPseudoTab } from "$lib/stores/pseudoTabs";
   import { loadingChangesText } from "$lib/stores/openingProgress";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
-  import { locateAbsolute, repoForPath } from "$lib/stores/workspacePaths";
-  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
-  import { parseTerminalTabPath } from "$lib/terminal/terminalTabs";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { changesSelection } from "./changes/selection.svelte";
+  import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
   import { updates } from "$lib/update/updates.svelte";
 
   const POLL_MS = 5000;
@@ -29,29 +23,16 @@
   let detailsOpen = $state(false);
   let memoryEl = $state<HTMLDivElement | null>(null);
 
-  // Like VS Code, the left side follows what is on screen: the repository of
-  // the visible file tab or diff, else the active repository.
+  // Like VS Code, the left side describes the active repository. With Auto (the
+  // default) that follows the open tab, and a file outside every repository says so.
   const shownView = $derived(changesSelection.shownView);
+  const screen = $derived(currentScreenRepo());
   const contextRepo = $derived.by(() => {
-    if (shownView === "file" && repoStore.openFilePath) {
-      const commit =
-        parseCommitTabPath(repoStore.openFilePath) ??
-        parseGitTabPath(repoStore.openFilePath) ??
-        parseBranchTabPath(repoStore.openFilePath);
-      if (commit) {
-        return repoStore.repos.find((repo) => repo.root === commit.repoRoot) ?? null;
-      }
-      const terminalKey = parseTerminalTabPath(repoStore.openFilePath);
-      if (terminalKey !== null) {
-        // A terminal belongs to the repository of its folder, else the active one.
-        const cwd = terminalStore.find(terminalKey)?.cwd ?? null;
-        return (cwd ? repoForPath(repoStore.repos, cwd) : null) ?? repoStore.repo;
-      }
-      return locateAbsolute(repoStore.repos, repoStore.openFilePath)?.repo ?? null;
+    if (settings.activeRepoAuto && screen.kind === "repo") {
+      return repoStore.repos.find((repo) => repo.root === screen.repoRoot) ?? null;
     }
-    if (shownView === "diff" && changesSelection.selected) {
-      const root = changesSelection.selected.repoRoot;
-      return repoStore.repos.find((repo) => repo.root === root) ?? null;
+    if (settings.activeRepoAuto && screen.kind === "outside") {
+      return null;
     }
     return repoStore.repo;
   });
@@ -62,20 +43,10 @@
   const conflicts = $derived(contextStatus?.files.filter((file) => file.conflicted).length ?? 0);
   const op = $derived(contextStatus?.op ?? null);
   /** A file tab is on screen and outside every repository. */
-  const fileWithoutRepo = $derived(
-    shownView === "file" && repoStore.openFilePath !== null && !isPseudoTab(repoStore.openFilePath) && contextRepo === null,
-  );
+  const fileWithoutRepo = $derived(settings.activeRepoAuto && screen.kind === "outside");
   const fileInfo = $derived(
     shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
   );
-
-  /** Clicking the repository or branch makes it active, then shows branches. */
-  async function showBranches(): Promise<void> {
-    if (contextRepo && contextRepo.root !== repoStore.repo?.root) {
-      await repoStore.setActiveRepo(contextRepo.root);
-    }
-    settings.setLeftPanel("branches");
-  }
 
   async function showConflicts(): Promise<void> {
     await repoStore.openConflicts(contextRepo?.root);
@@ -169,8 +140,8 @@
     {#if contextRepo}
       <button
         class="item"
-        onclick={() => void showBranches()}
-        title="Repository {contextRepo.root}{contextRepo.root === repoStore.repo?.root ? ' (active)' : '. Click to make it active'}"
+        onclick={() => void openRepoPicker()}
+        title="Repository {contextRepo.root}{settings.activeRepoAuto ? ' (Auto)' : ''}. Click to select a repository."
       >
         <Icon name="folder-git" size={12} />
         <span>{contextRepo.name}</span>
@@ -207,7 +178,13 @@
         <span class="item static op">{op.description}</span>
       {/if}
     {:else if fileWithoutRepo}
-      <span class="item static" title="This file is not inside a git repository"><Icon name="folder" size={12} /> No repository</span>
+      {#if repoStore.repos.length > 0}
+        <button class="item" onclick={() => void openRepoPicker()} title="This file is not inside a git repository. Click to select a repository.">
+          <Icon name="folder" size={12} /> No repository
+        </button>
+      {:else}
+        <span class="item static" title="This file is not inside a git repository"><Icon name="folder" size={12} /> No repository</span>
+      {/if}
     {:else if repoStore.workspace}
       <span class="item static"><Icon name="folder" size={12} /> {repoStore.workspace.name}</span>
     {/if}
