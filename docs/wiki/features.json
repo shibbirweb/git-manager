@@ -64,6 +64,7 @@
     { "page": "developer/How-Terminal-Features-Work.md", "summary": "Split groups, find, file links, drops and the terminal addons, each lazy and switchable." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
+    { "page": "developer/Git-Menu-Links.md", "summary": "How Open Repository in Browser and the GitHub link items turn remote URLs into web pages." },
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },

@@ -122,6 +122,7 @@ export const MENU_ACTIONS = [
   "git.lfs.prune",
   "git.lfs.install",
   "git.manageRemotes",
+  "git.openRemote",
   "git.clone",
   "git.github.open",
   "git.github.createPullRequest",

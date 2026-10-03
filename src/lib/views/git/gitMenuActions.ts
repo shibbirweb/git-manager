@@ -23,6 +23,7 @@ import { currentGitFile, fileStatusOf } from "./gitMenuInputs";
 import { rollbackPaths, updatePlan, updateProgressText } from "./gitOptions";
 import { headLineRange } from "./lineHistoryRange";
 import { gitHubCompareUrl, gitHubFileUrl, gitHubPullsUrl, type LineRange, linkRevision, pickGitHubRemote } from "./github";
+import { remoteLinkPickItems, remoteLinks } from "./remoteLinks";
 
 /** How many recent commits the commit pickers list. */
 const PICKER_COMMITS = 200;
@@ -568,6 +569,27 @@ export function openRemotesDialog(): void {
   const repoRoot = activeRoot();
   if (repoRoot) {
     gitDialogs.open({ kind: "remotes", repoRoot });
+  }
+}
+
+/** The remote's web page; with several, a list to choose from (the upstream's remote first). */
+export async function openRemoteInBrowser(): Promise<void> {
+  const upstream = repoStore.status?.head.upstream ?? null;
+  const links = remoteLinks(repoStore.remotes, upstream?.split("/")[0] ?? null);
+  if (links.length === 0) {
+    toast.info("No remote with a web page", "Add a remote such as https://github.com/owner/repo in Manage Remotes.");
+    return;
+  }
+  const url =
+    links.length === 1
+      ? links[0].url
+      : await dialogs.pick({
+          title: "Open Repository in Browser",
+          placeholder: "Type to filter remotes",
+          items: remoteLinkPickItems(links),
+        });
+  if (url) {
+    await updates.open(url);
   }
 }
 

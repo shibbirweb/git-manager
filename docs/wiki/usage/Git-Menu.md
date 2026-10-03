@@ -91,6 +91,7 @@ These submenus have pages of their own: [Worktrees](Worktrees.md), [Submodules](
 ## Remotes, Clone and GitHub
 
 - **Manage Remotes...** opens the Git Remotes dialog.
+- **Open Repository in Browser** opens the web page of the repository's remote, on any host: GitHub, GitLab, Bitbucket, Azure DevOps or your own server. An SSH address such as `git@gitlab.com:team/app.git` opens as `https://gitlab.com/team/app`. With more than one remote, a list shows each remote's name and page, the remote your branch tracks first; type to filter and press Enter. A remote that is a folder on disk has no page and is left out. The item is greyed out when no remote has one.
 - **Clone...** opens the Clone dialog. It works even with no folder open.
 - **GitHub** shows for every repository:
   - **Share Project on GitHub...**, **Sync Fork** and **Create Gist...** use your GitHub account. See [GitHub](GitHub.md).

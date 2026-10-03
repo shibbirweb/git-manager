@@ -8,6 +8,7 @@ import { repoStore } from "$lib/stores/repo.svelte";
 import { locateAbsolute } from "$lib/stores/workspacePaths";
 import type { FileStatus } from "$lib/types";
 import { pickGitHubRemote } from "./github";
+import { remoteLinks } from "./remoteLinks";
 
 export function gitRepoInputs(): GitRepoInputs | null {
   const repo = repoStore.repo;
@@ -28,6 +29,7 @@ export function gitRepoInputs(): GitRepoInputs | null {
     changes: status?.files.length ?? 0,
     remotes: repoStore.refs?.remotes.length ?? repoStore.remotes.length,
     github: pickGitHubRemote(repoStore.remotes, preferredRemote) !== null,
+    remoteLinks: remoteLinks(repoStore.remotes).length,
   };
 }
 
