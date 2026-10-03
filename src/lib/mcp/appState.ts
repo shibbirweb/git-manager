@@ -17,6 +17,8 @@ import { updates } from "$lib/update/updates.svelte";
 import { changesSelection } from "$lib/views/changes/selection.svelte";
 import { gitDialogs } from "$lib/views/git/gitDialogs.svelte";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
+import { localHistory } from "$lib/localHistory/localHistory.svelte";
+import { notifications } from "$lib/notifications/notifications.svelte";
 import { mcpStore } from "./mcpStore.svelte";
 
 function tabKind(tabPath: string): "file" | "terminal" | "commit" | "git" | "branch" | "compare" {
@@ -80,6 +82,12 @@ export function openDialog(): { kind: string; title: string | null } | null {
   }
   if (updates.dialogOpen) {
     return { kind: "update", title: "Update" };
+  }
+  if (localHistory.isOpen) {
+    return { kind: "localHistory", title: "Local History" };
+  }
+  if (notifications.open) {
+    return { kind: "notifications", title: "Notifications" };
   }
   return null;
 }

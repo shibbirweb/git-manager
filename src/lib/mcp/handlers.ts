@@ -52,6 +52,8 @@ import {
   toolArgs,
 } from "./args";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
+import { localHistory } from "$lib/localHistory/localHistory.svelte";
+import { notifications } from "$lib/notifications/notifications.svelte";
 import { copyPaths, createFile, createFolder, type FileToolDeps, movePaths, renamePath, trashPaths } from "./fileTools";
 import { mcpStore } from "./mcpStore.svelte";
 import { menuCommands } from "./menuCommands";
@@ -248,6 +250,12 @@ function closeDialog(): Structured {
       break;
     case "update":
       updates.dialogOpen = false;
+      break;
+    case "localHistory":
+      localHistory.close();
+      break;
+    case "notifications":
+      notifications.setOpen(false);
       break;
   }
   return { closed: shown.kind };
