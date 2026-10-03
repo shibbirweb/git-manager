@@ -9,11 +9,25 @@ export class CommitDraft {
   amend = $state(false);
   /** Message loaded from HEAD for amend, used to clear it again on uncheck. */
   prefilled = $state<string | null>(null);
+  /** The `commit.template` text put into the empty box, so it still counts as empty. */
+  template = $state<string | null>(null);
+  /** The template's comment lines, shown as the placeholder. */
+  templateHint = $state<string | null>(null);
+  /** `commit.template` was looked up since the box was last emptied by a commit. */
+  templateChecked = $state(false);
+
+  /** Nothing typed: empty, or only the untouched `commit.template` text. */
+  isBlank(): boolean {
+    return this.message.trim() === "" || (this.template !== null && this.message === this.template);
+  }
 
   clear(): void {
     this.message = "";
     this.amend = false;
     this.prefilled = null;
+    this.template = null;
+    this.templateHint = null;
+    this.templateChecked = false;
   }
 }
 

@@ -30,7 +30,7 @@
       return null;
     }
     const draft = commitDraft.for(repoRoot);
-    return commitPlan(stateOf(section), { message: draft.message, amend: draft.amend });
+    return commitPlan(stateOf(section), { message: draft.isBlank() ? "" : draft.message, amend: draft.amend });
   });
   let refreshing = $state(false);
 
