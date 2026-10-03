@@ -21,7 +21,12 @@ export interface MenuCommand {
   editorCommand: boolean;
 }
 
-export function menuCommands(spec: TopMenu[], state: MenuState): MenuCommand[] {
+/** `accelerators`: the keys the menu shows now (custom keyboard shortcuts applied), by action. */
+export function menuCommands(
+  spec: TopMenu[],
+  state: MenuState,
+  accelerators: ReadonlyMap<MenuAction, string | null> = new Map(),
+): MenuCommand[] {
   const commands: MenuCommand[] = [];
   const seen = new Set<MenuAction>();
   const walk = (entries: MenuEntry[], path: string[]) => {
@@ -41,7 +46,7 @@ export function menuCommands(spec: TopMenu[], state: MenuState): MenuCommand[] {
         action: item.action,
         label: itemState?.text ?? item.text,
         menuPath: itemPath.join(" > "),
-        accelerator: item.accelerator,
+        accelerator: accelerators.has(item.action) ? (accelerators.get(item.action) ?? null) : item.accelerator,
         enabled: itemState?.enabled ?? true,
         ...(item.check ? { checked: itemState?.checked ?? false } : {}),
         visible: itemState?.visible ?? true,

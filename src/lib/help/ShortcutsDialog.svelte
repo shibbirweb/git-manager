@@ -3,6 +3,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
+  import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { SHORTCUTS_URL } from "$lib/update/releases";
@@ -13,7 +14,7 @@
   let filter = $state("");
   let filterEl = $state<HTMLInputElement | null>(null);
 
-  const sections = shortcutSections(platformFromUserAgent(navigator.userAgent));
+  const sections = shortcutSections(platformFromUserAgent(navigator.userAgent), settings.keybindings);
   const shown = $derived(filterShortcuts(sections, filter));
   const total = sections.reduce((sum, section) => sum + section.rows.length, 0);
   const count = $derived(shown.reduce((sum, section) => sum + section.rows.length, 0));
@@ -24,6 +25,11 @@
 
   function close(): void {
     helpDialogs.shortcutsOpen = false;
+  }
+
+  function changeShortcuts(): void {
+    close();
+    settings.openDialog("keyboard");
   }
 
   function onKeydown(event: KeyboardEvent): void {
@@ -86,7 +92,10 @@
     </div>
     <div class="foot">
       <span class="dim">The Edit, Code and View items with keys work where the menu shows them enabled.</span>
-      <button class="btn small" onclick={() => void updates.open(SHORTCUTS_URL)}>Open Online Version</button>
+      <div class="foot-actions">
+        <button class="btn small" onclick={changeShortcuts}>Change Shortcuts</button>
+        <button class="btn small" onclick={() => void updates.open(SHORTCUTS_URL)}>Open Online Version</button>
+      </div>
     </div>
   </div>
 </div>
@@ -225,5 +234,11 @@
     padding: 10px 20px;
     border-top: 1px solid var(--border-strong);
     font-size: 12px;
+  }
+
+  .foot-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
   }
 </style>

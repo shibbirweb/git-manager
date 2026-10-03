@@ -42,6 +42,7 @@
   import SearchTabs from "./SearchTabs.svelte";
   import { nothingToReplace, replaceConfirm, replaceSummary } from "./replaceModel";
   import { isReplaceKey, stepTab, tabForKey, type SearchTab, usesSymbols } from "./searchTabs";
+  import { windowKeys } from "$lib/commands/commandRuntime";
   import SymbolResult from "./SymbolResult.svelte";
   import { symbolRows, type SymbolRow } from "./symbolSearchModel";
   import TextResult from "./TextResult.svelte";
@@ -525,7 +526,7 @@
       return;
     }
     // Shift+Cmd+R: the Text tab with its Replace field.
-    if (isReplaceKey(event)) {
+    if (isReplaceKey(event, windowKeys())) {
       event.preventDefault();
       event.stopPropagation();
       switchTab("text");
@@ -534,7 +535,7 @@
       return;
     }
     // After the moves: Ctrl+P (up) would also read as Cmd+P, the Files key.
-    const tabShortcut = tabForKey(event);
+    const tabShortcut = tabForKey(event, windowKeys());
     if (tabShortcut) {
       event.preventDefault();
       event.stopPropagation();
