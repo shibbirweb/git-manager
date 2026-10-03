@@ -259,8 +259,9 @@ export const api = {
   lineHistory: (repoPath: string, filePath: string, startLine: number, endLine: number, limit: number) =>
     invoke<LineHistoryEntry[]>("line_history", { repoPath, filePath, startLine, endLine, limit }),
   /** The file at `revision` against the work tree copy. */
-  compareWithRevision: (repoPath: string, filePath: string, revision: string) =>
-    invoke<RevisionDiff>("compare_with_revision", { repoPath, filePath, revision }),
+  /** `origPath` is the old name of a renamed file, read from `revision`. */
+  compareWithRevision: (repoPath: string, filePath: string, revision: string, origPath: string | null = null) =>
+    invoke<RevisionDiff>("compare_with_revision", { repoPath, filePath, revision, origPath }),
 
   // Stash
   getStashes: (repoPath: string) => invoke<StashEntry[]>("get_stashes", { repoPath }),

@@ -51,6 +51,7 @@ export {
   DEFAULT_RULER_COLUMN,
   DEFAULT_TERMINAL_HEIGHT,
   DEFAULT_TERMINAL_LIST_WIDTH,
+  DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
   CARET_EXTRA_RANGE,
   EDITOR_CURSOR_BLINKING_CHOICES,
@@ -64,6 +65,7 @@ export {
   MCP_PORT_RANGE,
   MIN_TERMINAL_HEIGHT,
   MIN_TERMINAL_LIST_WIDTH,
+  MIN_CHANGES_LIST_WIDTH,
   MONOSPACE_FONTS,
   normalizeFontFamily,
   normalizeTerminalFontFamily,
@@ -198,6 +200,8 @@ class SettingsStore {
   explorerWidth = $state(initialState.explorerWidth);
   terminalHeight = $state(initialState.terminalHeight);
   terminalListWidth = $state(initialState.terminalListWidth);
+  changesListWidth = $state(initialState.changesListWidth);
+  changesListVisible = $state(initialState.changesListVisible);
   markdownPreviewRatio = $state(initialState.markdownPreviewRatio);
 
   /** macOS is in dark mode; followed while `theme` is "system". */
@@ -383,6 +387,8 @@ class SettingsStore {
       explorerWidth: this.explorerWidth,
       terminalHeight: this.terminalHeight,
       terminalListWidth: this.terminalListWidth,
+      changesListWidth: this.changesListWidth,
+      changesListVisible: this.changesListVisible,
       markdownPreviewRatio: this.markdownPreviewRatio,
     };
   }
@@ -500,6 +506,12 @@ class SettingsStore {
     if (persist) {
       this.save();
     }
+  }
+
+  /** Shows or hides the Changes tab's file list. */
+  toggleChangesList(): void {
+    this.changesListVisible = !this.changesListVisible;
+    this.save();
   }
 
   toggleExplorer(): void {

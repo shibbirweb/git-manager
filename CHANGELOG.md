@@ -26,6 +26,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Back and Forward navigation across files, diffs and commits.
 - Settings saved in `~/.gitmanager`: theme, fonts, ligatures, tab size, word wrap, blame, zoom with Ctrl or Cmd + mouse wheel.
 - Status bar with the current repository, branch, cursor position and the app's memory use.
+- Clicking the changes count in the status bar opens a Changes tab: every uncommitted file of the repository, each compared with the last commit. Its file list can be resized or hidden to give the diff more room.
 - Works as `git mergetool`.
 - Update check: notify-only checks for new releases on the stable or beta channel, with release notes and a download link, plus What's New after an update.
 - Settings, About: star the project on GitHub, report a bug (with your version filled in) or request a feature.

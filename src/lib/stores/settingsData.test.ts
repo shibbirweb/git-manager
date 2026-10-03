@@ -9,10 +9,12 @@ import {
   DEFAULT_PANEL_WIDTH,
   DEFAULT_TERMINAL_HEIGHT,
   DEFAULT_TERMINAL_LIST_WIDTH,
+  DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
   MAX_MCP_TOOL_STATES,
   MIN_TERMINAL_HEIGHT,
   MIN_TERMINAL_LIST_WIDTH,
+  MIN_CHANGES_LIST_WIDTH,
   normalizeTerminalFontFamily,
   parseMcpPort,
   parsePreferences,
@@ -417,6 +419,18 @@ describe("parseState", () => {
     expect(parseState({ terminalListWidth: 20 }).state.terminalListWidth).toBe(MIN_TERMINAL_LIST_WIDTH);
     expect(parseState({ terminalListWidth: "wide" }).state.terminalListWidth).toBe(DEFAULT_TERMINAL_LIST_WIDTH);
     expect(stateToJson(parseState({ terminalListWidth: 260 }).state, {}).terminalListWidth).toBe(260);
+  });
+
+  it("validates the Changes tab's file list width and visibility", () => {
+    expect(parseState({}).state.changesListWidth).toBe(DEFAULT_CHANGES_LIST_WIDTH);
+    expect(parseState({ changesListWidth: 420 }).state.changesListWidth).toBe(420);
+    expect(parseState({ changesListWidth: 20 }).state.changesListWidth).toBe(MIN_CHANGES_LIST_WIDTH);
+    expect(parseState({ changesListWidth: "wide" }).state.changesListWidth).toBe(DEFAULT_CHANGES_LIST_WIDTH);
+    expect(parseState({}).state.changesListVisible).toBe(true);
+    expect(parseState({ changesListVisible: "no" }).state.changesListVisible).toBe(true);
+    const saved = stateToJson(parseState({ changesListWidth: 420, changesListVisible: false }).state, {});
+    expect(saved.changesListWidth).toBe(420);
+    expect(saved.changesListVisible).toBe(false);
   });
 
   it("reads the old recentRepos name", () => {

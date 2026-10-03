@@ -199,10 +199,11 @@ pub struct RevisionDiff {
     pub commit_id: String,
 }
 
-pub fn against_revision(repo: &Repository, path: &str, revision: &str) -> AppResult<RevisionDiff> {
+/// `orig_path` is the old name of a renamed file, read from `revision` instead of `path`.
+pub fn against_revision(repo: &Repository, path: &str, orig_path: Option<&str>, revision: &str) -> AppResult<RevisionDiff> {
     let commit = resolve_commit(repo, revision)?;
     let tree = commit.tree()?;
-    let original = tree_side(repo, Some(&tree), path)?;
+    let original = tree_side(repo, Some(&tree), orig_path.unwrap_or(path))?;
     let exists_in_revision = matches!(original, Side::Bytes(_));
     let modified = workdir_side(repo, path)?;
     Ok(RevisionDiff {

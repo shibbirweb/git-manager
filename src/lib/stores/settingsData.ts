@@ -112,6 +112,9 @@ export const MIN_TERMINAL_HEIGHT = 80;
 /** Width of the list of terminals beside the panel, shown with two or more terminals. */
 export const DEFAULT_TERMINAL_LIST_WIDTH = 180;
 export const MIN_TERMINAL_LIST_WIDTH = 120;
+/** Width of the file list in the Changes tab. */
+export const DEFAULT_CHANGES_LIST_WIDTH = 320;
+export const MIN_CHANGES_LIST_WIDTH = 160;
 export const MAX_RECENT = 12;
 
 /** JetBrains Mono when it is installed, else VS Code's default editor font on macOS. */
@@ -406,6 +409,9 @@ export interface UiState {
   terminalHeight: number;
   /** Width of the terminal list beside the panel. */
   terminalListWidth: number;
+  /** The Changes tab's file list: its width, and whether it is shown. */
+  changesListWidth: number;
+  changesListVisible: boolean;
   /** Share of the editor area the Markdown preview takes beside the source. */
   markdownPreviewRatio: number;
 }
@@ -526,6 +532,8 @@ const STATE_KEYS = [
   "explorerWidth",
   "terminalHeight",
   "terminalListWidth",
+  "changesListWidth",
+  "changesListVisible",
   "markdownPreviewRatio",
 ];
 
@@ -664,6 +672,8 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     explorerWidth: pickNumber(data.explorerWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
     terminalHeight: pickNumber(data.terminalHeight, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, 2000),
     terminalListWidth: pickNumber(data.terminalListWidth, DEFAULT_TERMINAL_LIST_WIDTH, MIN_TERMINAL_LIST_WIDTH, 1200),
+    changesListWidth: pickNumber(data.changesListWidth, DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, 2000),
+    changesListVisible: pickBoolean(data.changesListVisible, true),
     markdownPreviewRatio: pickNumber(data.markdownPreviewRatio, DEFAULT_MARKDOWN_PREVIEW_RATIO, ...MARKDOWN_PREVIEW_RATIO_RANGE),
   };
   const known = new Set([...STATE_KEYS, ...Object.keys(defaultPreferences)]);
@@ -693,6 +703,8 @@ export function stateToJson(state: UiState, extra: Json): Json {
     explorerWidth: state.explorerWidth,
     terminalHeight: state.terminalHeight,
     terminalListWidth: state.terminalListWidth,
+    changesListWidth: state.changesListWidth,
+    changesListVisible: state.changesListVisible,
     markdownPreviewRatio: state.markdownPreviewRatio,
   };
 }

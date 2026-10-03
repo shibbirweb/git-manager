@@ -7,6 +7,7 @@
   import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
   import { probeWebgl } from "$lib/ui/webglProbe";
   import { api } from "$lib/api";
+  import { branchTabPath } from "$lib/stores/branchTabs";
   import { loadingChangesText } from "$lib/stores/openingProgress";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -186,7 +187,11 @@
         </button>
       {/if}
       {#if changes > 0}
-        <button class="item" onclick={() => settings.setLeftPanel("changes")} title="Changed files in {contextRepo.name}">
+        <button
+          class="item"
+          onclick={() => repoStore.openPseudoTab(branchTabPath({ kind: "changes", repoRoot: contextRepo.root }))}
+          title="Changed files in {contextRepo.name}. Click to see them in a tab."
+        >
           <Icon name="git-compare" size={12} />
           <span>{changes} {changes === 1 ? "change" : "changes"}</span>
         </button>

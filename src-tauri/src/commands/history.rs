@@ -121,15 +121,24 @@ pub async fn line_history(
     .await
 }
 
-fn run_compare(repo_path: &str, file_path: &str, revision: &str) -> AppResult<RevisionDiff> {
+fn run_compare(repo_path: &str, file_path: &str, orig_path: Option<&str>, revision: &str) -> AppResult<RevisionDiff> {
     safe_join(repo_path, file_path)?;
-    diff::against_revision(&git_repo::open(repo_path)?, file_path, revision)
+    if let Some(orig_path) = orig_path {
+        safe_join(repo_path, orig_path)?;
+    }
+    diff::against_revision(&git_repo::open(repo_path)?, file_path, orig_path, revision)
 }
 
-/// The file at `revision` against its work tree copy (Compare with Revision / Branch).
+/// The file at `revision` against its work tree copy (Compare with Revision / Branch, the
+/// Changes tab). `orig_path` is the old name of a renamed file.
 #[tauri::command]
-pub async fn compare_with_revision(repo_path: String, file_path: String, revision: String) -> AppResult<RevisionDiff> {
-    blocking(move || run_compare(&repo_path, &file_path, &revision)).await
+pub async fn compare_with_revision(
+    repo_path: String,
+    file_path: String,
+    revision: String,
+    orig_path: Option<String>,
+) -> AppResult<RevisionDiff> {
+    blocking(move || run_compare(&repo_path, &file_path, orig_path.as_deref(), &revision)).await
 }
 
 #[tauri::command]
@@ -254,20 +263,39 @@ mod tests {
         repo.commit_all("three");
         let repo_path = repo.path_string();
 
-        let compared = run_compare(&repo_path, "f.txt", &first).unwrap();
+        let compared = run_compare(&repo_path, "f.txt", None, &first).unwrap();
         assert!(compared.exists_in_revision);
         assert_eq!(compared.commit_id, first);
         assert_eq!(compared.diff.original, "old\n");
         assert_eq!(compared.diff.modified, "work\n");
 
-        let missing = run_compare(&repo_path, "later.txt", "HEAD~2").unwrap();
+        let missing = run_compare(&repo_path, "later.txt", None, "HEAD~2").unwrap();
         assert!(!missing.exists_in_revision);
         assert_eq!(missing.diff.original, "");
         assert_eq!(missing.diff.modified, "later\n");
 
-        let binary = run_compare(&repo_path, "image.bin", "main").unwrap();
+        let binary = run_compare(&repo_path, "image.bin", None, "main").unwrap();
         assert!(binary.diff.binary);
-        assert!(run_compare(&repo_path, "../f.txt", "HEAD").is_err());
-        assert!(run_compare(&repo_path, "f.txt", "-x").is_err());
+        assert!(run_compare(&repo_path, "../f.txt", None, "HEAD").is_err());
+        assert!(run_compare(&repo_path, "f.txt", None, "-x").is_err());
+    }
+
+    #[test]
+    fn compare_with_revision_reads_a_renamed_file_by_its_old_name() {
+        let repo = TestRepo::new();
+        repo.write("old.txt", "one\ntwo\n");
+        repo.commit_all("one");
+        repo.git(&["mv", "old.txt", "new.txt"]);
+        repo.write("new.txt", "one\ntwo\nthree\n");
+        let repo_path = repo.path_string();
+
+        let renamed = run_compare(&repo_path, "new.txt", Some("old.txt"), "HEAD").unwrap();
+        assert!(renamed.exists_in_revision);
+        assert_eq!(renamed.diff.original, "one\ntwo\n");
+        assert_eq!(renamed.diff.modified, "one\ntwo\nthree\n");
+
+        let without_old_name = run_compare(&repo_path, "new.txt", None, "HEAD").unwrap();
+        assert!(!without_old_name.exists_in_revision);
+        assert!(run_compare(&repo_path, "new.txt", Some("../old.txt"), "HEAD").is_err());
     }
 }

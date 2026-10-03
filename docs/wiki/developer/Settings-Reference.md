@@ -133,6 +133,8 @@ The other Layout choices are in `state.json`, below.
 | `sidebarWidth`, `explorerWidth` | 260 | 120 to 2000 | side panels |
 | `terminalHeight` | 260 | 80 to 2000 | terminal panel |
 | `terminalListWidth` | 180 | 120 to 1200 | terminal list |
+| `changesListWidth` | 320 | 160 to 2000 | Changes tab file list |
+| `changesListVisible` | true | true or false | Changes tab file list shown |
 | `diffSplitRatio` | 0.5 | 0.15 to 0.85 | `diff/DiffView.svelte` |
 | `markdownPreviewRatio` | 0.5 | 0.15 to 0.85 | `FileView.svelte` |
 

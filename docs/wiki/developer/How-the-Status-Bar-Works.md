@@ -69,7 +69,7 @@ flowchart LR
 
 `followOpenTab()` runs one `$effect`, set up by `Workspace.svelte`. While Auto is on and the screen shows a repository, it makes that repository active. It does not track the active repository itself, so picking one another way (the header menu, Set as Active Repository) holds until the tab changes. It waits while the merge tool or the Conflicts dialog is open, since `setActiveRepo` would close them.
 
-The left side reads the same answer: with Auto it describes the screen's repository (or says **No repository** for `outside`), without Auto it always describes `repoStore.repo`. Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the branch opens the Branches popup for that repository. The branch name is capped at 200 px with an ellipsis, and its button may shrink, so a long name never pushes the other items out of the bar. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
+The left side reads the same answer: with Auto it describes the screen's repository (or says **No repository** for `outside`), without Auto it always describes `repoStore.repo`. Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the branch opens the Branches popup for that repository. The branch name is capped at 200 px with an ellipsis, and its button may shrink, so a long name never pushes the other items out of the bar. Clicking changes opens the Changes tab for that repository (see [How the Changes Tab Works](How-the-Changes-Tab-Works.md)), and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
 
 ### Sync
 
@@ -142,4 +142,4 @@ The status bar and Help bugs and their fixes are in [Status Bar Bugs We Fixed](S
 - Update [Status Bar and Help](../usage/Status-Bar-and-Help.md) for new items or clicks.
 - Retake `status-bar.png`, `help-menu.png` and `settings-about.png` when they change (the shortcuts window shot, `menus-shortcuts-window.png`, belongs to [Menus](../usage/Menus.md)).
 - Record bug fixes in [Status Bar Bugs We Fixed](Status-Bar-Bugs-We-Fixed.md).
-- Related: [How Updates Work](How-Updates-Work.md), [How Workspaces Work](How-Workspaces-Work.md), [How Memory Is Measured](How-Memory-Is-Measured.md).
+- Related: [How the Changes Tab Works](How-the-Changes-Tab-Works.md), [How Updates Work](How-Updates-Work.md), [How Workspaces Work](How-Workspaces-Work.md), [How Memory Is Measured](How-Memory-Is-Measured.md).
