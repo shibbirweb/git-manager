@@ -83,7 +83,7 @@ Version order comes from `compareVersions` in `version.ts`, which follows semver
 
 `WhatsNewDialog.svelte` imports `CHANGELOG.md?raw`, so the changelog is bundled at build time and works offline. A beta build shows the `Unreleased` section (betas ship those notes), a stable build shows its own dated section, and older entries can be expanded.
 
-`ReleaseNotes.svelte` renders Markdown with `renderMarkdown` from `markdown.ts`. It escapes all HTML, emits only a fixed set of tags, and only turns `https` links into links. Clicks on them go through `updates.open`, which uses the opener plugin (`openUrl`, allowed by `opener:allow-open-url` in `capabilities/default.json`), so the page opens in the user's browser, never inside the app.
+`ReleaseNotes.svelte` renders Markdown with `renderMarkdown` from `markdown.ts`. It escapes all HTML, emits only a fixed set of tags, and only turns `https` links into links. Clicks on them go through `updates.open`, which uses the opener plugin (`openUrl`, allowed by `opener:allow-open-url` plus the `http`, `https`, `mailto` and `tel` scope of `opener:allow-default-urls` in `capabilities/default.json`), so the page opens in the user's browser, never inside the app.
 
 ## Where the code lives
 
@@ -98,7 +98,7 @@ Version order comes from `compareVersions` in `version.ts`, which follows semver
 | `src/lib/update/WhatsNewDialog.svelte` | What's New from the bundled changelog |
 | `src/lib/update/ReleaseNotes.svelte` | Renders notes, opens links in the browser |
 | `src-tauri/tauri.conf.json` | CSP that allows `https://api.github.com` |
-| `src-tauri/capabilities/default.json` | `opener:allow-open-url` |
+| `src-tauri/capabilities/default.json` | `opener:allow-open-url` and `opener:allow-default-urls` |
 
 ## Design decisions
 
@@ -114,15 +114,7 @@ Version order comes from `compareVersions` in `version.ts`, which follows semver
 
 ## Bugs we fixed
 
-**Skip This Version did not stick.**
-- **The issue:** after skipping a version, a manual Check Now opened the update window and presented the same version as new again.
-- **Why it happened:** only the status bar item looked at `settings.skippedVersion`. The dialog read the plain list of newer releases.
-- **The fix and why we chose it:** `isSkipped` and `announcedRelease` in `releases.ts` treat the skipped version and anything older as skipped. Automatic checks never announce it. A manual check still opens the window, since you asked, but marks it "You skipped this version." and offers Stop Skipping instead of Skip. That way you learn a newer version exists without being nagged.
-
-**Update checks ran in mergetool mode.**
-- **The issue:** every window git mergetool opened also started the timed update check.
-- **Why it happened:** `updates.init()` armed the timer for every launch mode.
-- **The fix and why we chose it:** `init()` reads the launch mode and does not schedule checks or show What's New in mergetool mode. These windows live for one file, so a check there only costs network and could pop up over the merge. `lastRunVersion` is left alone, so the next normal start still shows What's New.
+The update and link bugs and their fixes are in [Update Bugs We Fixed](Update-Bugs-We-Fixed.md).
 
 One known trap: the repository must be public. For a private repository, GitHub answers 404 to the anonymous request, and Settings shows "GitHub answered 404".
 
@@ -138,4 +130,4 @@ When you change channel rules or parsing, add a case to `releases.test.ts` first
 - Update this page when anything in `src/lib/update/`, the CSP or the opener capability changes.
 - Update [Updates](../usage/Updates.md) when intervals, channels or buttons change.
 - Retake `settings-updates.png`, `update-dialog.png`, `update-dialog-skipped.png` and `whats-new.png` when those screens change.
-- Related: [Releases and CI](Releases-and-CI.md), [How Settings Work](How-Settings-Work.md), [How the Status Bar Works](How-the-Status-Bar-Works.md).
+- Related: [Update Bugs We Fixed](Update-Bugs-We-Fixed.md), [Releases and CI](Releases-and-CI.md), [How Settings Work](How-Settings-Work.md), [How the Status Bar Works](How-the-Status-Bar-Works.md).

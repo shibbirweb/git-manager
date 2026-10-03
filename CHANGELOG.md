@@ -88,6 +88,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- Links open in the browser again: Star on GitHub, the docs and release notes from the Help menu, update downloads, and links in Markdown previews and the terminal did nothing before.
 - The current-line blame note no longer takes a line of its own or sits under the pointer and catches clicks: it is drawn after the end of the line without moving the code (on a long line, scroll right to read it; with word wrap on it is cut short), and opens the commit with Cmd+click (Ctrl+click elsewhere).
 - Opening or adding a big folder no longer freezes the window for a moment.
 - A selection inside one line is visible again; the current line highlight hid it.
