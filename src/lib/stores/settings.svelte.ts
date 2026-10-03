@@ -168,6 +168,7 @@ class SettingsStore {
   reopenWindows = $state(initialPreferences.reopenWindows);
   tabLimit = $state(initialPreferences.tabLimit);
   splitEditor = $state(initialPreferences.splitEditor);
+  wrapTabs = $state(initialPreferences.wrapTabs);
   autoSave = $state<AutoSaveMode>(initialPreferences.autoSave);
   autoSaveDelayMs = $state(initialPreferences.autoSaveDelayMs);
   trimTrailingWhitespace = $state(initialPreferences.trimTrailingWhitespace);
@@ -392,6 +393,7 @@ class SettingsStore {
       reopenWindows: this.reopenWindows,
       tabLimit: this.tabLimit,
       splitEditor: this.splitEditor,
+      wrapTabs: this.wrapTabs,
       autoSave: this.autoSave,
       autoSaveDelayMs: this.autoSaveDelayMs,
       trimTrailingWhitespace: this.trimTrailingWhitespace,

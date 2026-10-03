@@ -57,11 +57,14 @@ import { isTerminalTab } from "$lib/terminal/terminalTabs";
 import {
   type FileTab,
   fileTabsUnder,
+  moveTab,
   otherPaths,
   pathsToRight,
+  pinnedFirst,
   pinTab,
   retargetTabs,
   setTabPinned,
+  unpinnedPaths,
   tabsInFolder,
   type TabsState,
 } from "./tabs";
@@ -1049,7 +1052,9 @@ class RepoStore {
   /** Puts new groups on screen: tabs no group has any more are remembered and reported, empty groups close. */
   private applyGroups(next: GroupsState): void {
     const before = this.groupsState;
-    const groups = dropEmptyGroups(next, this.keepPrimaryGroup());
+    // Whatever changed the strips (a merge, a reopen, a move), pinned tabs stay at the start.
+    const ordered = mapGroups(next, (group) => ({ ...group, tabs: pinnedFirst(group.tabs) }));
+    const groups = dropEmptyGroups(ordered, this.keepPrimaryGroup());
     const closedTabs = closedBetween(before, groups).map((tab) => tab.path);
     this.rememberClosedTabs(closedTabs, before);
     this.groupsState = groups;
@@ -1341,14 +1346,18 @@ class RepoStore {
     return group ? this.closeTabs(pathsToRight(group, filePath), groupId) : Promise.resolve(false);
   }
 
-  /** Close All in one group's strip, or every tab (null). */
+  /** Close All in one group's strip, or in every group (null); pinned tabs stay. */
   closeAllTabs(groupId: number | null = null): Promise<boolean> {
     const group = groupId === null ? null : groupById(this.groupsState, groupId);
-    const tabs = group ? group.tabs : this.tabs;
-    return this.closeTabs(
-      tabs.map((tab) => tab.path),
-      groupId,
-    );
+    return this.closeTabs(unpinnedPaths(group ? group.tabs : this.tabs), groupId);
+  }
+
+  /** A tab dragged within its group's strip to `gap` (see moveTab in tabs.ts). */
+  moveTab(groupId: number, tabPath: string, gap: number): void {
+    const next = mapGroups(this.groupsState, (group) => (group.id === groupId ? moveTab(group, tabPath, gap) : group));
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
+    }
   }
 
   /** Closes the focused group's active tab. */
@@ -1358,7 +1367,7 @@ class RepoStore {
     }
   }
 
-  /** Pin Tab / Unpin Tab: a pinned tab is never closed by the tab limit, in any group. */
+  /** Pin Tab / Unpin Tab, in every group: a pinned tab sits at the start and only closes on its own. */
   setTabPinned(tabPath: string, pinned: boolean): void {
     const next = mapGroups(this.groupsState, (group) => setTabPinned(group, tabPath, pinned));
     if (next !== this.groupsState) {
@@ -1532,7 +1541,7 @@ class RepoStore {
       }
     }
     const tabsOf = (group: SavedTabGroup): TabsState => ({
-      tabs: group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: false, pinned: tab.pinned })),
+      tabs: pinnedFirst(group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: false, pinned: tab.pinned }))),
       active: group.active,
     });
     let state = restoredGroups(tabsOf(restored), restored.right ? tabsOf(restored.right) : null, restored.rightFocused ?? false);

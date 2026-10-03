@@ -128,6 +128,6 @@ Put new rules in the pure modules, with tests. The path bar needs a visual check
 
 ## Keeping this page in sync
 
-- Update this page and [Editor and Tabs](../usage/Editor-and-Tabs.md) when tabs, shortcuts, extensions, markers or saving change.
+- Update this page and [Editor and Tabs](../usage/Editor-and-Tabs.md) when tabs, shortcuts, extensions, markers or saving change. Dragging, pinning and wrapping tabs are in [How tabs are arranged](How-Tabs-Are-Arranged.md).
 - A new pseudo tab kind goes into `isPseudoTab` and the table in [How commit tabs work](How-Commit-Tabs-Work.md).
 - Retake `editor-tabs.png`, `editor-change-markers.png` and `empty-main.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

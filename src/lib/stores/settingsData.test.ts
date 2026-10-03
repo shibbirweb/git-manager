@@ -694,6 +694,12 @@ describe("split editor settings", () => {
     expect(parsePreferences({ splitEditor: "off" }).preferences.splitEditor).toBe(true);
   });
 
+  it("scrolls the tabs by default and validates the wrap switch", () => {
+    expect(defaultPreferences.wrapTabs).toBe(false);
+    expect(parsePreferences({ wrapTabs: true }).preferences.wrapTabs).toBe(true);
+    expect(parsePreferences({ wrapTabs: "yes" }).preferences.wrapTabs).toBe(false);
+  });
+
   it("keeps the split ratio in range", () => {
     expect(parseState({}).state.editorSplitRatio).toBe(0.5);
     expect(parseState({ editorSplitRatio: 0.3 }).state.editorSplitRatio).toBe(0.3);

@@ -3,14 +3,18 @@ import {
   adjacentTab,
   closeTabs,
   fileTabsUnder,
+  moveTab,
   openTab,
   otherPaths,
   pathsToRight,
+  pinnedFirst,
   pinTab,
   retargetTabs,
   setTabDirty,
   setTabPinned,
   tabLabels,
+  unpinnedPaths,
+  type FileTab,
   type TabsState,
 } from "./tabs";
 import { commitTabPath } from "./commitTabs";
@@ -189,5 +193,92 @@ describe("setTabPinned", () => {
     let state = setTabPinned(openTab(empty, "a.ts", false), "a.ts", true);
     state = openTab(state, "b.ts", false);
     expect(paths(state)).toEqual(["a.ts", "b.ts*"]);
+  });
+});
+
+/** Tabs named in order; a trailing "^" marks a pinned one. */
+function strip(...names: string[]): TabsState {
+  const tabs: FileTab[] = names.map((name) => ({
+    path: name.replace("^", ""),
+    preview: false,
+    dirty: false,
+    pinned: name.endsWith("^"),
+  }));
+  return { tabs, active: tabs[0]?.path ?? null };
+}
+
+function order(state: TabsState): string[] {
+  return state.tabs.map((tab) => `${tab.path}${tab.pinned ? "^" : ""}`);
+}
+
+describe("pinned tabs", () => {
+  it("pinning moves a tab to the end of the pinned ones, unpinning to the start of the others", () => {
+    const state = strip("a^", "b^", "c", "d");
+    expect(order(setTabPinned(state, "d", true))).toEqual(["a^", "b^", "d^", "c"]);
+    expect(order(setTabPinned(state, "a", false))).toEqual(["b^", "a", "c", "d"]);
+  });
+
+  it("opens new tabs after the pinned ones", () => {
+    const state = openTab(strip("a^", "b^", "c"), "d", true);
+    expect(order(state)).toEqual(["a^", "b^", "d", "c"]);
+    expect(state.active).toBe("d");
+  });
+
+  it("puts pinned tabs first, keeping each side in order", () => {
+    const mixed = strip("a", "b^", "c", "d^");
+    expect(order({ ...mixed, tabs: pinnedFirst(mixed.tabs) })).toEqual(["b^", "d^", "a", "c"]);
+    const ordered = strip("a^", "b");
+    expect(pinnedFirst(ordered.tabs)).toBe(ordered.tabs);
+  });
+
+  it("bulk closes skip pinned tabs", () => {
+    const state = strip("a^", "b", "c^", "d");
+    expect(otherPaths(state, "b")).toEqual(["d"]);
+    expect(pathsToRight(state, "a")).toEqual(["b", "d"]);
+    expect(unpinnedPaths(state.tabs)).toEqual(["b", "d"]);
+  });
+});
+
+describe("moveTab", () => {
+  it("moves a tab to a gap, counted before the move", () => {
+    const state = strip("a", "b", "c", "d");
+    expect(order(moveTab(state, "a", 3))).toEqual(["b", "c", "a", "d"]);
+    expect(order(moveTab(state, "a", 4))).toEqual(["b", "c", "d", "a"]);
+    expect(order(moveTab(state, "d", 0))).toEqual(["d", "a", "b", "c"]);
+    expect(order(moveTab(state, "c", 1))).toEqual(["a", "c", "b", "d"]);
+  });
+
+  it("returns the same state for a drop next to the tab itself or an unknown tab", () => {
+    const state = strip("a", "b", "c");
+    expect(moveTab(state, "b", 1)).toBe(state);
+    expect(moveTab(state, "b", 2)).toBe(state);
+    expect(moveTab(state, "x", 0)).toBe(state);
+  });
+
+  it("never pins a tab dragged before the pinned ones", () => {
+    const state = strip("a^", "b^", "c", "d");
+    expect(order(moveTab(state, "d", 0))).toEqual(["a^", "b^", "d", "c"]);
+    expect(order(moveTab(state, "d", 1))).toEqual(["a^", "b^", "d", "c"]);
+    expect(moveTab(state, "c", 0)).toBe(state);
+  });
+
+  it("never unpins a pinned tab dragged past the others", () => {
+    const state = strip("a^", "b^", "c", "d");
+    expect(order(moveTab(state, "a", 4))).toEqual(["b^", "a^", "c", "d"]);
+    expect(order(moveTab(state, "b", 0))).toEqual(["b^", "a^", "c", "d"]);
+    expect(moveTab(state, "b", 3)).toBe(state);
+  });
+
+  it("keeps a dragged tab's flags", () => {
+    const state: TabsState = {
+      tabs: [
+        { path: "a", preview: false, dirty: false, pinned: true },
+        { path: "b", preview: false, dirty: true },
+        { path: "c", preview: true, dirty: false },
+      ],
+      active: "c",
+    };
+    expect(moveTab(state, "c", 0).tabs[1]).toEqual({ path: "c", preview: true, dirty: false });
+    expect(moveTab(state, "b", 3).tabs[2]).toEqual({ path: "b", preview: false, dirty: true });
   });
 });

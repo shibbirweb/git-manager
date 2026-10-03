@@ -39,8 +39,9 @@ With no file, diff or Log open, the editor area shows the workspace name and thr
 - A dot on the tab means unsaved changes. Hover it to see the close button. Middle-click a tab to close it.
 - Scroll with the mouse wheel over the tab strip to move through many tabs.
 - When two tabs have the same file name, the folder name is shown next to each.
+- Drag a tab to move it, and pin the tabs you always need. See [Pin, Reorder and Wrap Tabs](Pin-Reorder-and-Wrap-Tabs.md).
 
-Right-click a tab for **Close**, **Close Others**, **Close to the Right**, **Close All**, **Copy Path** and **Copy Relative Path** (a preview tab also has **Keep Open**). If a tab you close has unsaved changes, you are asked before they are thrown away. Closing or switching the folder asks the same way.
+Right-click a tab for **Pin Tab**, **Close**, **Close Others**, **Close to the Right**, **Close All**, **Copy Path** and **Copy Relative Path** (a preview tab also has **Keep Open**). If a tab you close has unsaved changes, you are asked before they are thrown away. Closing or switching the folder asks the same way.
 
 There is also a **Diff** tab, always first, with the file name and the word Diff. It appears when you select a file in Changes and shows that file's [diff](Diffs.md). Its close button clears the selection.
 

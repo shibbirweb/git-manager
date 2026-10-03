@@ -243,6 +243,8 @@ export interface Preferences {
   tabLimit: number;
   /** Two editor groups side by side (Window > Split Right). */
   splitEditor: boolean;
+  /** Tabs that do not fit wrap onto more rows instead of scrolling (VS Code's workbench.editor.wrapTabs). */
+  wrapTabs: boolean;
   autoSave: AutoSaveMode;
   /** Pause after the last edit before an "afterDelay" auto save. */
   autoSaveDelayMs: number;
@@ -398,6 +400,7 @@ export const defaultPreferences: Preferences = {
   reopenWindows: true,
   tabLimit: NO_TAB_LIMIT,
   splitEditor: true,
+  wrapTabs: false,
   autoSave: "off",
   autoSaveDelayMs: DEFAULT_AUTO_SAVE_DELAY,
   trimTrailingWhitespace: false,
@@ -686,6 +689,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     reopenWindows: pickBoolean(data.reopenWindows, defaultPreferences.reopenWindows),
     tabLimit: pickTabLimit(data.tabLimit),
     splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
+    wrapTabs: pickBoolean(data.wrapTabs, defaultPreferences.wrapTabs),
     autoSave: pickOneOf(data.autoSave, AUTO_SAVE_MODES, defaultPreferences.autoSave),
     autoSaveDelayMs: pickInteger(data.autoSaveDelayMs, defaultPreferences.autoSaveDelayMs, ...AUTO_SAVE_DELAY_RANGE),
     trimTrailingWhitespace: pickBoolean(data.trimTrailingWhitespace, defaultPreferences.trimTrailingWhitespace),

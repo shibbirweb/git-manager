@@ -991,6 +991,36 @@ define("editor-tabs", async (shot) => {
   await shot.save({ x: box.x, y: box.y, width: box.width, height: 330 });
 });
 
+/** Opens enough files to fill or overflow the tab strip, in this order. */
+async function openManyTabs(shot: Shot): Promise<void> {
+  for (const file of ["README.md", "package.json", "src/index.ts", "src/catalog.ts", "src/pricing.ts", "src/shipping.ts", "src/checkout.ts"]) {
+    await shot.openFile(join(storefront, file));
+  }
+  await shot.openFile(cartTs());
+}
+
+/** Pins a tab from its right-click menu. */
+async function pinTabNamed(shot: Shot, fileName: string): Promise<void> {
+  await shot.page.locator(`.tab-strip .tab[data-path$="/${fileName}"]`).first().click({ button: "right" });
+  await shot.menu().getByRole("menuitem", { name: "Pin Tab" }).click();
+}
+
+// Two pinned tabs at the front of the strip, each with its pin button.
+define("tabs-pinned", async (shot) => {
+  await openManyTabs(shot);
+  await pinTabNamed(shot, "catalog.ts");
+  await pinTabNamed(shot, "pricing.ts");
+  await shot.page.mouse.move(640, 700);
+  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
+});
+
+// Settings > Editor > Wrap tabs: a narrow window shows the tabs on two rows.
+define("tabs-wrapped", async (shot) => {
+  await openManyTabs(shot);
+  await shot.page.mouse.move(5, 690);
+  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
+}, () => ({ settings: { wrapTabs: true }, viewport: { width: 900, height: 700 } }));
+
 define("unsaved-changes-close", async (shot) => {
   await shot.openFile(cartTs());
   await clickLine(shot, "setQuantity(productId");

@@ -1060,6 +1060,18 @@
               onchange={(event) => set("splitEditor", event.currentTarget.checked)}
             />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Wrap tabs</span>
+              <span class="hint">Show tabs that do not fit on more rows instead of scrolling them sideways.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.wrapTabs}
+              onchange={(event) => set("wrapTabs", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Tab limit</span>
