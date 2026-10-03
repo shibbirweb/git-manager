@@ -55,6 +55,8 @@ export interface GitRepoInputs {
   remotes: number;
   /** A remote points to github.com. */
   github: boolean;
+  /** Distinct web pages of the remotes (Open Repository in Browser). */
+  remoteLinks: number;
 }
 
 export interface GitFileInputs {
@@ -279,6 +281,7 @@ export function gitMenuState(repo: GitRepoInputs | null, gitFile: GitFileInputs 
   state["git.file.rollback"] = { enabled: fileReady && file.changed && !file.untracked && !file.conflicted };
 
   state["git.manageRemotes"] = { enabled: ready };
+  state["git.openRemote"] = { enabled: (repo?.remoteLinks ?? 0) > 0 };
   for (const action of [
     "git.worktree.new",
     "git.worktree.prune",

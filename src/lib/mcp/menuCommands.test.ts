@@ -18,6 +18,7 @@ const inputs: MenuInputs = {
     changes: 1,
     remotes: 1,
     github: false,
+    remoteLinks: 0,
   },
   gitFile: null,
   blameGutter: false,

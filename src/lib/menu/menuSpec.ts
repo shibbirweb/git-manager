@@ -344,6 +344,7 @@ function gitMenu(platform: MenuPlatform): TopMenu {
       },
       separator,
       item("git.manageRemotes", "Manage Remotes..."),
+      item("git.openRemote", "Open Repository in Browser"),
       item("git.clone", "Clone..."),
       {
         kind: "submenu",

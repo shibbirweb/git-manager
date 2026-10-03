@@ -243,6 +243,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "git.lfs.prune": git(() => lfs.pruneObjects()),
   "git.lfs.install": git(() => lfs.installHooks()),
   "git.manageRemotes": git(() => gitMenu.openRemotesDialog()),
+  "git.openRemote": workspace(() => gitMenu.openRemoteInBrowser()),
   // Works from the welcome screen too.
   "git.clone": app(() => (fileSearch.isOpen ? undefined : gitMenu.openCloneDialog())),
   "git.github.open": workspace(() => gitMenu.openOnGitHub()),

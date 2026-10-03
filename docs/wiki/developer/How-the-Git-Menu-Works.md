@@ -63,9 +63,9 @@ flowchart TD
 - `apply_patch` applies to the work tree only, like JetBrains. If that fails, a 3-way merge can still apply it with conflicts, using the base blobs the patch names.
 - `read_clipboard_text` reads the clipboard natively (`pbpaste` on macOS), because the web view only allows a clipboard read right after a click in the page. The frontend checks the text looks like a patch first.
 
-### GitHub links
+### Links to the remote's web page
 
-`views/git/github.ts` is pure: it reads https, ssh, `git://` and scp-like remote URLs, picks the upstream's remote, then `origin`, and builds file, compare and pull request URLs. No API and no sign-in are used. `linkRevision` uses the branch name only when the branch is pushed as it is, else the commit.
+Open Repository in Browser and the GitHub link items only build URLs and open them. How they read remote URLs is in [Git Menu Links](Git-Menu-Links.md).
 
 ## Where the code lives
 
@@ -75,7 +75,7 @@ flowchart TD
 | `src/lib/views/git/gitMenuInputs.ts` | Inputs read from the stores, `currentGitFile` |
 | `src/lib/views/git/gitMenuActions.ts` | What each item does |
 | `src/lib/views/git/operationActions.ts` | Continue, Abort, Skip Commit |
-| `src/lib/views/git/github.ts` | GitHub remotes and links |
+| `src/lib/views/git/github.ts`, `remoteLinks.ts` | Links to the remote's pages, see [Git Menu Links](Git-Menu-Links.md) |
 | `src/lib/stores/gitTabs.ts`, `src/lib/views/git/GitTab.svelte` and its tabs | Current File tabs |
 | `src-tauri/src/commands/patch.rs` | Patch commands and the clipboard read |
 | `src-tauri/src/commands/history.rs`, `src-tauri/src/git/history.rs` | File and line history, compare |
@@ -100,7 +100,7 @@ flowchart TD
 ## Tests
 
 - `src/lib/menu/menuState.test.ts`, "Git menu": ahead and behind labels, branch and remote rules, operation items, Current File rules, GitHub and Clone.
-- `src/lib/views/git/github.test.ts`, `patchLines.test.ts`, `lineHistoryRange.test.ts` (inserted, deleted, modified and only new lines) and `src/lib/stores/gitTabs.test.ts`.
+- `src/lib/views/git/github.test.ts` and `remoteLinks.test.ts` (see [Git Menu Links](Git-Menu-Links.md)), `patchLines.test.ts`, `lineHistoryRange.test.ts` (inserted, deleted, modified and only new lines) and `src/lib/stores/gitTabs.test.ts`.
 - `src-tauri/src/commands/patch.rs`: `create_patch_writes_the_chosen_changes`, `create_patch_works_before_the_first_commit`, `a_commit_patch_applies_elsewhere`, `apply_patch_falls_back_to_a_three_way_merge`, `apply_patch_reports_why_it_does_not_apply` and `apply_patch_from_text`.
 - `src-tauri/src/commands/history.rs`: `file_history_follows_renames_page_by_page`, `line_history_traces_a_range` and `compare_with_revision_reads_the_old_version`.
 

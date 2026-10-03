@@ -74,6 +74,7 @@ GitHub release notes, and the app shows it as "What's New".
 - IDE editing features, each with a switch in Settings > Editor > Editing features that frees its memory when off: auto-close brackets and quotes, code completion from the file's words and the language's keywords (Ctrl+Space, Enter or Tab to accept, optionally only on Ctrl+Space), fold arrows beside the line numbers, indent guides, highlighting the word at the cursor, scrolling past the end, column selection with Option+drag and a right margin line at a chosen column.
 - Syntax colors for Go, Java, Kotlin, Swift, Ruby, shell scripts, TOML, XML, Dockerfile, C, C++ and C#, in the editor and in Markdown code blocks.
 - Terminal polish like VS Code and JetBrains: split terminals side by side (Cmd+\\) with a draggable divider and split groups in the list, find in the terminal (Cmd+F) with Match Case, Words and Regex, Cmd+click file paths such as `src/app.ts:12:5` to open them at that line, drop files from Finder to type their quoted paths, rename a terminal by double-clicking its name, Paste, Find... and Split Terminal in the right-click menu, a visual bell, and GPU drawing (WebGL), Unicode 11 widths, smooth scrolling and Option as Meta, each with its own switch in Settings > Terminal.
+- Git > Open Repository in Browser opens the web page of the repository's remote on any host (GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted); with several remotes, a list lets you choose.
 
 ### Changed
 

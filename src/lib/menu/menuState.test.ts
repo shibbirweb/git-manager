@@ -23,6 +23,7 @@ const repo: GitRepoInputs = {
   changes: 2,
   remotes: 1,
   github: false,
+  remoteLinks: 0,
 };
 
 const gitFile: GitFileInputs = {
@@ -271,6 +272,9 @@ describe("Git menu", () => {
     expect(github["git.github.copyLink"]?.enabled).toBe(true);
     expect(gitMenuState({ ...repo, github: true }, null, false)["git.github.copyLink"]?.enabled).toBe(false);
     expect(gitMenuState(null, null, false)["git.clone"]?.enabled).toBe(true);
+    expect(local["git.openRemote"]?.enabled).toBe(false);
+    expect(gitMenuState({ ...repo, remoteLinks: 2, busy: true }, null, false)["git.openRemote"]?.enabled).toBe(true);
+    expect(gitMenuState(null, null, false)["git.openRemote"]?.enabled).toBe(false);
     expect(gitMenuState(null, null, false)["git.commit"]?.enabled).toBe(false);
   });
 
