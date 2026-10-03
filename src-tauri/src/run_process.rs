@@ -256,7 +256,7 @@ pub fn prepare(request: &RunRequest, base_env: Vec<(String, String)>) -> AppResu
 pub fn start_run(
     registry: &TerminalRegistry,
     request: &RunRequest,
-    on_output: impl FnMut(&[u8]) + Send + 'static,
+    on_output: impl FnMut(Vec<u8>) + Send + 'static,
     on_exit: impl FnOnce(u32, Option<i32>) + Send + 'static,
 ) -> AppResult<TerminalInfo> {
     let (options, profile) = prepare(request, login_env())?;
@@ -364,7 +364,7 @@ mod tests {
             .spawn(
                 &options,
                 move |bytes| {
-                    let _ = output_sender.send(bytes.to_vec());
+                    let _ = output_sender.send(bytes);
                 },
                 move |_, code| {
                     let _ = exit_sender.send(code);
