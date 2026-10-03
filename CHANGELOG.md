@@ -18,6 +18,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Inline conflict actions in the editor: Accept Current, Accept Incoming, Accept Both and Resolve in Merge Tool, plus Mark as Resolved.
 - Workspaces like VS Code: open any folder (git or not), nested repositories, several folders in one workspace, and workspace files compatible with `.code-workspace`.
 - Changes sidebar grouped by repository with staging of files and hunks, discard, commit and amend.
+- Stage, unstage or discard selected lines in the Changes diff, like GitHub Desktop: select lines on either side and use the toolbar, the right-click menu, Git > Uncommitted Changes or Option+Shift+Cmd+S / U / D. Discard asks first and offers Undo.
 - Editor tabs with preview tabs, git status letters in the Files panel, breadcrumbs, change markers on the scrollbar and next or previous change navigation.
 - Git blame for the current line and a blame gutter, with click-through to the commit in the Log.
 - Log with a branch graph, commit details and per-file diffs; cherry-pick, revert, reset and checkout.

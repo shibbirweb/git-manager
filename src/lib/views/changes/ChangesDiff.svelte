@@ -42,6 +42,7 @@
   let previewVersion = $state(0);
   $effect(() => {
     void repoStore.statuses[selected?.repoRoot ?? ""];
+    void repoStore.fileVersions[selected?.repoRoot ?? ""];
     untrack(() => previewVersion++);
   });
   /** Unstaged: the index against the work tree. Staged: HEAD (the old path of a rename) against the index. */
@@ -73,6 +74,7 @@
       leftLabel={diffMode === "staged" ? "HEAD" : "Index"}
       rightLabel={diffMode === "staged" ? "Index (staged)" : "Working Tree"}
       onChange={(target, content) => changesSelection.applyDiffChange(target, content)}
+      onLines={(action, lineSelection) => void changesSelection.applyLines(action, lineSelection)}
       blame={{
         repoRoot: selected.repoRoot,
         filePath: selected.path,
