@@ -187,6 +187,7 @@ class SettingsStore {
   /** A release the user chose to skip; it is not announced again. */
   skippedVersion = $state<string | null>(initialState.skippedVersion);
   activeRepos = $state<Record<string, string>>(initialState.activeRepos);
+  activeRepoAuto = $state(initialState.activeRepoAuto);
   scriptNodeVersions = $state<Record<string, string>>(initialState.scriptNodeVersions);
   explorerOpen = $state(initialState.explorerOpen);
   leftBarVisible = $state(initialState.leftBarVisible);
@@ -371,6 +372,7 @@ class SettingsStore {
       lastRunVersion: this.lastRunVersion,
       skippedVersion: this.skippedVersion,
       activeRepos: this.activeRepos,
+      activeRepoAuto: this.activeRepoAuto,
       scriptNodeVersions: this.scriptNodeVersions,
       explorerOpen: this.explorerOpen,
       leftBarVisible: this.leftBarVisible,
@@ -473,6 +475,11 @@ class SettingsStore {
 
   rememberActiveRepo(workspaceRoot: string, repoRoot: string): void {
     this.activeRepos = { ...this.activeRepos, [workspaceRoot]: repoRoot };
+    this.save();
+  }
+
+  setActiveRepoAuto(auto: boolean): void {
+    this.activeRepoAuto = auto;
     this.save();
   }
 

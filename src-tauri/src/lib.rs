@@ -251,3 +251,18 @@ pub fn run() {
         }
     });
 }
+
+#[cfg(test)]
+mod capability_tests {
+    #[test]
+    fn opener_may_open_web_links() {
+        let capability: serde_json::Value = serde_json::from_str(include_str!("../capabilities/default.json")).unwrap();
+        let permissions: Vec<&str> = capability["permissions"]
+            .as_array()
+            .map(|items| items.iter().filter_map(|item| item.as_str()).collect())
+            .unwrap_or_default();
+        // allow-open-url has no URL scope of its own, so without allow-default-urls every link is refused.
+        assert!(permissions.contains(&"opener:allow-open-url"));
+        assert!(permissions.contains(&"opener:allow-default-urls"));
+    }
+}

@@ -43,7 +43,8 @@
     { "page": "usage/Settings-Terminal-and-Automation.md", "summary": "Every option of the Terminal, GitHub and Automation sections of Settings." },
     { "page": "usage/Settings-Files.md", "summary": "What is in ~/.gitmanager, editing settings.json by hand, and fixing a broken file." },
     { "page": "usage/Updates.md", "summary": "How Git Manager tells you about new versions, and the beta channel." },
-    { "page": "usage/Status-Bar-and-Help.md", "summary": "The status bar, memory use, and how to report a bug or ask for a feature." },
+    { "page": "usage/Status-Bar-and-Help.md", "summary": "The status bar, picking the active repository, and how to report a bug or ask for a feature." },
+    { "page": "usage/Memory-Use.md", "summary": "The memory readout, its breakdown and GPU rows, and the debug memory log." },
     { "page": "usage/MCP-and-CLI.md", "summary": "Let AI tools such as Claude Code, and scripts in a terminal, use Git Manager safely." },
     { "page": "usage/Git-Mergetool.md", "summary": "Use Git Manager as the merge tool for git on the command line." },
     { "page": "usage/Keyboard-Shortcuts.md", "summary": "Every keyboard shortcut on one page." },
@@ -66,6 +67,8 @@
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
     { "page": "developer/How-Editor-Features-Work.md", "summary": "Auto-close, completion, folding, indent guides, the margin line and the languages, each switchable and lazy." },
@@ -80,7 +83,6 @@
     { "page": "developer/Test-Suites.md", "summary": "Every Vitest and Rust test file, folder by folder, and what it covers." },
     { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
     { "page": "developer/Debugging-with-MCP.md", "summary": "Inspect, measure and drive the running app with the MCP tools and git-manager cli." },
-    { "page": "developer/How-Memory-Is-Measured.md", "summary": "The memory readout, the debug memory log and the live memory recorder." },
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
     { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
@@ -366,7 +368,14 @@
       "title": "Status bar and help links",
       "usage": "usage/Status-Bar-and-Help.md",
       "developer": "developer/How-the-Status-Bar-Works.md",
-      "screenshots": ["status-bar.png", "help-menu.png", "settings-about.png", "memory-log-settings.png"]
+      "screenshots": ["status-bar.png", "help-menu.png", "settings-about.png"]
+    },
+    {
+      "id": "memory",
+      "title": "Memory readout and memory log",
+      "usage": "usage/Memory-Use.md",
+      "developer": "developer/How-Memory-Is-Measured.md",
+      "screenshots": ["memory-log-settings.png"]
     },
     {
       "id": "mcp",

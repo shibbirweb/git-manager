@@ -1,6 +1,6 @@
 # How Memory Is Measured
 
-Memory is a feature of Git Manager (see [Architecture](Architecture.md)), so the app measures itself in three ways: the readout in the status bar, a debug memory log in a file, and a live recording that AI tools and the command line tool can start. All three use the same function, `memory::usage()`. The user side is in [Status Bar and Help](../usage/Status-Bar-and-Help.md).
+Memory is a feature of Git Manager (see [Architecture](Architecture.md)), so the app measures itself in three ways: the readout in the status bar, a debug memory log in a file, and a live recording that AI tools and the command line tool can start. All three use the same function, `memory::usage()`. The user side is in [Memory Use](../usage/Memory-Use.md).
 
 ## Why we need it
 
@@ -93,5 +93,5 @@ flowchart LR
 
 ## Keeping this page in sync
 
-- Update this page when `memory.rs`, the log format or the recorder change, and [Status Bar and Help](../usage/Status-Bar-and-Help.md) for visible changes.
-- Retake `status-bar.png` and `memory-log-settings.png` when they change.
+- Update this page when `memory.rs`, the log format or the recorder change, and [Memory Use](../usage/Memory-Use.md) for visible changes.
+- Retake `status-bar.png` and `memory-log-settings.png` when they change (`memory-log-settings.png` belongs to the memory feature in `features.json`).

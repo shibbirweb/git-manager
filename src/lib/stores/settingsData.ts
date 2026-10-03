@@ -389,6 +389,8 @@ export interface UiState {
   /** A release the user chose to skip; it is not announced again. */
   skippedVersion: string | null;
   activeRepos: Record<string, string>;
+  /** The active repository follows the open tab (the status bar picker's Auto). */
+  activeRepoAuto: boolean;
   /** Scripts panel: the Node version each package.json runs with, by file path: a bin folder, or "default" for the shell's. */
   scriptNodeVersions: Record<string, string>;
   explorerOpen: boolean;
@@ -513,6 +515,7 @@ const STATE_KEYS = [
   "recentFolders",
   "recentRepos",
   "activeRepos",
+  "activeRepoAuto",
   "scriptNodeVersions",
   "explorerOpen",
   "leftBarVisible",
@@ -646,6 +649,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     activeRepos: Object.fromEntries(
       Object.entries(asObject(data.activeRepos)).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
     ),
+    activeRepoAuto: pickBoolean(data.activeRepoAuto, true),
     scriptNodeVersions: Object.fromEntries(
       Object.entries(asObject(data.scriptNodeVersions))
         .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== "")

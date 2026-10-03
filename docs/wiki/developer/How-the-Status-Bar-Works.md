@@ -1,10 +1,10 @@
 # How the status bar works
 
-The status bar runs along the bottom of the window: on the left the repository of whatever is on screen, on the right the open file's cursor and format, update news, the running operation, help links and memory use. This page also covers the in-app Help > Keyboard Shortcuts window. For the user side, see [Status Bar and Help](../usage/Status-Bar-and-Help.md).
+The status bar runs along the bottom of the window: on the left the active repository (which, with Auto, follows the open tab), on the right the open file's cursor and format, update news, the running operation, help links and memory use. The Help > Keyboard Shortcuts window is in [Menu Keys and Routing](Menu-Keys-and-Routing.md). For the user side, see [Status Bar and Help](../usage/Status-Bar-and-Help.md).
 
 ## Why we need it
 
-In a workspace with many repositories, it is easy to lose track of which repository and branch a file belongs to. VS Code's status bar follows the active editor, and people expect the same.
+In a workspace with many repositories, it is easy to lose track of which repository and branch a file belongs to, and which one the sidebars act on. VS Code's status bar has a repository picker with an **Auto** entry that makes the active repository follow the active editor, and people expect the same.
 
 Memory is a feature of this app (see [Architecture](Architecture.md)), so we show it honestly, counted the way Activity Monitor counts it. And when something goes wrong, reporting it should take one click, with the version already filled in.
 
@@ -37,23 +37,38 @@ flowchart LR
 
 ### Following the screen
 
-`contextRepo` decides which repository the left side describes:
+`screenRepo` in `views/repoSelection.ts` (pure, tested) decides which repository the screen shows. It returns a repository, `outside` (a file tab in no repository) or `active` (nothing ties the screen to one):
 
 ```mermaid
 flowchart TD
     A["changesSelection.shownView"] --> B{"Which view?"}
     B -->|"file"| T{"Which tab?"}
     T -->|"commit, history or branch tab"| R2["The tab's repoRoot"]
-    T -->|"terminal tab"| R3["Repository of the terminal's folder,<br/>else the active one"]
+    T -->|"terminal tab"| R3["Repository of the terminal's folder,<br/>else active"]
     T -->|"file"| C["locateAbsolute(repos, openFilePath)"]
     C --> C2{"Inside a repository?"}
     C2 -->|"yes"| R1["That repository"]
-    C2 -->|"no"| R0["Show No repository"]
+    C2 -->|"no"| R0["outside"]
     B -->|"diff"| D["Repository of the selected change"]
-    B -->|"log or none"| E["The active repository"]
+    B -->|"log or none"| E["active"]
 ```
 
-Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the repository or branch makes that repository active and opens Branches. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`). Tabs that are not files (commit, history, branch and terminal tabs) are recognized with `parseCommitTabPath`, `parseGitTabPath`, `parseBranchTabPath` and `parseTerminalTabPath`, and `isPseudoTab` keeps them from showing "No repository".
+### The repository picker and Auto
+
+Clicking the repository name calls `openRepoPicker()` in `views/repoSelection.svelte.ts`. It opens `dialogs.pick` with `repoPickItems`: **Auto** first, then every repository under "Repositories" with its branch and folder. The choice is `activeRepoAuto` in `state.json` (true by default), saved by `settings.setActiveRepoAuto`.
+
+```mermaid
+flowchart LR
+    P["Select a Repository"] -->|"Auto"| ON["activeRepoAuto = true"]
+    P -->|"a repository"| OFF["activeRepoAuto = false<br/>setActiveRepo(root)"]
+    ON --> F["followOpenTab effect"]
+    S["currentScreenRepo()"] --> F
+    F -->|"screen is a repository<br/>and differs"| SA["repoStore.setActiveRepo"]
+```
+
+`followOpenTab()` runs one `$effect`, set up by `Workspace.svelte`. While Auto is on and the screen shows a repository, it makes that repository active. It does not track the active repository itself, so picking one another way (the header menu, Set as Active Repository) holds until the tab changes. It waits while the merge tool or the Conflicts dialog is open, since `setActiveRepo` would close them.
+
+The left side reads the same answer: with Auto it describes the screen's repository (or says **No repository** for `outside`), without Auto it always describes `repoStore.repo`. Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the branch opens the Branches popup for that repository. Clicking changes opens the Changes panel, and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
 
 While nothing else is busy, `repoStore.loadingChanges` shows "Reading changes 2 of 5" with a spinner (text from `loadingChangesText` in `stores/openingProgress.ts`), right after a folder opens. See [How workspaces work](How-Workspaces-Work.md).
 
@@ -67,80 +82,47 @@ The memory item calls `memory_usage` every 5 seconds while the window is visible
 
 The star button calls `updates.openRepository()`. The bug button opens a small menu with **Report a Bug** and **Request a Feature**. `bugReportUrl(version, platform)` in `update/releases.ts` builds a GitHub new-issue link for the `bug_report.yml` form with `version` and `platform` filled in. `updates.reportBug()` asks the backend with `api.osInfo()` (`os_info`: `sw_vers -productVersion` on macOS, `/etc/os-release` on Linux, "Windows" on Windows) and `osLabel` makes "macOS 15.4.1". WebKit freezes the macOS version in the user agent at 10.15.7, so `platformName(navigator.userAgent)` is only a fallback and gives just the family name, such as "macOS". The field ids in `.github/ISSUE_TEMPLATE/bug_report.yml` must match those parameter names. The same links are in Settings, About.
 
-### The Keyboard Shortcuts window
-
-Help > Keyboard Shortcuts sets `helpDialogs.shortcutsOpen`, and `App.svelte` loads `ShortcutsDialog.svelte` only then. Its rows come from `shortcutSections` in `help/shortcuts.ts`:
-
-```mermaid
-flowchart LR
-  Spec["menuSpec(platform, 'app')"] --> Menu["menuShortcuts: every item<br/>with an accelerator"]
-  Extra["extraShortcuts: double Shift,<br/>F7, terminal, Markdown..."] --> All["shortcutSections"]
-  Menu --> All
-  All --> Filter["filterShortcuts(filter)"]
-  Filter --> Dialog["ShortcutsDialog.svelte"]
-```
-
-Menu rows are read from the menu bar's own data, so they cannot drift from the real keys. `formatKeys` writes an accelerator the platform's way ("⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere). Shortcuts no menu shows are listed by hand in `extraShortcuts`, per platform where keys differ. **Open Online Version** opens `SHORTCUTS_URL`, the wiki's [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md) page.
-
 ## Where the code lives
 
 | File | What it does |
 | --- | --- |
 | `src/lib/views/StatusBar.svelte` | The bar: context repository, file details, update item, links, memory popover |
+| `src/lib/views/repoSelection.ts` | `screenRepo` and `repoPickItems` (pure) |
+| `src/lib/views/repoSelection.svelte.ts` | `currentScreenRepo`, the Auto effect `followOpenTab` and `openRepoPicker` |
 | `src/lib/stores/editorStatus.svelte.ts` | Cursor and file details of the visible editor |
 | `src/lib/views/files/FileView.svelte` | Reports cursor details while it is the visible tab |
 | `src/lib/editor/setup.ts` | `languageName` |
 | `src/lib/stores/workspacePaths.ts` | `locateAbsolute` |
 | `src/lib/stores/openingProgress.ts` | `loadingChangesText` |
-| `src/lib/help/shortcuts.ts`, `ShortcutsDialog.svelte`, `helpDialogs.svelte.ts` | The Keyboard Shortcuts window |
 | `src-tauri/src/commands/config.rs` | `memory_usage`, and `os_info`: the OS name and version |
 | `src/lib/update/releases.ts` | `bugReportUrl`, `featureRequestUrl`, `osLabel`, `platformName` |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | The bug form whose fields are pre-filled |
 
 ## Design decisions
 
-**Build the shortcuts list from the menu.** A hand-written list goes stale; the menu's data is the truth.
-
 **Reuse statuses, do not query.** The status of every repository is already in memory, so following the screen is only a `$derived`.
+
+**Auto by default, like VS Code.** Most people expect the sidebars to act on the file they are looking at. Pinning one repository stays one click away, and the choice is remembered in `state.json` because it is a habit, not a preference to edit by hand.
 
 **Pre-fill, do not collect.** The bug link carries the version and OS in the URL, and the user sees and sends the form themselves. The app gathers no other data.
 
 ## Bugs we fixed
 
-**The bar ignored the file on screen.**
-- **The issue:** the status bar always showed the active repository, even while you read a file from another one.
-- **Why it happened:** it read `repoStore.repo` directly.
-- **The fix and why we chose it:** `contextRepo` follows the visible file tab or diff, like VS Code, and falls back to the active repository.
-
-**Spaces opened the wrong Settings section.**
-- **The issue:** the Spaces item says the tab size is in Settings, Editor, but clicking it opened Settings on Appearance.
-- **Why it happened:** the Settings dialog always started on Appearance, and callers could only open it, not pick a section.
-- **The fix and why we chose it:** `settings.openDialog(section)` records the section to show, and the dialog starts there. Spaces opens the Editor section, and every other way in still opens Appearance. One small entry point keeps all callers consistent.
-
-**Two shortcut rows were wrong.**
-- **The issue:** Bold (Cmd+B) claimed the Markdown text editor, where Cmd+B hid the sidebar, and macOS listed Ctrl+PageDown and Ctrl+PageUp for tabs, which do nothing there.
-- **Why it happened:** `extraShortcuts` is hand-written, with one set of tab keys for all platforms.
-- **The fix and why we chose it:** the text editor now binds Cmd+B for bold, so the row is true, and the tab rows use the Window menu's keys per platform. Tests pin both.
-
-**Bug reports named the wrong macOS version.**
-- **The issue:** Report a Bug always filled in "macOS 10.15.7", whatever macOS you ran.
-- **Why it happened:** the platform came from the web view's user agent, and WebKit freezes the macOS version there at 10.15.7.
-- **The fix and why we chose it:** a small backend command, `os_info`, asks the system itself (`sw_vers` on macOS, `/etc/os-release` on Linux, just "Windows" on Windows). If it fails, the link falls back to the family name from the user agent, without the frozen version. A wrong version is worse than none.
+The status bar and Help bugs and their fixes are in [Status Bar Bugs We Fixed](Status-Bar-Bugs-We-Fixed.md).
 
 ## Tests
 
-- `src/lib/help/shortcuts.test.ts`: macOS and other key spelling, every menu accelerator listed, the extra shortcuts, the tab keys per platform, the Bold row and the filter.
+- `src/lib/views/repoSelection.test.ts`: the screen's repository for file, commit, terminal and diff tabs, outside and active, and the picker items with Auto and the selected mark.
+- `src/lib/stores/settingsData.test.ts`: `activeRepoAuto` is validated and defaults to true.
 - `src/lib/stores/openingProgress.test.ts`: the Reading changes text.
 - `src/lib/editor/languageName.test.ts`: language names for common files, `Dockerfile` and unknown extensions.
 - `src/lib/update/releases.test.ts`: the pre-filled bug link, `osLabel` and the user agent fallback.
 - `src-tauri/src/commands/config.rs`: `reads_the_macos_product_version`, `reads_the_linux_distribution`.
 
-`contextRepo` has no unit test; if it grows, move it into a pure function next to the component and test it.
-
 ## Keeping this page in sync
 
-- Update this page when `StatusBar.svelte`, the shortcuts window or the issue link helpers change.
+- Update this page when `StatusBar.svelte`, `repoSelection.ts` or the issue link helpers change.
 - Update [Status Bar and Help](../usage/Status-Bar-and-Help.md) for new items or clicks.
-- Retake `status-bar.png`, `help-menu.png`, `settings-about.png` and `memory-log-settings.png` when they change (the shortcuts window shot, `menus-shortcuts-window.png`, belongs to [Menus](../usage/Menus.md)).
-- A shortcut no menu shows goes in `extraShortcuts`, and on [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md).
-- Related: [How Updates Work](How-Updates-Work.md), [How Workspaces Work](How-Workspaces-Work.md).
+- Retake `status-bar.png`, `help-menu.png` and `settings-about.png` when they change (the shortcuts window shot, `menus-shortcuts-window.png`, belongs to [Menus](../usage/Menus.md)).
+- Record bug fixes in [Status Bar Bugs We Fixed](Status-Bar-Bugs-We-Fixed.md).
+- Related: [How Updates Work](How-Updates-Work.md), [How Workspaces Work](How-Workspaces-Work.md), [How Memory Is Measured](How-Memory-Is-Measured.md).

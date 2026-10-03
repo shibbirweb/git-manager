@@ -367,6 +367,7 @@ describe("parseState", () => {
       lastSession: ["/a"],
       lastSessionFile: 7,
       activeRepos: { "/a": "/a/web", "/b": false },
+      activeRepoAuto: "yes",
       leftPanel: "nope",
       sidebarWidth: 10,
       somethingNew: true,
@@ -375,11 +376,13 @@ describe("parseState", () => {
     expect(state.recentWorkspaces).toEqual([["/a", "/b"]]);
     expect(state.lastSessionFile).toBeNull();
     expect(state.activeRepos).toEqual({ "/a": "/a/web" });
+    expect(state.activeRepoAuto).toBe(true);
     expect(state.leftPanel).toBe("changes");
     expect(state.sidebarWidth).toBe(120);
     expect(state.explorerWidth).toBe(DEFAULT_PANEL_WIDTH);
     expect(extra).toEqual({ somethingNew: true });
     expect(parseState({ leftPanel: "scripts" }).state.leftPanel).toBe("scripts");
+    expect(parseState({ activeRepoAuto: false }).state.activeRepoAuto).toBe(false);
     expect(parseState({ scriptNodeVersions: { "/a/package.json": "default", "/b/package.json": 18, "/c/package.json": "" } }).state.scriptNodeVersions).toEqual({
       "/a/package.json": "default",
     });
