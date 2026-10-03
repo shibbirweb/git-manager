@@ -1,6 +1,7 @@
 //! Git LFS: whether it is installed and used, which files it stores, pointer
 //! detection for diffs, and its commands through the git CLI.
 
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 use std::sync::{Mutex, PoisonError};
 
@@ -8,6 +9,7 @@ use git2::Repository;
 use serde::Serialize;
 
 use super::cli;
+use super::files::path_stamp;
 use crate::error::{AppError, AppResult};
 
 /// Pointer files are small text files; anything bigger is real content.
@@ -70,11 +72,13 @@ pub fn lfs_patterns(attributes: &str) -> Vec<String> {
 }
 
 /// The `.gitattributes` files of the repository: the root one, every tracked
-/// one below it, and `.git/info/attributes`.
-fn attribute_texts(repo: &Repository) -> Vec<String> {
+/// one below it, and `.git/info/attributes`; with the repo-relative paths of the
+/// tracked ones below the root.
+fn attribute_texts(repo: &Repository) -> (Vec<String>, Vec<String>) {
     let mut texts = Vec::new();
+    let mut nested = Vec::new();
     let Some(root) = repo.workdir() else {
-        return texts;
+        return (texts, nested);
     };
     let mut read = |path: &Path| {
         if let Ok(text) = std::fs::read_to_string(path) {
@@ -88,10 +92,45 @@ fn attribute_texts(repo: &Repository) -> Vec<String> {
             let path = String::from_utf8_lossy(&entry.path).into_owned();
             if path.ends_with("/.gitattributes") {
                 read(&root.join(&path));
+                nested.push(path);
             }
         }
     }
-    texts
+    (texts, nested)
+}
+
+/// Everything an LFS state depends on, without reading the index or running git-lfs: HEAD,
+/// the index file, every attributes file (the tracked ones below the root are the `nested`
+/// paths found by the last full read: adding one changes the index) and what is known about
+/// the git-lfs install. The nested paths follow the hash, one per line, so a later check
+/// needs nothing else.
+fn lfs_stamp(repo: &Repository, nested: &[String], install: &Option<Option<String>>) -> String {
+    let mut hasher = DefaultHasher::new();
+    match repo.head().ok().and_then(|head| head.target()) {
+        Some(oid) => oid.to_string().hash(&mut hasher),
+        None => "unborn".hash(&mut hasher),
+    }
+    path_stamp(&repo.path().join("index")).hash(&mut hasher);
+    path_stamp(&repo.path().join("info").join("attributes")).hash(&mut hasher);
+    if let Some(root) = repo.workdir() {
+        path_stamp(&root.join(".gitattributes")).hash(&mut hasher);
+        for path in nested {
+            path.hash(&mut hasher);
+            path_stamp(&root.join(path)).hash(&mut hasher);
+        }
+    }
+    install.hash(&mut hasher);
+    let mut stamp = format!("{:016x}", hasher.finish());
+    for path in nested {
+        stamp.push('\n');
+        stamp.push_str(path);
+    }
+    stamp
+}
+
+/// The nested attribute paths a stamp carries.
+fn stamp_paths(stamp: &str) -> Vec<String> {
+    stamp.split('\n').skip(1).map(str::to_string).collect()
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -105,6 +144,10 @@ pub struct LfsStatus {
     pub patterns: Vec<String>,
     /// Repo-relative paths stored in LFS (`git lfs ls-files`); empty when not installed.
     pub files: Vec<String>,
+    /// The state this answer was read at, passed back as the known stamp next time.
+    pub stamp: String,
+    /// Nothing changed since the known stamp: no other field is filled in.
+    pub unchanged: bool,
 }
 
 /// `git lfs version`, or None when the `git-lfs` binary is missing.
@@ -139,40 +182,64 @@ impl InstallCache {
         }
         known.clone().flatten()
     }
+
+    /// What is known now, without probing.
+    fn snapshot(&self) -> Option<Option<String>> {
+        self.0.lock().unwrap_or_else(PoisonError::into_inner).clone()
+    }
 }
 
 static INSTALLED: InstallCache = InstallCache::new();
 
 /// The LFS state of a repository. The install check only runs for a repository that uses LFS
-/// (once per app run) or with `check_install` (an LFS action is about to run).
-pub fn status(repo_path: &str, check_install: bool) -> AppResult<LfsStatus> {
+/// (once per app run) or with `check_install` (an LFS action is about to run). With the
+/// `known_stamp` of the state the caller has, an unchanged repository answers `unchanged`
+/// after a few file checks, with no git-lfs process and without reading the index.
+pub fn status(repo_path: &str, check_install: bool, known_stamp: Option<&str>) -> AppResult<LfsStatus> {
     let root = Path::new(repo_path);
-    status_with(repo_path, check_install, &INSTALLED, || version(root))
+    status_with(repo_path, check_install, known_stamp, &INSTALLED, || version(root))
 }
 
 fn status_with(
     repo_path: &str,
     check_install: bool,
+    known_stamp: Option<&str>,
     installed: &InstallCache,
     probe: impl FnOnce() -> Option<String>,
 ) -> AppResult<LfsStatus> {
     let repo = Repository::open(repo_path)?;
-    let texts = attribute_texts(&repo);
+    if let (Some(known), false) = (known_stamp, check_install) {
+        if lfs_stamp(&repo, &stamp_paths(known), &installed.snapshot()) == known {
+            return Ok(LfsStatus {
+                version: None,
+                used: false,
+                patterns: Vec::new(),
+                files: Vec::new(),
+                stamp: known.to_string(),
+                unchanged: true,
+            });
+        }
+    }
+    let (texts, nested) = attribute_texts(&repo);
     let used = texts.iter().any(|text| !lfs_patterns(text).is_empty());
     let patterns = repo
         .workdir()
         .and_then(|root| std::fs::read_to_string(root.join(".gitattributes")).ok())
         .map(|text| lfs_patterns(&text))
         .unwrap_or_default();
+    let version = installed.get(used, check_install, probe);
+    // Taken before the file list: a change in between shows up as a change next time.
+    let stamp = lfs_stamp(&repo, &nested, &installed.snapshot());
     drop(repo);
     let root = Path::new(repo_path);
-    let version = installed.get(used, check_install, probe);
     let files = if version.is_some() && used { ls_files(root).unwrap_or_default() } else { Vec::new() };
     Ok(LfsStatus {
         version,
         used,
         patterns,
         files,
+        stamp,
+        unchanged: false,
     })
 }
 
@@ -280,7 +347,7 @@ mod tests {
             probes.set(probes.get() + 1);
             None
         };
-        let plain = status_with(&repo.path_string(), false, &installed, missing).unwrap();
+        let plain = status_with(&repo.path_string(), false, None, &installed, missing).unwrap();
         assert!(!plain.used);
         assert!(plain.patterns.is_empty());
         // A repository without LFS runs no git process for the install check.
@@ -288,7 +355,7 @@ mod tests {
 
         repo.write("art/.gitattributes", "*.psd filter=lfs diff=lfs merge=lfs -text\n");
         repo.commit_all("lfs in a folder");
-        let nested = status_with(&repo.path_string(), false, &installed, missing).unwrap();
+        let nested = status_with(&repo.path_string(), false, None, &installed, missing).unwrap();
         assert!(nested.used);
         assert_eq!(nested.version, None);
         // Only the root file's patterns are the ones Track and Untrack edit.
@@ -296,8 +363,56 @@ mod tests {
         assert_eq!(probes.get(), 1);
 
         // Later refreshes reuse the answer, so the not-installed notice still has it.
-        let again = status_with(&repo.path_string(), false, &installed, missing).unwrap();
+        let again = status_with(&repo.path_string(), false, None, &installed, missing).unwrap();
         assert!(again.used && again.version.is_none());
+        assert_eq!(probes.get(), 1);
+    }
+
+    #[test]
+    fn a_known_stamp_answers_unchanged_until_head_the_index_or_attributes_change() {
+        let repo = TestRepo::new();
+        repo.write("a.txt", "a\n");
+        repo.write("art/.gitattributes", "*.psd filter=lfs diff=lfs merge=lfs -text\n");
+        repo.commit_all("base");
+        let installed = InstallCache::new();
+        let probes = Cell::new(0);
+        let missing = || {
+            probes.set(probes.get() + 1);
+            None
+        };
+        let root = repo.path_string();
+        let first = status_with(&root, false, None, &installed, missing).unwrap();
+        assert!(first.used && !first.unchanged);
+        // The nested attributes file rides along, so the check needs no index read.
+        assert_eq!(stamp_paths(&first.stamp), vec!["art/.gitattributes".to_string()]);
+        let check = |stamp: &str| status_with(&root, false, Some(stamp), &installed, || None).unwrap();
+
+        let same = check(&first.stamp);
+        assert!(same.unchanged && same.files.is_empty());
+        assert_eq!(same.stamp, first.stamp);
+        // Editing a plain file leaves it alone.
+        repo.write("a.txt", "edited\n");
+        assert!(check(&first.stamp).unchanged);
+        // An install check always reads in full.
+        assert!(!status_with(&root, true, Some(&first.stamp), &installed, || None).unwrap().unchanged);
+
+        let mut stamp = check(&first.stamp).stamp;
+        let mut expect_change = |what: &str, change: &dyn Fn()| {
+            change();
+            let next = check(&stamp);
+            assert!(!next.unchanged, "{what} kept the stamp");
+            stamp = next.stamp;
+        };
+        expect_change("the nested attributes file", &|| repo.write("art/.gitattributes", "*.png filter=lfs -text\n"));
+        expect_change("the root attributes file", &|| repo.write(".gitattributes", "*.zip filter=lfs -text\n"));
+        expect_change("info/attributes", &|| repo.write(".git/info/attributes", "*.bin filter=lfs -text\n"));
+        expect_change("the index", &|| {
+            repo.git(&["add", "a.txt"]);
+        });
+        expect_change("HEAD", &|| {
+            repo.commit_all("next");
+        });
+        assert!(check(&stamp).unchanged);
         assert_eq!(probes.get(), 1);
     }
 
@@ -340,13 +455,13 @@ mod tests {
         install(&root).unwrap();
         track(&root, "*.psd").unwrap();
         assert!(repo.read_text(".gitattributes").contains("*.psd filter=lfs"));
-        let tracked = status(&root, true).unwrap();
+        let tracked = status(&root, true, None).unwrap();
         assert!(tracked.used);
         assert_eq!(tracked.patterns, vec!["*.psd".to_string()]);
 
         repo.write("art.psd", vec![0u8, 1, 2, 3, 255]);
         repo.commit_all("art");
-        assert_eq!(status(&root, false).unwrap().files, vec!["art.psd".to_string()]);
+        assert_eq!(status(&root, false, None).unwrap().files, vec!["art.psd".to_string()]);
         let pointer = parse_pointer(&repo.index_bytes("art.psd")).expect("the index holds a pointer");
         assert_eq!(pointer.size, 5);
 

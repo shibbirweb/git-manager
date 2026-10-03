@@ -2,7 +2,7 @@
 // numbers of the gesture (start distance, auto-scroll speed, Finder drop positions).
 
 import type { MenuPlatform } from "$lib/menu/menuIds";
-import { baseName, isInside, parentOf } from "$lib/stores/workspacePaths";
+import { isInside, parentOf } from "$lib/stores/workspacePaths";
 
 /** The pointer must move this far (CSS px) before a press on a row becomes a drag. */
 export const DRAG_THRESHOLD_PX = 4;
@@ -47,28 +47,6 @@ export function checkDrop(sourcePaths: string[], targetDir: string, mode: DropMo
     return "noop";
   }
   return "ok";
-}
-
-/**
- * The first name a move into `targetDir` would clash with, or null. A move never replaces:
- * `takenNames` are the names already in the folder, and two sources with one name clash too.
- * Sources already in the folder are skipped, as the backend skips them. macOS and Windows
- * see "Cart.ts" and "cart.ts" as one name.
- */
-export function moveClash(sourcePaths: string[], targetDir: string, takenNames: Iterable<string>, ignoreCase: boolean): string | null {
-  const fold = (name: string) => (ignoreCase ? name.toLowerCase() : name);
-  const taken = new Set([...takenNames].map(fold));
-  for (const sourcePath of sourcePaths) {
-    if (parentOf(sourcePath) === targetDir) {
-      continue;
-    }
-    const name = baseName(sourcePath);
-    if (taken.has(fold(name))) {
-      return name;
-    }
-    taken.add(fold(name));
-  }
-  return null;
 }
 
 /**

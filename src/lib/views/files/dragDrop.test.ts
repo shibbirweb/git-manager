@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AUTO_SCROLL_EDGE_PX, autoScrollStep, DRAG_THRESHOLD_PX, checkDrop, dragLabel, dropFolder, dropPointToCss, moveClash, pastDragThreshold } from "./dragDrop";
+import { AUTO_SCROLL_EDGE_PX, autoScrollStep, DRAG_THRESHOLD_PX, checkDrop, dragLabel, dropFolder, dropPointToCss, pastDragThreshold } from "./dragDrop";
+import cases from "./nameRules.cases.json";
 
 describe("dropFolder", () => {
   it("drops into a folder, or into the folder of a file", () => {
@@ -14,6 +15,14 @@ describe("dropFolder", () => {
 });
 
 describe("checkDrop", () => {
+  it("follows the shared rule table; clashes are left to the backend's dry run", () => {
+    for (const moveCase of cases.moves) {
+      const expected = moveCase.result.startsWith("clash:") ? "ok" : moveCase.result;
+      const sources = moveCase.sources.map((source) => source.path);
+      expect(checkDrop(sources, moveCase.target, "move"), moveCase.about).toBe(expected);
+    }
+  });
+
   it("allows moves and copies into another folder", () => {
     expect(checkDrop(["/w/src/cart.ts", "/w/README.md"], "/w/lib", "move")).toBe("ok");
     expect(checkDrop(["/w/src"], "/w/lib", "copy")).toBe("ok");
@@ -37,23 +46,6 @@ describe("pastDragThreshold", () => {
   it("turns a press into a drag only after a few pixels", () => {
     expect(pastDragThreshold({ x: 10, y: 10 }, { x: 12, y: 11 })).toBe(false);
     expect(pastDragThreshold({ x: 10, y: 10 }, { x: 10, y: 10 + DRAG_THRESHOLD_PX })).toBe(true);
-  });
-});
-
-describe("moveClash", () => {
-  it("finds a name the target folder already has, before anything is asked or moved", () => {
-    expect(moveClash(["/w/src/cart.ts"], "/w/docs", ["cart.ts", "notes.md"], true)).toBe("cart.ts");
-    expect(moveClash(["/w/src/cart.ts", "/w/src/a.ts"], "/w/docs", ["notes.md"], true)).toBeNull();
-  });
-
-  it("matches names without case only where the file system does", () => {
-    expect(moveClash(["/w/src/Cart.ts"], "/w/docs", ["cart.ts"], true)).toBe("Cart.ts");
-    expect(moveClash(["/w/src/Cart.ts"], "/w/docs", ["cart.ts"], false)).toBeNull();
-  });
-
-  it("refuses two sources with one name and skips sources already in the folder", () => {
-    expect(moveClash(["/w/a/index.ts", "/w/b/index.ts"], "/w/docs", [], false)).toBe("index.ts");
-    expect(moveClash(["/w/docs/cart.ts"], "/w/docs", ["cart.ts"], true)).toBeNull();
   });
 });
 

@@ -40,9 +40,9 @@
   const dialogName = $derived(multiRepo ? repo.name : null);
   const lfsFiles = $derived(lfsFileSet(lfsStore.statuses[repoRoot]));
 
-  // LFS files are read once per status refresh, for the "LFS" badges.
+  // LFS files for the "LFS" badges, checked again when HEAD, the index or entries change.
   $effect(() => {
-    lfsStore.follow(repoRoot, section.status);
+    lfsStore.follow(repoRoot, repoStore.treeVersions[repoRoot] ?? 0);
   });
 
   function rowBadge(file: FileStatus): string | null {

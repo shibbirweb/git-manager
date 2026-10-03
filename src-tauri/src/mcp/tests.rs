@@ -16,7 +16,7 @@ use super::http::{CLI_OFF, MCP_OFF};
 use super::paths::OUTSIDE;
 use super::protocol::{self, TURNED_OFF};
 use super::{cli, token, Host, Mcp};
-use crate::test_support::{image_bytes, TestRepo};
+use crate::test_support::{git_in, image_bytes, TestRepo};
 
 #[derive(Default)]
 struct TestHost {
@@ -607,6 +607,30 @@ fn file_search_and_performance_tools_answer() {
         .map(|entry| entry["name"].as_str().unwrap())
         .collect();
     assert_eq!(names, ["notes", "src"]);
+    assert_eq!(listing["structuredContent"]["entries"][0], json!({ "name": "notes", "isDir": true }));
+    assert_eq!(listing["structuredContent"]["total"], 2);
+    assert_eq!(listing["structuredContent"]["truncated"], false);
+
+    // Pages: flags only when true, nextOffset until the last page.
+    repo.write(".gitignore", "*.log\n");
+    repo.write("a.log", "x");
+    std::fs::create_dir_all(repo.file("inner")).unwrap();
+    git_in(&repo.file("inner"), &["init", "-q"]);
+    let page = |offset: u64| fixture.call("list_directory", json!({ "folderPath": repo.path_string(), "limit": 2, "offset": offset }));
+    let first = page(0);
+    assert_eq!(
+        first["structuredContent"]["entries"],
+        json!([{ "name": "inner", "isDir": true, "isRepo": true }, { "name": "notes", "isDir": true }]),
+        "{first}"
+    );
+    assert_eq!(first["structuredContent"]["total"], 5);
+    assert_eq!(first["structuredContent"]["truncated"], true);
+    assert_eq!(first["structuredContent"]["nextOffset"], 2);
+    let last = page(4);
+    assert_eq!(last["structuredContent"]["entries"], json!([{ "name": "a.log", "isDir": false, "ignored": true }]));
+    assert_eq!(last["structuredContent"]["truncated"], false);
+    assert!(last["structuredContent"].get("nextOffset").is_none());
+    assert_eq!(page(9)["structuredContent"]["entries"], json!([]));
 
     let found = fixture.call("search_files", json!({ "query": "cart" }));
     assert_eq!(found["structuredContent"]["items"][0]["relativePath"], "src/cart.rs");

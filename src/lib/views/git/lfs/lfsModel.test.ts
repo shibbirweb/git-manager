@@ -3,7 +3,7 @@ import type { LfsStatus } from "$lib/types";
 import { formatSize, lfsContentChanged, lfsFileSet, lfsSizeText, needsLfsInstall, validateLfsPattern } from "./lfsModel";
 
 function status(overrides: Partial<LfsStatus>): LfsStatus {
-  return { version: "git-lfs/3.5.1", used: true, patterns: ["*.psd"], files: ["art.psd"], ...overrides };
+  return { version: "git-lfs/3.5.1", used: true, patterns: ["*.psd"], files: ["art.psd"], stamp: "s", unchanged: false, ...overrides };
 }
 
 describe("lfsModel", () => {

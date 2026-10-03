@@ -1,8 +1,14 @@
 // Names typed into New File, New Folder and Rename. The backend checks them again; these
-// checks only make the dialog explain a problem before the user presses the button.
+// checks only make the dialog explain a problem before the user presses the button. Both
+// follow the rule table in nameRules.cases.json, which the tests on each side read.
 
-/** File systems limit one name to 255 bytes. */
-const MAX_NAME_BYTES = 255;
+/** File systems limit one name to 255 bytes (UTF-8), not 255 characters. */
+export const MAX_NAME_BYTES = 255;
+
+/** The length of a name as the file system counts it. */
+export function nameBytes(name: string): number {
+  return new TextEncoder().encode(name).length;
+}
 
 export interface NameRules {
   /** New File and New Folder accept "folder/file.ts" and create the folders on the way. */
@@ -13,6 +19,8 @@ export interface NameRules {
   folderLabel: string;
   /** Rename: the current name, which may stay as it is. */
   current?: string;
+  /** macOS and Windows see "Cart.ts" and "cart.ts" as one name, so a taken name is matched without case. */
+  ignoreCase?: boolean;
 }
 
 function partProblem(part: string): string | null {
@@ -22,7 +30,7 @@ function partProblem(part: string): string | null {
   if (part.includes("\0")) {
     return "A name cannot contain a null character";
   }
-  if (new TextEncoder().encode(part).length > MAX_NAME_BYTES) {
+  if (nameBytes(part) > MAX_NAME_BYTES) {
     return "The name is too long";
   }
   return null;
@@ -41,7 +49,7 @@ export function nameProblem(value: string, rules: NameRules): string | null {
     return "A name cannot contain /";
   }
   const parts = name.split("/");
-  if (parts.some((part) => part === "")) {
+  if (parts.some((part) => part.trim() === "")) {
     return "Each part between slashes needs a name";
   }
   for (const part of parts) {
@@ -51,8 +59,26 @@ export function nameProblem(value: string, rules: NameRules): string | null {
     }
   }
   // "lib/x.ts" may go into an existing "lib"; only a whole name that is there already clashes.
-  if (parts.length === 1 && rules.taken.has(name)) {
-    return `${name} already exists in ${rules.folderLabel}`;
+  const existing = parts.length === 1 ? takenName(name, rules) : null;
+  if (existing !== null) {
+    return `${existing} already exists in ${rules.folderLabel}`;
+  }
+  return null;
+}
+
+/** The entry already in the folder that `name` would clash with; a case change of the current name is a rename. */
+function takenName(name: string, rules: NameRules): string | null {
+  if (rules.taken.has(name)) {
+    return name;
+  }
+  if (!rules.ignoreCase) {
+    return null;
+  }
+  const folded = name.toLowerCase();
+  for (const taken of rules.taken) {
+    if (taken !== rules.current && taken.toLowerCase() === folded) {
+      return taken;
+    }
   }
   return null;
 }
