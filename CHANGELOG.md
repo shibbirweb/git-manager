@@ -58,7 +58,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Editor cursor settings like VS Code (style: line, line thin, block, block outline, underline, underline thin; width; blinking: blink, smooth, phase, expand, solid; smooth caret animation) and Sublime Text's caret extra top and bottom, in Settings > Editor.
 - Files panel: Select Opened File (the crosshair button) opens the folders down to the file you are editing, selects it and scrolls to it, like JetBrains.
 - Scripts tool window: run npm, yarn, pnpm, bun, Composer, Make, Deno and just scripts from the left activity bar, in a Run tab with Rerun and Stop, with the Node version each package asks for.
-- Search Everywhere (double Shift) with All, Classes, Files, Symbols and Text tabs, Go to File (Cmd+P), Go to Class (Cmd+O), Go to Symbol (Option+Cmd+O) and Find in Files (Shift+Cmd+F). Text selected in the editor fills the search field.
+- Search Everywhere (double Shift) with All, Classes, Files, Symbols and Text tabs, Go to File (Shift+Cmd+O), Go to Class (Cmd+O), Go to Symbol (Option+Cmd+O) and Find in Files (Shift+Cmd+F). Text selected in the editor fills the search field.
 - Find and replace bar in the editor (Cmd+F, Cmd+R) with Match Case, Words and Regex, a match counter and Select All Occurrences, plus Replace in Files (Shift+Cmd+R), which skips files with unsaved edits.
 - Code menu commands: comments, duplicate, delete, join, move, indent, toggle case and sort lines, folding, Go to Line, and Select Next Occurrence (Cmd+D) for multiple cursors.
 - Markdown editor: formatting toolbar, live preview with linked scrolling, mermaid diagrams and local images, as Editor Only, Editor and Preview, or Preview Only.
@@ -75,6 +75,7 @@ GitHub release notes, and the app shows it as "What's New".
 - IDE editing features, each with a switch in Settings > Editor > Editing features that frees its memory when off: auto-close brackets and quotes, code completion from the file's words and the language's keywords (Ctrl+Space, Enter or Tab to accept, optionally only on Ctrl+Space), fold arrows beside the line numbers, indent guides, highlighting the word at the cursor, scrolling past the end, column selection with Option+drag and a right margin line at a chosen column.
 - Syntax colors for Go, Java, Kotlin, Swift, Ruby, shell scripts, TOML, XML, Dockerfile, C, C++ and C#, in the editor and in Markdown code blocks.
 - Terminal polish like VS Code and JetBrains: split terminals side by side (Cmd+\\) with a draggable divider and split groups in the list, find in the terminal (Cmd+F) with Match Case, Words and Regex, Cmd+click file paths such as `src/app.ts:12:5` to open them at that line, drop files from Finder to type their quoted paths, rename a terminal by double-clicking its name, Paste, Find... and Split Terminal in the right-click menu, a visual bell, and GPU drawing (WebGL), Unicode 11 widths, smooth scrolling and Option as Meta, each with its own switch in Settings > Terminal.
+- Quick Open and the Command Palette, like VS Code: Cmd+P finds files (recently opened first, `name:42` opens at a line) and Shift+Cmd+P runs any menu command, with recently used commands on top and each command's shortcut. Type `>` for commands, `:` to go to a line, `@` for the symbols of the file, `#` for symbols in the workspace and `?` for help. Search Everywhere (double Shift) stays as it is.
 - Git > Open Repository in Browser opens the web page of the repository's remote on any host (GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted); with several remotes, a list lets you choose.
 
 ### Changed
@@ -82,6 +83,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Fetch, Pull, Push and Stash moved from the header to the Git menu (Fetch All Remotes, Pull..., Push..., Force Push..., Uncommitted Changes > Stash Changes...).
 - Save and Revert moved from the editor toolbar to the File menu (Save, Save All, Revert File).
 - Go to Line is now Cmd+L (it was Option+Cmd+G).
+- Cmd+P (Edit > Go to File...) opens Quick Open instead of the Files tab of Search Everywhere; Shift+Cmd+O still opens that tab.
 - The "Merge and Log" settings section is now called "Git", and also holds the commit options and the Git Console switch.
 - The hover-only buttons on a repository in the Changes sidebar became an always visible actions row with a ... menu.
 - The file editor header is one slim bar, like JetBrains: the path, its badges and icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch, so the code starts right under the tabs. Conflict actions get their own strip only while a file has conflicts, and the bar shortens the path instead of wrapping when the editor is narrow.
