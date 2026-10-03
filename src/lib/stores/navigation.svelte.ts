@@ -17,6 +17,8 @@ import { folderFor, relativeTo } from "./workspacePaths";
 
 export interface RevealRequest {
   filePath: string;
+  /** The editor group whose editor of the file takes it (a file can be open in both). */
+  groupId: number;
   /** 0-based line; null only focuses the editor. */
   line: number | null;
   /** 0-based column on that line. */
@@ -115,7 +117,8 @@ class NavigationStore {
     if (!(await this.fileExists(target.filePath))) {
       return "gone";
     }
-    this.reveal = { filePath: target.filePath, line: target.line, token: ++this.token };
+    const groupId = repoStore.targetGroupFor(target.filePath);
+    this.reveal = { filePath: target.filePath, groupId, line: target.line, token: ++this.token };
     await repoStore.openFile(target.filePath);
     const opened = repoStore.openFilePath === target.filePath;
     if (!opened) {
@@ -147,20 +150,31 @@ class NavigationStore {
 
   /**
    * Opens a file and focuses its editor, with the cursor on a 0-based `line`
-   * and `column` when given (Go to File with "name:42").
+   * and `column` when given (Go to File with "name:42"). `toSide` opens it in the other editor group.
    */
-  async openFileAt(filePath: string, line: number | null, column: number | null, options: { pin?: boolean } = {}): Promise<void> {
-    this.reveal = { filePath, line, column: column ?? 0, focus: true, token: ++this.token };
+  async openFileAt(
+    filePath: string,
+    line: number | null,
+    column: number | null,
+    options: { pin?: boolean; toSide?: boolean } = {},
+  ): Promise<void> {
+    const groupId = repoStore.targetGroupFor(filePath, options.toSide ?? false);
+    this.reveal = { filePath, groupId, line, column: column ?? 0, focus: true, token: ++this.token };
     await repoStore.openFile(filePath, options);
     if (repoStore.openFilePath !== filePath) {
       this.reveal = null;
     }
   }
 
-  /** The editor applied a reveal request; returns it when it targets `filePath`. */
-  takeReveal(filePath: string): RevealRequest | null {
+  /** The editor of `filePath` in `groupId` should take the keyboard, now or once it opens. */
+  focusEditor(filePath: string, groupId: number): void {
+    this.reveal = { filePath, groupId, line: null, focus: true, token: ++this.token };
+  }
+
+  /** The editor applied a reveal request; returns it when it targets `filePath` in `groupId`. */
+  takeReveal(filePath: string, groupId: number): RevealRequest | null {
     const request = this.reveal;
-    if (!request || request.filePath !== filePath) {
+    if (!request || request.filePath !== filePath || request.groupId !== groupId) {
       return null;
     }
     this.reveal = null;

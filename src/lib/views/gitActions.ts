@@ -149,7 +149,7 @@ export async function showLog(repoRoot?: string): Promise<void> {
   if (repoRoot) {
     await repoStore.setActiveRepo(repoRoot);
   }
-  if (changesSelection.shownView !== "log") {
+  if (!changesSelection.logShown) {
     changesSelection.toggleLog();
   }
 }
