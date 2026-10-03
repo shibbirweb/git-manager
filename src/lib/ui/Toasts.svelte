@@ -12,6 +12,9 @@
           <pre class="detail selectable">{item.detail}</pre>
         {/if}
       </div>
+      {#if item.action}
+        <button class="btn small toast-action" onclick={() => toast.runAction(item.id)}>{item.action.label}</button>
+      {/if}
       <button class="icon-btn close" onclick={() => toast.dismiss(item.id)} aria-label="Dismiss">
         <Icon name="x" size={14} />
       </button>
@@ -50,6 +53,10 @@
     border-left-color: var(--danger);
   }
 
+  .toast.warning {
+    border-left-color: var(--warning);
+  }
+
   .body {
     flex: 1;
     min-width: 0;
@@ -73,5 +80,10 @@
   .close {
     height: 22px;
     min-width: 22px;
+  }
+
+  .toast-action {
+    flex: none;
+    align-self: center;
   }
 </style>

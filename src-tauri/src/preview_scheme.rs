@@ -6,11 +6,16 @@
 //!   it asks for (seek + read), so WebKit's PDF viewer can load a big document in pieces.
 //! - `/revision/<repository root>/<revision>/<repo-relative path>`: a file in git. The revision
 //!   is `HEAD`, `index` (stage 0), a full commit id or `<commit id>^` (its first parent). git
-//!   stores blobs compressed, so each request reads the blob, answers its range and drops it.
+//!   stores blobs compressed and a blob is inflated whole to read any part of it, so a blob is
+//!   always sent whole: a `Range` header is ignored and no `Accept-Ranges` is offered.
 //!
-//! Only files inside the open workspace folders (`PreviewFolders`, set by the frontend) and
-//! only the types `media::preview_mime` knows. Refusals have an empty body, so no path leaks.
+//! Only files inside the workspace folders open in the asking window (`PreviewFolders`, set
+//! by the frontend per window) and
+//! only the types `media::preview_mime` knows, plus SVG work tree files for the Markdown
+//! images, sent with a CSP that lets them run nothing. Refusals have an empty body, so no
+//! path leaks.
 
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
@@ -29,19 +34,37 @@ pub const SCHEME: &str = "gmpreview";
 /// accept (they ask again from where the answer ended).
 pub const MAX_RANGE_BYTES: u64 = 4 * 1024 * 1024;
 
-/// The canonical workspace folders the scheme may serve from, replaced by the frontend
-/// whenever the workspace changes. Empty until then, so nothing is served.
+pub const SVG_MIME: &str = "image/svg+xml";
+
+/// For an SVG opened on its own (not through `<img>`): no scripts, no loads, no forms.
+pub const SVG_CSP: &str = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+
+/// The canonical workspace folders the scheme may serve from, per window label: a page only
+/// reaches the folders open in its own window. Replaced whenever a window's workspace
+/// changes, removed when it closes; a window that has not reported yet gets nothing.
 #[derive(Clone, Default)]
-pub struct PreviewFolders(Arc<RwLock<Vec<PathBuf>>>);
+pub struct PreviewFolders(Arc<RwLock<HashMap<String, Vec<PathBuf>>>>);
 
 impl PreviewFolders {
-    pub fn set(&self, folder_paths: &[String]) {
+    pub fn set(&self, window_label: &str, folder_paths: &[String]) {
         let folders = paths::canonical_folders(folder_paths);
-        *self.0.write().unwrap_or_else(|poisoned| poisoned.into_inner()) = folders;
+        self.0
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .insert(window_label.to_string(), folders);
     }
 
-    pub fn get(&self) -> Vec<PathBuf> {
-        self.0.read().unwrap_or_else(|poisoned| poisoned.into_inner()).clone()
+    pub fn get(&self, window_label: &str) -> Vec<PathBuf> {
+        self.0
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(window_label)
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    pub fn remove(&self, window_label: &str) {
+        self.0.write().unwrap_or_else(|poisoned| poisoned.into_inner()).remove(window_label);
     }
 }
 
@@ -247,10 +270,19 @@ fn resolve(folders: &[PathBuf], target: &Target) -> Result<Resolved, Refusal> {
     }
 }
 
+/// The preview's types, and SVG for the images of a Markdown document. The preview opens an SVG
+/// file in the editor (it is text), so only a work tree file is served, for an `<img>`.
+fn worktree_mime(file_path: &Path) -> Option<&'static str> {
+    media::preview_mime(file_path).or_else(|| {
+        let extension = file_path.extension()?.to_str()?;
+        extension.eq_ignore_ascii_case("svg").then_some(SVG_MIME)
+    })
+}
+
 fn resolve_file(folders: &[PathBuf], file_path: &str) -> Result<Resolved, Refusal> {
     // Resolves symlinks and refuses `..`, so a link out of the folders is outside too.
     let resolved = paths::checked_path(folders, file_path).map_err(|_| Refusal::Forbidden)?;
-    let mime = media::preview_mime(&resolved).ok_or(Refusal::Forbidden)?;
+    let mime = worktree_mime(&resolved).ok_or(Refusal::Forbidden)?;
     let metadata = std::fs::metadata(&resolved).map_err(|_| Refusal::NotFound)?;
     if !metadata.is_file() {
         return Err(Refusal::NotFound);
@@ -337,7 +369,7 @@ fn read_bytes(content: &Content, start: u64, length: u64) -> Option<Vec<u8>> {
             Some(body)
         }
         Content::Blob { repo_root, blob_id } => {
-            // The blob is inflated whole for every request and dropped right after.
+            // Inflated whole and dropped right after; asked for once, as blobs take no ranges.
             let repo = Repository::open(repo_root).ok()?;
             let blob = repo.find_blob(*blob_id).ok()?;
             let bytes = blob.content();
@@ -380,18 +412,30 @@ impl PreviewResponse {
     }
 }
 
-fn content_headers(mime: &str, length: u64) -> Vec<(&'static str, String)> {
-    vec![
-        ("Content-Type", mime.to_string()),
+fn content_headers(resolved: &Resolved, length: u64) -> Vec<(&'static str, String)> {
+    let mut headers = vec![
+        ("Content-Type", resolved.mime.to_string()),
         ("Content-Length", length.to_string()),
-        ("Accept-Ranges", "bytes".to_string()),
         ("Cache-Control", "no-store".to_string()),
         ("X-Content-Type-Options", "nosniff".to_string()),
-    ]
+    ];
+    if takes_ranges(&resolved.content) {
+        headers.push(("Accept-Ranges", "bytes".to_string()));
+    }
+    if resolved.mime == SVG_MIME {
+        headers.push(("Content-Security-Policy", SVG_CSP.to_string()));
+    }
+    headers
 }
 
-/// Answers one request: 200 with the whole content, 206 with one range (at most
-/// `MAX_RANGE_BYTES`), 403, 404, 405, 413 or 416.
+/// A file is read by seek, so a range costs only its bytes. A blob must be inflated whole for
+/// any range: a 100 MB PDF read in 4 MB ranges would be inflated 25 times.
+fn takes_ranges(content: &Content) -> bool {
+    matches!(content, Content::File(_))
+}
+
+/// Answers one request: 200 with the whole content, 206 with one range of a work tree file (at
+/// most `MAX_RANGE_BYTES`), 403, 404, 405, 413 or 416.
 pub fn respond(folders: &[PathBuf], request: &PreviewRequest) -> PreviewResponse {
     let head_only = match request.method {
         "GET" => false,
@@ -405,7 +449,7 @@ pub fn respond(folders: &[PathBuf], request: &PreviewRequest) -> PreviewResponse
         Ok(resolved) => resolved,
         Err(refusal) => return PreviewResponse::empty(refusal.status()),
     };
-    let range = if head_only {
+    let range = if head_only || !takes_ranges(&resolved.content) {
         ByteRange::Full
     } else {
         parse_range(request.range, resolved.len)
@@ -424,7 +468,7 @@ pub fn respond(folders: &[PathBuf], request: &PreviewRequest) -> PreviewResponse
             if head_only {
                 return PreviewResponse {
                     status: 200,
-                    headers: content_headers(resolved.mime, resolved.len),
+                    headers: content_headers(&resolved, resolved.len),
                     body: Vec::new(),
                 };
             }
@@ -433,7 +477,7 @@ pub fn respond(folders: &[PathBuf], request: &PreviewRequest) -> PreviewResponse
             };
             PreviewResponse {
                 status: 200,
-                headers: content_headers(resolved.mime, body.len() as u64),
+                headers: content_headers(&resolved, body.len() as u64),
                 body,
             }
         }
@@ -446,7 +490,7 @@ pub fn respond(folders: &[PathBuf], request: &PreviewRequest) -> PreviewResponse
                 return PreviewResponse::empty(416);
             }
             let last = start + body.len() as u64 - 1;
-            let mut headers = content_headers(resolved.mime, body.len() as u64);
+            let mut headers = content_headers(&resolved, body.len() as u64);
             headers.push(("Content-Range", format!("bytes {start}-{last}/{}", resolved.len)));
             PreviewResponse {
                 status: 206,

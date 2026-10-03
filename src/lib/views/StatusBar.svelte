@@ -9,11 +9,13 @@
   import { api } from "$lib/api";
   import { branchTabPath } from "$lib/stores/branchTabs";
   import { loadingChangesText } from "$lib/stores/openingProgress";
+  import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
   import Icon from "$lib/ui/Icon.svelte";
+  import NotificationBell from "$lib/notifications/NotificationBell.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { changesSelection } from "./changes/selection.svelte";
   import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
@@ -233,6 +235,12 @@
       <span class="item static" title="Language">{fileInfo.language}</span>
       <span class="gap"></span>
     {/if}
+    {#if autoFetch.hint}
+      <button class="item fetch-hint" onclick={() => autoFetch.retryNow()} title={autoFetch.hint.title}>
+        <Icon name="cloud" size={12} />
+        <span>{autoFetch.hint.text}</span>
+      </button>
+    {/if}
     {#if updates.available}
       <button class="item update" onclick={() => (updates.dialogOpen = true)} title="See what's new and download">
         <Icon name="arrow-down" size={12} />
@@ -246,6 +254,7 @@
         <span class="spinner"></span>{loadingChangesText(repoStore.loadingChanges.done, repoStore.loadingChanges.total)}
       </span>
     {/if}
+    <NotificationBell />
     <button class="item icon-only" onclick={() => void updates.openRepository()} title="Star Git Manager on GitHub" aria-label="Star on GitHub">
       <Icon name="star" size={12} />
     </button>
@@ -296,7 +305,8 @@
               </p>
             </div>
             <p class="note">
-              Physical memory, as Activity Monitor shows it. The UI runs in macOS WebKit helper processes, which are counted too.
+              Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in macOS
+              WebKit helper processes, one web content process per window, which are counted too.
               {#if memory.approximate}
                 Started from a terminal, so helpers are matched by start time.
               {/if}
@@ -390,6 +400,10 @@
   .item.update {
     color: var(--accent);
     font-weight: 600;
+  }
+
+  .item.fetch-hint {
+    color: var(--warning);
   }
 
   .item.conflict {

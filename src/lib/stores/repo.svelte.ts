@@ -9,21 +9,59 @@ import type { UnlistenFn } from "@tauri-apps/api/event";
 import { api, errorMessage, onGitProgress, onRepoChanged, onWorkspaceChanged } from "$lib/api";
 import type { OpOutcome, Refs, RemoteInfo, RepoInfo, RepoStatus, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
-import { toast } from "$lib/ui/toast.svelte";
+import { toast, type ToastAction } from "$lib/ui/toast.svelte";
 import { settings } from "./settings.svelte";
 import { commitTabPath } from "./commitTabs";
 import { baseName, openFailure, openingTitle } from "./openingProgress";
-import { locateAbsolute, type PathMove } from "./workspacePaths";
+import { folderFor, locateAbsolute, type PathMove } from "./workspacePaths";
+import { repoRefresh, treeChanged, WATCHER_FALLBACK_MS, workspaceRefresh, writeFallback } from "./refreshPlan";
+import { isPseudoTab } from "./pseudoTabs";
+import { type ClosedTab, popClosedTab, pushClosedTabs, reopenAt, updateClosedPosition } from "./closedTabs";
 import {
-  closeTabs,
+  allTabs,
+  applyEvictions,
+  canSplitRight,
+  closedBetween,
+  closeGroup,
+  closeInGroups,
+  dropEmptyGroups,
+  type EditorGroup,
+  focusedGroup,
+  focusGroup,
+  groupById,
+  groupEvictions,
+  type GroupsState,
+  type GroupTab,
+  hasTab,
+  initialGroups,
+  mapGroups,
+  mergeGroups,
+  moveToOtherGroup,
+  openInGroup,
+  openTarget,
+  restoredGroups,
+  setDirtyEverywhere,
+  sideOf,
+  splitRight,
+  updateGroup,
+} from "./editorGroups";
+import {
+  restorableTabs,
+  sameTabSession,
+  type SavedTabGroup,
+  sessionPaths,
+  type TabPosition,
+  tabSessionOf,
+} from "./tabSession";
+import { isTerminalTab } from "$lib/terminal/terminalTabs";
+import {
   type FileTab,
   fileTabsUnder,
-  openTab,
   otherPaths,
   pathsToRight,
   pinTab,
   retargetTabs,
-  setTabDirty,
+  setTabPinned,
   tabsInFolder,
   type TabsState,
 } from "./tabs";
@@ -50,6 +88,14 @@ export interface OpenWorkspace {
 
 /** Recognized workspace file suffixes; the first is the one we save. */
 export const WORKSPACE_FILE_SUFFIXES = [".gitmanager-workspace", ".code-workspace"];
+
+export interface OpenOptions {
+  /**
+   * False when a window reopens what it showed (restored at start, or a reload): two restored
+   * windows may share a folder, and neither should give it up to the other.
+   */
+  focusExisting?: boolean;
+}
 
 export function isWorkspaceFile(path: string): boolean {
   return WORKSPACE_FILE_SUFFIXES.some((suffix) => path.endsWith(suffix));
@@ -101,16 +147,31 @@ export interface CommitTabInfo {
   focus: { path: string; token: number } | null;
 }
 
+/** Wait after the last tab change (or caret move) before the open tabs are written to state.json. */
+const TABS_SAVE_DELAY_MS = 1000;
+
+/** File tabs count for the tab limit and the saved session; commit, history, branches and terminal tabs do not. */
+function isFileTab(tabPath: string): boolean {
+  return !isPseudoTab(tabPath);
+}
+
+/** Key of a dormant tab: the same file can sleep in each editor group. */
+function dormantKey(groupId: number, tabPath: string): string {
+  return `${groupId}\n${tabPath}`;
+}
+
 /** Wait after the last `.git` appearing or disappearing before rescanning, so a clone is scanned once. */
 const RESCAN_DELAY_MS = 1000;
 
 interface RunOptions<T> {
   /** Toast shown on success; a function receives the result. */
   success?: string | ((result: T) => string | null);
-  /** Refresh the repository afterwards (default true). */
-  refresh?: boolean;
+  /** Refresh the repository afterwards (default true); "status" when the work only touches the index or files. */
+  refresh?: boolean | "status";
   /** Repository to run in; defaults to the active one. */
   repoPath?: string;
+  /** A button in the success toast, such as Undo; null for none. */
+  action?: (result: T) => ToastAction | null;
 }
 
 class RepoStore {
@@ -129,18 +190,37 @@ class RepoStore {
   busy = $state<string | null>(null);
   /** Latest progress line from fetch/pull/push. */
   progress = $state("");
-  /** Incremented whenever HEAD or refs of the active repo may have changed; LogView reloads on change. */
+  /** Incremented when the active repo changes or its HEAD, a branch, remote branch or tag moves; LogView reloads on change. */
   historyVersion = $state(0);
-  /** Incremented when files anywhere in the workspace change; the file explorer reloads on change. */
+  /**
+   * Incremented when files outside every repository change, or entries anywhere are created, deleted or
+   * renamed; tabs of files outside a repository reload on change (the others follow their status).
+   */
   workspaceVersion = $state(0);
-  view = $state<MainView>("diff");
+  /** Incremented when entries are created, deleted or renamed, or ignore rules change; the Files panel re-lists. */
+  listingVersion = $state(0);
+  /**
+   * Per repository root: incremented when its work tree, index or HEAD changes. An unchanged status keeps its object,
+   * so open tabs and the Changes diff follow this to see a file edited or staged again while its status stays the same.
+   */
+  fileVersions = $state.raw<Record<string, number>>({});
+  /**
+   * Per repository root: incremented when HEAD, the index, entries or a `.gitattributes` may have changed (an event,
+   * a git operation, Refresh All), not for content edits. The Git LFS state follows this.
+   */
+  treeVersions = $state.raw<Record<string, number>>({});
+  private viewState = $state<MainView>("diff");
   /** Conflicted path (in the active repository) open in the merge view. */
   mergeTarget = $state<string | null>(null);
   conflictsOpen = $state(false);
-  /** Open editor tabs, in display order. */
-  tabs = $state.raw<FileTab[]>([]);
-  /** Absolute path of the active file tab. */
-  openFilePath = $state<string | null>(null);
+  /** The editor groups and which one has the focus (editorGroups.ts). */
+  private groupsState = $state.raw<GroupsState>(initialGroups());
+  /** Every open editor tab once, left group first. */
+  tabs = $derived(allTabs(this.groupsState));
+  /** Absolute path of the focused group's active tab. */
+  openFilePath = $derived(focusedGroup(this.groupsState).active);
+  /** Set by the changes view: a selected change keeps the first group's Diff tab. */
+  private primaryContent: () => boolean = () => false;
   /** A folder being opened: shown as a progress card, since there is nothing else to show yet. */
   opening = $state<{ title: string; step: string } | null>(null);
   /** Statuses still loading after a folder opened, shown in the status bar without blocking anything. */
@@ -159,6 +239,20 @@ class RepoStore {
   } | null>(null);
   private logFocusToken = 0;
 
+  // Tab session (tabSession.ts, closedTabs.ts, tabLimit.ts): kept small, paths and numbers only.
+  /** Recently closed tabs for Reopen Closed Tab, newest last. */
+  closedTabs = $state.raw<ClosedTab[]>([]);
+  /** Restored tabs (by group and path) whose file is not loaded yet; the editor mounts the first time the tab is shown. */
+  dormantTabs = $state.raw<ReadonlySet<string>>(new Set());
+  /** When each tab was last shown, for the tab limit's least recently used choice. */
+  private tabUse = new Map<string, number>();
+  private tabUseClock = 0;
+  /** Last known caret and scroll of open file tabs, saved with the session. */
+  private tabPositions = new Map<string, TabPosition>();
+  /** Positions a restored or reopened tab's editor applies when it opens. */
+  private pendingPositions = new Map<string, TabPosition>();
+  private tabsSaveTimer: ReturnType<typeof setTimeout> | undefined;
+
   private unlisteners: UnlistenFn[] = [];
   private tabsClosedListeners: Array<(tabPaths: string[]) => void> = [];
   private inflight = new Map<string, Promise<void>>();
@@ -166,6 +260,31 @@ class RepoStore {
   /** Repository whose stash list last failed to load, so the error shows once, not on every refresh. */
   private stashErrorRepo: string | null = null;
   private rescanTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Hash of the status held per repository root, sent back so an unchanged status is not sent again. */
+  private statusHashes = new Map<string, string>();
+  /** Fingerprint of the active repository's refs, stashes, remotes and worktrees, and of its branch tips. */
+  private refsState: { repoRoot: string; fingerprint: string; tips: string } | null = null;
+  /** Orders writes, reads and watcher events: `stamp()` only grows. */
+  private clock = 0;
+  /** `stamp()` when each repository's latest status read started. */
+  private statusReadAt = new Map<string, number>();
+  /** `stamp()` of the latest watcher event. */
+  private watcherEventAt = 0;
+
+  /**
+   * What the first editor group shows: the Diff tab, the Log, its file tabs or nothing.
+   * Showing the Diff or the Log focuses that group.
+   */
+  get view(): MainView {
+    return this.viewState;
+  }
+
+  set view(next: MainView) {
+    this.viewState = next;
+    if (next === "diff" || next === "log") {
+      this.groupsState = focusGroup(this.groupsState, this.groupsState.groups[0].id);
+    }
+  }
 
   /** Status of the active repository. */
   get status(): RepoStatus | null {
@@ -190,9 +309,9 @@ class RepoStore {
    * Opens several folders as one workspace, replacing the current one. Never throws: every
    * failure is a toast naming the folder, so a failed start cannot fall back to the welcome screen silently.
    */
-  async openFolders(folderPaths: string[], workspaceFile: string | null = null): Promise<boolean> {
+  async openFolders(folderPaths: string[], workspaceFile: string | null = null, options: OpenOptions = {}): Promise<boolean> {
     try {
-      return await this.replaceWorkspace(folderPaths, workspaceFile);
+      return await this.replaceWorkspace(folderPaths, workspaceFile, options);
     } catch (error) {
       const failure = openFailure(folderPaths, errorMessage(error));
       toast.error(failure.title, failure.detail);
@@ -201,7 +320,14 @@ class RepoStore {
     }
   }
 
-  private async replaceWorkspace(folderPaths: string[], workspaceFile: string | null): Promise<boolean> {
+  private async replaceWorkspace(folderPaths: string[], workspaceFile: string | null, options: OpenOptions): Promise<boolean> {
+    // Already open in another window: that window comes to the front instead (false: not opened here).
+    if (options.focusExisting ?? true) {
+      const owner = await api.windowFocusOwner(folderPaths, workspaceFile).catch(() => null);
+      if (owner !== null) {
+        return false;
+      }
+    }
     // Opening replaces the workspace and its tabs, so ask before anything changes.
     if (!(await this.confirmDiscardAll())) {
       return false;
@@ -243,23 +369,40 @@ class RepoStore {
       workspaceFile,
     );
     this.repo = this.pickActive(this.workspace, this.repos);
+    await this.restoreTabs(this.workspace);
     // The workspace is on screen now; statuses fill in as they arrive, with a counter in the status bar.
     await this.loadAllChanges();
     this.historyVersion++;
     await this.watchAll();
     this.unlisteners.push(
       await onRepoChanged((event) => {
+        this.watcherEventAt = this.stamp();
         if (!this.repos.some((repo) => repo.root === event.repoPath)) {
           return;
         }
-        void this.refreshRepo(event.repoPath, event.gitDir);
+        if (event.workTree || event.index || event.refs) {
+          // Replaced, not mutated, so effects that read the whole record rerun too.
+          this.fileVersions = { ...this.fileVersions, [event.repoPath]: (this.fileVersions[event.repoPath] ?? 0) + 1 };
+        }
+        if (treeChanged(event)) {
+          this.treeChanged([event.repoPath]);
+        }
+        void this.refreshRepo(event.repoPath, repoRefresh(event).refs);
       }),
       await onWorkspaceChanged((event) => {
-        if (this.workspace?.folders.some((folder) => folder.root === event.workspaceRoot)) {
+        this.watcherEventAt = this.stamp();
+        if (!this.workspace?.folders.some((folder) => folder.root === event.workspaceRoot)) {
+          return;
+        }
+        const plan = workspaceRefresh(event);
+        if (plan.listing) {
+          this.listingVersion++;
+        }
+        if (plan.looseFiles) {
           this.workspaceVersion++;
-          if (event.reposChanged) {
-            this.scheduleRescan();
-          }
+        }
+        if (plan.rescan) {
+          this.scheduleRescan();
         }
       }),
       await onGitProgress((event) => {
@@ -306,7 +449,7 @@ class RepoStore {
     }
     await this.watchFolder(folders[folders.length - 1]);
     await Promise.all([...added.repos.map((repo) => this.refreshRepoStatus(repo.root)), this.refreshActive()]);
-    this.workspaceVersion++;
+    this.filesChanged();
     toast.success(`Added ${added.name} to the workspace`);
   }
 
@@ -345,11 +488,11 @@ class RepoStore {
       workspace.file,
     );
     await this.syncWorkspaceFile();
-    this.workspaceVersion++;
+    this.filesChanged();
   }
 
   /** Opens a `.gitmanager-workspace` or VS Code `.code-workspace` file. */
-  async openWorkspaceFile(filePath: string): Promise<boolean> {
+  async openWorkspaceFile(filePath: string, options: OpenOptions = {}): Promise<boolean> {
     let saved;
     try {
       saved = await api.readWorkspaceFile(filePath);
@@ -368,7 +511,7 @@ class RepoStore {
       toast.error("The workspace file lists no folders that exist");
       return false;
     }
-    return this.openFolders(saved.folders, filePath);
+    return this.openFolders(saved.folders, filePath, options);
   }
 
   /** Saves the open folders to a workspace file and links the workspace to it. */
@@ -461,6 +604,7 @@ class RepoStore {
 
   private async teardown(): Promise<void> {
     clearTimeout(this.rescanTimer);
+    this.resetTabSession();
     for (const unlisten of this.unlisteners) {
       unlisten();
     }
@@ -471,6 +615,9 @@ class RepoStore {
     this.workspace = null;
     this.repos = [];
     this.statuses = {};
+    this.statusHashes.clear();
+    this.statusReadAt.clear();
+    this.refsState = null;
     this.repo = null;
     this.refs = null;
     this.stashes = [];
@@ -478,12 +625,11 @@ class RepoStore {
     this.mergeTarget = null;
     this.conflictsOpen = false;
     const closedTabs = this.tabs.map((tab) => tab.path);
-    this.openFilePath = null;
-    this.tabs = [];
+    this.groupsState = initialGroups();
     this.commitTabs = {};
     this.notifyTabsClosed(closedTabs);
-    if (this.view === "file") {
-      this.view = "diff";
+    if (this.viewState === "file") {
+      this.viewState = "diff";
     }
   }
 
@@ -574,7 +720,7 @@ class RepoStore {
     }
     await this.watchAll();
     await this.refreshAll();
-    this.workspaceVersion++;
+    this.filesChanged();
   }
 
   async initRepository(folderPath: string): Promise<void> {
@@ -606,6 +752,11 @@ class RepoStore {
   }
 
   async refreshAll(): Promise<void> {
+    // Read the branches again even when their fingerprint matches (Refresh All is the way out of anything stale).
+    if (this.refsState) {
+      this.refsState = { ...this.refsState, fingerprint: "" };
+    }
+    this.treeChanged(this.repos.map((repo) => repo.root));
     await Promise.all([...this.repos.map((repo) => this.refreshRepoStatus(repo.root)), this.refreshActive()]);
   }
 
@@ -630,22 +781,54 @@ class RepoStore {
     }
   }
 
-  /** Refreshes one repository after a change; the active one also reloads branches and stashes. */
-  async refreshRepo(repoRoot: string, gitDirChanged = true): Promise<void> {
+  /**
+   * Refreshes one repository after a change; the active one also reloads branches and stashes
+   * when `refsChanged` (the Log follows when its branch tips moved).
+   */
+  async refreshRepo(repoRoot: string, refsChanged = true): Promise<void> {
     const tasks = [this.refreshRepoStatus(repoRoot)];
-    if (repoRoot === this.repo?.root && gitDirChanged) {
-      this.historyVersion++;
+    if (repoRoot === this.repo?.root && refsChanged) {
       tasks.push(this.refreshActive());
     }
     await Promise.all(tasks);
   }
 
+  private stamp(): number {
+    return ++this.clock;
+  }
+
+  /** Bumps `treeVersions` of `repoRoots` in one update. */
+  private treeChanged(repoRoots: string[]): void {
+    if (repoRoots.length === 0) {
+      return;
+    }
+    const next = { ...this.treeVersions };
+    for (const repoRoot of repoRoots) {
+      next[repoRoot] = (next[repoRoot] ?? 0) + 1;
+    }
+    this.treeVersions = next;
+  }
+
+  /** Both file views: the Files panel listing and tabs of files outside a repository. */
+  private filesChanged(): void {
+    this.workspaceVersion++;
+    this.listingVersion++;
+  }
+
   refreshRepoStatus(repoRoot: string): Promise<void> {
     return this.coalesce(`status:${repoRoot}`, async () => {
+      this.statusReadAt.set(repoRoot, this.stamp());
       try {
-        const status = await api.getStatus(repoRoot);
-        if (this.repos.some((repo) => repo.root === repoRoot)) {
-          this.statuses = { ...this.statuses, [repoRoot]: status };
+        // Only a status still held may be answered with "unchanged".
+        const knownHash = this.statuses[repoRoot] ? (this.statusHashes.get(repoRoot) ?? null) : null;
+        const snapshot = await api.getStatus(repoRoot, knownHash);
+        if (!this.repos.some((repo) => repo.root === repoRoot)) {
+          return;
+        }
+        // Unchanged: keep the same object, so nothing depending on it runs again.
+        if (snapshot.status) {
+          this.statusHashes.set(repoRoot, snapshot.hash);
+          this.statuses = { ...this.statuses, [repoRoot]: snapshot.status };
         }
       } catch (error) {
         if (repoRoot === this.repo?.root) {
@@ -665,11 +848,30 @@ class RepoStore {
         this.remotes = [];
         return;
       }
-      const [refs, stashes, remotes] = await Promise.all([
-        api.getRefs(repoRoot).catch((error) => {
-          toast.error("Could not read branches", errorMessage(error));
-          return null;
-        }),
+      const held = this.refsState?.repoRoot === repoRoot && this.refs ? this.refsState : null;
+      let snapshot;
+      try {
+        snapshot = await api.getRefsSnapshot(repoRoot, held?.fingerprint ?? null);
+      } catch (error) {
+        toast.error("Could not read branches", errorMessage(error));
+        snapshot = null;
+      }
+      if (this.repo?.root !== repoRoot) {
+        return;
+      }
+      // Nothing the sidebar shows changed: refs, stashes, remotes and worktrees stay as they are.
+      if (snapshot && !snapshot.refs) {
+        return;
+      }
+      if (snapshot) {
+        const previous = this.refsState?.repoRoot === repoRoot ? this.refsState : null;
+        this.refsState = { repoRoot, fingerprint: snapshot.fingerprint, tips: snapshot.tips };
+        if (previous && previous.tips !== snapshot.tips) {
+          this.historyVersion++;
+        }
+      }
+      const refs = snapshot?.refs ?? null;
+      const [stashes, remotes] = await Promise.all([
         api.getStashes(repoRoot).then(
           (stashes) => {
             this.stashErrorRepo = null;
@@ -708,10 +910,14 @@ class RepoStore {
     }
     this.busy = label;
     this.progress = "";
+    // A toast with a button waits for the refresh, so its button sees the state after the work.
+    let withAction: { message: string; result: T } | null = null;
     try {
       const result = await work(repoPath);
       const message = typeof options.success === "function" ? options.success(result) : options.success;
-      if (message) {
+      if (message && options.action) {
+        withAction = { message, result };
+      } else if (message) {
         toast.success(message);
       }
       return result;
@@ -721,8 +927,19 @@ class RepoStore {
     } finally {
       this.busy = null;
       this.progress = "";
-      if (options.refresh ?? true) {
-        await this.refreshRepo(repoPath, true);
+      const refresh = options.refresh ?? true;
+      if (refresh) {
+        // A git operation may move HEAD or the index without a watcher (or before its event).
+        this.treeChanged([repoPath]);
+        await this.refreshRepo(repoPath, refresh !== "status");
+      }
+      if (withAction) {
+        const action = options.action?.(withAction.result) ?? null;
+        if (action) {
+          toast.successWithAction(withAction.message, undefined, action);
+        } else {
+          toast.success(withAction.message);
+        }
       }
     }
   }
@@ -756,15 +973,35 @@ class RepoStore {
   }
 
   /**
-   * Files were written outside an editor (Replace in Files): refresh the owning repositories
-   * and the workspace, so open tabs without unsaved edits reload without waiting for the watcher.
+   * Files were written outside an editor (Replace in Files, the Files panel, MCP). The watcher's
+   * event refreshes the owning repositories and the file views once; this only steps in when no
+   * event comes (ignored files, no watcher), so a write is never read twice.
    */
   async filesWritten(filePaths: string[]): Promise<void> {
     const repoRoots = new Set(
       filePaths.map((filePath) => locateAbsolute(this.repos, filePath)?.repo.root ?? null).filter((root) => root !== null),
     );
-    this.workspaceVersion++;
-    await Promise.all([...repoRoots].map((repoRoot) => this.refreshRepoStatus(repoRoot)));
+    await this.afterWatcher([...repoRoots], true);
+  }
+
+  /** A file tab saved a file in `repoRoot`: one status read follows, from the watcher's event or else from here. */
+  fileSaved(repoRoot: string): void {
+    void this.afterWatcher([repoRoot], false);
+  }
+
+  /** Waits for the watcher to report a write at "now", then refreshes whatever it did not. */
+  private async afterWatcher(repoRoots: string[], fileViews: boolean): Promise<void> {
+    const writtenAt = this.stamp();
+    await new Promise((resolve) => setTimeout(resolve, WATCHER_FALLBACK_MS));
+    const plan = writeFallback(writtenAt, repoRoots, (repoRoot) => this.statusReadAt.get(repoRoot) ?? 0, this.watcherEventAt);
+    if (fileViews && plan.files) {
+      this.filesChanged();
+    }
+    // No event came for these (no watcher, or ignored files): a write may have added a `.gitattributes`.
+    if (fileViews) {
+      this.treeChanged(plan.statusOf);
+    }
+    await Promise.all(plan.statusOf.map((repoRoot) => this.refreshRepoStatus(repoRoot)));
   }
 
   /** The active file tab has unsaved edits. */
@@ -776,23 +1013,76 @@ class RepoStore {
     return filePath !== null && this.tabs.some((tab) => tab.path === filePath && tab.dirty);
   }
 
-  private get tabsState(): TabsState {
-    return { tabs: this.tabs, active: this.openFilePath };
+  /** The editor groups, left to right (editorGroups.ts). */
+  get groups(): readonly EditorGroup[] {
+    return this.groupsState.groups;
   }
 
-  private applyTabs(next: TabsState): void {
-    const open = new Set(next.tabs.map((tab) => tab.path));
-    const closedTabs = this.tabs.filter((tab) => !open.has(tab.path)).map((tab) => tab.path);
-    this.tabs = next.tabs;
-    this.openFilePath = next.active;
-    if (!next.active && this.view === "file") {
-      this.view = "diff";
+  get focusedGroupId(): number {
+    return focusedGroup(this.groupsState).id;
+  }
+
+  /** The first (left) group: it also shows the Diff tab, the Log and the empty view. */
+  get primaryGroupId(): number {
+    return this.groupsState.groups[0].id;
+  }
+
+  /** The first group's active tab, whatever group has the focus. */
+  get primaryActive(): string | null {
+    return this.groupsState.groups[0].active;
+  }
+
+  groupById(groupId: number): EditorGroup | null {
+    return groupById(this.groupsState, groupId);
+  }
+
+  /** The changes view registers what keeps an empty first group open (a selected change). */
+  setPrimaryContent(check: () => boolean): void {
+    this.primaryContent = check;
+  }
+
+  /** An empty first group stays while it shows the Diff tab or the Log. */
+  private keepPrimaryGroup(): boolean {
+    return this.viewState === "log" || this.primaryContent();
+  }
+
+  /** Puts new groups on screen: tabs no group has any more are remembered and reported, empty groups close. */
+  private applyGroups(next: GroupsState): void {
+    const before = this.groupsState;
+    const groups = dropEmptyGroups(next, this.keepPrimaryGroup());
+    const closedTabs = closedBetween(before, groups).map((tab) => tab.path);
+    this.rememberClosedTabs(closedTabs, before);
+    this.groupsState = groups;
+    const primary = groups.groups[0];
+    // The right group took the left one's place: it shows its tabs there.
+    if (primary.id !== before.groups[0].id && primary.tabs.length > 0) {
+      this.viewState = "file";
     }
+    if (!primary.active && this.viewState === "file") {
+      this.viewState = "diff";
+    }
+    const open = new Set(this.tabs.map((tab) => tab.path));
     // Forget what closed commit tabs showed.
     if (Object.keys(this.commitTabs).some((tabPath) => !open.has(tabPath))) {
       this.commitTabs = Object.fromEntries(Object.entries(this.commitTabs).filter(([tabPath]) => open.has(tabPath)));
     }
     this.notifyTabsClosed(closedTabs);
+    this.tabsChanged(closedTabs);
+  }
+
+  /** A group got a tab on screen: the first group switches to its files. */
+  private showGroup(groupId: number): void {
+    if (groupId === this.primaryGroupId) {
+      this.viewState = "file";
+    }
+  }
+
+  /** Re-checks the groups, e.g. after the Diff tab closed: an empty first group may close now. */
+  tidyGroups(): void {
+    const next = dropEmptyGroups(this.groupsState, this.keepPrimaryGroup());
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
+    }
   }
 
   /**
@@ -816,13 +1106,26 @@ class RepoStore {
     }
   }
 
+  /** The group an open of `tabPath` goes to (see openTarget); `toSide` is Open to the Side. */
+  targetGroupFor(tabPath: string, toSide = false): number {
+    return openTarget(this.groupsState, tabPath, toSide && settings.splitEditor);
+  }
+
+  /** Opens a tab in `groupId` (made when it is the next id), applying the tab limit to a new one. */
+  private openIn(groupId: number, tabPath: string, pin: boolean, limit: boolean): void {
+    const isNew = !hasTab(groupById(this.groupsState, groupId) ?? { tabs: [], active: null }, tabPath);
+    const next = openInGroup(this.groupsState, groupId, tabPath, pin);
+    const target = focusedGroup(next).id;
+    this.applyGroups(isNew && limit ? this.withTabLimit(next, { groupId: target, tabPath }) : next);
+    this.showGroup(this.focusedGroupId);
+  }
+
   /**
    * Opens a tab that is not a file (see pseudoTabs.ts), such as a terminal in
    * the editor area. It opens pinned, since it is always a deliberate open.
    */
   openPseudoTab(tabPath: string): void {
-    this.applyTabs(openTab(this.tabsState, tabPath, true));
-    this.view = "file";
+    this.openIn(this.targetGroupFor(tabPath), tabPath, true, false);
   }
 
   /**
@@ -840,40 +1143,125 @@ class RepoStore {
         focus: options.filePath ? { path: options.filePath, token: (previous?.focus?.token ?? 0) + 1 } : (previous?.focus ?? null),
       },
     };
-    this.applyTabs(openTab(this.tabsState, tabPath, true));
-    this.view = "file";
+    this.openIn(this.targetGroupFor(tabPath), tabPath, true, false);
   }
 
   /**
    * Opens a file by absolute path. A plain open uses the preview tab (a
    * single click); `pin` keeps the tab open (double click, or an explicit open).
+   * `toSide` opens it in the other editor group (Open to the Side).
    */
-  async openFile(filePath: string, options: { pin?: boolean } = {}): Promise<void> {
-    this.applyTabs(openTab(this.tabsState, filePath, options.pin ?? false));
-    this.view = "file";
+  async openFile(filePath: string, options: { pin?: boolean; toSide?: boolean } = {}): Promise<void> {
+    this.openIn(this.targetGroupFor(filePath, options.toSide ?? false), filePath, options.pin ?? false, true);
   }
 
-  /** Makes a preview tab a normal tab. */
-  pinFile(filePath: string): void {
-    this.applyTabs(pinTab(this.tabsState, filePath));
+  /** A click on a tab in a group's strip: shows it there and focuses that group. */
+  activateTab(groupId: number, tabPath: string): void {
+    this.openIn(groupId, tabPath, false, false);
   }
 
-  /** The editor reports unsaved edits; editing also pins a preview tab. */
-  setDirty(filePath: string, dirty: boolean): void {
-    const next = setTabDirty(this.tabsState, filePath, dirty);
-    if (next.tabs !== this.tabs) {
-      this.tabs = next.tabs;
+  /** Focus moved into a group (a click or the keyboard). */
+  focusGroup(groupId: number): void {
+    const next = focusGroup(this.groupsState, groupId);
+    if (next !== this.groupsState) {
+      this.groupsState = next;
+      const active = focusedGroup(next).active;
+      if (active !== null) {
+        this.tabUse.set(active, ++this.tabUseClock);
+      }
     }
   }
 
-  /** Closes tabs, asking first when any of them has unsaved edits. */
-  async closeTabs(filePaths: string[]): Promise<boolean> {
-    const dirty = this.tabs.filter((tab) => filePaths.includes(tab.path) && tab.dirty);
+  /** Focus Left / Right Group: false when there is no group at `index`. */
+  focusGroupAt(index: number): boolean {
+    const group = this.groupsState.groups[index];
+    if (!group) {
+      return false;
+    }
+    this.focusGroup(group.id);
+    return true;
+  }
+
+  /** Split Right: `shownTab` (the focused group's tab on screen) also opens in the right group. */
+  splitRight(shownTab: string | null): void {
+    if (!settings.splitEditor || !canSplitRight(this.groupsState, shownTab)) {
+      return;
+    }
+    this.applyGroups(splitRight(this.groupsState, shownTab));
+  }
+
+  canSplitRight(shownTab: string | null): boolean {
+    return settings.splitEditor && canSplitRight(this.groupsState, shownTab);
+  }
+
+  /** Move Tab to Other Group, made when there is only one. */
+  moveTabToOtherGroup(tabPath: string, groupId: number = this.focusedGroupId): void {
+    if (!settings.splitEditor) {
+      return;
+    }
+    const next = moveToOtherGroup(this.groupsState, groupId, tabPath);
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
+      this.showGroup(this.focusedGroupId);
+    }
+  }
+
+  /** Close Group: its tabs close, asking first about unsaved edits not open in the other group. */
+  async closeGroup(groupId: number = this.focusedGroupId): Promise<boolean> {
+    if (this.groupsState.groups.length < 2) {
+      return false;
+    }
+    const dirty = closedBetween(this.groupsState, closeGroup(this.groupsState, groupId)).filter((tab) => tab.dirty);
     if (!(await this.confirmDiscard(dirty, dirty.length === 1 ? "Close it" : "Close them"))) {
       return false;
     }
-    this.applyTabs(closeTabs(this.tabsState, filePaths));
+    this.applyGroups(closeGroup(this.groupsState, groupId));
     return true;
+  }
+
+  /** Settings > Editor > Split editor turned off: one group with every tab. */
+  mergeGroups(): void {
+    if (this.groupsState.groups.length > 1) {
+      this.applyGroups(mergeGroups(this.groupsState));
+    }
+  }
+
+  /** Makes a preview tab a normal tab, in one group or in every group. */
+  pinFile(filePath: string, groupId: number | null = null): void {
+    const next = mapGroups(this.groupsState, (group) => (groupId === null || group.id === groupId ? pinTab(group, filePath) : group));
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
+    }
+  }
+
+  /** The editor reports unsaved edits; editing also pins a preview tab. Every group's tab of the file follows. */
+  setDirty(filePath: string, dirty: boolean): void {
+    const next = setDirtyEverywhere(this.groupsState, filePath, dirty);
+    if (next !== this.groupsState) {
+      this.groupsState = next;
+      this.scheduleTabsSave();
+    }
+  }
+
+  /**
+   * Closes tabs in one group, or in every group (null), asking first when a tab with unsaved
+   * edits would close everywhere. Still open in the other group, a file keeps its edits.
+   */
+  async closeTabs(filePaths: string[], groupId: number | null = null): Promise<boolean> {
+    const dirty = closedBetween(this.groupsState, closeInGroups(this.groupsState, filePaths, groupId)).filter((tab) => tab.dirty);
+    if (!(await this.confirmDiscard(dirty, dirty.length === 1 ? "Close it" : "Close them"))) {
+      return false;
+    }
+    this.applyGroups(closeInGroups(this.groupsState, filePaths, groupId));
+    return true;
+  }
+
+  /** Before the window closes: asks when a tab has unsaved edits. */
+  confirmCloseWindow(): Promise<boolean> {
+    return this.confirmDiscard(
+      this.tabs.filter((tab) => tab.dirty),
+      "Close the window",
+    );
   }
 
   /** Before the whole workspace goes away (close, or opening another one). */
@@ -919,12 +1307,11 @@ class RepoStore {
     return false;
   }
 
-  /** Files were renamed or moved on disk: their tabs (and tabs inside moved folders) follow them. */
+  /** Files were renamed or moved on disk: their tabs (and tabs inside moved folders) follow them, in every group. */
   retargetTabs(moves: PathMove[]): void {
-    const state = this.tabsState;
-    const next = retargetTabs(state, moves);
-    if (next !== state) {
-      this.applyTabs(next);
+    const next = mapGroups(this.groupsState, (group) => retargetTabs(group, moves));
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
     }
   }
 
@@ -935,31 +1322,284 @@ class RepoStore {
       entryPaths,
     );
     if (closing.length > 0) {
-      this.applyTabs(closeTabs(this.tabsState, closing));
+      this.applyGroups(closeInGroups(this.groupsState, closing, null));
     }
   }
 
-  closeTab(filePath: string): Promise<boolean> {
-    return this.closeTabs([filePath]);
+  /** Closes a tab in `groupId`, or in every group (null). */
+  closeTab(filePath: string, groupId: number | null = null): Promise<boolean> {
+    return this.closeTabs([filePath], groupId);
   }
 
-  closeOtherTabs(filePath: string): Promise<boolean> {
-    return this.closeTabs(otherPaths(this.tabsState, filePath));
+  closeOtherTabs(filePath: string, groupId: number = this.focusedGroupId): Promise<boolean> {
+    const group = groupById(this.groupsState, groupId);
+    return group ? this.closeTabs(otherPaths(group, filePath), groupId) : Promise.resolve(false);
   }
 
-  closeTabsToRight(filePath: string): Promise<boolean> {
-    return this.closeTabs(pathsToRight(this.tabsState, filePath));
+  closeTabsToRight(filePath: string, groupId: number = this.focusedGroupId): Promise<boolean> {
+    const group = groupById(this.groupsState, groupId);
+    return group ? this.closeTabs(pathsToRight(group, filePath), groupId) : Promise.resolve(false);
   }
 
-  closeAllTabs(): Promise<boolean> {
-    return this.closeTabs(this.tabs.map((tab) => tab.path));
+  /** Close All in one group's strip, or every tab (null). */
+  closeAllTabs(groupId: number | null = null): Promise<boolean> {
+    const group = groupId === null ? null : groupById(this.groupsState, groupId);
+    const tabs = group ? group.tabs : this.tabs;
+    return this.closeTabs(
+      tabs.map((tab) => tab.path),
+      groupId,
+    );
   }
 
-  /** Closes the active file tab. */
+  /** Closes the focused group's active tab. */
   async closeFile(): Promise<void> {
     if (this.openFilePath) {
-      await this.closeTab(this.openFilePath);
+      await this.closeTab(this.openFilePath, this.focusedGroupId);
     }
+  }
+
+  /** Pin Tab / Unpin Tab: a pinned tab is never closed by the tab limit, in any group. */
+  setTabPinned(tabPath: string, pinned: boolean): void {
+    const next = mapGroups(this.groupsState, (group) => setTabPinned(group, tabPath, pinned));
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
+    }
+  }
+
+  isPinned(tabPath: string | null): boolean {
+    return tabPath !== null && this.tabs.some((tab) => tab.path === tabPath && tab.pinned === true);
+  }
+
+  /** The tab limit (Settings > Editor) over every group: closes the least recently used file tabs past it, keeping `keep`. */
+  private withTabLimit(state: GroupsState, keep: GroupTab | null): GroupsState {
+    return applyEvictions(state, groupEvictions(state, this.tabUse, settings.tabLimit, keep, isFileTab));
+  }
+
+  /** Closed tabs go on the Reopen Closed Tab stack; a terminal's shell is gone, so its tab cannot come back. */
+  private rememberClosedTabs(closedPaths: string[], before: GroupsState): void {
+    if (closedPaths.length === 0) {
+      return;
+    }
+    const entries: ClosedTab[] = [];
+    for (const tabPath of closedPaths) {
+      const side = sideOf(before, tabPath);
+      const group = before.groups[side];
+      const index = group ? group.tabs.findIndex((tab) => tab.path === tabPath) : -1;
+      if (!group || index < 0 || isTerminalTab(tabPath)) {
+        continue;
+      }
+      const tab = group.tabs[index];
+      entries.push({
+        path: tabPath,
+        index,
+        preview: tab.preview,
+        pinned: tab.pinned ?? false,
+        position: this.tabPositions.get(tabPath) ?? this.pendingPositions.get(tabPath) ?? null,
+        side,
+      });
+    }
+    this.closedTabs = pushClosedTabs(this.closedTabs, entries);
+  }
+
+  /** After the strips changed: the shown tab counts as used and wakes up, closed tabs are forgotten, the session is saved soon. */
+  private tabsChanged(closedPaths: string[]): void {
+    const active = this.openFilePath;
+    if (active !== null) {
+      this.tabUse.set(active, ++this.tabUseClock);
+    }
+    if (this.dormantTabs.size > 0) {
+      // A tab sleeps until its group shows it; closed ones are forgotten.
+      const sleeping = new Set<string>();
+      for (const group of this.groupsState.groups) {
+        for (const tab of group.tabs) {
+          const key = dormantKey(group.id, tab.path);
+          if (tab.path !== group.active && this.dormantTabs.has(key)) {
+            sleeping.add(key);
+          }
+        }
+      }
+      if (sleeping.size !== this.dormantTabs.size) {
+        this.dormantTabs = sleeping;
+      }
+    }
+    for (const tabPath of closedPaths) {
+      this.tabUse.delete(tabPath);
+      this.tabPositions.delete(tabPath);
+      this.pendingPositions.delete(tabPath);
+    }
+    this.scheduleTabsSave();
+  }
+
+  /** A restored tab whose editor has not been created yet. */
+  isDormant(tabPath: string, groupId: number): boolean {
+    return this.dormantTabs.has(dormantKey(groupId, tabPath));
+  }
+
+  /**
+   * A file editor reports where its caret and view are; `topLine` null keeps the last one
+   * (a hidden editor cannot measure). A closed tab's editor reports once more while it goes away.
+   */
+  noteTabPosition(filePath: string, line: number, column: number, topLine: number | null): void {
+    const previous = this.tabPositions.get(filePath) ?? null;
+    const position: TabPosition = { line, column, topLine: topLine ?? previous?.topLine ?? Math.max(0, line - 5) };
+    if (this.tabs.some((tab) => tab.path === filePath)) {
+      if (previous?.line !== position.line || previous.column !== position.column || previous.topLine !== position.topLine) {
+        this.tabPositions.set(filePath, position);
+        this.scheduleTabsSave();
+      }
+      return;
+    }
+    const next = updateClosedPosition(this.closedTabs, filePath, position);
+    if (next !== this.closedTabs) {
+      this.closedTabs = next;
+    }
+  }
+
+  /** The position a restored or reopened tab should open at, once. */
+  takePendingPosition(filePath: string): TabPosition | null {
+    const position = this.pendingPositions.get(filePath) ?? null;
+    this.pendingPositions.delete(filePath);
+    return position;
+  }
+
+  private scheduleTabsSave(): void {
+    clearTimeout(this.tabsSaveTimer);
+    this.tabsSaveTimer = setTimeout(() => this.saveTabSession(), TABS_SAVE_DELAY_MS);
+  }
+
+  /** Writes the open file tabs of this workspace to state.json, when Reopen tabs on start is on. */
+  private saveTabSession(): void {
+    clearTimeout(this.tabsSaveTimer);
+    const workspace = this.workspace;
+    if (!workspace || !settings.reopenTabsOnStart) {
+      return;
+    }
+    const positions = new Map([...this.pendingPositions, ...this.tabPositions]);
+    const [left, right] = this.groupsState.groups;
+    const session = tabSessionOf(
+      left.tabs,
+      left.active,
+      isFileTab,
+      positions,
+      right ? { tabs: right.tabs, active: right.active, focused: this.groupsState.focused === right.id } : null,
+    );
+    if (!sameTabSession(settings.openTabs[workspace.id] ?? null, session.tabs.length > 0 ? session : null)) {
+      settings.rememberTabs(workspace.id, session);
+    }
+  }
+
+  /** Before the workspace goes: its tabs are saved now, and the closed tab stack and positions are dropped. */
+  private resetTabSession(): void {
+    this.saveTabSession();
+    this.closedTabs = [];
+    this.dormantTabs = new Set();
+    this.tabUse.clear();
+    this.tabPositions.clear();
+    this.pendingPositions.clear();
+  }
+
+  /**
+   * Reopen tabs on start: the file tabs this workspace had, in both editor groups, without
+   * loading any file yet. Files that are gone or outside the workspace are skipped; the tab
+   * limit applies.
+   */
+  private async restoreTabs(workspace: OpenWorkspace): Promise<void> {
+    const session = settings.reopenTabsOnStart ? (settings.openTabs[workspace.id] ?? null) : null;
+    if (!session || this.tabs.length > 0) {
+      return;
+    }
+    const exists = await api
+      .filesExist(
+        workspace.folders.map((folder) => folder.root),
+        sessionPaths(session),
+      )
+      .catch(() => [] as boolean[]);
+    if (this.workspace !== workspace || this.tabs.length > 0) {
+      return;
+    }
+    const restored = restorableTabs(session, exists, (filePath) => folderFor(workspace.folders, filePath) !== null);
+    if (restored.tabs.length === 0) {
+      return;
+    }
+    const savedGroups = [restored, ...(restored.right ? [restored.right] : [])];
+    // The saved order stands in for use: later tabs are newer, the active ones newest.
+    for (const group of savedGroups) {
+      group.tabs.forEach((tab) => this.tabUse.set(tab.path, ++this.tabUseClock));
+    }
+    for (const group of savedGroups) {
+      if (group.active) {
+        this.tabUse.set(group.active, ++this.tabUseClock);
+      }
+    }
+    const tabsOf = (group: SavedTabGroup): TabsState => ({
+      tabs: group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: false, pinned: tab.pinned })),
+      active: group.active,
+    });
+    let state = restoredGroups(tabsOf(restored), restored.right ? tabsOf(restored.right) : null, restored.rightFocused ?? false);
+    if (!settings.splitEditor) {
+      state = mergeGroups(state);
+    }
+    state = this.withTabLimit(state, null);
+    const open = new Set(allTabs(state).map((tab) => tab.path));
+    for (const tab of savedGroups.flatMap((group) => group.tabs)) {
+      if (tab.position && open.has(tab.path) && !this.pendingPositions.has(tab.path)) {
+        this.pendingPositions.set(tab.path, tab.position);
+        this.tabPositions.set(tab.path, tab.position);
+      }
+    }
+    this.groupsState = state;
+    this.dormantTabs = new Set(
+      state.groups.flatMap((group) => group.tabs.filter((tab) => tab.path !== group.active).map((tab) => dormantKey(group.id, tab.path))),
+    );
+    this.viewState = "file";
+  }
+
+  /**
+   * Reopen Closed Tab: the newest closed tab that can still open (its file exists, its
+   * repository is still in the workspace), back in its group, at its place and position.
+   */
+  async reopenClosedTab(): Promise<boolean> {
+    const workspace = this.workspace;
+    if (!workspace || this.closedTabs.length === 0) {
+      return false;
+    }
+    const filePaths = this.closedTabs.filter((tab) => isFileTab(tab.path)).map((tab) => tab.path);
+    const exists =
+      filePaths.length > 0
+        ? await api
+            .filesExist(
+              workspace.folders.map((folder) => folder.root),
+              filePaths,
+            )
+            .catch(() => filePaths.map(() => true))
+        : [];
+    if (this.workspace !== workspace) {
+      return false;
+    }
+    const existing = new Set(filePaths.filter((_filePath, index) => exists[index] === true));
+    const open = new Set(this.tabs.map((tab) => tab.path));
+    const inWorkspace = (tabPath: string) => workspace.folders.some((folder) => tabsInFolder([tabPath], folder.root).length > 0);
+    const { tab, stack } = popClosedTab(
+      this.closedTabs,
+      (entry) => !open.has(entry.path) && (isFileTab(entry.path) ? existing.has(entry.path) : inWorkspace(entry.path)),
+    );
+    this.closedTabs = stack;
+    if (!tab) {
+      toast.info("No closed tab to reopen");
+      return false;
+    }
+    if (tab.position) {
+      this.pendingPositions.set(tab.path, tab.position);
+      this.tabPositions.set(tab.path, tab.position);
+    }
+    // Back in the group it closed in while that group is still there, else in the focused one.
+    const group = this.groupsState.groups[tab.side ?? 0] ?? focusedGroup(this.groupsState);
+    // Reopening is deliberate, so the tab comes back kept open even if it was a preview.
+    const reopened = reopenAt(group.tabs, tab, (entry) => ({ path: entry.path, preview: false, dirty: false, pinned: entry.pinned }));
+    const next = { ...updateGroup(this.groupsState, group.id, reopened), focused: group.id };
+    this.applyGroups(this.withTabLimit(next, { groupId: group.id, tabPath: tab.path }));
+    this.showGroup(group.id);
+    return true;
   }
 
   /** Opens the conflicts dialog, switching to `repoRoot` first when given. */

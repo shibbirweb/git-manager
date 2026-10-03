@@ -1,7 +1,7 @@
 // The tabs of the Search Everywhere popup (FileSearch.svelte), like JetBrains: which tab
 // each shortcut opens, Tab / Shift+Tab cycling and the keys that switch tabs while open.
 
-import { type ShortcutKey, type WorkspaceShortcut, workspaceShortcut } from "$lib/views/workspaceShortcuts";
+import { type ShortcutKey, type ShortcutKeys, type WorkspaceShortcut, workspaceShortcut } from "$lib/views/workspaceShortcuts";
 
 export type SearchTab = "all" | "classes" | "files" | "symbols" | "text";
 
@@ -41,6 +41,8 @@ export function openingTab(opener: SearchOpener, lastEverywhereTab: SearchTab | 
 }
 
 const SHORTCUT_TABS: Partial<Record<WorkspaceShortcut, Exclude<SearchOpener, "everywhere">>> = {
+  // Outside the popup Cmd+P opens Quick Open; inside it, it still picks the Files tab.
+  quickOpen: "files",
   goToFile: "files",
   goToClass: "classes",
   goToSymbol: "symbols",
@@ -54,14 +56,14 @@ export function openerForShortcut(shortcut: WorkspaceShortcut): SearchOpener | n
 }
 
 /** A tab shortcut pressed while the popup shows switches to that tab. */
-export function tabForKey(event: ShortcutKey): SearchTab | null {
-  const shortcut = workspaceShortcut(event, { dialogOpen: false, mergeOpen: false });
+export function tabForKey(event: ShortcutKey, keys: ShortcutKeys): SearchTab | null {
+  const shortcut = workspaceShortcut(event, { dialogOpen: false, mergeOpen: false }, keys);
   return shortcut ? (SHORTCUT_TABS[shortcut] ?? null) : null;
 }
 
 /** Shift+Cmd+R: the Text tab with its Replace field. */
-export function isReplaceKey(event: ShortcutKey): boolean {
-  return workspaceShortcut(event, { dialogOpen: false, mergeOpen: false }) === "replaceInFiles";
+export function isReplaceKey(event: ShortcutKey, keys: ShortcutKeys): boolean {
+  return workspaceShortcut(event, { dialogOpen: false, mergeOpen: false }, keys) === "replaceInFiles";
 }
 
 /** Tabs whose results come from the symbol index. */

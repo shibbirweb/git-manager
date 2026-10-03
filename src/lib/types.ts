@@ -69,7 +69,15 @@ export interface OpState {
 export interface RepoStatus {
   head: HeadInfo;
   op: OpState;
+  /** While a `git bisect` runs: a fingerprint of its log, so every mark changes the status. */
+  bisect: string | null;
   files: FileStatus[];
+}
+
+/** `get_status`: `status` is null when the hash the caller sent still matched. */
+export interface StatusSnapshot {
+  hash: string;
+  status: RepoStatus | null;
 }
 
 export type DiffArea = "staged" | "unstaged";
@@ -84,6 +92,50 @@ export interface FileDiff {
   tooLarge: boolean;
   /** Set when either side is a Git LFS pointer. */
   lfs?: LfsDiff | null;
+  /** Changed lines from the backend's diff, refined to characters by the diff view. */
+  hunks?: LineHunk[];
+  /** Staged and unstaged diffs: which versions of the sides these are (see getFileDiffIfChanged). */
+  version?: string | null;
+}
+
+/** `[oldStart, oldEnd, newStart, newEnd]`: half-open 0-based line ranges. */
+export type LineHunk = [number, number, number, number];
+
+/** Stage and Discard work on the unstaged diff, Unstage on the staged one. */
+export type LineAction = "stage" | "unstage" | "discard";
+
+/** Selected lines of a diff: half-open 0-based ranges of the old (left) and new (right) side. */
+export interface LineSelection {
+  oldLines: [number, number][];
+  newLines: [number, number][];
+}
+
+/** The result of `applySelectedLines`. */
+export interface LinesOutcome {
+  /** How many changed lines moved. */
+  lines: number;
+  /** Discard only: the patch that was taken back, for Undo. */
+  patch: string | null;
+}
+
+/** The HEAD commit and the file's object in it that the editor's marks and blame belong to. */
+export interface HeadVersion {
+  commitId: string | null;
+  blobId: string | null;
+}
+
+/** A file as of HEAD, LF-normalized; empty when HEAD does not have it. */
+export interface HeadFile {
+  content: string;
+  binary: boolean;
+  tooLarge: boolean;
+  version: HeadVersion;
+}
+
+/** The editor's changes since the last commit (src-tauri/src/commands/editor.rs). */
+export interface LineMarks {
+  head: HeadVersion;
+  marks: { from: number; to: number; kind: "added" | "modified" | "deleted" }[];
 }
 
 export interface GitOutput {
@@ -167,6 +219,15 @@ export interface Refs {
   remotes: string[];
 }
 
+/** `get_refs_snapshot`: `refs` is null when the fingerprint the caller sent still matched. */
+export interface RefsSnapshot {
+  /** Covers the refs, stashes, remotes and worktrees: unchanged means none of them changed. */
+  fingerprint: string;
+  /** Changes exactly when the Log may show something else. */
+  tips: string;
+  refs: Refs | null;
+}
+
 export type RefKind = "head" | "local" | "remote" | "tag";
 
 export interface RefLabel {
@@ -183,6 +244,12 @@ export interface CommitSummary {
   time: number;
   parents: string[];
   refs: RefLabel[];
+}
+
+/** `get_log`: `commits` is null when the tips the caller sent still matched. */
+export interface LogPage {
+  tips: string;
+  commits: CommitSummary[] | null;
 }
 
 export interface ChangedFile {
@@ -311,6 +378,24 @@ export interface RevisionDiff {
   commitId: string;
 }
 
+// Compare any two files
+
+/** One side of Compare Files: an absolute file path, or text (an unsaved buffer, the clipboard). */
+export interface CompareSide {
+  filePath: string | null;
+  text: string | null;
+}
+
+export interface FileCompare {
+  diff: FileDiff;
+  /** Both sides' versions, passed back as `knownVersion`. */
+  version: string;
+  leftMissing: boolean;
+  rightMissing: boolean;
+  /** The bytes are equal; null when a side was too large to read. */
+  identical: boolean | null;
+}
+
 // Blame
 
 export interface BlameCommit {
@@ -326,10 +411,12 @@ export interface BlameCommit {
 
 export interface BlameInfo {
   commits: BlameCommit[];
-  /** Commit index for every 0-based line. */
-  lines: number[];
-  /** For every 0-based line, its 0-based line in the commit that last changed it. */
-  originalLines?: number[];
+  /**
+   * `[length, commit, originalStart]` for every run of consecutive lines from one commit (an
+   * index into `commits`) whose lines in that commit (0-based, from `originalStart`) are
+   * consecutive too, flattened in order.
+   */
+  runs: number[];
 }
 
 // Memory
@@ -428,27 +515,38 @@ export interface TerminalInfo {
   cwd: string;
 }
 
-/** Sent once when a terminal's shell exits (or was closed). */
-export interface TerminalExitedEvent {
-  terminalId: number;
+/** The last message on a terminal's output channel, once its shell exited (or was closed). */
+export interface TerminalExitMessage {
   /** null when the process was killed or the code is unknown. */
-  exitCode: number | null;
+  exit: number | null;
 }
+
+/** A terminal's output channel: raw output bytes, then the exit. */
+export type TerminalOutputMessage = ArrayBuffer | TerminalExitMessage;
 
 // File explorer
 
 export interface DirEntry {
+  /** The entry's name; its path is the listed folder joined with it. */
   name: string;
-  path: string;
   isDir: boolean;
   ignored: boolean;
   /** The folder is the root of a git repository. */
   isRepo: boolean;
 }
 
-export interface DirListing {
+/** One folder of a `list_directories` answer. */
+export interface FolderListing {
+  /** As asked: relative to the workspace folder, "" for the folder itself. */
+  dirPath: string;
+  /** The folder's state, passed back in `known` next time. */
+  stamp: string;
+  /** The folder still has the known stamp: it was not read and `entries` is empty. */
+  unchanged: boolean;
   entries: DirEntry[];
   truncated: boolean;
+  /** The folder could not be read (deleted, not a folder). */
+  error: string | null;
 }
 
 /** One entry moved by `file_move`: absolute paths before and after. */
@@ -464,6 +562,10 @@ export interface FileContent {
   binary: boolean;
   tooLarge: boolean;
   size: number;
+  /** The file's state on disk, passed back to readWorktreeFile as `knownVersion`. */
+  version: string;
+  /** The file still has `knownVersion`: nothing else is filled in and no text is sent. */
+  unchanged: boolean;
 }
 
 // Image and PDF preview (src-tauri/src/preview_scheme.rs)
@@ -572,6 +674,31 @@ export interface SymbolSearchResults {
   truncated: boolean;
 }
 
+// Quick Open "@": the symbols of one file
+
+/** A code definition's kind, or a Markdown heading. */
+export type OutlineKind = SymbolKind | "heading";
+
+export interface OutlineItem {
+  name: string;
+  kind: OutlineKind;
+  container: string | null;
+  /** 1-based. */
+  line: number;
+  /** 1-based, in UTF-16 code units. */
+  column: number;
+  /** A heading's level minus one, 1 for a member of a class. */
+  depth: number;
+}
+
+export interface OutlineResult {
+  items: OutlineItem[];
+  /** The file's language has a scanner (or is Markdown). */
+  supported: boolean;
+  /** Capped, or the text was too big to scan. */
+  truncated: boolean;
+}
+
 // Search Everywhere: Text (Find in Files)
 
 export interface TextSearchOptions {
@@ -666,16 +793,33 @@ export interface ReplaceOutcome {
 
 // Events
 
+/** What the watcher saw change in one repository (src-tauri/src/watcher.rs). */
 export interface RepoChangedEvent {
   repoPath: string;
-  gitDir: boolean;
+  /** HEAD, a branch, tag, remote branch or the stash moved, or a linked worktree changed. */
+  refs: boolean;
+  /** The repository config changed (remotes, upstreams). */
+  config: boolean;
+  /** The index changed, or something else in `.git` that status reads. */
+  index: boolean;
+  /** A merge, rebase, cherry-pick, revert or bisect started, moved on or ended. */
+  opState: boolean;
+  /** A visible (not ignored) work tree path changed. */
   workTree: boolean;
+  /** Entries were created, deleted or renamed, or ignore rules changed. */
+  structure: boolean;
+  /** A `.gitattributes` file in the work tree changed. */
+  attributes: boolean;
 }
 
 export interface WorkspaceChangedEvent {
   workspaceRoot: string;
   /** A repository may have appeared or disappeared, so the folder should be rescanned. */
   reposChanged: boolean;
+  /** Entries were created, deleted or renamed (or ignore rules changed): listings are out of date. */
+  structure: boolean;
+  /** Files outside every repository changed; they have no status to follow. */
+  outsideRepos: boolean;
 }
 
 export interface GitProgressEvent {
@@ -800,6 +944,10 @@ export interface LfsStatus {
   patterns: string[];
   /** Repo-relative paths stored in LFS. */
   files: string[];
+  /** The state this answer was read at, passed back as `knownStamp` next time. */
+  stamp: string;
+  /** Nothing changed since `knownStamp`: no other field is filled in. */
+  unchanged: boolean;
 }
 
 export interface LfsDiff {
@@ -1011,4 +1159,184 @@ export interface MemoryLogStatus {
   path: string;
   intervalMs: number;
   thresholdMb: number;
+}
+
+/** user.name and user.email at one config level (src-tauri/src/git/identity.rs). */
+export interface IdentityValues {
+  name: string | null;
+  email: string | null;
+}
+
+export interface Identity {
+  /** What `git config --global` holds. */
+  global: IdentityValues;
+  /** The repository's own config; empty without a repository. */
+  local: IdentityValues;
+  /** git would commit with a configured name and email (any level, includes or environment). */
+  complete: boolean;
+  /** The file `git config --global` writes. */
+  globalFile: string | null;
+}
+
+export type IdentityScope = "global" | "local";
+
+/** One of the current user's recent commit messages. */
+export interface RecentMessage {
+  message: string;
+  /** Commit time in milliseconds since the epoch. */
+  time: number;
+}
+
+/** Why a Local History version was kept (local_history/store.rs). */
+export type SnapshotLabel =
+  | "saved"
+  | "beforeSave"
+  | "externalChange"
+  | "beforeExternalChange"
+  | "beforeDiscard"
+  | "beforeRollback"
+  | "beforeRevert"
+  | "other";
+
+/** One version of a file in Local History. */
+export interface LocalSnapshot {
+  /** Milliseconds since the epoch. */
+  time: number;
+  label: SnapshotLabel;
+  /** Git blob id of the text: the version's id. */
+  hash: string;
+  /** Bytes of the text. */
+  size: number;
+}
+
+export interface FileLocalHistory {
+  filePath: string;
+  /** False for a deleted file. */
+  exists: boolean;
+  /** Newest first. */
+  snapshots: LocalSnapshot[];
+}
+
+/** A file with Local History that is gone from disk (Recently Deleted). */
+export interface DeletedLocalFile {
+  filePath: string;
+  latest: LocalSnapshot;
+  count: number;
+}
+
+export interface LocalHistoryUsage {
+  files: number;
+  snapshots: number;
+  /** Compressed bytes on disk. */
+  bytes: number;
+}
+
+/** A version the editor asks Local History to keep: its text, or the file on disk when `text` is null. */
+export interface LocalHistoryRecord {
+  filePath: string;
+  text: string | null;
+  eol: Eol | null;
+  label: SnapshotLabel;
+}
+
+/** What moved a ref, read from the reflog message (git/reflog.rs). */
+export type ReflogAction =
+  | "commit"
+  | "initialCommit"
+  | "amend"
+  | "merge"
+  | "checkout"
+  | "reset"
+  | "rebase"
+  | "pull"
+  | "cherryPick"
+  | "revert"
+  | "branch"
+  | "clone"
+  | "other";
+
+export interface ReflogEntry {
+  /** 0 is the newest: `HEAD@{0}`. */
+  index: number;
+  selector: string;
+  /** All zeros when the ref did not exist before. */
+  oldId: string;
+  newId: string;
+  oldShortId: string;
+  newShortId: string;
+  action: ReflogAction;
+  /** The message without its action prefix. */
+  detail: string;
+  message: string;
+  /** Seconds since the epoch. */
+  time: number;
+  committerName: string;
+  /** For a checkout: the branch or commit it moved away from. */
+  checkoutFrom: string | null;
+}
+
+export interface ReflogPage {
+  refName: string;
+  entries: ReflogEntry[];
+  total: number;
+}
+
+/** `last_action`: the latest HEAD movement and what Undo needs around it. */
+export interface LastAction {
+  entry: ReflogEntry | null;
+  branch: string | null;
+  /** The entry's new commit is on a remote branch already. */
+  pushed: boolean;
+  /** For a checkout: `checkoutFrom` names a local branch that still exists. */
+  fromBranchExists: boolean;
+}
+
+/** `move_head_back`: "soft" keeps the changes staged; "keep" falls back to "mixed" when local changes are in the way. */
+export type HeadBackMode = "soft" | "keep";
+
+export interface BisectCommit {
+  id: string;
+  shortId: string;
+  summary: string;
+}
+
+export interface BisectState {
+  /** Branch or commit `git bisect reset` goes back to. */
+  start: string;
+  badTerm: string;
+  goodTerm: string;
+  bad: string | null;
+  good: string[];
+  skipped: string[];
+  current: string | null;
+  /** Commits that may still be the first bad one. */
+  remaining: number;
+  remainingCapped: boolean;
+  steps: number;
+  firstBad: BisectCommit | null;
+}
+
+export type BisectMark = "good" | "bad" | "skip";
+
+export type AutoFetchOutcome = "fetched" | "upToDate" | "skipped" | "failed";
+
+export interface AutoFetchResult {
+  outcome: AutoFetchOutcome;
+  skipReason: "noRemotes" | "operation" | "bisect" | "busy" | null;
+  errorKind: "auth" | "offline" | "other" | null;
+  /** Git's last error line when the fetch failed. */
+  message: string;
+}
+
+/** `WindowOpened` in src-tauri/src/commands/window.rs. */
+export interface WindowOpened {
+  windowLabel: string;
+  /** Another window already showed the folders and was focused instead. */
+  existing: boolean;
+}
+
+/** `ConfigChanged` in src-tauri/src/commands/config.rs: what another window changed. */
+export interface ConfigChangedEvent {
+  configName: "settings" | "state";
+  patch: unknown;
 }

@@ -6,18 +6,20 @@
 <script lang="ts">
   import { LanguageSupport } from "@codemirror/language";
   import type { EditorView } from "@codemirror/view";
+  import { usesDefaultKeys } from "$lib/commands/commandRuntime";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { onMount, untrack } from "svelte";
-  import { api, errorMessage } from "$lib/api";
+  import { errorMessage } from "$lib/api";
   import { languageFor } from "$lib/editor/setup";
   import { editorTopLine, isScrolledToEnd, scrollEditorToLine } from "$lib/markdown/editorScroll";
   import { CodeHighlighter, fenceLanguages } from "$lib/markdown/highlight";
   import type { LinkContext } from "$lib/markdown/links";
   import type { MarkdownPreviewDom } from "$lib/markdown/previewDom";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { folderFor, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
+  import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
   import { watchTheme } from "$lib/themes/watch";
   import { toast } from "$lib/ui/toast.svelte";
+  import { markdownImageUrl } from "$lib/views/files/previewScheme";
   import "$lib/markdown/body.css";
 
   interface Props {
@@ -76,15 +78,10 @@
   }
 
   async function loadImage(imagePath: string): Promise<string> {
-    const folder = folderFor(repoStore.workspace?.folders ?? [], imagePath);
-    if (!folder) {
+    if (!folderFor(repoStore.workspace?.folders ?? [], imagePath)) {
       throw new Error("Image outside the workspace");
     }
-    try {
-      return await api.readImageDataUrl(folder.root, relativeTo(folder.root, imagePath));
-    } catch (error) {
-      throw new Error(errorMessage(error));
-    }
+    return markdownImageUrl(imagePath);
   }
 
   async function loadParser(extension: string) {
@@ -301,7 +298,8 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "s") {
+    const saveKey = (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "s";
+    if (saveKey && usesDefaultKeys("file.save")) {
       event.preventDefault();
       onSave();
     }

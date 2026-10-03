@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { ShortcutKey } from "$lib/views/workspaceShortcuts";
+import { buildCommandSpecs } from "$lib/commands/registry";
+import { menuSpec } from "$lib/menu/menuSpec";
+import type { ShortcutKey, ShortcutKeys } from "$lib/views/workspaceShortcuts";
 import { isReplaceKey, MAX_SELECTION_QUERY, openerForShortcut, openingTab, queryFromSelection, stepTab, tabForKey, usesSymbols } from "./searchTabs";
+
+const keys: ShortcutKeys = { specs: buildCommandSpecs(menuSpec("macos", "app")), platform: "macos", overrides: {} };
 
 function press(key: string, code: string, modifiers: Partial<ShortcutKey> = {}): ShortcutKey {
   return { key, code, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false, defaultPrevented: false, ...modifiers };
@@ -31,20 +35,22 @@ describe("search tabs", () => {
   });
 
   it("switches tabs with their shortcuts while open", () => {
-    expect(tabForKey(press("o", "KeyO", { metaKey: true }))).toBe("classes");
-    expect(tabForKey(press("ø", "KeyO", { metaKey: true, altKey: true }))).toBe("symbols");
-    expect(tabForKey(press("O", "KeyO", { metaKey: true, shiftKey: true }))).toBe("files");
-    expect(tabForKey(press("p", "KeyP", { metaKey: true }))).toBe("files");
-    expect(tabForKey(press("F", "KeyF", { metaKey: true, shiftKey: true }))).toBe("text");
-    expect(tabForKey(press("b", "KeyB", { metaKey: true }))).toBeNull();
-    expect(tabForKey(press("o", "KeyO"))).toBeNull();
-    expect(tabForKey(press("R", "KeyR", { metaKey: true, shiftKey: true }))).toBe("text");
+    expect(tabForKey(press("o", "KeyO", { metaKey: true }), keys)).toBe("classes");
+    expect(tabForKey(press("ø", "KeyO", { metaKey: true, altKey: true }), keys)).toBe("symbols");
+    expect(tabForKey(press("O", "KeyO", { metaKey: true, shiftKey: true }), keys)).toBe("files");
+    expect(tabForKey(press("p", "KeyP", { metaKey: true }), keys)).toBe("files");
+    // The Command Palette is Quick Open's, not a tab of this popup.
+    expect(tabForKey(press("P", "KeyP", { metaKey: true, shiftKey: true }), keys)).toBeNull();
+    expect(tabForKey(press("F", "KeyF", { metaKey: true, shiftKey: true }), keys)).toBe("text");
+    expect(tabForKey(press("b", "KeyB", { metaKey: true }), keys)).toBeNull();
+    expect(tabForKey(press("o", "KeyO"), keys)).toBeNull();
+    expect(tabForKey(press("R", "KeyR", { metaKey: true, shiftKey: true }), keys)).toBe("text");
   });
 
   it("knows the Replace in Files key", () => {
-    expect(isReplaceKey(press("R", "KeyR", { metaKey: true, shiftKey: true }))).toBe(true);
-    expect(isReplaceKey(press("F", "KeyF", { metaKey: true, shiftKey: true }))).toBe(false);
-    expect(isReplaceKey(press("r", "KeyR", { metaKey: true }))).toBe(false);
+    expect(isReplaceKey(press("R", "KeyR", { metaKey: true, shiftKey: true }), keys)).toBe(true);
+    expect(isReplaceKey(press("F", "KeyF", { metaKey: true, shiftKey: true }), keys)).toBe(false);
+    expect(isReplaceKey(press("r", "KeyR", { metaKey: true }), keys)).toBe(false);
   });
 
   it("knows which tabs read the symbol index", () => {

@@ -19,6 +19,14 @@ export interface MenuInputs {
   activeFile: { dirty: boolean; editable: boolean; markdownMode: MarkdownViewMode | null } | null;
   dirtyCount: number;
   tabCount: number;
+  /** Closed tabs Reopen Closed Tab can bring back. */
+  closedTabCount?: number;
+  /** The tab on screen is pinned (Pin Tab becomes Unpin Tab). */
+  activeTabPinned?: boolean;
+  /** The Log is on screen (in the first editor group), whichever group has the focus. */
+  logShown?: boolean;
+  /** Editor groups (Window > Split Right); missing means one group with splitting off. */
+  editorGroups?: EditorGroupInputs;
   leftPanel: LeftPanel;
   explorerOpen: boolean;
   leftBarVisible: boolean;
@@ -31,6 +39,16 @@ export interface MenuInputs {
   theme: ThemeSetting;
   /** Word wrap in the file editor. */
   wordWrap: boolean;
+  /** Sticky scroll and the minimap of the file editor (Settings > Editor). */
+  stickyScroll?: boolean;
+  minimap?: boolean;
+  /** Do Not Disturb (only errors pop up). */
+  doNotDisturb?: boolean;
+  /**
+   * The Changes diff that offers line actions: "unstaged" (Stage and Discard Selected Lines)
+   * or "staged" (Unstage); null or missing without one.
+   */
+  diffLines?: "unstaged" | "staged" | null;
   editor: {
     /** Focus is in a CodeMirror editor, its find bar included. */
     focused: boolean;
@@ -39,6 +57,16 @@ export interface MenuInputs {
     writable: boolean;
   };
   hasRecent: boolean;
+}
+
+export interface EditorGroupInputs {
+  /** Settings > Editor > Split editor. */
+  enabled: boolean;
+  count: number;
+  /** 0 the left group, 1 the right one. */
+  focusedIndex: number;
+  /** Split Right can open the tab on screen in the right group. */
+  canSplit: boolean;
 }
 
 export interface GitRepoInputs {
@@ -55,6 +83,8 @@ export interface GitRepoInputs {
   remotes: number;
   /** A remote points to github.com. */
   github: boolean;
+  /** A `git bisect` is in progress. */
+  bisecting: boolean;
   /** Distinct web pages of the remotes (Open Repository in Browser). */
   remoteLinks: number;
 }
@@ -143,7 +173,13 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["file.save"] = { enabled: file !== null && file.editable && file.dirty };
   state["file.saveAll"] = { enabled: inputs.dirtyCount > 0 };
   state["file.revert"] = { enabled: file !== null && file.editable };
+  state["file.compareWithClipboard"] = { enabled: workspace && file !== null };
+  state["file.compareWith"] = { enabled: workspace && file !== null };
+  // A deleted file's tab still shows its versions (and offers Restore).
+  state["file.localHistory"] = { enabled: workspace && file !== null };
+  state["file.recentlyDeleted"] = { enabled: workspace };
   state["file.closeTab"] = { enabled: workspace && (inputs.shownView === "file" || inputs.shownView === "diff") };
+  state["file.reopenClosedTab"] = { enabled: workspace && (inputs.closedTabCount ?? 0) > 0 };
   state["file.closeFolder"] = {
     enabled: workspace,
     text: (inputs.workspace?.folderCount ?? 0) > 1 ? "Close Workspace" : "Close Folder",
@@ -163,7 +199,7 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["view.changes"] = { enabled: workspace, checked: workspace && inputs.leftPanel === "changes" };
   state["view.branches"] = { enabled: workspace, checked: workspace && inputs.leftPanel === "branches" };
   state["view.scripts"] = { enabled: workspace, checked: workspace && inputs.leftPanel === "scripts" };
-  state["view.log"] = { enabled: workspace, checked: workspace && inputs.shownView === "log" };
+  state["view.log"] = { enabled: workspace, checked: workspace && (inputs.logShown ?? inputs.shownView === "log") };
   state["view.filesPanel"] = { enabled: workspace, checked: workspace && inputs.explorerOpen };
   state["view.sidebar"] = { enabled: workspace, checked: workspace && inputs.leftPanel !== null };
   state["view.leftActivityBar"] = { enabled: workspace, checked: workspace && inputs.leftBarVisible };
@@ -181,6 +217,10 @@ export function menuState(inputs: MenuInputs): MenuState {
     state[action] = { enabled: markdownMode !== null, checked: markdownMode === mode };
   }
   state["view.wordWrap"] = { enabled: true, checked: inputs.wordWrap };
+  state["view.stickyScroll"] = { enabled: true, checked: inputs.stickyScroll ?? false };
+  state["view.minimap"] = { enabled: true, checked: inputs.minimap ?? false };
+  state["view.notifications"] = { enabled: true };
+  state["view.doNotDisturb"] = { enabled: true, checked: inputs.doNotDisturb ?? false };
   for (const [action, theme] of THEME_ITEMS) {
     state[action] = { enabled: true, checked: inputs.theme === theme };
   }
@@ -193,11 +233,28 @@ export function menuState(inputs: MenuInputs): MenuState {
   }
 
   Object.assign(state, gitMenuState(inputs.repo, inputs.gitFile, inputs.blameGutter));
+  const lines = inputs.shownView === "diff" ? (inputs.diffLines ?? null) : null;
+  const linesReady = inputs.repo !== null && !inputs.repo.busy;
+  state["git.lines.stage"] = { enabled: linesReady && lines === "unstaged" };
+  state["git.lines.discard"] = { enabled: linesReady && lines === "unstaged" };
+  state["git.lines.unstage"] = { enabled: linesReady && lines === "staged" };
   // Create Gist works on any file editor, inside a repository or not.
   state["git.github.createGist"] = { enabled: inputs.repo !== null && file !== null };
 
   state["window.nextTab"] = { enabled: inputs.tabCount > 0 };
   state["window.previousTab"] = { enabled: inputs.tabCount > 0 };
+  state["window.pinTab"] = {
+    enabled: workspace && inputs.shownView === "file" && inputs.tabCount > 0,
+    text: inputs.activeTabPinned ? "Unpin Tab" : "Pin Tab",
+  };
+  const groups = inputs.editorGroups ?? { enabled: false, count: 1, focusedIndex: 0, canSplit: false };
+  const grouping = workspace && groups.enabled;
+  state["window.splitRight"] = { enabled: grouping && groups.canSplit };
+  state["window.moveTabToOtherGroup"] = { enabled: grouping && inputs.shownView === "file" && inputs.tabCount > 0 };
+  state["window.focusLeftGroup"] = { enabled: grouping && groups.count > 1 && groups.focusedIndex !== 0 };
+  // With one group it splits the tab on screen to the right, as in VS Code.
+  state["window.focusRightGroup"] = { enabled: grouping && (groups.count > 1 ? groups.focusedIndex !== 1 : groups.canSplit) };
+  state["window.closeGroup"] = { enabled: grouping && groups.count > 1 };
   // Works from the welcome screen too, with the server on or off.
   state["help.mcpTools"] = { enabled: true };
   return state;
@@ -242,6 +299,12 @@ export function gitMenuState(repo: GitRepoInputs | null, gitFile: GitFileInputs 
   state["git.newBranch"] = { enabled: hasCommits };
   state["git.newTag"] = { enabled: hasCommits };
   state["git.resetHead"] = { enabled: hasCommits && !inOperation };
+  const bisecting = repo?.bisecting ?? false;
+  state["git.undoLast"] = { enabled: ready && !inOperation && !bisecting };
+  state["git.bisect.start"] = { enabled: hasCommits && !inOperation && !bisecting };
+  for (const action of ["git.bisect.good", "git.bisect.bad", "git.bisect.skip", "git.bisect.reset"] as const) {
+    state[action] = { enabled: ready && bisecting };
+  }
 
   // Shown only while they apply, named after the operation, like JetBrains.
   const name = OPERATION_NAMES[operation] ?? null;
@@ -256,6 +319,7 @@ export function gitMenuState(repo: GitRepoInputs | null, gitFile: GitFileInputs 
   state["git.skipCommit"] = { enabled: ready, visible: operation === "rebase" };
 
   state["git.showLog"] = { enabled: repo !== null };
+  state["git.showReflog"] = { enabled: repo !== null && !repo.unborn };
   state["git.patch.create"] = { enabled: hasCommits && (repo?.changes ?? 0) > 0 };
   state["git.patch.createFromCommit"] = { enabled: hasCommits };
   state["git.patch.apply"] = { enabled: ready };

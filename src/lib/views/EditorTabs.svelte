@@ -1,10 +1,18 @@
-<!-- Tab bar above the editor area: the Diff tab plus every open file, commit and terminal tab. -->
+<!--
+  Tab bar of one editor group: the first group's strip starts with the Diff tab, then every
+  file, commit and terminal tab open in that group.
+-->
 <script lang="ts">
+  import { localHistory } from "$lib/localHistory/localHistory.svelte";
   import { errorMessage } from "$lib/api";
   import { parseCommitTabPath } from "$lib/stores/commitTabs";
   import { gitTabTitle, parseGitTabPath } from "$lib/stores/gitTabs";
   import { branchTabTitle, parseBranchTabPath } from "$lib/stores/branchTabs";
+  import { isPseudoTab } from "$lib/stores/pseudoTabs";
+  import { compareStore, compareTabTooltip } from "$lib/compare/compareStore.svelte";
+  import { isCompareTab } from "$lib/compare/compareTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
+  import { settings } from "$lib/stores/settings.svelte";
   import { tabLabels } from "$lib/stores/tabs";
   import { shellNameFor } from "$lib/terminal/terminals";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
@@ -14,11 +22,21 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { changesSelection } from "./changes/selection.svelte";
+  import { moveEditorTab, splitEditorRight } from "./workspaceActions";
+
+  let { groupId }: { groupId: number } = $props();
 
   let stripEl = $state<HTMLDivElement | null>(null);
 
-  const shownView = $derived(changesSelection.shownView);
-  const labels = $derived(tabLabels(repoStore.tabs));
+  const group = $derived(repoStore.groupById(groupId));
+  const tabs = $derived(group?.tabs ?? []);
+  /** The first group: it has the Diff tab. */
+  const primary = $derived(repoStore.primaryGroupId === groupId);
+  const split = $derived(repoStore.groups.length > 1);
+  /** With two groups, the strip of the unfocused one is dimmed. */
+  const focused = $derived(!split || repoStore.focusedGroupId === groupId);
+  const diffShown = $derived(primary && changesSelection.primaryView === "diff");
+  const labels = $derived(tabLabels(tabs));
   const diffName = $derived(changesSelection.selected?.path.split("/").pop() ?? "Diff");
   const diffTitle = $derived(
     changesSelection.selected
@@ -28,8 +46,8 @@
 
   // Keep the active tab scrolled into view.
   $effect(() => {
-    const active = repoStore.openFilePath;
-    void shownView;
+    const active = group?.active ?? null;
+    void diffShown;
     if (!stripEl || !active) {
       return;
     }
@@ -38,14 +56,14 @@
   });
 
   function activate(filePath: string): void {
-    void repoStore.openFile(filePath);
+    repoStore.activateTab(groupId, filePath);
   }
 
   function onAuxClick(event: MouseEvent, filePath: string): void {
     // Middle click closes, like browsers and editors.
     if (event.button === 1) {
       event.preventDefault();
-      void repoStore.closeTab(filePath);
+      void repoStore.closeTab(filePath, groupId);
     }
   }
 
@@ -88,14 +106,16 @@
     if (commit) {
       return [{ label: "Copy Commit Hash", action: () => void copy(commit.commitId) }];
     }
-    if (parseBranchTabPath(filePath)) {
+    if (parseBranchTabPath(filePath) || isCompareTab(filePath)) {
       return [];
     }
     const gitTab = parseGitTabPath(filePath);
     if (gitTab) {
-      return [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
+      return gitTab.kind === "reflog" ? [] : [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
     }
     return [
+      { label: "Show Local History", action: () => localHistory.openFile(filePath) },
+      { separator: true },
       { label: "Copy Path", action: () => void copy(filePath) },
       {
         label: "Copy Relative Path",
@@ -104,22 +124,49 @@
           void copy(folder ? relativeTo(folder.root, filePath) : filePath);
         },
       },
+      ...compareStore.fileTabItems(filePath),
     ];
   }
 
+  /** Split Right, the move to the other group and Close Group, while the split editor setting is on. */
+  function groupItems(filePath: string): MenuItem[] {
+    if (!settings.splitEditor) {
+      return [];
+    }
+    const items: MenuItem[] = [];
+    if (primary && !isPseudoTab(filePath)) {
+      items.push({
+        label: "Split Right",
+        action: () => {
+          repoStore.activateTab(groupId, filePath);
+          splitEditorRight(filePath);
+        },
+      });
+    }
+    items.push({ label: primary ? "Move to Right Group" : "Move to Left Group", action: () => moveEditorTab(filePath, groupId) });
+    if (split) {
+      items.push({ label: "Close Group", action: () => void repoStore.closeGroup(groupId) });
+    }
+    return [...items, { separator: true }];
+  }
+
   function openMenu(event: MouseEvent, filePath: string, preview: boolean): void {
-    const index = repoStore.tabs.findIndex((tab) => tab.path === filePath);
+    const index = tabs.findIndex((tab) => tab.path === filePath);
+    const pinned = repoStore.isPinned(filePath);
     contextMenu.open(event, [
-      ...(preview ? [{ label: "Keep Open", action: () => repoStore.pinFile(filePath) }, { separator: true as const }] : []),
-      { label: "Close", action: () => void repoStore.closeTab(filePath) },
-      { label: "Close Others", disabled: repoStore.tabs.length < 2, action: () => void repoStore.closeOtherTabs(filePath) },
+      ...(preview ? [{ label: "Keep Open", action: () => repoStore.pinFile(filePath, groupId) }] : []),
+      { label: pinned ? "Unpin Tab" : "Pin Tab", action: () => repoStore.setTabPinned(filePath, !pinned) },
+      { separator: true },
+      { label: "Close", action: () => void repoStore.closeTab(filePath, groupId) },
+      { label: "Close Others", disabled: tabs.length < 2, action: () => void repoStore.closeOtherTabs(filePath, groupId) },
       {
         label: "Close to the Right",
-        disabled: index < 0 || index === repoStore.tabs.length - 1,
-        action: () => void repoStore.closeTabsToRight(filePath),
+        disabled: index < 0 || index === tabs.length - 1,
+        action: () => void repoStore.closeTabsToRight(filePath, groupId),
       },
-      { label: "Close All", action: () => void repoStore.closeAllTabs() },
+      { label: "Close All", action: () => void repoStore.closeAllTabs(groupId) },
       { separator: true },
+      ...groupItems(filePath),
       ...tabItems(filePath),
     ]);
   }
@@ -132,10 +179,17 @@
   }
 </script>
 
-<div class="tab-strip" bind:this={stripEl} onwheel={onWheel} role="tablist" aria-label="Open editors">
-  {#if changesSelection.selected}
-    <div class="tab diff" class:active={shownView === "diff"} title={diffTitle} role="presentation">
-      <button class="tab-main" role="tab" aria-selected={shownView === "diff"} onclick={() => (repoStore.view = "diff")}>
+<div
+  class="tab-strip"
+  class:unfocused={!focused}
+  bind:this={stripEl}
+  onwheel={onWheel}
+  role="tablist"
+  aria-label={split ? (primary ? "Open editors, left group" : "Open editors, right group") : "Open editors"}
+>
+  {#if primary && changesSelection.selected}
+    <div class="tab diff" class:active={diffShown} title={diffTitle} role="presentation">
+      <button class="tab-main" role="tab" aria-selected={diffShown} onclick={() => (repoStore.view = "diff")}>
         <Icon name="git-compare" size={13} />
         <span class="name">{diffName}</span>
         <span class="hint">Diff</span>
@@ -145,9 +199,9 @@
       </button>
     </div>
   {/if}
-  {#each repoStore.tabs as tab (tab.path)}
+  {#each tabs as tab (tab.path)}
     {@const label = labels.get(tab.path)}
-    {@const active = shownView === "file" && repoStore.openFilePath === tab.path}
+    {@const active = changesSelection.tabShown(groupId, tab.path)}
     {@const commit = parseCommitTabPath(tab.path) !== null}
     {@const gitTab = parseGitTabPath(tab.path)}
     {@const branchTab = parseBranchTabPath(tab.path)}
@@ -167,7 +221,7 @@
             ? gitTabTitle(gitTab).title
             : branchTab
               ? branchTabTitle(branchTab).title
-              : `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`}
+              : (compareTabTooltip(tab.path) ?? `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`)}
       role="presentation"
       onauxclick={(event) => onAuxClick(event, tab.path)}
       oncontextmenu={(event) => openMenu(event, tab.path, tab.preview)}
@@ -177,7 +231,7 @@
         role="tab"
         aria-selected={active}
         onclick={() => activate(tab.path)}
-        ondblclick={() => repoStore.pinFile(tab.path)}
+        ondblclick={() => repoStore.pinFile(tab.path, groupId)}
       >
         <Icon
           name={terminalKey !== null
@@ -187,8 +241,10 @@
               : gitTab
                 ? gitTab.kind === "compare"
                   ? "git-compare"
-                  : "history"
-                : branchTab
+                  : gitTab.kind === "reflog"
+                    ? "undo"
+                    : "history"
+                : branchTab || isCompareTab(tab.path)
                   ? "git-compare"
                   : "file"}
           size={13}
@@ -197,10 +253,13 @@
         {#if label?.hint}
           <span class="hint">{label.hint}</span>
         {/if}
+        {#if tab.pinned}
+          <span class="pin" title="Pinned: the tab limit never closes it"><Icon name="pin" size={11} /></span>
+        {/if}
       </button>
       <button
         class="tab-close"
-        onclick={() => void repoStore.closeTab(tab.path)}
+        onclick={() => void repoStore.closeTab(tab.path, groupId)}
         aria-label={tab.dirty ? "Close (unsaved changes)" : "Close"}
         title={tab.dirty ? "Unsaved changes. Close" : "Close"}
       >
@@ -259,6 +318,15 @@
     background: var(--accent);
   }
 
+  /* The group without the focus: its tab on screen keeps the editor color but no accent. */
+  .tab-strip.unfocused .tab.active::before {
+    background: var(--border-strong);
+  }
+
+  .tab-strip.unfocused .tab.active {
+    color: var(--text-dim);
+  }
+
   .tab-main {
     display: flex;
     align-items: center;
@@ -295,6 +363,11 @@
 
   .tab.diff .hint {
     font-style: normal;
+  }
+
+  .pin {
+    display: inline-flex;
+    color: var(--text-faint);
   }
 
   .tab-close {

@@ -89,7 +89,10 @@ function appMenu(mode: MenuMode): TopMenu {
 
 function fileMenu(platform: MenuPlatform): TopMenu {
   const items: MenuEntry[] = [
+    item("file.newWindow", "New Window", "CmdOrCtrl+Shift+N"),
+    separator,
     item("file.openFolder", "Open Folder..."),
+    item("file.openFolderNewWindow", "Open Folder in New Window..."),
     item("file.openWorkspace", "Open Workspace from File..."),
     { kind: "recent", text: "Open Recent", clear: item("file.clearRecent", "Clear Recent") },
     separator,
@@ -99,9 +102,15 @@ function fileMenu(platform: MenuPlatform): TopMenu {
     item("file.save", "Save", "CmdOrCtrl+S"),
     item("file.saveAll", "Save All", "CmdOrCtrl+Alt+S"),
     item("file.revert", "Revert File"),
+    item("file.compareWithClipboard", "Compare with Clipboard"),
+    item("file.compareWith", "Compare with..."),
+    item("file.localHistory", "Show Local History"),
+    item("file.recentlyDeleted", "Recently Deleted Files..."),
     separator,
     item("file.closeTab", "Close Tab", "CmdOrCtrl+W"),
+    item("file.reopenClosedTab", "Reopen Closed Tab", "CmdOrCtrl+Shift+T"),
     item("file.closeFolder", "Close Folder"),
+    item("file.closeWindow", "Close Window", "CmdOrCtrl+Shift+W"),
   ];
   if (platform !== "macos") {
     items.push(separator, item("app.settings", "Settings...", "CmdOrCtrl+,"), separator, native("Quit", "Exit"));
@@ -136,6 +145,7 @@ function editMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       item("edit.findInFiles", "Find in Files...", "CmdOrCtrl+Shift+F"),
       item("edit.replaceInFiles", "Replace in Files...", "CmdOrCtrl+Shift+R"),
       separator,
+      // Cmd+P is VS Code's Quick Open; JetBrains' Shift+Cmd+O still opens Search Everywhere on Files.
       item("edit.goToFile", "Go to File...", "CmdOrCtrl+P"),
       item("edit.goToClass", "Go to Class...", "CmdOrCtrl+O"),
       item("edit.goToSymbol", "Go to Symbol...", "CmdOrCtrl+Alt+O"),
@@ -148,6 +158,9 @@ function editMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
 
 function viewMenu(platform: MenuPlatform): TopMenu {
   const items: MenuEntry[] = [
+    // VS Code's place for it; Quick Open with ">" typed.
+    item("view.commandPalette", "Command Palette...", "CmdOrCtrl+Shift+P"),
+    separator,
     // Shift+Cmd+G is Find Previous in the Edit menu; outside an editor it still shows Changes.
     check("view.changes", "Changes"),
     check("view.branches", "Branches and Stashes", "CmdOrCtrl+Shift+E"),
@@ -159,8 +172,12 @@ function viewMenu(platform: MenuPlatform): TopMenu {
     check("view.gitConsole", "Git Console"),
     check("view.leftActivityBar", "Left Activity Bar"),
     check("view.rightActivityBar", "Right Activity Bar"),
+    item("view.notifications", "Notifications"),
+    check("view.doNotDisturb", "Do Not Disturb"),
     separator,
     check("view.wordWrap", "Word Wrap", "Alt+Z"),
+    check("view.stickyScroll", "Sticky Scroll"),
+    check("view.minimap", "Minimap"),
     {
       kind: "submenu",
       text: "Markdown",
@@ -251,6 +268,7 @@ function gitMenu(platform: MenuPlatform): TopMenu {
       item("git.newBranch", "New Branch..."),
       item("git.newTag", "New Tag..."),
       item("git.resetHead", "Reset HEAD..."),
+      item("git.undoLast", "Undo Last Action..."),
       { kind: "separator", visibleWith: operation },
       item("git.resolveConflicts", "Resolve Conflicts..."),
       item("git.continueOp", "Continue"),
@@ -259,7 +277,21 @@ function gitMenu(platform: MenuPlatform): TopMenu {
       separator,
       item("git.showLog", "Show Git Log", key("Cmd+9")),
       item("git.showConsole", "Show Git Console"),
+      item("git.showReflog", "Show Reflog"),
       separator,
+      {
+        kind: "submenu",
+        text: "Bisect",
+        items: [
+          item("git.bisect.start", "Start..."),
+          separator,
+          item("git.bisect.good", "Mark Good"),
+          item("git.bisect.bad", "Mark Bad"),
+          item("git.bisect.skip", "Skip"),
+          separator,
+          item("git.bisect.reset", "Reset"),
+        ],
+      },
       {
         kind: "submenu",
         text: "Patch",
@@ -275,6 +307,11 @@ function gitMenu(platform: MenuPlatform): TopMenu {
         kind: "submenu",
         text: "Uncommitted Changes",
         items: [
+          // The Changes diff's selection (DiffView); like the Git keys above, macOS only.
+          item("git.lines.stage", "Stage Selected Lines", key("Cmd+Alt+Shift+S")),
+          item("git.lines.unstage", "Unstage Selected Lines", key("Cmd+Alt+Shift+U")),
+          item("git.lines.discard", "Discard Selected Lines...", key("Cmd+Alt+Shift+D")),
+          separator,
           item("git.stash", "Stash Changes..."),
           item("git.unstash", "Unstash Changes..."),
           separator,
@@ -378,6 +415,14 @@ function windowMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       separator,
       item("window.nextTab", "Next Tab", mac ? "Cmd+Shift+]" : "Ctrl+PageDown"),
       item("window.previousTab", "Previous Tab", mac ? "Cmd+Shift+[" : "Ctrl+PageUp"),
+      item("window.pinTab", "Pin Tab"),
+      separator,
+      // Editor groups, with VS Code's keys.
+      item("window.splitRight", "Split Right", "CmdOrCtrl+\\"),
+      item("window.moveTabToOtherGroup", "Move Tab to Other Group"),
+      item("window.focusLeftGroup", "Focus Left Group", "CmdOrCtrl+1"),
+      item("window.focusRightGroup", "Focus Right Group", "CmdOrCtrl+2"),
+      item("window.closeGroup", "Close Group"),
     );
   } else {
     // git mergetool: Cmd+W closes the window, which asks before dropping the merge result.

@@ -1,19 +1,27 @@
+pub mod auto_fetch;
+pub mod bisect;
 pub mod branch;
 pub mod branch_actions;
 pub mod commit_options;
+pub mod compare;
 pub mod config;
 pub mod console;
+pub mod editor;
 pub mod file_ops;
 pub mod files;
 pub mod history;
+pub mod identity;
 pub mod ignore;
 pub mod integrate;
 pub mod lfs;
+pub mod lines;
+pub mod local_history;
 pub mod mcp;
 pub mod merge;
 pub mod patch;
 pub mod rebase;
 pub mod rebase_merges;
+pub mod reflog;
 pub mod remote;
 pub mod repo;
 pub mod scripts;
@@ -24,6 +32,7 @@ pub mod status;
 pub mod submodule;
 pub mod tag;
 pub mod terminal;
+pub mod window;
 pub mod workspace;
 pub mod worktree;
 
@@ -32,7 +41,9 @@ mod tests;
 
 use std::path::{Component, Path, PathBuf};
 
+use serde::de::DeserializeOwned;
 use serde::Serialize;
+use tauri::ipc::{InvokeBody, Request};
 
 use crate::error::{AppError, AppResult};
 use crate::git::{cli, repo as git_repo};
@@ -108,4 +119,20 @@ pub fn with_paths<'a>(args: &[&'a str], paths: &'a [String]) -> Vec<&'a str> {
     all.push("--");
     all.extend(paths.iter().map(String::as_str));
     all
+}
+
+/// The body of a command invoked with raw bytes, copied out so blocking work can own it.
+pub fn raw_body(request: &Request<'_>) -> AppResult<Vec<u8>> {
+    match request.body() {
+        InvokeBody::Raw(bytes) => Ok(bytes.clone()),
+        InvokeBody::Json(_) => Err(AppError::invalid("This command takes raw bytes")),
+    }
+}
+
+/// Splits a raw body into its arguments (one line of JSON) and the bytes after it, usually an
+/// editor's text: large texts cross the bridge without JSON escaping that way.
+pub fn raw_parts<T: DeserializeOwned>(body: &[u8]) -> AppResult<(T, &[u8])> {
+    let split = memchr::memchr(b'\n', body).ok_or_else(|| AppError::invalid("The request has no arguments line"))?;
+    let args = serde_json::from_slice(&body[..split]).map_err(|err| AppError::invalid(format!("Bad arguments: {err}")))?;
+    Ok((args, &body[split + 1..]))
 }

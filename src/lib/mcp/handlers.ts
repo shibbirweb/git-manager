@@ -3,6 +3,8 @@
 // is off. Every request gets an answer: errors become results with ok false.
 
 import { api, errorMessage } from "$lib/api";
+import { menuAccelerators } from "$lib/commands/registry";
+import { usableOverrides } from "$lib/commands/shortcutSettings";
 import { appMenu, currentMenuInputs } from "$lib/menu/appMenu.svelte";
 import { editorFocus } from "$lib/menu/editorFocus.svelte";
 import { runMenuAction } from "$lib/menu/menuActions";
@@ -10,6 +12,7 @@ import { isEditorAction, MENU_ACTIONS } from "$lib/menu/menuIds";
 import { type MenuState, menuState } from "$lib/menu/menuState";
 import { menuSpec } from "$lib/menu/menuSpec";
 import { isMarkdownPath } from "$lib/markdown/viewMode";
+import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { runProjectScript } from "$lib/scripts/scriptActions";
 import { nodePickFor, scriptRunId, withRunner } from "$lib/scripts/scriptRun";
@@ -125,7 +128,9 @@ function currentMenuState(): MenuState {
 }
 
 function currentMenuCommands() {
-  return menuCommands(menuSpec(appMenu.menuPlatform, appMenu.menuMode), currentMenuState());
+  const spec = menuSpec(appMenu.menuPlatform, appMenu.menuMode);
+  const accelerators = menuAccelerators(spec, usableOverrides(settings.keybindings, appMenu.menuPlatform));
+  return menuCommands(spec, currentMenuState(), accelerators);
 }
 
 async function runMenuCommand(args: ToolArgs): Promise<Structured> {
@@ -173,7 +178,7 @@ async function showPanel(args: ToolArgs): Promise<Structured> {
     case "log":
       if (visible) {
         await showLog();
-      } else if (changesSelection.shownView === "log") {
+      } else if (changesSelection.logShown) {
         changesSelection.toggleLog();
       }
       break;
@@ -225,6 +230,9 @@ function closeDialog(): Structured {
       break;
     case "fileSearch":
       fileSearch.close();
+      break;
+    case "quickOpen":
+      quickOpen.close();
       break;
     case "settings":
       settings.dialogOpen = false;

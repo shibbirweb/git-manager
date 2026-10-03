@@ -1,6 +1,7 @@
 // Help > Keyboard Shortcuts: every shortcut of the app. Menu items come straight from the
 // menu bar's own definition (menuSpec.ts), so the list can never drift from the real keys;
 // the ones no menu shows (double Shift, the merge tool's F7, Option+Shift+click...) are added.
+// Custom keys from Settings > Keyboard Shortcuts replace the defaults they change.
 
 import type { MenuPlatform } from "$lib/menu/menuIds";
 import { menuSpec, type MenuEntry } from "$lib/menu/menuSpec";
@@ -97,15 +98,20 @@ export function formatKeys(accelerator: string, platform: MenuPlatform): string 
   return [...OTHER_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => OTHER_NAMES[modifier]), keyText].join("+");
 }
 
+/** Custom keys by command id (registry.ts's ShortcutOverrides): an accelerator, or null for none. */
+export type CustomKeys = Partial<Record<string, string | null>>;
+
 /** Every menu item that has a shortcut, one section per menu, submenus as "Submenu > Item". */
-export function menuShortcuts(platform: MenuPlatform): ShortcutSection[] {
+export function menuShortcuts(platform: MenuPlatform, customKeys: CustomKeys = {}): ShortcutSection[] {
   const sections: ShortcutSection[] = [];
   for (const menu of menuSpec(platform, "app")) {
     const rows: ShortcutRow[] = [];
     const walk = (entries: MenuEntry[], path: string[]) => {
       for (const entry of entries) {
-        if (entry.kind === "action" && entry.accelerator) {
-          rows.push({ label: [...path, entry.text.replace(/\.\.\.$/, "")].join(" > "), keys: [formatKeys(entry.accelerator, platform)] });
+        const accelerator =
+          entry.kind === "action" ? (Object.hasOwn(customKeys, entry.action) ? (customKeys[entry.action] ?? null) : entry.accelerator) : null;
+        if (entry.kind === "action" && accelerator) {
+          rows.push({ label: [...path, entry.text.replace(/\.\.\.$/, "")].join(" > "), keys: [formatKeys(accelerator, platform)] });
         } else if (entry.kind === "submenu") {
           walk(entry.items, [...path, entry.text]);
         }
@@ -120,21 +126,41 @@ export function menuShortcuts(platform: MenuPlatform): ShortcutSection[] {
 }
 
 /** Shortcuts no menu item shows. Keep in sync with workspaceShortcuts.ts, the merge tool and the editors. */
-function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
+function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): ShortcutSection[] {
   const keys = (...accelerators: string[]) => accelerators.map((accelerator) => formatKeys(accelerator, platform));
+  // A command's keys: its custom one when changed, else the defaults given.
+  const commandKeys = (commandId: string, ...defaults: string[]) => {
+    if (!Object.hasOwn(customKeys, commandId)) {
+      return keys(...defaults);
+    }
+    const custom = customKeys[commandId] ?? null;
+    return custom ? keys(custom) : [];
+  };
   const mac = platform === "macos";
   return [
     {
       title: "Search and navigation",
       rows: [
         { label: "Search Everywhere", keys: [mac ? "⇧ ⇧" : "Shift Shift"], context: "Press Shift twice" },
-        { label: "Go to File", keys: keys("CmdOrCtrl+P", "CmdOrCtrl+Shift+O") },
-        { label: "Go Back", keys: keys("Ctrl+-") },
-        { label: "Go Forward", keys: keys("Ctrl+Shift+-") },
+        { label: "Search Everywhere: Files", keys: commandKeys("search.files", "CmdOrCtrl+Shift+O") },
+        { label: "Go Back", keys: commandKeys("nav.goBack", "Ctrl+-") },
+        { label: "Go Forward", keys: commandKeys("nav.goForward", "Ctrl+Shift+-") },
         // As Window > Next Tab / Previous Tab has them: Ctrl+PageDown / PageUp do nothing on macOS.
-        { label: "Next Tab", keys: mac ? keys("Cmd+Shift+]") : keys("Ctrl+PageDown") },
-        { label: "Previous Tab", keys: mac ? keys("Cmd+Shift+[") : keys("Ctrl+PageUp") },
-        { label: "Show Changes", keys: keys("CmdOrCtrl+Shift+G"), context: "Outside a text editor" },
+        { label: "Next Tab", keys: commandKeys("window.nextTab", mac ? "Cmd+Shift+]" : "Ctrl+PageDown") },
+        { label: "Previous Tab", keys: commandKeys("window.previousTab", mac ? "Cmd+Shift+[" : "Ctrl+PageUp") },
+        { label: "Show Changes", keys: commandKeys("view.changes", "CmdOrCtrl+Shift+G"), context: "Outside a text editor" },
+      ],
+    },
+    {
+      // QuickOpen.svelte: Edit > Go to File (Cmd+P) and View > Command Palette open it.
+      title: "Quick Open",
+      rows: [
+        { label: "Run a command", keys: [">"], context: "Typed first in Quick Open" },
+        { label: "Go to a line (and column)", keys: [":"], context: "Typed first in Quick Open" },
+        { label: "Go to a symbol in the file", keys: ["@"], context: "Typed first in Quick Open" },
+        { label: "Go to a symbol in the workspace", keys: ["#"], context: "Typed first in Quick Open" },
+        { label: "List the prefixes", keys: ["?"], context: "Typed first in Quick Open" },
+        { label: "Open to the side", keys: keys("CmdOrCtrl+Enter"), context: "On a file in Quick Open, with the split editor on" },
       ],
     },
     {
@@ -170,6 +196,14 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
       ],
     },
     {
+      // CommitBox.svelte.
+      title: "Commit box",
+      rows: [
+        { label: "Commit", keys: keys("CmdOrCtrl+Enter"), context: "In the commit message" },
+        { label: "Message history", keys: [...(mac ? keys("Cmd+E") : keys("Ctrl+E")), ...keys("Up")], context: "In the commit message; Up when it is empty" },
+      ],
+    },
+    {
       title: "Merge tool and diffs",
       rows: [
         { label: "Next change or conflict", keys: keys("F7") },
@@ -179,8 +213,8 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
     {
       title: "Terminal",
       rows: [
-        { label: "Show or hide the terminal", keys: keys("Ctrl+`") },
-        { label: "New terminal", keys: keys("Ctrl+Shift+`") },
+        { label: "Show or hide the terminal", keys: commandKeys("view.terminal", "Ctrl+`") },
+        { label: "New terminal", keys: commandKeys("terminal.new", "Ctrl+Shift+`") },
         { label: "Copy / Paste", keys: mac ? keys("Cmd+C", "Cmd+V") : keys("Ctrl+Shift+C", "Ctrl+Shift+V"), context: "In a terminal" },
         { label: "Stop the running command", keys: keys("Ctrl+C"), context: "In a terminal or the Run tab" },
         { label: "Find in the terminal", keys: mac ? keys("Cmd+F") : keys("Ctrl+Shift+F"), context: "In a terminal" },
@@ -201,8 +235,13 @@ function extraShortcuts(platform: MenuPlatform): ShortcutSection[] {
 }
 
 /** All sections: the menus first, then the shortcuts no menu shows. */
-export function shortcutSections(platform: MenuPlatform): ShortcutSection[] {
-  return [...menuShortcuts(platform), ...extraShortcuts(platform)];
+export function shortcutSections(platform: MenuPlatform, customKeys: CustomKeys = {}): ShortcutSection[] {
+  // A command whose key was removed has no row.
+  const extras = extraShortcuts(platform, customKeys).map((section) => ({
+    title: section.title,
+    rows: section.rows.filter((row) => row.keys.length > 0),
+  }));
+  return [...menuShortcuts(platform, customKeys), ...extras];
 }
 
 /** Rows whose label, keys or context contain every word of `filter`; empty sections drop out. */

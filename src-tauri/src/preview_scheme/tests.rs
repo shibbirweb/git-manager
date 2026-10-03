@@ -193,7 +193,6 @@ fn refuses_work_tree_files_outside_the_folders_and_other_types() {
     let outside = TestDir::new();
     outside.write("secret.png", b"x");
     workspace.write("notes.txt", b"hello");
-    workspace.write("icon.svg", b"<svg/>");
     workspace.mkdir("folder.png");
     let folders = folders_of(&workspace);
 
@@ -205,7 +204,6 @@ fn refuses_work_tree_files_outside_the_folders_and_other_types() {
     assert_eq!(refused(&sneaky).status, 403);
     assert_eq!(refused("relative/logo.png").status, 403);
     assert_eq!(refused(&workspace.file_string("notes.txt")).status, 403);
-    assert_eq!(refused(&workspace.file_string("icon.svg")).status, 403);
     assert_eq!(refused(&workspace.file_string("missing.png")).status, 404);
     assert_eq!(refused(&workspace.file_string("folder.png")).status, 404);
     assert_eq!(get(&folders, "/worktree/%zz", None).status, 404);
@@ -295,15 +293,80 @@ fn serves_head_index_commits_and_parents() {
 }
 
 #[test]
-fn answers_a_range_of_a_blob() {
+fn a_blob_is_always_sent_whole() {
     let shop = shop();
     let folders = folders_of(&shop.workspace);
     let path = revision_path(&shop.root, &shop.first, "manual.pdf");
-    let ranged = get(&folders, &path, Some("bytes=9-"));
+    // Each range would inflate the whole blob again, so the range is ignored and none offered.
+    for range in [None, Some("bytes=9-"), Some("bytes=0-3"), Some("bytes=20-")] {
+        let response = get(&folders, &path, range);
+        assert_eq!(response.status, 200, "{range:?}");
+        assert_eq!(response.body, b"%PDF-1.7 first");
+        assert_eq!(response.header("Content-Length"), Some("14"));
+        assert_eq!(response.header("Accept-Ranges"), None);
+        assert_eq!(response.header("Content-Range"), None);
+    }
+    let head = respond(
+        &folders,
+        &PreviewRequest {
+            method: "HEAD",
+            path: &path,
+            range: None,
+        },
+    );
+    assert_eq!(head.status, 200);
+    assert_eq!(head.header("Accept-Ranges"), None);
+
+    // A work tree file of the same repository still answers ranges.
+    let worktree = worktree_path(&format!("{}/manual.pdf", shop.root));
+    let ranged = get(&folders, &worktree, Some("bytes=9-"));
     assert_eq!(ranged.status, 206);
     assert_eq!(ranged.body, b"first");
-    assert_eq!(ranged.header("Content-Range"), Some("bytes 9-13/14"));
-    assert_eq!(get(&folders, &path, Some("bytes=20-")).status, 416);
+    assert_eq!(ranged.header("Accept-Ranges"), Some("bytes"));
+}
+
+#[test]
+fn serves_work_tree_svg_with_a_csp_that_runs_nothing() {
+    let workspace = TestDir::new();
+    let svg = b"<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script></svg>";
+    workspace.write("docs/icon.SVG", svg);
+    workspace.write("logo.png", image_bytes(b"pixels"));
+    let folders = folders_of(&workspace);
+
+    let response = get(&folders, &worktree_path(&workspace.file_string("docs/icon.SVG")), None);
+    assert_eq!(response.status, 200);
+    assert_eq!(response.body, svg);
+    assert_eq!(response.header("Content-Type"), Some(SVG_MIME));
+    assert_eq!(
+        response.header("Content-Security-Policy"),
+        Some("default-src 'none'; style-src 'unsafe-inline'; sandbox")
+    );
+    assert_eq!(response.header("X-Content-Type-Options"), Some("nosniff"));
+    // Other types get no CSP of their own.
+    let png = get(&folders, &worktree_path(&workspace.file_string("logo.png")), None);
+    assert_eq!(png.header("Content-Security-Policy"), None);
+
+    let stat = stat(
+        &folders,
+        &Target::WorkTree {
+            file_path: workspace.file_string("docs/icon.SVG"),
+        },
+    )
+    .unwrap();
+    assert!(stat.exists);
+}
+
+#[test]
+fn svg_is_served_from_the_work_tree_only() {
+    let shop = shop();
+    shop.workspace.write("shop/icon.svg", b"<svg/>");
+    git_in(Path::new(&shop.root), &["add", "icon.svg"]);
+    let folders = folders_of(&shop.workspace);
+    assert_eq!(get(&folders, &revision_path(&shop.root, "index", "icon.svg"), None).status, 403);
+    assert_eq!(get(&folders, &worktree_path(&format!("{}/icon.svg", shop.root)), None).status, 200);
+    let outside = TestDir::new();
+    outside.write("icon.svg", b"<svg/>");
+    assert_eq!(get(&folders, &worktree_path(&outside.file_string("icon.svg")), None).status, 403);
 }
 
 #[test]
@@ -386,11 +449,17 @@ fn builds_targets_from_command_arguments() {
 fn the_folder_registry_keeps_existing_folders_only() {
     let workspace = TestDir::new();
     let registry = PreviewFolders::default();
-    assert!(registry.get().is_empty());
-    registry.set(&[workspace.path_string(), "/definitely/missing".to_string()]);
-    assert_eq!(registry.get(), vec![workspace.path.clone()]);
-    registry.set(&[]);
-    assert!(registry.get().is_empty());
+    assert!(registry.get("main").is_empty());
+    registry.set("main", &[workspace.path_string(), "/definitely/missing".to_string()]);
+    assert_eq!(registry.get("main"), vec![workspace.path.clone()]);
+    // Each window reaches only its own folders, and a closed window none.
+    assert!(registry.get("window-2").is_empty());
+    registry.set("window-2", &[workspace.path_string()]);
+    registry.remove("main");
+    assert!(registry.get("main").is_empty());
+    assert_eq!(registry.get("window-2"), vec![workspace.path.clone()]);
+    registry.set("window-2", &[]);
+    assert!(registry.get("window-2").is_empty());
 }
 
 #[test]

@@ -1,12 +1,13 @@
 // The IDE features of the editors: auto-close brackets, code completion, the fold gutter,
 // indent guides, highlighting the word at the cursor, scrolling past the end, column
-// selection and the right margin line. Each one sits in its own compartment, like the
+// selection, the right margin line, sticky scroll, the minimap, bracket pair colors and
+// matching brackets. Each one sits in its own compartment, like the
 // cursor and whitespace settings, so a changed setting reaches the open editors without
 // rebuilding them. A feature that is off leaves an empty compartment, so nothing of it stays
 // in memory, and the autocomplete package is only imported the first time it is needed.
 
 import type * as Autocomplete from "@codemirror/autocomplete";
-import { foldGutter, language } from "@codemirror/language";
+import { bracketMatching, foldGutter, language } from "@codemirror/language";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { Compartment, EditorState, type Extension, Facet, Prec } from "@codemirror/state";
 import { crosshairCursor, EditorView, keymap, rectangularSelection, scrollPastEnd, ViewPlugin } from "@codemirror/view";
@@ -20,7 +21,11 @@ import {
   needsAutocomplete,
   wordsWhileTyping,
 } from "./featurePlan";
+import { bracketPairColors } from "./bracketColors";
 import { indentGuides } from "./indentGuides";
+import { minimap } from "./minimap";
+import { stickyScroll } from "./stickyScroll";
+import { windowWords, wordPattern } from "./wordCompletion";
 import { rulerLine } from "./ruler";
 
 type AutocompleteModule = typeof Autocomplete;
@@ -73,6 +78,8 @@ function loadAutocomplete(): void {
 // Without "highlight the word", a selection still highlights its other matches, as before.
 const selectionMatches = highlightSelectionMatches();
 const wordMatches = highlightSelectionMatches({ highlightWordAroundCursor: true });
+
+const matchingBrackets = bracketMatching();
 
 const columnSelection: Extension = [
   // Option+Shift+click keeps adding a cursor (setup.ts), so Shift is left out here.
@@ -222,12 +229,15 @@ function completionExtension(module: AutocompleteModule, onTyping: boolean): Ext
     if (!context.explicit && !wordsWhileTyping(context.state.facet(language)?.name ?? null)) {
       return null;
     }
-    const result = module.completeAnyWord(context);
-    if (!result || result instanceof Promise) {
-      return result;
+    const pattern = wordPattern(context.state.languageDataAt<string>("wordChars", context.pos)[0] ?? "");
+    const token = context.matchBefore(new RegExp(`${pattern.source}$`, pattern.unicode ? "u" : ""));
+    if (!token && !context.explicit) {
+      return null;
     }
+    const from = token ? token.from : context.pos;
     // Without a type, a word that is also a keyword or a variable of the language is listed once.
-    return { ...result, options: result.options.map((option) => ({ label: option.label })) };
+    const options = windowWords(context.state.doc, context.pos, pattern, from).map((label) => ({ label }));
+    return { from, options, validFor: new RegExp(`^${pattern.source}`, pattern.unicode ? "u" : "") };
   };
   const wordData = [{ autocomplete: words }];
   return [
@@ -277,6 +287,14 @@ function extensionFor(feature: EditorFeature, kind: EditorKind, options: EditorF
       return columnSelection;
     case "ruler":
       return rulerLine(options.rulerColumn);
+    case "stickyScroll":
+      return stickyScroll();
+    case "minimap":
+      return minimap();
+    case "bracketPairColors":
+      return bracketPairColors();
+    case "matchBrackets":
+      return matchingBrackets;
   }
 }
 

@@ -4,7 +4,13 @@
 // created one by one (to keep a handle for updates), the rest with their top menu in one
 // call; later only the items whose state changed are updated, after a short pause. A menu
 // with items that come and go (the Git menu's operation items, GitHub) keeps a handle for
-// each of its entries, so they can be removed and inserted again in place.
+// each of its entries, so they can be removed and inserted again in place. Custom keyboard
+// shortcuts change the accelerators of the items concerned, once per change in Settings.
+//
+// Every window builds its own menu bar, and a click runs in the window whose page built the
+// item, with that window's enabled and checked state. macOS has one menu bar for the whole
+// app, so the window that comes to the front puts its own menu bar back; on Windows and Linux
+// each window has its own.
 
 import {
   CheckMenuItem,
@@ -16,8 +22,12 @@ import {
   Submenu,
   type SubmenuOptions,
 } from "@tauri-apps/api/menu";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { untrack } from "svelte";
 import { errorMessage } from "$lib/api";
+import { menuAccelerators } from "$lib/commands/registry";
+import { usableOverrides } from "$lib/commands/shortcutSettings";
+import { diffLines } from "$lib/diff/diffLines.svelte";
 import { fileCommands } from "$lib/stores/fileCommands.svelte";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
@@ -107,6 +117,18 @@ export function currentMenuInputs(mode: MenuMode): MenuInputs {
         : null,
     dirtyCount: repoStore.dirtyPaths.length,
     tabCount: repoStore.tabs.length,
+    closedTabCount: repoStore.closedTabs.length,
+    activeTabPinned: repoStore.isPinned(activePath),
+    logShown: changesSelection.logShown,
+    editorGroups: {
+      enabled: settings.splitEditor,
+      count: repoStore.groups.length,
+      focusedIndex: Math.max(
+        0,
+        repoStore.groups.findIndex((group) => group.id === repoStore.focusedGroupId),
+      ),
+      canSplit: repoStore.canSplitRight(activePath),
+    },
     leftPanel: settings.leftPanel,
     explorerOpen: settings.explorerOpen,
     leftBarVisible: settings.leftBarVisible,
@@ -116,6 +138,10 @@ export function currentMenuInputs(mode: MenuMode): MenuInputs {
     gitConsoleEnabled: settings.gitConsole,
     theme: settings.theme,
     wordWrap: settings.wordWrap,
+    stickyScroll: settings.editorStickyScroll,
+    minimap: settings.editorMinimap,
+    doNotDisturb: settings.notificationsDoNotDisturb,
+    diffLines: diffLines.target?.mode ?? null,
     editor: { focused: editorFocus.focused, inText: editorFocus.inText, writable: editorFocus.writable },
     hasRecent:
       settings.recentRepos.length + settings.recentWorkspaces.length + settings.recentWorkspaceFiles.length > 0,
@@ -140,6 +166,13 @@ class AppMenu {
   /** The Open Recent entries shown now, closed when the list changes. */
   private recentItems: MenuItem[] = [];
   private visibilityQueue: Promise<void> = Promise.resolve();
+  private spec: TopMenu[] = [];
+  /** Every action item's objects, for accelerator changes. */
+  private actionItems = new Map<MenuAction, Set<MenuItem | CheckMenuItem>>();
+  /** This window's menu bar, with its Window and Help menus (macOS lists the windows in the first). */
+  private menuBar: { menu: Menu; windowMenu: Submenu | null; helpMenu: Submenu | null } | null = null;
+  /** The accelerator each item shows now. */
+  private accelerators = new Map<MenuAction, string | null>();
 
   /** Replaces the default menu bar; once per window. */
   async install(mode: MenuMode): Promise<void> {
@@ -151,20 +184,47 @@ class AppMenu {
     this.platform = platformFromUserAgent(navigator.userAgent);
     try {
       const spec = menuSpec(this.platform, mode);
+      this.spec = spec;
+      // Built with the menu's own keys; custom ones follow (follow), so a key the native
+      // menu refuses only leaves that item without one instead of failing the menu bar.
+      this.accelerators = menuAccelerators(spec);
       const initial = menuState(this.inputs());
       await this.createStatefulItems(spec, initial);
       const menus = await Promise.all(spec.map((top) => this.createTopMenu(top, initial)));
       const menu = await Menu.new({ items: menus });
-      await menu.setAsAppMenu();
+      this.menuBar = { menu, windowMenu: this.forRole(spec, menus, "window"), helpMenu: this.forRole(spec, menus, "help") };
       if (this.platform === "macos") {
-        await this.forRole(spec, menus, "window")?.setAsWindowsMenuForNSApp();
-        await this.forRole(spec, menus, "help")?.setAsHelpMenuForNSApp();
+        const current = getCurrentWindow();
+        void current
+          .onFocusChanged(({ payload: focused }) => {
+            if (focused) {
+              void this.claimMenuBar().catch(() => undefined);
+            }
+          })
+          .catch(() => undefined);
+        // Windows restored at start build their menus at the same time: only the one in front takes the bar.
+        if (await current.isFocused().catch(() => true)) {
+          await this.claimMenuBar();
+        }
+      } else {
+        await menu.setAsWindowMenu();
       }
       editorFocus.start();
       this.follow();
     } catch (error) {
       toast.error("Could not build the menu bar", errorMessage(error));
     }
+  }
+
+  /** macOS: this window's menu bar becomes the app's, with the window list and Help search. */
+  private async claimMenuBar(): Promise<void> {
+    const bar = this.menuBar;
+    if (!bar) {
+      return;
+    }
+    await bar.menu.setAsAppMenu();
+    await bar.windowMenu?.setAsWindowsMenuForNSApp();
+    await bar.helpMenu?.setAsHelpMenuForNSApp();
   }
 
   private forRole(spec: TopMenu[], menus: Submenu[], role: TopMenu["role"]): Submenu | null {
@@ -189,6 +249,7 @@ class AppMenu {
           ? await CheckMenuItem.new({ ...options, checked: state.checked ?? false })
           : await MenuItem.new(options);
         this.items.set(entry.action, created);
+        this.rememberItem(entry.action, created);
         this.shown.set(entry.action, { ...state, text: state.text ?? entry.text });
       }),
     );
@@ -245,12 +306,14 @@ class AppMenu {
           return created;
         }
         const action = entry.action;
-        return MenuItem.new({
+        const item = await MenuItem.new({
           id: itemId(action),
           text: entry.text,
           accelerator: entry.accelerator ?? undefined,
           action: () => this.onAction(action, false),
         });
+        this.rememberItem(action, item);
+        return item;
       }
     }
   }
@@ -280,6 +343,7 @@ class AppMenu {
           action: () => this.onAction(action, false),
         });
         this.kept.push(item);
+        this.rememberItem(action, item);
         return item;
       }
     }
@@ -326,9 +390,33 @@ class AppMenu {
     }
   }
 
+  private rememberItem(action: MenuAction, item: MenuItem | CheckMenuItem): void {
+    const items = this.actionItems.get(action) ?? new Set();
+    items.add(item);
+    this.actionItems.set(action, items);
+  }
+
+  /** Gives the items whose key changed their new accelerator. */
+  private applyAccelerators(wanted: Map<MenuAction, string | null>): void {
+    for (const [action, accelerator] of wanted) {
+      if (this.accelerators.get(action) === accelerator) {
+        continue;
+      }
+      this.accelerators.set(action, accelerator);
+      for (const item of this.actionItems.get(action) ?? []) {
+        // A key the native menu refuses leaves the item without one; the window still runs it.
+        void item.setAccelerator(accelerator).catch(() => undefined);
+      }
+    }
+  }
+
   /** Follows the app state; only reactive reads happen in `inputs`. */
   private follow(): void {
     $effect.root(() => {
+      $effect(() => {
+        const wanted = menuAccelerators(this.spec, usableOverrides(settings.keybindings, this.platform));
+        untrack(() => this.applyAccelerators(wanted));
+      });
       $effect(() => {
         const next = menuState(this.inputs());
         untrack(() => this.schedule(next));

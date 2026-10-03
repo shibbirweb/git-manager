@@ -15,6 +15,7 @@ import { toast } from "$lib/ui/toast.svelte";
 import { updates } from "$lib/update/updates.svelte";
 import { changesSelection } from "../changes/selection.svelte";
 import { commitOptions } from "../changes/commitOptions.svelte";
+import { ensureIdentity } from "../changes/identityCheck";
 import { pickedStash, refPickItems, decodeRefPick, stashPickItems } from "../changes/repoPickers";
 import { createTag, mergeBranch, openBranchPicker, rebaseBranch } from "../changes/repoActions";
 import { applyStash, newBranchFrom, repoTarget } from "../sidebar/actions";
@@ -288,7 +289,7 @@ export async function createPatchFromCommit(): Promise<void> {
     return;
   }
   const selected = logSelection.current;
-  const shownLog = changesSelection.shownView === "log" && selected?.repoRoot === repoRoot;
+  const shownLog = changesSelection.logShown && selected?.repoRoot === repoRoot;
   const commit = shownLog && selected ? selected : await pickCommit(repoRoot, "Create Patch from Commit", true);
   if (!commit) {
     return;
@@ -387,6 +388,14 @@ export function openRollbackDialog(filePaths: string[] | null = null, repoRoot: 
   }
 }
 
+/** Git > Show Reflog: one tab per repository, HEAD first; branches are picked inside it. */
+export function showReflog(): void {
+  const repoRoot = activeRoot();
+  if (repoRoot) {
+    openGitTab({ kind: "reflog", repoRoot });
+  }
+}
+
 export function showLocalChanges(): void {
   settings.setLeftPanel("changes");
 }
@@ -418,6 +427,10 @@ export async function commitCurrentFile(): Promise<void> {
   if (!options) {
     return;
   }
+  if (!(await ensureIdentity(file.repoRoot))) {
+    return;
+  }
+  settings.rememberCommitMessage(file.repoRoot, message);
   await repoStore.run("Commit", (repoPath) => api.commitFiles(repoPath, [file.filePath], message, false, options), {
     repoPath: file.repoRoot,
     success: `Committed ${name}`,
@@ -515,11 +528,11 @@ async function committedSelection(repoRoot: string, filePath: string, lines: Lin
   }
   const origPath = fileStatusOf(repoRoot, filePath)?.origPath ?? null;
   try {
-    const committed = await api.getFileDiff(repoRoot, filePath, origPath, "staged");
+    const committed = await api.readHeadFile(repoRoot, filePath, origPath);
     if (committed.binary || committed.tooLarge) {
       return lines;
     }
-    return headLineRange(committed.original.split("\n"), view.state.doc.toJSON(), lines);
+    return headLineRange(committed.content.split("\n"), view.state.doc.toJSON(), lines);
   } catch {
     return lines;
   }

@@ -1,6 +1,7 @@
 // Editor tabs with a VS Code / JetBrains style preview tab: a single click
 // opens (or replaces) the one preview tab; double-clicking or editing pins it.
 
+import { compareTabsInFolder, compareTabTitle, parseCompareTabPath } from "$lib/compare/compareTabs";
 import { isTerminalTab } from "$lib/terminal/terminalTabs";
 import { commitTabsInFolder, parseCommitTabPath } from "./commitTabs";
 import { branchTabsInFolder, branchTabTitle, parseBranchTabPath } from "./branchTabs";
@@ -14,6 +15,8 @@ export interface FileTab {
   /** Preview tabs are shown in italics and replaced by the next single-click open. */
   preview: boolean;
   dirty: boolean;
+  /** Pinned (Pin Tab): the tab limit never closes it. Not the same as keeping a preview tab open. */
+  pinned?: boolean;
 }
 
 export interface TabsState {
@@ -46,6 +49,20 @@ export function pinTab(state: TabsState, path: string): TabsState {
   return {
     ...state,
     tabs: state.tabs.map((tab) => (tab.path === path && tab.preview ? { ...tab, preview: false } : tab)),
+  };
+}
+
+/** Pin Tab / Unpin Tab; pinning a preview tab also keeps it open. */
+export function setTabPinned(state: TabsState, path: string, pinned: boolean): TabsState {
+  const tab = state.tabs.find((candidate) => candidate.path === path);
+  if (!tab || (tab.pinned ?? false) === pinned) {
+    return state;
+  }
+  return {
+    ...state,
+    tabs: state.tabs.map((candidate) =>
+      candidate.path === path ? { ...candidate, pinned, preview: pinned ? false : candidate.preview } : candidate,
+    ),
   };
 }
 
@@ -133,6 +150,10 @@ export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: st
       if (branchTab) {
         return [tab.path, { name: branchTabTitle(branchTab).name, hint: null }];
       }
+      const compareTab = parseCompareTabPath(tab.path);
+      if (compareTab) {
+        return [tab.path, { name: compareTabTitle(compareTab).name, hint: null }];
+      }
       if (isTerminalTab(tab.path)) {
         return [tab.path, { name: TERMINAL_TAB_LABEL, hint: null }];
       }
@@ -154,6 +175,7 @@ export function tabsInFolder(tabPaths: string[], folderRoot: string): string[] {
     ...commitTabsInFolder(tabPaths, folderRoot),
     ...gitTabsInFolder(tabPaths, folderRoot),
     ...branchTabsInFolder(tabPaths, folderRoot),
+    ...compareTabsInFolder(tabPaths, folderRoot),
   ]);
   return tabPaths.filter((tabPath) => commits.has(tabPath) || (!isPseudoTab(tabPath) && tabPath.startsWith(prefix)));
 }

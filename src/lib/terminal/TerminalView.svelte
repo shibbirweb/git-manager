@@ -15,6 +15,7 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import type { TerminalOutputMessage } from "$lib/types";
   import { platformName } from "$lib/update/releases";
   import type { TerminalAddons } from "./addons";
   import { dropText, TERMINAL_DRAG_EVENT, TERMINAL_DROP_EVENT, type TerminalDragDetail, type TerminalDropDetail } from "./dropPaths";
@@ -30,8 +31,10 @@
   } from "./find";
   import TerminalFindBar from "./TerminalFindBar.svelte";
   import { terminalKeyAction } from "./keys";
+  import { terminalAppKeySet } from "$lib/commands/commandRuntime";
   import { gpuRenderers } from "./gpuRenderers.svelte";
   import { applyChangedOptions, changesMetrics, terminalAddonPlan, terminalDisplayOptions } from "./options";
+  import { isExitMessage, OutputAcks } from "./outputFlow";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { runFinishedMessage, runHeader } from "./runs";
   import { exitMessage, QUIET_SHELL_MS, shellNameFor, startupFailureTitle, startupLabel, type StartupPhase } from "./terminals";
@@ -51,8 +54,6 @@
   const RESIZE_DELAY_MS = 40;
   /** How long the visual bell flashes. */
   const BELL_FLASH_MS = 180;
-  /** Lets output that is still on its way land before the exit note. */
-  const EXIT_NOTE_DELAY_MS = 200;
   const isMac = platformName(navigator.userAgent) === "macOS";
 
   let root = $state<HTMLDivElement | null>(null);
@@ -77,8 +78,9 @@
   let disposed = false;
   let observer: ResizeObserver | null = null;
   let stopTheme: (() => void) | null = null;
-  /** Output of the current shell; a retry gets a new one. */
-  let channel: Channel<ArrayBuffer> | null = null;
+  /** Output of the current shell and its acks; a retry gets new ones. */
+  let channel: Channel<TerminalOutputMessage> | null = null;
+  let acks: OutputAcks | null = null;
   /** Search, WebGL and Unicode 11, each loaded only while its setting is on. */
   let addons: TerminalAddons | null = null;
   /** The file path link provider and what it knows about the files on screen. */
@@ -96,6 +98,8 @@
   let findOptions = $state<TerminalFindOptions>({ ...DEFAULT_FIND_OPTIONS });
   let findResults = $state.raw<FindResults | null>(null);
   let bellFlash = $state(false);
+  /** A flash is on its way or showing: more bells until it ends are ignored (binary output can ring thousands of times). */
+  let bellPending = false;
   let bellTimer: ReturnType<typeof setTimeout> | undefined;
   /** Files from Finder are being dragged over this terminal. */
   let dropOver = $state(false);
@@ -127,9 +131,7 @@
       stopTheme?.();
       host?.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mouseup", onMouseUp);
-      if (channel) {
-        channel.onmessage = () => undefined;
-      }
+      stopOutput();
       term?.dispose();
       term = null;
       fit = null;
@@ -228,17 +230,42 @@
     return instance;
   }
 
+  /** The previous shell's output is no longer shown; it is still acked, so nothing waits on this view. */
+  function stopOutput(): void {
+    const shellAcks = acks;
+    if (channel) {
+      channel.onmessage = (message) => {
+        if (message instanceof ArrayBuffer) {
+          shellAcks?.received(message.byteLength);
+        }
+      };
+    }
+    shellAcks?.stop();
+    channel = null;
+    acks = null;
+  }
+
   async function spawnShell(instance: Terminal): Promise<void> {
     const terminalKey = terminal.key;
     phase = "starting";
-    const shellChannel = new Channel<ArrayBuffer>();
-    shellChannel.onmessage = (bytes) => {
+    stopOutput();
+    const shellChannel = new Channel<TerminalOutputMessage>();
+    const shellAcks = new OutputAcks();
+    // The exit is the last message, after every byte of output, so its note lands below the output.
+    shellChannel.onmessage = (message) => {
+      if (isExitMessage(message)) {
+        terminalStore.exited(terminalKey, message.exit ?? null);
+        return;
+      }
       if (phase === "starting") {
         markReady();
       }
-      instance.write(new Uint8Array(bytes));
+      const bytes = new Uint8Array(message);
+      shellAcks.received(bytes.byteLength);
+      instance.write(bytes, () => shellAcks.written(bytes.byteLength));
     };
     channel = shellChannel;
+    acks = shellAcks;
     let info;
     const run = terminal.run ?? null;
     try {
@@ -266,6 +293,8 @@
       return;
     }
     terminalId = info.terminalId;
+    const ackedTerminalId = info.terminalId;
+    shellAcks.connect((byteCount) => void api.terminalAck(ackedTerminalId, byteCount).catch(() => undefined));
     sentSize = { cols: instance.cols, rows: instance.rows };
     // The panel may have changed size while the shell started.
     fitNow();
@@ -339,6 +368,7 @@
       hasSelection: instance.hasSelection(),
       findEnabled: settings.terminalFind,
       canSplit: terminal.location === "panel",
+      appKeys: terminalAppKeySet(),
     });
     if (action === "shell") {
       return true;
@@ -436,11 +466,16 @@
       terminalStore.ring(terminal.key);
       return;
     }
-    clearTimeout(bellTimer);
-    bellFlash = false;
+    if (bellPending) {
+      return;
+    }
+    bellPending = true;
     requestAnimationFrame(() => {
       bellFlash = true;
-      bellTimer = setTimeout(() => (bellFlash = false), BELL_FLASH_MS);
+      bellTimer = setTimeout(() => {
+        bellFlash = false;
+        bellPending = false;
+      }, BELL_FLASH_MS);
     });
   }
 
@@ -693,6 +728,13 @@
     });
   });
 
+  // Hidden: everything received is acked, so a shell never waits on a view out of sight.
+  $effect(() => {
+    if (!visible) {
+      untrack(() => acks?.flush());
+    }
+  });
+
   // A bell that rang out of sight is seen once the terminal shows.
   $effect(() => {
     if (visible && terminal.bell) {
@@ -750,15 +792,12 @@
     const isRun = terminal.location === "run";
     untrack(() => {
       instance.options.disableStdin = true;
-    });
-    if (exitShown || (exitCode === 0 && !isRun)) {
-      return;
-    }
-    const timer = setTimeout(() => {
+      if (exitShown || (exitCode === 0 && !isRun)) {
+        return;
+      }
       exitShown = true;
       instance.write(isRun ? runFinishedMessage(exitCode) : exitMessage(exitCode));
-    }, EXIT_NOTE_DELAY_MS);
-    return () => clearTimeout(timer);
+    });
   });
 
   function openMenu(event: MouseEvent): void {

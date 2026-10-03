@@ -112,9 +112,14 @@ fn describe(args: &[&str]) -> String {
 
 /// Runs git and returns its output regardless of exit status.
 pub fn run_raw(repo_path: &Path, args: &[&str], stdin: Option<&[u8]>) -> AppResult<GitOutput> {
+    run_raw_with_env(repo_path, args, &[], stdin)
+}
+
+/// `run_raw` with extra environment variables for this one call.
+pub fn run_raw_with_env(repo_path: &Path, args: &[&str], envs: &[(&str, &str)], stdin: Option<&[u8]>) -> AppResult<GitOutput> {
     let record = git_console::record(repo_path, args);
     let mut command = command(repo_path);
-    command.args(args);
+    command.args(args).envs(envs.iter().copied());
     if stdin.is_some() {
         command.stdin(Stdio::piped());
     }
@@ -189,6 +194,23 @@ pub fn run_with_env(repo_path: &Path, args: &[&str], envs: &[(&str, &str)]) -> A
 pub fn run_with_stdin(repo_path: &Path, args: &[&str], stdin: &[u8]) -> AppResult<GitOutput> {
     let output = run_raw(repo_path, args, Some(stdin))?;
     ensure_success(output, args)
+}
+
+/// Runs `git <args...>` with `paths` as NUL-separated pathspecs on stdin, so
+/// any number of paths fits (50k paths as arguments exceed ARG_MAX). Does
+/// nothing for an empty list: `git add -A` without a pathspec adds everything.
+pub fn run_with_pathspecs(repo_path: &Path, args: &[&str], paths: &[String]) -> AppResult<Option<GitOutput>> {
+    if paths.is_empty() {
+        return Ok(None);
+    }
+    let mut all = args.to_vec();
+    all.extend(["--pathspec-from-file=-", "--pathspec-file-nul"]);
+    let mut input = Vec::with_capacity(paths.iter().map(|path| path.len() + 1).sum());
+    for path in paths {
+        input.extend_from_slice(path.as_bytes());
+        input.push(0);
+    }
+    run_with_stdin(repo_path, &all, &input).map(Some)
 }
 
 fn ensure_success(output: GitOutput, args: &[&str]) -> AppResult<GitOutput> {

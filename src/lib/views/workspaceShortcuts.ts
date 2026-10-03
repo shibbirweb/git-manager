@@ -1,5 +1,10 @@
 // Decides which window-wide shortcut a key press means, kept pure so it can be tested
-// without a DOM.
+// without a DOM. The keys come from the command registry with the user's custom shortcuts
+// applied, so Settings > Keyboard Shortcuts changes them here too.
+
+import { matchesAccelerator } from "$lib/commands/keybinding";
+import { type CommandId, type CommandSpec, effectiveShortcut, type ShortcutOverrides } from "$lib/commands/registry";
+import type { MenuPlatform } from "$lib/menu/menuIds";
 
 export type WorkspaceShortcut =
   | "goBack"
@@ -11,6 +16,8 @@ export type WorkspaceShortcut =
   | "toggleLog"
   | "toggleTerminal"
   | "newTerminal"
+  | "quickOpen"
+  | "commandPalette"
   | "goToFile"
   | "goToClass"
   | "goToSymbol"
@@ -19,6 +26,35 @@ export type WorkspaceShortcut =
   | "nextTab"
   | "previousTab"
   | "toggleWordWrap";
+
+/**
+ * The commands the window handles itself, even from a text field or the terminal: Cmd+B
+ * toggles the sidebar, Shift+Cmd+G / Shift+Cmd+E pick a panel, Ctrl+` the terminal, Cmd+P
+ * opens Quick Open and Shift+Cmd+P the Command Palette (VS Code keys); Shift+Cmd+O, Cmd+O,
+ * Option+Cmd+O and Shift+Cmd+F open Search Everywhere on Files, Classes, Symbols and Text,
+ * and Shift+Cmd+R on Text with Replace (JetBrains keys). Double Shift is handled apart.
+ */
+export const WINDOW_COMMANDS: Partial<Record<CommandId, WorkspaceShortcut>> = {
+  "nav.goBack": "goBack",
+  "nav.goForward": "goForward",
+  "view.filesPanel": "toggleExplorer",
+  "view.sidebar": "toggleSidebar",
+  "view.changes": "showChanges",
+  "view.branches": "showBranches",
+  "view.log": "toggleLog",
+  "view.terminal": "toggleTerminal",
+  "terminal.new": "newTerminal",
+  "edit.goToFile": "quickOpen",
+  "view.commandPalette": "commandPalette",
+  "search.files": "goToFile",
+  "edit.goToClass": "goToClass",
+  "edit.goToSymbol": "goToSymbol",
+  "edit.findInFiles": "findInFiles",
+  "edit.replaceInFiles": "replaceInFiles",
+  "window.nextTab": "nextTab",
+  "window.previousTab": "previousTab",
+  "view.wordWrap": "toggleWordWrap",
+};
 
 /** The parts of a KeyboardEvent the decision needs. */
 export interface ShortcutKey {
@@ -36,80 +72,49 @@ export interface ShortcutContext {
   mergeOpen: boolean;
 }
 
+/** The commands and keys to match against: the registry, the platform and the custom shortcuts. */
+export interface ShortcutKeys {
+  specs: readonly CommandSpec[];
+  platform: MenuPlatform;
+  overrides: ShortcutOverrides;
+}
+
 /**
- * Returns the shortcut for a key press, or null when the window should leave it alone.
- * A key something else already handled (for example Shift+Cmd+G, find previous, in an
- * editor) is skipped, so one press never runs two actions.
+ * Whether the window runs `spec` from a key press. The window commands always do; so does
+ * an app command (no menu item would) and any command with a custom key, so the key works
+ * the same on every platform and from the terminal. The other menu items keep their keys
+ * in the native menu, and the editor runs its own commands.
  */
-export function workspaceShortcut(event: ShortcutKey, context: ShortcutContext): WorkspaceShortcut | null {
+function handledByWindow(spec: CommandSpec, overrides: ShortcutOverrides): boolean {
+  if (spec.scope !== "global") {
+    return false;
+  }
+  return WINDOW_COMMANDS[spec.id] !== undefined || spec.menuAction === null || Object.hasOwn(overrides, spec.id);
+}
+
+/**
+ * The command a key press runs from the window, or null when the window should leave it
+ * alone. A key something else already handled (for example Shift+Cmd+G, find previous, in
+ * an editor) is skipped, so one press never runs two actions.
+ */
+export function windowCommand(event: ShortcutKey, context: ShortcutContext, keys: ShortcutKeys): CommandSpec | null {
   if (context.dialogOpen || context.mergeOpen || event.defaultPrevented) {
     return null;
   }
-  // Ctrl+` / Ctrl+Shift+`: toggle the terminal panel / new terminal (VS Code). Matched by the
-  // physical key since layouts type other characters there; Cmd+` switches windows on macOS.
-  if (event.ctrlKey && !event.metaKey && !event.altKey && event.code === "Backquote") {
-    return event.shiftKey ? "newTerminal" : "toggleTerminal";
-  }
-  // Ctrl+- / Ctrl+Shift+-: Go Back / Go Forward (VS Code on macOS).
-  if (event.ctrlKey && !event.metaKey && !event.altKey && event.code === "Minus") {
-    return event.shiftKey ? "goForward" : "goBack";
-  }
-  // Option+Z: toggle word wrap (VS Code), by the physical key since Option+Z types a character.
-  if (event.altKey && !event.metaKey && !event.ctrlKey && !event.shiftKey && event.code === "KeyZ") {
-    return "toggleWordWrap";
-  }
-  if (!(event.metaKey || event.ctrlKey)) {
-    return null;
-  }
-  // Option changes the typed character on macOS, so match the physical key.
-  if (event.code === "KeyB" && event.altKey && !event.shiftKey) {
-    // Option+Cmd+B: VS Code's secondary sidebar toggle.
-    return "toggleExplorer";
-  }
-  if (event.code === "KeyO" && event.altKey && !event.shiftKey) {
-    // Option+Cmd+O: JetBrains' Go to Symbol.
-    return "goToSymbol";
-  }
-  if (event.altKey) {
-    return null;
-  }
-  // Shift+Cmd+] / Shift+Cmd+[: next and previous editor tab (macOS), by the physical key.
-  if (event.shiftKey && (event.code === "BracketRight" || event.code === "BracketLeft")) {
-    return event.code === "BracketRight" ? "nextTab" : "previousTab";
-  }
-  const key = event.key.toLowerCase();
-  if (key === "b" && !event.shiftKey) {
-    return "toggleSidebar";
-  }
-  // Cmd+P (VS Code) and Shift+Cmd+O (JetBrains) open Go to File, Cmd+O Go to Class,
-  // Shift+Cmd+F Find in Files and Shift+Cmd+R Replace in Files (JetBrains); double Shift
-  // (Search Everywhere) is handled apart. Cmd+F and Cmd+R belong to the editor.
-  if (key === "p" && !event.shiftKey) {
-    return "goToFile";
-  }
-  if (key === "o" && !event.shiftKey) {
-    return "goToClass";
-  }
-  if (!event.shiftKey) {
-    return null;
-  }
-  if (key === "o") {
-    return "goToFile";
-  }
-  if (key === "f") {
-    return "findInFiles";
-  }
-  if (key === "r") {
-    return "replaceInFiles";
-  }
-  if (key === "g") {
-    return "showChanges";
-  }
-  if (key === "e") {
-    return "showBranches";
-  }
-  if (key === "l") {
-    return "toggleLog";
+  for (const spec of keys.specs) {
+    if (!handledByWindow(spec, keys.overrides)) {
+      continue;
+    }
+    const shortcut = effectiveShortcut(spec, keys.overrides);
+    if (shortcut && matchesAccelerator(event, shortcut, keys.platform)) {
+      return spec;
+    }
   }
   return null;
+}
+
+/** The window shortcut a key press means, for the built-in window commands only. */
+export function workspaceShortcut(event: ShortcutKey, context: ShortcutContext, keys: ShortcutKeys): WorkspaceShortcut | null {
+  const spec = windowCommand(event, context, keys);
+  return spec ? (WINDOW_COMMANDS[spec.id] ?? null) : null;
 }
