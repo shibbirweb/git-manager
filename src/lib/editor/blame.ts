@@ -3,16 +3,7 @@
 // gutter column with the commit, author and age of every block of lines.
 
 import { Compartment, type EditorState, type Extension, StateEffect, StateField } from "@codemirror/state";
-import {
-  Decoration,
-  type DecorationSet,
-  EditorView,
-  GutterMarker,
-  gutter,
-  ViewPlugin,
-  type ViewUpdate,
-  WidgetType,
-} from "@codemirror/view";
+import { EditorView, GutterMarker, gutter, layer, type LayerMarker, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { api, errorMessage } from "$lib/api";
 import { fullDate, relativeTime } from "$lib/log/format";
 import type { NavLocation } from "$lib/stores/navHistory";
@@ -20,6 +11,7 @@ import type { BlameCommit, Eol } from "$lib/types";
 import { navigation } from "$lib/stores/navigation.svelte";
 import { settings } from "$lib/stores/settings.svelte";
 import { toast } from "$lib/ui/toast.svelte";
+import { type NotePlacement, placeNote } from "./inlineBlameLayout";
 import {
   ageRanks,
   allUncommitted,
@@ -105,73 +97,152 @@ function openBlame(
   );
 }
 
-class InlineBlameWidget extends WidgetType {
+/**
+ * The current-line note, drawn in its own layer beside the end of the line (see
+ * inlineBlameLayout.ts): it takes no room in the text, so lines never wrap or move because
+ * of it, and clicks go through to the code unless Cmd (Ctrl elsewhere) is held.
+ */
+class InlineBlameMarker implements LayerMarker {
   constructor(
+    readonly view: EditorView,
+    readonly placement: NotePlacement,
     readonly commit: BlameCommit | null,
     readonly label: string,
     readonly title: string,
     readonly blame: BlameState | null,
     readonly line: number,
-  ) {
-    super();
+  ) {}
+
+  eq(other: InlineBlameMarker): boolean {
+    return (
+      this.sameNote(other) &&
+      other.placement.left === this.placement.left &&
+      other.placement.top === this.placement.top &&
+      other.placement.height === this.placement.height &&
+      other.placement.maxWidth === this.placement.maxWidth
+    );
   }
 
-  eq(other: InlineBlameWidget): boolean {
+  private sameNote(other: InlineBlameMarker): boolean {
     return (
       other.label === this.label &&
       other.title === this.title &&
       other.line === this.line &&
+      other.commit === this.commit &&
       other.blame?.repoRoot === this.blame?.repoRoot &&
       other.blame?.origin === this.blame?.origin
     );
   }
 
-  toDOM(view: EditorView): HTMLElement {
-    const element = document.createElement("span");
+  draw(): HTMLElement {
+    const element = document.createElement("div");
     element.className = "cm-inline-blame";
     element.textContent = this.label;
     element.title = this.title;
     element.addEventListener("mousedown", (event) => event.preventDefault());
-    element.addEventListener("click", (event) => openBlame(view, this.blame, this.commit, event, this.line));
+    element.addEventListener("click", (event) => openBlame(this.view, this.blame, this.commit, event, this.line));
+    this.place(element);
     return element;
   }
 
-  ignoreEvent(): boolean {
+  update(element: HTMLElement, previous: InlineBlameMarker): boolean {
+    // The listeners belong to the note they were made for; another note gets a new element.
+    if (!this.sameNote(previous)) {
+      return false;
+    }
+    this.place(element);
     return true;
+  }
+
+  private place(element: HTMLElement): void {
+    const { left, top, height, maxWidth } = this.placement;
+    element.style.left = `${left}px`;
+    element.style.top = `${top}px`;
+    element.style.height = `${height}px`;
+    element.style.lineHeight = `${height}px`;
+    element.style.maxWidth = maxWidth === null ? "" : `${maxWidth}px`;
   }
 }
 
-function inlineDecorations(view: EditorView): DecorationSet {
+function inlineMarkers(view: EditorView): readonly LayerMarker[] {
   const state = view.state.field(blameField, false);
   if (!state) {
-    return Decoration.none;
+    return [];
   }
   const line = view.state.doc.lineAt(view.state.selection.main.head);
+  // The end of the line's last visual row, so a wrapped line keeps its note on its last row.
+  const end = view.coordsAtPos(line.to, -1);
+  if (!end) {
+    return [];
+  }
+  // The same base as CodeMirror's own layers: the scrolled content's top left corner.
+  const scroller = view.scrollDOM.getBoundingClientRect();
+  const baseLeft = scroller.left - view.scrollDOM.scrollLeft * view.scaleX;
+  const baseTop = scroller.top - view.scrollDOM.scrollTop * view.scaleY;
+  const placement = placeNote(
+    {
+      right: (end.right - baseLeft) / view.scaleX,
+      top: (end.top - baseTop) / view.scaleY,
+      bottom: (end.bottom - baseTop) / view.scaleY,
+    },
+    (scroller.left + view.scrollDOM.clientWidth * view.scaleX - baseLeft) / view.scaleX,
+    view.lineWrapping,
+  );
   const index = line.number - 1;
   const commit = isUncommitted(state, index) ? null : commitAt(state, index);
   const { label, title } = describe(commit);
-  return Decoration.set([
-    Decoration.widget({ widget: new InlineBlameWidget(commit, label, title, state, index), side: 1 }).range(line.to),
-  ]);
+  return [new InlineBlameMarker(view, placement, commit, label, title, state, index)];
 }
 
-const inlineBlame = ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet;
+const isMac = typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent);
 
-    constructor(view: EditorView) {
-      this.decorations = inlineDecorations(view);
+/** Holding Cmd (Ctrl elsewhere) makes the note clickable, like a link. */
+const noteClickKey = ViewPlugin.fromClass(
+  class {
+    private readonly onKey = (event: KeyboardEvent | MouseEvent): void => {
+      this.set(isMac ? event.metaKey : event.ctrlKey);
+    };
+    private readonly onBlur = (): void => this.set(false);
+
+    constructor(readonly view: EditorView) {
+      window.addEventListener("keydown", this.onKey, true);
+      window.addEventListener("keyup", this.onKey, true);
+      view.scrollDOM.addEventListener("mousemove", this.onKey);
+      window.addEventListener("blur", this.onBlur);
     }
 
-    update(update: ViewUpdate): void {
-      const blameChanged = update.startState.field(blameField, false) !== update.state.field(blameField, false);
-      if (update.docChanged || update.selectionSet || blameChanged) {
-        this.decorations = inlineDecorations(update.view);
+    private set(held: boolean): void {
+      if (held) {
+        this.view.scrollDOM.dataset.gmBlameClick = "";
+      } else {
+        delete this.view.scrollDOM.dataset.gmBlameClick;
       }
     }
+
+    destroy(): void {
+      window.removeEventListener("keydown", this.onKey, true);
+      window.removeEventListener("keyup", this.onKey, true);
+      this.view.scrollDOM.removeEventListener("mousemove", this.onKey);
+      window.removeEventListener("blur", this.onBlur);
+      this.set(false);
+    }
   },
-  { decorations: (plugin) => plugin.decorations },
 );
+
+const inlineBlame: Extension = [
+  layer({
+    above: true,
+    class: "cm-gm-blameLayer",
+    markers: inlineMarkers,
+    update: (update: ViewUpdate) =>
+      update.docChanged ||
+      update.selectionSet ||
+      update.viewportChanged ||
+      update.geometryChanged ||
+      update.startState.field(blameField, false) !== update.state.field(blameField, false),
+  }),
+  noteClickKey,
+];
 
 class BlameGutterMarker extends GutterMarker {
   constructor(
@@ -254,17 +325,26 @@ const blameGutter = gutter({
 });
 
 const blameTheme = EditorView.theme({
-  ".cm-inline-blame": {
-    marginLeft: "3em",
+  ".cm-gm-blameLayer": {
+    pointerEvents: "none",
+  },
+  ".cm-gm-blameLayer .cm-inline-blame": {
+    position: "absolute",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
     color: "var(--text-faint)",
     fontFamily: "var(--font-ui)",
     fontSize: "0.9em",
     fontStyle: "italic",
-    whiteSpace: "pre",
-    cursor: "pointer",
+    pointerEvents: "none",
   },
-  ".cm-inline-blame:hover": {
+  // Only while Cmd (Ctrl elsewhere) is held: then it is a link to the commit.
+  ".cm-scroller[data-gm-blame-click] .cm-gm-blameLayer .cm-inline-blame": {
+    pointerEvents: "auto",
+    cursor: "pointer",
     color: "var(--text-dim)",
+    textDecoration: "underline",
   },
   ".cm-blame-gutter": {
     width: "236px",

@@ -56,7 +56,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 | Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Editing-Code.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
 | Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. Off frees memory. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
-| Current line blame | Author, age and commit at the end of the cursor line. Click it to open the commit in the Log; Option-click copies the hash. See [Blame](Blame.md). | On |
+| Current line blame | Author, age and commit at the end of the cursor line. Cmd+click it to open the commit in the Log; Cmd+Option-click copies the hash. See [Blame](Blame.md). | On |
 | Blame gutter | A blame column beside the line numbers. Also the **Blame** button in the editor path bar and the diff toolbar. | Off |
 
 ![More editor settings](../images/settings-editor-more.png)

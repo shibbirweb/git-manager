@@ -40,12 +40,12 @@ All three are the same switch, so the gutter stays on for every file until you t
 
 ## Jump to the commit
 
-Click a blame note, or a block in the gutter:
+Hold Cmd (Ctrl on Windows and Linux) and click the blame note, or click a block in the gutter. Without Cmd, a click goes to the code under the note, so the note is never in your way:
 
 - On a committed line, the [Log](History-and-Log.md) opens with that commit selected and the same file's diff shown, scrolled to the line you clicked as it was in that commit.
 - On an uncommitted line, the Changes sidebar opens, where your change is waiting.
 
-Option-click instead copies the full commit hash to the clipboard.
+Cmd+Option-click on the note, or Option-click in the gutter, instead copies the full commit hash to the clipboard. The note never pushes the code, like GitLens and Zed: it always follows the end of the line. On a long line with word wrap off it runs past the edge, so scroll right to read it; with word wrap on it is cut short with "..." when the last row is nearly full.
 
 The Back button (or Ctrl+-) returns you to the exact line you clicked from. See [Navigation](Navigation.md).
 
@@ -58,7 +58,7 @@ If the commit is far back in history, the Log loads more pages to find it. When 
 
 ## Example
 
-In `src/cart.ts` the `useDiscount` method looks odd. With the cursor on it, the note says "Leo Park, Sep 19, 2026 • Cart: discount codes and totals rounded to cents". Click the note: the Log opens the diff on `useDiscount`. Read the full commit, and press Ctrl+- to come back to the line.
+In `src/cart.ts` the `useDiscount` method looks odd. With the cursor on it, the note says "Leo Park, Sep 19, 2026 • Cart: discount codes and totals rounded to cents". Cmd+click the note: the Log opens the diff on `useDiscount`. Read the full commit, and press Ctrl+- to come back to the line.
 
 ## Related
 

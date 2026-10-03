@@ -88,6 +88,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The current-line blame note no longer takes a line of its own or sits under the pointer and catches clicks: it is drawn after the end of the line without moving the code (on a long line, scroll right to read it; with word wrap on it is cut short), and opens the commit with Cmd+click (Ctrl+click elsewhere).
 - Opening or adding a big folder no longer freezes the window for a moment.
 - A selection inside one line is visible again; the current line highlight hid it.
 - A folder or workspace that fails to open, at start or later, now shows an error naming the folder instead of silently showing the welcome screen.

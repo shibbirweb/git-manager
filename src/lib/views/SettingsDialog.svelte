@@ -893,7 +893,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
-              <span class="hint">Show the author, age and commit of the cursor line at its end, like VS Code with GitLens. Click it to show the commit in the Log; Option-click copies the commit hash.</span>
+              <span class="hint">Show the author, age and commit of the cursor line at its end, like VS Code with GitLens. Cmd+click it (Ctrl+click elsewhere) to show the commit in the Log; add Option to copy the commit hash.</span>
             </div>
             <input
               type="checkbox"
