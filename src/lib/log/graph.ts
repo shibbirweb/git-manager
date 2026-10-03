@@ -27,9 +27,17 @@ export interface GraphRow {
   color: number;
   /** Number of lane columns this row needs. */
   width: number;
-  /** Flat [kind, from, to, color] quadruples, kept flat to stay compact. */
-  edges: number[];
+  /**
+   * Flat [kind, from, to, color] quadruples in a typed array: 100k rows of 20 lanes held about
+   * 90 MB as arrays of numbers and about 31 MB this way.
+   */
+  edges: GraphEdges;
 }
+
+/** 16-bit lanes; a row of more than 32767 lanes (never seen) gets 32-bit ones. */
+export type GraphEdges = Int16Array | Int32Array;
+
+const MAX_INT16 = 32767;
 
 export interface GraphCommit {
   id: string;
@@ -58,6 +66,8 @@ export function rowSegments(row: GraphRow): GraphSegment[] {
 
 export class GraphBuilder {
   private lanes: (Lane | null)[] = [];
+  /** The row being built, reused so only its typed copy stays. */
+  private readonly scratch: number[] = [];
   private nextColor = 0;
   private readonly colorCount: number;
   /** Widest row produced so far. */
@@ -77,7 +87,8 @@ export class GraphBuilder {
 
   next(commit: GraphCommit): GraphRow {
     const lanes = this.lanes;
-    const edges: number[] = [];
+    const edges = this.scratch;
+    edges.length = 0;
     const widthBefore = lanes.length;
 
     const incoming: number[] = [];
@@ -130,7 +141,9 @@ export class GraphBuilder {
       lanes.pop();
     }
     this.maxWidth = Math.max(this.maxWidth, width);
-    return { lane, color, width, edges };
+    const wide = width > MAX_INT16 || this.colorCount > MAX_INT16;
+    const stored = wide ? Int32Array.from(edges) : Int16Array.from(edges);
+    return { lane, color, width, edges: stored };
   }
 
   private firstFree(): number {

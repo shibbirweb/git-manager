@@ -6,14 +6,15 @@
 <script lang="ts">
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { onMount, untrack } from "svelte";
-  import { api, errorMessage } from "$lib/api";
+  import { errorMessage } from "$lib/api";
   import { classifyLink, type LinkContext } from "$lib/markdown/links";
   import type { RichAction, RichMarkdownEditor } from "$lib/markdown/richEditor";
   import type { SourceEdit } from "$lib/markdown/richSync";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { folderFor, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
+  import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { markdownImageUrl } from "$lib/views/files/previewScheme";
   import "$lib/markdown/body.css";
 
   interface Props {
@@ -61,15 +62,10 @@
   }
 
   async function loadImage(imagePath: string): Promise<string> {
-    const folder = folderFor(repoStore.workspace?.folders ?? [], imagePath);
-    if (!folder) {
+    if (!folderFor(repoStore.workspace?.folders ?? [], imagePath)) {
       throw new Error("Image outside the workspace");
     }
-    try {
-      return await api.readImageDataUrl(folder.root, relativeTo(folder.root, imagePath));
-    } catch (error) {
-      throw new Error(errorMessage(error));
-    }
+    return markdownImageUrl(imagePath);
   }
 
   onMount(() => {

@@ -199,3 +199,51 @@ fn the_session_builds_symbols_on_first_use_and_rebuilds_after_edits() {
     wait_until(|| !search.query_symbols(&roots, "Order", SymbolScope::All, 10).items.is_empty());
     search.close();
 }
+
+#[test]
+fn the_all_tab_classes_and_members_queries_do_not_cancel_each_other() {
+    // The All tab asks for its Classes and its Symbols (members) at the same time. They once
+    // shared one "latest query" counter, so whichever started second stopped the other, and
+    // on a big workspace the Classes section came back empty.
+    let dir = TestDir::new();
+    let functions: String = (0..4000).map(|number| format!("function cartItem{number}() {{}}\n")).collect();
+    for file in 0..20 {
+        dir.write(&format!("src/cart{file}.ts"), format!("export class Cart{file} {{}}\n{functions}"));
+    }
+    let roots = vec![dir.path_string()];
+    let search = crate::file_search::FileSearch::default();
+    search.open(&roots, Box::new(|_| {}));
+    search.open_symbols(&roots, Box::new(|_| {}));
+    wait_until(|| search.query_symbols(&roots, "cart", SymbolScope::All, 10).done);
+
+    let finished = std::sync::atomic::AtomicBool::new(false);
+    let classes = std::thread::scope(|scope| {
+        let members = scope.spawn(|| {
+            let mut answered = 0;
+            while !finished.load(std::sync::atomic::Ordering::Relaxed) {
+                let results = search.query_symbols(&roots, "cart", SymbolScope::Members, DEFAULT_LIMIT);
+                assert!(results.items.iter().all(|item| !item.kind.is_class_like()));
+                answered += 1;
+            }
+            answered
+        });
+        let classes: Vec<SymbolSearchResults> = (0..20)
+            .map(|_| search.query_symbols(&roots, "cart", SymbolScope::Classes, DEFAULT_LIMIT))
+            .collect();
+        finished.store(true, std::sync::atomic::Ordering::Relaxed);
+        assert!(members.join().unwrap() > 0);
+        classes
+    });
+    for results in classes {
+        assert_eq!(results.matched, 20, "a Members query must not cancel a Classes query");
+        assert_eq!(results.items.len(), 20);
+    }
+    search.close();
+
+    let slots: std::collections::HashSet<usize> = [SymbolScope::Classes, SymbolScope::All, SymbolScope::Members]
+        .into_iter()
+        .map(SymbolScope::index)
+        .collect();
+    assert_eq!(slots.len(), SymbolScope::COUNT);
+    assert!(slots.iter().all(|slot| *slot < SymbolScope::COUNT));
+}

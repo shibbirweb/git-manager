@@ -88,6 +88,10 @@ GitHub release notes, and the app shows it as "What's New".
 - New editor defaults, like JetBrains: JetBrains Mono when it is installed (else Menlo) at 13 px, with line spacing 1.25. An existing settings.json keeps its saved values; Reset to Defaults picks up the new ones.
 - The terminal starts at 13 px with a line height of 1.2 (it was 12.5 px and 1.0); sizes you saved stay. The terminal panel header and list are slimmer, and the header has a Split Terminal button.
 - Faster terminal and Run tab output: big outputs such as a long `cat` or `yes` arrive in a few large messages instead of thousands of small ones, the app reads a command only as fast as the terminal can show it, so Ctrl+C stops the scrolling at once, and typing still echoes right away. The Scrollback setting now says how much memory it uses.
+- Local images in the Markdown preview and the rich Markdown editor load straight from the file instead of being copied into memory as text, so big images use far less memory. SVG images show too, with a security policy that lets them run nothing.
+- Typing in the rich Markdown editor stays quick in big files: after each pause only the edited blocks are written back and read again (a 5,000 line file took about 1 s per pause, now 1 to 2 ms).
+- Image and PDF previews of a file in git history (HEAD, the index or a commit) read the file once instead of once per piece.
+- The Branches sidebar builds its tree about 4 times faster with thousands of branches and tags, and the Log graph keeps long histories in about a third of the memory.
 - Open file tabs stay quiet when nothing changed: saving reads nothing back and blames once, other tabs only check that their file and HEAD are the same, and the change markers are computed in the background after you stop typing. Typing in large files is faster too (conflict markers, the change bars and word completion no longer scan the whole file on every key), and the merge tool holds each side's text once.
 - Faster refreshes in big repositories: saving a file reads the changes once, staging no longer reloads the Log or the branches, the Log reloads in one step and only when a branch, tag or HEAD moved, the Files panel lists folders again only when files are added, removed or renamed, and bursts of file changes (npm install, a big checkout) refresh every second or two instead of every 300 ms.
 - The Files panel refreshes its open folders in one call per workspace folder, and folders that did not change answer in about 100 bytes each without being read again. Folder colors for changed files are worked out again only for repositories whose changes moved, Git LFS badges are checked only when HEAD, the index or files come and go (with no git-lfs process when nothing changed), and moving, cutting or trashing thousands of selected files no longer stalls on the selection.
@@ -99,6 +103,7 @@ GitHub release notes, and the app shows it as "What's New".
 ### Fixed
 
 - The terminal's visual bell no longer keeps restarting its flash when a command prints binary data that rings it thousands of times.
+- Search Everywhere's All tab shows its Classes section again on big workspaces: the Classes and Symbols searches it runs at the same time no longer cancel each other.
 - Diffs of large files no longer merge many small edits into one giant change: the lines that changed come from git-style line hunks, and only those are compared character by character.
 - Stage All, Unstage All and Discard All work with tens of thousands of files (they failed with "Argument list too long").
 - Links open in the browser again: Star on GitHub, the docs and release notes from the Help menu, update downloads, and links in Markdown previews and the terminal did nothing before.
