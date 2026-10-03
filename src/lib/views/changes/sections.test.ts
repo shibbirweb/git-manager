@@ -44,6 +44,7 @@ const file = (path: string, overrides: Partial<FileStatus> = {}): FileStatus => 
 const status = (files: FileStatus[]): RepoStatus => ({
   head: head(),
   op: { kind: "none", description: "", oursLabel: "", theirsLabel: "" },
+  bisect: null,
   files,
 });
 

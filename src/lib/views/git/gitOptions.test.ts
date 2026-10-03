@@ -23,7 +23,7 @@ function head(overrides: Partial<HeadInfo> = {}): HeadInfo {
 }
 
 function status(overrides: Partial<HeadInfo> = {}, opKind: RepoStatus["op"]["kind"] = "none"): RepoStatus {
-  return { head: head(overrides), op: { kind: opKind, description: "", oursLabel: "", theirsLabel: "" }, files: [] };
+  return { head: head(overrides), op: { kind: opKind, description: "", oursLabel: "", theirsLabel: "" }, bisect: null, files: [] };
 }
 
 function file(path: string, overrides: Partial<FileStatus> = {}): FileStatus {

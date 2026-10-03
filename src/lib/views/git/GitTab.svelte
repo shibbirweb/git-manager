@@ -1,9 +1,10 @@
-<!-- A Git history or compare view in its own editor tab (see stores/gitTabs.ts). -->
+<!-- A Git history, compare or reflog view in its own editor tab (see stores/gitTabs.ts). -->
 <script lang="ts">
   import { parseGitTabPath } from "$lib/stores/gitTabs";
   import CompareTab from "./CompareTab.svelte";
   import FileHistoryTab from "./FileHistoryTab.svelte";
   import LineHistoryTab from "./LineHistoryTab.svelte";
+  import ReflogTab from "./ReflogTab.svelte";
   import ShelfDiffTab from "$lib/shelf/ShelfDiffTab.svelte";
 
   interface Props {
@@ -23,4 +24,6 @@
   <CompareTab repoRoot={ref.repoRoot} filePath={ref.filePath} revision={ref.revision} />
 {:else if ref?.kind === "shelf"}
   <ShelfDiffTab repoRoot={ref.repoRoot} filePath={ref.filePath} shelfId={ref.shelfId} />
+{:else if ref?.kind === "reflog"}
+  <ReflogTab repoRoot={ref.repoRoot} />
 {/if}
