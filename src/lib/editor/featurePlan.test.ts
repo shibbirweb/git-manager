@@ -13,7 +13,7 @@ import {
 const defaults = featureOptions(defaultPreferences);
 
 describe("editor features", () => {
-  it("turns every feature but the margin line on by default", () => {
+  it("turns every feature but the margin line and the minimap on by default", () => {
     expect(defaults).toEqual({
       autoCloseBrackets: true,
       completion: true,
@@ -24,7 +24,25 @@ describe("editor features", () => {
       scrollPastEnd: true,
       columnSelection: true,
       rulerColumn: 0,
+      stickyScroll: true,
+      minimap: false,
+      bracketPairColors: true,
+      matchBrackets: true,
     });
+  });
+
+  it("keeps sticky scroll and the minimap to the file editor and colors brackets everywhere", () => {
+    const all = { ...defaults, minimap: true };
+    for (const feature of ["stickyScroll", "minimap"] as const) {
+      expect(featureApplies(feature, "file", all), feature).toBe(true);
+      expect(featureApplies(feature, "diff", all), feature).toBe(false);
+      expect(featureApplies(feature, "merge", all), feature).toBe(false);
+    }
+    for (const feature of ["bracketPairColors", "matchBrackets"] as const) {
+      expect(featureApplies(feature, "diff", all), feature).toBe(true);
+      expect(featureApplies(feature, "merge", all), feature).toBe(true);
+    }
+    expect(changedFeatures(defaults, { ...defaults, minimap: true, matchBrackets: false })).toEqual(["minimap", "matchBrackets"]);
   });
 
   it("keeps typing aids, folding and scrolling past the end to the file editor", () => {

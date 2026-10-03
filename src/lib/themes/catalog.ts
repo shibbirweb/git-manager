@@ -134,6 +134,9 @@ const GM_LIGHT: ThemeColors = {
   "--tok-tag": "#0033b3",
   "--tok-attr": "#174ad4",
   "--tok-invalid": "#f50000",
+  "--bracket-1": "#0431fa",
+  "--bracket-2": "#319331",
+  "--bracket-3": "#7b3814",
 };
 
 /** The dark set in src/app.css (a test keeps the two in sync). */
@@ -205,6 +208,9 @@ const GM_DARK: ThemeColors = {
   "--tok-tag": "#d5b778",
   "--tok-attr": "#bababa",
   "--tok-invalid": "#fa6675",
+  "--bracket-1": "#ffd700",
+  "--bracket-2": "#da70d6",
+  "--bracket-3": "#179fff",
 };
 
 /** VS Code's default terminal colors, for themes that publish none. */
@@ -751,7 +757,7 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const dark = modeOfKind(kind) === "dark";
   const high = isHighContrast(kind);
   const ui = spec.ui ?? {};
-  const [, red, green, yellow, blue, , , , , brightRed, brightGreen, brightYellow, brightBlue] = spec.ansi;
+  const [, red, green, yellow, blue, magenta, , , , brightRed, brightGreen, brightYellow, brightBlue, brightMagenta] = spec.ansi;
   const editorBg = spec.background;
   const text = spec.foreground;
   const panel = ui.panel ?? (dark ? mix(editorBg, text, 0.05) : editorBg);
@@ -775,6 +781,7 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const tint = (dark ? 1 : 0.8) * (high ? 1.6 : 1);
   const diffTint = (color: string, alpha: number) => fitTint(color, editorBg, text, alpha * tint, 4.5);
   const syntax = (color: string) => (high ? ensureContrast(color, editorBg, 7) : color);
+  const bracket = (color: string) => ensureContrast(color, editorBg, high ? 7 : 3);
   return {
     "--bg": bg,
     "--panel": panel,
@@ -843,6 +850,10 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
     "--tok-tag": syntax(spec.syntax.tag ?? spec.syntax.keyword),
     "--tok-attr": syntax(spec.syntax.attr ?? spec.syntax.property),
     "--tok-invalid": syntax(spec.syntax.invalid ?? danger),
+    // Bracket depth colors from the terminal palette, like VS Code's gold, orchid and blue.
+    "--bracket-1": bracket(dark ? brightYellow : blue),
+    "--bracket-2": bracket(dark ? brightMagenta : green),
+    "--bracket-3": bracket(dark ? brightBlue : magenta),
   };
 }
 
