@@ -17,9 +17,7 @@ The **Diff** tab is always first and cannot be moved.
 
 ## Pin a tab
 
-![Two pinned tabs at the front of the strip](../images/tabs-pinned.png)
-
-*Two pinned tabs at the front, each with a pin button that unpins it.*
+[TODO:tabs-pinned.png]
 
 A pinned tab stays at the front of the strip and stays open when you clean up:
 
@@ -37,9 +35,7 @@ Pinning a preview tab (the one in italics) also keeps it open. Pinned tabs stay 
 
 By default, tabs that do not fit stay in one row and you scroll through them with the mouse wheel. Turn on **Settings > Editor > Wrap tabs** to show them on more rows instead, like VS Code:
 
-![Tabs wrapped onto two rows](../images/tabs-wrapped.png)
-
-*With Wrap tabs on, tabs that do not fit go onto a second row.*
+[TODO:tabs-wrapped.png]
 
 - Every tab stays visible, so you never have to scroll to find one.
 - The strip grows one row at a time as you open tabs, and shrinks as you close them.

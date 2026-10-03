@@ -9,6 +9,7 @@ import {
   pageProblems,
   resolvePath,
   rewriteLinks,
+  screenshotTodos,
   stripTitle,
 } from "./wiki";
 
@@ -100,5 +101,26 @@ describe("manifest", () => {
     expect(problems.some((problem) => problem.includes("would both become the wiki page Blame"))).toBe(true);
     expect(problems.some((problem) => problem.includes("usage/Missing.md"))).toBe(true);
     expect(problems.some((problem) => problem.includes("no screenshots"))).toBe(true);
+  });
+});
+
+describe("screenshot todos", () => {
+  it("finds the markers in the prose, not in code", () => {
+    const page = [
+      "# Tabs",
+      "",
+      "[TODO:tabs-pinned.png]",
+      "",
+      "Text, then [TODO:tabs-wrapped.png] inline.",
+      "",
+      "Inline `[TODO:not-this.png]` stays.",
+      "",
+      "```md",
+      "[TODO:nor-this.png]",
+      "```",
+      "",
+      "[TODO:no-extension] and [todo:lower.png] are not markers.",
+    ].join("\n");
+    expect(screenshotTodos(page)).toEqual(["tabs-pinned.png", "tabs-wrapped.png"]);
   });
 });
