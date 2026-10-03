@@ -228,8 +228,12 @@
           ({fileInfo.selected} selected{fileInfo.selectedLines > 1 ? `, ${fileInfo.selectedLines} lines` : ""})
         {/if}
       </span>
-      <button class="item" onclick={() => settings.openDialog("editor")} title="Indentation (change in Settings > Editor)">
-        Spaces: {fileInfo.tabSize}
+      <button
+        class="item"
+        onclick={() => settings.openDialog("editor")}
+        title={fileInfo.indentDetected ? "Indentation detected from the file (Settings > Editor)" : "Indentation (change in Settings > Editor)"}
+      >
+        {fileInfo.indentTabs ? "Tab Size" : "Spaces"}: {fileInfo.tabSize}
       </button>
       <span class="item static" title="Line endings">{fileInfo.eol === "crlf" ? "CRLF" : "LF"}</span>
       <span class="item static" title="Language">{fileInfo.language}</span>

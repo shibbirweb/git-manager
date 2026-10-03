@@ -247,6 +247,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.wordWrap": app(() => settings.toggleWordWrap()),
   "view.stickyScroll": app(() => settings.setPreference("editorStickyScroll", !settings.editorStickyScroll)),
   "view.minimap": app(() => settings.setPreference("editorMinimap", !settings.editorMinimap)),
+  "view.detectIndentation": app(() => settings.setPreference("detectIndentation", !settings.detectIndentation)),
   "view.notifications": app(() => notifications.toggle()),
   "view.doNotDisturb": app(() => settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb)),
   "view.markdownEditor": setMarkdownMode("editor"),

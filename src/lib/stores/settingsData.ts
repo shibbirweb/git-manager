@@ -195,6 +195,8 @@ export interface Preferences {
   /** Render programming ligatures (=>, !=, ===) with fonts that provide them. */
   fontLigatures: boolean;
   tabSize: number;
+  /** Indent like the file already does (spaces or tabs, and how many), like VS Code's editor.detectIndentation. */
+  detectIndentation: boolean;
   wordWrap: boolean;
   renderWhitespace: RenderWhitespace;
   editorCursorStyle: EditorCursorStyle;
@@ -370,6 +372,7 @@ export const defaultPreferences: Preferences = {
   editorFontFamily: DEFAULT_EDITOR_FONT,
   fontLigatures: false,
   tabSize: 4,
+  detectIndentation: true,
   wordWrap: false,
   renderWhitespace: "selection",
   editorCursorStyle: "line",
@@ -657,6 +660,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     editorFontFamily: typeof data.editorFontFamily === "string" ? normalizeFontFamily(data.editorFontFamily) : DEFAULT_EDITOR_FONT,
     fontLigatures: pickBoolean(data.fontLigatures, defaultPreferences.fontLigatures),
     tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize) ? (data.tabSize as number) : defaultPreferences.tabSize,
+    detectIndentation: pickBoolean(data.detectIndentation, defaultPreferences.detectIndentation),
     wordWrap: pickBoolean(data.wordWrap, defaultPreferences.wordWrap),
     renderWhitespace: pickOneOf(data.renderWhitespace, RENDER_WHITESPACE_VALUES, defaultPreferences.renderWhitespace),
     editorCursorStyle: pickOneOf(data.editorCursorStyle, EDITOR_CURSOR_STYLES, defaultPreferences.editorCursorStyle),

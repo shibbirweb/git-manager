@@ -14,6 +14,10 @@ export interface EditorInfo {
   selectedLines: number;
   eol: Eol;
   tabSize: number;
+  /** Indents with tabs (else spaces). */
+  indentTabs: boolean;
+  /** The indentation was read from the file (Detect indentation). */
+  indentDetected: boolean;
   language: string;
 }
 
@@ -30,6 +34,8 @@ class EditorStatus {
       current.selected === info.selected &&
       current.eol === info.eol &&
       current.tabSize === info.tabSize &&
+      current.indentTabs === info.indentTabs &&
+      current.indentDetected === info.indentDetected &&
       current.language === info.language
     ) {
       return;

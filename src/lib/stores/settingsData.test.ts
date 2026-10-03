@@ -179,6 +179,9 @@ describe("parsePreferences", () => {
     const extras = parsePreferences({ editorStickyScroll: false, editorMinimap: true, editorBracketPairColors: 1, editorMatchBrackets: false }).preferences;
     expect(extras.editorStickyScroll).toBe(false);
     expect(extras.editorMinimap).toBe(true);
+    expect(defaultPreferences.detectIndentation).toBe(true);
+    expect(parsePreferences({ detectIndentation: false }).preferences.detectIndentation).toBe(false);
+    expect(parsePreferences({ detectIndentation: "no" }).preferences.detectIndentation).toBe(true);
     expect(extras.editorBracketPairColors).toBe(true);
     expect(extras.editorMatchBrackets).toBe(false);
     expect(edited.editorIndentGuides).toBe(false);

@@ -97,7 +97,7 @@ A changed image or PDF shows its old version on the left and the new one on the 
 - **File too large to diff**: very large files are skipped to keep the app fast.
 - **Stored in Git LFS**: for a file kept in Git LFS, the diff shows the old and new sizes instead of text. See [Git LFS](Git-LFS.md).
 
-Diffs and the merge tool never wrap long lines, so both sides stay aligned. Scroll sideways for long lines. The **Line spacing** and **Render whitespace** settings apply here too (see [Editing Code](Editing-Code.md#how-text-looks)).
+Diffs and the merge tool never wrap long lines, so both sides stay aligned. Scroll sideways for long lines. The **Line spacing** and **Render whitespace** settings apply here too (see [Editing Code](Code-Appearance.md)).
 
 ## Related
 

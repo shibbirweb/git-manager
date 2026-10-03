@@ -130,6 +130,8 @@ describe("menuState", () => {
     expect(menuState(inputs({ stickyScroll: true, minimap: false }))["view.stickyScroll"]).toEqual({ enabled: true, checked: true });
     expect(menuState(inputs({ minimap: true }))["view.minimap"]).toEqual({ enabled: true, checked: true });
     expect(menuState(inputs({}))["view.minimap"]?.checked).toBe(false);
+    expect(menuState(inputs({ detectIndentation: true }))["view.detectIndentation"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ detectIndentation: false }))["view.detectIndentation"]?.checked).toBe(false);
   });
 
   it("compares the file on screen with the clipboard or another file", () => {

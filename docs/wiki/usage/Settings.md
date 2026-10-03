@@ -50,10 +50,11 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 | Line spacing | Space between lines of code, 1.0 to 2.5 times the font size in 0.05 steps. Double-click the slider to reset it. | 1.25 |
 | Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane to zoom, or pinch. | Off |
 | Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them (Fira Code, JetBrains Mono, Cascadia Code). | Off |
-| Tab size | Spaces per indent level: 2, 4 or 8. Applies to files opened afterwards. | 4 |
-| Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Editing-Code.md#render-whitespace). | Selection |
+| Tab size | Spaces per indent level (2, 4 or 8) when not detected, and the width of a tab. | 4 |
+| Detect indentation | Indent like the file does. Also View > Detect Indentation. See [Indentation](Code-Appearance.md#indentation). | On |
+| Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Code-Appearance.md#render-whitespace). | Selection |
 | Word wrap | Wraps long lines in the file editor, also with View > Word Wrap (Option+Z). Diffs and the merge tool never wrap. | Off |
-| Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Editing-Code.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
+| Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Code-Appearance.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
 | Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. Off frees memory. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
 | Current line blame | Author, age and commit at the end of the cursor line. Cmd+click it to open the commit in the Log; Cmd+Option-click copies the hash. See [Blame](Blame.md). | On |

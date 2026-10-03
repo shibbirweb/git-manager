@@ -827,7 +827,7 @@
           <div class="row">
             <div class="label">
               <span>Tab size</span>
-              <span class="hint">Spaces per indent level. Applies to editors opened from now on.</span>
+              <span class="hint">Spaces per indent level, and the width of a tab, for files whose indentation is not detected.</span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Tab size">
               {#each TAB_SIZES as size (size)}
@@ -837,6 +837,18 @@
               {/each}
             </div>
           </div>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Detect indentation</span>
+              <span class="hint">Indent like the file already does: tabs or spaces, and how many. Also in View > Detect Indentation.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.detectIndentation}
+              onchange={(event) => set("detectIndentation", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Render whitespace</span>

@@ -9,6 +9,7 @@
   import { api, errorMessage } from "$lib/api";
   import { usesDefaultKeys } from "$lib/commands/commandRuntime";
   import { wordWrap } from "$lib/editor/wordWrap";
+  import { editorIndent } from "$lib/editor/indentation";
   import { type AutoSaveTrigger, shouldAutoSave } from "$lib/editor/autoSave";
   import { caretLines, saveCleanupTransaction } from "$lib/editor/saveCleanup";
   import { blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
@@ -96,6 +97,8 @@
       selectedLines: selection.empty ? 0 : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
       eol: file.eol,
       tabSize: state.tabSize,
+      indentTabs: editorIndent(state).useTabs,
+      indentDetected: editorIndent(state).detected,
       language: languageName(filePath),
     });
   }
@@ -557,6 +560,10 @@
     const navListener = EditorView.updateListener.of((update) => {
       if (update.docChanged || update.selectionSet || update.transactions.some((tr) => tr.effects.length > 0)) {
         updateNav(update.state);
+      }
+      // A changed Detect indentation or Tab size setting reads the file again.
+      if (editorIndent(update.startState) !== editorIndent(update.state)) {
+        reportStatus(update.state);
       }
       if (update.selectionSet || update.docChanged) {
         reportStatus(update.state);

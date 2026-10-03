@@ -22,7 +22,7 @@ Each key matches a setting in the dialog. Values in quotes must be one of the ch
 
 **Appearance**: `theme` (`"system"`, `"light"`, `"dark"`), `uiFontSize`.
 
-**Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `tabSize` (2, 4 or 8), `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
+**Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `tabSize` (2, 4 or 8), `detectIndentation`, `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
 
 **Git**: `ignoreWhitespace`, `logAllRefs`, `commitSignOff`, `commitGpgSign` (`"default"`, `"sign"`, `"noSign"`), `gitConsole`, and `updateMethod` (`"merge"` or `"rebase"`, default `"merge"`, saved by [Git > Update Project...](Git-Dialogs.md#update-project); there is no switch for it in Settings).
 

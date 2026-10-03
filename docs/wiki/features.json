@@ -6,7 +6,8 @@
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
     { "page": "usage/File-Operations.md", "summary": "Create, rename, copy, move and trash files and folders right in the Files panel." },
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
-    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
+    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line and the IDE features of the editor." },
+    { "page": "usage/Code-Appearance.md", "summary": "Line spacing, visible whitespace, the cursor, word wrap, indentation detected from each file, and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
     { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
@@ -125,7 +126,14 @@
       "title": "Editing code",
       "usage": "usage/Editing-Code.md",
       "developer": "developer/How-Editing-Code-Works.md",
-      "screenshots": ["editor-features.png", "editor-whitespace.png"]
+      "screenshots": ["editor-features.png"]
+    },
+    {
+      "id": "code-appearance",
+      "title": "Code appearance",
+      "usage": "usage/Code-Appearance.md",
+      "developer": "developer/How-Code-Appearance-Works.md",
+      "screenshots": ["editor-whitespace.png"]
     },
     {
       "id": "markdown",

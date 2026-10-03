@@ -2,7 +2,7 @@
 // grammars actually used end up in memory.
 
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language";
+import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { EditorState, type Extension } from "@codemirror/state";
 import {
   drawSelection,
@@ -21,6 +21,7 @@ import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
 import { type EditorKind, featureOptions } from "./featurePlan";
 import { editorFeatures } from "./features";
+import { indentation } from "./indentation";
 import { renderWhitespace } from "./whitespace";
 
 export const editorTheme = EditorView.theme({
@@ -111,9 +112,8 @@ export function baseExtensions({ readOnly = false, kind, extensions = [] }: Edit
     renderWhitespace(settings.renderWhitespace),
     editorCursor(cursorOptions(settings)),
     editorTheme,
-    // Read when the editor is created; open editors keep their values.
-    EditorState.tabSize.of(settings.tabSize),
-    indentUnit.of(" ".repeat(settings.tabSize)),
+    // The file's own indentation, or the Tab size setting; open editors follow both settings.
+    indentation({ detect: settings.detectIndentation, tabSize: settings.tabSize }),
     // Custom keys from Settings > Keyboard Shortcuts, ahead of every default key.
     commandKeys(),
     // The Code menu's keys (Duplicate, Join Lines, Toggle Case...), ahead of the defaults.

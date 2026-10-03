@@ -102,6 +102,7 @@ GitHub release notes, and the app shows it as "What's New".
 - More than one window, like VS Code: File > New Window (Shift+Cmd+N), Open Folder in New Window, Cmd+click or right-click a recent folder on the welcome screen, and Close Window (Shift+Cmd+W, asks about unsaved edits). Opening a folder another window shows brings that window to the front. Each window has its own folders, tabs, terminals and menu state, its title is the workspace name (listed in the Window menu), settings changed in one window reach every window, and Settings > Layout > Reopen windows on start (on by default) brings back every window with its folders, size and position.
 - Git > Open Repository in Browser opens the web page of the repository's remote on any host (GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted); with several remotes, a list lets you choose.
 - Restore Defaults in Help > Available MCP Tools puts the tool switches back to how they start: destructive tools off, every other tool on (only the tools the filter shows).
+- Detect indentation, like VS Code, on by default: each file keeps the indentation it already has (tabs or spaces, and how many), so a file indented with 2 spaces is not edited with 4. The status bar shows Spaces: 2 or Tab Size: 4. Turn it off with View > Detect Indentation or in Settings > Editor; Tab size is used for files with nothing to follow.
 
 ### Changed
 

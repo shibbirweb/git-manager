@@ -13,6 +13,7 @@
   import { runCommand, usesDefaultKeys, windowKeys } from "$lib/commands/commandRuntime";
   import { setRenderWhitespace } from "$lib/editor/whitespace";
   import { setWordWrap } from "$lib/editor/wordWrap";
+  import { setIndentation } from "$lib/editor/indentation";
   import { appMenu } from "$lib/menu/appMenu.svelte";
   import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
   import { startMcpBridge } from "$lib/mcp/bridge";
@@ -172,6 +173,11 @@
   // And word wrap (View > Word Wrap, Option+Z).
   $effect(() => {
     setWordWrap(settings.wordWrap);
+  });
+
+  // And the indentation: each open editor reads its file again with the new settings.
+  $effect(() => {
+    setIndentation({ detect: settings.detectIndentation, tabSize: settings.tabSize });
   });
 
   // And the editor features (auto-close, completion, folding, guides...); a feature turned off leaves the editors.

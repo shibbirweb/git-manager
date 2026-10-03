@@ -42,6 +42,8 @@ export interface MenuInputs {
   /** Sticky scroll and the minimap of the file editor (Settings > Editor). */
   stickyScroll?: boolean;
   minimap?: boolean;
+  /** Settings > Editor > Detect indentation. */
+  detectIndentation?: boolean;
   /** Do Not Disturb (only errors pop up). */
   doNotDisturb?: boolean;
   /**
@@ -219,6 +221,7 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["view.wordWrap"] = { enabled: true, checked: inputs.wordWrap };
   state["view.stickyScroll"] = { enabled: true, checked: inputs.stickyScroll ?? false };
   state["view.minimap"] = { enabled: true, checked: inputs.minimap ?? false };
+  state["view.detectIndentation"] = { enabled: true, checked: inputs.detectIndentation ?? false };
   state["view.notifications"] = { enabled: true };
   state["view.doNotDisturb"] = { enabled: true, checked: inputs.doNotDisturb ?? false };
   for (const [action, theme] of THEME_ITEMS) {

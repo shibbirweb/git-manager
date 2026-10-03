@@ -27,7 +27,7 @@ With Auto, a file tab that is outside any repository says **No repository**; cli
 While a file is shown in the editor:
 
 - **Ln 42, Col 7**: the cursor position. With a selection it adds, for example, "(18 selected, 2 lines)".
-- **Spaces: 4**: the indentation. Click it to open Settings on the **Editor** section, where the tab size is.
+- **Spaces: 4** (or **Tab Size: 4** for a file indented with tabs): the indentation, detected from the file unless Detect indentation is off. Click it to open Settings on the **Editor** section.
 - **LF** or **CRLF**: the file's line endings. Git Manager keeps them as they are when saving.
 - The language, such as **TypeScript**.
 

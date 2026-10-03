@@ -52,6 +52,7 @@ export const MENU_ACTIONS = [
   "view.wordWrap",
   "view.stickyScroll",
   "view.minimap",
+  "view.detectIndentation",
   "view.notifications",
   "view.doNotDisturb",
   "view.markdownEditor",

@@ -178,6 +178,7 @@ function viewMenu(platform: MenuPlatform): TopMenu {
     check("view.wordWrap", "Word Wrap", "Alt+Z"),
     check("view.stickyScroll", "Sticky Scroll"),
     check("view.minimap", "Minimap"),
+    check("view.detectIndentation", "Detect Indentation"),
     {
       kind: "submenu",
       text: "Markdown",
