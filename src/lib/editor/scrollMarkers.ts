@@ -190,7 +190,8 @@ const gutterTheme = EditorView.theme({
   ".cm-change-bar-deleted.at-end": { top: "auto", bottom: "-4px" },
 });
 
-function buildGutterSet(doc: EditorState["doc"], marks: readonly ChangeMark[]): RangeSet<GutterMarker> {
+/** Gutter markers for `marks` (0-based line ranges) in `doc`. */
+export function buildGutterSet(doc: EditorState["doc"], marks: readonly ChangeMark[]): RangeSet<GutterMarker> {
   const ranges = [];
   const sorted = [...marks].sort((a, b) => a.from - b.from);
   for (const mark of sorted) {
@@ -209,22 +210,40 @@ function buildGutterSet(doc: EditorState["doc"], marks: readonly ChangeMark[]): 
   return RangeSet.of(ranges, true);
 }
 
+/** The gutter's markers and the marks they were built from. */
+export interface GutterCache {
+  marks: readonly ChangeMark[] | null;
+  set: RangeSet<GutterMarker>;
+}
+
+/**
+ * The gutter's markers for a state. Marks are line numbers that only change when they are
+ * computed again, so the markers are built once from them and then moved with every edit by
+ * the field: typing in a heavily changed file does not rebuild the whole gutter.
+ */
+export function gutterMarkerSource(source: MarkSource): {
+  field: StateField<GutterCache>;
+  markers: (state: EditorState) => RangeSet<GutterMarker>;
+} {
+  const field = StateField.define<GutterCache>({
+    create: () => ({ marks: null, set: RangeSet.empty }),
+    update: (cache, tr) => (tr.docChanged && cache.marks ? { marks: cache.marks, set: cache.set.map(tr.changes) } : cache),
+  });
+  const markers = (state: EditorState): RangeSet<GutterMarker> => {
+    const marks = source(state);
+    const cache = state.field(field);
+    if (cache.marks !== marks) {
+      // A cache, not state: rebuilt in place for this state, then moved by the field.
+      cache.marks = marks;
+      cache.set = buildGutterSet(state.doc, marks);
+    }
+    return cache.set;
+  };
+  return { field, markers };
+}
+
 /** Colored bars beside the line numbers for each changed line. */
 export function changeGutter(source: MarkSource = fieldSource): Extension {
-  // The gutter asks for markers on every update; rebuild only when needed.
-  let cached: { marks: readonly ChangeMark[]; doc: EditorState["doc"]; set: RangeSet<GutterMarker> } | null = null;
-  return [
-    gutter({
-      class: "cm-change-gutter",
-      markers: (view) => {
-        const marks = source(view.state);
-        const doc = view.state.doc;
-        if (!cached || cached.marks !== marks || cached.doc !== doc) {
-          cached = { marks, doc, set: buildGutterSet(doc, marks) };
-        }
-        return cached.set;
-      },
-    }),
-    gutterTheme,
-  ];
+  const { field, markers } = gutterMarkerSource(source);
+  return [field, gutter({ class: "cm-change-gutter", markers: (view) => markers(view.state) }), gutterTheme];
 }

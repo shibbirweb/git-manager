@@ -3,7 +3,7 @@
 // so everything is unit-testable.
 
 import type { ChangeSet, Text } from "@codemirror/state";
-import type { ChunkKind, LineRange, MergeChunk, MergeDocument } from "$lib/types";
+import type { ChunkKind, LineRange, MergeChunk } from "$lib/types";
 
 export type SideName = "ours" | "theirs";
 
@@ -101,8 +101,49 @@ export function splitLines(text: string): string[] {
   return text.split("\n");
 }
 
-export function sliceLines(lines: string[], range: LineRange): string[] {
-  return lines.slice(range.start, range.end);
+/** Lines `range` of a text (0-based, half-open), read from the editor's own document. */
+export function sliceLines(text: Text, range: LineRange): string[] {
+  const lines: string[] = [];
+  const end = Math.min(range.end, text.lines);
+  if (range.start >= end) {
+    return lines;
+  }
+  for (const line of text.iterLines(range.start + 1, end + 1)) {
+    lines.push(line);
+  }
+  return lines;
+}
+
+/** Lines `range` of a text joined by newlines, without splitting the rest of it. */
+export function rangeText(text: Text, range: LineRange): string {
+  const end = Math.min(range.end, text.lines);
+  if (range.start >= end) {
+    return "";
+  }
+  return text.sliceString(text.line(range.start + 1).from, text.line(end).to);
+}
+
+/** Where each line of a plain string starts: four bytes a line instead of a copy of every line. */
+export function lineStarts(text: string): Uint32Array {
+  let count = 1;
+  for (let at = text.indexOf("\n"); at >= 0; at = text.indexOf("\n", at + 1)) {
+    count++;
+  }
+  const starts = new Uint32Array(count);
+  let line = 1;
+  for (let at = text.indexOf("\n"); at >= 0; at = text.indexOf("\n", at + 1)) {
+    starts[line++] = at + 1;
+  }
+  return starts;
+}
+
+/** Lines `range` of a plain string joined by newlines, using its `lineStarts`. */
+export function rangeOfString(text: string, starts: Uint32Array, range: LineRange): string {
+  const end = Math.min(range.end, starts.length);
+  if (range.start >= end) {
+    return "";
+  }
+  return text.slice(starts[range.start], end < starts.length ? starts[end] - 1 : text.length);
 }
 
 /**
@@ -151,9 +192,10 @@ function shiftAfter(chunks: ChunkState[], index: number, delta: number): void {
   }
 }
 
+/** The read-only sides, as the documents of their editors. */
 export interface SideTexts {
-  ours: string[];
-  theirs: string[];
+  ours: Text;
+  theirs: Text;
 }
 
 /**
@@ -404,10 +446,6 @@ export function findUnresolved(chunks: ChunkState[], fromLine: number, direction
     }
   }
   return open[open.length - 1];
-}
-
-export function documentFor(document: MergeDocument): SideTexts {
-  return { ours: splitLines(document.ours), theirs: splitLines(document.theirs) };
 }
 
 const MARKER = /^(<{7}|>{7})(\s|$)|^={7}$/m;

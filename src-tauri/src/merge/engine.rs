@@ -1,7 +1,7 @@
 //! Line-based 3-way merge: diffs base->ours and base->theirs, then groups
 //! overlapping or touching hunks (same rule as git's xdiff) into chunks.
 
-use imara_diff::{Algorithm, Diff, Hunk, InternedInput};
+use imara_diff::Hunk;
 
 use super::model::{ChunkKind, LineRange, MergeChunk};
 
@@ -16,12 +16,7 @@ fn normalize_whitespace(line: &str) -> String {
 }
 
 fn diff_hunks(before: &[&str], after: &[&str]) -> Vec<Hunk> {
-    let mut input: InternedInput<&str> = InternedInput::default();
-    input.update_before(before.iter().copied());
-    input.update_after(after.iter().copied());
-    let mut diff = Diff::compute(Algorithm::Histogram, &input);
-    diff.postprocess_lines(&input);
-    diff.hunks().collect()
+    super::line_diff::hunks(before, after)
 }
 
 /// Sum of line-count changes introduced by a set of hunks.

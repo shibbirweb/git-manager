@@ -20,13 +20,24 @@ function commit(id: string, authorTime: number, uncommitted = false): BlameCommi
 const commits = [commit("a", 100), commit("b", 200)];
 
 describe("fromInfo", () => {
+  it("expands runs into one owner and origin per line", () => {
+    // Lines 0-2 are lines 5-7 of commit a, lines 3-4 lines 0-1 of commit b.
+    const state = fromInfo({ commits, runs: [3, 0, 5, 2, 1, 0] }, 5);
+    expect(state.lines).toEqual([0, 0, 0, 1, 1]);
+    expect(state.origins).toEqual([5, 6, 7, 0, 1]);
+  });
+
   it("pads the empty line after a trailing newline", () => {
-    const state = fromInfo({ commits, lines: [0, 1] }, 3);
+    const state = fromInfo({ commits, runs: [1, 0, 0, 1, 1, 0] }, 3);
     expect(state.lines).toEqual([0, 1, 1]);
   });
 
   it("trims extra lines", () => {
-    expect(fromInfo({ commits, lines: [0, 1, 1] }, 2).lines).toEqual([0, 1]);
+    expect(fromInfo({ commits, runs: [1, 0, 0, 2, 1, 0] }, 2).lines).toEqual([0, 1]);
+  });
+
+  it("treats a missing blame as local edits", () => {
+    expect(fromInfo({ commits: [], runs: [] }, 2).lines).toEqual([LOCAL_EDIT, LOCAL_EDIT]);
   });
 });
 
@@ -71,16 +82,14 @@ describe("commit-side lines", () => {
   const doc = Text.of(["one", "two", "three", "four"]);
 
   it("keeps git's original line numbers and pads unknown ones", () => {
-    const state = fromInfo({ commits, lines: [0, 1], originalLines: [4, 9] }, 3);
+    const state = fromInfo({ commits, runs: [1, 0, 4, 1, 1, 9] }, 3);
     expect(state.origins).toEqual([4, 9, UNKNOWN_LINE]);
     expect(commitLineAt(state, 1)).toBe(9);
     expect(commitLineAt(state, 2)).toBeNull();
   });
 
-  it("has none when the backend sends none", () => {
-    const state = fromInfo({ commits, lines: [0, 1] }, 2);
-    expect(state.origins).toBeUndefined();
-    expect(commitLineAt(state, 0)).toBeNull();
+  it("has none for lines a state without origins does not know", () => {
+    expect(commitLineAt({ commits, lines: [0, 1] }, 0)).toBeNull();
   });
 
   it("moves them with edits and forgets them on edited lines", () => {

@@ -38,6 +38,42 @@ pub struct BlameInfo {
     pub original_lines: Vec<u32>,
 }
 
+/// What the editor receives: the commits and runs of lines, far smaller than a number per line.
+#[derive(Debug, Clone, Serialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct BlameRuns {
+    pub commits: Vec<BlameCommit>,
+    /// `[length, commit, originalStart]` for every run of consecutive lines from the same
+    /// commit whose lines in that commit are consecutive too, flattened in order.
+    pub runs: Vec<u32>,
+}
+
+impl BlameInfo {
+    pub fn into_runs(self) -> BlameRuns {
+        let mut runs: Vec<u32> = Vec::new();
+        let mut open: Option<(usize, u32, u32)> = None;
+        for (line, (&commit, &original)) in self.lines.iter().zip(&self.original_lines).enumerate() {
+            match open {
+                Some((start, run_commit, run_original))
+                    if run_commit == commit && run_original + (line - start) as u32 == original => {}
+                _ => {
+                    if let Some((start, run_commit, run_original)) = open {
+                        runs.extend([(line - start) as u32, run_commit, run_original]);
+                    }
+                    open = Some((line, commit, original));
+                }
+            }
+        }
+        if let Some((start, run_commit, run_original)) = open {
+            runs.extend([(self.lines.len() - start) as u32, run_commit, run_original]);
+        }
+        BlameRuns {
+            commits: self.commits,
+            runs,
+        }
+    }
+}
+
 /// A line header: the commit, the line's number in that commit and its number
 /// in the blamed text (both 1-based, as git prints them).
 fn is_header(line: &str) -> Option<(&str, usize, usize)> {
@@ -115,7 +151,7 @@ pub fn parse_porcelain(text: &str) -> BlameInfo {
 
 /// Blames `file_path` at `revision` (a commit), or the work tree when None.
 /// `contents` replaces the file text, e.g. an editor buffer or the index version.
-pub fn blame(repo_path: &Path, file_path: &str, revision: Option<&str>, contents: Option<&str>) -> AppResult<BlameInfo> {
+pub fn blame(repo_path: &Path, file_path: &str, revision: Option<&str>, contents: Option<&[u8]>) -> AppResult<BlameInfo> {
     let mut args = vec!["blame", "--porcelain"];
     if contents.is_some() {
         args.extend(["--contents", "-"]);
@@ -125,7 +161,7 @@ pub fn blame(repo_path: &Path, file_path: &str, revision: Option<&str>, contents
     }
     args.extend(["--", file_path]);
     let output = match contents {
-        Some(text) => cli::run_with_stdin(repo_path, &args, text.as_bytes())?,
+        Some(bytes) => cli::run_with_stdin(repo_path, &args, bytes)?,
         None => cli::run(repo_path, &args)?,
     };
     Ok(parse_porcelain(&output.stdout))
@@ -176,13 +212,25 @@ mod tests {
         assert_eq!(summaries, vec!["Add notes", "Add notes", "Add gamma"]);
 
         // An editor buffer with a new first line and an edited last line.
-        let edited = blame(&path, "notes.txt", None, Some("new\nalpha\nbeta\nGAMMA\n")).unwrap();
+        let edited = blame(&path, "notes.txt", None, Some("new\nalpha\nbeta\nGAMMA\n".as_bytes())).unwrap();
         let uncommitted: Vec<bool> = edited
             .lines
             .iter()
             .map(|index| edited.commits[*index as usize].uncommitted)
             .collect();
         assert_eq!(uncommitted, vec![true, false, false, true]);
+    }
+
+    #[test]
+    fn runs_group_consecutive_lines_of_one_commit() {
+        let info = BlameInfo {
+            commits: Vec::new(),
+            lines: vec![0, 0, 0, 1, 1, 0, 0],
+            // Lines 0-1 are lines 4-5 of commit 0, line 2 jumps elsewhere in it.
+            original_lines: vec![4, 5, 9, 0, 1, 6, 7],
+        };
+        assert_eq!(info.into_runs().runs, vec![2, 0, 4, 1, 0, 9, 2, 1, 0, 2, 0, 6]);
+        assert!(BlameInfo::default().into_runs().runs.is_empty());
     }
 
     #[test]

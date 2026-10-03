@@ -87,12 +87,14 @@ GitHub release notes, and the app shows it as "What's New".
 - The file editor header is one slim bar, like JetBrains: the path, its badges and icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch, so the code starts right under the tabs. Conflict actions get their own strip only while a file has conflicts, and the bar shortens the path instead of wrapping when the editor is narrow.
 - New editor defaults, like JetBrains: JetBrains Mono when it is installed (else Menlo) at 13 px, with line spacing 1.25. An existing settings.json keeps its saved values; Reset to Defaults picks up the new ones.
 - The terminal starts at 13 px with a line height of 1.2 (it was 12.5 px and 1.0); sizes you saved stay. The terminal panel header and list are slimmer, and the header has a Split Terminal button.
+- Open file tabs stay quiet when nothing changed: saving reads nothing back and blames once, other tabs only check that their file and HEAD are the same, and the change markers are computed in the background after you stop typing. Typing in large files is faster too (conflict markers, the change bars and word completion no longer scan the whole file on every key), and the merge tool holds each side's text once.
 - Faster refreshes in big repositories: saving a file reads the changes once, staging no longer reloads the Log or the branches, the Log reloads in one step and only when a branch, tag or HEAD moved, the Files panel lists folders again only when files are added, removed or renamed, and bursts of file changes (npm install, a big checkout) refresh every second or two instead of every 300 ms.
 - The status bar has a Sync item after the branch, like VS Code: it shows the commits to pull and push (such as 1↓ 2↑) and syncs on click, or publishes a branch that has no upstream. Long branch names are cut short so they no longer push the other items away.
 - Clicking the repository name in the status bar opens a Select a Repository list, like VS Code, instead of the Branches sidebar. Its Auto entry (the default) makes the active repository follow the open tab; picking a repository keeps it active.
 
 ### Fixed
 
+- Diffs of large files no longer merge many small edits into one giant change: the lines that changed come from git-style line hunks, and only those are compared character by character.
 - Stage All, Unstage All and Discard All work with tens of thousands of files (they failed with "Argument list too long").
 - Links open in the browser again: Star on GitHub, the docs and release notes from the Help menu, update downloads, and links in Markdown previews and the terminal did nothing before.
 - The current-line blame note no longer takes a line of its own or sits under the pointer and catches clicks: it is drawn after the end of the line without moving the code (on a long line, scroll right to read it; with word wrap on it is cut short), and opens the commit with Cmd+click (Ctrl+click elsewhere).

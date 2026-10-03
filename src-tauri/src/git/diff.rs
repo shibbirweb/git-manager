@@ -1,13 +1,15 @@
-//! Loads the two sides of a 2-way diff. The frontend computes the visual diff
-//! with CodeMirror, so only the texts cross the IPC bridge.
+//! Loads the two sides of a 2-way diff, with their line hunks. The frontend
+//! draws the diff with CodeMirror and refines each hunk to characters there.
 
 use git2::{Oid, Repository, Tree};
 use serde::{Deserialize, Serialize};
 
+use super::files::stat_version;
 use super::lfs::{self, LfsPointer};
 use super::repo::{bytes_to_text, resolve_commit, workdir};
 use crate::error::AppResult;
-use crate::merge::model::{normalize_eol, Eol};
+use crate::merge::line_diff::{text_hunks, LineHunk};
+use crate::merge::model::{into_lf, Eol};
 
 /// Files above this size are not diffed in the UI.
 const MAX_DIFF_BYTES: usize = 4 * 1024 * 1024;
@@ -33,6 +35,11 @@ pub struct FileDiff {
     pub too_large: bool,
     /// Set when either side is a Git LFS pointer: the sizes to show instead of the pointer text.
     pub lfs: Option<LfsDiff>,
+    /// The changed lines, `[oldStart, oldEnd, newStart, newEnd]` (0-based, half-open).
+    pub hunks: Vec<LineHunk>,
+    /// Staged and unstaged diffs only: which versions of the sides these are, so a refresh
+    /// can ask whether anything changed (see `working_file_if_changed`).
+    pub version: Option<String>,
 }
 
 /// One side's real content: from the pointer, or the bytes when that side is
@@ -109,6 +116,8 @@ fn build(path: &str, original: Side, modified: Side) -> FileDiff {
         binary: false,
         too_large: size(&original) > MAX_DIFF_BYTES || size(&modified) > MAX_DIFF_BYTES,
         lfs: lfs_diff(&original, &modified),
+        hunks: Vec::new(),
+        version: None,
     };
     if diff.too_large {
         return diff;
@@ -123,8 +132,9 @@ fn build(path: &str, original: Side, modified: Side) -> FileDiff {
         (Some(original), Some(modified)) => {
             diff.original_eol = Eol::detect(&original);
             diff.modified_eol = Eol::detect(&modified);
-            diff.original = normalize_eol(&original);
-            diff.modified = normalize_eol(&modified);
+            diff.original = into_lf(original);
+            diff.modified = into_lf(modified);
+            diff.hunks = text_hunks(&diff.original, &diff.modified);
         }
         _ => diff.binary = true,
     }
@@ -158,20 +168,139 @@ fn lfs_diff(original: &Side, modified: &Side) -> Option<LfsDiff> {
     })
 }
 
+fn head_tree(repo: &Repository) -> Option<Tree<'_>> {
+    repo.head().ok().and_then(|head| head.peel_to_tree().ok())
+}
+
+/// A side's identity without reading it: the object id (and mode) for HEAD and index sides.
+fn tree_token(tree: Option<&Tree>, path: &str) -> String {
+    tree.and_then(|tree| tree.get_path(std::path::Path::new(path)).ok())
+        .map(|entry| format!("{:o}:{}", entry.filemode(), entry.id()))
+        .unwrap_or_else(|| "-".to_string())
+}
+
+fn index_token(repo: &Repository, path: &str) -> AppResult<String> {
+    Ok(repo
+        .index()?
+        .get_path(std::path::Path::new(path), 0)
+        .map(|entry| format!("{:o}:{}", entry.mode, entry.id))
+        .unwrap_or_else(|| "-".to_string()))
+}
+
+/// The work tree side: the file's size, times and inode, or a submodule's checked-out commit.
+fn workdir_token(repo: &Repository, path: &str) -> AppResult<String> {
+    let full = workdir(repo)?.join(path);
+    if full.is_dir() {
+        let head = Repository::open(&full).ok().and_then(|submodule| submodule.head().ok()?.target());
+        return Ok(head.map(|oid| format!("dir:{oid}")).unwrap_or_else(|| "-".to_string()));
+    }
+    Ok(std::fs::metadata(&full)
+        .map(|meta| stat_version(&meta))
+        .unwrap_or_else(|_| "-".to_string()))
+}
+
+/// Which versions of the two sides a staged or unstaged diff shows.
+pub fn working_file_version(repo: &Repository, path: &str, orig_path: Option<&str>, area: DiffArea) -> AppResult<String> {
+    Ok(match area {
+        DiffArea::Unstaged => format!("u|{}|{}", index_token(repo, path)?, workdir_token(repo, path)?),
+        DiffArea::Staged => format!(
+            "s|{}|{}",
+            tree_token(head_tree(repo).as_ref(), orig_path.unwrap_or(path)),
+            index_token(repo, path)?
+        ),
+    })
+}
+
 pub fn working_file(repo: &Repository, path: &str, orig_path: Option<&str>, area: DiffArea) -> AppResult<FileDiff> {
-    match area {
+    // The version is taken before the sides are read: a change in between shows up next time.
+    let version = working_file_version(repo, path, orig_path, area)?;
+    let mut diff = match area {
         DiffArea::Unstaged => {
             let original = index_side(repo, path)?;
             let modified = workdir_side(repo, path)?;
-            Ok(build(path, original, modified))
+            build(path, original, modified)
         }
         DiffArea::Staged => {
-            let head_tree = repo.head().ok().and_then(|head| head.peel_to_tree().ok());
-            let original = tree_side(repo, head_tree.as_ref(), orig_path.unwrap_or(path))?;
+            let original = tree_side(repo, head_tree(repo).as_ref(), orig_path.unwrap_or(path))?;
             let modified = index_side(repo, path)?;
-            Ok(build(path, original, modified))
+            build(path, original, modified)
+        }
+    };
+    diff.version = Some(version);
+    Ok(diff)
+}
+
+/// The diff, or None when its sides still have `known_version` (nothing is read then).
+pub fn working_file_if_changed(
+    repo: &Repository,
+    path: &str,
+    orig_path: Option<&str>,
+    area: DiffArea,
+    known_version: Option<&str>,
+) -> AppResult<Option<FileDiff>> {
+    if let Some(known) = known_version {
+        if working_file_version(repo, path, orig_path, area)? == known {
+            return Ok(None);
         }
     }
+    working_file(repo, path, orig_path, area).map(Some)
+}
+
+/// The committed version of a file the editor compares against: the HEAD commit and the
+/// file's object in it (at `orig_path` for a staged rename), both None when absent.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HeadVersion {
+    pub commit_id: Option<String>,
+    pub blob_id: Option<String>,
+}
+
+pub fn head_version(repo: &Repository, path: &str, orig_path: Option<&str>) -> HeadVersion {
+    let Some(commit) = repo.head().ok().and_then(|head| head.peel_to_commit().ok()) else {
+        return HeadVersion::default();
+    };
+    let blob_id = commit
+        .tree()
+        .ok()
+        .and_then(|tree| tree.get_path(std::path::Path::new(orig_path.unwrap_or(path))).ok())
+        .map(|entry| entry.id().to_string());
+    HeadVersion {
+        commit_id: Some(commit.id().to_string()),
+        blob_id,
+    }
+}
+
+/// The file as of HEAD, LF-normalized; a file HEAD does not have reads as empty text.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HeadFile {
+    pub content: String,
+    pub binary: bool,
+    pub too_large: bool,
+    pub version: HeadVersion,
+}
+
+pub fn head_file(repo: &Repository, path: &str, orig_path: Option<&str>) -> AppResult<HeadFile> {
+    let version = head_version(repo, path, orig_path);
+    let side = tree_side(repo, head_tree(repo).as_ref(), orig_path.unwrap_or(path))?;
+    let mut file = HeadFile {
+        content: String::new(),
+        binary: false,
+        too_large: false,
+        version,
+    };
+    let Side::Bytes(bytes) = side else {
+        return Ok(file);
+    };
+    if bytes.len() > MAX_DIFF_BYTES {
+        file.too_large = true;
+        return Ok(file);
+    }
+    match bytes_to_text(bytes) {
+        Some(text) => file.content = into_lf(text),
+        None => file.binary = true,
+    }
+    Ok(file)
 }
 
 /// A diff of two sides given as bytes (None: the side does not exist), e.g. a shelved file.
