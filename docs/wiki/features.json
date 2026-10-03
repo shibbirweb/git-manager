@@ -34,6 +34,7 @@
     { "page": "usage/GitHub.md", "summary": "Sign in to GitHub to share a project, sync a fork and create gists." },
     { "page": "usage/Git-Console.md", "summary": "Every git command the app ran, with its output (off by default)." },
     { "page": "usage/Terminal.md", "summary": "Run shells below the editor or in a tab, with several terminals and your own shell and font." },
+    { "page": "usage/Terminal-Features.md", "summary": "Split terminals, find in the output, Cmd+click file paths, drop files, rename, and the optional parts." },
     { "page": "usage/Scripts.md", "summary": "Run npm, Composer, Make, Deno and just scripts with one click, with the right Node version." },
     { "page": "usage/Navigation.md", "summary": "Back and Forward across files, diffs and commits." },
     { "page": "usage/Menus.md", "summary": "The menu bar: what is in each menu, and how its keys work." },
@@ -59,12 +60,16 @@
     { "page": "developer/How-Workspace-Files-Work.md", "summary": "Workspace files, VS Code compatibility and which folders reopen at start." },
     { "page": "developer/How-the-Preview-Scheme-Works.md", "summary": "The gmpreview URL scheme: how previews stream images and PDFs to the web view, safely and in pieces." },
     { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
+    { "page": "developer/How-Terminal-Features-Work.md", "summary": "Split groups, find, file links, drops and the terminal addons, each lazy and switchable." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
+    { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
+    { "page": "developer/How-Editor-Features-Work.md", "summary": "Auto-close, completion, folding, indent guides, the margin line and the languages, each switchable and lazy." },
+    { "page": "developer/How-the-Path-Bar-Works.md", "summary": "The slim bar above the code: breadcrumbs, badges and icon actions, and how it collapses when narrow." },
     { "page": "developer/Commands-and-Events.md", "summary": "Index of the backend commands, plus every event and channel." },
     { "page": "developer/Settings-Reference.md", "summary": "Every settings.json and state.json key with its default, range and where it is used." },
     { "page": "developer/Commands-Workspace-and-Changes.md", "summary": "Commands for folders, status, staging, commits, diffs, conflicts, stashes, the shelf and ignore files." },
@@ -116,7 +121,7 @@
       "title": "Editing code",
       "usage": "usage/Editing-Code.md",
       "developer": "developer/How-Editing-Code-Works.md",
-      "screenshots": ["editor-whitespace.png"]
+      "screenshots": ["editor-features.png", "editor-whitespace.png"]
     },
     {
       "id": "markdown",

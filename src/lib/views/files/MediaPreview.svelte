@@ -164,14 +164,27 @@
     flex-direction: column;
   }
 
+  /* As low as the Markdown toolbar, under FileView's path bar. */
   .bar {
     flex: none;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: 2px 4px;
+    min-height: 28px;
+    padding: 2px 8px;
     border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+
+  .bar .btn.small {
+    height: 22px;
+  }
+
+  .bar .btn.icon-only {
+    width: 24px;
+    padding: 0;
+    justify-content: center;
   }
 
   .zoom {

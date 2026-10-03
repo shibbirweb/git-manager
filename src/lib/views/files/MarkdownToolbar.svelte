@@ -1,4 +1,7 @@
-<!-- Formatting buttons and the view mode switch above a Markdown file, like JetBrains' Markdown editor. -->
+<!--
+  Formatting buttons above a Markdown file, like JetBrains' Markdown editor. The view mode switch
+  sits in FileView's bar; this row stays because it is a tool, and it is kept as low as possible.
+-->
 <script lang="ts">
   import type { EditorState, TransactionSpec } from "@codemirror/state";
   import {
@@ -19,7 +22,6 @@
 
   interface Props {
     viewMode: MarkdownViewMode;
-    onViewMode: (viewMode: MarkdownViewMode) => void;
     /** Formatting in the text editor. */
     onFormat: (command: FormatCommand) => void;
     /** Formatting in the rich text editor (Preview mode). */
@@ -27,7 +29,7 @@
     onRichLink: () => void;
   }
 
-  let { viewMode, onViewMode, onFormat, onRichFormat, onRichLink }: Props = $props();
+  let { viewMode, onFormat, onRichFormat, onRichLink }: Props = $props();
 
   /** Preview mode edits the rendered document, so the buttons act there. */
   const rich = $derived(viewMode === "preview");
@@ -67,12 +69,6 @@
     }
   }
 
-  const modes: { value: MarkdownViewMode; icon: IconName; label: string }[] = [
-    { value: "editor", icon: "editor-only", label: "Editor Only" },
-    { value: "split", icon: "split-view", label: "Editor and Preview" },
-    { value: "preview", icon: "eye", label: "Preview Only" },
-  ];
-
   /** The editor keeps its focus and selection while a button is clicked. */
   function keepFocus(event: MouseEvent): void {
     event.preventDefault();
@@ -110,20 +106,6 @@
       </button>
     {/each}
   </div>
-  <div class="modes" role="radiogroup" aria-label="Markdown view">
-    {#each modes as mode (mode.value)}
-      <button
-        role="radio"
-        aria-checked={viewMode === mode.value}
-        class:on={viewMode === mode.value}
-        onclick={() => onViewMode(mode.value)}
-        title={mode.label}
-        aria-label={mode.label}
-      >
-        <Icon name={mode.icon} size={14} />
-      </button>
-    {/each}
-  </div>
 </div>
 
 <style>
@@ -132,9 +114,9 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px 12px;
-    min-height: 32px;
-    padding: 3px 10px 3px 8px;
+    gap: 2px 12px;
+    min-height: 28px;
+    padding: 2px 10px 2px 6px;
     border-bottom: 1px solid var(--border);
     background: var(--panel);
   }
@@ -152,8 +134,8 @@
     align-items: center;
     justify-content: center;
     gap: 1px;
-    height: 24px;
-    min-width: 26px;
+    height: 22px;
+    min-width: 24px;
     padding: 0 5px;
     border: none;
     border-radius: 4px;
@@ -174,42 +156,8 @@
 
   .divider {
     width: 1px;
-    height: 16px;
-    margin: 0 5px;
+    height: 14px;
+    margin: 0 4px;
     background: var(--border-strong);
-  }
-
-  .modes {
-    flex: none;
-    display: flex;
-    margin-left: auto;
-    padding: 2px;
-    border-radius: 6px;
-    border: 1px solid var(--border-strong);
-    background: var(--panel-alt);
-  }
-
-  .modes button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 20px;
-    padding: 0;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-  }
-
-  .modes button:hover:not(.on) {
-    color: var(--text);
-  }
-
-  .modes button.on {
-    background: var(--panel);
-    color: var(--text);
-    box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 18%, transparent);
   }
 </style>

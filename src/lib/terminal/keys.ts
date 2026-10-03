@@ -10,7 +10,11 @@ export type TerminalKeyAction =
   | "copy"
   | "paste"
   | "clear"
-  | "selectAll";
+  | "selectAll"
+  /** Opens the terminal's find bar. */
+  | "find"
+  /** Splits the terminal, like VS Code (Cmd+Backslash). */
+  | "split";
 
 /** The parts of a KeyboardEvent the decision needs. */
 export interface TerminalKey {
@@ -25,6 +29,10 @@ export interface TerminalKey {
 export interface TerminalKeyContext {
   isMac: boolean;
   hasSelection: boolean;
+  /** Find in terminal is on in Settings; off, its key is left to the app. */
+  findEnabled?: boolean;
+  /** The terminal is in the panel, where it can be split. */
+  canSplit?: boolean;
 }
 
 export function terminalKeyAction(event: TerminalKey, context: TerminalKeyContext): TerminalKeyAction {
@@ -51,6 +59,13 @@ export function terminalKeyAction(event: TerminalKey, context: TerminalKeyContex
     if (!event.shiftKey && key === "a") {
       return "selectAll";
     }
+    if (!event.shiftKey && key === "f" && context.findEnabled) {
+      return "find";
+    }
+    // By the physical key: layouts type other characters on the backslash key.
+    if (!event.shiftKey && event.code === "Backslash" && context.canSplit) {
+      return "split";
+    }
     // Cmd+V pastes through the native Edit menu, which xterm's paste listener receives.
     // Every other Cmd key (Cmd+B, Cmd+, ...) is an app shortcut.
     return "app";
@@ -62,6 +77,13 @@ export function terminalKeyAction(event: TerminalKey, context: TerminalKeyContex
     }
     if (key === "v") {
       return "paste";
+    }
+    if (key === "f" && context.findEnabled) {
+      return "find";
+    }
+    // VS Code's Ctrl+Shift+5, by the physical key (Shift turns 5 into another character).
+    if (event.code === "Digit5" && context.canSplit) {
+      return "split";
     }
   }
   return "shell";

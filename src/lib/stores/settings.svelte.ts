@@ -48,6 +48,7 @@ export {
   DEFAULT_MARKDOWN_PREVIEW_RATIO,
   DEFAULT_MCP_PORT,
   DEFAULT_PANEL_WIDTH,
+  DEFAULT_RULER_COLUMN,
   DEFAULT_TERMINAL_HEIGHT,
   DEFAULT_TERMINAL_LIST_WIDTH,
   defaultPreferences,
@@ -56,6 +57,7 @@ export {
   EDITOR_CURSOR_STYLE_CHOICES,
   EDITOR_CURSOR_WIDTH_RANGE,
   EDITOR_LINE_HEIGHT_RANGE,
+  EDITOR_RULER_RANGE,
   FONT_SIZE_RANGE,
   MARKDOWN_PREVIEW_RATIO_RANGE,
   MARKDOWN_VIEW_MODES,
@@ -66,6 +68,7 @@ export {
   normalizeFontFamily,
   normalizeTerminalFontFamily,
   parseMcpPort,
+  pickRulerColumn,
   RENDER_WHITESPACE_CHOICES,
   SETTINGS_SECTIONS,
   TAB_SIZES,
@@ -116,6 +119,15 @@ class SettingsStore {
   editorCursorSmoothCaret = $state(initialPreferences.editorCursorSmoothCaret);
   editorCaretExtraTop = $state(initialPreferences.editorCaretExtraTop);
   editorCaretExtraBottom = $state(initialPreferences.editorCaretExtraBottom);
+  editorAutoCloseBrackets = $state(initialPreferences.editorAutoCloseBrackets);
+  editorCompletion = $state(initialPreferences.editorCompletion);
+  editorCompletionOnTyping = $state(initialPreferences.editorCompletionOnTyping);
+  editorFoldGutter = $state(initialPreferences.editorFoldGutter);
+  editorIndentGuides = $state(initialPreferences.editorIndentGuides);
+  editorHighlightWord = $state(initialPreferences.editorHighlightWord);
+  editorScrollPastEnd = $state(initialPreferences.editorScrollPastEnd);
+  editorColumnSelection = $state(initialPreferences.editorColumnSelection);
+  editorRulerColumn = $state(initialPreferences.editorRulerColumn);
   currentLineBlame = $state(initialPreferences.currentLineBlame);
   blameGutter = $state(initialPreferences.blameGutter);
   mouseWheelZoom = $state(initialPreferences.mouseWheelZoom);
@@ -140,6 +152,14 @@ class SettingsStore {
   terminalCursorBlink = $state(initialPreferences.terminalCursorBlink);
   terminalScrollback = $state(initialPreferences.terminalScrollback);
   terminalCopyOnSelect = $state(initialPreferences.terminalCopyOnSelect);
+  terminalFind = $state(initialPreferences.terminalFind);
+  terminalFileLinks = $state(initialPreferences.terminalFileLinks);
+  terminalGpuAcceleration = $state(initialPreferences.terminalGpuAcceleration);
+  terminalUnicode11 = $state(initialPreferences.terminalUnicode11);
+  terminalOptionAsMeta = $state(initialPreferences.terminalOptionAsMeta);
+  terminalVisualBell = $state(initialPreferences.terminalVisualBell);
+  terminalSmoothScrolling = $state(initialPreferences.terminalSmoothScrolling);
+  terminalDropPaths = $state(initialPreferences.terminalDropPaths);
   markdownViewMode = $state<MarkdownViewMode>(initialPreferences.markdownViewMode);
   confirmDragAndDrop = $state(initialPreferences.confirmDragAndDrop);
   mcpEnabled = $state(initialPreferences.mcpEnabled);
@@ -282,6 +302,15 @@ class SettingsStore {
       editorCursorSmoothCaret: this.editorCursorSmoothCaret,
       editorCaretExtraTop: this.editorCaretExtraTop,
       editorCaretExtraBottom: this.editorCaretExtraBottom,
+      editorAutoCloseBrackets: this.editorAutoCloseBrackets,
+      editorCompletion: this.editorCompletion,
+      editorCompletionOnTyping: this.editorCompletionOnTyping,
+      editorFoldGutter: this.editorFoldGutter,
+      editorIndentGuides: this.editorIndentGuides,
+      editorHighlightWord: this.editorHighlightWord,
+      editorScrollPastEnd: this.editorScrollPastEnd,
+      editorColumnSelection: this.editorColumnSelection,
+      editorRulerColumn: this.editorRulerColumn,
       currentLineBlame: this.currentLineBlame,
       blameGutter: this.blameGutter,
       mouseWheelZoom: this.mouseWheelZoom,
@@ -306,6 +335,14 @@ class SettingsStore {
       terminalCursorBlink: this.terminalCursorBlink,
       terminalScrollback: this.terminalScrollback,
       terminalCopyOnSelect: this.terminalCopyOnSelect,
+      terminalFind: this.terminalFind,
+      terminalFileLinks: this.terminalFileLinks,
+      terminalGpuAcceleration: this.terminalGpuAcceleration,
+      terminalUnicode11: this.terminalUnicode11,
+      terminalOptionAsMeta: this.terminalOptionAsMeta,
+      terminalVisualBell: this.terminalVisualBell,
+      terminalSmoothScrolling: this.terminalSmoothScrolling,
+      terminalDropPaths: this.terminalDropPaths,
       markdownViewMode: this.markdownViewMode,
       confirmDragAndDrop: this.confirmDragAndDrop,
       mcpEnabled: this.mcpEnabled,

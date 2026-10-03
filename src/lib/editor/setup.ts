@@ -3,7 +3,6 @@
 
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { bracketMatching, indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language";
-import { highlightSelectionMatches } from "@codemirror/search";
 import { EditorState, type Extension } from "@codemirror/state";
 import {
   drawSelection,
@@ -19,6 +18,8 @@ import { codeKeymap } from "./editorCommands";
 import { findBar } from "./findPanel.svelte";
 import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
+import { type EditorKind, featureOptions } from "./featurePlan";
+import { editorFeatures } from "./features";
 import { renderWhitespace } from "./whitespace";
 
 export const editorTheme = EditorView.theme({
@@ -33,7 +34,7 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-scroller": {
     fontFamily: "var(--font-mono)",
-    lineHeight: "var(--code-line-height, 1.55)",
+    lineHeight: "var(--code-line-height, 1.25)",
   },
   ".cm-content": {
     caretColor: "var(--editor-cursor)",
@@ -87,18 +88,21 @@ export const editorTheme = EditorView.theme({
 
 export interface EditorOptions {
   readOnly?: boolean;
+  /** Which IDE features apply (features.ts); editable panes default to the file editor, read-only ones to a diff side. */
+  kind?: EditorKind;
   /** Extra extensions appended after the defaults. */
   extensions?: Extension[];
 }
 
-export function baseExtensions({ readOnly = false, extensions = [] }: EditorOptions = {}): Extension[] {
+export function baseExtensions({ readOnly = false, kind, extensions = [] }: EditorOptions = {}): Extension[] {
   const common: Extension[] = [
     lineNumbers(),
     highlightSpecialChars(),
     drawSelection(),
     syntaxHighlighting(classHighlighter),
     bracketMatching(),
-    highlightSelectionMatches(),
+    // Auto-close, completion, folding, guides, word highlight, margin line... each switchable in Settings.
+    editorFeatures(kind ?? (readOnly ? "diff" : "file"), featureOptions(settings)),
     // Select All Occurrences and Cmd+D add carets; Option+Shift+click adds one (JetBrains).
     EditorState.allowMultipleSelections.of(true),
     EditorView.clickAddsSelectionRange.of((event) => event.altKey && event.shiftKey),
@@ -127,111 +131,5 @@ export function baseExtensions({ readOnly = false, extensions = [] }: EditorOpti
   ];
 }
 
-function extensionOf(path: string): string {
-  const name = path.split("/").pop() ?? path;
-  const dot = name.lastIndexOf(".");
-  return dot >= 0 ? name.slice(dot + 1).toLowerCase() : name.toLowerCase();
-}
-
-const LANGUAGE_NAMES: Record<string, string> = {
-  js: "JavaScript",
-  mjs: "JavaScript",
-  cjs: "JavaScript",
-  jsx: "JavaScript JSX",
-  ts: "TypeScript",
-  mts: "TypeScript",
-  cts: "TypeScript",
-  tsx: "TypeScript JSX",
-  rs: "Rust",
-  php: "PHP",
-  html: "HTML",
-  htm: "HTML",
-  vue: "Vue",
-  svelte: "Svelte",
-  blade: "Blade",
-  css: "CSS",
-  scss: "SCSS",
-  less: "Less",
-  json: "JSON",
-  jsonc: "JSON with Comments",
-  lock: "JSON",
-  md: "Markdown",
-  markdown: "Markdown",
-  py: "Python",
-  yml: "YAML",
-  yaml: "YAML",
-  sql: "SQL",
-  go: "Go",
-  java: "Java",
-  kt: "Kotlin",
-  swift: "Swift",
-  rb: "Ruby",
-  sh: "Shell Script",
-  bash: "Shell Script",
-  zsh: "Shell Script",
-  bat: "Batch",
-  toml: "TOML",
-  xml: "XML",
-  txt: "Plain Text",
-};
-
-/** Display name of a file's language, like VS Code's status bar. */
-export function languageName(path: string): string {
-  const name = path.split("/").pop() ?? path;
-  if (!name.includes(".")) {
-    return name.toLowerCase() === "dockerfile" ? "Dockerfile" : "Plain Text";
-  }
-  return LANGUAGE_NAMES[extensionOf(path)] ?? "Plain Text";
-}
-
-/** Resolves the language support for a file path, or an empty extension. */
-export async function languageFor(path: string): Promise<Extension> {
-  const ext = extensionOf(path);
-  try {
-    switch (ext) {
-      case "js":
-      case "mjs":
-      case "cjs":
-      case "jsx":
-        return (await import("@codemirror/lang-javascript")).javascript({ jsx: true });
-      case "ts":
-      case "mts":
-      case "cts":
-        return (await import("@codemirror/lang-javascript")).javascript({ typescript: true });
-      case "tsx":
-        return (await import("@codemirror/lang-javascript")).javascript({ typescript: true, jsx: true });
-      case "rs":
-        return (await import("@codemirror/lang-rust")).rust();
-      case "php":
-        return (await import("@codemirror/lang-php")).php();
-      case "html":
-      case "htm":
-      case "vue":
-      case "svelte":
-      case "blade":
-        return (await import("@codemirror/lang-html")).html();
-      case "css":
-      case "scss":
-      case "less":
-        return (await import("@codemirror/lang-css")).css();
-      case "json":
-      case "jsonc":
-      case "lock":
-        return (await import("@codemirror/lang-json")).json();
-      case "md":
-      case "markdown":
-        return (await import("@codemirror/lang-markdown")).markdown();
-      case "py":
-        return (await import("@codemirror/lang-python")).python();
-      case "yml":
-      case "yaml":
-        return (await import("@codemirror/lang-yaml")).yaml();
-      case "sql":
-        return (await import("@codemirror/lang-sql")).sql();
-      default:
-        return [];
-    }
-  } catch {
-    return [];
-  }
-}
+// Languages live in languages.ts; re-exported so the editors keep one import.
+export { grammarFor, languageFor, languageName } from "./languages";

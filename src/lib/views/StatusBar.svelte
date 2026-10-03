@@ -1,6 +1,10 @@
 <!-- Bottom status bar: repository state on the left, app memory on the right. -->
 <script lang="ts">
   import { onMount } from "svelte";
+  import { openBranchPicker } from "./changes/repoActions";
+  import { gpuRenderers } from "$lib/terminal/gpuRenderers.svelte";
+  import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
+  import { probeWebgl } from "$lib/ui/webglProbe";
   import { api } from "$lib/api";
   import { parseCommitTabPath } from "$lib/stores/commitTabs";
   import { parseGitTabPath } from "$lib/stores/gitTabs";
@@ -128,10 +132,21 @@
     ]);
   }
 
+  /** Checked each time the popup opens; the test context is released at once. */
+  let webgl = $state<WebglInfo | null>(null);
+  const terminalDrawing = $derived(
+    terminalDrawingSummary({
+      drawings: [...gpuRenderers.drawings.values()],
+      gpuSetting: settings.terminalGpuAcceleration,
+      ligatures: settings.terminalLigatures,
+    }),
+  );
+
   function toggleDetails(): void {
     detailsOpen = !detailsOpen;
     if (detailsOpen) {
       void poll();
+      webgl = probeWebgl();
     }
   }
 </script>
@@ -161,7 +176,11 @@
         <span>{contextRepo.name}</span>
       </button>
       {#if branch}
-        <button class="item" onclick={() => void showBranches()} title="Branch {branch} of {contextRepo.name}">
+        <button
+          class="item"
+          onclick={() => openBranchPicker(contextRepo.root)}
+          title="Branch {branch} of {contextRepo.name}. Click to check out another branch."
+        >
           <Icon name="branch" size={12} />
           <span>{branch}</span>
           {#if head && (head.ahead > 0 || head.behind > 0)}
@@ -256,6 +275,21 @@
                 </div>
               </div>
             {/each}
+            <div class="gpu" aria-label="GPU acceleration">
+              <div class="gpu-title">GPU acceleration</div>
+              <div class="process-row">
+                <span>Terminals use the GPU</span>
+                <span class="gpu-value" title={terminalDrawing}>{terminalDrawing}</span>
+              </div>
+              <div class="process-row">
+                <span>WebGL support</span>
+                <span class="gpu-value" title={webglLabel(webgl)}>{webglLabel(webgl)}</span>
+              </div>
+              <p class="gpu-note">
+                The window always draws with the GPU through macOS (the Graphics process above). Only terminals add
+                WebGL drawing, set in Settings, Terminal.
+              </p>
+            </div>
             <p class="note">
               Physical memory, as Activity Monitor shows it. The UI runs in macOS WebKit helper processes, which are counted too.
               {#if memory.approximate}
@@ -397,6 +431,34 @@
     justify-content: space-between;
     margin-bottom: 10px;
     font-weight: 600;
+  }
+
+  .gpu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .gpu-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .gpu-note {
+    margin: 0;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .gpu-value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-dim);
   }
 
   .process {

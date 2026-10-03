@@ -61,3 +61,30 @@ describe("terminalKeyAction on Windows and Linux", () => {
     expect(terminalKeyAction(press("`", "Backquote", { ctrlKey: true }), linux)).toBe("app");
   });
 });
+
+describe("terminalKeyAction for find and split", () => {
+  const macFeatures = { isMac: true, hasSelection: false, findEnabled: true, canSplit: true };
+  const linuxFeatures = { isMac: false, hasSelection: false, findEnabled: true, canSplit: true };
+
+  it("finds with Cmd+F only while Find in terminal is on", () => {
+    expect(terminalKeyAction(press("f", "KeyF", { metaKey: true }), macFeatures)).toBe("find");
+    expect(terminalKeyAction(press("f", "KeyF", { metaKey: true }), mac)).toBe("app");
+    // Shift+Cmd+F stays Find in Files.
+    expect(terminalKeyAction(press("F", "KeyF", { metaKey: true, shiftKey: true }), macFeatures)).toBe("app");
+  });
+
+  it("finds with Ctrl+Shift+F on Windows and Linux, and Ctrl+F still reaches the shell", () => {
+    expect(terminalKeyAction(press("F", "KeyF", { ctrlKey: true, shiftKey: true }), linuxFeatures)).toBe("find");
+    expect(terminalKeyAction(press("F", "KeyF", { ctrlKey: true, shiftKey: true }), linux)).toBe("shell");
+    expect(terminalKeyAction(press("f", "KeyF", { ctrlKey: true }), linuxFeatures)).toBe("shell");
+  });
+
+  it("splits with Cmd+\\ or Ctrl+Shift+5 in the panel only", () => {
+    expect(terminalKeyAction(press("\\", "Backslash", { metaKey: true }), macFeatures)).toBe("split");
+    expect(terminalKeyAction(press("\\", "Backslash", { metaKey: true }), { ...macFeatures, canSplit: false })).toBe("app");
+    expect(terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), linuxFeatures)).toBe("split");
+    expect(terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), { ...linuxFeatures, canSplit: false })).toBe(
+      "shell",
+    );
+  });
+});

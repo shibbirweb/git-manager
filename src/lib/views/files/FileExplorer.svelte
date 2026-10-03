@@ -6,6 +6,7 @@
   import { api, errorMessage } from "$lib/api";
   import { formatKeys } from "$lib/help/shortcuts";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
+  import { terminalKeyAt } from "$lib/terminal/dropPaths";
   import { isPseudoTab } from "$lib/stores/pseudoTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -1188,6 +1189,14 @@
       finderPaths = event.paths;
     }
     const point = dropPointToCss(event.position, window.devicePixelRatio, PLATFORM);
+    // A terminal takes drops over it (TerminalHost), so the same drop never lands twice.
+    if (terminalKeyAt(document.elementFromPoint(point.x, point.y)) !== null) {
+      if (event.type === "drop") {
+        finderPaths = null;
+      }
+      clearDropFeedback();
+      return;
+    }
     const paths = event.type === "over" ? (finderPaths ?? []) : event.paths;
     if (event.type === "drop") {
       const hit = hitTest(point.x, point.y);

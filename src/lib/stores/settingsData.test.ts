@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   EDITOR_LINE_HEIGHT_RANGE,
+  EDITOR_RULER_RANGE,
   changedPreferenceKeys,
   clampTerminalScrollback,
   DEFAULT_EDITOR_FONT,
@@ -16,6 +17,7 @@ import {
   parseMcpPort,
   parsePreferences,
   parseState,
+  pickRulerColumn,
   pickToolStates,
   sessionSteps,
   shouldMigrateLegacy,
@@ -111,13 +113,54 @@ describe("parsePreferences", () => {
   });
 
   it("validates the editor line spacing", () => {
-    expect(parsePreferences({}).preferences.editorLineHeight).toBe(1.55);
+    expect(parsePreferences({}).preferences.editorLineHeight).toBe(1.25);
     expect(parsePreferences({ editorLineHeight: 1.8 }).preferences.editorLineHeight).toBe(1.8);
     expect(parsePreferences({ editorLineHeight: 0.5 }).preferences.editorLineHeight).toBe(EDITOR_LINE_HEIGHT_RANGE[0]);
     expect(parsePreferences({ editorLineHeight: 9 }).preferences.editorLineHeight).toBe(EDITOR_LINE_HEIGHT_RANGE[1]);
     expect(parsePreferences({ editorLineHeight: 1.5499999 }).preferences.editorLineHeight).toBe(1.55);
-    expect(parsePreferences({ editorLineHeight: "loose" }).preferences.editorLineHeight).toBe(1.55);
+    expect(parsePreferences({ editorLineHeight: "loose" }).preferences.editorLineHeight).toBe(1.25);
     expect(parsePreferences({ editorLineHeight: 1.8 }).extra).toEqual({});
+  });
+
+  it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo", () => {
+    expect(defaultPreferences.editorFontSize).toBe(13);
+    expect(DEFAULT_EDITOR_FONT).toBe("'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace");
+    // A saved value is kept, so changing a default never touches what the user picked.
+    expect(parsePreferences({ editorFontSize: 12.5, editorLineHeight: 1.55 }).preferences).toMatchObject({
+      editorFontSize: 12.5,
+      editorLineHeight: 1.55,
+    });
+  });
+
+  it("turns the editor features on by default and keeps hand-edited switches", () => {
+    const { preferences } = parsePreferences({});
+    expect(preferences).toMatchObject({
+      editorAutoCloseBrackets: true,
+      editorCompletion: true,
+      editorCompletionOnTyping: true,
+      editorFoldGutter: true,
+      editorIndentGuides: true,
+      editorHighlightWord: true,
+      editorScrollPastEnd: true,
+      editorColumnSelection: true,
+      editorRulerColumn: 0,
+    });
+    const edited = parsePreferences({ editorCompletion: false, editorFoldGutter: "no", editorIndentGuides: false }).preferences;
+    expect(edited.editorCompletion).toBe(false);
+    expect(edited.editorFoldGutter).toBe(true);
+    expect(edited.editorIndentGuides).toBe(false);
+  });
+
+  it("keeps the margin column whole and in range, 0 for off", () => {
+    expect(pickRulerColumn(120)).toBe(120);
+    expect(pickRulerColumn(80.4)).toBe(80);
+    expect(pickRulerColumn(9999)).toBe(EDITOR_RULER_RANGE[1]);
+    expect(pickRulerColumn(0)).toBe(0);
+    expect(pickRulerColumn(-5)).toBe(0);
+    expect(pickRulerColumn(0.3)).toBe(0);
+    expect(pickRulerColumn("120")).toBe(0);
+    expect(pickRulerColumn(Number.NaN)).toBe(0);
+    expect(parsePreferences({ editorRulerColumn: 100 }).preferences.editorRulerColumn).toBe(100);
   });
 
   it("falls back to defaults for missing or invalid values", () => {
@@ -153,9 +196,9 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ confirmDragAndDrop: false }).extra).toEqual({});
   });
 
-  it("defaults the terminal to the login shell and the editor's default size", () => {
+  it("defaults the terminal to the login shell and 12.5 px", () => {
     expect(defaultPreferences.terminalShell).toBeNull();
-    expect(defaultPreferences.terminalFontSize).toBe(12.5);
+    expect(defaultPreferences.terminalFontSize).toBe(13);
     expect(parsePreferences({}).preferences.terminalShell).toBeNull();
   });
 
@@ -170,13 +213,15 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ terminalFontSize: 14 }).preferences.terminalFontSize).toBe(14);
     expect(parsePreferences({ terminalFontSize: 99 }).preferences.terminalFontSize).toBe(24);
     expect(parsePreferences({ terminalFontSize: 2 }).preferences.terminalFontSize).toBe(9);
-    expect(parsePreferences({ terminalFontSize: "big" }).preferences.terminalFontSize).toBe(12.5);
+    expect(parsePreferences({ terminalFontSize: "big" }).preferences.terminalFontSize).toBe(13);
+    // A saved size stays, so people who never changed it keep what they had.
+    expect(parsePreferences({ terminalFontSize: 12.5 }).preferences.terminalFontSize).toBe(12.5);
   });
 
   it("defaults the terminal display settings like VS Code", () => {
     const { preferences } = parsePreferences({});
     expect(preferences.terminalFontFamily).toBe("");
-    expect(preferences.terminalLineHeight).toBe(1);
+    expect(preferences.terminalLineHeight).toBe(1.2);
     expect(preferences.terminalLetterSpacing).toBe(0);
     expect(preferences.terminalFontWeight).toBe("normal");
     expect(preferences.terminalFontWeightBold).toBe("bold");
@@ -207,8 +252,9 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ terminalLineHeight: 1.234 }).preferences.terminalLineHeight).toBe(1.2);
     expect(parsePreferences({ terminalLineHeight: 0.5 }).preferences.terminalLineHeight).toBe(1);
     expect(parsePreferences({ terminalLineHeight: 9 }).preferences.terminalLineHeight).toBe(2);
-    expect(parsePreferences({ terminalLineHeight: "tall" }).preferences.terminalLineHeight).toBe(1);
-    expect(parsePreferences({ terminalLineHeight: Number.NaN }).preferences.terminalLineHeight).toBe(1);
+    expect(parsePreferences({ terminalLineHeight: "tall" }).preferences.terminalLineHeight).toBe(1.2);
+    expect(parsePreferences({ terminalLineHeight: Number.NaN }).preferences.terminalLineHeight).toBe(1.2);
+    expect(parsePreferences({ terminalLineHeight: 1 }).preferences.terminalLineHeight).toBe(1);
     expect(parsePreferences({ terminalLetterSpacing: 2 }).preferences.terminalLetterSpacing).toBe(2);
     expect(parsePreferences({ terminalLetterSpacing: 1.6 }).preferences.terminalLetterSpacing).toBe(2);
     expect(parsePreferences({ terminalLetterSpacing: -3 }).preferences.terminalLetterSpacing).toBe(0);
@@ -251,6 +297,43 @@ describe("parsePreferences", () => {
     expect(invalid.terminalNerdFontIcons).toBe(true);
     expect(invalid.terminalCursorBlink).toBe(true);
     expect(invalid.terminalCopyOnSelect).toBe(false);
+  });
+
+  it("defaults the optional terminal parts and validates them", () => {
+    const defaults = parsePreferences({}).preferences;
+    expect(defaults.terminalFind).toBe(true);
+    expect(defaults.terminalFileLinks).toBe(true);
+    expect(defaults.terminalGpuAcceleration).toBe(true);
+    expect(defaults.terminalUnicode11).toBe(true);
+    expect(defaults.terminalOptionAsMeta).toBe(false);
+    expect(defaults.terminalVisualBell).toBe(true);
+    expect(defaults.terminalSmoothScrolling).toBe(false);
+    expect(defaults.terminalDropPaths).toBe(true);
+    const flipped = parsePreferences({
+      terminalFind: false,
+      terminalFileLinks: false,
+      terminalGpuAcceleration: false,
+      terminalUnicode11: false,
+      terminalOptionAsMeta: true,
+      terminalVisualBell: false,
+      terminalSmoothScrolling: true,
+      terminalDropPaths: false,
+    });
+    expect(flipped.preferences).toMatchObject({
+      terminalFind: false,
+      terminalFileLinks: false,
+      terminalGpuAcceleration: false,
+      terminalUnicode11: false,
+      terminalOptionAsMeta: true,
+      terminalVisualBell: false,
+      terminalSmoothScrolling: true,
+      terminalDropPaths: false,
+    });
+    expect(flipped.extra).toEqual({});
+    const invalid = parsePreferences({ terminalFind: "off", terminalOptionAsMeta: 1, terminalSmoothScrolling: "yes" }).preferences;
+    expect(invalid.terminalFind).toBe(true);
+    expect(invalid.terminalOptionAsMeta).toBe(false);
+    expect(invalid.terminalSmoothScrolling).toBe(false);
   });
 
   it("clamps the terminal scrollback to whole lines", () => {

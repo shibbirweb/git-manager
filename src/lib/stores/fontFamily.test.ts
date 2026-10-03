@@ -15,6 +15,11 @@ describe("normalizeFontFamily", () => {
     expect(normalizeFontFamily(",,")).toBe("monospace");
   });
 
+  it("drops a family named twice, ignoring quotes and case", () => {
+    expect(normalizeFontFamily(`'JetBrains Mono', ${DEFAULT_EDITOR_FONT}`)).toBe(DEFAULT_EDITOR_FONT);
+    expect(normalizeFontFamily("Menlo, menlo, \"Menlo\", Hack")).toBe("Menlo, Hack, monospace");
+  });
+
   it("strips characters that could break out of the CSS value", () => {
     expect(normalizeFontFamily("Menlo; color: red {}")).toBe("Menlo color: red, monospace");
   });

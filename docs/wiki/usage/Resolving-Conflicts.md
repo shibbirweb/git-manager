@@ -85,11 +85,11 @@ If you open a conflicted file in the editor, the conflict blocks between the `<<
 
 With more than one block, the row ends with a counter such as **Conflict 1 of 2**. When the editor is narrow it moves to a second line. F7 jumps to the next block. You can also just edit the text by hand.
 
-![Conflict toolbar](../images/editor-conflict-toolbar.png)
+![The path bar and the conflict strip](../images/editor-conflict-toolbar.png)
 
-*The toolbar of a conflicted app.ts: the Conflicted and 2 conflicts badges, 5 sections, and the conflict buttons.*
+*A conflicted app.ts: the Conflicted and 2 conflicts badges and 5 sections in the path bar, and the conflict buttons in the strip below.*
 
-The toolbar above the editor helps with the whole file:
+The bars above the editor help with the whole file. The path bar has the badges and the arrows; a tinted strip under it has the conflict buttons:
 
 - The **Conflicted** badge means git lists the file as conflicted. **2 conflicts** counts the blocks still in the text.
 - The label (**5 sections**) counts the conflict blocks and other changes together. The arrows step through them.

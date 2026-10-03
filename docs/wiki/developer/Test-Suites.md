@@ -9,13 +9,13 @@ Files are `<name>.test.ts` next to the module they test. Folders are under `src/
 | Folder | Test files | What they cover |
 | --- | --- | --- |
 | `merge/` | `model`, `inline`, `extensions` | line replacement and chunk actions, word highlights, the Cmd+Enter keymap |
-| `editor/` | `lineDiff`, `conflictMarkers`, `blameModel`, `navigation`, `wheelZoom`, `languageName`, `findModel`, `textCommands`, `editorShortcuts`, `whitespace`, `activeLine`, `selectionInfo` | change markers, conflict markers, blame mapping, next change, zoom, the find bar's options and counter, Duplicate, Join Lines, Sort Lines and Go to Line, menu keys, Render whitespace, the current-line highlight, selection counts |
+| `editor/` | `lineDiff`, `conflictMarkers`, `blameModel`, `navigation`, `wheelZoom`, `languageName`, `findModel`, `textCommands`, `editorShortcuts`, `whitespace`, `activeLine`, `selectionInfo`, `featurePlan`, `indentGuides`, `ruler` | change markers, conflict markers, blame mapping, next change, zoom, language names and grammars, the find bar's options and counter, Duplicate, Join Lines, Sort Lines and Go to Line, menu keys, Render whitespace, the current-line highlight, selection counts, which editor features apply where, indent guides, the margin line |
 | `diff/` | `split`, `binaryPreview` | the resizable split ratio and its limits, the side by side image and PDF preview: sides, shared zoom and scroll |
 | `log/` | `graph`, `lineMatch` | graph lanes and merges, finding the blamed line |
 | `stores/` | `tabs`, `navHistory`, `workspacePaths`, `fontFamily`, `commitTabs`, `gitTabs`, `branchTabs`, `settingsData`, `openingProgress` | preview tabs, Back and Forward, path helpers, font lists, pseudo tab paths, settings validation and migration, the opening progress text |
 | `menu/` | `menuSpec`, `menuState` | ids, accelerators and per-platform layout of the menu bar; enabled, checked and renamed items |
 | `help/` | `shortcuts` | the Keyboard Shortcuts window lists every menu key plus the others |
-| `terminal/` | `terminals`, `terminalTabs`, `runs`, `keys`, `fonts`, `options`, `theme` | naming and the active terminal after a close, terminals in editor tabs, script runs, key handling, fonts and xterm options, terminal colors |
+| `terminal/` | `terminals`, `terminalTabs`, `runs`, `keys`, `fonts`, `options`, `theme`, `find`, `fileLinks`, `splitPanes`, `dropPaths` | naming and the active terminal after a close, terminals in editor tabs, script runs, key handling, fonts, xterm options and the addon plan, terminal colors, find, clickable file paths, split groups and pane sizes, dropped paths |
 | `scripts/` | `scriptsModel`, `scriptRun`, `nodeVersion` | the Scripts tree, the run command, Node version ranges and LTS names |
 | `search/` | `doubleShift`, `searchTabs`, `popupRows`, `fileSearchModel`, `symbolSearchModel`, `textSearchModel`, `replaceModel` | double Shift, the popup tabs and rows, result models, Replace in Files |
 | `markdown/` | `render`, `format`, `links`, `highlight`, `scrollSync`, `richSync`, `slug`, `viewMode` | rendering, toolbar formatting, links and images, code highlight, scroll sync, rich editor write back, heading ids, view modes |
@@ -40,7 +40,7 @@ Most modules test themselves in a `#[cfg(test)]` block; the bigger ones have a `
 
 | Module | What the tests cover |
 | --- | --- |
-| `commands/tests.rs` | whole commands against real repositories: staging, commits, conflicts, mergetool |
+| `commands/tests.rs` | whole commands against real repositories: staging, commits, conflicts, mergetool, file operations and `files_exist` |
 | `commands/*.rs` | branch actions, commit options, history, ignore files, Merge and Rebase options, patches, interactive rebase (with merges), remotes, clone and cancel, shelf, stash, status, tags, config |
 | `git/tests.rs` and `git/*.rs` | readers and the CLI runner, the demo script, blame, cancel, files, LFS, submodules, worktrees |
 | `merge/engine.rs` | the 3-way engine and its oracle test against `git merge-file` |

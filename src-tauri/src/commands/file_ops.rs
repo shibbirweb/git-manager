@@ -43,3 +43,9 @@ pub async fn file_move(
 pub async fn file_trash(workspace_roots: Vec<String>, entry_paths: Vec<String>) -> AppResult<()> {
     blocking(move || file_ops::trash_entries(&workspace_roots, &entry_paths, file_ops::move_to_trash)).await
 }
+
+/// Which of the absolute `file_paths` are files inside the workspace (the terminal's file links).
+#[tauri::command]
+pub async fn files_exist(workspace_roots: Vec<String>, file_paths: Vec<String>) -> AppResult<Vec<bool>> {
+    blocking(move || Ok(file_ops::existing_files(&workspace_roots, &file_paths))).await
+}

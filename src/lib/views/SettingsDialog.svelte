@@ -5,6 +5,7 @@
     CARET_EXTRA_RANGE,
     clampTerminalScrollback,
     DEFAULT_EDITOR_FONT,
+    DEFAULT_RULER_COLUMN,
     defaultPreferences,
     EDITOR_CURSOR_BLINKING_CHOICES,
     EDITOR_CURSOR_STYLE_CHOICES,
@@ -12,11 +13,13 @@
     type EditorCursorBlinking,
     type EditorCursorStyle,
     EDITOR_LINE_HEIGHT_RANGE,
+    EDITOR_RULER_RANGE,
     FONT_SIZE_RANGE,
     type MarkdownViewMode,
     MONOSPACE_FONTS,
     normalizeFontFamily,
     normalizeTerminalFontFamily,
+    pickRulerColumn,
     type Preferences,
     RENDER_WHITESPACE_CHOICES,
     settings,
@@ -297,6 +300,49 @@
     { key: "editorCaretExtraTop", label: "Caret extra top", hint: "Pixels the cursor reaches above the text, so it is easier to see, like Sublime Text." },
     { key: "editorCaretExtraBottom", label: "Caret extra bottom", hint: "Pixels the cursor reaches below the text." },
   ];
+
+  /** The IDE features of the editor (src/lib/editor/features.ts), each a switch. */
+  const editorFeatureRows: {
+    key:
+      | "editorAutoCloseBrackets"
+      | "editorCompletion"
+      | "editorFoldGutter"
+      | "editorIndentGuides"
+      | "editorHighlightWord"
+      | "editorScrollPastEnd"
+      | "editorColumnSelection";
+    label: string;
+    hint: string;
+  }[] = [
+    { key: "editorAutoCloseBrackets", label: "Auto-close brackets and quotes", hint: "Typing ( [ { or a quote adds the closing one." },
+    {
+      key: "editorCompletion",
+      label: "Code completion",
+      hint: "Suggest words from the file and the language's keywords. Ctrl+Space opens the list; Enter or Tab accepts.",
+    },
+    { key: "editorFoldGutter", label: "Fold arrows", hint: "Arrows beside the line numbers fold and unfold blocks in the file editor." },
+    { key: "editorIndentGuides", label: "Indent guides", hint: "Faint lines at each indent level, also in diffs and the merge tool." },
+    { key: "editorHighlightWord", label: "Highlight the word at the cursor", hint: "Mark the other uses of that word, like JetBrains." },
+    { key: "editorScrollPastEnd", label: "Scroll past the end", hint: "Scroll the last line up to the top of the file editor." },
+    { key: "editorColumnSelection", label: "Column selection", hint: "Option+drag selects a rectangle of text." },
+  ];
+
+  /** Margin column being typed; applied on Enter or when the field loses focus. */
+  let rulerDraft = $state<number | null>(settings.editorRulerColumn || DEFAULT_RULER_COLUMN);
+  $effect(() => {
+    if (settings.editorRulerColumn > 0) {
+      rulerDraft = settings.editorRulerColumn;
+    }
+  });
+
+  function applyRuler(): void {
+    const column = typeof rulerDraft === "number" ? pickRulerColumn(rulerDraft) : 0;
+    const next = column > 0 ? column : settings.editorRulerColumn || DEFAULT_RULER_COLUMN;
+    rulerDraft = next;
+    if (next !== settings.editorRulerColumn) {
+      set("editorRulerColumn", next);
+    }
+  }
 
   function set<K extends keyof Preferences>(key: K, value: Preferences[K]): void {
     settings.setPreference(key, value);
@@ -584,7 +630,7 @@
           <div class="row">
             <div class="label">
               <span>Line spacing</span>
-              <span class="hint">Space between lines of code, as a multiple of the font size. The default is 1.55.</span>
+              <span class="hint">Space between lines of code, as a multiple of the font size. The default is {defaultPreferences.editorLineHeight}.</span>
             </div>
             <div class="range">
               <input
@@ -595,7 +641,7 @@
                 value={settings.editorLineHeight}
                 oninput={(event) => set("editorLineHeight", Math.round(Number(event.currentTarget.value) * 100) / 100)}
                 ondblclick={() => set("editorLineHeight", defaultPreferences.editorLineHeight)}
-                title="Double-click to reset to 1.55"
+                title="Double-click to reset to {defaultPreferences.editorLineHeight}"
                 aria-label="Line spacing"
               />
               <span class="value">{settings.editorLineHeight.toFixed(2)}</span>
@@ -763,6 +809,69 @@
               </div>
             </div>
           {/each}
+          <h4 class="group-title">Editing features</h4>
+          <p class="group-hint">Turning a feature off removes it from open editors and frees its memory.</p>
+          {#each editorFeatureRows as row (row.key)}
+            <label class="row toggle-row">
+              <div class="label">
+                <span>{row.label}</span>
+                <span class="hint">{row.hint}</span>
+              </div>
+              <input type="checkbox" class="switch" checked={settings[row.key]} onchange={(event) => set(row.key, event.currentTarget.checked)} />
+            </label>
+            {#if row.key === "editorCompletion" && settings.editorCompletion}
+              <label class="row toggle-row sub-row">
+                <div class="label">
+                  <span>Show completion while typing</span>
+                  <span class="hint">Off, only Ctrl+Space opens the list. Markdown and plain text always wait for Ctrl+Space.</span>
+                </div>
+                <input
+                  type="checkbox"
+                  class="switch"
+                  checked={settings.editorCompletionOnTyping}
+                  onchange={(event) => set("editorCompletionOnTyping", event.currentTarget.checked)}
+                />
+              </label>
+            {/if}
+          {/each}
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Right margin line</span>
+              <span class="hint">A thin line at a column, like VS Code's rulers, in editors, diffs and the merge tool.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.editorRulerColumn > 0}
+              onchange={(event) => set("editorRulerColumn", event.currentTarget.checked ? pickRulerColumn(rulerDraft) || DEFAULT_RULER_COLUMN : 0)}
+            />
+          </label>
+          {#if settings.editorRulerColumn > 0}
+            <div class="row sub-row">
+              <div class="label">
+                <span>Margin column</span>
+                <span class="hint">From {EDITOR_RULER_RANGE[0]} to {EDITOR_RULER_RANGE[1]}. JetBrains uses {DEFAULT_RULER_COLUMN}.</span>
+              </div>
+              <input
+                class="input number-input"
+                type="number"
+                inputmode="numeric"
+                min={EDITOR_RULER_RANGE[0]}
+                max={EDITOR_RULER_RANGE[1]}
+                step="1"
+                bind:value={rulerDraft}
+                onchange={applyRuler}
+                onkeydown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    applyRuler();
+                  }
+                }}
+                aria-label="Margin column"
+              />
+            </div>
+          {/if}
+          <h4 class="group-title">Preview and blame</h4>
           <div class="row">
             <div class="label">
               <span>Markdown preview</span>
@@ -784,7 +893,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
-              <span class="hint">Show the author, age and commit of the cursor line at its end, like VS Code with GitLens. Click it to show the commit in the Log; Option-click copies the commit hash.</span>
+              <span class="hint">Show the author, age and commit of the cursor line at its end, like VS Code with GitLens. Cmd+click it (Ctrl+click elsewhere) to show the commit in the Log; add Option to copy the commit hash.</span>
             </div>
             <input
               type="checkbox"
@@ -796,7 +905,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Blame gutter</span>
-              <span class="hint">A column with the commit, author and age of every block of lines. Also toggled with the Blame button in the editor and diff toolbars.</span>
+              <span class="hint">A column with the commit, author and age of every block of lines. Also toggled with the Blame button in the path bar and the diff toolbar.</span>
             </div>
             <input
               type="checkbox"
@@ -1090,7 +1199,7 @@
               <span class="hint">
                 Draw <code>=&gt;</code>, <code>!=</code> and similar as single glyphs with fonts such as Fira Code or
                 JetBrains Mono. A ligature splits where colors change or under the cursor, and fonts whose ligatures
-                change the text width can misalign columns.
+                change the text width can misalign columns. Ligatures draw without GPU acceleration.
               </span>
             </div>
             <input
@@ -1186,15 +1295,113 @@
               onchange={(event) => set("terminalCopyOnSelect", event.currentTarget.checked)}
             />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Find in terminal</span>
+              <span class="hint">Cmd+F searches the output. Off, the search code is never loaded.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalFind}
+              onchange={(event) => set("terminalFind", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Clickable file paths</span>
+              <span class="hint">Cmd+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalFileLinks}
+              onchange={(event) => set("terminalFileLinks", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Drop files to type their paths</span>
+              <span class="hint">Dropping files from Finder on a terminal types their paths, quoted for the shell.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalDropPaths}
+              onchange={(event) => set("terminalDropPaths", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Visual bell</span>
+              <span class="hint">A short flash when the shell rings the bell, or a dot on a terminal that is out of sight.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalVisualBell}
+              onchange={(event) => set("terminalVisualBell", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Smooth scrolling</span>
+              <span class="hint">Animates scrolling with the mouse wheel.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalSmoothScrolling}
+              onchange={(event) => set("terminalSmoothScrolling", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Option as Meta key</span>
+              <span class="hint">macOS: Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as å.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalOptionAsMeta}
+              onchange={(event) => set("terminalOptionAsMeta", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Keyboard</span>
               <span class="hint">
                 Ctrl+` shows or hides the terminal, Ctrl+Shift+` opens a new one. In a terminal, Cmd+C copies the
-                selection, Cmd+V pastes and Cmd+K clears; other Cmd shortcuts still work.
+                selection, Cmd+V pastes, Cmd+K clears, Cmd+F finds and Cmd+\ splits; other Cmd shortcuts still work.
               </span>
             </div>
           </div>
+
+          <h4 class="group-title">Rendering</h4>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>GPU acceleration</span>
+              <span class="hint">Recommended. Draws with WebGL, which keeps busy output smooth and uses less CPU. Off saves a few MB of GPU memory per terminal. With font ligatures on, the regular renderer is used.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalGpuAcceleration}
+              onchange={(event) => set("terminalGpuAcceleration", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Unicode 11 widths</span>
+              <span class="hint">Emoji and wide characters take the right number of columns. Applies to output printed after the change.</span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.terminalUnicode11}
+              onchange={(event) => set("terminalUnicode11", event.currentTarget.checked)}
+            />
+          </label>
         {:else if section === "github"}
           <div class="row stacked">
             <div class="label">
@@ -1873,6 +2080,16 @@
 
   .group-title:first-child {
     margin-top: 6px;
+  }
+
+  .group-hint {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: var(--text-faint);
+  }
+
+  .sub-row {
+    padding-left: 18px;
   }
 
   .number-input {

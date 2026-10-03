@@ -30,6 +30,10 @@ sequenceDiagram
 
 When the app is started from a terminal (as `bun tauri dev` does), macOS makes the **terminal** the responsible process, so its other WebKit helpers would match too. Then `approximate` is set and a helper must also have started after our process (`proc_start_abstime`). The popover says so. Polling stops on `visibilitychange` while the window is hidden. On other platforms `usage()` returns zero and the item is hidden.
 
+### GPU acceleration in the popup
+
+The popup also shows whether the GPU is used. `probeWebgl` (`src/lib/ui/webglProbe.ts`) asks the web view for a WebGL 2 context each time the popup opens, reads the renderer name, and releases the context with `WEBGL_lose_context` at once, so the check holds no GPU memory. Each terminal reports how it draws to `gpuRenderers` (`src/lib/terminal/gpuRenderers.svelte.ts`): `TerminalAddons` calls back with `gpu` when the WebGL addon loads, `fallback` when it fails or loses its context, and `normal` when GPU drawing is off; a closed terminal is forgotten. `terminalDrawingSummary` in `gpuStatus.ts` turns that and the two settings (GPU acceleration, font ligatures) into one line. The Graphics row above is the memory of WebKit's GPU process.
+
 ## The memory log
 
 Settings, Automation, Memory log sets `memoryLogEnabled`, `memoryLogIntervalMs` (default 500) and `memoryLogThresholdMb` (default 5). `src/lib/App.svelte` passes them to `memoryLog.configure` (`debug/memoryLog.svelte.ts`), which invokes `memory_log_configure`.
@@ -79,6 +83,8 @@ flowchart LR
 - **The fix and why we chose it:** match helpers on whatever process is responsible for us, and when that is not us, also require a later start time and mark the result approximate. A Finder launch, what users run, stays exact.
 
 ## Tests
+
+- `src/lib/terminal/gpuStatus.test.ts`: the GPU lines for every terminal state and setting, and the WebGL label.
 
 - `src-tauri/src/memory.rs`: `labels_web_kit_helpers` checks the role names; `measures_the_current_process` (macOS only) checks that our pid comes first and has memory.
 - `src-tauri/src/memory_log.rs`: UTC timestamps, the line format, and a run that logs changes and events, then stops.

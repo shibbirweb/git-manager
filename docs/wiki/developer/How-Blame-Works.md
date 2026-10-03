@@ -90,24 +90,11 @@ sequenceDiagram
 
 **Compartments for the switches.** Turning the note or gutter on or off reconfigures the open editor. Rebuilding it would lose the cursor and undo history.
 
-**Click opens the Log, Option-click copies.** The first version copied the hash on click; the user asked for the GitLens behavior.
+**Cmd+click opens the Log, Cmd+Option-click copies.** The first version copied the hash on click; the user asked for the GitLens behavior. The note needs Cmd so it never catches a click meant for the code (see [Blame Bugs We Fixed](Blame-Bugs-We-Fixed.md)); gutter blocks open with a plain click.
 
 ## Bugs we fixed
 
-**Blame never appeared on first open.**
-- **The issue:** on first open, a file could show no blame at all.
-- **Why it happened:** the only blame call was in `loadHead`, which starts before `createEditor`. With no editor yet, `refreshBlame` did nothing.
-- **The fix and why we chose it:** `createEditor` in `FileView.svelte` also calls `refreshBlame`, so blame loads as soon as the editor exists, whatever order the two steps finish in.
-
-**Back did not return to where you clicked blame.**
-- **The issue:** after clicking a blame note and landing in the Log, Back skipped your spot and went to an older one.
-- **Why it happened:** the history only recorded file locations, so the jump to the Log was never a step.
-- **The fix and why we chose it:** history steps can now be Log commits, and `openCommit` records the exact clicked line first. That matters for gutter clicks, which may not be on the cursor line. Diffs became steps too, so Back works from blame in any view.
-
-**The Log did not open on the line you clicked.**
-- **The issue:** clicking a blame note opened the right commit and file in the Log, but the diff stayed at the top or the first change, not at your line.
-- **Why it happened:** `openBlame` never passed a line to `openCommit`, so the commit diff had nothing to scroll to. The backend also dropped the original line number that `git blame --porcelain` reports, so blame knew no lines of the commit's version.
-- **The fix and why we chose it:** the backend now keeps git's original line numbers (`originalLines` in `BlameInfo`), and a blame click sends the line as it is in that commit. When that is unknown (for example a line typed since), it sends the same line number plus the line's text, and `findLine` in `log/lineMatch.ts` picks the nearest line with that exact text in the commit's file. Using git's own number is exact; the text search keeps it working when lines have moved.
+The blame bugs and their fixes are in [Blame Bugs We Fixed](Blame-Bugs-We-Fixed.md).
 
 ## Tests
 

@@ -19,9 +19,9 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | --- | --- | --- | --- |
 | `lightColorTheme` | `"gm-light"` | a light theme id | `themes/apply.ts` |
 | `darkColorTheme` | `"gm-dark"` | a dark theme id | `themes/apply.ts` |
-| `editorFontFamily` | `DEFAULT_EDITOR_FONT` | `normalizeFontFamily` | `--font-mono` |
-| `editorFontSize` | 12.5 | 10 to 20 | `--code-size`, View > Zoom |
-| `editorLineHeight` | 1.55 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
+| `editorFontFamily` | `DEFAULT_EDITOR_FONT` (`'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace`) | `normalizeFontFamily` (drops repeats) | `--font-mono` |
+| `editorFontSize` | 13 | 10 to 20 | `--code-size`, View > Zoom |
+| `editorLineHeight` | 1.25 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
 | `mouseWheelZoom` | false | boolean | `App.svelte`, `editor/wheelZoom.ts` |
 | `fontLigatures` | false | boolean | `data-ligatures` |
 | `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `editor/setup.ts` |
@@ -31,6 +31,15 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `editorCursorBlinking` | `"blink"` | `EDITOR_CURSOR_BLINKING_CHOICES` | `editor/cursor.ts` |
 | `editorCursorSmoothCaret` | false | `pickBoolean` | `editor/cursor.ts` |
 | `editorCaretExtraTop`, `editorCaretExtraBottom` | 0 | `pickInteger`, 0 to 10 (`CARET_EXTRA_RANGE`) | `editor/cursor.ts` |
+| `editorAutoCloseBrackets` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorCompletion` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorCompletionOnTyping` | true | `pickBoolean` | `editor/features.ts`; off, only Ctrl+Space opens the list |
+| `editorFoldGutter` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorIndentGuides` | true | `pickBoolean` | `editor/indentGuides.ts` (all panes) |
+| `editorHighlightWord` | true | `pickBoolean` | `editor/features.ts` (all panes) |
+| `editorScrollPastEnd` | true | `pickBoolean` | `editor/features.ts` (file editor) |
+| `editorColumnSelection` | true | `pickBoolean` | `editor/features.ts` (all panes) |
+| `editorRulerColumn` | 0 (off) | `pickRulerColumn`: whole, 1 to 500 (`EDITOR_RULER_RANGE`), else 0 | `editor/ruler.ts` (all panes) |
 | `wordWrap` | false | boolean | `FileView.svelte`, `App.svelte`, `editor/wordWrap.ts`, View > Word Wrap |
 | `markdownViewMode` | `"split"` | `editor`, `split`, `preview` | `FileView.svelte` (`sessionViewMode`) |
 | `currentLineBlame` | true | boolean | `FileView.svelte`, `DiffView.svelte` |
@@ -55,17 +64,27 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | --- | --- | --- | --- |
 | `terminalShell` | null | a trimmed path up to 1024 characters, else null | `terminalStore.svelte.ts` |
 | `terminalFontFamily` | `""` | `normalizeTerminalFontFamily` (empty means the editor font) | `terminal/options.ts`, `fonts.ts` |
-| `terminalFontSize` | 12.5 | 9 to 24 | `terminal/options.ts` |
-| `terminalLineHeight` | 1 | 1 to 2, tenths | `terminal/options.ts` |
+| `terminalFontSize` | 13 | 9 to 24 | `terminal/options.ts` |
+| `terminalLineHeight` | 1.2 | 1 to 2, tenths | `terminal/options.ts` |
 | `terminalLetterSpacing` | 0 | 0 to 5, whole | `terminal/options.ts` |
 | `terminalFontWeight` | `"normal"` | `normal`, `medium`, `bold` | `terminal/options.ts` |
 | `terminalFontWeightBold` | `"bold"` | same | `terminal/options.ts` |
-| `terminalLigatures` | false | boolean | `TerminalView.svelte` |
+| `terminalLigatures` | false | boolean | `TerminalView.svelte`, `terminalAddonPlan` (no WebGL with ligatures) |
 | `terminalNerdFontIcons` | true | boolean | `terminal/options.ts` |
 | `terminalCursorStyle` | `"block"` | `block`, `bar`, `underline` | `terminal/options.ts` |
 | `terminalCursorBlink` | true | boolean | `terminal/options.ts` |
 | `terminalScrollback` | 5000 | 1000 to 100000, whole (`clampTerminalScrollback`) | `terminal/options.ts` |
 | `terminalCopyOnSelect` | false | boolean | `TerminalView.svelte` |
+| `terminalFind` | true | boolean | `terminalAddonPlan`, `keys.ts` (Cmd+F) |
+| `terminalFileLinks` | true | boolean | `terminalAddonPlan`, `TerminalView.svelte` |
+| `terminalGpuAcceleration` | true | boolean | `terminalAddonPlan`, `addons.ts` |
+| `terminalUnicode11` | true | boolean | `terminalAddonPlan`, `addons.ts` |
+| `terminalOptionAsMeta` | false | boolean | `terminal/options.ts` (`macOptionIsMeta`) |
+| `terminalVisualBell` | true | boolean | `TerminalView.svelte` |
+| `terminalSmoothScrolling` | false | boolean | `terminal/options.ts` (`smoothScrollDuration` 125 ms) |
+| `terminalDropPaths` | true | boolean | `TerminalHost.svelte` |
+
+The two defaults changed from 12.5 and 1 to 13 and 1.2. Saved values are read as they are, so only people who never saved settings see the new ones. What each switch loads is in [How terminal features work](How-Terminal-Features-Work.md).
 
 ### Automation
 

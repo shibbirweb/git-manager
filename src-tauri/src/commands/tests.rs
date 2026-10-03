@@ -1326,6 +1326,43 @@ fn file_trash_checks_every_path_and_drops_nested_ones() {
     assert!(!called);
 }
 
+#[test]
+fn files_exist_reports_only_files_inside_the_workspace() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("src/a.ts", "a");
+    dir.write(".git/config", "[core]");
+    dir.mkdir("src/lib");
+    // Beside the workspace folder, in the same temporary folder.
+    let outside = dir.path.parent().unwrap().join("o.ts");
+    std::fs::write(&outside, "o").unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(&outside, dir.file("out-link.ts")).unwrap();
+
+    let asked = vec![
+        dir.file_string("src/a.ts"),
+        dir.file_string("src/missing.ts"),
+        dir.file_string("src/lib"),
+        dir.file_string(".git/config"),
+        outside.to_string_lossy().into_owned(),
+        dir.file_string("out-link.ts"),
+        "src/a.ts".to_string(),
+        dir.file_string("src/../src/a.ts"),
+    ];
+    let answers = block_on(file_ops::files_exist(roots.clone(), asked)).unwrap();
+    assert_eq!(answers, vec![true, false, false, false, false, false, false, false]);
+
+    // No workspace: nothing exists, and the call still succeeds.
+    let none = block_on(file_ops::files_exist(Vec::new(), vec![dir.file_string("src/a.ts")])).unwrap();
+    assert_eq!(none, vec![false]);
+
+    // Past the limit nothing is looked at.
+    let many = vec![dir.file_string("src/a.ts"); crate::file_ops::MAX_EXISTS_CHECKS + 2];
+    let answers = block_on(file_ops::files_exist(roots, many)).unwrap();
+    assert_eq!(answers.iter().filter(|exists| **exists).count(), crate::file_ops::MAX_EXISTS_CHECKS);
+    assert!(!answers[crate::file_ops::MAX_EXISTS_CHECKS]);
+}
+
 /// Puts a small file in the real Trash of the user running the tests, so it only runs on request:
 /// `cargo test file_trash_moves_entries_to_the_system_trash -- --ignored`.
 #[cfg(unix)]

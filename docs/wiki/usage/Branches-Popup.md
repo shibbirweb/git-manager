@@ -6,6 +6,7 @@ The Branches popup is the quick way to work with the branches of one repository,
 
 - Click the branch button of a repository in [Changes](Changes-and-Commits.md) (see [Repository Actions](Repository-Actions.md)). The popup opens for that repository.
 - Or choose **Git > Branches...** in the menu bar, for the active repository. See [Git Menu](Git-Menu.md).
+- Or click the branch name in the status bar, for the repository it shows. See [Status Bar and Help](Status-Bar-and-Help.md).
 
 ![Branches popup](../images/branches-popup.png)
 

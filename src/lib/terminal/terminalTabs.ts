@@ -46,6 +46,8 @@ export function terminalKeysOf(tabPaths: string[]): number[] {
 export interface PlacedTerminal {
   key: number;
   location: TerminalLocation;
+  /** Split group in the panel (see splitPanes.ts). */
+  group?: number;
 }
 
 export interface PanelState {
@@ -72,6 +74,17 @@ export function panelAfterLeave(terminals: PlacedTerminal[], leavingKey: number,
   }
   if (state.activeKey !== leavingKey && state.activeKey !== null && remaining.includes(state.activeKey)) {
     return state;
+  }
+  // A split terminal hands over to the pane beside it, so its group stays on screen.
+  if (leaving.group !== undefined) {
+    const groupKeys = terminals
+      .filter((terminal) => terminal.location === "panel" && terminal.group === leaving.group)
+      .map((terminal) => terminal.key);
+    const siblings = groupKeys.filter((terminalKey) => terminalKey !== leavingKey);
+    if (siblings.length > 0) {
+      const groupIndex = groupKeys.indexOf(leavingKey);
+      return { activeKey: siblings[Math.min(groupIndex, siblings.length - 1)], panelOpen: state.panelOpen };
+    }
   }
   const index = panelKeys.indexOf(leavingKey);
   return { activeKey: remaining[Math.min(index, remaining.length - 1)], panelOpen: state.panelOpen };

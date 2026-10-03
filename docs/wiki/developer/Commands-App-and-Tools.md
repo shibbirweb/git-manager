@@ -15,6 +15,7 @@ Commands that are not about one repository's git data: files, config, the memory
 | `file_copy` | `fileCopy(workspaceRoots, sourcePaths, targetDir)` | `string[]` | file | copies files and folders, symlinks as links; a taken name becomes `cart copy.ts`, `cart copy 2.ts` |
 | `file_move` | `fileMove(workspaceRoots, sourcePaths, targetDir)` | `FileMove[]` | file | moves into a folder (copy then delete across volumes); any conflict refuses the whole move |
 | `file_trash` | `fileTrash(workspaceRoots, entryPaths)` | `void` | file | Move to Trash with the `trash` crate (NSFileManager on macOS, no automation prompt) |
+| `files_exist` | `filesExist(workspaceRoots, filePaths)` | `boolean[]` | file | which absolute paths are files inside a workspace folder (not `.git`), at most 64; the terminal's clickable paths. Never fails |
 
 The file operations take absolute paths and return them in the same form. Each path must be inside one of `workspaceRoots`, and never a workspace folder itself or inside `.git`; symlinks are never followed out of the workspace. `FileMove` is `{ from: string, to: string }`. The code is in `src-tauri/src/file_ops.rs`.
 

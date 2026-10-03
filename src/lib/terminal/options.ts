@@ -18,6 +18,8 @@ export type TerminalPreferences = Pick<
   | "terminalCursorStyle"
   | "terminalCursorBlink"
   | "terminalScrollback"
+  | "terminalOptionAsMeta"
+  | "terminalSmoothScrolling"
 >;
 
 /** The xterm options that come from settings; a subset of xterm's ITerminalOptions. */
@@ -31,7 +33,12 @@ export interface TerminalDisplayOptions {
   cursorStyle: Preferences["terminalCursorStyle"];
   cursorBlink: boolean;
   scrollback: number;
+  macOptionIsMeta: boolean;
+  smoothScrollDuration: number;
 }
+
+/** How long a smooth scroll takes, VS Code's value. */
+export const SMOOTH_SCROLL_MS = 125;
 
 /** Options that change the cell size, so the grid must be fitted again. */
 export const METRIC_OPTIONS: ReadonlySet<keyof TerminalDisplayOptions> = new Set([
@@ -59,6 +66,8 @@ export function terminalDisplayOptions(preferences: TerminalPreferences, exited 
     cursorStyle: preferences.terminalCursorStyle,
     cursorBlink: preferences.terminalCursorBlink && !exited,
     scrollback: preferences.terminalScrollback,
+    macOptionIsMeta: preferences.terminalOptionAsMeta,
+    smoothScrollDuration: preferences.terminalSmoothScrolling ? SMOOTH_SCROLL_MS : 0,
   };
 }
 
@@ -84,4 +93,29 @@ export function applyChangedOptions(
 /** Whether any of the changed options affects the cell size. */
 export function changesMetrics(changedKeys: (keyof TerminalDisplayOptions)[]): boolean {
   return changedKeys.some((key) => METRIC_OPTIONS.has(key));
+}
+
+/** Which optional parts a terminal loads; each one that is false is not loaded, or disposed. */
+export interface TerminalAddonPlan {
+  /** xterm's WebGL renderer, else the DOM renderer. */
+  webgl: boolean;
+  unicode11: boolean;
+  /** The search addon may load (it still waits until the find bar first opens). */
+  search: boolean;
+  fileLinks: boolean;
+}
+
+export function terminalAddonPlan(
+  preferences: Pick<
+    Preferences,
+    "terminalGpuAcceleration" | "terminalLigatures" | "terminalUnicode11" | "terminalFind" | "terminalFileLinks"
+  >,
+): TerminalAddonPlan {
+  return {
+    // Ligatures are CSS on the DOM renderer's rows, which a WebGL canvas cannot do.
+    webgl: preferences.terminalGpuAcceleration && !preferences.terminalLigatures,
+    unicode11: preferences.terminalUnicode11,
+    search: preferences.terminalFind,
+    fileLinks: preferences.terminalFileLinks,
+  };
 }
