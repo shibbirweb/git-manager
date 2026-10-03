@@ -14,6 +14,7 @@
     type EditorCursorStyle,
     EDITOR_LINE_HEIGHT_RANGE,
     EDITOR_RULER_RANGE,
+    FILE_ICON_CHOICES,
     FONT_SIZE_RANGE,
     type MarkdownViewMode,
     MONOSPACE_FONTS,
@@ -678,6 +679,28 @@
                 aria-label="Interface font size"
               />
               <span class="value">{settings.uiFontSize}px</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>File icons</span>
+              <span class="hint">
+                Icons by file type in the Files panel, the Changes list and commit file lists. Also in View > File Icons.
+                Minimal and Material Icons use more memory, Material Icons the most. An icon set loads only while it is chosen.
+              </span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="File icons">
+              {#each FILE_ICON_CHOICES as choice (choice.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.fileIcons === choice.value}
+                  class:on={settings.fileIcons === choice.value}
+                  title={choice.hint}
+                  onclick={() => set("fileIcons", choice.value)}
+                >
+                  {choice.label}
+                </button>
+              {/each}
             </div>
           </div>
         {:else if section === "editor"}

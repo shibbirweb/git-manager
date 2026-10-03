@@ -172,6 +172,11 @@ function viewMenu(platform: MenuPlatform): TopMenu {
     check("view.gitConsole", "Git Console"),
     check("view.leftActivityBar", "Left Activity Bar"),
     check("view.rightActivityBar", "Right Activity Bar"),
+    {
+      kind: "submenu",
+      text: "File Icons",
+      items: [check("view.fileIconsOff", "No Icons"), check("view.fileIconsMinimal", "Minimal"), check("view.fileIconsMaterial", "Material Icons")],
+    },
     item("view.notifications", "Notifications"),
     check("view.doNotDisturb", "Do Not Disturb"),
     separator,

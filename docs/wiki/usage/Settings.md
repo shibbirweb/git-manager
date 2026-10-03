@@ -8,22 +8,23 @@ Settings change how Git Manager looks and behaves. Every change applies right aw
 - Or press Cmd+,, or choose **Git Manager > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
 - Or click **Settings** on the welcome screen.
 
-Settings opens on **Appearance**. A few places open another section: the **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
+Settings opens on **Appearance**. The **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
 
-The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, **Terminal**, **GitHub**, **Automation**, **Updates**, **Settings Files** and **About**. Press Esc or click the x to close. Drag the dialog by its title to move it; double-click the title to center it again.
+The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, **Terminal**, **GitHub**, **Automation**, **Updates**, **Settings Files** and **About**. Press Esc or click the x to close. Drag the title to move the dialog; double-click it to center it.
 
-**Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). The panel choices and sizes are kept, because they live in `state.json`.
+**Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). Panel choices and sizes live in `state.json` and are kept.
 
 ## Appearance
 
 ![Appearance settings](../images/settings-appearance.png)
 
-*Theme and interface font size.*
+*Theme, interface font size and file icons.*
 
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Theme | **System** follows the macOS appearance, or pick **Light** or **Dark**. The colors themselves are picked in **Editor**. | System |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
+| File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |
 
 The same choices are in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark in one click, so the theme stops following macOS until you pick **System** again.
 
@@ -112,7 +113,7 @@ Every option is described in [Terminal, GitHub and Automation Settings](Settings
 
 ## Updates and About
 
-**Updates** controls the update check and the release channel; see [Updates](Updates.md). **About** has the version and the links to star the project, report a bug or request a feature; see [Status Bar and Help](Status-Bar-and-Help.md).
+**Updates** controls the update check and the release channel ([Updates](Updates.md)). **About** has the version and links to star the project, report a bug or request a feature ([Status Bar and Help](Status-Bar-and-Help.md)).
 
 ## Settings Files
 
@@ -120,7 +121,7 @@ Every option is described in [Terminal, GitHub and Automation Settings](Settings
 
 *The settings folder and the list of settings changed from their defaults.*
 
-This section shows where your settings are saved and which ones you changed. If a settings file cannot be read, a banner says so:
+Where your settings are saved and which ones you changed. A banner shows when a settings file cannot be read:
 
 ![The state.json banner](../images/settings-state-error.png)
 

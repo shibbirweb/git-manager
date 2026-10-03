@@ -22,6 +22,8 @@ With one workspace folder, its contents are the top level. With several folders,
 
 Repository folders get a git folder icon and show their current branch next to the name. The `.git` folder itself is never listed.
 
+Files show one plain icon by default. To see an icon for each file type, pick **Minimal** or **Material Icons** in **View > File Icons**; see [File Icons](File-Icons.md).
+
 ## Status letters and colors
 
 Each changed file has a letter on the right and a matching color, like in VS Code: blue for changed, green for new, red for deleted or conflicted. Hover the letter to read the full state, for example "Modified (staged), modified (not staged)".

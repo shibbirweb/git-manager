@@ -940,6 +940,14 @@ define("files-panel", async (shot) => {
   await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
 });
 
+define("file-icons", async (shot) => {
+  await shot.expand(storefront, join(storefront, "src"));
+  await shot.page.locator("aside.explorer img.file-type-image").first().waitFor();
+  await shot.page.mouse.move(640, 400);
+  const explorer = shot.page.locator("aside.explorer");
+  await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
+}, () => ({ settings: { fileIcons: "material" } }));
+
 define("files-context-menu", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
   await shot.fileRow(cartTs()).click({ button: "right" });

@@ -33,6 +33,7 @@ A tick shows what is on screen now.
 - **Changes**, **Branches and Stashes** (Shift+Cmd+E), **Scripts**, **Log** (Shift+Cmd+L), **Files Panel** (Option+Cmd+B), **Sidebar** (Cmd+B) and **Terminal** (Ctrl+\`).
 - **Git Console** shows only while it is turned on in Settings, Git. See [Git Console](Git-Console.md).
 - **Left Activity Bar** and **Right Activity Bar** show or hide the icon strips at the window edges.
+- **File Icons** picks **No Icons**, **Minimal** or **Material Icons** for the file lists. See [File Icons](File-Icons.md).
 - **Word Wrap** (Option+Z) wraps long lines in the file editor. See [Editing Code](Code-Appearance.md#word-wrap).
 - **Markdown** picks **Editor Only**, **Editor and Preview** or **Preview Only** for a Markdown file. See [Markdown Editor](Markdown-Editor.md).
 - **Appearance** picks **Light**, **Dark** or **System**.

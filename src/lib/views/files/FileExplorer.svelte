@@ -25,6 +25,7 @@
     relativeTo,
   } from "$lib/stores/workspacePaths";
   import { dialogs } from "$lib/ui/dialog.svelte";
+  import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
@@ -1309,7 +1310,11 @@
               {/if}
             </span>
             <span class="icon">
-              <Icon name={row.entry.isRepo ? "folder-git" : row.entry.isDir ? "folder" : "file"} size={14} />
+              {#if row.entry.isDir}
+                <Icon name={row.entry.isRepo ? "folder-git" : "folder"} size={14} />
+              {:else}
+                <FileTypeIcon fileName={row.entry.name} />
+              {/if}
             </span>
             <span class="name truncate">{row.entry.name}</span>
             {#if row.entry.isRepo}
@@ -1598,5 +1603,10 @@
   .row.ignored .name,
   .row.ignored .icon {
     color: var(--text-faint);
+  }
+
+  .row.ignored .icon :global(.file-type-icon),
+  .row.ignored .icon :global(.file-type-image) {
+    opacity: 0.5;
   }
 </style>

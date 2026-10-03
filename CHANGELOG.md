@@ -105,6 +105,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Git > Open Repository in Browser opens the web page of the repository's remote on any host (GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted); with several remotes, a list lets you choose.
 - Restore Defaults in Help > Available MCP Tools puts the tool switches back to how they start: destructive tools off, every other tool on (only the tools the filter shows).
 - Detect indentation, like VS Code, on by default: each file keeps the indentation it already has (tabs or spaces, and how many), so a file indented with 2 spaces is not edited with 4. The status bar shows Spaces: 2 or Tab Size: 4. Turn it off with View > Detect Indentation or in Settings > Editor; Tab size is used for files with nothing to follow.
+- File icons, off by default: View > File Icons or Settings > Appearance picks No icons, Minimal (simple shapes colored by the theme) or Material Icons (colored icons for over 1,000 file types, from Material Icon Theme) for the Files panel, the Changes list and commit file lists. Each level loads only its own icons, and switching releases the others.
 
 ### Changed
 

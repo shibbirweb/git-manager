@@ -13,6 +13,7 @@
   import { runCommand, usesDefaultKeys, windowKeys } from "$lib/commands/commandRuntime";
   import { setRenderWhitespace } from "$lib/editor/whitespace";
   import { setWordWrap } from "$lib/editor/wordWrap";
+  import { setFileIcons } from "$lib/fileIcons/fileIcons.svelte";
   import { setIndentation } from "$lib/editor/indentation";
   import { appMenu } from "$lib/menu/appMenu.svelte";
   import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
@@ -173,6 +174,11 @@
   // And word wrap (View > Word Wrap, Option+Z).
   $effect(() => {
     setWordWrap(settings.wordWrap);
+  });
+
+  // And the file type icons: an icon set loads only while it is chosen.
+  $effect(() => {
+    void setFileIcons(settings.fileIcons, settings.colorMode === "light");
   });
 
   // And the indentation: each open editor reads its file again with the new settings.

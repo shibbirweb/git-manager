@@ -12,6 +12,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | --- | --- | --- | --- |
 | `theme` | `"system"` | `system`, `light`, `dark` | `applyAppearance`, `colorMode` |
 | `uiFontSize` | 13 | 11 to 16 | `--ui-size` |
+| `fileIcons` | `"off"` | `off`, `minimal`, `material` | `fileIcons/fileIcons.svelte.ts`, View > File Icons |
 
 ### Editor
 

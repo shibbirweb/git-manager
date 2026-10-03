@@ -130,6 +130,9 @@ describe("menuState", () => {
     expect(menuState(inputs({ stickyScroll: true, minimap: false }))["view.stickyScroll"]).toEqual({ enabled: true, checked: true });
     expect(menuState(inputs({ minimap: true }))["view.minimap"]).toEqual({ enabled: true, checked: true });
     expect(menuState(inputs({}))["view.minimap"]?.checked).toBe(false);
+    expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMaterial"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMinimal"]?.checked).toBe(false);
+    expect(menuState(inputs({}))["view.fileIconsOff"]?.checked).toBe(true);
     expect(menuState(inputs({ detectIndentation: true }))["view.detectIndentation"]).toEqual({ enabled: true, checked: true });
     expect(menuState(inputs({ detectIndentation: false }))["view.detectIndentation"]?.checked).toBe(false);
   });

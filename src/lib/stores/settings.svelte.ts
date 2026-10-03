@@ -60,7 +60,7 @@ import {
   WINDOW_STATE_KEYS,
   writableConfigs,
 } from "./settingsData";
-import type { CommitGpgSign } from "./settingsData";
+import type { CommitGpgSign, FileIconMode } from "./settingsData";
 import { type MessageHistory, rememberInHistory } from "../views/changes/commitMessages";
 import type { CommitTemplate } from "../views/changes/commitTemplates";
 
@@ -86,6 +86,7 @@ export {
   EDITOR_CURSOR_WIDTH_RANGE,
   EDITOR_LINE_HEIGHT_RANGE,
   EDITOR_RULER_RANGE,
+  FILE_ICON_CHOICES,
   FONT_SIZE_RANGE,
   EDITOR_SPLIT_RATIO_RANGE,
   MARKDOWN_PREVIEW_RATIO_RANGE,
@@ -137,6 +138,7 @@ class SettingsStore {
   lightColorTheme = $state(initialPreferences.lightColorTheme);
   darkColorTheme = $state(initialPreferences.darkColorTheme);
   uiFontSize = $state(initialPreferences.uiFontSize);
+  fileIcons = $state<FileIconMode>(initialPreferences.fileIcons);
   editorFontSize = $state(initialPreferences.editorFontSize);
   editorLineHeight = $state(initialPreferences.editorLineHeight);
   editorFontFamily = $state(initialPreferences.editorFontFamily);
@@ -362,6 +364,7 @@ class SettingsStore {
       lightColorTheme: this.lightColorTheme,
       darkColorTheme: this.darkColorTheme,
       uiFontSize: this.uiFontSize,
+      fileIcons: this.fileIcons,
       editorFontSize: this.editorFontSize,
       editorLineHeight: this.editorLineHeight,
       editorFontFamily: this.editorFontFamily,

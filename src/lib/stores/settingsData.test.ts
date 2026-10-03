@@ -180,6 +180,10 @@ describe("parsePreferences", () => {
     expect(extras.editorStickyScroll).toBe(false);
     expect(extras.editorMinimap).toBe(true);
     expect(defaultPreferences.detectIndentation).toBe(true);
+    expect(defaultPreferences.fileIcons).toBe("off");
+    expect(parsePreferences({ fileIcons: "material" }).preferences.fileIcons).toBe("material");
+    expect(parsePreferences({ fileIcons: "minimal" }).preferences.fileIcons).toBe("minimal");
+    expect(parsePreferences({ fileIcons: true }).preferences.fileIcons).toBe("off");
     expect(parsePreferences({ detectIndentation: false }).preferences.detectIndentation).toBe(false);
     expect(parsePreferences({ detectIndentation: "no" }).preferences.detectIndentation).toBe(true);
     expect(extras.editorBracketPairColors).toBe(true);

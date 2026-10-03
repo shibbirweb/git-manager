@@ -140,6 +140,7 @@ export function currentMenuInputs(mode: MenuMode): MenuInputs {
     wordWrap: settings.wordWrap,
     stickyScroll: settings.editorStickyScroll,
     minimap: settings.editorMinimap,
+    fileIcons: settings.fileIcons,
     detectIndentation: settings.detectIndentation,
     doNotDisturb: settings.notificationsDoNotDisturb,
     diffLines: diffLines.target?.mode ?? null,

@@ -5,6 +5,7 @@
   import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
   import type { ChangedFile, CommitDetails, FileDiff } from "$lib/types";
+  import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { parentRevision } from "$lib/views/files/previewSource";
@@ -310,6 +311,7 @@
             title={`${file.origPath ? `${file.origPath} -> ${file.path}` : file.path}${onOpenInTab ? "\nDouble-click to open in a tab" : ""}`}
           >
             <span class="status status-{file.status}">{statusLetter(file.status)}</span>
+            <FileTypeIcon fileName={file.path} plain={false} />
             <span class="name truncate" class:deleted={file.status === "deleted"}>{fileName(file.path)}</span>
             <span class="dir dim truncate">{file.origPath ? `from ${fileName(file.origPath)} ` : ""}{fileDir(file.path)}</span>
           </div>

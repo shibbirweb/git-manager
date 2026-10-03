@@ -31,6 +31,17 @@ export type CommitGpgSign = "default" | "sign" | "noSign";
 
 export const COMMIT_GPG_SIGNS = ["default", "sign", "noSign"] as const;
 
+/** File type icons in the file lists: none, simple shapes, or Material Icon Theme's colored icons. */
+export type FileIconMode = "off" | "minimal" | "material";
+
+export const FILE_ICON_CHOICES: { value: FileIconMode; label: string; hint: string }[] = [
+  { value: "off", label: "No icons", hint: "One plain icon for every file. Uses no extra memory." },
+  { value: "minimal", label: "Minimal", hint: "Simple colored shapes for common file types." },
+  { value: "material", label: "Material Icons", hint: "Colored icons for over 1,000 file types, from Material Icon Theme." },
+];
+
+const FILE_ICON_MODES = FILE_ICON_CHOICES.map((choice) => choice.value);
+
 /** Which spaces and tabs the editors draw as dots and arrows, like VS Code's editor.renderWhitespace. */
 export type RenderWhitespace = "none" | "boundary" | "selection" | "trailing" | "all";
 
@@ -187,6 +198,8 @@ export interface Preferences {
   /** Color theme id used while the appearance is dark. */
   darkColorTheme: string;
   uiFontSize: number;
+  /** File type icons in the Files panel, the Changes list and commit file lists. Off by default: an icon set loads only when chosen. */
+  fileIcons: FileIconMode;
   editorFontSize: number;
   /** Line height of code, as a multiple of the font size. */
   editorLineHeight: number;
@@ -369,6 +382,7 @@ export const defaultPreferences: Preferences = {
   lightColorTheme: DEFAULT_LIGHT_THEME,
   darkColorTheme: DEFAULT_DARK_THEME,
   uiFontSize: 13,
+  fileIcons: "off",
   editorFontSize: 13,
   editorLineHeight: 1.25,
   editorFontFamily: DEFAULT_EDITOR_FONT,
@@ -655,6 +669,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     lightColorTheme: pickThemeId(data.lightColorTheme, "light"),
     darkColorTheme: pickThemeId(data.darkColorTheme, "dark"),
     uiFontSize: pickNumber(data.uiFontSize, defaultPreferences.uiFontSize, ...FONT_SIZE_RANGE.ui),
+    fileIcons: pickOneOf(data.fileIcons, FILE_ICON_MODES, defaultPreferences.fileIcons),
     editorFontSize: pickNumber(data.editorFontSize, defaultPreferences.editorFontSize, ...FONT_SIZE_RANGE.editor),
     editorLineHeight: roundTo(
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),

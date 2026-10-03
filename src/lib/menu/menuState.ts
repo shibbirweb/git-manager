@@ -1,7 +1,7 @@
 // Which menu items are enabled, checked or renamed for the current app state. Pure:
 // appMenu.svelte.ts gathers the inputs and sends only what changed to the native menu.
 
-import type { LeftPanel, MarkdownViewMode, ThemeSetting } from "$lib/stores/settingsData";
+import type { FileIconMode, LeftPanel, MarkdownViewMode, ThemeSetting } from "$lib/stores/settingsData";
 import type { OpKind } from "$lib/types";
 import type { MenuAction, MenuMode } from "./menuIds";
 
@@ -42,6 +42,8 @@ export interface MenuInputs {
   /** Sticky scroll and the minimap of the file editor (Settings > Editor). */
   stickyScroll?: boolean;
   minimap?: boolean;
+  /** Settings > Appearance > File icons. */
+  fileIcons?: FileIconMode;
   /** Settings > Editor > Detect indentation. */
   detectIndentation?: boolean;
   /** Do Not Disturb (only errors pop up). */
@@ -151,6 +153,12 @@ const MARKDOWN_ITEMS: [MenuAction, MarkdownViewMode][] = [
   ["view.markdownPreview", "preview"],
 ];
 
+const FILE_ICON_ITEMS: [MenuAction, FileIconMode][] = [
+  ["view.fileIconsOff", "off"],
+  ["view.fileIconsMinimal", "minimal"],
+  ["view.fileIconsMaterial", "material"],
+];
+
 const THEME_ITEMS: [MenuAction, ThemeSetting][] = [
   ["view.themeLight", "light"],
   ["view.themeDark", "dark"],
@@ -221,6 +229,9 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["view.wordWrap"] = { enabled: true, checked: inputs.wordWrap };
   state["view.stickyScroll"] = { enabled: true, checked: inputs.stickyScroll ?? false };
   state["view.minimap"] = { enabled: true, checked: inputs.minimap ?? false };
+  for (const [action, mode] of FILE_ICON_ITEMS) {
+    state[action] = { enabled: true, checked: (inputs.fileIcons ?? "off") === mode };
+  }
   state["view.detectIndentation"] = { enabled: true, checked: inputs.detectIndentation ?? false };
   state["view.notifications"] = { enabled: true };
   state["view.doNotDisturb"] = { enabled: true, checked: inputs.doNotDisturb ?? false };
