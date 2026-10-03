@@ -9,6 +9,7 @@ import {
   pinTab,
   retargetTabs,
   setTabDirty,
+  setTabPinned,
   tabLabels,
   type TabsState,
 } from "./tabs";
@@ -171,5 +172,22 @@ describe("fileTabsUnder", () => {
   it("lists file tabs of the entries and inside folders, never pseudo tabs", () => {
     const commit = commitTabPath("/w/src", "abc123");
     expect(fileTabsUnder(["/w/src/a.ts", "/w/srcx/b.ts", commit, "/w/c.ts"], ["/w/src", "/w/c.ts"])).toEqual(["/w/src/a.ts", "/w/c.ts"]);
+  });
+});
+
+describe("setTabPinned", () => {
+  it("pins and unpins, and pinning keeps a preview tab open", () => {
+    const state = openTab(empty, "a.ts", false);
+    const pinned = setTabPinned(state, "a.ts", true);
+    expect(pinned.tabs[0]).toEqual({ path: "a.ts", preview: false, dirty: false, pinned: true });
+    expect(setTabPinned(pinned, "a.ts", false).tabs[0].pinned).toBe(false);
+    expect(setTabPinned(pinned, "a.ts", true)).toBe(pinned);
+    expect(setTabPinned(pinned, "missing.ts", true)).toBe(pinned);
+  });
+
+  it("keeps a pinned tab when the next single click reuses the preview slot", () => {
+    let state = setTabPinned(openTab(empty, "a.ts", false), "a.ts", true);
+    state = openTab(state, "b.ts", false);
+    expect(paths(state)).toEqual(["a.ts", "b.ts*"]);
   });
 });
