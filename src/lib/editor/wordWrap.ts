@@ -1,4 +1,4 @@
-// Word wrap in the file editor, like VS Code's View > Word Wrap (Option+Z). Open editors follow
+// Word wrap in the file editor, View > Word Wrap (Option+Z). Open editors follow
 // the setting through a compartment. Diffs and the merge tool never wrap, so their sides stay lined up.
 
 import { Compartment, type Extension } from "@codemirror/state";

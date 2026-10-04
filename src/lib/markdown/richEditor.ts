@@ -38,16 +38,19 @@ import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
 import type { NodeView } from "@milkdown/kit/prose/view";
 import { $prose, $remark, $view, callCommand } from "@milkdown/kit/utils";
 import { classifyImage, type LinkContext } from "./links";
-import { renderMermaid } from "./mermaid";
+import { releaseMermaid, renderMermaid } from "./mermaid";
 import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
 import {
   applyEdit,
   blockEdit,
   dropNullImageFields,
   type MarkdownTreeNode,
+  type PositionedTree,
+  rangesAfterEdit,
   type SourceBlock,
   type SourceEdit,
   splitFrontMatter,
+  topLevelRangesOf,
 } from "./richSync";
 import { sanitizeSvg } from "./sanitize";
 
@@ -101,6 +104,13 @@ export class RichMarkdownEditor {
   private ranges: SourceBlock[] = [];
   /** Each top-level node of the editor's document as the serializer writes it. */
   private blocks: string[] = [];
+  /**
+   * Each top-level node as written, by node: ProseMirror keeps the nodes an edit did not touch,
+   * so a sync writes only the edited blocks again (all of them took 30 ms or more in a big file).
+   */
+  private readonly written = new WeakMap<ProseNode, string>();
+  /** The block ranges of the latest text the editor's parser read (loading or pasting). */
+  private parsed: { text: string; ranges: SourceBlock[] } | null = null;
   private loadingSource = false;
   private syncTimer: ReturnType<typeof setTimeout> | undefined;
   private editable = true;
@@ -131,7 +141,12 @@ export class RichMarkdownEditor {
           }),
         }),
     );
-    // Runs on every parse (loading, pasting) before the tree becomes editor nodes.
+    // Runs first on every parse (loading, pasting), before other plugins change the tree, so
+    // loading needs no second parse for the block ranges.
+    const blockRanges = $remark("gmBlockRanges", () => () => (tree, file) => {
+      this.parsed = { text: String(file.value), ranges: topLevelRangesOf(tree as PositionedTree) };
+    });
+    // Runs on every parse before the tree becomes editor nodes.
     const imageDefaults = $remark("gmImageDefaults", () => () => (tree) => {
       dropNullImageFields(tree as unknown as MarkdownTreeNode);
     });
@@ -143,6 +158,7 @@ export class RichMarkdownEditor {
         ctx.update(remarkStringifyOptionsCtx, (previous) => ({ ...previous, ...STRINGIFY_OPTIONS }));
         ctx.update(editorViewOptionsCtx, (previous) => ({ ...previous, editable: () => this.editable }));
       })
+      .use(blockRanges)
       .use(commonmark)
       .use(gfm)
       .use(history)
@@ -181,6 +197,7 @@ export class RichMarkdownEditor {
     clearTimeout(this.syncTimer);
     this.nearScreen?.disconnect();
     this.nearScreen = null;
+    releaseMermaid(this);
     void this.editor?.destroy();
     this.editor = null;
   }
@@ -281,8 +298,10 @@ export class RichMarkdownEditor {
 
   /** Block ranges of the body and the editor's own blocks; they must line up to write back. */
   private realign(ctx: Ctx, body: string): void {
-    this.ranges = topLevelRanges(ctx, body);
-    this.blocks = serializeBlocks(ctx, ctx.get(editorViewCtx).state.doc);
+    const parsed = this.parsed;
+    this.parsed = null;
+    this.ranges = parsed && parsed.text === body ? parsed.ranges : topLevelRanges(ctx, body);
+    this.blocks = serializeBlocks(ctx, ctx.get(editorViewCtx).state.doc, this.written);
     if (this.ranges.length !== this.blocks.length) {
       this.setReadOnly("This file uses Markdown the rich editor cannot keep exactly. Edit it in the text editor.");
     } else if (!this.editable) {
@@ -310,7 +329,7 @@ export class RichMarkdownEditor {
       if (!this.editable) {
         return;
       }
-      const next = serializeBlocks(ctx, ctx.get(editorViewCtx).state.doc);
+      const next = serializeBlocks(ctx, ctx.get(editorViewCtx).state.doc, this.written);
       const body = this.source.slice(this.frontMatter.length);
       const edit = blockEdit(body, this.ranges, this.blocks, next);
       if (!edit) {
@@ -319,7 +338,7 @@ export class RichMarkdownEditor {
       const newBody = applyEdit(body, edit);
       this.source = this.frontMatter + newBody;
       this.options.onEdit({ from: edit.from + this.frontMatter.length, to: edit.to + this.frontMatter.length, insert: edit.insert });
-      this.ranges = topLevelRanges(ctx, newBody);
+      this.ranges = rangesAfterEdit(newBody, this.ranges, edit, (text) => topLevelRanges(ctx, text)) ?? topLevelRanges(ctx, newBody);
       this.blocks = next;
       if (this.ranges.length !== this.blocks.length) {
         // A written block reads back as more (or fewer) blocks: start again from the text.
@@ -413,7 +432,7 @@ export class RichMarkdownEditor {
       timer = setTimeout(() => {
         const text = latest;
         drawn = text;
-        void renderMermaid(text, this.options.isDark()).then((result) => {
+        void renderMermaid(this, text, this.options.isDark()).then((result) => {
           if (drawn !== text || !near) {
             return;
           }
@@ -493,28 +512,24 @@ export class RichMarkdownEditor {
 
 /** Where each top-level block of `body` is, from the same remark parser the editor uses. */
 function topLevelRanges(ctx: Ctx, body: string): SourceBlock[] {
-  const tree = ctx.get(remarkCtx).parse(body) as { children?: { position?: { start: { offset?: number }; end: { offset?: number } } }[] };
-  const ranges: SourceBlock[] = [];
-  for (const child of tree.children ?? []) {
-    const from = child.position?.start.offset;
-    const to = child.position?.end.offset;
-    if (from !== undefined && to !== undefined) {
-      ranges.push({ from, to });
-    }
-  }
-  return ranges;
+  return topLevelRangesOf(ctx.get(remarkCtx).parse(body) as PositionedTree);
 }
 
 /**
  * Each top-level node written on its own, as it would appear in the file. Empty paragraphs
- * write nothing and are not blocks of the text either (an empty file still has one).
+ * write nothing and are not blocks of the text either (an empty file still has one). `written`
+ * keeps what each node gave, as a node never changes.
  */
-function serializeBlocks(ctx: Ctx, doc: ProseNode): string[] {
+function serializeBlocks(ctx: Ctx, doc: ProseNode, written: WeakMap<ProseNode, string>): string[] {
   const serializer = ctx.get(serializerCtx);
   const schema = ctx.get(schemaCtx);
   const blocks: string[] = [];
   doc.forEach((node) => {
-    const text = serializer(schema.topNodeType.create(null, node)).replace(/\n+$/, "");
+    let text = written.get(node);
+    if (text === undefined) {
+      text = serializer(schema.topNodeType.create(null, node)).replace(/\n+$/, "");
+      written.set(node, text);
+    }
     if (text !== "") {
       blocks.push(text);
     }

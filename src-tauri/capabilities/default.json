@@ -1,8 +1,8 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main"],
+  "description": "Capability for every app window: the main one and those opened with New Window",
+  "windows": ["main", "window-*"],
   "permissions": [
     "core:default",
     "core:window:allow-set-title",

@@ -2,7 +2,7 @@
 
 import { parentOf } from "$lib/stores/workspacePaths";
 
-/** What the system file manager is called, like VS Code's menu labels. */
+/** What the system file manager is called, for menu labels. */
 export function revealLabel(platform: string): string {
   if (platform === "Windows") {
     return "Reveal in File Explorer";

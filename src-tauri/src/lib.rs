@@ -6,7 +6,7 @@ mod file_search;
 mod git;
 mod git_console;
 mod github;
-mod images;
+mod local_history;
 mod media;
 mod mcp;
 mod memory;
@@ -20,10 +20,13 @@ mod shelf;
 mod state;
 mod symbols;
 mod terminal;
+mod terminal_flow;
+mod terminal_link;
 #[cfg(test)]
 mod test_support;
 mod text_search;
 mod watcher;
+mod windows;
 mod workspace_file;
 
 use std::sync::atomic::Ordering;
@@ -46,15 +49,17 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(launch))
         // Images and PDFs for the previews, off the main thread (see preview_scheme.rs).
+        // Each window's page reaches only the folders open in that window.
         .register_asynchronous_uri_scheme_protocol(preview_scheme::SCHEME, |context, request, responder| {
-            let folders = context.app_handle().state::<AppState>().preview_folders.clone();
+            let folders = context.app_handle().state::<AppState>().preview_folders.get(context.webview_label());
             tauri::async_runtime::spawn_blocking(move || {
-                responder.respond(preview_scheme::http_response(&folders.get(), &request));
+                responder.respond(preview_scheme::http_response(&folders, &request));
             });
         })
         .setup(|app| {
             let host = std::sync::Arc::new(mcp::TauriHost::new(app.handle().clone()));
             app.state::<AppState>().mcp.attach_host(host);
+            commands::window::restore_at_start(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -71,11 +76,17 @@ pub fn run() {
             commands::status::unstage_files,
             commands::status::discard_files,
             commands::status::stage_content,
+            commands::lines::apply_selected_lines,
+            commands::lines::restore_discarded_lines,
             commands::status::write_worktree_file,
             commands::status::commit,
             commands::status::commit_all,
             commands::status::undo_last_commit,
             commands::status::get_head_message,
+            commands::identity::get_identity,
+            commands::identity::set_identity,
+            commands::identity::recent_commit_messages,
+            commands::identity::get_commit_template,
             commands::status::commit_files,
             commands::status::rollback_files,
             commands::merge::list_conflicts,
@@ -89,11 +100,19 @@ pub fn run() {
             commands::merge::save_mergetool,
             commands::merge::cancel_mergetool,
             commands::branch::get_refs,
+            commands::branch::get_refs_snapshot,
             commands::branch::checkout_branch,
             commands::branch::checkout_remote_branch,
             commands::branch::create_branch,
             commands::branch::rename_branch,
             commands::branch::delete_branch,
+            commands::reflog::get_reflog,
+            commands::reflog::last_action,
+            commands::reflog::move_head_back,
+            commands::bisect::bisect_state,
+            commands::bisect::bisect_start,
+            commands::bisect::bisect_mark,
+            commands::bisect::bisect_reset,
             commands::branch::merge_branch,
             commands::branch::rebase_onto,
             commands::branch_actions::update_branch,
@@ -109,6 +128,7 @@ pub fn run() {
             commands::rebase::interactive_rebase,
             commands::rebase::rebase_plan_onto,
             commands::remote::fetch_all,
+            commands::auto_fetch::auto_fetch,
             commands::remote::fetch,
             commands::remote::pull,
             commands::remote::push,
@@ -132,6 +152,10 @@ pub fn run() {
             commands::history::get_commit_details,
             commands::history::get_commit_file_diff,
             commands::history::blame_file,
+            commands::editor::blame_contents,
+            commands::editor::line_change_marks,
+            commands::editor::head_file_version,
+            commands::editor::read_head_file,
             commands::history::cherry_pick,
             commands::history::revert_commit,
             commands::history::reset_to,
@@ -140,23 +164,32 @@ pub fn run() {
             commands::history::file_history,
             commands::history::line_history,
             commands::history::compare_with_revision,
+            commands::compare::compare_files,
             commands::stash::get_stashes,
             commands::stash::stash_push,
             commands::stash::stash_apply,
             commands::stash::stash_drop,
             commands::stash::stash_clear,
             commands::config::memory_usage,
+            commands::config::clear_cache,
             commands::config::memory_log_configure,
             commands::config::memory_log_event,
             commands::config::load_config,
             commands::config::save_config,
             commands::config::config_dir,
             commands::config::os_info,
+            commands::local_history::local_history_configure,
+            commands::local_history::local_history_record,
+            commands::local_history::local_history_list,
+            commands::local_history::local_history_diff,
+            commands::local_history::local_history_restore,
+            commands::local_history::local_history_deleted,
+            commands::local_history::local_history_usage,
+            commands::local_history::local_history_clear,
             commands::workspace::read_workspace_file,
             commands::workspace::write_workspace_file,
-            commands::files::list_directory,
+            commands::files::list_directories,
             commands::files::read_worktree_file,
-            commands::files::read_image_data_url,
             commands::files::preview_stat,
             commands::file_ops::file_create,
             commands::file_ops::file_rename,
@@ -173,15 +206,19 @@ pub fn run() {
             commands::search::text_search_cancel,
             commands::search::replace_in_files,
             commands::search::replace_in_files_cancel,
+            commands::search::document_symbols,
             commands::scripts::list_project_scripts,
             commands::scripts::list_node_versions,
             commands::scripts::run_script,
             commands::terminal::terminal_shells,
             commands::terminal::terminal_spawn,
             commands::terminal::terminal_write,
+            commands::terminal::terminal_ack,
             commands::terminal::terminal_resize,
             commands::terminal::terminal_close,
             commands::terminal::terminal_close_all,
+            commands::terminal::terminal_unstash,
+            commands::terminal::terminal_reattach,
             commands::console::git_console_entries,
             commands::console::git_console_clear,
             commands::console::git_console_set_enabled,
@@ -189,7 +226,6 @@ pub fn run() {
             commands::mcp::mcp_status,
             commands::mcp::mcp_tools,
             commands::mcp::mcp_register_ui_tools,
-            commands::mcp::mcp_set_workspace,
             commands::mcp::mcp_ui_respond,
             commands::mcp::mcp_regenerate_token,
             commands::mcp::mcp_activity,
@@ -232,12 +268,23 @@ pub fn run() {
             github::commands::github_repository,
             github::commands::github_sync_fork,
             github::commands::github_create_gist,
+            commands::config::update_config,
+            commands::window::window_startup,
+            commands::window::window_set_workspace,
+            commands::window::window_focus_owner,
+            commands::window::window_open,
+            commands::window::window_close,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
 
-    app.run(|app_handle, event| {
-        if let RunEvent::Exit = event {
+    app.run(|app_handle, event| match event {
+        RunEvent::WindowEvent { label, event, .. } => commands::window::on_window_event(app_handle, &label, &event),
+        // An explicit quit closes every window at once: they all stay in the session.
+        RunEvent::ExitRequested { code: Some(_), .. } => commands::window::on_quit(app_handle),
+        RunEvent::Exit => {
+            // Cmd+Q on macOS ends the loop without closing the windows one by one.
+            commands::window::on_quit(app_handle);
             let state = app_handle.state::<AppState>();
             // No orphan shells: every terminal process dies with the app.
             state.terminals.shutdown();
@@ -249,6 +296,7 @@ pub fn run() {
                 std::process::exit(state.mergetool_exit_code.load(Ordering::SeqCst));
             }
         }
+        _ => {}
     });
 }
 

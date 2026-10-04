@@ -86,6 +86,82 @@ export function applyEdit(source: string, edit: SourceEdit): string {
   return source.slice(0, edit.from) + edit.insert + source.slice(edit.to);
 }
 
+/** The parts of a parsed (mdast) tree that give its blocks' places. */
+export interface PositionedTree {
+  children?: { position?: { start: { offset?: number }; end: { offset?: number } } }[];
+}
+
+/** Where each top-level block of a parsed text is. */
+export function topLevelRangesOf(tree: PositionedTree): SourceBlock[] {
+  const ranges: SourceBlock[] = [];
+  for (const child of tree.children ?? []) {
+    const from = child.position?.start.offset;
+    const to = child.position?.end.offset;
+    if (from !== undefined && to !== undefined) {
+      ranges.push({ from, to });
+    }
+  }
+  return ranges;
+}
+
+function sameBlock(left: SourceBlock | undefined, right: SourceBlock): boolean {
+  return left !== undefined && left.from === right.from && left.to === right.to;
+}
+
+/**
+ * The block ranges of `newBody` (the body after `edit`) from `ranges`, those of the body before
+ * it, without parsing the whole text: a full parse of a 5,000 line file takes over 100 ms, and it
+ * ran after every pause in typing. Blocks before the edit stay, blocks after it move by its
+ * length, and only the edited stretch is parsed again, with the untouched block on each side.
+ *
+ * Markdown reads a block the same way wherever it starts, as long as the block before it has
+ * ended, so the stretch can be parsed on its own. The block on each side must read back exactly
+ * where it was; when it does not (the edit opened a code fence that runs on, or merged two
+ * lists), null is returned and the caller parses the whole body.
+ */
+export function rangesAfterEdit(
+  newBody: string,
+  ranges: SourceBlock[],
+  edit: SourceEdit,
+  parse: (text: string) => SourceBlock[],
+): SourceBlock[] | null {
+  const shift = edit.insert.length - (edit.to - edit.from);
+  let before = -1;
+  while (before + 1 < ranges.length && ranges[before + 1].to <= edit.from) {
+    before++;
+  }
+  let after = before + 1;
+  while (after < ranges.length && ranges[after].from < edit.to) {
+    after++;
+  }
+  const hasAfter = after < ranges.length;
+  let start = 0;
+  if (before >= 0) {
+    // From the start of its line, so indentation reads as it does in the whole text.
+    start = newBody.lastIndexOf("\n", ranges[before].from - 1) + 1;
+    if (!/^[ \t]*$/.test(newBody.slice(start, ranges[before].from))) {
+      return null;
+    }
+  }
+  const end = hasAfter ? ranges[after].to + shift : newBody.length;
+  if (end < start || end > newBody.length) {
+    return null;
+  }
+  const parsed = parse(newBody.slice(start, end)).map((block) => ({ from: block.from + start, to: block.to + start }));
+  if (before >= 0 && !sameBlock(parsed[0], ranges[before])) {
+    return null;
+  }
+  if (hasAfter) {
+    const moved = { from: ranges[after].from + shift, to: ranges[after].to + shift };
+    if (parsed.length < (before >= 0 ? 2 : 1) || !sameBlock(parsed[parsed.length - 1], moved)) {
+      return null;
+    }
+  }
+  const kept = before >= 0 ? ranges.slice(0, before) : [];
+  const moved = ranges.slice(after + 1).map((block) => ({ from: block.from + shift, to: block.to + shift }));
+  return [...kept, ...parsed, ...moved];
+}
+
 /** The parts of a remark (mdast) node the parse fix-up reads. */
 export interface MarkdownTreeNode {
   type: string;

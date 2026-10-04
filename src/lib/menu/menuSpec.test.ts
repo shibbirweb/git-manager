@@ -43,11 +43,25 @@ describe("menuSpec", () => {
     expect(windowMenu?.items.some((entry) => entry.kind === "native" && entry.item === "CloseWindow")).toBe(true);
   });
 
+  it("opens and closes windows from the File menu", () => {
+    for (const platform of PLATFORMS) {
+      const entries = actionEntries(menuSpec(platform, "app"));
+      const key = (action: string) => entries.find((entry) => entry.action === action)?.accelerator ?? null;
+      expect(key("file.newWindow")).toBe("CmdOrCtrl+Shift+N");
+      expect(key("file.closeWindow")).toBe("CmdOrCtrl+Shift+W");
+      expect(entries.some((entry) => entry.action === "file.openFolderNewWindow")).toBe(true);
+    }
+    // git mergetool runs one window.
+    expect(actionEntries(menuSpec("macos", "mergeTool")).some((entry) => entry.action === "file.newWindow")).toBe(false);
+  });
+
   it("never closes the main window with Cmd+W", () => {
     const entries = menuSpec("macos", "app").flatMap((menu) => menu.items);
     expect(entries.some((entry) => entry.kind === "native" && entry.item === "CloseWindow")).toBe(false);
     const closeTab = actionEntries(menuSpec("macos", "app")).find((entry) => entry.action === "file.closeTab");
     expect(closeTab?.accelerator).toBe("CmdOrCtrl+W");
+    const reopen = actionEntries(menuSpec("macos", "app")).find((entry) => entry.action === "file.reopenClosedTab");
+    expect(reopen?.accelerator).toBe("CmdOrCtrl+Shift+T");
   });
 
   it("uses known actions and each action once per menu bar", () => {

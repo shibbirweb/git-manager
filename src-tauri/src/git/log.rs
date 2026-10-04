@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 use git2::{Commit, DiffFindOptions, Delta, Oid, Repository, Sort};
 use serde::Serialize;
@@ -104,6 +105,40 @@ fn ref_labels(repo: &Repository) -> HashMap<Oid, Vec<RefLabel>> {
         }
     }
     labels
+}
+
+/// A fingerprint of everything a history walk and its labels depend on: HEAD
+/// and every branch, remote branch and tag (commits never change). The same
+/// fingerprint means the same log, so a reload can skip the walk.
+pub fn tips(repo: &Repository, all_refs: bool) -> String {
+    let mode = if all_refs { "all" } else { "head" };
+    format!("{mode}:{}", tips_hash(repo))
+}
+
+/// `tips` for both walks: what the Log shows changes only when this does.
+pub fn tips_hash(repo: &Repository) -> String {
+    let mut hasher = DefaultHasher::new();
+    if let Ok(head) = repo.find_reference("HEAD") {
+        head.symbolic_target_bytes().hash(&mut hasher);
+        head.target().hash(&mut hasher);
+    }
+    repo.head().ok().and_then(|head| head.target()).hash(&mut hasher);
+    let mut targets: Vec<(Vec<u8>, Option<Oid>)> = Vec::new();
+    if let Ok(references) = repo.references() {
+        for reference in references.flatten() {
+            let name = reference.name_bytes();
+            let shown = [b"refs/heads/".as_slice(), b"refs/remotes/", b"refs/tags/"]
+                .iter()
+                .any(|prefix| name.starts_with(prefix));
+            if shown {
+                targets.push((name.to_vec(), reference.target()));
+            }
+        }
+    }
+    // Packing refs changes the iteration order, not the log.
+    targets.sort_unstable_by(|left, right| left.0.cmp(&right.0));
+    targets.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
 }
 
 /// One page of history in topological + date order. When `all_refs` is set,

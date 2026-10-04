@@ -1,4 +1,4 @@
-// The folders the Files panel opens for "Select Opened File", like JetBrains' Project view.
+// The folders the Files panel opens for "Select Opened File".
 
 import { isInside, parentOf } from "$lib/stores/workspacePaths";
 

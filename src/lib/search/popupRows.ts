@@ -108,8 +108,8 @@ export function firstSelectable(rows: PopupRow[]): number {
 }
 
 /**
- * The row to select after a key, skipping headings: single steps wrap around
- * (as in JetBrains), page steps stop at the ends.
+ * The row to select after a key, skipping headings: single steps wrap around,
+ * page steps stop at the ends.
  */
 export function moveSelectable(rows: PopupRow[], selected: number, step: number): number {
   const selectable: number[] = [];

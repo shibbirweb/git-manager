@@ -50,8 +50,12 @@ function newNode<T>(): FolderNode<T> {
   return { folders: new Map(), leaves: [], count: 0 };
 }
 
+// One collator for every sort: `localeCompare` with options builds one per call, which took
+// most of the time for 20k refs.
+const NAME_ORDER = new Intl.Collator(undefined, { numeric: true });
+
 function compareNames(left: string, right: string): number {
-  return left.localeCompare(right, undefined, { numeric: true });
+  return NAME_ORDER.compare(left, right);
 }
 
 function buildTree<T>(items: T[], nameOf: (item: T) => string): FolderNode<T> {

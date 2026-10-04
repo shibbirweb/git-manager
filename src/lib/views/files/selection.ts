@@ -1,8 +1,8 @@
-// Multi-selection in the Files panel, like VS Code's explorer: a click selects one row,
+// Multi-selection in the Files panel: a click selects one row,
 // Cmd-click (Ctrl-click elsewhere) toggles a row, Shift-click selects the range from the
 // anchor, and Shift+Up / Shift+Down extend it. `order` is always the visible rows, top down.
 
-import { isInside, movedPath, type PathMove } from "$lib/stores/workspacePaths";
+import { movedPath, type PathMove } from "$lib/stores/workspacePaths";
 
 export interface TreeSelection {
   /** Selected absolute paths. */
@@ -80,9 +80,28 @@ export function selectedInOrder(selection: TreeSelection, order: string[]): stri
   return order.filter((path) => selection.paths.has(path));
 }
 
+/**
+ * Whether one of `folders` holds `path` (strictly: `path` itself does not count), by the rule of `isInside`.
+ * Every folder that holds a path ends right before one of its slashes, with or without that slash, so looking
+ * those prefixes up is enough: no pass over all the folders.
+ */
+function insideAnyOf(folders: ReadonlySet<string>, path: string): boolean {
+  for (let index = path.indexOf("/"); index >= 0; index = path.indexOf("/", index + 1)) {
+    if (folders.has(path.slice(0, index))) {
+      return true;
+    }
+    const withSlash = path.slice(0, index + 1);
+    if (withSlash !== path && folders.has(withSlash)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Drops paths inside another listed folder: moving or trashing the folder takes them along. */
 export function topLevel(paths: string[]): string[] {
-  return paths.filter((path) => !paths.some((other) => other !== path && isInside(other, path)));
+  const all = new Set(paths);
+  return paths.filter((path) => !insideAnyOf(all, path));
 }
 
 /** The selection after renames or moves, following each path to its new place. */
@@ -100,7 +119,8 @@ export function retargetSelection(selection: TreeSelection, moves: PathMove[]): 
  * last removed one, else the nearest one above, else null.
  */
 export function rowAfterRemoval(order: string[], removed: string[]): string | null {
-  const gone = (path: string) => removed.some((entry) => isInside(entry, path));
+  const removedSet = new Set(removed);
+  const gone = (path: string) => removedSet.has(path) || insideAnyOf(removedSet, path);
   let last = -1;
   order.forEach((path, index) => {
     if (gone(path)) {

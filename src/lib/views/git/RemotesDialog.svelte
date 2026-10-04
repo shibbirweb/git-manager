@@ -1,4 +1,4 @@
-<!-- JetBrains' Git Remotes: each remote with its fetch and push URLs; add, edit (name and
+<!-- Git Remotes: each remote with its fetch and push URLs; add, edit (name and
      URLs) and remove, with the names checked like git does. -->
 <script lang="ts">
   import { onMount } from "svelte";

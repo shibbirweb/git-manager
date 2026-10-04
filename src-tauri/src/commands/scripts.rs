@@ -1,11 +1,12 @@
 use tauri::ipc::{Channel, InvokeResponseBody};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{State, Window};
 
 use super::blocking;
+use super::terminal::channel_sink;
 use crate::error::AppResult;
 use crate::run_process::{self, RunRequest};
 use crate::state::AppState;
-use crate::terminal::{TerminalExitedEvent, TerminalInfo};
+use crate::terminal::TerminalInfo;
 use crate::node_versions::{self, NodeInstall};
 use crate::scripts::{self, ScriptSource};
 
@@ -24,11 +25,11 @@ pub async fn list_node_versions() -> AppResult<Vec<NodeInstall>> {
 }
 
 /// Starts a script as its own process (the Run tab). Output and exit arrive like a terminal's:
-/// raw bytes on `output`, then a "terminal-exited" event; input and resizing use the terminal commands.
+/// raw bytes on `output`, then `{ exit }`; input, resizing and acks use the terminal commands.
 #[tauri::command]
 #[allow(clippy::too_many_arguments)]
 pub async fn run_script(
-    app: AppHandle,
+    window: Window,
     state: State<'_, AppState>,
     program: String,
     args: Vec<String>,
@@ -39,6 +40,7 @@ pub async fn run_script(
     output: Channel<InvokeResponseBody>,
 ) -> AppResult<TerminalInfo> {
     let terminals = state.terminals.clone();
+    let links = state.terminal_links.clone();
     let request = RunRequest {
         program,
         args,
@@ -47,17 +49,13 @@ pub async fn run_script(
         cols,
         rows,
     };
+    let window_label = window.label().to_string();
     blocking(move || {
-        run_process::start_run(
-            &terminals,
-            &request,
-            move |bytes| {
-                let _ = output.send(InvokeResponseBody::Raw(bytes.to_vec()));
-            },
-            move |terminal_id, exit_code| {
-                let _ = app.emit("terminal-exited", TerminalExitedEvent { terminal_id, exit_code });
-            },
-        )
+        let (link, on_output, on_exit) = links.link(channel_sink(output));
+        let info = run_process::start_run(&terminals, &request, on_output, on_exit)?;
+        links.register(info.terminal_id, link);
+        terminals.adopt(info.terminal_id, &window_label);
+        Ok(info)
     })
     .await
 }

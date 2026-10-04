@@ -60,7 +60,7 @@ Validation lives in the pure functions `parsePreferences` and `parseState`:
 
 ### Applying a change
 
-`setPreference(key, value)` sets the field, calls `applyAppearance()` and saves. `applyAppearance()` pushes the look into the document: the color theme (`applyColorTheme`, see [How Color Themes Work](How-Color-Themes-Work.md)), `--ui-size`, `--code-size`, `--code-line-height`, `--font-mono` and `data-ligatures`. `data-theme` is now always set, also for System, which is watched with `matchMedia` (`systemDark`, `colorMode`).
+`setPreference(key, value)` sets the field, calls `applyAppearance()` and saves. `applyAppearance()` pushes the look into the document: the color theme (`applyColorTheme`, see [How Color Themes Work](How-Color-Themes-Work.md)), `--ui-size`, `--code-size`, `--code-line-height`, `--font-mono`, `data-ligatures` and `data-rounded-panels` (see [How Rounded Panels Work](How-Rounded-Panels-Work.md)). `data-theme` is now always set, also for System, which is watched with `matchMedia` (`systemDark`, `colorMode`).
 
 Settings that need the backend or a running service are applied by `$effect`s in `App.svelte` once settings have loaded:
 
@@ -85,6 +85,7 @@ Terminal loads the shell list when first shown; Automation refreshes the server 
 | `src/lib/stores/settingsData.ts` | Pure validation, JSON shape, what may be saved, session steps |
 | `src/lib/views/SettingsDialog.svelte` | The dialog and its sections, Reset, Try Again, the state.json banner |
 | `src/lib/views/settings/ColorThemePicker.svelte` | The color theme lists |
+| `src/lib/views/settings/settingsSearch.ts` | [Search in Settings](How-Settings-Search-Works.md) |
 | `src/lib/App.svelte` | Effects that pass settings to the backend |
 | `src/app.css` | The built-in color tokens |
 

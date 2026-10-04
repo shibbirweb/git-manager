@@ -1,6 +1,8 @@
 //! Files panel writes: create, rename, copy, move and Move to Trash. The checks and
 //! file system work live in `crate::file_ops`; these only move it off the main thread.
 
+use serde::Serialize;
+
 use super::blocking;
 use crate::error::AppResult;
 use crate::file_ops::{self, FileMove};
@@ -30,13 +32,30 @@ pub async fn file_copy(
     blocking(move || file_ops::copy_entries(&workspace_roots, &source_paths, &target_dir)).await
 }
 
+/// What `file_move` answers: the moves made, or with `dry_run` only the first name the
+/// target folder already has (null when the move can go ahead).
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+pub enum MoveAnswer {
+    Moved(Vec<FileMove>),
+    Clash(Option<String>),
+}
+
+/// Moves into `target_dir`; `dry_run` runs every check and moves nothing.
 #[tauri::command]
 pub async fn file_move(
     workspace_roots: Vec<String>,
     source_paths: Vec<String>,
     target_dir: String,
-) -> AppResult<Vec<FileMove>> {
-    blocking(move || file_ops::move_entries(&workspace_roots, &source_paths, &target_dir)).await
+    dry_run: Option<bool>,
+) -> AppResult<MoveAnswer> {
+    blocking(move || {
+        if dry_run.unwrap_or_default() {
+            return file_ops::move_clash(&workspace_roots, &source_paths, &target_dir).map(MoveAnswer::Clash);
+        }
+        file_ops::move_entries(&workspace_roots, &source_paths, &target_dir).map(MoveAnswer::Moved)
+    })
+    .await
 }
 
 #[tauri::command]

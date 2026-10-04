@@ -1,17 +1,22 @@
 <!-- Bottom status bar: repository state on the left, app memory on the right. -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { openBranchPicker } from "./changes/repoActions";
+  import { openBranchPicker, syncFromRow } from "./changes/repoActions";
+  import { rowSync, rowSyncBadge, rowSyncTooltip } from "./changes/sync";
   import { gpuRenderers } from "$lib/terminal/gpuRenderers.svelte";
   import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
   import { probeWebgl } from "$lib/ui/webglProbe";
   import { api } from "$lib/api";
+  import { branchTabPath } from "$lib/stores/branchTabs";
   import { loadingChangesText } from "$lib/stores/openingProgress";
+  import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
+  import { clearCache } from "$lib/debug/clearCache";
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
   import Icon from "$lib/ui/Icon.svelte";
+  import NotificationBell from "$lib/notifications/NotificationBell.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { changesSelection } from "./changes/selection.svelte";
   import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
@@ -23,7 +28,7 @@
   let detailsOpen = $state(false);
   let memoryEl = $state<HTMLDivElement | null>(null);
 
-  // Like VS Code, the left side describes the active repository. With Auto (the
+  // The left side describes the active repository. With Auto (the
   // default) that follows the open tab, and a file outside every repository says so.
   const shownView = $derived(changesSelection.shownView);
   const screen = $derived(currentScreenRepo());
@@ -42,11 +47,24 @@
   const changes = $derived(contextStatus?.files.length ?? 0);
   const conflicts = $derived(contextStatus?.files.filter((file) => file.conflicted).length ?? 0);
   const op = $derived(contextStatus?.op ?? null);
+  // The Synchronize Changes item: sync with the upstream, or publish a branch without one.
+  const sync = $derived(rowSync(head));
+  const syncBadge = $derived(rowSyncBadge(sync));
+  let syncing = $state(false);
   /** A file tab is on screen and outside every repository. */
   const fileWithoutRepo = $derived(settings.activeRepoAuto && screen.kind === "outside");
   const fileInfo = $derived(
     shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
   );
+
+  async function runSync(repoRoot: string): Promise<void> {
+    syncing = true;
+    try {
+      await syncFromRow(repoRoot);
+    } finally {
+      syncing = false;
+    }
+  }
 
   async function showConflicts(): Promise<void> {
     await repoStore.openConflicts(contextRepo?.root);
@@ -148,22 +166,35 @@
       </button>
       {#if branch}
         <button
-          class="item"
+          class="item branch"
           onclick={() => openBranchPicker(contextRepo.root)}
           title="Branch {branch} of {contextRepo.name}. Click to check out another branch."
         >
           <Icon name="branch" size={12} />
-          <span>{branch}</span>
-          {#if head && (head.ahead > 0 || head.behind > 0)}
-            <span class="sync">
-              {#if head.behind > 0}{head.behind}<Icon name="arrow-down" size={10} />{/if}
-              {#if head.ahead > 0}{head.ahead}<Icon name="arrow-up" size={10} />{/if}
-            </span>
+          <span class="branch-name">{branch}</span>
+        </button>
+      {/if}
+      {#if sync.kind !== "hidden"}
+        <button
+          class="item"
+          class:spinning={syncing}
+          onclick={() => void runSync(contextRepo.root)}
+          disabled={repoStore.busy !== null || (op?.kind ?? "none") !== "none"}
+          title={rowSyncTooltip(sync)}
+          aria-label={sync.kind === "publish" ? "Publish Branch" : "Synchronize Changes"}
+        >
+          <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={12} />
+          {#if syncBadge}
+            <span>{syncBadge}</span>
           {/if}
         </button>
       {/if}
       {#if changes > 0}
-        <button class="item" onclick={() => settings.setLeftPanel("changes")} title="Changed files in {contextRepo.name}">
+        <button
+          class="item"
+          onclick={() => repoStore.openPseudoTab(branchTabPath({ kind: "changes", repoRoot: contextRepo.root }))}
+          title="Changed files in {contextRepo.name}. Click to see them in a tab."
+        >
           <Icon name="git-compare" size={12} />
           <span>{changes} {changes === 1 ? "change" : "changes"}</span>
         </button>
@@ -198,12 +229,22 @@
           ({fileInfo.selected} selected{fileInfo.selectedLines > 1 ? `, ${fileInfo.selectedLines} lines` : ""})
         {/if}
       </span>
-      <button class="item" onclick={() => settings.openDialog("editor")} title="Indentation (change in Settings > Editor)">
-        Spaces: {fileInfo.tabSize}
+      <button
+        class="item"
+        onclick={() => settings.openDialog("editor")}
+        title={fileInfo.indentDetected ? "Indentation detected from the file (Settings > Editor)" : "Indentation (change in Settings > Editor)"}
+      >
+        {fileInfo.indentTabs ? "Tab Size" : "Spaces"}: {fileInfo.tabSize}
       </button>
       <span class="item static" title="Line endings">{fileInfo.eol === "crlf" ? "CRLF" : "LF"}</span>
       <span class="item static" title="Language">{fileInfo.language}</span>
       <span class="gap"></span>
+    {/if}
+    {#if autoFetch.hint}
+      <button class="item fetch-hint" onclick={() => autoFetch.retryNow()} title={autoFetch.hint.title}>
+        <Icon name="cloud" size={12} />
+        <span>{autoFetch.hint.text}</span>
+      </button>
     {/if}
     {#if updates.available}
       <button class="item update" onclick={() => (updates.dialogOpen = true)} title="See what's new and download">
@@ -218,6 +259,7 @@
         <span class="spinner"></span>{loadingChangesText(repoStore.loadingChanges.done, repoStore.loadingChanges.total)}
       </span>
     {/if}
+    <NotificationBell />
     <button class="item icon-only" onclick={() => void updates.openRepository()} title="Star Git Manager on GitHub" aria-label="Star on GitHub">
       <Icon name="star" size={12} />
     </button>
@@ -234,6 +276,14 @@
         >
           <span class="chip"></span>
           <span>Memory {formatBytes(memory.totalBytes)}</span>
+        </button>
+        <button
+          class="item icon-only"
+          onclick={() => void clearCache()}
+          title="Clear Cache: restart this window's interface to give back all the memory it holds. The screen blinks once; your folder and tabs come back."
+          aria-label="Clear Cache"
+        >
+          <Icon name="brush" size={12} />
         </button>
         {#if detailsOpen}
           <div class="details" role="dialog" aria-label="Memory usage">
@@ -268,7 +318,8 @@
               </p>
             </div>
             <p class="note">
-              Physical memory, as Activity Monitor shows it. The UI runs in macOS WebKit helper processes, which are counted too.
+              Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in macOS
+              WebKit helper processes, one web content process per window, which are counted too.
               {#if memory.approximate}
                 Started from a terminal, so helpers are matched by start time.
               {/if}
@@ -293,6 +344,12 @@
     background: var(--panel-alt);
     font-size: 12px;
     color: var(--text-dim);
+  }
+
+  /* Rounded panels: the status bar is part of the window frame. */
+  :global(html[data-rounded-panels]) .status-bar {
+    border-top: none;
+    background: var(--frame);
   }
 
   .left,
@@ -323,14 +380,36 @@
     cursor: pointer;
   }
 
-  button.item:hover,
+  button.item:hover:not(:disabled),
   .item.open {
     background: var(--hover);
     color: var(--text);
   }
 
-  .item.static {
+  .item.static,
+  button.item:disabled {
     cursor: default;
+  }
+
+  button.item:disabled:not(.spinning) {
+    opacity: 0.6;
+  }
+
+  /* A long branch name shrinks first and never pushes the other items away. */
+  .item.branch {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .branch-name {
+    min-width: 0;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .spinning :global(svg) {
+    animation: spin 0.8s linear infinite;
   }
 
   .item.icon-only {
@@ -340,6 +419,10 @@
   .item.update {
     color: var(--accent);
     font-weight: 600;
+  }
+
+  .item.fetch-hint {
+    color: var(--warning);
   }
 
   .item.conflict {
@@ -354,13 +437,6 @@
 
   .gap {
     width: 6px;
-  }
-
-  .sync {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-    margin-left: 2px;
   }
 
   .spinner {
@@ -380,6 +456,8 @@
 
   .memory {
     position: relative;
+    display: flex;
+    align-items: center;
   }
 
   .chip {

@@ -1,5 +1,5 @@
 <!--
-  The terminal panel below the editor, like VS Code's: a slim header with actions, the shown group of terminals (split
+  The terminal panel below the editor: a slim header with actions, the shown group of terminals (split
   side by side) and, with several, a list to switch between them that shows split groups together. The terminals are
   mounted by TerminalHost and moved into their panes.
 -->
@@ -33,7 +33,7 @@
     { tab: "gitConsole", label: "Git Console" },
     { tab: "shelf", label: "Shelf" },
   ];
-  // Run shows once a script ran, like JetBrains' Run window.
+  // Run shows once a script ran.
   const tabs = $derived(
     ALL_TABS.filter(
       (item) => (item.tab !== "gitConsole" || settings.gitConsole) && (item.tab !== "run" || terminalStore.runSessions.length > 0),
@@ -387,6 +387,13 @@
     display: none;
   }
 
+  /* Rounded panels: the bottom panel is a panel of its own. */
+  :global(html[data-rounded-panels]) .panel {
+    border-top: none;
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+  }
+
   /* About 29 px, like the editor's slim path bar. */
   .head {
     flex: none;
@@ -528,7 +535,7 @@
     border-left: 1px solid var(--border-strong);
   }
 
-  /* The focused one of split terminals, like VS Code's active pane. */
+  /* The focused one of split terminals. */
   .pane.focused::after {
     content: "";
     position: absolute;
@@ -593,7 +600,7 @@
     color: var(--text-faint);
   }
 
-  /* Tree lines that join the rows of one split group, like VS Code's terminal list. */
+  /* Tree lines that join the rows of one split group in the terminal list. */
   .tree {
     flex: none;
     position: relative;

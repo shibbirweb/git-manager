@@ -1,36 +1,36 @@
 # Remaining work
 
-Status on 2026-10-03: every feature below is built and tested by its own checks, but nothing is committed and
-nothing has been tried in the real app.
+Status on 2026-10-03: every feature below, A3 included, is merged, passes all four checks and is **committed** on
+`feat/GM-8-terminal-git-menu-search-themes` (one commit per feature, not pushed). Parts were tried in the real app
+through the MCP tools; the full manual test by the user is still open.
 
 ## Where the code is
 
-- **Merged and tested:** everything except A3, in the integration worktree
-  `/private/tmp/claude-501/-Users-shibbir-Personal-git-merger/0ea45078-82cb-455c-8e0f-764dfe3e99a9/scratchpad/wt/int`
-  (changes staged, not committed). Checks there: `bun run check` clean, 1504 Vitest tests, 601 cargo tests, clippy clean.
-- **Backups**, in case that temporary folder is gone:
-  - `~/.claude/projects/-Users-shibbir-Personal-git-merger/docs-resume/patches/int-combined.patch`. Apply it onto
-    commit `ee3f456` with `git apply --index`.
-  - The same state as the git object `refs/gm-backup/int` in this repository (not a branch).
-  - One patch per feature in the same `patches/` folder.
-- **A3, more than one window:** coded but not merged. Its patch is `docs-resume/patches/wip-a3.patch`, based on
-  `refs/gm-backup/a3-base` (an older integration state). Its resume note is `docs-resume/resume/a3.md`.
+- **Committed** on the branch, on top of `5cb76d0`. Not pushed.
+- **Backups** (can go once the commits are pushed): `refs/gm-backup/int` (before A3), `refs/gm-backup/int-a3` (with A3,
+  before the 7 newer branch commits), `refs/gm-backup/a3-base`, and the patches in
+  `~/.claude/projects/-Users-shibbir-Personal-git-merger/docs-resume/patches/`.
 
 ## Next steps, in order
 
-1. Merge A3 into the integration worktree (`git apply --3way --index wip-a3.patch`) and fix the conflicts. Its
-   CHANGELOG line ("More than one window, like VS Code...") comes with the patch; leave it out if a beta ships
-   without A3.
-2. Check `mcp::tests::the_cli_reports_a_switched_off_tool`: it failed once in A3's full run and passes alone.
-   Run it on the integration state without A3 too, to see whether A3 caused it.
-3. Run all four checks: `bun run check`, `bun run test`, `cargo test`, `cargo clippy --all-targets`.
-4. Tell the user, then copy the integration changes into the main tree (their `bun tauri dev` rebuilds).
-5. The user tests in the real app (list below). Fix what they find.
-6. Commit only when the user says "commit", split by feature (`feat:[GM-8] ...`, `fix:[GM-8] ...`). The CHANGELOG lines
-   are already written. Push only when told.
-7. Then the docs and screenshots: [docs-and-screenshots.md](docs-and-screenshots.md).
-8. Clean up: remove the worktrees under the scratchpad (`git worktree prune`), the shared `cargo-target` there, and
+1. DONE: merge A3 (kept both sides in CHANGELOG.md, types.ts, settingsData.test.ts).
+2. DONE: `mcp::tests::the_cli_reports_a_switched_off_tool` passed in the full run and 5 of 5 MCP runs with A3; not
+   caused by A3.
+3. DONE: all four checks, then again after merging the 7 newer branch commits (1547 Vitest, 623 cargo tests, clippy
+   clean).
+4. DONE: copied into the main tree.
+5. PARTLY DONE: tried through the MCP tools (below). The user still tests by hand, with the list below.
+6. DONE: committed, split by feature. Push only when told.
+7. Docs and screenshots: [docs-and-screenshots.md](docs-and-screenshots.md).
+8. Clean up: remove the worktrees under the old scratchpad (`git worktree prune`), its shared `cargo-target`, and
    `refs/gm-backup/*` (`git update-ref -d`).
+
+## Added after the batch (2026-10-03, committed)
+
+- DONE: `get_app_state` and `close_dialog` know the Local History dialog and the notifications popup.
+- DONE: Restore Defaults in Help > Available MCP Tools.
+- DONE: Detect indentation (View > Detect Indentation, Settings > Editor; the status bar shows Spaces: 2 or Tab Size: 4),
+  with its docs. Editing Code was split: the new Code Appearance user page and developer chapter.
 
 ## Decision waiting for the user
 
@@ -38,6 +38,28 @@ nothing has been tried in the real app.
   file and history follows a file whichever folder opens it. Changing it stays inside `src-tauri/src/local_history/store.rs`.
 
 ## Check in the real app
+
+Tried through the MCP/CLI tools on 2026-10-03 (no screenshots, Screen Recording is not allowed), marked DONE below
+where it passed. Everything else still needs the user, and everything that writes should use a demo repository.
+
+- DONE: every new menu command is listed with its keys and enabled state.
+- DONE (A1): Quick Open and the Command Palette open, list and close.
+- DONE (E12, E3): split, Pin Tab, Close Tab, Reopen Closed Tab, tabs restored after a reload.
+- DONE: status bar branch cap and Sync item; the bell popup; Show Reflog; the Local History dialog; New Window opens.
+- Noticed: pinning a file open in both groups shows the pin on both tabs; `get_app_state` does not list editor groups
+  or pinned tabs.
+
+
+Added on 2026-10-04, not tried in the real app yet:
+
+- **Navigation Bar:** Cmd+Up from the editor, the Files panel, the terminal (macOS) and the welcome screen; the
+  popup's place under each crumb; Left, Right, Enter, Cmd+Enter, Esc and typing; "Search everywhere for ..." when
+  nothing matches; focus goes back on Esc; a workspace with several folders; Cmd+Up in the commit message box still
+  moves the caret; Cmd+Home still goes to the start of the file.
+- **File toolbar setting:** Top, Bottom (whole bar under the code, lists open upward) and Hidden (Cmd+Up shows the
+  floating bar at the top left of the focused editor); each switch hides its part; with every part off the bar goes
+  away; dividers only between parts that show; the Markdown formatting row switch works with the toolbar hidden.
+- **Recent Files, editor font weight, rounded panels:** see their pages; none was tried in the real app.
 
 - **O1:** the Changes list updates about 300 ms after a save (from the watcher); the Files panel updates on add,
   delete, rename and `.gitignore` edits; the Log does not reload on stage or save but does on commit, checkout,

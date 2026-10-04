@@ -55,7 +55,7 @@ Sort Lines has no key.
 | Option+Left and Option+Right | Move by word |
 | Ctrl+Left and Ctrl+Right | Move by code element |
 | Cmd+Left and Cmd+Right | Start and end of the line |
-| Cmd+Up and Cmd+Down | Start and end of the file |
+| Cmd+Home and Cmd+Down | Start and end of the file (Cmd+Up opens the [Navigation Bar](Navigation-Bar.md), as in JetBrains IDEs) |
 | Ctrl+Up and Ctrl+Down, Page Up and Page Down | Move a page |
 | Option+Backspace and Option+Delete | Delete a word |
 | Cmd+Backspace and Cmd+Delete | Delete to the start or end of the line |

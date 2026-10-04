@@ -83,6 +83,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
   - Platform changes (build, CI, releases, versioning, testing, architecture) update the matching page in `docs/wiki/developer/`.
 - Writing: simple, friendly English; short sentences; explain git terms on first use; pages of about 300 to 1000 words (split rather than grow); relative links (`Merge-Tool.md`, `../developer/How-Blame-Works.md`, `../images/x.png`); verify every label, setting and shortcut in the code.
 - Screenshots come from the real app through the dev-only IPC bridge (`src/lib/dev/ipcBridge.ts`, relayed by Vite only with `GM_IPC_BRIDGE=1`) and the demo built by `scripts/make-docs-demo.sh`. Never point the bridge at a real repository or the user's `~/.gitmanager`.
+- A screenshot that cannot be taken yet is written as `[TODO:name.png]` in the usage page where the image goes (still listed in `features.json` and defined in `scripts/screenshots.ts`). The wiki check accepts it and lists every pending shot; replace the marker with the image once it is taken.
 
 ## Gotchas
 

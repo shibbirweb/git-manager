@@ -1,18 +1,30 @@
 // Branches popup views in their own editor tab: Compare with Current (commits each branch
-// has that the other lacks, and the files that differ) and Show Diff with Working Tree.
+// has that the other lacks, and the files that differ) and Show Diff with Working Tree,
+// plus the Changes tab (the uncommitted files, opened from the status bar).
 // Like commit and Git tabs they share the tab strip with files, so each has a pseudo path
 // that can never be a file: it does not start with "/".
 
 export type BranchTabRef =
   /** `branchName` against `baseName` (the branch that was current when it opened). */
   | { kind: "compare"; repoRoot: string; branchName: string; baseName: string }
-  | { kind: "worktree"; repoRoot: string; revision: string };
+  | { kind: "worktree"; repoRoot: string; revision: string }
+  | { kind: "changes"; repoRoot: string };
 
 const PREFIX = "branches-";
-const KINDS = ["compare", "worktree"] as const;
+const KINDS = ["compare", "worktree", "changes"] as const;
+
+function partsOf(ref: BranchTabRef): string[] {
+  if (ref.kind === "compare") {
+    return [ref.repoRoot, ref.branchName, ref.baseName];
+  }
+  if (ref.kind === "worktree") {
+    return [ref.repoRoot, ref.revision];
+  }
+  return [ref.repoRoot];
+}
 
 export function branchTabPath(ref: BranchTabRef): string {
-  const parts = ref.kind === "compare" ? [ref.repoRoot, ref.branchName, ref.baseName] : [ref.repoRoot, ref.revision];
+  const parts = partsOf(ref);
   return `${PREFIX}${ref.kind}:${parts.map((part) => encodeURIComponent(part)).join("|")}`;
 }
 
@@ -38,6 +50,9 @@ export function parseBranchTabPath(tabPath: string): BranchTabRef | null {
   }
   const parts = tabPath.slice(colon + 1).split("|").map(decode);
   const [repoRoot, first, second] = parts;
+  if (kind === "changes") {
+    return repoRoot && parts.length === 1 ? { kind, repoRoot } : null;
+  }
   if (!repoRoot || !first) {
     return null;
   }
@@ -63,6 +78,9 @@ export function branchTabTitle(ref: BranchTabRef): { name: string; title: string
       name: `${ref.branchName} vs ${ref.baseName}`,
       title: `${ref.branchName} compared with ${ref.baseName} (${repoName})`,
     };
+  }
+  if (ref.kind === "changes") {
+    return { name: `Changes: ${repoName}`, title: `Uncommitted changes in ${repoName}` };
   }
   return { name: `${ref.revision} vs Working Tree`, title: `${ref.revision} compared with the working tree (${repoName})` };
 }

@@ -61,7 +61,7 @@ export function pushTags(repoRoot?: string): Promise<unknown> {
 }
 
 /**
- * Sync Changes, like VS Code: pull what the upstream has, then push what this
+ * Sync Changes: pull what the upstream has, then push what this
  * branch has; a branch without an upstream is published instead. A pull that
  * stops on conflicts stops the sync there (the Conflicts dialog opens).
  * Resolves true when everything went through.
@@ -149,7 +149,7 @@ export async function showLog(repoRoot?: string): Promise<void> {
   if (repoRoot) {
     await repoStore.setActiveRepo(repoRoot);
   }
-  if (changesSelection.shownView !== "log") {
+  if (!changesSelection.logShown) {
     changesSelection.toggleLog();
   }
 }

@@ -940,6 +940,14 @@ define("files-panel", async (shot) => {
   await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
 });
 
+define("file-icons", async (shot) => {
+  await shot.expand(storefront, join(storefront, "src"));
+  await shot.page.locator("aside.explorer img.file-type-image").first().waitFor();
+  await shot.page.mouse.move(640, 400);
+  const explorer = shot.page.locator("aside.explorer");
+  await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
+}, () => ({ settings: { fileIcons: "material" } }));
+
 define("files-context-menu", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
   await shot.fileRow(cartTs()).click({ button: "right" });
@@ -990,6 +998,43 @@ define("editor-tabs", async (shot) => {
   }
   await shot.save({ x: box.x, y: box.y, width: box.width, height: 330 });
 });
+
+/** Opens enough files to fill or overflow the tab strip, in this order. */
+async function openManyTabs(shot: Shot): Promise<void> {
+  for (const file of ["README.md", "package.json", "src/index.ts", "src/catalog.ts", "src/pricing.ts", "src/shipping.ts", "src/checkout.ts"]) {
+    await shot.openFile(join(storefront, file));
+  }
+  await shot.openFile(cartTs());
+}
+
+/** Pins a tab from its right-click menu. */
+async function pinTabNamed(shot: Shot, fileName: string): Promise<void> {
+  await shot.page.locator(`.tab-strip .tab[data-path$="/${fileName}"]`).first().click({ button: "right" });
+  await shot.menu().getByRole("menuitem", { name: "Pin Tab" }).click();
+}
+
+// Two pinned tabs at the front of the strip, each with its pin button.
+define("tabs-pinned", async (shot) => {
+  await openManyTabs(shot);
+  await pinTabNamed(shot, "catalog.ts");
+  await pinTabNamed(shot, "pricing.ts");
+  await shot.page.mouse.move(640, 700);
+  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
+});
+
+// Settings > Editor > Wrap tabs: a narrow window shows the tabs on two rows.
+define("tabs-wrapped", async (shot) => {
+  await openManyTabs(shot);
+  await shot.page.mouse.move(5, 690);
+  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
+}, () => ({ settings: { wrapTabs: true }, viewport: { width: 900, height: 700 } }));
+
+// Settings > Editor > Tab limit > Single tab title: in single tab mode, one open file shows its name centered above the code.
+define("single-tab-title", async (shot) => {
+  await shot.openFile(cartTs());
+  await shot.page.mouse.move(5, 690);
+  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip.single").first()], { bottom: 60 }));
+}, () => ({ settings: { tabLimit: 1 } }));
 
 define("unsaved-changes-close", async (shot) => {
   await shot.openFile(cartTs());
@@ -1257,7 +1302,8 @@ define("empty-main", async (shot) => {
   await shot.page.mouse.move(640, 790);
   const main = await shot.clipAround([shot.page.locator("main.main")]);
   const content = await shot.clipAround([shot.page.locator("main.main .empty .logo"), shot.page.locator("main.main .empty .actions")], 56);
-  await shot.save({ x: main.x, width: main.width, y: content.y, height: content.height });
+  // From the top, so the Navigation Bar above the welcome screen is in the shot.
+  await shot.save({ x: main.x, width: main.width, y: main.y, height: content.y + content.height - main.y });
 });
 
 define("git-progress", async (shot) => {
@@ -1326,6 +1372,14 @@ define("status-bar", async (shot) => {
   await clickLine(shot, "useDiscount(code");
   await shot.page.locator("footer.status-bar").getByText(/Memory/).waitFor();
   await shot.save(shot.page.locator("footer.status-bar"));
+});
+
+define("status-bar-clear-cache", async (shot) => {
+  await shot.openFile(cartTs());
+  const button = shot.page.getByRole("button", { name: "Clear Cache" });
+  await button.waitFor();
+  await button.hover();
+  await shot.save(await shot.clipAround([shot.page.locator("footer.status-bar .memory")], { top: 40, left: 160 }));
 });
 
 define("help-menu", async (shot) => {
@@ -1682,6 +1736,52 @@ define("search-everywhere-recent", async (shot) => {
   await savePopup(shot, popup);
 }, () => ({ settings: { currentLineBlame: false } }));
 
+// Recent Files (Cmd+E): the file before the one on screen is selected.
+define("recent-files", async (shot) => {
+  await shot.openFile(join(storefront, "README.md"));
+  await shot.openFile(join(storefront, "src/catalog.ts"));
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.recentFiles");
+  const popup = shot.page.locator('.popup[role="dialog"][aria-label="Recent Files"]');
+  await popup.waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 790);
+  await savePopup(shot, popup);
+}, () => ({ settings: { currentLineBlame: false } }));
+
+// Navigation Bar (Cmd+Up): the path bar with the file's folder listed and the file selected.
+define("navigation-bar", async (shot) => {
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.navigationBar");
+  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
+  await popup.locator(".row.selected").waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 790);
+  await shot.save(await shot.clipAround([shot.page.locator(".file-bar").first(), popup], 12));
+}, () => ({ settings: { currentLineBlame: false } }));
+
+// File toolbar Bottom: the whole path bar under the code, its list opened upward.
+define("navigation-bar-bottom", async (shot) => {
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.navigationBar");
+  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
+  await popup.locator(".row.selected").waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 300);
+  await shot.save(await shot.clipAround([shot.page.locator(".file-view.bar-bottom .file-bar").first(), popup], 12));
+}, () => ({ settings: { currentLineBlame: false, fileToolbar: "bottom" } }));
+
+// File toolbar Hidden: Cmd+Up shows the bar floating at the top left of the editor.
+define("navigation-bar-hidden", async (shot) => {
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.navigationBar");
+  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
+  await popup.locator(".row.selected").waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 790);
+  await shot.save(await shot.clipAround([shot.page.locator(".editor-group.focused"), popup], { bottom: 12 }));
+}, () => ({ settings: { currentLineBlame: false, fileToolbar: "none" } }));
+
 define("search-everywhere-files", async (shot) => {
   const popup = await openSearch(shot, "files", "cart");
   await shot.page.mouse.move(5, 790);
@@ -1935,6 +2035,19 @@ define("color-theme-solarized-light", async (shot) => {
   await shot.save();
 }, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "solarized-light" } }));
 
+define("rounded-panels", async (shot) => {
+  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
+  await overview(shot);
+  await shot.save();
+}, () => ({ colorScheme: "dark", settings: { theme: "dark", roundedPanels: true } }));
+
+define("rounded-panels-islands-light", async (shot) => {
+  await waitForColorTheme(shot, "islands-light");
+  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
+  await overview(shot);
+  await shot.save();
+}, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light", roundedPanels: true } }));
+
 define("color-theme-high-contrast", async (shot) => {
   await waitForColorTheme(shot, "high-contrast-dark");
   await shot.page.waitForFunction(() => document.documentElement.getAttribute("data-contrast") === "high");
@@ -1959,12 +2072,39 @@ async function scrollSettingsTo(dialog: Locator, text: string): Promise<void> {
   }, text);
 }
 
+define("settings-search", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await dialog.getByRole("textbox", { name: "Search settings" }).fill("font");
+  await shot.settle();
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+});
+
 define("settings-editor-fonts", async (shot) => {
   const dialog = await openSettings(shot, "Editor");
   await scrollSettingsTo(dialog, "Editor font family");
   await shot.page.mouse.move(5, 790);
   await shot.save(dialog);
 });
+
+define("settings-unload-hidden-tabs", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await scrollSettingsTo(dialog, "Unload hidden tabs");
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+});
+
+define("editor-font-weight", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await scrollSettingsTo(dialog, "Editor font family");
+  await shot.settle();
+  const preview = dialog.locator(".font-preview");
+  const weight = dialog.locator(".row", { hasText: "Editor font weight" }).first();
+  const across = await shot.clipAround([dialog.locator(".rows")], 0);
+  const down = await shot.clipAround([preview, weight], { top: 12, bottom: 12 });
+  await shot.page.mouse.move(5, 790);
+  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+}, () => ({ settings: { editorFontWeight: 300 } }));
 
 define("settings-automation", async (shot) => {
   const dialog = await openSettings(shot, "Automation");
@@ -2025,6 +2165,18 @@ define("memory-log-settings", async (shot) => {
   await shot.page.mouse.move(5, 790);
   await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
 }, () => ({ settings: { memoryLogEnabled: true } }));
+
+define("settings-memory-flags", async (shot) => {
+  const dialog = await openSettings(shot, "Terminal");
+  await scrollSettingsTo(dialog, "Rendering");
+  await shot.settle();
+  const heading = dialog.locator(".group-title", { hasText: "Rendering" });
+  const gpu = dialog.locator(".row", { hasText: "GPU acceleration" }).first();
+  const across = await shot.clipAround([dialog.locator(".rows")], 0);
+  const down = await shot.clipAround([heading, gpu], { top: 12, bottom: 12 });
+  await shot.page.mouse.move(5, 790);
+  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+});
 
 // ---------------------------------------------------------------------------------------------
 // The Git menu, its dialogs and interactive rebase

@@ -1,10 +1,11 @@
 use tauri::ipc::Channel;
-use tauri::State;
+use tauri::{State, Window};
 
 use super::blocking;
 use crate::error::AppResult;
 use crate::file_search::{FileSearchProgress, FileSearchResults, DEFAULT_LIMIT};
 use crate::state::AppState;
+use crate::symbols::outline::{outline, OutlineResult};
 use crate::symbols::{SymbolScope, SymbolSearchProgress, SymbolSearchResults};
 use crate::text_search::replace::{ReplaceOutcome, ReplaceRequest};
 use crate::text_search::{TextSearchBatch, TextSearchOptions};
@@ -13,11 +14,12 @@ use crate::text_search::{TextSearchBatch, TextSearchOptions};
 /// and returns right away; `progress` hears about it until the popup closes.
 #[tauri::command]
 pub async fn file_search_open(
+    window: Window,
     state: State<'_, AppState>,
     workspace_roots: Vec<String>,
     progress: Channel<FileSearchProgress>,
 ) -> AppResult<FileSearchProgress> {
-    let search = state.file_search.clone();
+    let search = state.file_search.window(window.label());
     blocking(move || {
         Ok(search.open(
             &workspace_roots,
@@ -32,19 +34,20 @@ pub async fn file_search_open(
 /// Matches against whatever is indexed so far; never waits for indexing.
 #[tauri::command]
 pub async fn file_search_query(
+    window: Window,
     state: State<'_, AppState>,
     workspace_roots: Vec<String>,
     query: String,
     limit: Option<usize>,
 ) -> AppResult<FileSearchResults> {
-    let search = state.file_search.clone();
+    let search = state.file_search.window(window.label());
     blocking(move || Ok(search.query(&workspace_roots, &query, limit.unwrap_or(DEFAULT_LIMIT)))).await
 }
 
 /// The popup closed; the index stays a short while so reopening is instant.
 #[tauri::command]
-pub async fn file_search_close(state: State<'_, AppState>) -> AppResult<()> {
-    let search = state.file_search.clone();
+pub async fn file_search_close(window: Window, state: State<'_, AppState>) -> AppResult<()> {
+    let search = state.file_search.window(window.label());
     blocking(move || {
         search.close();
         Ok(())
@@ -56,11 +59,12 @@ pub async fn file_search_close(state: State<'_, AppState>) -> AppResult<()> {
 /// returns right away; `progress` hears about it until the popup closes.
 #[tauri::command]
 pub async fn symbol_search_open(
+    window: Window,
     state: State<'_, AppState>,
     workspace_roots: Vec<String>,
     progress: Channel<SymbolSearchProgress>,
 ) -> AppResult<SymbolSearchProgress> {
-    let search = state.file_search.clone();
+    let search = state.file_search.window(window.label());
     blocking(move || {
         Ok(search.open_symbols(
             &workspace_roots,
@@ -75,13 +79,14 @@ pub async fn symbol_search_open(
 /// Matches against whatever symbols are indexed so far; never waits for indexing.
 #[tauri::command]
 pub async fn symbol_search_query(
+    window: Window,
     state: State<'_, AppState>,
     workspace_roots: Vec<String>,
     query: String,
     scope: SymbolScope,
     limit: Option<usize>,
 ) -> AppResult<SymbolSearchResults> {
-    let search = state.file_search.clone();
+    let search = state.file_search.window(window.label());
     blocking(move || {
         Ok(search.query_symbols(
             &workspace_roots,
@@ -97,6 +102,7 @@ pub async fn symbol_search_query(
 /// ends; a newer `search_id` (or a cancel) stops it within a file.
 #[tauri::command]
 pub async fn text_search(
+    window: Window,
     state: State<'_, AppState>,
     workspace_roots: Vec<String>,
     search_id: u64,
@@ -104,7 +110,7 @@ pub async fn text_search(
     options: TextSearchOptions,
     results: Channel<TextSearchBatch>,
 ) -> AppResult<()> {
-    let search = state.file_search.clone();
+    let search = state.file_search.window(window.label());
     blocking(move || {
         search.search_text(&workspace_roots, search_id, &query, &options, &|batch| {
             let _ = results.send(batch);
@@ -115,8 +121,8 @@ pub async fn text_search(
 }
 
 #[tauri::command]
-pub async fn text_search_cancel(state: State<'_, AppState>, search_id: u64) -> AppResult<()> {
-    let search = state.file_search.clone();
+pub async fn text_search_cancel(window: Window, state: State<'_, AppState>, search_id: u64) -> AppResult<()> {
+    let search = state.file_search.window(window.label());
     blocking(move || {
         search.cancel_text_search(search_id);
         Ok(())
@@ -130,21 +136,29 @@ pub async fn text_search_cancel(state: State<'_, AppState>, search_id: u64) -> A
 /// `replace_id` or a cancel stops it between files.
 #[tauri::command]
 pub async fn replace_in_files(
+    window: Window,
     state: State<'_, AppState>,
     workspace_roots: Vec<String>,
     replace_id: u64,
     request: ReplaceRequest,
 ) -> AppResult<ReplaceOutcome> {
-    let search = state.file_search.clone();
+    let search = state.file_search.window(window.label());
     blocking(move || Ok(search.replace_text(&workspace_roots, replace_id, &request))).await
 }
 
 #[tauri::command]
-pub async fn replace_in_files_cancel(state: State<'_, AppState>, replace_id: u64) -> AppResult<()> {
-    let search = state.file_search.clone();
+pub async fn replace_in_files_cancel(window: Window, state: State<'_, AppState>, replace_id: u64) -> AppResult<()> {
+    let search = state.file_search.window(window.label());
     blocking(move || {
         search.cancel_replace(replace_id);
         Ok(())
     })
     .await
+}
+
+/// Quick Open's "@" mode: the symbols of the editor's text (unsaved edits
+/// included), read as the language of `file_path`. Nothing is cached.
+#[tauri::command]
+pub async fn document_symbols(file_path: String, text: String) -> AppResult<OutlineResult> {
+    blocking(move || Ok(outline(&file_path, &text))).await
 }

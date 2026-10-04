@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ChangeKind, FileStatus } from "$lib/types";
+  import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { splitPath, statusLetter, statusTitle, type RowAction } from "./fileStatus";
 
@@ -66,6 +67,7 @@
   }}
 >
   <span class="letter kind-{kind ?? 'conflicted'}">{statusLetter(kind)}</span>
+  <FileTypeIcon fileName={parts.name} plain={false} />
   <span class="text truncate">
     <span class="name" class:deleted={kind === "deleted"}>{parts.name}</span>
     {#if parts.directory}

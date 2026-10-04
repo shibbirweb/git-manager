@@ -14,6 +14,9 @@ use serde::Serialize;
 
 use crate::error::{AppError, AppResult};
 
+/// File systems limit one name to 255 bytes.
+pub const MAX_NAME_BYTES: usize = 255;
+
 /// One entry moved by `move_entries`: absolute paths before and after.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -196,6 +199,9 @@ pub fn validate_name(name: &str) -> AppResult<()> {
     if name.contains('\0') {
         return Err(AppError::invalid("A name cannot contain a null character"));
     }
+    if name.len() > MAX_NAME_BYTES {
+        return Err(AppError::invalid("The name is too long"));
+    }
     #[cfg(windows)]
     {
         if let Some(bad) = name.chars().find(|c| "\\<>:\"|?*".contains(*c)) {
@@ -208,12 +214,16 @@ pub fn validate_name(name: &str) -> AppResult<()> {
     Ok(())
 }
 
-/// Splits a New File or New Folder name like VS Code: "a/b/c.ts" creates the folders
-/// `a` and `b`. Empty parts ("a//b", a trailing "/") are ignored.
+/// Splits a New File or New Folder name: "a/b/c.ts" creates the folders
+/// `a` and `b`. An empty part ("a//b", a leading or trailing "/") is refused, as the
+/// dialog refuses it, rather than guessing what was meant.
 pub fn split_new_path(name: &str) -> AppResult<Vec<&str>> {
-    let parts: Vec<&str> = name.split('/').filter(|part| !part.is_empty()).collect();
-    if parts.is_empty() {
+    if name.trim().is_empty() {
         return Err(AppError::invalid("Enter a name"));
+    }
+    let parts: Vec<&str> = name.split('/').collect();
+    if parts.iter().any(|part| part.trim().is_empty()) {
+        return Err(AppError::invalid("Each part between slashes needs a name"));
     }
     for part in &parts {
         validate_name(part)?;
@@ -248,7 +258,7 @@ fn strip_copy_suffix(stem: &str) -> (&str, u32) {
     (stem, 1)
 }
 
-/// VS Code's copy names: "cart.ts", then "cart copy.ts", "cart copy 2.ts"; folders
+/// Copy names: "cart.ts", then "cart copy.ts", "cart copy 2.ts"; folders
 /// "src copy". Copying "cart copy.ts" again gives "cart copy 2.ts", not "cart copy copy.ts".
 pub fn copy_name(name: &str, is_dir: bool, taken: impl Fn(&str) -> bool) -> String {
     if !taken(name) {
@@ -270,25 +280,33 @@ pub fn copy_name(name: &str, is_dir: bool, taken: impl Fn(&str) -> bool) -> Stri
 }
 
 /// Drops repeated entries and entries inside another selected folder, which go with it.
+/// The rest keep their order. Sorted by path (component by component), everything inside a
+/// folder comes right after it, so one pass that remembers the last kept folder is enough.
 pub fn drop_nested(entries: Vec<Entry>) -> Vec<Entry> {
-    let mut kept: Vec<Entry> = Vec::with_capacity(entries.len());
-    for entry in entries {
-        if kept.iter().any(|other| other.real == entry.real) {
+    let mut order: Vec<usize> = (0..entries.len()).collect();
+    order.sort_by(|&first, &second| entries[first].real.cmp(&entries[second].real).then(first.cmp(&second)));
+    let mut keep = vec![false; entries.len()];
+    let mut previous: Option<&Path> = None;
+    let mut folder: Option<&Path> = None;
+    for index in order {
+        let real = entries[index].real.as_path();
+        if previous == Some(real) {
             continue;
         }
-        if entries_inside(&kept, &entry) {
+        previous = Some(real);
+        if folder.is_some_and(|folder| real.starts_with(folder)) {
             continue;
         }
-        kept.retain(|other| !(entry.is_dir && other.real.starts_with(&entry.real)));
-        kept.push(entry);
+        keep[index] = true;
+        if entries[index].is_dir {
+            folder = Some(real);
+        }
     }
-    kept
-}
-
-fn entries_inside(folders: &[Entry], entry: &Entry) -> bool {
-    folders
-        .iter()
-        .any(|folder| folder.is_dir && entry.real != folder.real && entry.real.starts_with(&folder.real))
+    entries
+        .into_iter()
+        .zip(keep)
+        .filter_map(|(entry, kept)| kept.then_some(entry))
+        .collect()
 }
 
 /// Names that the file system may treat as one: case-insensitive on macOS and Windows.
@@ -300,15 +318,17 @@ fn same_name(first: &str, second: &str) -> bool {
     }
 }
 
-/// Plans a move into `target_dir` (canonical) before anything changes: the moves to
-/// make, in order, as indexes into `entries` with their real targets. Entries already
-/// in `target_dir` are skipped. Any conflict refuses the whole move.
-pub fn plan_moves(
-    entries: &[Entry],
-    target_dir: &Path,
-    exists: impl Fn(&Path) -> bool,
-) -> AppResult<Vec<(usize, PathBuf)>> {
-    let folder_name = display_name(target_dir);
+/// A planned move: the moves to make, in order, as indexes into the entries with their
+/// real targets, or the first name the target folder already has (a move never replaces).
+#[derive(Debug, PartialEq, Eq)]
+pub enum MovePlan {
+    Moves(Vec<(usize, PathBuf)>),
+    Clash(String),
+}
+
+/// Plans a move into `target_dir` (canonical) before anything changes. Entries already in
+/// `target_dir` are skipped. A folder moving into itself is an error.
+pub fn plan_move(entries: &[Entry], target_dir: &Path, exists: impl Fn(&Path) -> bool) -> AppResult<MovePlan> {
     let mut planned: Vec<(usize, PathBuf)> = Vec::new();
     for (index, entry) in entries.iter().enumerate() {
         if entry.real.parent() == Some(target_dir) {
@@ -322,11 +342,11 @@ pub fn plan_moves(
             .any(|(other, _)| same_name(&entries[*other].name, &entry.name));
         let target = target_dir.join(&entry.name);
         if clashes_with_planned || exists(&target) {
-            return Err(AppError::invalid(format!("{} already exists in {folder_name}", entry.name)));
+            return Ok(MovePlan::Clash(entry.name.clone()));
         }
         planned.push((index, target));
     }
-    Ok(planned)
+    Ok(MovePlan::Moves(planned))
 }
 
 fn exists_no_follow(path: &Path) -> bool {
@@ -566,19 +586,48 @@ fn move_entry(entry: &Entry, target: &Path) -> AppResult<()> {
     }
 }
 
+/// Every check of a move into `target_dir`, without moving anything.
+fn checked_move_plan(
+    workspace_roots: &[String],
+    source_paths: &[String],
+    target_dir: &str,
+) -> AppResult<(Vec<Entry>, MovePlan)> {
+    let workspace = WorkspaceRoots::new(workspace_roots)?;
+    let real_dir = workspace.folder(target_dir)?;
+    let entries = drop_nested(workspace.entries(source_paths, false)?);
+    let plan = plan_move(&entries, &real_dir, exists_no_follow)?;
+    if let MovePlan::Moves(planned) = &plan {
+        for (_, target) in planned {
+            workspace.check_new(target)?;
+        }
+    }
+    Ok((entries, plan))
+}
+
+/// A dry run of `move_entries`, so the Files panel can refuse a drop before asking about
+/// it: the first name the target folder already has, or None when the move can go ahead.
+/// Any other refusal (into itself, outside the workspace) is the same error the move gives.
+pub fn move_clash(workspace_roots: &[String], source_paths: &[String], target_dir: &str) -> AppResult<Option<String>> {
+    match checked_move_plan(workspace_roots, source_paths, target_dir)?.1 {
+        MovePlan::Moves(_) => Ok(None),
+        MovePlan::Clash(name) => Ok(Some(name)),
+    }
+}
+
 /// Moves into `target_dir`. Everything is checked before the first move.
 pub fn move_entries(
     workspace_roots: &[String],
     source_paths: &[String],
     target_dir: &str,
 ) -> AppResult<Vec<FileMove>> {
-    let workspace = WorkspaceRoots::new(workspace_roots)?;
-    let real_dir = workspace.folder(target_dir)?;
-    let entries = drop_nested(workspace.entries(source_paths, false)?);
-    let planned = plan_moves(&entries, &real_dir, exists_no_follow)?;
-    for (_, target) in &planned {
-        workspace.check_new(target)?;
-    }
+    let (entries, plan) = checked_move_plan(workspace_roots, source_paths, target_dir)?;
+    let planned = match plan {
+        MovePlan::Moves(planned) => planned,
+        MovePlan::Clash(name) => {
+            let real_dir = Path::new(target_dir);
+            return Err(AppError::invalid(format!("{name} already exists in {}", display_name(real_dir))));
+        }
+    };
     let mut moved = Vec::with_capacity(planned.len());
     for (index, target) in planned {
         let entry = &entries[index];
@@ -685,8 +734,9 @@ mod tests {
     fn splits_nested_new_names() {
         assert_eq!(split_new_path("cart.ts").unwrap(), vec!["cart.ts"]);
         assert_eq!(split_new_path("a/b/c.ts").unwrap(), vec!["a", "b", "c.ts"]);
-        assert_eq!(split_new_path("/a//b/").unwrap(), vec!["a", "b"]);
-        assert_eq!(message(split_new_path("//")), "Enter a name");
+        assert_eq!(message(split_new_path("/a//b/")), "Each part between slashes needs a name");
+        assert_eq!(message(split_new_path("//")), "Each part between slashes needs a name");
+        assert_eq!(message(split_new_path(" ")), "Enter a name");
         assert_eq!(message(split_new_path("a/../b")), "A name cannot be . or ..");
     }
 
@@ -751,34 +801,156 @@ mod tests {
     }
 
     #[test]
-    fn plans_moves_and_refuses_conflicts_before_moving() {
+    fn plans_moves_and_finds_clashes_before_moving() {
         let entries = vec![entry("/w/a/cart.ts", false), entry("/w/b", true), entry("/w/src/c.ts", false)];
-        let planned = plan_moves(&entries, Path::new("/w/src"), |_| false).unwrap();
+        let planned = plan_move(&entries, Path::new("/w/src"), |_| false).unwrap();
         assert_eq!(
             planned,
-            vec![(0, PathBuf::from("/w/src/cart.ts")), (1, PathBuf::from("/w/src/b"))],
+            MovePlan::Moves(vec![(0, PathBuf::from("/w/src/cart.ts")), (1, PathBuf::from("/w/src/b"))]),
         );
 
         let exists = |path: &Path| path == Path::new("/w/src/b");
-        assert_eq!(
-            message(plan_moves(&entries, Path::new("/w/src"), exists)),
-            "b already exists in src",
-        );
+        assert_eq!(plan_move(&entries, Path::new("/w/src"), exists).unwrap(), MovePlan::Clash("b".to_string()));
 
         let into_itself = vec![entry("/w/b", true)];
         assert_eq!(
-            message(plan_moves(&into_itself, Path::new("/w/b/inner"), |_| false)),
+            message(plan_move(&into_itself, Path::new("/w/b/inner"), |_| false)),
             "Cannot move b into itself",
         );
-        assert_eq!(
-            message(plan_moves(&into_itself, Path::new("/w/b"), |_| false)),
-            "Cannot move b into itself",
-        );
+    }
 
-        let same_name = vec![entry("/w/a/x.ts", false), entry("/w/b/x.ts", false)];
-        assert_eq!(
-            message(plan_moves(&same_name, Path::new("/w/c"), |_| false)),
-            "x.ts already exists in c",
-        );
+    /// The shared table (`src/lib/views/files/nameRules.cases.json`); the Files panel's tests read it too.
+    const CASES: &str = include_str!("../../src/lib/views/files/nameRules.cases.json");
+
+    fn case_name(case: &serde_json::Value) -> String {
+        let prefix = case["prefix"].as_str().unwrap_or_default();
+        let repeat = case["repeat"].as_u64().unwrap_or(1) as usize;
+        format!("{prefix}{}", case["name"].as_str().unwrap().repeat(repeat))
+    }
+
+    /// The message of each code, as the backend words it.
+    fn code_message(code: &str) -> Option<&'static str> {
+        match code {
+            "ok" => None,
+            "empty" => Some("Enter a name"),
+            "dot" => Some("A name cannot be . or .."),
+            "slash" => Some("A name cannot contain /"),
+            "emptyPart" => Some("Each part between slashes needs a name"),
+            "nullChar" => Some("A name cannot contain a null character"),
+            "tooLong" => Some("The name is too long"),
+            other => panic!("unknown code {other}"),
+        }
+    }
+
+    #[test]
+    fn names_follow_the_shared_rule_table() {
+        let cases: serde_json::Value = serde_json::from_str(CASES).unwrap();
+        for case in cases["names"].as_array().unwrap() {
+            let name = case_name(case);
+            let result = if case["nested"].as_bool().unwrap() {
+                split_new_path(&name).map(|_| ())
+            } else {
+                validate_name(&name)
+            };
+            let expected = code_message(case["code"].as_str().unwrap());
+            assert_eq!(result.err().map(|err| err.to_string()).as_deref(), expected, "{case}");
+        }
+    }
+
+    #[test]
+    fn moves_follow_the_shared_rule_table() {
+        let cases: serde_json::Value = serde_json::from_str(CASES).unwrap();
+        let ignore_case = cfg!(any(target_os = "macos", windows));
+        for case in cases["moves"].as_array().unwrap() {
+            let entries: Vec<Entry> = case["sources"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|source| entry(source["path"].as_str().unwrap(), source["isDir"].as_bool().unwrap()))
+                .collect();
+            let target = Path::new(case["target"].as_str().unwrap());
+            let taken: Vec<&str> = case["taken"].as_array().unwrap().iter().map(|name| name.as_str().unwrap()).collect();
+            // As the file system answers: case-insensitive on macOS and Windows.
+            let exists = |path: &Path| {
+                path.parent() == Some(target)
+                    && taken.iter().any(|name| same_name(name, &display_name(path)))
+            };
+            let result = match plan_move(&entries, target, exists) {
+                Err(_) => "intoItself".to_string(),
+                Ok(MovePlan::Clash(name)) => format!("clash:{name}"),
+                Ok(MovePlan::Moves(planned)) if planned.is_empty() => "noop".to_string(),
+                Ok(MovePlan::Moves(_)) => "ok".to_string(),
+            };
+            let expected = match case.get("resultIgnoreCase") {
+                Some(value) if ignore_case => value,
+                _ => &case["result"],
+            };
+            assert_eq!(result, expected.as_str().unwrap(), "{case}");
+        }
+    }
+
+    /// The old quadratic `drop_nested`, kept as the reference the new one must match.
+    fn drop_nested_reference(entries: Vec<Entry>) -> Vec<Entry> {
+        let mut kept: Vec<Entry> = Vec::with_capacity(entries.len());
+        for entry in entries {
+            if kept.iter().any(|other| other.real == entry.real) {
+                continue;
+            }
+            let inside = kept
+                .iter()
+                .any(|folder| folder.is_dir && entry.real != folder.real && entry.real.starts_with(&folder.real));
+            if inside {
+                continue;
+            }
+            kept.retain(|other| !(entry.is_dir && other.real.starts_with(&entry.real)));
+            kept.push(entry);
+        }
+        kept
+    }
+
+    /// A small xorshift generator: the same "random" entries on every run.
+    fn random_entries(seed: u64, count: usize) -> Vec<Entry> {
+        let mut state = seed;
+        let mut next = move |below: u64| {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state % below
+        };
+        let parts = ["a", "b", "ab", "a b", "a-b", "a.b", "B"];
+        (0..count)
+            .map(|_| {
+                let depth = 1 + next(4) as usize;
+                let path: Vec<&str> = (0..depth).map(|_| parts[next(parts.len() as u64) as usize]).collect();
+                entry(&format!("/w/{}", path.join("/")), next(3) > 0)
+            })
+            .collect()
+    }
+
+    fn givens(entries: &[Entry]) -> Vec<&str> {
+        entries.iter().map(|entry| entry.given.as_str()).collect()
+    }
+
+    #[test]
+    fn drop_nested_matches_the_reference_on_random_selections() {
+        for seed in 1..300u64 {
+            let entries = random_entries(seed * 7919, 1 + (seed % 40) as usize);
+            let expected = drop_nested_reference(entries.clone());
+            assert_eq!(givens(&drop_nested(entries)), givens(&expected), "seed {seed}");
+        }
+    }
+
+    #[test]
+    fn drop_nested_stays_fast_for_big_selections() {
+        let entries: Vec<Entry> = (0..5000)
+            .map(|index| entry(&format!("/w/dir{}/file{index}.ts", index % 50), false))
+            .chain((0..50).map(|index| entry(&format!("/w/other{index}"), true)))
+            .collect();
+        // The old quadratic version took about 3 s here in a debug build.
+        let started = std::time::Instant::now();
+        let kept = drop_nested(entries);
+        let elapsed = started.elapsed();
+        assert_eq!(kept.len(), 5050);
+        assert!(elapsed < std::time::Duration::from_millis(500), "{elapsed:?}");
     }
 }

@@ -1,14 +1,21 @@
 // Runs a menu item: one function per action, reusing what the buttons and window shortcuts
 // already do, with the same guards (no workspace action behind a dialog or the merge tool).
 
+import { clearCache } from "$lib/debug/clearCache";
+import { tick } from "svelte";
 import { errorMessage } from "$lib/api";
+import { compareStore } from "$lib/compare/compareStore.svelte";
+import { diffLines } from "$lib/diff/diffLines.svelte";
 import { focusedEditor, runEditorCommand, runTextEdit } from "$lib/editor/editorCommands";
 import { steppedFontSize } from "$lib/editor/wheelZoom";
+import { localHistory } from "$lib/localHistory/localHistory.svelte";
 import { mcpStore } from "$lib/mcp/mcpStore.svelte";
+import { notifications } from "$lib/notifications/notifications.svelte";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { openShelveDialog, showShelf } from "$lib/shelf/shelfActions.svelte";
 import { fileCommands } from "$lib/stores/fileCommands.svelte";
+import { isPseudoTab } from "$lib/stores/pseudoTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { defaultPreferences, type MarkdownViewMode, settings, type ThemeSetting } from "$lib/stores/settings.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
@@ -20,14 +27,31 @@ import { changesSelection } from "$lib/views/changes/selection.svelte";
 import { fetchAll, fetchRemote, focusCommitMessage, push, showLog, stash } from "$lib/views/gitActions";
 import { gitDialogs } from "$lib/views/git/gitDialogs.svelte";
 import * as gitMenu from "$lib/views/git/gitMenuActions";
+import * as bisect from "$lib/views/git/bisectActions";
+import { undoLastAction } from "$lib/views/git/undoActions";
 import * as lfs from "$lib/views/git/lfs/lfsActions";
 import * as submodules from "$lib/views/git/submodules/submoduleActions";
 import * as worktrees from "$lib/views/git/worktrees/worktreeActions";
 import * as githubActions from "$lib/views/github/githubActions";
 import { abortOperation, continueOperation, skipRebaseCommit } from "$lib/views/git/operationActions";
-import { pickAndAddFolder, pickAndOpenRepo, pickAndOpenWorkspaceFile, pickAndSaveWorkspace } from "$lib/views/repoPicker";
-import { openFileSearch, runWorkspaceShortcut, shortcutsBlocked } from "$lib/views/workspaceActions";
+import {
+  openNewWindow,
+  pickAndAddFolder,
+  pickAndOpenInNewWindow,
+  pickAndOpenRepo,
+  pickAndOpenWorkspaceFile,
+  pickAndSaveWorkspace,
+} from "$lib/views/repoPicker";
+import {
+  moveEditorTab,
+  openFileSearch,
+  openQuickOpen,
+  runWorkspaceShortcut,
+  shortcutsBlocked,
+  splitEditorRight,
+} from "$lib/views/workspaceActions";
 import type { WorkspaceShortcut } from "$lib/views/workspaceShortcuts";
+import { closeThisWindow } from "$lib/windows/windowActions";
 import { type EditorAction, isEditorAction, type MenuAction } from "./menuIds";
 
 type Handler = () => unknown;
@@ -94,12 +118,40 @@ async function saveAll(): Promise<void> {
 }
 
 async function closeTab(): Promise<void> {
-  // Cmd+W closes the editor tab on screen; with none it does nothing (the window stays).
+  // Cmd+W closes the editor tab on screen in the focused group; with none it does nothing (the window stays).
   const shown = changesSelection.shownView;
   if (shown === "file" && repoStore.openFilePath) {
-    await repoStore.closeTab(repoStore.openFilePath);
+    await repoStore.closeTab(repoStore.openFilePath, repoStore.focusedGroupId);
   } else if (shown === "diff" && changesSelection.selected) {
     changesSelection.close();
+  }
+}
+
+/** Focus Left / Right Group: the keyboard goes to that group's editor. Right with one group splits. */
+async function focusGroupAt(index: number): Promise<void> {
+  if (!settings.splitEditor) {
+    return;
+  }
+  if (index > 0 && repoStore.groups.length < 2) {
+    splitEditorRight(activeFilePath());
+    return;
+  }
+  if (!repoStore.focusGroupAt(index)) {
+    return;
+  }
+  const tabPath = activeFilePath();
+  if (tabPath && fileCommands.states[tabPath]) {
+    fileCommands.focus(tabPath);
+    return;
+  }
+  // The diff, the Log or another kind of tab: its first text editor, else nothing keeps the old group's focus.
+  await tick();
+  const group = document.querySelector<HTMLElement>(".editor-group.focused");
+  const editor = group?.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-content, :scope > :not(.file-host) .cm-content");
+  if (editor) {
+    editor.focus();
+  } else if (document.activeElement instanceof HTMLElement && !group?.contains(document.activeElement)) {
+    document.activeElement.blur();
   }
 }
 
@@ -135,7 +187,9 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "app.checkForUpdates": app(() => updates.check(true)),
   "app.settings": app(() => settings.openDialog()),
 
+  "file.newWindow": app(() => openNewWindow()),
   "file.openFolder": app(() => pickAndOpenRepo()),
+  "file.openFolderNewWindow": app(() => pickAndOpenInNewWindow()),
   "file.openWorkspace": app(() => pickAndOpenWorkspaceFile()),
   "file.clearRecent": app(() => settings.clearRecent()),
   "file.addFolder": workspace(() => pickAndAddFolder()),
@@ -149,8 +203,23 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
     const filePath = activeFilePath();
     return filePath ? fileCommands.revert(filePath) : undefined;
   }),
+  "file.compareWithClipboard": workspace(() => {
+    const filePath = activeFilePath();
+    return filePath ? compareStore.compareWithClipboard(filePath) : undefined;
+  }),
+  "file.compareWith": workspace(() => {
+    const filePath = activeFilePath();
+    return filePath ? compareStore.compareWith(filePath) : undefined;
+  }),
+  "file.localHistory": workspace(() => {
+    const filePath = activeFilePath();
+    return filePath && !isPseudoTab(filePath) ? localHistory.openFile(filePath) : undefined;
+  }),
+  "file.recentlyDeleted": workspace(() => localHistory.openDeleted()),
   "file.closeTab": workspace(closeTab),
+  "file.reopenClosedTab": workspace(() => repoStore.reopenClosedTab()),
   "file.closeFolder": workspace(() => repoStore.closeWorkspace()),
+  "file.closeWindow": app(() => closeThisWindow()),
 
   // Editing in dialogs must work too: no guard.
   "edit.undo": () => textEdit("undo"),
@@ -159,11 +228,15 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "edit.selectAll": () => textEdit("selectAll"),
   "edit.findInFiles": shortcut("findInFiles"),
   "edit.replaceInFiles": shortcut("replaceInFiles"),
-  "edit.goToFile": shortcut("goToFile"),
+  "edit.goToFile": shortcut("quickOpen"),
+  "edit.recentFiles": shortcut("recentFiles"),
+  "edit.navigationBar": shortcut("navigationBar"),
   "edit.goToClass": shortcut("goToClass"),
   "edit.goToSymbol": shortcut("goToSymbol"),
   "edit.searchEverywhere": workspace(() => openFileSearch("everywhere")),
 
+  // Works from the welcome screen too (no folder: commands only).
+  "view.commandPalette": app(() => openQuickOpen(">")),
   "view.changes": shortcut("showChanges"),
   "view.branches": shortcut("showBranches"),
   "view.scripts": workspace(() => settings.toggleLeftPanel("scripts")),
@@ -175,6 +248,15 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.terminal": shortcut("toggleTerminal"),
   "view.gitConsole": workspace(() => terminalStore.toggleTab("gitConsole")),
   "view.wordWrap": app(() => settings.toggleWordWrap()),
+  "view.stickyScroll": app(() => settings.setPreference("editorStickyScroll", !settings.editorStickyScroll)),
+  "view.minimap": app(() => settings.setPreference("editorMinimap", !settings.editorMinimap)),
+  "view.fileIconsOff": app(() => settings.setPreference("fileIcons", "off")),
+  "view.fileIconsMinimal": app(() => settings.setPreference("fileIcons", "minimal")),
+  "view.fileIconsMaterial": app(() => settings.setPreference("fileIcons", "material")),
+  "view.detectIndentation": app(() => settings.setPreference("detectIndentation", !settings.detectIndentation)),
+  "view.notifications": app(() => notifications.toggle()),
+  "view.doNotDisturb": app(() => settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb)),
+  "view.clearCache": app(() => void clearCache()),
   "view.markdownEditor": setMarkdownMode("editor"),
   "view.markdownSplit": setMarkdownMode("split"),
   "view.markdownPreview": setMarkdownMode("preview"),
@@ -185,7 +267,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.zoomOut": zoom(-1),
   "view.zoomReset": zoom(0),
 
-  // JetBrains' Git menu, for the active repository; the Current File items act on the file on screen.
+  // The Git menu, for the active repository; the Current File items act on the file on screen.
   "git.commit": git(() => focusCommitMessage(repoStore.repo?.root)),
   "git.push": git(() => gitMenu.openPushDialog()),
   // Asks first, then pushes with --force-with-lease.
@@ -201,12 +283,19 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "git.newBranch": git(() => gitMenu.newBranchFromMenu()),
   "git.newTag": git(() => gitMenu.newTagFromMenu()),
   "git.resetHead": git(() => gitMenu.openResetDialog()),
+  "git.undoLast": git(() => undoLastAction()),
   "git.resolveConflicts": git(() => repoStore.openConflicts()),
   "git.continueOp": git(() => continueOperation()),
   "git.abortOp": git(() => abortOperation()),
   "git.skipCommit": git(() => skipRebaseCommit()),
   "git.showLog": workspace(() => showLog()),
   "git.showConsole": workspace(() => terminalStore.showTab("gitConsole")),
+  "git.showReflog": workspace(() => gitMenu.showReflog()),
+  "git.bisect.start": git(() => bisect.startBisect()),
+  "git.bisect.good": git(() => bisect.markBisect("good")),
+  "git.bisect.bad": git(() => bisect.markBisect("bad")),
+  "git.bisect.skip": git(() => bisect.markBisect("skip")),
+  "git.bisect.reset": git(() => bisect.resetBisect()),
   "git.patch.create": git(() => gitMenu.createPatchFromChanges()),
   "git.patch.createFromCommit": git(() => gitMenu.createPatchFromCommit()),
   "git.patch.apply": git(() => gitMenu.applyPatchFromFile()),
@@ -217,6 +306,10 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "git.showShelf": workspace(() => showShelf()),
   "git.rollback": git(() => gitMenu.openRollbackDialog()),
   "git.showLocalChanges": workspace(() => gitMenu.showLocalChanges()),
+  // The selection of the Changes diff on screen (DiffView); nothing without one.
+  "git.lines.stage": git(() => diffLines.run("stage")),
+  "git.lines.unstage": git(() => diffLines.run("unstage")),
+  "git.lines.discard": git(() => diffLines.run("discard")),
   "git.file.commit": git(() => gitMenu.commitCurrentFile()),
   "git.file.add": git(() => gitMenu.addCurrentFile()),
   "git.file.annotate": workspace(() => gitMenu.toggleAnnotate()),
@@ -257,6 +350,22 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
 
   "window.nextTab": shortcut("nextTab"),
   "window.previousTab": shortcut("previousTab"),
+  "window.pinTab": workspace(() => {
+    const tabPath = activeFilePath();
+    if (tabPath) {
+      repoStore.setTabPinned(tabPath, !repoStore.isPinned(tabPath));
+    }
+  }),
+  "window.splitRight": workspace(() => splitEditorRight(activeFilePath())),
+  "window.moveTabToOtherGroup": workspace(() => {
+    const tabPath = activeFilePath();
+    if (tabPath) {
+      moveEditorTab(tabPath);
+    }
+  }),
+  "window.focusLeftGroup": workspace(() => focusGroupAt(0)),
+  "window.focusRightGroup": workspace(() => focusGroupAt(1)),
+  "window.closeGroup": workspace(() => repoStore.closeGroup()),
 
   "help.docs": openUrl(WIKI_URL),
   "help.shortcuts": app(() => helpDialogs.openShortcuts()),

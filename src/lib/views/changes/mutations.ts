@@ -15,7 +15,8 @@ export function stage(repoRoot: string, targets: FileStatus[]): void {
   }
   changesLayout.focusRepo(repoRoot);
   const filePaths = targets.map((file) => file.path);
-  void repoStore.run("Stage", (repoPath) => api.stageFiles(repoPath, filePaths), { repoPath: repoRoot });
+  // Index only: the branches and the Log stay as they are.
+  void repoStore.run("Stage", (repoPath) => api.stageFiles(repoPath, filePaths), { repoPath: repoRoot, refresh: "status" });
 }
 
 export function unstage(repoRoot: string, targets: FileStatus[]): void {
@@ -24,7 +25,7 @@ export function unstage(repoRoot: string, targets: FileStatus[]): void {
   }
   changesLayout.focusRepo(repoRoot);
   const filePaths = unstagePaths(targets);
-  void repoStore.run("Unstage", (repoPath) => api.unstageFiles(repoPath, filePaths), { repoPath: repoRoot });
+  void repoStore.run("Unstage", (repoPath) => api.unstageFiles(repoPath, filePaths), { repoPath: repoRoot, refresh: "status" });
 }
 
 /** Asks for confirmation, then discards unstaged changes. `repoName` is named in the dialog when given. */
@@ -65,6 +66,7 @@ export async function discard(repoRoot: string, targets: FileStatus[], repoName:
   changesLayout.focusRepo(repoRoot);
   await repoStore.run("Discard", (repoPath) => api.discardFiles(repoPath, trackedPaths, untrackedPaths), {
     repoPath: repoRoot,
+    refresh: "status",
     success: targets.length === 1 ? "Changes discarded" : `Discarded changes in ${targets.length} files`,
   });
 }

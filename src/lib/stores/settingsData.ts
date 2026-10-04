@@ -3,7 +3,18 @@
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
 
+import { pickRecentCommands } from "../commands/recentCommands";
+import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
+import { AUTO_FETCH_INTERVAL_RANGE, DEFAULT_AUTO_FETCH_MINUTES } from "./autoFetchPlan";
+import { NO_TAB_LIMIT, pickTabLimit } from "./tabLimit";
+import { pickUnloadTabMinutes } from "./tabSleep";
+import { parseRecentFiles, type RecentFile } from "./recentFiles";
+import { parseTabSessions, type SavedTabSession } from "./tabSession";
+import type { ShortcutOverrides } from "../commands/registry";
+import { pickKeybindings } from "../commands/shortcutSettings";
 import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "../themes/themeIndex";
+import { type MessageHistory, parseMessageHistory } from "../views/changes/commitMessages";
+import { type CommitTemplate, parseCommitTemplates } from "../views/changes/commitTemplates";
 
 export type ThemeSetting = "system" | "light" | "dark";
 
@@ -22,7 +33,53 @@ export type CommitGpgSign = "default" | "sign" | "noSign";
 
 export const COMMIT_GPG_SIGNS = ["default", "sign", "noSign"] as const;
 
-/** Which spaces and tabs the editors draw as dots and arrows, like VS Code's editor.renderWhitespace. */
+/** File type icons in the file lists: none, simple shapes, or Material Icon Theme's colored icons. */
+export type FileIconMode = "off" | "minimal" | "material";
+
+export const FILE_ICON_CHOICES: { value: FileIconMode; label: string; hint: string }[] = [
+  { value: "off", label: "No icons", hint: "One plain icon for every file. Uses no extra memory." },
+  { value: "minimal", label: "Minimal", hint: "Simple colored shapes for common file types." },
+  { value: "material", label: "Material Icons", hint: "Colored icons for over 1,000 file types, from Material Icon Theme." },
+];
+
+const FILE_ICON_MODES = FILE_ICON_CHOICES.map((choice) => choice.value);
+
+/** Where a file tab's toolbar (path, badges and buttons) shows: above the code, under it, or hidden. */
+export type FileToolbarPlacement = "top" | "bottom" | "none";
+
+export const FILE_TOOLBAR_CHOICES: { value: FileToolbarPlacement; label: string }[] = [
+  { value: "top", label: "Top" },
+  { value: "bottom", label: "Bottom" },
+  { value: "none", label: "Hidden" },
+];
+
+const FILE_TOOLBAR_PLACEMENTS = FILE_TOOLBAR_CHOICES.map((choice) => choice.value);
+
+/** A switch per part of the file toolbar, each on by default. */
+export type FileToolbarSwitchKey =
+  | "fileToolbarBreadcrumbs"
+  | "fileToolbarBadges"
+  | "fileToolbarChanges"
+  | "fileToolbarBlame"
+  | "fileToolbarCopyPath"
+  | "fileToolbarMarkdownView"
+  | "fileToolbarMarkdownFormat";
+
+export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; hint: string }[] = [
+  { key: "fileToolbarBreadcrumbs", label: "Breadcrumbs", hint: "The folders and file as a Navigation Bar. Off, Cmd+Up shows it over the editor." },
+  { key: "fileToolbarBadges", label: "Badges", hint: "Unsaved, Modified, New file and the number of conflicts." },
+  { key: "fileToolbarChanges", label: "Change arrows", hint: "Previous and next change with the counter. F7 and Shift+F7 work either way." },
+  { key: "fileToolbarBlame", label: "Blame", hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame." },
+  { key: "fileToolbarCopyPath", label: "Copy relative path", hint: "Copies the file's path inside the workspace folder." },
+  { key: "fileToolbarMarkdownView", label: "Markdown view switch", hint: "Editor, Editor and Preview, Preview. Also in View > Markdown." },
+  {
+    key: "fileToolbarMarkdownFormat",
+    label: "Markdown formatting row",
+    hint: "Bold, headings, lists and more above a Markdown file. It has its own row, so it shows even when the toolbar is hidden.",
+  },
+];
+
+/** Which spaces and tabs the editors draw as dots and arrows. */
 export type RenderWhitespace = "none" | "boundary" | "selection" | "trailing" | "all";
 
 export const RENDER_WHITESPACE_CHOICES: { value: RenderWhitespace; label: string; hint: string }[] = [
@@ -35,7 +92,7 @@ export const RENDER_WHITESPACE_CHOICES: { value: RenderWhitespace; label: string
 
 const RENDER_WHITESPACE_VALUES = RENDER_WHITESPACE_CHOICES.map((choice) => choice.value);
 
-/** How the editors draw the cursor, like VS Code's editor.cursorStyle. */
+/** How the editors draw the cursor. */
 export type EditorCursorStyle = "line" | "line-thin" | "block" | "block-outline" | "underline" | "underline-thin";
 
 export const EDITOR_CURSOR_STYLE_CHOICES: { value: EditorCursorStyle; label: string }[] = [
@@ -49,7 +106,7 @@ export const EDITOR_CURSOR_STYLE_CHOICES: { value: EditorCursorStyle; label: str
 
 const EDITOR_CURSOR_STYLES = EDITOR_CURSOR_STYLE_CHOICES.map((choice) => choice.value);
 
-/** How the editor cursor blinks, like VS Code's editor.cursorBlinking. */
+/** How the editor cursor blinks. */
 export type EditorCursorBlinking = "blink" | "smooth" | "phase" | "expand" | "solid";
 
 export const EDITOR_CURSOR_BLINKING_CHOICES: { value: EditorCursorBlinking; label: string; hint: string }[] = [
@@ -64,6 +121,11 @@ const EDITOR_CURSOR_BLINKINGS = EDITOR_CURSOR_BLINKING_CHOICES.map((choice) => c
 
 export type ConfigName = "settings" | "state";
 
+/** When the file editor saves by itself. */
+export type AutoSaveMode = "off" | "afterDelay" | "onFocusChange";
+
+export const AUTO_SAVE_MODES = ["off", "afterDelay", "onFocusChange"] as const;
+
 /** Weight of terminal text; mapped to xterm's fontWeight values in terminal/fonts.ts. */
 export type TerminalFontWeight = "normal" | "medium" | "bold";
 
@@ -76,6 +138,9 @@ export const MARKDOWN_VIEW_MODES = ["editor", "split", "preview"] as const;
 /** Share of the editor area the Markdown preview takes in split mode. */
 export const DEFAULT_MARKDOWN_PREVIEW_RATIO = 0.5;
 export const MARKDOWN_PREVIEW_RATIO_RANGE = [0.15, 0.85] as const;
+/** Share of the editor area the left editor group takes when the editor is split. */
+export const DEFAULT_EDITOR_SPLIT_RATIO = 0.5;
+export const EDITOR_SPLIT_RATIO_RANGE = [0.2, 0.8] as const;
 
 /** Sections of the Settings dialog, in the order the dialog lists them. */
 export const SETTINGS_SECTIONS = [
@@ -84,6 +149,7 @@ export const SETTINGS_SECTIONS = [
   "merge",
   "layout",
   "terminal",
+  "keyboard",
   "github",
   "automation",
   "updates",
@@ -112,6 +178,9 @@ export const MIN_TERMINAL_HEIGHT = 80;
 /** Width of the list of terminals beside the panel, shown with two or more terminals. */
 export const DEFAULT_TERMINAL_LIST_WIDTH = 180;
 export const MIN_TERMINAL_LIST_WIDTH = 120;
+/** Width of the file list in the Changes tab. */
+export const DEFAULT_CHANGES_LIST_WIDTH = 320;
+export const MIN_CHANGES_LIST_WIDTH = 160;
 export const MAX_RECENT = 12;
 
 /** JetBrains Mono when it is installed, else VS Code's default editor font on macOS. */
@@ -166,27 +235,46 @@ export interface Preferences {
   /** Color theme id used while the appearance is dark. */
   darkColorTheme: string;
   uiFontSize: number;
+  /** File type icons in the Files panel, the Changes list and commit file lists. Off by default: an icon set loads only when chosen. */
+  fileIcons: FileIconMode;
+  /** Sidebars, editor groups and the bottom panel as rounded panels with space between them. Any color theme. */
+  roundedPanels: boolean;
+  /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
+  fileToolbar: FileToolbarPlacement;
+  fileToolbarBreadcrumbs: boolean;
+  fileToolbarBadges: boolean;
+  fileToolbarChanges: boolean;
+  fileToolbarBlame: boolean;
+  fileToolbarCopyPath: boolean;
+  fileToolbarMarkdownView: boolean;
+  fileToolbarMarkdownFormat: boolean;
   editorFontSize: number;
   /** Line height of code, as a multiple of the font size. */
   editorLineHeight: number;
   /** CSS font-family list for code, e.g. "Menlo, Monaco, monospace". */
   editorFontFamily: string;
+  /** CSS font-weight of code, 100 (Thin) to 900 (Black). */
+  editorFontWeight: number;
   /** Render programming ligatures (=>, !=, ===) with fonts that provide them. */
   fontLigatures: boolean;
+  /** Color code by its language; off, editors load no grammar and keep no syntax tree. */
+  syntaxHighlighting: boolean;
   tabSize: number;
+  /** Indent like the file already does (spaces or tabs, and how many). */
+  detectIndentation: boolean;
   wordWrap: boolean;
   renderWhitespace: RenderWhitespace;
   editorCursorStyle: EditorCursorStyle;
-  /** Width in pixels of the Line cursor (VS Code's editor.cursorWidth). */
+  /** Width in pixels of the Line cursor. */
   editorCursorWidth: number;
   editorCursorBlinking: EditorCursorBlinking;
-  /** Glide the cursor to its new place instead of jumping (VS Code's editor.cursorSmoothCaretAnimation). */
+  /** Glide the cursor to its new place instead of jumping. */
   editorCursorSmoothCaret: boolean;
   /** Pixels the cursor reaches above the text (Sublime Text's caret_extra_top). */
   editorCaretExtraTop: number;
   /** Pixels the cursor reaches below the text (Sublime Text's caret_extra_bottom). */
   editorCaretExtraBottom: number;
-  /** Type the closing bracket or quote with the opening one (VS Code's editor.autoClosingBrackets). */
+  /** Type the closing bracket or quote with the opening one. */
   editorAutoCloseBrackets: boolean;
   /** Code completion from the words of the file and the language's own lists. */
   editorCompletion: boolean;
@@ -194,16 +282,50 @@ export interface Preferences {
   editorCompletionOnTyping: boolean;
   /** Fold arrows beside the line numbers in the file editor. */
   editorFoldGutter: boolean;
-  /** Faint vertical lines at each indent level (VS Code's editor.guides.indentation). */
+  /** Faint vertical lines at each indent level. */
   editorIndentGuides: boolean;
-  /** Highlight other uses of the word at the cursor, like JetBrains. */
+  /** Highlight other uses of the word at the cursor. */
   editorHighlightWord: boolean;
-  /** Scroll the last line up to the top of the file editor (VS Code's editor.scrollBeyondLastLine). */
+  /** Scroll the last line up to the top of the file editor. */
   editorScrollPastEnd: boolean;
   /** Option+drag selects a rectangle (column selection). */
   editorColumnSelection: boolean;
-  /** Column of the right margin line (VS Code's editor.rulers); 0 hides it. */
+  /** Keep the headers of the blocks around the top line pinned above the file editor. */
+  editorStickyScroll: boolean;
+  /** A small picture of the whole file beside the scrollbar of the file editor. */
+  editorMinimap: boolean;
+  /** Color each pair of brackets by how deep it is nested. */
+  editorBracketPairColors: boolean;
+  /** Highlight the bracket that matches the one at the cursor. */
+  editorMatchBrackets: boolean;
+  /** Column of the right margin line; 0 hides it. */
   editorRulerColumn: number;
+  /** Open the tabs a folder or workspace had when it was last open. */
+  reopenTabsOnStart: boolean;
+  /** Recent Files (Cmd+E): keep a list of the files shown in the editor, per workspace. */
+  recentFiles: boolean;
+  /** Reopen every window that was open at quit, each with its folders (read by the backend at start too). */
+  reopenWindows: boolean;
+  /** File tabs kept open: 0 no limit, 1 single tab, else the number (see tabLimit.ts). */
+  tabLimit: number;
+  /** A file tab hidden for `unloadHiddenTabsMinutes`, without unsaved edits, gives its editor back. */
+  unloadHiddenTabs: boolean;
+  unloadHiddenTabsMinutes: number;
+  /** Two editor groups side by side (Window > Split Right). */
+  splitEditor: boolean;
+  /** Tabs that do not fit wrap onto more rows instead of scrolling. */
+  wrapTabs: boolean;
+  /** A strip with one tab shows it as a centered name instead of a tab. */
+  singleTabTitle: boolean;
+  autoSave: AutoSaveMode;
+  /** Pause after the last edit before an "afterDelay" auto save. */
+  autoSaveDelayMs: number;
+  /** On save: remove spaces and tabs at line ends. */
+  trimTrailingWhitespace: boolean;
+  /** On save: end the file with a newline (files.insertFinalNewline). */
+  insertFinalNewline: boolean;
+  /** On save: remove blank lines after the last one (files.trimFinalNewlines). */
+  trimFinalNewlines: boolean;
   /** Author, date and commit at the end of the cursor line. */
   currentLineBlame: boolean;
   /** Blame column beside the line numbers. */
@@ -216,17 +338,27 @@ export interface Preferences {
   updateChannel: UpdateChannelSetting;
   ignoreWhitespace: boolean;
   logAllRefs: boolean;
+  /** Fetch every remote in the background while the window is in use. */
+  autoFetch: boolean;
+  /** Minutes between background fetches of a repository. */
+  autoFetchIntervalMinutes: number;
   /** Git > Update Project: merge or rebase the incoming changes, remembered from its dialog. */
   updateMethod: UpdateMethod;
   /** Commit Options: add a Signed-off-by trailer (--signoff) to every commit. */
   commitSignOff: boolean;
   /** Commit Options: GPG signing of every commit. */
   commitGpgSign: CommitGpgSign;
+  /** The commit box lists recent messages (Cmd+E) and remembers messages that were not committed. */
+  commitMessageHistory: boolean;
+  /** Soft warning under the commit box when the subject line passes 72 characters. */
+  commitSubjectGuide: boolean;
+  /** Commit message templates picked from the commit box, with {branch}, {ticket} and other placeholders. */
+  commitTemplates: CommitTemplate[];
   /** Record the git commands the app runs (Git Console). Off, the console is not loaded at all. */
   gitConsole: boolean;
   /** Shell id (its absolute path) new terminals start; null is the login shell. */
   terminalShell: string | null;
-  /** CSS font-family list for the terminal; empty uses the editor font, like VS Code. */
+  /** CSS font-family list for the terminal; empty uses the editor font. */
   terminalFontFamily: string;
   terminalFontSize: number;
   /** Multiplier of the font's line height, xterm's `lineHeight`. */
@@ -243,7 +375,7 @@ export interface Preferences {
   terminalCursorBlink: boolean;
   /** Lines kept above the screen. */
   terminalScrollback: number;
-  /** Selecting text copies it, like VS Code's terminal.integrated.copyOnSelection. */
+  /** Selecting text copies it. */
   terminalCopyOnSelect: boolean;
   /** Find in the terminal (Cmd+F). Off, the search addon is never loaded. */
   terminalFind: boolean;
@@ -273,21 +405,35 @@ export interface Preferences {
   mcpPort: number;
   /** Tools switched away from their default (on, or off for destructive ones), by tool name. */
   mcpTools: Record<string, boolean>;
+  /** Custom keyboard shortcuts: command id to a menu accelerator, or null for no key. */
+  keybindings: ShortcutOverrides;
   /** Debug memory log: memory readings and UI events written to ~/.gitmanager/logs/memory.log. */
   memoryLogEnabled: boolean;
   /** How often the memory log reads memory. */
   memoryLogIntervalMs: number;
   /** A reading is written when the total changed by at least this much. */
   memoryLogThresholdMb: number;
+  /** Local History: a copy of a file on every save, outside change and discard (~/.gitmanager/local-history). */
+  localHistoryEnabled: boolean;
+  /** Versions older than this many days are removed. */
+  localHistoryDays: number;
+  /** All versions together stay under this many MB; the oldest go first. */
+  localHistorySizeMb: number;
+  /** Only errors pop up; every message is still kept in the status bar's notification list. */
+  notificationsDoNotDisturb: boolean;
 }
 
 /** The memory log reads every 100 ms to 10 s, and logs changes of 0 MB (every reading) to 500 MB. */
 export const MEMORY_LOG_INTERVAL_RANGE = [100, 10_000] as const;
 export const MEMORY_LOG_THRESHOLD_RANGE = [0, 500] as const;
 
+/** Local History keeps 1 to 90 days and 10 MB to 2 GB (the backend clamps the same way). */
+export const LOCAL_HISTORY_DAYS_RANGE = [1, 90] as const;
+export const LOCAL_HISTORY_SIZE_MB_RANGE = [10, 2000] as const;
+
 /** Right margin columns; 0 means no margin line. */
 export const EDITOR_RULER_RANGE = [1, 500] as const;
-/** The column the margin line starts at when it is switched on, like JetBrains. */
+/** The column the margin line starts at when it is switched on. */
 export const DEFAULT_RULER_COLUMN = 120;
 
 export const defaultPreferences: Preferences = {
@@ -295,11 +441,24 @@ export const defaultPreferences: Preferences = {
   lightColorTheme: DEFAULT_LIGHT_THEME,
   darkColorTheme: DEFAULT_DARK_THEME,
   uiFontSize: 13,
+  fileIcons: "off",
+  roundedPanels: false,
+  fileToolbar: "top",
+  fileToolbarBreadcrumbs: true,
+  fileToolbarBadges: true,
+  fileToolbarChanges: true,
+  fileToolbarBlame: true,
+  fileToolbarCopyPath: true,
+  fileToolbarMarkdownView: true,
+  fileToolbarMarkdownFormat: true,
   editorFontSize: 13,
   editorLineHeight: 1.25,
   editorFontFamily: DEFAULT_EDITOR_FONT,
+  editorFontWeight: 400,
   fontLigatures: false,
+  syntaxHighlighting: true,
   tabSize: 4,
+  detectIndentation: true,
   wordWrap: false,
   renderWhitespace: "selection",
   editorCursorStyle: "line",
@@ -316,7 +475,25 @@ export const defaultPreferences: Preferences = {
   editorHighlightWord: true,
   editorScrollPastEnd: true,
   editorColumnSelection: true,
+  editorStickyScroll: true,
+  editorMinimap: false,
+  editorBracketPairColors: true,
+  editorMatchBrackets: true,
   editorRulerColumn: 0,
+  reopenTabsOnStart: true,
+  recentFiles: true,
+  reopenWindows: true,
+  tabLimit: NO_TAB_LIMIT,
+  unloadHiddenTabs: true,
+  unloadHiddenTabsMinutes: 15,
+  splitEditor: true,
+  wrapTabs: false,
+  singleTabTitle: true,
+  autoSave: "off",
+  autoSaveDelayMs: DEFAULT_AUTO_SAVE_DELAY,
+  trimTrailingWhitespace: false,
+  insertFinalNewline: false,
+  trimFinalNewlines: false,
   currentLineBlame: true,
   blameGutter: false,
   mouseWheelZoom: false,
@@ -324,9 +501,14 @@ export const defaultPreferences: Preferences = {
   updateChannel: "auto",
   ignoreWhitespace: false,
   logAllRefs: true,
+  autoFetch: true,
+  autoFetchIntervalMinutes: DEFAULT_AUTO_FETCH_MINUTES,
   updateMethod: "merge",
   commitSignOff: false,
   commitGpgSign: "default",
+  commitMessageHistory: true,
+  commitSubjectGuide: true,
+  commitTemplates: [],
   gitConsole: false,
   terminalShell: null,
   terminalFontFamily: "",
@@ -357,12 +539,35 @@ export const defaultPreferences: Preferences = {
   memoryLogEnabled: false,
   memoryLogIntervalMs: 500,
   memoryLogThresholdMb: 5,
+  localHistoryEnabled: true,
+  localHistoryDays: 7,
+  localHistorySizeMb: 200,
+  notificationsDoNotDisturb: false,
   mcpTools: {},
+  keybindings: {},
 };
 
 export const FONT_SIZE_RANGE = { ui: [11, 16], editor: [10, 20], terminal: [9, 24] } as const;
 /** Line spacing of code in the editor, diffs and the merge tool. */
 export const EDITOR_LINE_HEIGHT_RANGE = [1, 2.5] as const;
+/** Code font weights in steps of 100, named like the styles of JetBrains Mono and most variable fonts. */
+export const EDITOR_FONT_WEIGHT_RANGE = [100, 900] as const;
+const FONT_WEIGHT_NAMES: Record<number, string> = {
+  100: "Thin",
+  200: "ExtraLight",
+  300: "Light",
+  400: "Regular",
+  500: "Medium",
+  600: "SemiBold",
+  700: "Bold",
+  800: "ExtraBold",
+  900: "Black",
+};
+
+/** The style name of a font weight, such as "Light" for 300; other values read as their number. */
+export function fontWeightName(fontWeight: number): string {
+  return FONT_WEIGHT_NAMES[fontWeight] ?? String(fontWeight);
+}
 export const TAB_SIZES = [2, 4, 8] as const;
 export const EDITOR_CURSOR_WIDTH_RANGE = [1, 6] as const;
 export const CARET_EXTRA_RANGE = [0, 10] as const;
@@ -394,7 +599,7 @@ export interface UiState {
   /** Scripts panel: the Node version each package.json runs with, by file path: a bin folder, or "default" for the shell's. */
   scriptNodeVersions: Record<string, string>;
   explorerOpen: boolean;
-  /** The icon strips at the left and right edges of the window (VS Code's activity bars). */
+  /** The icon strips at the left and right edges of the window (the activity bars). */
   leftBarVisible: boolean;
   rightBarVisible: boolean;
   /** The left side's share of a side-by-side diff (see src/lib/diff/split.ts). */
@@ -406,8 +611,21 @@ export interface UiState {
   terminalHeight: number;
   /** Width of the terminal list beside the panel. */
   terminalListWidth: number;
+  /** The Changes tab's file list: its width, and whether it is shown. */
+  changesListWidth: number;
+  changesListVisible: boolean;
   /** Share of the editor area the Markdown preview takes beside the source. */
   markdownPreviewRatio: number;
+  /** Share of the editor area the left group takes in a split editor. */
+  editorSplitRatio: number;
+  /** Command Palette: recently used command ids, most recent first. */
+  recentCommands: string[];
+  /** Commit messages typed but not committed, and committed from the app, by repository root. */
+  commitMessages: MessageHistory;
+  /** The file tabs of each workspace, by workspace id, for Reopen tabs on start. */
+  openTabs: Record<string, SavedTabSession>;
+  /** Recent Files (Cmd+E) of each workspace, by workspace id. */
+  recentFileLists: Record<string, RecentFile[]>;
 }
 
 export type Json = Record<string, unknown>;
@@ -526,7 +744,14 @@ const STATE_KEYS = [
   "explorerWidth",
   "terminalHeight",
   "terminalListWidth",
+  "changesListWidth",
+  "changesListVisible",
   "markdownPreviewRatio",
+  "editorSplitRatio",
+  "recentCommands",
+  "commitMessages",
+  "openTabs",
+  "recentFileLists",
 ];
 
 /** Validates settings.json; unknown keys come back in `extra` so a save keeps them. */
@@ -539,14 +764,30 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     lightColorTheme: pickThemeId(data.lightColorTheme, "light"),
     darkColorTheme: pickThemeId(data.darkColorTheme, "dark"),
     uiFontSize: pickNumber(data.uiFontSize, defaultPreferences.uiFontSize, ...FONT_SIZE_RANGE.ui),
+    fileIcons: pickOneOf(data.fileIcons, FILE_ICON_MODES, defaultPreferences.fileIcons),
+    roundedPanels: pickBoolean(data.roundedPanels, defaultPreferences.roundedPanels),
+    fileToolbar: pickOneOf(data.fileToolbar, FILE_TOOLBAR_PLACEMENTS, defaultPreferences.fileToolbar),
+    fileToolbarBreadcrumbs: pickBoolean(data.fileToolbarBreadcrumbs, defaultPreferences.fileToolbarBreadcrumbs),
+    fileToolbarBadges: pickBoolean(data.fileToolbarBadges, defaultPreferences.fileToolbarBadges),
+    fileToolbarChanges: pickBoolean(data.fileToolbarChanges, defaultPreferences.fileToolbarChanges),
+    fileToolbarBlame: pickBoolean(data.fileToolbarBlame, defaultPreferences.fileToolbarBlame),
+    fileToolbarCopyPath: pickBoolean(data.fileToolbarCopyPath, defaultPreferences.fileToolbarCopyPath),
+    fileToolbarMarkdownView: pickBoolean(data.fileToolbarMarkdownView, defaultPreferences.fileToolbarMarkdownView),
+    fileToolbarMarkdownFormat: pickBoolean(data.fileToolbarMarkdownFormat, defaultPreferences.fileToolbarMarkdownFormat),
     editorFontSize: pickNumber(data.editorFontSize, defaultPreferences.editorFontSize, ...FONT_SIZE_RANGE.editor),
     editorLineHeight: roundTo(
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),
       0.05,
     ),
     editorFontFamily: typeof data.editorFontFamily === "string" ? normalizeFontFamily(data.editorFontFamily) : DEFAULT_EDITOR_FONT,
+    editorFontWeight: roundTo(
+      pickNumber(data.editorFontWeight, defaultPreferences.editorFontWeight, ...EDITOR_FONT_WEIGHT_RANGE),
+      100,
+    ),
     fontLigatures: pickBoolean(data.fontLigatures, defaultPreferences.fontLigatures),
+    syntaxHighlighting: pickBoolean(data.syntaxHighlighting, defaultPreferences.syntaxHighlighting),
     tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize) ? (data.tabSize as number) : defaultPreferences.tabSize,
+    detectIndentation: pickBoolean(data.detectIndentation, defaultPreferences.detectIndentation),
     wordWrap: pickBoolean(data.wordWrap, defaultPreferences.wordWrap),
     renderWhitespace: pickOneOf(data.renderWhitespace, RENDER_WHITESPACE_VALUES, defaultPreferences.renderWhitespace),
     editorCursorStyle: pickOneOf(data.editorCursorStyle, EDITOR_CURSOR_STYLES, defaultPreferences.editorCursorStyle),
@@ -563,7 +804,25 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     editorHighlightWord: pickBoolean(data.editorHighlightWord, defaultPreferences.editorHighlightWord),
     editorScrollPastEnd: pickBoolean(data.editorScrollPastEnd, defaultPreferences.editorScrollPastEnd),
     editorColumnSelection: pickBoolean(data.editorColumnSelection, defaultPreferences.editorColumnSelection),
+    editorStickyScroll: pickBoolean(data.editorStickyScroll, defaultPreferences.editorStickyScroll),
+    editorMinimap: pickBoolean(data.editorMinimap, defaultPreferences.editorMinimap),
+    editorBracketPairColors: pickBoolean(data.editorBracketPairColors, defaultPreferences.editorBracketPairColors),
+    editorMatchBrackets: pickBoolean(data.editorMatchBrackets, defaultPreferences.editorMatchBrackets),
     editorRulerColumn: pickRulerColumn(data.editorRulerColumn),
+    reopenTabsOnStart: pickBoolean(data.reopenTabsOnStart, defaultPreferences.reopenTabsOnStart),
+    recentFiles: pickBoolean(data.recentFiles, defaultPreferences.recentFiles),
+    reopenWindows: pickBoolean(data.reopenWindows, defaultPreferences.reopenWindows),
+    tabLimit: pickTabLimit(data.tabLimit),
+    unloadHiddenTabs: pickBoolean(data.unloadHiddenTabs, defaultPreferences.unloadHiddenTabs),
+    unloadHiddenTabsMinutes: pickUnloadTabMinutes(data.unloadHiddenTabsMinutes, defaultPreferences.unloadHiddenTabsMinutes),
+    splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
+    wrapTabs: pickBoolean(data.wrapTabs, defaultPreferences.wrapTabs),
+    singleTabTitle: pickBoolean(data.singleTabTitle, defaultPreferences.singleTabTitle),
+    autoSave: pickOneOf(data.autoSave, AUTO_SAVE_MODES, defaultPreferences.autoSave),
+    autoSaveDelayMs: pickInteger(data.autoSaveDelayMs, defaultPreferences.autoSaveDelayMs, ...AUTO_SAVE_DELAY_RANGE),
+    trimTrailingWhitespace: pickBoolean(data.trimTrailingWhitespace, defaultPreferences.trimTrailingWhitespace),
+    insertFinalNewline: pickBoolean(data.insertFinalNewline, defaultPreferences.insertFinalNewline),
+    trimFinalNewlines: pickBoolean(data.trimFinalNewlines, defaultPreferences.trimFinalNewlines),
     currentLineBlame: pickBoolean(data.currentLineBlame, defaultPreferences.currentLineBlame),
     blameGutter: pickBoolean(data.blameGutter, defaultPreferences.blameGutter),
     mouseWheelZoom: pickBoolean(data.mouseWheelZoom, defaultPreferences.mouseWheelZoom),
@@ -571,9 +830,18 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     updateChannel: channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
     ignoreWhitespace: pickBoolean(data.ignoreWhitespace, defaultPreferences.ignoreWhitespace),
     logAllRefs: pickBoolean(data.logAllRefs, defaultPreferences.logAllRefs),
+    autoFetch: pickBoolean(data.autoFetch, defaultPreferences.autoFetch),
+    autoFetchIntervalMinutes: pickInteger(
+      data.autoFetchIntervalMinutes,
+      defaultPreferences.autoFetchIntervalMinutes,
+      ...AUTO_FETCH_INTERVAL_RANGE,
+    ),
     updateMethod: pickOneOf(data.updateMethod, UPDATE_METHODS, defaultPreferences.updateMethod),
     commitSignOff: pickBoolean(data.commitSignOff, defaultPreferences.commitSignOff),
     commitGpgSign: pickOneOf(data.commitGpgSign, COMMIT_GPG_SIGNS, defaultPreferences.commitGpgSign),
+    commitMessageHistory: pickBoolean(data.commitMessageHistory, defaultPreferences.commitMessageHistory),
+    commitSubjectGuide: pickBoolean(data.commitSubjectGuide, defaultPreferences.commitSubjectGuide),
+    commitTemplates: parseCommitTemplates(data.commitTemplates),
     gitConsole: pickBoolean(data.gitConsole, defaultPreferences.gitConsole),
     terminalShell: pickShell(data.terminalShell),
     terminalFontFamily: normalizeTerminalFontFamily(data.terminalFontFamily),
@@ -606,9 +874,14 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     cliEnabled: pickBoolean(data.cliEnabled, defaultPreferences.cliEnabled),
     mcpPort: parseMcpPort(data.mcpPort) ?? defaultPreferences.mcpPort,
     mcpTools: pickToolStates(data.mcpTools),
+    keybindings: pickKeybindings(data.keybindings),
     memoryLogEnabled: pickBoolean(data.memoryLogEnabled, defaultPreferences.memoryLogEnabled),
     memoryLogIntervalMs: pickInteger(data.memoryLogIntervalMs, defaultPreferences.memoryLogIntervalMs, ...MEMORY_LOG_INTERVAL_RANGE),
     memoryLogThresholdMb: pickNumber(data.memoryLogThresholdMb, defaultPreferences.memoryLogThresholdMb, ...MEMORY_LOG_THRESHOLD_RANGE),
+    localHistoryEnabled: pickBoolean(data.localHistoryEnabled, defaultPreferences.localHistoryEnabled),
+    localHistoryDays: pickInteger(data.localHistoryDays, defaultPreferences.localHistoryDays, ...LOCAL_HISTORY_DAYS_RANGE),
+    localHistorySizeMb: pickInteger(data.localHistorySizeMb, defaultPreferences.localHistorySizeMb, ...LOCAL_HISTORY_SIZE_MB_RANGE),
+    notificationsDoNotDisturb: pickBoolean(data.notificationsDoNotDisturb, defaultPreferences.notificationsDoNotDisturb),
   };
   const known = new Set(Object.keys(defaultPreferences));
   // Legacy browser storage mixed state into the same object; keep only real extras.
@@ -664,7 +937,14 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     explorerWidth: pickNumber(data.explorerWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
     terminalHeight: pickNumber(data.terminalHeight, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, 2000),
     terminalListWidth: pickNumber(data.terminalListWidth, DEFAULT_TERMINAL_LIST_WIDTH, MIN_TERMINAL_LIST_WIDTH, 1200),
+    changesListWidth: pickNumber(data.changesListWidth, DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, 2000),
+    changesListVisible: pickBoolean(data.changesListVisible, true),
     markdownPreviewRatio: pickNumber(data.markdownPreviewRatio, DEFAULT_MARKDOWN_PREVIEW_RATIO, ...MARKDOWN_PREVIEW_RATIO_RANGE),
+    editorSplitRatio: pickNumber(data.editorSplitRatio, DEFAULT_EDITOR_SPLIT_RATIO, ...EDITOR_SPLIT_RATIO_RANGE),
+    recentCommands: pickRecentCommands(data.recentCommands),
+    commitMessages: parseMessageHistory(data.commitMessages),
+    openTabs: parseTabSessions(data.openTabs),
+    recentFileLists: parseRecentFiles(data.recentFileLists),
   };
   const known = new Set([...STATE_KEYS, ...Object.keys(defaultPreferences)]);
   const extra = Object.fromEntries(Object.entries(data).filter(([key]) => !known.has(key)));
@@ -672,6 +952,28 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
 }
 
 /** The JSON written to state.json. */
+/**
+ * state.json keys each window keeps for itself: a window's panel sizes and open panels, and
+ * the folders it reopens. Another window changing them does not move this window's layout.
+ * `windows` (the window session) is written by the backend only.
+ */
+export const WINDOW_STATE_KEYS = [
+  "lastSession",
+  "lastSessionFile",
+  "explorerOpen",
+  "leftBarVisible",
+  "rightBarVisible",
+  "diffSplitRatio",
+  "leftPanel",
+  "sidebarWidth",
+  "explorerWidth",
+  "terminalHeight",
+  "terminalListWidth",
+  "markdownPreviewRatio",
+  "editorSplitRatio",
+  "windows",
+] as const;
+
 export function stateToJson(state: UiState, extra: Json): Json {
   return {
     ...extra,
@@ -693,7 +995,14 @@ export function stateToJson(state: UiState, extra: Json): Json {
     explorerWidth: state.explorerWidth,
     terminalHeight: state.terminalHeight,
     terminalListWidth: state.terminalListWidth,
+    changesListWidth: state.changesListWidth,
+    changesListVisible: state.changesListVisible,
     markdownPreviewRatio: state.markdownPreviewRatio,
+    editorSplitRatio: state.editorSplitRatio,
+    recentCommands: state.recentCommands,
+    commitMessages: state.commitMessages,
+    openTabs: state.openTabs,
+    recentFileLists: state.recentFileLists,
   };
 }
 

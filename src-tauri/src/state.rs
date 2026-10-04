@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use notify_debouncer_full::{notify::RecommendedWatcher, Debouncer, NoCache};
 use serde::Serialize;
 
-use crate::file_search::FileSearch;
+use crate::file_search::WindowSearches;
 use crate::git_console::{self, GitConsole};
 use crate::mcp::Mcp;
 use crate::terminal::TerminalRegistry;
@@ -66,21 +66,27 @@ pub struct AppState {
     pub launch: LaunchMode,
     /// Process exit code in mergetool mode: stays 1 (unresolved) until saved.
     pub mergetool_exit_code: AtomicI32,
-    /// Keyed by workspace root; one watcher per workspace folder.
-    pub watchers: Mutex<HashMap<String, RepoWatcher>>,
+    /// Keyed by (window label, workspace root); one watcher per workspace folder of each window.
+    pub watchers: Mutex<HashMap<(String, String), RepoWatcher>>,
     /// Integrated terminal shells, killed at app exit.
     pub terminals: TerminalRegistry,
-    /// The Search Everywhere indexes (files, then symbols on first use) and
+    /// Where each terminal's output goes, and what a window leaves while Clear Cache restarts it.
+    pub terminal_links: crate::terminal_link::TerminalLinks,
+    /// Each window's Search Everywhere indexes (files, then symbols on first use) and
     /// Find in Files, alive only while the popup is used.
-    pub file_search: FileSearch,
+    pub file_search: WindowSearches,
     /// The Git Console's ring buffer of recent git commands (shared with git/cli.rs).
     pub git_console: &'static GitConsole,
     /// The MCP server; nothing runs until a switch turns it on.
     pub mcp: Mcp,
     /// The debug memory log (memory_log.rs), off unless the setting turns it on.
     pub memory_log: crate::memory_log::MemoryLog,
-    /// The workspace folders the `gmpreview` scheme may serve files from.
+    /// The workspace folders the `gmpreview` scheme may serve files from, per window.
     pub preview_folders: crate::preview_scheme::PreviewFolders,
+    /// The open windows: what each shows, the last focused one, the session to restore.
+    pub windows: Mutex<crate::windows::WindowBook>,
+    /// The app is quitting (Cmd+Q): closing windows no longer changes the saved session.
+    pub quitting: std::sync::atomic::AtomicBool,
 }
 
 impl AppState {
@@ -90,12 +96,19 @@ impl AppState {
             mergetool_exit_code: AtomicI32::new(1),
             watchers: Mutex::new(HashMap::new()),
             terminals: TerminalRegistry::default(),
-            file_search: FileSearch::default(),
+            terminal_links: crate::terminal_link::TerminalLinks::default(),
+            file_search: WindowSearches::default(),
             git_console: git_console::global(),
             mcp: Mcp::default(),
             memory_log: crate::memory_log::MemoryLog::default(),
             preview_folders: crate::preview_scheme::PreviewFolders::default(),
+            windows: Mutex::new(crate::windows::WindowBook::default()),
+            quitting: std::sync::atomic::AtomicBool::new(false),
         }
+    }
+
+    pub fn window_book(&self) -> std::sync::MutexGuard<'_, crate::windows::WindowBook> {
+        self.windows.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 }
 

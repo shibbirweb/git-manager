@@ -28,13 +28,28 @@
   /** Bumped on every diff load, so a binary preview reads the work tree file again. */
   let previewVersion = $state(0);
 
+  /** A commit changes the status and moves the branch tips moments apart: one reload covers both. */
+  const RELOAD_DELAY_MS = 150;
+  let reloadTimer: ReturnType<typeof setTimeout> | undefined;
+  let firstLoad = true;
+
   $effect(() => {
-    // A new status object means files changed on disk.
+    // A new status object means files changed on disk (an unchanged status keeps its object).
     void repoStore.statuses[repoRoot];
     void repoStore.historyVersion;
     void revision;
-    untrack(() => void load());
+    untrack(() => {
+      clearTimeout(reloadTimer);
+      if (firstLoad) {
+        firstLoad = false;
+        void load();
+        return;
+      }
+      reloadTimer = setTimeout(() => void load(), RELOAD_DELAY_MS);
+    });
   });
+
+  $effect(() => () => clearTimeout(reloadTimer));
 
   async function load(): Promise<void> {
     const token = ++loadToken;

@@ -3,16 +3,23 @@ import {
   adjacentTab,
   closeTabs,
   fileTabsUnder,
+  moveTab,
   openTab,
   otherPaths,
   pathsToRight,
+  pinnedFirst,
   pinTab,
   retargetTabs,
   setTabDirty,
+  setTabPinned,
+  showsTabAsTitle,
   tabLabels,
+  unpinnedPaths,
+  type FileTab,
   type TabsState,
 } from "./tabs";
 import { commitTabPath } from "./commitTabs";
+import { NO_TAB_LIMIT, SINGLE_TAB } from "./tabLimit";
 
 const empty: TabsState = { tabs: [], active: null };
 
@@ -171,5 +178,131 @@ describe("fileTabsUnder", () => {
   it("lists file tabs of the entries and inside folders, never pseudo tabs", () => {
     const commit = commitTabPath("/w/src", "abc123");
     expect(fileTabsUnder(["/w/src/a.ts", "/w/srcx/b.ts", commit, "/w/c.ts"], ["/w/src", "/w/c.ts"])).toEqual(["/w/src/a.ts", "/w/c.ts"]);
+  });
+});
+
+describe("setTabPinned", () => {
+  it("pins and unpins, and pinning keeps a preview tab open", () => {
+    const state = openTab(empty, "a.ts", false);
+    const pinned = setTabPinned(state, "a.ts", true);
+    expect(pinned.tabs[0]).toEqual({ path: "a.ts", preview: false, dirty: false, pinned: true });
+    expect(setTabPinned(pinned, "a.ts", false).tabs[0].pinned).toBe(false);
+    expect(setTabPinned(pinned, "a.ts", true)).toBe(pinned);
+    expect(setTabPinned(pinned, "missing.ts", true)).toBe(pinned);
+  });
+
+  it("keeps a pinned tab when the next single click reuses the preview slot", () => {
+    let state = setTabPinned(openTab(empty, "a.ts", false), "a.ts", true);
+    state = openTab(state, "b.ts", false);
+    expect(paths(state)).toEqual(["a.ts", "b.ts*"]);
+  });
+});
+
+/** Tabs named in order; a trailing "^" marks a pinned one. */
+function strip(...names: string[]): TabsState {
+  const tabs: FileTab[] = names.map((name) => ({
+    path: name.replace("^", ""),
+    preview: false,
+    dirty: false,
+    pinned: name.endsWith("^"),
+  }));
+  return { tabs, active: tabs[0]?.path ?? null };
+}
+
+function order(state: TabsState): string[] {
+  return state.tabs.map((tab) => `${tab.path}${tab.pinned ? "^" : ""}`);
+}
+
+describe("showsTabAsTitle", () => {
+  it("shows a lone tab as a title only while the setting is on", () => {
+    expect(showsTabAsTitle(true, SINGLE_TAB, 1, false)).toBe(true);
+    expect(showsTabAsTitle(false, SINGLE_TAB, 1, false)).toBe(false);
+  });
+
+  it("shows the title only in single tab mode", () => {
+    expect(showsTabAsTitle(true, NO_TAB_LIMIT, 1, false)).toBe(false);
+    expect(showsTabAsTitle(true, 5, 1, false)).toBe(false);
+  });
+
+  it("counts the Diff tab", () => {
+    expect(showsTabAsTitle(true, SINGLE_TAB, 0, true)).toBe(true);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 1, true)).toBe(false);
+  });
+
+  it("keeps tabs for an empty strip and for two or more tabs", () => {
+    expect(showsTabAsTitle(true, SINGLE_TAB, 0, false)).toBe(false);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 2, false)).toBe(false);
+  });
+});
+
+describe("pinned tabs", () => {
+  it("pinning moves a tab to the end of the pinned ones, unpinning to the start of the others", () => {
+    const state = strip("a^", "b^", "c", "d");
+    expect(order(setTabPinned(state, "d", true))).toEqual(["a^", "b^", "d^", "c"]);
+    expect(order(setTabPinned(state, "a", false))).toEqual(["b^", "a", "c", "d"]);
+  });
+
+  it("opens new tabs after the pinned ones", () => {
+    const state = openTab(strip("a^", "b^", "c"), "d", true);
+    expect(order(state)).toEqual(["a^", "b^", "d", "c"]);
+    expect(state.active).toBe("d");
+  });
+
+  it("puts pinned tabs first, keeping each side in order", () => {
+    const mixed = strip("a", "b^", "c", "d^");
+    expect(order({ ...mixed, tabs: pinnedFirst(mixed.tabs) })).toEqual(["b^", "d^", "a", "c"]);
+    const ordered = strip("a^", "b");
+    expect(pinnedFirst(ordered.tabs)).toBe(ordered.tabs);
+  });
+
+  it("bulk closes skip pinned tabs", () => {
+    const state = strip("a^", "b", "c^", "d");
+    expect(otherPaths(state, "b")).toEqual(["d"]);
+    expect(pathsToRight(state, "a")).toEqual(["b", "d"]);
+    expect(unpinnedPaths(state.tabs)).toEqual(["b", "d"]);
+  });
+});
+
+describe("moveTab", () => {
+  it("moves a tab to a gap, counted before the move", () => {
+    const state = strip("a", "b", "c", "d");
+    expect(order(moveTab(state, "a", 3))).toEqual(["b", "c", "a", "d"]);
+    expect(order(moveTab(state, "a", 4))).toEqual(["b", "c", "d", "a"]);
+    expect(order(moveTab(state, "d", 0))).toEqual(["d", "a", "b", "c"]);
+    expect(order(moveTab(state, "c", 1))).toEqual(["a", "c", "b", "d"]);
+  });
+
+  it("returns the same state for a drop next to the tab itself or an unknown tab", () => {
+    const state = strip("a", "b", "c");
+    expect(moveTab(state, "b", 1)).toBe(state);
+    expect(moveTab(state, "b", 2)).toBe(state);
+    expect(moveTab(state, "x", 0)).toBe(state);
+  });
+
+  it("never pins a tab dragged before the pinned ones", () => {
+    const state = strip("a^", "b^", "c", "d");
+    expect(order(moveTab(state, "d", 0))).toEqual(["a^", "b^", "d", "c"]);
+    expect(order(moveTab(state, "d", 1))).toEqual(["a^", "b^", "d", "c"]);
+    expect(moveTab(state, "c", 0)).toBe(state);
+  });
+
+  it("never unpins a pinned tab dragged past the others", () => {
+    const state = strip("a^", "b^", "c", "d");
+    expect(order(moveTab(state, "a", 4))).toEqual(["b^", "a^", "c", "d"]);
+    expect(order(moveTab(state, "b", 0))).toEqual(["b^", "a^", "c", "d"]);
+    expect(moveTab(state, "b", 3)).toBe(state);
+  });
+
+  it("keeps a dragged tab's flags", () => {
+    const state: TabsState = {
+      tabs: [
+        { path: "a", preview: false, dirty: false, pinned: true },
+        { path: "b", preview: false, dirty: true },
+        { path: "c", preview: true, dirty: false },
+      ],
+      active: "c",
+    };
+    expect(moveTab(state, "c", 0).tabs[1]).toEqual({ path: "c", preview: true, dirty: false });
+    expect(moveTab(state, "b", 3).tabs[2]).toEqual({ path: "b", preview: false, dirty: true });
   });
 });

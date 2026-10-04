@@ -1,4 +1,4 @@
-//! Replace in Files (JetBrains' Shift+Cmd+R): the Text tab's matching (same
+//! Replace in Files (Shift+Cmd+R): the Text tab's matching (same
 //! matcher, same lines, same options) with each match replaced, written back
 //! to disk atomically (a temporary file renamed over the original).
 //!

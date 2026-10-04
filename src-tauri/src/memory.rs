@@ -156,6 +156,13 @@ mod platform {
             approximate,
         }
     }
+
+    /// A WebKit web content process of this app, the only kind Clear Cache may end.
+    pub fn is_own_web_content(pid: c_int) -> bool {
+        pid > 0
+            && name_of(pid).starts_with("com.apple.WebKit.WebContent")
+            && usage().processes.iter().any(|process| process.pid == pid)
+    }
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -174,6 +181,63 @@ mod platform {
 pub fn usage() -> MemoryUsage {
     platform::usage()
 }
+
+/// Clear Cache: the pid of this window's web content process, checked to be ours. Ending it
+/// (`end_web_content`) makes Tauri reload the page in a new process, which starts with only what
+/// the page needs; a reload in the same process keeps what the old page held.
+#[cfg(target_os = "macos")]
+pub fn web_content_pid(window: &tauri::WebviewWindow) -> crate::error::AppResult<i32> {
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    use objc2::msg_send;
+    use objc2::runtime::AnyObject;
+
+    use crate::error::AppError;
+
+    let (sender, receiver) = mpsc::channel();
+    window
+        .with_webview(move |webview| {
+            let pointer = webview.inner();
+            let pid = if pointer.is_null() {
+                0
+            } else {
+                // SAFETY: tauri hands out the live WKWebView of this window on the main thread;
+                // _webProcessIdentifier is a plain getter WebKit has had since macOS 10.12.
+                let view = unsafe { &*(pointer as *const AnyObject) };
+                let pid: i32 = unsafe { msg_send![view, _webProcessIdentifier] };
+                pid
+            };
+            let _ = sender.send(pid);
+        })
+        .map_err(|err| AppError::invalid(format!("Could not reach the window: {err}")))?;
+    let pid = receiver.recv_timeout(Duration::from_secs(5)).unwrap_or(0);
+    if !platform::is_own_web_content(pid) {
+        return Err(AppError::invalid("Could not find the window's web content process"));
+    }
+    Ok(pid)
+}
+
+/// Ends a web content process found by `web_content_pid`, a moment later so the command's answer
+/// still reaches the page.
+#[cfg(target_os = "macos")]
+pub fn end_web_content(pid: i32) {
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(150));
+        // SAFETY: plain signal to a pid checked above to be our own WebKit web content process.
+        unsafe {
+            libc::kill(pid, libc::SIGKILL);
+        }
+    });
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn web_content_pid(_window: &tauri::WebviewWindow) -> crate::error::AppResult<i32> {
+    Err(crate::error::AppError::invalid("Clear Cache is only available on macOS for now"))
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn end_web_content(_pid: i32) {}
 
 #[cfg(test)]
 mod tests {
@@ -195,5 +259,15 @@ mod tests {
         assert_eq!(report.processes[0].pid, std::process::id() as i32);
         assert!(report.processes[0].bytes > 0);
         assert!(report.total_bytes >= report.processes[0].bytes);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn clear_cache_only_ends_our_web_content_process() {
+        // Our own process, launchd and pids that do not exist are never a web content process.
+        assert!(!platform::is_own_web_content(std::process::id() as i32));
+        assert!(!platform::is_own_web_content(1));
+        assert!(!platform::is_own_web_content(0));
+        assert!(!platform::is_own_web_content(-1));
     }
 }

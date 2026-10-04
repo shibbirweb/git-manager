@@ -1,31 +1,66 @@
 //! Watches a workspace folder (including every `.git` inside it) and emits
 //! debounced `repo-changed` and `workspace-changed` events so the UI
-//! refreshes without polling. `workspace-changed` carries `reposChanged` when
-//! a repository may have appeared or disappeared, so the frontend rescans
-//! only then.
+//! refreshes without polling. Each event says what kind of change happened
+//! (refs, config, index, operation state, work tree contents or structure),
+//! so the frontend reads only what may be out of date: the Log and branches
+//! only on refs changes, the Files panel only when entries come and go.
+//! Bursts (npm install, a big checkout) are held and merged so they cost one
+//! refresh every second or two instead of one every 300 ms.
 
 use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
-use std::time::Duration;
+use std::sync::mpsc::{self, RecvTimeoutError};
+use std::time::{Duration, Instant};
 
 use git2::Repository;
 use notify_debouncer_full::notify::event::{EventKind, ModifyKind};
 use notify_debouncer_full::{new_debouncer_opt, notify, notify::RecursiveMode, DebounceEventResult, NoCache};
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, EventTarget, Manager};
 
 use crate::error::{AppError, AppResult};
 use crate::git::workspace::{deepest_repo_index, SKIPPED_DIRS};
 use crate::state::{AppState, RepoWatcher};
 use crate::symbols::language_for;
 
+/// What changed in one repository during a batch.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepoChange {
+    /// HEAD, a branch, tag, remote branch or the stash moved, or a linked work tree changed.
+    pub refs: bool,
+    /// The repository config changed (remotes, upstreams).
+    pub config: bool,
+    /// The index changed, or something else in `.git` that status reads.
+    pub index: bool,
+    /// A merge, rebase, cherry-pick, revert or bisect started, moved on or ended.
+    pub op_state: bool,
+    /// A visible (not ignored) work tree path changed.
+    pub work_tree: bool,
+    /// Entries were created, deleted or renamed, or ignore rules changed.
+    pub structure: bool,
+    /// A `.gitattributes` file in the work tree changed (what Git LFS stores, among others).
+    pub attributes: bool,
+}
+
+impl RepoChange {
+    fn merge(&mut self, other: RepoChange) {
+        self.refs |= other.refs;
+        self.config |= other.config;
+        self.index |= other.index;
+        self.op_state |= other.op_state;
+        self.work_tree |= other.work_tree;
+        self.structure |= other.structure;
+        self.attributes |= other.attributes;
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct RepoChanged {
     repo_path: String,
-    /// HEAD, refs, index or operation state changed.
-    git_dir: bool,
-    work_tree: bool,
+    #[serde(flatten)]
+    change: RepoChange,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -34,28 +69,91 @@ struct WorkspaceChanged {
     workspace_root: String,
     /// A repository may have appeared or disappeared: the frontend rescans.
     repos_changed: bool,
+    /// Entries were created, deleted or renamed (or ignore rules changed): listings are out of date.
+    structure: bool,
+    /// Files outside every repository changed; they have no status to follow.
+    outside_repos: bool,
 }
 
 /// What one debounced batch changed.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Attribution {
-    /// `(index into repo_roots, git_dir, work_tree)`, in `repo_roots` order.
-    pub repos: Vec<(usize, bool, bool)>,
-    pub workspace_changed: bool,
+    /// `(index into repo_roots, change)`, in `repo_roots` order.
+    pub repos: Vec<(usize, RepoChange)>,
+    /// Visible entries were created, deleted or renamed anywhere, or ignore rules changed.
+    pub structure: bool,
+    /// Files outside every repository changed.
+    pub outside_repos: bool,
     /// A `.git` appeared or disappeared, a repository (or a folder holding
     /// one) was removed or moved, or a folder with a `.git` was moved in.
     pub repos_changed: bool,
 }
 
-/// `.git` internals that change constantly but never affect what we show.
-fn is_noise(git_relative: &Path) -> bool {
-    let first = git_relative.components().next();
-    let noisy_dir = matches!(
-        first,
-        Some(Component::Normal(name)) if name == "objects" || name == "logs" || name == "lfs"
-    );
-    let is_lock = git_relative.extension().map(|ext| ext == "lock").unwrap_or(false);
-    noisy_dir || is_lock
+impl Attribution {
+    /// Folds a later batch into this one.
+    pub fn merge(&mut self, other: Attribution) {
+        for (index, change) in other.repos {
+            match self.repos.iter_mut().find(|(candidate, _)| *candidate == index) {
+                Some((_, existing)) => existing.merge(change),
+                None => self.repos.push((index, change)),
+            }
+        }
+        self.repos.sort_by_key(|(index, _)| *index);
+        self.structure |= other.structure;
+        self.outside_repos |= other.outside_repos;
+        self.repos_changed |= other.repos_changed;
+    }
+
+    fn workspace_changed(&self) -> bool {
+        self.structure || self.outside_repos || self.repos_changed
+    }
+}
+
+/// What a path inside `.git` means for the UI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum GitDirChange {
+    Refs,
+    Config,
+    Index,
+    OpState,
+    /// `info/exclude`: what is ignored, so status and listings.
+    Ignore,
+}
+
+/// Classifies `git_relative` (a path inside `.git`); None for internals that
+/// change constantly but never affect what we show (objects, logs, locks).
+fn classify_git_path(git_relative: &Path, structural: bool) -> Option<GitDirChange> {
+    if git_relative.extension().is_some_and(|ext| ext == "lock") {
+        return None;
+    }
+    let names: Vec<&str> = git_relative
+        .components()
+        .filter_map(|component| match component {
+            Component::Normal(name) => name.to_str(),
+            _ => None,
+        })
+        .collect();
+    let first = *names.first()?;
+    match first {
+        "objects" | "lfs" | "hooks" | "description" | "COMMIT_EDITMSG" | "FETCH_HEAD" | "ORIG_HEAD" | "gc.pid" | "gc.log" => None,
+        // Dropping a stash other than the newest only rewrites its reflog.
+        "logs" => (names[1..] == ["refs", "stash"]).then_some(GitDirChange::Refs),
+        "HEAD" | "packed-refs" | "refs" | "shallow" => Some(GitDirChange::Refs),
+        "config" | "config.worktree" => Some(GitDirChange::Config),
+        "MERGE_HEAD" | "MERGE_MSG" | "MERGE_MODE" | "AUTO_MERGE" | "CHERRY_PICK_HEAD" | "REVERT_HEAD" | "REBASE_HEAD"
+        | "rebase-merge" | "rebase-apply" | "sequencer" => Some(GitDirChange::OpState),
+        name if name.starts_with("BISECT_") => Some(GitDirChange::OpState),
+        "info" if names.get(1) == Some(&"exclude") => Some(GitDirChange::Ignore),
+        // Linked work trees (the Branches sidebar lists them): added, removed, switched or (un)locked.
+        "worktrees" => match names.get(2) {
+            None if names.len() == 2 && structural => Some(GitDirChange::Refs),
+            Some(&("HEAD" | "locked" | "gitdir")) => Some(GitDirChange::Refs),
+            _ => None,
+        },
+        // The git dirs of absorbed submodules: their HEAD shows in this status.
+        "modules" if names.iter().any(|name| matches!(*name, "objects" | "logs" | "lfs")) => None,
+        _ => Some(GitDirChange::Index),
+    }
 }
 
 fn is_structural(kind: &EventKind) -> bool {
@@ -80,75 +178,157 @@ fn is_git_head(path: &Path) -> bool {
             .unwrap_or(false)
 }
 
+fn is_gitignore(path: &Path) -> bool {
+    path.file_name().is_some_and(|name| name == ".gitignore")
+}
+
+fn is_gitattributes(path: &Path) -> bool {
+    path.file_name().is_some_and(|name| name == ".gitattributes")
+}
+
 /// Attributes every event path to the deepest of `repo_roots` containing it.
 /// `is_ignored(repo_index, repo_relative_path)` asks that repository's
-/// .gitignore; ignored work tree paths are dropped. Paths outside every
-/// repository, visible work tree changes and any `.git` appearing or
-/// disappearing mark the workspace as changed. `has_git_entry(path)` is asked
-/// only for renamed paths, to notice a repository moved into the workspace.
+/// .gitignore; ignored work tree paths are dropped. Created, deleted or
+/// renamed visible entries, `.gitignore` edits and any `.git` appearing or
+/// disappearing change the structure; content edits outside every repository
+/// are `outside_repos`. `has_git_entry(path)` is asked only for renamed paths,
+/// to notice a repository moved into the workspace.
 pub fn attribute<'a>(
     repo_roots: &[PathBuf],
     events: impl IntoIterator<Item = (&'a EventKind, &'a [PathBuf])>,
     mut is_ignored: impl FnMut(usize, &Path) -> bool,
     mut has_git_entry: impl FnMut(&Path) -> bool,
 ) -> Attribution {
-    let mut flags = vec![(false, false); repo_roots.len()];
-    let mut workspace_changed = false;
-    let mut repos_changed = false;
+    let mut changes = vec![RepoChange::default(); repo_roots.len()];
+    let mut attribution = Attribution::default();
     for (kind, paths) in events {
         let structural = is_structural(kind);
         for path in paths {
             let is_git_entry = path.file_name().map(|name| name == ".git").unwrap_or(false);
             if is_git_entry && structural {
-                workspace_changed = true;
-                repos_changed = true;
+                attribution.structure = true;
+                attribution.repos_changed = true;
                 continue;
             }
-            if structural && !repos_changed {
+            if structural && !attribution.repos_changed {
                 let holds_known_repo = repo_roots.iter().any(|repo_root| repo_root.starts_with(path));
                 let moved_in_repo = matches!(kind, EventKind::Modify(ModifyKind::Name(_)))
                     && !has_git_component(path)
                     && has_git_entry(path);
-                repos_changed = holds_known_repo || moved_in_repo;
+                attribution.repos_changed = holds_known_repo || moved_in_repo;
             }
             let Some(index) = deepest_repo_index(repo_roots, path) else {
                 // A `.git` of a repository not in the list: only its creation matters.
                 if !has_git_component(path) {
-                    workspace_changed = true;
+                    attribution.outside_repos = true;
+                    attribution.structure |= structural || is_gitignore(path);
                 } else if structural && is_git_head(path) {
-                    repos_changed = true;
+                    attribution.repos_changed = true;
                 }
                 continue;
             };
             let Ok(relative) = path.strip_prefix(&repo_roots[index]) else {
                 continue;
             };
+            let change = &mut changes[index];
             if let Ok(git_relative) = relative.strip_prefix(".git") {
-                if !is_noise(git_relative) {
-                    flags[index].0 = true;
+                match classify_git_path(git_relative, structural) {
+                    Some(GitDirChange::Refs) => change.refs = true,
+                    Some(GitDirChange::Config) => change.config = true,
+                    Some(GitDirChange::Index) => change.index = true,
+                    Some(GitDirChange::OpState) => change.op_state = true,
+                    Some(GitDirChange::Ignore) => {
+                        change.index = true;
+                        change.structure = true;
+                        attribution.structure = true;
+                    }
+                    None => {}
                 }
             } else if has_git_component(relative) {
                 // Inside the `.git` of a nested repository that is not in the list yet.
                 if structural && is_git_head(relative) {
-                    repos_changed = true;
+                    attribution.repos_changed = true;
                 }
                 continue;
             } else if relative.as_os_str().is_empty() || !is_ignored(index, relative) {
-                flags[index].1 = true;
-                workspace_changed = true;
+                change.work_tree = true;
+                change.attributes |= is_gitattributes(relative);
+                if structural || is_gitignore(relative) {
+                    change.structure = true;
+                    attribution.structure = true;
+                }
             }
         }
     }
-    let repos = flags
+    attribution.repos = changes
         .into_iter()
         .enumerate()
-        .filter(|(_, (git_dir, work_tree))| *git_dir || *work_tree)
-        .map(|(index, (git_dir, work_tree))| (index, git_dir, work_tree))
+        .filter(|(_, change)| *change != RepoChange::default())
         .collect();
-    Attribution {
-        repos,
-        workspace_changed,
-        repos_changed,
+    attribution
+}
+
+/// A batch with more paths than this is a burst (npm install, a big checkout).
+pub const BURST_PATHS: usize = 1000;
+/// A burst is over after this long without events.
+const BURST_QUIET: Duration = Duration::from_secs(1);
+/// A held burst is sent at least this often, so a long one still shows progress.
+const BURST_MAX_HOLD: Duration = Duration::from_secs(2);
+
+/// Holds and merges the batches of a burst: once a batch has more than
+/// `BURST_PATHS` paths, every batch is held until events stop for
+/// `BURST_QUIET` or the first held one is `BURST_MAX_HOLD` old. Small batches
+/// outside a burst pass straight through. Pure, so it is tested without threads.
+#[derive(Debug, Default)]
+pub struct BurstGate {
+    pending: Option<Attribution>,
+    held_since: Option<Instant>,
+    last_batch: Option<Instant>,
+}
+
+impl BurstGate {
+    fn bursting(&self, now: Instant) -> bool {
+        self.last_batch.is_some_and(|last| now.saturating_duration_since(last) < BURST_QUIET)
+    }
+
+    /// A batch of `path_count` paths arrived: returns what to send now, if anything.
+    pub fn push(&mut self, batch: Attribution, path_count: usize, now: Instant) -> Option<Attribution> {
+        let bursting = self.pending.is_some() || self.bursting(now);
+        if !bursting && path_count <= BURST_PATHS {
+            return Some(batch);
+        }
+        match &mut self.pending {
+            Some(pending) => pending.merge(batch),
+            None => {
+                self.pending = Some(batch);
+                self.held_since = Some(now);
+            }
+        }
+        self.last_batch = Some(now);
+        None
+    }
+
+    /// When the held batch is due; None when nothing is held.
+    pub fn deadline(&self) -> Option<Instant> {
+        self.pending.as_ref()?;
+        let quiet = self.last_batch? + BURST_QUIET;
+        let max_hold = self.held_since? + BURST_MAX_HOLD;
+        Some(quiet.min(max_hold))
+    }
+
+    /// The held batch once it is due.
+    pub fn poll(&mut self, now: Instant) -> Option<Attribution> {
+        if self.deadline().is_some_and(|deadline| now >= deadline) {
+            self.held_since = None;
+            return self.pending.take();
+        }
+        None
+    }
+
+    /// Whatever is held, for a watcher that stops.
+    pub fn take(&mut self) -> Option<Attribution> {
+        self.held_since = None;
+        self.pending.take()
     }
 }
 
@@ -242,19 +422,56 @@ fn submodule_parents(repo_roots: &[PathBuf]) -> Vec<Option<usize>> {
 }
 
 /// Adds a work tree change for the parent of every changed submodule.
-pub fn with_submodule_parents(mut repos: Vec<(usize, bool, bool)>, parents: &[Option<usize>]) -> Vec<(usize, bool, bool)> {
-    let changed: Vec<usize> = repos.iter().map(|(index, _, _)| *index).collect();
+pub fn with_submodule_parents(mut repos: Vec<(usize, RepoChange)>, parents: &[Option<usize>]) -> Vec<(usize, RepoChange)> {
+    let changed: Vec<usize> = repos.iter().map(|(index, _)| *index).collect();
     for index in changed {
         let Some(parent) = parents.get(index).copied().flatten() else {
             continue;
         };
-        match repos.iter_mut().find(|(candidate, _, _)| *candidate == parent) {
-            Some(entry) => entry.2 = true,
-            None => repos.push((parent, false, true)),
+        match repos.iter_mut().find(|(candidate, _)| *candidate == parent) {
+            Some((_, change)) => change.work_tree = true,
+            None => repos.push((parent, RepoChange { work_tree: true, ..RepoChange::default() })),
         }
     }
-    repos.sort_by_key(|(index, _, _)| *index);
+    repos.sort_by_key(|(index, _)| *index);
     repos
+}
+
+/// Starts the thread that passes batches through a `BurstGate` to `emit`. It
+/// ends when the returned sender is dropped (the watcher stopped), sending
+/// what it still holds.
+fn spawn_burst_gate(emit: impl Fn(Attribution) + Send + 'static) -> AppResult<mpsc::Sender<(Attribution, usize)>> {
+    let (sender, receiver) = mpsc::channel::<(Attribution, usize)>();
+    std::thread::Builder::new()
+        .name("watch-bursts".into())
+        .spawn(move || {
+            let mut gate = BurstGate::default();
+            loop {
+                let received = match gate.deadline() {
+                    Some(deadline) => receiver.recv_timeout(deadline.saturating_duration_since(Instant::now())),
+                    None => receiver.recv().map_err(|_| RecvTimeoutError::Disconnected),
+                };
+                match received {
+                    Ok((batch, path_count)) => {
+                        if let Some(ready) = gate.push(batch, path_count, Instant::now()) {
+                            emit(ready);
+                        }
+                    }
+                    Err(RecvTimeoutError::Timeout) => {}
+                    Err(RecvTimeoutError::Disconnected) => {
+                        if let Some(rest) = gate.take() {
+                            emit(rest);
+                        }
+                        return;
+                    }
+                }
+                if let Some(ready) = gate.poll(Instant::now()) {
+                    emit(ready);
+                }
+            }
+        })
+        .map_err(watch_error)?;
+    Ok(sender)
 }
 
 fn watch_error(err: impl std::fmt::Display) -> AppError {
@@ -263,8 +480,12 @@ fn watch_error(err: impl std::fmt::Display) -> AppError {
 
 /// One recursive watcher on the workspace root, plus the `.git` directory of
 /// any repository outside it (a repository enclosing the workspace) and the
-/// git dir of a linked work tree whose main repository is elsewhere.
-pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> AppResult<RepoWatcher> {
+/// git dir of a linked work tree whose main repository is elsewhere. Its events
+/// go only to the window that watches (`window_label`).
+pub fn watch(app: AppHandle, window_label: &str, workspace_root: &str, repo_roots: &[String]) -> AppResult<RepoWatcher> {
+    let app_for_emit = app.clone();
+    let target = EventTarget::webview_window(window_label);
+    let search_label = window_label.to_string();
     let root = canonical_or_given(workspace_root);
     let canonical_roots: Vec<PathBuf> = repo_roots.iter().map(|repo_root| canonical_or_given(repo_root)).collect();
     let outside_git_dirs: Vec<PathBuf> = canonical_roots
@@ -284,6 +505,31 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
 
     let workspace_root_owned = workspace_root.to_string();
     let repo_paths = repo_roots.to_vec();
+    let emit = move |attribution: Attribution| {
+        for (index, change) in &attribution.repos {
+            let _ = app_for_emit.emit_to(
+                target.clone(),
+                "repo-changed",
+                RepoChanged {
+                    repo_path: repo_paths[*index].clone(),
+                    change: *change,
+                },
+            );
+        }
+        if attribution.workspace_changed() {
+            let _ = app_for_emit.emit_to(
+                target.clone(),
+                "workspace-changed",
+                WorkspaceChanged {
+                    workspace_root: workspace_root_owned.clone(),
+                    repos_changed: attribution.repos_changed,
+                    structure: attribution.structure,
+                    outside_repos: attribution.outside_repos,
+                },
+            );
+        }
+    };
+    let batches = spawn_burst_gate(emit)?;
     let roots = canonical_roots.clone();
     let watched_root = root.clone();
     let handler = move |result: DebounceEventResult| {
@@ -291,10 +537,14 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
             return;
         };
         let changes = || events.iter().map(|event| (&event.kind, event.paths.as_slice()));
-        if adds_or_removes_files(&watched_root, changes()) {
-            app.state::<AppState>().file_search.mark_stale();
-        } else if edits_source_files(&watched_root, changes()) {
-            app.state::<AppState>().file_search.mark_contents_changed();
+        // Only this window's search indexes this folder.
+        let search = app.state::<AppState>().file_search.existing(&search_label);
+        if let Some(search) = search {
+            if adds_or_removes_files(&watched_root, changes()) {
+                search.mark_stale();
+            } else if edits_source_files(&watched_root, changes()) {
+                search.mark_contents_changed();
+            }
         }
         let relinked: Vec<(EventKind, Vec<PathBuf>)> = events
             .iter()
@@ -303,9 +553,10 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
                 (event.kind, paths)
             })
             .collect();
+        let path_count = relinked.iter().map(|(_, paths)| paths.len()).sum();
         // Opened lazily for this batch only.
         let mut repos: HashMap<usize, Option<Repository>> = HashMap::new();
-        let attribution = attribute(
+        let mut attribution = attribute(
             &roots,
             relinked.iter().map(|(kind, paths)| (kind, paths.as_slice())),
             |index, relative| {
@@ -318,24 +569,9 @@ pub fn watch(app: AppHandle, workspace_root: &str, repo_roots: &[String]) -> App
             },
             has_git_entry,
         );
-        for (index, git_dir, work_tree) in with_submodule_parents(attribution.repos, &parents) {
-            let _ = app.emit(
-                "repo-changed",
-                RepoChanged {
-                    repo_path: repo_paths[index].clone(),
-                    git_dir,
-                    work_tree,
-                },
-            );
-        }
-        if attribution.workspace_changed || attribution.repos_changed {
-            let _ = app.emit(
-                "workspace-changed",
-                WorkspaceChanged {
-                    workspace_root: workspace_root_owned.clone(),
-                    repos_changed: attribution.repos_changed,
-                },
-            );
+        attribution.repos = with_submodule_parents(attribution.repos, &parents);
+        if attribution != Attribution::default() {
+            let _ = batches.send((attribution, path_count));
         }
     };
     let mut debouncer =
@@ -354,11 +590,29 @@ mod tests {
 
     use notify_debouncer_full::notify::event::{CreateKind, DataChange, EventKind, ModifyKind, RemoveKind, RenameMode};
 
+    use std::time::{Duration, Instant};
+
     use super::{
         adds_or_removes_files, attribute, edits_source_files, git_dir_links, has_git_entry, relink, submodule_parents,
-        with_submodule_parents, Attribution,
+        with_submodule_parents, Attribution, BurstGate, RepoChange, BURST_PATHS,
     };
     use crate::test_support::TestDir;
+
+    fn content() -> RepoChange {
+        RepoChange { work_tree: true, ..RepoChange::default() }
+    }
+
+    fn structure() -> RepoChange {
+        RepoChange { work_tree: true, structure: true, ..RepoChange::default() }
+    }
+
+    fn refs() -> RepoChange {
+        RepoChange { refs: true, ..RepoChange::default() }
+    }
+
+    fn index() -> RepoChange {
+        RepoChange { index: true, ..RepoChange::default() }
+    }
 
     const MODIFY: EventKind = EventKind::Modify(ModifyKind::Data(DataChange::Content));
     const CREATE_DIR: EventKind = EventKind::Create(CreateKind::Folder);
@@ -386,26 +640,79 @@ mod tests {
 
     #[test]
     fn work_tree_changes_go_to_the_deepest_repository() {
+        // Content edits in a repository leave the workspace listing alone.
         let result = run(NESTED, &[(MODIFY, paths(&["/w/apps/web/src/a.ts"]))]);
-        assert_eq!(result, Attribution { repos: vec![(1, false, true)], workspace_changed: true, ..Attribution::default() });
+        assert_eq!(result, Attribution { repos: vec![(1, content())], ..Attribution::default() });
 
         let result = run(NESTED, &[(MODIFY, paths(&["/w/README.md", "/w/apps/web/b.ts"]))]);
-        assert_eq!(result, Attribution { repos: vec![(0, false, true), (1, false, true)], workspace_changed: true, ..Attribution::default() });
+        assert_eq!(result, Attribution { repos: vec![(0, content()), (1, content())], ..Attribution::default() });
+
+        // A .gitattributes edit is flagged, so the Git LFS state is read again.
+        let result = run(NESTED, &[(MODIFY, paths(&["/w/apps/web/art/.gitattributes"]))]);
+        let expected = RepoChange { work_tree: true, attributes: true, ..RepoChange::default() };
+        assert_eq!(result, Attribution { repos: vec![(1, expected)], ..Attribution::default() });
+    }
+
+    #[test]
+    fn created_deleted_or_renamed_entries_and_gitignore_edits_change_the_structure() {
+        for kind in [CREATE_FILE, REMOVE_DIR, RENAME] {
+            let result = run(NESTED, &[(kind, paths(&["/w/apps/web/src/new.ts"]))]);
+            assert_eq!(result, Attribution { repos: vec![(1, structure())], structure: true, ..Attribution::default() });
+        }
+        // What is ignored decides the greyed rows of the Files panel.
+        let result = run(NESTED, &[(MODIFY, paths(&["/w/.gitignore"]))]);
+        assert_eq!(result, Attribution { repos: vec![(0, structure())], structure: true, ..Attribution::default() });
+        let exclude = run(NESTED, &[(MODIFY, paths(&["/w/.git/info/exclude"]))]);
+        let expected = RepoChange { index: true, structure: true, ..RepoChange::default() };
+        assert_eq!(exclude, Attribution { repos: vec![(0, expected)], structure: true, ..Attribution::default() });
     }
 
     #[test]
     fn git_dir_changes_skip_noise_and_do_not_touch_the_workspace() {
         let result = run(NESTED, &[(MODIFY, paths(&["/w/apps/web/.git/index", "/w/.git/refs/heads/main"]))]);
-        assert_eq!(result, Attribution { repos: vec![(0, true, false), (1, true, false)], workspace_changed: false, ..Attribution::default() });
+        assert_eq!(result, Attribution { repos: vec![(0, refs()), (1, index())], ..Attribution::default() });
 
         let noise = paths(&[
             "/w/apps/web/.git/objects/ab/cdef",
             "/w/.git/logs/HEAD",
+            "/w/.git/logs/refs/heads/main",
             "/w/.git/lfs/tmp",
             "/w/.git/index.lock",
             "/w/.git/refs/heads/main.lock",
+            "/w/.git/FETCH_HEAD",
+            "/w/.git/ORIG_HEAD",
+            "/w/.git/COMMIT_EDITMSG",
+            "/w/.git/hooks/pre-commit",
+            "/w/.git/worktrees/wt/index",
+            "/w/.git/worktrees/wt/logs/HEAD",
+            "/w/.git/modules/lib/objects/ab/cdef",
+            "/w/.git",
         ]);
         assert_eq!(run(NESTED, &[(MODIFY, noise)]), Attribution::default());
+    }
+
+    #[test]
+    fn git_dir_changes_are_told_apart() {
+        let kind_of = |git_path: &str| {
+            let result = run(&["/w"], &[(MODIFY, paths(&[&format!("/w/.git/{git_path}")]))]);
+            result.repos.first().map(|(_, change)| *change).unwrap_or_default()
+        };
+        for refs_path in ["HEAD", "packed-refs", "refs/heads/main", "refs/remotes/origin/main", "refs/tags/v1", "refs/stash", "logs/refs/stash", "shallow"] {
+            assert_eq!(kind_of(refs_path), refs(), "{refs_path}");
+        }
+        for linked in ["worktrees/wt/HEAD", "worktrees/wt/locked", "worktrees/wt/gitdir"] {
+            assert_eq!(kind_of(linked), refs(), "{linked}");
+        }
+        let removed = run(&["/w"], &[(REMOVE_DIR, paths(&["/w/.git/worktrees/wt"]))]);
+        assert_eq!(removed.repos, vec![(0, refs())]);
+        assert_eq!(kind_of("config"), RepoChange { config: true, ..RepoChange::default() });
+        let op_state = RepoChange { op_state: true, ..RepoChange::default() };
+        for op_path in ["MERGE_HEAD", "MERGE_MSG", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge/done", "rebase-apply/next", "sequencer/todo", "BISECT_LOG"] {
+            assert_eq!(kind_of(op_path), op_state, "{op_path}");
+        }
+        for status_path in ["index", "sharedindex.abc", "modules/lib/HEAD", "info/sparse-checkout"] {
+            assert_eq!(kind_of(status_path), index(), "{status_path}");
+        }
     }
 
     #[test]
@@ -424,8 +731,10 @@ mod tests {
     #[test]
     fn paths_outside_every_repository_change_the_workspace() {
         let result = run(&["/w/apps/web"], &[(MODIFY, paths(&["/w/notes.txt", "/w/other/x.log"]))]);
-        assert_eq!(result, Attribution { repos: Vec::new(), workspace_changed: true, ..Attribution::default() });
-        assert!(run(&[], &[(MODIFY, paths(&["/w/a.txt"]))]).workspace_changed);
+        assert_eq!(result, Attribution { outside_repos: true, ..Attribution::default() });
+        assert!(run(&[], &[(MODIFY, paths(&["/w/a.txt"]))]).outside_repos);
+        let created = run(&[], &[(CREATE_FILE, paths(&["/w/a.txt"]))]);
+        assert_eq!(created, Attribution { structure: true, outside_repos: true, ..Attribution::default() });
     }
 
     #[test]
@@ -437,13 +746,13 @@ mod tests {
                 (EventKind::Create(CreateKind::File), paths(&["/w/libs/new/.git/HEAD"])),
             ],
         );
-        assert_eq!(created, Attribution { repos: Vec::new(), workspace_changed: true, repos_changed: true });
+        assert_eq!(created, Attribution { structure: true, repos_changed: true, ..Attribution::default() });
 
         let removed = run(NESTED, &[(REMOVE_DIR, paths(&["/w/apps/web/.git"]))]);
-        assert_eq!(removed, Attribution { repos: Vec::new(), workspace_changed: true, repos_changed: true });
+        assert_eq!(removed, Attribution { structure: true, repos_changed: true, ..Attribution::default() });
 
         let renamed = run(&[], &[(RENAME, paths(&["/w/x/.git", "/w/x/.git-old"]))]);
-        assert!(renamed.workspace_changed);
+        assert!(renamed.structure);
         assert!(renamed.repos_changed);
 
         // Internals of a repository that is not in the list are ignored.
@@ -455,21 +764,22 @@ mod tests {
     #[test]
     fn enclosing_repository_outside_the_workspace() {
         let result = run(&["/e"], &[(MODIFY, paths(&["/e/.git/HEAD", "/e/sub/file.txt"]))]);
-        assert_eq!(result, Attribution { repos: vec![(0, true, true)], workspace_changed: true, ..Attribution::default() });
+        let expected = RepoChange { refs: true, work_tree: true, ..RepoChange::default() };
+        assert_eq!(result, Attribution { repos: vec![(0, expected)], ..Attribution::default() });
     }
 
     #[test]
     fn a_new_head_in_an_unknown_git_dir_asks_for_a_rescan() {
         // `git init` and `git clone` write HEAD through a lock file and a rename.
         let top = run(&[], &[(RENAME, paths(&["/w/new/.git/HEAD.lock", "/w/new/.git/HEAD"]))]);
-        assert_eq!(top, Attribution { repos: Vec::new(), workspace_changed: false, repos_changed: true });
+        assert_eq!(top, Attribution { repos_changed: true, ..Attribution::default() });
 
         let nested = run(NESTED, &[(CREATE_FILE, paths(&["/w/libs/new/.git/HEAD"]))]);
-        assert_eq!(nested, Attribution { repos: Vec::new(), workspace_changed: false, repos_changed: true });
+        assert_eq!(nested, Attribution { repos_changed: true, ..Attribution::default() });
 
         // Checking out a branch in a known repository rewrites HEAD too: no rescan.
         let checkout = run(NESTED, &[(RENAME, paths(&["/w/apps/web/.git/HEAD"]))]);
-        assert_eq!(checkout, Attribution { repos: vec![(1, true, false)], workspace_changed: false, repos_changed: false });
+        assert_eq!(checkout, Attribution { repos: vec![(1, refs())], ..Attribution::default() });
 
         // Content changes inside an unknown `.git` are still ignored.
         assert_eq!(run(&[], &[(MODIFY, paths(&["/w/new/.git/HEAD"]))]), Attribution::default());
@@ -536,15 +846,80 @@ mod tests {
         let roots = paths(&["/w/app", "/w/app/lib", "/w/wt"]);
         let relinked = [relink(Path::new("/main/.git/worktrees/wt/index"), &links).unwrap()];
         let result = attribute(&roots, [(&MODIFY, &relinked[..])], |_, _| false, |_| false);
-        assert_eq!(result.repos, vec![(2, true, false)]);
+        assert_eq!(result.repos, vec![(2, index())]);
     }
 
     #[test]
     fn a_changed_submodule_refreshes_its_parent() {
         let parents = [None, Some(0), None];
-        assert_eq!(with_submodule_parents(vec![(1, false, true)], &parents), vec![(0, false, true), (1, false, true)]);
-        assert_eq!(with_submodule_parents(vec![(0, true, false), (1, true, false)], &parents), vec![(0, true, true), (1, true, false)]);
-        assert_eq!(with_submodule_parents(vec![(2, true, true)], &parents), vec![(2, true, true)]);
+        assert_eq!(with_submodule_parents(vec![(1, content())], &parents), vec![(0, content()), (1, content())]);
+        let refs_and_content = RepoChange { refs: true, work_tree: true, ..RepoChange::default() };
+        assert_eq!(with_submodule_parents(vec![(0, refs()), (1, refs())], &parents), vec![(0, refs_and_content), (1, refs())]);
+        assert_eq!(with_submodule_parents(vec![(2, refs_and_content)], &parents), vec![(2, refs_and_content)]);
+    }
+
+    #[test]
+    fn merged_batches_keep_every_change() {
+        let mut first = Attribution { repos: vec![(1, refs())], structure: true, ..Attribution::default() };
+        first.merge(Attribution { repos: vec![(0, content()), (1, index())], outside_repos: true, ..Attribution::default() });
+        let both = RepoChange { refs: true, index: true, ..RepoChange::default() };
+        assert_eq!(
+            first,
+            Attribution { repos: vec![(0, content()), (1, both)], structure: true, outside_repos: true, repos_changed: false },
+        );
+    }
+
+    fn batch(repo_index: usize) -> Attribution {
+        Attribution { repos: vec![(repo_index, content())], ..Attribution::default() }
+    }
+
+    #[test]
+    fn small_batches_pass_straight_through_the_burst_gate() {
+        let mut gate = BurstGate::default();
+        let start = Instant::now();
+        assert_eq!(gate.push(batch(0), 3, start), Some(batch(0)));
+        assert_eq!(gate.push(batch(1), BURST_PATHS, start + Duration::from_millis(300)), Some(batch(1)));
+        assert_eq!(gate.deadline(), None);
+    }
+
+    #[test]
+    fn a_burst_is_held_merged_and_sent_once_it_settles() {
+        let mut gate = BurstGate::default();
+        let start = Instant::now();
+        let at = |millis: u64| start + Duration::from_millis(millis);
+        assert_eq!(gate.push(batch(0), BURST_PATHS + 1, start), None);
+        // Small batches during the burst are held with it.
+        assert_eq!(gate.push(batch(1), 2, at(300)), None);
+        assert_eq!(gate.deadline(), Some(at(1300)));
+        assert_eq!(gate.poll(at(1000)), None);
+        let mut expected = batch(0);
+        expected.merge(batch(1));
+        assert_eq!(gate.poll(at(1300)), Some(expected));
+        assert_eq!(gate.deadline(), None);
+        // Quiet again: the next small batch goes out at once.
+        assert_eq!(gate.push(batch(2), 2, at(2400)), Some(batch(2)));
+    }
+
+    #[test]
+    fn a_long_burst_is_sent_every_two_seconds_at_most() {
+        let mut gate = BurstGate::default();
+        let start = Instant::now();
+        let at = |millis: u64| start + Duration::from_millis(millis);
+        let mut sent = Vec::new();
+        // Batches every 300 ms for 6 seconds, each over the burst size.
+        for step in 0..20 {
+            let now = at(step * 300);
+            if let Some(ready) = gate.poll(now) {
+                sent.push(now);
+                assert!(!ready.repos.is_empty());
+            }
+            assert_eq!(gate.push(batch(0), BURST_PATHS * 5, now), None);
+        }
+        assert_eq!(sent, vec![at(2100), at(4200)]);
+        // Small batches right after a sent burst are still held: it has not settled.
+        assert_eq!(gate.push(batch(1), 1, at(5800)), None);
+        assert_eq!(gate.poll(at(6800)).map(|held| held.repos.len()), Some(2));
+        assert_eq!(gate.take(), None);
     }
 
     #[test]

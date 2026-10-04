@@ -98,7 +98,7 @@ export const EDITOR_COMMANDS: Record<EditorAction, EditorCommandEntry> = {
 
 /**
  * The editor keys CodeMirror's own keymaps do not cover. Listed before the default and
- * history keymaps, so Shift+Cmd+U is Toggle Case (JetBrains) rather than Redo Selection.
+ * history keymaps, so Shift+Cmd+U is Toggle Case rather than Redo Selection.
  */
 export const codeKeymap: readonly KeyBinding[] = (Object.keys(EDITOR_SHORTCUTS) as EditorAction[]).flatMap((action) => {
   const shortcut = EDITOR_SHORTCUTS[action];

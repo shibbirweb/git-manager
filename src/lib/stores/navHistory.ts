@@ -1,5 +1,4 @@
-// Back / forward location history across files, like VS Code's Go Back / Go
-// Forward. Small cursor moves update the current location in place; opening
+// Back / forward location history across files. Small cursor moves update the current location in place; opening
 // another file or jumping far records a new entry.
 
 import { isPseudoTab } from "./pseudoTabs";
@@ -176,18 +175,6 @@ export class NavigationHistory {
         this.forget(target.filePath);
       }
     }
-  }
-
-  /** Files visited, most recent first, each once: the current one, forward, then back. */
-  recentFilePaths(): string[] {
-    const seen = new Set<string>();
-    const stops = [this.current, ...this.forward.slice().reverse(), ...this.back.slice().reverse()];
-    for (const stop of stops) {
-      if (stop && isFile(stop)) {
-        seen.add(stop.filePath);
-      }
-    }
-    return [...seen];
   }
 
   /** Drops entries for a file that no longer exists. */

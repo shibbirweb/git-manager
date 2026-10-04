@@ -42,7 +42,7 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Scrollback | Lines kept for scrolling back, 1,000 to 100,000. More lines use more memory. Type a number and press Enter. | 5,000 |
+| Scrollback | Lines kept for scrolling back, 1,000 to 100,000. A full terminal uses about 2 KB per line in a wide window: about 10 MB at 5,000 lines and 200 MB at 100,000. Type a number and press Enter. | 5,000 |
 | Copy on selection | Selecting text copies it to the clipboard. | Off |
 | Find in terminal | Cmd+F searches the output. Off, the search code is never loaded. | On |
 | Clickable file paths | Cmd+click a path such as `src/app.ts:12:5` to open it at that line. Only files inside an open folder become links. | On |
@@ -57,7 +57,7 @@ The **Keyboard** row is a reminder: Ctrl+` shows or hides the terminal, Ctrl+Shi
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| GPU acceleration | Draws with WebGL (the graphics card), which keeps busy output smooth, and falls back to normal drawing when WebGL is missing or fails. Off saves graphics memory. | On |
+| GPU acceleration | Draws with WebGL (the graphics card), which keeps busy output smooth, and falls back to normal drawing when WebGL is missing or fails. It uses about 70 MB for the first terminal and 10 MB for each other one; off saves that. | On |
 | Unicode 11 widths | Emoji and wide characters take the right number of columns. Applies to output printed after the change. | On |
 
 Every switch applies to open terminals at once. What each part does is on [Terminal Features](Terminal-Features.md).

@@ -15,6 +15,10 @@ export const EDITOR_FEATURES = [
   "scrollPastEnd",
   "columnSelection",
   "ruler",
+  "stickyScroll",
+  "minimap",
+  "bracketPairColors",
+  "matchBrackets",
 ] as const;
 
 export type EditorFeature = (typeof EDITOR_FEATURES)[number];
@@ -30,12 +34,17 @@ export interface EditorFeatureOptions {
   columnSelection: boolean;
   /** 0 hides the margin line. */
   rulerColumn: number;
+  stickyScroll: boolean;
+  minimap: boolean;
+  bracketPairColors: boolean;
+  matchBrackets: boolean;
 }
 
 /**
  * Where each feature applies. Typing aids only help where you type code. Folding and
  * scrolling past the end would move one pane's lines against the others in a diff or the
- * merge tool, so they stay in the file editor; drawing and selecting work everywhere.
+ * merge tool, so they stay in the file editor; drawing and selecting work everywhere. The
+ * sides of a diff share one scroller, so sticky scroll and the minimap are file editor only.
  */
 export const FEATURE_KINDS: Record<EditorFeature, readonly EditorKind[]> = {
   autoCloseBrackets: ["file"],
@@ -46,6 +55,10 @@ export const FEATURE_KINDS: Record<EditorFeature, readonly EditorKind[]> = {
   scrollPastEnd: ["file"],
   columnSelection: ["file", "diff", "merge"],
   ruler: ["file", "diff", "merge"],
+  stickyScroll: ["file"],
+  minimap: ["file"],
+  bracketPairColors: ["file", "diff", "merge"],
+  matchBrackets: ["file", "diff", "merge"],
 };
 
 /** The settings that switch the features. */
@@ -60,6 +73,10 @@ export type EditorFeaturePreferences = Pick<
   | "editorScrollPastEnd"
   | "editorColumnSelection"
   | "editorRulerColumn"
+  | "editorStickyScroll"
+  | "editorMinimap"
+  | "editorBracketPairColors"
+  | "editorMatchBrackets"
 >;
 
 export function featureOptions(preferences: EditorFeaturePreferences): EditorFeatureOptions {
@@ -73,6 +90,10 @@ export function featureOptions(preferences: EditorFeaturePreferences): EditorFea
     scrollPastEnd: preferences.editorScrollPastEnd,
     columnSelection: preferences.editorColumnSelection,
     rulerColumn: preferences.editorRulerColumn,
+    stickyScroll: preferences.editorStickyScroll,
+    minimap: preferences.editorMinimap,
+    bracketPairColors: preferences.editorBracketPairColors,
+    matchBrackets: preferences.editorMatchBrackets,
   };
 }
 
@@ -99,7 +120,7 @@ export function changedFeatures(previous: EditorFeatureOptions, next: EditorFeat
   });
 }
 
-/** Prose and plain text get words only on Ctrl+Space, like JetBrains, so writing a sentence opens no list. */
+/** Prose and plain text get words only on Ctrl+Space, so writing a sentence opens no list. */
 export function wordsWhileTyping(languageName: string | null): boolean {
   return languageName !== null && languageName !== "markdown";
 }

@@ -1,6 +1,5 @@
-// Which repository the screen shows, and the status bar's repository picker
-// (VS Code's repository quick pick with its Auto entry). Kept free of Svelte so
-// it can be tested directly.
+// Which repository the screen shows, and the status bar's repository picker with its
+// Auto entry. Kept free of Svelte so it can be tested directly.
 
 import { parseBranchTabPath } from "$lib/stores/branchTabs";
 import { parseCommitTabPath } from "$lib/stores/commitTabs";

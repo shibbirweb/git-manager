@@ -1,4 +1,4 @@
-<!-- JetBrains' Shelve Changes: a name, the changed files with checkboxes (staged, unstaged and new
+<!-- Shelve Changes: a name, the changed files with checkboxes (staged, unstaged and new
      files) and "Keep changes in the working tree". The changes are saved as a patch on the shelf,
      then taken out of the work tree unless kept. -->
 <script lang="ts">

@@ -1,5 +1,5 @@
 <!--
-  Search Everywhere popup, like JetBrains: All, Classes, Files, Symbols and Text tabs.
+  Search Everywhere popup: All, Classes, Files, Symbols and Text tabs.
   Opened by double Shift (All), Cmd+O (Classes), Cmd+P or Shift+Cmd+O (Files),
   Option+Cmd+O (Symbols), Shift+Cmd+F (Text, Find in Files) and Shift+Cmd+R (Text with
   its Replace field, Replace in Files).
@@ -11,6 +11,7 @@
   import { dialogs } from "$lib/ui/dialog.svelte";
   import SearchToggles from "$lib/ui/SearchToggles.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type {
@@ -42,6 +43,7 @@
   import SearchTabs from "./SearchTabs.svelte";
   import { nothingToReplace, replaceConfirm, replaceSummary } from "./replaceModel";
   import { isReplaceKey, stepTab, tabForKey, type SearchTab, usesSymbols } from "./searchTabs";
+  import { windowKeys } from "$lib/commands/commandRuntime";
   import SymbolResult from "./SymbolResult.svelte";
   import { symbolRows, type SymbolRow } from "./symbolSearchModel";
   import TextResult from "./TextResult.svelte";
@@ -111,7 +113,7 @@
     input?.focus();
     input?.select();
     const tabPaths = repoStore.tabs.map((openTab) => openTab.path);
-    recent = pathRows(recentFiles(repoStore.openFilePath, navigation.recentFilePaths(), tabPaths), folders);
+    recent = pathRows(recentFiles(repoStore.openFilePath, recentFilesStore.filePaths(), tabPaths), folders);
     // Start (or reuse) the file index without waiting: the field is already usable.
     const progress = new Channel<FileSearchProgress>();
     progress.onmessage = (update) => {
@@ -497,7 +499,7 @@
     if (event.isComposing) {
       return;
     }
-    // Option+C / W / X toggle Match case, Words and Regex, as in JetBrains.
+    // Option+C / W / X toggle Match case, Words and Regex.
     if (tab === "text" && event.altKey && !event.metaKey && !event.ctrlKey) {
       const option = event.code === "KeyC" ? "matchCase" : event.code === "KeyW" ? "wholeWords" : event.code === "KeyX" ? "regex" : null;
       if (option) {
@@ -525,7 +527,7 @@
       return;
     }
     // Shift+Cmd+R: the Text tab with its Replace field.
-    if (isReplaceKey(event)) {
+    if (isReplaceKey(event, windowKeys())) {
       event.preventDefault();
       event.stopPropagation();
       switchTab("text");
@@ -534,7 +536,7 @@
       return;
     }
     // After the moves: Ctrl+P (up) would also read as Cmd+P, the Files key.
-    const tabShortcut = tabForKey(event);
+    const tabShortcut = tabForKey(event, windowKeys());
     if (tabShortcut) {
       event.preventDefault();
       event.stopPropagation();

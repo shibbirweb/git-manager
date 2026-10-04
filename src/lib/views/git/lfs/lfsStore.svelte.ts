@@ -1,11 +1,13 @@
-// Git LFS state per repository: installed, used, and its files, read once per status
-// refresh of a repository on screen (never per file). The Changes list and the Files panel
-// ask for it with `follow`; repositories that do not use LFS cost no git process, and the
-// backend checks that git-lfs is installed once per app run (again only before an LFS action).
+// Git LFS state per repository: installed, used, and its files, read again only when HEAD,
+// the index, entries or a .gitattributes may have changed (`repoStore.treeVersions`), never per
+// file or per content edit. The Changes list and the Files panel ask for it with `follow`; each
+// read sends the stamp of the last answer, so an unchanged repository costs a few file checks and
+// no git-lfs process. Repositories that do not use LFS cost no git process, and the backend
+// checks that git-lfs is installed once per app run (again only before an LFS action).
 
 import { untrack } from "svelte";
 import { api } from "$lib/api";
-import type { LfsStatus, RepoStatus } from "$lib/types";
+import type { LfsStatus } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { updates } from "$lib/update/updates.svelte";
 import { needsLfsInstall } from "./lfsModel";
@@ -31,29 +33,41 @@ function rememberNotice(): void {
 
 class LfsStore {
   statuses = $state.raw<Record<string, LfsStatus>>({});
-  /** The repository status each LFS state was read for. */
-  private readFor = new Map<string, RepoStatus | null>();
+  /** The `repoStore.treeVersions` value each LFS state was read for. */
+  private readFor = new Map<string, number>();
+  /** The stamp of each repository's last answer. */
+  private stamps = new Map<string, string>();
+  /** Repositories whose next read is a full one (an LFS action asked), not a stamp check. */
+  private fullReads = new Set<string>();
   private running = new Map<string, Promise<void>>();
   private queued = new Set<string>();
   /** Repositories whose next read also checks that git-lfs is installed. */
   private installChecks = new Set<string>();
   private noticePending = false;
 
-  /** Reads `repoRoot`'s LFS state again when its status object changed since the last read. */
-  follow(repoRoot: string, status: RepoStatus | null): void {
-    if (this.readFor.has(repoRoot) && this.readFor.get(repoRoot) === status) {
+  /** Checks `repoRoot`'s LFS state again when its `treeVersion` (`repoStore.treeVersions`) moved since the last check. */
+  follow(repoRoot: string, treeVersion: number): void {
+    if (this.readFor.get(repoRoot) === treeVersion) {
       return;
     }
-    this.readFor.set(repoRoot, status);
+    this.readFor.set(repoRoot, treeVersion);
     // Called from effects: reading this store's state here must not make them depend on it.
-    untrack(() => void this.refresh(repoRoot));
+    untrack(() => void this.read(repoRoot, false));
   }
 
-  /** `checkInstall` asks again whether git-lfs is installed, before an LFS action. */
-  async refresh(repoRoot: string, checkInstall = false): Promise<LfsStatus | null> {
+  /**
+   * Reads the LFS state in full (around LFS actions and for a first look); `checkInstall` asks again whether git-lfs
+   * is installed, before an LFS action.
+   */
+  refresh(repoRoot: string, checkInstall = false): Promise<LfsStatus | null> {
+    this.fullReads.add(repoRoot);
     if (checkInstall) {
       this.installChecks.add(repoRoot);
     }
+    return this.read(repoRoot, checkInstall);
+  }
+
+  private async read(repoRoot: string, checkInstall: boolean): Promise<LfsStatus | null> {
     const pending = this.running.get(repoRoot);
     if (pending) {
       this.queued.add(repoRoot);
@@ -77,8 +91,13 @@ class LfsStore {
     do {
       this.queued.delete(repoRoot);
       const check = this.installChecks.delete(repoRoot);
-      const status = await api.lfsStatus(repoRoot, check).catch(() => null);
+      const full = this.fullReads.delete(repoRoot) || !(repoRoot in this.statuses);
+      const known = full ? null : (this.stamps.get(repoRoot) ?? null);
+      const status = await api.lfsStatus(repoRoot, check, known).catch(() => null);
       if (status) {
+        this.stamps.set(repoRoot, status.stamp);
+      }
+      if (status && !status.unchanged) {
         this.statuses = { ...this.statuses, [repoRoot]: status };
         if (needsLfsInstall(status)) {
           this.offerInstall();
@@ -97,9 +116,10 @@ class LfsStore {
     if (Object.keys(this.statuses).some((root) => !keep.has(root))) {
       this.statuses = Object.fromEntries(Object.entries(this.statuses).filter(([root]) => keep.has(root)));
     }
-    for (const root of [...this.readFor.keys()]) {
+    for (const root of [...this.readFor.keys(), ...this.stamps.keys()]) {
       if (!keep.has(root)) {
         this.readFor.delete(root);
+        this.stamps.delete(root);
       }
     }
   }

@@ -9,8 +9,13 @@
   --ui-size: 13px;
   --code-size: 13px;
   --radius: 6px;
+  /* Rounded panels (data-rounded-panels on <html>): the space between panels and their corner radius. */
+  --panel-gap: 6px;
+  --panel-radius: 10px;
 
   --bg: #f7f8fa;
+  /* The window behind rounded panels (Settings > Appearance); it must stand apart from --panel. */
+  --frame: #ebecf0;
   --panel: #ffffff;
   --panel-alt: #f2f3f5;
   --border: #ebecf0;
@@ -42,7 +47,7 @@
   --term-foreground: var(--text);
   --term-cursor: var(--text);
   --term-selection: var(--editor-selection);
-  /* Integrated terminal ANSI colors (VS Code's light palette). */
+  /* Integrated terminal ANSI colors (light palette). */
   --term-black: #000000;
   --term-red: #cd3131;
   --term-green: #00bc00;
@@ -62,7 +67,7 @@
   --term-scrollbar: rgba(108, 112, 126, 0.35);
   --term-scrollbar-hover: rgba(108, 112, 126, 0.55);
 
-  /* Diff and merge colors, JetBrains style. */
+  /* Diff and merge colors. */
   --diff-modified: rgba(53, 116, 240, 0.13);
   --diff-modified-edge: #6f9cf5;
   --diff-added: rgba(76, 175, 80, 0.16);
@@ -84,12 +89,16 @@
   --tok-tag: #0033b3;
   --tok-attr: #174ad4;
   --tok-invalid: #f50000;
+  --bracket-1: #0431fa;
+  --bracket-2: #319331;
+  --bracket-3: #7b3814;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1e1f22;
+    --frame: #1e1f22;
     --panel: #2b2d30;
     --panel-alt: #25272a;
     --border: #1e1f22;
@@ -152,12 +161,16 @@
     --tok-tag: #d5b778;
     --tok-attr: #bababa;
     --tok-invalid: #fa6675;
+    --bracket-1: #ffd700;
+    --bracket-2: #da70d6;
+    --bracket-3: #179fff;
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
   --bg: #1e1f22;
+  --frame: #1e1f22;
   --panel: #2b2d30;
   --panel-alt: #25272a;
   --border: #1e1f22;
@@ -220,6 +233,9 @@
   --tok-tag: #d5b778;
   --tok-attr: #bababa;
   --tok-invalid: #fa6675;
+  --bracket-1: #ffd700;
+  --bracket-2: #da70d6;
+  --bracket-3: #179fff;
   color-scheme: dark;
 }
 
@@ -487,7 +503,8 @@ textarea.input {
 
 .tok-heading,
 .tok-strong {
-  font-weight: 600;
+  /* Stays heavier than the code font weight set in Settings > Editor. */
+  font-weight: calc(var(--code-weight, 400) + 200);
 }
 
 .tok-emphasis {

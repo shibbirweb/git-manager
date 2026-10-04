@@ -1,7 +1,6 @@
-// What the repository rows of the Changes view offer, like VS Code's Source
-// Control repositories: the branch label, which actions are enabled, the "..."
-// menu tree, what the Commit (check) button does and the Commit button's
-// dropdown. Pure, so it is tested without the stores.
+// What the repository rows of the Changes view offer: the branch label, which
+// actions are enabled, the "..." menu tree, what the Commit (check) button does
+// and the Commit button's dropdown. Pure, so it is tested without the stores.
 
 import type { HeadInfo } from "$lib/types";
 import type { MenuItem } from "$lib/ui/menu.svelte";
@@ -67,7 +66,7 @@ export function repoActionState(
 }
 
 /**
- * VS Code's branch label decorations: "*" for unstaged changes (untracked
+ * Branch label decorations: "*" for unstaged changes (untracked
  * files too), "+" for staged changes, "!" for conflicts, e.g. "main*+".
  */
 export function branchDecorations(groups: FileGroups): string {
@@ -104,7 +103,7 @@ export type CommitPlan =
   /** No message yet: put the caret in the commit box, targeting this repository. */
   | { kind: "focus" }
   | { kind: "commit"; mode: CommitMode; amend: boolean }
-  /** Nothing staged but tracked changes: ask, then Commit All (VS Code's smart commit). */
+  /** Nothing staged but tracked changes: ask, then Commit All (smart commit). */
   | { kind: "confirmAll" }
   | { kind: "blocked"; reason: string };
 
@@ -342,7 +341,7 @@ export function repoMenuItems(state: RepoActionState, handlers: RepoMenuHandlers
     { label: "Drop Stash...", action: handlers.dropStash, disabled: noStash, danger: true },
     { label: "Drop All Stashes", action: handlers.dropAllStashes, disabled: noStash, danger: true },
     { separator: true },
-    // JetBrains' Shelf: changes put aside as a patch, outside git's stash.
+    // Shelf: changes put aside as a patch, outside git's stash.
     { label: "Shelve Changes...", action: handlers.shelveChanges, disabled: busy || changes === 0 },
     { label: "Show Shelf", action: handlers.showShelf },
   ];

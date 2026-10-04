@@ -15,6 +15,7 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import type { TerminalOutputMessage } from "$lib/types";
   import { platformName } from "$lib/update/releases";
   import type { TerminalAddons } from "./addons";
   import { dropText, TERMINAL_DRAG_EVENT, TERMINAL_DROP_EVENT, type TerminalDragDetail, type TerminalDropDetail } from "./dropPaths";
@@ -30,8 +31,10 @@
   } from "./find";
   import TerminalFindBar from "./TerminalFindBar.svelte";
   import { terminalKeyAction } from "./keys";
+  import { terminalAppKeySet } from "$lib/commands/commandRuntime";
   import { gpuRenderers } from "./gpuRenderers.svelte";
   import { applyChangedOptions, changesMetrics, terminalAddonPlan, terminalDisplayOptions } from "./options";
+  import { isExitMessage, OutputAcks } from "./outputFlow";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { runFinishedMessage, runHeader } from "./runs";
   import { exitMessage, QUIET_SHELL_MS, shellNameFor, startupFailureTitle, startupLabel, type StartupPhase } from "./terminals";
@@ -51,8 +54,6 @@
   const RESIZE_DELAY_MS = 40;
   /** How long the visual bell flashes. */
   const BELL_FLASH_MS = 180;
-  /** Lets output that is still on its way land before the exit note. */
-  const EXIT_NOTE_DELAY_MS = 200;
   const isMac = platformName(navigator.userAgent) === "macOS";
 
   let root = $state<HTMLDivElement | null>(null);
@@ -77,15 +78,18 @@
   let disposed = false;
   let observer: ResizeObserver | null = null;
   let stopTheme: (() => void) | null = null;
-  /** Output of the current shell; a retry gets a new one. */
-  let channel: Channel<ArrayBuffer> | null = null;
+  /** Stops offering this terminal's screen to Clear Cache. */
+  let stopSnapshot: (() => void) | null = null;
+  /** Output of the current shell and its acks; a retry gets new ones. */
+  let channel: Channel<TerminalOutputMessage> | null = null;
+  let acks: OutputAcks | null = null;
   /** Search, WebGL and Unicode 11, each loaded only while its setting is on. */
   let addons: TerminalAddons | null = null;
   /** The file path link provider and what it knows about the files on screen. */
   let linkProvider: IDisposable | null = null;
   let linkScroll: IDisposable | null = null;
   let linkCache: FileExistenceCache | null = null;
-  /** The decorations of the file link under the pointer: underlined only while Cmd (Ctrl) is held, like VS Code. */
+  /** The decorations of the file link under the pointer: underlined only while Cmd (Ctrl) is held. */
   let hoveredLink: ILinkDecorations | null = null;
   /** The folder the shell last reported with OSC 7; null until it does. */
   let reportedFolder: string | null = null;
@@ -96,6 +100,8 @@
   let findOptions = $state<TerminalFindOptions>({ ...DEFAULT_FIND_OPTIONS });
   let findResults = $state.raw<FindResults | null>(null);
   let bellFlash = $state(false);
+  /** A flash is on its way or showing: more bells until it ends are ignored (binary output can ring thousands of times). */
+  let bellPending = false;
   let bellTimer: ReturnType<typeof setTimeout> | undefined;
   /** Files from Finder are being dragged over this terminal. */
   let dropOver = $state(false);
@@ -125,11 +131,10 @@
       gpuRenderers.forget(terminal.key);
       observer?.disconnect();
       stopTheme?.();
+      stopSnapshot?.();
       host?.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mouseup", onMouseUp);
-      if (channel) {
-        channel.onmessage = () => undefined;
-      }
+      stopOutput();
       term?.dispose();
       term = null;
       fit = null;
@@ -165,6 +170,12 @@
     if (disposed || !host) {
       return;
     }
+    // Rebuilt after Clear Cache: the old screen comes back, and a running shell is reconnected.
+    const restore = terminalStore.takeRestore(terminal.key);
+    if (restore && !restore.reattach && terminal.exited) {
+      // Its exit note is part of the old screen.
+      exitShown = true;
+    }
     const instance = createInstance(xterm, host);
     term = instance;
     await nextFrame();
@@ -174,16 +185,26 @@
     fitNow();
     observer = new ResizeObserver(() => scheduleFit());
     observer.observe(host);
-    await spawnShell(instance);
+    if (restore?.snapshot) {
+      instance.write(restore.snapshot);
+    }
+    if (restore?.reattach && terminal.terminalId !== null) {
+      await reattachShell(instance, terminal.terminalId);
+    } else if (restore && terminal.exited) {
+      markReady();
+      phase = "ready";
+    } else {
+      await spawnShell(instance);
+    }
   }
 
   function createInstance(xterm: typeof import("./xterm"), hostElement: HTMLDivElement): Terminal {
     const instance = new xterm.Terminal({
       ...displayOptions,
       theme: currentTerminalTheme(),
-      // VS Code's default: keeps colored output readable in both themes.
+      // Keeps colored output readable in both themes.
       minimumContrastRatio: 4.5,
-      // Unicode versions and the search highlights are xterm's proposed API, as in VS Code.
+      // Unicode versions and the search highlights are xterm's proposed API.
       allowProposedApi: true,
     });
     const drawingKey = terminal.key;
@@ -197,7 +218,7 @@
     );
     fit = new xterm.FitAddon();
     instance.loadAddon(fit);
-    // Cmd+click (Ctrl+click elsewhere) opens a link, like VS Code.
+    // Cmd+click (Ctrl+click elsewhere) opens a link.
     instance.loadAddon(
       new xterm.WebLinksAddon((event, uri) => {
         if (isMac ? event.metaKey : event.ctrlKey) {
@@ -220,6 +241,16 @@
       }
     });
     instance.open(hostElement);
+    stopSnapshot = terminalStore.registerSnapshot(terminal.key, async () => {
+      const { SerializeAddon } = await import("@xterm/addon-serialize");
+      const serializer = new SerializeAddon();
+      instance.loadAddon(serializer);
+      try {
+        return serializer.serialize();
+      } finally {
+        serializer.dispose();
+      }
+    });
     stopTheme = watchTheme(() => {
       instance.options.theme = currentTerminalTheme();
     });
@@ -228,17 +259,42 @@
     return instance;
   }
 
+  /** The previous shell's output is no longer shown; it is still acked, so nothing waits on this view. */
+  function stopOutput(): void {
+    const shellAcks = acks;
+    if (channel) {
+      channel.onmessage = (message) => {
+        if (message instanceof ArrayBuffer) {
+          shellAcks?.received(message.byteLength);
+        }
+      };
+    }
+    shellAcks?.stop();
+    channel = null;
+    acks = null;
+  }
+
   async function spawnShell(instance: Terminal): Promise<void> {
     const terminalKey = terminal.key;
     phase = "starting";
-    const shellChannel = new Channel<ArrayBuffer>();
-    shellChannel.onmessage = (bytes) => {
+    stopOutput();
+    const shellChannel = new Channel<TerminalOutputMessage>();
+    const shellAcks = new OutputAcks();
+    // The exit is the last message, after every byte of output, so its note lands below the output.
+    shellChannel.onmessage = (message) => {
+      if (isExitMessage(message)) {
+        terminalStore.exited(terminalKey, message.exit ?? null);
+        return;
+      }
       if (phase === "starting") {
         markReady();
       }
-      instance.write(new Uint8Array(bytes));
+      const bytes = new Uint8Array(message);
+      shellAcks.received(bytes.byteLength);
+      instance.write(bytes, () => shellAcks.written(bytes.byteLength));
     };
     channel = shellChannel;
+    acks = shellAcks;
     let info;
     const run = terminal.run ?? null;
     try {
@@ -266,6 +322,8 @@
       return;
     }
     terminalId = info.terminalId;
+    const ackedTerminalId = info.terminalId;
+    shellAcks.connect((byteCount) => void api.terminalAck(ackedTerminalId, byteCount).catch(() => undefined));
     sentSize = { cols: instance.cols, rows: instance.rows };
     // The panel may have changed size while the shell started.
     fitNow();
@@ -277,6 +335,46 @@
       // A shell that prints no prompt must not leave the status up.
       readyTimer = setTimeout(() => markReady(), QUIET_SHELL_MS);
     }
+  }
+
+  /** After Clear Cache: the shell kept running; its output since the restart comes first, then live output. */
+  async function reattachShell(instance: Terminal, liveTerminalId: number): Promise<void> {
+    const terminalKey = terminal.key;
+    stopOutput();
+    const shellChannel = new Channel<TerminalOutputMessage>();
+    const shellAcks = new OutputAcks();
+    shellChannel.onmessage = (message) => {
+      if (isExitMessage(message)) {
+        terminalStore.exited(terminalKey, message.exit ?? null);
+        return;
+      }
+      const bytes = new Uint8Array(message);
+      shellAcks.received(bytes.byteLength);
+      instance.write(bytes, () => shellAcks.written(bytes.byteLength));
+    };
+    channel = shellChannel;
+    acks = shellAcks;
+    let connected = false;
+    try {
+      connected = await api.terminalReattach(liveTerminalId, shellChannel);
+    } catch {
+      connected = false;
+    }
+    if (disposed) {
+      return;
+    }
+    if (!connected) {
+      // Closed or timed out meanwhile: the old screen stays, with the usual note below it.
+      terminalStore.exited(terminalKey, null);
+      phase = "ready";
+      return;
+    }
+    terminalId = liveTerminalId;
+    shellAcks.connect((byteCount) => void api.terminalAck(liveTerminalId, byteCount).catch(() => undefined));
+    // The new page's size may differ; the next fit tells the shell.
+    sentSize = { cols: 0, rows: 0 };
+    fitNow();
+    phase = "ready";
   }
 
   function markReady(): void {
@@ -339,6 +437,7 @@
       hasSelection: instance.hasSelection(),
       findEnabled: settings.terminalFind,
       canSplit: terminal.location === "panel",
+      appKeys: terminalAppKeySet(),
     });
     if (action === "shell") {
       return true;
@@ -436,11 +535,16 @@
       terminalStore.ring(terminal.key);
       return;
     }
-    clearTimeout(bellTimer);
-    bellFlash = false;
+    if (bellPending) {
+      return;
+    }
+    bellPending = true;
     requestAnimationFrame(() => {
       bellFlash = true;
-      bellTimer = setTimeout(() => (bellFlash = false), BELL_FLASH_MS);
+      bellTimer = setTimeout(() => {
+        bellFlash = false;
+        bellPending = false;
+      }, BELL_FLASH_MS);
     });
   }
 
@@ -693,6 +797,13 @@
     });
   });
 
+  // Hidden: everything received is acked, so a shell never waits on a view out of sight.
+  $effect(() => {
+    if (!visible) {
+      untrack(() => acks?.flush());
+    }
+  });
+
   // A bell that rang out of sight is seen once the terminal shows.
   $effect(() => {
     if (visible && terminal.bell) {
@@ -739,8 +850,8 @@
     }
   });
 
-  // A shell that ended with an error stays open with a note, like VS Code; a clean exit closes it.
-  // A run always ends with JetBrains' "Process finished with exit code N".
+  // A shell that ended with an error stays open with a note; a clean exit closes it.
+  // A run always ends with "Process finished with exit code N".
   $effect(() => {
     const instance = term;
     if (!instance || !terminal.exited) {
@@ -750,15 +861,12 @@
     const isRun = terminal.location === "run";
     untrack(() => {
       instance.options.disableStdin = true;
-    });
-    if (exitShown || (exitCode === 0 && !isRun)) {
-      return;
-    }
-    const timer = setTimeout(() => {
+      if (exitShown || (exitCode === 0 && !isRun)) {
+        return;
+      }
       exitShown = true;
       instance.write(isRun ? runFinishedMessage(exitCode) : exitMessage(exitCode));
-    }, EXIT_NOTE_DELAY_MS);
-    return () => clearTimeout(timer);
+    });
   });
 
   function openMenu(event: MouseEvent): void {
@@ -949,7 +1057,7 @@
   /*
    * Ligatures are CSS on the rows: xterm's DOM renderer puts runs of equally
    * styled characters in one span, so WebKit can join them. WebKit turns them
-   * on by default, so off is set explicitly (VS Code's default).
+   * on by default, so off is set explicitly.
    */
   .terminal-view :global(.xterm-rows) {
     font-variant-ligatures: none;

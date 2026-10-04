@@ -1,4 +1,4 @@
-// JetBrains' Branches popup, kept pure: the filtered branch list and the submenu of each
+// The Branches popup, kept pure: the filtered branch list and the submenu of each
 // branch (which actions it offers, their labels and when they are disabled). The popup
 // component maps each action to the code that runs it.
 

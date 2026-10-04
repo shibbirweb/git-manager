@@ -2,6 +2,7 @@
 // scroll_view walk. Nothing runs until an agent calls a tool; the long task observer starts on
 // the first get_ui_performance call and reports what it saw since the previous one.
 
+import { mermaidLoaded } from "$lib/markdown/mermaid";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 import { FRAME_MS, frameStats, type FrameStats, largest, nextScroll, type ScrollWalk } from "./perfModel";
@@ -125,6 +126,9 @@ export async function uiPerformance(sampleMs: number): Promise<Record<string, un
     terminals: terminalStore.terminals.filter((terminal) => terminal.location !== "run").length,
     runSessions: terminalStore.runSessions.length,
     markdownDiagrams: document.querySelectorAll(".md-mermaid svg").length,
+    // The hidden frame that holds the mermaid library; false once no document with diagrams is open.
+    mermaidLoaded: mermaidLoaded(),
+    markdownDiagramErrors: [...document.querySelectorAll(".md-mermaid-error")].slice(0, 3).map((element) => element.textContent ?? ""),
     longTasks: tasks,
     frames: frames ? { sampleMs, ...frames } : null,
     windowVisible: document.visibilityState === "visible",

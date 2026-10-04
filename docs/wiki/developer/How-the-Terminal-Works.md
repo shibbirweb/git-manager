@@ -35,7 +35,7 @@ sequenceDiagram
   Reg-->>View: event "terminal-exited" {terminalId, exitCode}
 ```
 
-The commands are `terminal_shells`, `terminal_spawn`, `terminal_write`, `terminal_resize`, `terminal_close` and `terminal_close_all` (arguments in [Commands and Events](Commands-and-Events.md)). Small and big output chunks take different routes, so the last chunk can arrive after `terminal-exited`; the store waits 250 ms before it closes a terminal that exited with code 0. `exitCode` is null when the shell was killed.
+The commands are `terminal_shells`, `terminal_spawn`, `terminal_write`, `terminal_resize`, `terminal_close` and `terminal_close_all`, plus `terminal_unstash` and `terminal_reattach` for [Clear Cache](How-Clear-Cache-Works.md#terminals-keep-running) (arguments in [Commands and Events](Commands-and-Events.md)). Small and big output chunks take different routes, so the last chunk can arrive after `terminal-exited`; the store waits 250 ms before it closes a terminal that exited with code 0. `exitCode` is null when the shell was killed.
 
 **Shells.** `shell_profiles` reads `/etc/shells`, keeps executable files, removes duplicates by real path and puts the login shell (`$SHELL`, else the passwd entry, for apps opened from Finder) first. zsh, bash and fish start with `-l`, so `PATH` matches Terminal.app. Windows shells are in [Platforms and Signing](Platforms-and-Signing.md).
 

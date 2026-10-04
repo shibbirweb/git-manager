@@ -42,7 +42,7 @@ The All tab shows the best six results of three kinds: **Classes**, **Files** an
 
 *The Files tab before you type: the files you visited last, newest first.*
 
-Before you type, the All and Files tabs show **Recent Files**: the file you are on, then the files you visited (newest first), then your other open tabs.
+Before you type, the All and Files tabs show **Recent Files**: the file you are on, then the files you worked on last (newest first, the same list as the [Recent Files](Recent-Files.md) popup), then your other open tabs.
 
 ![The Files tab](../images/search-everywhere-files.png)
 

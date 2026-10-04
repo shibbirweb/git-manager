@@ -1,6 +1,6 @@
 // Which installed Node a package.json's scripts run with: the one its .nvmrc (or similar)
 // asks for, one picked by hand, or the shell's own. The backend puts that version's bin
-// folder first on the run's PATH (src-tauri/src/run_process.rs), like JetBrains does.
+// folder first on the run's PATH (src-tauri/src/run_process.rs).
 
 import type { NodeInstall, NodeWanted } from "$lib/types";
 

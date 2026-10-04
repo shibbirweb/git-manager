@@ -40,7 +40,7 @@ export function suggestRepositoryName(folderName: string): string {
   return cleaned === "." || cleaned === ".." ? "" : cleaned;
 }
 
-/** "origin", or "github" when origin is taken (JetBrains does the same), then "github-2"... */
+/** "origin", or "github" when origin is taken, then "github-2"... */
 export function defaultShareRemoteName(remoteNames: string[]): string {
   if (!remoteNames.includes("origin")) {
     return "origin";

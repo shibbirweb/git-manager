@@ -1,4 +1,4 @@
-//! The Git Console (JetBrains' Git tool window, Console tab): every git command run through
+//! The Git Console: every git command run through
 //! `git/cli.rs` is recorded with its arguments, duration, exit code and the start of its
 //! output. Credentials are masked before anything is stored. Reads done through git2 are not
 //! git commands and never appear here.

@@ -99,10 +99,6 @@ pub fn deepest_repo_index(repo_roots: &[PathBuf], path: &Path) -> Option<usize> 
         .map(|(index, _)| index)
 }
 
-pub fn deepest_repo<'a>(repo_roots: &'a [PathBuf], path: &Path) -> Option<&'a PathBuf> {
-    deepest_repo_index(repo_roots, path).map(|index| &repo_roots[index])
-}
-
 /// The repository whose work tree contains the workspace root, if any.
 fn enclosing_repo(workspace_root: &Path) -> Option<PathBuf> {
     let repo = Repository::discover(workspace_root).ok()?;

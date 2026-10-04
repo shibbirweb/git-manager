@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { menuAccelerators } from "$lib/commands/registry";
 import { MENU_ACTIONS } from "$lib/menu/menuIds";
 import { menuSpec } from "$lib/menu/menuSpec";
 import { type MenuInputs, menuState } from "$lib/menu/menuState";
@@ -18,6 +19,7 @@ const inputs: MenuInputs = {
     changes: 1,
     remotes: 1,
     github: false,
+    bisecting: false,
     remoteLinks: 0,
   },
   gitFile: null,
@@ -72,5 +74,16 @@ describe("menuCommands", () => {
     const merge = menuCommands(menuSpec("macos", "mergeTool"), menuState({ ...inputs, mode: "mergeTool" }));
     expect(merge.some((command) => command.action === "git.fetch")).toBe(false);
     expect(merge.some((command) => command.action === "edit.find")).toBe(true);
+  });
+});
+
+describe("menuCommands with custom keyboard shortcuts", () => {
+  it("reports the keys the menu shows now", () => {
+    const spec = menuSpec("macos", "app");
+    const commands = menuCommands(spec, menuState(inputs), menuAccelerators(spec, { "git.push": "F5", "file.save": null }));
+    const byAction = new Map(commands.map((command) => [command.action, command]));
+    expect(byAction.get("git.push")?.accelerator).toBe("F5");
+    expect(byAction.get("file.save")?.accelerator).toBeNull();
+    expect(byAction.get("file.saveAll")?.accelerator).toBe("CmdOrCtrl+Alt+S");
   });
 });

@@ -37,7 +37,7 @@ sequenceDiagram
 
 ### Opening progress
 
-Finding repositories in a big folder can take seconds, and until then there is nothing to show. So `openFolders` and `addFolder` set `repoStore.opening` to `{ title, step }` ("Opening acme" and "Looking for repositories...", per folder for a workspace, "Adding X" for Add Folder). `OpeningProgress.svelte` shows it as a card over a dimmed window, but only after 150 ms so a quick open does not flash, and after 4 seconds adds a hint that folders such as `node_modules` are skipped.
+Finding repositories in a big folder can take seconds. So `openFolders` and `addFolder` set `repoStore.opening` to `{ title, step }` ("Opening acme" and "Looking for repositories...", per folder for a workspace, "Adding X" for Add Folder). `OpeningProgress.svelte` shows it as a card over a dimmed window, but only after 150 ms so a quick open does not flash, and after 4 seconds adds a hint that folders such as `node_modules` are skipped.
 
 Once the repositories are known the workspace is on screen, and `loadAllChanges` reads every status in parallel. It keeps `loadingChanges = { done, total }`, which the status bar shows as "Reading changes 2 of 5" (see [How the status bar works](How-the-Status-Bar-Works.md)). The texts come from `stores/openingProgress.ts`.
 
@@ -55,7 +55,7 @@ Workspace files (`.gitmanager-workspace` and VS Code `.code-workspace`) and whic
 
 ### Showing or hiding the activity bars
 
-The workspace window has an icon strip at each edge, the activity bars. Two header buttons left of the theme button, and View > Left Activity Bar and Right Activity Bar, call `settings.toggleActivityBar(side)`. It flips `leftBarVisible` or `rightBarVisible` (both `true` by default) and saves them in `state.json`. `Workspace.svelte` leaves a hidden bar out, and `ACTIVITY_BARS` counts 44 px per visible bar in the panel width math. The button icon, `views/LayoutToggleIcon.svelte`, is a small window with that side filled while the bar shows, like VS Code's layout controls.
+The activity bars are the icon strips at each edge. Two header buttons left of the theme button, and View > Left Activity Bar and Right Activity Bar, call `settings.toggleActivityBar(side)`, which flips `leftBarVisible` or `rightBarVisible` (default `true`) in `state.json`. `Workspace.svelte` leaves a hidden bar out, and `ACTIVITY_BARS` counts 44 px per visible bar in the panel width math. The button icon, `views/LayoutToggleIcon.svelte`, is a small window with that side filled while the bar shows, like VS Code's layout controls.
 
 ## Where the code lives
 
@@ -87,17 +87,22 @@ The workspace window has an icon strip at each edge, the activity bars. Two head
 **Closing a folder threw away unsaved edits.**
 - **The issue:** Close Folder, Open Folder, a recent folder or a workspace file closed every tab, dropping unsaved edits without a question.
 - **Why it happened:** `close()` cleared the tabs directly; only `closeTabs` asked first.
-- **The fix and why we chose it:** `close()` and `openFolders` ask through `confirmDiscardAll` with the same dialog as closing tabs, and Cancel leaves everything as it was. `openFolders` asks before loading anything, so a cancelled or failed open changes nothing. One dialog for every close is familiar.
+- **The fix and why we chose it:** `close()` and `openFolders` ask through `confirmDiscardAll`, the dialog of closing tabs, before loading anything, so Cancel or a failed open changes nothing. One familiar dialog for every close.
 
 **Opening a big folder froze the window.**
 - **The issue:** opening or adding a big folder froze the whole window: 0.3 to 1.1 seconds on a folder with 60,000 files, longer on bigger ones.
-- **Why it happened:** `watch_workspace` was a plain Tauri command, and a command without `async` runs on the main thread. On top of that, the watcher's default file id cache (`RecommendedCache`) walks every file under the folder when watching starts and keeps all their paths in memory.
-- **The fix and why we chose it:** the watcher uses `NoCache` (see [How folder watching works](How-Folder-Watching-Works.md)), and `watch_workspace` and `unwatch_workspace` are `async`: they set up and drop watchers through `blocking`, so the main thread never waits on them. We measured the stall going from 516 ms to 9 ms. The progress card covers the time that is left.
+- **Why it happened:** `watch_workspace` was not `async`, so it ran on the main thread, and the watcher's default file id cache (`RecommendedCache`) walks every file when watching starts and keeps their paths in memory.
+- **The fix and why we chose it:** the watcher uses `NoCache` (see [How folder watching works](How-Folder-Watching-Works.md)), and `watch_workspace` and `unwatch_workspace` are `async`, working through `blocking`. The stall went from 516 ms to 9 ms; the progress card covers the rest.
 
 **A failed open showed the welcome screen with no message.**
-- **The issue:** when restoring the session or opening a folder failed (seen with a broken dev IPC bridge), the welcome screen came up silently.
+- **The issue:** when restoring the session or opening a folder failed, the welcome screen came up silently.
 - **Why it happened:** `openFolders` caught errors only around `api.openWorkspace`. Anything that threw later, such as a bad reply, rejected a promise nobody caught.
 - **The fix and why we chose it:** `openFolders` never throws: any error is a toast from the pure `openFailure` (`openingProgress.ts`) naming the folder and the error. One catch in the store covers every caller.
+
+**The welcome screen did not fit a short window.**
+- **The issue:** in a short window the card was cut off at the top and bottom.
+- **Why it happened:** `align-items: center` on a `100vh` screen with `overflow: hidden` pushes a taller card past both edges.
+- **The fix and why we chose it:** `Welcome.svelte` centers with `margin: auto` (never past the top), caps the card at the window height and lets the recent lists scroll inside it. Plain CSS, no resize code.
 
 **Option+Cmd+B did not match.**
 - **The issue:** a check on `event.key` never fired, so the Files panel did not toggle.

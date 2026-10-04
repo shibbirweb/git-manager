@@ -1,4 +1,4 @@
-// The right margin line, like VS Code's editor.rulers and JetBrains' hard wrap guide: one
+// The right margin line: one
 // thin line at a column, drawn as a single marker in a CodeMirror layer above the text.
 // With the setting off, the extension is not in the editor at all.
 

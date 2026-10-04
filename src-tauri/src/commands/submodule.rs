@@ -1,5 +1,5 @@
 use serde::Serialize;
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 
 use super::blocking;
 use crate::error::AppResult;
@@ -14,8 +14,11 @@ struct Progress<'a> {
 
 /// Progress lines go out as "git-progress", like fetch and pull.
 pub fn progress_emitter(app: AppHandle, repo_path: String) -> impl FnMut(&str) {
+    let canonical = crate::windows::canonical(&repo_path);
     move |line| {
-        let _ = app.emit(
+        super::window::emit_for_path(
+            &app,
+            &canonical,
             "git-progress",
             Progress {
                 repo_path: &repo_path,

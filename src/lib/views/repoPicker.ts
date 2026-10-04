@@ -1,5 +1,7 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
+import { api, errorMessage } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
+import { toast } from "$lib/ui/toast.svelte";
 import type { RecentEntry } from "./recentEntries";
 
 async function pickFolder(title: string): Promise<string | null> {
@@ -23,7 +25,7 @@ export async function pickAndAddFolder(): Promise<void> {
   }
 }
 
-/** Opens a saved workspace file (ours or VS Code's). */
+/** Opens a saved workspace file (ours or any .code-workspace file). */
 export async function pickAndOpenWorkspaceFile(): Promise<void> {
   const selected = await open({
     multiple: false,
@@ -64,4 +66,34 @@ export async function openRecent(entry: RecentEntry): Promise<void> {
   } else {
     await repoStore.open(entry.folderPath);
   }
+}
+
+/** A new window with these folders (none: the welcome screen); a window that shows them already comes to the front. */
+async function openInNewWindow(folderPaths: string[], workspaceFile: string | null): Promise<void> {
+  try {
+    await api.windowOpen(folderPaths, workspaceFile);
+  } catch (error) {
+    toast.error("Could not open a new window", errorMessage(error));
+  }
+}
+
+/** File > New Window. */
+export function openNewWindow(): Promise<void> {
+  return openInNewWindow([], null);
+}
+
+/** File > Open Folder in New Window. */
+export async function pickAndOpenInNewWindow(): Promise<void> {
+  const folder = await pickFolder("Open Folder in New Window");
+  if (folder) {
+    await openInNewWindow([folder], null);
+  }
+}
+
+/** A recent folder, workspace or workspace file in a new window (Cmd+click on the welcome screen). */
+export function openRecentInNewWindow(entry: RecentEntry): Promise<void> {
+  if (entry.kind === "workspaceFile") {
+    return openInNewWindow([], entry.filePath);
+  }
+  return openInNewWindow(entry.kind === "workspace" ? entry.folderPaths : [entry.folderPath], null);
 }

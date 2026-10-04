@@ -7,7 +7,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "list_workspace",
         title: "List workspace",
-        description: "Lists the folders open in Git Manager and the git repositories found in each (nested ones too). Start here to learn which repoPath and folder paths the other tools accept.",
+        description: "Lists the windows of Git Manager with their folders, and the git repositories found in each folder (nested ones too). Start here to learn which repoPath and folder paths the other tools accept. UI tools act on the window holding their path argument, else on the window focused last (marked focused).",
         category: WORKSPACE,
         read_only: true,
         destructive: false,
@@ -34,8 +34,22 @@ fn list_workspace(ctx: &ToolCtx, _args: &Args) -> ToolResult {
             Err(err) => folders.push(json!({ "root": folder_path, "error": err.to_string() })),
         }
     }
+    let focused = ctx.shared.focused_window();
+    let windows: Vec<_> = ctx
+        .shared
+        .windows()
+        .into_iter()
+        .map(|window| {
+            json!({
+                "label": window.label,
+                "title": window.title,
+                "focused": focused.as_deref() == Some(window.label.as_str()),
+                "folderPaths": window.folders.iter().map(|folder| folder.to_string_lossy().into_owned()).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
     let note = folders.is_empty().then_some("No folder is open in Git Manager. Open one in the app first.");
-    json_out(json!({ "folders": folders, "note": note }))
+    json_out(json!({ "folders": folders, "windows": windows, "note": note }))
 }
 
 fn get_app_info(_ctx: &ToolCtx, _args: &Args) -> ToolResult {

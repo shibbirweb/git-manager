@@ -1,5 +1,5 @@
 // The Files panel's own clipboard for Cut and Copy: absolute paths, not file contents. It
-// outlives the panel being hidden, like VS Code's, and holds nothing but a few strings.
+// outlives the panel being hidden, and holds nothing but a few strings.
 
 import { movedPath, pathsUnder, type PathMove } from "$lib/stores/workspacePaths";
 

@@ -1,4 +1,4 @@
-// Split terminals, like VS Code: the panel's terminals form groups, a group's
+// Split terminals: the panel's terminals form groups, a group's
 // terminals sit side by side, and the list shows each group's members together.
 // A group's pane sizes are fractions of the panel width that add up to 1.
 // Kept free of Svelte so it can be tested directly.

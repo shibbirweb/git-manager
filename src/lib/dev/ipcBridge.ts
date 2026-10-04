@@ -7,13 +7,15 @@
 // page asks who is there and talks to one: the app process whose pid the URL names (`?ipc-bridge=<pid>`),
 // else the first that answers. Tauri Channels in the arguments (terminal output, search progress) get a real
 // Channel in the app window whose messages are relayed back to the page's Channel, and a few backend
-// events are relayed the same way. Vite only relays these messages when the dev server was started with
+// events are relayed the same way. Only the app's main window serves: every window of one app has the
+// same pid, so the page could not tell them apart. Vite only relays these messages when the dev server was started with
 // GM_IPC_BRIDGE=1 (see vite.config.js), so a normal `bun tauri dev` ignores them. None of this is in a
 // production build.
 
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
 import { mockIPC, mockWindows } from "@tauri-apps/api/mocks";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 interface Call {
   serverId: string;
@@ -47,15 +49,15 @@ interface Here {
   pid: number | null;
 }
 
-/** Raw bytes (Channel messages and raw command results) do not survive JSON, so they travel as base64. */
+/** Raw bytes (Channel messages, raw command bodies and results) do not survive JSON, so they travel as base64. */
 interface EncodedBytes {
   __gmBytes: string;
 }
 
 type Override = (args: unknown) => unknown;
 
-/** Backend events the page needs: a terminal or script ended, the Git Console got a command. */
-const RELAYED_EVENTS = ["terminal-exited", "git-command"];
+/** Backend events the page needs: the Git Console got a command (a terminal's exit comes on its channel). */
+const RELAYED_EVENTS = ["git-command"];
 
 const CHANNEL_PREFIX = "__CHANNEL__:";
 
@@ -73,16 +75,16 @@ export function startIpcBridge(): void {
   }
   if (new URLSearchParams(location.search).has("ipc-bridge")) {
     relayFromPage(hot);
-  } else if ("__TAURI_INTERNALS__" in window) {
+  } else if ("__TAURI_INTERNALS__" in window && getCurrentWindow().label === "main") {
     serveFromApp(hot);
   }
 }
 
 function encodeMessage(message: unknown): unknown {
-  if (!(message instanceof ArrayBuffer)) {
+  if (!(message instanceof ArrayBuffer) && !(message instanceof Uint8Array)) {
     return message;
   }
-  const bytes = new Uint8Array(message);
+  const bytes = message instanceof Uint8Array ? message : new Uint8Array(message);
   let binary = "";
   for (let start = 0; start < bytes.length; start += 0x8000) {
     binary += String.fromCharCode(...bytes.subarray(start, start + 0x8000));
@@ -152,18 +154,21 @@ function relayFromPage(hot: NonNullable<ImportMeta["hot"]>): void {
       if (override) {
         return override(args);
       }
+      // A raw body (an editor's text) goes as base64 and comes out as bytes again in the app.
+      const raw = args instanceof Uint8Array;
       // A Channel goes over the socket as its "__CHANNEL__:<id>" string; the app answers with that id.
-      for (const value of Object.values((args ?? {}) as Record<string, unknown>)) {
+      for (const value of raw ? [] : Object.values((args ?? {}) as Record<string, unknown>)) {
         if (value instanceof Channel) {
           channels.set(value.id, value);
         }
       }
       const callId = nextCallId++;
+      const relayed = raw ? encodeMessage(args) : args;
       return server.then(
         (chosen) =>
           new Promise((resolve, reject) => {
             pending.set(callId, { resolve, reject });
-            hot.send("gm-ipc:call", { serverId: chosen, callId, cmd, args } satisfies Call);
+            hot.send("gm-ipc:call", { serverId: chosen, callId, cmd, args: relayed } satisfies Call);
           }),
       );
     },
@@ -189,7 +194,9 @@ function serveFromApp(hot: NonNullable<ImportMeta["hot"]>): void {
     }
     let result: Result;
     try {
-      result = { serverId, callId: call.callId, ok: true, value: encodeMessage(await invoke(call.cmd, withChannels(hot, serverId, call.args))) };
+      const decoded = decodeMessage(call.args);
+      const args = decoded instanceof ArrayBuffer ? new Uint8Array(decoded) : withChannels(hot, serverId, call.args);
+      result = { serverId, callId: call.callId, ok: true, value: encodeMessage(await invoke(call.cmd, args)) };
     } catch (error) {
       result = { serverId, callId: call.callId, ok: false, value: error };
     }

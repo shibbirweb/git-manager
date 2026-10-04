@@ -254,7 +254,7 @@ impl GitHub<'_> {
     }
 }
 
-/// JetBrains' "add files for the initial commit": stage everything git does not ignore, then commit.
+/// "Add files for the initial commit": stage everything git does not ignore, then commit.
 fn commit_everything(root: &Path, message: &str) -> AppResult<()> {
     cli::run(root, &["add", "--all"])?;
     cli::run_with_stdin(root, &["commit", "-F", "-"], message.as_bytes())?;

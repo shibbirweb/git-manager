@@ -139,3 +139,32 @@ function randomHistory(count: number, seed: number): GraphCommit[] {
   }
   return oldestFirst.reverse();
 }
+
+describe("GraphRow edges", () => {
+  it("are kept in a compact typed array that reads back the same segments", () => {
+    const rows = layout([commit("m", "b", "d"), commit("d", "a"), commit("b", "a"), commit("a")]);
+    for (const row of rows) {
+      expect(row.edges).toBeInstanceOf(Int16Array);
+      expect(row.edges.length % 4).toBe(0);
+    }
+    expect(Array.from(rows[0].edges)).toEqual([2, 0, 0, 0, 2, 0, 1, rows[1].color]);
+    // A row does not share its storage with the next one, which reuses the builder's scratch.
+    expect(rows[0].edges.buffer).not.toBe(rows[1].edges.buffer);
+    expect(describeRow(rows[1])).toEqual(["in:1-1", "out:1-1", "pass:0-0"]);
+  });
+
+  it("stay exact for many lanes", () => {
+    const lanes = 300;
+    const commits: GraphCommit[] = [];
+    for (let index = 0; index < lanes * 3; index++) {
+      commits.push(commit(`c${index}`, ...(index + lanes < lanes * 3 ? [`c${index + lanes}`] : [])));
+    }
+    const rows = layout(commits);
+    const middle = rows[lanes + 7];
+    expect(middle.lane).toBe(7);
+    expect(middle.width).toBe(lanes);
+    const passes = rowSegments(middle).filter((segment) => segment.kind === "pass");
+    expect(passes.length).toBe(lanes - 1);
+    expect(passes[passes.length - 1]).toMatchObject({ from: lanes - 1, to: lanes - 1 });
+  });
+});

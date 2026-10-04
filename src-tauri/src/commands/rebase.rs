@@ -1,4 +1,4 @@
-//! JetBrains-style interactive rebase: the dialog edits the todo list, and
+//! Interactive rebase: the dialog edits the todo list, and
 //! `git rebase -i` runs it with that list in place of the editor.
 
 use std::collections::HashSet;

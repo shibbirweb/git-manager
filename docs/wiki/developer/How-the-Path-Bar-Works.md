@@ -15,7 +15,7 @@ flowchart TD
   Tabs["EditorTabs.svelte: the tab strip"] --> Bar
   subgraph Bar["file-bar (29 px, a size container)"]
     direction LR
-    Crumbs["crumbs: folders and file"] --> Badges["badges: Unsaved, Modified, 2 conflicts"]
+    Crumbs["NavigationBar: folders and file"] --> Badges["badges: Unsaved, Modified, 2 conflicts"]
     Badges --> Actions["File actions toolbar"]
   end
   Bar --> Conflict["conflict strip: only while the file has conflicts"]
@@ -25,11 +25,13 @@ flowchart TD
 
 `FileView.svelte` draws the bar as `.file-bar`, 28 px plus a 1 px border. It holds three parts:
 
-- **`.crumbs`**: the workspace folder, then each folder down to the file, built by the `crumbs` derived value. Repository roots get the `folder-git` icon. The full absolute path is the tooltip.
+- **The crumbs** (`NavigationBar.svelte`): the workspace folder, then each folder down to the file, built by `crumbsFor`. Repository roots get the `folder-git` icon and the file its type icon. The full absolute path is the tooltip. Each crumb is a button that opens the folder's popup; see [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
 - **Badges**: Unsaved, the git state (Modified, New file, Conflicted) and the number of conflict blocks. Each badge has a `title` with its text.
 - **The `File actions` toolbar** (`role="toolbar"`): previous and next section (Shift+F7 and F7) with the counter, a divider, **Blame** (an icon button with `aria-label="Blame"` and `aria-pressed`), **Copy relative path**, and for Markdown files the view switch, a `radiogroup` named **Markdown view** with Editor Only, Editor and Preview, and Preview Only.
 
 All buttons are 24 by 22 px, with a tooltip and an accessible name. The keyboard shortcuts did not change: F7 and Shift+F7 live in the editor keymap, and the view modes are also in **View > Markdown**.
+
+**Settings > Appearance > File toolbar** places the bar and switches its parts. `fileToolbarParts` in `views/files/fileToolbar.ts` (pure, tested) turns the placement, the seven `fileToolbar*` switches and the file (in a repository and editable, Markdown) into what to draw: Hidden or no part left drops the bar, the git buttons need a repository, and the Markdown formatting row follows its own switch whatever the placement. With **Bottom**, `.file-view.bar-bottom` gives the bar `order: 1`, so the same bar sits under the code. Dividers only show between parts that are on. See [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
 
 Below the bar come only rows that are tools, and only when they apply:
 
@@ -47,13 +49,14 @@ The bar never wraps and never overflows. `.file-bar` sets `container-type: inlin
 | 480 px or less | Badges become 8 px colored dots; the text stays for screen readers and the tooltip. |
 | 320 px or less | The dividers between the buttons go. |
 
-The breadcrumbs shorten all the time, as needed. The crumbs container may shrink, the badges and buttons may not. Inside it, each crumb gets a `flex-shrink` from `crumbShrink`: 10 to the power of its distance from the file, so the outermost folder gives up its width first, then the next one. Each folder keeps room for an ellipsis (`min-width: 1.4em`, plus the icon when it has one), and the file name shrinks last. `.crumbs` is aligned to its end, so whatever still does not fit is cut on the left, never the file name on the right.
+The breadcrumbs shorten all the time, as needed. The crumbs container (`.nav-bar`) may shrink, the badges and buttons may not. Inside it, each crumb gets a `flex-shrink` from `crumbShrink` in `NavigationBar.svelte`: 10 to the power of its distance from the file, so the outermost folder gives up its width first, then the next one. Each folder keeps room for an ellipsis (`min-width: 1.4em`, plus the icon when it has one), and the file name shrinks last. `.nav-bar` is aligned to its end, so whatever still does not fit is cut on the left, never the file name on the right.
 
 ## Where the code lives
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileView.svelte` | The bar, the crumbs and `crumbShrink`, the badges, the actions, the view switch, the conflict strip and the container queries |
+| `src/lib/views/files/FileView.svelte` | The bar, the badges, the actions, the view switch, the conflict strip and the container queries |
+| `src/lib/navBar/NavigationBar.svelte` | The crumbs, `crumbShrink` and the folder popups |
 | `src/lib/views/files/MarkdownToolbar.svelte` | The Markdown formatting row |
 | `src/lib/views/files/MediaPreview.svelte` | The image and PDF row |
 | `scripts/screenshots.ts` | `editor-conflict-toolbar` clips `.file-bar` and the Conflict actions toolbar; `markdown-toolbar` clips the formatting row, the view switch and the Heading menu |
@@ -79,7 +82,7 @@ The breadcrumbs shorten all the time, as needed. The crumbs container may shrink
 
 ## Tests
 
-The bar is layout and has no pure logic of its own; `crumbShrink` is one line. It needs a visual check in light and dark, and at narrow editor widths (drag the Files panel wider): the counter hides first, then the badges become dots, and the file name stays readable. See [Testing](Testing.md).
+The bar is layout; `crumbShrink` is one line, the crumbs come from `navBarModel.ts`, and `fileToolbar.test.ts` covers which parts show. It needs a visual check in light and dark, and at narrow editor widths (drag the Files panel wider): the counter hides first, then the badges become dots, and the file name stays readable. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

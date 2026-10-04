@@ -3,13 +3,13 @@
 // whether the panel is open. Each terminal's xterm and shell live in
 // TerminalView.svelte, mounted once by TerminalHost.svelte and moved into the
 // place that shows it; this store only keeps the list and those places. Hiding
-// the panel keeps every shell running, like VS Code. Run sessions (runs.ts) are
+// the panel keeps every shell running. Run sessions (runs.ts) are
 // entries too, shown in the panel's Run tab instead of the Terminal tab.
 
-import { api, onTerminalExited } from "$lib/api";
+import { api } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
-import type { ShellProfile, TerminalExitedEvent, TerminalInfo } from "$lib/types";
+import type { ShellProfile, TerminalInfo } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import type { MenuItem } from "$lib/ui/menu.svelte";
 import { platformName } from "$lib/update/releases";
@@ -21,6 +21,14 @@ import {
   validateTerminalName,
 } from "./terminals";
 import { runAfterClose, type RunSpec } from "./runs";
+import {
+  describeLayout,
+  describeTerminal,
+  fittedLayout,
+  parseLayout,
+  restoredTerminals,
+  type TerminalStashData,
+} from "./terminalStash";
 import { panelAfterLeave, type TerminalLocation, terminalKeysOf, terminalTabPath } from "./terminalTabs";
 import {
   groupMembers,
@@ -66,13 +74,7 @@ export interface FocusRequest {
   token: number;
 }
 
-/**
- * The last output chunk can arrive after the exit event (large chunks travel
- * separately), so a terminal that exited cleanly closes a moment later.
- */
-export const EXIT_CLOSE_DELAY_MS = 250;
-
-/** The tabs of the bottom panel, like JetBrains' bottom tool windows. */
+/** The tabs of the bottom panel. */
 export type PanelTab = "terminal" | "run" | "gitConsole" | "shelf";
 
 export interface NewTerminalOptions {
@@ -121,16 +123,17 @@ class TerminalStore {
 
   private nextKey = 1;
   private nextGroup = 1;
+  /** Each mounted terminal's screen as text, for Clear Cache (registered by TerminalView). */
+  private snapshotters = new Map<number, () => Promise<string>>();
+  /** Terminals rebuilt after Clear Cache: the old screen, taken once by the terminal's view. */
+  private restoring = new Map<number, { snapshot: string; reattach: boolean }>();
   private focusToken = 0;
   private shellsLoad: Promise<ShellProfile[]> | null = null;
-  private listening: Promise<void> | null = null;
   /** Bumped by closeAll, so a create still waiting for the shell list gives up. */
   private generation = 0;
-  /** Exit events that arrived before their spawn call returned. */
-  private earlyExits = new Map<number, number | null>();
 
   constructor() {
-    // Closing a terminal's editor tab kills it, like VS Code (x, Close Others, Close All...).
+    // Closing a terminal's editor tab kills it (x, Close Others, Close All...).
     repoStore.onTabsClosed((tabPaths) => this.tabsClosed(tabPaths));
   }
 
@@ -232,9 +235,103 @@ class TerminalStore {
     this.focusRequest = { terminalKey, token: this.focusToken };
   }
 
-  /** Closes terminals left over from before a reload of the window. Called once on start. */
-  init(): void {
+  /**
+   * Called once on start. Closes terminals left over from before a reload of the window, except
+   * the ones Clear Cache left running for this page: their stash is returned, for
+   * `restoreAfterClearCache` once the workspace is open.
+   */
+  async init(): Promise<TerminalStashData | null> {
+    const stash = await api.terminalUnstash().catch(() => null);
     void api.terminalCloseAll().catch(() => undefined);
+    return stash;
+  }
+
+  /** TerminalView gives its screen as text; returns the function that takes it back. */
+  registerSnapshot(terminalKey: number, snapshot: () => Promise<string>): () => void {
+    this.snapshotters.set(terminalKey, snapshot);
+    return () => {
+      if (this.snapshotters.get(terminalKey) === snapshot) {
+        this.snapshotters.delete(terminalKey);
+      }
+    };
+  }
+
+  /** A rebuilt terminal's old screen and whether its shell is still running; once. */
+  takeRestore(terminalKey: number): { snapshot: string; reattach: boolean } | null {
+    const restore = this.restoring.get(terminalKey) ?? null;
+    this.restoring.delete(terminalKey);
+    return restore;
+  }
+
+  /**
+   * Clear Cache, before the page restarts: every terminal's place and screen, for the backend,
+   * which keeps the shells running and holds their output for the new page.
+   */
+  async stashForClearCache(): Promise<TerminalStashData> {
+    const terminals = await Promise.all(
+      this.terminals.map(async (entry) => ({
+        terminalId: entry.exited ? null : entry.terminalId,
+        descriptor: describeTerminal({
+          key: entry.key,
+          name: entry.name,
+          renamed: entry.renamed,
+          shellId: entry.shellId,
+          cwd: entry.cwd,
+          exited: entry.exited,
+          exitCode: entry.exitCode,
+          location: entry.location,
+          run: entry.run ?? null,
+          group: entry.group,
+          bell: entry.bell,
+        }),
+        snapshot: await (this.snapshotters.get(entry.key)?.() ?? Promise.resolve("")).catch(() => ""),
+      })),
+    );
+    const layout = describeLayout({
+      activeKey: this.activeKey,
+      runActiveKey: this.runActiveKey,
+      panelOpen: this.panelOpen,
+      panelTab: this.panelTab,
+      started: this.started,
+      groupSizes: this.groupSizes,
+    });
+    return { layout, terminals };
+  }
+
+  /** After Clear Cache: the same terminals in the same places; their views reconnect to the shells. */
+  restoreAfterClearCache(stash: TerminalStashData): void {
+    const { terminals, dropped } = restoredTerminals(stash);
+    for (const terminalId of dropped) {
+      void api.terminalClose(terminalId).catch(() => undefined);
+    }
+    if (terminals.length === 0) {
+      return;
+    }
+    const layout = fittedLayout(parseLayout(stash.layout), terminals);
+    for (const restored of terminals) {
+      this.restoring.set(restored.descriptor.key, { snapshot: restored.snapshot, reattach: restored.terminalId !== null });
+    }
+    this.terminals = terminals.map(({ descriptor, terminalId }) => ({ ...descriptor, terminalId }));
+    this.nextKey = Math.max(this.nextKey, ...terminals.map((restored) => restored.descriptor.key + 1));
+    this.nextGroup = Math.max(this.nextGroup, ...terminals.map((restored) => restored.descriptor.group + 1));
+    this.groupSizes = layout.groupSizes;
+    this.activeKey = layout.activeKey;
+    this.runActiveKey = layout.runActiveKey;
+    this.panelTab = layout.panelTab;
+    this.panelOpen = layout.panelOpen;
+    this.started = layout.started;
+    // Terminal editor tabs come back after the file tabs; the tab each group showed stays shown.
+    const shown = repoStore.groups.map((group) => [group.id, group.active] as const);
+    for (const restored of terminals) {
+      if (restored.descriptor.location === "editor") {
+        repoStore.openPseudoTab(terminalTabPath(restored.descriptor.key));
+      }
+    }
+    for (const [groupId, tabPath] of shown) {
+      if (tabPath !== null) {
+        repoStore.activateTab(groupId, tabPath);
+      }
+    }
   }
 
   /** The shell list, asked for once; an error leaves it empty so it is asked again next time. */
@@ -326,7 +423,6 @@ class TerminalStore {
       this.panelTab = "terminal";
     }
     const generation = this.generation;
-    await this.listen();
     const shells = this.shells.length > 0 ? this.shells : await this.loadShells();
     if (generation !== this.generation) {
       return;
@@ -369,7 +465,7 @@ class TerminalStore {
   }
 
   /**
-   * Runs a script in the Run tab, like JetBrains: a script that has a session already
+   * Runs a script in the Run tab: a script that has a session already
    * runs again in it. `askToStop` asks first when it is still running (the Scripts
    * panel); the Rerun button restarts it at once.
    */
@@ -388,7 +484,6 @@ class TerminalStore {
         return;
       }
     }
-    await this.listen();
     const entry: TerminalEntry = {
       key: this.nextKey++,
       terminalId: null,
@@ -408,7 +503,7 @@ class TerminalStore {
       if (current.terminalId !== null && !current.exited) {
         void api.terminalClose(current.terminalId).catch(() => undefined);
       }
-      // A new entry in the same place: a fresh view, as JetBrains clears the console on Rerun.
+      // A new entry in the same place: a fresh view, so Rerun starts with a clear console.
       this.terminals = this.terminals.map((terminal) => (terminal.key === current.key ? entry : terminal));
     } else {
       this.terminals = [...this.terminals, entry];
@@ -542,6 +637,22 @@ class TerminalStore {
   }
 
   /**
+   * The shell exited (TerminalView got the last message on its channel, after all of its output,
+   * possibly before its spawn call returned). A clean exit closes the terminal; an
+   * error keeps it with a note. Runs always stay.
+   */
+  exited(terminalKey: number, exitCode: number | null): void {
+    const entry = this.find(terminalKey);
+    if (!entry || entry.exited) {
+      return;
+    }
+    this.update(terminalKey, { exited: true, exitCode });
+    if (exitCode === 0 && entry.location !== "run") {
+      this.remove(terminalKey);
+    }
+  }
+
+  /**
    * Called by TerminalView once the shell runs. Returns false when the terminal
    * was closed meanwhile, so the caller stops the shell it just started.
    */
@@ -554,14 +665,6 @@ class TerminalStore {
     const shellName = info.shell?.name ?? "";
     const name = entry.renamed || !shellName ? entry.name : uniqueTerminalName(shellName, others);
     this.update(terminalKey, { terminalId: info.terminalId, name, cwd: info.cwd ?? entry.cwd });
-    const early = this.earlyExits.get(info.terminalId);
-    if (early !== undefined) {
-      this.earlyExits.delete(info.terminalId);
-      this.handleExit({ terminalId: info.terminalId, exitCode: early });
-    }
-    if (!this.terminals.some((terminal) => terminal.terminalId === null)) {
-      this.earlyExits.clear();
-    }
     return true;
   }
 
@@ -578,7 +681,7 @@ class TerminalStore {
     this.update(terminalKey, { terminalId: null, exited: false, exitCode: null });
   }
 
-  /** Names are kept for the session only, like VS Code's. An invalid name is ignored. */
+  /** Names are kept for the session only. An invalid name is ignored. */
   rename(terminalKey: number, name: string): void {
     const trimmed = name.trim();
     if (trimmed && validateTerminalName(trimmed) === null) {
@@ -713,7 +816,6 @@ class TerminalStore {
     this.started = false;
     this.panelTab = "terminal";
     this.focusRequest = null;
-    this.earlyExits.clear();
     this.closeTabsOf(tabPaths);
   }
 
@@ -739,7 +841,7 @@ class TerminalStore {
     if (!entry) {
       return;
     }
-    // Like VS Code, the panel hides with its last terminal.
+    // The panel hides with its last terminal.
     const next = panelAfterLeave(this.terminals, terminalKey, { activeKey: this.activeKey, panelOpen: this.panelOpen });
     this.leaveGroup(entry);
     this.terminals = this.terminals.filter((terminal) => terminal.key !== terminalKey);
@@ -755,40 +857,6 @@ class TerminalStore {
 
   private update(terminalKey: number, patch: Partial<TerminalEntry>): void {
     this.terminals = this.terminals.map((terminal) => (terminal.key === terminalKey ? { ...terminal, ...patch } : terminal));
-  }
-
-  /** Subscribes to exit events once, before the first shell starts. */
-  private listen(): Promise<void> {
-    if (!this.listening) {
-      this.listening = onTerminalExited((event) => this.handleExit(event)).then(
-        () => undefined,
-        () => {
-          this.listening = null;
-        },
-      );
-    }
-    return this.listening ?? Promise.resolve();
-  }
-
-  /** A clean exit closes a terminal like VS Code; an error keeps it with a note. Runs always stay. */
-  private handleExit(event: TerminalExitedEvent): void {
-    const entry = this.terminals.find((terminal) => terminal.terminalId === event.terminalId);
-    if (!entry) {
-      // Its spawn call may not have returned yet; terminals we closed ourselves are not waited for.
-      if (this.terminals.some((terminal) => terminal.terminalId === null && !terminal.exited)) {
-        this.earlyExits.set(event.terminalId, event.exitCode ?? null);
-      }
-      return;
-    }
-    if (entry.exited) {
-      return;
-    }
-    const exitCode = event.exitCode ?? null;
-    this.update(entry.key, { exited: true, exitCode });
-    // A run keeps its output and the exit code, like JetBrains' Run window.
-    if (exitCode === 0 && entry.location !== "run") {
-      setTimeout(() => this.remove(entry.key), EXIT_CLOSE_DELAY_MS);
-    }
   }
 }
 

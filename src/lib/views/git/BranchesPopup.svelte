@@ -1,4 +1,4 @@
-<!-- JetBrains' Branches popup: a filter, New Branch and Checkout Tag or Revision, then the
+<!-- The Branches popup: a filter, New Branch and Checkout Tag or Revision, then the
      local and remote branches. A branch opens its submenu (Checkout, Compare, Merge, Update,
      Push...) on click, Enter or Right; Up and Down move through the list. -->
 <script lang="ts">

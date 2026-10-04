@@ -1,4 +1,4 @@
-//! Go to File (JetBrains' Search Everywhere for files): an in-memory index of
+//! Go to File (Search Everywhere for files): an in-memory index of
 //! the workspace folders' files, built off the main thread by the ripgrep
 //! walker, and fuzzy matching over it with nucleo-matcher.
 //!
@@ -14,6 +14,7 @@
 //! shares this session's lifecycle.
 
 use std::cmp::Ordering as CmpOrdering;
+use std::collections::HashMap;
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
@@ -935,7 +936,9 @@ struct Shared {
     session: Mutex<Option<Session>>,
     /// Bumped by every query; a running query stops when it is no longer the latest.
     query_seq: AtomicU64,
-    symbol_seq: AtomicU64,
+    /// Like `query_seq`, one per symbol scope: the All tab asks for Classes and Members at
+    /// once, and neither may stop the other.
+    symbol_seq: [AtomicU64; SymbolScope::COUNT],
     /// The newest text search id (from the UI) or cancel; a running search
     /// stops when it changes, and an older one arriving late never starts.
     text_seq: AtomicU64,
@@ -1152,7 +1155,7 @@ impl FileSearch {
             shared: Arc::new(Shared {
                 session: Mutex::new(None),
                 query_seq: AtomicU64::new(0),
-                symbol_seq: AtomicU64::new(0),
+                symbol_seq: Default::default(),
                 text_seq: AtomicU64::new(0),
                 replace_seq: AtomicU64::new(0),
                 reaper_running: AtomicBool::new(false),
@@ -1219,7 +1222,8 @@ impl FileSearch {
 
     /// Matches `query` against the symbols found in `roots` so far.
     pub fn query_symbols(&self, roots: &[String], query: &str, scope: SymbolScope, limit: usize) -> SymbolSearchResults {
-        let seq = self.shared.symbol_seq.fetch_add(1, Ordering::SeqCst) + 1;
+        let latest = &self.shared.symbol_seq[scope.index()];
+        let seq = latest.fetch_add(1, Ordering::SeqCst) + 1;
         let index = {
             let mut slot = lock(&self.shared.session);
             let session = self.shared.session_for(&mut slot, roots);
@@ -1235,8 +1239,7 @@ impl FileSearch {
         let Some(index) = index else {
             return SymbolSearchResults::default();
         };
-        let shared = &self.shared;
-        crate::symbols::search(&index, query, scope, limit, &|| shared.symbol_seq.load(Ordering::Relaxed) != seq)
+        crate::symbols::search(&index, query, scope, limit, &|| latest.load(Ordering::Relaxed) != seq)
     }
 
     /// Find in Files over the indexed files of `roots`, streaming batches to
@@ -1320,6 +1323,16 @@ impl FileSearch {
         }
     }
 
+    /// Drops the indexes now, stopping any build (the window closed).
+    pub fn shutdown(&self) {
+        self.shared.text_seq.fetch_add(1, Ordering::SeqCst);
+        self.shared.replace_seq.fetch_add(1, Ordering::SeqCst);
+        let session = lock(&self.shared.session).take();
+        if let Some(session) = session {
+            session.cancel();
+        }
+    }
+
     /// Files were created, deleted or renamed: rebuild now while the popup
     /// shows, otherwise when it opens next.
     pub fn mark_stale(&self) {
@@ -1351,6 +1364,37 @@ impl FileSearch {
                 self.shared.start_symbol_rebuild(session);
             }
         }
+    }
+}
+
+/// One `FileSearch` per window: their query and search ids are counted by each page, so a
+/// window must never cancel or refuse another window's search, and two windows on different
+/// folders must not take turns rebuilding one index.
+#[derive(Clone, Default)]
+pub struct WindowSearches(Arc<Mutex<HashMap<String, FileSearch>>>);
+
+impl WindowSearches {
+    /// The window's search, made on first use.
+    pub fn window(&self, window_label: &str) -> FileSearch {
+        lock(&self.0).entry(window_label.to_string()).or_default().clone()
+    }
+
+    /// The window's search when it has one; the watcher only marks indexes that exist.
+    pub fn existing(&self, window_label: &str) -> Option<FileSearch> {
+        lock(&self.0).get(window_label).cloned()
+    }
+
+    /// The window closed: its indexes stop building and go.
+    pub fn remove(&self, window_label: &str) {
+        let removed = lock(&self.0).remove(window_label);
+        if let Some(search) = removed {
+            search.shutdown();
+        }
+    }
+
+    #[cfg(test)]
+    pub fn count(&self) -> usize {
+        lock(&self.0).len()
     }
 }
 

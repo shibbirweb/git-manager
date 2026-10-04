@@ -5,11 +5,19 @@
     { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
     { "page": "usage/File-Operations.md", "summary": "Create, rename, copy, move and trash files and folders right in the Files panel." },
+    { "page": "usage/File-Icons.md", "summary": "Show an icon for each file type: no icons, simple Minimal shapes, or full Material Icons." },
+    { "page": "usage/Rounded-Panels.md", "summary": "Turn the sidebars, editors and terminal into rounded panels with space between them, in any color theme." },
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
-    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
+    { "page": "usage/Pin-Reorder-and-Wrap-Tabs.md", "summary": "Drag tabs into the order you like, pin the ones you always need, and wrap a long row of tabs." },
+    { "page": "usage/Single-Tab-Title.md", "summary": "With one file open, see its name centered above the code instead of a lone tab." },
+    { "page": "usage/Unload-Hidden-Tabs.md", "summary": "Free the memory of tabs you have not looked at for a while; they open again where you left them." },
+    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line and the IDE features of the editor." },
+    { "page": "usage/Code-Appearance.md", "summary": "Font weight, line spacing, syntax highlighting, visible whitespace, the cursor, word wrap, indentation detected from each file, and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
     { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
+    { "page": "usage/Recent-Files.md", "summary": "Jump back to the files you worked on last with Cmd+E, like in JetBrains IDEs." },
+    { "page": "usage/Navigation-Bar.md", "summary": "Move through your project's folders from the keyboard with Cmd+Up and search each folder, like in JetBrains IDEs." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
     { "page": "usage/Repository-Actions.md", "summary": "The buttons and the ... menu of each repository in Changes: branch, Sync, Commit and more." },
@@ -39,12 +47,14 @@
     { "page": "usage/Navigation.md", "summary": "Back and Forward across files, diffs and commits." },
     { "page": "usage/Menus.md", "summary": "The menu bar: what is in each menu, and how its keys work." },
     { "page": "usage/Settings.md", "summary": "Every setting, where it is saved, and the light and dark themes." },
+    { "page": "usage/Settings-Search.md", "summary": "Type in the Settings search field to find a setting and see its matches highlighted." },
     { "page": "usage/Color-Themes.md", "summary": "Pick a light and a dark color theme from 37, including high contrast ones." },
     { "page": "usage/Settings-Terminal-and-Automation.md", "summary": "Every option of the Terminal, GitHub and Automation sections of Settings." },
     { "page": "usage/Settings-Files.md", "summary": "What is in ~/.gitmanager, editing settings.json by hand, and fixing a broken file." },
     { "page": "usage/Updates.md", "summary": "How Git Manager tells you about new versions, and the beta channel." },
     { "page": "usage/Status-Bar-and-Help.md", "summary": "The status bar, picking the active repository, and how to report a bug or ask for a feature." },
     { "page": "usage/Memory-Use.md", "summary": "The memory readout, its breakdown and GPU rows, and the debug memory log." },
+    { "page": "usage/Clear-Cache.md", "summary": "Give back all the memory the window holds with one click; the folder and tabs come back." },
     { "page": "usage/MCP-and-CLI.md", "summary": "Let AI tools such as Claude Code, and scripts in a terminal, use Git Manager safely." },
     { "page": "usage/Git-Mergetool.md", "summary": "Use Git Manager as the merge tool for git on the command line." },
     { "page": "usage/Keyboard-Shortcuts.md", "summary": "Every keyboard shortcut on one page." },
@@ -70,6 +80,7 @@
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/How-the-Changes-Tab-Works.md", "summary": "The Changes tab opened from the status bar: every uncommitted file compared with the last commit." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
     { "page": "developer/How-Editor-Features-Work.md", "summary": "Auto-close, completion, folding, indent guides, the margin line and the languages, each switchable and lazy." },
@@ -84,6 +95,8 @@
     { "page": "developer/Test-Suites.md", "summary": "Every Vitest and Rust test file, folder by folder, and what it covers." },
     { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
     { "page": "developer/Debugging-with-MCP.md", "summary": "Inspect, measure and drive the running app with the MCP tools and git-manager cli." },
+    { "page": "developer/Measuring-Setting-Memory.md", "summary": "How the memory cost of each setting was measured, the results, and the marks in Settings." },
+    { "page": "developer/How-Markdown-Diagrams-Work.md", "summary": "Mermaid diagrams in a hidden frame that leaves memory with the last document." },
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
     { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
@@ -113,6 +126,13 @@
       "screenshots": ["file-ops-menu.png", "file-ops-rename.png"]
     },
     {
+      "id": "file-icons",
+      "title": "File icons",
+      "usage": "usage/File-Icons.md",
+      "developer": "developer/How-File-Icons-Work.md",
+      "screenshots": ["file-icons.png"]
+    },
+    {
       "id": "editor",
       "title": "Editor and tabs",
       "usage": "usage/Editor-and-Tabs.md",
@@ -120,11 +140,39 @@
       "screenshots": ["editor-tabs.png", "editor-change-markers.png", "empty-main.png"]
     },
     {
+      "id": "tab-strip",
+      "title": "Pin, reorder and wrap tabs",
+      "usage": "usage/Pin-Reorder-and-Wrap-Tabs.md",
+      "developer": "developer/How-Tabs-Are-Arranged.md",
+      "screenshots": ["tabs-pinned.png", "tabs-wrapped.png"]
+    },
+    {
+      "id": "single-tab-title",
+      "title": "Single tab title",
+      "usage": "usage/Single-Tab-Title.md",
+      "developer": "developer/How-the-Single-Tab-Title-Works.md",
+      "screenshots": ["single-tab-title.png"]
+    },
+    {
+      "id": "unload-hidden-tabs",
+      "title": "Unload hidden tabs",
+      "usage": "usage/Unload-Hidden-Tabs.md",
+      "developer": "developer/How-Unloading-Hidden-Tabs-Works.md",
+      "screenshots": ["settings-unload-hidden-tabs.png"]
+    },
+    {
       "id": "code-editing",
       "title": "Editing code",
       "usage": "usage/Editing-Code.md",
       "developer": "developer/How-Editing-Code-Works.md",
-      "screenshots": ["editor-features.png", "editor-whitespace.png"]
+      "screenshots": ["editor-features.png"]
+    },
+    {
+      "id": "code-appearance",
+      "title": "Code appearance",
+      "usage": "usage/Code-Appearance.md",
+      "developer": "developer/How-Code-Appearance-Works.md",
+      "screenshots": ["editor-whitespace.png", "editor-font-weight.png"]
     },
     {
       "id": "markdown",
@@ -146,6 +194,20 @@
       "usage": "usage/Search-Everywhere.md",
       "developer": "developer/How-Search-Everywhere-Works.md",
       "screenshots": ["search-everywhere-all.png", "search-everywhere-recent.png", "search-everywhere-files.png", "search-everywhere-classes.png", "search-everywhere-symbols.png", "search-everywhere-text.png"]
+    },
+    {
+      "id": "recent-files",
+      "title": "Recent Files",
+      "usage": "usage/Recent-Files.md",
+      "developer": "developer/How-Recent-Files-Work.md",
+      "screenshots": ["recent-files.png"]
+    },
+    {
+      "id": "navigation-bar",
+      "title": "Navigation Bar",
+      "usage": "usage/Navigation-Bar.md",
+      "developer": "developer/How-the-Navigation-Bar-Works.md",
+      "screenshots": ["navigation-bar.png", "navigation-bar-bottom.png", "navigation-bar-hidden.png"]
     },
     {
       "id": "find-replace",
@@ -351,11 +413,25 @@
       "screenshots": ["settings-appearance.png", "settings-editor.png", "settings-merge.png", "settings-layout.png", "settings-files.png", "settings-editor-more.png", "settings-state-error.png", "dark-theme.png", "settings-editor-fonts.png", "settings-automation.png"]
     },
     {
+      "id": "settings-search",
+      "title": "Search in Settings",
+      "usage": "usage/Settings-Search.md",
+      "developer": "developer/How-Settings-Search-Works.md",
+      "screenshots": ["settings-search.png"]
+    },
+    {
       "id": "color-themes",
       "title": "Color themes",
       "usage": "usage/Color-Themes.md",
       "developer": "developer/How-Color-Themes-Work.md",
       "screenshots": ["color-theme-pickers.png", "color-theme-dracula.png", "color-theme-solarized-light.png", "color-theme-high-contrast.png"]
+    },
+    {
+      "id": "rounded-panels",
+      "title": "Rounded panels",
+      "usage": "usage/Rounded-Panels.md",
+      "developer": "developer/How-Rounded-Panels-Work.md",
+      "screenshots": ["rounded-panels.png", "rounded-panels-islands-light.png"]
     },
     {
       "id": "updates",
@@ -376,7 +452,14 @@
       "title": "Memory readout and memory log",
       "usage": "usage/Memory-Use.md",
       "developer": "developer/How-Memory-Is-Measured.md",
-      "screenshots": ["memory-log-settings.png"]
+      "screenshots": ["memory-log-settings.png", "settings-memory-flags.png"]
+    },
+    {
+      "id": "clear-cache",
+      "title": "Clear Cache",
+      "usage": "usage/Clear-Cache.md",
+      "developer": "developer/How-Clear-Cache-Works.md",
+      "screenshots": ["status-bar-clear-cache.png"]
     },
     {
       "id": "mcp",

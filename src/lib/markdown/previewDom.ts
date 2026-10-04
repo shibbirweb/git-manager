@@ -8,7 +8,7 @@
 import type * as Engine from "./engine";
 import type { CodeHighlighter } from "./highlight";
 import { classifyImage, classifyLink, ID_PREFIX, type LinkContext, type LinkTarget } from "./links";
-import { cachedMermaid, type MermaidResult, renderMermaid } from "./mermaid";
+import { cachedMermaid, type MermaidResult, releaseMermaid, renderMermaid } from "./mermaid";
 import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
 import { buildAnchors, type LineAnchor, lineForOffset, offsetForLine } from "./scrollSync";
 
@@ -17,7 +17,7 @@ type EngineModule = typeof Engine;
 export interface PreviewCallbacks {
   /** Where links and images are resolved. */
   linkContext: () => LinkContext;
-  /** A local image as a data URL. */
+  /** The URL of a local image (the `gmpreview` scheme, so its bytes stay out of JavaScript). */
   loadImage: (filePath: string) => Promise<string>;
   isDark: () => boolean;
 }
@@ -77,12 +77,17 @@ export class MarkdownPreviewDom {
   /** Stops watching for diagrams and images to draw; the preview is going away. */
   destroy(): void {
     this.nearScreen.disconnect();
+    releaseMermaid(this);
   }
 
   /** Renders `source`, touching only the segments that changed. */
   render(source: string): void {
     this.lastLineCount = Math.max(1, source.split("\n").length);
     const { segments, hasMermaid, hasRawHtml } = this.renderer.render(source);
+    if (!hasMermaid) {
+      // The last diagram was deleted: this preview no longer keeps the diagram frame.
+      releaseMermaid(this);
+    }
     this.highlighter.sweep();
     const signatures = segments.map((segment) => segment.html.replace(LINE_ATTRIBUTES, ""));
     const old = this.shown;
@@ -199,7 +204,7 @@ export class MarkdownPreviewDom {
       return;
     }
     image.dataset.gmFile = target.filePath;
-    // Loaded once it is scrolled near; data URLs of images far down are never made.
+    // Loaded once it is scrolled near, so images far down are never read.
     this.nearScreen.watch(image, () => {
       this.nearScreen.unwatch(image);
       this.loadLocalImage(image, target.filePath, alt, raw);
@@ -228,7 +233,7 @@ export class MarkdownPreviewDom {
       });
   }
 
-  /** Drops loaded images no block shows any more, so their data URLs can be freed. */
+  /** Forgets images no block shows any more; one shown again is read anew (it may have changed). */
   private forgetUnusedImages(): void {
     if (this.images.size === 0) {
       return;
@@ -264,7 +269,7 @@ export class MarkdownPreviewDom {
       return;
     }
     diagram.classList.add("loading");
-    void renderMermaid(source, dark).then((result) => {
+    void renderMermaid(this, source, dark).then((result) => {
       diagram.classList.remove("loading");
       // Scrolled far away while it was drawn: it stays freed until it comes near again.
       if (diagram.isConnected && diagram.dataset.near === "true" && this.mermaidSources.get(diagram) === source) {

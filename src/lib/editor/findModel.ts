@@ -23,7 +23,7 @@ export const MAX_SELECTION_QUERY = 500;
 export type MatchTest = (match: string, state: EditorState, from: number, to: number) => boolean;
 
 /**
- * The CodeMirror query for the field and toggles. Without Regex the text is literal (JetBrains),
+ * The CodeMirror query for the field and toggles. Without Regex the text is literal,
  * so a typed \n stays two characters; with Regex the replacement understands \n, \t and $1.
  */
 export function buildQuery(search: string, replace: string, options: FindOptions, test?: MatchTest): SearchQuery {
@@ -62,7 +62,7 @@ function escapeRegex(text: string): string {
 
 /**
  * The find field's text for a selection, or null to keep the previous query: only a short
- * selection on one line seeds it, escaped when Regex is on (JetBrains does the same).
+ * selection on one line seeds it, escaped when Regex is on.
  */
 export function selectionQuery(selected: string, regex: boolean): string | null {
   if (selected === "" || selected.length > MAX_SELECTION_QUERY || /[\r\n]/.test(selected)) {
@@ -140,7 +140,7 @@ export interface OccurrenceRanges {
 
 /**
  * Select All Occurrences without a find query: every occurrence of the selection, or of the
- * word at the caret as a whole word (JetBrains), matched case-sensitively.
+ * word at the caret as a whole word, matched case-sensitively.
  */
 export function occurrenceRanges(state: EditorState, cap = SELECT_CAP): OccurrenceRanges | null {
   const selection = state.selection.main;

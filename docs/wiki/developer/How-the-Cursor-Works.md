@@ -1,6 +1,6 @@
 # How the Cursor Works
 
-The editors' cursor can change its shape, width, blinking and height, like VS Code's cursor settings plus Sublime Text's `caret_extra_top` and `caret_extra_bottom`. The user side is in [Editing Code](../usage/Editing-Code.md#the-cursor).
+The editors' cursor can change its shape, width, blinking and height, like VS Code's cursor settings plus Sublime Text's `caret_extra_top` and `caret_extra_bottom`. The user side is in [Editing Code](../usage/Code-Appearance.md#the-cursor).
 
 ## Why we need it
 
@@ -59,7 +59,7 @@ How the cursor looks needs a visual check in the app.
 
 ## Keeping this page in sync
 
-- Update this page and [Editing Code](../usage/Editing-Code.md#the-cursor) when a cursor setting or its behavior changes.
+- Update this page and [Editing Code](../usage/Code-Appearance.md#the-cursor) when a cursor setting or its behavior changes.
 - Update [Settings Reference](Settings-Reference.md) when a key, default or range changes.
 
 ## Bugs we fixed

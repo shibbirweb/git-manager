@@ -2,8 +2,20 @@
 
 import { type Channel, invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import type { ConfigPatch } from "./stores/configPatch";
 import type {
   AppError,
+  DeletedLocalFile,
+  FileLocalHistory,
+  LocalHistoryRecord,
+  LocalHistoryUsage,
+  AutoFetchResult,
+  BisectMark,
+  BisectState,
+  HeadBackMode,
+  LastAction,
+  ReflogPage,
   GitCommandEntry,
   IgnoreOutcome,
   IgnoreTarget,
@@ -13,11 +25,14 @@ import type {
   CommitSummary,
   BlameInfo,
   ConflictSummary,
-  DirListing,
   DiffArea,
   Eol,
   FileContent,
+  FolderListing,
   FileDiff,
+  HeadFile,
+  HeadVersion,
+  LineMarks,
   PreviewSource,
   PreviewStat,
   FileHistoryEntry,
@@ -27,6 +42,7 @@ import type {
   GitProgressEvent,
   LaunchMode,
   LineHistoryEntry,
+  LogPage,
   MemoryUsage,
   MemoryLogStatus,
   MergeDocument,
@@ -39,6 +55,7 @@ import type {
   RebasePlan,
   PullMode,
   Refs,
+  RefsSnapshot,
   RemoteInfo,
   ReplaceOutcome,
   ReplaceRequest,
@@ -51,17 +68,21 @@ import type {
   ShellProfile,
   Side,
   StashEntry,
+  OutlineResult,
+  StatusSnapshot,
   SymbolScope,
   SymbolSearchProgress,
   SymbolSearchResults,
-  TerminalExitedEvent,
   TerminalInfo,
+  TerminalOutputMessage,
   TextSearchBatch,
   TextSearchOptions,
   WorkspaceChangedEvent,
   WorkspaceFile,
   WorkspaceInfo,
 } from "./types";
+import { rawBody } from "./rawBody";
+import type { TerminalStashData } from "./terminal/terminalStash";
 import type {
   GhCliStatus,
   GitHubAccount,
@@ -73,8 +94,12 @@ import type {
   GitHubSyncForkOutcome,
 } from "./types";
 import type { FileMove, LfsStatus, SubmoduleInfo, WorktreeBranch, WorktreeInfo } from "./types";
+import type { CompareSide, FileCompare } from "./types";
+import type { LineAction, LineSelection, LinesOutcome } from "./types";
 import type { BranchComparison, CommitOptions, MergeOptions, RebaseOptions, WorktreeComparison } from "./types";
+import type { Identity, IdentityScope, RecentMessage } from "./types";
 import type { McpActivity, McpStatus, McpToolInfo, McpUiRequest, McpUiResult, McpUiToolDef } from "./types";
+import type { ConfigChangedEvent, WindowOpened } from "./types";
 
 export function errorMessage(error: unknown): string {
   if (typeof error === "string") {
@@ -104,17 +129,37 @@ export const api = {
     invoke<void>("write_workspace_file", { filePath, folders }),
 
   // Status and commit
-  getStatus: (repoPath: string) => invoke<RepoStatus>("get_status", { repoPath }),
+  /** The status, or `status: null` when it still has `knownHash` (the caller keeps the one it holds). */
+  getStatus: (repoPath: string, knownHash: string | null = null) =>
+    invoke<StatusSnapshot>("get_status", { repoPath, knownHash }),
   getFileDiff: (repoPath: string, filePath: string, origPath: string | null, area: DiffArea) =>
-    invoke<FileDiff>("get_file_diff", { repoPath, filePath, origPath, area }),
+    invoke<FileDiff>("get_file_diff", { repoPath, filePath, origPath, area, knownVersion: null }),
+  /** Null when the diff still has `knownVersion` (a FileDiff's `version`): nothing is read or sent. */
+  getFileDiffIfChanged: (repoPath: string, filePath: string, origPath: string | null, area: DiffArea, knownVersion: string | null) =>
+    invoke<FileDiff | null>("get_file_diff", { repoPath, filePath, origPath, area, knownVersion }),
   stageFiles: (repoPath: string, filePaths: string[]) => invoke<void>("stage_files", { repoPath, filePaths }),
   unstageFiles: (repoPath: string, filePaths: string[]) => invoke<void>("unstage_files", { repoPath, filePaths }),
   discardFiles: (repoPath: string, trackedPaths: string[], untrackedPaths: string[]) =>
     invoke<void>("discard_files", { repoPath, trackedPaths, untrackedPaths }),
   stageContent: (repoPath: string, filePath: string, content: string, eol: Eol) =>
     invoke<void>("stage_content", { repoPath, filePath, content, eol }),
+  /**
+   * Stages, unstages or discards only the selected lines of a file's diff. `knownVersion` is the
+   * diff's `version`: a file that changed since then is refused instead of patched at the wrong lines.
+   */
+  applySelectedLines: (
+    repoPath: string,
+    filePath: string,
+    origPath: string | null,
+    action: LineAction,
+    selection: LineSelection,
+    knownVersion: string | null,
+  ) => invoke<LinesOutcome>("apply_selected_lines", { repoPath, filePath, origPath, action, selection, knownVersion }),
+  /** Undo of Discard Selected Lines: applies the discarded patch to the work tree again. */
+  restoreDiscardedLines: (repoPath: string, patch: string) => invoke<void>("restore_discarded_lines", { repoPath, patch }),
+  /** Resolves to the file's new version (see FileContent.version). */
   writeWorktreeFile: (repoPath: string, filePath: string, content: string, eol: Eol) =>
-    invoke<void>("write_worktree_file", { repoPath, filePath, content, eol }),
+    invoke<string>("write_worktree_file", { repoPath, filePath, content, eol }),
   /** `options` (sign-off, author, GPG, skip hooks) null commits with the defaults. */
   commit: (repoPath: string, message: string, amend: boolean, options: CommitOptions | null = null) =>
     invoke<GitOutput>("commit", { repoPath, message, amend, options }),
@@ -127,7 +172,17 @@ export const api = {
   /** Commits only `filePaths` (`git commit --only`), staging them first; other staged changes stay staged. */
   commitFiles: (repoPath: string, filePaths: string[], message: string, amend: boolean, options: CommitOptions | null = null) =>
     invoke<GitOutput>("commit_files", { repoPath, filePaths, message, amend, options }),
-  /** JetBrains' Rollback: staged and unstaged changes of tracked files go back to HEAD; added files are unstaged (and deleted when asked). */
+  /** Global and repository user.name and user.email; `complete` says git would commit with them. */
+  getIdentity: (repoPath: string | null) => invoke<Identity>("get_identity", { repoPath }),
+  /** `git config --global` or `--local`; an empty name or email unsets it. */
+  setIdentity: (repoPath: string | null, scope: IdentityScope, name: string, email: string) =>
+    invoke<Identity>("set_identity", { repoPath, scope, name, email }),
+  /** The current user's recent commit messages from HEAD, newest first. */
+  recentCommitMessages: (repoPath: string, limit: number) =>
+    invoke<RecentMessage[]>("recent_commit_messages", { repoPath, limit }),
+  /** The text of the `commit.template` file, or null. */
+  getCommitTemplate: (repoPath: string) => invoke<string | null>("get_commit_template", { repoPath }),
+  /** Rollback: staged and unstaged changes of tracked files go back to HEAD; added files are unstaged (and deleted when asked). */
   rollbackFiles: (repoPath: string, filePaths: string[], deleteAdded: boolean) =>
     invoke<void>("rollback_files", { repoPath, filePaths, deleteAdded }),
 
@@ -148,6 +203,9 @@ export const api = {
 
   // Branches
   getRefs: (repoPath: string) => invoke<Refs>("get_refs", { repoPath }),
+  /** Refs for a refresh: `refs: null` while `knownFingerprint` (refs, stashes, remotes, worktrees) still matches. */
+  getRefsSnapshot: (repoPath: string, knownFingerprint: string | null) =>
+    invoke<RefsSnapshot>("get_refs_snapshot", { repoPath, knownFingerprint }),
   checkoutBranch: (repoPath: string, branchName: string) => invoke<void>("checkout_branch", { repoPath, branchName }),
   checkoutRemoteBranch: (repoPath: string, remoteBranch: string, localName: string) =>
     invoke<void>("checkout_remote_branch", { repoPath, remoteBranch, localName }),
@@ -155,8 +213,25 @@ export const api = {
     invoke<void>("create_branch", { repoPath, branchName, startPoint, checkout }),
   renameBranch: (repoPath: string, branchName: string, newName: string) =>
     invoke<void>("rename_branch", { repoPath, branchName, newName }),
+  /** Deletes a local branch and returns the commit it pointed at, for Restore. */
   deleteBranch: (repoPath: string, branchName: string, force: boolean) =>
-    invoke<void>("delete_branch", { repoPath, branchName, force }),
+    invoke<string>("delete_branch", { repoPath, branchName, force }),
+  /** One page of the reflog of HEAD (refName null) or of a local branch, newest first. */
+  getReflog: (repoPath: string, refName: string | null, offset: number, limit: number) =>
+    invoke<ReflogPage>("get_reflog", { repoPath, refName, offset, limit }),
+  /** The latest HEAD movement, for Undo Last Action. */
+  lastAction: (repoPath: string) => invoke<LastAction>("last_action", { repoPath }),
+  /** Moves HEAD back to `commitId` while it still points at `headId`; returns the reset mode used. */
+  moveHeadBack: (repoPath: string, headId: string, commitId: string, mode: HeadBackMode) =>
+    invoke<string>("move_head_back", { repoPath, headId, commitId, mode }),
+  bisectState: (repoPath: string) => invoke<BisectState | null>("bisect_state", { repoPath }),
+  /** Starts a bisect; with a bad commit (and good ones) git checks out the first commit to test. */
+  bisectStart: (repoPath: string, badCommit: string | null, goodCommits: string[]) =>
+    invoke<string>("bisect_start", { repoPath, badCommit, goodCommits }),
+  /** Marks `commitId` (the checked out commit when null) good, bad or skipped. */
+  bisectMark: (repoPath: string, mark: BisectMark, commitId: string | null) =>
+    invoke<string>("bisect_mark", { repoPath, mark, commitId }),
+  bisectReset: (repoPath: string) => invoke<string>("bisect_reset", { repoPath }),
   mergeBranch: (repoPath: string, branchName: string) => invoke<OpOutcome>("merge_branch", { repoPath, branchName }),
   rebaseOnto: (repoPath: string, branchName: string) => invoke<OpOutcome>("rebase_onto", { repoPath, branchName }),
   /** The Merge dialog: merges `branchName` into the current branch. */
@@ -184,6 +259,8 @@ export const api = {
   // Remote
   /** Every remote, pruning deleted branches. */
   fetchAll: (repoPath: string) => invoke<OpOutcome>("fetch_all", { repoPath }),
+  /** The auto fetch timer: a quiet `git fetch --all --prune` that never asks for credentials. */
+  autoFetch: (repoPath: string) => invoke<AutoFetchResult>("auto_fetch", { repoPath }),
   /** The default remote, optionally pruning deleted branches. */
   fetch: (repoPath: string, prune: boolean) => invoke<OpOutcome>("fetch", { repoPath, prune }),
   pull: (repoPath: string, rebase = false) => invoke<OpOutcome>("pull", { repoPath, rebase }),
@@ -231,13 +308,27 @@ export const api = {
 
   // History
   getLog: (repoPath: string, offset: number, limit: number, allRefs: boolean) =>
-    invoke<CommitSummary[]>("get_log", { repoPath, offset, limit, allRefs }),
+    invoke<LogPage>("get_log", { repoPath, offset, limit, allRefs, knownTips: null }).then((page) => page.commits ?? []),
+  /** A page of history, or `commits: null` without walking while the branch tips still match `knownTips`. */
+  getLogPage: (repoPath: string, offset: number, limit: number, allRefs: boolean, knownTips: string | null) =>
+    invoke<LogPage>("get_log", { repoPath, offset, limit, allRefs, knownTips }),
   getCommitDetails: (repoPath: string, commitId: string) =>
     invoke<CommitDetails>("get_commit_details", { repoPath, commitId }),
   getCommitFileDiff: (repoPath: string, commitId: string, filePath: string, origPath: string | null) =>
     invoke<FileDiff>("get_commit_file_diff", { repoPath, commitId, filePath, origPath }),
-  blameFile: (repoPath: string, filePath: string, revision: string | null, contents: string | null) =>
-    invoke<BlameInfo>("blame_file", { repoPath, filePath, revision, contents }),
+  /** Blames the file at `revision`, or as it is on disk when null. */
+  blameFile: (repoPath: string, filePath: string, revision: string | null) =>
+    invoke<BlameInfo>("blame_file", { repoPath, filePath, revision }),
+  /** Blames an editor's LF-normalized `text`, unsaved edits included; `eol` is the file's own. */
+  blameContents: (repoPath: string, filePath: string, text: string, eol: Eol) =>
+    invoke<BlameInfo>("blame_contents", rawBody({ repoPath, filePath, eol }, text)),
+  /** The editor's changed lines against HEAD (at `origPath` for a staged rename). */
+  lineChangeMarks: (repoPath: string, filePath: string, origPath: string | null, text: string) =>
+    invoke<LineMarks>("line_change_marks", rawBody({ repoPath, filePath, origPath }, text)),
+  headFileVersion: (repoPath: string, filePath: string, origPath: string | null) =>
+    invoke<HeadVersion>("head_file_version", { repoPath, filePath, origPath }),
+  readHeadFile: (repoPath: string, filePath: string, origPath: string | null) =>
+    invoke<HeadFile>("read_head_file", { repoPath, filePath, origPath }),
   cherryPick: (repoPath: string, commitId: string) => invoke<OpOutcome>("cherry_pick", { repoPath, commitId }),
   revertCommit: (repoPath: string, commitId: string) => invoke<OpOutcome>("revert_commit", { repoPath, commitId }),
   resetTo: (repoPath: string, commitId: string, mode: ResetMode) =>
@@ -259,8 +350,9 @@ export const api = {
   lineHistory: (repoPath: string, filePath: string, startLine: number, endLine: number, limit: number) =>
     invoke<LineHistoryEntry[]>("line_history", { repoPath, filePath, startLine, endLine, limit }),
   /** The file at `revision` against the work tree copy. */
-  compareWithRevision: (repoPath: string, filePath: string, revision: string) =>
-    invoke<RevisionDiff>("compare_with_revision", { repoPath, filePath, revision }),
+  /** `origPath` is the old name of a renamed file, read from `revision`. */
+  compareWithRevision: (repoPath: string, filePath: string, revision: string, origPath: string | null = null) =>
+    invoke<RevisionDiff>("compare_with_revision", { repoPath, filePath, revision, origPath }),
 
   // Stash
   getStashes: (repoPath: string) => invoke<StashEntry[]>("get_stashes", { repoPath }),
@@ -301,7 +393,9 @@ export const api = {
 
   // Git LFS
   /** `checkInstall` runs `git lfs version` again unless git-lfs is already known to be installed. */
-  lfsStatus: (repoPath: string, checkInstall: boolean) => invoke<LfsStatus>("lfs_status", { repoPath, checkInstall }),
+  /** With the `knownStamp` of the last answer, an unchanged repository answers `unchanged` (no git-lfs process). */
+  lfsStatus: (repoPath: string, checkInstall: boolean, knownStamp: string | null = null) =>
+    invoke<LfsStatus>("lfs_status", { repoPath, checkInstall, knownStamp }),
   lfsTrack: (repoPath: string, pattern: string) => invoke<string>("lfs_track", { repoPath, pattern }),
   lfsUntrack: (repoPath: string, pattern: string) => invoke<string>("lfs_untrack", { repoPath, pattern }),
   /** `git lfs pull` (`pull` true) or `git lfs fetch`; progress arrives as git-progress events. */
@@ -311,18 +405,27 @@ export const api = {
 
   // User config in ~/.gitmanager
   loadConfig: (configName: "settings" | "state") => invoke<unknown>("load_config", { configName }),
+  /** Replaces a whole file: only to reset one that could not be read. Saves go through `updateConfig`. */
   saveConfig: (configName: "settings" | "state", value: unknown) => invoke<void>("save_config", { configName, value }),
+  /** Writes only what this window changed into the file as it is now; the other windows hear of it. */
+  updateConfig: (configName: "settings" | "state", patch: ConfigPatch) =>
+    invoke<void>("update_config", { configName, patch }),
   configDir: () => invoke<string>("config_dir"),
   memoryUsage: () => invoke<MemoryUsage>("memory_usage"),
+  /** Restarts this window's page in a new web content process (Clear Cache). */
+  clearCache: (stash: TerminalStashData | null) => invoke<void>("clear_cache", { stash }),
   osInfo: () => invoke<OsInfo>("os_info"),
 
   // File explorer
-  listDirectory: (rootPath: string, dirPath: string, repoRoots: string[]) =>
-    invoke<DirListing>("list_directory", { rootPath, dirPath, repoRoots }),
-  readWorktreeFile: (repoPath: string, filePath: string) =>
-    invoke<FileContent>("read_worktree_file", { repoPath, filePath }),
-  /** A local image for the Markdown preview as a data URL; `imagePath` is relative to the workspace folder `rootPath`. */
-  readImageDataUrl: (rootPath: string, imagePath: string) => invoke<string>("read_image_data_url", { rootPath, imagePath }),
+  /**
+   * Lists folders of one workspace folder (`dirPaths` relative to it, "" for itself) in one call. A folder whose
+   * stamp in `known` still matches answers `unchanged` without its entries.
+   */
+  listDirectories: (rootPath: string, dirPaths: string[], repoRoots: string[], known: Record<string, string> | null = null) =>
+    invoke<FolderListing[]>("list_directories", { rootPath, dirPaths, repoRoots, known }),
+  /** With the `knownVersion` of the text already shown, an unchanged file answers `unchanged` without its text. */
+  readWorktreeFile: (repoPath: string, filePath: string, knownVersion: string | null = null) =>
+    invoke<FileContent>("read_worktree_file", { repoPath, filePath, knownVersion }),
   /** Whether a previewed image or PDF is there, its size, and the limit when it is too big. */
   previewStat: (source: PreviewSource) =>
     invoke<PreviewStat>(
@@ -331,6 +434,10 @@ export const api = {
         ? { filePath: source.filePath, repoRoot: null, revision: null }
         : { filePath: source.filePath, repoRoot: source.repoRoot, revision: source.revision },
     ),
+
+  /** Two files (or a file and text) as a diff; null when both still have `knownVersion`. */
+  compareFiles: (left: CompareSide, right: CompareSide, knownVersion: string | null = null) =>
+    invoke<FileCompare | null>("compare_files", { left, right, knownVersion }),
 
   // File operations in the Files panel: absolute paths, each inside one of `workspaceRoots`.
   /** `name` may contain "/" to create nested folders; returns the new absolute path. */
@@ -344,7 +451,13 @@ export const api = {
     invoke<string[]>("file_copy", { workspaceRoots, sourcePaths, targetDir }),
   /** Moves into `targetDir`; entries already there are skipped. Returns each moved entry. */
   fileMove: (workspaceRoots: string[], sourcePaths: string[], targetDir: string) =>
-    invoke<FileMove[]>("file_move", { workspaceRoots, sourcePaths, targetDir }),
+    invoke<FileMove[]>("file_move", { workspaceRoots, sourcePaths, targetDir, dryRun: false }),
+  /**
+   * A dry run of `fileMove`: the first name `targetDir` already has, or null when the move can go ahead. Other
+   * refusals (into itself, outside the workspace) reject with the error the move would give.
+   */
+  fileMoveClash: (workspaceRoots: string[], sourcePaths: string[], targetDir: string) =>
+    invoke<string | null>("file_move", { workspaceRoots, sourcePaths, targetDir, dryRun: true }),
   fileTrash: (workspaceRoots: string[], entryPaths: string[]) => invoke<void>("file_trash", { workspaceRoots, entryPaths }),
   /** Which absolute paths are files inside the workspace folders (the terminal's clickable paths); never fails. */
   filesExist: (workspaceRoots: string[], filePaths: string[]) => invoke<boolean[]>("files_exist", { workspaceRoots, filePaths }),
@@ -373,19 +486,28 @@ export const api = {
   replaceInFiles: (workspaceRoots: string[], replaceId: number, request: ReplaceRequest) =>
     invoke<ReplaceOutcome>("replace_in_files", { workspaceRoots, replaceId, request }),
   replaceInFilesCancel: (replaceId: number) => invoke<void>("replace_in_files_cancel", { replaceId }),
+  // Quick Open "@": the symbols of the editor's text, unsaved edits included; nothing is cached.
+  documentSymbols: (filePath: string, text: string) => invoke<OutlineResult>("document_symbols", { filePath, text }),
 
-  // Integrated terminal. Output arrives as raw bytes on `output`; exit as a "terminal-exited" event.
+  // Integrated terminal. Output arrives as raw bytes on `output`, then the exit as its last message;
+  // the view acks written output (terminal/outputFlow.ts).
   terminalShells: () => invoke<ShellProfile[]>("terminal_shells"),
   terminalSpawn: (
     options: { shellId: string | null; cwd: string | null; cols: number; rows: number },
-    output: Channel<ArrayBuffer>,
+    output: Channel<TerminalOutputMessage>,
   ) => invoke<TerminalInfo>("terminal_spawn", { ...options, output }),
   terminalWrite: (terminalId: number, data: string) => invoke<void>("terminal_write", { terminalId, data }),
+  terminalAck: (terminalId: number, byteCount: number) => invoke<void>("terminal_ack", { terminalId, byteCount }),
   terminalResize: (terminalId: number, cols: number, rows: number) =>
     invoke<void>("terminal_resize", { terminalId, cols, rows }),
   terminalClose: (terminalId: number) => invoke<void>("terminal_close", { terminalId }),
   /** Closes every terminal, e.g. left over after a reload of the window. */
   terminalCloseAll: () => invoke<void>("terminal_close_all"),
+  /** What Clear Cache left for this page, once; null after a normal start. */
+  terminalUnstash: () => invoke<TerminalStashData | null>("terminal_unstash"),
+  /** Connects a terminal left running by Clear Cache to this page; false when it is gone. */
+  terminalReattach: (terminalId: number, output: Channel<TerminalOutputMessage>) =>
+    invoke<boolean>("terminal_reattach", { terminalId, output }),
 
   // Git Console: the git commands the app ran. The first call starts the "git-command" events.
   gitConsoleEntries: () => invoke<GitCommandEntry[]>("git_console_entries"),
@@ -399,10 +521,26 @@ export const api = {
   memoryLogConfigure: (enabled: boolean, intervalMs: number, thresholdMb: number) =>
     invoke<MemoryLogStatus>("memory_log_configure", { enabled, intervalMs, thresholdMb }),
   memoryLogEvent: (label: string) => invoke<void>("memory_log_event", { label }),
+
+  // Local History (~/.gitmanager/local-history): versions of files kept on save, outside changes and discards.
+  localHistoryConfigure: (enabled: boolean, maxDays: number, maxSizeMb: number) =>
+    invoke<void>("local_history_configure", { enabled, maxDays, maxSizeMb }),
+  /** Keeps these versions, in order, in one call. */
+  localHistoryRecord: (records: LocalHistoryRecord[]) => invoke<void>("local_history_record", { records }),
+  localHistoryList: (filePath: string) => invoke<FileLocalHistory>("local_history_list", { filePath }),
+  /** A version (left) against `currentText`, or the file on disk when it is null (right). */
+  localHistoryDiff: (filePath: string, snapshotHash: string, currentText: string | null) =>
+    invoke<FileDiff>("local_history_diff", { filePath, snapshotHash, currentText }),
+  /** Writes a version back to a deleted file's path; refused when a file is there. */
+  localHistoryRestore: (filePath: string, snapshotHash: string) =>
+    invoke<void>("local_history_restore", { filePath, snapshotHash }),
+  localHistoryDeleted: (folderPaths: string[]) => invoke<DeletedLocalFile[]>("local_history_deleted", { folderPaths }),
+  localHistoryUsage: () => invoke<LocalHistoryUsage>("local_history_usage"),
+  localHistoryClear: () => invoke<void>("local_history_clear"),
   /** A script as its own process (the Run tab); output and exit arrive like a terminal's. */
   runScript: (
     options: { program: string; args: string[]; cwd: string; nodeBinDir: string | null; cols: number; rows: number },
-    output: Channel<ArrayBuffer>,
+    output: Channel<TerminalOutputMessage>,
   ) => invoke<TerminalInfo>("run_script", { ...options, output }),
 
   // Shelf (.git/gitmanager-shelf). `filePaths` null unshelves every file.
@@ -448,8 +586,6 @@ export const api = {
   /** Backend and registered UI tools, with their effective enabled state. */
   mcpTools: () => invoke<McpToolInfo[]>("mcp_tools"),
   mcpRegisterUiTools: (tools: McpUiToolDef[]) => invoke<void>("mcp_register_ui_tools", { tools }),
-  /** The folders tools may touch: the workspace folders open now. */
-  mcpSetWorkspace: (folderPaths: string[]) => invoke<void>("mcp_set_workspace", { folderPaths }),
   mcpUiRespond: (requestId: number, result: McpUiResult) => invoke<void>("mcp_ui_respond", { requestId, result }),
   /** A new secret token; connected tools need the new one. */
   mcpRegenerateToken: () => invoke<McpStatus>("mcp_regenerate_token"),
@@ -458,22 +594,60 @@ export const api = {
   /** Links `git-manager` in ~/.local/bin (not supported on Windows yet). */
   cliInstall: () => invoke<McpStatus>("cli_install"),
   cliUninstall: () => invoke<McpStatus>("cli_uninstall"),
+
+  // Windows (src-tauri/src/commands/window.rs)
+  /** What this window opens when its page starts or reloads (see windows/windowSession.ts). */
+  windowStartup: () => invoke<unknown>("window_startup"),
+  /**
+   * This window shows these folders now: its title, the folders its previews and the MCP
+   * tools reach, and the window session saved for the next start.
+   */
+  windowSetWorkspace: (folderPaths: string[], workspaceFile: string | null, title: string) =>
+    invoke<void>("window_set_workspace", { folderPaths, workspaceFile, title }),
+  /** Focuses the other window that already shows these folders and returns its label; null: open here. */
+  windowFocusOwner: (folderPaths: string[], workspaceFile: string | null) =>
+    invoke<string | null>("window_focus_owner", { folderPaths, workspaceFile }),
+  /** A new window showing these folders (none: the welcome screen), or the window that already shows them. */
+  windowOpen: (folderPaths: string[], workspaceFile: string | null) =>
+    invoke<WindowOpened>("window_open", { folderPaths, workspaceFile }),
+  /** Closes this window without asking (the page asks about unsaved edits first). */
+  windowClose: () => invoke<void>("window_close"),
 };
 
+/** This window's label ("main", "window-2", ...). */
+export function currentWindowLabel(): string {
+  try {
+    return getCurrentWindow().label;
+  } catch {
+    return "main";
+  }
+}
+
+/**
+ * Listens to events sent to this window, or to every window. A plain `listen` would also hear
+ * events the backend sends to another window (a watcher of another workspace, say).
+ */
+function listenHere<T>(event: string, handler: (payload: T) => void): Promise<UnlistenFn> {
+  return listen<T>(event, (received) => handler(received.payload), {
+    target: { kind: "WebviewWindow", label: currentWindowLabel() },
+  });
+}
+
+/** Another window changed settings.json or state.json. */
+export function onConfigChanged(handler: (event: ConfigChangedEvent) => void): Promise<UnlistenFn> {
+  return listenHere<ConfigChangedEvent>("config-changed", handler);
+}
+
 export function onRepoChanged(handler: (event: RepoChangedEvent) => void): Promise<UnlistenFn> {
-  return listen<RepoChangedEvent>("repo-changed", (event) => handler(event.payload));
+  return listenHere<RepoChangedEvent>("repo-changed", handler);
 }
 
 export function onWorkspaceChanged(handler: (event: WorkspaceChangedEvent) => void): Promise<UnlistenFn> {
-  return listen<WorkspaceChangedEvent>("workspace-changed", (event) => handler(event.payload));
+  return listenHere<WorkspaceChangedEvent>("workspace-changed", handler);
 }
 
 export function onGitProgress(handler: (event: GitProgressEvent) => void): Promise<UnlistenFn> {
-  return listen<GitProgressEvent>("git-progress", (event) => handler(event.payload));
-}
-
-export function onTerminalExited(handler: (event: TerminalExitedEvent) => void): Promise<UnlistenFn> {
-  return listen<TerminalExitedEvent>("terminal-exited", (event) => handler(event.payload));
+  return listenHere<GitProgressEvent>("git-progress", handler);
 }
 
 /** A git command started or finished (Git Console). Sent once `gitConsoleEntries` was called. */
@@ -483,7 +657,7 @@ export function onGitCommand(handler: (entry: GitCommandEntry) => void): Promise
 
 /** A tool call for a UI tool; every request must be answered with `api.mcpUiRespond`. */
 export function onMcpUiRequest(handler: (request: McpUiRequest) => void): Promise<UnlistenFn> {
-  return listen<McpUiRequest>("mcp-ui-request", (event) => handler(event.payload));
+  return listenHere<McpUiRequest>("mcp-ui-request", handler);
 }
 
 /** A tool call finished (MCP or CLI), for the live Recent calls list. */

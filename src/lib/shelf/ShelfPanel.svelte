@@ -1,5 +1,5 @@
 <!--
-  JetBrains' Shelf, in the bottom panel: the active repository's shelved change lists with their files.
+  The Shelf, in the bottom panel: the active repository's shelved change lists with their files.
   Double click (or Enter) on a file shows its diff; the right-click menus unshelve, rename and delete.
 -->
 <script lang="ts">

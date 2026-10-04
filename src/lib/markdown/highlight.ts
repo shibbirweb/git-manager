@@ -114,14 +114,33 @@ export class CodeHighlighter {
   private parsers = new Map<string, Parser | null | "loading">();
   private cache = new Map<string, string>();
   private used = new Set<string>();
+  private enabled = true;
 
   constructor(
     private readonly loadParser: (extension: string) => Promise<Parser | null>,
     private readonly onReady: () => void,
   ) {}
 
+  /**
+   * The Syntax highlighting setting. Off, every block is plain and the grammars and cached
+   * HTML are let go; on, they load again on the next render. Returns whether it changed.
+   */
+  setEnabled(enabled: boolean): boolean {
+    if (enabled === this.enabled) {
+      return false;
+    }
+    this.enabled = enabled;
+    this.parsers.clear();
+    this.cache.clear();
+    this.used.clear();
+    return true;
+  }
+
   /** Loads the grammars for `languages`, so a first render can highlight right away. */
   async preload(languages: string[]): Promise<void> {
+    if (!this.enabled) {
+      return;
+    }
     const extensions = new Set(languages.map(fenceExtension).filter((extension): extension is string => extension !== null));
     await Promise.all(
       [...extensions]
@@ -139,7 +158,7 @@ export class CodeHighlighter {
 
   highlight(code: string, language: string): string | null {
     const extension = fenceExtension(language);
-    if (!extension || code.length > MAX_HIGHLIGHT_CHARS) {
+    if (!this.enabled || !extension || code.length > MAX_HIGHLIGHT_CHARS) {
       return null;
     }
     const key = `${extension}\u0000${code}`;
@@ -153,6 +172,9 @@ export class CodeHighlighter {
       this.parsers.set(extension, "loading");
       this.loadParser(extension)
         .then((loaded) => {
+          if (!this.enabled) {
+            return;
+          }
           this.parsers.set(extension, loaded ?? null);
           if (loaded) {
             this.onReady();

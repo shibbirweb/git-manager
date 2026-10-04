@@ -37,7 +37,7 @@ export interface TerminalDisplayOptions {
   smoothScrollDuration: number;
 }
 
-/** How long a smooth scroll takes, VS Code's value. */
+/** How long a smooth scroll takes. */
 export const SMOOTH_SCROLL_MS = 125;
 
 /** Options that change the cell size, so the grid must be fitted again. */

@@ -1,4 +1,4 @@
-<!-- JetBrains' Update Project: pulls every repository of the workspace, merging or rebasing
+<!-- Update Project: pulls every repository of the workspace, merging or rebasing
      the incoming changes; the choice is remembered. -->
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";

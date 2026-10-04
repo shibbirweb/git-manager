@@ -56,7 +56,7 @@ Open **Help > Available MCP Tools...** (or the button next to the Status line). 
 - **can change files**: for example staging or committing.
 - **destructive**: it can lose work or run commands, such as discarding changes, pushing, resetting a branch, writing, renaming, moving or trashing files, running scripts or typing in a terminal. These start **off**.
 
-Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. A single switch turns its tool on right away. The header says how many tools are on, for example "74 of 86 tools on".
+Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. **Restore Defaults** puts the tools shown back to how they start, destructive tools off and every other tool on, after asking you. A single switch turns its tool on right away. The header says how many tools are on, for example "74 of 86 tools on".
 
 **Recent calls** shows the last calls as they happen: the tool, **MCP** or **CLI**, the time, how long it took and any error.
 

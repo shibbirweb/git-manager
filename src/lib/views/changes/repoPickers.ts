@@ -78,7 +78,7 @@ export function refPickItems(refs: Refs | null, options: RefPickOptions): PickIt
   return items;
 }
 
-/** VS Code's Checkout to...: create entries first, then every branch and tag. */
+/** Checkout to...: create entries first, then every branch and tag. */
 export function checkoutPickItems(refs: Refs | null): PickItem[] {
   return [
     { value: encodeRefPick({ kind: "create" }), label: "+ Create Branch...", pinned: true },

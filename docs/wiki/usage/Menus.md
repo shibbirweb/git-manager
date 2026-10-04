@@ -24,7 +24,7 @@ On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Ed
 - **Undo** (Cmd+Z) and **Redo** (Shift+Cmd+Z) work on the place you are typing: the editor keeps its own history, and a text field its own.
 - **Cut**, **Copy**, **Paste**, **Delete** and **Select All** (Cmd+A).
 - **Find...** (Cmd+F), **Replace...** (Cmd+R), **Find Next** (Cmd+G), **Find Previous** (Shift+Cmd+G) and **Select All Occurrences** (Ctrl+Cmd+G) work in the editor that has the keyboard. See [Find and Replace](Find-and-Replace.md).
-- **Find in Files...** (Shift+Cmd+F), **Replace in Files...** (Shift+Cmd+R), **Go to File...** (Cmd+P), **Go to Class...** (Cmd+O), **Go to Symbol...** (Option+Cmd+O) and **Search Everywhere** (press Shift twice). See [Search Everywhere](Search-Everywhere.md).
+- **Find in Files...** (Shift+Cmd+F), **Replace in Files...** (Shift+Cmd+R), **Go to File...** (Cmd+P), **Recent Files...** (Cmd+E, see [Recent Files](Recent-Files.md)), **Jump to Navigation Bar** (Cmd+Up, see [Navigation Bar](Navigation-Bar.md)), **Go to Class...** (Cmd+O), **Go to Symbol...** (Option+Cmd+O) and **Search Everywhere** (press Shift twice). See [Search Everywhere](Search-Everywhere.md).
 
 ## View
 
@@ -33,7 +33,8 @@ A tick shows what is on screen now.
 - **Changes**, **Branches and Stashes** (Shift+Cmd+E), **Scripts**, **Log** (Shift+Cmd+L), **Files Panel** (Option+Cmd+B), **Sidebar** (Cmd+B) and **Terminal** (Ctrl+\`).
 - **Git Console** shows only while it is turned on in Settings, Git. See [Git Console](Git-Console.md).
 - **Left Activity Bar** and **Right Activity Bar** show or hide the icon strips at the window edges.
-- **Word Wrap** (Option+Z) wraps long lines in the file editor. See [Editing Code](Editing-Code.md#word-wrap).
+- **File Icons** picks **No Icons**, **Minimal** or **Material Icons** for the file lists. See [File Icons](File-Icons.md).
+- **Word Wrap** (Option+Z) wraps long lines in the file editor. See [Editing Code](Code-Appearance.md#word-wrap).
 - **Markdown** picks **Editor Only**, **Editor and Preview** or **Preview Only** for a Markdown file. See [Markdown Editor](Markdown-Editor.md).
 - **Appearance** picks **Light**, **Dark** or **System**.
 - **Zoom In** (Cmd+=), **Zoom Out** (Cmd+-) and **Reset Zoom** (Cmd+0) change the size of the code text.

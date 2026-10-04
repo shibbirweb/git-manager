@@ -2,7 +2,7 @@
 // Supports the default "merge" style and "diff3" / "zdiff3" (with a base
 // section introduced by |||||||).
 
-import type { Text } from "@codemirror/state";
+import type { ChangeSet, Text } from "@codemirror/state";
 import { type LineEdit, replaceLines } from "$lib/merge/model";
 
 export interface ConflictRegion {
@@ -36,11 +36,12 @@ function isMarker(line: string, char: string): boolean {
 }
 
 /** Scans lines for complete conflict regions. Incomplete regions are skipped. */
-export function findConflicts(lineCount: number, lineAt: (index: number) => string): ConflictRegion[] {
+export function findConflicts(lines: Iterable<string>): ConflictRegion[] {
   const regions: ConflictRegion[] = [];
   let open: { start: number; label: string; baseMarker: number | null; separator: number | null } | null = null;
-  for (let index = 0; index < lineCount; index++) {
-    const line = lineAt(index);
+  let index = -1;
+  for (const line of lines) {
+    index++;
     const first = line.charCodeAt(0);
     // Fast path: markers start with one of < | = >.
     if (first !== 60 && first !== 124 && first !== 61 && first !== 62) {
@@ -70,7 +71,57 @@ export function findConflicts(lineCount: number, lineAt: (index: number) => stri
 }
 
 export function findConflictsInDoc(doc: Text): ConflictRegion[] {
-  return findConflicts(doc.lines, (index) => doc.line(index + 1).text);
+  // iterLines walks the text tree once; doc.line(n) per line would search it from the root.
+  return findConflicts({ [Symbol.iterator]: () => doc.iterLines() });
+}
+
+const MARKER_STARTS = ["<<<<<<<", "|||||||", "=======", ">>>>>>>"];
+
+/** A line that is, or with a few more characters could become, part of a region's structure. */
+function mayBeMarker(line: string): boolean {
+  const first = line.charCodeAt(0);
+  if (first !== 60 && first !== 124 && first !== 61 && first !== 62) {
+    return false;
+  }
+  return MARKER_STARTS.some((start) => line.startsWith(start));
+}
+
+/** Whether any whole line touched by `from..to` may be a marker. */
+function rangeHasMarker(doc: Text, from: number, to: number): boolean {
+  const first = doc.lineAt(from).number;
+  const last = doc.lineAt(to).number;
+  for (const line of doc.iterLines(first, last + 1)) {
+    if (mayBeMarker(line)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * The regions after an edit. Lines the edit did not touch keep their text, so when no touched
+ * line (before or after the edit) looks like a marker, the markers are the same lines as before
+ * and only move: typing costs a look at the edited lines instead of a scan of the whole file.
+ */
+export function updateConflicts(regions: ConflictRegion[], changes: ChangeSet, oldDoc: Text, newDoc: Text): ConflictRegion[] {
+  let touched = false;
+  changes.iterChangedRanges((fromA, toA, fromB, toB) => {
+    touched ||= rangeHasMarker(oldDoc, fromA, toA) || rangeHasMarker(newDoc, fromB, toB);
+  });
+  if (touched) {
+    return findConflictsInDoc(newDoc);
+  }
+  if (regions.length === 0) {
+    return regions;
+  }
+  const map = (line: number) => newDoc.lineAt(changes.mapPos(oldDoc.line(line + 1).from)).number - 1;
+  return regions.map((region) => ({
+    ...region,
+    start: map(region.start),
+    baseMarker: region.baseMarker === null ? null : map(region.baseMarker),
+    separator: map(region.separator),
+    end: map(region.end),
+  }));
 }
 
 function sliceLines(doc: Text, from: number, to: number): string[] {

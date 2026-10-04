@@ -16,9 +16,9 @@ import {
 describe("THEME_INDEX", () => {
   it("has the two built-ins plus 10 light, 20 dark and 5 high contrast themes", () => {
     const count = (kinds: string[]) => THEME_INDEX.filter((theme) => kinds.includes(theme.kind)).length;
-    expect(THEME_INDEX).toHaveLength(37);
-    expect(count(["light"])).toBe(11);
-    expect(count(["dark"])).toBe(21);
+    expect(THEME_INDEX).toHaveLength(41);
+    expect(count(["light"])).toBe(13);
+    expect(count(["dark"])).toBe(23);
     expect(count(["high-contrast-light", "high-contrast-dark"])).toBe(5);
   });
 
@@ -71,11 +71,11 @@ describe("themeGroups", () => {
   it("lists the mode's themes with high contrast in its own group", () => {
     const dark = themeGroups("dark");
     expect(dark.map((group) => group.label)).toEqual(["Dark", "High contrast"]);
-    expect(dark[0].themes).toHaveLength(21);
+    expect(dark[0].themes).toHaveLength(23);
     expect(dark[0].themes[0].id).toBe(DEFAULT_DARK_THEME);
     expect(dark[1].themes.map((theme) => theme.kind)).toEqual(["high-contrast-dark", "high-contrast-dark", "high-contrast-dark"]);
     const light = themeGroups("light");
-    expect(light[0].themes).toHaveLength(11);
+    expect(light[0].themes).toHaveLength(13);
     expect(light[1].themes.every((theme) => theme.kind === "high-contrast-light")).toBe(true);
   });
 

@@ -86,7 +86,7 @@ On Windows and Linux, copy and paste are **Ctrl+Shift+C** and **Ctrl+Shift+V**, 
 
 - **Visual bell**: when the shell rings its bell (for example after a failed Tab completion), the terminal flashes briefly. A terminal that is out of sight gets a dot in the list instead. On by default.
 - **Smooth scrolling**: scrolling with the mouse wheel glides instead of jumping. Off by default.
-- **GPU acceleration**: the terminal draws with the graphics card (WebGL), which keeps busy output smooth. If the graphics card is not available, or stops working, it goes back to normal drawing by itself. Turn it off to save graphics memory. With **Font ligatures** on, the terminal always uses normal drawing, since ligatures need it.
+- **GPU acceleration**: the terminal draws with the graphics card (WebGL), which keeps busy output smooth. If the graphics card is not available, or stops working, it goes back to normal drawing by itself. It uses about 70 MB more for the first terminal, mostly graphics memory, and about 10 MB for each other one; turn it off to save that. With **Font ligatures** on, the terminal always uses normal drawing, since ligatures need it.
 - **Unicode 11 widths**: emoji and wide characters (such as Chinese and Japanese) take the right number of columns, so the text after them lines up. It applies to output printed after you change it.
 
 ## Related

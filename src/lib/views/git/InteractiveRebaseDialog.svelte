@@ -1,4 +1,4 @@
-<!-- JetBrains' interactive rebase dialog: one row per commit, oldest at the top, each with
+<!-- The interactive rebase dialog: one row per commit, oldest at the top, each with
      its action (letter keys on a focused row), reorder by drag and drop or Option+Up / Down,
      reword and squash messages edited in place, and Reset to start over. With merge commits
      the rows follow the --rebase-merges todo, grouped by branch (see rebaseModel.ts). -->

@@ -155,6 +155,18 @@
     height: 3px;
   }
 
+  /* Rounded panels: the handle covers the whole gap between two panels. */
+  :global(html[data-rounded-panels]) .handle {
+    width: var(--panel-gap);
+    margin: 0 calc(-1 * var(--panel-gap));
+  }
+
+  :global(html[data-rounded-panels]) .handle.horizontal {
+    width: auto;
+    height: var(--panel-gap);
+    margin: calc(-1 * var(--panel-gap)) 0;
+  }
+
   /* Keep the resize cursor and stop text selection while dragging. */
   :global(body.resizing-columns),
   :global(body.resizing-columns *) {

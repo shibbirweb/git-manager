@@ -32,7 +32,7 @@ When the app is started from a terminal (as `bun tauri dev` does), macOS makes t
 
 ### GPU acceleration in the popup
 
-The popup also shows whether the GPU is used. `probeWebgl` (`src/lib/ui/webglProbe.ts`) asks the web view for a WebGL 2 context each time the popup opens, reads the renderer name, and releases the context with `WEBGL_lose_context` at once, so the check holds no GPU memory. Each terminal reports how it draws to `gpuRenderers` (`src/lib/terminal/gpuRenderers.svelte.ts`): `TerminalAddons` calls back with `gpu` when the WebGL addon loads, `fallback` when it fails or loses its context, and `normal` when GPU drawing is off; a closed terminal is forgotten. `terminalDrawingSummary` in `gpuStatus.ts` turns that and the two settings (GPU acceleration, font ligatures) into one line. The Graphics row above is the memory of WebKit's GPU process.
+The popup also shows whether the GPU is used. `probeWebgl` (`src/lib/ui/webglProbe.ts`) asks the web view for a WebGL 2 context each time the popup opens, reads the renderer name, and releases the context with `WEBGL_lose_context` at once, so the check holds no GPU memory. Each terminal reports how it draws to `gpuRenderers` (`src/lib/terminal/gpuRenderers.svelte.ts`): `TerminalAddons` calls back with `gpu` when the WebGL addon loads, `fallback` when it fails or loses its context, and `normal` when GPU drawing is off; a closed terminal is forgotten. `terminalDrawingSummary` in `gpuStatus.ts` turns that and the two settings (GPU acceleration, font ligatures) into one line. GPU drawing costs about 70 MB for the first terminal ([Measuring Setting Memory](Measuring-Setting-Memory.md)). The Graphics row above is the memory of WebKit's GPU process.
 
 ## The memory log
 
@@ -94,4 +94,5 @@ flowchart LR
 ## Keeping this page in sync
 
 - Update this page when `memory.rs`, the log format or the recorder change, and [Memory Use](../usage/Memory-Use.md) for visible changes.
+- The memory marks in Settings and how each setting was measured are in [Measuring Setting Memory](Measuring-Setting-Memory.md).
 - Retake `status-bar.png` and `memory-log-settings.png` when they change (`memory-log-settings.png` belongs to the memory feature in `features.json`).

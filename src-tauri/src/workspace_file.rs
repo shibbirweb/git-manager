@@ -1,4 +1,4 @@
-//! Workspace files: a saved set of folders, compatible with VS Code's
+//! Workspace files: a saved set of folders, compatible with the
 //! `.code-workspace` format (`{"folders": [{"path": "..."}]}`, JSON with
 //! comments). Paths are stored relative to the file when they share a parent.
 
@@ -149,7 +149,7 @@ pub fn read(file: &Path) -> AppResult<WorkspaceFile> {
 }
 
 /// The `folders` array for `folders`, reusing each existing entry that points
-/// at one of them so VS Code keys like `name` survive. Entries the app does not
+/// at one of them so other keys like `name` survive. Entries the app does not
 /// open (missing folders, `uri` folders) are kept at the end: they never appear
 /// in the folder list, so the user had no way to remove them.
 fn folder_entries(existing: &[Value], base: &Path, folders: &[String]) -> Vec<Value> {

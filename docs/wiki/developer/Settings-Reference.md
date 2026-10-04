@@ -11,7 +11,11 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | Key | Default | Accepted | Used by |
 | --- | --- | --- | --- |
 | `theme` | `"system"` | `system`, `light`, `dark` | `applyAppearance`, `colorMode` |
+| `roundedPanels` | false | boolean | `data-rounded-panels` |
+| `fileToolbar` | `"top"` | `top`, `bottom`, `none` | `FileView`, `EmptyMain`, `navBar/` |
+| `fileToolbarBreadcrumbs`, `fileToolbarBadges`, `fileToolbarChanges`, `fileToolbarBlame`, `fileToolbarCopyPath`, `fileToolbarMarkdownView`, `fileToolbarMarkdownFormat` | true | boolean | `views/files/fileToolbar.ts` |
 | `uiFontSize` | 13 | 11 to 16 | `--ui-size` |
+| `fileIcons` | `"off"` | `off`, `minimal`, `material` | `fileIcons/fileIcons.svelte.ts`, View > File Icons |
 
 ### Editor
 
@@ -21,11 +25,16 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `darkColorTheme` | `"gm-dark"` | a dark theme id | `themes/apply.ts` |
 | `editorFontFamily` | `DEFAULT_EDITOR_FONT` (`'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace`) | `normalizeFontFamily` (drops repeats) | `--font-mono` |
 | `editorFontSize` | 13 | 10 to 20 | `--code-size`, View > Zoom |
+| `editorFontWeight` | 400 | 100 to 900, rounded to 100 | `--code-weight` |
 | `editorLineHeight` | 1.25 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
 | `mouseWheelZoom` | false | boolean | `App.svelte`, `editor/wheelZoom.ts` |
 | `fontLigatures` | false | boolean | `data-ligatures` |
-| `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `editor/setup.ts` |
+| `syntaxHighlighting` | true | boolean | `App.svelte`, `editor/languages.ts`, `MarkdownPreview.svelte` |
+| `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `App.svelte`, `editor/indentation.ts` |
+| `detectIndentation` | true | boolean | `App.svelte`, `editor/indentation.ts`, View > Detect Indentation |
 | `renderWhitespace` | `"selection"` | `RENDER_WHITESPACE_CHOICES` | `App.svelte`, `editor/whitespace.ts` |
+| `unloadHiddenTabs` | true | boolean | `App.svelte`, `repoStore.sleepHiddenTabs` |
+| `unloadHiddenTabsMinutes` | 15 | 5, 15, 30, 60 (`UNLOAD_TAB_MINUTES`) | `stores/tabSleep.ts` |
 | `editorCursorStyle` | `"line"` | `EDITOR_CURSOR_STYLE_CHOICES` | `App.svelte`, `editor/cursor.ts` |
 | `editorCursorWidth` | 2 | `pickInteger`, 1 to 6 (`EDITOR_CURSOR_WIDTH_RANGE`) | `editor/cursor.ts` |
 | `editorCursorBlinking` | `"blink"` | `EDITOR_CURSOR_BLINKING_CHOICES` | `editor/cursor.ts` |
@@ -133,6 +142,8 @@ The other Layout choices are in `state.json`, below.
 | `sidebarWidth`, `explorerWidth` | 260 | 120 to 2000 | side panels |
 | `terminalHeight` | 260 | 80 to 2000 | terminal panel |
 | `terminalListWidth` | 180 | 120 to 1200 | terminal list |
+| `changesListWidth` | 320 | 160 to 2000 | Changes tab file list |
+| `changesListVisible` | true | true or false | Changes tab file list shown |
 | `diffSplitRatio` | 0.5 | 0.15 to 0.85 | `diff/DiffView.svelte` |
 | `markdownPreviewRatio` | 0.5 | 0.15 to 0.85 | `FileView.svelte` |
 
@@ -140,6 +151,6 @@ The other Layout choices are in `state.json`, below.
 
 ## Keeping this page in sync
 
-- A new preference goes in `Preferences`, `defaultPreferences`, `parsePreferences`, the store's field and `preferences()`, then in this page, [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md).
+- A new preference goes in `Preferences`, `defaultPreferences`, `parsePreferences`, the store's field and `preferences()`, then in this page, [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md). Its row in the dialog needs an entry in `SETTINGS_SEARCH_INDEX` ([How search in Settings works](How-Settings-Search-Works.md)).
 - A new state key goes in `UiState`, `STATE_KEYS`, `parseState`, `stateToJson` and the store's `uiState()`.
 - `settingsData.test.ts` should cover its validation.

@@ -21,16 +21,19 @@ export const LOCAL_EDIT = -1;
 export const UNKNOWN_LINE = -1;
 
 export function fromInfo(info: BlameInfo, lineCount: number): BlameState {
-  const lines = info.lines.slice(0, lineCount);
+  const lines: number[] = [];
+  const origins: number[] = [];
+  const runs = info.runs ?? [];
+  for (let index = 0; index + 2 < runs.length && lines.length < lineCount; index += 3) {
+    const [length, commit, originalStart] = [runs[index], runs[index + 1], runs[index + 2]];
+    for (let offset = 0; offset < length && lines.length < lineCount; offset++) {
+      lines.push(commit);
+      origins.push(originalStart + offset);
+    }
+  }
   // git counts no line after a trailing newline; CodeMirror has an empty last line.
   while (lines.length < lineCount) {
     lines.push(lines.length > 0 ? lines[lines.length - 1] : LOCAL_EDIT);
-  }
-  if (!info.originalLines) {
-    return { commits: info.commits, lines };
-  }
-  const origins = info.originalLines.slice(0, lineCount);
-  while (origins.length < lineCount) {
     origins.push(UNKNOWN_LINE);
   }
   return { commits: info.commits, lines, origins };

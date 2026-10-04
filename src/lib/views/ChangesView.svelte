@@ -120,7 +120,7 @@
     {/if}
     <div class="spacer"></div>
     {#if !multiRepo && sections[0]?.status}
-      <!-- One repository: its actions sit in the title bar, like VS Code's Source Control. -->
+      <!-- One repository: its actions sit in the title bar. -->
       <RepoActions section={sections[0]} />
     {:else}
       <button class="icon-btn small" onclick={() => void repoStore.refreshAll()} title="Refresh All" aria-label="Refresh all">

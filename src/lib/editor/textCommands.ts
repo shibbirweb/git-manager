@@ -1,5 +1,5 @@
 // Editor commands CodeMirror does not ship, written against the state alone so they can be
-// tested without a view: Duplicate, Join Lines, Toggle Case and Sort Lines (JetBrains' Code
+// tested without a view: Duplicate, Join Lines, Toggle Case and Sort Lines (the Code
 // menu), and parsing Go to Line's input. Each returns null when there is nothing to do.
 
 import { EditorSelection, type EditorState, type SelectionRange, type TransactionSpec } from "@codemirror/state";
@@ -31,7 +31,7 @@ function forward(range: SelectionRange): boolean {
 /**
  * Join Lines: a caret joins its line with the next one, a selection joins every line it
  * touches. The line break and the indentation around it become one space (none next to a
- * blank line), like JetBrains.
+ * blank line).
  */
 export function joinLines(state: EditorState): TransactionSpec | null {
   if (state.readOnly) {

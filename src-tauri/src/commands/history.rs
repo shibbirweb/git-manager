@@ -1,19 +1,48 @@
 use std::path::Path;
 
+use serde::Serialize;
+
 use super::{blocking, reject_option, run_op, safe_join, OpOutcome};
 use crate::error::{AppError, AppResult};
-use crate::git::blame::{self, BlameInfo};
+use crate::git::blame::{self, BlameRuns};
 use crate::git::cli;
 use crate::git::diff::{self, FileDiff, RevisionDiff};
 use crate::git::history::{self as file_log, FileHistoryEntry, LineHistoryEntry};
 use crate::git::log::{self, CommitDetails, CommitSummary};
 use crate::git::repo as git_repo;
 
-const MAX_PAGE: usize = 1000;
+/// A reload asks for everything it shows in one call (the Log keeps up to 3000 rows),
+/// since every topological page walks the whole history first.
+const MAX_PAGE: usize = 5000;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogPage {
+    /// Fingerprint of the branch tips the page was read at (`log::tips`).
+    pub tips: String,
+    /// None when `known_tips` still matched: nothing in the log changed, so nothing was walked.
+    pub commits: Option<Vec<CommitSummary>>,
+}
 
 #[tauri::command]
-pub async fn get_log(repo_path: String, offset: usize, limit: usize, all_refs: bool) -> AppResult<Vec<CommitSummary>> {
-    blocking(move || log::page(&git_repo::open(&repo_path)?, offset, limit.min(MAX_PAGE), all_refs)).await
+pub async fn get_log(
+    repo_path: String,
+    offset: usize,
+    limit: usize,
+    all_refs: bool,
+    known_tips: Option<String>,
+) -> AppResult<LogPage> {
+    blocking(move || {
+        let repo = git_repo::open(&repo_path)?;
+        // Taken before the walk: a ref moving meanwhile only costs one more reload.
+        let tips = log::tips(&repo, all_refs);
+        if known_tips.as_deref() == Some(tips.as_str()) {
+            return Ok(LogPage { tips, commits: None });
+        }
+        let commits = log::page(&repo, offset, limit.min(MAX_PAGE), all_refs)?;
+        Ok(LogPage { tips, commits: Some(commits) })
+    })
+    .await
 }
 
 #[tauri::command]
@@ -35,16 +64,11 @@ pub async fn get_commit_file_diff(
     .await
 }
 
-/// Blames a file at `revision`, or the work tree when None; `contents`
-/// (editor text or the index version) is blamed instead of the file on disk.
+/// Blames a file at `revision`, or the file on disk when None. The editor blames its own
+/// text with `editor::blame_contents`.
 #[tauri::command]
-pub async fn blame_file(
-    repo_path: String,
-    file_path: String,
-    revision: Option<String>,
-    contents: Option<String>,
-) -> AppResult<BlameInfo> {
-    blocking(move || blame::blame(Path::new(&repo_path), &file_path, revision.as_deref(), contents.as_deref())).await
+pub async fn blame_file(repo_path: String, file_path: String, revision: Option<String>) -> AppResult<BlameRuns> {
+    blocking(move || Ok(blame::blame(Path::new(&repo_path), &file_path, revision.as_deref(), None)?.into_runs())).await
 }
 
 #[tauri::command]
@@ -121,15 +145,24 @@ pub async fn line_history(
     .await
 }
 
-fn run_compare(repo_path: &str, file_path: &str, revision: &str) -> AppResult<RevisionDiff> {
+fn run_compare(repo_path: &str, file_path: &str, orig_path: Option<&str>, revision: &str) -> AppResult<RevisionDiff> {
     safe_join(repo_path, file_path)?;
-    diff::against_revision(&git_repo::open(repo_path)?, file_path, revision)
+    if let Some(orig_path) = orig_path {
+        safe_join(repo_path, orig_path)?;
+    }
+    diff::against_revision(&git_repo::open(repo_path)?, file_path, orig_path, revision)
 }
 
-/// The file at `revision` against its work tree copy (Compare with Revision / Branch).
+/// The file at `revision` against its work tree copy (Compare with Revision / Branch, the
+/// Changes tab). `orig_path` is the old name of a renamed file.
 #[tauri::command]
-pub async fn compare_with_revision(repo_path: String, file_path: String, revision: String) -> AppResult<RevisionDiff> {
-    blocking(move || run_compare(&repo_path, &file_path, &revision)).await
+pub async fn compare_with_revision(
+    repo_path: String,
+    file_path: String,
+    revision: String,
+    orig_path: Option<String>,
+) -> AppResult<RevisionDiff> {
+    blocking(move || run_compare(&repo_path, &file_path, orig_path.as_deref(), &revision)).await
 }
 
 #[tauri::command]
@@ -254,20 +287,39 @@ mod tests {
         repo.commit_all("three");
         let repo_path = repo.path_string();
 
-        let compared = run_compare(&repo_path, "f.txt", &first).unwrap();
+        let compared = run_compare(&repo_path, "f.txt", None, &first).unwrap();
         assert!(compared.exists_in_revision);
         assert_eq!(compared.commit_id, first);
         assert_eq!(compared.diff.original, "old\n");
         assert_eq!(compared.diff.modified, "work\n");
 
-        let missing = run_compare(&repo_path, "later.txt", "HEAD~2").unwrap();
+        let missing = run_compare(&repo_path, "later.txt", None, "HEAD~2").unwrap();
         assert!(!missing.exists_in_revision);
         assert_eq!(missing.diff.original, "");
         assert_eq!(missing.diff.modified, "later\n");
 
-        let binary = run_compare(&repo_path, "image.bin", "main").unwrap();
+        let binary = run_compare(&repo_path, "image.bin", None, "main").unwrap();
         assert!(binary.diff.binary);
-        assert!(run_compare(&repo_path, "../f.txt", "HEAD").is_err());
-        assert!(run_compare(&repo_path, "f.txt", "-x").is_err());
+        assert!(run_compare(&repo_path, "../f.txt", None, "HEAD").is_err());
+        assert!(run_compare(&repo_path, "f.txt", None, "-x").is_err());
+    }
+
+    #[test]
+    fn compare_with_revision_reads_a_renamed_file_by_its_old_name() {
+        let repo = TestRepo::new();
+        repo.write("old.txt", "one\ntwo\n");
+        repo.commit_all("one");
+        repo.git(&["mv", "old.txt", "new.txt"]);
+        repo.write("new.txt", "one\ntwo\nthree\n");
+        let repo_path = repo.path_string();
+
+        let renamed = run_compare(&repo_path, "new.txt", Some("old.txt"), "HEAD").unwrap();
+        assert!(renamed.exists_in_revision);
+        assert_eq!(renamed.diff.original, "one\ntwo\n");
+        assert_eq!(renamed.diff.modified, "one\ntwo\nthree\n");
+
+        let without_old_name = run_compare(&repo_path, "new.txt", None, "HEAD").unwrap();
+        assert!(!without_old_name.exists_in_revision);
+        assert!(run_compare(&repo_path, "new.txt", Some("../old.txt"), "HEAD").is_err());
     }
 }

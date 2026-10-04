@@ -1,4 +1,4 @@
-// Git blame in CodeMirror, like VS Code with GitLens: an inline note at the
+// Git blame in CodeMirror: an inline note at the
 // end of the cursor line ("Author, 3 months ago - summary") and an optional
 // gutter column with the commit, author and age of every block of lines.
 
@@ -418,14 +418,12 @@ export interface BlameTarget {
  */
 export async function loadBlame(view: EditorView, target: BlameTarget, eol: Eol): Promise<void> {
   const doc = view.state.doc;
-  let contents: string | null = null;
-  if (target.revision === null) {
-    const text = doc.toString();
-    contents = eol === "crlf" ? text.replace(/\n/g, "\r\n") : text;
-  }
   let blame: BlameState;
   try {
-    const info = await api.blameFile(target.repoRoot, target.filePath, target.revision, contents);
+    const info =
+      target.revision === null
+        ? await api.blameContents(target.repoRoot, target.filePath, doc.toString(), eol)
+        : await api.blameFile(target.repoRoot, target.filePath, target.revision);
     blame = fromInfo(info, doc.lines);
   } catch {
     // Typically a file git does not track yet: all of it is uncommitted work.

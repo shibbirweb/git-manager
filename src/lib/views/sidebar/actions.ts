@@ -5,6 +5,7 @@ import { repoStore } from "$lib/stores/repo.svelte";
 import type { LocalBranch, Refs, RemoteBranch, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import type { MenuItem } from "$lib/ui/menu.svelte";
+import { recordDeletedBranch, restoreAction } from "../git/undoActions";
 
 /**
  * The repository a branch or stash action runs in, with its branches for
@@ -174,22 +175,31 @@ export async function deleteLocalBranch(branchName: string, target: RepoTarget =
   if (!confirmed) {
     return;
   }
+  const repoRoot = target.repoRoot ?? repoStore.repo?.root ?? null;
+  if (!repoRoot) {
+    return;
+  }
   let notFullyMerged = false;
   await repoStore.run(
     "Delete branch",
     async (repoPath) => {
       try {
-        await api.deleteBranch(repoPath, branchName, false);
-        return true;
+        const tip = await api.deleteBranch(repoPath, branchName, false);
+        recordDeletedBranch(repoPath, branchName, tip);
+        return tip;
       } catch (error) {
         if (/not fully merged/i.test(errorMessage(error))) {
           notFullyMerged = true;
-          return false;
+          return null;
         }
         throw error;
       }
     },
-    { success: (deleted) => (deleted ? `Deleted ${branchName}` : null), repoPath: target.repoRoot },
+    {
+      success: (tip) => (tip !== null ? `Deleted ${branchName}` : null),
+      action: (tip) => (tip ? restoreAction(repoRoot, branchName, tip) : null),
+      repoPath: repoRoot,
+    },
   );
   if (!notFullyMerged) {
     return;
@@ -203,10 +213,19 @@ export async function deleteLocalBranch(branchName: string, target: RepoTarget =
   if (!force) {
     return;
   }
-  await repoStore.run("Delete branch", (repoPath) => api.deleteBranch(repoPath, branchName, true), {
-    success: `Deleted ${branchName}`,
-    repoPath: target.repoRoot,
-  });
+  await repoStore.run(
+    "Delete branch",
+    async (repoPath) => {
+      const tip = await api.deleteBranch(repoPath, branchName, true);
+      recordDeletedBranch(repoPath, branchName, tip);
+      return tip;
+    },
+    {
+      success: `Deleted ${branchName}`,
+      action: (tip) => restoreAction(repoRoot, branchName, tip),
+      repoPath: repoRoot,
+    },
+  );
 }
 
 /** `repoRoot` undefined: the active repository. */

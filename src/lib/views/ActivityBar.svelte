@@ -1,4 +1,4 @@
-<!-- VS Code style activity bar: picks what the left sidebar shows, or hides it. -->
+<!-- Activity bar: picks what the left sidebar shows, or hides it. -->
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
@@ -48,16 +48,16 @@
   <!-- The Log opens in the main area rather than in the sidebar. -->
   <button
     class="item"
-    class:active={changesSelection.shownView === "log"}
+    class:active={changesSelection.logShown}
     onclick={() => changesSelection.toggleLog()}
-    title="Log: commit history and graph (Shift+Cmd+L){changesSelection.shownView === 'log' ? ', click to hide' : ''}"
+    title="Log: commit history and graph (Shift+Cmd+L){changesSelection.logShown ? ', click to hide' : ''}"
     aria-label="Log"
-    aria-pressed={changesSelection.shownView === "log"}
+    aria-pressed={changesSelection.logShown}
   >
     <Icon name="history" size={19} strokeWidth={1.8} />
   </button>
   <div class="spacer"></div>
-  <!-- Scripts of package.json, composer.json, Makefiles and the like, run in a terminal (JetBrains' npm window). -->
+  <!-- Scripts of package.json, composer.json, Makefiles and the like, run in a terminal. -->
   <button
     class="item"
     class:active={settings.leftPanel === "scripts"}
@@ -68,7 +68,7 @@
   >
     <Icon name="play" size={18} strokeWidth={1.8} />
   </button>
-  <!-- The terminal panel opens below the editor, like VS Code's panel. -->
+  <!-- The terminal panel opens below the editor. -->
   <button
     class="item"
     class:active={terminalStore.panelOpen}
@@ -92,6 +92,13 @@
     padding: 6px 0;
     background: var(--panel-alt);
     border-right: 1px solid var(--border-strong);
+  }
+
+  /* Rounded panels: a stripe on the window frame, flush with the window edge. */
+  :global(html[data-rounded-panels]) .activity {
+    margin-left: calc(-1 * var(--panel-gap));
+    background: var(--frame);
+    border-right: none;
   }
 
   .item {

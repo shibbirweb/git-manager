@@ -28,6 +28,20 @@ export function withToolStates(
   return next;
 }
 
+/** Tools switched away from their default (what Restore Defaults would change). */
+export function changedTools<T extends ToolSwitch>(toolStates: Record<string, boolean>, tools: T[]): T[] {
+  return tools.filter((tool) => toolEnabled(tool, toolStates) !== defaultToolEnabled(tool));
+}
+
+/** Puts tools back to their default: their recorded choices are dropped, the others stay. */
+export function withDefaultStates(toolStates: Record<string, boolean>, tools: ToolSwitch[]): Record<string, boolean> {
+  const next = { ...toolStates };
+  for (const tool of tools) {
+    delete next[tool.name];
+  }
+  return next;
+}
+
 /** The fields the list reads; categories are plain strings, since the backend may add new ones. */
 interface ListedTool {
   name: string;

@@ -1,5 +1,5 @@
-// A commit opened in its own editor tab, like VS Code opens a commit's changes
-// in the editor area instead of a small panel. It shares the tab strip with
+// A commit opened in its own editor tab, so its changes get the editor area
+// instead of a small panel. It shares the tab strip with
 // file tabs, so its "path" is a pseudo path that can never be a file: it does
 // not start with "/", so folder and repository lookups never match it.
 

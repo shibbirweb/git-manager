@@ -3,7 +3,7 @@
   import { EditorSelection, EditorState, type Extension } from "@codemirror/state";
   import { EditorView } from "@codemirror/view";
   import { onMount } from "svelte";
-  import { baseExtensions, languageFor } from "$lib/editor/setup";
+  import { baseExtensions, editorLanguage } from "$lib/editor/setup";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
@@ -29,19 +29,21 @@
     changeType,
     type ChunkAction,
     type ChunkState,
-    documentFor,
     findUnresolved,
     hasConflictMarkers,
     ignoreSide,
     initialChunks,
     invertAnchors,
     isResolved,
+    lineStarts,
     mapLine,
     sideChanged,
     type SideName,
+    rangeOfString,
+    rangeText,
+    type SideTexts,
     sideRange,
     sideToResultAnchors,
-    splitLines,
     unresolvedCounts,
   } from "./model";
 
@@ -82,9 +84,10 @@
   let saving = $state(false);
 
   let views: Record<Pane, EditorView> | null = null;
-  // Line arrays of the read-only sides, reused by every apply.
-  const sides = $derived(documentFor(doc));
-  const baseLines = $derived(splitLines(doc.base));
+  // The read-only sides are read from their editors' documents, so each text is held once more
+  // at most, not again as arrays of lines. The base is read from the string through its line starts.
+  let sides: SideTexts | null = null;
+  const baseStarts = $derived(lineStarts(doc.base));
   // Sides are read-only, so word-level highlights are computed once per chunk.
   const inlineCache = new Map<string, TextSpan[] | null>();
   let lastMarkSignature = "";
@@ -94,20 +97,20 @@
     if (inlineCache.has(key)) {
       return inlineCache.get(key) ?? null;
     }
+    if (!sides) {
+      return null;
+    }
     const range = sideRange(chunk, side);
-    const sideLines = side === "ours" ? sides.ours : sides.theirs;
-    const otherLines = side === "ours" ? sides.theirs : sides.ours;
+    const other: SideName = side === "ours" ? "theirs" : "ours";
+    const otherRange = sideRange(chunk, other);
     // With no base text (both added), compare against the other side instead.
-    const reference =
-      chunk.base.start < chunk.base.end
-        ? baseLines.slice(chunk.base.start, chunk.base.end)
-        : chunk.kind === "conflict"
-          ? otherLines.slice(sideRange(chunk, side === "ours" ? "theirs" : "ours").start, sideRange(chunk, side === "ours" ? "theirs" : "ours").end)
-          : [];
-    const spans =
-      range.start < range.end && reference.length > 0
-        ? changedSpans(reference.join("\n"), sideLines.slice(range.start, range.end).join("\n"))
-        : null;
+    let reference: string | null = null;
+    if (chunk.base.start < chunk.base.end) {
+      reference = rangeOfString(doc.base, baseStarts, chunk.base);
+    } else if (chunk.kind === "conflict" && otherRange.start < otherRange.end) {
+      reference = rangeText(sides[other], otherRange);
+    }
+    const spans = range.start < range.end && reference !== null ? changedSpans(reference, rangeText(sides[side], range)) : null;
     inlineCache.set(key, spans);
     return spans;
   }
@@ -122,7 +125,7 @@
     let cancelled = false;
     let observer: ResizeObserver | null = null;
     void (async () => {
-      const language = await languageFor(doc.path);
+      const language = await editorLanguage(doc.path);
       if (cancelled || !oursHost || !resultHost || !theirsHost) {
         return;
       }
@@ -147,6 +150,7 @@
         views.result.destroy();
         views.theirs.destroy();
         views = null;
+        sides = null;
       }
     };
   });
@@ -199,6 +203,7 @@
       });
     const ours = sideView(doc.ours, oursHost!);
     const theirs = sideView(doc.theirs, theirsHost!);
+    sides = { ours: ours.state.doc, theirs: theirs.state.doc };
     const result = new EditorView({
       parent: resultHost!,
       state: EditorState.create({
@@ -257,7 +262,7 @@
   }
 
   function apply(chunkId: number, side: SideName): void {
-    if (views) {
+    if (views && sides) {
       dispatchAction(applySide(views.result.state.doc, views.result.state.field(chunkField), chunkId, side, sides));
     }
   }
@@ -269,7 +274,7 @@
   }
 
   function applyAllNonConflicting(only?: SideName): void {
-    if (views) {
+    if (views && sides) {
       dispatchAction(applyNonConflicting(views.result.state.doc, views.result.state.field(chunkField), sides, only));
     }
   }

@@ -3,12 +3,40 @@ use std::path::Path;
 use super::{blocking, run_op, OpOutcome};
 use crate::error::AppResult;
 use crate::git::cli;
+use crate::git::log;
 use crate::git::refs::{self, Refs};
 use crate::git::repo as git_repo;
 
 #[tauri::command]
 pub async fn get_refs(repo_path: String) -> AppResult<Refs> {
     blocking(move || refs::read(&git_repo::open(&repo_path)?)).await
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RefsSnapshot {
+    /// `refs::fingerprint`: also covers the stashes, remotes and work trees.
+    pub fingerprint: String,
+    /// `log::tips_hash`: changes exactly when the Log may show something else.
+    pub tips: String,
+    /// None when `known_fingerprint` still matched: nothing the sidebar shows changed.
+    pub refs: Option<Refs>,
+}
+
+/// The branches of `repo_path` for a refresh: with the fingerprint the caller
+/// holds, unchanged refs are not read again (ahead/behind walks every branch).
+#[tauri::command]
+pub async fn get_refs_snapshot(repo_path: String, known_fingerprint: Option<String>) -> AppResult<RefsSnapshot> {
+    blocking(move || {
+        let repo = git_repo::open(&repo_path)?;
+        let fingerprint = refs::fingerprint(&repo);
+        let tips = log::tips_hash(&repo);
+        if known_fingerprint.as_deref() == Some(fingerprint.as_str()) {
+            return Ok(RefsSnapshot { fingerprint, tips, refs: None });
+        }
+        Ok(RefsSnapshot { fingerprint, tips, refs: Some(refs::read(&repo)?) })
+    })
+    .await
 }
 
 #[tauri::command]
@@ -69,14 +97,21 @@ pub async fn rename_branch(repo_path: String, branch_name: String, new_name: Str
     .await
 }
 
+/// Deletes a local branch and returns the commit it pointed at, so the UI can offer Restore.
+pub(crate) fn run_delete_branch(repo_path: &str, branch_name: &str, force: bool) -> AppResult<String> {
+    let tip = {
+        let repo = git_repo::open(repo_path)?;
+        let branch = repo.find_branch(branch_name, git2::BranchType::Local)?;
+        branch.get().target().map(|oid| oid.to_string()).unwrap_or_default()
+    };
+    let flag = if force { "-D" } else { "-d" };
+    cli::run(Path::new(repo_path), &["branch", flag, branch_name])?;
+    Ok(tip)
+}
+
 #[tauri::command]
-pub async fn delete_branch(repo_path: String, branch_name: String, force: bool) -> AppResult<()> {
-    blocking(move || {
-        let flag = if force { "-D" } else { "-d" };
-        cli::run(Path::new(&repo_path), &["branch", flag, &branch_name])?;
-        Ok(())
-    })
-    .await
+pub async fn delete_branch(repo_path: String, branch_name: String, force: bool) -> AppResult<String> {
+    blocking(move || run_delete_branch(&repo_path, &branch_name, force)).await
 }
 
 #[tauri::command]

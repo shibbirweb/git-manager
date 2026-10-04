@@ -63,7 +63,7 @@ sequenceDiagram
 
 ### Diagrams
 
-`mermaid.ts` loads mermaid only for documents with a diagram and renders one at a time (it is not reentrant), with `securityLevel: "strict"` and a `secure` list so `%%{init}%%` cannot loosen it. Results are cached by theme and source. Built-in themes use mermaid's looks, other themes pass CSS variables (`themeVariables`). Every SVG goes through `sanitizeSvg`, a second DOMPurify instance. `watchTheme` redraws shown diagrams after a theme change.
+Diagrams are drawn in a hidden frame that is removed when the last document with diagrams closes, so mermaid never stays in memory; see [How Markdown diagrams work](How-Markdown-Diagrams-Work.md). Built-in themes use mermaid's looks, other themes pass CSS variables (`themeVariables`). Every SVG goes through `sanitizeSvg`, a second DOMPurify instance. `watchTheme` redraws shown diagrams after a theme change.
 
 ### Scroll sync
 
@@ -75,7 +75,7 @@ Memory follows the screen, not the file length:
 
 - **Hidden tabs free their preview.** `FileView` mounts `MarkdownPreview` or `RichMarkdownView` only while `isActive`, and keeps the place (`onLeave`, `initialLine`, `richScroll`).
 - **Diagrams and images draw near the screen only.** `nearScreen.ts` has a `NearScreen` class: each preview or rich editor makes one, with one `IntersectionObserver` and a margin of one screen. Far diagrams are freed by `releaseDiagram`, which keeps their height; unused image data URLs are dropped.
-- **The mermaid cache is capped** at 24 entries and 2,000,000 characters, and mermaid's temporary render elements are removed (`removeLeftovers`).
+- **The mermaid cache is capped** at 24 entries and 2,000,000 characters and goes with the diagram frame.
 - **Off-screen blocks are not painted:** `content-visibility: auto` in `body.css` and `RichMarkdownView`.
 
 Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 SVGs and 8,562 elements.
@@ -88,7 +88,7 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 | `src/lib/views/files/MarkdownToolbar.svelte`, `MarkdownPreview.svelte` | Toolbar; preview timing, scroll sync, clicks |
 | `src/lib/markdown/format.ts` | Text formatting commands |
 | `src/lib/markdown/render.ts`, `engine.ts`, `previewDom.ts`, `sanitize.ts` | Rendering, the lazy chunk, segment updates, DOMPurify |
-| `src/lib/markdown/mermaid.ts`, `nearScreen.ts` | Diagrams, near-screen drawing |
+| `src/lib/markdown/mermaid.ts`, `nearScreen.ts` | Diagrams (through a hidden frame), near-screen drawing |
 | `src/lib/markdown/links.ts`, `slug.ts`, `highlight.ts` | Links and images, heading ids, code colors |
 | `src/lib/markdown/scrollSync.ts`, `editorScroll.ts`, `body.css` | Scroll sync, shared page styles |
 | `src-tauri/src/commands/files.rs`, `images.rs` | `read_image_data_url`, local images as data URLs |
@@ -99,7 +99,7 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 
 **Remote images are never loaded.** Opening a file must not contact a server or reveal that you read it.
 
-**What stays after first use.** The libraries keep their heap until the app quits: markdown-it about 2 MB, mermaid about 30 MB, Milkdown about 8 MB. We tried mermaid in a disposable iframe and rejected it: the UMD build is 73 MB and Chrome did not free it when the iframe was removed.
+**What stays after first use.** markdown-it (about 2 MB) and Milkdown (about 8 MB) keep their heap until the app quits. Mermaid lives in a disposable frame ([How Markdown diagrams work](How-Markdown-Diagrams-Work.md)).
 
 **Fast scrolling in WebKit.** WebKit's WebContent process peaks at 400 to 650 MB while a 35 KB README is scrolled fast, and settles at 60 to 200 MB after. Plain HTML without our code does the same (runs are noisy: 98 MB and 444 MB for one setup), so it looks like WebKit's own. `content-visibility: auto` is a candidate fix still under test; re-measure in the real app with the MCP tools `scroll_view` and `sample_memory` or the memory log ([Debugging](Debugging.md)).
 

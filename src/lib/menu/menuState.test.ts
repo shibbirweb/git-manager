@@ -23,6 +23,7 @@ const repo: GitRepoInputs = {
   changes: 2,
   remotes: 1,
   github: false,
+  bisecting: false,
   remoteLinks: 0,
 };
 
@@ -75,6 +76,15 @@ describe("menuState", () => {
     expect(menuState(inputs({ shownView: "log", activeFile: null }))["file.closeTab"]?.enabled).toBe(false);
   });
 
+  it("offers Reopen Closed Tab after a tab closed, and names Pin Tab for the tab on screen", () => {
+    expect(menuState(idle)["file.reopenClosedTab"]?.enabled).toBe(false);
+    expect(menuState(inputs({ closedTabCount: 2 }))["file.reopenClosedTab"]?.enabled).toBe(true);
+    expect(menuState(inputs({ closedTabCount: 2, workspace: null }))["file.reopenClosedTab"]?.enabled).toBe(false);
+    expect(menuState(idle)["window.pinTab"]).toEqual({ enabled: true, text: "Pin Tab" });
+    expect(menuState(inputs({ activeTabPinned: true }))["window.pinTab"]?.text).toBe("Unpin Tab");
+    expect(menuState(inputs({ shownView: "log", activeFile: null }))["window.pinTab"]?.enabled).toBe(false);
+  });
+
   it("needs a focused editor for the Code and Find items", () => {
     const away = menuState(idle);
     expect(away["code.lineComment"]?.enabled).toBe(false);
@@ -116,6 +126,24 @@ describe("menuState", () => {
     expect(menuState(inputs({ wordWrap: false, workspace: null }))["view.wordWrap"]).toEqual({ enabled: true, checked: false });
   });
 
+  it("ticks Sticky Scroll and Minimap from their settings", () => {
+    expect(menuState(inputs({ stickyScroll: true, minimap: false }))["view.stickyScroll"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ minimap: true }))["view.minimap"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({}))["view.minimap"]?.checked).toBe(false);
+    expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMaterial"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMinimal"]?.checked).toBe(false);
+    expect(menuState(inputs({}))["view.fileIconsOff"]?.checked).toBe(true);
+    expect(menuState(inputs({ detectIndentation: true }))["view.detectIndentation"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ detectIndentation: false }))["view.detectIndentation"]?.checked).toBe(false);
+  });
+
+  it("compares the file on screen with the clipboard or another file", () => {
+    expect(menuState(inputs({}))["file.compareWith"]?.enabled).toBe(true);
+    expect(menuState(inputs({}))["file.compareWithClipboard"]?.enabled).toBe(true);
+    expect(menuState(inputs({ activeFile: null }))["file.compareWith"]?.enabled).toBe(false);
+    expect(menuState(inputs({ workspace: null }))["file.compareWithClipboard"]?.enabled).toBe(false);
+  });
+
   it("ticks Scripts while its panel shows", () => {
     expect(menuState(inputs({ leftPanel: "scripts" }))["view.scripts"]).toEqual({ enabled: true, checked: true });
     expect(menuState(idle)["view.scripts"]?.checked).toBe(false);
@@ -134,6 +162,8 @@ describe("menuState", () => {
     const state = menuState(inputs({ workspace: null, repo: null, shownView: "none", activeFile: null, tabCount: 0 }));
     expect(state["file.closeFolder"]?.enabled).toBe(false);
     expect(state["edit.goToFile"]?.enabled).toBe(false);
+    expect(state["edit.recentFiles"]?.enabled).toBe(false);
+    expect(state["edit.navigationBar"]?.enabled).toBe(false);
     expect(state["view.sidebar"]).toEqual({ enabled: false, checked: false });
     expect(state["git.fetch"]?.enabled).toBe(false);
     expect(state["window.nextTab"]?.enabled).toBe(false);
@@ -276,6 +306,22 @@ describe("Git menu", () => {
     expect(gitMenuState({ ...repo, remoteLinks: 2, busy: true }, null, false)["git.openRemote"]?.enabled).toBe(true);
     expect(gitMenuState(null, null, false)["git.openRemote"]?.enabled).toBe(false);
     expect(gitMenuState(null, null, false)["git.commit"]?.enabled).toBe(false);
+  });
+
+  it("offers the line actions of the Changes diff on screen", () => {
+    const unstaged = menuState(inputs({ shownView: "diff", diffLines: "unstaged" }));
+    expect(unstaged["git.lines.stage"]?.enabled).toBe(true);
+    expect(unstaged["git.lines.discard"]?.enabled).toBe(true);
+    expect(unstaged["git.lines.unstage"]?.enabled).toBe(false);
+    const staged = menuState(inputs({ shownView: "diff", diffLines: "staged" }));
+    expect(staged["git.lines.unstage"]?.enabled).toBe(true);
+    expect(staged["git.lines.stage"]?.enabled).toBe(false);
+    // Another view on screen, no diff, or Git busy.
+    expect(menuState(inputs({ shownView: "log", diffLines: "unstaged" }))["git.lines.stage"]?.enabled).toBe(false);
+    expect(menuState(inputs({ shownView: "diff" }))["git.lines.stage"]?.enabled).toBe(false);
+    expect(menuState(inputs({ shownView: "diff", diffLines: "unstaged", repo: { ...repo, busy: true } }))["git.lines.stage"]?.enabled).toBe(
+      false,
+    );
   });
 
   it("tells the menu when an item appears or goes", () => {

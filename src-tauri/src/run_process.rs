@@ -1,9 +1,9 @@
-//! Runs a project script as its own process in a PTY, like JetBrains' Run window: no shell
+//! Runs a project script as its own process in a PTY: no shell
 //! is typed into, so it works the same with zsh, fish, PowerShell or cmd. The Node version
 //! goes first on the process's PATH.
 //!
 //! Apps opened from Finder (or a Linux desktop launcher) get a bare PATH without Homebrew,
-//! nvm, pnpm or Composer. Like JetBrains, the login shell's environment is read once and
+//! nvm, pnpm or Composer. So the login shell's environment is read once and
 //! used for runs; the Scripts panel's Refresh reads it again.
 
 use std::ffi::OsString;
@@ -256,7 +256,7 @@ pub fn prepare(request: &RunRequest, base_env: Vec<(String, String)>) -> AppResu
 pub fn start_run(
     registry: &TerminalRegistry,
     request: &RunRequest,
-    on_output: impl FnMut(&[u8]) + Send + 'static,
+    on_output: impl FnMut(Vec<u8>) + Send + 'static,
     on_exit: impl FnOnce(u32, Option<i32>) + Send + 'static,
 ) -> AppResult<TerminalInfo> {
     let (options, profile) = prepare(request, login_env())?;
@@ -364,7 +364,7 @@ mod tests {
             .spawn(
                 &options,
                 move |bytes| {
-                    let _ = output_sender.send(bytes.to_vec());
+                    let _ = output_sender.send(bytes);
                 },
                 move |_, code| {
                     let _ = exit_sender.send(code);

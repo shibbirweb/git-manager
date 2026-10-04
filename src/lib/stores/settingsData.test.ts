@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  EDITOR_FONT_WEIGHT_RANGE,
   EDITOR_LINE_HEIGHT_RANGE,
   EDITOR_RULER_RANGE,
   changedPreferenceKeys,
@@ -9,10 +10,13 @@ import {
   DEFAULT_PANEL_WIDTH,
   DEFAULT_TERMINAL_HEIGHT,
   DEFAULT_TERMINAL_LIST_WIDTH,
+  DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
+  fontWeightName,
   MAX_MCP_TOOL_STATES,
   MIN_TERMINAL_HEIGHT,
   MIN_TERMINAL_LIST_WIDTH,
+  MIN_CHANGES_LIST_WIDTH,
   normalizeTerminalFontFamily,
   parseMcpPort,
   parsePreferences,
@@ -22,6 +26,7 @@ import {
   sessionSteps,
   shouldMigrateLegacy,
   stateToJson,
+  WINDOW_STATE_KEYS,
   writableConfigs,
 } from "./settingsData";
 
@@ -68,6 +73,27 @@ describe("parsePreferences", () => {
     const custom = parsePreferences({ memoryLogEnabled: true, memoryLogIntervalMs: 20, memoryLogThresholdMb: 9000 }).preferences;
     expect([custom.memoryLogEnabled, custom.memoryLogIntervalMs, custom.memoryLogThresholdMb]).toEqual([true, 100, 500]);
     expect(parsePreferences({ memoryLogThresholdMb: "x" }).preferences.memoryLogThresholdMb).toBe(5);
+  });
+
+  it("keeps Local History on for 7 days and 200 MB, within range", () => {
+    const keys = ["localHistoryEnabled", "localHistoryDays", "localHistorySizeMb", "notificationsDoNotDisturb"] as const;
+    const values = (data: Record<string, unknown>) => {
+      const preferences = parsePreferences(data).preferences;
+      return keys.map((key) => preferences[key]);
+    };
+    expect(values({})).toEqual([true, 7, 200, false]);
+    expect(values({ localHistoryEnabled: false, localHistoryDays: 500, localHistorySizeMb: 1, notificationsDoNotDisturb: true })).toEqual([
+      false,
+      90,
+      10,
+      true,
+    ]);
+    expect(values({ localHistoryEnabled: "no", localHistoryDays: "3", localHistorySizeMb: null, notificationsDoNotDisturb: 1 })).toEqual([
+      true,
+      7,
+      200,
+      false,
+    ]);
   });
 
   it("keeps the Git Console off unless it was turned on", () => {
@@ -122,6 +148,24 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ editorLineHeight: 1.8 }).extra).toEqual({});
   });
 
+  it("validates the editor font weight", () => {
+    expect(parsePreferences({}).preferences.editorFontWeight).toBe(400);
+    expect(parsePreferences({ editorFontWeight: 300 }).preferences.editorFontWeight).toBe(300);
+    expect(parsePreferences({ editorFontWeight: 20 }).preferences.editorFontWeight).toBe(EDITOR_FONT_WEIGHT_RANGE[0]);
+    expect(parsePreferences({ editorFontWeight: 1000 }).preferences.editorFontWeight).toBe(EDITOR_FONT_WEIGHT_RANGE[1]);
+    expect(parsePreferences({ editorFontWeight: 349 }).preferences.editorFontWeight).toBe(300);
+    expect(parsePreferences({ editorFontWeight: "bold" }).preferences.editorFontWeight).toBe(400);
+    expect(parsePreferences({ editorFontWeight: 300 }).extra).toEqual({});
+  });
+
+  it("names font weights like the font styles", () => {
+    expect(fontWeightName(100)).toBe("Thin");
+    expect(fontWeightName(300)).toBe("Light");
+    expect(fontWeightName(400)).toBe("Regular");
+    expect(fontWeightName(900)).toBe("Black");
+    expect(fontWeightName(350)).toBe("350");
+  });
+
   it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo", () => {
     expect(defaultPreferences.editorFontSize).toBe(13);
     expect(DEFAULT_EDITOR_FONT).toBe("'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace");
@@ -144,10 +188,36 @@ describe("parsePreferences", () => {
       editorScrollPastEnd: true,
       editorColumnSelection: true,
       editorRulerColumn: 0,
+      editorStickyScroll: true,
+      editorMinimap: false,
+      editorBracketPairColors: true,
+      editorMatchBrackets: true,
     });
     const edited = parsePreferences({ editorCompletion: false, editorFoldGutter: "no", editorIndentGuides: false }).preferences;
     expect(edited.editorCompletion).toBe(false);
     expect(edited.editorFoldGutter).toBe(true);
+    const extras = parsePreferences({ editorStickyScroll: false, editorMinimap: true, editorBracketPairColors: 1, editorMatchBrackets: false }).preferences;
+    expect(extras.editorStickyScroll).toBe(false);
+    expect(extras.editorMinimap).toBe(true);
+    expect(defaultPreferences.detectIndentation).toBe(true);
+    expect(defaultPreferences.fileIcons).toBe("off");
+    expect(parsePreferences({ fileIcons: "material" }).preferences.fileIcons).toBe("material");
+    expect(parsePreferences({ fileIcons: "minimal" }).preferences.fileIcons).toBe("minimal");
+    expect(parsePreferences({ fileIcons: true }).preferences.fileIcons).toBe("off");
+    expect(defaultPreferences.roundedPanels).toBe(false);
+    expect(parsePreferences({ roundedPanels: true }).preferences.roundedPanels).toBe(true);
+    expect(parsePreferences({ roundedPanels: "yes" }).preferences.roundedPanels).toBe(false);
+    expect(defaultPreferences.fileToolbar).toBe("top");
+    expect(parsePreferences({ fileToolbar: "bottom" }).preferences.fileToolbar).toBe("bottom");
+    expect(parsePreferences({ fileToolbar: "none" }).preferences.fileToolbar).toBe("none");
+    expect(parsePreferences({ fileToolbar: "left" }).preferences.fileToolbar).toBe("top");
+    expect(defaultPreferences.fileToolbarBlame).toBe(true);
+    expect(parsePreferences({ fileToolbarBlame: false }).preferences.fileToolbarBlame).toBe(false);
+    expect(parsePreferences({ fileToolbarBreadcrumbs: "no" }).preferences.fileToolbarBreadcrumbs).toBe(true);
+    expect(parsePreferences({ detectIndentation: false }).preferences.detectIndentation).toBe(false);
+    expect(parsePreferences({ detectIndentation: "no" }).preferences.detectIndentation).toBe(true);
+    expect(extras.editorBracketPairColors).toBe(true);
+    expect(extras.editorMatchBrackets).toBe(false);
     expect(edited.editorIndentGuides).toBe(false);
   });
 
@@ -185,6 +255,40 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ markdownViewMode: "editor" }).preferences.markdownViewMode).toBe("editor");
     expect(parsePreferences({ markdownViewMode: "side" }).preferences.markdownViewMode).toBe("split");
     expect(parsePreferences({ markdownViewMode: "preview" }).extra).toEqual({});
+  });
+
+  it("validates the tab and saving settings", () => {
+    const defaults = parsePreferences({}).preferences;
+    expect([defaults.reopenTabsOnStart, defaults.tabLimit, defaults.autoSave, defaults.autoSaveDelayMs]).toEqual([true, 0, "off", 1000]);
+    expect([defaults.trimTrailingWhitespace, defaults.insertFinalNewline, defaults.trimFinalNewlines]).toEqual([false, false, false]);
+    const custom = parsePreferences({
+      reopenTabsOnStart: false,
+      tabLimit: 1,
+      autoSave: "onFocusChange",
+      autoSaveDelayMs: 2500.4,
+      trimTrailingWhitespace: true,
+      insertFinalNewline: true,
+      trimFinalNewlines: true,
+    });
+    expect(custom.preferences).toMatchObject({
+      reopenTabsOnStart: false,
+      tabLimit: 1,
+      autoSave: "onFocusChange",
+      autoSaveDelayMs: 2500,
+      trimTrailingWhitespace: true,
+      insertFinalNewline: true,
+      trimFinalNewlines: true,
+    });
+    expect(custom.extra).toEqual({});
+    const wrong = parsePreferences({ reopenTabsOnStart: "no", tabLimit: -2, autoSave: "always", autoSaveDelayMs: 5, insertFinalNewline: 1 }).preferences;
+    expect([wrong.reopenTabsOnStart, wrong.tabLimit, wrong.autoSave, wrong.autoSaveDelayMs, wrong.insertFinalNewline]).toEqual([
+      true,
+      0,
+      "off",
+      100,
+      false,
+    ]);
+    expect(parsePreferences({ tabLimit: 500 }).preferences.tabLimit).toBe(100);
   });
 
   it("asks before drag and drop moves unless turned off", () => {
@@ -419,6 +523,18 @@ describe("parseState", () => {
     expect(stateToJson(parseState({ terminalListWidth: 260 }).state, {}).terminalListWidth).toBe(260);
   });
 
+  it("validates the Changes tab's file list width and visibility", () => {
+    expect(parseState({}).state.changesListWidth).toBe(DEFAULT_CHANGES_LIST_WIDTH);
+    expect(parseState({ changesListWidth: 420 }).state.changesListWidth).toBe(420);
+    expect(parseState({ changesListWidth: 20 }).state.changesListWidth).toBe(MIN_CHANGES_LIST_WIDTH);
+    expect(parseState({ changesListWidth: "wide" }).state.changesListWidth).toBe(DEFAULT_CHANGES_LIST_WIDTH);
+    expect(parseState({}).state.changesListVisible).toBe(true);
+    expect(parseState({ changesListVisible: "no" }).state.changesListVisible).toBe(true);
+    const saved = stateToJson(parseState({ changesListWidth: 420, changesListVisible: false }).state, {});
+    expect(saved.changesListWidth).toBe(420);
+    expect(saved.changesListVisible).toBe(false);
+  });
+
   it("reads the old recentRepos name", () => {
     expect(parseState({ recentRepos: ["/old"] }).state.recentRepos).toEqual(["/old"]);
   });
@@ -435,6 +551,44 @@ describe("parseState", () => {
     expect(parseState({ markdownPreviewRatio: 0 }).state.markdownPreviewRatio).toBe(0.15);
     expect(parseState({ markdownPreviewRatio: "wide" }).state.markdownPreviewRatio).toBe(0.5);
     expect(stateToJson(parseState({ markdownPreviewRatio: 0.4 }).state, {}).markdownPreviewRatio).toBe(0.4);
+  });
+
+  it("validates the Command Palette's recently used commands", () => {
+    expect(parseState({}).state.recentCommands).toEqual([]);
+    expect(parseState({ recentCommands: "git.push" }).state.recentCommands).toEqual([]);
+    expect(parseState({ recentCommands: ["git.push", 7, "git.push", "view.log"] }).state.recentCommands).toEqual(["git.push", "view.log"]);
+    const many = Array.from({ length: 30 }, (_, index) => `command.${index}`);
+    expect(parseState({ recentCommands: many }).state.recentCommands).toHaveLength(20);
+    expect(stateToJson(parseState({ recentCommands: ["git.pull"] }).state, {}).recentCommands).toEqual(["git.pull"]);
+    // A known key: not kept twice through `extra`.
+    expect(parseState({ recentCommands: ["git.pull"] }).extra).toEqual({});
+  });
+
+  it("keeps the open tabs of each workspace, validated", () => {
+    const openTabs = {
+      "/w": { tabs: [{ path: "/w/a.ts", preview: false, pinned: true, position: { line: 3, column: 1, topLine: 0 } }], active: "/w/a.ts" },
+      "/bad": { tabs: [{ path: "relative.ts" }] },
+    };
+    const { state, extra } = parseState({ openTabs });
+    expect(state.openTabs).toEqual({ "/w": openTabs["/w"] });
+    expect(extra).toEqual({});
+    expect(stateToJson(state, {}).openTabs).toEqual({ "/w": openTabs["/w"] });
+    expect(parseState({ openTabs: "x" }).state.openTabs).toEqual({});
+  });
+
+  it("turns Recent Files on by default and reads it as a boolean", () => {
+    expect(defaultPreferences.recentFiles).toBe(true);
+    expect(parsePreferences({ recentFiles: false }).preferences.recentFiles).toBe(false);
+    expect(parsePreferences({ recentFiles: "no" }).preferences.recentFiles).toBe(true);
+  });
+
+  it("keeps the Recent Files of each workspace, validated", () => {
+    const recentFileLists = { "/w": [{ filePath: "/w/a.ts", edited: true }, { filePath: "relative.ts" }], "/empty": [] };
+    const { state, extra } = parseState({ recentFileLists });
+    expect(state.recentFileLists).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
+    expect(extra).toEqual({});
+    expect(stateToJson(state, {}).recentFileLists).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
+    expect(parseState({ recentFileLists: "x" }).state.recentFileLists).toEqual({});
   });
 
   it("round-trips through stateToJson", () => {
@@ -532,5 +686,124 @@ describe("color theme preferences", () => {
   it("show up as changed only when not the default", () => {
     expect(changedPreferenceKeys(defaultPreferences)).toEqual([]);
     expect(changedPreferenceKeys({ ...defaultPreferences, darkColorTheme: "nord" })).toEqual(["darkColorTheme"]);
+  });
+});
+
+describe("commit message settings", () => {
+  it("defaults to history and the subject guide on, with no templates", () => {
+    const { preferences } = parsePreferences({});
+    expect([preferences.commitMessageHistory, preferences.commitSubjectGuide, preferences.commitTemplates]).toEqual([true, true, []]);
+    expect(changedPreferenceKeys(preferences)).toEqual([]);
+  });
+
+  it("validates the switches and templates", () => {
+    const { preferences, extra } = parsePreferences({
+      commitMessageHistory: false,
+      commitSubjectGuide: "yes",
+      commitTemplates: [{ name: "Feature", text: "feat:[{ticket}] " }, { name: "", text: "dropped" }],
+    });
+    expect(preferences.commitMessageHistory).toBe(false);
+    expect(preferences.commitSubjectGuide).toBe(true);
+    expect(preferences.commitTemplates).toEqual([{ name: "Feature", text: "feat:[{ticket}] " }]);
+    expect(extra).toEqual({});
+    expect(changedPreferenceKeys(preferences)).toEqual(["commitMessageHistory", "commitTemplates"]);
+  });
+
+  it("keeps the message history in state.json, validated", () => {
+    expect(parseState({}).state.commitMessages).toEqual({});
+    const { state, extra } = parseState({
+      commitMessages: { "/repo": [{ message: "wip: typed", time: 5 }, { message: 1 }] },
+    });
+    expect(state.commitMessages).toEqual({ "/repo": [{ message: "wip: typed", time: 5 }] });
+    expect(extra).toEqual({});
+    expect(parseState(stateToJson(state, extra)).state.commitMessages).toEqual(state.commitMessages);
+    expect(parseState({ commitMessages: "broken" }).state.commitMessages).toEqual({});
+  });
+});
+
+describe("keybindings", () => {
+  it("keeps custom keys for known commands and drops the rest", () => {
+    expect(parsePreferences({}).preferences.keybindings).toEqual({});
+    expect(
+      parsePreferences({ keybindings: { "git.push": "F5", "view.sidebar": null, "made.up": "F6", "git.pull": "Nope+P" } }).preferences
+        .keybindings,
+    ).toEqual({ "git.push": "F5", "view.sidebar": null });
+    expect(parsePreferences({ keybindings: "F5" }).preferences.keybindings).toEqual({});
+  });
+
+  it("counts custom keys as a changed preference", () => {
+    expect(changedPreferenceKeys({ ...defaultPreferences, keybindings: { "git.push": "F5" } })).toEqual(["keybindings"]);
+  });
+});
+
+describe("split editor settings", () => {
+  it("splits by default and validates the switch", () => {
+    expect(defaultPreferences.splitEditor).toBe(true);
+    expect(parsePreferences({ splitEditor: false }).preferences.splitEditor).toBe(false);
+    expect(parsePreferences({ splitEditor: "off" }).preferences.splitEditor).toBe(true);
+  });
+
+  it("scrolls the tabs by default and validates the wrap switch", () => {
+    expect(defaultPreferences.wrapTabs).toBe(false);
+    expect(parsePreferences({ wrapTabs: true }).preferences.wrapTabs).toBe(true);
+    expect(parsePreferences({ wrapTabs: "yes" }).preferences.wrapTabs).toBe(false);
+  });
+
+  it("shows a lone tab as a title by default and validates the switch", () => {
+    expect(defaultPreferences.singleTabTitle).toBe(true);
+    expect(parsePreferences({ singleTabTitle: false }).preferences.singleTabTitle).toBe(false);
+    expect(parsePreferences({ singleTabTitle: "no" }).preferences.singleTabTitle).toBe(true);
+  });
+
+  it("keeps the split ratio in range", () => {
+    expect(parseState({}).state.editorSplitRatio).toBe(0.5);
+    expect(parseState({ editorSplitRatio: 0.3 }).state.editorSplitRatio).toBe(0.3);
+    expect(parseState({ editorSplitRatio: 5 }).state.editorSplitRatio).toBe(0.8);
+    expect(parseState({ editorSplitRatio: "wide" }).state.editorSplitRatio).toBe(0.5);
+  });
+});
+
+describe("auto fetch preferences", () => {
+  it("fetches every 10 minutes by default", () => {
+    expect(defaultPreferences.autoFetch).toBe(true);
+    expect(defaultPreferences.autoFetchIntervalMinutes).toBe(10);
+  });
+
+  it("keeps valid values and clamps or drops the rest", () => {
+    expect(parsePreferences({ autoFetch: false, autoFetchIntervalMinutes: 30 }).preferences).toMatchObject({
+      autoFetch: false,
+      autoFetchIntervalMinutes: 30,
+    });
+    expect(parsePreferences({ autoFetchIntervalMinutes: 0 }).preferences.autoFetchIntervalMinutes).toBe(1);
+    expect(parsePreferences({ autoFetchIntervalMinutes: 5000 }).preferences.autoFetchIntervalMinutes).toBe(1440);
+    expect(parsePreferences({ autoFetchIntervalMinutes: 2.6 }).preferences.autoFetchIntervalMinutes).toBe(3);
+    expect(parsePreferences({ autoFetch: "yes", autoFetchIntervalMinutes: "5" }).preferences).toMatchObject({
+      autoFetch: true,
+      autoFetchIntervalMinutes: 10,
+    });
+  });
+});
+
+describe("window settings", () => {
+  it("reopens windows on start unless turned off", () => {
+    expect(defaultPreferences.reopenWindows).toBe(true);
+    expect(parsePreferences({ reopenWindows: false }).preferences.reopenWindows).toBe(false);
+    expect(parsePreferences({ reopenWindows: "no" }).preferences.reopenWindows).toBe(true);
+  });
+
+  it("keeps each window's layout keys among the keys state.json holds", () => {
+    const written = stateToJson(parseState({}).state, {});
+    for (const key of WINDOW_STATE_KEYS.filter((key) => key !== "windows")) {
+      expect(written).toHaveProperty(key);
+    }
+    // Shared lists are not per window: a recent folder opened in one window shows in all.
+    expect(WINDOW_STATE_KEYS).not.toContain("recentFolders");
+    expect(WINDOW_STATE_KEYS).not.toContain("openTabs");
+  });
+
+  it("leaves the backend's window session alone", () => {
+    const windows = [{ folders: ["/a"], workspaceFile: null, bounds: null }];
+    const { state, extra } = parseState({ windows, lastSession: ["/a"] });
+    expect(stateToJson(state, extra).windows).toEqual(windows);
   });
 });

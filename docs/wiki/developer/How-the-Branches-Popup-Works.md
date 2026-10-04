@@ -47,7 +47,7 @@ The new commands live in `src-tauri/src/commands/branch_actions.rs`. Branch name
 
 ### Compare tabs
 
-Compare and Show Diff open pseudo tabs, like commit tabs (see [How Commit Tabs Work](How-Commit-Tabs-Work.md)). `branchTabPath` in `stores/branchTabs.ts` encodes the reference as `branches-compare:<repo>|<branch>|<base>` or `branches-worktree:<repo>|<revision>`, URI-encoded, never starting with `/`, so it cannot clash with a file. `branchTabTitle` names the tab ("fix/tax-rates vs main") and `branchTabsInFolder` closes them with their workspace folder.
+Compare and Show Diff open pseudo tabs, like commit tabs (see [How Commit Tabs Work](How-Commit-Tabs-Work.md)). `branchTabPath` in `stores/branchTabs.ts` encodes the reference as `branches-compare:<repo>|<branch>|<base>` or `branches-worktree:<repo>|<revision>` (and `branches-changes:<repo>` for the status bar's [Changes tab](How-the-Changes-Tab-Works.md)), URI-encoded, never starting with `/`, so it cannot clash with a file. `branchTabTitle` names the tab ("fix/tax-rates vs main") and `branchTabsInFolder` closes them with their workspace folder.
 
 - `BranchCompareTab.svelte` calls `compare_branches`: commits in each side and not the other (at most `MAX_COMPARED`, 1000, then `truncated`) and the changed files. A file's diff comes from `revisions_file_diff`, the base on the left.
 - `WorktreeDiffTab.svelte` calls `compare_with_worktree` (untracked files count as added) and `compare_with_revision` per file. It reloads when the repository's status object changes.

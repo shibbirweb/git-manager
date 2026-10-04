@@ -6,18 +6,21 @@
 <script lang="ts">
   import { LanguageSupport } from "@codemirror/language";
   import type { EditorView } from "@codemirror/view";
+  import { usesDefaultKeys } from "$lib/commands/commandRuntime";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { onMount, untrack } from "svelte";
-  import { api, errorMessage } from "$lib/api";
+  import { errorMessage } from "$lib/api";
   import { languageFor } from "$lib/editor/setup";
   import { editorTopLine, isScrolledToEnd, scrollEditorToLine } from "$lib/markdown/editorScroll";
   import { CodeHighlighter, fenceLanguages } from "$lib/markdown/highlight";
   import type { LinkContext } from "$lib/markdown/links";
   import type { MarkdownPreviewDom } from "$lib/markdown/previewDom";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { folderFor, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
+  import { settings } from "$lib/stores/settings.svelte";
+  import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
   import { watchTheme } from "$lib/themes/watch";
   import { toast } from "$lib/ui/toast.svelte";
+  import { markdownImageUrl } from "$lib/views/files/previewScheme";
   import "$lib/markdown/body.css";
 
   interface Props {
@@ -51,6 +54,7 @@
   let ready = $state(false);
 
   let preview: MarkdownPreviewDom | null = null;
+  let highlighter: CodeHighlighter | null = null;
   let renderTimer: ReturnType<typeof setTimeout> | undefined;
   let renderedVersion = -1;
   let lastRenderMs = 0;
@@ -76,15 +80,10 @@
   }
 
   async function loadImage(imagePath: string): Promise<string> {
-    const folder = folderFor(repoStore.workspace?.folders ?? [], imagePath);
-    if (!folder) {
+    if (!folderFor(repoStore.workspace?.folders ?? [], imagePath)) {
       throw new Error("Image outside the workspace");
     }
-    try {
-      return await api.readImageDataUrl(folder.root, relativeTo(folder.root, imagePath));
-    } catch (error) {
-      throw new Error(errorMessage(error));
-    }
+    return markdownImageUrl(imagePath);
   }
 
   async function loadParser(extension: string) {
@@ -93,7 +92,9 @@
   }
 
   onMount(() => {
-    const highlighter = new CodeHighlighter(loadParser, () => schedule(0));
+    const codeHighlighter = new CodeHighlighter(loadParser, () => schedule(0));
+    codeHighlighter.setEnabled(settings.syntaxHighlighting);
+    highlighter = codeHighlighter;
     void import("$lib/markdown/engine")
       .then(async (engine) => {
         const { MarkdownPreviewDom } = await import("$lib/markdown/previewDom");
@@ -101,11 +102,11 @@
           return;
         }
         // Grammars for the code blocks load first, so the first render is already highlighted.
-        await highlighter.preload(fenceLanguages(getSource()));
+        await codeHighlighter.preload(fenceLanguages(getSource()));
         if (destroyed) {
           return;
         }
-        preview = new MarkdownPreviewDom(engine, body, highlighter, { linkContext, loadImage, isDark });
+        preview = new MarkdownPreviewDom(engine, body, codeHighlighter, { linkContext, loadImage, isDark });
         ready = true;
         schedule(0);
       })
@@ -131,7 +132,21 @@
       resize.disconnect();
       preview?.destroy();
       preview = null;
+      highlighter = null;
     };
+  });
+
+  // Code blocks follow the Syntax highlighting setting; a hidden preview renders when shown again.
+  $effect(() => {
+    const enabled = settings.syntaxHighlighting;
+    untrack(() => {
+      if (highlighter?.setEnabled(enabled)) {
+        renderedVersion = -1;
+        if (visible && ready) {
+          schedule(0);
+        }
+      }
+    });
   });
 
   /** Renders after `delay`, or after a longer pause when the last render was slow. */
@@ -301,7 +316,8 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "s") {
+    const saveKey = (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "s";
+    if (saveKey && usesDefaultKeys("file.save")) {
       event.preventDefault();
       onSave();
     }

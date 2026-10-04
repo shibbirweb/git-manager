@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use super::repo::{read_git_file, short_id};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum OpKind {
     None,
@@ -30,7 +30,7 @@ impl OpKind {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpState {
     pub kind: OpKind,
@@ -91,7 +91,8 @@ fn merge_msg_branch(repo: &Repository) -> Option<String> {
 pub fn read(repo: &Repository) -> OpState {
     let ours = current_branch(repo);
     match repo.state() {
-        RepositoryState::Clean => OpState {
+        // A bisect is not an operation to continue or abort: its own banner shows it (git/bisect.rs).
+        RepositoryState::Clean | RepositoryState::Bisect => OpState {
             kind: OpKind::None,
             description: String::new(),
             ours_label: format!("Yours ({ours})"),

@@ -13,7 +13,7 @@ export function claudeAddCommand(url: string, token: string): string {
   return `claude mcp add --transport http ${MCP_SERVER_NAME} ${url} --header "Authorization: Bearer ${token}"`;
 }
 
-/** The `mcpServers` block most harnesses (Cursor, Claude Desktop with a bridge, VS Code...) read. */
+/** The `mcpServers` block most harnesses (Cursor, Claude Desktop with a bridge...) read. */
 export function mcpJsonConfig(url: string, token: string): string {
   const config = {
     mcpServers: {

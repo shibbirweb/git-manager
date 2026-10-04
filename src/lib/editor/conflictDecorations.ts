@@ -1,6 +1,6 @@
 // Inline conflict resolution for the file editor: colored sections and
 // "Accept Current | Accept Incoming | Accept Both | Merge Tool" links above
-// every conflict, like VS Code's CodeLens.
+// every conflict.
 
 import { type Extension, type Range, StateField, type Text } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from "@codemirror/view";
@@ -10,15 +10,17 @@ import {
   findConflictsInDoc,
   resolveAllEdits,
   resolveEdit,
+  updateConflicts,
 } from "./conflictMarkers";
 
 export interface ConflictActions {
   onOpenMergeTool: () => void;
 }
 
+/** Kept as the same array while nothing changes, so the decorations and marks built from it are reused. */
 export const conflictField = StateField.define<ConflictRegion[]>({
   create: (state) => findConflictsInDoc(state.doc),
-  update: (value, tr) => (tr.docChanged ? findConflictsInDoc(tr.state.doc) : value),
+  update: (value, tr) => (tr.docChanged ? updateConflicts(value, tr.changes, tr.startState.doc, tr.newDoc) : value),
 });
 
 export function resolveConflictAt(view: EditorView, index: number, choice: ConflictChoice): void {

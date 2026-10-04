@@ -1,6 +1,7 @@
-<!-- JetBrains' Reset HEAD dialog: the revision to reset the current branch to (HEAD, a commit
+<!-- The Reset HEAD dialog: the revision to reset the current branch to (HEAD, a commit
      id or a branch) and the mode, each with its one-line explanation. Hard asks first. -->
 <script lang="ts">
+  import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { CommitSummary, ResetMode } from "$lib/types";
@@ -9,14 +10,18 @@
   import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { RESET_MODES, validateRevision } from "./gitOptions";
+  import { undoAction } from "./undoActions";
 
   interface Props {
     repoRoot: string;
+    /** Filled in when opened from a commit, e.g. the reflog's Reset Current Branch to Here. */
+    initialRevision?: string | null;
   }
 
-  let { repoRoot }: Props = $props();
+  let { repoRoot, initialRevision = null }: Props = $props();
 
-  let revision = $state("HEAD");
+  // The dialog opens once per request, so the prop is only read at the start.
+  let revision = $state(untrack(() => initialRevision) ?? "HEAD");
   let mode = $state<ResetMode>("mixed");
   let resolved = $state<{ revision: string; commitId: string } | null>(null);
   let resolveError = $state<string | null>(null);
@@ -113,6 +118,7 @@
     await repoStore.run("Reset", (repoPath) => api.resetTo(repoPath, target.commitId, resetMode), {
       repoPath: repoRoot,
       success: `Reset ${branch} to ${shortId} (${resetMode})`,
+      action: () => undoAction(repoRoot, ["reset"]),
     });
   }
 </script>

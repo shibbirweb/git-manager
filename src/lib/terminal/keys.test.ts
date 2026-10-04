@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { type TerminalKey, terminalKeyAction } from "./keys";
+import { parseAccelerator } from "$lib/commands/keybinding";
+import { buildCommandSpecs } from "$lib/commands/registry";
+import { menuSpec } from "$lib/menu/menuSpec";
+import { shellOwns, type TerminalKey, terminalAppKeys, terminalKeyAction } from "./keys";
 
 const mac = { isMac: true, hasSelection: false };
 const macSelected = { isMac: true, hasSelection: true };
@@ -86,5 +89,69 @@ describe("terminalKeyAction for find and split", () => {
     expect(terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), { ...linuxFeatures, canSplit: false })).toBe(
       "shell",
     );
+  });
+});
+
+describe("the app's keys in a terminal", () => {
+  const macSpecs = buildCommandSpecs(menuSpec("macos", "app"));
+  const linuxSpecs = buildCommandSpecs(menuSpec("linux", "app"));
+
+  it("leaves control characters, Alt keys and AltGr to the shell", () => {
+    const parse = (accelerator: string, platform: "macos" | "linux") => {
+      const parsed = parseAccelerator(accelerator, platform);
+      if (!parsed) {
+        throw new Error(accelerator);
+      }
+      return parsed;
+    };
+    expect(shellOwns(parse("Ctrl+P", "linux"), "linux")).toBe(true);
+    expect(shellOwns(parse("Alt+B", "linux"), "linux")).toBe(true);
+    expect(shellOwns(parse("Ctrl+Alt+Q", "linux"), "linux")).toBe(true);
+    expect(shellOwns(parse("F5", "linux"), "linux")).toBe(true);
+    expect(shellOwns(parse("Ctrl+Shift+P", "linux"), "linux")).toBe(false);
+    expect(shellOwns(parse("Ctrl+`", "linux"), "linux")).toBe(false);
+    expect(shellOwns(parse("Super+K", "linux"), "linux")).toBe(false);
+    expect(shellOwns(parse("Ctrl+Alt+Q", "macos"), "macos")).toBe(false);
+  });
+
+  it("lists the global keys that pass the shell by", () => {
+    const keys = terminalAppKeys(linuxSpecs, {}, "linux");
+    expect(keys.has("ctrl+shift:KeyP")).toBe(true);
+    expect(keys.has("ctrl:Backquote")).toBe(true);
+    expect(keys.has("ctrl+shift:Backquote")).toBe(true);
+    // Ctrl+B and Ctrl+P stay readline's.
+    expect(keys.has("ctrl:KeyB")).toBe(false);
+    expect(keys.has("ctrl:KeyP")).toBe(false);
+    // Editor commands do nothing in a terminal.
+    expect(keys.has("ctrl+shift:KeyD")).toBe(false);
+  });
+
+  it("sends Ctrl+Shift+P to the app on Windows and Linux, and custom keys too", () => {
+    const appKeys = terminalAppKeys(linuxSpecs, { "git.push": "Ctrl+Shift+U", "view.terminal": "Ctrl+Shift+T" }, "linux");
+    const context = { ...linux, appKeys };
+    expect(terminalKeyAction(press("P", "KeyP", { ctrlKey: true, shiftKey: true }), context)).toBe("app");
+    expect(terminalKeyAction(press("U", "KeyU", { ctrlKey: true, shiftKey: true }), context)).toBe("app");
+    expect(terminalKeyAction(press("T", "KeyT", { ctrlKey: true, shiftKey: true }), context)).toBe("app");
+    // Ctrl+` moved away: it goes back to the shell.
+    expect(terminalKeyAction(press("`", "Backquote", { ctrlKey: true }), context)).toBe("shell");
+    expect(terminalKeyAction(press("p", "KeyP", { ctrlKey: true }), context)).toBe("shell");
+    // The terminal's own keys come first.
+    expect(terminalKeyAction(press("V", "KeyV", { ctrlKey: true, shiftKey: true }), context)).toBe("paste");
+  });
+
+  it("matches letters by the typed key, as the window does, so other layouts agree", () => {
+    const appKeys = terminalAppKeys(linuxSpecs, { "git.push": "CmdOrCtrl+Shift+A" }, "linux");
+    // AZERTY: the key that types A sits where QWERTY has Q.
+    expect(terminalKeyAction(press("A", "KeyQ", { ctrlKey: true, shiftKey: true }), { ...linux, appKeys })).toBe("app");
+    expect(terminalKeyAction(press("Q", "KeyA", { ctrlKey: true, shiftKey: true }), { ...linux, appKeys })).toBe("shell");
+  });
+
+  it("lets a custom Ctrl+Shift key reach the app on macOS", () => {
+    const appKeys = terminalAppKeys(macSpecs, { "git.push": "Ctrl+Shift+U" }, "macos");
+    const context = { ...mac, appKeys };
+    expect(terminalKeyAction(press("U", "KeyU", { ctrlKey: true, shiftKey: true }), context)).toBe("app");
+    expect(terminalKeyAction(press("`", "Backquote", { ctrlKey: true }), context)).toBe("app");
+    expect(terminalKeyAction(press("u", "KeyU", { ctrlKey: true }), context)).toBe("shell");
+    expect(terminalKeyAction(press("b", "KeyB", { metaKey: true }), context)).toBe("app");
   });
 });

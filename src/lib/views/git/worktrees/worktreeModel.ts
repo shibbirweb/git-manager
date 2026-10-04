@@ -41,7 +41,7 @@ export function folderSafe(branchName: string): string {
     .replace(/^\.+/, "");
 }
 
-/** "<repo>-<branch>" next to the main worktree, like JetBrains. */
+/** "<repo>-<branch>" next to the main worktree. */
 export function defaultWorktreePath(mainRoot: string, branchName: string): string {
   const suffix = folderSafe(branchName);
   const name = suffix ? `${baseName(mainRoot)}-${suffix}` : `${baseName(mainRoot)}-worktree`;

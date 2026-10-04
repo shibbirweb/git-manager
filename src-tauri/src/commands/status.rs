@@ -5,25 +5,48 @@ use super::{blocking, safe_join, with_paths};
 use crate::error::{AppError, AppResult};
 use crate::git::cli::{self, GitOutput};
 use crate::git::diff::{self, DiffArea, FileDiff};
+use crate::git::files;
 use crate::git::repo as git_repo;
 use crate::git::status::{self, RepoStatus};
+use crate::local_history::{self, store::Label};
 use crate::merge::model::Eol;
 
-#[tauri::command]
-pub async fn get_status(repo_path: String) -> AppResult<RepoStatus> {
-    blocking(move || status::read(&git_repo::open(&repo_path)?)).await
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusSnapshot {
+    pub hash: String,
+    /// None when `known_hash` still matched: the frontend keeps the status it has.
+    pub status: Option<RepoStatus>,
 }
 
+/// The status of `repo_path`; with the hash of the status the caller holds,
+/// an unchanged one is not sent again (50k untracked files are 7 MB of JSON).
+#[tauri::command]
+pub async fn get_status(repo_path: String, known_hash: Option<String>) -> AppResult<StatusSnapshot> {
+    blocking(move || {
+        let status = status::read(&git_repo::open(&repo_path)?)?;
+        let hash = status::hash(&status);
+        if known_hash.as_deref() == Some(hash.as_str()) {
+            return Ok(StatusSnapshot { hash, status: None });
+        }
+        Ok(StatusSnapshot { hash, status: Some(status) })
+    })
+    .await
+}
+
+/// One file's staged or unstaged diff. With the `known_version` of a diff already on screen,
+/// None means it is still the same, so the texts are not read or sent again.
 #[tauri::command]
 pub async fn get_file_diff(
     repo_path: String,
     file_path: String,
     orig_path: Option<String>,
     area: DiffArea,
-) -> AppResult<FileDiff> {
+    known_version: Option<String>,
+) -> AppResult<Option<FileDiff>> {
     blocking(move || {
         let repo = git_repo::open(&repo_path)?;
-        diff::working_file(&repo, &file_path, orig_path.as_deref(), area)
+        diff::working_file_if_changed(&repo, &file_path, orig_path.as_deref(), area, known_version.as_deref())
     })
     .await
 }
@@ -31,7 +54,8 @@ pub async fn get_file_diff(
 #[tauri::command]
 pub async fn stage_files(repo_path: String, file_paths: Vec<String>) -> AppResult<()> {
     blocking(move || {
-        cli::run(Path::new(&repo_path), &with_paths(&["add", "-A"], &file_paths))?;
+        let pathspecs = status::pathspecs_for(&git_repo::open(&repo_path)?, &file_paths)?;
+        cli::run_with_pathspecs(Path::new(&repo_path), &["add", "-A"], &pathspecs)?;
         Ok(())
     })
     .await
@@ -42,11 +66,12 @@ pub async fn unstage_files(repo_path: String, file_paths: Vec<String>) -> AppRes
     blocking(move || {
         let repo = git_repo::open(&repo_path)?;
         let root = Path::new(&repo_path);
+        let pathspecs = status::pathspecs_for(&repo, &file_paths)?;
         if repo.head().is_ok() {
-            cli::run(root, &with_paths(&["restore", "--staged"], &file_paths))?;
+            cli::run_with_pathspecs(root, &["restore", "--staged"], &pathspecs)?;
         } else {
             // No HEAD to restore from in a fresh repository.
-            cli::run(root, &with_paths(&["rm", "--cached", "-r", "-q"], &file_paths))?;
+            cli::run_with_pathspecs(root, &["rm", "--cached", "-r", "-q"], &pathspecs)?;
         }
         Ok(())
     })
@@ -58,9 +83,14 @@ pub async fn unstage_files(repo_path: String, file_paths: Vec<String>) -> AppRes
 #[tauri::command]
 pub async fn discard_files(repo_path: String, tracked_paths: Vec<String>, untracked_paths: Vec<String>) -> AppResult<()> {
     blocking(move || {
-        if !tracked_paths.is_empty() {
-            cli::run(Path::new(&repo_path), &with_paths(&["restore", "--worktree"], &tracked_paths))?;
-        }
+        let pathspecs = status::pathspecs_for(&git_repo::open(&repo_path)?, &tracked_paths)?;
+        let targets = tracked_paths
+            .iter()
+            .chain(&untracked_paths)
+            .map(|file_path| safe_join(&repo_path, file_path))
+            .collect::<AppResult<Vec<_>>>()?;
+        local_history::snapshot_before(&targets, Label::BeforeDiscard);
+        cli::run_with_pathspecs(Path::new(&repo_path), &["restore", "--worktree"], &pathspecs)?;
         for untracked_path in &untracked_paths {
             let full = safe_join(&repo_path, untracked_path)?;
             if full.is_dir() {
@@ -97,13 +127,18 @@ pub async fn stage_content(repo_path: String, file_path: String, content: String
     .await
 }
 
-/// Overwrites a work tree file (used to discard a single hunk).
+/// Overwrites a work tree file (the editor's Save). Returns the file's new version, so the
+/// editor's next refresh knows the text on disk is the one it wrote.
 #[tauri::command]
-pub async fn write_worktree_file(repo_path: String, file_path: String, content: String, eol: Eol) -> AppResult<()> {
+pub async fn write_worktree_file(repo_path: String, file_path: String, content: String, eol: Eol) -> AppResult<String> {
     blocking(move || {
         let full = safe_join(&repo_path, &file_path)?;
-        std::fs::write(full, eol.apply(&content))?;
-        Ok(())
+        let before = local_history::read_before_save(&full);
+        let bytes = eol.apply(&content).into_bytes();
+        std::fs::write(&full, &bytes)?;
+        let version = files::stat_version(&std::fs::metadata(&full)?);
+        local_history::record_save(full.to_string_lossy().into_owned(), before, bytes);
+        Ok(version)
     })
     .await
 }
@@ -139,7 +174,7 @@ pub async fn commit(
     blocking(move || run_commit(&repo_path, &message, amend, false, &options.unwrap_or_default())).await
 }
 
-/// VS Code's Commit All: stages every tracked change, then commits. Untracked files stay out.
+/// Commit All: stages every tracked change, then commits. Untracked files stay out.
 #[tauri::command]
 pub async fn commit_all(
     repo_path: String,
@@ -194,7 +229,7 @@ fn run_commit_files(
         return Err(AppError::invalid("Write a commit message first"));
     }
     let root = Path::new(repo_path);
-    cli::run(root, &with_paths(&["add", "-A"], file_paths))?;
+    cli::run_with_pathspecs(root, &["add", "-A"], file_paths)?;
     let mut args = vec!["commit", "--only"];
     args.extend(extra.iter().map(String::as_str));
     if amend {
@@ -220,7 +255,7 @@ pub async fn commit_files(
     blocking(move || run_commit_files(&repo_path, &file_paths, &message, amend, &options.unwrap_or_default())).await
 }
 
-/// JetBrains' Rollback: files in HEAD get their HEAD version back in the index and
+/// Rollback: files in HEAD get their HEAD version back in the index and
 /// the work tree; files only in the index (added) are unstaged, and deleted from
 /// disk when `delete_added`. Untracked files are left alone.
 fn run_rollback(repo_path: &str, file_paths: &[String], delete_added: bool) -> AppResult<()> {
@@ -244,11 +279,11 @@ fn run_rollback(repo_path: &str, file_paths: &[String], delete_added: bool) -> A
         }
     }
     let root = Path::new(repo_path);
-    if !in_head.is_empty() {
-        cli::run(root, &with_paths(&["restore", "--source=HEAD", "--staged", "--worktree"], &in_head))?;
-    }
+    let targets: Vec<_> = in_head.iter().chain(&added).map(|file_path| root.join(file_path)).collect();
+    local_history::snapshot_before(&targets, Label::BeforeRollback);
+    cli::run_with_pathspecs(root, &["restore", "--source=HEAD", "--staged", "--worktree"], &in_head)?;
     if !added.is_empty() {
-        cli::run(root, &with_paths(&["rm", "--cached", "-q", "-f", "--ignore-unmatch"], &added))?;
+        cli::run_with_pathspecs(root, &["rm", "--cached", "-q", "-f", "--ignore-unmatch"], &added)?;
         if delete_added {
             for added_path in &added {
                 let full = safe_join(repo_path, added_path)?;

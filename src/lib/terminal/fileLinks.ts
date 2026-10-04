@@ -1,4 +1,4 @@
-// Clickable file paths in the terminal, like VS Code: `src/app.ts`,
+// Clickable file paths in the terminal: `src/app.ts`,
 // `src/app.ts:12`, `src/app.ts:12:5` and `src/app.ts(12,5)`, resolved against
 // the terminal's folder and kept only for files that exist inside an open
 // workspace folder. Kept free of Svelte, Tauri and xterm so it can be tested

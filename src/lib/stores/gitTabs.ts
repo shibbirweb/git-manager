@@ -1,5 +1,5 @@
-// Git views opened from the Git menu's Current File submenu in their own editor tab: a
-// file's history, the history of a few lines, and a file compared with a revision. Like
+// Git views opened from the Git menu in their own editor tab: a file's history, the history
+// of a few lines, a file compared with a revision, and a repository's reflog. Like
 // commit tabs (commitTabs.ts) they share the tab strip with files, so each has a pseudo
 // path that can never be a file: it does not start with "/".
 
@@ -9,12 +9,17 @@ export type GitTabRef =
   | { kind: "lineHistory"; repoRoot: string; filePath: string; startLine: number; endLine: number }
   | { kind: "compare"; repoRoot: string; filePath: string; revision: string }
   /** A file of a shelved change list (Shelf > Show Diff), read-only. */
-  | { kind: "shelf"; repoRoot: string; filePath: string; shelfId: string };
+  | { kind: "shelf"; repoRoot: string; filePath: string; shelfId: string }
+  /** Git > Show Reflog: one tab per repository; the ref (HEAD or a branch) is picked inside it. */
+  | { kind: "reflog"; repoRoot: string };
 
 const PREFIX = "git-";
-const KINDS = ["fileHistory", "lineHistory", "compare", "shelf"] as const;
+const KINDS = ["fileHistory", "lineHistory", "compare", "shelf", "reflog"] as const;
 
 export function gitTabPath(ref: GitTabRef): string {
+  if (ref.kind === "reflog") {
+    return `${PREFIX}${ref.kind}:${encodeURIComponent(ref.repoRoot)}`;
+  }
   const parts = [ref.repoRoot, ref.filePath];
   if (ref.kind === "lineHistory") {
     parts.push(`${ref.startLine}-${ref.endLine}`);
@@ -48,6 +53,9 @@ export function parseGitTabPath(tabPath: string): GitTabRef | null {
   }
   const parts = tabPath.slice(colon + 1).split("|");
   const repoRoot = decode(parts[0]);
+  if (kind === "reflog") {
+    return repoRoot && parts.length === 1 ? { kind, repoRoot } : null;
+  }
   const filePath = decode(parts[1]);
   if (!repoRoot || !filePath) {
     return null;
@@ -89,8 +97,11 @@ export function revisionLabel(revision: string): string {
 
 /** The tab's label and tooltip. */
 export function gitTabTitle(ref: GitTabRef): { name: string; title: string } {
-  const name = fileName(ref.filePath);
   const repoName = fileName(ref.repoRoot);
+  if (ref.kind === "reflog") {
+    return { name: `Reflog: ${repoName}`, title: `Reflog of ${repoName}` };
+  }
+  const name = fileName(ref.filePath);
   if (ref.kind === "fileHistory") {
     return { name: `History: ${name}`, title: `History of ${ref.filePath} (${repoName})` };
   }

@@ -1,5 +1,4 @@
-// Ctrl/Cmd + mouse wheel over an editor changes the editor font size, like
-// VS Code's `editor.mouseWheelZoom`. Trackpad pinches arrive as ctrl+wheel too.
+// Ctrl/Cmd + mouse wheel over an editor changes the editor font size. Trackpad pinches arrive as ctrl+wheel too.
 
 import { FONT_SIZE_RANGE } from "$lib/stores/settings.svelte";
 

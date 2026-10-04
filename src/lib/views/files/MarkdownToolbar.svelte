@@ -1,5 +1,5 @@
 <!--
-  Formatting buttons above a Markdown file, like JetBrains' Markdown editor. The view mode switch
+  Formatting buttons above a Markdown file. The view mode switch
   sits in FileView's bar; this row stays because it is a tool, and it is kept as low as possible.
 -->
 <script lang="ts">

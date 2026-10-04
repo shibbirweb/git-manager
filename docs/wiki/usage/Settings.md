@@ -1,6 +1,6 @@
 # Settings
 
-Settings change how Git Manager looks and behaves. Every change applies right away and is saved for next time.
+Settings change how Git Manager looks and behaves, apply at once and are saved. A mark such as **+70 MB** means a setting uses more memory when on ([Memory Use](Memory-Use.md#settings-that-use-more-memory)).
 
 ## Open Settings
 
@@ -8,24 +8,27 @@ Settings change how Git Manager looks and behaves. Every change applies right aw
 - Or press Cmd+,, or choose **Git Manager > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
 - Or click **Settings** on the welcome screen.
 
-Settings opens on **Appearance**. A few places open another section: the **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
+Settings opens on **Appearance**. The **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
 
-The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, **Terminal**, **GitHub**, **Automation**, **Updates**, **Settings Files** and **About**. Press Esc or click the x to close. Drag the dialog by its title to move it; double-click the title to center it again.
+The sections are on the left, with a [search field](Settings-Search.md) above them. Press Esc or click the x to close. Drag the title to move the dialog; double-click it to center it.
 
-**Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). The panel choices and sizes are kept, because they live in `state.json`.
+**Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). Panel choices and sizes live in `state.json` and are kept.
 
 ## Appearance
 
 ![Appearance settings](../images/settings-appearance.png)
 
-*Theme and interface font size.*
+*The Appearance section.*
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Theme | **System** follows the macOS appearance, or pick **Light** or **Dark**. The colors themselves are picked in **Editor**. | System |
+| Theme | **System** follows macOS, or pick **Light** or **Dark**. Colors are picked in **Editor**. | System |
+| Rounded panels | Rounded panels with space between them, in any color theme. See [Rounded Panels](Rounded-Panels.md). | Off |
+| File toolbar | **Top**, **Bottom** or **Hidden**, plus switches. See [Navigation Bar](Navigation-Bar.md#the-file-toolbar-top-bottom-or-hidden). | Top |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
+| File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |
 
-The same choices are in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark in one click, so the theme stops following macOS until you pick **System** again.
+The theme is also in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark; macOS is followed again once you pick **System**.
 
 ![Dark theme](../images/dark-theme.png)
 
@@ -41,29 +44,33 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 
 ![Editor fonts and spacing](../images/settings-editor-fonts.png)
 
-*Font family with a live preview, font size and line spacing.*
+*Font family with a live preview, font size, font weight and line spacing.*
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Editor font family | A comma-separated list, like VS Code's `editor.fontFamily`. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
-| Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. | 13 px |
-| Line spacing | Space between lines of code, 1.0 to 2.5 times the font size in 0.05 steps. Double-click the slider to reset it. | 1.25 |
-| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane to zoom, or pinch. | Off |
-| Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them (Fira Code, JetBrains Mono, Cascadia Code). | Off |
-| Tab size | Spaces per indent level: 2, 4 or 8. Applies to files opened afterwards. | 4 |
-| Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Editing-Code.md#render-whitespace). | Selection |
+| Editor font family | A comma-separated list. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
+| Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. See [Zoom](Code-Appearance.md#zoom). | 13 px |
+| Editor font weight | Thin to Black. See [Font weight](Code-Appearance.md#font-weight). | Regular |
+| Line spacing | Space between lines, 1.0 to 2.5 times the font size. Double-click the slider to reset it. | 1.25 |
+| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over code, or pinch. | Off |
+| Font ligatures | Draws `=>`, `!=` and `===` as single symbols with fonts such as Fira Code. | Off |
+| Syntax highlighting | Colors code by language. See [Syntax highlighting](Code-Appearance.md#syntax-highlighting). | On |
+| Tab size | Spaces per indent level (2, 4 or 8) when not detected, and the width of a tab. | 4 |
+| Detect indentation | Indent like the file does. Also View > Detect Indentation. See [Indentation](Code-Appearance.md#indentation). | On |
+| Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Code-Appearance.md#render-whitespace). | Selection |
 | Word wrap | Wraps long lines in the file editor, also with View > Word Wrap (Option+Z). Diffs and the merge tool never wrap. | Off |
-| Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Editing-Code.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
-| Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. Off frees memory. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
+| Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor. See [The cursor](Code-Appearance.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
+| Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
 | Current line blame | Author, age and commit at the end of the cursor line. Cmd+click it to open the commit in the Log; Cmd+Option-click copies the hash. See [Blame](Blame.md). | On |
 | Blame gutter | A blame column beside the line numbers. Also the **Blame** button in the editor path bar and the diff toolbar. | Off |
+| Recent Files | Cmd+E lists recent files. See [Recent Files](Recent-Files.md). | On |
 
 ![More editor settings](../images/settings-editor-more.png)
 
 *The lower part of the Editor section: render whitespace, word wrap, Markdown preview and blame.*
 
-Type a font list and press Enter (or click outside the box), or click a font name below it. **Reset** goes back to the default font. **View > Zoom In** (Cmd+=), **Zoom Out** (Cmd+-) and **Reset Zoom** (Cmd+0) change the editor font size too.
+Type a font list and press Enter, or click a font name below it. **Reset** goes back to the default font.
 
 ## Git
 
@@ -81,7 +88,7 @@ Type a font list and press Enter (or click outside the box), or click a font nam
 
 See [Commit Options](Commit-Options.md) for signing and the other per-commit choices.
 
-**Git > Update Project...** also saves its last choice, merge or rebase, in `settings.json` (`updateMethod`, default merge). There is no switch for it here; see [Git Dialogs](Git-Dialogs.md#update-project).
+**Git > Update Project...** also saves its last choice, merge or rebase, in `settings.json` (`updateMethod`, default merge), with no switch here; see [Git Dialogs](Git-Dialogs.md#update-project).
 
 ## Layout
 
@@ -111,7 +118,7 @@ Every option is described in [Terminal, GitHub and Automation Settings](Settings
 
 ## Updates and About
 
-**Updates** controls the update check and the release channel; see [Updates](Updates.md). **About** has the version and the links to star the project, report a bug or request a feature; see [Status Bar and Help](Status-Bar-and-Help.md).
+**Updates** controls the update check and the release channel ([Updates](Updates.md)). **About** has the version and links to star the project, report a bug or request a feature ([Status Bar and Help](Status-Bar-and-Help.md)).
 
 ## Settings Files
 
@@ -119,7 +126,7 @@ Every option is described in [Terminal, GitHub and Automation Settings](Settings
 
 *The settings folder and the list of settings changed from their defaults.*
 
-This section shows where your settings are saved and which ones you changed. If a settings file cannot be read, a banner says so:
+Where your settings are saved and which ones you changed. A banner shows when a settings file cannot be read:
 
 ![The state.json banner](../images/settings-state-error.png)
 

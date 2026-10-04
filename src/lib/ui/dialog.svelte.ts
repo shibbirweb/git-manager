@@ -86,7 +86,7 @@ class DialogStore {
     });
   }
 
-  /** A filterable list (VS Code's quick pick): resolves with the picked value, or null. */
+  /** A filterable list (quick pick): resolves with the picked value, or null. */
   pick<T extends string>(options: PickOptions<T>): Promise<T | null> {
     return new Promise((resolve) => {
       this.active = {

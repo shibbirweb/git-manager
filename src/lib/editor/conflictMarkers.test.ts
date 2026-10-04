@@ -1,6 +1,6 @@
-import { ChangeSet, Text } from "@codemirror/state";
+import { ChangeSet, EditorState, Text } from "@codemirror/state";
 import { describe, expect, it } from "vitest";
-import { findConflictsInDoc, resolveAllEdits, resolveEdit } from "./conflictMarkers";
+import { findConflictsInDoc, resolveAllEdits, resolveEdit, updateConflicts } from "./conflictMarkers";
 
 function doc(value: string): Text {
   return Text.of(value.split("\n"));
@@ -93,5 +93,44 @@ describe("resolving", () => {
     expect(ChangeSet.of(edits, document.length).apply(document).toString()).toBe(
       ["before", "theirs", "middle", "b", "after"].join("\n"),
     );
+  });
+});
+
+describe("updateConflicts", () => {
+  const pieces = ["text", "<<<<<<< HEAD", "<<<<", "<<<", "=======", "===", ">>>>>>> x", ">>>", "||||||| base", "\n", "a\nb"];
+
+  it("matches a full scan after random edits", () => {
+    let seed = 3;
+    const random = (bound: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed % bound;
+    };
+    let state = EditorState.create({ doc: mergeStyle });
+    let regions = findConflictsInDoc(state.doc);
+    for (let round = 0; round < 2000; round++) {
+      const length = state.doc.length;
+      const from = random(length + 1);
+      const to = Math.min(length, from + random(4));
+      const insert = random(3) === 0 ? "" : pieces[random(pieces.length)];
+      const tr = state.update({ changes: { from, to, insert } });
+      regions = updateConflicts(regions, tr.changes, state.doc, tr.newDoc);
+      state = tr.state;
+      expect(regions).toEqual(findConflictsInDoc(state.doc));
+    }
+  });
+
+  it("keeps the same array while typing away from markers", () => {
+    const state = EditorState.create({ doc: "one\ntwo\nthree" });
+    const none = findConflictsInDoc(state.doc);
+    const tr = state.update({ changes: { from: 4, insert: "x" } });
+    expect(updateConflicts(none, tr.changes, state.doc, tr.newDoc)).toBe(none);
+  });
+
+  it("moves regions when lines are added above them", () => {
+    const state = EditorState.create({ doc: mergeStyle });
+    const regions = findConflictsInDoc(state.doc);
+    const tr = state.update({ changes: { from: 0, insert: "new\nlines\n" } });
+    const moved = updateConflicts(regions, tr.changes, state.doc, tr.newDoc);
+    expect(moved.map((region) => region.start)).toEqual(regions.map((region) => region.start + 2));
   });
 });

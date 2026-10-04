@@ -11,7 +11,7 @@ export const MAX_TERMINAL_NAME = 60;
 export const FALLBACK_SHELL_NAME = "terminal";
 
 /**
- * A name not used by another terminal, like VS Code: the first zsh is "zsh",
+ * A name not used by another terminal: the first zsh is "zsh",
  * the next "zsh (2)", then "zsh (3)". Freed numbers are reused.
  */
 export function uniqueTerminalName(shellName: string, takenNames: string[]): string {

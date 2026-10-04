@@ -41,6 +41,8 @@ Window shortcuts do nothing while a dialog or the merge tool is open: the key is
 | Shift+Cmd+F | Edit > Find in Files... |
 | Shift+Cmd+R | Edit > Replace in Files... |
 | Cmd+P | Edit > Go to File... |
+| Cmd+E | Edit > Recent Files... |
+| Cmd+Up | Edit > Jump to Navigation Bar (Alt+Home on Windows and Linux) |
 | Cmd+O | Edit > Go to Class... |
 | Option+Cmd+O | Edit > Go to Symbol... |
 | Shift Shift (press Shift twice) | Edit > Search Everywhere |
@@ -67,12 +69,14 @@ The Code menu's keys (comments, duplicate, move and delete lines, folding, Go to
 | --- | --- |
 | Shift Shift | Search Everywhere |
 | Cmd+P or Shift+Cmd+O | Go to File |
+| Cmd+E | Recent Files (press it again for edited files only) |
+| Cmd+Up | Navigation Bar: the current file's folder, then arrows to move and typing to search |
 | Shift+Cmd+G | Show Changes (outside a text editor) |
 | Ctrl+- | Go Back |
 | Ctrl+Shift+- | Go Forward |
 | Esc | Close the open dialog, menu or popup |
 
-Ctrl+- really is Control, not Command, as in VS Code on the Mac. See [Search Everywhere](Search-Everywhere.md) and [Navigation](Navigation.md).
+Ctrl+- really is Control, not Command, as in VS Code on the Mac. See [Search Everywhere](Search-Everywhere.md), [Recent Files](Recent-Files.md), [Navigation Bar](Navigation-Bar.md) and [Navigation](Navigation.md).
 
 ## Terminal and bottom panel
 

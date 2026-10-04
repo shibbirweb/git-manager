@@ -15,6 +15,10 @@
  * image is unused, a link points nowhere, or a page breaks the style rules
  * (title line, no em-dash, at most MAX_WORDS words, valid mermaid blocks).
  *
+ * A screenshot not taken yet is written as `[TODO:name.png]` in its usage page, where the
+ * image will go. The check accepts it in place of the image and lists every one still to
+ * take, so they are easy to find; a marker for an image that exists is a problem.
+ *
  * On the way out, `# Title` lines are dropped (the wiki prints the page name),
  * links between pages become wiki links, images go to images/, links to other
  * repository files become GitHub URLs, and Home, _Sidebar and _Footer are
@@ -34,6 +38,7 @@ import {
   pageProblems,
   resolvePath,
   rewriteLinks,
+  screenshotTodos,
   stripTitle,
   WIKI_DIR,
 } from "./wiki";
@@ -68,8 +73,15 @@ function allPages(manifest: Manifest): string[] {
   ];
 }
 
-function check(manifest: Manifest): string[] {
+interface CheckResult {
+  problems: string[];
+  /** Screenshots marked `[TODO:name.png]` and not taken yet, as "feature: image". */
+  pending: string[];
+}
+
+function check(manifest: Manifest): CheckResult {
   const problems = manifestProblems(manifest);
+  const pending: string[] = [];
   const pages = allPages(manifest);
   const listed = new Set(pages);
 
@@ -111,11 +123,29 @@ function check(manifest: Manifest): string[] {
     }
   }
 
+  const screenshots = new Set(manifest.features.flatMap((feature) => feature.screenshots));
+  for (const [page, text] of texts) {
+    for (const screenshot of screenshotTodos(text)) {
+      if (existsSync(join(WIKI, "images", screenshot))) {
+        problems.push(`${WIKI_DIR}/${page} still has [TODO:${screenshot}]; show the image instead`);
+      } else if (!screenshots.has(screenshot)) {
+        problems.push(`${WIKI_DIR}/${page} has [TODO:${screenshot}], which is not a screenshot of any feature in features.json`);
+      }
+    }
+  }
+
   for (const feature of manifest.features) {
     const usageText = texts.get(feature.usage) ?? "";
+    const todos = screenshotTodos(usageText);
     for (const screenshot of feature.screenshots) {
       if (!existsSync(join(WIKI, "images", screenshot))) {
-        problems.push(`feature ${feature.id}: screenshot images/${screenshot} does not exist (bun scripts/screenshots.ts ${screenshot.replace(/\.png$/, "")})`);
+        if (todos.includes(screenshot)) {
+          pending.push(`${feature.id}: images/${screenshot} (bun scripts/screenshots.ts ${screenshot.replace(/\.png$/, "")})`);
+        } else {
+          problems.push(
+            `feature ${feature.id}: screenshot images/${screenshot} does not exist (bun scripts/screenshots.ts ${screenshot.replace(/\.png$/, "")}, or write [TODO:${screenshot}] in ${feature.usage} for now)`,
+          );
+        }
       } else if (!findLinks(usageText).some((link) => link.target.endsWith(`images/${screenshot}`))) {
         problems.push(`feature ${feature.id}: ${feature.usage} does not show its screenshot images/${screenshot}`);
       }
@@ -127,7 +157,7 @@ function check(manifest: Manifest): string[] {
       problems.push(`${WIKI_DIR}/images/${image} is not used by any page`);
     }
   }
-  return problems;
+  return { problems, pending };
 }
 
 function title(page: string): string {
@@ -215,7 +245,7 @@ if (!argument || process.argv.length > 3) {
   process.exit(2);
 }
 const manifest = loadManifest();
-const problems = check(manifest);
+const { problems, pending } = check(manifest);
 if (problems.length > 0) {
   console.error(`docs/wiki has ${problems.length} problem${problems.length === 1 ? "" : "s"}:\n`);
   for (const problem of problems) {
@@ -230,3 +260,9 @@ if (argument !== "--check") {
   console.log(`wrote ${pages} pages, Home, _Sidebar and _Footer to ${argument}`);
 }
 console.log(`docs/wiki is fine: ${pages} pages, ${manifest.features.length} features, ${(imageBytes / 1024 / 1024).toFixed(1)} MB of screenshots`);
+if (pending.length > 0) {
+  console.log(`\n${pending.length} screenshot${pending.length === 1 ? "" : "s"} still to take ([TODO:...] in the pages):\n`);
+  for (const screenshot of pending) {
+    console.log(`  ${screenshot}`);
+  }
+}

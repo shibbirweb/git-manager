@@ -1,5 +1,4 @@
-// The actions of a repository row in the Changes view (VS Code's Source Control
-// repository actions). Each runs in the row's repository, never just the active one.
+// The actions of a repository row in the Changes view. Each runs in the row's repository, never just the active one.
 
 import { api } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
@@ -22,8 +21,11 @@ import {
   type RepoTarget,
 } from "../sidebar/actions";
 import { gitDialogs } from "../git/gitDialogs.svelte";
+import { undoAction } from "../git/undoActions";
 import { commitDraft } from "./commitDraft.svelte";
 import { commitOptions } from "./commitOptions.svelte";
+import { ensureIdentity } from "./identityCheck";
+import { settings } from "$lib/stores/settings.svelte";
 import { discard, stage, unstage } from "./mutations";
 import {
   commitPlan,
@@ -105,8 +107,9 @@ export interface CommitRequest {
  */
 export async function commitRepo(repoRoot: string, request: CommitRequest): Promise<boolean> {
   const draft = commitDraft.for(repoRoot);
-  const message = draft.message;
-  if (!request.amend && message.trim() === "") {
+  // An untouched commit.template is no message, as in git.
+  const message = request.amend && draft.isBlank() ? "" : draft.message;
+  if (!request.amend && draft.isBlank()) {
     toast.info("Write a commit message first");
     await focusCommitMessage(repoRoot);
     return false;
@@ -115,14 +118,24 @@ export async function commitRepo(repoRoot: string, request: CommitRequest): Prom
   if (!options) {
     return false;
   }
+  if (!(await ensureIdentity(repoRoot))) {
+    return false;
+  }
   const result = await repoStore.run(
     "Commit",
     (repoPath) =>
       request.mode === "all"
         ? api.commitAll(repoPath, message, request.amend, options)
         : api.commit(repoPath, message, request.amend, options),
-    { repoPath: repoRoot, success: request.amend ? "Commit amended" : "Committed" },
+    {
+      repoPath: repoRoot,
+      success: request.amend ? "Commit amended" : "Committed",
+      // Pushed right after, an undo would rewrite what was just published.
+      action: () => (request.followUp === "none" ? undoAction(repoRoot, request.amend ? ["amend"] : ["commit"]) : null),
+    },
   );
+  // Kept for the history dropdown either way: a failed commit's message is not lost.
+  settings.rememberCommitMessage(repoRoot, message);
   if (result === undefined) {
     return false;
   }
@@ -142,7 +155,7 @@ export async function commitFromRow(repoRoot: string): Promise<void> {
     return;
   }
   const draft = commitDraft.for(repoRoot);
-  const plan = commitPlan(stateOf(section), draft);
+  const plan = commitPlan(stateOf(section), { message: draft.isBlank() ? "" : draft.message, amend: draft.amend });
   if (plan.kind === "focus") {
     await focusCommitMessage(repoRoot);
   } else if (plan.kind === "blocked") {
@@ -179,9 +192,9 @@ export async function undoLastCommit(repoRoot: string): Promise<void> {
     repoPath: repoRoot,
     success: "Undid the last commit; its changes are staged",
   });
-  // Like VS Code: offer the message again for the next commit.
+  // Offer the message again for the next commit.
   const draft = commitDraft.for(repoRoot);
-  if (message !== undefined && draft.message.trim() === "") {
+  if (message !== undefined && draft.isBlank()) {
     draft.message = message.trimEnd();
   }
 }
@@ -266,7 +279,7 @@ export async function createBranchFrom(target: RepoTarget, repoRoot: string): Pr
   await newBranchFrom(picked.name, initialName, target);
 }
 
-/** Renames the current branch, like VS Code; with a detached HEAD, asks which branch. */
+/** Renames the current branch; with a detached HEAD, asks which branch. */
 export async function renameBranch(target: RepoTarget, repoRoot: string): Promise<void> {
   const current = repoStore.statuses[repoRoot]?.head.branch ?? null;
   if (current) {
@@ -294,12 +307,12 @@ export async function deleteBranch(target: RepoTarget, repoRoot: string): Promis
   }
 }
 
-/** JetBrains' Merge dialog: the branch to merge and the merge options. */
+/** The Merge dialog: the branch to merge and the merge options. */
 export function mergeBranch(repoRoot: string, branchName: string | null = null): void {
   gitDialogs.open({ kind: "merge", repoRoot, branchName });
 }
 
-/** JetBrains' Rebase dialog: what to rebase onto and the rebase options. */
+/** The Rebase dialog: what to rebase onto and the rebase options. */
 export function rebaseBranch(repoRoot: string, onto: string | null = null): void {
   gitDialogs.open({ kind: "rebaseBranch", repoRoot, onto });
 }
@@ -448,7 +461,7 @@ export async function repoMenuFor(repoRoot: string): Promise<MenuItem[]> {
   return withRepoExtras(repoMenuItems(stateOf(section, extrasOf(details)), handlersFor(repoRoot, details)), repoRoot);
 }
 
-/** The branch button and Git > Branches...: JetBrains' Branches popup. */
+/** The branch button and Git > Branches...: the Branches popup. */
 export function openBranchPicker(repoRoot: string): void {
   gitDialogs.open({ kind: "branches", repoRoot });
 }

@@ -1,6 +1,7 @@
 // Save, Revert and the Markdown view mode of each open file editor (FileView.svelte), so the
 // File and View menus can act on the active tab and show what it can do. The MCP tools read
-// the editors' text and selection through it too.
+// the editors' text and selection through it too. A file open in both editor groups has two
+// editors; the one in the focused group answers.
 
 import type { MarkdownViewMode } from "./settingsData";
 
@@ -15,6 +16,10 @@ export interface FileViewCommands {
   selection(): EditorSelectionInfo | null;
   /** Puts the keyboard focus in the editor. */
   focus(): void;
+  /** This editor is in the focused editor group, so it answers for its file. */
+  preferred?(): boolean;
+  /** Replaces the whole text as one undoable change (Local History > Revert); false when not editable. */
+  replaceText?(text: string): boolean;
 }
 
 /** Positions are 1-based lines and columns. */
@@ -44,13 +49,16 @@ export interface FileViewState {
 class FileCommandsStore {
   /** Keyed by the absolute path of each open file editor. */
   states = $state.raw<Record<string, FileViewState>>({});
-  private handlers = new Map<string, FileViewCommands>();
+  /** Every editor of each file, in the order they mounted. */
+  private handlers = new Map<string, FileViewCommands[]>();
 
   /** Called by a file editor when it mounts; the returned function unregisters it. */
   register(filePath: string, commands: FileViewCommands): () => void {
-    this.handlers.set(filePath, commands);
+    this.handlers.set(filePath, [...(this.handlers.get(filePath) ?? []), commands]);
     return () => {
-      if (this.handlers.get(filePath) !== commands) {
+      const left = (this.handlers.get(filePath) ?? []).filter((candidate) => candidate !== commands);
+      if (left.length > 0) {
+        this.handlers.set(filePath, left);
         return;
       }
       this.handlers.delete(filePath);
@@ -59,6 +67,12 @@ class FileCommandsStore {
         this.states = rest;
       }
     };
+  }
+
+  /** The editor that answers for `filePath`: the one in the focused group, else the first. */
+  private handler(filePath: string): FileViewCommands | undefined {
+    const list = this.handlers.get(filePath) ?? [];
+    return list.find((commands) => commands.preferred?.() ?? false) ?? list[0];
   }
 
   report(filePath: string, state: FileViewState): void {
@@ -70,28 +84,32 @@ class FileCommandsStore {
   }
 
   async save(filePath: string, options: { quiet?: boolean } = {}): Promise<boolean> {
-    return (await this.handlers.get(filePath)?.save(options)) ?? false;
+    return (await this.handler(filePath)?.save(options)) ?? false;
   }
 
   async revert(filePath: string): Promise<void> {
-    await this.handlers.get(filePath)?.revert();
+    await this.handler(filePath)?.revert();
   }
 
   setViewMode(filePath: string, mode: MarkdownViewMode): void {
-    this.handlers.get(filePath)?.setViewMode(mode);
+    this.handler(filePath)?.setViewMode(mode);
   }
 
   /** The open editor's text; null when no editor shows `filePath`. */
   text(filePath: string): string | null {
-    return this.handlers.get(filePath)?.text() ?? null;
+    return this.handler(filePath)?.text() ?? null;
   }
 
   selection(filePath: string): EditorSelectionInfo | null {
-    return this.handlers.get(filePath)?.selection() ?? null;
+    return this.handler(filePath)?.selection() ?? null;
   }
 
   focus(filePath: string): void {
-    this.handlers.get(filePath)?.focus();
+    this.handler(filePath)?.focus();
+  }
+
+  replaceText(filePath: string, text: string): boolean {
+    return this.handler(filePath)?.replaceText?.(text) ?? false;
   }
 }
 

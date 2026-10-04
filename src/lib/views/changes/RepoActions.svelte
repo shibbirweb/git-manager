@@ -1,5 +1,5 @@
 <script lang="ts">
-  // VS Code's repository row actions: branch, Sync, Commit, Refresh and "...".
+  // The repository row actions: branch, Sync, Commit, Refresh and "...".
   import { repoStore } from "$lib/stores/repo.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
@@ -30,7 +30,7 @@
       return null;
     }
     const draft = commitDraft.for(repoRoot);
-    return commitPlan(stateOf(section), { message: draft.message, amend: draft.amend });
+    return commitPlan(stateOf(section), { message: draft.isBlank() ? "" : draft.message, amend: draft.amend });
   });
   let refreshing = $state(false);
 
