@@ -92,10 +92,12 @@ fn commit_info(repo: &Repository, oid: Oid) -> BisectCommit {
 }
 
 /// The commit in the last "# first bad commit: [<id>] subject" line of BISECT_LOG.
+/// Newer git (2.56 at least) quotes the term: "# first 'bad' commit: [<id>] subject".
 fn first_bad_in_log(log: &str, bad_term: &str) -> Option<Oid> {
-    let marker = format!("# first {bad_term} commit: [");
+    let plain = format!("# first {bad_term} commit: [");
+    let quoted = format!("# first '{bad_term}' commit: [");
     log.lines().rev().find_map(|line| {
-        let rest = line.strip_prefix(&marker)?;
+        let rest = line.strip_prefix(&plain).or_else(|| line.strip_prefix(&quoted))?;
         let end = rest.find(']')?;
         Oid::from_str(&rest[..end]).ok()
     })
@@ -213,5 +215,8 @@ mod tests {
         assert_eq!(first_bad_in_log(&log, "bad"), Some(Oid::from_str(id).unwrap()));
         assert_eq!(first_bad_in_log(&log, "new"), None);
         assert_eq!(first_bad_in_log("git bisect start\n", "bad"), None);
+        let quoted = format!("# bad: [{id}] Break\n# first 'new' commit: [{id}] Break\n");
+        assert_eq!(first_bad_in_log(&quoted, "new"), Some(Oid::from_str(id).unwrap()));
+        assert_eq!(first_bad_in_log(&quoted, "bad"), None);
     }
 }

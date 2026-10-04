@@ -196,12 +196,15 @@ mod tests {
         run_bisect_mark(&path, "bad", None).unwrap();
         let mut last = status_hash(&repo);
         assert_ne!(started, last);
+        let mut marks = 0;
         while state(&repo).unwrap().first_bad.is_none() {
             let mark = if is_bad(&repo) { "bad" } else { "good" };
             run_bisect_mark(&path, mark, None).unwrap();
             let next = status_hash(&repo);
             assert_ne!(last, next, "a mark leaves the status unchanged");
             last = next;
+            marks += 1;
+            assert!(marks < 10, "the bisect does not finish");
         }
         run_bisect_reset(&path).unwrap();
         assert_eq!(status_hash(&repo), before);
