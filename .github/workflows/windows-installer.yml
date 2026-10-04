@@ -1,0 +1,87 @@
+# Builds the Windows installer for every pull request, installs it on the runner to check what it
+# bundles, and keeps it as a download (the run's Artifacts) for trying the app on a Windows machine.
+#
+# Apart from ci.yml on purpose: a release build takes a while, and the release workflows wait for
+# CI, so a slow installer never holds up a release. release.yml builds the real installer the same
+# way in build-windows.
+name: Windows installer
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request makes the older installer useless.
+concurrency:
+  group: windows-installer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  installer:
+    name: Build, install and keep the Windows installer
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The same two steps as build-windows in release.yml.
+      - name: Build the command line program
+        run: |
+          cargo build --release --locked -p git-manager-cli --manifest-path src-tauri/Cargo.toml
+          mkdir -p src-tauri/binaries
+          cp src-tauri/target/release/git-manager-cli.exe src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe
+
+      - name: Build the installer
+        run: bun run tauri build --config src-tauri/tauri.windows-release.conf.json
+
+      # A silent per-user install, then the console program must sit next to the app and answer.
+      # Exit code 2 with "not running" is right: the app is installed but not started.
+      - name: Install it and run the command line program
+        run: |
+          installer="$(find src-tauri/target/release/bundle/nsis -name '*-setup.exe' | head -n 1)"
+          echo "Installer: $installer"
+          "$installer" /S
+          console="$(find "$(cygpath "$LOCALAPPDATA")" -name git-manager-cli.exe 2>/dev/null | head -n 1)"
+          if [ -z "$console" ]; then
+            echo "::error::git-manager-cli.exe was not installed next to the app"
+            exit 1
+          fi
+          echo "Installed: $console"
+          ls "$(dirname "$console")"
+          set +e
+          output="$("$console" cli status 2>&1)"
+          code=$?
+          set -e
+          echo "$output"
+          if [ "$code" != "2" ] || ! echo "$output" | grep -q "not running"; then
+            echo "::error::git-manager-cli cli status answered $code instead of 2 and \"not running\""
+            exit 1
+          fi
+
+      - name: Keep the installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-manager-windows-installer
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          retention-days: 14
+          if-no-files-found: error

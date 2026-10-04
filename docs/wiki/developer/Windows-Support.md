@@ -1,10 +1,10 @@
 # Windows Support
 
-Windows support is being built (the work list is in `docs/plans/windows-release.md`). This page explains what the code already does differently on Windows, and the rules that keep it working. For builds and signing, see [Platforms and Signing](Platforms-and-Signing.md).
+What the code does differently on Windows, and the rules that keep it working (work list: `docs/plans/windows-release.md`). Builds and signing: [Platforms and Signing](Platforms-and-Signing.md).
 
 ## Helper processes without a console window
 
-A Windows program built as a GUI app has no console. When it starts a console program such as `git.exe`, Windows opens a new console window for it, so every git call would flash a black window. `child_process::hide_console` (`src-tauri/src/child_process.rs`) sets the `CREATE_NO_WINDOW` flag. `git::cli::command` uses it, so every git call gets it, and so do `gh auth token` and the PowerShell clipboard reader. Use it for any new helper process.
+A GUI program that starts a console program such as `git.exe` gets a new console window for it, so every git call would flash one. `child_process::hide_console` (`src-tauri/src/child_process.rs`) sets the `CREATE_NO_WINDOW` flag. `git::cli::command` uses it, so every git call gets it, and so do `gh auth token` and the PowerShell clipboard reader. Use it for any new helper process.
 
 ## Cancel stops everything git started
 
@@ -39,7 +39,7 @@ Absolute paths always use `/`, on Windows too (`C:/Users/me/repo`), so the page'
 
 `src-tauri/tauri.windows.conf.json` is merged over `tauri.conf.json` on Windows. Its bundle targets replace the macOS ones with `nsis`: a per-user installer (`installMode: currentUser`, no administrator rights) that downloads WebView2 when it is missing. `build-windows` in `release.yml` builds it on `windows-latest` and attaches the `-setup.exe` to the release, but only when the repository variable `WINDOWS_RELEASES` is `true`. That switch keeps betas from offering a Windows download before Windows support is finished. The update check offers that `-setup.exe` to Windows users (`downloadAsset` in `src/lib/update/releases.ts`).
 
-The installer is not signed yet, so Windows SmartScreen warns about an unknown publisher.
+`windows-installer.yml` builds, installs and checks it for every pull request, and keeps the `-setup.exe` under the run's Artifacts. It is not signed yet, so SmartScreen warns about an unknown publisher.
 
 ## Code written for Windows
 

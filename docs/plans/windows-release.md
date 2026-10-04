@@ -121,3 +121,6 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   `build-windows` builds it first and bundles it (`tauri.windows-release.conf.json`, `bundle.externalBin`).
   Install command line tool writes `git-manager.cmd` into `%LOCALAPPDATA%\Microsoft\WindowsApps`. CI and the
   docs use `cargo test --workspace` and `cargo clippy --workspace`. Needs a manual check with a real installer.
+- Installer from CI: `windows-installer.yml` on every pull request builds the installer like
+  `build-windows`, installs it silently, runs `git-manager-cli cli status` (must answer "not running", code 2)
+  and keeps the `-setup.exe` as an artifact for 14 days. Use it for the manual test.
