@@ -123,6 +123,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Search Everywhere: the All tab lists Files first, then Classes and Symbols, so Enter right after typing opens the best matching file.
 - Fetch, Pull, Push and Stash moved from the header to the Git menu (Fetch All Remotes, Pull..., Push..., Force Push..., Uncommitted Changes > Stash Changes...).
 - Save and Revert moved from the editor toolbar to the File menu (Save, Save All, Revert File).
 - Go to Line is now Cmd+L (it was Option+Cmd+G).

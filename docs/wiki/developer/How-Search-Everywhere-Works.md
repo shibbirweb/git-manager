@@ -90,13 +90,15 @@ The MCP tools (see [How MCP and the CLI work](How-MCP-and-CLI-Work.md)) use `bui
 
 ## Design decisions
 
-**In memory, and only while used.** An index on disk would go stale and take space per workspace. Walking is fast enough on demand, and the session is dropped two minutes after the popup closes.
+**In memory, and only while used.** An index on disk would go stale and take space per workspace. Walking on demand is fast enough.
 
 **One file list for three searches.** All three follow the same skip rules, and the symbol and text searches read chunks as they arrive (`Index::wait_chunk`), so the tree is walked once.
 
 **Never wait for indexing.** Queries match what is indexed so far, and the UI retries every 250 ms until `done`.
 
-**Line scanners, not parsers.** Tree-sitter grammars for fifteen languages would add megabytes to the binary and to memory. Missing an oddly formatted definition is acceptable for a quick jump.
+**Files first in the All tab.** Most searches are for a file, so Enter right after typing opens the best one.
+
+**Line scanners, not parsers.** Tree-sitter grammars for fifteen languages would add megabytes to the binary and memory. Missing an odd definition is fine.
 
 **Optimized in dev builds.** `Cargo.toml` builds the matcher and search crates with `opt-level = 3` even in debug, so `bun tauri dev` feels like the release.
 

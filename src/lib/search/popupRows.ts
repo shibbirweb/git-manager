@@ -84,8 +84,8 @@ export function tabRows(tab: SearchTab, results: PopupResults): PopupRow[] {
         return recentRows(results.recent);
       }
       return [
-        ...section("Classes", "classes", symbolRowsOf(results.classes.rows, "c"), results.classes.matched),
         ...section("Files", "files", fileRows(results.files.rows), results.files.matched),
+        ...section("Classes", "classes", symbolRowsOf(results.classes.rows, "c"), results.classes.matched),
         ...section("Symbols", "symbols", symbolRowsOf(results.members.rows, "s"), results.members.matched),
       ];
     case "files":
