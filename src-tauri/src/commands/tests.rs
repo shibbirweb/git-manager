@@ -338,6 +338,8 @@ fn stage_content_updates_index_for_tracked_file() {
     assert_eq!(repo.index_bytes("a.txt"), b"crlf\r\nlines\r\n".to_vec());
 }
 
+// Windows has no executable bit (git runs with core.filemode=false there).
+#[cfg(unix)]
 #[test]
 fn stage_content_adds_new_file_and_keeps_executable_mode() {
     let repo = TestRepo::new();
@@ -379,6 +381,7 @@ fn stage_content_adds_new_file_and_keeps_executable_mode() {
     assert!(matches!(escape, Err(AppError::Invalid(_))), "{escape:?}");
 }
 
+#[cfg(unix)]
 fn set_executable(path: &Path) {
     use std::os::unix::fs::PermissionsExt;
     let mut permissions = std::fs::metadata(path).unwrap().permissions();

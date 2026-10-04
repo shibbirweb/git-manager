@@ -23,6 +23,7 @@ pub struct MemoryUsage {
     pub approximate: bool,
 }
 
+#[cfg(any(target_os = "macos", test))]
 pub fn label_for(name: &str, is_self: bool) -> String {
     if is_self {
         return "Git Manager (app)".to_string();

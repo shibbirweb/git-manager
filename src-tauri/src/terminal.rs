@@ -21,6 +21,7 @@ const READ_CHUNK_BYTES: usize = 16 * 1024;
 /// How long the exit report waits for the last output once the shell has exited.
 const OUTPUT_GRACE: Duration = Duration::from_millis(500);
 /// Time a closed shell gets to handle SIGHUP before it is killed.
+#[cfg(unix)]
 const KILL_GRACE: Duration = Duration::from_secs(2);
 /// The same at app exit, kept short so quitting stays fast.
 const SHUTDOWN_GRACE: Duration = Duration::from_millis(300);

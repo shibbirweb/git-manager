@@ -38,6 +38,7 @@ pub struct LinesOutcome {
 }
 
 const REGULAR_MODE: u32 = 0o100644;
+#[cfg(unix)]
 const EXECUTABLE_MODE: u32 = 0o100755;
 const SYMLINK_MODE: u32 = 0o120000;
 const GITLINK_MODE: u32 = 0o160000;
