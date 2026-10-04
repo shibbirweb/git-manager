@@ -289,8 +289,8 @@ pub fn has_changes(worktree_path: &str) -> AppResult<bool> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::*;
+    use crate::test_support::UiText;
     use crate::test_support::{git_in, BareRemote, TestRepo};
 
     #[test]

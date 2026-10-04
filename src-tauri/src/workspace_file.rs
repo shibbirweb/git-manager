@@ -389,8 +389,8 @@ pub fn write(file: &Path, folders: &[String]) -> AppResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::*;
+    use crate::test_support::UiText;
 
     fn canonical(path: &Path) -> String {
         path.real_path().unwrap().ui()

@@ -46,7 +46,7 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 | Copy on selection | Selecting text copies it to the clipboard. | Off |
 | Find in terminal | Cmd+F searches the output. Off, the search code is never loaded. | On |
 | Clickable file paths | Cmd+click a path such as `src/app.ts:12:5` to open it at that line. Only files inside an open folder become links. | On |
-| Drop files to type their paths | Dropping files from Finder on a terminal types their paths, quoted for the shell. | On |
+| Drop files to type their paths | Dropping files on a terminal types their paths, quoted for the shell. | On |
 | Visual bell | A short flash when the shell rings the bell, or a dot on a terminal that is out of sight. | On |
 | Smooth scrolling | Animates scrolling with the mouse wheel. | Off |
 | Option as Meta key | Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as å. | Off |

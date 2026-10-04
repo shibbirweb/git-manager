@@ -183,8 +183,10 @@ export const DEFAULT_CHANGES_LIST_WIDTH = 320;
 export const MIN_CHANGES_LIST_WIDTH = 160;
 export const MAX_RECENT = 12;
 
-/** JetBrains Mono when it is installed, else VS Code's default editor font on macOS. */
-export const DEFAULT_EDITOR_FONT = "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace";
+/** JetBrains Mono when it is installed, else VS Code's default editor font on macOS, else Windows' own code fonts. */
+export const DEFAULT_EDITOR_FONT = "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace";
+/** Earlier defaults, read as today's so a saved copy of one does not count as a custom font. */
+const OLD_DEFAULT_EDITOR_FONTS = ["'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace"];
 
 export const MONOSPACE_FONTS = [
   "Menlo",
@@ -193,6 +195,8 @@ export const MONOSPACE_FONTS = [
   "JetBrains Mono",
   "Fira Code",
   "Cascadia Code",
+  "Cascadia Mono",
+  "Consolas",
   "Source Code Pro",
   "IBM Plex Mono",
   "Hack",
@@ -782,7 +786,10 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),
       0.05,
     ),
-    editorFontFamily: typeof data.editorFontFamily === "string" ? normalizeFontFamily(data.editorFontFamily) : DEFAULT_EDITOR_FONT,
+    editorFontFamily:
+      typeof data.editorFontFamily === "string" && !OLD_DEFAULT_EDITOR_FONTS.includes(data.editorFontFamily)
+        ? normalizeFontFamily(data.editorFontFamily)
+        : DEFAULT_EDITOR_FONT,
     editorFontWeight: roundTo(
       pickNumber(data.editorFontWeight, defaultPreferences.editorFontWeight, ...EDITOR_FONT_WEIGHT_RANGE),
       100,

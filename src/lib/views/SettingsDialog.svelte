@@ -49,6 +49,8 @@
   import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
+  import { platformName } from "$lib/update/releases";
+  import { revealLabel } from "$lib/views/files/reveal";
   import { MCP_PORT_RANGE, parseMcpPort } from "$lib/stores/settingsData";
   import GitHubSignInForm from "./github/GitHubSignInForm.svelte";
   import ColorThemePicker from "./settings/ColorThemePicker.svelte";
@@ -2062,7 +2064,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Drop files to type their paths</span>
-              <span class="hint">Dropping files from Finder on a terminal types their paths, quoted for the shell.</span>
+              <span class="hint">Dropping files on a terminal types their paths, quoted for the shell.</span>
             </div>
             <input
               type="checkbox"
@@ -2350,7 +2352,7 @@
                 <span>Log file</span>
                 <code class="path selectable">{memoryLog.status.path}</code>
               </div>
-              <button class="btn small" onclick={() => void revealMemoryLog()}>Reveal in Finder</button>
+              <button class="btn small" onclick={() => void revealMemoryLog()}>{revealLabel(platformName(navigator.userAgent))}</button>
             </div>
           {/if}
         {:else if section === "updates"}

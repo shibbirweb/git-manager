@@ -329,8 +329,8 @@ pub fn remove(repo_path: &str, submodule_path: &str, envs: Envs) -> AppResult<()
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::*;
+    use crate::test_support::UiText;
     use crate::git::status;
     use crate::test_support::{git_in, BareRemote, TestDir, TestRepo};
 

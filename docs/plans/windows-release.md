@@ -100,3 +100,9 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   `C:/` tab path; the conflict demo script tests and the two cancel tests are ignored on Windows with a reason
   (cancel needs a Job Object: beta list). Not understood yet (messages cut off): the MCP CLI tests, the recorder,
   identity includes, scripts, workspace files, stdin staging. Read them in the next run.
+- Step 5, started: Cascadia Mono and Consolas in the code font list (`app.css`,
+  `DEFAULT_EDITOR_FONT`; the earlier default loads as the new one), the memory log button uses `revealLabel`, and
+  the terminal drop hint no longer says Finder.
+- Single instance: `tauri-plugin-single-instance` on Windows only (not for the merge tool);
+  `on_second_launch` opens the folder or workspace file of a second start, or focuses the window showing it.
+  Needs a manual check on Windows.

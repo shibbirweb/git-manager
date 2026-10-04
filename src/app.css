@@ -5,7 +5,7 @@
 :root {
   --font-ui: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
   /* JetBrains Mono when installed, else VS Code's default; the Settings dialog can change it. */
-  --font-mono: "JetBrains Mono", Menlo, Monaco, "Courier New", monospace;
+  --font-mono: "JetBrains Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Courier New", monospace;
   --ui-size: 13px;
   --code-size: 13px;
   --radius: 6px;

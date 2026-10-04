@@ -47,7 +47,18 @@ pub fn run() {
     }
     let launch = LaunchMode::from_args(&args);
 
-    let app = tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // Registered first, as the plugin asks. Never for the merge tool: `git mergetool` starts it next to
+    // the running app on purpose.
+    #[cfg(windows)]
+    let builder = if launch.is_mergetool() {
+        builder
+    } else {
+        builder.plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+            commands::window::on_second_launch(app, &args, &cwd);
+        }))
+    };
+    let app = builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(launch))

@@ -11,6 +11,10 @@ A Windows program built as a GUI app has no console. When it starts a console pr
 - `config::home_dir` reads `USERPROFILE` first on Windows, then `HOME`. `HOME` is usually unset there, and when Git Bash sets it, an app started from the Start menu does not see it, so the app and the command line tool would use different config folders. The test sandbox in `test_support.rs` moves both.
 - `git::cli::user_path` asks the login shell for `PATH` on macOS and Linux, because apps started from Finder get a short one. On Windows the app already gets the user's full `PATH`, so it is used as it is.
 
+## One copy at a time
+
+On macOS, opening the app again brings the running copy forward. Windows starts a new process for every launch, and two copies would share `state.json` and the MCP port. So on Windows, `lib.rs` registers `tauri-plugin-single-instance` first. A second start hands its arguments to the running app and exits. `commands::window::on_second_launch` then opens the folder or workspace file it names (`windows::open_for_arguments`, resolved against the folder it was started in), or focuses the window that shows it already. With nothing to open, the last focused window comes forward. The merge tool never registers the plugin, because `git mergetool` starts it next to the running app on purpose, and `git-manager cli` exits before the app is built.
+
 ## Paths
 
 Absolute paths always use `/`, on Windows too (`C:/Users/me/repo`), so the page's path helpers work the same everywhere. On Windows, `canonicalize` returns `\\?\C:\...`, which git cannot use, and `Path::join` adds `\`. So:

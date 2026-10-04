@@ -220,8 +220,8 @@ pub async fn untrack_files(repo_path: String, file_paths: Vec<String>) -> AppRes
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::*;
+    use crate::test_support::UiText;
     use crate::test_support::TestRepo;
 
     fn strings(values: &[&str]) -> Vec<String> {

@@ -280,8 +280,8 @@ pub fn write_identity(
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::*;
+    use crate::test_support::UiText;
     use crate::test_support::TestDir;
 
     /// A repository with no identity at all and its own empty global config file.

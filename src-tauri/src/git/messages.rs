@@ -116,8 +116,8 @@ pub fn commit_template(repo_path: &str) -> AppResult<Option<String>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::*;
+    use crate::test_support::UiText;
     use crate::test_support::TestRepo;
 
     #[test]

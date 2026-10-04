@@ -118,8 +118,8 @@ impl AppState {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::UiText;
     use super::LaunchMode;
+    use crate::test_support::UiText;
     use crate::paths::RealPath;
 
     fn args(values: &[&str]) -> Vec<String> {
