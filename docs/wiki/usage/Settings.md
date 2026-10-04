@@ -10,7 +10,7 @@ Settings change how Git Manager looks and behaves, apply at once and are saved. 
 
 Settings opens on **Appearance**. The **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
 
-The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, **Terminal**, **GitHub**, **Automation**, **Updates**, **Settings Files** and **About**. Press Esc or click the x to close. Drag the title to move the dialog; double-click it to center it.
+The sections are on the left, with a [search field](Settings-Search.md) above them. Press Esc or click the x to close. Drag the title to move the dialog; double-click it to center it.
 
 **Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). Panel choices and sizes live in `state.json` and are kept.
 

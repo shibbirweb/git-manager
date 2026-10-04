@@ -46,6 +46,7 @@
     { "page": "usage/Navigation.md", "summary": "Back and Forward across files, diffs and commits." },
     { "page": "usage/Menus.md", "summary": "The menu bar: what is in each menu, and how its keys work." },
     { "page": "usage/Settings.md", "summary": "Every setting, where it is saved, and the light and dark themes." },
+    { "page": "usage/Settings-Search.md", "summary": "Type in the Settings search field to find a setting and see its matches highlighted." },
     { "page": "usage/Color-Themes.md", "summary": "Pick a light and a dark color theme from 37, including high contrast ones." },
     { "page": "usage/Settings-Terminal-and-Automation.md", "summary": "Every option of the Terminal, GitHub and Automation sections of Settings." },
     { "page": "usage/Settings-Files.md", "summary": "What is in ~/.gitmanager, editing settings.json by hand, and fixing a broken file." },
@@ -400,6 +401,13 @@
       "usage": "usage/Settings.md",
       "developer": "developer/How-Settings-Work.md",
       "screenshots": ["settings-appearance.png", "settings-editor.png", "settings-merge.png", "settings-layout.png", "settings-files.png", "settings-editor-more.png", "settings-state-error.png", "dark-theme.png", "settings-editor-fonts.png", "settings-automation.png"]
+    },
+    {
+      "id": "settings-search",
+      "title": "Search in Settings",
+      "usage": "usage/Settings-Search.md",
+      "developer": "developer/How-Settings-Search-Works.md",
+      "screenshots": ["settings-search.png"]
     },
     {
       "id": "color-themes",

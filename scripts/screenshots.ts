@@ -2064,6 +2064,14 @@ async function scrollSettingsTo(dialog: Locator, text: string): Promise<void> {
   }, text);
 }
 
+define("settings-search", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await dialog.getByRole("textbox", { name: "Search settings" }).fill("font");
+  await shot.settle();
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+});
+
 define("settings-editor-fonts", async (shot) => {
   const dialog = await openSettings(shot, "Editor");
   await scrollSettingsTo(dialog, "Editor font family");

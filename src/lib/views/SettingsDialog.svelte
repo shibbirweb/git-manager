@@ -1,5 +1,6 @@
 <!-- Settings dialog. Every change is applied immediately and saved to ~/.gitmanager/settings.json. -->
 <script lang="ts">
+  import { onMount, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import {
     CARET_EXTRA_RANGE,
@@ -55,6 +56,11 @@
   import GitIdentitySettings from "./settings/GitIdentitySettings.svelte";
   import KeyboardShortcuts from "./settings/KeyboardShortcuts.svelte";
   import MemoryFlag from "./settings/MemoryFlag.svelte";
+  import { CARET_EXTRA_ROWS, EDITOR_FEATURE_ROWS, SAVE_CLEANUP_ROWS } from "./settings/settingsRows";
+  import { matchingEntries, searchWords, textMatches } from "./settings/settingsSearch";
+  import { clearSettingsMatches, showSettingsMatches } from "./settings/settingsHighlight";
+  import { commandSpecs, currentPlatform } from "$lib/commands/commandRuntime";
+  import { shortcutRows } from "$lib/commands/shortcutSettings";
   import type { GpgSign } from "$lib/types";
   import { GPG_SIGN_CHOICES } from "./changes/commitOptions";
   import { AUTO_SAVE_DELAY_RANGE } from "$lib/editor/autoSave";
@@ -128,6 +134,76 @@
   ];
 
   let section = $state<SettingsSection>(settings.dialogSection);
+
+  // Search: the section list keeps the sections with a match and the open one highlights them.
+  let searchQuery = $state("");
+  let searchInput = $state<HTMLInputElement | null>(null);
+  let rowsEl = $state<HTMLDivElement | null>(null);
+  const shortcutPlatform = currentPlatform();
+  const shortcutSpecs = commandSpecs(shortcutPlatform);
+  const sectionLabels = Object.fromEntries(sections.map((item) => [item.id, item.label])) as Record<SettingsSection, string>;
+  const searchTerms = $derived(searchWords(searchQuery));
+  const searching = $derived(searchTerms.length > 0);
+  const foundEntries = $derived(matchingEntries(searchTerms, sectionLabels));
+  /** Commands the Keyboard Shortcuts list shows for this search. */
+  const foundShortcuts = $derived(
+    searching
+      ? shortcutRows(shortcutSpecs, settings.keybindings, shortcutPlatform, { query: searchQuery, keys: null, changedOnly: false }).length
+      : 0,
+  );
+  const visibleSections = $derived(
+    searching
+      ? sections.filter(
+          (item) =>
+            textMatches(item.label, searchTerms) ||
+            foundEntries.some((entry) => entry.section === item.id) ||
+            (item.id === "keyboard" && foundShortcuts > 0),
+        )
+      : sections,
+  );
+
+  /** Nothing matches anywhere, so the open section has nothing to show. */
+  const sectionUnmatched = $derived(searching && !visibleSections.some((item) => item.id === section));
+
+  // Stay on the open section while it still matches; otherwise show the first one that does.
+  $effect(() => {
+    const first = visibleSections[0];
+    if (first && !visibleSections.some((item) => item.id === untrack(() => section))) {
+      section = first.id;
+    }
+  });
+
+  let lastScrolled = "";
+  $effect(() => {
+    const rootEl = rowsEl;
+    const entries = foundEntries.filter((entry) => entry.section === section);
+    const words = searchTerms;
+    const scrollKey = `${section}\n${searchQuery}`;
+    if (!rootEl || !searching) {
+      clearSettingsMatches(rootEl);
+      lastScrolled = "";
+      return;
+    }
+    const show = (): void => {
+      showSettingsMatches(rootEl, entries, words);
+    };
+    show();
+    if (lastScrolled !== scrollKey) {
+      lastScrolled = scrollKey;
+      rootEl.scrollTop = 0;
+    }
+    // Rows come and go as switches change (a sub-row shows when its switch turns on).
+    const observer = new MutationObserver(show);
+    observer.observe(rootEl, { childList: true, subtree: true, characterData: true });
+    return () => {
+      observer.disconnect();
+    };
+  });
+  $effect(() => () => clearSettingsMatches(null));
+
+  onMount(() => {
+    searchInput?.focus();
+  });
 
   /** The shell list is asked for the first time the Terminal section shows. */
   let shellsLoaded = $state(false);
@@ -312,46 +388,6 @@
     mcpStore.openToolsDialog();
   }
 
-  /** Sublime Text's caret_extra_top and caret_extra_bottom. */
-  const caretExtras: { key: "editorCaretExtraTop" | "editorCaretExtraBottom"; label: string; hint: string }[] = [
-    { key: "editorCaretExtraTop", label: "Caret extra top", hint: "Pixels the cursor reaches above the text, so it is easier to see." },
-    { key: "editorCaretExtraBottom", label: "Caret extra bottom", hint: "Pixels the cursor reaches below the text." },
-  ];
-
-  /** The IDE features of the editor (src/lib/editor/features.ts), each a switch. */
-  const editorFeatureRows: {
-    key:
-      | "editorAutoCloseBrackets"
-      | "editorCompletion"
-      | "editorFoldGutter"
-      | "editorIndentGuides"
-      | "editorHighlightWord"
-      | "editorScrollPastEnd"
-      | "editorColumnSelection"
-      | "editorStickyScroll"
-      | "editorMinimap"
-      | "editorBracketPairColors"
-      | "editorMatchBrackets";
-    label: string;
-    hint: string;
-  }[] = [
-    { key: "editorAutoCloseBrackets", label: "Auto-close brackets and quotes", hint: "Typing ( [ { or a quote adds the closing one." },
-    {
-      key: "editorCompletion",
-      label: "Code completion",
-      hint: "Suggest words from the file and the language's keywords. Ctrl+Space opens the list; Enter or Tab accepts.",
-    },
-    { key: "editorFoldGutter", label: "Fold arrows", hint: "Arrows beside the line numbers fold and unfold blocks in the file editor." },
-    { key: "editorIndentGuides", label: "Indent guides", hint: "Faint lines at each indent level, also in diffs and the merge tool." },
-    { key: "editorHighlightWord", label: "Highlight the word at the cursor", hint: "Mark the other uses of that word." },
-    { key: "editorScrollPastEnd", label: "Scroll past the end", hint: "Scroll the last line up to the top of the file editor." },
-    { key: "editorColumnSelection", label: "Column selection", hint: "Option+drag selects a rectangle of text." },
-    { key: "editorStickyScroll", label: "Sticky scroll", hint: "Keep the lines of the blocks you are in pinned at the top of the file editor. Click one to jump to it." },
-    { key: "editorMinimap", label: "Minimap", hint: "A small picture of the whole file beside the scrollbar of the file editor." },
-    { key: "editorBracketPairColors", label: "Bracket pair colors", hint: "Color brackets by how deep they are nested, also in diffs and the merge tool." },
-    { key: "editorMatchBrackets", label: "Highlight matching brackets", hint: "Mark the bracket that pairs with the one at the cursor." },
-  ];
-
   /** Margin column being typed; applied on Enter or when the field loses focus. */
   let rulerDraft = $state<number | null>(settings.editorRulerColumn || DEFAULT_RULER_COLUMN);
   $effect(() => {
@@ -458,16 +494,6 @@
     }
   }
 
-  const saveCleanupRows: { key: "trimTrailingWhitespace" | "insertFinalNewline" | "trimFinalNewlines"; label: string; hint: string }[] = [
-    {
-      key: "trimTrailingWhitespace",
-      label: "Trim trailing whitespace",
-      hint: "Remove spaces and tabs at the end of lines. Markdown keeps two spaces at a line end, since they make a line break there.",
-    },
-    { key: "insertFinalNewline", label: "Insert final newline", hint: "End the file with a newline when it has none." },
-    { key: "trimFinalNewlines", label: "Trim final newlines", hint: "Remove blank lines after the last line of text." },
-  ];
-
   function set<K extends keyof Preferences>(key: K, value: Preferences[K]): void {
     settings.setPreference(key, value);
   }
@@ -562,7 +588,18 @@
     }
   }
 
+  function clearSearch(): void {
+    searchQuery = "";
+    searchInput?.focus();
+  }
+
   function onKeydown(event: KeyboardEvent): void {
+    // Escape empties the search first, then closes the dialog.
+    if (event.key === "Escape" && !dialogs.active && !event.defaultPrevented && event.target === searchInput && searchQuery !== "") {
+      event.preventDefault();
+      clearSearch();
+      return;
+    }
     if (event.key === "Escape" && !dialogs.active && !event.defaultPrevented) {
       event.preventDefault();
       close();
@@ -596,10 +633,29 @@
       >
         Settings
       </h2>
-      {#each sections as item (item.id)}
+      <div class="search">
+        <span class="magnifier"><Icon name="search" size={13} /></span>
+        <input
+          bind:this={searchInput}
+          bind:value={searchQuery}
+          type="text"
+          placeholder="Search settings"
+          aria-label="Search settings"
+          spellcheck="false"
+          autocomplete="off"
+        />
+        {#if searchQuery !== ""}
+          <button class="clear" onclick={clearSearch} aria-label="Clear search" title="Clear">
+            <Icon name="x" size={12} />
+          </button>
+        {/if}
+      </div>
+      {#each visibleSections as item (item.id)}
         <button class="nav-item" class:active={section === item.id} onclick={() => (section = item.id)}>
           {item.label}
         </button>
+      {:else}
+        <div class="nav-empty">Nothing found</div>
       {/each}
       <div class="nav-spacer"></div>
       <button class="nav-item reset" onclick={reset}>Reset to Defaults</button>
@@ -645,7 +701,10 @@
         </div>
       {/if}
 
-      <div class="rows">
+      {#if sectionUnmatched}
+        <p class="search-empty">No settings match "{searchQuery.trim()}".</p>
+      {/if}
+      <div class="rows" class:searching class:unmatched={sectionUnmatched} bind:this={rowsEl}>
         {#if section === "appearance"}
           <div class="row">
             <div class="label">
@@ -1050,7 +1109,7 @@
               onchange={(event) => set("editorCursorSmoothCaret", event.currentTarget.checked)}
             />
           </label>
-          {#each caretExtras as extra (extra.key)}
+          {#each CARET_EXTRA_ROWS as extra (extra.key)}
             <div class="row">
               <div class="label">
                 <span>{extra.label}</span>
@@ -1074,7 +1133,7 @@
           {/each}
           <h4 class="group-title">Editing features</h4>
           <p class="group-hint">Turning a feature off removes it from open editors and frees its memory.</p>
-          {#each editorFeatureRows as row (row.key)}
+          {#each EDITOR_FEATURE_ROWS as row (row.key)}
             <label class="row toggle-row">
               <div class="label">
                 <span>{row.label}</span>
@@ -1296,7 +1355,7 @@
               />
             </div>
           {/if}
-          {#each saveCleanupRows as row (row.key)}
+          {#each SAVE_CLEANUP_ROWS as row (row.key)}
             <label class="row toggle-row">
               <div class="label">
                 <span>{row.label}</span>
@@ -2014,7 +2073,7 @@
             />
           </label>
         {:else if section === "keyboard"}
-          <KeyboardShortcuts />
+          <KeyboardShortcuts filter={foundShortcuts > 0 ? searchQuery : ""} />
         {:else if section === "github"}
           <div class="row stacked">
             <div class="label">
@@ -2413,6 +2472,81 @@
   h2 {
     margin: 0 8px 12px;
     font-size: 15px;
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    margin: 0 0 8px;
+    padding: 0 6px 0 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--panel);
+  }
+
+  .search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+
+  .magnifier {
+    flex: none;
+    display: flex;
+    color: var(--text-faint);
+  }
+
+  .search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+  }
+
+  .search .clear {
+    flex: none;
+    display: flex;
+    padding: 2px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .search .clear:hover {
+    background: var(--hover);
+  }
+
+  .nav-empty {
+    padding: 6px 10px;
+    color: var(--text-dim);
+  }
+
+  /* Blocks the search does not keep (settingsHighlight.ts sets the attribute). */
+  .rows.searching :global([data-search-hidden]) {
+    display: none;
+  }
+
+  .rows.unmatched {
+    visibility: hidden;
+  }
+
+  .search-empty {
+    margin: 4px 22px 0;
+    color: var(--text-dim);
+  }
+
+  /* The Custom Highlight API paints matches without touching the rows. */
+  :global(::highlight(settings-search)) {
+    background-color: color-mix(in srgb, var(--warning) 40%, transparent);
+    color: inherit;
   }
 
   .nav-item {

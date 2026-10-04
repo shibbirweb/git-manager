@@ -20,6 +20,8 @@
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
 
+  let { filter = "" }: { filter?: string } = $props();
+
   const platform = currentPlatform();
   const mac = platform === "macos";
   const specs = commandSpecs(platform);
@@ -31,6 +33,10 @@
   let searchText = $state("");
   let changedOnly = $state(false);
   let searchInput = $state<HTMLInputElement | null>(null);
+  // The settings search fills the field; typing here afterwards still works.
+  $effect(() => {
+    query = filter;
+  });
 
   /** The command whose keys are being recorded. */
   let editingId = $state<CommandId | null>(null);

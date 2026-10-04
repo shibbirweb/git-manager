@@ -148,6 +148,6 @@ The other Layout choices are in `state.json`, below.
 
 ## Keeping this page in sync
 
-- A new preference goes in `Preferences`, `defaultPreferences`, `parsePreferences`, the store's field and `preferences()`, then in this page, [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md).
+- A new preference goes in `Preferences`, `defaultPreferences`, `parsePreferences`, the store's field and `preferences()`, then in this page, [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md). Its row in the dialog needs an entry in `SETTINGS_SEARCH_INDEX` ([How search in Settings works](How-Settings-Search-Works.md)).
 - A new state key goes in `UiState`, `STATE_KEYS`, `parseState`, `stateToJson` and the store's `uiState()`.
 - `settingsData.test.ts` should cover its validation.
