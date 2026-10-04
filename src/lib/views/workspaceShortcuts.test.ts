@@ -29,7 +29,7 @@ function press(key: string, code: string, modifiers: Partial<ShortcutKey> = {}):
 
 describe("workspaceShortcut", () => {
   it("maps the Cmd shortcuts", () => {
-    expect(workspaceShortcut(press("b", "KeyB", { metaKey: true }), idle, mac)).toBe("toggleSidebar");
+    expect(workspaceShortcut(press("b", "KeyB", { metaKey: true }), idle, mac)).toBe("toggleExplorer");
     // The Markdown editors make text bold with Cmd+B and handle it first.
     expect(workspaceShortcut(press("b", "KeyB", { metaKey: true, defaultPrevented: true }), idle, mac)).toBeNull();
     expect(workspaceShortcut(press("G", "KeyG", { metaKey: true, shiftKey: true }), idle, mac)).toBe("showChanges");
@@ -93,7 +93,7 @@ describe("workspaceShortcut", () => {
   });
 
   it("uses Ctrl for Cmd on Windows and Linux, and only there", () => {
-    expect(workspaceShortcut(press("b", "KeyB", { ctrlKey: true }), idle, windows)).toBe("toggleSidebar");
+    expect(workspaceShortcut(press("b", "KeyB", { ctrlKey: true }), idle, windows)).toBe("toggleExplorer");
     expect(workspaceShortcut(press("G", "KeyG", { ctrlKey: true, shiftKey: true }), idle, windows)).toBe("showChanges");
     expect(workspaceShortcut(press("P", "KeyP", { ctrlKey: true, shiftKey: true }), idle, windows)).toBe("commandPalette");
     // Ctrl+B is the cursor's back key in a macOS text field.
@@ -104,7 +104,7 @@ describe("workspaceShortcut", () => {
 
   it("matches Option+Cmd+B by the physical key", () => {
     // Option turns B into another character on macOS.
-    expect(workspaceShortcut(press("∫", "KeyB", { metaKey: true, altKey: true }), idle, mac)).toBe("toggleExplorer");
+    expect(workspaceShortcut(press("∫", "KeyB", { metaKey: true, altKey: true }), idle, mac)).toBe("toggleSidebar");
     expect(workspaceShortcut(press("∫", "KeyB", { metaKey: true, altKey: true, shiftKey: true }), idle, mac)).toBeNull();
   });
 
@@ -166,8 +166,8 @@ describe("workspaceShortcut", () => {
 
 describe("windowCommand with custom shortcuts", () => {
   it("follows a changed or removed key", () => {
-    const keys = { ...mac, overrides: { "view.sidebar": "CmdOrCtrl+Shift+B", "view.log": null } };
-    expect(windowCommand(press("B", "KeyB", { metaKey: true, shiftKey: true }), idle, keys)?.id).toBe("view.sidebar");
+    const keys = { ...mac, overrides: { "view.filesPanel": "CmdOrCtrl+Shift+B", "view.log": null } };
+    expect(windowCommand(press("B", "KeyB", { metaKey: true, shiftKey: true }), idle, keys)?.id).toBe("view.filesPanel");
     expect(windowCommand(press("b", "KeyB", { metaKey: true }), idle, keys)).toBeNull();
     expect(windowCommand(press("L", "KeyL", { metaKey: true, shiftKey: true }), idle, keys)).toBeNull();
   });

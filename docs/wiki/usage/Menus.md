@@ -31,7 +31,7 @@ On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Ed
 
 A tick shows what is on screen now.
 
-- **Changes**, **Branches and Stashes** (Shift+Cmd+E), **Scripts**, **Log** (Shift+Cmd+L), **Files Panel** (Option+Cmd+B), **Sidebar** (Cmd+B) and **Terminal** (Ctrl+\`).
+- **Changes**, **Branches and Stashes** (Shift+Cmd+E), **Scripts**, **Log** (Shift+Cmd+L), **Files Panel** (Cmd+B), **Sidebar** (Option+Cmd+B) and **Terminal** (Ctrl+\`).
 - **Git Console** shows only while it is turned on in Settings, Git. See [Git Console](Git-Console.md).
 - **Left Activity Bar** and **Right Activity Bar** show or hide the icon strips at the window edges.
 - **File Icons** picks **No Icons**, **Minimal** or **Material Icons** for the file lists. See [File Icons](File-Icons.md).

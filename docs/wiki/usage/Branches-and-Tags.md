@@ -7,7 +7,7 @@ A branch is a separate line of work, so you can try something without touching `
 - Click the branch icon in the left activity bar (**Branches and Stashes**).
 - Or press Shift+Cmd+E.
 
-The title bar of the sidebar has **Refresh**, and an **X** that hides the sidebar (Cmd+B does the same).
+The title bar of the sidebar has **Refresh**, and an **X** that hides the sidebar (Option+Cmd+B does the same).
 
 ![Branches sidebar](../images/branches-panel.png)
 

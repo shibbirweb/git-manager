@@ -124,6 +124,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Cmd+B (Ctrl+B on Windows and Linux) now shows or hides the Files panel, and Option+Cmd+B (Ctrl+Alt+B) the left sidebar; the two keys swapped. A key you set yourself in Settings > Keyboard Shortcuts stays as it is.
 - The Branches and Stashes and Scripts panels have a title bar like Changes and Files, with Refresh and an X that hides the sidebar (Scripts keeps Collapse All there too). The Log toolbar has an X that hides the Log.
 - The Discard changes button uses the same hooked arrow as VS Code, in the Changes sidebar, the Changes tab and the diff's line actions.
 - Search Everywhere: the All tab lists Files first, then Classes and Symbols, so Enter right after typing opens the best matching file.

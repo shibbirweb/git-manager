@@ -70,7 +70,7 @@ A single click calls `repoStore.openFile(path)`, which opens a preview tab. A do
 
 A deleted file only gets Show in Changes and the copy items. Files stored in Git LFS get an "LFS" tag: while the panel is open, `lfsStore.follow` reads each repository's LFS files once per status refresh.
 
-The panel is shown by `settings.explorerOpen`. The Files icon in `RightActivityBar.svelte` and Option+Cmd+B call `settings.toggleExplorer()`.
+The panel is shown by `settings.explorerOpen`. The Files icon in `RightActivityBar.svelte` and Cmd+B call `settings.toggleExplorer()`.
 
 ## Where the code lives
 
@@ -81,7 +81,7 @@ The panel is shown by `settings.explorerOpen`. The Files icon in `RightActivityB
 | `src/lib/views/files/reveal.ts` | `revealLabel`, `terminalFolderFor` |
 | `src/lib/views/files/locate.ts` | `foldersToOpen`, `centeredScrollTop` for Select Opened File |
 | `src/lib/views/RightActivityBar.svelte` | The Files toggle on the right edge |
-| `src/lib/views/Workspace.svelte`, `workspaceShortcuts.ts` | Panel widths and the Option+Cmd+B shortcut |
+| `src/lib/views/Workspace.svelte`, `workspaceShortcuts.ts` | Panel widths and the Cmd+B shortcut |
 | `src/lib/ui/ResizeHandle.svelte` | The drag handle that resizes the side panels |
 | `src-tauri/src/commands/files.rs` | `list_directory` and `read_worktree_file` |
 | `src-tauri/src/git/files.rs` | `list_dir`, ignore checks, `read_file` |

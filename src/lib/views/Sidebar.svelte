@@ -234,7 +234,7 @@
 </script>
 
 <div class="sidebar-view">
-  <PanelHead title="Branches and Stashes" hideTitle="Hide (Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
+  <PanelHead title="Branches and Stashes" hideTitle="Hide (Option+Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
     <button
       class="icon-btn small"
       onclick={() => {

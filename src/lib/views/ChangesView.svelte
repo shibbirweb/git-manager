@@ -127,7 +127,7 @@
         <Icon name="refresh" size={13} />
       </button>
     {/if}
-    <button class="icon-btn small" onclick={() => settings.setLeftPanel(null)} title="Hide (Cmd+B)" aria-label="Hide changes">
+    <button class="icon-btn small" onclick={() => settings.setLeftPanel(null)} title="Hide (Option+Cmd+B)" aria-label="Hide changes">
       <Icon name="x" size={14} />
     </button>
   </div>

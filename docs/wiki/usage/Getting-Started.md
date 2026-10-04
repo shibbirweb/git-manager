@@ -40,18 +40,18 @@ From top to bottom and left to right:
   - Then the active repository and the number of repositories found. It shows when the workspace holds more than one repository, or when the repository is not the folder itself.
   - Then the current branch, with how many commits you can push or pull. Click it to switch branches.
   - On the right: two buttons that show or hide the left and right activity bars, a light and dark theme toggle, and Settings (Cmd+,). While git is working, a spinner and its progress line show up here too.
-- **Left activity bar** (the thin icon strip on the left edge). Its icons pick what the left sidebar shows: **Changes** (Shift+Cmd+G, with a badge counting your changed files), **Branches and Stashes** (Shift+Cmd+E) and the **Log** (Shift+Cmd+L, the commit history, which opens in the middle). At the bottom of the strip, **Scripts** lists the scripts of your projects (see [Scripts](Scripts.md)) and **Terminal** (Ctrl+`) opens the bottom panel. Click the active icon again to hide its view. Cmd+B hides or shows the left sidebar.
+- **Left activity bar** (the thin icon strip on the left edge). Its icons pick what the left sidebar shows: **Changes** (Shift+Cmd+G, with a badge counting your changed files), **Branches and Stashes** (Shift+Cmd+E) and the **Log** (Shift+Cmd+L, the commit history, which opens in the middle). At the bottom of the strip, **Scripts** lists the scripts of your projects (see [Scripts](Scripts.md)) and **Terminal** (Ctrl+`) opens the bottom panel. Click the active icon again to hide its view. Option+Cmd+B hides or shows the left sidebar.
 - **Left sidebar**. Changes shows your edited files and the commit box. Branches and Stashes shows branches, tags and stashes.
 - **Editor area** (the middle). It holds tabs for open files, diffs, commits and terminals. The Log also opens here. When nothing is open, it shows shortcuts to get started (see [Editor and Tabs](Editor-and-Tabs.md)).
 - **Bottom panel**, under the editor. Its tabs are **Terminal** (see [Terminal](Terminal.md)), **Run** (the output of scripts, once one ran), **Git Console** (the git commands the app ran, when turned on in Settings, Git, see [Git Console](Git-Console.md)) and **Shelf** (see [Shelf](Shelf.md)). Ctrl+` shows or hides it.
-- **Right sidebar** with the **Files panel**, a tree of every file in the workspace. The right activity bar has one icon to show or hide it (Option+Cmd+B).
+- **Right sidebar** with the **Files panel**, a tree of every file in the workspace. The right activity bar has one icon to show or hide it (Cmd+B).
 - **Status bar** (the bottom line). It shows the repository, branch and number of changes of what you are looking at, the cursor position, update notices, Star and feedback buttons, and the app's memory use. See [Status Bar and Help](Status-Bar-and-Help.md).
 
 You can drag the edge between a sidebar or the bottom panel and the editor to resize it. Double-click the edge to put it back to its normal size.
 
 ### Hide the activity bars
 
-The two layout buttons next to the theme toggle hide or show the activity bars (the filled side shows a visible bar), like **View > Left Activity Bar** and **View > Right Activity Bar**. The sidebars stay usable with their keys, such as Cmd+B and Option+Cmd+B.
+The two layout buttons next to the theme toggle hide or show the activity bars (the filled side shows a visible bar), like **View > Left Activity Bar** and **View > Right Activity Bar**. The sidebars stay usable with their keys, such as Option+Cmd+B and Cmd+B.
 
 ## Your first commit
 

@@ -9,7 +9,7 @@ The Files panel on the right is a tree of every file in your workspace. Use it t
 ## Show or hide it
 
 - Click the tree icon in the thin bar on the right edge of the window.
-- Or press Option+Cmd+B.
+- Or press Cmd+B.
 - Or click the x at the top of the panel.
 
 Settings, Layout also has a **Files panel** switch. Drag the panel's left edge to make it wider, and double-click that edge to reset its width.

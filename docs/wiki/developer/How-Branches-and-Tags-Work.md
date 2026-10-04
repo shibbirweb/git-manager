@@ -10,7 +10,7 @@ Switching, creating and merging branches is the daily bread of Git. People also 
 
 The panel is `Sidebar.svelte`, opened from the activity bar or Shift+Cmd+E. It shows data that `repoStore` keeps for the **active** repository only: `repoStore.refs` and `repoStore.stashes`. `refreshActive()` reloads both whenever the active repository changes, after every mutation, and when the watcher reports a change inside `.git`.
 
-Its title row is `PanelHead.svelte`, shared with the Scripts panel and styled like the Changes and Files panels: Refresh calls `refreshRepo` for the active repository, and the X hides the sidebar with `settings.setLeftPanel(null)`, the same as Cmd+B.
+Its title row is `PanelHead.svelte`, shared with the Scripts panel and styled like the Changes and Files panels: Refresh calls `refreshRepo` for the active repository, and the X hides the sidebar with `settings.setLeftPanel(null)`, the same as Option+Cmd+B.
 
 ```mermaid
 sequenceDiagram

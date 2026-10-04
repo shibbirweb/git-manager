@@ -302,7 +302,7 @@
 </script>
 
 <div class="scripts-view">
-  <PanelHead title="Scripts" hideTitle="Hide (Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
+  <PanelHead title="Scripts" hideTitle="Hide (Option+Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
     <button class="icon-btn small" title="Collapse All" aria-label="Collapse all" onclick={collapseAll} disabled={sources.length === 0}>
       <Icon name="chevrons-left" size={14} />
     </button>

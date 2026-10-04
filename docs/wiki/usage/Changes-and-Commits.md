@@ -8,7 +8,7 @@ A few words first. **Staging** a file means putting it on the list for the next 
 
 - Click the Changes icon at the top of the left activity bar.
 - Or choose **View > Changes**, or press Shift+Cmd+G while you are not typing in an editor (there it is Find Previous).
-- Press Cmd+B to hide or show the left sidebar.
+- Press Option+Cmd+B to hide or show the left sidebar.
 
 The Changes icon shows the number of changed files, in red while any file has a conflict. The x in the sidebar title hides the sidebar.
 

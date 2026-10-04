@@ -9,7 +9,7 @@
     class="item"
     class:active={settings.explorerOpen}
     onclick={() => settings.toggleExplorer()}
-    title="Files (Option+Cmd+B){settings.explorerOpen ? ', click to hide' : ''}"
+    title="Files (Cmd+B){settings.explorerOpen ? ', click to hide' : ''}"
     aria-label="Files"
     aria-pressed={settings.explorerOpen}
   >
