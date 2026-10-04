@@ -672,4 +672,43 @@
     display: flex;
     opacity: 1;
   }
+
+  /* Islands themes: rounded tabs on the editor color, the active one tinted and outlined, like JetBrains Islands. */
+  :global(html[data-islands]) .tab-strip {
+    align-items: center;
+    gap: 2px;
+    padding: 0 6px;
+    background: var(--editor-bg);
+    border-bottom-color: var(--border);
+  }
+
+  :global(html[data-islands]) .tab-strip.wrap {
+    padding: 4px 6px;
+    row-gap: 4px;
+  }
+
+  :global(html[data-islands]) .tab-strip .tab {
+    height: 26px;
+    margin-bottom: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+  }
+
+  :global(html[data-islands]) .tab-strip .tab.active {
+    background: var(--selected);
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--editor-bg));
+  }
+
+  :global(html[data-islands]) .tab.active::before {
+    display: none;
+  }
+
+  :global(html[data-islands]) .tab-strip.unfocused .tab.active {
+    background: var(--selected-inactive);
+    border-color: var(--border-strong);
+  }
+
+  :global(html[data-islands]) .tab-main {
+    padding-left: 10px;
+  }
 </style>

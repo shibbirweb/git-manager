@@ -155,6 +155,18 @@
     height: 3px;
   }
 
+  /* Islands themes: the handle covers the whole gap between two islands. */
+  :global(html[data-islands]) .handle {
+    width: var(--island-gap);
+    margin: 0 calc(-1 * var(--island-gap));
+  }
+
+  :global(html[data-islands]) .handle.horizontal {
+    width: auto;
+    height: var(--island-gap);
+    margin: calc(-1 * var(--island-gap)) 0;
+  }
+
   /* Keep the resize cursor and stop text selection while dragging. */
   :global(body.resizing-columns),
   :global(body.resizing-columns *) {

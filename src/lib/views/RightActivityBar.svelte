@@ -30,6 +30,13 @@
     border-left: 1px solid var(--border-strong);
   }
 
+  /* Islands themes: a stripe on the window frame, flush with the window edge. */
+  :global(html[data-islands]) .activity {
+    margin-right: calc(-1 * var(--island-gap));
+    background: var(--bg);
+    border-left: none;
+  }
+
   .item {
     position: relative;
     display: flex;

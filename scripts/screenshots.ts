@@ -1986,6 +1986,20 @@ define("color-theme-solarized-light", async (shot) => {
   await shot.save();
 }, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "solarized-light" } }));
 
+define("color-theme-islands-dark", async (shot) => {
+  await waitForColorTheme(shot, "islands-dark");
+  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-islands"));
+  await overview(shot);
+  await shot.save();
+}, () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "islands-dark" } }));
+
+define("color-theme-islands-light", async (shot) => {
+  await waitForColorTheme(shot, "islands-light");
+  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-islands"));
+  await overview(shot);
+  await shot.save();
+}, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light" } }));
+
 define("color-theme-high-contrast", async (shot) => {
   await waitForColorTheme(shot, "high-contrast-dark");
   await shot.page.waitForFunction(() => document.documentElement.getAttribute("data-contrast") === "high");

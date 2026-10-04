@@ -9,6 +9,9 @@
   --ui-size: 13px;
   --code-size: 13px;
   --radius: 6px;
+  /* Islands themes (data-islands on <html>): the space between panels and their corner radius. */
+  --island-gap: 6px;
+  --island-radius: 10px;
 
   --bg: #f7f8fa;
   --panel: #ffffff;

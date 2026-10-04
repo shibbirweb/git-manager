@@ -387,6 +387,13 @@
     display: none;
   }
 
+  /* Islands themes: the bottom panel is its own island. */
+  :global(html[data-islands]) .panel {
+    border-top: none;
+    border-radius: var(--island-radius);
+    overflow: hidden;
+  }
+
   /* About 29 px, like the editor's slim path bar. */
   .head {
     flex: none;

@@ -423,4 +423,29 @@
     display: flex;
     flex-direction: column;
   }
+
+  /* Islands themes: each panel is a rounded island on the window color. The resize
+     handles fill the gaps (ResizeHandle.svelte), so flex gaps do the spacing. */
+  :global(html[data-islands]) .body {
+    gap: var(--island-gap);
+    padding: 0 var(--island-gap) var(--island-gap);
+  }
+
+  :global(html[data-islands]) .sidebar,
+  :global(html[data-islands]) .explorer {
+    border: none;
+    border-radius: var(--island-radius);
+  }
+
+  :global(html[data-islands]) .main,
+  :global(html[data-islands]) .editor-area {
+    gap: var(--island-gap);
+    background: transparent;
+  }
+
+  :global(html[data-islands]) .editor-group {
+    border-radius: var(--island-radius);
+    overflow: hidden;
+    background: var(--panel);
+  }
 </style>

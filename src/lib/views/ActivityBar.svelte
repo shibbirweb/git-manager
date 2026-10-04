@@ -94,6 +94,13 @@
     border-right: 1px solid var(--border-strong);
   }
 
+  /* Islands themes: a stripe on the window frame, flush with the window edge. */
+  :global(html[data-islands]) .activity {
+    margin-left: calc(-1 * var(--island-gap));
+    background: var(--bg);
+    border-right: none;
+  }
+
   .item {
     position: relative;
     display: flex;

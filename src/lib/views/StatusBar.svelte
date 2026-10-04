@@ -337,6 +337,12 @@
     color: var(--text-dim);
   }
 
+  /* Islands themes: the status bar is part of the window frame. */
+  :global(html[data-islands]) .status-bar {
+    border-top: none;
+    background: var(--bg);
+  }
+
   .left,
   .right {
     display: flex;

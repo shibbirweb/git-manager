@@ -227,6 +227,12 @@
     border-bottom: 1px solid var(--border-strong);
   }
 
+  /* Islands themes: the header is part of the window frame. */
+  :global(html[data-islands]) .header {
+    background: var(--bg);
+    border-bottom: none;
+  }
+
   .left,
   .right {
     display: flex;

@@ -12,13 +12,19 @@ export interface ThemeAttributes {
   theme: ColorMode;
   colorTheme: string;
   contrast: "high" | null;
+  islands: boolean;
 }
 
 /** What <html> says about the applied theme; an id of the wrong mode falls back to the mode's default. */
 export function themeAttributes(mode: ColorMode, themeId: string): ThemeAttributes {
   const colorTheme = pickThemeId(themeId, mode);
   const info = themeInfo(colorTheme);
-  return { theme: mode, colorTheme, contrast: info && isHighContrast(info.kind) ? "high" : null };
+  return {
+    theme: mode,
+    colorTheme,
+    contrast: info && isHighContrast(info.kind) ? "high" : null,
+    islands: info?.islands ?? false,
+  };
 }
 
 /** Whether a theme needs the catalog; the defaults come from app.css. */
@@ -57,6 +63,7 @@ function commit(attributes: ThemeAttributes, css: string | null): void {
   setAttribute("data-theme", attributes.theme);
   setAttribute("data-color-theme", attributes.colorTheme);
   setAttribute("data-contrast", attributes.contrast);
+  setAttribute("data-islands", attributes.islands ? "" : null);
 }
 
 /**

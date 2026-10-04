@@ -44,7 +44,7 @@ describe("catalog", () => {
   });
 
   it("covers every color token app.css defines", () => {
-    const appTokens = Object.keys(root).filter((token) => !/^--(font-|ui-size|code-size|radius)/.test(token));
+    const appTokens = Object.keys(root).filter((token) => !/^--(font-|ui-size|code-size|radius|island-)/.test(token));
     expect([...COLOR_TOKENS].sort()).toEqual(appTokens.sort());
   });
 
