@@ -54,11 +54,11 @@ gitGraph
 
 ## CI
 
-`ci.yml` runs two jobs on `macos-latest`, because the app ships for macOS, and a third on Windows.
+`ci.yml` runs two jobs on `macos-latest`, because the app ships for macOS, and the same two on Windows.
 
 - **Frontend:** `bun install --frozen-lockfile`, `bun scripts/version.ts check`, `bun scripts/file-icons.ts --check` (see [How file icons work](How-File-Icons-Work.md)), `bun run check`, `bun run test` and, in the step "Wiki docs are complete", `bun scripts/build-wiki.ts --check`.
 - **Rust:** builds the frontend first (`tauri::generate_context!` embeds it, so it must exist), then `cargo test --locked` and `cargo clippy --locked --all-targets -- -D warnings`.
-- **Windows:** the same checks on `windows-latest`, each running even when an earlier one failed, so one run lists every Windows failure. It must pass like the macOS jobs. See [Windows Support](Windows-Support.md).
+- **Windows:** the same checks on `windows-latest`, in `windows-frontend` and `windows-rust`, which run side by side. A failed check never skips the next one. Both must pass. See [Windows Support](Windows-Support.md).
 
 `--frozen-lockfile` and `--locked` fail when `bun.lock` or `Cargo.lock` is out of date, so always commit them.
 

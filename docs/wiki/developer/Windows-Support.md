@@ -35,7 +35,7 @@ The installer is not signed yet, so Windows SmartScreen warns about an unknown p
 
 ## Code written for Windows
 
-The terminal, the Scripts panel and the command line tool already have Windows paths behind `cfg(windows)` or runtime checks. The `windows` job in `ci.yml` builds and tests them on every pull request.
+The terminal, the Scripts panel and the command line tool already have Windows paths behind `cfg(windows)` or runtime checks. The `windows-rust` job in `ci.yml` builds and tests them on every pull request.
 
 | Where | On Windows |
 | --- | --- |
