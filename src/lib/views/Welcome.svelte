@@ -6,6 +6,7 @@
   import type { RecentEntry } from "./recentEntries";
   import { openRecent, openRecentInNewWindow, pickAndOpenRepo, pickAndOpenWorkspaceFile } from "./repoPicker";
   import { updates } from "$lib/update/updates.svelte";
+  import { openCloneDialog } from "./git/gitMenuActions";
 
   const newWindowKey = platformFromUserAgent(navigator.userAgent) === "macos" ? "Cmd" : "Ctrl";
   const newWindowHint = `${newWindowKey}+click to open in a new window`;
@@ -56,6 +57,10 @@
     <button class="btn primary open" onclick={pickAndOpenRepo}>
       <Icon name="folder" size={15} />
       Open Folder...
+    </button>
+    <button class="btn open clone" onclick={openCloneDialog}>
+      <Icon name="cloud-download" size={15} />
+      Clone Repository...
     </button>
     <div class="links">
     <button class="settings-link" onclick={() => void pickAndOpenWorkspaceFile()}>
@@ -280,6 +285,10 @@
     width: 100%;
     justify-content: center;
     height: 34px;
+  }
+
+  .clone {
+    margin-top: 8px;
   }
 
   h2 {

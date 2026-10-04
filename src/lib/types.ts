@@ -1112,7 +1112,9 @@ export interface McpToolInfo {
   kind: "backend" | "ui";
   readOnly: boolean;
   destructive: boolean;
-  /** Effective state: the user's choice, else on unless destructive. */
+  /** The state until the user switches it: off for destructive tools and those outside the workspace. */
+  defaultEnabled: boolean;
+  /** Effective state: the user's choice, else the default. */
   enabled: boolean;
   inputSchema: Record<string, unknown>;
 }
@@ -1136,6 +1138,12 @@ export interface McpUiResult {
 }
 
 /** Payload of the "mcp-ui-request" event: answer it with mcp_ui_respond. */
+/** clone_repository asks the window to open the clone, in place of its folders or added to them. */
+export interface McpOpenFolderRequest {
+  folderPath: string;
+  mode: "window" | "workspace";
+}
+
 export interface McpUiRequest {
   requestId: number;
   tool: string;

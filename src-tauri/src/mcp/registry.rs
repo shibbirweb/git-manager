@@ -54,11 +54,13 @@ pub fn infos(shared: &Shared) -> Vec<McpToolInfo> {
             kind: ToolKind::Backend,
             read_only: tool.read_only,
             destructive: tool.destructive,
+            default_enabled: tools::starts_on(tool.name, tool.destructive),
             enabled: shared.tool_enabled(tool.name, tool.destructive),
             input_schema: (tool.schema)(),
         })
         .collect();
     infos.extend(shared.ui_tools().into_iter().map(|def| McpToolInfo {
+        default_enabled: tools::starts_on(&def.name, def.destructive),
         enabled: shared.tool_enabled(&def.name, def.destructive),
         name: def.name,
         title: def.title,
@@ -88,6 +90,7 @@ pub fn listed(info: &McpToolInfo) -> Value {
             "gitManager/category": info.category,
             "gitManager/kind": info.kind,
             "gitManager/enabled": info.enabled,
+            "gitManager/defaultEnabled": info.default_enabled,
         },
     })
 }

@@ -63,6 +63,15 @@ const GROUPS: [&[BackendTool]; 8] = [
     recorder::TOOLS,
 ];
 
+/// Tools that reach outside the workspace folders: they start off like the destructive ones.
+const OUTSIDE_WORKSPACE: [&str; 1] = ["clone_repository"];
+
+/// A tool's state until the user switches it: on, unless it is destructive or reaches outside
+/// the workspace.
+pub fn starts_on(tool_name: &str, destructive: bool) -> bool {
+    !destructive && !OUTSIDE_WORKSPACE.contains(&tool_name)
+}
+
 pub fn all() -> impl Iterator<Item = &'static BackendTool> {
     GROUPS.iter().flat_map(|group| group.iter())
 }

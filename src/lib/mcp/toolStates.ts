@@ -4,7 +4,7 @@
 import type { McpToolInfo } from "$lib/types";
 import { defaultToolEnabled, MCP_CATEGORIES } from "./toolDefs";
 
-type ToolSwitch = Pick<McpToolInfo, "name" | "destructive">;
+type ToolSwitch = Pick<McpToolInfo, "name" | "destructive"> & Partial<Pick<McpToolInfo, "defaultEnabled">>;
 
 /** The user's choice when there is one, else the default. */
 export function toolEnabled(tool: ToolSwitch, toolStates: Record<string, boolean>): boolean {

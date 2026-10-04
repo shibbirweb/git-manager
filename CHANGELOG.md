@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Clone Repository... on the welcome screen opens the Clone dialog, so you can start from a repository on GitHub or another server without opening a folder first. Scripts and AI tools can clone too: `git-manager cli clone <url> [folder] [--into <folder>] [--open window|workspace]` and the MCP tool `clone_repository`. The tool starts off, since it writes outside the open folders; turn it on in Help > Available MCP Tools.
 - The Changes tab (click **N changes** in the status bar) can stage, unstage and discard: hover a file for Stage, Unstage and Discard changes, right-click it for more, or use Stage all, Unstage all and Discard all next to **Changed files**. A **staged** or **partly staged** tag shows what is in the next commit.
 - New File, like Sublime Text: File > New File (Cmd+N) opens an empty Untitled tab named after its first line. Cmd+S asks where to save it; saved inside the folder, the tab becomes that file's tab.
 - Remember unsaved changes in Settings > Editor > Saving (on by default): closing the window, quitting, Close Folder and Clear Cache keep the text of Untitled tabs and the unsaved edits of files, without asking, and the tabs come back with them the next time the folder opens. The text is kept in `~/.gitmanager/unsaved` until you save, revert or discard it. Closing a tab yourself still asks.

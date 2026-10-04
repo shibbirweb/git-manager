@@ -20,6 +20,7 @@ When nothing is open you see the welcome screen.
 *The welcome screen with recent workspaces and folders.*
 
 - **Open Folder...** picks any folder. It can be one repository (a project folder that git tracks), a folder with many repositories inside, or a plain folder with no git at all.
+- **Clone Repository...** copies a repository from a server, such as GitHub, into a new folder and can open it right away (see [Clone](Git-Dialogs.md#clone)).
 - **Open Workspace from File...** opens a saved workspace (see [Workspaces](Workspaces.md)).
 - **Recent Workspaces** (saved workspace files and sets of several folders) and **Recent Folders** reopen what you used before. Hover a row and click the x (**Remove from list**) to drop it.
 - **Settings**, **Star on GitHub**, **Report a Bug** and **Request a Feature** are small links under the big button.

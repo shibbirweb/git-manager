@@ -53,7 +53,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 ### The CLI
 
-`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. `mcp/cli.rs` reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. It has `status`, `tools`, `describe`, `call`, `screenshot` and `memory` (which calls `get_memory_usage` every interval and prints one line per sample). Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
+`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. `mcp/cli.rs` reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. It has `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (which calls `get_memory_usage` every interval and prints one line per sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
 
 ### The memory recorder
 
@@ -70,7 +70,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 | `src-tauri/src/mcp/bridge.rs`, `host.rs` | UI calls through the window, events, the macOS screenshot (`screencapture -l`) |
 | `src-tauri/src/mcp/paths.rs`, `token.rs`, `activity.rs` | Path safety, `mcp.json`, the last 50 calls |
 | `src-tauri/src/mcp/cli.rs`, `install.rs` | The command line tool and its link |
-| `src-tauri/src/mcp/tools/` | The 56 backend tools, by area, and the recorder |
+| `src-tauri/src/mcp/tools/` | The 57 backend tools, by area, and the recorder |
 | `src-tauri/src/commands/mcp.rs` | `mcp_*` and `cli_install` / `cli_uninstall` commands |
 | `src/lib/mcp/toolDefs.ts` | The 30 UI tools with their schemas |
 | `src/lib/mcp/bridge.ts`, `handlers.ts` | Answers `mcp-ui-request`; handlers load on the first call |
@@ -92,13 +92,19 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 **Destructive tools start off.** Settings store only the tools that differ from the default, so new tools get the safe default.
 
+**Cloning is the one way out of the workspace, so it starts off.** `clone_repository` must write where nothing is open yet, so it takes any absolute `parentPath`. `tools::starts_on` keeps it off and `McpToolInfo.defaultEnabled` tells the dialog. It only makes a new or empty folder, refuses `transport::address` URLs (`ext::` runs commands), and opens the clone through the `mcp-open-folder` event.
+
 **Two switches.** A user may want scripts in a terminal without giving an AI harness access, or the other way round.
 
 ## Tests
 
-- `src-tauri/src/mcp/tests.rs`: a real server on a free port: protocol versions, JSON-RPC errors and batches, token and Origin checks, keep-alive, switches per client, `mcp.json`, busy and low ports, UI calls with timeouts and no window, paths outside the workspace, git tools over HTTP, and the CLI against the running server.
+- `src-tauri/src/mcp/tests.rs`: a real server on a free port: protocol versions, JSON-RPC errors and batches, token and Origin checks, keep-alive, switches per client, `mcp.json`, busy and low ports, UI calls with timeouts and no window, paths outside the workspace, git tools over HTTP, `clone_repository` (off at first) and the CLI against the running server.
 - Unit tests in `token.rs`, `install.rs`, `paths.rs`, `registry.rs`, `tools/recorder.rs` and `tools/performance.rs`.
 - Vitest: `src/lib/mcp/args.test.ts`, `connect.test.ts`, `fileTools.test.ts`, `menuCommands.test.ts`, `perfModel.test.ts`, `toolDefs.test.ts`, `toolStates.test.ts`.
+
+## Bugs we fixed
+
+The MCP and command line bugs and their fixes are in [MCP and CLI Bugs We Fixed](MCP-and-CLI-Bugs-We-Fixed.md).
 
 ## Keeping this page in sync
 
@@ -106,10 +112,3 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 - `FRONTEND_TOOLS` in `registry.rs` (the test list of UI tool names no backend tool may take) must match `UI_TOOLS` in `toolDefs.ts`; `toolDefs.test.ts` fails when they differ. Keep the tool counts here and on the usage page right too.
 - New commands go in [Commands and Events](Commands-and-Events.md); settings in [How Settings Work](How-Settings-Work.md).
 - Retake `mcp-settings.png`, `mcp-tools-dialog.png` and `mcp-cli-settings.png` when Settings, Automation or the dialog change.
-
-## Bugs we fixed
-
-**The clash check missed `inspect_elements`.**
-- **The issue:** a backend tool could have taken the name `inspect_elements` without a test failing.
-- **Why it happened:** `FRONTEND_TOOLS`, the list the Rust clash test checks, was typed by hand with a fixed length of 23, and nobody added the 24th UI tool to it.
-- **The fix and why we chose it:** the list is now a slice with every UI tool, and a Vitest test in `toolDefs.test.ts` reads `registry.rs` and compares it with the real `UI_TOOLS` names. Reading the Rust file from TypeScript checks the list the app actually registers, not a parse of `toolDefs.ts`.

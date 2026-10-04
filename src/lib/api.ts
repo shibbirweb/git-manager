@@ -98,7 +98,7 @@ import type { CompareSide, FileCompare } from "./types";
 import type { LineAction, LineSelection, LinesOutcome } from "./types";
 import type { BranchComparison, CommitOptions, MergeOptions, RebaseOptions, WorktreeComparison } from "./types";
 import type { Identity, IdentityScope, RecentMessage } from "./types";
-import type { McpActivity, McpStatus, McpToolInfo, McpUiRequest, McpUiResult, McpUiToolDef } from "./types";
+import type { McpActivity, McpOpenFolderRequest, McpStatus, McpToolInfo, McpUiRequest, McpUiResult, McpUiToolDef } from "./types";
 import type { ConfigChangedEvent, WindowOpened } from "./types";
 import type { UnsavedMeta, UnsavedText } from "./types";
 
@@ -665,6 +665,11 @@ export function onGitCommand(handler: (entry: GitCommandEntry) => void): Promise
 /** A tool call for a UI tool; every request must be answered with `api.mcpUiRespond`. */
 export function onMcpUiRequest(handler: (request: McpUiRequest) => void): Promise<UnlistenFn> {
   return listenHere<McpUiRequest>("mcp-ui-request", handler);
+}
+
+/** clone_repository finished and asks this window to open the clone. */
+export function onMcpOpenFolder(handler: (request: McpOpenFolderRequest) => void): Promise<UnlistenFn> {
+  return listenHere<McpOpenFolderRequest>("mcp-open-folder", handler);
 }
 
 /** A tool call finished (MCP or CLI), for the live Recent calls list. */

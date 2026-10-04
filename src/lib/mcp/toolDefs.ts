@@ -445,6 +445,7 @@ export const UI_TOOLS: McpUiToolDef[] = [
 ];
 
 /** Every tool is on unless it is destructive; the user's choices change that. */
-export function defaultToolEnabled(tool: { destructive: boolean }): boolean {
-  return !tool.destructive;
+/** The backend says so for its tools (clone_repository starts off); a UI tool is on unless destructive. */
+export function defaultToolEnabled(tool: { destructive: boolean; defaultEnabled?: boolean }): boolean {
+  return tool.defaultEnabled ?? !tool.destructive;
 }

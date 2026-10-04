@@ -28,6 +28,15 @@ describe("tool switches", () => {
     expect(withToolStates({}, [trash, create], true)).toEqual({ trash_paths: true });
   });
 
+  it("follow the backend's default for a tool that starts off without being destructive", () => {
+    const clone = { name: "clone_repository", title: "Clone", description: "Clones.", category: "Git", readOnly: false, destructive: false, defaultEnabled: false };
+    expect(toolEnabled(clone, {})).toBe(false);
+    expect(toolEnabled(clone, { clone_repository: true })).toBe(true);
+    expect(withToolStates({}, [clone], true)).toEqual({ clone_repository: true });
+    expect(withToolStates({ clone_repository: true }, [clone], false)).toEqual({});
+    expect(changedTools({ clone_repository: true }, [clone, status])).toEqual([clone]);
+  });
+
   it("keep only the choices that differ from the default", () => {
     const off = withToolStates({}, [status], false);
     expect(off).toEqual({ git_status: false });
