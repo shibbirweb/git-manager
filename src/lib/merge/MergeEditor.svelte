@@ -3,7 +3,7 @@
   import { EditorSelection, EditorState, type Extension } from "@codemirror/state";
   import { EditorView } from "@codemirror/view";
   import { onMount } from "svelte";
-  import { baseExtensions, languageFor } from "$lib/editor/setup";
+  import { baseExtensions, editorLanguage } from "$lib/editor/setup";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
@@ -125,7 +125,7 @@
     let cancelled = false;
     let observer: ResizeObserver | null = null;
     void (async () => {
-      const language = await languageFor(doc.path);
+      const language = await editorLanguage(doc.path);
       if (cancelled || !oursHost || !resultHost || !theirsHost) {
         return;
       }

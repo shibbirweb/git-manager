@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { grammarFor, languageFor, languageName } from "./setup";
+import { toggleComment } from "@codemirror/commands";
+import { language, syntaxTree } from "@codemirror/language";
+import { EditorState, type Extension } from "@codemirror/state";
+import { afterEach, describe, expect, it } from "vitest";
+import { commentTokensFor, setSyntaxHighlighting, syntaxHighlightingEnabled } from "./languages";
+import { editorLanguage, grammarFor, languageFor, languageName } from "./setup";
 
 describe("languageName", () => {
   it("names common languages by extension", () => {
@@ -72,5 +76,50 @@ describe("grammarFor", () => {
     const toml = await languageFor("/work/Cargo.toml");
     expect(Array.isArray(toml)).toBe(false);
     expect(await languageFor("/work/LICENSE")).toEqual([]);
+  });
+});
+
+describe("syntax highlighting setting", () => {
+  afterEach(() => {
+    setSyntaxHighlighting(true);
+  });
+
+  function stateFor(doc: string, extension: Extension): EditorState {
+    return EditorState.create({ doc, extensions: extension });
+  }
+
+  function toggled(state: EditorState): string {
+    let result = state.doc.toString();
+    toggleComment({ state, dispatch: (transaction) => (result = transaction.state.doc.toString()) });
+    return result;
+  }
+
+  it("gives editors the grammar while it is on", async () => {
+    expect(syntaxHighlightingEnabled()).toBe(true);
+    const state = stateFor("const a = 1;", await editorLanguage("/work/app.ts"));
+    expect(state.facet(language)?.name).toBe("typescript");
+  });
+
+  it("gives editors only the comment style while it is off", async () => {
+    setSyntaxHighlighting(false);
+    expect(syntaxHighlightingEnabled()).toBe(false);
+    const ts = stateFor("const a = 1;", await editorLanguage("/work/app.ts"));
+    expect(ts.facet(language)).toBeNull();
+    expect(syntaxTree(ts).length).toBe(0);
+    expect(toggled(ts)).toBe("// const a = 1;");
+    expect(toggled(stateFor("x = 1", await editorLanguage("/work/a.py")))).toBe("# x = 1");
+    expect(toggled(stateFor("<p>", await editorLanguage("/work/a.html")))).toBe("<!-- <p> -->");
+    // No comment style: nothing changes.
+    expect(toggled(stateFor("{}", await editorLanguage("/work/a.json")))).toBe("{}");
+    expect(toggled(stateFor("text", await editorLanguage("/work/LICENSE")))).toBe("text");
+  });
+
+  it("knows a comment style for every grammar but JSON", () => {
+    expect(commentTokensFor("/work/a.rs")).toEqual({ line: "//", block: { open: "/*", close: "*/" } });
+    expect(commentTokensFor("/work/a.sql")?.line).toBe("--");
+    expect(commentTokensFor("/work/a.css")).toEqual({ block: { open: "/*", close: "*/" } });
+    expect(commentTokensFor("/work/Dockerfile")?.line).toBe("#");
+    expect(commentTokensFor("/work/a.json")).toBeNull();
+    expect(commentTokensFor("/work/notes.txt")).toBeNull();
   });
 });

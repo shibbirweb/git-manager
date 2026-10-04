@@ -29,6 +29,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `editorLineHeight` | 1.25 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
 | `mouseWheelZoom` | false | boolean | `App.svelte`, `editor/wheelZoom.ts` |
 | `fontLigatures` | false | boolean | `data-ligatures` |
+| `syntaxHighlighting` | true | boolean | `App.svelte`, `editor/languages.ts`, `MarkdownPreview.svelte` |
 | `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `App.svelte`, `editor/indentation.ts` |
 | `detectIndentation` | true | boolean | `App.svelte`, `editor/indentation.ts`, View > Detect Indentation |
 | `renderWhitespace` | `"selection"` | `RENDER_WHITESPACE_CHOICES` | `App.svelte`, `editor/whitespace.ts` |

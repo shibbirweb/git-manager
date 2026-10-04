@@ -158,6 +158,7 @@ class SettingsStore {
   editorFontFamily = $state(initialPreferences.editorFontFamily);
   editorFontWeight = $state(initialPreferences.editorFontWeight);
   fontLigatures = $state(initialPreferences.fontLigatures);
+  syntaxHighlighting = $state(initialPreferences.syntaxHighlighting);
   tabSize = $state(initialPreferences.tabSize);
   detectIndentation = $state(initialPreferences.detectIndentation);
   wordWrap = $state(initialPreferences.wordWrap);
@@ -398,6 +399,7 @@ class SettingsStore {
       editorFontFamily: this.editorFontFamily,
       editorFontWeight: this.editorFontWeight,
       fontLigatures: this.fontLigatures,
+      syntaxHighlighting: this.syntaxHighlighting,
       tabSize: this.tabSize,
       detectIndentation: this.detectIndentation,
       wordWrap: this.wordWrap,

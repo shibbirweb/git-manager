@@ -11,7 +11,7 @@
     { "page": "usage/Pin-Reorder-and-Wrap-Tabs.md", "summary": "Drag tabs into the order you like, pin the ones you always need, and wrap a long row of tabs." },
     { "page": "usage/Single-Tab-Title.md", "summary": "With one file open, see its name centered above the code instead of a lone tab." },
     { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line and the IDE features of the editor." },
-    { "page": "usage/Code-Appearance.md", "summary": "Font weight, line spacing, visible whitespace, the cursor, word wrap, indentation detected from each file, and zoom." },
+    { "page": "usage/Code-Appearance.md", "summary": "Font weight, line spacing, syntax highlighting, visible whitespace, the cursor, word wrap, indentation detected from each file, and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
     { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },

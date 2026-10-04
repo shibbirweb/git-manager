@@ -12,6 +12,7 @@
   import { editorKeyPlan } from "$lib/commands/editorKeyPlan";
   import { runCommand, usesDefaultKeys, windowKeys } from "$lib/commands/commandRuntime";
   import { setRenderWhitespace } from "$lib/editor/whitespace";
+  import { setSyntaxHighlighting } from "$lib/editor/languages";
   import { setWordWrap } from "$lib/editor/wordWrap";
   import { setFileIcons } from "$lib/fileIcons/fileIcons.svelte";
   import { setIndentation } from "$lib/editor/indentation";
@@ -169,6 +170,11 @@
   // And the cursor settings.
   $effect(() => {
     setEditorCursor(cursorOptions(settings));
+  });
+
+  // And syntax highlighting: off, editors drop their grammar and syntax tree.
+  $effect(() => {
+    setSyntaxHighlighting(settings.syntaxHighlighting);
   });
 
   // And word wrap (View > Word Wrap, Option+Z).

@@ -256,6 +256,8 @@ export interface Preferences {
   editorFontWeight: number;
   /** Render programming ligatures (=>, !=, ===) with fonts that provide them. */
   fontLigatures: boolean;
+  /** Color code by its language; off, editors load no grammar and keep no syntax tree. */
+  syntaxHighlighting: boolean;
   tabSize: number;
   /** Indent like the file already does (spaces or tabs, and how many). */
   detectIndentation: boolean;
@@ -450,6 +452,7 @@ export const defaultPreferences: Preferences = {
   editorFontFamily: DEFAULT_EDITOR_FONT,
   editorFontWeight: 400,
   fontLigatures: false,
+  syntaxHighlighting: true,
   tabSize: 4,
   detectIndentation: true,
   wordWrap: false,
@@ -776,6 +779,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
       100,
     ),
     fontLigatures: pickBoolean(data.fontLigatures, defaultPreferences.fontLigatures),
+    syntaxHighlighting: pickBoolean(data.syntaxHighlighting, defaultPreferences.syntaxHighlighting),
     tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize) ? (data.tabSize as number) : defaultPreferences.tabSize,
     detectIndentation: pickBoolean(data.detectIndentation, defaultPreferences.detectIndentation),
     wordWrap: pickBoolean(data.wordWrap, defaultPreferences.wordWrap),

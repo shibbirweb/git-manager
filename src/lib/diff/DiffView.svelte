@@ -4,7 +4,7 @@
   import { EditorView, keymap, panels } from "@codemirror/view";
   import type { ChangeMark } from "$lib/editor/lineDiff";
   import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/scrollMarkers";
-  import { baseExtensions, languageFor } from "$lib/editor/setup";
+  import { baseExtensions, editorLanguage } from "$lib/editor/setup";
   import type { FileDiff, LineAction, LineHunk, LineSelection } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
   import { hunkDiff, SCAN_LIMIT } from "./hunkDiff";
@@ -227,7 +227,7 @@
     token: number,
     scrollKey: string,
   ): Promise<void> {
-    const language = await languageFor(filePath);
+    const language = await editorLanguage(filePath);
     if (token !== buildToken) {
       return;
     }

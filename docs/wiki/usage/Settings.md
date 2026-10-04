@@ -52,8 +52,9 @@ The theme is also in **View > Appearance**. The sun button in the header (**Togg
 | Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. See [Zoom](Code-Appearance.md#zoom). | 13 px |
 | Editor font weight | Thin to Black. See [Font weight](Code-Appearance.md#font-weight). | Regular |
 | Line spacing | Space between lines, 1.0 to 2.5 times the font size. Double-click the slider to reset it. | 1.25 |
-| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane, or pinch. | Off |
-| Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them, such as Fira Code. | Off |
+| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over code, or pinch. | Off |
+| Font ligatures | Draws `=>`, `!=` and `===` as single symbols with fonts such as Fira Code. | Off |
+| Syntax highlighting | Colors code by language. See [Syntax highlighting](Code-Appearance.md#syntax-highlighting). | On |
 | Tab size | Spaces per indent level (2, 4 or 8) when not detected, and the width of a tab. | 4 |
 | Detect indentation | Indent like the file does. Also View > Detect Indentation. See [Indentation](Code-Appearance.md#indentation). | On |
 | Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Code-Appearance.md#render-whitespace). | Selection |

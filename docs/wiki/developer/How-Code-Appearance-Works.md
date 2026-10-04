@@ -1,6 +1,6 @@
 # How code appearance works
 
-This chapter covers the settings that change how code looks in every editor, diff side and merge pane: font weight, line spacing, render whitespace, the current line, indentation, zoom and ligatures. The cursor has its own chapter, [How the Cursor Works](How-the-Cursor-Works.md). The commands and keys are in [How editing code works](How-Editing-Code-Works.md). The user side is in [Code Appearance](../usage/Code-Appearance.md).
+This chapter covers the settings that change how code looks in every editor, diff side and merge pane: font weight, line spacing, syntax highlighting, render whitespace, the current line, indentation, zoom and ligatures. The cursor has its own chapter, [How the Cursor Works](How-the-Cursor-Works.md). The commands and keys are in [How editing code works](How-Editing-Code-Works.md). The user side is in [Code Appearance](../usage/Code-Appearance.md).
 
 ## Why we need it
 
@@ -22,6 +22,8 @@ flowchart LR
 
 **Font weight.** `settings.editorFontWeight` (default 400, from 100 to 900) is validated by `pickNumber` and rounded to a step of 100, and `fontWeightName` gives the style name the slider shows (300 is Light). It works like line spacing: `applyAppearance` writes `--code-weight`, and `editorTheme` (`.cm-scroller`), the sticky scroll header and Markdown code blocks read it. `.tok-heading` and `.tok-strong` in `src/app.css` use `calc(var(--code-weight) + 200)`, so bold text stays bolder than the code around it at every weight.
 
+**Syntax highlighting.** Every editor, diff side and merge pane gets its language from `editorLanguage(filePath)` in `languages.ts`: a `Compartment` holding either the grammar (`languageFor`, a dynamic import) or, with `syntaxHighlighting` off, only `EditorState.languageData` with the file's `commentTokens`, so Toggle Comment still works without a parser. A facet in the compartment remembers the file and which of the two it holds. `setSyntaxHighlighting`, called from an effect in `App.svelte`, swaps the compartment in every registered view; an editor built while the setting changed catches up from its registry plugin. Dropping the grammar drops the language state field and its syntax tree. The Markdown preview's `CodeHighlighter` has `setEnabled`, which clears its parsers and cached HTML and renders again.
+
 **Render whitespace.** `whitespace.ts` has a pure part and a view part. `whitespaceRuns(text, mode)` finds the stretches of spaces and the tabs one line draws for a mode (`none`, `boundary`, `selection`, `trailing`, `all`), and `clipRuns` cuts them to the selection. A ViewPlugin decorates only `view.visibleRanges` with mark decorations: a dotted background for spaces and a drawn arrow for tabs. The text itself never changes, so copying gives real spaces. With `none` the extension adds nothing at all.
 
 The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in a `Set`, and `App.svelte` calls `setRenderWhitespace` from an effect when the setting changes, which reconfigures the compartment in each registered view. Open editors follow at once.
@@ -36,6 +38,8 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 
 | File | What it does |
 | --- | --- |
+| `src/lib/editor/languages.ts` | `editorLanguage`, `setSyntaxHighlighting`, the comment style of each grammar |
+| `src/lib/markdown/highlight.ts` | `CodeHighlighter.setEnabled` for Markdown code blocks |
 | `src/lib/editor/whitespace.ts` | Render whitespace |
 | `src/lib/editor/indentDetect.ts` | `detectIndentation`, pure |
 | `src/lib/editor/indentation.ts` | The editor's tab size and indent unit, `setIndentation`, `editorIndent` |
@@ -53,11 +57,14 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 
 **Detect only on open.** Indentation is read when an editor opens and when a setting changes, not while you type, so the indent unit never jumps under the cursor. Steps into a deeper level count, steps back out do not, because closing several blocks at once makes a step of many levels.
 
+**Syntax highlighting off means no grammar.** Only hiding the colors would keep the parser and its tree, which is where the memory goes, so the switch removes the language itself.
+
 **Only visible lines.** Decorating the whole document would cost memory on big files. The plugin rebuilds on scroll, edits and, in Selection mode, selection changes.
 
 ## Tests
 
 - `src/lib/editor/whitespace.test.ts`: the runs of each mode and clipping to selections.
+- `src/lib/editor/languageName.test.ts`: editors get the grammar or only the comment style, and Toggle Comment works without a grammar. `src/lib/markdown/highlight.test.ts`: code blocks turn plain and come back.
 - `src/lib/editor/activeLine.test.ts`: the highlight shows only without a selection.
 - `src/lib/editor/indentDetect.test.ts`: 2 and 4 spaces, tabs, mixed files, comment stars, alignment and the line limit.
 - `src/lib/stores/settingsData.test.ts` and `src/lib/editor/wheelZoom.test.ts`: setting checks and zoom steps.

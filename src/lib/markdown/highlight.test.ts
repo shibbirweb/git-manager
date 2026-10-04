@@ -45,4 +45,34 @@ describe("code highlighting", () => {
     expect(highlighter.highlight("let x = 1;", "js")).toBe(first);
     expect(highlighter.highlight("plain", "text")).toBeNull();
   });
+
+  it("keeps every block plain while highlighting is off, and loads again when it is on", async () => {
+    const loadParser = vi.fn(async () => javascriptLanguage.parser);
+    const onReady = vi.fn();
+    const highlighter = new CodeHighlighter(loadParser, onReady);
+    await highlighter.preload(["js"]);
+    expect(highlighter.highlight("let x;", "js")).toContain("tok-keyword");
+    expect(highlighter.setEnabled(false)).toBe(true);
+    expect(highlighter.setEnabled(false)).toBe(false);
+    await highlighter.preload(["js"]);
+    expect(highlighter.highlight("let x;", "js")).toBeNull();
+    expect(loadParser).toHaveBeenCalledTimes(1);
+    expect(highlighter.setEnabled(true)).toBe(true);
+    expect(highlighter.highlight("let x;", "js")).toBeNull();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(highlighter.highlight("let x;", "js")).toContain("tok-keyword");
+  });
+
+  it("drops a grammar that finishes loading after highlighting was turned off", async () => {
+    const loadParser = vi.fn(async () => javascriptLanguage.parser);
+    const onReady = vi.fn();
+    const highlighter = new CodeHighlighter(loadParser, onReady);
+    expect(highlighter.highlight("let x;", "js")).toBeNull();
+    highlighter.setEnabled(false);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onReady).not.toHaveBeenCalled();
+  });
 });

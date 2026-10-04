@@ -25,6 +25,7 @@ Most settings cost almost nothing. The few that use clearly more memory when the
 | Blame gutter (Editor) | 35 MB | While a file is open with the column showing |
 | Markdown preview (Editor) | 35 MB, up to 140 MB with diagrams | **Editor and preview** and **Preview only**, compared with **Editor only** |
 | File icons (Appearance) | Up to 25 MB | Material Icons with thousands of files listed; Minimal costs less |
+| Syntax highlighting (Editor) | 35 MB | With code open; about the same for one file or ten |
 | Render whitespace (Editor) | 9 MB | With **All** |
 | Tab limit (Editor) | 4 MB per tab | Each open file tab keeps its editor; a limit closes the oldest |
 

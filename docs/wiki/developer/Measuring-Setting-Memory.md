@@ -37,12 +37,17 @@ Measured on 2026-10-03 on the built-in 3024 x 1964 display, release build, media
 | Scrollback 50,000 / 100,000 (full) | +91 / +175 MB | +90 / +177 MB | About 2 KB per line: xterm keeps 12 bytes per cell, about 180 columns wide |
 | Scrollback 1,000 (full) | -17 MB | -17 MB | Compared with the default 5,000 |
 | Blame gutter | +35 MB | +39 MB | A 236 pixel column drawn beside every line on screen |
+| Syntax highlighting, 3,000 line Svelte file | +38 MB | +40 MB | The grammars, syntax trees and colored text spans |
+| The same, 43,700 line TypeScript file | +36 MB | +35 MB | Hardly more for a much longer file |
+| The same, 10 tabs (Svelte, TypeScript, Rust) | +38 MB | +33 MB | 3,017 instead of 8,517 page elements |
 | Render whitespace: All | +9 MB | +9 MB | A mark for every space and tab |
 | 10 file tabs instead of 1 | +40 MB | +39 MB | Every tab keeps its editor mounted |
 | Markdown Editor and preview instead of Editor only, plain file | +34 MB | +32 MB | The rendered page beside the code (`CHANGELOG.md`) |
 | The same with four mermaid diagrams | +137 MB | +131 MB | The mermaid library and the drawn diagrams (`Architecture.md`) |
 
 Recent Files was measured on 2026-10-04 the same way, with its own scenario: open the same 30 files with a tab limit of 1, then sample. Keeping the list cost +1 MB of Web content (total -0.1 MB). With the popup open on top it was +20 MB total and +17 MB Web content, and after closing it nothing was left (it measured lower than with the popup never opened).
+
+Syntax highlighting was measured on 2026-10-04 with three scenarios, each with a tab limit of none: `SettingsDialog.svelte` scrolled through, a 43,700 line TypeScript file (every `.ts` file of `src/lib` joined) scrolled through, and 10 source files opened as tabs. The cost hardly grows with the file, so most of it is the grammar code and parser, not one tree per file. All runs were cold starts, so the number is what a restart saves.
 
 The file icon numbers come from their own test with 2,400 changed files (see [How File Icons Work](How-File-Icons-Work.md)).
 

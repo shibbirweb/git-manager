@@ -987,6 +987,22 @@
               onchange={(event) => set("fontLigatures", event.currentTarget.checked)}
             />
           </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Syntax highlighting<MemoryFlag setting="syntaxHighlighting" /></span>
+              <span class="hint">
+                Color code by its language in editors, diffs, the merge tool and Markdown code blocks. Off, code is plain text
+                and no language grammar is loaded, which saves memory with big files. Fold arrows and bracket pair colors need
+                it; sticky scroll then follows the indentation.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.syntaxHighlighting}
+              onchange={(event) => set("syntaxHighlighting", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Tab size</span>

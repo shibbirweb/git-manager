@@ -33,6 +33,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Line spacing", "line height leading"],
     ["Change font size with Ctrl + mouse wheel", "zoom scroll pinch trackpad command"],
     ["Font ligatures", "glyphs fira code arrows"],
+    ["Syntax highlighting", "colors grammar language plain text memory"],
     ["Tab size", "indent spaces width"],
     ["Detect indentation", "indent tabs spaces"],
     ["Render whitespace", "show spaces tabs dots invisible characters"],

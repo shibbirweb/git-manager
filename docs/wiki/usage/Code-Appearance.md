@@ -18,6 +18,12 @@ The weight needs a font that has it. JetBrains Mono, SF Mono and most variable f
 
 **Line spacing** sets the space between lines of code, as a multiple of the font size. Drag the slider from 1.00 (tight) to 2.50 (airy), in steps of 0.05. The default is 1.25. Double-click the slider to go back to it.
 
+## Syntax highlighting
+
+**Syntax highlighting** colors code by its language: keywords, strings, comments and so on. It is on by default and works in editors, diffs, the merge tool and the code blocks of the Markdown preview.
+
+Turn it off to see every file as plain text and save memory. Off, Git Manager loads no language grammar and keeps no syntax tree (the structure of the code it builds to color it), which saves about 35 MB. Turned off while the app runs, the trees go at once and the rest after a restart. Some features need that structure and stop while it is off: fold arrows and bracket pair colors. Sticky scroll then follows the indentation, and Toggle Comment (Cmd+/) still works. Open editors change at once.
+
 ## Render whitespace
 
 ![Spaces and tabs drawn in the editor](../images/editor-whitespace.png)

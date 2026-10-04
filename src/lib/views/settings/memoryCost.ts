@@ -21,6 +21,11 @@ export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
     amount: "up to +25 MB",
     detail: "With 2,400 changed files, Minimal adds 2 to 10 MB and Material Icons 10 to 15 MB more. Fewer files cost less.",
   },
+  syntaxHighlighting: {
+    amount: "+35 MB",
+    detail:
+      "The language grammars and the colored text cost about 35 to 40 MB, nearly the same for one file or ten. Turned off while running, the full saving comes after a restart.",
+  },
   renderWhitespace: {
     amount: "+9 MB with All",
     detail: "All draws a mark for every space and tab, about 9 MB more with a long file open.",

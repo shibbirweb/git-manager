@@ -24,7 +24,7 @@
     scrollMarkers,
     setChangeMarks,
   } from "$lib/editor/scrollMarkers";
-  import { baseExtensions, languageFor, languageName } from "$lib/editor/setup";
+  import { baseExtensions, editorLanguage, languageName } from "$lib/editor/setup";
   import { editorTopLine, scrollEditorToLine } from "$lib/markdown/editorScroll";
   import { toggleInline, toggleLink, toggleTaskAt } from "$lib/markdown/format";
   import type { SourceEdit } from "$lib/markdown/richSync";
@@ -540,7 +540,7 @@
   });
 
   async function createEditor(content: string): Promise<void> {
-    const language = await languageFor(filePath);
+    const language = await editorLanguage(filePath);
     // Wait for the editor host to render after `file` was set.
     await Promise.resolve();
     if (!host || view) {

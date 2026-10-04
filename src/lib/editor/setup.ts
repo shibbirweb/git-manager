@@ -136,4 +136,4 @@ export function baseExtensions({ readOnly = false, kind, extensions = [] }: Edit
 }
 
 // Languages live in languages.ts; re-exported so the editors keep one import.
-export { grammarFor, languageFor, languageName } from "./languages";
+export { editorLanguage, grammarFor, languageFor, languageName } from "./languages";
