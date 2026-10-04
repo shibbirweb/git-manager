@@ -1295,7 +1295,8 @@ define("empty-main", async (shot) => {
   await shot.page.mouse.move(640, 790);
   const main = await shot.clipAround([shot.page.locator("main.main")]);
   const content = await shot.clipAround([shot.page.locator("main.main .empty .logo"), shot.page.locator("main.main .empty .actions")], 56);
-  await shot.save({ x: main.x, width: main.width, y: content.y, height: content.height });
+  // From the top, so the Navigation Bar above the welcome screen is in the shot.
+  await shot.save({ x: main.x, width: main.width, y: main.y, height: content.y + content.height - main.y });
 });
 
 define("git-progress", async (shot) => {

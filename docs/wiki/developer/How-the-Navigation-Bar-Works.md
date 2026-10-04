@@ -13,7 +13,7 @@ flowchart TD
   Key["Cmd+Up / Alt+Home, Edit menu, or the editor keymap"] --> Run["runWorkspaceShortcut: navigationBar"]
   Run --> Open["openNavigationBar (workspaceActions.ts)"]
   Open --> Jump["navBarStore.jump()"]
-  Jump -->|"a path bar claimed it"| Inline["NavigationBar in FileView"]
+  Jump -->|"a path bar claimed it"| Inline["NavigationBar in FileView or EmptyMain"]
   Jump -->|"no file on screen"| Floating["floating NavigationBar in Workspace.svelte"]
   Inline --> Popup["popup: api.listDirectories, navRows"]
   Floating --> Popup
@@ -27,7 +27,7 @@ flowchart TD
 
 ### Who answers the jump
 
-Several path bars can be mounted at once (one per tab, two groups in the split editor). The bar of the tab on screen in the focused group gets `claimed`, and calls `navBarStore.claim(owner)` with its own `Symbol`. `navBarStore.jump()` remembers the focused element, then either makes that bar `active` and bumps `jumpToken`, or sets `floating`. The active bar's effect sees the new token and opens its popup on `startIndex`: the file's folder, so the list shows the file's neighbors with the file selected.
+Several path bars can be mounted at once (one per tab, two groups in the split editor, and the welcome screen, `EmptyMain.svelte`, which shows the active repository's path when the first group has nothing open). The bar of the tab on screen in the focused group, or the welcome screen's while its group is focused, gets `claimed`, and calls `navBarStore.claim(owner)` with its own `Symbol`. `navBarStore.jump()` remembers the focused element, then either makes that bar `active` and bumps `jumpToken`, or sets `floating`. The active bar's effect sees the new token and opens its popup on `startIndex`: the file's folder, so the list shows the file's neighbors with the file selected.
 
 `navBarStore.active` is the one bar that has the keyboard. A bar whose owner is no longer active resets itself, so clicking a crumb in the other group closes the first popup. `close(restore)` puts the focus back where it was, except after a click elsewhere or opening a file, which take the focus themselves.
 
@@ -66,6 +66,7 @@ The popup is moved to `<body>` with the `portal` action (`src/lib/ui/portal.ts`)
 | `src/lib/navBar/navBarStore.svelte.ts` | Which bar answers the jump, the floating bar, focus restore |
 | `src/lib/navBar/NavigationBar.svelte` | The crumbs, the popup and its keys |
 | `src/lib/views/files/FileView.svelte` | Mounts the bar in the path bar and claims it for the tab on screen |
+| `src/lib/views/EmptyMain.svelte` | The bar on the welcome screen and its **Navigation Bar** button |
 | `src/lib/views/Workspace.svelte` | The floating bar, and the text field check for the key |
 | `src/lib/ui/portal.ts` | Moves the popup to `<body>` |
 | `src/lib/menu/menuSpec.ts`, `menuState.ts`, `menuActions.ts` | Edit > Jump to Navigation Bar |
@@ -94,4 +95,4 @@ The popup is moved to `<body>` with the `portal` action (`src/lib/ui/portal.ts`)
 
 - Changing the popup's keys: update `help/shortcuts.ts` and the [Navigation Bar](../usage/Navigation-Bar.md) page.
 - The path bar layout is described in [How the path bar works](How-the-Path-Bar-Works.md).
-- Retake `navigation-bar.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).
+- Retake `navigation-bar.png` and `empty-main.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

@@ -11,7 +11,7 @@ The Navigation Bar lets you move around your project from the keyboard, like the
 
 With the keyboard, the list of the current file's folder opens right away, with the file selected. So **Cmd+Up, Down, Enter** opens the file next to this one.
 
-When no file is on screen (for example on the Log or a diff), the bar shows up floating at the top of the window, starting at the active repository.
+With nothing open, the bar sits at the top of the welcome screen, starting at the active repository, and Cmd+Up opens it there. On the Log or a diff, it shows up floating at the top of the window instead.
 
 In the code editor, Cmd+Up now opens the Navigation Bar, as in JetBrains IDEs. To go to the start of the file, press **Cmd+Home** (Fn+Cmd+Left on a laptop keyboard). In a plain text field, such as the commit message, Cmd+Up still moves the caret.
 

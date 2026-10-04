@@ -22,15 +22,16 @@ Files over 4 MB and binary files are not opened; the tab shows a note instead. I
 
 ![The empty editor area](../images/empty-main.png)
 
-*The empty editor area with the workspace name and five ways to start.*
+*The empty editor area: the Navigation Bar, the workspace name and six ways to start.*
 
-With no file, diff or Log open, the editor area shows the workspace name and five shortcuts:
+With no file, diff or Log open, the editor area shows the [Navigation Bar](Navigation-Bar.md), the workspace name and six shortcuts:
 
 - **Review changes** (Shift+Cmd+G) opens the Changes sidebar.
 - **Show the Log** (Shift+Cmd+L) opens the commit history. It is greyed out when there is no repository.
 - **Open a file from the Files panel** shows the Files panel.
 - **Go to File** (Cmd+P) finds a file by name.
 - **Search Everywhere** (press Shift twice) searches the whole workspace.
+- **Navigation Bar** (Cmd+Up) opens the bar's list.
 
 ## Tabs
 
@@ -110,7 +111,7 @@ Files that change on disk (for example after a checkout, or an edit in another a
 
 ## Editing
 
-The editor has syntax colors, bracket matching, undo, multiple cursors and the commands of a **Code** menu. How to use them, plus line spacing, visible whitespace and zoom, is on [Editing Code](Editing-Code.md). To find and replace text, see [Find and Replace](Find-and-Replace.md).
+Syntax colors, multiple cursors, the **Code** menu, line spacing and zoom are on [Editing Code](Editing-Code.md). To find and replace text, see [Find and Replace](Find-and-Replace.md).
 
 ## Status bar
 
