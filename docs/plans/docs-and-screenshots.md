@@ -26,6 +26,42 @@ the real app, so the pages match what the app shows.
   manual capture, since the screenshot browser cannot draw PDFs.
 - Each note in [doc-notes/](doc-notes/) lists the new screenshots for its feature.
 
+## Screenshots left from the 2026-10-04 features
+
+Paused on 2026-10-04: the user will take these later. The pages are written; only the images are missing or out of
+date. Take them all in one session, view each image, then run `bun scripts/build-wiki.ts --check`.
+
+New shots. Each has a `define(...)` in `scripts/screenshots.ts` and a `[TODO:name.png]` marker in its page; replace
+the marker with the image link once it is taken (the wiki check lists them as pending until then):
+
+- [ ] `navigation-bar` (usage/Navigation-Bar.md): the path bar with the file's folder listed and the file selected.
+- [ ] `navigation-bar-bottom` (usage/Navigation-Bar.md): File toolbar set to Bottom, the whole bar under the code with
+      its list opened upward.
+- [ ] `navigation-bar-hidden` (usage/Navigation-Bar.md): File toolbar set to Hidden, the floating bar at the top left of
+      the editor after Cmd+Up.
+- [ ] `recent-files` (usage/Recent-Files.md): the Cmd+E popup with the previous file selected.
+- [ ] `editor-font-weight` (usage/Code-Appearance.md): the font weight slider and its preview.
+- [ ] `rounded-panels` and `rounded-panels-islands-light` (usage/Rounded-Panels.md).
+- [ ] `settings-memory-flags` (usage/Memory-Use.md): the +N MB marks in Settings.
+- [ ] `file-icons` (usage/File-Icons.md), `tabs-pinned` and `tabs-wrapped` (usage/Pin-Reorder-and-Wrap-Tabs.md): older
+      ones still pending.
+
+Retakes. These images exist but no longer match the app:
+
+- [ ] `settings-appearance.png`: new rows Rounded panels and File toolbar, with the File toolbar switches
+      (Breadcrumbs, Badges, Change arrows, Blame, Copy relative path, Markdown view switch, Markdown formatting row).
+- [ ] `settings-editor-fonts.png`: the new Editor font weight row.
+- [ ] `color-theme-pickers.png`: the theme lists are longer (Islands Light and Dark, VS Code Light+ and Dark+).
+- [ ] `empty-main.png`: the welcome screen now has the Navigation Bar on top and a sixth button, Navigation Bar
+      (Cmd+Up); the shot now clips from the top of the editor area.
+- [ ] Path bar shots, check and retake if they look different: the crumbs are now buttons and the file crumb shows the
+      file type icon. `editor-tabs.png`, `editor-change-markers.png`, `editor-conflict-toolbar.png`,
+      `markdown-toolbar.png`, `markdown-split.png`, `markdown-rich-editor.png`, `markdown-mermaid.png`.
+
+Open question for the user: the wiki still calls the bar above the code the "path bar" (usage/Editor-and-Tabs.md
+"The path bar", developer/How-the-Path-Bar-Works.md), while the setting is now named File toolbar. Rename the docs to
+"file toolbar" or keep both names.
+
 ## Checklist
 
 New user pages and developer chapters:

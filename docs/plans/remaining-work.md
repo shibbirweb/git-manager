@@ -50,6 +50,17 @@ where it passed. Everything else still needs the user, and everything that write
   or pinned tabs.
 
 
+Added on 2026-10-04, not tried in the real app yet:
+
+- **Navigation Bar:** Cmd+Up from the editor, the Files panel, the terminal (macOS) and the welcome screen; the
+  popup's place under each crumb; Left, Right, Enter, Cmd+Enter, Esc and typing; "Search everywhere for ..." when
+  nothing matches; focus goes back on Esc; a workspace with several folders; Cmd+Up in the commit message box still
+  moves the caret; Cmd+Home still goes to the start of the file.
+- **File toolbar setting:** Top, Bottom (whole bar under the code, lists open upward) and Hidden (Cmd+Up shows the
+  floating bar at the top left of the focused editor); each switch hides its part; with every part off the bar goes
+  away; dividers only between parts that show; the Markdown formatting row switch works with the toolbar hidden.
+- **Recent Files, editor font weight, rounded panels:** see their pages; none was tried in the real app.
+
 - **O1:** the Changes list updates about 300 ms after a save (from the watcher); the Files panel updates on add,
   delete, rename and `.gitignore` edits; the Log does not reload on stage or save but does on commit, checkout,
   fetch and tag; a long `npm install` refreshes about every 1 to 2 s.
