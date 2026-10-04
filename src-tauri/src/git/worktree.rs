@@ -289,6 +289,7 @@ pub fn has_changes(worktree_path: &str) -> AppResult<bool> {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
     use crate::test_support::{git_in, BareRemote, TestRepo};
 
@@ -316,7 +317,7 @@ mod tests {
     }
 
     fn sibling(repo: &TestRepo, name: &str) -> String {
-        repo.path.parent().expect("repo parent").join(name).to_string_lossy().into_owned()
+        repo.path.parent().expect("repo parent").join(name).ui()
     }
 
     #[test]
@@ -386,7 +387,7 @@ mod tests {
     }
 
     fn list_sorted(repo_path: &Path) -> Vec<WorktreeInfo> {
-        let mut list = list(&repo_path.to_string_lossy()).unwrap();
+        let mut list = list(&repo_path.ui()).unwrap();
         list[1..].sort_by(|left, right| left.path.cmp(&right.path));
         list
     }
@@ -431,7 +432,7 @@ mod tests {
         seed.write("a.txt", "a\n");
         seed.commit_all("base");
         seed.git(&["push", "-q", &remote.path_string(), "main"]);
-        let linked = remote.path.parent().unwrap().join("bare-linked").to_string_lossy().into_owned();
+        let linked = remote.path.parent().unwrap().join("bare-linked").ui();
         git_in(&remote.path, &["worktree", "add", "-q", &linked, "main"]);
 
         let from_bare = list_from_cli(&remote.path);

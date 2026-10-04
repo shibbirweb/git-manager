@@ -1,3 +1,4 @@
+use crate::test_support::UiText;
 use std::path::{Path, PathBuf};
 
 use super::plan::{Limits, MAX_FILE_BYTES};
@@ -28,7 +29,7 @@ impl Fixture {
     }
 
     fn path(&self, name: &str) -> String {
-        self.work.join(name).to_string_lossy().into_owned()
+        self.work.join(name).ui()
     }
 
     fn record(&self, file_path: &str, text: &str, label: Label, now_ms: u64) -> Recorded {
@@ -87,7 +88,7 @@ fn saves_discards_and_rollbacks_keep_versions_while_history_is_on() {
         let repo = TestRepo::new();
         repo.write("a.txt", "v1\n");
         repo.commit_all("first");
-        let file = repo.file("a.txt").to_string_lossy().into_owned();
+        let file = repo.file("a.txt").ui();
 
         // A save keeps what it replaced, then what it wrote.
         block_on(status::write_worktree_file(repo.path_string(), "a.txt".to_string(), "v2\n".to_string(), Eol::Lf)).unwrap();
@@ -264,7 +265,7 @@ fn a_deleted_file_is_listed_and_restored() {
     let outside = Fixture::new();
     fixture.record(&outside.path("elsewhere.txt"), "x", Label::Saved, 4);
 
-    let work = fixture.work.to_string_lossy().into_owned();
+    let work = fixture.work.ui();
     let deleted = fixture.store.deleted_under(std::slice::from_ref(&work)).unwrap();
     assert_eq!(deleted.len(), 1);
     assert_eq!(deleted[0].file_path, gone);

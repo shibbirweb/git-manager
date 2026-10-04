@@ -587,6 +587,7 @@ pub fn watch(app: AppHandle, window_label: &str, workspace_root: &str, repo_root
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use std::path::{Path, PathBuf};
 
     use notify_debouncer_full::notify::event::{CreateKind, DataChange, EventKind, ModifyKind, RemoveKind, RenameMode};
@@ -931,7 +932,7 @@ mod tests {
         let plain = dir.init_repo("main/plain");
         crate::test_support::git_in(&main, &["-c", "user.name=T", "-c", "user.email=t@e", "commit", "-q", "--allow-empty", "-m", "base"]);
         let worktree = dir.file("wt");
-        crate::test_support::git_in(&main, &["worktree", "add", "-q", "-b", "wt", &worktree.to_string_lossy()]);
+        crate::test_support::git_in(&main, &["worktree", "add", "-q", "-b", "wt", &worktree.ui()]);
         let roots = vec![main.clone(), plain.clone(), worktree.clone()];
         let links = git_dir_links(&roots);
         assert_eq!(links.len(), 1, "{links:?}");

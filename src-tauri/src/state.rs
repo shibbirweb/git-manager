@@ -118,6 +118,7 @@ impl AppState {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::LaunchMode;
     use crate::paths::RealPath;
 
@@ -157,7 +158,7 @@ mod tests {
     #[test]
     fn repo_path_argument_is_canonicalized() {
         let dir = tempfile::TempDir::new().unwrap();
-        let canonical = dir.path().real_path().unwrap().to_string_lossy().into_owned();
+        let canonical = dir.path().real_path().unwrap().ui();
         let given = dir.path().to_string_lossy().into_owned();
         assert_eq!(repo_path(LaunchMode::from_args(&args(&[&given]))), Some(canonical));
 

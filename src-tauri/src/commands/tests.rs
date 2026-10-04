@@ -1,3 +1,4 @@
+use crate::test_support::UiText;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -745,7 +746,7 @@ fn refs_snapshot_answers_unchanged_until_something_the_sidebar_shows_changes() {
     }, false);
     step("drop an older stash", &|| { repo.git(&["stash", "drop", "-q", "stash@{1}"]); }, false);
     step("config", &|| { repo.git(&["config", "remote.origin.url", "https://example.com/x.git"]); }, false);
-    let linked = repo.path.parent().unwrap().join("linked").to_string_lossy().into_owned();
+    let linked = repo.path.parent().unwrap().join("linked").ui();
     step("worktree", &|| { repo.git(&["worktree", "add", "-q", "-b", "linked", &linked]); }, true);
     step("lock", &|| { repo.git(&["worktree", "lock", &linked]); }, false);
 }
@@ -994,7 +995,7 @@ fn read_worktree_file_normalizes_crlf_and_detects_binary() {
 // Workspaces
 
 fn open_workspace(folder: &Path) -> WorkspaceInfo {
-    block_on(workspace::open_workspace(folder.to_string_lossy().into_owned())).unwrap()
+    block_on(workspace::open_workspace(folder.ui())).unwrap()
 }
 
 /// `(root, relative_path)` of each repository, in order.
@@ -1006,7 +1007,7 @@ fn repo_list(repos: &[RepoInfo]) -> Vec<(String, String)> {
 }
 
 fn text(path: &Path) -> String {
-    path.to_string_lossy().into_owned()
+    path.ui()
 }
 
 #[test]
@@ -1515,8 +1516,8 @@ fn file_operations_refuse_roots_git_folders_and_paths_outside() {
     std::fs::create_dir_all(&outside).unwrap();
     std::fs::write(outside.join("o.ts"), "o").unwrap();
     let roots = vec![dir.path_string(), dir.file_string("holder/nested")];
-    let outside_dir = outside.to_string_lossy().into_owned();
-    let outside_file = outside.join("o.ts").to_string_lossy().into_owned();
+    let outside_dir = outside.ui();
+    let outside_file = outside.join("o.ts").ui();
 
     let rename_root = block_on(file_ops::file_rename(roots.clone(), dir.path_string(), "x".to_string()));
     assert_eq!(file_error(rename_root), "workspace is a workspace folder");
@@ -1632,7 +1633,7 @@ fn files_exist_reports_only_files_inside_the_workspace() {
         dir.file_string("src/missing.ts"),
         dir.file_string("src/lib"),
         dir.file_string(".git/config"),
-        outside.to_string_lossy().into_owned(),
+        outside.ui(),
         dir.file_string("out-link.ts"),
         "src/a.ts".to_string(),
         dir.file_string("src/../src/a.ts"),

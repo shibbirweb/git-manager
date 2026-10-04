@@ -116,6 +116,7 @@ pub fn commit_template(repo_path: &str) -> AppResult<Option<String>> {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
     use crate::test_support::TestRepo;
 
@@ -178,7 +179,7 @@ mod tests {
         assert_eq!(commit_template(&repo.path_string()).unwrap().as_deref(), Some("feat: \n\n# Why?\n"));
         let absolute = repo.file("abs.txt");
         std::fs::write(&absolute, "abs").unwrap();
-        repo.git(&["config", "commit.template", &absolute.to_string_lossy()]);
+        repo.git(&["config", "commit.template", &absolute.ui()]);
         assert_eq!(commit_template(&repo.path_string()).unwrap().as_deref(), Some("abs"));
         repo.git(&["config", "commit.template", "missing.txt"]);
         assert_eq!(commit_template(&repo.path_string()).unwrap(), None, "a missing file is no template");

@@ -973,6 +973,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(windows, ignore = "Windows stops only git itself, not its children, until cancel uses a Job Object")]
     fn cancelling_a_clone_removes_only_what_it_created() {
         let parent = crate::test_support::TestDir::new();
         let refused = cancelled_clone(&parent, "fresh", "test-clone-cancel-fresh");

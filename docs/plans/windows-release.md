@@ -93,3 +93,10 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   `build-windows` job in `release.yml`, off until the repository variable `WINDOWS_RELEASES` is `true`;
   `downloadAsset` in `releases.ts` offers the `-setup.exe` (else `.msi`) on Windows. Developer docs updated. User
   pages (Getting Started, Updates) stay macOS only until Windows releases are switched on: update them then.
+- Third Windows CI run (`f3ec85e`): build and clippy pass; 565 of 612 tests pass, 47 fail. Fixed:
+  tests now compare with `to_ui` paths (`test_support::UiText`); Local History refused `C:/` paths
+  (`paths::after_root`); `safe_join` and the submodule check now refuse `RootDir` (`\etc` escaped on Windows);
+  `untracks_names_with_glob_characters_literally` uses `[ab]` (no `*` in Windows names); unsaved tests use a
+  `C:/` tab path; the conflict demo script tests and the two cancel tests are ignored on Windows with a reason
+  (cancel needs a Job Object: beta list). Not understood yet (messages cut off): the MCP CLI tests, the recorder,
+  identity includes, scripts, workspace files, stdin staging. Read them in the next run.

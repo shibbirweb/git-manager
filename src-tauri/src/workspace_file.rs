@@ -389,10 +389,11 @@ pub fn write(file: &Path, folders: &[String]) -> AppResult<()> {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
 
     fn canonical(path: &Path) -> String {
-        path.real_path().unwrap().to_string_lossy().into_owned()
+        path.real_path().unwrap().ui()
     }
 
     #[test]

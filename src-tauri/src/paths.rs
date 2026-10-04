@@ -30,6 +30,20 @@ pub fn to_ui(path: impl AsRef<Path>) -> String {
     ui_text(&dunce::simplified(path.as_ref()).to_string_lossy(), cfg!(windows))
 }
 
+/// The part of a page path after its root: "/a/b" and, on Windows, "C:/a/b" give "a/b". None when not absolute.
+pub fn after_root(text: &str) -> Option<&str> {
+    after_root_on(text, cfg!(windows))
+}
+
+fn after_root_on(text: &str, windows: bool) -> Option<&str> {
+    if let Some(rest) = text.strip_prefix('/') {
+        return Some(rest);
+    }
+    let bytes = text.as_bytes();
+    let drive = windows && bytes.len() >= 3 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':' && bytes[2] == b'/';
+    drive.then(|| &text[3..])
+}
+
 /// `to_ui` for a serde field: `#[serde(serialize_with = "crate::paths::serialize_ui")]`.
 pub fn serialize_ui<P: AsRef<Path>, S: serde::Serializer>(path: &P, serializer: S) -> Result<S::Ok, S::Error> {
     serializer.serialize_str(&to_ui(path))
@@ -64,6 +78,16 @@ mod tests {
         assert_eq!(ui_text(r"c:\repo\src/main.rs", true), "C:/repo/src/main.rs");
         assert_eq!(ui_text(r"\\server\share\repo", true), "//server/share/repo");
         assert_eq!(ui_text("", true), "");
+    }
+
+    #[test]
+    fn the_root_is_a_slash_or_a_windows_drive() {
+        assert_eq!(after_root_on("/a/b", false), Some("a/b"));
+        assert_eq!(after_root_on("C:/a/b", false), None);
+        assert_eq!(after_root_on("C:/a/b", true), Some("a/b"));
+        assert_eq!(after_root_on("/a/b", true), Some("a/b"));
+        assert_eq!(after_root_on("C:a", true), None);
+        assert_eq!(after_root_on("a/b", true), None);
     }
 
     #[test]

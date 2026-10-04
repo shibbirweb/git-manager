@@ -46,3 +46,10 @@ See [How the terminal works](How-the-Terminal-Works.md) and [How scripts work](H
 - `git/repo.rs` and `git/cli.rs`: tests behind `cfg(windows)` that only the Windows CI job runs.
 - `workspacePaths.test.ts`, `fileLinks.test.ts` and `args.test.ts`: drive roots, `fromNativePath` and MCP paths.
 - The test sandbox (`test_support.rs`) takes its home folder from `real_path`, and `path_string` and `file_string` return paths the way the page sends them (`to_ui`). The first Windows CI run failed in most git tests because the sandbox used `canonicalize`: git cannot read its config files at a `\\?\` path.
+- `test_support::UiText` (`path.ui()`) gives a path the way the app returns it, for expected values. Tests that need a Unix-only tool or a missing Windows feature are marked `#[cfg_attr(windows, ignore = "why")]`, so they still show in the output.
+
+## Bugs we fixed
+
+**Local History refused every file on Windows.** `check_file_path` wanted the path to start with `/`, so a `C:/...` path was "invalid" and no snapshot was ever written. The Windows CI run showed it. Now `paths::after_root` accepts `/` or, on Windows, a drive root, and the rest of the check is unchanged, so `.` and `..` parts are still refused.
+
+**A rooted path could leave the work tree on Windows.** `safe_join` and the submodule path check refused absolute paths with `is_absolute()`. On Windows `\etc\passwd` has a root but no drive, so it is not "absolute", and joining it onto the repository gives a path at the drive root. Both checks now also refuse `Component::RootDir`, like the MCP path check already did.

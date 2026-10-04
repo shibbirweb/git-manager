@@ -235,7 +235,8 @@ fn checked_path(submodule_path: &str) -> AppResult<String> {
     let escapes = relative.is_absolute()
         || relative
             .components()
-            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_)));
+            // RootDir too: on Windows `\etc` is not absolute, yet joining it lands at the drive root.
+            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_) | Component::RootDir));
     if trimmed.is_empty() || escapes || trimmed.starts_with('-') {
         return Err(AppError::invalid(format!("Invalid submodule path: {submodule_path}")));
     }
@@ -328,6 +329,7 @@ pub fn remove(repo_path: &str, submodule_path: &str, envs: Envs) -> AppResult<()
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
     use crate::git::status;
     use crate::test_support::{git_in, BareRemote, TestDir, TestRepo};
@@ -481,7 +483,7 @@ mod tests {
         dir.write("app/a.txt", "a\n");
         git_in(&parent_root, &["add", "-A"]);
         git_in(&parent_root, &["commit", "-q", "-m", "base"]);
-        add(&parent_root.to_string_lossy(), &url_of(&library), "vendor-lib", None, ALLOW_FILE).unwrap();
+        add(&parent_root.ui(), &url_of(&library), "vendor-lib", None, ALLOW_FILE).unwrap();
         dir.init_repo("app/nested-plain");
 
         let workspace = crate::git::workspace::open(&dir.path_string()).unwrap();

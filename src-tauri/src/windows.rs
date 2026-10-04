@@ -465,6 +465,7 @@ pub fn cascade(from: &Bounds) -> (f64, f64) {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
 
     fn shown(folders: &[&str], file: Option<&str>) -> Shown {
@@ -583,7 +584,7 @@ mod tests {
         let dir = tempfile::TempDir::new().unwrap();
         let real = dir.path().join("repo");
         std::fs::create_dir_all(real.join("sub")).unwrap();
-        let plain = real.to_string_lossy().into_owned();
+        let plain = real.ui();
         let roundabout = format!("{}/sub/..", plain);
         let mut book = WindowBook::default();
         book.add(MAIN_LABEL, None, None);

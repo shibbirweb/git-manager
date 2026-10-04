@@ -220,6 +220,7 @@ pub async fn untrack_files(repo_path: String, file_paths: Vec<String>) -> AppRes
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
     use crate::test_support::TestRepo;
 
@@ -269,7 +270,7 @@ mod tests {
         let outcome = run_add_to_ignore(&repo.path_string(), &strings(&["/logs/"]), IgnoreTarget::Gitignore, &strings(&["logs"]))
             .unwrap();
         assert_eq!(repo.read_text(".gitignore"), "/logs/\n");
-        assert_eq!(outcome.ignore_file, repo.file(".gitignore").to_string_lossy());
+        assert_eq!(outcome.ignore_file, repo.file(".gitignore").ui());
         assert_eq!(outcome.tracked_paths, strings(&["logs/a.log"]));
 
         let again = run_add_to_ignore(&repo.path_string(), &strings(&["/logs/"]), IgnoreTarget::Gitignore, &[]).unwrap();
@@ -299,18 +300,19 @@ mod tests {
         assert!(!repo.exists(".gitignore"));
 
         let created = run_ensure_ignore_file(&repo.path_string(), IgnoreTarget::Gitignore).unwrap();
-        assert_eq!(created, repo.file(".gitignore").to_string_lossy());
+        assert_eq!(created, repo.file(".gitignore").ui());
         assert_eq!(repo.read_text(".gitignore"), "");
     }
 
     #[test]
     fn untracks_names_with_glob_characters_literally() {
         let repo = TestRepo::new();
-        repo.write("star*.txt", "s\n");
-        repo.write("starry.txt", "t\n");
+        // `[ab]` and not `*`: Windows file names cannot hold `*` or `?`.
+        repo.write("star[ab].txt", "s\n");
+        repo.write("stara.txt", "t\n");
         repo.commit_all("base");
-        run_untrack_files(&repo.path_string(), &strings(&["star*.txt"])).unwrap();
-        assert_eq!(repo.git(&["ls-files"]).trim(), "starry.txt");
+        run_untrack_files(&repo.path_string(), &strings(&["star[ab].txt"])).unwrap();
+        assert_eq!(repo.git(&["ls-files"]).trim(), "stara.txt");
     }
 
     #[test]

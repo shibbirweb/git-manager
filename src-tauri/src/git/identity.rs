@@ -280,6 +280,7 @@ pub fn write_identity(
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::UiText;
     use super::*;
     use crate::test_support::TestDir;
 
@@ -290,7 +291,7 @@ mod tests {
         let global_file = dir.file("global.gitconfig");
         std::fs::write(&global_file, "").expect("write global config");
         let global = GlobalConfig::at(&global_file);
-        (dir, repo_root.to_string_lossy().into_owned(), global, global_file)
+        (dir, repo_root.ui(), global, global_file)
     }
 
     #[test]
@@ -310,7 +311,7 @@ mod tests {
         assert_eq!(identity.global.email.as_deref(), Some("ann@example.com"));
         assert_eq!(identity.local, IdentityValues::default());
         assert!(identity.complete, "a global identity is enough to commit");
-        assert_eq!(identity.global_file.as_deref(), Some(global_file.to_string_lossy().as_ref()));
+        assert_eq!(identity.global_file.as_deref(), Some(global_file.ui().as_str()));
         let text = std::fs::read_to_string(&global_file).unwrap();
         assert!(text.contains("name = Ann Lee") && text.contains("email = ann@example.com"), "{text}");
         let repo_config = std::fs::read_to_string(dir.file("repo/.git/config")).unwrap();

@@ -1,3 +1,4 @@
+use crate::test_support::UiText;
 use std::fs;
 use std::path::Path;
 
@@ -10,7 +11,7 @@ fn write(root: &Path, relative: &str, text: &str) {
 }
 
 fn text(path: &Path) -> String {
-    path.to_string_lossy().into_owned()
+    path.ui()
 }
 
 /// (workspace folder, path below it, kind, runner, script names)

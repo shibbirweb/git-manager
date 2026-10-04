@@ -146,7 +146,7 @@ pub fn load_files(base: &Path, local: &Path, remote: &Path, merged: &Path, ignor
         FileConflictKind::BothModified
     };
     build_document(
-        &merged.to_string_lossy(),
+        &crate::paths::to_ui(merged),
         kind,
         (read(base), read(local), read(remote)),
         "Local (yours)".to_string(),

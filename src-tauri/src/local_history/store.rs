@@ -126,8 +126,7 @@ pub fn check_hash(hash: &str) -> AppResult<()> {
 pub fn check_file_path(file_path: &str) -> AppResult<()> {
     // Checked on the text: `Path::components` would quietly drop "." and repeated slashes.
     let clean = Path::new(file_path).is_absolute()
-        && file_path
-            .strip_prefix('/')
+        && crate::paths::after_root(file_path)
             .is_some_and(|rest| rest.split('/').all(|segment| !segment.is_empty() && segment != "." && segment != ".."));
     if clean {
         Ok(())

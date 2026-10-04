@@ -1,5 +1,6 @@
 //! The MCP server over real HTTP on ephemeral ports, against real temporary repositories.
 
+use crate::test_support::UiText;
 use crate::paths::RealPath;
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -511,7 +512,7 @@ fn paths_outside_the_workspace_are_refused() {
     outside.write("secret.txt", "secret\n");
     fixture.mcp.set_workspace(&[inside.path_string()]);
     for (tool_name, arguments) in [
-        ("read_file", json!({ "filePath": outside.file("secret.txt").to_string_lossy() })),
+        ("read_file", json!({ "filePath": outside.file("secret.txt").ui() })),
         ("git_status", json!({ "repoPath": outside.path_string() })),
         ("list_directory", json!({ "folderPath": "/" })),
     ] {
@@ -550,10 +551,10 @@ fn git_tools_read_and_commit_over_http() {
     let only_a = text_of(&fixture.call("git_diff", json!({ "repoPath": repo_path, "filePaths": ["a.txt"] })));
     assert!(!only_a.contains("new.txt"), "{only_a}");
 
-    let read = text_of(&fixture.call("read_file", json!({ "filePath": repo.file("a.txt").to_string_lossy(), "startLine": 2, "endLine": 2 })));
+    let read = text_of(&fixture.call("read_file", json!({ "filePath": repo.file("a.txt").ui(), "startLine": 2, "endLine": 2 })));
     assert!(read.starts_with("TWO\n[Lines 2-2 of 3."), "{read}");
 
-    let staged = fixture.call("git_stage", json!({ "repoPath": repo_path, "filePaths": [repo.file("a.txt").to_string_lossy(), "new.txt"] }));
+    let staged = fixture.call("git_stage", json!({ "repoPath": repo_path, "filePaths": [repo.file("a.txt").ui(), "new.txt"] }));
     assert_eq!(staged["isError"], false, "{staged}");
     let staged_diff = text_of(&fixture.call("git_diff", json!({ "repoPath": repo_path, "mode": "staged" })));
     assert!(staged_diff.contains("2 file(s) changed"), "{staged_diff}");
@@ -594,10 +595,10 @@ fn file_search_and_performance_tools_answer() {
     repo.commit_all("cart");
     fixture.mcp.set_workspace(&[repo.path_string()]);
 
-    let written = fixture.call("write_file", json!({ "filePath": repo.file("notes/todo.md").to_string_lossy(), "content": "buy milk\n" }));
+    let written = fixture.call("write_file", json!({ "filePath": repo.file("notes/todo.md").ui(), "content": "buy milk\n" }));
     assert_eq!(written["isError"], false, "{written}");
     assert_eq!(repo.read_text("notes/todo.md"), "buy milk\n");
-    let into_git = fixture.call("write_file", json!({ "filePath": repo.file(".git/config").to_string_lossy(), "content": "x" }));
+    let into_git = fixture.call("write_file", json!({ "filePath": repo.file(".git/config").ui(), "content": "x" }));
     assert_eq!(into_git["isError"], true);
 
     let listing = fixture.call("list_directory", json!({ "folderPath": repo.path_string() }));
@@ -791,7 +792,7 @@ fn clone_repository_starts_off_and_clones_outside_the_workspace() {
     source.commit_all("first");
     let parent = TempDir::new().unwrap();
     let parent_path = parent.path().real_path().unwrap();
-    let arguments = json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy() });
+    let arguments = json!({ "url": source.path_string(), "parentPath": parent_path.ui() });
 
     let off = Fixture::new(true, false);
     let result = off.call("clone_repository", arguments.clone());
@@ -805,7 +806,7 @@ fn clone_repository_starts_off_and_clones_outside_the_workspace() {
     let cloned = fixture.call("clone_repository", arguments.clone());
     assert_eq!(cloned["isError"], false, "{cloned}");
     let cloned_path = parent_path.join(&source_name);
-    assert_eq!(cloned["structuredContent"]["clonedPath"], cloned_path.to_string_lossy().as_ref());
+    assert_eq!(cloned["structuredContent"]["clonedPath"], cloned_path.ui().as_str());
     assert!(cloned_path.join("readme.md").exists());
     assert!(fixture.host.events_named("mcp-open-folder").is_empty());
 
@@ -816,18 +817,18 @@ fn clone_repository_starts_off_and_clones_outside_the_workspace() {
     fixture.mcp.set_workspace(&[]);
     let opened = fixture.call(
         "clone_repository",
-        json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy(), "folderName": "second", "open": "window" }),
+        json!({ "url": source.path_string(), "parentPath": parent_path.ui(), "folderName": "second", "open": "window" }),
     );
     assert_eq!(opened["isError"], false, "{opened}");
     let events = fixture.host.events_named("mcp-open-folder");
     assert_eq!(events.len(), 1, "{events:?}");
-    assert_eq!(events[0]["folderPath"], parent_path.join("second").to_string_lossy().as_ref());
+    assert_eq!(events[0]["folderPath"], parent_path.join("second").ui().as_str());
     assert_eq!(events[0]["mode"], "window");
 
     for (bad, message) in [
-        (json!({ "url": "ext::sh -c touch% /tmp/x", "parentPath": parent_path.to_string_lossy() }), "Remote helper"),
+        (json!({ "url": "ext::sh -c touch% /tmp/x", "parentPath": parent_path.ui() }), "Remote helper"),
         (json!({ "url": source.path_string(), "parentPath": "relative/dir" }), "absolute path"),
-        (json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy(), "open": "tab" }), "open must be"),
+        (json!({ "url": source.path_string(), "parentPath": parent_path.ui(), "open": "tab" }), "open must be"),
     ] {
         let refused = fixture.call("clone_repository", bad);
         assert_eq!(refused["isError"], true);
@@ -865,13 +866,13 @@ fn the_cli_clones_into_the_given_or_current_folder() {
     let parent = TempDir::new().unwrap();
     let parent_path = parent.path().real_path().unwrap();
     let off = Fixture::new(false, true);
-    let (code, _, err) = run_cli(&off.config_dir, &["clone", &source.path_string(), "--into", &parent_path.to_string_lossy()]);
+    let (code, _, err) = run_cli(&off.config_dir, &["clone", &source.path_string(), "--into", &parent_path.ui()]);
     assert_eq!(code, cli::EXIT_TOOL_ERROR);
     assert!(err.contains(TURNED_OFF), "{err}");
     drop(off);
 
     let fixture = Fixture::with_states(false, true, HashMap::from([("clone_repository".to_string(), true)]));
-    let (code, out, err) = run_cli(&fixture.config_dir, &["clone", &source.path_string(), "copy", "--into", &parent_path.to_string_lossy()]);
+    let (code, out, err) = run_cli(&fixture.config_dir, &["clone", &source.path_string(), "copy", "--into", &parent_path.ui()]);
     assert_eq!(code, cli::EXIT_OK, "{out}{err}");
     assert!(out.contains(&format!("Cloned into {}", parent_path.join("copy").display())), "{out}");
     assert!(parent_path.join("copy/a.txt").exists());

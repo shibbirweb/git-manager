@@ -74,6 +74,17 @@ pub fn git_in(dir: &Path, args: &[&str]) -> String {
     String::from_utf8_lossy(&output.stdout).into_owned()
 }
 
+/// A path as the app hands it to the page (`paths::to_ui`), for expected values and page-style arguments.
+pub trait UiText {
+    fn ui(&self) -> String;
+}
+
+impl UiText for Path {
+    fn ui(&self) -> String {
+        crate::paths::to_ui(self)
+    }
+}
+
 pub fn block_on<F: Future>(future: F) -> F::Output {
     tauri::async_runtime::block_on(future)
 }
