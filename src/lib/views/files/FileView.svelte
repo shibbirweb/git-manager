@@ -1389,6 +1389,18 @@
     border-bottom: none;
   }
 
+  /* Rounded panels: the bar rounds the two corners on the side it faces, like the panel's own
+     corners do at the bottom, so at the top it reads as a rounded header under the tabs. */
+  :global(html[data-rounded-panels]) .file-view:not(.bar-bottom) .file-bar {
+    border-top-left-radius: var(--panel-radius);
+    border-top-right-radius: var(--panel-radius);
+  }
+
+  :global(html[data-rounded-panels]) .file-view.bar-bottom .file-bar {
+    border-bottom-left-radius: var(--panel-radius);
+    border-bottom-right-radius: var(--panel-radius);
+  }
+
   .preview-pane {
     flex: none;
     min-width: 0;
