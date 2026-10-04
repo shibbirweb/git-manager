@@ -26,7 +26,7 @@ On macOS the web view sees a key equivalent first and passes it to the menu only
 - **An accelerator only the menu knows still works everywhere.** Cmd+W, Option+Cmd+S and Cmd+= reach the menu from the editor, the terminal or a text field, because nothing in the page claims them.
 - **Both routes call the same function.** The View and Edit items call `runWorkspaceShortcut`, the Code items call `runEditorCommand`, File > Save calls `fileCommands.save`. So it does not matter which route fires.
 
-This is also why one key can mean different things by place. Cmd+K is Git > Commit..., but the Markdown editor makes a link with it and the terminal clears its screen; they see it first. Cmd+B is View > Sidebar, but both Markdown editors make text bold with it: their keymaps (`markdownKeys` in `FileView.svelte`, Milkdown's own) prevent the default, so `workspaceShortcut` skips the key and the menu never gets it.
+This is also why one key can mean different things by place. Cmd+K is Git > Commit..., but the Markdown editor makes a link with it and the terminal clears its screen; they see it first. Cmd+B is View > Files Panel, but both Markdown editors make text bold with it: their keymaps (`markdownKeys` in `FileView.svelte`, Milkdown's own) prevent the default, so `workspaceShortcut` skips the key and the menu never gets it.
 
 ## Editor keys in one table
 

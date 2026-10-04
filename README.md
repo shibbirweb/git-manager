@@ -157,7 +157,7 @@ A few to start with (macOS keys; Help > Keyboard Shortcuts lists them all):
 | Cmd+K / Cmd+T | Commit / Update Project |
 | Cmd+9 | Show Git Log |
 | Ctrl+` / Ctrl+Shift+` | Show or hide the terminal / New terminal |
-| Cmd+B / Option+Cmd+B | Sidebar / Files panel |
+| Cmd+B / Option+Cmd+B | Files panel / Sidebar |
 | Cmd+, | Settings |
 
 In the merge tool:

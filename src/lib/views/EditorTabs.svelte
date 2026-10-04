@@ -20,6 +20,8 @@
   import { shellNameFor } from "$lib/terminal/terminals";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { parseTerminalTabPath } from "$lib/terminal/terminalTabs";
+  import { unsavedText } from "$lib/stores/unsavedText.svelte";
+  import { isUntitledTab } from "$lib/stores/untitledTabs";
   import { folderFor, relativeTo } from "$lib/stores/workspacePaths";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
@@ -140,7 +142,7 @@
     if (commit) {
       return [{ label: "Copy Commit Hash", action: () => void copy(commit.commitId) }];
     }
-    if (parseBranchTabPath(filePath) || isCompareTab(filePath)) {
+    if (parseBranchTabPath(filePath) || isCompareTab(filePath) || isUntitledTab(filePath)) {
       return [];
     }
     const gitTab = parseGitTabPath(filePath);
@@ -412,6 +414,7 @@
     {@const branchTab = parseBranchTabPath(tab.path)}
     {@const terminalKey = parseTerminalTabPath(tab.path)}
     {@const terminal = terminalKey !== null ? terminalStore.find(terminalKey) : null}
+    {@const untitled = isUntitledTab(tab.path)}
     <div
       class="tab"
       class:active
@@ -429,7 +432,9 @@
             ? gitTabTitle(gitTab).title
             : branchTab
               ? branchTabTitle(branchTab).title
-              : (compareTabTooltip(tab.path) ?? `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`)}
+              : untitled
+                ? `${unsavedText.title(tab.path) ?? label?.name ?? ""} (not saved to a file yet)`
+                : (compareTabTooltip(tab.path) ?? `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`)}
       role="presentation"
       onpointerdown={(event) => onTabPointerDown(event, tab.path)}
       onauxclick={(event) => onAuxClick(event, tab.path)}
@@ -458,7 +463,7 @@
                   : "file"}
           size={13}
         />
-        <span class="name" class:mono={commit}>{terminal?.name ?? label?.name ?? tab.path}</span>
+        <span class="name" class:mono={commit}>{terminal?.name ?? (untitled ? unsavedText.title(tab.path) : null) ?? label?.name ?? tab.path}</span>
         {#if label?.hint}
           <span class="hint">{label.hint}</span>
         {/if}

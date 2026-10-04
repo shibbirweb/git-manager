@@ -17,7 +17,8 @@ export async function clearCache(): Promise<void> {
     return;
   }
   const plan = clearCachePlan({
-    dirtyFiles: repoStore.tabs.filter((tab) => tab.dirty).length,
+    // Remember unsaved changes keeps them across the restart, like across a quit.
+    dirtyFiles: settings.rememberUnsaved ? 0 : repoStore.tabs.filter((tab) => tab.dirty).length,
     busy: repoStore.busy,
     mergeOpen: repoStore.mergeTarget !== null,
   });
@@ -27,8 +28,12 @@ export async function clearCache(): Promise<void> {
   }
   running = true;
   try {
-    repoStore.saveTabsNow();
-    await settings.flushNow();
+    if (settings.rememberUnsaved) {
+      await repoStore.keepUnsaved();
+    } else {
+      repoStore.saveTabsNow();
+      await settings.flushNow();
+    }
     const stash = terminalStore.terminals.length > 0 ? await terminalStore.stashForClearCache() : null;
     // The page goes away a moment after this answers; the terminals wait for the new one.
     await api.clearCache(stash);

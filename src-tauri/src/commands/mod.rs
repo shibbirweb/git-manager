@@ -32,6 +32,7 @@ pub mod status;
 pub mod submodule;
 pub mod tag;
 pub mod terminal;
+pub mod unsaved;
 pub mod window;
 pub mod workspace;
 pub mod worktree;

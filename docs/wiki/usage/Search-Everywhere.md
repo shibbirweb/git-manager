@@ -4,7 +4,7 @@ Search Everywhere is one popup that finds files, classes, functions and text in 
 
 ![Search Everywhere on the All tab](../images/search-everywhere-all.png)
 
-*The All tab for "cart": the best classes, files and symbols, each with a row that leads to its own tab.*
+*The All tab for "cart": the best files, classes and symbols, each with a row that leads to its own tab.*
 
 ## Open it
 
@@ -34,7 +34,7 @@ Opening a result adds a stop to Back and Forward, so Ctrl+- takes you back. See 
 
 ## All
 
-The All tab shows the best six results of three kinds: **Classes**, **Files** and **Symbols**. When a kind has more, a row such as **14 more** opens that kind's own tab with the same text.
+The All tab shows the best six results of three kinds, in this order: **Files**, **Classes** and **Symbols**. When a kind has more, a row such as **14 more** opens that kind's own tab with the same text.
 
 ## Files and Recent Files
 

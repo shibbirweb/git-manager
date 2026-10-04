@@ -52,10 +52,12 @@ const many = Array.from({ length: 10 }, (_, index) => symbol(`Cart${index}`));
 describe("tabRows", () => {
   it("lists sections in the All tab with a few rows each and a more row", () => {
     const rows = tabRows("all", results({ classes: { rows: many, matched: 40 }, files: { rows: [file("/w/cart.ts")], matched: 1 } }));
-    expect(rows[0]).toMatchObject({ kind: "header", label: "Classes" });
-    expect(rows.slice(1, 1 + SECTION_LIMIT).every((row) => row.kind === "symbol")).toBe(true);
-    expect(rows[1 + SECTION_LIMIT]).toMatchObject({ kind: "more", tab: "classes", label: "34 more" });
-    expect(rows.slice(2 + SECTION_LIMIT).map((row) => row.kind)).toEqual(["header", "file"]);
+    // Files come first, then classes.
+    expect(rows.slice(0, 2).map((row) => row.kind)).toEqual(["header", "file"]);
+    expect(rows[0]).toMatchObject({ label: "Files" });
+    expect(rows[2]).toMatchObject({ kind: "header", label: "Classes" });
+    expect(rows.slice(3, 3 + SECTION_LIMIT).every((row) => row.kind === "symbol")).toBe(true);
+    expect(rows[3 + SECTION_LIMIT]).toMatchObject({ kind: "more", tab: "classes", label: "34 more" });
     // Symbols with nothing found leave no empty section.
     expect(rows.some((row) => row.kind === "header" && row.label === "Symbols")).toBe(false);
   });
@@ -76,12 +78,12 @@ describe("tabRows", () => {
 
 describe("selection", () => {
   const rows = tabRows("all", results({ classes: { rows: many.slice(0, 2), matched: 2 }, files: { rows: [file("/w/x.ts")], matched: 1 } }));
-  // [header, c0, c1, header, file]
+  // [header, file, header, c0, c1]
 
   it("skips headings and wraps single steps", () => {
     expect(firstSelectable(rows)).toBe(1);
-    expect(moveSelectable(rows, 1, 1)).toBe(2);
-    expect(moveSelectable(rows, 2, 1)).toBe(4);
+    expect(moveSelectable(rows, 1, 1)).toBe(3);
+    expect(moveSelectable(rows, 3, 1)).toBe(4);
     expect(moveSelectable(rows, 4, 1)).toBe(1);
     expect(moveSelectable(rows, 1, -1)).toBe(4);
     expect(moveSelectable(rows, 1, 10)).toBe(4);
@@ -89,9 +91,10 @@ describe("selection", () => {
   });
 
   it("keeps the selected row by key when rows refresh", () => {
-    const next = tabRows("all", results({ classes: { rows: many.slice(1, 3), matched: 2 } }));
-    expect(keepSelectedKey(rows, 2, next)).toBe(1);
-    expect(keepSelectedKey(rows, 4, next)).toBe(1);
+    const next = tabRows("all", results({ classes: { rows: many.slice(1, 3), matched: 2 }, files: { rows: [file("/w/y.ts")], matched: 1 } }));
+    // [header, y, header, c1, c2]: c1 moves from 4 to 3, the gone file falls back to the first row.
+    expect(keepSelectedKey(rows, 4, next)).toBe(3);
+    expect(keepSelectedKey(rows, 1, next)).toBe(1);
     expect(keepSelectedKey([], 0, next)).toBe(1);
   });
 });

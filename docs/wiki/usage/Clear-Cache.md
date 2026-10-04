@@ -21,7 +21,7 @@ The screen blinks once. Your folder, the open tabs (when **Reopen tabs on start*
 
 Clear Cache never throws away your work:
 
-- **Unsaved changes**: it does nothing and says so. Save or close those files first.
+- **Unsaved changes**: kept and brought back like after a restart, while **Remember unsaved changes** is on (see [New File and Unsaved Changes](New-File-and-Unsaved-Changes.md)). With it off, it does nothing and says so: save or close those files first.
 - **A git operation running** (a fetch, a pull, a commit): it waits until that finishes.
 - **The merge tool is open**: finish or close it first.
 

@@ -77,7 +77,7 @@ On a Mac:
 - **Cmd+C** copies the selection. With nothing selected it does nothing.
 - **Cmd+V** pastes, **Cmd+A** selects everything and **Cmd+K** clears the terminal.
 - **Cmd+F** finds and **Cmd+\\** splits.
-- Other Cmd shortcuts, such as Cmd+B, still work in the app. Everything else goes to the shell, so Ctrl+C stops a command as usual.
+- Other Cmd shortcuts, such as Cmd+B (Files panel), still work in the app. Everything else goes to the shell, so Ctrl+C stops a command as usual.
 - Option types special characters, as in Terminal.app. Turn on **Option as Meta key** to use Option+B and Option+F to move by word, and other shortcuts from emacs (a text editor whose keys many shells use).
 
 On Windows and Linux, copy and paste are **Ctrl+Shift+C** and **Ctrl+Shift+V**, and links open with Ctrl+click. All keys are on [Keyboard Shortcuts](Keyboard-Shortcuts.md#terminal-and-bottom-panel).

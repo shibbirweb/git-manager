@@ -8,7 +8,7 @@ People want to scroll the history, see where branches split and merged, read one
 
 ## How it works
 
-`LogView.svelte` fills the main area. The Log button in the activity bar, the empty main area, Shift+Cmd+L and View > Log all call `changesSelection.toggleLog()`, which remembers the view you came from, so a second click returns you there. Git > Show Git Log (Cmd+9) and a repository row's **...** > Show Log call `showLog(repoRoot?)` in `views/gitActions.ts`, which makes the repository active first and only opens the Log, never hides it.
+`LogView.svelte` fills the main area. The Log button in the activity bar, the empty main area, Shift+Cmd+L, View > Log and the X at the right end of the Log toolbar all call `changesSelection.toggleLog()`, which remembers the view you came from, so a second click returns you there. Git > Show Git Log (Cmd+9) and a repository row's **...** > Show Log call `showLog(repoRoot?)` in `views/gitActions.ts`, which makes the repository active first and only opens the Log, never hides it.
 
 Double-clicking a commit opens it in its own editor tab instead; see [How commit tabs work](How-Commit-Tabs-Work.md).
 

@@ -31,7 +31,7 @@ export type WorkspaceShortcut =
 
 /**
  * The commands the window handles itself, even from a text field or the terminal: Cmd+B
- * toggles the sidebar, Shift+Cmd+G / Shift+Cmd+E pick a panel, Ctrl+` the terminal, Cmd+P
+ * toggles the Files panel and Option+Cmd+B the sidebar, Shift+Cmd+G / Shift+Cmd+E pick a panel, Ctrl+` the terminal, Cmd+P
  * opens Quick Open and Shift+Cmd+P the Command Palette; Cmd+E opens Recent
  * Files, Cmd+Up (Alt+Home elsewhere) the Navigation Bar, Shift+Cmd+O, Cmd+O, Option+Cmd+O
  * and Shift+Cmd+F open Search Everywhere on Files, Classes, Symbols and Text, and

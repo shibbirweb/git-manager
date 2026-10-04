@@ -1,7 +1,10 @@
 // The file tabs of each workspace, kept in state.json so they come back after a restart
 // (Settings > Editor > Reopen tabs on start). Only paths, flags and positions are kept:
-// a restored tab loads its file the first time it is shown. Pure, so the validation of a
+// a restored tab loads its file the first time it is shown. Untitled tabs are kept too; their
+// text lives in ~/.gitmanager/unsaved (unsavedText.svelte.ts). Pure, so the validation of a
 // hand-edited state.json can be tested.
+
+import { isUntitledTab } from "./untitledTabs";
 
 /** Where the caret and the view were in a file tab. Lines and columns are 0-based. */
 export interface TabPosition {
@@ -12,7 +15,7 @@ export interface TabPosition {
 }
 
 export interface SavedTab {
-  /** Absolute file path. */
+  /** Absolute file path, or an Untitled tab's path. */
   path: string;
   preview: boolean;
   pinned: boolean;
@@ -52,6 +55,11 @@ export function isSavablePath(value: unknown): value is string {
   );
 }
 
+/** A tab a session may hold: a file, or an Untitled tab. */
+export function isSessionTabPath(value: unknown): value is string {
+  return isSavablePath(value) || (typeof value === "string" && isUntitledTab(value));
+}
+
 function pickCount(value: unknown, fractional: boolean): number | null {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
     return null;
@@ -87,7 +95,7 @@ function parseTabGroup(value: unknown): SavedTabGroup {
     }
     const tab = entry && typeof entry === "object" ? (entry as Record<string, unknown>) : null;
     const path = tab?.path;
-    if (!tab || !isSavablePath(path) || seen.has(path)) {
+    if (!tab || !isSessionTabPath(path) || seen.has(path)) {
       continue;
     }
     seen.add(path);
@@ -193,7 +201,7 @@ function savedGroup(
     if (saved.length >= MAX_SAVED_TABS) {
       break;
     }
-    if (!isFile(tab.path) || !isSavablePath(tab.path)) {
+    if (!isFile(tab.path) || !isSessionTabPath(tab.path)) {
       continue;
     }
     saved.push({ path: tab.path, preview: tab.preview, pinned: tab.pinned ?? false, position: positions.get(tab.path) ?? null });
@@ -235,4 +243,36 @@ export function restorableTabs(
     return right;
   }
   return { ...left, right, rightFocused: session.rightFocused ?? false };
+}
+
+/**
+ * Remember unsaved changes: the session to restore once the tabs with kept text are known.
+ * With `reopenAll` off (Reopen tabs on start) only those tabs come back. A kept tab the
+ * session lacks (the window closed before the session was written) joins the left group.
+ */
+export function sessionWithKept(
+  session: SavedTabSession | null,
+  keptPaths: readonly string[],
+  reopenAll: boolean,
+): SavedTabSession | null {
+  const kept = new Set(keptPaths);
+  const pick = (group: SavedTabGroup): SavedTabGroup => {
+    const tabs = reopenAll ? group.tabs : group.tabs.filter((tab) => kept.has(tab.path));
+    return { tabs, active: tabs.some((tab) => tab.path === group.active) ? group.active : null };
+  };
+  const left = session ? pick(session) : { tabs: [], active: null };
+  const right = session?.right ? pick(session.right) : null;
+  const present = new Set([...left.tabs, ...(right?.tabs ?? [])].map((tab) => tab.path));
+  const added: SavedTab[] = keptPaths
+    .filter((tabPath) => !present.has(tabPath) && isSessionTabPath(tabPath))
+    .map((tabPath) => ({ path: tabPath, preview: false, pinned: false, position: null }));
+  const merged: SavedTabGroup = { tabs: [...left.tabs, ...added].slice(0, MAX_SAVED_TABS), active: left.active };
+  const active = merged.active ?? merged.tabs[0]?.path ?? null;
+  if (!right || right.tabs.length === 0) {
+    return merged.tabs.length > 0 ? { ...merged, active } : null;
+  }
+  if (merged.tabs.length === 0) {
+    return { ...right, active: right.active ?? right.tabs[0]?.path ?? null };
+  }
+  return { ...merged, active, right, rightFocused: session?.rightFocused ?? false };
 }

@@ -10,6 +10,7 @@
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
     { "page": "usage/Pin-Reorder-and-Wrap-Tabs.md", "summary": "Drag tabs into the order you like, pin the ones you always need, and wrap a long row of tabs." },
     { "page": "usage/Single-Tab-Title.md", "summary": "With one file open, see its name centered above the code instead of a lone tab." },
+    { "page": "usage/New-File-and-Unsaved-Changes.md", "summary": "Open a new tab with Cmd+N, save it later, and get your unsaved work back after a restart, like Sublime Text." },
     { "page": "usage/Unload-Hidden-Tabs.md", "summary": "Free the memory of tabs you have not looked at for a while; they open again where you left them." },
     { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line and the IDE features of the editor." },
     { "page": "usage/Code-Appearance.md", "summary": "Font weight, line spacing, syntax highlighting, visible whitespace, the cursor, word wrap, indentation detected from each file, and zoom." },
@@ -80,6 +81,8 @@
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/MCP-and-CLI-Bugs-We-Fixed.md", "summary": "The MCP server and command line tool bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Repository-Actions-Bugs-We-Fixed.md", "summary": "The repository row and Changes title bar bugs we found, why they happened and how we fixed them." },
     { "page": "developer/How-the-Changes-Tab-Works.md", "summary": "The Changes tab opened from the status bar: every uncommitted file compared with the last commit." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
@@ -152,6 +155,13 @@
       "usage": "usage/Single-Tab-Title.md",
       "developer": "developer/How-the-Single-Tab-Title-Works.md",
       "screenshots": ["single-tab-title.png"]
+    },
+    {
+      "id": "new-file-and-unsaved-changes",
+      "title": "New File and unsaved changes",
+      "usage": "usage/New-File-and-Unsaved-Changes.md",
+      "developer": "developer/How-New-Files-and-Unsaved-Changes-Work.md",
+      "screenshots": ["new-file-untitled.png", "settings-remember-unsaved.png"]
     },
     {
       "id": "unload-hidden-tabs",

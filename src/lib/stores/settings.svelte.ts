@@ -193,6 +193,7 @@ class SettingsStore {
   singleTabTitle = $state(initialPreferences.singleTabTitle);
   autoSave = $state<AutoSaveMode>(initialPreferences.autoSave);
   autoSaveDelayMs = $state(initialPreferences.autoSaveDelayMs);
+  rememberUnsaved = $state(initialPreferences.rememberUnsaved);
   trimTrailingWhitespace = $state(initialPreferences.trimTrailingWhitespace);
   insertFinalNewline = $state(initialPreferences.insertFinalNewline);
   trimFinalNewlines = $state(initialPreferences.trimFinalNewlines);
@@ -436,6 +437,7 @@ class SettingsStore {
       singleTabTitle: this.singleTabTitle,
       autoSave: this.autoSave,
       autoSaveDelayMs: this.autoSaveDelayMs,
+      rememberUnsaved: this.rememberUnsaved,
       trimTrailingWhitespace: this.trimTrailingWhitespace,
       insertFinalNewline: this.insertFinalNewline,
       trimFinalNewlines: this.trimFinalNewlines,

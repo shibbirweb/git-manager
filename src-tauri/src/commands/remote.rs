@@ -449,6 +449,43 @@ fn clone_into(
     Ok(strip_trailing_slash(&cloned))
 }
 
+/// The folder `git clone` makes for `url`: its last part without `.git` or `.bundle`, like
+/// the Clone dialog's default (`cloneFolderName` in gitOptions.ts).
+pub fn clone_folder_name(url: &str) -> String {
+    let trimmed = url.trim().trim_end_matches(['/', '\\']);
+    let lower = trimmed.to_ascii_lowercase();
+    let without_git_dir = if lower.ends_with("/.git") || lower.ends_with("\\.git") {
+        &trimmed[..trimmed.len() - 5]
+    } else {
+        trimmed
+    };
+    let without_git_dir = without_git_dir.trim_end_matches(['/', '\\']);
+    let last = without_git_dir.rsplit(['/', '\\', ':']).next().unwrap_or_default();
+    let lower_last = last.to_ascii_lowercase();
+    for suffix in [".git", ".bundle"] {
+        if lower_last.ends_with(suffix) {
+            return last[..last.len() - suffix.len()].to_string();
+        }
+    }
+    last.to_string()
+}
+
+/// `transport::address` URLs run a git remote helper (`ext::` can run any command), so the
+/// MCP and command line clone refuses them even when the user's git config would allow one.
+pub fn is_remote_helper_url(url: &str) -> bool {
+    url.trim().split_once("::").is_some_and(|(transport, _)| {
+        !transport.is_empty()
+            && transport
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'+' | b'-' | b'.'))
+    })
+}
+
+/// Clones without progress or Cancel, for the MCP tool and the command line.
+pub fn clone_quietly(url: &str, parent_dir: &str, folder_name: &str) -> AppResult<String> {
+    clone_into(url, parent_dir, folder_name, None, &[], &mut |_line: &str| {})
+}
+
 /// The error a cancelled clone ends with; the Clone dialog shows it as a notice, not a failure.
 pub const CLONE_CANCELLED: &str = "Clone cancelled";
 
@@ -860,6 +897,33 @@ mod tests {
         assert!(!read_remotes(&local.open()).unwrap().iter().any(|info| info.name == "mirror"));
         assert!(matches!(run_add_remote(&repo_path, "-x", "u", None), Err(AppError::Invalid(_))));
         assert!(run_add_remote(&repo_path, "origin", "https://example.com/c.git", None).is_err());
+    }
+
+    #[test]
+    fn clone_folder_names_follow_the_url_like_the_dialog() {
+        for (url, expected) in [
+            ("https://github.com/owner/repo.git", "repo"),
+            ("https://github.com/owner/repo", "repo"),
+            ("https://github.com/owner/repo/", "repo"),
+            ("git@github.com:owner/Repo.GIT", "Repo"),
+            ("git@host:repo.git", "repo"),
+            ("/srv/git/project/.git", "project"),
+            ("ssh://host/path/backup.bundle", "backup"),
+            ("  https://host/x.git  ", "x"),
+            ("", ""),
+        ] {
+            assert_eq!(clone_folder_name(url), expected, "{url}");
+        }
+    }
+
+    #[test]
+    fn remote_helper_urls_are_recognised() {
+        for url in ["ext::sh -c touch% /tmp/x", "fd::17", "persistent-https::host/repo", " ext::x"] {
+            assert!(is_remote_helper_url(url), "{url}");
+        }
+        for url in ["https://host/repo.git", "git@host:repo.git", "ssh://[::1]/repo.git", "/srv/repo", "file:///srv/repo"] {
+            assert!(!is_remote_helper_url(url), "{url}");
+        }
     }
 
     #[test]

@@ -31,6 +31,7 @@
   import { isMarkdownPath, rememberViewMode, sessionViewMode } from "$lib/markdown/viewMode";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
   import { fileCommands } from "$lib/stores/fileCommands.svelte";
+  import { unsavedText } from "$lib/stores/unsavedText.svelte";
   import { selectionInfo } from "$lib/editor/selectionInfo";
   import { changesSelection } from "../changes/selection.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -238,6 +239,8 @@
       clearTimeout(marksTimer);
       clearTimeout(positionTimer);
       clearTimeout(autoSaveTimer);
+      // Remember unsaved changes: a waiting write goes now, while the text is still here.
+      unsavedText.writeNow(filePath);
       // A closed tab keeps its caret for Reopen Closed Tab.
       notePosition();
       view?.destroy();
@@ -331,7 +334,13 @@
         void refreshGitInfo();
         return;
       }
-      await createEditor(next.content);
+      // Remember unsaved changes: the tab starts from the text kept last time, unsaved against the file on disk.
+      const first = sharedDocs.peers(filePath, member).length === 0 && !shared.text;
+      const kept = first && unsavedText.has(filePath) ? await unsavedText.read(filePath) : null;
+      if (request !== requestId) {
+        return;
+      }
+      await createEditor(next.content, kept);
     } catch (error) {
       if (request !== requestId) {
         return;
@@ -539,7 +548,8 @@
     return navIndex >= 0 ? `${navIndex + 1} of ${navMarks.length}` : `${navMarks.length} ${noun}`;
   });
 
-  async function createEditor(content: string): Promise<void> {
+  /** `kept` is unsaved text kept from last time (unsavedText.svelte.ts), shown instead of `content`. */
+  async function createEditor(content: string, kept: string | null = null): Promise<void> {
     const language = await editorLanguage(filePath);
     // Wait for the editor host to render after `file` was set.
     await Promise.resolve();
@@ -613,7 +623,11 @@
     const dirtyListener = EditorView.updateListener.of((update) => {
       // The editor that made the change reports unsaved edits, for both.
       if (update.docChanged && shared.baseline && !isReplay(update)) {
-        repoStore.setDirty(filePath, !update.state.doc.eq(shared.baseline));
+        const unsaved = !update.state.doc.eq(shared.baseline);
+        repoStore.setDirty(filePath, unsaved);
+        if (unsaved) {
+          unsavedText.schedule(filePath, () => view?.state.doc.toString() ?? null);
+        }
       }
       if (update.docChanged) {
         conflictCount = update.state.field(conflictField).length;
@@ -630,7 +644,7 @@
       parent: host,
       dispatchTransactions: syncedDispatch(filePath, member),
       state: EditorState.create({
-        doc: peer ? peer.state.doc : (moved ?? content),
+        doc: peer ? peer.state.doc : (moved ?? kept ?? content),
         extensions: [
           saveKeys,
           markdownKeys,
@@ -654,7 +668,7 @@
     // The preview may have mounted before the editor existed; it renders the new text now.
     docVersion++;
     if ((!peer && !moved) || !shared.baseline) {
-      shared.baseline = view.state.doc;
+      shared.baseline = kept !== null && !peer && !moved ? view.state.toText(content) : view.state.doc;
     }
     conflictCount = view.state.field(conflictField).length;
     void refreshGitInfo();

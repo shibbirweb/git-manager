@@ -30,6 +30,7 @@ Window shortcuts do nothing while a dialog or the merge tool is open: the key is
 | --- | --- |
 | Cmd+, | Git Manager > Settings... |
 | Cmd+H, Option+Cmd+H, Cmd+Q | Hide Git Manager, Hide Others, Quit Git Manager |
+| Cmd+N | File > New File |
 | Cmd+S | File > Save |
 | Option+Cmd+S | File > Save All |
 | Cmd+W | File > Close Tab |
@@ -48,8 +49,8 @@ Window shortcuts do nothing while a dialog or the merge tool is open: the key is
 | Shift Shift (press Shift twice) | Edit > Search Everywhere |
 | Shift+Cmd+E | View > Branches and Stashes |
 | Shift+Cmd+L | View > Log |
-| Option+Cmd+B | View > Files Panel |
-| Cmd+B | View > Sidebar |
+| Cmd+B | View > Files Panel |
+| Option+Cmd+B | View > Sidebar |
 | Ctrl+` | View > Terminal |
 | Option+Z | View > Word Wrap |
 | Cmd+=, Cmd+- and Cmd+0 | View > Zoom In, Zoom Out and Reset Zoom (the editor font size) |

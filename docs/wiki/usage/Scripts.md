@@ -8,7 +8,7 @@ The Scripts panel lists the scripts of your projects and runs them with one clic
 
 ## Open the panel
 
-Click the **play** button in the left activity bar, just above the Terminal button, or choose **View > Scripts**. The panel opens on the left, in place of Changes. Click the button again to hide it.
+Click the **play** button in the left activity bar, just above the Terminal button, or choose **View > Scripts**. The panel opens on the left, in place of Changes. Click the button again, or the **X** at the top right of the panel, to hide it.
 
 ## What it lists
 
@@ -26,7 +26,7 @@ Each file is a row with its name, then the package name and its folder, dimmed. 
 
 Folders with downloaded or built files are skipped: `node_modules`, `vendor`, `target`, `dist`, `build`, hidden folders and anything your `.gitignore` leaves out. If a file cannot be read (for example broken JSON), its row shows a warning sign; hover it for the reason.
 
-The list is read again each time the panel opens. Click **Refresh** in the toolbar after you add a script.
+The list is read again each time the panel opens. Click **Refresh** in the panel's title bar after you add a script.
 
 ### Which package manager
 

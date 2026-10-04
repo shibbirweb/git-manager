@@ -13,6 +13,11 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Clone Repository... on the welcome screen opens the Clone dialog, so you can start from a repository on GitHub or another server without opening a folder first. Scripts and AI tools can clone too: `git-manager cli clone <url> [folder] [--into <folder>] [--open window|workspace]` and the MCP tool `clone_repository`. The tool starts off, since it writes outside the open folders; turn it on in Help > Available MCP Tools.
+- The Changes tab (click **N changes** in the status bar) can stage, unstage and discard: hover a file for Stage, Unstage and Discard changes, right-click it for more, or use Stage all, Unstage all and Discard all next to **Changed files**. A **staged** or **partly staged** tag shows what is in the next commit.
+- New File, like Sublime Text: File > New File (Cmd+N) opens an empty Untitled tab named after its first line. Cmd+S asks where to save it; saved inside the folder, the tab becomes that file's tab.
+- Remember unsaved changes in Settings > Editor > Saving (on by default): closing the window, quitting, Close Folder and Clear Cache keep the text of Untitled tabs and the unsaved edits of files, without asking, and the tabs come back with them the next time the folder opens. The text is kept in `~/.gitmanager/unsaved` until you save, revert or discard it. Closing a tab yourself still asks.
+
 - Clear Cache: a brush button right of Memory in the status bar, and View > Clear Cache, restart the window's interface in a fresh WebKit process and give back all the memory it holds (measured: 328 MB with every file closed after a Markdown session, 127 MB after). The screen blinks once and the folder and tabs come back. Terminals and Run sessions keep running and come back in the same place with what they showed, so a dev server or a build never stops. It waits for unsaved files and running git operations.
 - Unload hidden tabs in Settings > Editor (on by default): a file tab you have not looked at for 15 minutes (or 5, 30, 60) frees its editor, about 4 MB each. The tab stays in the strip and opens again at the same line; tabs with unsaved changes are never unloaded. Undo history of an unloaded tab starts over.
 - Syntax highlighting switch in Settings > Editor (on by default). Off, code in editors, diffs, the merge tool and Markdown code blocks shows as plain text and no language grammar is loaded, which saves about 35 MB. Toggle Comment still works; fold arrows and bracket pair colors need highlighting, and sticky scroll follows the indentation instead.
@@ -120,6 +125,10 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Cmd+B (Ctrl+B on Windows and Linux) now shows or hides the Files panel, and Option+Cmd+B (Ctrl+Alt+B) the left sidebar; the two keys swapped. A key you set yourself in Settings > Keyboard Shortcuts stays as it is.
+- The Branches and Stashes and Scripts panels have a title bar like Changes and Files, with Refresh and an X that hides the sidebar (Scripts keeps Collapse All there too). The Log toolbar has an X that hides the Log.
+- The Discard changes button uses the same hooked arrow as VS Code, in the Changes sidebar, the Changes tab and the diff's line actions.
+- Search Everywhere: the All tab lists Files first, then Classes and Symbols, so Enter right after typing opens the best matching file.
 - Fetch, Pull, Push and Stash moved from the header to the Git menu (Fetch All Remotes, Pull..., Push..., Force Push..., Uncommitted Changes > Stash Changes...).
 - Save and Revert moved from the editor toolbar to the File menu (Save, Save All, Revert File).
 - Go to Line is now Cmd+L (it was Option+Cmd+G).
@@ -145,6 +154,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- In a narrow sidebar, the buttons in the Changes title bar no longer slide under its close button; the CHANGES title gets shorter instead.
 - Closing Markdown files with mermaid diagrams left the diagram library in memory until the app quit. Diagrams are now drawn in a hidden frame that goes away with the library and its cache 3 seconds after the last document with diagrams closes (after closing four such files: 264 MB instead of 342 MB, median of three runs).
 - The welcome screen fits short windows: the recent lists scroll inside the card instead of the card being cut off at the top and bottom.
 - The GPU acceleration and scrollback hints in Settings, Terminal gave wrong memory numbers ("a few MB" for GPU drawing); they now show measured ones: about 70 MB for the first GPU terminal, and about 2 KB per scrollback line.

@@ -25,6 +25,7 @@ mod terminal_link;
 #[cfg(test)]
 mod test_support;
 mod text_search;
+mod unsaved;
 mod watcher;
 mod windows;
 mod workspace_file;
@@ -186,6 +187,10 @@ pub fn run() {
             commands::local_history::local_history_deleted,
             commands::local_history::local_history_usage,
             commands::local_history::local_history_clear,
+            commands::unsaved::unsaved_write,
+            commands::unsaved::unsaved_read,
+            commands::unsaved::unsaved_remove,
+            commands::unsaved::unsaved_list,
             commands::workspace::read_workspace_file,
             commands::workspace::write_workspace_file,
             commands::files::list_directories,

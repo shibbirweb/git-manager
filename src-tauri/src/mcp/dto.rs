@@ -41,6 +41,8 @@ pub struct McpToolInfo {
     pub kind: ToolKind,
     pub read_only: bool,
     pub destructive: bool,
+    /// On until the user switches it (off for destructive tools and those outside the workspace).
+    pub default_enabled: bool,
     pub enabled: bool,
     pub input_schema: Value,
 }

@@ -1112,7 +1112,9 @@ export interface McpToolInfo {
   kind: "backend" | "ui";
   readOnly: boolean;
   destructive: boolean;
-  /** Effective state: the user's choice, else on unless destructive. */
+  /** The state until the user switches it: off for destructive tools and those outside the workspace. */
+  defaultEnabled: boolean;
+  /** Effective state: the user's choice, else the default. */
   enabled: boolean;
   inputSchema: Record<string, unknown>;
 }
@@ -1136,6 +1138,12 @@ export interface McpUiResult {
 }
 
 /** Payload of the "mcp-ui-request" event: answer it with mcp_ui_respond. */
+/** clone_repository asks the window to open the clone, in place of its folders or added to them. */
+export interface McpOpenFolderRequest {
+  folderPath: string;
+  mode: "window" | "workspace";
+}
+
 export interface McpUiRequest {
   requestId: number;
   tool: string;
@@ -1237,6 +1245,19 @@ export interface LocalHistoryRecord {
   text: string | null;
   eol: Eol | null;
   label: SnapshotLabel;
+}
+
+/** Unsaved text kept across restarts (unsaved.rs): whose it is. */
+export interface UnsavedMeta {
+  /** An absolute file path, or the path of an Untitled tab. */
+  tabPath: string;
+  workspaceId: string;
+  /** Milliseconds since the epoch. */
+  savedAt: number;
+}
+
+export interface UnsavedText extends UnsavedMeta {
+  text: string;
 }
 
 /** What moved a ref, read from the reflog message (git/reflog.rs). */

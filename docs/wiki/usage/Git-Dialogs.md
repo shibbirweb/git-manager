@@ -121,7 +121,7 @@ Type HEAD, a commit id or a branch, or use **Commit...** and **Branch...** to pi
 
 ## Clone
 
-**Git > Clone...** copies a repository from a server into a new folder, even with no folder open.
+**Git > Clone...** copies a repository from a server into a new folder, even with no folder open. **Clone Repository...** on the welcome screen opens the same dialog.
 
 ![The Clone dialog](../images/git-clone-dialog.png)
 
@@ -130,6 +130,8 @@ Type HEAD, a commit id or a branch, or use **Commit...** and **Branch...** to pi
 Paste the **Repository URL**. **Clone into folder** starts next to the open folder (or in your home folder), and **Folder name** fills in from the URL. The full path shows below.
 
 While it clones you see git's progress. **Cancel** stops git and removes the folder it was creating. When the clone is done, choose **Open in This Window**, **Add to Workspace** (only when a folder is open) or **Not Now**.
+
+Scripts and AI tools can clone too, with `git-manager cli clone` or the `clone_repository` tool. See [MCP Server and Command Line Tool](MCP-and-CLI.md).
 
 ## Related
 

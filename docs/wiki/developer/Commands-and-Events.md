@@ -37,6 +37,7 @@ The backend emits seven events. The `api.ts` helpers return an unlisten function
 | `terminal-exited` | `onTerminalExited` | `TerminalExitedEvent { terminalId, exitCode }` | `commands/terminal.rs` and `commands/scripts.rs`, when a shell or a script run ends; `exitCode` is null when killed |
 | `git-command` | `onGitCommand` | `GitCommandEntry` | `commands/console.rs`, when a git command starts and when it ends, only after `git_console_entries` was called once |
 | `mcp-ui-request` | `onMcpUiRequest` | `McpUiRequest { requestId, tool, arguments }` | `mcp/bridge.rs`, for a tool the window runs; answer every one with `mcp_ui_respond` |
+| `mcp-open-folder` | `onMcpOpenFolder` | `McpOpenFolderRequest { folderPath, mode }` | `mcp/tools/git_write.rs`, when `clone_repository` should open the clone (`window`) or add it (`workspace`) |
 | `mcp-activity` | `onMcpActivity` | `McpActivity { tool, at, durationMs, ok, error, client }` | `mcp/mod.rs`, after each MCP or command line tool call |
 
 `gitDir: true` means HEAD, refs, the index or the operation state changed, so branches and the log need a reload too. `workTree: true` means only files changed. `reposChanged: true` asks the store to rescan. See [Architecture](Architecture.md) for the refresh flow.

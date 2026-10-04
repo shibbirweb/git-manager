@@ -61,6 +61,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Saving", "save"],
     ["Auto save", "autosave save automatically focus change"],
     ["Delay", "auto save milliseconds", "Auto save"],
+    ["Remember unsaved changes", "hot exit untitled new file keep restore quit backup"],
     ...SAVE_CLEANUP_ROWS.map((row): EntrySpec => [row.label, "save whitespace newline"]),
     ["Local History", "versions backup restore"],
     ["Keep local history", "versions backup restore"],

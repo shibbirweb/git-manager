@@ -5,6 +5,7 @@ export const MENU_ACTIONS = [
   "app.about",
   "app.checkForUpdates",
   "app.settings",
+  "file.newFile",
   "file.newWindow",
   "file.openFolder",
   "file.openFolderNewWindow",

@@ -10,6 +10,7 @@ Like VS Code keeps its files in `~/.vscode`, Git Manager keeps its own in a fold
   state.json      recent folders, the last session, panel sizes and layout
   mcp.json        the MCP secret token, and the port while the server runs
   logs/memory.log the debug memory log, written while it is on
+  unsaved/        unsaved text kept until it is saved (Remember unsaved changes)
 ```
 
 The folder is created the first time a setting is saved. **Settings > Settings Files** shows the **Settings folder** path, a **Copy settings.json Path** button and **Changed from defaults**: each setting you changed, such as `tabSize: 2`, or **Nothing yet**.
@@ -22,7 +23,7 @@ Each key matches a setting in the dialog. Values in quotes must be one of the ch
 
 **Appearance**: `theme` (`"system"`, `"light"`, `"dark"`), `roundedPanels`, `fileToolbar` (`"top"`, `"bottom"`, `"none"`), `fileToolbarBreadcrumbs`, `fileToolbarBadges`, `fileToolbarChanges`, `fileToolbarBlame`, `fileToolbarCopyPath`, `fileToolbarMarkdownView`, `fileToolbarMarkdownFormat`, `uiFontSize`.
 
-**Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `syntaxHighlighting`, `tabSize` (2, 4 or 8), `detectIndentation`, `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `unloadHiddenTabs`, `unloadHiddenTabsMinutes` (5, 15, 30 or 60), `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
+**Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `syntaxHighlighting`, `tabSize` (2, 4 or 8), `detectIndentation`, `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `unloadHiddenTabs`, `unloadHiddenTabsMinutes` (5, 15, 30 or 60), `rememberUnsaved`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
 
 **Git**: `ignoreWhitespace`, `logAllRefs`, `commitSignOff`, `commitGpgSign` (`"default"`, `"sign"`, `"noSign"`), `gitConsole`, and `updateMethod` (`"merge"` or `"rebase"`, default `"merge"`, saved by [Git > Update Project...](Git-Dialogs.md#update-project); there is no switch for it in Settings).
 

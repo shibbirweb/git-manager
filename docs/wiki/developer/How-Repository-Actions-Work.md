@@ -126,15 +126,13 @@ New for these menus: `commit_all` (`commit --all`), `undo_last_commit`, `fetch` 
 - `src-tauri/src/commands/remote.rs`: `pull_merges_or_rebases_as_asked`, `pull_rebase_reports_conflicts`, `fetch_with_prune_drops_deleted_remote_branches`, `fetch_all_remotes_reads_every_remote`, `push_tags_sends_local_tags`, `push_tags_without_upstream_uses_the_only_remote`, `push_publishes_a_branch_without_upstream`.
 - `src-tauri/src/commands/stash.rs`: `stash_clear_drops_every_stash_and_pop_by_index_keeps_the_rest`; `tag.rs`: `creates_lightweight_and_annotated_tags`, `tags_a_given_commit_and_refuses_duplicates`, `deletes_a_tag`.
 
+## Bugs we fixed
+
+The repository row bugs and their fixes are in [Repository Actions Bugs We Fixed](Repository-Actions-Bugs-We-Fixed.md).
+
 ## Keeping this page in sync
 
 - Update this page when an item, a disabled rule or a shared action in `gitActions.ts` changes, and add the case to `repoMenu.test.ts`.
 - Update [Repository Actions](../usage/Repository-Actions.md) and retake `repo-actions-row.png` and `repo-actions-menu.png` when the row or the menu looks different.
+- Record bug fixes in [Repository Actions Bugs We Fixed](Repository-Actions-Bugs-We-Fixed.md).
 - Related: [How Changes and Commits Work](How-Changes-and-Commits-Work.md), [How Remotes Work](How-Remotes-Work.md), [How the Branches Popup Works](How-the-Branches-Popup-Works.md).
-
-## Bugs we fixed
-
-**The Merging badge was cut off.**
-- **The issue:** at 260 and 360 px, a merging repository showed "Mergin".
-- **Why it happened:** the header button clipped its overflow, its name and badges never shrank, and the actions kept their full width.
-- **The fix and why we chose it:** only the repository and branch names shrink (`minmax(0, max-content)` grid tracks), and the actions wrap below when not even four letters fit. Hiding the badge would hide the state.

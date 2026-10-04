@@ -16,6 +16,7 @@ import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { openShelveDialog, showShelf } from "$lib/shelf/shelfActions.svelte";
 import { fileCommands } from "$lib/stores/fileCommands.svelte";
 import { isPseudoTab } from "$lib/stores/pseudoTabs";
+import { isUntitledTab } from "$lib/stores/untitledTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { defaultPreferences, type MarkdownViewMode, settings, type ThemeSetting } from "$lib/stores/settings.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
@@ -110,7 +111,11 @@ function hasSelection(active: Element | null): boolean {
 
 async function saveAll(): Promise<void> {
   const dirty = repoStore.dirtyPaths;
-  const saved = await Promise.all(dirty.map((filePath) => fileCommands.save(filePath, { quiet: true })));
+  const saved = await Promise.all(dirty.filter((tabPath) => !isUntitledTab(tabPath)).map((filePath) => fileCommands.save(filePath, { quiet: true })));
+  // Each Untitled tab asks where to save, one dialog at a time.
+  for (const tabPath of dirty.filter((candidate) => isUntitledTab(candidate))) {
+    saved.push(await fileCommands.save(tabPath, { quiet: true }));
+  }
   const count = saved.filter(Boolean).length;
   if (count > 0) {
     toast.success(count === 1 ? "Saved 1 file" : `Saved ${count} files`);
@@ -194,6 +199,9 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "file.clearRecent": app(() => settings.clearRecent()),
   "file.addFolder": workspace(() => pickAndAddFolder()),
   "file.saveWorkspace": workspace(() => pickAndSaveWorkspace()),
+  "file.newFile": workspace(() => {
+    repoStore.newUntitledTab();
+  }),
   "file.save": app(() => {
     const filePath = activeFilePath();
     return filePath ? fileCommands.save(filePath) : undefined;

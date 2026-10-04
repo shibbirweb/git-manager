@@ -56,16 +56,18 @@ Open **Help > Available MCP Tools...** (or the button next to the Status line). 
 - **can change files**: for example staging or committing.
 - **destructive**: it can lose work or run commands, such as discarding changes, pushing, resetting a branch, writing, renaming, moving or trashing files, running scripts or typing in a terminal. These start **off**.
 
-Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. **Restore Defaults** puts the tools shown back to how they start, destructive tools off and every other tool on, after asking you. A single switch turns its tool on right away. The header says how many tools are on, for example "74 of 86 tools on".
+`clone_repository` starts off too, though it is not destructive: it is the one tool that writes outside the folders open in Git Manager.
+
+Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. **Restore Defaults** puts the tools shown back to how they start, destructive tools and `clone_repository` off and every other tool on, after asking you. A single switch turns its tool on right away. The header says how many tools are on, for example "74 of 86 tools on".
 
 **Recent calls** shows the last calls as they happen: the tool, **MCP** or **CLI**, the time, how long it took and any error.
 
 ## What the tools can do
 
-There are about 86 tools. Some highlights:
+There are about 87 tools. Some highlights:
 
 - **Workspace and app**: `list_workspace` (start here), `get_app_state`, `list_menu_commands` and `run_menu_command` (any menu bar item), `show_panel`, `open_settings`.
-- **Git**: `git_status`, `git_diff`, `git_log`, `git_blame`, `git_branches`, and actions such as `git_stage`, `git_commit`, `git_pull`, `git_push`, `git_merge`, `git_rebase` and the stash tools.
+- **Git**: `git_status`, `git_diff`, `git_log`, `git_blame`, `git_branches`, and actions such as `git_stage`, `git_commit`, `git_pull`, `git_push`, `git_merge`, `git_rebase` and the stash tools. `clone_repository` clones into any folder you name and can open the clone in the window (`open` set to `window`) or add it to the open folders (`workspace`).
 - **Files and search**: `read_file`, `open_file`, `get_editor_text`, `search_files`, `search_text`, `search_symbols`.
 - **File operations**: `create_file`, `create_folder`, `copy_paths`, and `rename_path`, `move_paths` and `trash_paths`, which work like the [Files panel](File-Operations.md): open tabs follow, a file with unsaved edits is refused and nothing is ever replaced. Rename, move and trash start off; trash only moves to the system Trash.
 - **Scripts and terminal**: `list_scripts`, `run_script` and `stop_run` (the Run tab), `list_terminals`, `new_terminal` and `send_terminal_text`. `run_script` and `send_terminal_text` can run any command, so they start off.
@@ -87,9 +89,12 @@ git-manager cli tools                      # the tools that are on (--all lists 
 git-manager cli describe git_log           # what a tool does and its arguments
 git-manager cli call git_log repoPath="$PWD" limit=5
 git-manager cli call copy_paths paths='["/Users/me/shop/src/cart.ts"]' targetFolder=/Users/me/shop/lib
+git-manager cli clone https://github.com/owner/repo.git --open window
 git-manager cli screenshot ~/Desktop/gm.png
 git-manager cli memory --duration 10       # live memory, then the minimum, average and peak
 ```
+
+`clone` works like `git clone`: it clones into the folder you are in (or `--into <folder>`), names the new folder after the URL unless you give a name, and `--open window` or `--open workspace` shows it in Git Manager. Turn on `clone_repository` in Available MCP Tools first.
 
 Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
 
@@ -106,7 +111,7 @@ The command line tool is for macOS (and later Linux). On Windows it prints nothi
 - The server only listens on this Mac (127.0.0.1), never on the network.
 - Every request needs the secret token. It is kept in `~/.gitmanager/mcp.json`, readable only by you.
 - Web pages cannot use it: requests from a browser are refused.
-- Tools only reach the folders open in Git Manager right now. Anything else is refused.
+- Tools only reach the folders open in Git Manager right now. Anything else is refused. The one exception is `clone_repository`, which starts off and only makes a new folder.
 - Destructive tools are off until you turn them on.
 - Each switch has its own job. With only the command line tool on, an MCP client cannot get in. With only the MCP server on, the command line tool cannot get in.
 

@@ -163,9 +163,14 @@ impl Shared {
         self.ui_timeout
     }
 
-    /// Destructive tools start off; the user's choices override.
+    /// Destructive tools, and tools that reach outside the workspace, start off; the user's
+    /// choices override.
     pub fn tool_enabled(&self, tool_name: &str, destructive: bool) -> bool {
-        read(&self.switches).tool_states.get(tool_name).copied().unwrap_or(!destructive)
+        read(&self.switches)
+            .tool_states
+            .get(tool_name)
+            .copied()
+            .unwrap_or_else(|| tools::starts_on(tool_name, destructive))
     }
 
     pub fn record(&self, entry: McpActivity) {

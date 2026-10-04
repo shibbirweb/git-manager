@@ -89,6 +89,7 @@ function appMenu(mode: MenuMode): TopMenu {
 
 function fileMenu(platform: MenuPlatform): TopMenu {
   const items: MenuEntry[] = [
+    item("file.newFile", "New File", "CmdOrCtrl+N"),
     item("file.newWindow", "New Window", "CmdOrCtrl+Shift+N"),
     separator,
     item("file.openFolder", "Open Folder..."),
@@ -170,8 +171,8 @@ function viewMenu(platform: MenuPlatform): TopMenu {
     check("view.branches", "Branches and Stashes", "CmdOrCtrl+Shift+E"),
     check("view.scripts", "Scripts"),
     check("view.log", "Log", "CmdOrCtrl+Shift+L"),
-    check("view.filesPanel", "Files Panel", "CmdOrCtrl+Alt+B"),
-    check("view.sidebar", "Sidebar", "CmdOrCtrl+B"),
+    check("view.filesPanel", "Files Panel", "CmdOrCtrl+B"),
+    check("view.sidebar", "Sidebar", "CmdOrCtrl+Alt+B"),
     check("view.terminal", "Terminal", "Ctrl+`"),
     check("view.gitConsole", "Git Console"),
     check("view.leftActivityBar", "Left Activity Bar"),

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
+  import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import {
@@ -14,6 +15,7 @@
     stashMenu,
     tagMenu,
   } from "./sidebar/actions";
+  import PanelHead from "./PanelHead.svelte";
   import { collapse } from "./sidebar/collapse.svelte";
   import RowContent from "./sidebar/RowContent.svelte";
   import { buildRows, isCollapsible, type SidebarRow } from "./sidebar/tree";
@@ -232,6 +234,21 @@
 </script>
 
 <div class="sidebar-view">
+  <PanelHead title="Branches and Stashes" hideTitle="Hide (Option+Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
+    <button
+      class="icon-btn small"
+      onclick={() => {
+        const repoRoot = repoStore.repo?.root ?? null;
+        if (repoRoot) {
+          void repoStore.refreshRepo(repoRoot);
+        }
+      }}
+      title="Refresh"
+      aria-label="Refresh branches"
+    >
+      <Icon name="refresh" size={13} />
+    </button>
+  </PanelHead>
   <div class="filter">
     <span class="filter-icon"><Icon name="search" size={13} /></span>
     <input

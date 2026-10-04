@@ -1410,6 +1410,21 @@
               />
             </div>
           {/if}
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Remember unsaved changes</span>
+              <span class="hint">
+                Keep the text of new files and unsaved edits when you close the window or quit, and bring the tabs back with it
+                next time. Off, closing asks before unsaved changes are lost.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.rememberUnsaved}
+              onchange={(event) => set("rememberUnsaved", event.currentTarget.checked)}
+            />
+          </label>
           {#each SAVE_CLEANUP_ROWS as row (row.key)}
             <label class="row toggle-row">
               <div class="label">
@@ -1690,7 +1705,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Files panel</span>
-              <span class="hint">Show the file tree on the right.</span>
+              <span class="hint">Show the file tree on the right. Also toggled with Cmd+B.</span>
             </div>
             <input type="checkbox" class="switch" checked={settings.explorerOpen} onchange={() => settings.toggleExplorer()} />
           </label>
@@ -1709,7 +1724,7 @@
           <div class="row">
             <div class="label">
               <span>Left sidebar</span>
-              <span class="hint">Also toggled from the activity bar or with Cmd+B.</span>
+              <span class="hint">Also toggled from the activity bar or with Option+Cmd+B.</span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Left sidebar">
               {#each [{ value: "changes", label: "Changes" }, { value: "branches", label: "Branches" }, { value: null, label: "Hidden" }] as const as option (option.label)}

@@ -8,7 +8,7 @@ The Log shows the history of the active repository as a graph, so you can see wh
 - Or press Shift+Cmd+L (**View > Log**), or choose **Git > Show Git Log** (Cmd+9).
 - Or choose **Show Log** in a repository's **...** menu in [Changes](Repository-Actions.md), which makes that repository active first.
 
-The Log opens in the middle of the window. Click the icon or press Shift+Cmd+L again to hide it. It always shows the **active repository**; switch repositories from the header (see [Workspaces](Workspaces.md)).
+The Log opens in the middle of the window. Click the icon or press Shift+Cmd+L again, or click the **X** at the right end of the Log toolbar, to hide it. It always shows the **active repository**; switch repositories from the header (see [Workspaces](Workspaces.md)).
 
 ![Log with the branch graph](../images/log-graph.png)
 

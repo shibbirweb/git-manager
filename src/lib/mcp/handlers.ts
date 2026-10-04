@@ -23,6 +23,7 @@ import { runnerOverrides } from "$lib/scripts/runnerOverrides.svelte";
 import { fileCommands } from "$lib/stores/fileCommands.svelte";
 import { navigation } from "$lib/stores/navigation.svelte";
 import { isPseudoTab } from "$lib/stores/pseudoTabs";
+import { isUntitledTab } from "$lib/stores/untitledTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { MARKDOWN_VIEW_MODES, SETTINGS_SECTIONS } from "$lib/stores/settingsData";
 import { settings } from "$lib/stores/settings.svelte";
@@ -115,10 +116,12 @@ function requireRepository(repoPath: string): string {
 }
 
 /** An open file tab: the one given, else the tab on screen. */
+/** The file or Untitled tab a tool acts on (File > New File tabs have an `untitled:` path, not a file path). */
 function fileTab(args: ToolArgs): string {
-  const given = optionalPath(args, "filePath");
+  const raw = optionalString(args, "filePath");
+  const given = raw !== null && isUntitledTab(raw) ? raw : optionalPath(args, "filePath");
   const filePath = given ?? (changesSelection.shownView === "file" ? repoStore.openFilePath : null);
-  if (!filePath || isPseudoTab(filePath)) {
+  if (!filePath || (isPseudoTab(filePath) && !isUntitledTab(filePath))) {
     throw new ToolArgError(given ? "Not an open file tab" : "No file tab is on screen; pass filePath or open_file first");
   }
   if (!repoStore.tabs.some((tab) => tab.path === filePath)) {
@@ -382,6 +385,11 @@ async function saveFile(args: ToolArgs): Promise<Structured> {
   const filePath = fileTab(args);
   if (!repoStore.isDirty(filePath)) {
     return { filePath, saved: false, note: "No unsaved edits" };
+  }
+  if (isUntitledTab(filePath)) {
+    // The save dialog waits for the user, longer than a tool call may wait.
+    void fileCommands.save(filePath, { quiet: true });
+    return { filePath, saved: false, asked: true, note: "An Untitled tab has no file yet, so the app asks the user where to save it." };
   }
   const saved = await fileCommands.save(filePath, { quiet: true });
   if (!saved) {

@@ -48,7 +48,12 @@ class McpStore {
       this.toolsError = null;
     } catch (error) {
       this.toolsError = errorMessage(error);
-      this.tools = UI_TOOLS.map((tool) => ({ ...tool, kind: "ui", enabled: defaultToolEnabled(tool) }));
+      this.tools = UI_TOOLS.map((tool) => ({
+        ...tool,
+        kind: "ui",
+        defaultEnabled: defaultToolEnabled(tool),
+        enabled: defaultToolEnabled(tool),
+      }));
     }
   }
 

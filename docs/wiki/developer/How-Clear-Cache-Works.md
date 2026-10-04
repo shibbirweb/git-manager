@@ -36,7 +36,7 @@ sequenceDiagram
     Note over UI: the page starts like a launch and restores the folder and tabs
 ```
 
-- **The rules** are pure, in `src/lib/debug/clearCachePlan.ts`: unsaved files, a running git operation (`repoStore.busy`) or the open merge tool block it with a message; otherwise it goes.
+- **The rules** are pure, in `src/lib/debug/clearCachePlan.ts`: unsaved files (counted only while Remember unsaved changes is off; with it on, `repoStore.keepUnsaved` writes them first, see [How New File and unsaved changes work](How-New-Files-and-Unsaved-Changes-Work.md)), a running git operation (`repoStore.busy`) or the open merge tool block it with a message; otherwise it goes.
 - **Saving first.** `repoStore.saveTabsNow` writes the tab session at once instead of after its one second delay, and `settings.flushNow` writes `settings.json` and `state.json` and waits for both.
 - **One command, in order.** `clear_cache` first finds the process to end; only then does it hand the terminals to their links and end the process. A failure before that leaves every terminal connected.
 - **Only our own process.** `web_content_pid` asks the window's `WKWebView` for `_webProcessIdentifier` on the main thread, then `is_own_web_content` checks that the pid is a `com.apple.WebKit.WebContent` process that `memory::usage` already counts as ours. Anything else is refused. The kill waits 150 ms so the command's answer still reaches the page.

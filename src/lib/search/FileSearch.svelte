@@ -652,7 +652,7 @@
   const placeholder = $derived.by(() => {
     switch (tab) {
       case "all":
-        return "Search classes, files and symbols";
+        return "Search files, classes and symbols";
       case "classes":
         return "Search classes by name";
       case "files":

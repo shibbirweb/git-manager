@@ -74,6 +74,7 @@ A run is a `TerminalEntry` with `location: "run"` and a `RunSpec` (`runs.ts`), s
 | `src-tauri/src/run_process.rs` | Login environment, `PATH`, program lookup, `start_run` |
 | `src-tauri/src/commands/scripts.rs` | `list_project_scripts`, `list_node_versions`, `run_script` |
 | `src/lib/scripts/ScriptsPanel.svelte` | The panel, lazy loaded from `Workspace.svelte` |
+| `src/lib/views/PanelHead.svelte` | The title row: Collapse All, Refresh and the X that hides the sidebar |
 | `src/lib/scripts/scriptsModel.ts` | Commands, rows, labels |
 | `src/lib/scripts/scriptRun.ts`, `scriptActions.ts` | The `RunSpec` and starting a run |
 | `src/lib/scripts/nodeVersion.ts` | Spec matching and the badge text |

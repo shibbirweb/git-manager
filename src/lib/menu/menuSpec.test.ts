@@ -64,6 +64,13 @@ describe("menuSpec", () => {
     expect(reopen?.accelerator).toBe("CmdOrCtrl+Shift+T");
   });
 
+  it("starts the File menu with New File on Cmd+N, and keeps it out of the merge tool", () => {
+    const file = menuSpec("macos", "app").find((menu) => menu.text === "File");
+    const first = file?.items[0];
+    expect(first?.kind === "action" ? [first.action, first.accelerator] : null).toEqual(["file.newFile", "CmdOrCtrl+N"]);
+    expect(actionEntries(menuSpec("macos", "mergeTool")).some((entry) => entry.action === "file.newFile")).toBe(false);
+  });
+
   it("uses known actions and each action once per menu bar", () => {
     for (const platform of PLATFORMS) {
       for (const mode of MODES) {

@@ -16,7 +16,8 @@ export interface MenuInputs {
   blameGutter: boolean;
   shownView: "diff" | "log" | "file" | "none";
   /** The file editor on screen; null for other tabs and views. */
-  activeFile: { dirty: boolean; editable: boolean; markdownMode: MarkdownViewMode | null } | null;
+  /** `untitled`: an Untitled tab (File > New File), which has no file to compare or a history. */
+  activeFile: { dirty: boolean; editable: boolean; markdownMode: MarkdownViewMode | null; untitled?: boolean } | null;
   dirtyCount: number;
   tabCount: number;
   /** Closed tabs Reopen Closed Tab can bring back. */
@@ -177,16 +178,18 @@ export function menuState(inputs: MenuInputs): MenuState {
   const workspace = inputs.workspace !== null;
   const file = inputs.activeFile;
 
+  state["file.newFile"] = { enabled: workspace };
   state["file.clearRecent"] = { enabled: inputs.hasRecent };
   state["file.addFolder"] = { enabled: workspace };
   state["file.saveWorkspace"] = { enabled: workspace };
   state["file.save"] = { enabled: file !== null && file.editable && file.dirty };
   state["file.saveAll"] = { enabled: inputs.dirtyCount > 0 };
   state["file.revert"] = { enabled: file !== null && file.editable };
-  state["file.compareWithClipboard"] = { enabled: workspace && file !== null };
-  state["file.compareWith"] = { enabled: workspace && file !== null };
+  const onDisk = file !== null && file.untitled !== true;
+  state["file.compareWithClipboard"] = { enabled: workspace && onDisk };
+  state["file.compareWith"] = { enabled: workspace && onDisk };
   // A deleted file's tab still shows its versions (and offers Restore).
-  state["file.localHistory"] = { enabled: workspace && file !== null };
+  state["file.localHistory"] = { enabled: workspace && onDisk };
   state["file.recentlyDeleted"] = { enabled: workspace };
   state["file.closeTab"] = { enabled: workspace && (inputs.shownView === "file" || inputs.shownView === "diff") };
   state["file.reopenClosedTab"] = { enabled: workspace && (inputs.closedTabCount ?? 0) > 0 };

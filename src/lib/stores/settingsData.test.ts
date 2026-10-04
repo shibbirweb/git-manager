@@ -291,6 +291,12 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ tabLimit: 500 }).preferences.tabLimit).toBe(100);
   });
 
+  it("remembers unsaved changes unless turned off", () => {
+    expect(defaultPreferences.rememberUnsaved).toBe(true);
+    expect(parsePreferences({ rememberUnsaved: false }).preferences.rememberUnsaved).toBe(false);
+    expect(parsePreferences({ rememberUnsaved: "no" }).preferences.rememberUnsaved).toBe(true);
+  });
+
   it("asks before drag and drop moves unless turned off", () => {
     expect(defaultPreferences.confirmDragAndDrop).toBe(true);
     expect(parsePreferences({}).preferences.confirmDragAndDrop).toBe(true);

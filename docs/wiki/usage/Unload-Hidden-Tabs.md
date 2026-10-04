@@ -2,7 +2,7 @@
 
 Every open file tab keeps an editor ready behind it, about 4 MB each. With many tabs open, most of them sit out of sight and still use that memory. **Unload hidden tabs** frees the editor of a tab you have not looked at for a while. The tab stays in the strip, and clicking it opens the file again where you left it.
 
-[TODO:settings-unload-hidden-tabs.png]
+![Settings, Editor: Unload hidden tabs with its Unload after choices](../images/settings-unload-hidden-tabs.png)
 
 *Settings, Editor, Tabs: Unload hidden tabs with its Unload after choices.*
 

@@ -10,6 +10,8 @@ Switching, creating and merging branches is the daily bread of Git. People also 
 
 The panel is `Sidebar.svelte`, opened from the activity bar or Shift+Cmd+E. It shows data that `repoStore` keeps for the **active** repository only: `repoStore.refs` and `repoStore.stashes`. `refreshActive()` reloads both whenever the active repository changes, after every mutation, and when the watcher reports a change inside `.git`.
 
+Its title row is `PanelHead.svelte`, shared with the Scripts panel and styled like the Changes and Files panels: Refresh calls `refreshRepo` for the active repository, and the X hides the sidebar with `settings.setLeftPanel(null)`, the same as Option+Cmd+B.
+
 ```mermaid
 sequenceDiagram
     participant RS as repoStore
@@ -105,6 +107,7 @@ New and renamed branch names are checked by `validateBranchName` before git ever
 | File | What it does |
 | --- | --- |
 | `src/lib/views/Sidebar.svelte` | The Branches panel: filter, rows, keyboard, menus |
+| `src/lib/views/PanelHead.svelte` | Title row with buttons and a close X, shared by sidebar panels |
 | `src/lib/views/sidebar/tree.ts` | `buildRows`: flat row model with folder grouping |
 | `src/lib/views/sidebar/collapse.svelte.ts` | Saved and temporary collapse state |
 | `src/lib/views/sidebar/RowContent.svelte` | One row: icon, label, ahead and behind |

@@ -33,6 +33,8 @@ Commands:
   describe <tool>        A tool's description and arguments
   call <tool> [key=value ...] [--args '<json>'] [--json] [--out <file>]
                          Runs a tool and prints its result
+  clone <url> [folder] [--into <dir>] [--open window|workspace]
+                         Clones a repository, like git clone, and can open it in the app
   screenshot <file.png>  Saves a screenshot of the app window
   memory [--interval <ms>] [--duration <s>] [--json]
                          Live memory: one line per sample until Ctrl+C (or --duration)
@@ -64,6 +66,21 @@ one JSON object; key=value pairs win over it.
 
 Example: git-manager cli call git_log repoPath=\"$PWD\" limit=5";
 
+const CLONE_HELP: &str = "Usage: git-manager cli clone <url> [folder] [--into <dir>] [--open window|workspace]
+
+Clones a repository into a new folder through Git Manager, like Git > Clone, with your git
+credentials and settings. It runs the clone_repository tool, which starts turned off: turn it
+on in Help > Available MCP Tools.
+  folder             Name of the new folder (default: the URL's last part without .git)
+  --into <dir>       The folder to clone into (default: the current folder)
+  --open window      Open the clone in the Git Manager window, in place of its folders
+  --open workspace   Add the clone to the folders open in the window
+
+Example: git-manager cli clone https://github.com/owner/repo.git --open window";
+
+/// A clone may download for a long time; other calls keep the shorter limit.
+const CLONE_TIMEOUT: Duration = Duration::from_secs(60 * 60);
+
 const SCREENSHOT_HELP: &str = "Usage: git-manager cli screenshot <file.png>
 
 Saves a PNG screenshot of the Git Manager window (macOS asks for Screen Recording permission
@@ -88,6 +105,7 @@ pub enum Command {
     Tools { json: bool, all: bool },
     Describe { tool_name: String },
     Call { tool_name: String, arguments: Map<String, Value>, json: bool, out: Option<PathBuf> },
+    Clone { url: String, folder_name: Option<String>, into: Option<PathBuf>, open: Option<String> },
     Screenshot { file_path: PathBuf },
     Memory { interval_ms: u64, duration_s: Option<u64>, json: bool },
 }
@@ -153,6 +171,12 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             }
             parse_call(rest)
         }
+        "clone" => {
+            if wants_help(rest) {
+                return Ok(Command::Help(CLONE_HELP));
+            }
+            parse_clone(rest)
+        }
         "screenshot" => {
             if wants_help(rest) {
                 return Ok(Command::Help(SCREENSHOT_HELP));
@@ -170,6 +194,69 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
         }
         other => Err(format!("Unknown command: {other}")),
     }
+}
+
+fn parse_clone(rest: &[String]) -> Result<Command, String> {
+    let mut positional: Vec<&String> = Vec::new();
+    let (mut into, mut open) = (None, None);
+    let mut words = rest.iter();
+    while let Some(word) = words.next() {
+        match word.as_str() {
+            "--into" => into = Some(PathBuf::from(words.next().ok_or("--into needs a folder")?)),
+            "--open" => {
+                let mode = words.next().ok_or("--open needs window or workspace")?;
+                if mode != "window" && mode != "workspace" {
+                    return Err(format!("--open is window or workspace, got: {mode}"));
+                }
+                open = Some(mode.clone());
+            }
+            flag if flag.starts_with("--") => return Err(format!("Unknown option for clone: {flag}")),
+            _ => positional.push(word),
+        }
+    }
+    match positional.as_slice() {
+        [url] => Ok(Command::Clone { url: (*url).clone(), folder_name: None, into, open }),
+        [url, folder_name] => Ok(Command::Clone { url: (*url).clone(), folder_name: Some((*folder_name).clone()), into, open }),
+        _ => Err("Usage: git-manager cli clone <url> [folder] [--into <dir>] [--open window|workspace]".to_string()),
+    }
+}
+
+/// The clone_repository arguments; a relative or missing --into is taken from `current_dir`.
+pub fn clone_arguments(url: &str, folder_name: Option<&str>, into: Option<&Path>, open: Option<&str>, current_dir: &Path) -> Map<String, Value> {
+    let parent = match into {
+        Some(dir) if dir.is_absolute() => dir.to_path_buf(),
+        Some(dir) => current_dir.join(dir),
+        None => current_dir.to_path_buf(),
+    };
+    let mut arguments = Map::new();
+    arguments.insert("url".to_string(), json!(url));
+    arguments.insert("parentPath".to_string(), json!(parent.to_string_lossy()));
+    if let Some(folder_name) = folder_name {
+        arguments.insert("folderName".to_string(), json!(folder_name));
+    }
+    if let Some(open) = open {
+        arguments.insert("open".to_string(), json!(open));
+    }
+    arguments
+}
+
+fn run_clone(client: Client, arguments: &Map<String, Value>, out: &mut dyn Write, err: &mut dyn Write) -> std::io::Result<i32> {
+    let client = client.with_timeout(CLONE_TIMEOUT);
+    writeln!(out, "Cloning {}...", arguments["url"].as_str().unwrap_or_default())?;
+    out.flush()?;
+    let result = match client.call("clone_repository", arguments) {
+        Ok(result) => result,
+        Err(message) => return writeln!(err, "{message}").map(|_| EXIT_UNAVAILABLE),
+    };
+    if result["isError"].as_bool().unwrap_or(false) {
+        return print_result(out, err, &result, false, None);
+    }
+    let structured = &result["structuredContent"];
+    writeln!(out, "Cloned into {}", structured["clonedPath"].as_str().unwrap_or_default())?;
+    if let Some(note) = structured["note"].as_str() {
+        writeln!(out, "{note}")?;
+    }
+    Ok(EXIT_OK)
 }
 
 fn parse_memory(rest: &[String]) -> Result<Command, String> {
@@ -278,6 +365,16 @@ fn parse_call(rest: &[String]) -> Result<Command, String> {
     })
 }
 
+fn agent_with_timeout(timeout: Duration) -> ureq::Agent {
+    let config = ureq::Agent::config_builder()
+        .http_status_as_error(false)
+        .timeout_connect(Some(Duration::from_secs(3)))
+        .timeout_global(Some(timeout))
+        .max_redirects(0)
+        .build();
+    ureq::Agent::new_with_config(config)
+}
+
 /// A JSON-RPC client of the local server.
 pub struct Client {
     url: String,
@@ -299,17 +396,11 @@ fn process_alive(_pid: u32) -> bool {
 
 impl Client {
     pub fn new(port: u16, token: String) -> Client {
-        let config = ureq::Agent::config_builder()
-            .http_status_as_error(false)
-            .timeout_connect(Some(Duration::from_secs(3)))
-            // Long enough for sample_memory (60 s) and a UI tool's 30 s wait.
-            .timeout_global(Some(Duration::from_secs(150)))
-            .max_redirects(0)
-            .build();
         Client {
             url: format!("http://127.0.0.1:{port}/mcp"),
             token,
-            agent: ureq::Agent::new_with_config(config),
+            // Long enough for sample_memory (60 s) and a UI tool's 30 s wait.
+            agent: agent_with_timeout(Duration::from_secs(150)),
         }
     }
 
@@ -325,6 +416,14 @@ impl Client {
 
     pub fn url(&self) -> &str {
         &self.url
+    }
+
+    /// The same client with another time limit for each call.
+    pub fn with_timeout(self, timeout: Duration) -> Client {
+        Client {
+            agent: agent_with_timeout(timeout),
+            ..self
+        }
     }
 
     fn request(&self, method: &str, params: Value) -> Result<Value, String> {
@@ -541,6 +640,11 @@ fn execute(command: Command, config_dir: &Path, out: &mut dyn Write, err: &mut d
             };
         }
         Command::Call { tool_name, arguments, json, out: image_out } => (tool_name, arguments, json, image_out),
+        Command::Clone { url, folder_name, into, open } => {
+            let current_dir = std::env::current_dir().unwrap_or_default();
+            let arguments = clone_arguments(&url, folder_name.as_deref(), into.as_deref(), open.as_deref(), &current_dir);
+            return run_clone(client, &arguments, out, err);
+        }
         Command::Screenshot { file_path } => ("take_screenshot".to_string(), Map::new(), false, Some(file_path)),
         Command::Memory { interval_ms, duration_s, json } => return watch_memory(&client, interval_ms, duration_s, json, out),
         Command::Help(_) | Command::Status => return Ok(EXIT_OK),

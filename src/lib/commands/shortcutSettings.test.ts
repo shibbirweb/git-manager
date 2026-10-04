@@ -163,15 +163,15 @@ describe("conflicts", () => {
   it("finds the other commands with the same keys", () => {
     expect(commandsWithKeys(specs, {}, "macos", "Cmd+Shift+P").map((other) => other.id)).toEqual(["view.commandPalette"]);
     expect(commandsWithKeys(specs, {}, "macos", "CmdOrCtrl+Shift+P", "view.commandPalette")).toEqual([]);
-    expect(commandsWithKeys(specs, { "view.sidebar": null }, "macos", "CmdOrCtrl+B")).toEqual([]);
+    expect(commandsWithKeys(specs, { "view.filesPanel": null }, "macos", "CmdOrCtrl+B")).toEqual([]);
     // An editor key and a window key get in each other's way too.
     expect(commandsWithKeys(specs, {}, "macos", "CmdOrCtrl+D").map((other) => other.id)).toEqual(["code.selectNextOccurrence"]);
   });
 
   it("reports a changed key that matches another command, on both sides", () => {
     const conflicts = shortcutConflicts(specs, { "git.push": "CmdOrCtrl+B" }, "macos");
-    expect(conflicts.get("git.push")?.map((other) => other.id)).toEqual(["view.sidebar"]);
-    expect(conflicts.get("view.sidebar")?.map((other) => other.id)).toEqual(["git.push"]);
+    expect(conflicts.get("git.push")?.map((other) => other.id)).toEqual(["view.filesPanel"]);
+    expect(conflicts.get("view.filesPanel")?.map((other) => other.id)).toEqual(["git.push"]);
   });
 
   it("leaves out the pairs the app ships on purpose", () => {
@@ -203,13 +203,13 @@ describe("shortcutRows", () => {
 
   it("searches by recorded keys, custom ones included", () => {
     const rows = shortcutRows(specs, { "git.push": "CmdOrCtrl+B" }, "macos", { ...noFilter, keys: binding("Cmd+B") });
-    expect(rows.map((row) => row.spec.id)).toEqual(["view.sidebar", "git.push"]);
+    expect(rows.map((row) => row.spec.id)).toEqual(["view.filesPanel", "git.push"]);
     expect(rows.every((row) => row.conflicts.length === 1)).toBe(true);
   });
 
   it("shows only changed commands, with the default they replace", () => {
-    const rows = shortcutRows(specs, { "view.sidebar": "F2", "git.push": null }, "macos", { ...noFilter, changedOnly: true });
-    expect(rows.map((row) => row.spec.id)).toEqual(["view.sidebar", "git.push"]);
+    const rows = shortcutRows(specs, { "view.filesPanel": "F2", "git.push": null }, "macos", { ...noFilter, changedOnly: true });
+    expect(rows.map((row) => row.spec.id)).toEqual(["view.filesPanel", "git.push"]);
     expect(rows[0].keysText).toBe("F2");
     expect(rows[0].defaultText).toBe("⌘B");
     expect(rows[1].keysText).toBeNull();

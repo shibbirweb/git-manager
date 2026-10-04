@@ -21,9 +21,13 @@ import { gitDialogs } from "$lib/views/git/gitDialogs.svelte";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
 import { localHistory } from "$lib/localHistory/localHistory.svelte";
 import { notifications } from "$lib/notifications/notifications.svelte";
+import { isUntitledTab } from "$lib/stores/untitledTabs";
 import { mcpStore } from "./mcpStore.svelte";
 
-function tabKind(tabPath: string): "file" | "terminal" | "commit" | "git" | "branch" | "compare" {
+function tabKind(tabPath: string): "file" | "untitled" | "terminal" | "commit" | "git" | "branch" | "compare" {
+  if (isUntitledTab(tabPath)) {
+    return "untitled";
+  }
   if (isCompareTab(tabPath)) {
     return "compare";
   }

@@ -205,6 +205,7 @@ function installOverrides(config: PageConfig): void {
   };
   // Exact folder or below it: a bare prefix would also let a sibling like /tmp/gitmanager-docs-x through.
   const inside = (value: string) => value === config.allowedRoot || value.startsWith(`${config.allowedRoot.replace(/\/+$/, "")}/`);
+  const unsaved = new Map<string, { tabPath: string; workspaceId: string; savedAt: number; text: string }>();
   let mcpStatus = { ...config.mcp };
   let memoryLog = { enabled: false, path: "/Users/you/.gitmanager/logs/memory.log", intervalMs: 500, thresholdMb: 5 };
   const overrides: Record<string, Handler> = {
@@ -219,6 +220,41 @@ function installOverrides(config: PageConfig): void {
     save_config: (args) => {
       const { configName, value } = args as { configName: string; value: unknown };
       store[configName] = value;
+      return null;
+    },
+    // Settings are written as patches; relayed, they would patch your own settings.json and
+    // state.json with the demo (its folder became the last session and the only recent folder).
+    update_config: (args) => {
+      const { configName, patch } = args as { configName: string; patch: { set?: { path: string[]; value: unknown }[]; remove?: string[][] } };
+      const root = (store[configName] ?? {}) as Record<string, unknown>;
+      // The object holding the last key of `path`, made on the way for a set.
+      const parentOf = (path: string[], make: boolean): Record<string, unknown> | null => {
+        let node = root;
+        for (const key of path.slice(0, -1)) {
+          const next = node[key];
+          if (typeof next !== "object" || next === null || Array.isArray(next)) {
+            if (!make) {
+              return null;
+            }
+            node[key] = {};
+          }
+          node = node[key] as Record<string, unknown>;
+        }
+        return node;
+      };
+      for (const entry of patch.set ?? []) {
+        const parent = parentOf(entry.path, true);
+        if (parent && entry.path.length > 0) {
+          parent[entry.path[entry.path.length - 1]] = structuredClone(entry.value);
+        }
+      }
+      for (const path of patch.remove ?? []) {
+        const parent = parentOf(path, false);
+        if (parent && path.length > 0) {
+          delete parent[path[path.length - 1]];
+        }
+      }
+      store[configName] = root;
       return null;
     },
     config_dir: () => "/Users/you/.gitmanager",
@@ -269,6 +305,30 @@ function installOverrides(config: PageConfig): void {
     },
     memory_log_event: () => null,
     lfs_install: blocked("lfs_install"),
+    // The window commands belong to the app window: asked there, they would hand the page that
+    // window's own folders (refused below, so every shot fell back to the welcome screen) and
+    // retitle it. The page is a window of its own that opens the scenario's launch.
+    window_startup: () => ({ kind: "default", label: "main" }),
+    window_set_workspace: () => null,
+    window_focus_owner: () => null,
+    window_open: blocked("window_open"),
+    window_close: blocked("window_close"),
+    // Remember unsaved changes would write into ~/.gitmanager/unsaved: kept in the page instead.
+    unsaved_write: (args) => {
+      const bytes = args as Uint8Array;
+      const split = bytes.indexOf(10);
+      const meta = JSON.parse(new TextDecoder().decode(bytes.subarray(0, split))) as { tabPath: string; workspaceId: string };
+      unsaved.set(meta.tabPath, { ...meta, savedAt: Date.now(), text: new TextDecoder().decode(bytes.subarray(split + 1)) });
+      return null;
+    },
+    unsaved_read: (args) => structuredClone(unsaved.get((args as { tabPath: string }).tabPath) ?? null),
+    unsaved_remove: (args) => {
+      for (const tabPath of (args as { tabPaths: string[] }).tabPaths) {
+        unsaved.delete(tabPath);
+      }
+      return null;
+    },
+    unsaved_list: () => [...unsaved.values()].map(({ text: _text, ...meta }) => meta),
     // Only the demo's commands: the app window may run its own.
     git_console_entries: async () => {
       const entries = (await internals.invoke("git_console_entries__real")) as { repoPath: string }[];
@@ -747,6 +807,7 @@ async function openApp(browser: Browser, name: string, scenario: Scenario): Prom
   await context.route("http://gmpreview.localhost/**", (route) => route.fulfill(previewResponse(route.request().url())));
   const page = await context.newPage();
   page.on("pageerror", (error) => console.warn(`  ${name}: page error: ${error.message}`));
+  page.on("console", (message) => { if (process.env.GM_SHOTS_CONSOLE) { console.warn(`  console: ${message.text()}`); } });
   if (scenario.clock) {
     await page.clock.install();
   }
@@ -1225,6 +1286,32 @@ define("stashes", async (shot) => {
   const top = Math.max(sidebar.y, sectionBox.y - 120);
   await shot.save({ x: sidebar.x, y: top, width: sidebar.width, height: stashBox.y + stashBox.height + 16 - top });
 }, branchesScenario);
+
+// File > New File: an Untitled tab named after its first line, beside a file tab, with unsaved text.
+define("new-file-untitled", async (shot) => {
+  await shot.openFile(join(storefront, "README.md"));
+  await shot.openFile(cartTs());
+  await menuAction(shot, "file.newFile");
+  const editor = shot.page.locator(".file-host:not(.hidden) .cm-content");
+  await editor.waitFor();
+  await editor.click();
+  await shot.page.keyboard.type("Release notes\n\n- Faster checkout\n- Fix the cart total when a coupon is removed\n");
+  await shot.settle(600);
+  await shot.page.mouse.move(640, 700);
+  const main = shot.page.locator("main.main");
+  const box = await main.boundingBox();
+  if (!box) {
+    throw new Error("new-file-untitled: no editor area");
+  }
+  await shot.save({ x: box.x, y: box.y, width: box.width, height: 260 });
+}, () => ({ settings: { currentLineBlame: false } }));
+
+define("settings-remember-unsaved", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await scrollSettingsTo(dialog, "Saving");
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+});
 
 define("back-forward", async (shot) => {
   await shot.openFile(cartTs());

@@ -782,3 +782,96 @@ fn the_cli_reports_a_switched_off_tool() {
     assert_eq!(code, cli::EXIT_UNAVAILABLE);
     assert!(err.contains(CLI_OFF), "{err}");
 }
+
+#[test]
+fn clone_repository_starts_off_and_clones_outside_the_workspace() {
+    let source = TestRepo::new();
+    source.write("readme.md", "hello\n");
+    source.commit_all("first");
+    let parent = TempDir::new().unwrap();
+    let parent_path = parent.path().canonicalize().unwrap();
+    let arguments = json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy() });
+
+    let off = Fixture::new(true, false);
+    let result = off.call("clone_repository", arguments.clone());
+    assert_eq!(text_of(&result), TURNED_OFF);
+    let listed = off.mcp.tools().into_iter().find(|tool| tool.name == "clone_repository").expect("listed");
+    assert!(!listed.default_enabled && !listed.enabled && !listed.destructive);
+    drop(off);
+
+    let fixture = Fixture::with_states(true, false, HashMap::from([("clone_repository".to_string(), true)]));
+    let source_name = source.path.file_name().unwrap().to_string_lossy().into_owned();
+    let cloned = fixture.call("clone_repository", arguments.clone());
+    assert_eq!(cloned["isError"], false, "{cloned}");
+    let cloned_path = parent_path.join(&source_name);
+    assert_eq!(cloned["structuredContent"]["clonedPath"], cloned_path.to_string_lossy().as_ref());
+    assert!(cloned_path.join("readme.md").exists());
+    assert!(fixture.host.events_named("mcp-open-folder").is_empty());
+
+    // The same folder again is refused; a named folder can be opened in the window.
+    let again = fixture.call("clone_repository", arguments);
+    assert_eq!(again["isError"], true);
+    assert!(text_of(&again).contains("not an empty folder"), "{again}");
+    fixture.mcp.set_workspace(&[]);
+    let opened = fixture.call(
+        "clone_repository",
+        json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy(), "folderName": "second", "open": "window" }),
+    );
+    assert_eq!(opened["isError"], false, "{opened}");
+    let events = fixture.host.events_named("mcp-open-folder");
+    assert_eq!(events.len(), 1, "{events:?}");
+    assert_eq!(events[0]["folderPath"], parent_path.join("second").to_string_lossy().as_ref());
+    assert_eq!(events[0]["mode"], "window");
+
+    for (bad, message) in [
+        (json!({ "url": "ext::sh -c touch% /tmp/x", "parentPath": parent_path.to_string_lossy() }), "Remote helper"),
+        (json!({ "url": source.path_string(), "parentPath": "relative/dir" }), "absolute path"),
+        (json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy(), "open": "tab" }), "open must be"),
+    ] {
+        let refused = fixture.call("clone_repository", bad);
+        assert_eq!(refused["isError"], true);
+        assert!(text_of(&refused).contains(message), "{refused}");
+    }
+}
+
+#[test]
+fn the_cli_clones_into_the_given_or_current_folder() {
+    assert_eq!(
+        cli::parse(&strings(&["clone", "https://h/r.git", "name", "--into", "dir", "--open", "workspace"])).unwrap(),
+        cli::Command::Clone {
+            url: "https://h/r.git".to_string(),
+            folder_name: Some("name".to_string()),
+            into: Some(PathBuf::from("dir")),
+            open: Some("workspace".to_string()),
+        },
+    );
+    for bad in [&["clone"][..], &["clone", "a", "b", "c"], &["clone", "u", "--open", "tab"], &["clone", "u", "--into"], &["clone", "u", "--bogus"]] {
+        assert!(cli::parse(&strings(bad)).is_err(), "{bad:?}");
+    }
+    let here = std::path::Path::new("/work");
+    let relative = cli::clone_arguments("u", None, Some(std::path::Path::new("sub")), None, here);
+    assert_eq!(relative["parentPath"], "/work/sub");
+    assert!(!relative.contains_key("folderName") && !relative.contains_key("open"));
+    let absolute = cli::clone_arguments("u", Some("n"), Some(std::path::Path::new("/abs")), Some("window"), here);
+    assert_eq!(absolute["parentPath"], "/abs");
+    assert_eq!(absolute["folderName"], "n");
+    assert_eq!(absolute["open"], "window");
+    assert_eq!(cli::clone_arguments("u", None, None, None, here)["parentPath"], "/work");
+
+    let source = TestRepo::new();
+    source.write("a.txt", "a\n");
+    source.commit_all("first");
+    let parent = TempDir::new().unwrap();
+    let parent_path = parent.path().canonicalize().unwrap();
+    let off = Fixture::new(false, true);
+    let (code, _, err) = run_cli(&off.config_dir, &["clone", &source.path_string(), "--into", &parent_path.to_string_lossy()]);
+    assert_eq!(code, cli::EXIT_TOOL_ERROR);
+    assert!(err.contains(TURNED_OFF), "{err}");
+    drop(off);
+
+    let fixture = Fixture::with_states(false, true, HashMap::from([("clone_repository".to_string(), true)]));
+    let (code, out, err) = run_cli(&fixture.config_dir, &["clone", &source.path_string(), "copy", "--into", &parent_path.to_string_lossy()]);
+    assert_eq!(code, cli::EXIT_OK, "{out}{err}");
+    assert!(out.contains(&format!("Cloned into {}", parent_path.join("copy").display())), "{out}");
+    assert!(parent_path.join("copy/a.txt").exists());
+}

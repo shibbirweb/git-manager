@@ -1,5 +1,6 @@
 <!-- The Changes tab (status bar > N changes): the uncommitted files of a repository, each
-     compared with HEAD, staged and unstaged together. Follows the live status. -->
+     compared with HEAD, staged and unstaged together. Follows the live status, and stages,
+     unstages and discards like the Changes sidebar. -->
 <script lang="ts">
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
@@ -8,12 +9,27 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
-  import type { RevisionDiff } from "$lib/types";
+  import { ignoreMenu } from "$lib/ignore/ignoreActions";
+  import { openShelveDialog } from "$lib/shelf/shelfActions.svelte";
+  import type { FileStatus, RevisionDiff } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
+  import type { IconName } from "$lib/ui/icons";
+  import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import LayoutToggleIcon from "../LayoutToggleIcon.svelte";
   import { splitPath, statusLetter, statusTitle } from "../changes/fileStatus";
-  import { type ChangesTabFile, changesListBounds, changesTabFiles, pickSelected, stepSelection } from "./changesTab";
+  import { copyText, discard, stage, unstage } from "../changes/mutations";
+  import {
+    type ChangesTabAction,
+    type ChangesTabFile,
+    bulkTargets,
+    changesListBounds,
+    changesTabFiles,
+    fileActions,
+    pickSelected,
+    stagedState,
+    stepSelection,
+  } from "./changesTab";
 
   interface Props {
     repoRoot: string;
@@ -41,6 +57,16 @@
   const listVisible = $derived(settings.changesListVisible);
   const list = $derived(changesListBounds(settings.changesListWidth, bodyWidth, MIN_CHANGES_LIST_WIDTH));
   const selectedIndex = $derived(selected ? files.findIndex((file) => file.path === selected.path) : -1);
+  const busy = $derived(repoStore.busy !== null);
+  const bulk = $derived(bulkTargets(files));
+  const repoName = $derived(repo?.name ?? splitPath(repoRoot).name);
+
+  const actionButtons: Record<ChangesTabAction, { icon: IconName; title: string; danger?: boolean }> = {
+    resolve: { icon: "merge", title: "Resolve in merge tool" },
+    unstage: { icon: "minus", title: "Unstage" },
+    discard: { icon: "discard", title: "Discard changes", danger: true },
+    stage: { icon: "plus", title: "Stage" },
+  };
 
   // A new status object means files changed on disk, so the diff loads again.
   $effect(() => {
@@ -97,6 +123,63 @@
     }
   }
 
+  function runAction(action: ChangesTabAction, file: FileStatus): void {
+    if (action === "resolve") {
+      void repoStore.openMerge(file.path, repoRoot);
+    } else if (action === "unstage") {
+      unstage(repoRoot, [file]);
+    } else if (action === "discard") {
+      void discard(repoRoot, [file], repoName);
+    } else {
+      stage(repoRoot, [file]);
+    }
+  }
+
+  function rowMenu(event: MouseEvent, file: ChangesTabFile): void {
+    event.preventDefault();
+    select(file);
+    const status = file.status;
+    const actions = fileActions(status);
+    let items: MenuItem[];
+    if (status.conflicted) {
+      items = [
+        { label: "Resolve in Merge Tool", action: () => void repoStore.openMerge(status.path, repoRoot) },
+        { label: "Show All Conflicts...", action: () => void repoStore.openConflicts(repoRoot) },
+      ];
+    } else {
+      items = [];
+      if (actions.includes("stage")) {
+        items.push({ label: "Stage", action: () => stage(repoRoot, [status]), disabled: busy });
+      }
+      if (actions.includes("unstage")) {
+        items.push({ label: "Unstage", action: () => unstage(repoRoot, [status]), disabled: busy });
+      }
+      if (actions.includes("discard")) {
+        items.push({
+          label: "Discard Changes...",
+          action: () => void discard(repoRoot, [status], repoName),
+          danger: true,
+          disabled: busy,
+        });
+      }
+      if (items.length > 0) {
+        items.push({ separator: true });
+      }
+      if (file.kind !== "deleted" && !file.submodule) {
+        items.push({ label: "Open File", action: () => openFile(file) });
+      }
+      if (!file.submodule) {
+        items.push({ label: "Shelve Changes...", disabled: busy, action: () => openShelveDialog(repoRoot, [status.path]) });
+      }
+      const ignoreItem = ignoreMenu(repoRoot, status.path, status.path.endsWith("/"));
+      if (ignoreItem) {
+        items.push(ignoreItem);
+      }
+    }
+    items.push({ separator: true }, { label: "Copy Path", action: () => copyText(status.path) });
+    contextMenu.open(event, items);
+  }
+
   function onKeydown(event: KeyboardEvent): void {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
@@ -123,7 +206,7 @@
 <div class="changes-tab">
   <div class="toolbar">
     <Icon name="git-compare" size={14} />
-    <span class="title truncate">Uncommitted changes in <strong>{repo?.name ?? splitPath(repoRoot).name}</strong></span>
+    <span class="title truncate">Uncommitted changes in <strong>{repoName}</strong></span>
     {#if !listVisible && selected}
       <!-- With the list hidden, the toolbar says which file the diff shows. -->
       <span class="current" title={selected.path}>
@@ -175,7 +258,31 @@
     <div class="body" bind:clientWidth={bodyWidth}>
       {#if listVisible}
         <div class="side" style="width: {list.width}px">
-          <div class="section-title">Changed files <span class="dim">({files.length})</span></div>
+          <div class="section-title">
+            <span class="truncate">Changed files <span class="dim">({files.length})</span></span>
+            <span class="bulk-actions">
+              {#if bulk.unstage.length > 0}
+                <button class="action" onclick={() => unstage(repoRoot, bulk.unstage)} disabled={busy} title="Unstage all">
+                  <Icon name="minus" size={13} />
+                </button>
+              {/if}
+              {#if bulk.discard.length > 0}
+                <button
+                  class="action danger"
+                  onclick={() => void discard(repoRoot, bulk.discard, repoName)}
+                  disabled={busy}
+                  title="Discard all"
+                >
+                  <Icon name="discard" size={13} />
+                </button>
+              {/if}
+              {#if bulk.stage.length > 0}
+                <button class="action" onclick={() => stage(repoRoot, bulk.stage)} disabled={busy} title="Stage all">
+                  <Icon name="plus" size={13} />
+                </button>
+              {/if}
+            </span>
+          </div>
           <div
             class="files"
             role="listbox"
@@ -186,6 +293,7 @@
           >
             {#each files as file (file.path)}
               {@const parts = splitPath(file.path)}
+              {@const staged = stagedState(file.status)}
               <div
                 id={rowId(file)}
                 class="file"
@@ -196,6 +304,7 @@
                 title={`${statusTitle(file.kind)}: ${file.origPath ? `${file.origPath} -> ${file.path}` : file.path}`}
                 onclick={() => select(file)}
                 ondblclick={() => openFile(file)}
+                oncontextmenu={(event) => rowMenu(event, file)}
                 onkeydown={(event) => {
                   if (event.key === "Enter") {
                     openFile(file);
@@ -205,6 +314,28 @@
                 <span class="letter kind-{file.kind ?? 'conflicted'}">{statusLetter(file.kind)}</span>
                 <span class="name truncate" class:deleted={file.kind === "deleted"}>{parts.name}</span>
                 <span class="dir truncate dim">{parts.directory}</span>
+                {#if staged}
+                  <span class="tag" title={staged === "staged" ? "All changes are staged" : "Some changes are staged"}>{staged}</span>
+                {/if}
+                <span class="actions">
+                  {#each fileActions(file.status) as action (action)}
+                    {@const button = actionButtons[action]}
+                    <button
+                      class="action"
+                      class:danger={button.danger}
+                      title={button.title}
+                      aria-label={button.title}
+                      disabled={busy && action !== "resolve"}
+                      onclick={(event) => {
+                        event.stopPropagation();
+                        runAction(action, file.status);
+                      }}
+                      ondblclick={(event) => event.stopPropagation()}
+                    >
+                      <Icon name={button.icon} size={13} />
+                    </button>
+                  {/each}
+                </span>
               </div>
             {:else}
               <div class="empty dim">No uncommitted changes</div>
@@ -317,10 +448,70 @@
   }
 
   .section-title {
-    padding: 6px 10px 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 26px;
+    padding: 3px 6px 0 10px;
     font-size: 12px;
     font-weight: 600;
     color: var(--text-dim);
+  }
+
+  .bulk-actions {
+    flex: none;
+    display: flex;
+    gap: 1px;
+    margin-left: auto;
+  }
+
+  .actions {
+    flex: none;
+    display: none;
+    gap: 1px;
+  }
+
+  .file:hover .actions {
+    display: flex;
+  }
+
+  .action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .action:hover:not(:disabled) {
+    background: var(--border-strong);
+    color: var(--text);
+  }
+
+  .action.danger:hover:not(:disabled) {
+    color: var(--danger);
+  }
+
+  .action:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .tag {
+    flex: none;
+    padding: 0 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 14px;
   }
 
   .files {
@@ -332,7 +523,7 @@
     align-items: center;
     gap: 8px;
     height: 24px;
-    padding: 0 10px;
+    padding: 0 6px 0 10px;
     cursor: default;
   }
 

@@ -10,6 +10,7 @@ use crate::commands::remote::{self, PullMode};
 use crate::commands::{self as app, reject_option, OpOutcome};
 use crate::git::repo as git_repo;
 use crate::git::status::{self, ChangeKind};
+use crate::mcp::paths;
 
 const CONFLICT_HINT: &str =
     "Stopped with conflicts. List them with git_conflicts, fix the files, stage them, then call git_continue_operation (or git_abort_operation).";
@@ -149,6 +150,16 @@ pub const TOOLS: &[BackendTool] = &[
         destructive: true,
         schema: push_schema,
         run: git_push,
+    },
+    BackendTool {
+        name: "clone_repository",
+        title: "Clone repository",
+        description: "Clones a repository into a new folder, like Git > Clone. parentPath may be any existing folder, also outside the workspace; folderName defaults to the URL's last part without .git. open \"window\" opens the clone in the app window (in place of its folders), \"workspace\" adds it to the open folders, and \"none\" (the default) only clones. Off by default because it writes outside the workspace: turn it on in Help > Available MCP Tools.",
+        category: GIT,
+        read_only: false,
+        destructive: false,
+        schema: clone_schema,
+        run: clone_repository,
     },
     BackendTool {
         name: "git_stash_push",
@@ -704,4 +715,51 @@ fn git_abort_operation(ctx: &ToolCtx, args: &Args) -> ToolResult {
 fn git_continue_operation(ctx: &ToolCtx, args: &Args) -> ToolResult {
     let repo_path = ctx.repo(args)?;
     outcome(wait(app::merge::continue_operation(repo_path))?)
+}
+
+const CLONE_OPEN_MODES: [&str; 3] = ["none", "window", "workspace"];
+
+fn clone_schema() -> Value {
+    object(
+        json!({
+            "url": { "type": "string", "description": "The repository URL: https://..., git@host:owner/repo.git, ssh://..., or a local path." },
+            "parentPath": { "type": "string", "description": "Absolute path of an existing folder to clone into (any folder, not only the workspace)." },
+            "folderName": { "type": "string", "description": "Name of the new folder (default: the URL's last part without .git). It must not exist, or be empty." },
+            "open": { "type": "string", "enum": CLONE_OPEN_MODES, "description": "After cloning: \"window\" opens the clone in the app window, \"workspace\" adds it to the open folders, \"none\" (default) leaves the window as it is." },
+        }),
+        &["url", "parentPath"],
+    )
+}
+
+fn clone_repository(ctx: &ToolCtx, args: &Args) -> ToolResult {
+    let url = args.str("url")?.trim();
+    if remote::is_remote_helper_url(url) {
+        return Err("Remote helper URLs (transport::address) cannot be cloned here. Use an https, ssh or git URL, or a local path.".to_string());
+    }
+    let parent = paths::resolve(args.str("parentPath")?)?;
+    let folder_name = match args.opt_str("folderName")?.map(str::trim).filter(|name| !name.is_empty()) {
+        Some(name) => name.to_string(),
+        None => remote::clone_folder_name(url),
+    };
+    let open = args.opt_str("open")?.unwrap_or("none");
+    if !CLONE_OPEN_MODES.contains(&open) {
+        return Err(format!("open must be one of {}", CLONE_OPEN_MODES.join(", ")));
+    }
+    let cloned_path = remote::clone_quietly(url, &parent.to_string_lossy(), &folder_name).map_err(|err| err.to_string())?;
+    let window = if open == "none" { None } else { open_in_window(ctx, &cloned_path, open) };
+    let note = match (open, &window) {
+        ("none", _) => None,
+        (_, Some(_)) => Some("The window opens the clone now."),
+        (_, None) => Some("Cloned, but no app window is ready to open it."),
+    };
+    json_out(json!({ "clonedPath": cloned_path, "open": open, "window": window, "note": note }))
+}
+
+/// Asks the window focused last to open the clone (App.svelte listens for mcp-open-folder);
+/// the window label, or None when no window can.
+fn open_in_window(ctx: &ToolCtx, cloned_path: &str, mode: &str) -> Option<String> {
+    let host = ctx.host().filter(|host| host.window_ready())?;
+    let window_label = ctx.shared.target_window(&serde_json::Map::new())?;
+    host.emit_to(&window_label, "mcp-open-folder", json!({ "folderPath": cloned_path, "mode": mode }));
+    Some(window_label)
 }

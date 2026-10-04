@@ -50,7 +50,9 @@ const filePathList = (description: string): Schema => ({
   description,
 });
 
-const optionalFilePath = absolutePath("Absolute path of an open file tab. Leave out for the file tab on screen.");
+const optionalFilePath = absolutePath(
+  "Absolute path of an open file tab, or the untitled: path of a New File tab as get_app_state lists it. Leave out for the tab on screen.",
+);
 
 function tool(
   name: string,
@@ -443,6 +445,7 @@ export const UI_TOOLS: McpUiToolDef[] = [
 ];
 
 /** Every tool is on unless it is destructive; the user's choices change that. */
-export function defaultToolEnabled(tool: { destructive: boolean }): boolean {
-  return !tool.destructive;
+/** The backend says so for its tools (clone_repository starts off); a UI tool is on unless destructive. */
+export function defaultToolEnabled(tool: { destructive: boolean; defaultEnabled?: boolean }): boolean {
+  return tool.defaultEnabled ?? !tool.destructive;
 }
