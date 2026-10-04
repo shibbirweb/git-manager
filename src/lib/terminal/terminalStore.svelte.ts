@@ -21,6 +21,14 @@ import {
   validateTerminalName,
 } from "./terminals";
 import { runAfterClose, type RunSpec } from "./runs";
+import {
+  describeLayout,
+  describeTerminal,
+  fittedLayout,
+  parseLayout,
+  restoredTerminals,
+  type TerminalStashData,
+} from "./terminalStash";
 import { panelAfterLeave, type TerminalLocation, terminalKeysOf, terminalTabPath } from "./terminalTabs";
 import {
   groupMembers,
@@ -115,6 +123,10 @@ class TerminalStore {
 
   private nextKey = 1;
   private nextGroup = 1;
+  /** Each mounted terminal's screen as text, for Clear Cache (registered by TerminalView). */
+  private snapshotters = new Map<number, () => Promise<string>>();
+  /** Terminals rebuilt after Clear Cache: the old screen, taken once by the terminal's view. */
+  private restoring = new Map<number, { snapshot: string; reattach: boolean }>();
   private focusToken = 0;
   private shellsLoad: Promise<ShellProfile[]> | null = null;
   /** Bumped by closeAll, so a create still waiting for the shell list gives up. */
@@ -223,9 +235,103 @@ class TerminalStore {
     this.focusRequest = { terminalKey, token: this.focusToken };
   }
 
-  /** Closes terminals left over from before a reload of the window. Called once on start. */
-  init(): void {
+  /**
+   * Called once on start. Closes terminals left over from before a reload of the window, except
+   * the ones Clear Cache left running for this page: their stash is returned, for
+   * `restoreAfterClearCache` once the workspace is open.
+   */
+  async init(): Promise<TerminalStashData | null> {
+    const stash = await api.terminalUnstash().catch(() => null);
     void api.terminalCloseAll().catch(() => undefined);
+    return stash;
+  }
+
+  /** TerminalView gives its screen as text; returns the function that takes it back. */
+  registerSnapshot(terminalKey: number, snapshot: () => Promise<string>): () => void {
+    this.snapshotters.set(terminalKey, snapshot);
+    return () => {
+      if (this.snapshotters.get(terminalKey) === snapshot) {
+        this.snapshotters.delete(terminalKey);
+      }
+    };
+  }
+
+  /** A rebuilt terminal's old screen and whether its shell is still running; once. */
+  takeRestore(terminalKey: number): { snapshot: string; reattach: boolean } | null {
+    const restore = this.restoring.get(terminalKey) ?? null;
+    this.restoring.delete(terminalKey);
+    return restore;
+  }
+
+  /**
+   * Clear Cache, before the page restarts: every terminal's place and screen, for the backend,
+   * which keeps the shells running and holds their output for the new page.
+   */
+  async stashForClearCache(): Promise<TerminalStashData> {
+    const terminals = await Promise.all(
+      this.terminals.map(async (entry) => ({
+        terminalId: entry.exited ? null : entry.terminalId,
+        descriptor: describeTerminal({
+          key: entry.key,
+          name: entry.name,
+          renamed: entry.renamed,
+          shellId: entry.shellId,
+          cwd: entry.cwd,
+          exited: entry.exited,
+          exitCode: entry.exitCode,
+          location: entry.location,
+          run: entry.run ?? null,
+          group: entry.group,
+          bell: entry.bell,
+        }),
+        snapshot: await (this.snapshotters.get(entry.key)?.() ?? Promise.resolve("")).catch(() => ""),
+      })),
+    );
+    const layout = describeLayout({
+      activeKey: this.activeKey,
+      runActiveKey: this.runActiveKey,
+      panelOpen: this.panelOpen,
+      panelTab: this.panelTab,
+      started: this.started,
+      groupSizes: this.groupSizes,
+    });
+    return { layout, terminals };
+  }
+
+  /** After Clear Cache: the same terminals in the same places; their views reconnect to the shells. */
+  restoreAfterClearCache(stash: TerminalStashData): void {
+    const { terminals, dropped } = restoredTerminals(stash);
+    for (const terminalId of dropped) {
+      void api.terminalClose(terminalId).catch(() => undefined);
+    }
+    if (terminals.length === 0) {
+      return;
+    }
+    const layout = fittedLayout(parseLayout(stash.layout), terminals);
+    for (const restored of terminals) {
+      this.restoring.set(restored.descriptor.key, { snapshot: restored.snapshot, reattach: restored.terminalId !== null });
+    }
+    this.terminals = terminals.map(({ descriptor, terminalId }) => ({ ...descriptor, terminalId }));
+    this.nextKey = Math.max(this.nextKey, ...terminals.map((restored) => restored.descriptor.key + 1));
+    this.nextGroup = Math.max(this.nextGroup, ...terminals.map((restored) => restored.descriptor.group + 1));
+    this.groupSizes = layout.groupSizes;
+    this.activeKey = layout.activeKey;
+    this.runActiveKey = layout.runActiveKey;
+    this.panelTab = layout.panelTab;
+    this.panelOpen = layout.panelOpen;
+    this.started = layout.started;
+    // Terminal editor tabs come back after the file tabs; the tab each group showed stays shown.
+    const shown = repoStore.groups.map((group) => [group.id, group.active] as const);
+    for (const restored of terminals) {
+      if (restored.descriptor.location === "editor") {
+        repoStore.openPseudoTab(terminalTabPath(restored.descriptor.key));
+      }
+    }
+    for (const [groupId, tabPath] of shown) {
+      if (tabPath !== null) {
+        repoStore.activateTab(groupId, tabPath);
+      }
+    }
   }
 
   /** The shell list, asked for once; an error leaves it empty so it is asked again next time. */

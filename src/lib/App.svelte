@@ -216,9 +216,15 @@
 
   onMount(() => {
     settings.applyTheme();
-    // Shells left running by a reload of the window would otherwise leak.
-    terminalStore.init();
-    void start();
+    void (async () => {
+      // Shells left running by a reload of the window would otherwise leak; the ones Clear
+      // Cache left for this page come back once the workspace is open.
+      const terminalStash = await terminalStore.init();
+      await start();
+      if (terminalStash) {
+        terminalStore.restoreAfterClearCache(terminalStash);
+      }
+    })();
     // Non-passive so the page itself does not zoom or scroll while resizing text.
     window.addEventListener("wheel", onWheel, { passive: false });
     return () => {

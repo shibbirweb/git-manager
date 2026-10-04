@@ -82,6 +82,7 @@ import type {
   WorkspaceInfo,
 } from "./types";
 import { rawBody } from "./rawBody";
+import type { TerminalStashData } from "./terminal/terminalStash";
 import type {
   GhCliStatus,
   GitHubAccount,
@@ -412,7 +413,7 @@ export const api = {
   configDir: () => invoke<string>("config_dir"),
   memoryUsage: () => invoke<MemoryUsage>("memory_usage"),
   /** Restarts this window's page in a new web content process (Clear Cache). */
-  clearCache: () => invoke<void>("clear_cache"),
+  clearCache: (stash: TerminalStashData | null) => invoke<void>("clear_cache", { stash }),
   osInfo: () => invoke<OsInfo>("os_info"),
 
   // File explorer
@@ -502,6 +503,11 @@ export const api = {
   terminalClose: (terminalId: number) => invoke<void>("terminal_close", { terminalId }),
   /** Closes every terminal, e.g. left over after a reload of the window. */
   terminalCloseAll: () => invoke<void>("terminal_close_all"),
+  /** What Clear Cache left for this page, once; null after a normal start. */
+  terminalUnstash: () => invoke<TerminalStashData | null>("terminal_unstash"),
+  /** Connects a terminal left running by Clear Cache to this page; false when it is gone. */
+  terminalReattach: (terminalId: number, output: Channel<TerminalOutputMessage>) =>
+    invoke<boolean>("terminal_reattach", { terminalId, output }),
 
   // Git Console: the git commands the app ran. The first call starts the "git-command" events.
   gitConsoleEntries: () => invoke<GitCommandEntry[]>("git_console_entries"),

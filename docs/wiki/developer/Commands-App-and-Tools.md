@@ -27,6 +27,7 @@ The file operations take absolute paths and return them in the same form. Each p
 | `save_config` | `saveConfig(configName, value)` | `void` | file | atomic write of the same |
 | `config_dir` | `configDir()` | `string` | app | the `~/.gitmanager` path |
 | `memory_usage` | `memoryUsage()` | `MemoryUsage` | app | memory of the app and its web view helpers |
+| `clear_cache` | `clearCache(stash)` | `void` | app | Clear Cache: keeps the terminals in `stash` running, then restarts the window's web content process ([How Clear Cache Works](How-Clear-Cache-Works.md)) |
 | `os_info` | `osInfo()` | `OsInfo` | app | OS name and version for bug reports (`sw_vers`, os-release) |
 | `memory_log_configure` | `memoryLogConfigure(enabled, intervalMs, thresholdMb)` | `MemoryLogStatus` | app | starts or stops the debug memory log in `~/.gitmanager/logs/memory.log` |
 | `memory_log_event` | `memoryLogEvent(label)` | `void` | app | a UI event (tab, view, scroll start or stop) for the next log line |
@@ -70,7 +71,9 @@ Output arrives as raw bytes on `output`, the end as a `terminal-exited` event. S
 | `terminal_write` | `terminalWrite(terminalId, data)` | `void` | app | queues keystrokes for the terminal's writer thread; synchronous on purpose |
 | `terminal_resize` | `terminalResize(terminalId, cols, rows)` | `void` | app | resizes the PTY |
 | `terminal_close` | `terminalClose(terminalId)` | `void` | app | hangs up the shell and its jobs, and kills them after a grace period |
-| `terminal_close_all` | `terminalCloseAll()` | `void` | app | closes every terminal, for example after a window reload |
+| `terminal_close_all` | `terminalCloseAll()` | `void` | app | closes the window's terminals after a reload, except those waiting after Clear Cache |
+| `terminal_unstash` | `terminalUnstash()` | `TerminalStashData \| null` | app | what Clear Cache left for this page: layout, descriptors, screens; once |
+| `terminal_reattach` | `terminalReattach(terminalId, output)` | `boolean` | app | connects a terminal left running by Clear Cache to the new page, held output first |
 
 ## Git Console
 

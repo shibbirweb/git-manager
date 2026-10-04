@@ -356,6 +356,7 @@ fn release_window(app: &AppHandle, window_label: &str) {
     state.preview_folders.remove(window_label);
     let watchers = super::workspace::take_window_watchers(&state, window_label);
     let terminals = state.terminals.clone();
+    state.terminal_links.forget_window(window_label);
     let searches = state.file_search.clone();
     let label = window_label.to_string();
     let app = app.clone();

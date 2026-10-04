@@ -182,11 +182,11 @@ pub fn usage() -> MemoryUsage {
     platform::usage()
 }
 
-/// Clear Cache: ends this window's web content process. Tauri sees it go and reloads the page in
-/// a new process, which starts with only what the page needs; a reload in the same process keeps
-/// what the old page held. The page saves its state before asking.
+/// Clear Cache: the pid of this window's web content process, checked to be ours. Ending it
+/// (`end_web_content`) makes Tauri reload the page in a new process, which starts with only what
+/// the page needs; a reload in the same process keeps what the old page held.
 #[cfg(target_os = "macos")]
-pub fn restart_web_content(window: &tauri::WebviewWindow) -> crate::error::AppResult<()> {
+pub fn web_content_pid(window: &tauri::WebviewWindow) -> crate::error::AppResult<i32> {
     use std::sync::mpsc;
     use std::time::Duration;
 
@@ -215,21 +215,29 @@ pub fn restart_web_content(window: &tauri::WebviewWindow) -> crate::error::AppRe
     if !platform::is_own_web_content(pid) {
         return Err(AppError::invalid("Could not find the window's web content process"));
     }
-    // A moment later, so this answer still reaches the page.
+    Ok(pid)
+}
+
+/// Ends a web content process found by `web_content_pid`, a moment later so the command's answer
+/// still reaches the page.
+#[cfg(target_os = "macos")]
+pub fn end_web_content(pid: i32) {
     std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_millis(150));
+        std::thread::sleep(std::time::Duration::from_millis(150));
         // SAFETY: plain signal to a pid checked above to be our own WebKit web content process.
         unsafe {
             libc::kill(pid, libc::SIGKILL);
         }
     });
-    Ok(())
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn restart_web_content(_window: &tauri::WebviewWindow) -> crate::error::AppResult<()> {
+pub fn web_content_pid(_window: &tauri::WebviewWindow) -> crate::error::AppResult<i32> {
     Err(crate::error::AppError::invalid("Clear Cache is only available on macOS for now"))
 }
+
+#[cfg(not(target_os = "macos"))]
+pub fn end_web_content(_pid: i32) {}
 
 #[cfg(test)]
 mod tests {

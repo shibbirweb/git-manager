@@ -53,10 +53,26 @@ pub async fn memory_usage() -> AppResult<crate::memory::MemoryUsage> {
     blocking(|| Ok(crate::memory::usage())).await
 }
 
-/// Clear Cache in the status bar: the window's page restarts in a new web content process.
+/// Clear Cache in the status bar: the window's page restarts in a new web content process. Its
+/// terminals keep running and wait for the new page (`stash`), but only once the restart is sure
+/// to happen, so a failure never leaves them unconnected.
 #[tauri::command]
-pub async fn clear_cache(window: tauri::WebviewWindow) -> AppResult<()> {
-    blocking(move || crate::memory::restart_web_content(&window)).await
+pub async fn clear_cache(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, crate::state::AppState>,
+    stash: Option<crate::terminal_link::TerminalStash>,
+) -> AppResult<()> {
+    let terminals = state.terminals.clone();
+    let links = state.terminal_links.clone();
+    blocking(move || {
+        let pid = crate::memory::web_content_pid(&window)?;
+        if let Some(stash) = stash {
+            super::terminal::stash_terminals(&terminals, &links, window.label(), stash);
+        }
+        crate::memory::end_web_content(pid);
+        Ok(())
+    })
+    .await
 }
 
 /// The debug memory log (Settings > Automation): on or off, its interval and change threshold.

@@ -646,6 +646,29 @@ impl TerminalRegistry {
         drop(processes);
     }
 
+    /// A starting page closes the shells its window left behind, except `keep`: the terminals
+    /// that wait for it after Clear Cache.
+    pub fn close_window_except(&self, window_label: &str, keep: &[u32]) {
+        let owned: Vec<u32> = self
+            .inner
+            .owners()
+            .iter()
+            .filter(|(terminal_id, owner)| owner.as_str() == window_label && !keep.contains(terminal_id))
+            .map(|(terminal_id, _)| *terminal_id)
+            .collect();
+        let processes: Vec<PtyProcess> = {
+            let mut terminals = self.inner.terminals();
+            owned.iter().filter_map(|terminal_id| terminals.remove(terminal_id)).collect()
+        };
+        {
+            let mut owners = self.inner.owners();
+            for terminal_id in &owned {
+                owners.remove(terminal_id);
+            }
+        }
+        drop(processes);
+    }
+
     /// For app exit: hangs up every shell, waits briefly, then kills what is left.
     pub fn shutdown(&self) {
         let mut processes: Vec<PtyProcess> = self.inner.terminals().drain().map(|(_, process)| process).collect();
@@ -963,6 +986,29 @@ mod tests {
             assert!(!registry.is_running(terminal_id));
             assert_eq!(exit_receiver.recv_timeout(WAIT).unwrap(), (terminal_id, None));
             assert!(started.elapsed() < Duration::from_secs(2));
+        }
+
+        #[test]
+        fn a_restarted_page_keeps_the_shells_waiting_for_it() {
+            let registry = TerminalRegistry::default();
+            let (exit_sender, exit_receiver) = mpsc::channel();
+            let spawn = || {
+                let exit_sender = exit_sender.clone();
+                let (terminal_id, _pid) = registry
+                    .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
+                        let _ = exit_sender.send((terminal_id, exit_code));
+                    })
+                    .unwrap();
+                registry.adopt(terminal_id, "main");
+                terminal_id
+            };
+            let kept = spawn();
+            let stale = spawn();
+            registry.close_window_except("main", &[kept]);
+            assert_eq!(exit_receiver.recv_timeout(WAIT).unwrap().0, stale);
+            assert!(registry.is_running(kept));
+            registry.close(kept);
+            assert_eq!(exit_receiver.recv_timeout(WAIT).unwrap().0, kept);
         }
 
         #[test]

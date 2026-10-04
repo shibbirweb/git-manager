@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use serde::Serialize;
 use tauri::ipc::{Channel, InvokeResponseBody};
 use tauri::{State, Window};
@@ -5,7 +7,8 @@ use tauri::{State, Window};
 use super::blocking;
 use crate::error::AppResult;
 use crate::state::AppState;
-use crate::terminal::{self, ShellProfile, TerminalInfo};
+use crate::terminal::{self, ShellProfile, TerminalInfo, TerminalRegistry};
+use crate::terminal_link::{Delivery, Sink, TerminalLinks, TerminalStash, DETACHED_TIMEOUT};
 
 /// The last message on a terminal's output channel; None when the shell was killed or its code is unknown.
 #[derive(Debug, Serialize)]
@@ -13,20 +16,18 @@ struct TerminalExitMessage {
     exit: Option<i32>,
 }
 
-/// A terminal's or a run's output callback: merged output as raw bytes (an ArrayBuffer in JS).
-pub(crate) fn send_output(output: Channel<InvokeResponseBody>) -> impl FnMut(Vec<u8>) + Send + 'static {
-    move |bytes: Vec<u8>| {
-        let _ = output.send(InvokeResponseBody::Raw(bytes));
-    }
-}
-
-/// A terminal's or a run's exit callback: `{ exit }` as a JSON message, after every byte of output.
-pub(crate) fn send_exit(output: Channel<InvokeResponseBody>) -> impl FnOnce(u32, Option<i32>) + Send + 'static {
-    move |_terminal_id: u32, exit_code: Option<i32>| {
-        if let Ok(json) = serde_json::to_string(&TerminalExitMessage { exit: exit_code }) {
-            let _ = output.send(InvokeResponseBody::Json(json));
-        }
-    }
+/// A terminal's or a run's page channel: merged output as raw bytes (an ArrayBuffer in JS), then
+/// the exit as a `{ exit }` JSON message, after every byte of output.
+pub(crate) fn channel_sink(output: Channel<InvokeResponseBody>) -> Sink {
+    Box::new(move |delivery| {
+        let _ = match delivery {
+            Delivery::Output(bytes) => output.send(InvokeResponseBody::Raw(bytes)),
+            Delivery::Exit(exit_code) => match serde_json::to_string(&TerminalExitMessage { exit: exit_code }) {
+                Ok(json) => output.send(InvokeResponseBody::Json(json)),
+                Err(_) => Ok(()),
+            },
+        };
+    })
 }
 
 #[tauri::command]
@@ -47,11 +48,12 @@ pub async fn terminal_spawn(
     output: Channel<InvokeResponseBody>,
 ) -> AppResult<TerminalInfo> {
     let terminals = state.terminals.clone();
+    let links = state.terminal_links.clone();
     let window_label = window.label().to_string();
     blocking(move || {
-        let on_output = send_output(output.clone());
-        let info =
-            terminal::start_terminal(&terminals, shell_id.as_deref(), cwd.as_deref(), cols, rows, on_output, send_exit(output))?;
+        let (link, on_output, on_exit) = links.link(channel_sink(output));
+        let info = terminal::start_terminal(&terminals, shell_id.as_deref(), cwd.as_deref(), cols, rows, on_output, on_exit)?;
+        links.register(info.terminal_id, link);
         terminals.adopt(info.terminal_id, &window_label);
         Ok(info)
     })
@@ -87,16 +89,52 @@ pub async fn terminal_close(state: State<'_, AppState>, terminal_id: u32) -> App
     .await
 }
 
-/// Closes the asking window's terminals and runs (it reloaded); other windows keep theirs.
+/// Closes the asking window's terminals and runs (it reloaded); other windows keep theirs, and
+/// terminals waiting for this window after Clear Cache stay for `terminal_reattach`.
 #[tauri::command]
 pub async fn terminal_close_all(window: Window, state: State<'_, AppState>) -> AppResult<()> {
     let terminals = state.terminals.clone();
+    let links = state.terminal_links.clone();
     let window_label = window.label().to_string();
     blocking(move || {
-        terminals.close_window(&window_label);
+        terminals.close_window_except(&window_label, &links.detached_ids());
         Ok(())
     })
     .await
+}
+
+/// Clear Cache, before the page restarts: the page's terminals keep running and hold their
+/// output, and the layout and screens wait for the new page. A terminal nobody reconnects to
+/// within `DETACHED_TIMEOUT` is closed.
+pub(crate) fn stash_terminals(terminals: &TerminalRegistry, links: &TerminalLinks, window_label: &str, stash: TerminalStash) {
+    let waiting = links.stash(window_label, stash, Instant::now());
+    if waiting.is_empty() {
+        return;
+    }
+    let terminals = terminals.clone();
+    let links = links.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(DETACHED_TIMEOUT);
+        for terminal_id in links.take_expired(Instant::now(), DETACHED_TIMEOUT) {
+            terminals.close(terminal_id);
+        }
+    });
+}
+
+/// A starting page takes what its window left before Clear Cache, once; None after a normal start.
+#[tauri::command]
+pub async fn terminal_unstash(window: Window, state: State<'_, AppState>) -> AppResult<Option<TerminalStash>> {
+    let links = state.terminal_links.clone();
+    let window_label = window.label().to_string();
+    blocking(move || Ok(links.unstash(&window_label))).await
+}
+
+/// Connects a waiting terminal to the new page: what it printed meanwhile comes first, then
+/// live output. False when the terminal is not waiting (it was closed or timed out).
+#[tauri::command]
+pub async fn terminal_reattach(state: State<'_, AppState>, terminal_id: u32, output: Channel<InvokeResponseBody>) -> AppResult<bool> {
+    let links = state.terminal_links.clone();
+    blocking(move || Ok(links.reattach(terminal_id, channel_sink(output)))).await
 }
 
 #[cfg(test)]

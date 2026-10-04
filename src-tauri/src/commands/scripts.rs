@@ -2,7 +2,7 @@ use tauri::ipc::{Channel, InvokeResponseBody};
 use tauri::{State, Window};
 
 use super::blocking;
-use super::terminal::{send_exit, send_output};
+use super::terminal::channel_sink;
 use crate::error::AppResult;
 use crate::run_process::{self, RunRequest};
 use crate::state::AppState;
@@ -40,6 +40,7 @@ pub async fn run_script(
     output: Channel<InvokeResponseBody>,
 ) -> AppResult<TerminalInfo> {
     let terminals = state.terminals.clone();
+    let links = state.terminal_links.clone();
     let request = RunRequest {
         program,
         args,
@@ -50,7 +51,9 @@ pub async fn run_script(
     };
     let window_label = window.label().to_string();
     blocking(move || {
-        let info = run_process::start_run(&terminals, &request, send_output(output.clone()), send_exit(output))?;
+        let (link, on_output, on_exit) = links.link(channel_sink(output));
+        let info = run_process::start_run(&terminals, &request, on_output, on_exit)?;
+        links.register(info.terminal_id, link);
         terminals.adopt(info.terminal_id, &window_label);
         Ok(info)
     })

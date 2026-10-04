@@ -85,6 +85,8 @@
   let disposed = false;
   let observer: ResizeObserver | null = null;
   let stopTheme: (() => void) | null = null;
+  /** Stops offering this terminal's screen to Clear Cache. */
+  let stopSnapshot: (() => void) | null = null;
   /** Output of the current shell and its acks; a retry gets new ones. */
   let channel: Channel<TerminalOutputMessage> | null = null;
   let acks: OutputAcks | null = null;
@@ -136,6 +138,7 @@
       gpuRenderers.forget(terminal.key);
       observer?.disconnect();
       stopTheme?.();
+      stopSnapshot?.();
       host?.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mouseup", onMouseUp);
       stopOutput();
@@ -174,6 +177,12 @@
     if (disposed || !host) {
       return;
     }
+    // Rebuilt after Clear Cache: the old screen comes back, and a running shell is reconnected.
+    const restore = terminalStore.takeRestore(terminal.key);
+    if (restore && !restore.reattach && terminal.exited) {
+      // Its exit note is part of the old screen.
+      exitShown = true;
+    }
     const instance = createInstance(xterm, host);
     term = instance;
     await nextFrame();
@@ -183,7 +192,17 @@
     fitNow();
     observer = new ResizeObserver(() => scheduleFit());
     observer.observe(host);
-    await spawnShell(instance);
+    if (restore?.snapshot) {
+      instance.write(restore.snapshot);
+    }
+    if (restore?.reattach && terminal.terminalId !== null) {
+      await reattachShell(instance, terminal.terminalId);
+    } else if (restore && terminal.exited) {
+      markReady();
+      phase = "ready";
+    } else {
+      await spawnShell(instance);
+    }
   }
 
   function createInstance(xterm: typeof import("./xterm"), hostElement: HTMLDivElement): Terminal {
@@ -229,6 +248,16 @@
       }
     });
     instance.open(hostElement);
+    stopSnapshot = terminalStore.registerSnapshot(terminal.key, async () => {
+      const { SerializeAddon } = await import("@xterm/addon-serialize");
+      const serializer = new SerializeAddon();
+      instance.loadAddon(serializer);
+      try {
+        return serializer.serialize();
+      } finally {
+        serializer.dispose();
+      }
+    });
     stopTheme = watchTheme(() => {
       instance.options.theme = currentTerminalTheme();
     });
@@ -313,6 +342,46 @@
       // A shell that prints no prompt must not leave the status up.
       readyTimer = setTimeout(() => markReady(), QUIET_SHELL_MS);
     }
+  }
+
+  /** After Clear Cache: the shell kept running; its output since the restart comes first, then live output. */
+  async function reattachShell(instance: Terminal, liveTerminalId: number): Promise<void> {
+    const terminalKey = terminal.key;
+    stopOutput();
+    const shellChannel = new Channel<TerminalOutputMessage>();
+    const shellAcks = new OutputAcks();
+    shellChannel.onmessage = (message) => {
+      if (isExitMessage(message)) {
+        terminalStore.exited(terminalKey, message.exit ?? null);
+        return;
+      }
+      const bytes = new Uint8Array(message);
+      shellAcks.received(bytes.byteLength);
+      instance.write(bytes, () => shellAcks.written(bytes.byteLength));
+    };
+    channel = shellChannel;
+    acks = shellAcks;
+    let connected = false;
+    try {
+      connected = await api.terminalReattach(liveTerminalId, shellChannel);
+    } catch {
+      connected = false;
+    }
+    if (disposed) {
+      return;
+    }
+    if (!connected) {
+      // Closed or timed out meanwhile: the old screen stays, with the usual note below it.
+      terminalStore.exited(terminalKey, null);
+      phase = "ready";
+      return;
+    }
+    terminalId = liveTerminalId;
+    shellAcks.connect((byteCount) => void api.terminalAck(liveTerminalId, byteCount).catch(() => undefined));
+    // The new page's size may differ; the next fit tells the shell.
+    sentSize = { cols: 0, rows: 0 };
+    fitNow();
+    phase = "ready";
   }
 
   function markReady(): void {

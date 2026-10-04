@@ -70,6 +70,8 @@ pub struct AppState {
     pub watchers: Mutex<HashMap<(String, String), RepoWatcher>>,
     /// Integrated terminal shells, killed at app exit.
     pub terminals: TerminalRegistry,
+    /// Where each terminal's output goes, and what a window leaves while Clear Cache restarts it.
+    pub terminal_links: crate::terminal_link::TerminalLinks,
     /// Each window's Search Everywhere indexes (files, then symbols on first use) and
     /// Find in Files, alive only while the popup is used.
     pub file_search: WindowSearches,
@@ -94,6 +96,7 @@ impl AppState {
             mergetool_exit_code: AtomicI32::new(1),
             watchers: Mutex::new(HashMap::new()),
             terminals: TerminalRegistry::default(),
+            terminal_links: crate::terminal_link::TerminalLinks::default(),
             file_search: WindowSearches::default(),
             git_console: git_console::global(),
             mcp: Mcp::default(),

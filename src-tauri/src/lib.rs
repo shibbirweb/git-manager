@@ -21,6 +21,7 @@ mod state;
 mod symbols;
 mod terminal;
 mod terminal_flow;
+mod terminal_link;
 #[cfg(test)]
 mod test_support;
 mod text_search;
@@ -216,6 +217,8 @@ pub fn run() {
             commands::terminal::terminal_resize,
             commands::terminal::terminal_close,
             commands::terminal::terminal_close_all,
+            commands::terminal::terminal_unstash,
+            commands::terminal::terminal_reattach,
             commands::console::git_console_entries,
             commands::console::git_console_clear,
             commands::console::git_console_set_enabled,
