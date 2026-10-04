@@ -22,8 +22,9 @@ The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, *
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Theme | **System** follows the macOS appearance, or pick **Light** or **Dark**. The colors themselves are picked in **Editor**. | System |
+| Theme | **System** follows macOS, or pick **Light** or **Dark**. Colors are picked in **Editor**. | System |
 | Rounded panels | Rounded panels with space between them, in any color theme. See [Rounded Panels](Rounded-Panels.md). | Off |
+| File toolbar | **Top**, **Bottom** or **Hidden**, plus switches. See [Navigation Bar](Navigation-Bar.md#the-file-toolbar-top-bottom-or-hidden). | Top |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
 | File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |
 

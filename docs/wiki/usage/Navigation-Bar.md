@@ -11,7 +11,33 @@ The Navigation Bar lets you move around your project from the keyboard, like the
 
 With the keyboard, the list of the current file's folder opens right away, with the file selected. So **Cmd+Up, Down, Enter** opens the file next to this one.
 
-With nothing open, the bar sits at the top of the welcome screen, starting at the active repository, and Cmd+Up opens it there. On the Log or a diff, it shows up floating at the top of the window instead.
+With nothing open, the bar sits at the top of the welcome screen, starting at the active repository, and Cmd+Up opens it there. On the Log or a diff, it shows up floating over the editor instead.
+
+## The file toolbar: top, bottom or hidden
+
+The Navigation Bar is part of each file's toolbar, the slim bar with the path, the badges and the buttons. **Settings > Appearance > File toolbar** decides where that toolbar goes:
+
+- **Top** (the default): above the code. The welcome screen shows the bar at its top.
+- **Bottom**: the whole toolbar moves under the code: the path, the badges and the buttons. On the welcome screen the bar moves to the foot. The lists open upward.
+- **Hidden**: no toolbar. Cmd+Up (or the menu) shows the bar floating at the top left of the editor you are in, with the list already open, like JetBrains does when its Navigation Bar is hidden. It goes away again when you open a file, press Esc or click elsewhere.
+
+Under it, a switch for each part, all on at first:
+
+| Switch | What it shows |
+| --- | --- |
+| Breadcrumbs | The Navigation Bar (the path). Off, Cmd+Up shows the floating bar, as with Hidden. |
+| Badges | Unsaved, Modified, New file and the number of conflicts |
+| Change arrows | Previous and next change with the counter. F7 and Shift+F7 still work. |
+| Blame | The Blame button. Git > Current File > Annotate with Git Blame still works. |
+| Copy relative path | The copy button |
+| Markdown view switch | Editor, Editor and Preview, Preview. View > Markdown still works. |
+| Markdown formatting row | The row of formatting buttons above a Markdown file. It has its own row, so this switch works even with the toolbar hidden. |
+
+With every part off, the toolbar goes away. The conflict buttons are not part of it: they show whenever a file has conflicts.
+
+[TODO:navigation-bar-bottom.png]
+
+[TODO:navigation-bar-hidden.png]
 
 In the code editor, Cmd+Up now opens the Navigation Bar, as in JetBrains IDEs. To go to the start of the file, press **Cmd+Home** (Fn+Cmd+Left on a laptop keyboard). In a plain text field, such as the commit message, Cmd+Up still moves the caret.
 

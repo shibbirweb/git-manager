@@ -12,10 +12,12 @@
 </script>
 
 <div class="welcome">
-  <!-- Like JetBrains' Navigation Bar over an empty editor: the active repository's path. -->
-  <div class="nav-strip">
-    <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir {claimed} />
-  </div>
+  <!-- The Navigation Bar over an empty editor: the active repository's path, on top or (Bottom) at the foot. -->
+  {#if settings.fileToolbar === "top" && settings.fileToolbarBreadcrumbs}
+    <div class="nav-strip">
+      <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir {claimed} />
+    </div>
+  {/if}
   <div class="empty">
     <div class="logo"><Icon name="merge" size={28} /></div>
     <p class="title">{repoStore.workspace?.name ?? "Git Manager"}</p>
@@ -58,6 +60,11 @@
       </button>
     </div>
   </div>
+  {#if settings.fileToolbar === "bottom" && settings.fileToolbarBreadcrumbs}
+    <div class="nav-strip bottom">
+      <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir {claimed} />
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -82,6 +89,11 @@
     background: var(--panel);
     color: var(--text-dim);
     font-size: 12px;
+  }
+
+  .nav-strip.bottom {
+    border-top: 1px solid var(--border-strong);
+    border-bottom: none;
   }
 
   .empty {

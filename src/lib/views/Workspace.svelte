@@ -26,6 +26,7 @@
   import { dialogs } from "$lib/ui/dialog.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
+  import { navTarget } from "$lib/navBar/navTarget.svelte";
   import ActivityBar from "./ActivityBar.svelte";
   import ChangesDiff from "./changes/ChangesDiff.svelte";
   import { changesSelection } from "./changes/selection.svelte";
@@ -356,9 +357,13 @@
   {/await}
 {/if}
 
-<!-- Jump to Navigation Bar with no file on screen: a floating bar from the active repository. -->
+<!--
+  Jump to Navigation Bar when no placed bar answers it (placement None, or the Log or a diff
+  with placement Top): a floating bar for the file on screen, else the active repository.
+-->
 {#if navBarStore.floating}
-  <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir floating />
+  {@const target = navTarget()}
+  <NavigationBar targetPath={target.path} targetIsDir={target.isDir} floating />
 {/if}
 
 {#if repoStore.mergeTarget && repoStore.repo}

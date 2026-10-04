@@ -16,6 +16,8 @@
     EDITOR_LINE_HEIGHT_RANGE,
     EDITOR_RULER_RANGE,
     FILE_ICON_CHOICES,
+    FILE_TOOLBAR_CHOICES,
+    FILE_TOOLBAR_SWITCHES,
     FONT_SIZE_RANGE,
     fontWeightName,
     type MarkdownViewMode,
@@ -681,6 +683,44 @@
               onchange={(event) => set("roundedPanels", event.currentTarget.checked)}
             />
           </label>
+          <div class="row">
+            <div class="label">
+              <span>File toolbar</span>
+              <span class="hint">
+                The bar with a file's path, badges and buttons: above the code, under it, or hidden. Pick its parts
+                below. Without the path, Cmd+Up shows the Navigation Bar over the editor.
+              </span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="File toolbar">
+              {#each FILE_TOOLBAR_CHOICES as choice (choice.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.fileToolbar === choice.value}
+                  class:on={settings.fileToolbar === choice.value}
+                  onclick={() => set("fileToolbar", choice.value)}
+                >
+                  {choice.label}
+                </button>
+              {/each}
+            </div>
+          </div>
+          <!-- One switch per part; with the toolbar hidden only the Markdown formatting row (its own row) still applies. -->
+          {#each FILE_TOOLBAR_SWITCHES as part (part.key)}
+            {#if settings.fileToolbar !== "none" || part.key === "fileToolbarMarkdownFormat"}
+              <label class="row toggle-row sub-row">
+                <div class="label">
+                  <span>{part.label}</span>
+                  <span class="hint">{part.hint}</span>
+                </div>
+                <input
+                  type="checkbox"
+                  class="switch"
+                  checked={settings[part.key]}
+                  onchange={(event) => set(part.key, event.currentTarget.checked)}
+                />
+              </label>
+            {/if}
+          {/each}
           <div class="row">
             <div class="label">
               <span>Interface font size</span>

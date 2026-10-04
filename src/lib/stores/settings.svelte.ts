@@ -61,7 +61,7 @@ import {
   WINDOW_STATE_KEYS,
   writableConfigs,
 } from "./settingsData";
-import type { CommitGpgSign, FileIconMode } from "./settingsData";
+import type { CommitGpgSign, FileIconMode, FileToolbarPlacement } from "./settingsData";
 import { type MessageHistory, rememberInHistory } from "../views/changes/commitMessages";
 import type { CommitTemplate } from "../views/changes/commitTemplates";
 
@@ -89,6 +89,8 @@ export {
   EDITOR_LINE_HEIGHT_RANGE,
   EDITOR_RULER_RANGE,
   FILE_ICON_CHOICES,
+  FILE_TOOLBAR_CHOICES,
+  FILE_TOOLBAR_SWITCHES,
   FONT_SIZE_RANGE,
   fontWeightName,
   EDITOR_SPLIT_RATIO_RANGE,
@@ -143,6 +145,14 @@ class SettingsStore {
   uiFontSize = $state(initialPreferences.uiFontSize);
   fileIcons = $state<FileIconMode>(initialPreferences.fileIcons);
   roundedPanels = $state(initialPreferences.roundedPanels);
+  fileToolbar = $state<FileToolbarPlacement>(initialPreferences.fileToolbar);
+  fileToolbarBreadcrumbs = $state(initialPreferences.fileToolbarBreadcrumbs);
+  fileToolbarBadges = $state(initialPreferences.fileToolbarBadges);
+  fileToolbarChanges = $state(initialPreferences.fileToolbarChanges);
+  fileToolbarBlame = $state(initialPreferences.fileToolbarBlame);
+  fileToolbarCopyPath = $state(initialPreferences.fileToolbarCopyPath);
+  fileToolbarMarkdownView = $state(initialPreferences.fileToolbarMarkdownView);
+  fileToolbarMarkdownFormat = $state(initialPreferences.fileToolbarMarkdownFormat);
   editorFontSize = $state(initialPreferences.editorFontSize);
   editorLineHeight = $state(initialPreferences.editorLineHeight);
   editorFontFamily = $state(initialPreferences.editorFontFamily);
@@ -374,6 +384,14 @@ class SettingsStore {
       uiFontSize: this.uiFontSize,
       fileIcons: this.fileIcons,
       roundedPanels: this.roundedPanels,
+      fileToolbar: this.fileToolbar,
+      fileToolbarBreadcrumbs: this.fileToolbarBreadcrumbs,
+      fileToolbarBadges: this.fileToolbarBadges,
+      fileToolbarChanges: this.fileToolbarChanges,
+      fileToolbarBlame: this.fileToolbarBlame,
+      fileToolbarCopyPath: this.fileToolbarCopyPath,
+      fileToolbarMarkdownView: this.fileToolbarMarkdownView,
+      fileToolbarMarkdownFormat: this.fileToolbarMarkdownFormat,
       editorFontSize: this.editorFontSize,
       editorLineHeight: this.editorLineHeight,
       editorFontFamily: this.editorFontFamily,

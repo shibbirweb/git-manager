@@ -1745,6 +1745,28 @@ define("navigation-bar", async (shot) => {
   await shot.save(await shot.clipAround([shot.page.locator(".file-bar").first(), popup], 12));
 }, () => ({ settings: { currentLineBlame: false } }));
 
+// File toolbar Bottom: the whole path bar under the code, its list opened upward.
+define("navigation-bar-bottom", async (shot) => {
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.navigationBar");
+  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
+  await popup.locator(".row.selected").waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 300);
+  await shot.save(await shot.clipAround([shot.page.locator(".file-view.bar-bottom .file-bar").first(), popup], 12));
+}, () => ({ settings: { currentLineBlame: false, fileToolbar: "bottom" } }));
+
+// File toolbar Hidden: Cmd+Up shows the bar floating at the top left of the editor.
+define("navigation-bar-hidden", async (shot) => {
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.navigationBar");
+  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
+  await popup.locator(".row.selected").waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 790);
+  await shot.save(await shot.clipAround([shot.page.locator(".editor-group.focused"), popup], { bottom: 12 }));
+}, () => ({ settings: { currentLineBlame: false, fileToolbar: "none" } }));
+
 define("search-everywhere-files", async (shot) => {
   const popup = await openSearch(shot, "files", "cart");
   await shot.page.mouse.move(5, 790);

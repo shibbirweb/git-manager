@@ -2,8 +2,10 @@
   The Navigation Bar, like JetBrains': the path as crumbs. Clicking a crumb, or Jump to
   Navigation Bar (Cmd+Up on macOS, Alt+Home elsewhere), opens a popup of what that folder
   holds. Typing filters it, Up and Down pick, Right or Enter goes into a folder, Left goes
-  up, Enter opens a file. Inside FileView it is the path bar; Workspace.svelte shows it
-  floating when no file is on screen. The logic is in navBarModel.ts.
+  up, Enter opens a file. It lives in FileView's path bar, above the code or under it
+  (Settings > Appearance > File toolbar), and on the welcome screen; hidden or with its
+  Breadcrumbs switch off it is left out, and Workspace.svelte shows it floating over the editor when no placed bar answers
+  the jump. The logic is in navBarModel.ts.
 -->
 <script lang="ts">
   import { onMount, tick, untrack } from "svelte";
@@ -41,7 +43,7 @@
     targetIsDir?: boolean;
     /** Shown over the editor area by Jump to Navigation Bar, closed with its popup. */
     floating?: boolean;
-    /** This is the path bar of the tab on screen in the focused group: it answers the jump. */
+    /** This bar answers the jump: the one of the tab on screen in the focused group, or of the welcome screen. */
     claimed?: boolean;
   }
 
@@ -68,7 +70,15 @@
   let truncated = $state(false);
   let query = $state("");
   let selected = $state(0);
-  let position = $state({ top: 0, left: 0, maxHeight: 400 });
+  /** Under the crumb (`top`), or above it (`bottom`) when there is no room below, as under the code. */
+  let position = $state<{ top: number | null; bottom: number | null; left: number; maxHeight: number }>({
+    top: 0,
+    bottom: null,
+    left: 0,
+    maxHeight: 400,
+  });
+  /** Where the floating bar sits: the top left of the focused editor group. */
+  let floatAt = $state<{ top: number; left: number; maxWidth: number } | null>(null);
   let requestId = 0;
   /** The path to select once the listing arrives. */
   let pendingSelection: string | null = null;
@@ -120,6 +130,7 @@
 
   onMount(() => {
     if (floating) {
+      floatAt = floatingAnchor();
       navBarStore.enter(owner);
       void openAt(startIndex(base));
     }
@@ -252,7 +263,7 @@
     selected = query.trim() === "" ? rowIndexOf(navRows(next, ""), selectPath) : 0;
   }
 
-  /** Puts the popup under crumb `index`, inside the window. */
+  /** Puts the popup under crumb `index`, or above it when the room below is short, inside the window. */
   function place(index: number): void {
     const crumb = bar?.querySelector<HTMLElement>(`[data-crumb="${index}"]`);
     const rect = (crumb ?? bar)?.getBoundingClientRect();
@@ -261,8 +272,23 @@
     }
     const width = Math.min(POPUP_WIDTH, window.innerWidth - 16);
     const left = Math.max(8, Math.min(rect.left - 4, window.innerWidth - width - 8));
-    const top = rect.bottom + 3;
-    position = { top, left, maxHeight: Math.max(120, Math.min(440, window.innerHeight - top - 12)) };
+    const below = window.innerHeight - rect.bottom - 15;
+    const above = rect.top - 15;
+    if (below < 200 && above > below) {
+      position = { top: null, bottom: window.innerHeight - rect.top + 3, left, maxHeight: Math.min(440, above) };
+    } else {
+      position = { top: rect.bottom + 3, bottom: null, left, maxHeight: Math.max(120, Math.min(440, below)) };
+    }
+  }
+
+  /** The top left of the focused editor group (else the editor area), like JetBrains' hidden bar. */
+  function floatingAnchor(): { top: number; left: number; maxWidth: number } | null {
+    const area = document.querySelector<HTMLElement>(".editor-group.focused") ?? document.querySelector<HTMLElement>("main.main");
+    const rect = area?.getBoundingClientRect();
+    if (!rect || rect.width === 0) {
+      return null;
+    }
+    return { top: rect.top + 6, left: rect.left + 8, maxWidth: Math.max(160, rect.width - 16) };
   }
 
   /** Right or Enter on a folder: it becomes the last crumb and its popup opens. */
@@ -390,7 +416,18 @@
   }
 </script>
 
-<nav class="nav-bar" class:floating class:active bind:this={bar} aria-label="Navigation bar" title={floating ? null : targetPath}>
+<nav
+  class="nav-bar"
+  class:floating
+  class:anchored={floatAt !== null}
+  class:active
+  bind:this={bar}
+  aria-label="Navigation bar"
+  title={floating ? null : targetPath}
+  style:top={floatAt ? `${floatAt.top}px` : null}
+  style:left={floatAt ? `${floatAt.left}px` : null}
+  style:max-width={floatAt ? `${floatAt.maxWidth}px` : null}
+>
   {#each crumbs as crumb, index (crumb.path)}
     {@const icon = crumbIcon(crumb)}
     {#if index > 0}
@@ -427,7 +464,8 @@
     aria-label="Navigation bar: {crumbs[listedIndex(crumbs, popupIndex)]?.name ?? ''}"
     bind:this={popup}
     use:portal
-    style:top="{position.top}px"
+    style:top={position.top === null ? null : `${position.top}px`}
+    style:bottom={position.bottom === null ? null : `${position.bottom}px`}
     style:left="{position.left}px"
     style:width="{Math.min(POPUP_WIDTH, window.innerWidth - 16)}px"
   >
@@ -537,6 +575,11 @@
     box-shadow: var(--shadow);
     color: var(--text-dim);
     font-size: 12px;
+  }
+
+  /* Hidden bar: at the top left of the focused editor, over the code. */
+  .nav-bar.floating.anchored {
+    transform: none;
   }
 
   .sep {

@@ -43,6 +43,41 @@ export const FILE_ICON_CHOICES: { value: FileIconMode; label: string; hint: stri
 
 const FILE_ICON_MODES = FILE_ICON_CHOICES.map((choice) => choice.value);
 
+/** Where a file tab's toolbar (path, badges and buttons) shows: above the code, under it, or hidden. */
+export type FileToolbarPlacement = "top" | "bottom" | "none";
+
+export const FILE_TOOLBAR_CHOICES: { value: FileToolbarPlacement; label: string }[] = [
+  { value: "top", label: "Top" },
+  { value: "bottom", label: "Bottom" },
+  { value: "none", label: "Hidden" },
+];
+
+const FILE_TOOLBAR_PLACEMENTS = FILE_TOOLBAR_CHOICES.map((choice) => choice.value);
+
+/** A switch per part of the file toolbar, each on by default. */
+export type FileToolbarSwitchKey =
+  | "fileToolbarBreadcrumbs"
+  | "fileToolbarBadges"
+  | "fileToolbarChanges"
+  | "fileToolbarBlame"
+  | "fileToolbarCopyPath"
+  | "fileToolbarMarkdownView"
+  | "fileToolbarMarkdownFormat";
+
+export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; hint: string }[] = [
+  { key: "fileToolbarBreadcrumbs", label: "Breadcrumbs", hint: "The folders and file as a Navigation Bar. Off, Cmd+Up shows it over the editor." },
+  { key: "fileToolbarBadges", label: "Badges", hint: "Unsaved, Modified, New file and the number of conflicts." },
+  { key: "fileToolbarChanges", label: "Change arrows", hint: "Previous and next change with the counter. F7 and Shift+F7 work either way." },
+  { key: "fileToolbarBlame", label: "Blame", hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame." },
+  { key: "fileToolbarCopyPath", label: "Copy relative path", hint: "Copies the file's path inside the workspace folder." },
+  { key: "fileToolbarMarkdownView", label: "Markdown view switch", hint: "Editor, Editor and Preview, Preview. Also in View > Markdown." },
+  {
+    key: "fileToolbarMarkdownFormat",
+    label: "Markdown formatting row",
+    hint: "Bold, headings, lists and more above a Markdown file. It has its own row, so it shows even when the toolbar is hidden.",
+  },
+];
+
 /** Which spaces and tabs the editors draw as dots and arrows, like VS Code's editor.renderWhitespace. */
 export type RenderWhitespace = "none" | "boundary" | "selection" | "trailing" | "all";
 
@@ -203,6 +238,15 @@ export interface Preferences {
   fileIcons: FileIconMode;
   /** Sidebars, editor groups and the bottom panel as rounded panels with space between them, like JetBrains Islands. Any color theme. */
   roundedPanels: boolean;
+  /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
+  fileToolbar: FileToolbarPlacement;
+  fileToolbarBreadcrumbs: boolean;
+  fileToolbarBadges: boolean;
+  fileToolbarChanges: boolean;
+  fileToolbarBlame: boolean;
+  fileToolbarCopyPath: boolean;
+  fileToolbarMarkdownView: boolean;
+  fileToolbarMarkdownFormat: boolean;
   editorFontSize: number;
   /** Line height of code, as a multiple of the font size. */
   editorLineHeight: number;
@@ -391,6 +435,14 @@ export const defaultPreferences: Preferences = {
   uiFontSize: 13,
   fileIcons: "off",
   roundedPanels: false,
+  fileToolbar: "top",
+  fileToolbarBreadcrumbs: true,
+  fileToolbarBadges: true,
+  fileToolbarChanges: true,
+  fileToolbarBlame: true,
+  fileToolbarCopyPath: true,
+  fileToolbarMarkdownView: true,
+  fileToolbarMarkdownFormat: true,
   editorFontSize: 13,
   editorLineHeight: 1.25,
   editorFontFamily: DEFAULT_EDITOR_FONT,
@@ -702,6 +754,14 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     uiFontSize: pickNumber(data.uiFontSize, defaultPreferences.uiFontSize, ...FONT_SIZE_RANGE.ui),
     fileIcons: pickOneOf(data.fileIcons, FILE_ICON_MODES, defaultPreferences.fileIcons),
     roundedPanels: pickBoolean(data.roundedPanels, defaultPreferences.roundedPanels),
+    fileToolbar: pickOneOf(data.fileToolbar, FILE_TOOLBAR_PLACEMENTS, defaultPreferences.fileToolbar),
+    fileToolbarBreadcrumbs: pickBoolean(data.fileToolbarBreadcrumbs, defaultPreferences.fileToolbarBreadcrumbs),
+    fileToolbarBadges: pickBoolean(data.fileToolbarBadges, defaultPreferences.fileToolbarBadges),
+    fileToolbarChanges: pickBoolean(data.fileToolbarChanges, defaultPreferences.fileToolbarChanges),
+    fileToolbarBlame: pickBoolean(data.fileToolbarBlame, defaultPreferences.fileToolbarBlame),
+    fileToolbarCopyPath: pickBoolean(data.fileToolbarCopyPath, defaultPreferences.fileToolbarCopyPath),
+    fileToolbarMarkdownView: pickBoolean(data.fileToolbarMarkdownView, defaultPreferences.fileToolbarMarkdownView),
+    fileToolbarMarkdownFormat: pickBoolean(data.fileToolbarMarkdownFormat, defaultPreferences.fileToolbarMarkdownFormat),
     editorFontSize: pickNumber(data.editorFontSize, defaultPreferences.editorFontSize, ...FONT_SIZE_RANGE.editor),
     editorLineHeight: roundTo(
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),

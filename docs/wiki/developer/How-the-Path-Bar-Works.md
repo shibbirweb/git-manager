@@ -31,6 +31,8 @@ flowchart TD
 
 All buttons are 24 by 22 px, with a tooltip and an accessible name. The keyboard shortcuts did not change: F7 and Shift+F7 live in the editor keymap, and the view modes are also in **View > Markdown**.
 
+**Settings > Appearance > File toolbar** places the bar and switches its parts. `fileToolbarParts` in `views/files/fileToolbar.ts` (pure, tested) turns the placement, the seven `fileToolbar*` switches and the file (in a repository and editable, Markdown) into what to draw: Hidden or no part left drops the bar, the git buttons need a repository, and the Markdown formatting row follows its own switch whatever the placement. With **Bottom**, `.file-view.bar-bottom` gives the bar `order: 1`, so the same bar sits under the code. Dividers only show between parts that are on. See [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
+
 Below the bar come only rows that are tools, and only when they apply:
 
 - The **conflict strip** (`.conflict-bar`, toolbar **Conflict actions**) with Accept All Current, Accept All Incoming, Resolve in Merge Tool and Mark as Resolved. See [How conflict resolution works](How-Conflict-Resolution-Works.md).
@@ -80,7 +82,7 @@ The breadcrumbs shorten all the time, as needed. The crumbs container (`.nav-bar
 
 ## Tests
 
-The bar is layout; `crumbShrink` is one line, and the crumbs come from `navBarModel.ts`, which has its own tests. It needs a visual check in light and dark, and at narrow editor widths (drag the Files panel wider): the counter hides first, then the badges become dots, and the file name stays readable. See [Testing](Testing.md).
+The bar is layout; `crumbShrink` is one line, the crumbs come from `navBarModel.ts`, and `fileToolbar.test.ts` covers which parts show. It needs a visual check in light and dark, and at narrow editor widths (drag the Files panel wider): the counter hides first, then the badges become dots, and the file name stays readable. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

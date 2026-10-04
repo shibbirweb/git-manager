@@ -207,6 +207,13 @@ describe("parsePreferences", () => {
     expect(defaultPreferences.roundedPanels).toBe(false);
     expect(parsePreferences({ roundedPanels: true }).preferences.roundedPanels).toBe(true);
     expect(parsePreferences({ roundedPanels: "yes" }).preferences.roundedPanels).toBe(false);
+    expect(defaultPreferences.fileToolbar).toBe("top");
+    expect(parsePreferences({ fileToolbar: "bottom" }).preferences.fileToolbar).toBe("bottom");
+    expect(parsePreferences({ fileToolbar: "none" }).preferences.fileToolbar).toBe("none");
+    expect(parsePreferences({ fileToolbar: "left" }).preferences.fileToolbar).toBe("top");
+    expect(defaultPreferences.fileToolbarBlame).toBe(true);
+    expect(parsePreferences({ fileToolbarBlame: false }).preferences.fileToolbarBlame).toBe(false);
+    expect(parsePreferences({ fileToolbarBreadcrumbs: "no" }).preferences.fileToolbarBreadcrumbs).toBe(true);
     expect(parsePreferences({ detectIndentation: false }).preferences.detectIndentation).toBe(false);
     expect(parsePreferences({ detectIndentation: "no" }).preferences.detectIndentation).toBe(true);
     expect(extras.editorBracketPairColors).toBe(true);

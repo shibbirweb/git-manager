@@ -51,6 +51,7 @@
   import RichMarkdownView from "./RichMarkdownView.svelte";
   import { tonesByPath } from "./tones";
   import { previewOf } from "./mediaPreview";
+  import { fileToolbarParts } from "./fileToolbar";
 
   let { filePath, groupId }: { filePath: string; groupId: number } = $props();
 
@@ -897,6 +898,23 @@
     }
   }
 
+  /** Settings > Appearance > File toolbar: where the bar goes and which of its parts show for this file. */
+  const toolbar = $derived(
+    fileToolbarParts(
+      settings.fileToolbar,
+      {
+        breadcrumbs: settings.fileToolbarBreadcrumbs,
+        badges: settings.fileToolbarBadges,
+        changes: settings.fileToolbarChanges,
+        blame: settings.fileToolbarBlame,
+        copyPath: settings.fileToolbarCopyPath,
+        markdownView: settings.fileToolbarMarkdownView,
+        markdownFormat: settings.fileToolbarMarkdownFormat,
+      },
+      { gitTools: location !== null && editable, markdown: isMarkdown && editable && loadError === null },
+    ),
+  );
+
   const conflictText = $derived(`${conflictCount} ${conflictCount === 1 ? "conflict" : "conflicts"}`);
 
   const MARKDOWN_MODES: { value: MarkdownViewMode; icon: IconName; label: string }[] = [
@@ -945,76 +963,91 @@
   }
 </script>
 
-<div class="file-view">
-  <!-- One slim bar, like JetBrains: the path and badges on the left, compact actions on the right. -->
-  <div class="file-bar">
-    <NavigationBar targetPath={filePath} claimed={isActive} />
-    {#if dirty}
-      <span class="badge unsaved" title="Unsaved changes"><span class="badge-text">Unsaved</span></span>
-    {/if}
-    {#if toneLabel}
-      <span class="badge {tone}" title={toneLabel}><span class="badge-text">{toneLabel}</span></span>
-    {/if}
-    {#if conflictCount > 0}
-      <span class="badge conflict" title={conflictText}><span class="badge-text">{conflictText}</span></span>
-    {/if}
+<!-- Settings > Appearance > File toolbar: Bottom moves the whole bar under the code (CSS order), Hidden or every part off leaves it out. -->
+<div class="file-view" class:bar-bottom={settings.fileToolbar === "bottom"}>
+  {#if toolbar.shown}
+    <!-- One slim bar, like JetBrains: the path and badges on the left, compact actions on the right. -->
+    <div class="file-bar">
+      {#if toolbar.breadcrumbs}
+        <NavigationBar targetPath={filePath} claimed={isActive} />
+      {/if}
+      {#if toolbar.badges}
+        {#if dirty}
+          <span class="badge unsaved" title="Unsaved changes"><span class="badge-text">Unsaved</span></span>
+        {/if}
+        {#if toneLabel}
+          <span class="badge {tone}" title={toneLabel}><span class="badge-text">{toneLabel}</span></span>
+        {/if}
+        {#if conflictCount > 0}
+          <span class="badge conflict" title={conflictText}><span class="badge-text">{conflictText}</span></span>
+        {/if}
+      {/if}
 
-    <div class="actions" role="toolbar" aria-label="File actions">
-      {#if location && editable}
-        <button
-          class="tool"
-          onclick={() => goToSection(-1)}
-          disabled={navMarks.length === 0}
-          title="Previous change or conflict (Shift+F7)"
-          aria-label="Previous change or conflict"
-        >
-          <Icon name="arrow-up" size={13} />
-        </button>
-        <button
-          class="tool"
-          onclick={() => goToSection(1)}
-          disabled={navMarks.length === 0}
-          title="Next change or conflict (F7)"
-          aria-label="Next change or conflict"
-        >
-          <Icon name="arrow-down" size={13} />
-        </button>
-        <span class="nav-label">{navLabel}</span>
-        <span class="divider" aria-hidden="true"></span>
-        <button
-          class="tool"
-          class:on={settings.blameGutter}
-          onclick={() => settings.setPreference("blameGutter", !settings.blameGutter)}
-          title="Blame: show who changed each line and when"
-          aria-label="Blame"
-          aria-pressed={settings.blameGutter}
-        >
-          <Icon name="history" size={13} />
-        </button>
-      {/if}
-      <!-- Save and Revert live in the File menu (Cmd+S), not here. -->
-      <button class="tool" onclick={() => void copyPath()} title="Copy relative path" aria-label="Copy relative path">
-        <Icon name="copy" size={12} />
-      </button>
-      {#if isMarkdown && editable && loadError === null}
-        <span class="divider" aria-hidden="true"></span>
-        <div class="modes" role="radiogroup" aria-label="Markdown view">
-          {#each MARKDOWN_MODES as mode (mode.value)}
-            <button
-              role="radio"
-              aria-checked={viewMode === mode.value}
-              class:on={viewMode === mode.value}
-              onclick={() => void setViewMode(mode.value)}
-              title={mode.label}
-              aria-label={mode.label}
-            >
-              <Icon name={mode.icon} size={13} />
-            </button>
-          {/each}
-        </div>
-      {/if}
+      <div class="actions" role="toolbar" aria-label="File actions">
+        {#if toolbar.changes}
+          <button
+            class="tool"
+            onclick={() => goToSection(-1)}
+            disabled={navMarks.length === 0}
+            title="Previous change or conflict (Shift+F7)"
+            aria-label="Previous change or conflict"
+          >
+            <Icon name="arrow-up" size={13} />
+          </button>
+          <button
+            class="tool"
+            onclick={() => goToSection(1)}
+            disabled={navMarks.length === 0}
+            title="Next change or conflict (F7)"
+            aria-label="Next change or conflict"
+          >
+            <Icon name="arrow-down" size={13} />
+          </button>
+          <span class="nav-label">{navLabel}</span>
+          {#if toolbar.blame || toolbar.copyPath || toolbar.markdownView}
+            <span class="divider" aria-hidden="true"></span>
+          {/if}
+        {/if}
+        {#if toolbar.blame}
+          <button
+            class="tool"
+            class:on={settings.blameGutter}
+            onclick={() => settings.setPreference("blameGutter", !settings.blameGutter)}
+            title="Blame: show who changed each line and when"
+            aria-label="Blame"
+            aria-pressed={settings.blameGutter}
+          >
+            <Icon name="history" size={13} />
+          </button>
+        {/if}
+        <!-- Save and Revert live in the File menu (Cmd+S), not here. -->
+        {#if toolbar.copyPath}
+          <button class="tool" onclick={() => void copyPath()} title="Copy relative path" aria-label="Copy relative path">
+            <Icon name="copy" size={12} />
+          </button>
+        {/if}
+        {#if toolbar.markdownView}
+          {#if toolbar.blame || toolbar.copyPath}
+            <span class="divider" aria-hidden="true"></span>
+          {/if}
+          <div class="modes" role="radiogroup" aria-label="Markdown view">
+            {#each MARKDOWN_MODES as mode (mode.value)}
+              <button
+                role="radio"
+                aria-checked={viewMode === mode.value}
+                class:on={viewMode === mode.value}
+                onclick={() => void setViewMode(mode.value)}
+                title={mode.label}
+                aria-label={mode.label}
+              >
+                <Icon name={mode.icon} size={13} />
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </div>
-  </div>
+  {/if}
 
   <!-- Conflict actions are a tool for this file, so they get their own strip while it has conflicts. -->
   {#if conflictCount > 0 || tone === "conflict"}
@@ -1043,7 +1076,7 @@
     </div>
   {/if}
 
-  {#if isMarkdown && editable && loadError === null}
+  {#if toolbar.markdownFormat}
     <MarkdownToolbar
       {viewMode}
       onFormat={applyFormat}
@@ -1346,6 +1379,14 @@
   .editor-area.hidden,
   .editor.hidden {
     display: none;
+  }
+
+  /* File toolbar Bottom: the whole bar goes under the code, also under a message or a preview. */
+  .file-view.bar-bottom .file-bar {
+    order: 1;
+    margin-top: auto;
+    border-top: 1px solid var(--border-strong);
+    border-bottom: none;
   }
 
   .preview-pane {

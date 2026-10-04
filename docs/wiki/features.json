@@ -188,7 +188,7 @@
       "title": "Navigation Bar",
       "usage": "usage/Navigation-Bar.md",
       "developer": "developer/How-the-Navigation-Bar-Works.md",
-      "screenshots": ["navigation-bar.png"]
+      "screenshots": ["navigation-bar.png", "navigation-bar-bottom.png", "navigation-bar-hidden.png"]
     },
     {
       "id": "find-replace",
