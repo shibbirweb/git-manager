@@ -228,7 +228,6 @@ class SettingsStore {
   terminalFind = $state(initialPreferences.terminalFind);
   terminalFileLinks = $state(initialPreferences.terminalFileLinks);
   terminalGpuAcceleration = $state(initialPreferences.terminalGpuAcceleration);
-  terminalFreeGpuWhenHidden = $state(initialPreferences.terminalFreeGpuWhenHidden);
   terminalUnicode11 = $state(initialPreferences.terminalUnicode11);
   terminalOptionAsMeta = $state(initialPreferences.terminalOptionAsMeta);
   terminalVisualBell = $state(initialPreferences.terminalVisualBell);
@@ -472,7 +471,6 @@ class SettingsStore {
       terminalFind: this.terminalFind,
       terminalFileLinks: this.terminalFileLinks,
       terminalGpuAcceleration: this.terminalGpuAcceleration,
-      terminalFreeGpuWhenHidden: this.terminalFreeGpuWhenHidden,
       terminalUnicode11: this.terminalUnicode11,
       terminalOptionAsMeta: this.terminalOptionAsMeta,
       terminalVisualBell: this.terminalVisualBell,

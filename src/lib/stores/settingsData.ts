@@ -383,8 +383,6 @@ export interface Preferences {
   terminalFileLinks: boolean;
   /** Draw with WebGL (xterm's GPU renderer), falling back to the DOM renderer. */
   terminalGpuAcceleration: boolean;
-  /** A terminal out of sight gives its WebGL renderer back, and takes it again when shown. */
-  terminalFreeGpuWhenHidden: boolean;
   /** Unicode 11 character widths, so emoji and wide characters line up. */
   terminalUnicode11: boolean;
   /** macOS: Option works as Meta (xterm's macOptionIsMeta) for word jumps and emacs keys. */
@@ -528,7 +526,6 @@ export const defaultPreferences: Preferences = {
   terminalFind: true,
   terminalFileLinks: true,
   terminalGpuAcceleration: true,
-  terminalFreeGpuWhenHidden: true,
   terminalUnicode11: true,
   terminalOptionAsMeta: false,
   terminalVisualBell: true,
@@ -866,7 +863,6 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     terminalFind: pickBoolean(data.terminalFind, defaultPreferences.terminalFind),
     terminalFileLinks: pickBoolean(data.terminalFileLinks, defaultPreferences.terminalFileLinks),
     terminalGpuAcceleration: pickBoolean(data.terminalGpuAcceleration, defaultPreferences.terminalGpuAcceleration),
-    terminalFreeGpuWhenHidden: pickBoolean(data.terminalFreeGpuWhenHidden, defaultPreferences.terminalFreeGpuWhenHidden),
     terminalUnicode11: pickBoolean(data.terminalUnicode11, defaultPreferences.terminalUnicode11),
     terminalOptionAsMeta: pickBoolean(data.terminalOptionAsMeta, defaultPreferences.terminalOptionAsMeta),
     terminalVisualBell: pickBoolean(data.terminalVisualBell, defaultPreferences.terminalVisualBell),

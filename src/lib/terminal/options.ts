@@ -105,14 +105,6 @@ export interface TerminalAddonPlan {
   fileLinks: boolean;
 }
 
-/** A hidden terminal keeps its GPU renderer this long, so a quick look elsewhere does not redraw it. */
-export const GPU_RELEASE_DELAY_MS = 30_000;
-
-/** Whether a terminal out of sight should give its WebGL renderer back. */
-export function releasesGpuWhenHidden(plan: TerminalAddonPlan, preferences: Pick<Preferences, "terminalFreeGpuWhenHidden">): boolean {
-  return plan.webgl && preferences.terminalFreeGpuWhenHidden;
-}
-
 export function terminalAddonPlan(
   preferences: Pick<
     Preferences,

@@ -87,7 +87,6 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `terminalFind` | true | boolean | `terminalAddonPlan`, `keys.ts` (Cmd+F) |
 | `terminalFileLinks` | true | boolean | `terminalAddonPlan`, `TerminalView.svelte` |
 | `terminalGpuAcceleration` | true | boolean | `terminalAddonPlan`, `addons.ts` |
-| `terminalFreeGpuWhenHidden` | true | boolean | `releasesGpuWhenHidden`, `TerminalView.svelte` |
 | `terminalUnicode11` | true | boolean | `terminalAddonPlan`, `addons.ts` |
 | `terminalOptionAsMeta` | false | boolean | `terminal/options.ts` (`macOptionIsMeta`) |
 | `terminalVisualBell` | true | boolean | `TerminalView.svelte` |

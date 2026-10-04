@@ -2113,23 +2113,6 @@
               onchange={(event) => set("terminalGpuAcceleration", event.currentTarget.checked)}
             />
           </label>
-          {#if settings.terminalGpuAcceleration}
-            <label class="row toggle-row sub-row">
-              <div class="label">
-                <span>Free GPU memory while hidden</span>
-                <span class="hint">
-                  A terminal out of sight for 30 seconds gives its GPU drawing back, about 70 MB for the first terminal. It
-                  draws with the GPU again as soon as it shows. The terminal and its output keep running.
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                class="switch"
-                checked={settings.terminalFreeGpuWhenHidden}
-                onchange={(event) => set("terminalFreeGpuWhenHidden", event.currentTarget.checked)}
-              />
-            </label>
-          {/if}
           <label class="row toggle-row">
             <div class="label">
               <span>Unicode 11 widths</span>

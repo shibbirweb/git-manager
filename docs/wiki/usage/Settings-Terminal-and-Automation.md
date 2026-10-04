@@ -58,7 +58,6 @@ The **Keyboard** row is a reminder: Ctrl+` shows or hides the terminal, Ctrl+Shi
 | Setting | What it does | Default |
 | --- | --- | --- |
 | GPU acceleration | Draws with WebGL (the graphics card), which keeps busy output smooth, and falls back to normal drawing when WebGL is missing or fails. It uses about 70 MB for the first terminal and 10 MB for each other one; off saves that. | On |
-| Free GPU memory while hidden | A terminal out of sight for 30 seconds gives its GPU memory back and takes it again when shown. | On |
 | Unicode 11 widths | Emoji and wide characters take the right number of columns. Applies to output printed after the change. | On |
 
 Every switch applies to open terminals at once. What each part does is on [Terminal Features](Terminal-Features.md).

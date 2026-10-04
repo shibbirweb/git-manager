@@ -22,7 +22,7 @@ flowchart LR
   Close["terminal closes"] --> Free
 ```
 
-- **WebGL** (`@xterm/addon-webgl`): loaded when the terminal first shows, since it measures cells as it starts. A failed `loadAddon` (no WebGL2) or `onContextLoss` (too many contexts, a GPU reset) disposes it and marks the terminal as broken, so it stays on the DOM renderer until the setting is turned on again. Ligatures are CSS on the DOM renderer's rows, so ligatures on means no WebGL. `releaseWebgl` frees it after 30 s hidden (`terminalFreeGpuWhenHidden`); showing the terminal loads it again.
+- **WebGL** (`@xterm/addon-webgl`): loaded when the terminal first shows, since it measures cells as it starts. A failed `loadAddon` (no WebGL2) or `onContextLoss` (too many contexts, a GPU reset) disposes it and marks the terminal as broken, so it stays on the DOM renderer until the setting is turned on again. Ligatures are CSS on the DOM renderer's rows, so ligatures on means no WebGL. Hidden terminals keep it: releasing it saved nothing (200 vs 199 MB).
 - **Unicode 11** (`@xterm/addon-unicode11`): registers its width table once per terminal and switches `term.unicode.activeVersion` between `"11"` and `"6"`. xterm cannot unregister a version, so off keeps the small table until the terminal closes.
 - **Search** (`@xterm/addon-search`): waits until the find bar first opens; turning Find off closes the bar and disposes the addon with its highlights.
 

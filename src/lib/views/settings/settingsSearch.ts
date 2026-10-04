@@ -121,7 +121,6 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Keyboard", "terminal shortcuts keys"],
     ["Rendering", "terminal"],
     ["GPU acceleration", "webgl renderer graphics"],
-    ["Free GPU memory while hidden", "release webgl graphics background", "GPU acceleration"],
     ["Unicode 11 widths", "emoji wide characters"],
   ],
   keyboard: [],

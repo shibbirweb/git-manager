@@ -112,19 +112,6 @@ export class TerminalAddons {
     }
   }
 
-  /**
-   * A hidden terminal gives its WebGL renderer back to free the GPU memory; the next
-   * `setWebgl(true)` (when it shows) makes a new one. A failed renderer stays failed.
-   */
-  releaseWebgl(): void {
-    if (!this.webgl) {
-      return;
-    }
-    this.webglWanted = false;
-    this.disposeWebgl();
-    this.onDrawing("released");
-  }
-
   private disposeWebgl(): void {
     const addon = this.webgl;
     this.webgl = null;

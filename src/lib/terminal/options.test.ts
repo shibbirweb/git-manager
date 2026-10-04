@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultPreferences } from "$lib/stores/settingsData";
-import {
-  applyChangedOptions,
-  changesMetrics,
-  releasesGpuWhenHidden,
-  SMOOTH_SCROLL_MS,
-  terminalAddonPlan,
-  terminalDisplayOptions,
-} from "./options";
+import { applyChangedOptions, changesMetrics, SMOOTH_SCROLL_MS, terminalAddonPlan, terminalDisplayOptions } from "./options";
 
 describe("terminalDisplayOptions", () => {
   it("maps the defaults to xterm options", () => {
@@ -106,14 +99,5 @@ describe("terminalAddonPlan", () => {
 
   it("draws ligatures with the DOM renderer, since they are CSS", () => {
     expect(terminalAddonPlan({ ...defaultPreferences, terminalLigatures: true }).webgl).toBe(false);
-  });
-});
-
-describe("releasesGpuWhenHidden", () => {
-  it("frees the GPU of hidden terminals only while they would draw with it", () => {
-    expect(releasesGpuWhenHidden(terminalAddonPlan(defaultPreferences), defaultPreferences)).toBe(true);
-    expect(releasesGpuWhenHidden(terminalAddonPlan(defaultPreferences), { terminalFreeGpuWhenHidden: false })).toBe(false);
-    const noGpu = terminalAddonPlan({ ...defaultPreferences, terminalGpuAcceleration: false });
-    expect(releasesGpuWhenHidden(noGpu, defaultPreferences)).toBe(false);
   });
 });
