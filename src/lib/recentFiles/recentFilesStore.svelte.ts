@@ -1,6 +1,8 @@
 // Recent Files (JetBrains' Cmd+E): the open workspace's list, kept in state.json by
 // stores/recentFiles.ts, and whether the popup (RecentFiles.svelte) shows. The list follows
 // the editor: the tab on screen moves to the top, a file with unsaved edits counts as edited.
+// With Settings > Editor > Recent Files off, nothing is followed and the list stays empty;
+// the saved lists are kept for when it is turned on again.
 
 import { untrack } from "svelte";
 import { type RecentFile, markEdited, removeRecent, touchRecent } from "$lib/stores/recentFiles";
@@ -19,11 +21,11 @@ class RecentFilesStore {
   /** Follows the open workspace and its editor; call once from the workspace's component. */
   follow(): void {
     $effect(() => {
-      const workspaceId = repoStore.workspace?.id ?? null;
+      const workspaceId = settings.recentFiles ? (repoStore.workspace?.id ?? null) : null;
       untrack(() => this.load(workspaceId));
     });
     $effect(() => {
-      const filePath = repoStore.openFilePath;
+      const filePath = settings.recentFiles ? repoStore.openFilePath : null;
       untrack(() => {
         if (filePath !== null && this.inWorkspace(filePath)) {
           this.update(touchRecent(this.files, filePath));
@@ -31,7 +33,7 @@ class RecentFilesStore {
       });
     });
     $effect(() => {
-      const dirtyPaths = repoStore.dirtyPaths;
+      const dirtyPaths = settings.recentFiles ? repoStore.dirtyPaths : [];
       untrack(() => {
         let next = this.files;
         for (const filePath of dirtyPaths) {
@@ -84,7 +86,7 @@ class RecentFilesStore {
 
   private load(workspaceId: string | null): void {
     this.workspaceId = workspaceId;
-    this.files = workspaceId === null ? [] : (settings.recentFiles[workspaceId] ?? []);
+    this.files = workspaceId === null ? [] : (settings.recentFileLists[workspaceId] ?? []);
     this.isOpen = false;
   }
 

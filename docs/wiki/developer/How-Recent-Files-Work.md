@@ -23,10 +23,10 @@ The list is an array of `RecentFile` (`filePath`, `edited`), newest first. The r
 
 ```mermaid
 flowchart LR
-  W["repoStore.workspace.id"] -->|load| L["settings.recentFiles[id]"]
+  W["repoStore.workspace.id"] -->|load| L["settings.recentFileLists[id]"]
   O["repoStore.openFilePath"] -->|touchRecent| S["recentFilesStore.files"]
   D["repoStore.dirtyPaths"] -->|markEdited| S
-  S -->|rememberRecentFiles| J["state.json recentFiles"]
+  S -->|rememberRecentFiles| J["state.json recentFileLists"]
   S --> P["RecentFiles.svelte"]
   S --> Q["Quick Open, Search Everywhere"]
 ```
@@ -37,7 +37,7 @@ flowchart LR
 
 ### Saving
 
-Each change calls `settings.rememberRecentFiles(workspaceId, files)`, which stores the list under the `recentFiles` key of `state.json` (see [How Settings Work](How-Settings-Work.md)). `withRecentFiles` moves the workspace to the end and keeps the newest `MAX_TAB_SESSIONS` (30) workspaces, like the saved tabs. On load, `parseRecentFiles` keeps only absolute paths that `isSavablePath` accepts, drops repeats and pseudo tabs, and caps each list. The settings store's own debounce turns a burst of tab switches into one write.
+Each change calls `settings.rememberRecentFiles(workspaceId, files)`, which stores the list under the `recentFileLists` key of `state.json` (see [How Settings Work](How-Settings-Work.md)). `withRecentFiles` moves the workspace to the end and keeps the newest `MAX_TAB_SESSIONS` (30) workspaces, like the saved tabs. On load, `parseRecentFiles` keeps only absolute paths that `isSavablePath` accepts, drops repeats and pseudo tabs, and caps each list. The settings store's own debounce turns a burst of tab switches into one write.
 
 ### The popup
 
@@ -49,6 +49,12 @@ Each change calls `settings.rememberRecentFiles(workspaceId, files)`, which stor
 The component adds the git tones of `views/files/tones.ts` (shared with the Files panel), the unsaved dot from `repoStore.isDirty`, and the keys: arrows and Ctrl+N/P, Enter and Cmd+Enter (to the side), Esc, the Recent Files shortcut again to toggle edited only, and Delete (Cmd+Backspace on a Mac with an empty filter) to remove a row.
 
 Opening a row first checks `navigation.fileExists`. A file that is gone is removed from the list with a toast instead of opening an error tab. Otherwise `navigation.openFileAt(filePath, null, null, { pin: true, toSide })` opens it and focuses its editor.
+
+### The setting
+
+**Settings > Editor > Recent Files** (`recentFiles` in `settings.json`, on by default) turns the feature off. The store's effects read it, so with it off `load(null)` empties the list, nothing is touched or marked, and nothing is written. The lists in `state.json` stay untouched, so turning it on again loads them back. The saved lists use their own key, `recentFileLists`, because the settings store applies `settings.json` and `state.json` to the same object and the two names must not meet.
+
+With it off, `openRecentFiles` in `workspaceActions.ts` shows an info toast with an **Open Settings** button (`settings.openDialog("editor")`) instead of the popup, so Cmd+E never seems to do nothing. Quick Open and Search Everywhere get an empty list and fall back to the open tabs.
 
 ### The key
 
@@ -62,7 +68,8 @@ Opening a row first checks `navigation.fileExists`. A file that is gone is remov
 | `src/lib/recentFiles/recentFilesStore.svelte.ts` | The open workspace's list, following the editor, popup open state |
 | `src/lib/recentFiles/recentFilesModel.ts` | Popup rows, filtering, the first selected row |
 | `src/lib/recentFiles/RecentFiles.svelte` | The popup |
-| `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `recentFiles` key of `state.json` |
+| `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `recentFiles` setting and the `recentFileLists` key of `state.json` |
+| `src/lib/views/SettingsDialog.svelte`, `views/settings/memoryCost.ts` | The Settings row and its memory mark |
 | `src/lib/menu/menuSpec.ts`, `menuState.ts`, `menuActions.ts` | Edit > Recent Files |
 | `src/lib/views/workspaceShortcuts.ts`, `workspaceActions.ts` | The window key and the open guard |
 | `src/lib/quickOpen/QuickOpen.svelte`, `src/lib/search/FileSearch.svelte` | Their recent sections read the same list |

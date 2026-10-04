@@ -42,6 +42,8 @@ Measured on 2026-10-03 on the built-in 3024 x 1964 display, release build, media
 | Markdown Editor and preview instead of Editor only, plain file | +34 MB | +32 MB | The rendered page beside the code (`CHANGELOG.md`) |
 | The same with four mermaid diagrams | +137 MB | +131 MB | The mermaid library and the drawn diagrams (`Architecture.md`) |
 
+Recent Files was measured on 2026-10-04 the same way, with its own scenario: open the same 30 files with a tab limit of 1, then sample. Keeping the list cost +1 MB of Web content (total -0.1 MB). With the popup open on top it was +20 MB total and +17 MB Web content, and after closing it nothing was left (it measured lower than with the popup never opened).
+
 The file icon numbers come from their own test with 2,400 changed files (see [How File Icons Work](How-File-Icons-Work.md)).
 
 Everything else stayed within about 10 MB in both directions, which is the noise: the editor features, the minimap, word wrap, current line blame, Git Console, terminal find, file links, Unicode 11 widths, icons from patched fonts and editor font ligatures. Terminal font ligatures use about 80 MB **less**, because they turn GPU drawing off.
@@ -57,6 +59,8 @@ Everything else stayed within about 10 MB in both directions, which is the noise
 ## Design decisions
 
 **Only measured costs get a mark.** A mark on every setting would be noise, and a guessed number is worse than none. A setting gets an entry only when the difference was clearly larger than the noise in every round.
+
+**A quiet mark for a switch that saves little.** A feature with its own on/off switch, such as Recent Files, gets a `minor` entry even when its cost is within the noise. The switch exists for memory too, so it should say honestly that it saves almost nothing. The mark is gray instead of orange, and its tooltip starts with "Memory" instead of "Uses more memory".
 
 **Amounts are rough on purpose.** The cost depends on the display size, the file and the terminal width, so the mark shows one rounded number, and the tooltip says what it grows with.
 

@@ -251,6 +251,8 @@ export interface Preferences {
   editorRulerColumn: number;
   /** Open the tabs a folder or workspace had when it was last open. */
   reopenTabsOnStart: boolean;
+  /** Recent Files (Cmd+E): keep a list of the files shown in the editor, per workspace. */
+  recentFiles: boolean;
   /** Reopen every window that was open at quit, each with its folders (read by the backend at start too). */
   reopenWindows: boolean;
   /** File tabs kept open: 0 no limit, 1 single tab, else the number (see tabLimit.ts). */
@@ -412,6 +414,7 @@ export const defaultPreferences: Preferences = {
   editorMatchBrackets: true,
   editorRulerColumn: 0,
   reopenTabsOnStart: true,
+  recentFiles: true,
   reopenWindows: true,
   tabLimit: NO_TAB_LIMIT,
   splitEditor: true,
@@ -534,7 +537,7 @@ export interface UiState {
   /** The file tabs of each workspace, by workspace id, for Reopen tabs on start. */
   openTabs: Record<string, SavedTabSession>;
   /** Recent Files (Cmd+E) of each workspace, by workspace id. */
-  recentFiles: Record<string, RecentFile[]>;
+  recentFileLists: Record<string, RecentFile[]>;
 }
 
 export type Json = Record<string, unknown>;
@@ -660,7 +663,7 @@ const STATE_KEYS = [
   "recentCommands",
   "commitMessages",
   "openTabs",
-  "recentFiles",
+  "recentFileLists",
 ];
 
 /** Validates settings.json; unknown keys come back in `extra` so a save keeps them. */
@@ -705,6 +708,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     editorMatchBrackets: pickBoolean(data.editorMatchBrackets, defaultPreferences.editorMatchBrackets),
     editorRulerColumn: pickRulerColumn(data.editorRulerColumn),
     reopenTabsOnStart: pickBoolean(data.reopenTabsOnStart, defaultPreferences.reopenTabsOnStart),
+    recentFiles: pickBoolean(data.recentFiles, defaultPreferences.recentFiles),
     reopenWindows: pickBoolean(data.reopenWindows, defaultPreferences.reopenWindows),
     tabLimit: pickTabLimit(data.tabLimit),
     splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
@@ -835,7 +839,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     recentCommands: pickRecentCommands(data.recentCommands),
     commitMessages: parseMessageHistory(data.commitMessages),
     openTabs: parseTabSessions(data.openTabs),
-    recentFiles: parseRecentFiles(data.recentFiles),
+    recentFileLists: parseRecentFiles(data.recentFileLists),
   };
   const known = new Set([...STATE_KEYS, ...Object.keys(defaultPreferences)]);
   const extra = Object.fromEntries(Object.entries(data).filter(([key]) => !known.has(key)));
@@ -893,7 +897,7 @@ export function stateToJson(state: UiState, extra: Json): Json {
     recentCommands: state.recentCommands,
     commitMessages: state.commitMessages,
     openTabs: state.openTabs,
-    recentFiles: state.recentFiles,
+    recentFileLists: state.recentFileLists,
   };
 }
 

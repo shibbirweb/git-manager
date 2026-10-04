@@ -9,7 +9,9 @@
 </script>
 
 {#if cost}
-  <span class="memory-flag" title={memoryFlagTitle(cost)} aria-label={memoryFlagTitle(cost)}>{cost.amount}</span>
+  <span class="memory-flag" class:minor={cost.minor ?? false} title={memoryFlagTitle(cost)} aria-label={memoryFlagTitle(cost)}
+    >{cost.amount}</span
+  >
 {/if}
 
 <style>
@@ -27,5 +29,11 @@
     white-space: nowrap;
     vertical-align: 1px;
     cursor: help;
+  }
+
+  .memory-flag.minor {
+    border-color: var(--border-strong);
+    background: transparent;
+    color: var(--text-dim);
   }
 </style>

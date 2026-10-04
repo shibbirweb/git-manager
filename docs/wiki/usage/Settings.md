@@ -48,9 +48,9 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 | --- | --- | --- |
 | Editor font family | A comma-separated list, like VS Code's `editor.fontFamily`. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
 | Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. | 13 px |
-| Line spacing | Space between lines of code, 1.0 to 2.5 times the font size in 0.05 steps. Double-click the slider to reset it. | 1.25 |
-| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane to zoom, or pinch. | Off |
-| Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them (Fira Code, JetBrains Mono, Cascadia Code). | Off |
+| Line spacing | Space between lines, 1.0 to 2.5 times the font size. Double-click the slider to reset it. | 1.25 |
+| Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane, or pinch. | Off |
+| Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them, such as Fira Code. | Off |
 | Tab size | Spaces per indent level (2, 4 or 8) when not detected, and the width of a tab. | 4 |
 | Detect indentation | Indent like the file does. Also View > Detect Indentation. See [Indentation](Code-Appearance.md#indentation). | On |
 | Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Code-Appearance.md#render-whitespace). | Selection |
@@ -60,6 +60,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
 | Current line blame | Author, age and commit at the end of the cursor line. Cmd+click it to open the commit in the Log; Cmd+Option-click copies the hash. See [Blame](Blame.md). | On |
 | Blame gutter | A blame column beside the line numbers. Also the **Blame** button in the editor path bar and the diff toolbar. | Off |
+| Recent Files | Cmd+E lists recent files. See [Recent Files](Recent-Files.md). | On |
 
 ![More editor settings](../images/settings-editor-more.png)
 

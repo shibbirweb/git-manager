@@ -1072,6 +1072,21 @@
           </label>
           <label class="row toggle-row">
             <div class="label">
+              <span>Recent Files<MemoryFlag setting="recentFiles" /></span>
+              <span class="hint">
+                Cmd+E lists the files you worked on last, like JetBrains, and Quick Open and Search Everywhere show them first.
+                Each workspace keeps up to 50 in state.json. Off, Cmd+E only says it is off.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.recentFiles}
+              onchange={(event) => set("recentFiles", event.currentTarget.checked)}
+            />
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
               <span>Split editor</span>
               <span class="hint">
                 Show two groups of tabs side by side with Window > Split Right. Turning it off moves every tab into one group.

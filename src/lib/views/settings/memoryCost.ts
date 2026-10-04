@@ -1,8 +1,9 @@
 // What a setting costs in memory when it is on, shown as a small mark beside its name in
 // Settings. The numbers were measured on the release app on a 3024 x 1964 display: a cold
 // start with the setting on and one with it off, the same files and terminals each time, the
-// median of three runs. Settings that stayed within the noise (about 10 MB) have no entry. See
-// docs/wiki/developer/Measuring-Setting-Memory.md to measure them again.
+// median of three runs. Settings that stayed within the noise (about 10 MB) have no entry, except
+// a feature with its own on/off switch for memory: it gets a `minor` entry, so the switch says
+// what it saves. See docs/wiki/developer/Measuring-Setting-Memory.md to measure them again.
 
 import type { Preferences } from "$lib/stores/settingsData";
 
@@ -11,6 +12,8 @@ export interface MemoryCost {
   amount: string;
   /** One sentence for the tooltip: when the memory is used and what it scales with. */
   detail: string;
+  /** Within the measuring noise: a quiet mark instead of the orange warning. */
+  minor?: boolean;
 }
 
 export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
@@ -40,6 +43,11 @@ export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
     detail:
       "Per terminal once the scrollback is full, about 2 KB per line in a wide window: +90 MB at 50,000 lines and +175 MB at 100,000, compared with 5,000.",
   },
+  recentFiles: {
+    amount: "about +1 MB",
+    detail: "Keeping the list costs about 1 MB, within the measuring noise, and the popup uses about 17 MB more only while it is open.",
+    minor: true,
+  },
   terminalGpuAcceleration: {
     amount: "+70 MB",
     detail: "About 70 MB for the first terminal, mostly graphics memory, and about 10 MB for each other one.",
@@ -52,5 +60,5 @@ export function memoryCost(setting: keyof Preferences): MemoryCost | null {
 
 /** The tooltip and accessible name of the mark. */
 export function memoryFlagTitle(cost: MemoryCost): string {
-  return `Uses more memory: ${cost.amount}. ${cost.detail}`;
+  return `${cost.minor ? "Memory" : "Uses more memory"}: ${cost.amount}. ${cost.detail}`;
 }

@@ -51,6 +51,18 @@ Each workspace has its own list, and it is kept when you quit, so it is still th
 
 The same list feeds the **Recent Files** section of [Search Everywhere](Search-Everywhere.md) and the **Recently opened** section of Quick Open (Cmd+P), so all three agree.
 
+## Turn it off
+
+Recent Files is on by default. To turn it off, open **Settings > Editor** and switch off **Recent Files** under **Tabs**.
+
+While it is off:
+
+- Git Manager does not keep the list. That saves very little: the mark beside the setting says **about +1 MB**, which is within what we can measure. The popup itself uses about 17 MB more only while it is open, and gives it back when it closes.
+- Cmd+E shows a short note that Recent Files is off, with an **Open Settings** button that takes you to the setting.
+- Quick Open and Search Everywhere show only the file on screen and your open tabs as recent files.
+
+The lists already saved are kept. Turn the setting on again and each workspace gets its list back.
+
 ## In the commit message
 
 While you type a commit message, Cmd+E opens your earlier commit messages instead, as in JetBrains IDEs. You can turn that off with **Settings > Git > Message history**; then Cmd+E opens Recent Files there too. See [Changes and Commits](Changes-and-Commits.md).

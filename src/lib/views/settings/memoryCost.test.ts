@@ -24,5 +24,6 @@ describe("memoryCost", () => {
 
   it("builds the tooltip from the amount and the detail", () => {
     expect(memoryFlagTitle({ amount: "+5 MB", detail: "Per open editor." })).toBe("Uses more memory: +5 MB. Per open editor.");
+    expect(memoryFlagTitle({ amount: "about +1 MB", detail: "A short list.", minor: true })).toBe("Memory: about +1 MB. A short list.");
   });
 });

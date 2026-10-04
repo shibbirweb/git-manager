@@ -168,6 +168,7 @@ class SettingsStore {
   editorMatchBrackets = $state(initialPreferences.editorMatchBrackets);
   editorRulerColumn = $state(initialPreferences.editorRulerColumn);
   reopenTabsOnStart = $state(initialPreferences.reopenTabsOnStart);
+  recentFiles = $state(initialPreferences.recentFiles);
   reopenWindows = $state(initialPreferences.reopenWindows);
   tabLimit = $state(initialPreferences.tabLimit);
   splitEditor = $state(initialPreferences.splitEditor);
@@ -269,7 +270,7 @@ class SettingsStore {
   /** File tabs of each workspace, by workspace id (Reopen tabs on start). Not reactive: only read when a workspace opens. */
   openTabs: Record<string, SavedTabSession> = initialState.openTabs;
   /** Recent Files of each workspace, by workspace id. Not reactive: read when a workspace opens. */
-  recentFiles: Record<string, RecentFile[]> = initialState.recentFiles;
+  recentFileLists: Record<string, RecentFile[]> = initialState.recentFileLists;
 
   /** macOS is in dark mode; followed while `theme` is "system". */
   systemDark = $state(false);
@@ -396,6 +397,7 @@ class SettingsStore {
       editorMatchBrackets: this.editorMatchBrackets,
       editorRulerColumn: this.editorRulerColumn,
       reopenTabsOnStart: this.reopenTabsOnStart,
+      recentFiles: this.recentFiles,
       reopenWindows: this.reopenWindows,
       tabLimit: this.tabLimit,
       splitEditor: this.splitEditor,
@@ -493,7 +495,7 @@ class SettingsStore {
       recentCommands: this.recentCommands,
       commitMessages: this.commitMessages,
       openTabs: this.openTabs,
-      recentFiles: this.recentFiles,
+      recentFileLists: this.recentFileLists,
     };
   }
 
@@ -682,7 +684,7 @@ class SettingsStore {
 
   /** Keeps a workspace's Recent Files for its next open; an empty list forgets them. */
   rememberRecentFiles(workspaceId: string, files: readonly RecentFile[]): void {
-    this.recentFiles = withRecentFiles(this.recentFiles, workspaceId, files);
+    this.recentFileLists = withRecentFiles(this.recentFileLists, workspaceId, files);
     this.save();
   }
 

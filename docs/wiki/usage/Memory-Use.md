@@ -28,6 +28,8 @@ Most settings cost almost nothing. The few that use clearly more memory when the
 | Render whitespace (Editor) | 9 MB | With **All** |
 | Tab limit (Editor) | 4 MB per tab | Each open file tab keeps its editor; a limit closes the oldest |
 
+Recent Files (Editor) has a gray mark instead, **about +1 MB**: keeping its list costs almost nothing, and its popup uses about 17 MB only while it is open. See [Recent Files](Recent-Files.md).
+
 These numbers come from the release app on a MacBook Pro screen. A bigger window, a longer file or a wider terminal uses more. How they were measured is in [Measuring Setting Memory](../developer/Measuring-Setting-Memory.md).
 
 ## The memory log

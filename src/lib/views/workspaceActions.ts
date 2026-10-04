@@ -15,6 +15,7 @@ import { isPseudoTab } from "$lib/stores/pseudoTabs";
 import { adjacentTab } from "$lib/stores/tabs";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 import { dialogs } from "$lib/ui/dialog.svelte";
+import { toast } from "$lib/ui/toast.svelte";
 import { updates } from "$lib/update/updates.svelte";
 import { changesSelection } from "./changes/selection.svelte";
 import { gitDialogs } from "./git/gitDialogs.svelte";
@@ -76,11 +77,22 @@ export function openQuickOpen(prefix: string): void {
   }
 }
 
-/** Opens Recent Files (JetBrains' Cmd+E); never over Search Everywhere or another popup. */
+/**
+ * Opens Recent Files (JetBrains' Cmd+E); never over Search Everywhere or another popup.
+ * Turned off in Settings, the key says so and offers the setting instead of doing nothing.
+ */
 export function openRecentFiles(): void {
-  if (!overlayOpen() && !fileSearch.isOpen) {
-    recentFilesStore.open();
+  if (overlayOpen() || fileSearch.isOpen) {
+    return;
   }
+  if (!settings.recentFiles) {
+    toast.show("info", "Recent Files is off", "Turn it on in Settings > Editor > Recent Files.", 8000, {
+      label: "Open Settings",
+      run: () => settings.openDialog("editor"),
+    });
+    return;
+  }
+  recentFilesStore.open();
 }
 
 export function runWorkspaceShortcut(shortcut: WorkspaceShortcut): void {

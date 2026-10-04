@@ -546,13 +546,19 @@ describe("parseState", () => {
     expect(parseState({ openTabs: "x" }).state.openTabs).toEqual({});
   });
 
+  it("turns Recent Files on by default and reads it as a boolean", () => {
+    expect(defaultPreferences.recentFiles).toBe(true);
+    expect(parsePreferences({ recentFiles: false }).preferences.recentFiles).toBe(false);
+    expect(parsePreferences({ recentFiles: "no" }).preferences.recentFiles).toBe(true);
+  });
+
   it("keeps the Recent Files of each workspace, validated", () => {
-    const recentFiles = { "/w": [{ filePath: "/w/a.ts", edited: true }, { filePath: "relative.ts" }], "/empty": [] };
-    const { state, extra } = parseState({ recentFiles });
-    expect(state.recentFiles).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
+    const recentFileLists = { "/w": [{ filePath: "/w/a.ts", edited: true }, { filePath: "relative.ts" }], "/empty": [] };
+    const { state, extra } = parseState({ recentFileLists });
+    expect(state.recentFileLists).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
     expect(extra).toEqual({});
-    expect(stateToJson(state, {}).recentFiles).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
-    expect(parseState({ recentFiles: "x" }).state.recentFiles).toEqual({});
+    expect(stateToJson(state, {}).recentFileLists).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
+    expect(parseState({ recentFileLists: "x" }).state.recentFileLists).toEqual({});
   });
 
   it("round-trips through stateToJson", () => {
