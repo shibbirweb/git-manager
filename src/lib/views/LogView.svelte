@@ -8,6 +8,7 @@
   import { markFromLog } from "./git/bisectActions";
   import { bisectBadges } from "./git/bisectBanner";
   import { undoAction } from "./git/undoActions";
+  import { changesSelection } from "./changes/selection.svelte";
   import { fullDate, relativeTime, sortRefs } from "$lib/log/format";
   import { GraphBuilder, type GraphRow } from "$lib/log/graph";
   import GraphCell, { LANE_COLORS, graphColumnWidth } from "$lib/log/GraphCell.svelte";
@@ -726,6 +727,9 @@
         Load more
       </button>
     {/if}
+    <button class="icon-btn" onclick={() => changesSelection.toggleLog()} title="Hide Log (Shift+Cmd+L)" aria-label="Hide log">
+      <Icon name="x" size={14} />
+    </button>
   </div>
 
   <div class="panes" bind:this={paneEl}>

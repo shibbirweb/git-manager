@@ -13,6 +13,7 @@
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem, type MenuSubmenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import PanelHead from "$lib/views/PanelHead.svelte";
   import { NODE_RUNNERS, type ScriptRow, scriptCommand, scriptRows, sourceLabel } from "./scriptsModel";
   import { runProjectScript } from "./scriptActions";
   import { describeRun as describeScriptRun, nodePickFor, withRunner } from "./scriptRun";
@@ -301,6 +302,14 @@
 </script>
 
 <div class="scripts-view">
+  <PanelHead title="Scripts" hideTitle="Hide (Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
+    <button class="icon-btn small" title="Collapse All" aria-label="Collapse all" onclick={collapseAll} disabled={sources.length === 0}>
+      <Icon name="chevrons-left" size={14} />
+    </button>
+    <button class="icon-btn small" title="Refresh" aria-label="Refresh scripts" onclick={() => void load(folderPaths)} disabled={loading}>
+      <Icon name="refresh" size={13} />
+    </button>
+  </PanelHead>
   <div class="toolbar">
     <div class="filter">
       <span class="filter-icon"><Icon name="search" size={13} /></span>
@@ -320,12 +329,6 @@
         </button>
       {/if}
     </div>
-    <button class="icon-btn" title="Collapse All" aria-label="Collapse all" onclick={collapseAll} disabled={sources.length === 0}>
-      <Icon name="chevrons-left" size={14} />
-    </button>
-    <button class="icon-btn" title="Refresh" aria-label="Refresh scripts" onclick={() => void load(folderPaths)} disabled={loading}>
-      <Icon name="refresh" size={14} />
-    </button>
   </div>
 
   <div
@@ -439,7 +442,7 @@
     align-items: center;
     gap: 2px;
     flex: none;
-    padding: 8px 6px 8px 8px;
+    padding: 8px;
     border-bottom: 1px solid var(--border);
   }
 
@@ -449,7 +452,6 @@
     align-items: center;
     flex: 1;
     min-width: 0;
-    margin-right: 4px;
   }
 
   .filter-icon {
