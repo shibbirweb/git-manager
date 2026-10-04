@@ -222,7 +222,12 @@
     container: repo-row / inline-size;
   }
 
+  /* The title gives way first in a narrow sidebar, so the buttons never run into the close button. */
   .title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -230,7 +235,13 @@
     color: var(--text-dim);
   }
 
+  /* RepoActions may shrink in a repository row, but here it keeps its buttons whole (the branch name still hides). */
+  .head > :global(.repo-row-actions) {
+    min-width: auto;
+  }
+
   .count {
+    flex: none;
     min-width: 18px;
     padding: 0 5px;
     border-radius: 9px;

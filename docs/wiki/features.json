@@ -81,6 +81,7 @@
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Repository-Actions-Bugs-We-Fixed.md", "summary": "The repository row and Changes title bar bugs we found, why they happened and how we fixed them." },
     { "page": "developer/How-the-Changes-Tab-Works.md", "summary": "The Changes tab opened from the status bar: every uncommitted file compared with the last commit." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },

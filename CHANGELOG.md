@@ -153,6 +153,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- In a narrow sidebar, the buttons in the Changes title bar no longer slide under its close button; the CHANGES title gets shorter instead.
 - Closing Markdown files with mermaid diagrams left the diagram library in memory until the app quit. Diagrams are now drawn in a hidden frame that goes away with the library and its cache 3 seconds after the last document with diagrams closes (after closing four such files: 264 MB instead of 342 MB, median of three runs).
 - The welcome screen fits short windows: the recent lists scroll inside the card instead of the card being cut off at the top and bottom.
 - The GPU acceleration and scrollback hints in Settings, Terminal gave wrong memory numbers ("a few MB" for GPU drawing); they now show measured ones: about 70 MB for the first GPU terminal, and about 2 KB per scrollback line.
