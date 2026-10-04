@@ -162,6 +162,7 @@ describe("menuState", () => {
     const state = menuState(inputs({ workspace: null, repo: null, shownView: "none", activeFile: null, tabCount: 0 }));
     expect(state["file.closeFolder"]?.enabled).toBe(false);
     expect(state["edit.goToFile"]?.enabled).toBe(false);
+    expect(state["edit.recentFiles"]?.enabled).toBe(false);
     expect(state["view.sidebar"]).toEqual({ enabled: false, checked: false });
     expect(state["git.fetch"]?.enabled).toBe(false);
     expect(state["window.nextTab"]?.enabled).toBe(false);

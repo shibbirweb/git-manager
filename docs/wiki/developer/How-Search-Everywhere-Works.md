@@ -18,7 +18,7 @@ Every tab starts with the focused editor's selection. `editorSelection` reads it
 
 `tabRows` in `popupRows.ts` builds each tab's rows: the All tab's sections of `SECTION_LIMIT` (6) with a "N more" row, Recent Files for an empty query, and the Text tab's file and line rows. Every row is 26 px high, so `visibleRange` virtualizes the list without measuring, and `keepSelectedKey` keeps the selection while results grow.
 
-Recent Files (`recentFiles`) is the active tab, then `navigation.recentFilePaths()` from the Back and Forward history, then the open tabs. A chosen row opens through `navigation.openFileAt`, which places the cursor and focuses the editor.
+Recent Files (`recentFiles`) is the active tab, then the [Recent Files](How-Recent-Files-Work.md) list, then the open tabs. A chosen row opens through `navigation.openFileAt`, which places the cursor and focuses the editor.
 
 ### The Rust session
 

@@ -7,6 +7,7 @@ import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
 import { AUTO_FETCH_INTERVAL_RANGE, DEFAULT_AUTO_FETCH_MINUTES } from "./autoFetchPlan";
 import { NO_TAB_LIMIT, pickTabLimit } from "./tabLimit";
+import { parseRecentFiles, type RecentFile } from "./recentFiles";
 import { parseTabSessions, type SavedTabSession } from "./tabSession";
 import type { ShortcutOverrides } from "../commands/registry";
 import { pickKeybindings } from "../commands/shortcutSettings";
@@ -532,6 +533,8 @@ export interface UiState {
   commitMessages: MessageHistory;
   /** The file tabs of each workspace, by workspace id, for Reopen tabs on start. */
   openTabs: Record<string, SavedTabSession>;
+  /** Recent Files (Cmd+E) of each workspace, by workspace id. */
+  recentFiles: Record<string, RecentFile[]>;
 }
 
 export type Json = Record<string, unknown>;
@@ -657,6 +660,7 @@ const STATE_KEYS = [
   "recentCommands",
   "commitMessages",
   "openTabs",
+  "recentFiles",
 ];
 
 /** Validates settings.json; unknown keys come back in `extra` so a save keeps them. */
@@ -831,6 +835,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     recentCommands: pickRecentCommands(data.recentCommands),
     commitMessages: parseMessageHistory(data.commitMessages),
     openTabs: parseTabSessions(data.openTabs),
+    recentFiles: parseRecentFiles(data.recentFiles),
   };
   const known = new Set([...STATE_KEYS, ...Object.keys(defaultPreferences)]);
   const extra = Object.fromEntries(Object.entries(data).filter(([key]) => !known.has(key)));
@@ -888,6 +893,7 @@ export function stateToJson(state: UiState, extra: Json): Json {
     recentCommands: state.recentCommands,
     commitMessages: state.commitMessages,
     openTabs: state.openTabs,
+    recentFiles: state.recentFiles,
   };
 }
 

@@ -21,6 +21,7 @@
   import FileSearch from "$lib/search/FileSearch.svelte";
   import { fileSearch } from "$lib/search/fileSearchStore.svelte";
   import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
+  import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import ActivityBar from "./ActivityBar.svelte";
@@ -112,6 +113,9 @@
   // With Auto (status bar repository picker), the active repository follows the open tab.
   followOpenTab();
 
+  // Recent Files (Cmd+E) follows the tab on screen and the files edited.
+  recentFilesStore.follow();
+
   // A new workspace starts with nothing selected and an empty Back / Forward history.
   $effect(() => {
     void repoStore.workspace?.root;
@@ -166,7 +170,8 @@
     const command = windowCommand(
       event,
       {
-        dialogOpen: dialogs.active !== null || gitDialogs.active !== null || fileSearch.isOpen || quickOpen.isOpen,
+        dialogOpen:
+          dialogs.active !== null || gitDialogs.active !== null || fileSearch.isOpen || quickOpen.isOpen || recentFilesStore.isOpen,
         mergeOpen: repoStore.mergeTarget !== null,
       },
       windowKeys(),
@@ -335,6 +340,13 @@
 
 {#if fileSearch.isOpen}
   <FileSearch />
+{/if}
+
+<!-- Recent Files (Cmd+E), loaded on first use. -->
+{#if recentFilesStore.isOpen}
+  {#await import("$lib/recentFiles/RecentFiles.svelte") then module}
+    <module.default />
+  {/await}
 {/if}
 
 {#if repoStore.mergeTarget && repoStore.repo}

@@ -191,11 +191,6 @@ class NavigationStore {
     return { line: request.line, token: request.token };
   }
 
-  /** Files visited, most recent first (Go to File's Recent Files). */
-  recentFilePaths(): string[] {
-    return this.history.recentFilePaths();
-  }
-
   /** Drops the Back / Forward stops of a file that no longer exists. */
   forget(filePath: string): void {
     this.history.forget(filePath);

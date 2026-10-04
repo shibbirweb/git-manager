@@ -1720,6 +1720,19 @@ define("search-everywhere-recent", async (shot) => {
   await savePopup(shot, popup);
 }, () => ({ settings: { currentLineBlame: false } }));
 
+// Recent Files (Cmd+E): the file before the one on screen is selected.
+define("recent-files", async (shot) => {
+  await shot.openFile(join(storefront, "README.md"));
+  await shot.openFile(join(storefront, "src/catalog.ts"));
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.recentFiles");
+  const popup = shot.page.locator('.popup[role="dialog"][aria-label="Recent Files"]');
+  await popup.waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 790);
+  await savePopup(shot, popup);
+}, () => ({ settings: { currentLineBlame: false } }));
+
 define("search-everywhere-files", async (shot) => {
   const popup = await openSearch(shot, "files", "cart");
   await shot.page.mouse.move(5, 790);

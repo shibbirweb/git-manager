@@ -164,6 +164,15 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
       ],
     },
     {
+      // RecentFiles.svelte: Edit > Recent Files (Cmd+E) opens it.
+      title: "Recent Files",
+      rows: [
+        { label: "Show edited files only", keys: commandKeys("edit.recentFiles", "CmdOrCtrl+E"), context: "Pressed again in Recent Files" },
+        { label: "Open to the side", keys: keys("CmdOrCtrl+Enter"), context: "In Recent Files, with the split editor on" },
+        { label: "Remove from the list", keys: mac ? keys("Delete", "Cmd+Backspace") : keys("Delete"), context: "In Recent Files" },
+      ],
+    },
+    {
       title: "Editor",
       rows: [
         { label: "Add a cursor", keys: [mac ? "⌥⇧ click" : "Alt+Shift+click"], context: "In a text editor" },

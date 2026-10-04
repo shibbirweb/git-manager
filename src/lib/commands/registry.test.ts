@@ -81,6 +81,7 @@ describe("buildCommandSpecs", () => {
     expect(byId.get("app.settings")).toMatchObject({ title: "Settings", category: "App", defaultShortcut: "CmdOrCtrl+," });
     expect(byId.get("view.commandPalette")).toMatchObject({ defaultShortcut: "CmdOrCtrl+Shift+P", inPalette: false });
     expect(byId.get("edit.goToFile")).toMatchObject({ defaultShortcut: "CmdOrCtrl+P", inPalette: true });
+    expect(byId.get("edit.recentFiles")).toMatchObject({ title: "Recent Files", defaultShortcut: "CmdOrCtrl+E", inPalette: true });
     expect(byId.get("code.lineComment")).toMatchObject({ scope: "editor", defaultShortcut: "CmdOrCtrl+/" });
     expect(byId.get("view.sidebar")?.checkable).toBe(true);
     expect(byId.get("nav.goBack")).toMatchObject({ menuAction: null, defaultShortcut: "Ctrl+-", needsWorkspace: true });

@@ -546,6 +546,15 @@ describe("parseState", () => {
     expect(parseState({ openTabs: "x" }).state.openTabs).toEqual({});
   });
 
+  it("keeps the Recent Files of each workspace, validated", () => {
+    const recentFiles = { "/w": [{ filePath: "/w/a.ts", edited: true }, { filePath: "relative.ts" }], "/empty": [] };
+    const { state, extra } = parseState({ recentFiles });
+    expect(state.recentFiles).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
+    expect(extra).toEqual({});
+    expect(stateToJson(state, {}).recentFiles).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
+    expect(parseState({ recentFiles: "x" }).state.recentFiles).toEqual({});
+  });
+
   it("round-trips through stateToJson", () => {
     const { state, extra } = parseState({ recentFolders: ["/a"], lastSession: [], terminalHeight: 300, somethingNew: 1 });
     const json = stateToJson(state, extra);

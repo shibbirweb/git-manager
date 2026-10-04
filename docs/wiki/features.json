@@ -13,6 +13,7 @@
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
     { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
+    { "page": "usage/Recent-Files.md", "summary": "Jump back to the files you worked on last with Cmd+E, like in JetBrains IDEs." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
     { "page": "usage/Repository-Actions.md", "summary": "The buttons and the ... menu of each repository in Changes: branch, Sync, Commit and more." },
@@ -172,6 +173,13 @@
       "usage": "usage/Search-Everywhere.md",
       "developer": "developer/How-Search-Everywhere-Works.md",
       "screenshots": ["search-everywhere-all.png", "search-everywhere-recent.png", "search-everywhere-files.png", "search-everywhere-classes.png", "search-everywhere-symbols.png", "search-everywhere-text.png"]
+    },
+    {
+      "id": "recent-files",
+      "title": "Recent Files",
+      "usage": "usage/Recent-Files.md",
+      "developer": "developer/How-Recent-Files-Work.md",
+      "screenshots": ["recent-files.png"]
     },
     {
       "id": "find-replace",

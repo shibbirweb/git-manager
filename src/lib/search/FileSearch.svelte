@@ -11,6 +11,7 @@
   import { dialogs } from "$lib/ui/dialog.svelte";
   import SearchToggles from "$lib/ui/SearchToggles.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type {
@@ -112,7 +113,7 @@
     input?.focus();
     input?.select();
     const tabPaths = repoStore.tabs.map((openTab) => openTab.path);
-    recent = pathRows(recentFiles(repoStore.openFilePath, navigation.recentFilePaths(), tabPaths), folders);
+    recent = pathRows(recentFiles(repoStore.openFilePath, recentFilesStore.filePaths(), tabPaths), folders);
     // Start (or reuse) the file index without waiting: the field is already usable.
     const progress = new Channel<FileSearchProgress>();
     progress.onmessage = (update) => {

@@ -19,6 +19,7 @@
   import { scrollToShow, visibleRange } from "$lib/search/popupRows";
   import SymbolResult from "$lib/search/SymbolResult.svelte";
   import { symbolRows, type SymbolRow } from "$lib/search/symbolSearchModel";
+  import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -102,10 +103,10 @@
   /** Select the first row when the next rows come (new query or mode). */
   let resetSelection = true;
 
-  /** Recently opened files, from the Back / Forward history and the open tabs. */
+  /** Recently opened files, from Recent Files (Cmd+E) and the open tabs. */
   function recentRows(): SearchRow[] {
     const tabPaths = repoStore.tabs.map((tab) => tab.path);
-    const filePaths = recentOrder(recentFiles(null, navigation.recentFilePaths(), tabPaths), repoStore.openFilePath);
+    const filePaths = recentOrder(recentFiles(null, recentFilesStore.filePaths(), tabPaths), repoStore.openFilePath);
     return pathRows(filePaths, repoStore.workspace?.folders ?? []);
   }
 

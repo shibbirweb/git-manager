@@ -24,7 +24,7 @@ On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Ed
 - **Undo** (Cmd+Z) and **Redo** (Shift+Cmd+Z) work on the place you are typing: the editor keeps its own history, and a text field its own.
 - **Cut**, **Copy**, **Paste**, **Delete** and **Select All** (Cmd+A).
 - **Find...** (Cmd+F), **Replace...** (Cmd+R), **Find Next** (Cmd+G), **Find Previous** (Shift+Cmd+G) and **Select All Occurrences** (Ctrl+Cmd+G) work in the editor that has the keyboard. See [Find and Replace](Find-and-Replace.md).
-- **Find in Files...** (Shift+Cmd+F), **Replace in Files...** (Shift+Cmd+R), **Go to File...** (Cmd+P), **Go to Class...** (Cmd+O), **Go to Symbol...** (Option+Cmd+O) and **Search Everywhere** (press Shift twice). See [Search Everywhere](Search-Everywhere.md).
+- **Find in Files...** (Shift+Cmd+F), **Replace in Files...** (Shift+Cmd+R), **Go to File...** (Cmd+P), **Recent Files...** (Cmd+E, see [Recent Files](Recent-Files.md)), **Go to Class...** (Cmd+O), **Go to Symbol...** (Option+Cmd+O) and **Search Everywhere** (press Shift twice). See [Search Everywhere](Search-Everywhere.md).
 
 ## View
 

@@ -147,6 +147,8 @@ function editMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       separator,
       // Cmd+P is VS Code's Quick Open; JetBrains' Shift+Cmd+O still opens Search Everywhere on Files.
       item("edit.goToFile", "Go to File...", "CmdOrCtrl+P"),
+      // JetBrains' Cmd+E; the commit message box keeps it for its history while focused.
+      item("edit.recentFiles", "Recent Files...", "CmdOrCtrl+E"),
       item("edit.goToClass", "Go to Class...", "CmdOrCtrl+O"),
       item("edit.goToSymbol", "Go to Symbol...", "CmdOrCtrl+Alt+O"),
       // Double Shift cannot be a menu accelerator, so the label tells it.

@@ -19,6 +19,7 @@ export type WorkspaceShortcut =
   | "quickOpen"
   | "commandPalette"
   | "goToFile"
+  | "recentFiles"
   | "goToClass"
   | "goToSymbol"
   | "findInFiles"
@@ -30,9 +31,10 @@ export type WorkspaceShortcut =
 /**
  * The commands the window handles itself, even from a text field or the terminal: Cmd+B
  * toggles the sidebar, Shift+Cmd+G / Shift+Cmd+E pick a panel, Ctrl+` the terminal, Cmd+P
- * opens Quick Open and Shift+Cmd+P the Command Palette (VS Code keys); Shift+Cmd+O, Cmd+O,
- * Option+Cmd+O and Shift+Cmd+F open Search Everywhere on Files, Classes, Symbols and Text,
- * and Shift+Cmd+R on Text with Replace (JetBrains keys). Double Shift is handled apart.
+ * opens Quick Open and Shift+Cmd+P the Command Palette (VS Code keys); Cmd+E opens Recent
+ * Files, Shift+Cmd+O, Cmd+O, Option+Cmd+O and Shift+Cmd+F open Search Everywhere on Files,
+ * Classes, Symbols and Text, and Shift+Cmd+R on Text with Replace (JetBrains keys). Double
+ * Shift is handled apart.
  */
 export const WINDOW_COMMANDS: Partial<Record<CommandId, WorkspaceShortcut>> = {
   "nav.goBack": "goBack",
@@ -47,6 +49,7 @@ export const WINDOW_COMMANDS: Partial<Record<CommandId, WorkspaceShortcut>> = {
   "edit.goToFile": "quickOpen",
   "view.commandPalette": "commandPalette",
   "search.files": "goToFile",
+  "edit.recentFiles": "recentFiles",
   "edit.goToClass": "goToClass",
   "edit.goToSymbol": "goToSymbol",
   "edit.findInFiles": "findInFiles",

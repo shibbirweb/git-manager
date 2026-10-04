@@ -178,18 +178,6 @@ export class NavigationHistory {
     }
   }
 
-  /** Files visited, most recent first, each once: the current one, forward, then back. */
-  recentFilePaths(): string[] {
-    const seen = new Set<string>();
-    const stops = [this.current, ...this.forward.slice().reverse(), ...this.back.slice().reverse()];
-    for (const stop of stops) {
-      if (stop && isFile(stop)) {
-        seen.add(stop.filePath);
-      }
-    }
-    return [...seen];
-  }
-
   /** Drops entries for a file that no longer exists. */
   forget(filePath: string): void {
     const keep = (location: NavLocation) => !isFile(location) || location.filePath !== filePath;

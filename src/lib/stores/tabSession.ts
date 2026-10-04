@@ -39,7 +39,7 @@ export const MAX_SAVED_TABS = 50;
 export const MAX_TAB_SESSIONS = 30;
 /** No real line number or column is near this; it keeps a hand edit from holding huge numbers. */
 const MAX_POSITION = 10_000_000;
-const MAX_PATH_LENGTH = 4096;
+export const MAX_PATH_LENGTH = 4096;
 
 /** An absolute path the app could have written: "/..." or "C:/..." (and "C:\..."). */
 export function isSavablePath(value: unknown): value is string {

@@ -40,6 +40,12 @@ describe("workspaceShortcut", () => {
     expect(workspaceShortcut(press("p", "KeyP", { ctrlKey: true, defaultPrevented: true }), idle, mac)).toBeNull();
   });
 
+  it("maps Cmd+E to Recent Files, but not from the commit box that handled it first", () => {
+    expect(workspaceShortcut(press("e", "KeyE", { metaKey: true }), idle, mac)).toBe("recentFiles");
+    expect(workspaceShortcut(press("e", "KeyE", { metaKey: true, defaultPrevented: true }), idle, mac)).toBeNull();
+    expect(workspaceShortcut(press("e", "KeyE", { metaKey: true }), { dialogOpen: true, mergeOpen: false }, mac)).toBeNull();
+  });
+
   it("maps the JetBrains Search Everywhere keys", () => {
     expect(workspaceShortcut(press("o", "KeyO", { metaKey: true }), idle, mac)).toBe("goToClass");
     expect(workspaceShortcut(press("F", "KeyF", { metaKey: true, shiftKey: true }), idle, mac)).toBe("findInFiles");

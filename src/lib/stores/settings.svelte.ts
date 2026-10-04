@@ -18,6 +18,7 @@ import type { ShortcutOverrides } from "$lib/commands/registry";
 import { applyColorTheme } from "$lib/themes/apply";
 import { type ColorMode, effectiveMode, pickThemeId } from "$lib/themes/themeIndex";
 import { toast } from "$lib/ui/toast.svelte";
+import { type RecentFile, withRecentFiles } from "./recentFiles";
 import { type SavedTabSession, withTabSession } from "./tabSession";
 import {
   type ConfigPatch,
@@ -267,6 +268,8 @@ class SettingsStore {
   commitMessages = $state.raw<MessageHistory>(initialState.commitMessages);
   /** File tabs of each workspace, by workspace id (Reopen tabs on start). Not reactive: only read when a workspace opens. */
   openTabs: Record<string, SavedTabSession> = initialState.openTabs;
+  /** Recent Files of each workspace, by workspace id. Not reactive: read when a workspace opens. */
+  recentFiles: Record<string, RecentFile[]> = initialState.recentFiles;
 
   /** macOS is in dark mode; followed while `theme` is "system". */
   systemDark = $state(false);
@@ -490,6 +493,7 @@ class SettingsStore {
       recentCommands: this.recentCommands,
       commitMessages: this.commitMessages,
       openTabs: this.openTabs,
+      recentFiles: this.recentFiles,
     };
   }
 
@@ -673,6 +677,12 @@ class SettingsStore {
   /** Keeps the file tabs of a workspace for its next open; null forgets them. */
   rememberTabs(workspaceId: string, session: SavedTabSession | null): void {
     this.openTabs = withTabSession(this.openTabs, workspaceId, session);
+    this.save();
+  }
+
+  /** Keeps a workspace's Recent Files for its next open; an empty list forgets them. */
+  rememberRecentFiles(workspaceId: string, files: readonly RecentFile[]): void {
+    this.recentFiles = withRecentFiles(this.recentFiles, workspaceId, files);
     this.save();
   }
 

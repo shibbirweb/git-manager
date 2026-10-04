@@ -35,6 +35,7 @@ export const MENU_ACTIONS = [
   "edit.findInFiles",
   "edit.replaceInFiles",
   "edit.goToFile",
+  "edit.recentFiles",
   "edit.goToClass",
   "edit.goToSymbol",
   "edit.searchEverywhere",

@@ -161,6 +161,25 @@ export function recentOrder(filePaths: readonly string[], activePath: string | n
   return [...filePaths.filter((filePath) => filePath !== activePath), activePath];
 }
 
+/** A recent file row matched against `query` (its folder and name), highlighted; null when it does not match. */
+export function matchRecentRow(row: SearchRow, query: string): { row: SearchRow; score: number } | null {
+  const folder = row.folderParts.map((part) => part.text).join("");
+  const path = folder ? `${folder}/${row.name}` : row.name;
+  const match = fuzzyMatch(query, path);
+  if (!match) {
+    return null;
+  }
+  const nameStart = Array.from(path).length - Array.from(row.name).length;
+  return {
+    row: {
+      ...row,
+      nameParts: highlight(row.name, match.indices, nameStart),
+      folderParts: folder ? highlight(folder, match.indices, 0) : [],
+    },
+    score: match.score,
+  };
+}
+
 /** Recently opened files that match `query` (their folder and name), best first. */
 export function matchingRecent(rows: readonly SearchRow[], query: string): SearchRow[] {
   if (query.trim() === "") {
@@ -168,22 +187,10 @@ export function matchingRecent(rows: readonly SearchRow[], query: string): Searc
   }
   const scored: { row: SearchRow; score: number; recency: number }[] = [];
   rows.forEach((row, recency) => {
-    const folder = row.folderParts.map((part) => part.text).join("");
-    const path = folder ? `${folder}/${row.name}` : row.name;
-    const match = fuzzyMatch(query, path);
-    if (!match) {
-      return;
+    const match = matchRecentRow(row, query);
+    if (match) {
+      scored.push({ ...match, recency });
     }
-    const nameStart = Array.from(path).length - Array.from(row.name).length;
-    scored.push({
-      row: {
-        ...row,
-        nameParts: highlight(row.name, match.indices, nameStart),
-        folderParts: folder ? highlight(folder, match.indices, 0) : [],
-      },
-      score: match.score,
-      recency,
-    });
   });
   scored.sort((a, b) => b.score - a.score || a.recency - b.recency);
   return scored.map((entry) => entry.row);

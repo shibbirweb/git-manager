@@ -4,6 +4,7 @@
 
 import { localHistory } from "$lib/localHistory/localHistory.svelte";
 import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
+import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { focusedEditor } from "$lib/editor/editorCommands";
 import { openerForShortcut, queryFromSelection, type SearchOpener } from "$lib/search/searchTabs";
@@ -19,22 +20,24 @@ import { changesSelection } from "./changes/selection.svelte";
 import { gitDialogs } from "./git/gitDialogs.svelte";
 import type { WorkspaceShortcut } from "./workspaceShortcuts";
 
-/** The window shortcuts wait while a dialog, the Search Everywhere or Quick Open popup or the merge tool is up. */
+/** The window shortcuts wait while a dialog, the Search Everywhere, Quick Open or Recent Files popup or the merge tool is up. */
 export function shortcutsBlocked(): boolean {
   return (
     dialogs.active !== null ||
     gitDialogs.active !== null ||
     fileSearch.isOpen ||
     quickOpen.isOpen ||
+    recentFilesStore.isOpen ||
     localHistory.isOpen ||
     repoStore.mergeTarget !== null
   );
 }
 
-/** Search Everywhere and Quick Open wait while any dialog, the other popup or the merge tool is up. */
+/** Search Everywhere, Quick Open and Recent Files wait while any dialog, another popup or the merge tool is up. */
 function overlayOpen(): boolean {
   return (
     quickOpen.isOpen ||
+    recentFilesStore.isOpen ||
     dialogs.active !== null ||
     gitDialogs.active !== null ||
     repoStore.mergeTarget !== null ||
@@ -73,10 +76,20 @@ export function openQuickOpen(prefix: string): void {
   }
 }
 
+/** Opens Recent Files (JetBrains' Cmd+E); never over Search Everywhere or another popup. */
+export function openRecentFiles(): void {
+  if (!overlayOpen() && !fileSearch.isOpen) {
+    recentFilesStore.open();
+  }
+}
+
 export function runWorkspaceShortcut(shortcut: WorkspaceShortcut): void {
   switch (shortcut) {
     case "quickOpen":
       openQuickOpen("");
+      break;
+    case "recentFiles":
+      openRecentFiles();
       break;
     case "commandPalette":
       openQuickOpen(">");
