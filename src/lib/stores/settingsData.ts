@@ -206,6 +206,8 @@ export interface Preferences {
   editorLineHeight: number;
   /** CSS font-family list for code, e.g. "Menlo, Monaco, monospace". */
   editorFontFamily: string;
+  /** CSS font-weight of code, 100 (Thin) to 900 (Black), like VS Code's editor.fontWeight. */
+  editorFontWeight: number;
   /** Render programming ligatures (=>, !=, ===) with fonts that provide them. */
   fontLigatures: boolean;
   tabSize: number;
@@ -389,6 +391,7 @@ export const defaultPreferences: Preferences = {
   editorFontSize: 13,
   editorLineHeight: 1.25,
   editorFontFamily: DEFAULT_EDITOR_FONT,
+  editorFontWeight: 400,
   fontLigatures: false,
   tabSize: 4,
   detectIndentation: true,
@@ -480,6 +483,24 @@ export const defaultPreferences: Preferences = {
 export const FONT_SIZE_RANGE = { ui: [11, 16], editor: [10, 20], terminal: [9, 24] } as const;
 /** Line spacing of code in the editor, diffs and the merge tool. */
 export const EDITOR_LINE_HEIGHT_RANGE = [1, 2.5] as const;
+/** Code font weights in steps of 100, named like the styles of JetBrains Mono and most variable fonts. */
+export const EDITOR_FONT_WEIGHT_RANGE = [100, 900] as const;
+const FONT_WEIGHT_NAMES: Record<number, string> = {
+  100: "Thin",
+  200: "ExtraLight",
+  300: "Light",
+  400: "Regular",
+  500: "Medium",
+  600: "SemiBold",
+  700: "Bold",
+  800: "ExtraBold",
+  900: "Black",
+};
+
+/** The style name of a font weight, such as "Light" for 300; other values read as their number. */
+export function fontWeightName(fontWeight: number): string {
+  return FONT_WEIGHT_NAMES[fontWeight] ?? String(fontWeight);
+}
 export const TAB_SIZES = [2, 4, 8] as const;
 export const EDITOR_CURSOR_WIDTH_RANGE = [1, 6] as const;
 export const CARET_EXTRA_RANGE = [0, 10] as const;
@@ -683,6 +704,10 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
       0.05,
     ),
     editorFontFamily: typeof data.editorFontFamily === "string" ? normalizeFontFamily(data.editorFontFamily) : DEFAULT_EDITOR_FONT,
+    editorFontWeight: roundTo(
+      pickNumber(data.editorFontWeight, defaultPreferences.editorFontWeight, ...EDITOR_FONT_WEIGHT_RANGE),
+      100,
+    ),
     fontLigatures: pickBoolean(data.fontLigatures, defaultPreferences.fontLigatures),
     tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize) ? (data.tabSize as number) : defaultPreferences.tabSize,
     detectIndentation: pickBoolean(data.detectIndentation, defaultPreferences.detectIndentation),

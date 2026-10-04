@@ -496,7 +496,8 @@ textarea.input {
 
 .tok-heading,
 .tok-strong {
-  font-weight: 600;
+  /* Stays heavier than the code font weight set in Settings > Editor. */
+  font-weight: calc(var(--code-weight, 400) + 200);
 }
 
 .tok-emphasis {

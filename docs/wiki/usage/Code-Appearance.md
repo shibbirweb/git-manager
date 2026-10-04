@@ -1,6 +1,14 @@
 # Code Appearance
 
-These settings are in [Settings](Settings.md#editor), **Editor**. They apply to editors, diffs and the merge tool alike, and open editors change at once. The default font is JetBrains Mono at 13 px when it is installed, else Menlo.
+These settings are in [Settings](Settings.md#editor), **Editor**. They apply to editors, diffs and the merge tool alike, and open editors change at once. The default font is JetBrains Mono at 13 px and Regular weight when it is installed, else Menlo.
+
+## Font weight
+
+**Editor font weight** sets how thick code is drawn. Drag the slider from **Thin** (100) to **Black** (900), in steps of 100. The default is **Regular** (400). Double-click the slider to go back to it. The preview above the slider shows the result before you close Settings.
+
+For a soft, calm look like JetBrains IDEs on a dark theme, try **Light** (300) with JetBrains Mono. Bold text in code, such as Markdown headings, stays a little heavier than the weight you pick.
+
+The weight needs a font that has it. JetBrains Mono, SF Mono and most variable fonts have every weight. A font with only Regular and Bold, such as Menlo, uses the closest one it has.
 
 ## Line spacing
 

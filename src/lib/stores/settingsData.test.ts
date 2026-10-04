@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  EDITOR_FONT_WEIGHT_RANGE,
   EDITOR_LINE_HEIGHT_RANGE,
   EDITOR_RULER_RANGE,
   changedPreferenceKeys,
@@ -11,6 +12,7 @@ import {
   DEFAULT_TERMINAL_LIST_WIDTH,
   DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
+  fontWeightName,
   MAX_MCP_TOOL_STATES,
   MIN_TERMINAL_HEIGHT,
   MIN_TERMINAL_LIST_WIDTH,
@@ -144,6 +146,24 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ editorLineHeight: 1.5499999 }).preferences.editorLineHeight).toBe(1.55);
     expect(parsePreferences({ editorLineHeight: "loose" }).preferences.editorLineHeight).toBe(1.25);
     expect(parsePreferences({ editorLineHeight: 1.8 }).extra).toEqual({});
+  });
+
+  it("validates the editor font weight", () => {
+    expect(parsePreferences({}).preferences.editorFontWeight).toBe(400);
+    expect(parsePreferences({ editorFontWeight: 300 }).preferences.editorFontWeight).toBe(300);
+    expect(parsePreferences({ editorFontWeight: 20 }).preferences.editorFontWeight).toBe(EDITOR_FONT_WEIGHT_RANGE[0]);
+    expect(parsePreferences({ editorFontWeight: 1000 }).preferences.editorFontWeight).toBe(EDITOR_FONT_WEIGHT_RANGE[1]);
+    expect(parsePreferences({ editorFontWeight: 349 }).preferences.editorFontWeight).toBe(300);
+    expect(parsePreferences({ editorFontWeight: "bold" }).preferences.editorFontWeight).toBe(400);
+    expect(parsePreferences({ editorFontWeight: 300 }).extra).toEqual({});
+  });
+
+  it("names font weights like the font styles", () => {
+    expect(fontWeightName(100)).toBe("Thin");
+    expect(fontWeightName(300)).toBe("Light");
+    expect(fontWeightName(400)).toBe("Regular");
+    expect(fontWeightName(900)).toBe("Black");
+    expect(fontWeightName(350)).toBe("350");
   });
 
   it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo", () => {

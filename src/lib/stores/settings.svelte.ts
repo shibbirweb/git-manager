@@ -85,10 +85,12 @@ export {
   EDITOR_CURSOR_BLINKING_CHOICES,
   EDITOR_CURSOR_STYLE_CHOICES,
   EDITOR_CURSOR_WIDTH_RANGE,
+  EDITOR_FONT_WEIGHT_RANGE,
   EDITOR_LINE_HEIGHT_RANGE,
   EDITOR_RULER_RANGE,
   FILE_ICON_CHOICES,
   FONT_SIZE_RANGE,
+  fontWeightName,
   EDITOR_SPLIT_RATIO_RANGE,
   MARKDOWN_PREVIEW_RATIO_RANGE,
   MARKDOWN_VIEW_MODES,
@@ -143,6 +145,7 @@ class SettingsStore {
   editorFontSize = $state(initialPreferences.editorFontSize);
   editorLineHeight = $state(initialPreferences.editorLineHeight);
   editorFontFamily = $state(initialPreferences.editorFontFamily);
+  editorFontWeight = $state(initialPreferences.editorFontWeight);
   fontLigatures = $state(initialPreferences.fontLigatures);
   tabSize = $state(initialPreferences.tabSize);
   detectIndentation = $state(initialPreferences.detectIndentation);
@@ -372,6 +375,7 @@ class SettingsStore {
       editorFontSize: this.editorFontSize,
       editorLineHeight: this.editorLineHeight,
       editorFontFamily: this.editorFontFamily,
+      editorFontWeight: this.editorFontWeight,
       fontLigatures: this.fontLigatures,
       tabSize: this.tabSize,
       detectIndentation: this.detectIndentation,
@@ -853,6 +857,7 @@ class SettingsStore {
     root.style.setProperty("--code-size", `${this.editorFontSize}px`);
     root.style.setProperty("--code-line-height", String(this.editorLineHeight));
     root.style.setProperty("--font-mono", this.editorFontFamily);
+    root.style.setProperty("--code-weight", String(this.editorFontWeight));
     root.setAttribute("data-ligatures", this.fontLigatures ? "on" : "off");
   }
 }

@@ -1,6 +1,6 @@
 # How code appearance works
 
-This chapter covers the settings that change how code looks in every editor, diff side and merge pane: line spacing, render whitespace, the current line, indentation, zoom and ligatures. The cursor has its own chapter, [How the Cursor Works](How-the-Cursor-Works.md). The commands and keys are in [How editing code works](How-Editing-Code-Works.md). The user side is in [Code Appearance](../usage/Code-Appearance.md).
+This chapter covers the settings that change how code looks in every editor, diff side and merge pane: font weight, line spacing, render whitespace, the current line, indentation, zoom and ligatures. The cursor has its own chapter, [How the Cursor Works](How-the-Cursor-Works.md). The commands and keys are in [How editing code works](How-Editing-Code-Works.md). The user side is in [Code Appearance](../usage/Code-Appearance.md).
 
 ## Why we need it
 
@@ -19,6 +19,8 @@ flowchart LR
 ```
 
 **Line spacing.** `settings.editorLineHeight` (default 1.25, from 1.0 to 2.5) is validated by `pickNumber` and rounded in `settingsData.ts`. `applyAppearance` writes it to `--code-line-height` on the root element, and `editorTheme` reads it for `.cm-scroller`. Every editor, diff side and merge pane uses `editorTheme`, and Markdown code blocks read the same variable, so one CSS variable changes them all without rebuilding a view.
+
+**Font weight.** `settings.editorFontWeight` (default 400, from 100 to 900) is validated by `pickNumber` and rounded to a step of 100, and `fontWeightName` gives the style name the slider shows (300 is Light). It works like line spacing: `applyAppearance` writes `--code-weight`, and `editorTheme` (`.cm-scroller`), the sticky scroll header and Markdown code blocks read it. `.tok-heading` and `.tok-strong` in `src/app.css` use `calc(var(--code-weight) + 200)`, so bold text stays bolder than the code around it at every weight.
 
 **Render whitespace.** `whitespace.ts` has a pure part and a view part. `whitespaceRuns(text, mode)` finds the stretches of spaces and the tabs one line draws for a mode (`none`, `boundary`, `selection`, `trailing`, `all`), and `clipRuns` cuts them to the selection. A ViewPlugin decorates only `view.visibleRanges` with mark decorations: a dotted background for spaces and a drawn arrow for tabs. The text itself never changes, so copying gives real spaces. With `none` the extension adds nothing at all.
 
@@ -40,10 +42,12 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 | `src/lib/editor/activeLine.ts` | The current line highlight |
 | `src/lib/editor/setup.ts` | `editorTheme` and `baseExtensions` |
 | `src/lib/editor/wheelZoom.ts` | Wheel zoom steps and `steppedFontSize` |
-| `src/lib/stores/settingsData.ts` | `editorLineHeight`, `renderWhitespace`, `tabSize`, `detectIndentation` and their checks |
+| `src/lib/stores/settingsData.ts` | `editorFontWeight`, `fontWeightName`, `editorLineHeight`, `renderWhitespace`, `tabSize`, `detectIndentation` and their checks |
 | `src/lib/views/StatusBar.svelte` | Spaces or Tab Size for the file on screen |
 
 ## Design decisions
+
+**Font weight in steps of 100.** Fonts name their weights in hundreds (Light, Regular, Medium), so the slider shows a name instead of a bare number, like the font picker of JetBrains IDEs. Weights in between only work with variable fonts, so they would look the same as a step for most fonts.
 
 **Selection by default.** Drawing every space is noisy, and drawing none hides trailing spaces. VS Code's default, dots only inside the selection, shows them exactly when you look.
 

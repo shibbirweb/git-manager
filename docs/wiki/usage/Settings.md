@@ -42,12 +42,13 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 
 ![Editor fonts and spacing](../images/settings-editor-fonts.png)
 
-*Font family with a live preview, font size and line spacing.*
+*Font family with a live preview, font size, font weight and line spacing.*
 
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Editor font family | A comma-separated list, like VS Code's `editor.fontFamily`. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
-| Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. | 13 px |
+| Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. See [Zoom](Code-Appearance.md#zoom). | 13 px |
+| Editor font weight | Thin to Black. See [Font weight](Code-Appearance.md#font-weight). | Regular |
 | Line spacing | Space between lines, 1.0 to 2.5 times the font size. Double-click the slider to reset it. | 1.25 |
 | Change font size with Ctrl + mouse wheel | Hold Control (or Command) and scroll over an editor, diff or merge pane, or pinch. | Off |
 | Font ligatures | Draws `=>`, `!=` and `===` as single symbols, with fonts that have them, such as Fira Code. | Off |
@@ -66,7 +67,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 
 *The lower part of the Editor section: render whitespace, word wrap, Markdown preview and blame.*
 
-Type a font list and press Enter, or click a font name below it. **Reset** goes back to the default font. **View > Zoom In** (Cmd+=), **Zoom Out** (Cmd+-) and **Reset Zoom** (Cmd+0) change the editor font size too.
+Type a font list and press Enter, or click a font name below it. **Reset** goes back to the default font.
 
 ## Git
 

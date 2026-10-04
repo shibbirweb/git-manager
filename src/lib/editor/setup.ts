@@ -36,6 +36,7 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-scroller": {
     fontFamily: "var(--font-mono)",
+    fontWeight: "var(--code-weight, 400)",
     lineHeight: "var(--code-line-height, 1.25)",
   },
   ".cm-content": {

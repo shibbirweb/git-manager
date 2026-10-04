@@ -110,6 +110,7 @@ const theme = EditorView.baseTheme({
     backgroundColor: "var(--editor-bg)",
     borderBottom: "1px solid var(--border-strong)",
     fontFamily: "var(--font-mono)",
+    fontWeight: "var(--code-weight, 400)",
     cursor: "pointer",
   },
   ".cm-gm-sticky-row": {

@@ -22,6 +22,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `darkColorTheme` | `"gm-dark"` | a dark theme id | `themes/apply.ts` |
 | `editorFontFamily` | `DEFAULT_EDITOR_FONT` (`'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace`) | `normalizeFontFamily` (drops repeats) | `--font-mono` |
 | `editorFontSize` | 13 | 10 to 20 | `--code-size`, View > Zoom |
+| `editorFontWeight` | 400 | 100 to 900, rounded to 100 | `--code-weight` |
 | `editorLineHeight` | 1.25 | 1 to 2.5, rounded to 0.05 | `--code-line-height` |
 | `mouseWheelZoom` | false | boolean | `App.svelte`, `editor/wheelZoom.ts` |
 | `fontLigatures` | false | boolean | `data-ligatures` |

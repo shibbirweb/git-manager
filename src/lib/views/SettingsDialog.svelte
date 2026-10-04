@@ -12,10 +12,12 @@
     EDITOR_CURSOR_WIDTH_RANGE,
     type EditorCursorBlinking,
     type EditorCursorStyle,
+    EDITOR_FONT_WEIGHT_RANGE,
     EDITOR_LINE_HEIGHT_RANGE,
     EDITOR_RULER_RANGE,
     FILE_ICON_CHOICES,
     FONT_SIZE_RANGE,
+    fontWeightName,
     type MarkdownViewMode,
     MONOSPACE_FONTS,
     normalizeFontFamily,
@@ -776,7 +778,7 @@
                 </button>
               {/each}
             </div>
-            <pre class="font-preview code-ligatures" style="font-family: {normalizeFontFamily(fontDraft)}; font-size: {settings.editorFontSize}px; line-height: {settings.editorLineHeight}">function greet(name: string) &#123;
+            <pre class="font-preview code-ligatures" style="font-family: {normalizeFontFamily(fontDraft)}; font-size: {settings.editorFontSize}px; font-weight: {settings.editorFontWeight}; line-height: {settings.editorLineHeight}">function greet(name: string) &#123;
   return `Hello, $&#123;name&#125;!`; // 0O 1lI =&gt; != ===
 &#125;</pre>
           </div>
@@ -796,6 +798,29 @@
                 aria-label="Editor font size"
               />
               <span class="value">{settings.editorFontSize}px</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="label">
+              <span>Editor font weight</span>
+              <span class="hint">
+                How thick code is drawn. Light (300) looks calm on dark themes. Needs a font with several weights, such as
+                JetBrains Mono or SF Mono; other fonts use their closest weight.
+              </span>
+            </div>
+            <div class="range">
+              <input
+                type="range"
+                min={EDITOR_FONT_WEIGHT_RANGE[0]}
+                max={EDITOR_FONT_WEIGHT_RANGE[1]}
+                step="100"
+                value={settings.editorFontWeight}
+                oninput={(event) => set("editorFontWeight", Number(event.currentTarget.value))}
+                ondblclick={() => set("editorFontWeight", defaultPreferences.editorFontWeight)}
+                title="Double-click to reset to {fontWeightName(defaultPreferences.editorFontWeight)}"
+                aria-label="Editor font weight"
+              />
+              <span class="value weight-value">{fontWeightName(settings.editorFontWeight)}</span>
             </div>
           </div>
           <div class="row">
@@ -2459,6 +2484,10 @@
     text-align: right;
     font-family: var(--font-mono);
     font-size: 12px;
+  }
+
+  .weight-value {
+    width: 76px;
   }
 
   .switch {
