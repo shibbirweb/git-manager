@@ -183,6 +183,7 @@ function viewMenu(platform: MenuPlatform): TopMenu {
     },
     item("view.notifications", "Notifications"),
     check("view.doNotDisturb", "Do Not Disturb"),
+    item("view.clearCache", "Clear Cache"),
     separator,
     check("view.wordWrap", "Word Wrap", "Alt+Z"),
     check("view.stickyScroll", "Sticky Scroll"),

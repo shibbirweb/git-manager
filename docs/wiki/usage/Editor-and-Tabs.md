@@ -35,7 +35,7 @@ With no file, diff or Log open, the editor area shows the [Navigation Bar](Navig
 
 ## Tabs
 
-- Click a tab to show it. Every tab keeps its own cursor, scroll position and unsaved edits while you look at another one.
+- Click a tab to show it. Every tab keeps its own cursor, scroll position and unsaved edits (see also [Unload Hidden Tabs](Unload-Hidden-Tabs.md)).
 - **Shift+Cmd+]** and **Shift+Cmd+[** show the next and previous tab (also **Window > Next Tab** and **Previous Tab**).
 - **Cmd+W** closes the tab on screen (**File > Close Tab**).
 - New tabs open after the current one.

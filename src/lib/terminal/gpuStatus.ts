@@ -1,7 +1,8 @@
 // How the terminals draw, for the memory popup's GPU acceleration section: the
-// WebGL renderer, xterm's normal (DOM) renderer, or normal after WebGL failed.
+// WebGL renderer, xterm's normal (DOM) renderer, normal after WebGL failed, or
+// released while hidden to free its memory.
 
-export type TerminalDrawing = "gpu" | "normal" | "fallback";
+export type TerminalDrawing = "gpu" | "normal" | "fallback" | "released";
 
 export interface TerminalDrawingInput {
   /** One entry per open terminal. */
@@ -29,6 +30,10 @@ export function terminalDrawingSummary({ drawings, gpuSetting, ligatures }: Term
   }
   const gpu = drawings.filter((drawing) => drawing === "gpu").length;
   const fallback = drawings.filter((drawing) => drawing === "fallback").length;
+  const released = drawings.filter((drawing) => drawing === "released").length;
+  if (gpu === 0 && fallback === 0 && released > 0) {
+    return "Not now, freed while hidden";
+  }
   if (gpu === 0 && fallback === 0) {
     // Hidden terminals switch to the GPU the first time they are shown.
     return "Not yet, starts when a terminal is shown";
@@ -37,7 +42,8 @@ export function terminalDrawingSummary({ drawings, gpuSetting, ligatures }: Term
     return fallback === 1 ? "No, the GPU failed, normal drawing" : `No, the GPU failed in ${fallback} terminals`;
   }
   const used = gpu === drawings.length ? `Yes, in ${terminals(gpu)}` : `Yes, in ${gpu} of ${terminals(drawings.length)}`;
-  return fallback > 0 ? `${used} (${fallback} fell back)` : used;
+  const notes = [fallback > 0 ? `${fallback} fell back` : "", released > 0 ? `${released} freed while hidden` : ""].filter(Boolean);
+  return notes.length > 0 ? `${used} (${notes.join(", ")})` : used;
 }
 
 export interface WebglInfo {

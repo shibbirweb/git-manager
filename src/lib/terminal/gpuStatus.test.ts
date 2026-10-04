@@ -22,6 +22,15 @@ describe("terminalDrawingSummary", () => {
   it("waits for hidden terminals", () => {
     expect(terminalDrawingSummary({ drawings: ["normal"], ...on })).toBe("Not yet, starts when a terminal is shown");
   });
+
+  it("counts terminals that gave the GPU back while hidden", () => {
+    expect(terminalDrawingSummary({ drawings: ["released"], ...on })).toBe("Not now, freed while hidden");
+    expect(terminalDrawingSummary({ drawings: ["released", "normal"], ...on })).toBe("Not now, freed while hidden");
+    expect(terminalDrawingSummary({ drawings: ["gpu", "released"], ...on })).toBe("Yes, in 1 of 2 terminals (1 freed while hidden)");
+    expect(terminalDrawingSummary({ drawings: ["gpu", "fallback", "released"], ...on })).toBe(
+      "Yes, in 1 of 3 terminals (1 fell back, 1 freed while hidden)",
+    );
+  });
 });
 
 describe("webglLabel", () => {

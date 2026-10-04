@@ -53,6 +53,7 @@ import {
   type TabPosition,
   tabSessionOf,
 } from "./tabSession";
+import { type TabSleepEntry, tabsToSleep } from "./tabSleep";
 import { isTerminalTab } from "$lib/terminal/terminalTabs";
 import {
   type FileTab,
@@ -249,6 +250,8 @@ class RepoStore {
   dormantTabs = $state.raw<ReadonlySet<string>>(new Set());
   /** When each tab was last shown, for the tab limit's least recently used choice. */
   private tabUse = new Map<string, number>();
+  /** When each tab (by dormant key) was last on screen, for Unload hidden tabs. */
+  private tabShownAt = new Map<string, number>();
   private tabUseClock = 0;
   /** Last known caret and scroll of open file tabs, saved with the session. */
   private tabPositions = new Map<string, TabPosition>();
@@ -1416,14 +1419,29 @@ class RepoStore {
     if (active !== null) {
       this.tabUse.set(active, ++this.tabUseClock);
     }
+    const now = Date.now();
+    for (const group of this.groupsState.groups) {
+      if (group.active !== null) {
+        this.tabShownAt.set(dormantKey(group.id, group.active), now);
+      }
+    }
     if (this.dormantTabs.size > 0) {
       // A tab sleeps until its group shows it; closed ones are forgotten.
       const sleeping = new Set<string>();
       for (const group of this.groupsState.groups) {
         for (const tab of group.tabs) {
           const key = dormantKey(group.id, tab.path);
-          if (tab.path !== group.active && this.dormantTabs.has(key)) {
+          if (!this.dormantTabs.has(key)) {
+            continue;
+          }
+          if (tab.path !== group.active) {
             sleeping.add(key);
+          } else if (!this.pendingPositions.has(tab.path)) {
+            // Waking after Unload hidden tabs: the new editor opens where the old one was.
+            const position = this.tabPositions.get(tab.path);
+            if (position) {
+              this.pendingPositions.set(tab.path, position);
+            }
           }
         }
       }
@@ -1437,6 +1455,23 @@ class RepoStore {
       this.pendingPositions.delete(tabPath);
     }
     this.scheduleTabsSave();
+  }
+
+  /**
+   * Unload hidden tabs: file tabs out of sight for `delayMs`, without unsaved edits, go back to
+   * sleep. Their editors go away, and showing one builds it again at its caret and scroll.
+   */
+  sleepHiddenTabs(delayMs: number, now = Date.now()): void {
+    const entries: TabSleepEntry[] = this.groupsState.groups.flatMap((group) =>
+      group.tabs.map((tab) => {
+        const key = dormantKey(group.id, tab.path);
+        return { key, shown: tab.path === group.active, eligible: isFileTab(tab.path) && !tab.dirty && !this.dormantTabs.has(key) };
+      }),
+    );
+    const keys = tabsToSleep(entries, this.tabShownAt, now, delayMs);
+    if (keys.length > 0) {
+      this.dormantTabs = new Set([...this.dormantTabs, ...keys]);
+    }
   }
 
   /** A restored tab whose editor has not been created yet. */
@@ -1476,6 +1511,11 @@ class RepoStore {
     this.tabsSaveTimer = setTimeout(() => this.saveTabSession(), TABS_SAVE_DELAY_MS);
   }
 
+  /** Clear Cache: the tab session is written now, since the page restarts right after. */
+  saveTabsNow(): void {
+    this.saveTabSession();
+  }
+
   /** Writes the open file tabs of this workspace to state.json, when Reopen tabs on start is on. */
   private saveTabSession(): void {
     clearTimeout(this.tabsSaveTimer);
@@ -1503,6 +1543,7 @@ class RepoStore {
     this.closedTabs = [];
     this.dormantTabs = new Set();
     this.tabUse.clear();
+    this.tabShownAt.clear();
     this.tabPositions.clear();
     this.pendingPositions.clear();
   }

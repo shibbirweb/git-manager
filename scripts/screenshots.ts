@@ -1374,6 +1374,14 @@ define("status-bar", async (shot) => {
   await shot.save(shot.page.locator("footer.status-bar"));
 });
 
+define("status-bar-clear-cache", async (shot) => {
+  await shot.openFile(cartTs());
+  const button = shot.page.getByRole("button", { name: "Clear Cache" });
+  await button.waitFor();
+  await button.hover();
+  await shot.save(await shot.clipAround([shot.page.locator("footer.status-bar .memory")], { top: 40, left: 160 }));
+});
+
 define("help-menu", async (shot) => {
   await shot.page.getByRole("button", { name: "Report an issue" }).click();
   await shot.menu().waitFor();
@@ -2075,6 +2083,13 @@ define("settings-search", async (shot) => {
 define("settings-editor-fonts", async (shot) => {
   const dialog = await openSettings(shot, "Editor");
   await scrollSettingsTo(dialog, "Editor font family");
+  await shot.page.mouse.move(5, 790);
+  await shot.save(dialog);
+});
+
+define("settings-unload-hidden-tabs", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await scrollSettingsTo(dialog, "Unload hidden tabs");
   await shot.page.mouse.move(5, 790);
   await shot.save(dialog);
 });

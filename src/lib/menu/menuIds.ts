@@ -60,6 +60,7 @@ export const MENU_ACTIONS = [
   "view.detectIndentation",
   "view.notifications",
   "view.doNotDisturb",
+  "view.clearCache",
   "view.markdownEditor",
   "view.markdownSplit",
   "view.markdownPreview",

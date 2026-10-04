@@ -12,6 +12,7 @@
   import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
+  import { clearCache } from "$lib/debug/clearCache";
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
   import Icon from "$lib/ui/Icon.svelte";
@@ -276,6 +277,14 @@
           <span class="chip"></span>
           <span>Memory {formatBytes(memory.totalBytes)}</span>
         </button>
+        <button
+          class="item icon-only"
+          onclick={() => void clearCache()}
+          title="Clear Cache: restart this window's interface to give back all the memory it holds. The screen blinks once; your folder and tabs come back."
+          aria-label="Clear Cache"
+        >
+          <Icon name="brush" size={12} />
+        </button>
         {#if detailsOpen}
           <div class="details" role="dialog" aria-label="Memory usage">
             <div class="details-head">
@@ -447,6 +456,8 @@
 
   .memory {
     position: relative;
+    display: flex;
+    align-items: center;
   }
 
   .chip {

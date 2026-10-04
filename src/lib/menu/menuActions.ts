@@ -1,6 +1,7 @@
 // Runs a menu item: one function per action, reusing what the buttons and window shortcuts
 // already do, with the same guards (no workspace action behind a dialog or the merge tool).
 
+import { clearCache } from "$lib/debug/clearCache";
 import { tick } from "svelte";
 import { errorMessage } from "$lib/api";
 import { compareStore } from "$lib/compare/compareStore.svelte";
@@ -255,6 +256,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.detectIndentation": app(() => settings.setPreference("detectIndentation", !settings.detectIndentation)),
   "view.notifications": app(() => notifications.toggle()),
   "view.doNotDisturb": app(() => settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb)),
+  "view.clearCache": app(() => void clearCache()),
   "view.markdownEditor": setMarkdownMode("editor"),
   "view.markdownSplit": setMarkdownMode("split"),
   "view.markdownPreview": setMarkdownMode("preview"),

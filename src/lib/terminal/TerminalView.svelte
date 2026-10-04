@@ -33,7 +33,14 @@
   import { terminalKeyAction } from "./keys";
   import { terminalAppKeySet } from "$lib/commands/commandRuntime";
   import { gpuRenderers } from "./gpuRenderers.svelte";
-  import { applyChangedOptions, changesMetrics, terminalAddonPlan, terminalDisplayOptions } from "./options";
+  import {
+    applyChangedOptions,
+    changesMetrics,
+    GPU_RELEASE_DELAY_MS,
+    releasesGpuWhenHidden,
+    terminalAddonPlan,
+    terminalDisplayOptions,
+  } from "./options";
   import { isExitMessage, OutputAcks } from "./outputFlow";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { runFinishedMessage, runHeader } from "./runs";
@@ -726,6 +733,16 @@
       }
       setFileLinks(instance, plan.fileLinks);
     });
+  });
+
+  // Out of sight for a while, the terminal gives its GPU memory back (Free GPU memory while
+  // hidden); the effect above makes a new renderer as soon as it shows.
+  $effect(() => {
+    if (visible || !term || !releasesGpuWhenHidden(addonPlan, settings)) {
+      return;
+    }
+    const timer = setTimeout(() => addons?.releaseWebgl(), GPU_RELEASE_DELAY_MS);
+    return () => clearTimeout(timer);
   });
 
   // Hidden: everything received is acked, so a shell never waits on a view out of sight.

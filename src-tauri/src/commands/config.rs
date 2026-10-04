@@ -53,6 +53,12 @@ pub async fn memory_usage() -> AppResult<crate::memory::MemoryUsage> {
     blocking(|| Ok(crate::memory::usage())).await
 }
 
+/// Clear Cache in the status bar: the window's page restarts in a new web content process.
+#[tauri::command]
+pub async fn clear_cache(window: tauri::WebviewWindow) -> AppResult<()> {
+    blocking(move || crate::memory::restart_web_content(&window)).await
+}
+
 /// The debug memory log (Settings > Automation): on or off, its interval and change threshold.
 #[tauri::command]
 pub async fn memory_log_configure(

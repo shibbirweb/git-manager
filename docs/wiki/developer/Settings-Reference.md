@@ -33,6 +33,8 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `tabSize` | 4 | 2, 4, 8 (`TAB_SIZES`) | `App.svelte`, `editor/indentation.ts` |
 | `detectIndentation` | true | boolean | `App.svelte`, `editor/indentation.ts`, View > Detect Indentation |
 | `renderWhitespace` | `"selection"` | `RENDER_WHITESPACE_CHOICES` | `App.svelte`, `editor/whitespace.ts` |
+| `unloadHiddenTabs` | true | boolean | `App.svelte`, `repoStore.sleepHiddenTabs` |
+| `unloadHiddenTabsMinutes` | 15 | 5, 15, 30, 60 (`UNLOAD_TAB_MINUTES`) | `stores/tabSleep.ts` |
 | `editorCursorStyle` | `"line"` | `EDITOR_CURSOR_STYLE_CHOICES` | `App.svelte`, `editor/cursor.ts` |
 | `editorCursorWidth` | 2 | `pickInteger`, 1 to 6 (`EDITOR_CURSOR_WIDTH_RANGE`) | `editor/cursor.ts` |
 | `editorCursorBlinking` | `"blink"` | `EDITOR_CURSOR_BLINKING_CHOICES` | `editor/cursor.ts` |
@@ -85,6 +87,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `terminalFind` | true | boolean | `terminalAddonPlan`, `keys.ts` (Cmd+F) |
 | `terminalFileLinks` | true | boolean | `terminalAddonPlan`, `TerminalView.svelte` |
 | `terminalGpuAcceleration` | true | boolean | `terminalAddonPlan`, `addons.ts` |
+| `terminalFreeGpuWhenHidden` | true | boolean | `releasesGpuWhenHidden`, `TerminalView.svelte` |
 | `terminalUnicode11` | true | boolean | `terminalAddonPlan`, `addons.ts` |
 | `terminalOptionAsMeta` | false | boolean | `terminal/options.ts` (`macOptionIsMeta`) |
 | `terminalVisualBell` | true | boolean | `TerminalView.svelte` |

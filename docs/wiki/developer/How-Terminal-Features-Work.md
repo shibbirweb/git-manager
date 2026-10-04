@@ -22,7 +22,7 @@ flowchart LR
   Close["terminal closes"] --> Free
 ```
 
-- **WebGL** (`@xterm/addon-webgl`): loaded when the terminal first shows, since it measures cells as it starts. A failed `loadAddon` (no WebGL2) or `onContextLoss` (too many contexts, a GPU reset) disposes it and marks the terminal as broken, so it stays on the DOM renderer until the setting is turned on again. Ligatures are CSS on the DOM renderer's rows, so ligatures on means no WebGL.
+- **WebGL** (`@xterm/addon-webgl`): loaded when the terminal first shows, since it measures cells as it starts. A failed `loadAddon` (no WebGL2) or `onContextLoss` (too many contexts, a GPU reset) disposes it and marks the terminal as broken, so it stays on the DOM renderer until the setting is turned on again. Ligatures are CSS on the DOM renderer's rows, so ligatures on means no WebGL. `releaseWebgl` frees it after 30 s hidden (`terminalFreeGpuWhenHidden`); showing the terminal loads it again.
 - **Unicode 11** (`@xterm/addon-unicode11`): registers its width table once per terminal and switches `term.unicode.activeVersion` between `"11"` and `"6"`. xterm cannot unregister a version, so off keeps the small table until the terminal closes.
 - **Search** (`@xterm/addon-search`): waits until the find bar first opens; turning Find off closes the bar and disposes the addon with its highlights.
 
@@ -104,5 +104,5 @@ WebGL fallback, hover underlines, drops from Finder and dragging the divider nee
 
 **The GPU acceleration hint said it costs a few MB.**
 - **The issue:** Settings, Terminal said turning GPU acceleration off "saves a few MB of GPU memory per terminal", far too little.
-- **Why it happened:** the number was a guess, written before the memory of each setting was measured.
-- **The fix and why we chose it:** we measured it, three cold starts each way: about 70 MB for the first terminal, mostly graphics memory, and 10 MB for each other one. The hint, the usage pages and a memory mark in Settings now show measured numbers ([Measuring Setting Memory](Measuring-Setting-Memory.md)).
+- **Why it happened:** the number was a guess, written before anything was measured.
+- **The fix and why we chose it:** three cold starts each way measured about 70 MB for the first terminal, mostly graphics memory, and 10 MB for each other one. Settings and the usage pages now show measured numbers ([Measuring Setting Memory](Measuring-Setting-Memory.md)).

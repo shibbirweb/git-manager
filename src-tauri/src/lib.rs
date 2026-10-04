@@ -170,6 +170,7 @@ pub fn run() {
             commands::stash::stash_drop,
             commands::stash::stash_clear,
             commands::config::memory_usage,
+            commands::config::clear_cache,
             commands::config::memory_log_configure,
             commands::config::memory_log_event,
             commands::config::load_config,

@@ -29,7 +29,7 @@ stateDiagram-v2
 
 A tab can also hold a commit, a terminal, a Git history or compare view, a shelved file, a branch comparison or a branch against the working tree. Each has a pseudo path that never starts with `/`, checked by `isPseudoTab` (`stores/pseudoTabs.ts`). See [How commit tabs work](How-Commit-Tabs-Work.md#other-tabs-that-are-not-files) and [How the terminal works](How-the-Terminal-Works.md).
 
-`EditorTabs.svelte` draws the strip: the Diff tab (while a change is selected), then the tabs. `Workspace.svelte` renders one `FileView` per file tab and hides the inactive ones, so each keeps its state.
+`EditorTabs.svelte` draws the strip: the Diff tab (while a change is selected), then the tabs. `Workspace.svelte` renders one `FileView` per file tab and hides the inactive ones ([unused ones sleep](How-Unloading-Hidden-Tabs-Works.md)).
 
 Right under the strip, each `FileView` draws one slim bar, like JetBrains: the breadcrumbs and badges, then icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch. How it collapses when narrow, and why it replaced two rows, is in [How the path bar works](How-the-Path-Bar-Works.md).
 

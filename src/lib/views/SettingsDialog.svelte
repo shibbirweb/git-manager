@@ -57,6 +57,7 @@
   import KeyboardShortcuts from "./settings/KeyboardShortcuts.svelte";
   import MemoryFlag from "./settings/MemoryFlag.svelte";
   import { CARET_EXTRA_ROWS, EDITOR_FEATURE_ROWS, SAVE_CLEANUP_ROWS } from "./settings/settingsRows";
+  import { UNLOAD_TAB_MINUTES } from "$lib/stores/tabSleep";
   import { matchingEntries, searchWords, textMatches } from "./settings/settingsSearch";
   import { clearSettingsMatches, showSettingsMatches } from "./settings/settingsHighlight";
   import { commandSpecs, currentPlatform } from "$lib/commands/commandRuntime";
@@ -1321,6 +1322,42 @@
               />
             </div>
           {/if}
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Unload hidden tabs</span>
+              <span class="hint">
+                A file tab you have not looked at for a while gives its editor back, about 4 MB each. The tab stays, and
+                opening it again goes back to the same place, but its undo history starts over. Tabs with unsaved changes
+                are never unloaded.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.unloadHiddenTabs}
+              onchange={(event) => set("unloadHiddenTabs", event.currentTarget.checked)}
+            />
+          </label>
+          {#if settings.unloadHiddenTabs}
+            <div class="row sub-row">
+              <div class="label">
+                <span>Unload after</span>
+                <span class="hint">How long a tab stays out of sight before it is unloaded.</span>
+              </div>
+              <div class="segmented" role="radiogroup" aria-label="Unload after">
+                {#each UNLOAD_TAB_MINUTES as minutes (minutes)}
+                  <button
+                    role="radio"
+                    aria-checked={settings.unloadHiddenTabsMinutes === minutes}
+                    class:on={settings.unloadHiddenTabsMinutes === minutes}
+                    onclick={() => set("unloadHiddenTabsMinutes", minutes)}
+                  >
+                    {minutes} min
+                  </button>
+                {/each}
+              </div>
+            </div>
+          {/if}
           <h4 class="group-title">Saving</h4>
           <div class="row">
             <div class="label">
@@ -2076,6 +2113,23 @@
               onchange={(event) => set("terminalGpuAcceleration", event.currentTarget.checked)}
             />
           </label>
+          {#if settings.terminalGpuAcceleration}
+            <label class="row toggle-row sub-row">
+              <div class="label">
+                <span>Free GPU memory while hidden</span>
+                <span class="hint">
+                  A terminal out of sight for 30 seconds gives its GPU drawing back, about 70 MB for the first terminal. It
+                  draws with the GPU again as soon as it shows. The terminal and its output keep running.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                class="switch"
+                checked={settings.terminalFreeGpuWhenHidden}
+                onchange={(event) => set("terminalFreeGpuWhenHidden", event.currentTarget.checked)}
+              />
+            </label>
+          {/if}
           <label class="row toggle-row">
             <div class="label">
               <span>Unicode 11 widths</span>

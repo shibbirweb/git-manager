@@ -27,6 +27,7 @@
   import { isWorkspaceFile, repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { sessionSteps } from "$lib/stores/settingsData";
+  import { TAB_SLEEP_CHECK_MS } from "$lib/stores/tabSleep";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import type { LaunchMode } from "$lib/types";
   import ContextMenuHost from "$lib/ui/ContextMenuHost.svelte";
@@ -170,6 +171,16 @@
   // And the cursor settings.
   $effect(() => {
     setEditorCursor(cursorOptions(settings));
+  });
+
+  // And Unload hidden tabs: file tabs out of sight for a while give their editors back.
+  $effect(() => {
+    if (!settings.unloadHiddenTabs) {
+      return;
+    }
+    const delayMs = settings.unloadHiddenTabsMinutes * 60_000;
+    const timer = setInterval(() => repoStore.sleepHiddenTabs(delayMs), TAB_SLEEP_CHECK_MS);
+    return () => clearInterval(timer);
   });
 
   // And syntax highlighting: off, editors drop their grammar and syntax tree.

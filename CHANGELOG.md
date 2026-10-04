@@ -13,6 +13,9 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Clear Cache: a brush button right of Memory in the status bar, and View > Clear Cache, restart the window's interface in a fresh WebKit process and give back all the memory it holds (measured: 328 MB with every file closed after a Markdown session, 127 MB after). The screen blinks once and the folder and tabs come back; it waits for unsaved files and running git operations, and asks first when terminals would close.
+- Unload hidden tabs in Settings > Editor (on by default): a file tab you have not looked at for 15 minutes (or 5, 30, 60) frees its editor, about 4 MB each. The tab stays in the strip and opens again at the same line; tabs with unsaved changes are never unloaded. Undo history of an unloaded tab starts over.
+- Free GPU memory while hidden in Settings > Terminal (on by default): a terminal out of sight for 30 seconds, for example with the panel closed, gives back the GPU memory of its drawing (about 70 MB for the first terminal) and takes it again when it shows. The shell keeps running.
 - Syntax highlighting switch in Settings > Editor (on by default). Off, code in editors, diffs, the merge tool and Markdown code blocks shows as plain text and no language grammar is loaded, which saves about 35 MB. Toggle Comment still works; fold arrows and bracket pair colors need highlighting, and sticky scroll follows the indentation instead.
 - Search in Settings: type in the field at the top left of the Settings dialog to keep only the sections with a match, and the open section shows only the matching settings with the matched words highlighted. Words match the start of a setting's words, other common names work too (for example "ruler" or "autosave"), and matching keyboard shortcuts filter the Keyboard Shortcuts list. Esc clears the search, then closes Settings.
 - Single tab title in Settings > Editor (on by default): with only one tab open, the tab strip shows the file's name in the middle instead of a lone tab. Open a second file and the tabs come back.
@@ -143,6 +146,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- Closing Markdown files with mermaid diagrams left the diagram library in memory until the app quit. Diagrams are now drawn in a hidden frame that goes away with the library and its cache 3 seconds after the last document with diagrams closes (after closing four such files: 264 MB instead of 342 MB, median of three runs).
 - The welcome screen fits short windows: the recent lists scroll inside the card instead of the card being cut off at the top and bottom.
 - The GPU acceleration and scrollback hints in Settings, Terminal gave wrong memory numbers ("a few MB" for GPU drawing); they now show measured ones: about 70 MB for the first GPU terminal, and about 2 KB per scrollback line.
 - The terminal's visual bell no longer keeps restarting its flash when a command prints binary data that rings it thousands of times.

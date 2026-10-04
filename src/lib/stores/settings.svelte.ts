@@ -186,6 +186,8 @@ class SettingsStore {
   recentFiles = $state(initialPreferences.recentFiles);
   reopenWindows = $state(initialPreferences.reopenWindows);
   tabLimit = $state(initialPreferences.tabLimit);
+  unloadHiddenTabs = $state(initialPreferences.unloadHiddenTabs);
+  unloadHiddenTabsMinutes = $state(initialPreferences.unloadHiddenTabsMinutes);
   splitEditor = $state(initialPreferences.splitEditor);
   wrapTabs = $state(initialPreferences.wrapTabs);
   singleTabTitle = $state(initialPreferences.singleTabTitle);
@@ -226,6 +228,7 @@ class SettingsStore {
   terminalFind = $state(initialPreferences.terminalFind);
   terminalFileLinks = $state(initialPreferences.terminalFileLinks);
   terminalGpuAcceleration = $state(initialPreferences.terminalGpuAcceleration);
+  terminalFreeGpuWhenHidden = $state(initialPreferences.terminalFreeGpuWhenHidden);
   terminalUnicode11 = $state(initialPreferences.terminalUnicode11);
   terminalOptionAsMeta = $state(initialPreferences.terminalOptionAsMeta);
   terminalVisualBell = $state(initialPreferences.terminalVisualBell);
@@ -427,6 +430,8 @@ class SettingsStore {
       recentFiles: this.recentFiles,
       reopenWindows: this.reopenWindows,
       tabLimit: this.tabLimit,
+      unloadHiddenTabs: this.unloadHiddenTabs,
+      unloadHiddenTabsMinutes: this.unloadHiddenTabsMinutes,
       splitEditor: this.splitEditor,
       wrapTabs: this.wrapTabs,
       singleTabTitle: this.singleTabTitle,
@@ -467,6 +472,7 @@ class SettingsStore {
       terminalFind: this.terminalFind,
       terminalFileLinks: this.terminalFileLinks,
       terminalGpuAcceleration: this.terminalGpuAcceleration,
+      terminalFreeGpuWhenHidden: this.terminalFreeGpuWhenHidden,
       terminalUnicode11: this.terminalUnicode11,
       terminalOptionAsMeta: this.terminalOptionAsMeta,
       terminalVisualBell: this.terminalVisualBell,
@@ -539,10 +545,15 @@ class SettingsStore {
     return cloneJson(value) as JsonObject;
   }
 
-  private flush(): void {
+  /** Writes both files now, for Clear Cache, which restarts the page right after. */
+  flushNow(): Promise<void> {
+    return this.flush();
+  }
+
+  private flush(): Promise<void> {
     clearTimeout(this.saveTimer);
     const writes = writableConfigs(this.loadErrors).map((configName) => this.writeChanges(configName));
-    Promise.all(writes)
+    return Promise.all(writes)
       .then(() => {
         this.saveFailed = false;
       })

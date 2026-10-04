@@ -38,7 +38,7 @@ import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
 import type { NodeView } from "@milkdown/kit/prose/view";
 import { $prose, $remark, $view, callCommand } from "@milkdown/kit/utils";
 import { classifyImage, type LinkContext } from "./links";
-import { renderMermaid } from "./mermaid";
+import { releaseMermaid, renderMermaid } from "./mermaid";
 import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
 import {
   applyEdit,
@@ -197,6 +197,7 @@ export class RichMarkdownEditor {
     clearTimeout(this.syncTimer);
     this.nearScreen?.disconnect();
     this.nearScreen = null;
+    releaseMermaid(this);
     void this.editor?.destroy();
     this.editor = null;
   }
@@ -431,7 +432,7 @@ export class RichMarkdownEditor {
       timer = setTimeout(() => {
         const text = latest;
         drawn = text;
-        void renderMermaid(text, this.options.isDark()).then((result) => {
+        void renderMermaid(this, text, this.options.isDark()).then((result) => {
           if (drawn !== text || !near) {
             return;
           }

@@ -237,6 +237,7 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["view.detectIndentation"] = { enabled: true, checked: inputs.detectIndentation ?? false };
   state["view.notifications"] = { enabled: true };
   state["view.doNotDisturb"] = { enabled: true, checked: inputs.doNotDisturb ?? false };
+  state["view.clearCache"] = { enabled: true };
   for (const [action, theme] of THEME_ITEMS) {
     state[action] = { enabled: true, checked: inputs.theme === theme };
   }

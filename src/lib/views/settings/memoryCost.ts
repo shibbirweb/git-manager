@@ -32,7 +32,8 @@ export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
   },
   tabLimit: {
     amount: "+4 MB per tab",
-    detail: "Every open file tab keeps its editor, about 4 MB each for an ordinary source file. A limit closes the oldest ones.",
+    detail:
+      "Every open file tab keeps its editor, about 4 MB each for an ordinary source file, until Unload hidden tabs frees it. A limit closes the oldest ones.",
   },
   markdownViewMode: {
     amount: "+35 to 140 MB",

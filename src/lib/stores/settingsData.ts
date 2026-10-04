@@ -7,6 +7,7 @@ import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
 import { AUTO_FETCH_INTERVAL_RANGE, DEFAULT_AUTO_FETCH_MINUTES } from "./autoFetchPlan";
 import { NO_TAB_LIMIT, pickTabLimit } from "./tabLimit";
+import { pickUnloadTabMinutes } from "./tabSleep";
 import { parseRecentFiles, type RecentFile } from "./recentFiles";
 import { parseTabSessions, type SavedTabSession } from "./tabSession";
 import type { ShortcutOverrides } from "../commands/registry";
@@ -307,6 +308,9 @@ export interface Preferences {
   reopenWindows: boolean;
   /** File tabs kept open: 0 no limit, 1 single tab, else the number (see tabLimit.ts). */
   tabLimit: number;
+  /** A file tab hidden for `unloadHiddenTabsMinutes`, without unsaved edits, gives its editor back. */
+  unloadHiddenTabs: boolean;
+  unloadHiddenTabsMinutes: number;
   /** Two editor groups side by side (Window > Split Right). */
   splitEditor: boolean;
   /** Tabs that do not fit wrap onto more rows instead of scrolling. */
@@ -379,6 +383,8 @@ export interface Preferences {
   terminalFileLinks: boolean;
   /** Draw with WebGL (xterm's GPU renderer), falling back to the DOM renderer. */
   terminalGpuAcceleration: boolean;
+  /** A terminal out of sight gives its WebGL renderer back, and takes it again when shown. */
+  terminalFreeGpuWhenHidden: boolean;
   /** Unicode 11 character widths, so emoji and wide characters line up. */
   terminalUnicode11: boolean;
   /** macOS: Option works as Meta (xterm's macOptionIsMeta) for word jumps and emacs keys. */
@@ -480,6 +486,8 @@ export const defaultPreferences: Preferences = {
   recentFiles: true,
   reopenWindows: true,
   tabLimit: NO_TAB_LIMIT,
+  unloadHiddenTabs: true,
+  unloadHiddenTabsMinutes: 15,
   splitEditor: true,
   wrapTabs: false,
   singleTabTitle: true,
@@ -520,6 +528,7 @@ export const defaultPreferences: Preferences = {
   terminalFind: true,
   terminalFileLinks: true,
   terminalGpuAcceleration: true,
+  terminalFreeGpuWhenHidden: true,
   terminalUnicode11: true,
   terminalOptionAsMeta: false,
   terminalVisualBell: true,
@@ -807,6 +816,8 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     recentFiles: pickBoolean(data.recentFiles, defaultPreferences.recentFiles),
     reopenWindows: pickBoolean(data.reopenWindows, defaultPreferences.reopenWindows),
     tabLimit: pickTabLimit(data.tabLimit),
+    unloadHiddenTabs: pickBoolean(data.unloadHiddenTabs, defaultPreferences.unloadHiddenTabs),
+    unloadHiddenTabsMinutes: pickUnloadTabMinutes(data.unloadHiddenTabsMinutes, defaultPreferences.unloadHiddenTabsMinutes),
     splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
     wrapTabs: pickBoolean(data.wrapTabs, defaultPreferences.wrapTabs),
     singleTabTitle: pickBoolean(data.singleTabTitle, defaultPreferences.singleTabTitle),
@@ -855,6 +866,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     terminalFind: pickBoolean(data.terminalFind, defaultPreferences.terminalFind),
     terminalFileLinks: pickBoolean(data.terminalFileLinks, defaultPreferences.terminalFileLinks),
     terminalGpuAcceleration: pickBoolean(data.terminalGpuAcceleration, defaultPreferences.terminalGpuAcceleration),
+    terminalFreeGpuWhenHidden: pickBoolean(data.terminalFreeGpuWhenHidden, defaultPreferences.terminalFreeGpuWhenHidden),
     terminalUnicode11: pickBoolean(data.terminalUnicode11, defaultPreferences.terminalUnicode11),
     terminalOptionAsMeta: pickBoolean(data.terminalOptionAsMeta, defaultPreferences.terminalOptionAsMeta),
     terminalVisualBell: pickBoolean(data.terminalVisualBell, defaultPreferences.terminalVisualBell),

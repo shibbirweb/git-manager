@@ -411,6 +411,8 @@ export const api = {
     invoke<void>("update_config", { configName, patch }),
   configDir: () => invoke<string>("config_dir"),
   memoryUsage: () => invoke<MemoryUsage>("memory_usage"),
+  /** Restarts this window's page in a new web content process (Clear Cache). */
+  clearCache: () => invoke<void>("clear_cache"),
   osInfo: () => invoke<OsInfo>("os_info"),
 
   // File explorer
