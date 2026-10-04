@@ -514,7 +514,7 @@ fn paths_outside_the_workspace_are_refused() {
     for (tool_name, arguments) in [
         ("read_file", json!({ "filePath": outside.file("secret.txt").ui() })),
         ("git_status", json!({ "repoPath": outside.path_string() })),
-        ("list_directory", json!({ "folderPath": "/" })),
+        ("list_directory", json!({ "folderPath": if cfg!(windows) { "C:/" } else { "/" } })),
     ] {
         let result = fixture.call(tool_name, arguments);
         assert_eq!(result["isError"], true, "{tool_name}");
@@ -741,7 +741,8 @@ fn the_cli_calls_tools_on_the_running_server() {
     assert_eq!(code, cli::EXIT_OK);
     assert_eq!(serde_json::from_str::<Value>(&out).unwrap()["commits"][0]["summary"], "hello from the cli");
 
-    let (code, _, err) = run_cli(dir, &["call", "git_status", "repoPath=/elsewhere"]);
+    let elsewhere = if cfg!(windows) { "repoPath=C:/elsewhere" } else { "repoPath=/elsewhere" };
+    let (code, _, err) = run_cli(dir, &["call", "git_status", elsewhere]);
     assert_eq!(code, cli::EXIT_TOOL_ERROR);
     assert!(err.contains(OUTSIDE), "{err}");
     let (code, _, err) = run_cli(dir, &["call", "no_such_tool"]);
@@ -874,6 +875,6 @@ fn the_cli_clones_into_the_given_or_current_folder() {
     let fixture = Fixture::with_states(false, true, HashMap::from([("clone_repository".to_string(), true)]));
     let (code, out, err) = run_cli(&fixture.config_dir, &["clone", &source.path_string(), "copy", "--into", &parent_path.ui()]);
     assert_eq!(code, cli::EXIT_OK, "{out}{err}");
-    assert!(out.contains(&format!("Cloned into {}", parent_path.join("copy").display())), "{out}");
+    assert!(out.contains(&format!("Cloned into {}", parent_path.join("copy").ui())), "{out}");
     assert!(parent_path.join("copy/a.txt").exists());
 }

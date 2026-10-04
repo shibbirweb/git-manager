@@ -106,3 +106,8 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 - Single instance: `tauri-plugin-single-instance` on Windows only (not for the merge tool);
   `on_second_launch` opens the folder or workspace file of a second start, or focuses the window showing it.
   Needs a manual check on Windows.
+- Fourth Windows CI run (`d275fca`): 602 pass, 8 fail, 4 ignored. Fixed: the MCP server closed
+  a refused connection with the body unread, and Windows reset it before the CLI read the answer
+  (`close_after_refusal`); tests: a `C:/` include path in git config, no `"` or newline in Windows file names and
+  shorter names (git's 260 character limit), `C:/` paths where a test needs an absolute path, and the memory
+  recorder test is macOS only.

@@ -362,7 +362,8 @@ mod tests {
         let (dir, repo_root, global, global_file) = bare_identity();
         let included = dir.file("identity.gitconfig");
         std::fs::write(&included, "[user]\n\tname = Included Name\n\temail = inc@example.com\n").unwrap();
-        std::fs::write(&global_file, format!("[include]\n\tpath = {}\n", included.display())).unwrap();
+        // "/" separators: a `\` in a git config value starts an escape.
+        std::fs::write(&global_file, format!("[include]\n\tpath = {}\n", included.ui())).unwrap();
         let identity = read_identity(Some(&repo_root), &global).unwrap();
         assert_eq!(identity.global.name.as_deref(), Some("Included Name"));
         assert!(identity.complete);

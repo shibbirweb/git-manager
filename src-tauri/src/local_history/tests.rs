@@ -298,7 +298,7 @@ fn bad_paths_and_ids_are_refused() {
         assert!(check_file_path(bad).is_err(), "{bad}");
         assert!(fixture.store.list(bad).is_err(), "{bad}");
     }
-    assert!(check_file_path("/a/b.txt").is_ok());
+    assert!(check_file_path(if cfg!(windows) { "C:/a/b.txt" } else { "/a/b.txt" }).is_ok());
     for bad in ["", "../x", "ABCDEF0123456789ABCDEF0123456789ABCDEF01", &"a".repeat(41)] {
         assert!(check_hash(bad).is_err(), "{bad}");
     }

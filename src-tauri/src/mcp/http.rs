@@ -3,7 +3,7 @@
 //! connections, close idle ones and leave no thread behind when it stops.
 
 use std::io::{ErrorKind, Read, Write};
-use std::net::{Ipv4Addr, SocketAddr, TcpListener, TcpStream};
+use std::net::{Ipv4Addr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::thread::JoinHandle;
@@ -24,6 +24,8 @@ const MAX_HEADERS: usize = 48;
 const POLL: Duration = Duration::from_millis(200);
 const IDLE_TIMEOUT: Duration = Duration::from_secs(60);
 const BODY_TIMEOUT: Duration = Duration::from_secs(30);
+/// How long a refused request may keep sending its body before the connection closes.
+const LINGER: Duration = Duration::from_secs(1);
 /// Requests from `git-manager cli` carry this header with the value "cli".
 pub const CLIENT_HEADER: &str = "x-git-manager-client";
 pub const CLI_OFF: &str = "The command line tool is turned off in Git Manager settings";
@@ -264,6 +266,23 @@ fn read_more(stream: &mut TcpStream, buffer: &mut Vec<u8>, chunk: &mut [u8]) -> 
     }
 }
 
+/// Closes after an answer to a request whose body was not read. Closing with unread data makes the
+/// system reset the connection (Windows always does), and the client can lose the answer. So the
+/// sending side is shut first, and the rest of the request is read and dropped for a short while.
+fn close_after_refusal(stream: &mut TcpStream) {
+    let _ = stream.shutdown(Shutdown::Write);
+    let mut chunk = [0u8; 8192];
+    let deadline = Instant::now() + LINGER;
+    while Instant::now() < deadline {
+        match stream.read(&mut chunk) {
+            Ok(0) => return,
+            Ok(_) => {}
+            Err(err) if matches!(err.kind(), ErrorKind::WouldBlock | ErrorKind::TimedOut | ErrorKind::Interrupted) => {}
+            Err(_) => return,
+        }
+    }
+}
+
 /// One keep-alive connection, one request at a time.
 fn serve_connection(mut stream: TcpStream, shared: &Shared, stop: &AtomicBool) {
     let _ = stream.set_read_timeout(Some(POLL));
@@ -280,6 +299,7 @@ fn serve_connection(mut stream: TcpStream, shared: &Shared, stop: &AtomicBool) {
             Ok(None) => {
                 if buffer.len() > MAX_HEAD_BYTES {
                     let _ = write_response(&mut stream, 431, &json!({ "error": "Request head too large" }), true, &[]);
+                    close_after_refusal(&mut stream);
                     return;
                 }
                 match read_more(&mut stream, &mut buffer, &mut chunk) {
@@ -292,12 +312,14 @@ fn serve_connection(mut stream: TcpStream, shared: &Shared, stop: &AtomicBool) {
             }
             Err(()) => {
                 let _ = write_response(&mut stream, 400, &json!({ "error": "Bad request" }), true, &[]);
+                close_after_refusal(&mut stream);
                 return;
             }
         };
         if let Some((status, message, _client)) = refusal(shared, &head) {
             let allow: &[(&str, &str)] = if status == 405 { &[("Allow", "POST")] } else { &[] };
             let _ = write_response(&mut stream, status, &json!({ "error": message }), true, allow);
+            close_after_refusal(&mut stream);
             return;
         }
         let client = if head.client.as_deref() == Some("cli") { McpClient::Cli } else { McpClient::Mcp };

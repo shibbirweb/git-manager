@@ -427,18 +427,22 @@ fn stage_unstage_and_discard_pass_any_number_of_paths_on_stdin() {
     let repo = TestRepo::new();
     repo.write("keep.txt", "keep\n");
     repo.commit_all("first");
-    // Long names so the list is far over ARG_MAX (1 MB on macOS) as arguments.
-    let padding = "p".repeat(200);
+    // Long names so the list is far over ARG_MAX (1 MB on macOS, 32 KB on Windows) as arguments.
+    // Shorter on Windows, where git refuses paths over 260 characters by default.
+    let padding = "p".repeat(if cfg!(windows) { 100 } else { 200 });
     let mut untracked: Vec<String> = (0..6000).map(|index| format!("many/{padding}-{index:05}.txt")).collect();
     for file_path in &untracked {
         repo.write(file_path, "x");
     }
     // Spaces, quotes and a newline reach git unchanged with NUL-separated pathspecs.
-    for odd in ["with space.txt", "quote\"d.txt", "new\nline.txt"] {
+    // Windows file names cannot hold `"` or a newline.
+    let odd_names: &[&str] = if cfg!(windows) { &["with space.txt", "it's.txt"] } else { &["with space.txt", "quote\"d.txt", "new\nline.txt"] };
+    for odd in odd_names {
         repo.write(odd, "odd");
         untracked.push(odd.to_string());
     }
-    assert!(untracked.iter().map(|file_path| file_path.len() + 1).sum::<usize>() > 1024 * 1024);
+    let arg_max = if cfg!(windows) { 32 * 1024 } else { 1024 * 1024 };
+    assert!(untracked.iter().map(|file_path| file_path.len() + 1).sum::<usize>() > arg_max);
 
     block_on(status::stage_files(repo.path_string(), untracked.clone())).unwrap();
     let staged = repo.git(&["diff", "--cached", "--name-only", "-z"]);
