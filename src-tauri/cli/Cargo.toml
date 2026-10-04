@@ -1,0 +1,29 @@
+[package]
+# The command line tool, apart from the app so Windows can ship it as a console program
+# (the app is a GUI program there, which has no console). The app runs it as `git-manager cli`.
+# Its version stays 0.0.0: the app's version lives in ../Cargo.toml (scripts/version.ts).
+name = "git-manager-cli"
+version = "0.0.0"
+description = "Command line client of Git Manager's MCP server"
+license = "MIT"
+edition = "2021"
+publish = false
+
+[lib]
+name = "git_manager_cli"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "3.4.2", default-features = false, features = ["native-tls-no-default"] }
+base64 = "0.22"
+dunce = "1.0.5"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Threading"] }
+
+[dev-dependencies]
+tempfile = "3.27.0"

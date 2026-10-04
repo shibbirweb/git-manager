@@ -779,6 +779,11 @@ fn the_cli_calls_tools_on_the_running_server() {
 }
 
 #[test]
+fn the_cli_asks_for_the_newest_protocol_the_server_speaks() {
+    assert_eq!(cli::PROTOCOL_VERSION, super::protocol::PROTOCOL_VERSIONS[0]);
+}
+
+#[test]
 fn the_cli_reports_a_switched_off_tool() {
     let fixture = Fixture::new(true, false);
     let (code, _, err) = run_cli(&fixture.config_dir, &["tools"]);

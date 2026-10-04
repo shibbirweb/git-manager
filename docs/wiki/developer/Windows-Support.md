@@ -19,6 +19,14 @@ On macOS and Linux, a cancellable git command (Clone, Fetch and others with a Ca
 
 On macOS, opening the app again brings the running copy forward. Windows starts a new process for every launch, and two copies would share `state.json` and the MCP port. So on Windows, `lib.rs` registers `tauri-plugin-single-instance` first. A second start hands its arguments to the running app and exits. `commands::window::on_second_launch` then opens the folder or workspace file it names (`windows::open_for_arguments`, resolved against the folder it was started in), or focuses the window that shows it already. With nothing to open, the last focused window comes forward. The merge tool never registers the plugin, because `git mergetool` starts it next to the running app on purpose, and `git-manager cli` exits before the app is built.
 
+## The command line tool
+
+A Windows GUI program has no console: `git-manager cli` would print nothing, and cmd and PowerShell would not wait for it or see its exit code. So the tool is its own crate, `src-tauri/cli` (`git-manager-cli`), in a Cargo workspace with the app. The app uses it as a library (`mcp::cli`), so nothing changes on macOS. Its `src/main.rs` builds `git-manager-cli.exe`, a console program: `git-manager-cli cli <command>` runs the tool, and anything else (a folder, nothing) starts the app next to it, which hands a folder to the copy already running.
+
+The crate holds what the tool and the app share: the config folder (`home`), the `mcp.json` format (`server_file`), the client header and the protocol version (a test in the app checks it). It has no build script, which matters: `tauri-build` copies a bundled program while the app compiles, so the program must exist before that.
+
+`build-windows` in `release.yml` therefore builds `git-manager-cli` first, copies it to `src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe` and passes `--config src-tauri/tauri.windows-release.conf.json`, which lists it in `bundle.externalBin`. The installer puts it next to the app. Install command line tool then writes `git-manager.cmd` into `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on every user's `PATH`, and the `.cmd` runs the console program with all its arguments. It never touches a file that is not ours (`SHIM_MARK`).
+
 ## Paths
 
 Absolute paths always use `/`, on Windows too (`C:/Users/me/repo`), so the page's path helpers work the same everywhere. On Windows, `canonicalize` returns `\\?\C:\...`, which git cannot use, and `Path::join` adds `\`. So:
@@ -43,7 +51,6 @@ The terminal, the Scripts panel and the command line tool already have Windows p
 | `src-tauri/src/node_versions.rs` | nvm-windows (`NVM_HOME` or `%APPDATA%\nvm`), fnm, Volta and Scoop, with `node.exe` right in each version folder. |
 | `src-tauri/src/run_process.rs` | No login shell is read (Explorer gives apps the full environment). Programs are found with `PATHEXT`, and `.cmd` files such as `npm.cmd` start through `cmd.exe /d /c`. |
 | `src/lib/terminal/keys.ts`, `src/lib/views/files/reveal.ts` | Ctrl+Shift+C and Ctrl+Shift+V copy and paste; "Reveal in File Explorer". |
-| `src-tauri/src/mcp/cli.rs`, `install.rs` | `git-manager cli` prints nothing in a release build, which has no console; installing the command link is Unix only. |
 
 See [How the terminal works](How-the-Terminal-Works.md) and [How scripts work](How-Scripts-Work.md).
 
@@ -56,8 +63,4 @@ See [How the terminal works](How-the-Terminal-Works.md) and [How scripts work](H
 - The test sandbox (`test_support.rs`) takes its home folder from `real_path`, and `path_string` and `file_string` return paths the way the page sends them (`to_ui`). The first Windows CI run failed in most git tests because the sandbox used `canonicalize`: git cannot read its config files at a `\\?\` path.
 - `test_support::UiText` (`path.ui()`) gives a path the way the app returns it, for expected values. Tests that need a Unix-only tool or a missing Windows feature are marked `#[cfg_attr(windows, ignore = "why")]`, so they still show in the output.
 
-## Bugs we fixed
-
-**Local History refused every file on Windows.** `check_file_path` wanted the path to start with `/`, so a `C:/...` path was "invalid" and no snapshot was ever written. The Windows CI run showed it. Now `paths::after_root` accepts `/` or, on Windows, a drive root, and the rest of the check is unchanged, so `.` and `..` parts are still refused.
-
-**A rooted path could leave the work tree on Windows.** `safe_join` and the submodule path check refused absolute paths with `is_absolute()`. On Windows `\etc\passwd` has a root but no drive, so it is not "absolute", and joining it onto the repository gives a path at the drive root. Both checks now also refuse `Component::RootDir`, like the MCP path check already did.
+The bugs Windows CI found are on [Windows Bugs We Fixed](Windows-Bugs-We-Fixed.md).

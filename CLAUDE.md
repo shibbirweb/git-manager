@@ -11,8 +11,8 @@ bun install                    # dependencies
 bun tauri dev                  # run the app (hot reload); add -- -- /path/to/folder to open a folder
 bun run check                  # svelte-check + TypeScript: must end with 0 errors and 0 warnings
 bun run test                   # Vitest (frontend unit tests)
-cd src-tauri && cargo test     # Rust unit and git integration tests
-cd src-tauri && cargo clippy --all-targets   # must report no warnings
+cd src-tauri && cargo test --workspace     # Rust unit and git integration tests (app and cli/)
+cd src-tauri && cargo clippy --workspace --all-targets   # must report no warnings
 bun tauri build --bundles app  # release .app in src-tauri/target/release/bundle/macos
 ```
 
@@ -49,7 +49,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 
 - Put non-trivial logic in pure `.ts` modules next to their component and cover them with `*.test.ts` (Vitest). Examples: `merge/model.ts`, `editor/lineDiff.ts`, `stores/tabs.ts`, `stores/navHistory.ts`.
 - Rust tests use real temporary repositories via `src-tauri/src/test_support.rs` (isolated from the user's git config). Add tests with every backend change.
-- Before reporting work as done: `bun run check`, `bun run test`, `cargo test`, `cargo clippy --all-targets` all clean. Say plainly if something could not be verified (for example UI behavior that needs a visual check).
+- Before reporting work as done: `bun run check`, `bun run test`, `cargo test --workspace`, `cargo clippy --workspace --all-targets` all clean. Say plainly if something could not be verified (for example UI behavior that needs a visual check).
 
 ## Git and PRs
 

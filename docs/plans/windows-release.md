@@ -115,3 +115,9 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   with the single instance code compiled for the first time. `continue-on-error` is dropped: the job is a gate now.
 - Cancel on Windows: `git/cancel.rs` puts git in a Job Object and Cancel ends the job, so hooks
   and helpers stop too; the two cancel tests run on Windows again. Compiles only on Windows: check the CI run.
+- CI split (`c7e4cee`): `windows-frontend` (1.1 min) and `windows-rust` (11.7 min) run side by side.
+- Command line tool: its own crate `src-tauri/cli` (`git-manager-cli`) in a Cargo workspace; the app
+  uses it as `mcp::cli`. Its console program `git-manager-cli.exe` runs `cli ...` or starts the app.
+  `build-windows` builds it first and bundles it (`tauri.windows-release.conf.json`, `bundle.externalBin`).
+  Install command line tool writes `git-manager.cmd` into `%LOCALAPPDATA%\Microsoft\WindowsApps`. CI and the
+  docs use `cargo test --workspace` and `cargo clippy --workspace`. Needs a manual check with a real installer.

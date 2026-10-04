@@ -77,10 +77,10 @@ jobs:
           bun run build
 
       - name: Tests
-        run: cargo test --locked
+        run: cargo test --locked --workspace
 
       - name: Clippy
-        run: cargo clippy --locked --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
 
   # Windows runs as two jobs, like macOS, so the frontend checks and the slower Rust build run side by side.
   windows-frontend:
@@ -148,9 +148,9 @@ jobs:
       # Clippy runs even when a test failed, so one run lists every Windows failure.
       - name: Tests
         working-directory: src-tauri
-        run: cargo test --locked --no-fail-fast
+        run: cargo test --locked --workspace --no-fail-fast
 
       - name: Clippy
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         working-directory: src-tauri
-        run: cargo clippy --locked --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings

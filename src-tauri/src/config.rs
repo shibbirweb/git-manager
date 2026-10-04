@@ -7,7 +7,6 @@
 //! never writes back another window's older values. A file that does not parse is never
 //! written by a patch: the user may be fixing it by hand.
 
-use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
@@ -16,20 +15,13 @@ use serde_json::{Map, Value};
 
 use crate::error::{AppError, AppResult};
 
-pub const DIR_NAME: &str = ".gitmanager";
+pub use git_manager_cli::home::DIR_NAME;
 
 /// Config files the frontend may read and write, by logical name.
 const FILES: [(&str, &str); 2] = [("settings", "settings.json"), ("state", "state.json")];
 
 pub fn home_dir() -> AppResult<PathBuf> {
-    home_from(cfg!(windows), |name| std::env::var_os(name)).ok_or_else(|| AppError::invalid("Could not find your home folder"))
-}
-
-/// Windows reads USERPROFILE first: HOME is usually unset there, and when Git Bash sets it, an app
-/// started from Explorer does not see it, so the app and the command line tool would disagree.
-fn home_from(windows: bool, lookup: impl Fn(&str) -> Option<OsString>) -> Option<PathBuf> {
-    let names: &[&str] = if windows { &["USERPROFILE", "HOME"] } else { &["HOME"] };
-    names.iter().filter_map(|name| lookup(name)).find(|home| !home.is_empty()).map(PathBuf::from)
+    git_manager_cli::home::home_dir().map_err(AppError::invalid)
 }
 
 pub fn config_dir_in(home: &Path) -> PathBuf {
@@ -174,27 +166,6 @@ fn save_unlocked(dir: &Path, config_name: &str, value: &Value) -> AppResult<()> 
 mod tests {
     use super::*;
     use serde_json::json;
-
-    fn lookup(pairs: &[(&str, &str)]) -> impl Fn(&str) -> Option<OsString> {
-        let pairs: Vec<(String, String)> = pairs.iter().map(|(name, value)| (name.to_string(), value.to_string())).collect();
-        move |name| pairs.iter().find(|(key, _)| key == name).map(|(_, value)| OsString::from(value))
-    }
-
-    #[test]
-    fn the_home_folder_comes_from_home_on_unix() {
-        let env = lookup(&[("HOME", "/Users/someone"), ("USERPROFILE", "/elsewhere")]);
-        assert_eq!(home_from(false, &env), Some(PathBuf::from("/Users/someone")));
-        assert_eq!(home_from(false, lookup(&[("USERPROFILE", "/elsewhere")])), None);
-        assert_eq!(home_from(false, lookup(&[("HOME", "")])), None);
-    }
-
-    #[test]
-    fn windows_prefers_userprofile_and_falls_back_to_home() {
-        let both = lookup(&[("HOME", "C:/msys/home"), ("USERPROFILE", r"C:\Users\someone")]);
-        assert_eq!(home_from(true, &both), Some(PathBuf::from(r"C:\Users\someone")));
-        assert_eq!(home_from(true, lookup(&[("HOME", r"D:\home"), ("USERPROFILE", "")])), Some(PathBuf::from(r"D:\home")));
-        assert_eq!(home_from(true, lookup(&[])), None);
-    }
 
     #[test]
     fn missing_files_load_as_none_and_the_folder_is_created_on_save() {

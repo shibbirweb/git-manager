@@ -4,7 +4,8 @@
 
 mod activity;
 mod bridge;
-pub mod cli;
+/// The command line tool lives in its own crate (src-tauri/cli); `mcp::cli` keeps its old path.
+pub use git_manager_cli as cli;
 pub mod dto;
 mod host;
 mod http;

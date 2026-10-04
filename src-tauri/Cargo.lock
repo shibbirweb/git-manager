@@ -1425,6 +1425,7 @@ dependencies = [
  "dunce",
  "flate2",
  "getrandom 0.3.4",
+ "git-manager-cli",
  "git2",
  "grep-matcher",
  "grep-regex",
@@ -1449,6 +1450,20 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "trash",
+ "ureq",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "git-manager-cli"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "dunce",
+ "libc",
+ "serde",
+ "serde_json",
+ "tempfile",
  "ureq",
  "windows-sys 0.61.2",
 ]

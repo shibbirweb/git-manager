@@ -1,8 +1,12 @@
-//! `git-manager cli ...`: a command line MCP client of the running app's server, in the same
-//! binary. It finds the server through `~/.gitmanager/mcp.json` and talks only to 127.0.0.1.
+//! The command line tool: a client of the running app's MCP server. It finds the server through
+//! `~/.gitmanager/mcp.json` and talks only to 127.0.0.1.
 //!
-//! Windows release builds use the "windows" subsystem, so a run from a terminal has no console
-//! attached and prints nothing there; the tool is meant for macOS and Linux for now.
+//! On macOS and Linux the app runs it as `git-manager cli ...`. On Windows the app is a GUI
+//! program with no console, so the installer also ships `git-manager-cli.exe`, a console program
+//! built from this crate (src/main.rs), which runs `cli ...` itself and starts the app otherwise.
+
+pub mod home;
+pub mod server_file;
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -11,9 +15,12 @@ use std::time::Duration;
 use base64::Engine;
 use serde_json::{json, Map, Value};
 
-use super::http::CLIENT_HEADER;
-use super::token;
-use crate::config;
+use server_file as token;
+
+/// The header that tells the server a request comes from this tool, not an AI harness.
+pub const CLIENT_HEADER: &str = "x-git-manager-client";
+/// The MCP protocol version this tool asks for (the newest the server speaks; a test in the app checks it).
+pub const PROTOCOL_VERSION: &str = "2025-06-18";
 
 pub const EXIT_OK: i32 = 0;
 pub const EXIT_TOOL_ERROR: i32 = 1;
@@ -230,7 +237,7 @@ pub fn clone_arguments(url: &str, folder_name: Option<&str>, into: Option<&Path>
     };
     let mut arguments = Map::new();
     arguments.insert("url".to_string(), json!(url));
-    arguments.insert("parentPath".to_string(), json!(crate::paths::to_ui(&parent)));
+    arguments.insert("parentPath".to_string(), json!(home::to_ui(&parent)));
     if let Some(folder_name) = folder_name {
         arguments.insert("folderName".to_string(), json!(folder_name));
     }
@@ -389,7 +396,24 @@ fn process_alive(pid: u32) -> bool {
     result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
 }
 
-#[cfg(not(unix))]
+#[cfg(windows)]
+fn process_alive(pid: u32) -> bool {
+    use windows_sys::Win32::Foundation::{CloseHandle, STILL_ACTIVE};
+    use windows_sys::Win32::System::Threading::{GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION};
+    // SAFETY: plain Win32 calls on a handle this function opens and closes.
+    unsafe {
+        let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+        if process.is_null() {
+            return false;
+        }
+        let mut code = 0u32;
+        let running = GetExitCodeProcess(process, &mut code) != 0 && code == STILL_ACTIVE as u32;
+        CloseHandle(process);
+        running
+    }
+}
+
+#[cfg(not(any(unix, windows)))]
 fn process_alive(_pid: u32) -> bool {
     true
 }
@@ -463,7 +487,7 @@ impl Client {
         self.request(
             "initialize",
             json!({
-                "protocolVersion": super::protocol::PROTOCOL_VERSIONS[0],
+                "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {},
                 "clientInfo": { "name": "git-manager-cli", "version": env!("CARGO_PKG_VERSION") },
             }),
@@ -667,10 +691,39 @@ pub fn run_with(args: &[String], config_dir: &Path, out: &mut dyn Write, err: &m
     execute(command, config_dir, out, err).unwrap_or(EXIT_UNAVAILABLE)
 }
 
+/// The app's file names next to the console program: Tauri names the Windows app after the
+/// Cargo binary, and after the product name in some setups.
+const APP_EXE_NAMES: [&str; 3] = ["git-manager.exe", "Git Manager.exe", "git-manager"];
+
+/// The app's program in the folder of `exe` (the installer puts both there).
+pub fn app_next_to(exe: &Path) -> Option<PathBuf> {
+    let folder = exe.parent()?;
+    APP_EXE_NAMES.iter().map(|name| folder.join(name)).find(|candidate| candidate.is_file())
+}
+
+/// The console program (src/main.rs): `cli ...` runs the tool here, anything else starts the app,
+/// which opens the folder it is given or hands it to the copy already running.
+pub fn console_main(args: &[String]) -> i32 {
+    if args.first().map(String::as_str) == Some("cli") {
+        return run(&args[1..]);
+    }
+    let Some(app) = std::env::current_exe().ok().and_then(|exe| app_next_to(&exe)) else {
+        eprintln!("Could not find Git Manager next to this program. Reinstall Git Manager.");
+        return EXIT_UNAVAILABLE;
+    };
+    match std::process::Command::new(&app).args(args).spawn() {
+        Ok(_) => EXIT_OK,
+        Err(err) => {
+            eprintln!("Could not start Git Manager: {err}");
+            EXIT_UNAVAILABLE
+        }
+    }
+}
+
 /// `git-manager cli ...` from main: no window, the process exits with the code.
 pub fn run(args: &[String]) -> i32 {
-    let config_dir = match config::home_dir() {
-        Ok(home) => config::config_dir_in(&home),
+    let config_dir = match home::home_dir() {
+        Ok(home) => home::config_dir_in(&home),
         Err(message) => {
             eprintln!("{message}");
             return EXIT_UNAVAILABLE;
@@ -678,4 +731,28 @@ pub fn run(args: &[String]) -> i32 {
     };
     let (mut out, mut err) = (std::io::stdout(), std::io::stderr());
     run_with(args, &config_dir, &mut out, &mut err)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_app_is_found_next_to_the_console_program() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let console = dir.path().join("git-manager-cli.exe");
+        assert_eq!(app_next_to(&console), None);
+        std::fs::write(dir.path().join("Git Manager.exe"), "").unwrap();
+        assert_eq!(app_next_to(&console), Some(dir.path().join("Git Manager.exe")));
+        std::fs::write(dir.path().join("git-manager.exe"), "").unwrap();
+        assert_eq!(app_next_to(&console), Some(dir.path().join("git-manager.exe")));
+    }
+
+    #[test]
+    fn a_bad_command_line_is_a_usage_error() {
+        let (mut out, mut err) = (Vec::new(), Vec::new());
+        let args = vec!["no-such-command".to_string()];
+        assert_eq!(run_with(&args, Path::new("/nonexistent"), &mut out, &mut err), EXIT_UNAVAILABLE);
+        assert!(String::from_utf8(err).unwrap().contains("Usage: git-manager cli"));
+    }
 }

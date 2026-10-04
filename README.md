@@ -80,7 +80,7 @@ bun install          # frontend dependencies
 bun tauri dev        # run the app with hot reload
 bun run check        # svelte-check / TypeScript
 bun run test         # frontend unit tests (Vitest)
-cd src-tauri && cargo test   # Rust unit and git integration tests
+cd src-tauri && cargo test --workspace   # Rust unit and git integration tests
 bun tauri build      # release .app and .dmg in src-tauri/target/release/bundle
 ```
 

@@ -186,11 +186,22 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # tauri.windows.conf.json makes this an NSIS installer (x64); files are uploaded to the release that started this.
+      # The app is a GUI program on Windows, without a console, so the command line tool ships as its own
+      # console program next to it. Tauri bundles it from binaries/ with the target in the name.
+      - name: Build the command line program
+        shell: bash
+        run: |
+          cargo build --release --locked -p git-manager-cli --manifest-path src-tauri/Cargo.toml
+          mkdir -p src-tauri/binaries
+          cp src-tauri/target/release/git-manager-cli.exe src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe
+
+      # tauri.windows.conf.json makes this an NSIS installer (x64) and tauri.windows-release.conf.json adds the
+      # command line program; files are uploaded to the release that started this.
       - name: Build and upload
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tauriScript: bun run tauri
+          args: --config src-tauri/tauri.windows-release.conf.json
           tagName: ${{ needs.version.outputs.tag }}

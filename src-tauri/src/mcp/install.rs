@@ -1,15 +1,30 @@
-//! Puts the command line tool on the PATH: a `git-manager` link in `~/.local/bin` to the
-//! running binary. Never sudo, never /usr/local.
+//! Puts the command line tool on the PATH, never with sudo and never in /usr/local.
+//! macOS and Linux: a `git-manager` link in `~/.local/bin` to the running binary.
+//! Windows: a `git-manager.cmd` in `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on
+//! every user's PATH, running the console program `git-manager-cli.exe` next to the app (the
+//! app itself is a GUI program there, without a console).
 
 use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use crate::error::{AppError, AppResult};
 
+#[cfg(not(windows))]
 pub const LINK_NAME: &str = "git-manager";
+#[cfg(windows)]
+pub const LINK_NAME: &str = "git-manager.cmd";
+/// The console program the Windows installer puts next to the app (src-tauri/cli).
+pub const CONSOLE_NAME: &str = "git-manager-cli.exe";
+/// The line that marks a `git-manager.cmd` as ours.
+const SHIM_MARK: &str = "rem Git Manager command line tool";
 
+/// Windows: the default `%LOCALAPPDATA%` below the home folder, so tests can use a temporary home.
 pub fn bin_dir_in(home: &Path) -> PathBuf {
-    home.join(".local").join("bin")
+    if cfg!(windows) {
+        home.join("AppData").join("Local").join("Microsoft").join("WindowsApps")
+    } else {
+        home.join(".local").join("bin")
+    }
 }
 
 pub fn link_in(home: &Path) -> PathBuf {
@@ -17,6 +32,7 @@ pub fn link_in(home: &Path) -> PathBuf {
 }
 
 /// A link we made: it points at this binary, or at a binary of the same name (an older copy of the app).
+#[cfg(not(windows))]
 fn is_ours(link: &Path, exe: &Path) -> bool {
     let Ok(target) = std::fs::read_link(link) else {
         return false;
@@ -24,16 +40,72 @@ fn is_ours(link: &Path, exe: &Path) -> bool {
     target == exe || (target.file_name().is_some() && target.file_name() == exe.file_name())
 }
 
+#[cfg(windows)]
+fn is_ours(link: &Path, _exe: &Path) -> bool {
+    is_our_shim(link)
+}
+
 pub fn installed_link(home: &Path, exe: &Path) -> Option<PathBuf> {
     let link = link_in(home);
     is_ours(&link, exe).then_some(link)
 }
 
-/// `~/.local/bin` is one of the folders in `path_var`.
+/// The tool's folder is one of the folders in `path_var`.
 pub fn on_path(home: &Path, path_var: &str) -> bool {
     let bin_dir = bin_dir_in(home);
     let canonical = bin_dir.real_path().ok();
     std::env::split_paths(path_var).any(|entry| entry == bin_dir || (canonical.is_some() && entry.real_path().ok() == canonical))
+}
+
+/// The `.cmd` file: runs the console program with every argument, `cli ...` or a folder to open.
+fn shim_text(console: &Path) -> String {
+    format!("@echo off\r\n{SHIM_MARK}\r\n\"{}\" %*\r\n", console.display())
+}
+
+fn is_our_shim(shim: &Path) -> bool {
+    std::fs::read_to_string(shim).is_ok_and(|text| text.lines().any(|line| line.trim() == SHIM_MARK))
+}
+
+/// Windows' install: `exe` is the app; the console program must sit next to it.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn install_shim(shim: &Path, exe: &Path) -> AppResult<PathBuf> {
+    let console = exe.with_file_name(CONSOLE_NAME);
+    if !console.is_file() {
+        return Err(AppError::invalid(format!(
+            "{} is missing next to Git Manager. It comes with the installer: reinstall Git Manager.",
+            console.display()
+        )));
+    }
+    if shim.exists() && !is_our_shim(shim) {
+        return Err(AppError::invalid(format!("{} already exists and is not Git Manager's. Remove it first.", shim.display())));
+    }
+    if let Some(folder) = shim.parent() {
+        std::fs::create_dir_all(folder)?;
+    }
+    std::fs::write(shim, shim_text(&console))?;
+    Ok(shim.to_path_buf())
+}
+
+#[cfg_attr(not(windows), allow(dead_code))]
+fn uninstall_shim(shim: &Path) -> AppResult<()> {
+    if !shim.exists() {
+        return Ok(());
+    }
+    if !is_our_shim(shim) {
+        return Err(AppError::invalid(format!("{} is not Git Manager's, so it was left alone.", shim.display())));
+    }
+    std::fs::remove_file(shim)?;
+    Ok(())
+}
+
+#[cfg(windows)]
+pub fn install_in(home: &Path, exe: &Path) -> AppResult<PathBuf> {
+    install_shim(&link_in(home), exe)
+}
+
+#[cfg(windows)]
+pub fn uninstall_in(home: &Path, _exe: &Path) -> AppResult<()> {
+    uninstall_shim(&link_in(home))
 }
 
 #[cfg(unix)]
@@ -66,20 +138,42 @@ pub fn uninstall_in(home: &Path, exe: &Path) -> AppResult<()> {
     Ok(())
 }
 
-#[cfg(not(unix))]
-pub fn install_in(_home: &Path, _exe: &Path) -> AppResult<PathBuf> {
-    Err(AppError::invalid("Installing the command line tool is not supported on this platform yet"))
-}
-
-#[cfg(not(unix))]
-pub fn uninstall_in(_home: &Path, _exe: &Path) -> AppResult<()> {
-    Err(AppError::invalid("Installing the command line tool is not supported on this platform yet"))
-}
 
 pub fn current_exe() -> PathBuf {
     std::env::current_exe()
         .and_then(|exe| exe.real_path())
         .unwrap_or_else(|_| PathBuf::from(LINK_NAME))
+}
+
+#[cfg(test)]
+mod shim_tests {
+    use super::*;
+
+    #[test]
+    fn the_windows_shim_runs_the_console_program_and_is_removed_only_when_ours() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let exe = dir.path().join("app/git-manager.exe");
+        std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
+        std::fs::write(&exe, "app").unwrap();
+        let shim = dir.path().join("WindowsApps/git-manager.cmd");
+
+        assert!(install_shim(&shim, &exe).unwrap_err().to_string().contains(CONSOLE_NAME), "the console program is missing");
+        std::fs::write(exe.with_file_name(CONSOLE_NAME), "console").unwrap();
+        install_shim(&shim, &exe).unwrap();
+        let text = std::fs::read_to_string(&shim).unwrap();
+        assert!(text.contains(&format!("\"{}\" %*", exe.with_file_name(CONSOLE_NAME).display())), "{text}");
+        assert!(is_our_shim(&shim));
+        install_shim(&shim, &exe).unwrap();
+
+        uninstall_shim(&shim).unwrap();
+        assert!(!shim.exists());
+        uninstall_shim(&shim).unwrap();
+
+        std::fs::write(&shim, "@echo off\r\nsomeone else\r\n").unwrap();
+        assert!(install_shim(&shim, &exe).is_err());
+        assert!(uninstall_shim(&shim).is_err());
+        assert!(shim.is_file(), "a file that is not ours is never removed");
+    }
 }
 
 #[cfg(all(test, unix))]

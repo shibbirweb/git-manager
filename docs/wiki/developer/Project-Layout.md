@@ -79,9 +79,12 @@ Pure logic lives in plain `.ts` files next to the component that uses it, with a
 
 ```text
 src-tauri/
-├── Cargo.toml              the version (source of truth), dependencies, release profile
+├── Cargo.toml              the version (source of truth), dependencies, release profile, workspace
 ├── Cargo.lock              locked Rust dependencies (always committed)
+├── cli/                    git-manager-cli: the command line tool, and Windows' console program
 ├── tauri.conf.json         window, CSP, bundle settings (no version of its own)
+├── tauri.windows.conf.json the Windows installer (NSIS)
+├── tauri.windows-release.conf.json   adds the console program to Windows release builds
 ├── capabilities/default.json   what the main window may call
 ├── build.rs                tauri_build::build()
 ├── .gitignore              keeps target/ and gen/schemas out of git
@@ -123,7 +126,7 @@ src-tauri/
     ├── git_console.rs      the Git Console's record of git commands
     ├── shelf/              shelved changes as patches in the git folder
     ├── github/             GitHub account, REST client, keychain, gh CLI
-    ├── mcp/                MCP server, its tools, the UI bridge and the cli client
+    ├── mcp/                MCP server, its tools and the UI bridge (mcp::cli is the cli/ crate)
     ├── memory_log.rs       debug memory log in ~/.gitmanager/logs
     ├── images.rs           local images for the Markdown preview as data URLs
     ├── media.rs            image and PDF types and size limits for the previews
