@@ -42,10 +42,10 @@ flowchart LR
 
 ### The frame color
 
-The window behind the panels uses the color token `--frame`. Every theme must set it, and it must stand apart from `--panel`, or the gaps would be invisible.
+The window behind the panels uses the color token `--frame`. Every theme must set it, and it must stand apart from both `--panel` and `--editor-bg`, or the gaps would be invisible. The editor is a panel too: in rounded mode its tab strip takes the editor color.
 
-- The built-in themes set it in `app.css`: `#ebecf0` for Git Manager Light, `#1e1f22` for Git Manager Dark.
-- Catalog themes get it from `frameColor()` in `themes/catalog.ts`: the theme's `--bg` when its CIELAB distance from the panel color is at least 5 (`FRAME_DISTANCE`), else the panel darkened (dark themes) or greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel end up there.
+- The built-in themes set it in `app.css`: `#ebecf0` for Git Manager Light, `#131416` for Git Manager Dark.
+- Catalog themes get it from `frameColor()` in `themes/catalog.ts`: the theme's `--bg` when its CIELAB distance from both the panel and the editor color is at least 5 (`FRAME_DISTANCE`), else the darker of the two darkened (dark themes) or the panel greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel and GitHub Dark, whose editor is almost black, end up there.
 - `legible()` in `deriveColors` now also checks the frame, so dim text and status colors stay readable on the header and status bar.
 
 ### Tabs
@@ -66,7 +66,7 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 | `src/lib/views/Header.svelte`, `StatusBar.svelte`, `ActivityBar.svelte`, `RightActivityBar.svelte` | frame color, no dividers |
 | `src/lib/views/EditorTabs.svelte` | pill tabs |
 | `src/lib/terminal/TerminalPanel.svelte` | the rounded bottom panel |
-| `src/lib/views/files/FileView.svelte` | the file toolbar's rounded corners |
+| `src/lib/views/files/FileView.svelte` | the file toolbar's rounded corners at the bottom |
 
 ## Design decisions
 
@@ -76,16 +76,18 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 **A derived frame instead of `--bg`.** Many themes paint `--bg` and `--panel` the same, which would hide the gaps. A tested token keeps the look working in all 41 themes.
 
+**The file toolbar is square at the top.** With the File toolbar at the Bottom, `FileView.svelte` gives the bar's two bottom corners `--panel-radius`, so they follow the panel's own corners. At the Top the bar sits right under the tabs, inside the panel, so it stays a square band joined to the tab strip. Rounding its top corners there was tried and made the bar look like a separate box.
+
 **Off by default.** Existing users keep the classic look until they choose otherwise.
 
 ## Bugs we fixed
 
-**The file toolbar looked square at the top.** With the File toolbar at the Bottom, the bar's two bottom corners followed the panel's rounded corners. At the Top it sat under the tabs as a flat band with square corners, so the two placements did not match. The panel only clips its own outer corners, and at the top the tab strip sits between the bar and those corners. The fix gives the bar `--panel-radius` on the two corners on the side it faces (top or bottom) in `FileView.svelte`, under `html[data-rounded-panels]`. The corners show the editor background, which is also the tab strip's color in rounded mode, so the bar reads as a rounded header under the tabs. A CSS rule on the root attribute keeps it in line with the rest of the feature.
+**The editor did not stand out in Git Manager Dark.** In Git Manager Light the editor's tab strip showed as a white rounded panel on the grey window. In Git Manager Dark the frame and the editor were both `#1e1f22`, so the tabs and the top of the editor melted into the window and only the file toolbar showed. The frame was only checked against `--panel`, but in rounded mode the tab strip and the code take `--editor-bg`. The fix sets the Git Manager Dark frame to `#131416` (darker, like the gaps in the JetBrains Islands themes) and makes `frameColor()` and its test keep the frame apart from the editor color too. That also fixed Darcula, Nord, Gruvbox Dark and Rose Pine. Dark themes shade the darker surface, so the frame sits below both.
 
 ## Tests
 
 - `settingsData.test.ts`: the default, `true`, and a non-boolean value falling back to off.
-- `catalog.test.ts`: for every theme, `--frame` is at least 5 CIELAB units from `--panel` and `--text` keeps its contrast minimum on it; `--frame` is in all three `app.css` blocks.
+- `catalog.test.ts`: for every theme, `--frame` is at least 5 CIELAB units from `--panel` and `--editor-bg`, and `--text` keeps its contrast minimum on it; `--frame` is in all three `app.css` blocks.
 - The look itself needs a visual check: `rounded-panels` and `rounded-panels-islands-light` in `scripts/screenshots.ts`.
 
 ## Keeping in sync

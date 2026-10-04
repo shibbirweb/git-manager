@@ -29,7 +29,7 @@ Nothing else changes: menus, dialogs, the merge tool window and the colors insid
 
 ## With any color theme
 
-Rounded panels need the window frame to look different from the panels, or the gaps would be invisible. Many themes, such as One Dark Pro or Dracula, use one color for both. For those, Git Manager picks a frame color for you: a little darker than the panels in dark themes, and a little greyer in light themes. Text on the frame always stays readable.
+Rounded panels need the window frame to look different from the panels and from the editor, or the gaps would be invisible. Many themes, such as One Dark Pro, Dracula or Darcula, use one color for both. For those, Git Manager picks a frame color for you: a little darker than the panels and the editor in dark themes, and a little greyer in light themes. Text on the frame always stays readable. Git Manager Dark uses a frame darker than its editor, so the editor and its tabs show as a rounded panel just as they do in Git Manager Light.
 
 The **Islands Light** and **Islands Dark** themes use the frame colors of the JetBrains themes, so with rounded panels on they look very close to the real thing. See [Color Themes](Color-Themes.md).
 

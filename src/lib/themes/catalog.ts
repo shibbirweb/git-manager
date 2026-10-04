@@ -5,7 +5,7 @@
 // Values are computed on demand and never cached, so only the applied CSS
 // variables stay around.
 
-import { colorDistance, composite, contrastRatio, ensureContrast, fitTint, mix, withAlpha } from "./color";
+import { colorDistance, composite, contrastRatio, ensureContrast, fitTint, luminance, mix, withAlpha } from "./color";
 import {
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
@@ -146,7 +146,7 @@ const GM_LIGHT: ThemeColors = {
 /** The dark set in src/app.css (a test keeps the two in sync). */
 const GM_DARK: ThemeColors = {
   "--bg": "#1e1f22",
-  "--frame": "#1e1f22",
+  "--frame": "#131416",
   "--panel": "#2b2d30",
   "--panel-alt": "#25272a",
   "--border": "#1e1f22",
@@ -825,15 +825,18 @@ const SPECS: Record<string, ThemeSpec> = {
 
 /**
  * The window color behind rounded panels: the theme's own background when it
- * differs enough from the panels, else the panel color darkened (dark themes)
- * or greyed (light themes), and as a last resort moved toward the text.
+ * differs enough from the panels and the editor (the editor is an island too),
+ * else the darker of the two darkened (dark themes) or the panel greyed (light
+ * themes), and as a last resort moved toward the text.
  */
-function frameColor(bg: string, panel: string, text: string, dark: boolean): string {
-  if (colorDistance(bg, panel) >= FRAME_DISTANCE) {
-    return bg;
-  }
-  const shaded = dark ? mix(panel, "#000000", 0.35) : mix(panel, text, 0.08);
-  return colorDistance(shaded, panel) >= FRAME_DISTANCE ? shaded : mix(panel, text, 0.12);
+function frameColor(bg: string, panel: string, editorBg: string, text: string, dark: boolean): string {
+  const apart = (color: string) =>
+    colorDistance(color, panel) >= FRAME_DISTANCE && colorDistance(color, editorBg) >= FRAME_DISTANCE;
+  // Dark themes shade the darker island, so the frame sits below both.
+  const base = dark && luminance(editorBg) < luminance(panel) ? editorBg : panel;
+  const shaded = dark ? mix(base, "#000000", 0.35) : mix(base, text, 0.08);
+  const candidates = [bg, shaded, mix(panel, text, 0.12), mix(editorBg, text, 0.12)];
+  return candidates.find(apart) ?? mix(panel, text, 0.12);
 }
 
 function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
@@ -846,7 +849,7 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const panel = ui.panel ?? (dark ? mix(editorBg, text, 0.05) : editorBg);
   const panelAlt = ui.panelAlt ?? (dark ? mix(editorBg, text, 0.025) : mix(editorBg, text, 0.035));
   const bg = ui.bg ?? (dark ? editorBg : mix(editorBg, text, 0.025));
-  const frame = frameColor(bg, panel, text, dark);
+  const frame = frameColor(bg, panel, editorBg, text, dark);
   const textMinimum = high ? 7 : 4.5;
   // Hints and status colors must read on every surface they sit on.
   const legible = (color: string, minimum: number) =>
