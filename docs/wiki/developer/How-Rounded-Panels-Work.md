@@ -42,10 +42,10 @@ flowchart LR
 
 ### The frame color
 
-The window behind the panels uses the color token `--frame`. Every theme must set it, and it must stand apart from `--panel`, or the gaps would be invisible.
+The window behind the panels uses the color token `--frame`. Every theme must set it, and it must stand apart from both `--panel` and `--editor-bg`, or the gaps would be invisible. The editor is a panel too: in rounded mode its tab strip takes the editor color.
 
-- The built-in themes set it in `app.css`: `#ebecf0` for Git Manager Light, `#1e1f22` for Git Manager Dark.
-- Catalog themes get it from `frameColor()` in `themes/catalog.ts`: the theme's `--bg` when its CIELAB distance from the panel color is at least 5 (`FRAME_DISTANCE`), else the panel darkened (dark themes) or greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel end up there.
+- The built-in themes set it in `app.css`: `#ebecf0` for Git Manager Light, `#131416` for Git Manager Dark.
+- Catalog themes get it from `frameColor()` in `themes/catalog.ts`: the theme's `--bg` when its CIELAB distance from both the panel and the editor color is at least 5 (`FRAME_DISTANCE`), else the darker of the two darkened (dark themes) or the panel greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel and GitHub Dark, whose editor is almost black, end up there.
 - `legible()` in `deriveColors` now also checks the frame, so dim text and status colors stay readable on the header and status bar.
 
 ### Tabs
@@ -80,10 +80,14 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 **Off by default.** Existing users keep the classic look until they choose otherwise.
 
+## Bugs we fixed
+
+**The editor did not stand out in Git Manager Dark.** In Git Manager Light the editor's tab strip showed as a white rounded panel on the grey window. In Git Manager Dark the frame and the editor were both `#1e1f22`, so the tabs and the top of the editor melted into the window and only the file toolbar showed. The frame was only checked against `--panel`, but in rounded mode the tab strip and the code take `--editor-bg`. The fix sets the Git Manager Dark frame to `#131416` (darker, like the gaps in the JetBrains Islands themes) and makes `frameColor()` and its test keep the frame apart from the editor color too. That also fixed Darcula, Nord, Gruvbox Dark and Rose Pine. Dark themes shade the darker surface, so the frame sits below both.
+
 ## Tests
 
 - `settingsData.test.ts`: the default, `true`, and a non-boolean value falling back to off.
-- `catalog.test.ts`: for every theme, `--frame` is at least 5 CIELAB units from `--panel` and `--text` keeps its contrast minimum on it; `--frame` is in all three `app.css` blocks.
+- `catalog.test.ts`: for every theme, `--frame` is at least 5 CIELAB units from `--panel` and `--editor-bg`, and `--text` keeps its contrast minimum on it; `--frame` is in all three `app.css` blocks.
 - The look itself needs a visual check: `rounded-panels` and `rounded-panels-islands-light` in `scripts/screenshots.ts`.
 
 ## Keeping in sync

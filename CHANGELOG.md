@@ -74,7 +74,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Markdown editor: formatting toolbar, live preview with linked scrolling, mermaid diagrams and local images, as Editor Only, Editor and Preview, or Preview Only.
 - Preview Only edits the rendered Markdown page in place and keeps untouched text exactly as it was.
 - 41 color themes, with one pick for light mode and one for dark mode, in Settings > Editor, including JetBrains Islands Light and Islands Dark and VS Code Light+ and Dark+.
-- Rounded panels in Settings > Appearance, like JetBrains Islands: the sidebars, editors and the bottom panel become rounded panels with space between them, with pill-shaped editor tabs. Works with every color theme and is off by default.
+- Rounded panels in Settings > Appearance, like JetBrains Islands: the sidebars, editors and the bottom panel become rounded panels with space between them, with pill-shaped editor tabs. Works with every color theme and is off by default. The window color always stands apart from the editor too, so in Git Manager Dark the editor shows as its own rounded panel, like in the light theme.
 - Settings > Editor: Line spacing and Render whitespace, applied to the editor, diffs and the merge tool.
 - Resizable side-by-side diffs: drag the line between the two sides, or double-click it for 50/50.
 - Header buttons to show or hide the left and right activity bars (also in the View menu).
