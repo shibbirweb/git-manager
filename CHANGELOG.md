@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- The empty editor area also offers Go to File (Cmd+P) and Search Everywhere (Shift Shift).
 - JetBrains-style 3-way merge tool: Yours, Result and Theirs panes with connectors, apply, append and ignore per change, apply all non-conflicting changes, word-level highlights, synchronized scrolling, F7 navigation, full undo and ignore-whitespace mode.
 - Conflicts dialog to accept yours or theirs for whole files (including binary and deleted files), then continue or abort the merge, rebase, cherry-pick or revert.
 - Inline conflict actions in the editor: Accept Current, Accept Incoming, Accept Both and Resolve in Merge Tool, plus Mark as Resolved.

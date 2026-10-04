@@ -4,6 +4,7 @@
   import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { changesSelection } from "./changes/selection.svelte";
+  import { openFileSearch, openQuickOpen } from "./workspaceActions";
 </script>
 
 <div class="empty">
@@ -30,6 +31,16 @@
     >
       <Icon name="list-tree" size={15} />
       <span>Open a file from the Files panel</span>
+    </button>
+    <button class="action" onclick={() => openQuickOpen("")}>
+      <Icon name="file" size={15} />
+      <span>Go to File</span>
+      <kbd>Cmd+P</kbd>
+    </button>
+    <button class="action" onclick={() => openFileSearch("everywhere")}>
+      <Icon name="search" size={15} />
+      <span>Search Everywhere</span>
+      <kbd>Shift Shift</kbd>
     </button>
   </div>
 </div>

@@ -1,6 +1,6 @@
 # Editor and Tabs
 
-Git Manager has a light code editor for quick fixes. Open files in tabs, edit and save them, and jump straight to the lines you changed since the last commit.
+Git Manager has a light code editor. Open files in tabs, edit and save them, and jump to the lines you changed since the last commit.
 
 ![Editor tabs and the path bar](../images/editor-tabs.png)
 
@@ -22,13 +22,15 @@ Files larger than 4 MB and binary files (such as images) are not opened; the tab
 
 ![The empty editor area](../images/empty-main.png)
 
-*The empty editor area with the workspace name and three ways to start.*
+*The empty editor area with the workspace name and five ways to start.*
 
-With no file, diff or Log open, the editor area shows the workspace name and three shortcuts:
+With no file, diff or Log open, the editor area shows the workspace name and five shortcuts:
 
 - **Review changes** (Shift+Cmd+G) opens the Changes sidebar.
 - **Show the Log** (Shift+Cmd+L) opens the commit history. It is greyed out when there is no repository.
 - **Open a file from the Files panel** shows the Files panel.
+- **Go to File** (Cmd+P) finds a file by name.
+- **Search Everywhere** (press Shift twice) searches the whole workspace.
 
 ## Tabs
 
@@ -78,13 +80,13 @@ On the right are small icon buttons. Hover one to see what it does:
 
 The arrows and Blame only appear for files inside a git repository.
 
-When the editor gets narrow, the bar never spills over. First the **2 of 5** label hides, then the badges shrink to colored dots (hover them for the text), and the folders in the path shorten to "..." from the left. The file name stays readable the longest.
+When the editor gets narrow, the **2 of 5** label hides first, then the badges shrink to colored dots (hover them for the text) and the folders shorten to "..." from the left. The file name stays readable the longest.
 
 A file with conflicts gets a second, tinted strip with **Accept All Current**, **Accept All Incoming**, **Resolve in Merge Tool** and **Mark as Resolved**. See [Resolving Conflicts](Resolving-Conflicts.md).
 
 ## Save and revert
 
-Saving lives in the **File** menu, like in other Mac editors:
+Saving is in the **File** menu:
 
 - **Save** (Cmd+S) writes the file. It is greyed out until you edit. Line endings (LF or CRLF) are kept as they were.
 - **Save All** (Option+Cmd+S) saves every tab with unsaved edits.

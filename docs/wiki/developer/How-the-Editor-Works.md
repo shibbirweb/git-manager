@@ -76,6 +76,7 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 | --- | --- |
 | `src/lib/views/files/FileView.svelte` | One editor tab: load, save, markers, navigation, the path bar |
 | `src/lib/views/EditorTabs.svelte` | The tab strip and its menu |
+| `src/lib/views/EmptyMain.svelte` | The empty editor area; buttons reuse `openQuickOpen` and `openFileSearch` |
 | `src/lib/views/workspaceShortcuts.ts` | Which window shortcut a key means |
 | `src/lib/stores/tabs.ts` | Pure tab rules |
 | `src/lib/stores/pseudoTabs.ts` | `isPseudoTab` for tabs that are not files |
