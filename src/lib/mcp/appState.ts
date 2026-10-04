@@ -8,6 +8,7 @@ import { isGitTab } from "$lib/stores/gitTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
 import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
+import { navBarStore } from "$lib/navBar/navBarStore.svelte";
 import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { isTerminalTab } from "$lib/terminal/terminalTabs";
@@ -71,6 +72,9 @@ export function openDialog(): { kind: string; title: string | null } | null {
   }
   if (recentFilesStore.isOpen) {
     return { kind: "recentFiles", title: "Recent Files" };
+  }
+  if (navBarStore.isOpen) {
+    return { kind: "navigationBar", title: "Navigation Bar" };
   }
   if (settings.dialogOpen) {
     return { kind: "settings", title: "Settings" };

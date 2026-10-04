@@ -13,6 +13,7 @@ import { type MenuState, menuState } from "$lib/menu/menuState";
 import { menuSpec } from "$lib/menu/menuSpec";
 import { isMarkdownPath } from "$lib/markdown/viewMode";
 import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
+import { navBarStore } from "$lib/navBar/navBarStore.svelte";
 import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { runProjectScript } from "$lib/scripts/scriptActions";
@@ -239,6 +240,9 @@ function closeDialog(): Structured {
       break;
     case "recentFiles":
       recentFilesStore.close();
+      break;
+    case "navigationBar":
+      navBarStore.close();
       break;
     case "settings":
       settings.dialogOpen = false;

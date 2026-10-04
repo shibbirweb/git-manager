@@ -229,6 +229,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "edit.replaceInFiles": shortcut("replaceInFiles"),
   "edit.goToFile": shortcut("quickOpen"),
   "edit.recentFiles": shortcut("recentFiles"),
+  "edit.navigationBar": shortcut("navigationBar"),
   "edit.goToClass": shortcut("goToClass"),
   "edit.goToSymbol": shortcut("goToSymbol"),
   "edit.searchEverywhere": workspace(() => openFileSearch("everywhere")),

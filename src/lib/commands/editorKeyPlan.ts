@@ -1,8 +1,9 @@
 // What custom shortcuts change inside a text editor, as data for editor/commandKeys.ts.
 // The editor binds its commands' default keys in CodeMirror's own keymaps (setup.ts, the
 // find bar, editorCommands.ts); this plan goes in front of them, so it only has to name
-// what differs: editor commands on new keys, default keys that were freed, and custom keys
-// of window commands that should also work while the caret is in an editor. Pure.
+// what differs: editor commands on new keys, default keys that were freed, custom keys of
+// window commands that should also work while the caret is in an editor, and the window
+// commands that always do (IN_EDITOR). Pure.
 
 import { isEditorAction, type EditorAction, type MenuPlatform } from "$lib/menu/menuIds";
 import { acceleratorId, codeMirrorKey } from "./keybinding";
@@ -23,11 +24,14 @@ function editorAction(spec: CommandSpec): EditorAction | null {
   return spec.scope === "editor" && spec.menuAction && isEditorAction(spec.menuAction) ? spec.menuAction : null;
 }
 
+/**
+ * Window commands whose key also works in an editor, over the editor's own binding: like
+ * JetBrains, Cmd+Up jumps to the Navigation Bar (Cmd+Home still goes to the top).
+ */
+const IN_EDITOR = new Set<CommandId>(["edit.navigationBar"]);
+
 export function editorKeyPlan(specs: readonly CommandSpec[], overrides: ShortcutOverrides, platform: MenuPlatform): EditorKeyPlan {
   const plan: EditorKeyPlan = { commands: [], window: [], blocked: [] };
-  if (Object.keys(overrides).length === 0) {
-    return plan;
-  }
   const idOf = (accelerator: string | null) => (accelerator === null ? null : acceleratorId(accelerator, platform));
   // Every key an editor command answers to now: an editor key wins inside the editor.
   const editorKeys = new Set<string>();
@@ -73,7 +77,7 @@ export function editorKeyPlan(specs: readonly CommandSpec[], overrides: Shortcut
     }
   }
   for (const spec of specs) {
-    if (spec.scope !== "global" || !Object.hasOwn(overrides, spec.id)) {
+    if (spec.scope !== "global" || (!IN_EDITOR.has(spec.id) && !Object.hasOwn(overrides, spec.id))) {
       continue;
     }
     const shortcut = effectiveShortcut(spec, overrides);

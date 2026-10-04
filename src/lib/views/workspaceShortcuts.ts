@@ -20,6 +20,7 @@ export type WorkspaceShortcut =
   | "commandPalette"
   | "goToFile"
   | "recentFiles"
+  | "navigationBar"
   | "goToClass"
   | "goToSymbol"
   | "findInFiles"
@@ -32,9 +33,9 @@ export type WorkspaceShortcut =
  * The commands the window handles itself, even from a text field or the terminal: Cmd+B
  * toggles the sidebar, Shift+Cmd+G / Shift+Cmd+E pick a panel, Ctrl+` the terminal, Cmd+P
  * opens Quick Open and Shift+Cmd+P the Command Palette (VS Code keys); Cmd+E opens Recent
- * Files, Shift+Cmd+O, Cmd+O, Option+Cmd+O and Shift+Cmd+F open Search Everywhere on Files,
- * Classes, Symbols and Text, and Shift+Cmd+R on Text with Replace (JetBrains keys). Double
- * Shift is handled apart.
+ * Files, Cmd+Up (Alt+Home elsewhere) the Navigation Bar, Shift+Cmd+O, Cmd+O, Option+Cmd+O
+ * and Shift+Cmd+F open Search Everywhere on Files, Classes, Symbols and Text, and
+ * Shift+Cmd+R on Text with Replace (JetBrains keys). Double Shift is handled apart.
  */
 export const WINDOW_COMMANDS: Partial<Record<CommandId, WorkspaceShortcut>> = {
   "nav.goBack": "goBack",
@@ -50,6 +51,7 @@ export const WINDOW_COMMANDS: Partial<Record<CommandId, WorkspaceShortcut>> = {
   "view.commandPalette": "commandPalette",
   "search.files": "goToFile",
   "edit.recentFiles": "recentFiles",
+  "edit.navigationBar": "navigationBar",
   "edit.goToClass": "goToClass",
   "edit.goToSymbol": "goToSymbol",
   "edit.findInFiles": "findInFiles",
@@ -120,4 +122,30 @@ export function windowCommand(event: ShortcutKey, context: ShortcutContext, keys
 export function workspaceShortcut(event: ShortcutKey, context: ShortcutContext, keys: ShortcutKeys): WorkspaceShortcut | null {
   const spec = windowCommand(event, context, keys);
   return spec ? (WINDOW_COMMANDS[spec.id] ?? null) : null;
+}
+
+/** Window commands on caret keys (Cmd+Up, Alt+Home), which a plain text field keeps for moving its caret. */
+const CARET_COMMANDS = new Set<CommandId>(["edit.navigationBar"]);
+
+/** The parts of a key press target the decision needs. */
+export interface KeyTarget {
+  tagName?: string;
+  type?: string;
+  className?: unknown;
+}
+
+/**
+ * The key press stays with the text field it was typed in: an input or a text area, but not
+ * a code editor (CodeMirror is not a text area) or a terminal (xterm's hidden text area).
+ */
+export function textFieldKeeps(commandId: CommandId, target: KeyTarget | EventTarget | null): boolean {
+  if (!CARET_COMMANDS.has(commandId) || target === null || typeof target !== "object" || !("tagName" in target)) {
+    return false;
+  }
+  const field = target as KeyTarget;
+  const tagName = String(field.tagName).toUpperCase();
+  if (tagName === "TEXTAREA") {
+    return !String(field.className ?? "").includes("xterm-helper-textarea");
+  }
+  return tagName === "INPUT" && field.type !== "checkbox" && field.type !== "radio";
 }

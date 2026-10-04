@@ -22,8 +22,10 @@
   import { fileSearch } from "$lib/search/fileSearchStore.svelte";
   import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
   import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
+  import { navBarStore } from "$lib/navBar/navBarStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
+  import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import ActivityBar from "./ActivityBar.svelte";
   import ChangesDiff from "./changes/ChangesDiff.svelte";
   import { changesSelection } from "./changes/selection.svelte";
@@ -51,7 +53,7 @@
   import StatusBar from "./StatusBar.svelte";
   import Sidebar from "./Sidebar.svelte";
   import { openFileSearch, runWorkspaceShortcut } from "./workspaceActions";
-  import { WINDOW_COMMANDS, windowCommand } from "./workspaceShortcuts";
+  import { textFieldKeeps, WINDOW_COMMANDS, windowCommand } from "./workspaceShortcuts";
   import { runCommand, windowKeys } from "$lib/commands/commandRuntime";
   import { followOpenTab } from "./repoSelection.svelte";
 
@@ -171,12 +173,17 @@
       event,
       {
         dialogOpen:
-          dialogs.active !== null || gitDialogs.active !== null || fileSearch.isOpen || quickOpen.isOpen || recentFilesStore.isOpen,
+          dialogs.active !== null ||
+          gitDialogs.active !== null ||
+          fileSearch.isOpen ||
+          quickOpen.isOpen ||
+          recentFilesStore.isOpen ||
+          navBarStore.isOpen,
         mergeOpen: repoStore.mergeTarget !== null,
       },
       windowKeys(),
     );
-    if (!command) {
+    if (!command || textFieldKeeps(command.id, event.target)) {
       return;
     }
     // The menus show these keys too; the page sees a key first, so preventing its default
@@ -347,6 +354,11 @@
   {#await import("$lib/recentFiles/RecentFiles.svelte") then module}
     <module.default />
   {/await}
+{/if}
+
+<!-- Jump to Navigation Bar with no file on screen: a floating bar from the active repository. -->
+{#if navBarStore.floating}
+  <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir floating />
 {/if}
 
 {#if repoStore.mergeTarget && repoStore.repo}

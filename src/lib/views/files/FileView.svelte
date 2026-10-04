@@ -35,7 +35,7 @@
   import { changesSelection } from "../changes/selection.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { MARKDOWN_PREVIEW_RATIO_RANGE, type MarkdownViewMode, settings } from "$lib/stores/settings.svelte";
-  import { folderFor, joinPath, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
+  import { folderFor, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { isMissingFileError } from "$lib/stores/navHistory";
   import { localHistory } from "$lib/localHistory/localHistory.svelte";
@@ -45,6 +45,7 @@
   import type { IconName } from "$lib/ui/icons";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import MarkdownPreview from "./MarkdownPreview.svelte";
   import MarkdownToolbar from "./MarkdownToolbar.svelte";
   import RichMarkdownView from "./RichMarkdownView.svelte";
@@ -896,32 +897,6 @@
     }
   }
 
-  // Breadcrumbs: every folder of the path, marking repository roots. When the bar is narrow the
-  // folders farthest from the file shrink first (much larger flex-shrink), so the file name and
-  // its parent stay readable longest.
-  const crumbs = $derived.by(() => {
-    const root = folder?.root ?? "";
-    const repoRoots = new Set(repoStore.repos.map((repo) => repo.root));
-    const parts = folderPath.split("/").filter(Boolean);
-    const segments = parts.map((part, index) => {
-      const path = parts.slice(0, index + 1).join("/");
-      const isFile = index === parts.length - 1;
-      return {
-        name: part,
-        path,
-        isFile,
-        isRepo: !isFile && repoRoots.has(joinPath(root, path)),
-        shrink: isFile ? 1 : crumbShrink(parts.length - 1 - index),
-      };
-    });
-    return { rootIsRepo: repoRoots.has(root), rootShrink: crumbShrink(parts.length), segments };
-  });
-
-  /** Shrink weight of a breadcrumb `distance` folders above the file. */
-  function crumbShrink(distance: number): number {
-    return 10 ** Math.min(Math.max(distance, 1), 6);
-  }
-
   const conflictText = $derived(`${conflictCount} ${conflictCount === 1 ? "conflict" : "conflicts"}`);
 
   const MARKDOWN_MODES: { value: MarkdownViewMode; icon: IconName; label: string }[] = [
@@ -973,29 +948,7 @@
 <div class="file-view">
   <!-- One slim bar, like JetBrains: the path and badges on the left, compact actions on the right. -->
   <div class="file-bar">
-    <div class="crumbs" title={filePath}>
-      <span class="crumb root has-icon" style:flex-shrink={crumbs.rootShrink}>
-        <Icon name={crumbs.rootIsRepo ? "folder-git" : "folder"} size={12} />
-        <span class="crumb-name">{folder?.name ?? ""}</span>
-      </span>
-      {#each crumbs.segments as segment (segment.path)}
-        <span class="sep" aria-hidden="true"><Icon name="chevron-right" size={11} /></span>
-        <span
-          class="crumb"
-          class:repo={segment.isRepo}
-          class:file={segment.isFile}
-          class:has-icon={segment.isRepo || segment.isFile}
-          style:flex-shrink={segment.shrink}
-        >
-          {#if segment.isRepo}
-            <Icon name="folder-git" size={12} />
-          {:else if segment.isFile}
-            <Icon name="file" size={12} />
-          {/if}
-          <span class="crumb-name">{segment.name}</span>
-        </span>
-      {/each}
-    </div>
+    <NavigationBar targetPath={filePath} claimed={isActive} />
     {#if dirty}
       <span class="badge unsaved" title="Unsaved changes"><span class="badge-text">Unsaved</span></span>
     {/if}
@@ -1199,59 +1152,6 @@
     background: var(--panel);
     color: var(--text-dim);
     font-size: 12px;
-  }
-
-  /* Overflow goes off the left edge, so the file name is the last thing to disappear. */
-  .crumbs {
-    flex: 0 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 3px;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .sep {
-    flex: none;
-    display: inline-flex;
-    color: var(--text-faint);
-  }
-
-  .crumb {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    /* flex-shrink comes from the markup; a folder keeps room for an ellipsis. */
-    flex-grow: 0;
-    flex-basis: auto;
-    min-width: 1.4em;
-    overflow: hidden;
-    color: var(--text-dim);
-  }
-
-  .crumb.has-icon {
-    min-width: calc(16px + 1.4em);
-  }
-
-  .crumb :global(svg) {
-    flex: none;
-  }
-
-  .crumb-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .crumb.repo {
-    color: var(--accent);
-  }
-
-  .crumb.file {
-    color: var(--text);
-    font-weight: 600;
   }
 
   .badge {

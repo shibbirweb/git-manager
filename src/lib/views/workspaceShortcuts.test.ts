@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { buildCommandSpecs } from "$lib/commands/registry";
 import { menuSpec } from "$lib/menu/menuSpec";
-import { type ShortcutContext, type ShortcutKey, type ShortcutKeys, windowCommand, workspaceShortcut } from "./workspaceShortcuts";
+import {
+  type ShortcutContext,
+  type ShortcutKey,
+  type ShortcutKeys,
+  textFieldKeeps,
+  windowCommand,
+  workspaceShortcut,
+} from "./workspaceShortcuts";
 
 const idle: ShortcutContext = { dialogOpen: false, mergeOpen: false };
 const mac: ShortcutKeys = { specs: buildCommandSpecs(menuSpec("macos", "app")), platform: "macos", overrides: {} };
@@ -44,6 +51,22 @@ describe("workspaceShortcut", () => {
     expect(workspaceShortcut(press("e", "KeyE", { metaKey: true }), idle, mac)).toBe("recentFiles");
     expect(workspaceShortcut(press("e", "KeyE", { metaKey: true, defaultPrevented: true }), idle, mac)).toBeNull();
     expect(workspaceShortcut(press("e", "KeyE", { metaKey: true }), { dialogOpen: true, mergeOpen: false }, mac)).toBeNull();
+  });
+
+  it("maps the JetBrains Navigation Bar keys: Cmd+Up on macOS, Alt+Home elsewhere", () => {
+    expect(workspaceShortcut(press("ArrowUp", "ArrowUp", { metaKey: true }), idle, mac)).toBe("navigationBar");
+    expect(workspaceShortcut(press("Home", "Home", { altKey: true }), idle, windows)).toBe("navigationBar");
+    expect(workspaceShortcut(press("ArrowUp", "ArrowUp", { metaKey: true }), { dialogOpen: true, mergeOpen: false }, mac)).toBeNull();
+  });
+
+  it("leaves the Navigation Bar key to a text field, but not to the terminal", () => {
+    expect(textFieldKeeps("edit.navigationBar", { tagName: "INPUT", type: "text" })).toBe(true);
+    expect(textFieldKeeps("edit.navigationBar", { tagName: "TEXTAREA", className: "commit-message" })).toBe(true);
+    expect(textFieldKeeps("edit.navigationBar", { tagName: "TEXTAREA", className: "xterm-helper-textarea" })).toBe(false);
+    expect(textFieldKeeps("edit.navigationBar", { tagName: "DIV", className: "cm-content" })).toBe(false);
+    expect(textFieldKeeps("edit.navigationBar", { tagName: "INPUT", type: "checkbox" })).toBe(false);
+    expect(textFieldKeeps("edit.goToFile", { tagName: "INPUT", type: "text" })).toBe(false);
+    expect(textFieldKeeps("edit.navigationBar", null)).toBe(false);
   });
 
   it("maps the JetBrains Search Everywhere keys", () => {

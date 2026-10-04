@@ -16,7 +16,7 @@ A preview tab becomes a normal tab when you double-click the tab, start editing,
 
 Markdown files open with a formatting toolbar and a live preview; see [Markdown Editor](Markdown-Editor.md). Images and PDFs open in a preview; see [Image and PDF Preview](Image-and-PDF-Preview.md).
 
-Files larger than 4 MB and binary files (such as images) are not opened; the tab shows a short note instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
+Files over 4 MB and binary files are not opened; the tab shows a note instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
 
 ## When nothing is open
 
@@ -37,9 +37,9 @@ With no file, diff or Log open, the editor area shows the workspace name and fiv
 - Click a tab to show it. Every tab keeps its own cursor, scroll position and unsaved edits while you look at another one.
 - **Shift+Cmd+]** and **Shift+Cmd+[** show the next and previous tab (also **Window > Next Tab** and **Previous Tab**).
 - **Cmd+W** closes the tab on screen (**File > Close Tab**).
-- A new tab opens right after the current one.
-- A dot on the tab means unsaved changes. Hover it to see the close button. Middle-click a tab to close it.
-- Scroll with the mouse wheel over the tab strip to move through many tabs.
+- New tabs open after the current one.
+- A dot on the tab means unsaved changes; hover it for the close button. Middle-click a tab to close it.
+- Scroll the mouse wheel over the tab strip to move through many tabs.
 - When two tabs have the same file name, the folder name is shown next to each.
 - Drag a tab to move it, and pin the tabs you always need. See [Pin, Reorder and Wrap Tabs](Pin-Reorder-and-Wrap-Tabs.md).
 
@@ -63,7 +63,7 @@ They close like any other tab; closing a terminal tab stops its shell.
 
 One slim bar sits between the tabs and the code, like in JetBrains editors.
 
-On the left are the **breadcrumbs**: the workspace folder, then each folder down to the file. Repository folders are marked with a git icon. Hover the path to see it in full.
+On the left are the **breadcrumbs**: the workspace folder, then each folder down to the file. Repository folders are marked with a git icon. Hover it to see it in full; click it, or press Cmd+Up, to browse: see [Navigation Bar](Navigation-Bar.md).
 
 Badges next to the path tell you about the file:
 

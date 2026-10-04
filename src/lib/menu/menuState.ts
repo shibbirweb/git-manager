@@ -200,6 +200,7 @@ export function menuState(inputs: MenuInputs): MenuState {
     "edit.replaceInFiles",
     "edit.goToFile",
     "edit.recentFiles",
+    "edit.navigationBar",
     "edit.goToClass",
     "edit.goToSymbol",
     "edit.searchEverywhere",

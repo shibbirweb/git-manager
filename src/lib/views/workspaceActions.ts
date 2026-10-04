@@ -3,6 +3,7 @@
 // menu item always run the same code.
 
 import { localHistory } from "$lib/localHistory/localHistory.svelte";
+import { navBarStore } from "$lib/navBar/navBarStore.svelte";
 import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
 import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
@@ -21,7 +22,7 @@ import { changesSelection } from "./changes/selection.svelte";
 import { gitDialogs } from "./git/gitDialogs.svelte";
 import type { WorkspaceShortcut } from "./workspaceShortcuts";
 
-/** The window shortcuts wait while a dialog, the Search Everywhere, Quick Open or Recent Files popup or the merge tool is up. */
+/** The window shortcuts wait while a dialog, a popup (Search Everywhere, Quick Open, Recent Files, the Navigation Bar) or the merge tool is up. */
 export function shortcutsBlocked(): boolean {
   return (
     dialogs.active !== null ||
@@ -29,16 +30,18 @@ export function shortcutsBlocked(): boolean {
     fileSearch.isOpen ||
     quickOpen.isOpen ||
     recentFilesStore.isOpen ||
+    navBarStore.isOpen ||
     localHistory.isOpen ||
     repoStore.mergeTarget !== null
   );
 }
 
-/** Search Everywhere, Quick Open and Recent Files wait while any dialog, another popup or the merge tool is up. */
+/** Search Everywhere, Quick Open, Recent Files and the Navigation Bar wait while any dialog, another popup or the merge tool is up. */
 function overlayOpen(): boolean {
   return (
     quickOpen.isOpen ||
     recentFilesStore.isOpen ||
+    navBarStore.isOpen ||
     dialogs.active !== null ||
     gitDialogs.active !== null ||
     repoStore.mergeTarget !== null ||
@@ -95,8 +98,18 @@ export function openRecentFiles(): void {
   recentFilesStore.open();
 }
 
+/** Jump to Navigation Bar (JetBrains' Cmd+Up): the path bar of the file on screen, or a floating one. */
+export function openNavigationBar(): void {
+  if (!overlayOpen() && !fileSearch.isOpen) {
+    navBarStore.jump();
+  }
+}
+
 export function runWorkspaceShortcut(shortcut: WorkspaceShortcut): void {
   switch (shortcut) {
+    case "navigationBar":
+      openNavigationBar();
+      break;
     case "quickOpen":
       openQuickOpen("");
       break;

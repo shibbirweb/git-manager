@@ -1733,6 +1733,17 @@ define("recent-files", async (shot) => {
   await savePopup(shot, popup);
 }, () => ({ settings: { currentLineBlame: false } }));
 
+// Navigation Bar (Cmd+Up): the path bar with the file's folder listed and the file selected.
+define("navigation-bar", async (shot) => {
+  await shot.openFile(cartTs());
+  await menuAction(shot, "edit.navigationBar");
+  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
+  await popup.locator(".row.selected").waitFor();
+  await shot.settle(300);
+  await shot.page.mouse.move(5, 790);
+  await shot.save(await shot.clipAround([shot.page.locator(".file-bar").first(), popup], 12));
+}, () => ({ settings: { currentLineBlame: false } }));
+
 define("search-everywhere-files", async (shot) => {
   const popup = await openSearch(shot, "files", "cart");
   await shot.page.mouse.move(5, 790);

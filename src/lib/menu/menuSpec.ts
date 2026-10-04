@@ -149,6 +149,8 @@ function editMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       item("edit.goToFile", "Go to File...", "CmdOrCtrl+P"),
       // JetBrains' Cmd+E; the commit message box keeps it for its history while focused.
       item("edit.recentFiles", "Recent Files...", "CmdOrCtrl+E"),
+      // JetBrains' keys. On macOS the editor gives Cmd+Up up for it (Cmd+Home still goes to the top).
+      item("edit.navigationBar", "Jump to Navigation Bar", mac ? "Cmd+Up" : "Alt+Home"),
       item("edit.goToClass", "Go to Class...", "CmdOrCtrl+O"),
       item("edit.goToSymbol", "Go to Symbol...", "CmdOrCtrl+Alt+O"),
       // Double Shift cannot be a menu accelerator, so the label tells it.

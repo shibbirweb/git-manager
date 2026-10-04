@@ -173,6 +173,17 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
       ],
     },
     {
+      // NavigationBar.svelte: Edit > Jump to Navigation Bar (Cmd+Up, Alt+Home elsewhere) or a click on the path opens it.
+      title: "Navigation Bar",
+      rows: [
+        { label: "Pick an entry", keys: keys("Up", "Down"), context: "In a Navigation Bar popup; type to filter" },
+        { label: "Go into a folder", keys: keys("Right", "Enter"), context: "In a Navigation Bar popup" },
+        { label: "Go to the folder above", keys: keys("Left"), context: "In a Navigation Bar popup" },
+        { label: "Open to the side", keys: keys("CmdOrCtrl+Enter"), context: "On a file in a Navigation Bar popup, with the split editor on" },
+        { label: "Clear the filter, then close", keys: keys("Escape"), context: "In a Navigation Bar popup" },
+      ],
+    },
+    {
       title: "Editor",
       rows: [
         { label: "Add a cursor", keys: [mac ? "⌥⇧ click" : "Alt+Shift+click"], context: "In a text editor" },

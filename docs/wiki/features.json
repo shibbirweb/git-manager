@@ -15,6 +15,7 @@
     { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
     { "page": "usage/Recent-Files.md", "summary": "Jump back to the files you worked on last with Cmd+E, like in JetBrains IDEs." },
+    { "page": "usage/Navigation-Bar.md", "summary": "Move through your project's folders from the keyboard with Cmd+Up and search each folder, like in JetBrains IDEs." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
     { "page": "usage/Repository-Actions.md", "summary": "The buttons and the ... menu of each repository in Changes: branch, Sync, Commit and more." },
@@ -181,6 +182,13 @@
       "usage": "usage/Recent-Files.md",
       "developer": "developer/How-Recent-Files-Work.md",
       "screenshots": ["recent-files.png"]
+    },
+    {
+      "id": "navigation-bar",
+      "title": "Navigation Bar",
+      "usage": "usage/Navigation-Bar.md",
+      "developer": "developer/How-the-Navigation-Bar-Works.md",
+      "screenshots": ["navigation-bar.png"]
     },
     {
       "id": "find-replace",
