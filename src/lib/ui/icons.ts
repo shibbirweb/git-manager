@@ -111,7 +111,8 @@ export const icons = {
   search: [circle(11, 11, 8), "m21 21-4.3-4.3"],
   // Three text carets: Select All Occurrences (multiple carets).
   carets: ["M5 5v14", "M3 5h4", "M3 19h4", "M12 5v14", "M10 5h4", "M10 19h4", "M19 5v14", "M17 5h4", "M17 19h4"],
-  discard: ["M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", "M3 3v5h5"],
+  // VS Code's codicon "discard": a hooked arrow turning back.
+  discard: ["M5 4v5h5", "M5 9 8.26 5.76A6 6 0 0 1 16.74 14.24L9.5 21.5"],
   history: ["M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", "M3 3v5h5", "M12 7v5l4 2"],
   pilcrow: ["M13 4v16", "M17 4v16", "M19 4H9.5a4.5 4.5 0 0 0 0 9H13"],
   eye: ["M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0", circle(12, 12, 3)],
