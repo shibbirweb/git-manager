@@ -2,6 +2,7 @@
 // one repository compared with HEAD, so staged and unstaged edits show together.
 
 import type { ChangeKind, FileStatus } from "$lib/types";
+import { isSubmoduleEntry } from "./submodules/submoduleModel";
 
 export interface ChangesTabFile {
   path: string;
@@ -10,6 +11,8 @@ export interface ChangesTabFile {
   /** How the file differs from HEAD; null while it is in conflict. */
   kind: ChangeKind | null;
   submodule: boolean;
+  /** The status row, for stage, unstage and discard. */
+  status: FileStatus;
 }
 
 /** One letter for both areas: what HEAD to the work tree looks like. */
@@ -41,9 +44,67 @@ export function changesTabFiles(files: FileStatus[]): ChangesTabFile[] {
       origPath: kind === "renamed" ? (file.origPath ?? null) : null,
       kind,
       submodule: Boolean(file.submodule),
+      status: file,
     };
   });
   return [...listed.filter((file) => file.kind === null), ...listed.filter((file) => file.kind !== null)];
+}
+
+export type ChangesTabAction = "resolve" | "unstage" | "discard" | "stage";
+
+/** The hover buttons of a row, in display order, like the Changes sidebar offers them. */
+export function fileActions(file: FileStatus): ChangesTabAction[] {
+  if (file.conflicted) {
+    return ["resolve"];
+  }
+  const actions: ChangesTabAction[] = [];
+  if (file.staged !== null) {
+    actions.push("unstage");
+  }
+  if (file.unstaged !== null) {
+    // Discarding does not apply to a submodule: Update (in the sidebar) checks out the recorded commit.
+    if (!isSubmoduleEntry(file)) {
+      actions.push("discard");
+    }
+    actions.push("stage");
+  }
+  return actions;
+}
+
+/** How much of a file is in the index: shown next to its name, since the list mixes both areas. */
+export function stagedState(file: FileStatus): "staged" | "partly staged" | null {
+  if (file.conflicted || file.staged === null) {
+    return null;
+  }
+  return file.unstaged === null ? "staged" : "partly staged";
+}
+
+export interface BulkTargets {
+  stage: FileStatus[];
+  unstage: FileStatus[];
+  discard: FileStatus[];
+}
+
+/** What Stage All, Unstage All and Discard All act on; conflicts are left to the merge tool. */
+export function bulkTargets(files: ChangesTabFile[]): BulkTargets {
+  const targets: BulkTargets = {
+    stage: [],
+    unstage: [],
+    discard: [],
+  };
+  for (const { status } of files) {
+    const actions = fileActions(status);
+    if (actions.includes("stage")) {
+      targets.stage.push(status);
+    }
+    if (actions.includes("unstage")) {
+      targets.unstage.push(status);
+    }
+    if (actions.includes("discard")) {
+      targets.discard.push(status);
+    }
+  }
+  return targets;
 }
 
 /** Keeps the selected file while it is still changed, else the first one. */

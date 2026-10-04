@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { FileStatus } from "$lib/types";
-import { changeAgainstHead, changesListBounds, changesTabFiles, MIN_CHANGES_DIFF_WIDTH, pickSelected, stepSelection } from "./changesTab";
+import {
+  bulkTargets,
+  changeAgainstHead,
+  changesListBounds,
+  changesTabFiles,
+  fileActions,
+  MIN_CHANGES_DIFF_WIDTH,
+  pickSelected,
+  stagedState,
+  stepSelection,
+} from "./changesTab";
 
 function file(path: string, fields: Partial<FileStatus> = {}): FileStatus {
   return { path, origPath: null, staged: null, unstaged: null, conflicted: false, ...fields };
@@ -53,5 +63,40 @@ describe("changes tab", () => {
     expect(changesListBounds(50, 1000, 160).width).toBe(160);
     expect(changesListBounds(320, 300, 160)).toEqual({ width: 160, max: 160 });
     expect(changesListBounds(320, 0, 160)).toEqual({ width: 320, max: 320 });
+  });
+
+  it("offers the sidebar's row actions for what each file has in each area", () => {
+    const submodule = { newCommits: true, modifiedContent: false, untrackedContent: false };
+    expect(fileActions(file("a", { unstaged: "modified" }))).toEqual(["discard", "stage"]);
+    expect(fileActions(file("a", { unstaged: "untracked" }))).toEqual(["discard", "stage"]);
+    expect(fileActions(file("a", { staged: "added" }))).toEqual(["unstage"]);
+    expect(fileActions(file("a", { staged: "modified", unstaged: "modified" }))).toEqual(["unstage", "discard", "stage"]);
+    expect(fileActions(file("a", { conflicted: true, staged: "modified", unstaged: "modified" }))).toEqual(["resolve"]);
+    expect(fileActions(file("lib", { unstaged: "modified", submodule }))).toEqual(["stage"]);
+    expect(fileActions(file("a"))).toEqual([]);
+  });
+
+  it("says how much of a file is staged", () => {
+    expect(stagedState(file("a", { staged: "modified" }))).toBe("staged");
+    expect(stagedState(file("a", { staged: "modified", unstaged: "modified" }))).toBe("partly staged");
+    expect(stagedState(file("a", { unstaged: "modified" }))).toBeNull();
+    expect(stagedState(file("a", { conflicted: true, staged: "modified" }))).toBeNull();
+  });
+
+  it("collects what Stage All, Unstage All and Discard All act on, leaving conflicts out", () => {
+    const submodule = { newCommits: true, modifiedContent: false, untrackedContent: false };
+    const targets = bulkTargets(
+      changesTabFiles([
+        file("a", { unstaged: "modified" }),
+        file("b", { staged: "added" }),
+        file("c", { staged: "modified", unstaged: "modified" }),
+        file("d", { conflicted: true, unstaged: "modified" }),
+        file("lib", { unstaged: "modified", submodule }),
+      ]),
+    );
+    expect(targets.stage.map((entry) => entry.path)).toEqual(["a", "c", "lib"]);
+    expect(targets.unstage.map((entry) => entry.path)).toEqual(["b", "c"]);
+    expect(targets.discard.map((entry) => entry.path)).toEqual(["a", "c"]);
+    expect(bulkTargets([])).toEqual({ stage: [], unstage: [], discard: [] });
   });
 });
