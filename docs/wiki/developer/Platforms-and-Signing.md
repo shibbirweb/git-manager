@@ -57,7 +57,7 @@ flowchart LR
 | `src-tauri/src/git/cli.rs` | the git binary search (`/opt/homebrew/bin/git`, `/usr/local/bin/git`, `/usr/bin/git`) and the login shell `PATH` (`$SHELL -l -c`, default `/bin/zsh`) | `git` on the app's own `PATH`, which Explorer fills, with no shell asked |
 | `src/lib/stores/workspacePaths.ts` and `src-tauri/src/paths.rs` | paths use `/` separators | Windows paths leave Rust as `C:/...` (`to_ui`) and the page converts dialog paths (`fromNativePath`); comparisons are still case-sensitive |
 | `src/lib/update/releases.ts` | `parseReleases` takes the first `.dmg` asset as the download | needs a per-platform asset |
-| `src-tauri/tauri.conf.json` | bundle targets `app` and `dmg` | needs Windows and Linux targets |
+| `src-tauri/tauri.conf.json` | bundle targets `app` and `dmg` | `tauri.windows.conf.json` builds an NSIS installer; Linux needs targets |
 | `.github/workflows/ci.yml`, `release.yml` | the release build runs on `macos-latest`; CI also runs a `windows` job that may fail for now (`continue-on-error`) | Windows needs a build job; Linux needs CI jobs |
 | `scripts/*.sh` | bash demo scripts | need Git Bash or WSL on Windows |
 | Keyboard shortcuts | Cmd (`metaKey`), usually with Ctrl too | check each shortcut |
@@ -101,7 +101,7 @@ Concretely, the work is:
 1. **Backend:** a Windows way to find git and its `PATH`, path handling that accepts `\` and drive letters (and the `\\?\` form that `canonicalize` returns on Windows), and memory readouts per platform or an honest "not available".
 2. **Frontend:** separator-aware path helpers with tests, a review of shortcuts (most accept Cmd or Ctrl already, but Ctrl+Minus for Back is a macOS habit), and per-platform assets in `releases.ts`.
 3. **CI:** the `windows` job in `ci.yml` runs every check on `windows-latest`; once it passes, drop its `continue-on-error`. Linux needs the same on `ubuntu-latest`. The Linux runner needs the WebKitGTK and build packages that Tauri lists as prerequisites. The one `#[cfg(unix)]` symlink in `commands/tests.rs` already skips itself on Windows.
-4. **Releases:** add build jobs to `release.yml` next to `build-macos`, each running `tauri-action` for its platform against the same tag, and signing for Windows when a certificate is available.
+4. **Releases:** `build-windows` in `release.yml` runs when the repository variable `WINDOWS_RELEASES` is `true`. Still to add: signing for Windows, and a Linux job.
 
 ## Where to go next
 

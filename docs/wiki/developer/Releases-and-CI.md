@@ -116,7 +116,7 @@ sequenceDiagram
 
 ## Building: `release.yml`
 
-It checks that every file agrees on the version, that the tag is exactly `v` plus the version in `src-tauri/Cargo.toml`, and that the pre-release flag matches (betas must be pre-releases, stable versions must not). Empty or GitHub-generated notes are replaced with the changelog section. Unless the caller says CI already passed, it runs `ci.yml` first. Then `tauri-action` builds a universal app (Apple Silicon and Intel) and attaches the `.dmg` and zipped `.app`. Run workflow with a tag rebuilds an existing release. Signing is optional: add the `APPLE_*` secrets named at the top of the file and uncomment the matching lines.
+It checks that every file agrees on the version, that the tag is exactly `v` plus the version in `src-tauri/Cargo.toml`, and that the pre-release flag matches (betas must be pre-releases, stable versions must not). Empty or GitHub-generated notes are replaced with the changelog section. Unless the caller says CI already passed, it runs `ci.yml` first. Then `tauri-action` builds a universal app (Apple Silicon and Intel) and attaches the `.dmg` and zipped `.app`. When the repository variable `WINDOWS_RELEASES` is `true`, `build-windows` also attaches the Windows installer. Run workflow with a tag rebuilds an existing release. Signing is optional: add the `APPLE_*` secrets named at the top of the file and uncomment the matching lines.
 
 ## Publishing the wiki: `wiki.yml`
 

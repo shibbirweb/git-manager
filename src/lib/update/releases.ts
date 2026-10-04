@@ -63,11 +63,11 @@ export interface Release {
   url: string;
   publishedAt: string | null;
   prerelease: boolean;
-  /** Direct link to the .dmg, when attached. */
+  /** Direct link to the download for this platform (`downloadAsset`), when attached. */
   downloadUrl: string | null;
 }
 
-interface GitHubAsset {
+export interface GitHubAsset {
   name?: string;
   browser_download_url?: string;
 }
@@ -83,8 +83,23 @@ interface GitHubRelease {
   assets?: GitHubAsset[];
 }
 
+/**
+ * The asset to download on `platform` (a `platformName`): the .dmg on macOS, the installer on
+ * Windows (the NSIS setup, else an .msi). None elsewhere, so the release page opens instead.
+ */
+export function downloadAsset(assets: GitHubAsset[], platform: string): GitHubAsset | null {
+  const named = (pattern: RegExp) => assets.find((asset) => pattern.test(asset.name ?? "")) ?? null;
+  if (platform === "macOS") {
+    return named(/\.dmg$/i);
+  }
+  if (platform === "Windows") {
+    return named(/-setup\.exe$/i) ?? named(/\.msi$/i);
+  }
+  return null;
+}
+
 /** Turns the GitHub API list into releases, dropping drafts and tags that are not versions. */
-export function parseReleases(payload: unknown): Release[] {
+export function parseReleases(payload: unknown, platform: string): Release[] {
   if (!Array.isArray(payload)) {
     return [];
   }
@@ -94,7 +109,7 @@ export function parseReleases(payload: unknown): Release[] {
     if (item?.draft || !parseVersion(tag)) {
       continue;
     }
-    const dmg = (item.assets ?? []).find((asset) => asset.name?.toLowerCase().endsWith(".dmg"));
+    const download = downloadAsset(item.assets ?? [], platform);
     releases.push({
       tag,
       version: tag.replace(/^v/, ""),
@@ -103,7 +118,7 @@ export function parseReleases(payload: unknown): Release[] {
       url: item.html_url ?? `${RELEASES_URL}/tag/${tag}`,
       publishedAt: item.published_at ?? null,
       prerelease: item.prerelease ?? false,
-      downloadUrl: dmg?.browser_download_url ?? null,
+      downloadUrl: download?.browser_download_url ?? null,
     });
   }
   return releases;

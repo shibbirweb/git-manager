@@ -69,15 +69,15 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 
 ## Progress
 
-- Step 1: `windows` job added to `.github/workflows/ci.yml` (not committed). Needs a push to run.
-- Step 2 (not committed): `config::home_dir` reads `USERPROFILE` first on Windows, then `HOME` (tested with
+- Step 1: `windows` job added to `.github/workflows/ci.yml` (`9761593`).
+- Step 2 (`9761593`): `config::home_dir` reads `USERPROFILE` first on Windows, then `HOME` (tested with
   `home_from`); the terminal and workspace files use it too, and the test sandbox moves `USERPROFILE`.
   `git/cli.rs` `user_path()` uses the app's own PATH on Windows (a `cfg(windows)` test checks it).
   `child_process::hide_console` adds `CREATE_NO_WINDOW` to git (`cli::command`, so also cancellable runs and
   identity), gh and the clipboard reader. Not verified on Windows yet: needs the CI job or a Windows machine.
 - First Windows CI run (PR, 2026-10-05): svelte-check, Vitest and the frontend build pass. The app code compiles.
   The test build and clippy failed on six Unix-only items; fixed in `f34ac11`.
-- Step 3 done (not committed). Rust: `src-tauri/src/paths.rs` (`real`, `RealPath::real_path` through `dunce`,
+- Step 3 done (`f3ec85e`). Rust: `src-tauri/src/paths.rs` (`real`, `RealPath::real_path` through `dunce`,
   `to_ui`, `serialize_ui`), `clippy.toml` forbids `canonicalize`, every root and absolute path for the page goes
   through `to_ui` (`strip_trailing_slash` included). Page: `fromNativePath` on dialog and drop results,
   `isAbsolutePath` and `rootOf` in `workspacePaths.ts` (`parentOf` and `normalizePath` keep the `C:/` root),
@@ -88,4 +88,8 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   occurred while reading the configuration files": the sandbox home and `GIT_CONFIG_GLOBAL` were `\\?\` paths, fixed
   by step 3 (`real_path`). `git::compare` failed on `\` from joining onto a `\\?\` path (same fix; test strings
   now use `to_ui`). `text_search` and `merge::engine` failed with messages cut off, most likely the same cause.
-  Clippy: `node_at` and three `TerminalRegistry` test helpers are only used by Unix tests, now gated (not committed).
+  Clippy: `node_at` and three `TerminalRegistry` test helpers are only used by Unix tests, now gated (`f3ec85e`).
+- Step 4: `src-tauri/tauri.windows.conf.json` (NSIS, per-user, WebView2 bootstrapper);
+  `build-windows` job in `release.yml`, off until the repository variable `WINDOWS_RELEASES` is `true`;
+  `downloadAsset` in `releases.ts` offers the `-setup.exe` (else `.msi`) on Windows. Developer docs updated. User
+  pages (Getting Started, Updates) stay macOS only until Windows releases are switched on: update them then.

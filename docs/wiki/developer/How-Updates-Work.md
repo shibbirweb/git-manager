@@ -45,7 +45,7 @@ sequenceDiagram
     U->>GH: GET /repos/shibbirweb/git-manager/releases?per_page=30
     Note over U,GH: 20 s timeout with AbortController
     GH-->>U: JSON list, or 403 or 404
-    U->>R: parseReleases(json)
+    U->>R: parseReleases(json, platform)
     R-->>U: Release list without drafts or non-version tags
     U->>R: newerReleases(current, channel, releases)
     R-->>U: newer releases, newest first
@@ -79,7 +79,7 @@ Version order comes from `compareVersions` in `version.ts`, which follows semver
 
 ### The dialogs
 
-`UpdateDialog.svelte` shows the notes of every newer release (with Beta badges and dates), a View on GitHub link and three buttons. **Download** calls `updates.download(release)`, which opens the `.dmg` link found by `parseReleases`, or the release page. **Skip This Version** stores `settings.skippedVersion`. `isSkipped` treats that version and anything older as skipped, so `available` (`announcedRelease`) hides the status bar item and automatic checks stay quiet. A manual Check Now still opens the dialog. When `updates.newestSkipped` is true, it shows "You skipped this version." and a **Stop Skipping** button (`updates.unskip()`) in place of Skip This Version. A release newer than the skipped one is announced as usual. **Later** just closes.
+`UpdateDialog.svelte` shows the notes of every newer release (with Beta badges and dates), a View on GitHub link and three buttons. **Download** calls `updates.download(release)`, which opens the download `downloadAsset` picks for the platform (the `.dmg` on macOS, the `-setup.exe` installer or else an `.msi` on Windows), or the release page. **Skip This Version** stores `settings.skippedVersion`. `isSkipped` treats that version and anything older as skipped, so `available` (`announcedRelease`) hides the status bar item and automatic checks stay quiet. A manual Check Now still opens the dialog. When `updates.newestSkipped` is true, it shows "You skipped this version." and a **Stop Skipping** button (`updates.unskip()`) in place of Skip This Version. A release newer than the skipped one is announced as usual. **Later** just closes.
 
 `WhatsNewDialog.svelte` imports `CHANGELOG.md?raw`, so the changelog is bundled at build time and works offline. A beta build shows the `Unreleased` section (betas ship those notes), a stable build shows its own dated section, and older entries can be expanded.
 
@@ -90,7 +90,7 @@ Version order comes from `compareVersions` in `version.ts`, which follows semver
 | File | What it does |
 | --- | --- |
 | `src/lib/update/updates.svelte.ts` | `UpdateStore`: timers, check, channel, skip, download, links |
-| `src/lib/update/releases.ts` | `parseReleases`, `newerReleases`, `defaultChannel`, `isSkipped`, `announcedRelease`, `osLabel`, issue link helpers |
+| `src/lib/update/releases.ts` | `parseReleases`, `downloadAsset`, `newerReleases`, `defaultChannel`, `isSkipped`, `announcedRelease`, `osLabel`, issue link helpers |
 | `src/lib/update/version.ts` | `parseVersion`, `compareVersions`, `isNewer` |
 | `src/lib/update/changelog.ts` | `parseChangelog`, `entryFor`, `releasedEntries` |
 | `src/lib/update/markdown.ts` | Safe Markdown renderer |
@@ -121,7 +121,7 @@ One known trap: the repository must be public. For a private repository, GitHub 
 ## Tests
 
 - `src/lib/update/update.test.ts`: changelog sections with dates, one version's body without link definitions, released versions only, tags with or without `v`, and semver ordering.
-- `src/lib/update/releases.test.ts`: `parseReleases` keeps published version tags and finds the `.dmg`; `newerReleases` for stable, beta, up to date, and the default channel of a beta build; `renderMarkdown` formatting, HTML escaping and non-https links; `isSkipped` and `announcedRelease`; the bug report link, `osLabel` and the user agent fallback.
+- `src/lib/update/releases.test.ts`: `parseReleases` keeps published version tags and finds the `.dmg`; `downloadAsset` picks per platform; `newerReleases` for stable, beta, up to date, and the default channel of a beta build; `renderMarkdown` formatting, HTML escaping and non-https links; `isSkipped` and `announcedRelease`; the bug report link, `osLabel` and the user agent fallback.
 
 When you change channel rules or parsing, add a case to `releases.test.ts` first. The store itself is not unit tested because it needs the network and Tauri.
 

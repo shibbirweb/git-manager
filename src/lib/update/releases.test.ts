@@ -8,6 +8,7 @@ import {
   isSkipped,
   newerReleases,
   osLabel,
+  downloadAsset,
   parseReleases,
   platformName,
 } from "./releases";
@@ -30,17 +31,38 @@ const payload = [
 
 describe("parseReleases", () => {
   it("keeps published version tags and finds the dmg", () => {
-    const releases = parseReleases(payload);
+    const releases = parseReleases(payload, "macOS");
     expect(releases.map((release) => release.tag)).toEqual(["v0.3.0-beta.1", "v0.2.0", "v0.1.1", "v0.2.1-beta.1"]);
     expect(releases[1].downloadUrl).toBe("https://x/020.dmg");
     expect(releases[1].name).toBe("Git Manager v0.2.0");
     expect(releases[2].name).toBe("v0.1.1");
-    expect(parseReleases({ message: "rate limited" })).toEqual([]);
+    expect(parseReleases({ message: "rate limited" }, "macOS")).toEqual([]);
+  });
+});
+
+describe("downloadAsset", () => {
+  const assets = [
+    { name: "Git.Manager_0.2.0_universal.dmg", browser_download_url: "https://x/dmg" },
+    { name: "Git.Manager_0.2.0_x64_en-US.msi", browser_download_url: "https://x/msi" },
+    { name: "Git.Manager_0.2.0_x64-setup.exe", browser_download_url: "https://x/exe" },
+    { name: "Git.Manager_universal.app.tar.gz", browser_download_url: "https://x/tar" },
+  ];
+
+  it("picks the file for each platform", () => {
+    expect(downloadAsset(assets, "macOS")?.browser_download_url).toBe("https://x/dmg");
+    expect(downloadAsset(assets, "Windows")?.browser_download_url).toBe("https://x/exe");
+    expect(downloadAsset(assets.filter((asset) => !asset.name.endsWith(".exe")), "Windows")?.browser_download_url).toBe("https://x/msi");
+  });
+
+  it("has nothing for a platform without a build", () => {
+    expect(downloadAsset(assets, "Linux")).toBeNull();
+    expect(downloadAsset([{ name: "Git.Manager_0.2.0_universal.dmg" }], "Windows")).toBeNull();
+    expect(downloadAsset([], "macOS")).toBeNull();
   });
 });
 
 describe("newerReleases", () => {
-  const releases = parseReleases(payload);
+  const releases = parseReleases(payload, "macOS");
 
   it("offers only stable releases on the stable channel", () => {
     expect(newerReleases("0.1.0", "stable", releases).map((release) => release.tag)).toEqual(["v0.2.0", "v0.1.1"]);
@@ -61,7 +83,7 @@ describe("newerReleases", () => {
 });
 
 describe("skipped versions", () => {
-  const releases = newerReleases("0.1.0", "stable", parseReleases(payload));
+  const releases = newerReleases("0.1.0", "stable", parseReleases(payload, "macOS"));
 
   it("announces the newest release unless it or a newer one was skipped", () => {
     expect(announcedRelease(releases, null)?.version).toBe("0.2.0");

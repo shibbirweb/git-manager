@@ -1,4 +1,4 @@
-# Builds the macOS app and attaches it to a published release.
+# Builds the macOS app (and, once switched on, the Windows installer) and attaches them to a published release.
 #
 # Releases are not cut by hand. "Beta release" (beta.yml) and "Stable release" (stable.yml) work out the
 # version and open a release pull request; once it is merged and CI passes, beta-publish.yml or
@@ -12,6 +12,9 @@
 #
 # The version comes from src-tauri/Cargo.toml, never from the tag: a tag that disagreed with the code
 # would ship an app reporting the wrong version. So the tag, the pre-release flag and the code must agree.
+#
+# The Windows installer is built only when the repository variable WINDOWS_RELEASES is "true" (Settings,
+# Secrets and variables, Actions, Variables), so betas do not offer it before Windows support is finished.
 #
 # Code signing and notarization are optional. To enable them, add these repository secrets and uncomment
 # the matching env lines below: APPLE_CERTIFICATE (base64 .p12), APPLE_CERTIFICATE_PASSWORD,
@@ -158,4 +161,36 @@ jobs:
         with:
           tauriScript: bun run tauri
           args: --target universal-apple-darwin
+          tagName: ${{ needs.version.outputs.tag }}
+
+  build-windows:
+    name: Build and attach the Windows installer
+    needs: [version, test]
+    if: ${{ !cancelled() && vars.WINDOWS_RELEASES == 'true' && needs.version.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.test.result) }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # tauri.windows.conf.json makes this an NSIS installer (x64); files are uploaded to the release that started this.
+      - name: Build and upload
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tauriScript: bun run tauri
           tagName: ${{ needs.version.outputs.tag }}

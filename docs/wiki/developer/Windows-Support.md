@@ -19,6 +19,12 @@ Absolute paths always use `/`, on Windows too (`C:/Users/me/repo`), so the page'
 - every absolute path for the page goes through `paths::to_ui` (or `serialize_ui` on a serde field), which also writes the drive letter in upper case;
 - on the page, `fromNativePath` converts what the system hands over directly (dialogs, dropped files), and `isAbsolutePath`, `rootOf`, `parentOf` and `normalizePath` in `workspacePaths.ts` know the `C:/` and `//server/share/` roots.
 
+## Installer and releases
+
+`src-tauri/tauri.windows.conf.json` is merged over `tauri.conf.json` on Windows. Its bundle targets replace the macOS ones with `nsis`: a per-user installer (`installMode: currentUser`, no administrator rights) that downloads WebView2 when it is missing. `build-windows` in `release.yml` builds it on `windows-latest` and attaches the `-setup.exe` to the release, but only when the repository variable `WINDOWS_RELEASES` is `true`. That switch keeps betas from offering a Windows download before Windows support is finished. The update check offers that `-setup.exe` to Windows users (`downloadAsset` in `src/lib/update/releases.ts`).
+
+The installer is not signed yet, so Windows SmartScreen warns about an unknown publisher.
+
 ## Code written for Windows
 
 The terminal, the Scripts panel and the command line tool already have Windows paths behind `cfg(windows)` or runtime checks. The `windows` job in `ci.yml` builds and tests them on every pull request.
