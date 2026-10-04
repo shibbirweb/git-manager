@@ -59,7 +59,8 @@ Earlier docs work still open (from before this batch):
       usage/Status-Bar-and-Help.md, usage/Settings.md, usage/Settings-Terminal-and-Automation.md,
       usage/Keyboard-Shortcuts.md, usage/Keyboard-Shortcuts-Editor.md and their developer chapters.
 - [ ] "Bugs we fixed" entry for the hidden terminal frame catching clicks (How-Terminal-Features-Work.md).
-- [ ] Pages near the word limit (Status-Bar-and-Help, Editing-Code, Settings, the Markdown chapter): split them.
-- [ ] Settings-Reference.md: every new settings key and default from the notes.
+- [x] Editing-Code split: the Code Appearance page and How-Code-Appearance-Works chapter (2026-10-03).
+- [ ] Pages near the word limit (Status-Bar-and-Help, Settings at about 1190 words, the Markdown chapter): split them.
+- [ ] Settings-Reference.md: every new settings key and default from the notes. (`detectIndentation` is in already.)
 - [ ] Keyboard shortcut pages: Cmd+P, Shift+Cmd+P, Shift+Cmd+T, Cmd+\, Cmd+1, Cmd+2, Cmd+E in the commit box, the
       line staging keys, and the changed Go to File key (now Shift+Cmd+O for the Search Everywhere Files tab).

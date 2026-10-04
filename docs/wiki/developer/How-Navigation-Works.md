@@ -68,7 +68,7 @@ stateDiagram-v2
 
 Places are recorded by `FileView.svelte` (selection or text changes, and when a file opens), `ChangesView.svelte` (a click in Changes, `kind: "diff"`, line 0) and `editor/blame.ts` (blame clicks).
 
-`recentFilePaths()` lists the visited files, newest first and each once (current, then forward, then back), for Recent Files in [Search Everywhere](How-Search-Everywhere-Works.md). A search result opens through `navigation.openFileAt(filePath, line, column)`: it sets a reveal request with a 0-based line and column and `focus: true`, then opens the file. `FileView` applies it, focuses the editor, and records the new place as usual.
+The history is not a list of recent files: Recent Files in [Search Everywhere](How-Search-Everywhere-Works.md), Quick Open and the Cmd+E popup come from their own list, kept per workspace (see [How Recent Files Works](How-Recent-Files-Work.md)). Going back reorders the history and a restart empties it, which made it a poor source for that. A search result opens through `navigation.openFileAt(filePath, line, column)`: it sets a reveal request with a 0-based line and column and `focus: true`, then opens the file. `FileView` applies it, focuses the editor, and records the new place as usual.
 
 ### Blame jumps
 
@@ -158,7 +158,7 @@ The triggers are the arrow buttons in `Header.svelte`, Ctrl+- and Ctrl+Shift+- (
 
 ## Tests
 
-`src/lib/stores/navHistory.test.ts` covers small moves versus jumps, back and forward, the cap and `forget`, Log and diff steps, refusing pseudo tabs, `recentFilePaths`, `travel` (skipping gone stops, cancelling) and `isMissingFileError`. Any new location kind or rule needs a case here first.
+`src/lib/stores/navHistory.test.ts` covers small moves versus jumps, back and forward, the cap and `forget`, Log and diff steps, refusing pseudo tabs, `travel` (skipping gone stops, cancelling) and `isMissingFileError`. Any new location kind or rule needs a case here first.
 
 ## Keeping this page in sync
 

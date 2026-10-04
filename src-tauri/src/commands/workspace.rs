@@ -1,4 +1,4 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, Window};
 
 use super::blocking;
 use crate::error::AppResult;
@@ -25,38 +25,49 @@ pub async fn init_repository(folder_path: String) -> AppResult<RepoInfo> {
 }
 
 /// Starts watching one workspace folder for changes in `repo_roots`, replacing
-/// the previous watcher of that folder. A multi-root workspace watches each of
-/// its folders; the frontend unwatches folders it removes.
+/// the previous watcher of that folder in the asking window. A multi-root
+/// workspace watches each of its folders; the frontend unwatches folders it
+/// removes, and a window that closes loses all of its watchers.
 ///
 /// Async on purpose: a command without `async` runs on the main thread, and
 /// starting a watcher on a big folder there froze the window.
 #[tauri::command]
 pub async fn watch_workspace(
     app: AppHandle,
+    window: Window,
     state: State<'_, AppState>,
     workspace_root: String,
     repo_roots: Vec<String>,
 ) -> AppResult<()> {
     let root = workspace_root.clone();
-    let workspace_watcher = blocking(move || watcher::watch(app, &root, &repo_roots)).await?;
+    let window_label = window.label().to_string();
+    let label = window_label.clone();
+    let workspace_watcher = blocking(move || watcher::watch(app, &label, &root, &repo_roots)).await?;
     let previous = state
         .watchers
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .insert(workspace_root, workspace_watcher);
+        .insert((window_label, workspace_root), workspace_watcher);
     stop_watcher(previous).await;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn unwatch_workspace(state: State<'_, AppState>, workspace_root: String) -> AppResult<()> {
+pub async fn unwatch_workspace(window: Window, state: State<'_, AppState>, workspace_root: String) -> AppResult<()> {
     let previous = state
         .watchers
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .remove(&workspace_root);
+        .remove(&(window.label().to_string(), workspace_root));
     stop_watcher(previous).await;
     Ok(())
+}
+
+/// Takes every watcher of a window out of the map (it closed); the caller drops them off the main thread.
+pub fn take_window_watchers(state: &AppState, window_label: &str) -> Vec<crate::state::RepoWatcher> {
+    let mut watchers = state.watchers.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let keys: Vec<(String, String)> = watchers.keys().filter(|(label, _)| label == window_label).cloned().collect();
+    keys.iter().filter_map(|key| watchers.remove(key)).collect()
 }
 
 /// Stopping a watcher waits for its threads, so it happens off the main thread too.

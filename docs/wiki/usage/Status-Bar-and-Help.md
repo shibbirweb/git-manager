@@ -14,8 +14,9 @@ Like in VS Code, the left side describes the active repository, the one the side
   - **Auto** (the default) makes the active repository follow the open tab. Open a file, a diff, or a commit, branch or history tab, and its repository becomes the active one. A terminal tab picks the repository of its folder. The Log and an empty editor keep the active repository as it is.
   - Pick a repository to keep it active whatever tab is open. Pick **Auto** again to follow the tabs.
   - Each repository shows its branch, and its folder when that differs from its name. The current choice says **selected**.
-- **Branch**, with numbers for commits to pull (down arrow) and to push (up arrow), such as **main 1** and an up arrow. A checked-out commit shows as "detached" and its short hash. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
-- **4 changes**: the number of changed files, hidden when there are none. Click it to open Changes.
+- **Branch**. A checked-out commit shows as "detached" and its short hash. A long name is cut short with "..."; hover it for the full name. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
+- **Sync**, right after the branch, like VS Code. It shows the commits to pull and to push, such as **1↓ 2↑**. Click it to pull, then push. When nothing is waiting, a click pulls whatever the remote has. A branch that is not on the remote yet shows a cloud icon instead: click it to publish the branch (push it and track it). Hover it to see what a click will do.
+- **4 changes**: the number of changed files, hidden when there are none. Click it to open a **Changes** tab: the changed files on the left, and the selected file compared with the last commit on the right (staged and unstaged edits together). Use Up and Down to move through the files; double-click a file or press Enter to open it. The list updates as you work. Drag the line between the list and the diff to make the list wider or narrower (double-click the line to reset it). The layout button in the tab's toolbar hides the list to give the diff the whole width; the toolbar then names the file shown, and its up and down arrows move to the previous or next file.
 - **2 conflicts**, in red, while files are in conflict. Click it to open the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
 - A note such as **Merging feature into main** while a merge, rebase, cherry-pick or revert is in progress. See [Resolving Conflicts](Resolving-Conflicts.md).
 
@@ -26,7 +27,7 @@ With Auto, a file tab that is outside any repository says **No repository**; cli
 While a file is shown in the editor:
 
 - **Ln 42, Col 7**: the cursor position. With a selection it adds, for example, "(18 selected, 2 lines)".
-- **Spaces: 4**: the indentation. Click it to open Settings on the **Editor** section, where the tab size is.
+- **Spaces: 4** (or **Tab Size: 4** for a file indented with tabs): the indentation, detected from the file unless Detect indentation is off. Click it to open Settings on the **Editor** section.
 - **LF** or **CRLF**: the file's line endings. Git Manager keeps them as they are when saving.
 - The language, such as **TypeScript**.
 

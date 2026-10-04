@@ -25,6 +25,7 @@ function status(branch: string | null, shortId: string | null = null): RepoStatu
   return {
     head: { branch, shortId, unborn: false, upstream: null, ahead: 0, behind: 0 },
     op: { kind: "none", description: "", oursLabel: "", theirsLabel: "" },
+    bisect: null,
     files: [],
   };
 }

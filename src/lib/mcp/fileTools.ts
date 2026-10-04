@@ -7,6 +7,7 @@
 import { fileTabsUnder } from "$lib/stores/tabs";
 import { baseName, folderFor, type FolderRef, type PathMove, relativeTo } from "$lib/stores/workspacePaths";
 import { checkDrop } from "$lib/views/files/dragDrop";
+import { MAX_NAME_BYTES, nameBytes } from "$lib/views/files/fileNames";
 import { topLevel } from "$lib/views/files/selection";
 import { normalizeAbsolutePath, optionalBoolean, requiredPath, requiredString, ToolArgError, type ToolArgs } from "./args";
 import { FILE_TOOL_MAX_PATHS } from "./toolDefs";
@@ -143,7 +144,11 @@ export async function createFolder(deps: FileToolDeps, args: ToolArgs): Promise<
 
 export async function renamePath(deps: FileToolDeps, args: ToolArgs): Promise<Structured> {
   const entryPath = requiredPath(args, "entryPath");
-  const newName = requiredString(args, "newName", 255);
+  const newName = requiredString(args, "newName", MAX_NAME_BYTES);
+  // The file system counts bytes: "é" is two.
+  if (nameBytes(newName) > MAX_NAME_BYTES) {
+    throw new ToolArgError(`"newName" is too long: a name holds at most ${MAX_NAME_BYTES} bytes`);
+  }
   const folders = workspaceFolders(deps);
   folderOf(folders, entryPath);
   refuseRoots(folders, [entryPath], "renamed");

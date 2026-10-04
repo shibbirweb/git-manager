@@ -18,7 +18,7 @@ const INVALID_REQUEST: i64 = -32600;
 const METHOD_NOT_FOUND: i64 = -32601;
 const INVALID_PARAMS: i64 = -32602;
 
-const INSTRUCTIONS: &str = "Git Manager is the desktop Git client the user has open. These tools read and change the git repositories and files in the workspace folders open in the app, search them, drive the app's UI and report its memory use. Call list_workspace first to learn the repository paths; every path must be absolute and inside an open workspace folder.";
+const INSTRUCTIONS: &str = "Git Manager is the desktop Git client the user has open. These tools read and change the git repositories and files in the workspace folders open in the app, search them, drive the app's UI and report its memory use. Call list_workspace first to learn the windows and repository paths; every path must be absolute and inside a workspace folder open in one of the app's windows. UI tools act on the window holding their path argument, else on the window focused last.";
 
 /// HTTP status and body (None: 202 Accepted with no body).
 pub type Reply = (u16, Option<Value>);
@@ -193,7 +193,11 @@ fn call_tool(shared: &Shared, client: McpClient, params: &Value) -> Result<Value
         tool_result((tool.run)(&ToolCtx { shared }, &Args(arguments)))
     } else {
         let host = shared.host();
-        match shared.bridge.call(host.as_deref(), tool_name, arguments, shared.ui_timeout()) {
+        let window_label = shared.target_window(arguments);
+        match shared
+            .bridge
+            .call(host.as_deref(), window_label.as_deref(), tool_name, arguments, shared.ui_timeout())
+        {
             Ok(answer) => ui_result(answer),
             Err(message) => tool_result(Err(message)),
         }

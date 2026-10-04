@@ -387,6 +387,13 @@
     display: none;
   }
 
+  /* Rounded panels: the bottom panel is a panel of its own. */
+  :global(html[data-rounded-panels]) .panel {
+    border-top: none;
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+  }
+
   /* About 29 px, like the editor's slim path bar. */
   .head {
     flex: none;

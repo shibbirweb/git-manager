@@ -13,7 +13,7 @@ use super::status::{ChangeKind, FileStatus};
 use crate::error::{AppError, AppResult};
 
 /// What `git status` says about a submodule in its parent.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubmoduleChange {
     /// Its checked-out commit differs from the one the parent records.

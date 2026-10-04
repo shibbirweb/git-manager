@@ -102,6 +102,23 @@ export function findLinks(markdown: string): Link[] {
   return links;
 }
 
+/** A screenshot still to take, written in a page where the image will go: `[TODO:merge-tool.png]`. */
+const SCREENSHOT_TODO = /\[TODO:([\w.-]+\.png)\]/g;
+
+/** The screenshots a page marks as still to take, in the prose (not in code). */
+export function screenshotTodos(markdown: string): string[] {
+  const names: string[] = [];
+  for (const segment of segments(markdown)) {
+    if (segment.code) {
+      continue;
+    }
+    for (const match of withoutInlineCode(segment.text).matchAll(SCREENSHOT_TODO)) {
+      names.push(match[1]);
+    }
+  }
+  return names;
+}
+
 export function isExternal(target: string): boolean {
   return /^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith("//") || target === "";
 }

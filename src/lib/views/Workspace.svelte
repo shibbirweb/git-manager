@@ -1,8 +1,15 @@
 <script lang="ts">
   import ConflictsDialog from "$lib/merge/ConflictsDialog.svelte";
   import MergeView from "$lib/merge/MergeView.svelte";
+  import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { DEFAULT_PANEL_WIDTH, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, settings } from "$lib/stores/settings.svelte";
+  import {
+    DEFAULT_PANEL_WIDTH,
+    DEFAULT_TERMINAL_HEIGHT,
+    EDITOR_SPLIT_RATIO_RANGE,
+    MIN_TERMINAL_HEIGHT,
+    settings,
+  } from "$lib/stores/settings.svelte";
   import TerminalHost from "$lib/terminal/TerminalHost.svelte";
   import TerminalPanel from "$lib/terminal/TerminalPanel.svelte";
   import TerminalSlot from "$lib/terminal/TerminalSlot.svelte";
@@ -13,8 +20,12 @@
   import { DoubleShift } from "$lib/search/doubleShift";
   import FileSearch from "$lib/search/FileSearch.svelte";
   import { fileSearch } from "$lib/search/fileSearchStore.svelte";
+  import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
+  import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
+  import { navBarStore } from "$lib/navBar/navBarStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
+  import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import ActivityBar from "./ActivityBar.svelte";
   import ChangesDiff from "./changes/ChangesDiff.svelte";
   import { changesSelection } from "./changes/selection.svelte";
@@ -27,11 +38,14 @@
   import GitTab from "./git/GitTab.svelte";
   import BranchTab from "./git/BranchTab.svelte";
   import { isBranchTab } from "$lib/stores/branchTabs";
+  import { isCompareTab } from "$lib/compare/compareTabs";
+  import FileCompareTab from "$lib/compare/FileCompareTab.svelte";
   import FileView from "./files/FileView.svelte";
   import ChangesView from "./ChangesView.svelte";
   import Header from "./Header.svelte";
   import LogView from "./LogView.svelte";
   import OpBanner from "./OpBanner.svelte";
+  import BisectBanner from "./git/BisectBanner.svelte";
   import NoRepository from "./NoRepository.svelte";
   import EditorTabs from "./EditorTabs.svelte";
   import EmptyMain from "./EmptyMain.svelte";
@@ -39,8 +53,9 @@
   import StatusBar from "./StatusBar.svelte";
   import Sidebar from "./Sidebar.svelte";
   import { openFileSearch, runWorkspaceShortcut } from "./workspaceActions";
+  import { textFieldKeeps, WINDOW_COMMANDS, windowCommand } from "./workspaceShortcuts";
+  import { runCommand, windowKeys } from "$lib/commands/commandRuntime";
   import { followOpenTab } from "./repoSelection.svelte";
-  import { workspaceShortcut } from "./workspaceShortcuts";
 
   const MIN_PANEL = 200;
   // The editor area always keeps at least this much room.
@@ -56,7 +71,24 @@
   let bodyWidth = $state(0);
   let mainHeight = $state(0);
   const leftOpen = $derived(settings.leftPanel !== null);
-  const shownView = $derived(changesSelection.shownView);
+  /** What the first editor group shows besides its tabs. */
+  const primaryView = $derived(changesSelection.primaryView);
+  const split = $derived(repoStore.groups.length > 1);
+  let groupsWidth = $state(0);
+  const leftGroupWidth = $derived(Math.round(settings.editorSplitRatio * groupsWidth));
+
+  function resizeGroups(width: number, persist: boolean): void {
+    if (groupsWidth > 0) {
+      settings.setEditorSplitRatio(width / groupsWidth, persist);
+    }
+  }
+
+  // Settings > Editor > Split editor turned off: the right group's tabs join the left group.
+  $effect(() => {
+    if (!settings.splitEditor) {
+      untrack(() => repoStore.mergeGroups());
+    }
+  });
 
   const sidebarMax = $derived(
     Math.max(MIN_PANEL, bodyWidth - ACTIVITY_BARS - MIN_MAIN - (settings.explorerOpen ? settings.explorerWidth : 0)),
@@ -75,12 +107,16 @@
   // The selected change must stay valid even while the Changes sidebar is hidden.
   $effect(() => {
     void repoStore.statuses;
+    void repoStore.fileVersions;
     void repoStore.repos;
     untrack(() => changesSelection.sync());
   });
 
   // With Auto (status bar repository picker), the active repository follows the open tab.
   followOpenTab();
+
+  // Recent Files (Cmd+E) follows the tab on screen and the files edited.
+  recentFilesStore.follow();
 
   // A new workspace starts with nothing selected and an empty Back / Forward history.
   $effect(() => {
@@ -111,6 +147,9 @@
     };
   });
 
+  // Background fetches run while a workspace is open (Settings > Git > Auto fetch).
+  onMount(() => autoFetch.start());
+
   // Closing the workspace closes the popup too.
   onDestroy(() => fileSearch.close());
 
@@ -126,22 +165,36 @@
   }
 
   /**
-   * Cmd+B toggles the sidebar, Shift+Cmd+G / Shift+Cmd+E pick a panel, Ctrl+` the terminal (VS Code keys);
-   * Cmd+P / Shift+Cmd+O, Cmd+O, Option+Cmd+O and Shift+Cmd+F open Search Everywhere on Files, Classes,
-   * Symbols and Text, and Shift+Cmd+R on Text with Replace (JetBrains keys).
+   * The window shortcuts (workspaceShortcuts.ts lists them) and every command with a custom key
+   * from Settings > Keyboard Shortcuts.
    */
   function onKeydown(event: KeyboardEvent): void {
-    const shortcut = workspaceShortcut(event, {
-      dialogOpen: dialogs.active !== null || gitDialogs.active !== null || fileSearch.isOpen,
-      mergeOpen: repoStore.mergeTarget !== null,
-    });
-    if (!shortcut) {
+    const command = windowCommand(
+      event,
+      {
+        dialogOpen:
+          dialogs.active !== null ||
+          gitDialogs.active !== null ||
+          fileSearch.isOpen ||
+          quickOpen.isOpen ||
+          recentFilesStore.isOpen ||
+          navBarStore.isOpen,
+        mergeOpen: repoStore.mergeTarget !== null,
+      },
+      windowKeys(),
+    );
+    if (!command || textFieldKeeps(command.id, event.target)) {
       return;
     }
-    // The View and Edit menus show these keys too; the page sees a key first, so preventing
-    // its default here keeps the menu item from running it a second time.
+    // The menus show these keys too; the page sees a key first, so preventing its default
+    // here keeps the menu item from running it a second time.
     event.preventDefault();
-    runWorkspaceShortcut(shortcut);
+    const shortcut = WINDOW_COMMANDS[command.id];
+    if (shortcut) {
+      runWorkspaceShortcut(shortcut);
+    } else {
+      runCommand(command.id);
+    }
   }
 </script>
 
@@ -150,6 +203,7 @@
 <div class="workspace">
   <Header />
   <OpBanner />
+  <BisectBanner />
   <div class="body" bind:clientWidth={bodyWidth}>
     {#if settings.leftBarVisible}
       <ActivityBar />
@@ -182,37 +236,69 @@
     />
     {/if}
     <main class="main" bind:clientHeight={mainHeight}>
-      <div class="editor-area">
-        {#if changesSelection.selected || repoStore.tabs.length > 0}
-          <EditorTabs />
-        {/if}
-        {#if shownView === "diff"}
-          <ChangesDiff />
-        {:else if shownView === "log"}
-          {#if repoStore.repo}
-            <LogView />
-          {:else}
-            <NoRepository />
+      <div class="editor-area" bind:clientWidth={groupsWidth}>
+        <!-- One editor group, or two side by side (Window > Split Right); the first one also shows the diff and the Log. -->
+        {#each repoStore.groups as group, index (group.id)}
+          {#if index > 0}
+            <ResizeHandle
+              label="Resize editor groups"
+              panel="left"
+              size={leftGroupWidth}
+              min={Math.round(groupsWidth * EDITOR_SPLIT_RATIO_RANGE[0])}
+              max={Math.round(groupsWidth * EDITOR_SPLIT_RATIO_RANGE[1])}
+              defaultSize={Math.round(groupsWidth / 2)}
+              onResize={(width) => resizeGroups(width, false)}
+              onCommit={(width) => resizeGroups(width, true)}
+            />
           {/if}
-        {:else if shownView === "none"}
-          <EmptyMain />
-        {/if}
-        <!-- Every tab keeps its editor mounted, so unsaved edits, cursor and scroll survive switching. -->
-        {#each repoStore.tabs as tab (tab.path)}
-          {@const terminalKey = parseTerminalTabPath(tab.path)}
-          <div class="file-host" class:hidden={shownView !== "file" || repoStore.openFilePath !== tab.path}>
-            {#if terminalKey !== null}
-              <TerminalSlot {terminalKey} />
-            {:else if isCommitTab(tab.path)}
-              <CommitTab tabPath={tab.path} />
-            {:else if isGitTab(tab.path)}
-              <GitTab tabPath={tab.path} />
-            {:else if isBranchTab(tab.path)}
-              <BranchTab tabPath={tab.path} />
-            {:else}
-              <FileView filePath={tab.path} />
+          <section
+            class="editor-group"
+            class:split
+            class:focused={repoStore.focusedGroupId === group.id}
+            style:flex-basis={split && index === 0 ? `${settings.editorSplitRatio * 100}%` : null}
+            aria-label={split ? (index === 0 ? "Left editor group" : "Right editor group") : "Editor"}
+            onfocusin={() => repoStore.focusGroup(group.id)}
+            onpointerdown={() => repoStore.focusGroup(group.id)}
+          >
+            {#if (index === 0 && changesSelection.selected) || group.tabs.length > 0}
+              <EditorTabs groupId={group.id} />
             {/if}
-          </div>
+            {#if index === 0}
+              {#if primaryView === "diff"}
+                <ChangesDiff />
+              {:else if primaryView === "log"}
+                {#if repoStore.repo}
+                  <LogView />
+                {:else}
+                  <NoRepository />
+                {/if}
+              {:else if primaryView === "none"}
+                <EmptyMain />
+              {/if}
+            {/if}
+            <!--
+              Every tab keeps its editor mounted, so unsaved edits, cursor and scroll survive switching.
+              A tab restored at start (dormant) gets its editor the first time it is shown.
+            -->
+            {#each group.tabs as tab (tab.path)}
+              {@const terminalKey = parseTerminalTabPath(tab.path)}
+              <div class="file-host" class:hidden={!changesSelection.tabShown(group.id, tab.path)}>
+                {#if terminalKey !== null}
+                  <TerminalSlot {terminalKey} />
+                {:else if isCommitTab(tab.path)}
+                  <CommitTab tabPath={tab.path} />
+                {:else if isGitTab(tab.path)}
+                  <GitTab tabPath={tab.path} />
+                {:else if isBranchTab(tab.path)}
+                  <BranchTab tabPath={tab.path} />
+                {:else if isCompareTab(tab.path)}
+                  <FileCompareTab tabPath={tab.path} />
+                {:else if !repoStore.isDormant(tab.path, group.id)}
+                  <FileView filePath={tab.path} groupId={group.id} />
+                {/if}
+              </div>
+            {/each}
+          </section>
         {/each}
       </div>
       {#if terminalStore.started}
@@ -263,6 +349,18 @@
   <FileSearch />
 {/if}
 
+<!-- Recent Files (Cmd+E), loaded on first use. -->
+{#if recentFilesStore.isOpen}
+  {#await import("$lib/recentFiles/RecentFiles.svelte") then module}
+    <module.default />
+  {/await}
+{/if}
+
+<!-- Jump to Navigation Bar with no file on screen: a floating bar from the active repository. -->
+{#if navBarStore.floating}
+  <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir floating />
+{/if}
+
 {#if repoStore.mergeTarget && repoStore.repo}
   {#key repoStore.mergeTarget}
     <MergeView repoPath={repoStore.repo.root} conflictPath={repoStore.mergeTarget} />
@@ -303,7 +401,19 @@
     flex: 1;
     min-height: 0;
     display: flex;
+  }
+
+  .editor-group {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
     flex-direction: column;
+  }
+
+  .editor-group.split:first-child {
+    flex-grow: 0;
+    flex-shrink: 0;
   }
 
   .file-host {
@@ -324,5 +434,31 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+
+  /* Rounded panels: each panel is rounded and sits on the window color. The resize
+     handles fill the gaps (ResizeHandle.svelte), so flex gaps do the spacing. */
+  :global(html[data-rounded-panels]) .body {
+    gap: var(--panel-gap);
+    padding: 0 var(--panel-gap) var(--panel-gap);
+    background: var(--frame);
+  }
+
+  :global(html[data-rounded-panels]) .sidebar,
+  :global(html[data-rounded-panels]) .explorer {
+    border: none;
+    border-radius: var(--panel-radius);
+  }
+
+  :global(html[data-rounded-panels]) .main,
+  :global(html[data-rounded-panels]) .editor-area {
+    gap: var(--panel-gap);
+    background: transparent;
+  }
+
+  :global(html[data-rounded-panels]) .editor-group {
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    background: var(--panel);
   }
 </style>

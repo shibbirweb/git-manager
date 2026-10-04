@@ -32,6 +32,8 @@ pub struct MemoryLogStatus {
 struct Running {
     stop: Arc<AtomicBool>,
     events: Arc<Mutex<Vec<String>>>,
+    interval_ms: u64,
+    threshold_mb: f64,
 }
 
 #[derive(Default)]
@@ -112,6 +114,18 @@ impl MemoryLog {
         let interval_ms = interval_ms.max(MIN_INTERVAL_MS);
         let threshold_mb = if threshold_mb.is_finite() { threshold_mb.max(0.0) } else { 5.0 };
         let mut running = lock(&self.running);
+        // Every window applies the setting at start: the same one again keeps the log going.
+        let unchanged = running
+            .as_ref()
+            .is_some_and(|current| current.interval_ms == interval_ms && current.threshold_mb == threshold_mb);
+        if enabled && unchanged {
+            return MemoryLogStatus {
+                enabled: true,
+                path: path.to_string_lossy().into_owned(),
+                interval_ms,
+                threshold_mb,
+            };
+        }
         if let Some(old) = running.take() {
             old.stop.store(true, Ordering::SeqCst);
         }
@@ -124,7 +138,12 @@ impl MemoryLog {
                 .name("gm-memory-log".to_string())
                 .spawn(move || run(&thread_path, &thread_stop, &thread_events, interval_ms, threshold_mb));
             if started.is_ok() {
-                *running = Some(Running { stop, events });
+                *running = Some(Running {
+                    stop,
+                    events,
+                    interval_ms,
+                    threshold_mb,
+                });
             }
         }
         MemoryLogStatus {

@@ -7,7 +7,16 @@
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { mcpStore } from "./mcpStore.svelte";
-  import { filterTools, groupTools, toolBadge, toolCountLabel, toolEnabled, withToolStates } from "./toolStates";
+  import {
+    changedTools,
+    filterTools,
+    groupTools,
+    toolBadge,
+    toolCountLabel,
+    toolEnabled,
+    withDefaultStates,
+    withToolStates,
+  } from "./toolStates";
 
   let filter = $state("");
   let filterEl = $state<HTMLInputElement | null>(null);
@@ -16,6 +25,7 @@
   const shown = $derived(filterTools(tools, filter));
   const groups = $derived(groupTools(shown));
   const enabledCount = $derived(tools.filter((tool) => toolEnabled(tool, settings.mcpTools)).length);
+  const changedShown = $derived(changedTools(settings.mcpTools, shown));
   const recent = $derived([...mcpStore.activity].reverse());
   const status = $derived(mcpStore.status);
   const statusLine = $derived.by(() => {
@@ -71,6 +81,19 @@
     settings.setPreference("mcpTools", withToolStates(settings.mcpTools, list, enabled));
   }
 
+  /** Destructive tools go back off and the rest back on, for the tools the filter shows. */
+  async function restoreDefaults(): Promise<void> {
+    const count = changedShown.length;
+    const ok = await dialogs.confirm({
+      title: "Restore Defaults",
+      message: `This puts ${count === 1 ? "1 tool" : `${count} tools`} back to the default: destructive tools off, every other tool on.`,
+      confirmLabel: "Restore",
+    });
+    if (ok) {
+      settings.setPreference("mcpTools", withDefaultStates(settings.mcpTools, shown));
+    }
+  }
+
   function setOne(tool: McpToolInfo, enabled: boolean): void {
     settings.setPreference("mcpTools", withToolStates(settings.mcpTools, [tool], enabled));
   }
@@ -108,6 +131,14 @@
       <input class="input filter" placeholder="Filter tools" bind:value={filter} bind:this={filterEl} aria-label="Filter tools" />
       <button class="btn small" onclick={() => void setMany(shown, true)} disabled={shown.length === 0}>Turn All On</button>
       <button class="btn small" onclick={() => void setMany(shown, false)} disabled={shown.length === 0}>Turn All Off</button>
+      <button
+        class="btn small"
+        onclick={() => void restoreDefaults()}
+        disabled={changedShown.length === 0}
+        title="Destructive tools off, every other tool on"
+      >
+        Restore Defaults
+      </button>
       <button class="btn small" onclick={openSettings}>Settings...</button>
     </div>
 

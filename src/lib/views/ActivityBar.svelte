@@ -48,11 +48,11 @@
   <!-- The Log opens in the main area rather than in the sidebar. -->
   <button
     class="item"
-    class:active={changesSelection.shownView === "log"}
+    class:active={changesSelection.logShown}
     onclick={() => changesSelection.toggleLog()}
-    title="Log: commit history and graph (Shift+Cmd+L){changesSelection.shownView === 'log' ? ', click to hide' : ''}"
+    title="Log: commit history and graph (Shift+Cmd+L){changesSelection.logShown ? ', click to hide' : ''}"
     aria-label="Log"
-    aria-pressed={changesSelection.shownView === "log"}
+    aria-pressed={changesSelection.logShown}
   >
     <Icon name="history" size={19} strokeWidth={1.8} />
   </button>
@@ -92,6 +92,13 @@
     padding: 6px 0;
     background: var(--panel-alt);
     border-right: 1px solid var(--border-strong);
+  }
+
+  /* Rounded panels: a stripe on the window frame, flush with the window edge. */
+  :global(html[data-rounded-panels]) .activity {
+    margin-left: calc(-1 * var(--panel-gap));
+    background: var(--frame);
+    border-right: none;
   }
 
   .item {

@@ -76,6 +76,7 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 | --- | --- |
 | `src/lib/views/files/FileView.svelte` | One editor tab: load, save, markers, navigation, the path bar |
 | `src/lib/views/EditorTabs.svelte` | The tab strip and its menu |
+| `src/lib/views/EmptyMain.svelte` | The empty editor area with the Navigation Bar; buttons reuse `openQuickOpen`, `openFileSearch`, `openNavigationBar` |
 | `src/lib/views/workspaceShortcuts.ts` | Which window shortcut a key means |
 | `src/lib/stores/tabs.ts` | Pure tab rules |
 | `src/lib/stores/pseudoTabs.ts` | `isPseudoTab` for tabs that are not files |
@@ -128,6 +129,6 @@ Put new rules in the pure modules, with tests. The path bar needs a visual check
 
 ## Keeping this page in sync
 
-- Update this page and [Editor and Tabs](../usage/Editor-and-Tabs.md) when tabs, shortcuts, extensions, markers or saving change.
+- Update this page and [Editor and Tabs](../usage/Editor-and-Tabs.md) when tabs, shortcuts, extensions, markers or saving change. Dragging, pinning and wrapping tabs are in [How tabs are arranged](How-Tabs-Are-Arranged.md).
 - A new pseudo tab kind goes into `isPseudoTab` and the table in [How commit tabs work](How-Commit-Tabs-Work.md).
 - Retake `editor-tabs.png`, `editor-change-markers.png` and `empty-main.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

@@ -22,8 +22,11 @@ import {
   type RepoTarget,
 } from "../sidebar/actions";
 import { gitDialogs } from "../git/gitDialogs.svelte";
+import { undoAction } from "../git/undoActions";
 import { commitDraft } from "./commitDraft.svelte";
 import { commitOptions } from "./commitOptions.svelte";
+import { ensureIdentity } from "./identityCheck";
+import { settings } from "$lib/stores/settings.svelte";
 import { discard, stage, unstage } from "./mutations";
 import {
   commitPlan,
@@ -105,8 +108,9 @@ export interface CommitRequest {
  */
 export async function commitRepo(repoRoot: string, request: CommitRequest): Promise<boolean> {
   const draft = commitDraft.for(repoRoot);
-  const message = draft.message;
-  if (!request.amend && message.trim() === "") {
+  // An untouched commit.template is no message, as in git.
+  const message = request.amend && draft.isBlank() ? "" : draft.message;
+  if (!request.amend && draft.isBlank()) {
     toast.info("Write a commit message first");
     await focusCommitMessage(repoRoot);
     return false;
@@ -115,14 +119,24 @@ export async function commitRepo(repoRoot: string, request: CommitRequest): Prom
   if (!options) {
     return false;
   }
+  if (!(await ensureIdentity(repoRoot))) {
+    return false;
+  }
   const result = await repoStore.run(
     "Commit",
     (repoPath) =>
       request.mode === "all"
         ? api.commitAll(repoPath, message, request.amend, options)
         : api.commit(repoPath, message, request.amend, options),
-    { repoPath: repoRoot, success: request.amend ? "Commit amended" : "Committed" },
+    {
+      repoPath: repoRoot,
+      success: request.amend ? "Commit amended" : "Committed",
+      // Pushed right after, an undo would rewrite what was just published.
+      action: () => (request.followUp === "none" ? undoAction(repoRoot, request.amend ? ["amend"] : ["commit"]) : null),
+    },
   );
+  // Kept for the history dropdown either way: a failed commit's message is not lost.
+  settings.rememberCommitMessage(repoRoot, message);
   if (result === undefined) {
     return false;
   }
@@ -142,7 +156,7 @@ export async function commitFromRow(repoRoot: string): Promise<void> {
     return;
   }
   const draft = commitDraft.for(repoRoot);
-  const plan = commitPlan(stateOf(section), draft);
+  const plan = commitPlan(stateOf(section), { message: draft.isBlank() ? "" : draft.message, amend: draft.amend });
   if (plan.kind === "focus") {
     await focusCommitMessage(repoRoot);
   } else if (plan.kind === "blocked") {
@@ -181,7 +195,7 @@ export async function undoLastCommit(repoRoot: string): Promise<void> {
   });
   // Like VS Code: offer the message again for the next commit.
   const draft = commitDraft.for(repoRoot);
-  if (message !== undefined && draft.message.trim() === "") {
+  if (message !== undefined && draft.isBlank()) {
     draft.message = message.trimEnd();
   }
 }

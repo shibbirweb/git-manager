@@ -1,7 +1,8 @@
 //! Integrated terminal: finds the installed shells and runs them in pseudo terminals.
 //!
-//! Every terminal has three parked threads: a writer (keystrokes stay in order and a
-//! full PTY never blocks the caller), a reader (output in chunks) and a waiter (exit).
+//! Every terminal has four parked threads: a writer (keystrokes stay in order and a
+//! full PTY never blocks the caller), a reader (pauses while the view is behind), a
+//! sender (merges output into few messages, see terminal_flow.rs) and a waiter (exit).
 
 use std::collections::{HashMap, HashSet};
 use std::io::{ErrorKind, Read, Write};
@@ -14,6 +15,7 @@ use portable_pty::{native_pty_system, ChildKiller, CommandBuilder, MasterPty, Pt
 use serde::Serialize;
 
 use crate::error::{AppError, AppResult};
+use crate::terminal_flow::OutputPump;
 
 const READ_CHUNK_BYTES: usize = 16 * 1024;
 /// How long the exit report waits for the last output once the shell has exited.
@@ -41,13 +43,6 @@ pub struct TerminalInfo {
     pub pid: Option<u32>,
     pub shell: ShellProfile,
     pub cwd: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TerminalExitedEvent {
-    pub terminal_id: u32,
-    pub exit_code: Option<i32>,
 }
 
 // Shell detection
@@ -307,14 +302,16 @@ pub struct PtyProcess {
     killer: Box<dyn ChildKiller + Send + Sync>,
     exited: Arc<AtomicBool>,
     killed: Arc<AtomicBool>,
+    pump: Arc<OutputPump>,
 }
 
-/// Starts `options.program` in a new PTY. `on_output` gets every chunk of output on a
-/// reader thread; `on_exit` runs once after the output ended, with None when the shell
-/// was killed or its code is unknown.
+/// Starts `options.program` in a new PTY. `on_output` gets the output in merged messages
+/// on a sender thread; `on_exit` runs once on that thread after the output ended, with None
+/// when the shell was killed or its code is unknown. Reading pauses while more than about
+/// 2 MB were not acknowledged with `ack`.
 pub fn spawn_pty(
     options: &SpawnOptions,
-    mut on_output: impl FnMut(&[u8]) + Send + 'static,
+    on_output: impl FnMut(Vec<u8>) + Send + 'static,
     on_exit: impl FnOnce(Option<i32>) + Send + 'static,
 ) -> AppResult<PtyProcess> {
     let start_error = |reason: String| AppError::invalid(format!("Could not start {}: {reason}", options.program));
@@ -345,6 +342,7 @@ pub fn spawn_pty(
     let master = pair.master;
     let exited = Arc::new(AtomicBool::new(false));
     let killed = Arc::new(AtomicBool::new(false));
+    let pump = Arc::new(OutputPump::new());
     let (input, input_queue) = mpsc::channel::<Vec<u8>>();
 
     let started = (|| -> AppResult<()> {
@@ -360,36 +358,47 @@ pub fn spawn_pty(
         })?;
 
         let (output_done, output_ended) = mpsc::channel::<()>();
+        let reader_pump = Arc::clone(&pump);
         spawn_thread("terminal-reader", move || {
             let mut buffer = vec![0u8; READ_CHUNK_BYTES];
             loop {
+                reader_pump.wait_until_readable();
                 match reader.read(&mut buffer) {
                     Ok(0) => break,
-                    Ok(count) => on_output(&buffer[..count]),
+                    Ok(count) => reader_pump.push(&buffer[..count]),
                     Err(err) if err.kind() == ErrorKind::Interrupted => {}
                     // Linux reports EIO once the shell side is closed.
                     Err(_) => break,
                 }
             }
+            reader_pump.reader_finished();
             let _ = output_done.send(());
         })?;
 
         let exited = Arc::clone(&exited);
         let killed = Arc::clone(&killed);
+        let waiter_pump = Arc::clone(&pump);
         spawn_thread("terminal-waiter", move || {
             let status = child.wait();
             exited.store(true, Ordering::SeqCst);
+            // Only the PTY buffer is left: read it without waiting for acks.
+            waiter_pump.release();
             // A background job can keep the PTY open after the shell exits; it must not hold back the exit.
             let _ = output_ended.recv_timeout(OUTPUT_GRACE);
             let code = status
                 .ok()
                 .filter(|_| !killed.load(Ordering::SeqCst))
                 .and_then(|status| exit_code(&status));
-            on_exit(code);
-        })
+            waiter_pump.finish(code);
+        })?;
+
+        // Started last, so it never waits for a reader or waiter that failed to start.
+        let sender_pump = Arc::clone(&pump);
+        spawn_thread("terminal-output", move || sender_pump.run_sender(on_output, on_exit))
     })();
     if let Err(err) = started {
         let _ = killer.kill();
+        pump.release();
         return Err(err);
     }
 
@@ -400,6 +409,7 @@ pub fn spawn_pty(
         killer,
         exited,
         killed,
+        pump,
     })
 }
 
@@ -417,6 +427,11 @@ impl PtyProcess {
         let _ = self.input.send(bytes);
     }
 
+    /// The view wrote `byte_count` more bytes of output; a paused reader may resume.
+    pub fn ack(&self, byte_count: usize) {
+        self.pump.ack(byte_count);
+    }
+
     pub fn resize(&self, cols: u16, rows: u16) -> AppResult<()> {
         self.master
             .resize(pty_size(cols, rows))
@@ -429,6 +444,8 @@ impl PtyProcess {
         if self.has_exited() {
             return;
         }
+        // A paused reader must read on to the end of output.
+        self.pump.release();
         self.killed.store(true, Ordering::SeqCst);
         #[cfg(unix)]
         {
@@ -502,6 +519,9 @@ struct RegistryInner {
     terminals: Mutex<HashMap<u32, PtyProcess>>,
     /// Shells that exited before `spawn` added them; only touched with `terminals` locked.
     exited_early: Mutex<HashSet<u32>>,
+    /// The window each terminal belongs to: closing a window kills its shells, and a
+    /// reloaded window only clears its own.
+    owners: Mutex<HashMap<u32, String>>,
 }
 
 impl RegistryInner {
@@ -512,6 +532,10 @@ impl RegistryInner {
     fn exited_early(&self) -> MutexGuard<'_, HashSet<u32>> {
         self.exited_early.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
     }
+
+    fn owners(&self) -> MutexGuard<'_, HashMap<u32, String>> {
+        self.owners.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
 }
 
 impl TerminalRegistry {
@@ -520,7 +544,7 @@ impl TerminalRegistry {
     pub fn spawn(
         &self,
         options: &SpawnOptions,
-        on_output: impl FnMut(&[u8]) + Send + 'static,
+        on_output: impl FnMut(Vec<u8>) + Send + 'static,
         on_exit: impl FnOnce(u32, Option<i32>) + Send + 'static,
     ) -> AppResult<(u32, Option<u32>)> {
         let terminal_id = self.inner.last_terminal_id.fetch_add(1, Ordering::SeqCst) + 1;
@@ -539,6 +563,7 @@ impl TerminalRegistry {
                     finished
                 };
                 drop(finished);
+                registry.owners().remove(&terminal_id);
             }
             on_exit(terminal_id, exit_code);
         })?;
@@ -563,6 +588,13 @@ impl TerminalRegistry {
         }
     }
 
+    /// Unknown or exited terminals ignore acks: their output is no longer held back.
+    pub fn ack(&self, terminal_id: u32, byte_count: usize) {
+        if let Some(process) = self.inner.terminals().get(&terminal_id) {
+            process.ack(byte_count);
+        }
+    }
+
     pub fn resize(&self, terminal_id: u32, cols: u16, rows: u16) -> AppResult<()> {
         match self.inner.terminals().get(&terminal_id) {
             Some(process) => process.resize(cols, rows),
@@ -576,14 +608,48 @@ impl TerminalRegistry {
         drop(process);
     }
 
+    #[cfg(test)]
     pub fn close_all(&self) {
         let processes: Vec<PtyProcess> = self.inner.terminals().drain().map(|(_, process)| process).collect();
+        self.inner.owners().clear();
+        drop(processes);
+    }
+
+    /// Records the window a terminal (or a script run) belongs to. A shell that already
+    /// exited is not recorded.
+    pub fn adopt(&self, terminal_id: u32, window_label: &str) {
+        let terminals = self.inner.terminals();
+        if terminals.contains_key(&terminal_id) {
+            self.inner.owners().insert(terminal_id, window_label.to_string());
+        }
+    }
+
+    /// Kills every shell of one window (it closed or reloaded); the other windows keep theirs.
+    pub fn close_window(&self, window_label: &str) {
+        let owned: Vec<u32> = self
+            .inner
+            .owners()
+            .iter()
+            .filter(|(_, owner)| owner.as_str() == window_label)
+            .map(|(terminal_id, _)| *terminal_id)
+            .collect();
+        let processes: Vec<PtyProcess> = {
+            let mut terminals = self.inner.terminals();
+            owned.iter().filter_map(|terminal_id| terminals.remove(terminal_id)).collect()
+        };
+        {
+            let mut owners = self.inner.owners();
+            for terminal_id in &owned {
+                owners.remove(terminal_id);
+            }
+        }
         drop(processes);
     }
 
     /// For app exit: hangs up every shell, waits briefly, then kills what is left.
     pub fn shutdown(&self) {
         let mut processes: Vec<PtyProcess> = self.inner.terminals().drain().map(|(_, process)| process).collect();
+        self.inner.owners().clear();
         for process in &mut processes {
             process.kill();
         }
@@ -600,6 +666,11 @@ impl TerminalRegistry {
     pub fn is_running(&self, terminal_id: u32) -> bool {
         self.inner.terminals().contains_key(&terminal_id)
     }
+
+    #[cfg(test)]
+    pub fn owner_count(&self) -> usize {
+        self.inner.owners().len()
+    }
 }
 
 /// Starts the requested shell (else the default) in `cwd` (else the home folder).
@@ -609,7 +680,7 @@ pub fn start_terminal(
     cwd: Option<&str>,
     cols: u16,
     rows: u16,
-    on_output: impl FnMut(&[u8]) + Send + 'static,
+    on_output: impl FnMut(Vec<u8>) + Send + 'static,
     on_exit: impl FnOnce(u32, Option<i32>) + Send + 'static,
 ) -> AppResult<TerminalInfo> {
     let shell = pick_shell(shell_profiles(), shell_id);
@@ -715,10 +786,10 @@ mod tests {
         }
 
         /// An output callback and the text it collected so far.
-        fn collector() -> (impl FnMut(&[u8]) + Send + 'static, Collected) {
+        fn collector() -> (impl FnMut(Vec<u8>) + Send + 'static, Collected) {
             let collected = Arc::new(Mutex::new(Vec::new()));
             let sink = Arc::clone(&collected);
-            (move |bytes: &[u8]| sink.lock().unwrap().extend_from_slice(bytes), collected)
+            (move |bytes: Vec<u8>| sink.lock().unwrap().extend_from_slice(&bytes), collected)
         }
 
         fn text(collected: &Collected) -> String {
@@ -880,7 +951,7 @@ mod tests {
             let registry = TerminalRegistry::default();
             let (exit_sender, exit_receiver) = mpsc::channel();
             let (terminal_id, _pid) = registry
-                .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: &[u8]| {}, move |terminal_id, exit_code| {
+                .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
                     let _ = exit_sender.send((terminal_id, exit_code));
                 })
                 .unwrap();
@@ -892,6 +963,42 @@ mod tests {
             assert!(!registry.is_running(terminal_id));
             assert_eq!(exit_receiver.recv_timeout(WAIT).unwrap(), (terminal_id, None));
             assert!(started.elapsed() < Duration::from_secs(2));
+        }
+
+        #[test]
+        fn closing_a_window_kills_only_its_own_shells() {
+            let registry = TerminalRegistry::default();
+            let (exit_sender, exit_receiver) = mpsc::channel();
+            let spawn = |window_label: &str| {
+                let exit_sender = exit_sender.clone();
+                let (terminal_id, _pid) = registry
+                    .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
+                        let _ = exit_sender.send((terminal_id, exit_code));
+                    })
+                    .unwrap();
+                registry.adopt(terminal_id, window_label);
+                terminal_id
+            };
+            let first = spawn("main");
+            let second = spawn("window-2");
+            let third = spawn("window-2");
+            assert_eq!(registry.owner_count(), 3);
+
+            registry.close_window("window-2");
+            let mut exited = vec![exit_receiver.recv_timeout(WAIT).unwrap().0, exit_receiver.recv_timeout(WAIT).unwrap().0];
+            exited.sort();
+            assert_eq!(exited, vec![second, third]);
+            assert!(registry.is_running(first), "the other window keeps its shell");
+            assert!(!registry.is_running(second) && !registry.is_running(third));
+            registry.close_window("window-9");
+            assert!(registry.is_running(first));
+
+            registry.close(first);
+            assert_eq!(exit_receiver.recv_timeout(WAIT).unwrap().0, first);
+            // The exit forgets the owner too; adopting a finished terminal records nothing.
+            assert_eq!(registry.owner_count(), 0);
+            registry.adopt(first, "main");
+            assert_eq!(registry.owner_count(), 0);
         }
 
         #[test]
@@ -918,7 +1025,7 @@ mod tests {
             let registry = TerminalRegistry::default();
             let (exit_sender, exit_receiver) = mpsc::channel();
             let (terminal_id, _pid) = registry
-                .spawn(&sh("exit 0", std::env::temp_dir()), |_bytes: &[u8]| {}, move |terminal_id, exit_code| {
+                .spawn(&sh("exit 0", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
                     let _ = exit_sender.send((terminal_id, exit_code));
                 })
                 .unwrap();
@@ -941,7 +1048,7 @@ mod tests {
             for _ in 0..12 {
                 let exit_sender = exit_sender.clone();
                 let (terminal_id, _pid) = registry
-                    .spawn(&sh("exit 0", std::env::temp_dir()), |_bytes: &[u8]| {}, move |terminal_id, exit_code| {
+                    .spawn(&sh("exit 0", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
                         let _ = exit_sender.send((terminal_id, exit_code));
                     })
                     .unwrap();
@@ -964,7 +1071,7 @@ mod tests {
             for _ in 0..4 {
                 let exit_sender = exit_sender.clone();
                 let (terminal_id, _pid) = registry
-                    .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: &[u8]| {}, move |terminal_id, exit_code| {
+                    .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
                         let _ = exit_sender.send((terminal_id, exit_code));
                     })
                     .unwrap();
@@ -980,7 +1087,7 @@ mod tests {
             for _ in 0..2 {
                 let exit_sender = exit_sender.clone();
                 registry
-                    .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: &[u8]| {}, move |terminal_id, exit_code| {
+                    .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |terminal_id, exit_code| {
                         let _ = exit_sender.send((terminal_id, exit_code));
                     })
                     .unwrap();
@@ -992,11 +1099,92 @@ mod tests {
         }
 
         #[test]
+        fn output_pauses_without_acks_and_every_byte_arrives_before_the_exit() {
+            use crate::terminal_flow::HIGH_WATERMARK;
+
+            const TOTAL_BYTES: usize = 8_000_000;
+            let (message_sender, messages) = mpsc::channel::<Result<Vec<u8>, Option<i32>>>();
+            let exit_sender = message_sender.clone();
+            let process = spawn_pty(
+                &sh(&format!("head -c {TOTAL_BYTES} /dev/zero | tr '\\0' x"), std::env::temp_dir()),
+                move |bytes: Vec<u8>| {
+                    let _ = message_sender.send(Ok(bytes));
+                },
+                move |exit_code| {
+                    let _ = exit_sender.send(Err(exit_code));
+                },
+            )
+            .unwrap();
+            let mut received = Received::default();
+
+            // Without acks the reader stops just above the high watermark.
+            let deadline = Instant::now() + WAIT;
+            while received.bytes <= HIGH_WATERMARK && Instant::now() < deadline {
+                assert_eq!(received.take(&messages, Duration::from_millis(20)), None);
+            }
+            let paused_at = received.bytes;
+            assert!(paused_at > HIGH_WATERMARK, "{paused_at} bytes");
+            let quiet_until = Instant::now() + Duration::from_millis(300);
+            while Instant::now() < quiet_until {
+                assert_eq!(received.take(&messages, Duration::from_millis(20)), None);
+            }
+            assert!(received.bytes <= HIGH_WATERMARK + READ_CHUNK_BYTES, "{} bytes", received.bytes);
+            // A lost ack never stalls it: reading resumes after a second.
+            let deadline = Instant::now() + WAIT;
+            while received.bytes == paused_at && Instant::now() < deadline {
+                assert_eq!(received.take(&messages, Duration::from_millis(20)), None);
+            }
+            assert!(received.bytes > paused_at);
+
+            // Acked as it is written, the rest flows to the end, then the exit.
+            let mut acked = 0;
+            let deadline = Instant::now() + WAIT;
+            let exit_code = loop {
+                process.ack(received.bytes - acked);
+                acked = received.bytes;
+                if let Some(exit_code) = received.take(&messages, Duration::from_millis(20)) {
+                    break exit_code;
+                }
+                assert!(Instant::now() < deadline, "the output did not end");
+            };
+            assert_eq!(exit_code, Some(0));
+            assert_eq!(received.bytes, TOTAL_BYTES);
+            // Merged: far fewer messages than the PTY reads of about 1 KB.
+            assert!(received.messages < TOTAL_BYTES / 16_384, "{} messages", received.messages);
+        }
+
+        type Messages = mpsc::Receiver<Result<Vec<u8>, Option<i32>>>;
+
+        /// What arrived on the output messages so far.
+        #[derive(Default)]
+        struct Received {
+            bytes: usize,
+            messages: usize,
+        }
+
+        impl Received {
+            /// Takes one message; Some with the exit code once the exit arrived.
+            fn take(&mut self, messages: &Messages, wait: Duration) -> Option<Option<i32>> {
+                match messages.recv_timeout(wait) {
+                    Ok(Ok(bytes)) => {
+                        assert!(bytes.len() <= crate::terminal_flow::MAX_MESSAGE_BYTES);
+                        assert!(bytes.iter().all(|byte| *byte == b'x'));
+                        self.bytes += bytes.len();
+                        self.messages += 1;
+                        None
+                    }
+                    Ok(Err(exit_code)) => Some(exit_code),
+                    Err(_) => None,
+                }
+            }
+        }
+
+        #[test]
         fn dropping_the_registry_kills_its_shells() {
             let registry = TerminalRegistry::default();
             let (exit_sender, exit_receiver) = mpsc::channel();
             registry
-                .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: &[u8]| {}, move |_terminal_id, exit_code| {
+                .spawn(&sh("sleep 30", std::env::temp_dir()), |_bytes: Vec<u8>| {}, move |_terminal_id, exit_code| {
                     let _ = exit_sender.send(exit_code);
                 })
                 .unwrap();

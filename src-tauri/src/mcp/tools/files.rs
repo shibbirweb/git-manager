@@ -4,10 +4,11 @@ use serde_json::{json, Value};
 
 use super::{done, json_out, object, Args, BackendTool, ToolCtx, ToolOutput, ToolResult, FILES};
 use crate::git::files;
-use crate::git::workspace::relative_slash_path;
 
 const DEFAULT_MAX_BYTES: usize = 256 * 1024;
 const MAX_BYTES: usize = 1024 * 1024;
+const DEFAULT_LIST_LIMIT: usize = 200;
+const MAX_LIST_LIMIT: usize = 1000;
 
 pub const TOOLS: &[BackendTool] = &[
     BackendTool {
@@ -23,7 +24,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "list_directory",
         title: "List folder",
-        description: "Lists one folder of the workspace: folders first, then files, with whether each is git-ignored or a repository root.",
+        description: "Lists one folder of the workspace, a page at a time: folders first, then files, by name. Entries flag ignored (git-ignored) and isRepo (a repository root) only when true; nextOffset asks for the next page.",
         category: FILES,
         read_only: true,
         destructive: false,
@@ -80,7 +81,7 @@ fn read_file(ctx: &ToolCtx, args: &Args) -> ToolResult {
         return Err("This is a folder; use list_directory".to_string());
     }
     let shown = full_path.to_string_lossy().into_owned();
-    let file = files::read_file(&full_path, &shown).map_err(|err| err.to_string())?;
+    let file = files::read_file(&full_path, &shown, None).map_err(|err| err.to_string())?;
     if file.too_large {
         return Err(format!("The file is too large to read ({} bytes)", file.size));
     }
@@ -108,59 +109,68 @@ fn list_schema() -> Value {
     object(
         json!({
             "folderPath": { "type": "string", "description": "Absolute path of the folder, inside an open workspace folder." },
+            "limit": { "type": "integer", "description": format!("Entries to return (default {DEFAULT_LIST_LIMIT}, at most {MAX_LIST_LIMIT}).") },
+            "offset": { "type": "integer", "description": "Entries to skip, for the next page (default 0); pass the nextOffset of the last answer." },
         }),
         &["folderPath"],
     )
 }
 
-/// The enclosing repository and the repositories directly inside `dir`, for the ignored and isRepo flags.
-fn repo_roots_near(dir: &Path) -> Vec<PathBuf> {
-    let mut roots: Vec<PathBuf> = git2::Repository::discover(dir)
-        .ok()
-        .and_then(|repo| repo.workdir().and_then(|workdir| workdir.canonicalize().ok()))
-        .into_iter()
-        .collect();
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.join(".git").exists() {
-                if let Ok(canonical) = path.canonicalize() {
-                    roots.push(canonical);
-                }
-            }
-        }
-    }
-    roots
+/// The repository whose work tree holds `dir`, which decides what is ignored there.
+fn enclosing_repo(dir: &Path) -> Option<(git2::Repository, PathBuf)> {
+    let repo = git2::Repository::discover(dir).ok()?;
+    let workdir = repo.workdir()?.canonicalize().ok()?;
+    Some((repo, workdir))
 }
 
+/// One page of a folder: names and kinds only, with `ignored` and `isRepo` given only when
+/// true, so a big folder stays small. Only the folders on the page are checked for `.git`.
 fn list_directory(ctx: &ToolCtx, args: &Args) -> ToolResult {
     let full_dir = ctx.path(args, "folderPath")?;
     if !full_dir.is_dir() {
         return Err("Not a folder".to_string());
     }
-    let folders = ctx.folders();
-    let root = folders
-        .iter()
-        .filter(|folder| full_dir.starts_with(folder))
-        .max_by_key(|folder| folder.components().count())
-        .cloned()
-        .unwrap_or_else(|| full_dir.clone());
-    let dir_path = relative_slash_path(&root, &full_dir);
-    let listing = files::list_dir(&full_dir, &dir_path, &repo_roots_near(&full_dir)).map_err(|err| err.to_string())?;
-    let entries: Vec<Value> = listing
-        .entries
-        .iter()
+    let limit = args.usize("limit", DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT)?.max(1);
+    let offset = args.usize("offset", 0, usize::MAX / 2)?;
+    let (candidates, total) = files::sorted_candidates(&full_dir, offset + limit).map_err(|err| err.to_string())?;
+    let page: Vec<files::Candidate> = candidates.into_iter().skip(offset).collect();
+    let owner = enclosing_repo(&full_dir);
+    let mut repo_roots: Vec<PathBuf> = owner.iter().map(|(_, workdir)| workdir.clone()).collect();
+    for candidate in page.iter().filter(|candidate| candidate.is_dir()) {
+        let child = full_dir.join(&candidate.name);
+        if child.join(".git").exists() {
+            if let Ok(canonical) = child.canonicalize() {
+                repo_roots.push(canonical);
+            }
+        }
+    }
+    let shown = page.len();
+    let owner = owner.as_ref().map(|(repo, workdir)| (repo, workdir.as_path()));
+    let entries: Vec<Value> = files::describe(&full_dir, page, &repo_roots, owner)
+        .into_iter()
         .map(|entry| {
-            json!({
-                "name": entry.name,
-                "path": full_dir.join(&entry.name).to_string_lossy(),
-                "isDir": entry.is_dir,
-                "ignored": entry.ignored,
-                "isRepo": entry.is_repo,
-            })
+            let mut item = json!({ "name": entry.name, "isDir": entry.is_dir });
+            if entry.ignored {
+                item["ignored"] = json!(true);
+            }
+            if entry.is_repo {
+                item["isRepo"] = json!(true);
+            }
+            item
         })
         .collect();
-    json_out(json!({ "folderPath": full_dir.to_string_lossy(), "entries": entries, "truncated": listing.truncated }))
+    let next = offset + shown;
+    let mut out = json!({
+        "folderPath": full_dir.to_string_lossy(),
+        "entries": entries,
+        "total": total,
+        "offset": offset,
+        "truncated": next < total,
+    });
+    if next < total {
+        out["nextOffset"] = json!(next);
+    }
+    json_out(out)
 }
 
 fn write_schema() -> Value {

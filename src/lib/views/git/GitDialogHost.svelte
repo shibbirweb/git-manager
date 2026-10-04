@@ -17,6 +17,7 @@
   import UpdateProjectDialog from "./UpdateProjectDialog.svelte";
   import AddSubmoduleDialog from "./submodules/AddSubmoduleDialog.svelte";
   import NewWorktreeDialog from "./worktrees/NewWorktreeDialog.svelte";
+  import IdentityDialog from "../changes/IdentityDialog.svelte";
 
   const active = $derived(gitDialogs.active);
 </script>
@@ -28,7 +29,7 @@
     {:else if active.kind === "pull"}
       <PullDialog repoRoot={active.repoRoot} />
     {:else if active.kind === "reset"}
-      <ResetDialog repoRoot={active.repoRoot} />
+      <ResetDialog repoRoot={active.repoRoot} initialRevision={active.revision ?? null} />
     {:else if active.kind === "rollback"}
       <RollbackDialog repoRoot={active.repoRoot} filePaths={active.filePaths} />
     {:else if active.kind === "shelve"}
@@ -53,6 +54,8 @@
       <NewWorktreeDialog repoRoot={active.repoRoot} />
     {:else if active.kind === "addSubmodule"}
       <AddSubmoduleDialog repoRoot={active.repoRoot} />
+    {:else if active.kind === "identity"}
+      <IdentityDialog repoRoot={active.repoRoot} identity={active.identity} resolve={active.resolve} />
     {/if}
   {/key}
 {/if}

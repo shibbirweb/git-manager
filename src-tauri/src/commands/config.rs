@@ -1,5 +1,6 @@
 use serde::Serialize;
 use serde_json::Value;
+use tauri::Emitter;
 
 use super::blocking;
 use crate::config;
@@ -11,9 +12,39 @@ pub async fn load_config(config_name: String) -> AppResult<Option<Value>> {
     blocking(move || config::load_in(&config::config_dir_in(&config::home_dir()?), &config_name)).await
 }
 
+/// Replaces a whole config file: only for resetting one that could not be read, and the one-time migration.
 #[tauri::command]
 pub async fn save_config(config_name: String, value: Value) -> AppResult<()> {
     blocking(move || config::save_in(&config::config_dir_in(&config::home_dir()?), &config_name, &value)).await
+}
+
+/// What another window changed in a config file, for the windows to apply.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigChanged {
+    pub config_name: String,
+    pub patch: config::ConfigPatch,
+}
+
+/// Writes what one window changed into the file as it is on disk now (see config.rs), then
+/// tells the other windows, so a setting changed in one window reaches every window.
+#[tauri::command]
+pub async fn update_config(
+    app: tauri::AppHandle,
+    window: tauri::Window,
+    config_name: String,
+    patch: config::ConfigPatch,
+) -> AppResult<()> {
+    let name = config_name.clone();
+    let sent = patch.clone();
+    let wrote = blocking(move || config::update_in(&config::config_dir_in(&config::home_dir()?), &name, &sent)).await?;
+    if wrote {
+        let source = window.label().to_string();
+        let _ = app.emit_filter("config-changed", ConfigChanged { config_name, patch }, |target| {
+            matches!(target, tauri::EventTarget::WebviewWindow { label } if *label != source)
+        });
+    }
+    Ok(())
 }
 
 /// Memory of the app and its web view helper processes, for the status bar.

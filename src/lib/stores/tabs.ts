@@ -1,6 +1,8 @@
 // Editor tabs with a VS Code / JetBrains style preview tab: a single click
 // opens (or replaces) the one preview tab; double-clicking or editing pins it.
+// Pinned tabs (Pin Tab) always sit together at the start of the strip.
 
+import { compareTabsInFolder, compareTabTitle, parseCompareTabPath } from "$lib/compare/compareTabs";
 import { isTerminalTab } from "$lib/terminal/terminalTabs";
 import { commitTabsInFolder, parseCommitTabPath } from "./commitTabs";
 import { branchTabsInFolder, branchTabTitle, parseBranchTabPath } from "./branchTabs";
@@ -14,6 +16,11 @@ export interface FileTab {
   /** Preview tabs are shown in italics and replaced by the next single-click open. */
   preview: boolean;
   dirty: boolean;
+  /**
+   * Pinned (Pin Tab): kept at the start of the strip, never closed by the tab limit or by
+   * Close Others, Close to the Right and Close All. Not the same as keeping a preview tab open.
+   */
+  pinned?: boolean;
 }
 
 export interface TabsState {
@@ -35,11 +42,46 @@ export function openTab(state: TabsState, path: string, pin: boolean): TabsState
     tabs[previewIndex] = opened;
     return { tabs, active: path };
   }
-  // A new tab goes right after the active one, as editors do.
+  // A new tab goes right after the active one, as editors do, but never among the pinned tabs.
   const activeIndex = state.tabs.findIndex((tab) => tab.path === state.active);
   const tabs = state.tabs.slice();
-  tabs.splice(activeIndex >= 0 ? activeIndex + 1 : tabs.length, 0, opened);
+  tabs.splice(Math.max(activeIndex >= 0 ? activeIndex + 1 : tabs.length, pinnedCount(tabs)), 0, opened);
   return { tabs, active: path };
+}
+
+export function pinnedCount(tabs: readonly FileTab[]): number {
+  return tabs.filter((tab) => tab.pinned === true).length;
+}
+
+/** Pinned tabs first, each side keeping its order; returns `tabs` itself when already so. */
+export function pinnedFirst<T extends FileTab>(tabs: T[]): T[] {
+  const count = pinnedCount(tabs);
+  if (tabs.slice(0, count).every((tab) => tab.pinned === true)) {
+    return tabs;
+  }
+  return [...tabs.filter((tab) => tab.pinned === true), ...tabs.filter((tab) => tab.pinned !== true)];
+}
+
+/**
+ * Drag and drop in the strip: moves `path` to the gap `gap` (0 is before the first tab,
+ * `tabs.length` after the last), as gaps were before the move. A drag never pins or unpins:
+ * a pinned tab stays among the pinned tabs and any other tab stays after them.
+ */
+export function moveTab(state: TabsState, path: string, gap: number): TabsState {
+  const index = state.tabs.findIndex((tab) => tab.path === path);
+  if (index < 0) {
+    return state;
+  }
+  const boundary = pinnedCount(state.tabs);
+  const pinned = state.tabs[index].pinned === true;
+  const clamped = pinned ? Math.max(0, Math.min(gap, boundary)) : Math.max(boundary, Math.min(gap, state.tabs.length));
+  const target = clamped > index ? clamped - 1 : clamped;
+  if (target === index) {
+    return state;
+  }
+  const tabs = state.tabs.slice();
+  tabs.splice(target, 0, ...tabs.splice(index, 1));
+  return { ...state, tabs };
 }
 
 export function pinTab(state: TabsState, path: string): TabsState {
@@ -47,6 +89,18 @@ export function pinTab(state: TabsState, path: string): TabsState {
     ...state,
     tabs: state.tabs.map((tab) => (tab.path === path && tab.preview ? { ...tab, preview: false } : tab)),
   };
+}
+
+/** Pin Tab / Unpin Tab; pinning a preview tab also keeps it open. */
+export function setTabPinned(state: TabsState, path: string, pinned: boolean): TabsState {
+  const tab = state.tabs.find((candidate) => candidate.path === path);
+  if (!tab || (tab.pinned ?? false) === pinned) {
+    return state;
+  }
+  // Pinning moves the tab to the end of the pinned tabs, unpinning to the start of the others.
+  const tabs = state.tabs.filter((candidate) => candidate.path !== path);
+  tabs.splice(pinnedCount(tabs), 0, { ...tab, pinned, preview: pinned ? false : tab.preview });
+  return { ...state, tabs };
 }
 
 /** Editing a file pins its tab so the next single-click does not replace it. */
@@ -79,13 +133,20 @@ export function closeTabs(state: TabsState, paths: string[]): TabsState {
   return { tabs, active: right?.path ?? left?.path ?? null };
 }
 
+/** Close to the Right: the unpinned tabs after `path`. */
 export function pathsToRight(state: TabsState, path: string): string[] {
   const index = state.tabs.findIndex((tab) => tab.path === path);
-  return index < 0 ? [] : state.tabs.slice(index + 1).map((tab) => tab.path);
+  return index < 0 ? [] : unpinnedPaths(state.tabs.slice(index + 1));
 }
 
+/** Close Others: every unpinned tab but `path`. */
 export function otherPaths(state: TabsState, path: string): string[] {
-  return state.tabs.filter((tab) => tab.path !== path).map((tab) => tab.path);
+  return unpinnedPaths(state.tabs.filter((tab) => tab.path !== path));
+}
+
+/** Close All keeps pinned tabs, as Close Others and Close to the Right do. */
+export function unpinnedPaths(tabs: readonly FileTab[]): string[] {
+  return tabs.filter((tab) => tab.pinned !== true).map((tab) => tab.path);
 }
 
 /**
@@ -133,6 +194,10 @@ export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: st
       if (branchTab) {
         return [tab.path, { name: branchTabTitle(branchTab).name, hint: null }];
       }
+      const compareTab = parseCompareTabPath(tab.path);
+      if (compareTab) {
+        return [tab.path, { name: compareTabTitle(compareTab).name, hint: null }];
+      }
       if (isTerminalTab(tab.path)) {
         return [tab.path, { name: TERMINAL_TAB_LABEL, hint: null }];
       }
@@ -154,6 +219,7 @@ export function tabsInFolder(tabPaths: string[], folderRoot: string): string[] {
     ...commitTabsInFolder(tabPaths, folderRoot),
     ...gitTabsInFolder(tabPaths, folderRoot),
     ...branchTabsInFolder(tabPaths, folderRoot),
+    ...compareTabsInFolder(tabPaths, folderRoot),
   ]);
   return tabPaths.filter((tabPath) => commits.has(tabPath) || (!isPseudoTab(tabPath) && tabPath.startsWith(prefix)));
 }

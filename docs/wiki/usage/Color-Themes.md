@@ -2,7 +2,7 @@
 
 A color theme sets every color in Git Manager: panels, text, the editor and its syntax colors, diffs, the merge tool and the terminal. You pick one theme for light mode and one for dark mode, so the app keeps looking the way you like when macOS switches between day and night.
 
-There are 37 themes, including the two built-in ones, **Git Manager Light** and **Git Manager Dark**, which are the defaults.
+There are 41 themes, including the two built-in ones, **Git Manager Light** and **Git Manager Dark**, which are the defaults.
 
 ![The Light theme and Dark theme pickers](../images/color-theme-pickers.png)
 
@@ -33,11 +33,11 @@ The same three choices are in the menu bar under **View > Appearance**, and the 
 
 Light themes:
 
-- Git Manager Light, GitHub Light, One Light, Solarized Light, Quiet Light, Ayu Light, Catppuccin Latte, Gruvbox Light, Tokyo Night Day, Rosé Pine Dawn, IntelliJ Light.
+- Git Manager Light, GitHub Light, One Light, Solarized Light, Quiet Light, Ayu Light, Catppuccin Latte, Gruvbox Light, Tokyo Night Day, Rosé Pine Dawn, IntelliJ Light, Islands Light, VS Code Light+.
 
 Dark themes:
 
-- Git Manager Dark, Darcula, One Dark Pro, Dracula, Monokai, Monokai Pro, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
+- Git Manager Dark, Darcula, Islands Dark, VS Code Dark+, One Dark Pro, Dracula, Monokai, Monokai Pro, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
 
 High contrast themes have their own group at the end of each list:
 
@@ -63,6 +63,8 @@ High contrast themes have their own group at the end of each list:
 - **Change colors:** added, changed, deleted and conflict lines in diffs and the merge tool.
 - **The terminal:** its 16 colors, background, cursor and selection, also in terminals that are already open.
 - **Mermaid diagrams** in the Markdown preview. See [Markdown Editor](Markdown-Editor.md).
+
+Islands Light and Islands Dark bring the colors of the JetBrains themes. For their rounded, spaced-out panels, turn on **Rounded panels** in Settings > Appearance; it works with every theme. See [Rounded Panels](Rounded-Panels.md).
 
 Every theme is checked for readable text. Text on the editor and on panels has a contrast of at least 4.5 to 1 (7 to 1 in high contrast themes), selected text stays readable, and diff colors stand out from the background. Where a theme's own colors would fail, Git Manager adjusts them a little.
 

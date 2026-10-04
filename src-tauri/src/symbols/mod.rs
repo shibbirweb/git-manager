@@ -8,6 +8,7 @@
 //! it. The index lives in the Go to File session and shares its lifecycle.
 
 mod extract;
+pub mod outline;
 
 use std::cmp::Ordering as CmpOrdering;
 use std::io::Read;
@@ -69,6 +70,17 @@ pub enum SymbolScope {
 }
 
 impl SymbolScope {
+    pub const COUNT: usize = 3;
+
+    /// A slot per scope, for state kept per scope.
+    pub fn index(self) -> usize {
+        match self {
+            SymbolScope::Classes => 0,
+            SymbolScope::All => 1,
+            SymbolScope::Members => 2,
+        }
+    }
+
     fn accepts(self, kind: SymbolKind) -> bool {
         match self {
             SymbolScope::Classes => kind.is_class_like(),

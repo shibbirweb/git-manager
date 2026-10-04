@@ -1,14 +1,25 @@
 //! What the MCP server needs from the running app, behind a trait so tests run without a window.
 
 use serde_json::Value;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, EventTarget, Manager};
 
 pub trait Host: Send + Sync {
+    /// To every window.
     fn emit(&self, event: &str, payload: Value);
+    /// To one window only (a UI tool call is answered by the window it acts on).
+    fn emit_to(&self, window_label: &str, event: &str, payload: Value) {
+        let _ = window_label;
+        self.emit(event, payload);
+    }
     /// A window exists that can answer UI tool calls.
     fn window_ready(&self) -> bool;
-    /// The main window as PNG bytes.
+    /// The first window as PNG bytes.
     fn screenshot_png(&self) -> Result<Vec<u8>, String>;
+    /// One window as PNG bytes.
+    fn screenshot_window_png(&self, window_label: &str) -> Result<Vec<u8>, String> {
+        let _ = window_label;
+        self.screenshot_png()
+    }
 }
 
 pub struct TauriHost {
@@ -26,12 +37,20 @@ impl Host for TauriHost {
         let _ = self.app.emit(event, payload);
     }
 
+    fn emit_to(&self, window_label: &str, event: &str, payload: Value) {
+        let _ = self.app.emit_to(EventTarget::webview_window(window_label), event, payload);
+    }
+
     fn window_ready(&self) -> bool {
         !self.app.webview_windows().is_empty()
     }
 
     fn screenshot_png(&self) -> Result<Vec<u8>, String> {
-        screenshot::capture(&self.app)
+        screenshot::capture(&self.app, None)
+    }
+
+    fn screenshot_window_png(&self, window_label: &str) -> Result<Vec<u8>, String> {
+        screenshot::capture(&self.app, Some(window_label))
     }
 }
 
@@ -45,10 +64,11 @@ mod screenshot {
     use objc2::runtime::AnyObject;
     use tauri::{AppHandle, Manager};
 
-    /// The CGWindowID of the main window, read on the main thread as AppKit requires.
-    fn window_number(app: &AppHandle) -> Result<isize, String> {
-        let window = app
-            .get_webview_window("main")
+    /// The CGWindowID of a window (else the main one), read on the main thread as AppKit requires.
+    fn window_number(app: &AppHandle, window_label: Option<&str>) -> Result<isize, String> {
+        let window = window_label
+            .and_then(|label| app.get_webview_window(label))
+            .or_else(|| app.get_webview_window(crate::windows::MAIN_LABEL))
             .or_else(|| app.webview_windows().into_values().next())
             .ok_or_else(|| "The app window is not ready".to_string())?;
         let (sender, receiver) = mpsc::channel();
@@ -70,9 +90,9 @@ mod screenshot {
             .ok_or_else(|| "Could not find the app window".to_string())
     }
 
-    pub fn capture(app: &AppHandle) -> Result<Vec<u8>, String> {
+    pub fn capture(app: &AppHandle, window_label: Option<&str>) -> Result<Vec<u8>, String> {
         static NEXT: AtomicU64 = AtomicU64::new(1);
-        let number = window_number(app)?;
+        let number = window_number(app, window_label)?;
         let file = std::env::temp_dir().join(format!(
             "git-manager-screenshot-{}-{}.png",
             std::process::id(),
@@ -103,7 +123,7 @@ mod screenshot {
 mod screenshot {
     use tauri::AppHandle;
 
-    pub fn capture(_app: &AppHandle) -> Result<Vec<u8>, String> {
+    pub fn capture(_app: &AppHandle, _window_label: Option<&str>) -> Result<Vec<u8>, String> {
         Err("Screenshots are not supported on this platform yet".to_string())
     }
 }

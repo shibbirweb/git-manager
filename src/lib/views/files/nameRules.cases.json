@@ -1,0 +1,46 @@
+{
+  "about": "Name and move rules shared by the Files panel (fileNames.test.ts, dragDrop.test.ts) and the backend (file_ops.rs tests), so the dialog never accepts what the backend refuses. A name is `prefix` (if any) and then `name` repeated `repeat` times (once when not given). Codes: ok, empty, dot, slash, emptyPart, nullChar, tooLong, taken.",
+  "names": [
+    { "name": "cart.ts", "nested": false, "code": "ok" },
+    { "name": ".env", "nested": false, "code": "ok" },
+    { "name": "with space", "nested": false, "code": "ok" },
+    { "name": "", "nested": false, "code": "empty" },
+    { "name": "   ", "nested": true, "code": "empty" },
+    { "name": ".", "nested": false, "code": "dot" },
+    { "name": "..", "nested": true, "code": "dot" },
+    { "name": "a/../b", "nested": true, "code": "dot" },
+    { "name": "lib/./x.ts", "nested": true, "code": "dot" },
+    { "name": "a/b", "nested": false, "code": "slash" },
+    { "name": "a/b/c.ts", "nested": true, "code": "ok" },
+    { "name": "a//b", "nested": true, "code": "emptyPart" },
+    { "name": "/a", "nested": true, "code": "emptyPart" },
+    { "name": "a/", "nested": true, "code": "emptyPart" },
+    { "name": "//", "nested": true, "code": "emptyPart" },
+    { "name": "a/ /b", "nested": true, "code": "emptyPart" },
+    { "name": "bad\u0000name", "nested": false, "code": "nullChar" },
+    { "name": "x", "repeat": 255, "nested": false, "code": "ok" },
+    { "name": "x", "repeat": 256, "nested": false, "code": "tooLong" },
+    { "name": "é", "repeat": 127, "nested": false, "code": "ok" },
+    { "name": "é", "repeat": 128, "nested": false, "code": "tooLong" },
+    { "prefix": "lib/", "name": "x", "repeat": 256, "nested": true, "code": "tooLong" }
+  ],
+  "taken": [
+    { "name": "cart.ts", "taken": ["cart.ts", "lib"], "ignoreCase": false, "code": "taken", "takenName": "cart.ts" },
+    { "name": "Cart.ts", "taken": ["cart.ts", "lib"], "ignoreCase": false, "code": "ok" },
+    { "name": "Cart.ts", "taken": ["cart.ts", "lib"], "ignoreCase": true, "code": "taken", "takenName": "cart.ts" },
+    { "name": "LIB", "taken": ["cart.ts", "lib"], "ignoreCase": true, "code": "taken", "takenName": "lib" },
+    { "name": "Cart.ts", "taken": ["cart.ts"], "current": "cart.ts", "ignoreCase": true, "code": "ok" },
+    { "name": "cart.ts", "taken": ["cart.ts"], "current": "cart.ts", "ignoreCase": false, "code": "ok" },
+    { "name": "lib/x.ts", "taken": ["lib"], "nested": true, "ignoreCase": true, "code": "ok" }
+  ],
+  "moves": [
+    { "about": "into another folder", "sources": [{ "path": "/w/a/cart.ts", "isDir": false }, { "path": "/w/b", "isDir": true }], "target": "/w/src", "taken": [], "result": "ok" },
+    { "about": "already there", "sources": [{ "path": "/w/src/cart.ts", "isDir": false }], "target": "/w/src", "taken": ["cart.ts"], "result": "noop" },
+    { "about": "a folder into itself", "sources": [{ "path": "/w/b", "isDir": true }], "target": "/w/b", "taken": [], "result": "intoItself" },
+    { "about": "a folder into a folder inside it", "sources": [{ "path": "/w/b", "isDir": true }], "target": "/w/b/inner", "taken": [], "result": "intoItself" },
+    { "about": "a taken name", "sources": [{ "path": "/w/a/cart.ts", "isDir": false }], "target": "/w/src", "taken": ["cart.ts", "notes.md"], "result": "clash:cart.ts" },
+    { "about": "two sources with one name", "sources": [{ "path": "/w/a/index.ts", "isDir": false }, { "path": "/w/b/index.ts", "isDir": false }], "target": "/w/src", "taken": [], "result": "clash:index.ts" },
+    { "about": "only case differs", "sources": [{ "path": "/w/a/Cart.ts", "isDir": false }], "target": "/w/src", "taken": ["cart.ts"], "result": "ok", "resultIgnoreCase": "clash:Cart.ts" },
+    { "about": "a source already there is skipped", "sources": [{ "path": "/w/src/cart.ts", "isDir": false }, { "path": "/w/a/notes.md", "isDir": false }], "target": "/w/src", "taken": ["cart.ts"], "result": "ok" }
+  ]
+}

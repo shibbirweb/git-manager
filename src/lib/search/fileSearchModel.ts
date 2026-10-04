@@ -80,13 +80,13 @@ export function pathRows(paths: string[], folders: FolderRef[]): SearchRow[] {
 export const RECENT_LIMIT = 50;
 
 /**
- * Recent Files, like JetBrains: the active tab, then files from the Back /
- * Forward history (most recent first), then the other open tabs. Terminal and
- * commit tabs are not files.
+ * Recent Files, like JetBrains: the active tab, then the Recent Files list
+ * (most recent first), then the other open tabs. Terminal and commit tabs are
+ * not files.
  */
-export function recentFiles(activePath: string | null, historyPaths: string[], tabPaths: string[], limit = RECENT_LIMIT): string[] {
+export function recentFiles(activePath: string | null, recentPaths: string[], tabPaths: string[], limit = RECENT_LIMIT): string[] {
   const seen = new Set<string>();
-  for (const path of [activePath, ...historyPaths, ...tabPaths]) {
+  for (const path of [activePath, ...recentPaths, ...tabPaths]) {
     if (path && !isPseudoTab(path)) {
       seen.add(path);
     }

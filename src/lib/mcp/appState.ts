@@ -1,11 +1,15 @@
 // get_app_state and list_terminals: what the window shows now, read from the stores.
 
 import { isBranchTab } from "$lib/stores/branchTabs";
+import { isCompareTab } from "$lib/compare/compareTabs";
 import { isCommitTab } from "$lib/stores/commitTabs";
 import { fileCommands } from "$lib/stores/fileCommands.svelte";
 import { isGitTab } from "$lib/stores/gitTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
+import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
+import { navBarStore } from "$lib/navBar/navBarStore.svelte";
+import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { isTerminalTab } from "$lib/terminal/terminalTabs";
 import { type TerminalEntry, terminalStore } from "$lib/terminal/terminalStore.svelte";
@@ -15,9 +19,14 @@ import { updates } from "$lib/update/updates.svelte";
 import { changesSelection } from "$lib/views/changes/selection.svelte";
 import { gitDialogs } from "$lib/views/git/gitDialogs.svelte";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
+import { localHistory } from "$lib/localHistory/localHistory.svelte";
+import { notifications } from "$lib/notifications/notifications.svelte";
 import { mcpStore } from "./mcpStore.svelte";
 
-function tabKind(tabPath: string): "file" | "terminal" | "commit" | "git" | "branch" {
+function tabKind(tabPath: string): "file" | "terminal" | "commit" | "git" | "branch" | "compare" {
+  if (isCompareTab(tabPath)) {
+    return "compare";
+  }
   if (isTerminalTab(tabPath)) {
     return "terminal";
   }
@@ -58,6 +67,15 @@ export function openDialog(): { kind: string; title: string | null } | null {
   if (fileSearch.isOpen) {
     return { kind: "fileSearch", title: "Search" };
   }
+  if (quickOpen.isOpen) {
+    return { kind: "quickOpen", title: "Quick Open" };
+  }
+  if (recentFilesStore.isOpen) {
+    return { kind: "recentFiles", title: "Recent Files" };
+  }
+  if (navBarStore.isOpen) {
+    return { kind: "navigationBar", title: "Navigation Bar" };
+  }
   if (settings.dialogOpen) {
     return { kind: "settings", title: "Settings" };
   }
@@ -72,6 +90,12 @@ export function openDialog(): { kind: string; title: string | null } | null {
   }
   if (updates.dialogOpen) {
     return { kind: "update", title: "Update" };
+  }
+  if (localHistory.isOpen) {
+    return { kind: "localHistory", title: "Local History" };
+  }
+  if (notifications.open) {
+    return { kind: "notifications", title: "Notifications" };
   }
   return null;
 }

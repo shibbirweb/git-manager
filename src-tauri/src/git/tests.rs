@@ -537,6 +537,48 @@ fn diff_working_file_staged_and_unstaged() {
 }
 
 #[test]
+fn diff_versions_change_only_when_a_side_changes() {
+    let repo = TestRepo::new();
+    repo.write("a.txt", "one\n");
+    repo.write("b.txt", "b\n");
+    repo.commit_all("first");
+    repo.write("a.txt", "two\n");
+    repo.git(&["add", "a.txt"]);
+    let staged = diff::working_file(&repo.open(), "a.txt", None, DiffArea::Staged).unwrap();
+    let known = staged.version.clone();
+    let check = || diff::working_file_if_changed(&repo.open(), "a.txt", None, DiffArea::Staged, known.as_deref()).unwrap();
+    assert!(check().is_none());
+    // Work tree edits and other files leave the staged diff alone.
+    repo.write("a.txt", "three\n");
+    repo.write("b.txt", "b2\n");
+    repo.git(&["add", "b.txt"]);
+    assert!(check().is_none());
+    // Staging this file changes its staged diff.
+    repo.git(&["add", "a.txt"]);
+    let changed = check().expect("the index side changed");
+    assert_eq!(changed.modified, "three\n");
+    assert_eq!(changed.hunks, vec![[0, 1, 0, 1]]);
+}
+
+#[test]
+fn diff_hunks_follow_the_line_ranges_of_both_sides() {
+    let repo = TestRepo::new();
+    let base: Vec<String> = (0..40).map(|index| format!("line {index}")).collect();
+    repo.write("a.txt", base.join("\n"));
+    repo.commit_all("first");
+    let mut edited = base.clone();
+    edited[5] = "changed".to_string();
+    edited.insert(30, "inserted".to_string());
+    edited.remove(1);
+    repo.write("a.txt", edited.join("\n"));
+    let diff = diff::working_file(&repo.open(), "a.txt", None, DiffArea::Unstaged).unwrap();
+    assert_eq!(diff.hunks, vec![[1, 2, 1, 1], [5, 6, 4, 5], [30, 30, 29, 30]]);
+    // Binary and identical sides have none.
+    assert!(diff::from_bytes("x", Some(vec![0, 1]), Some(vec![0, 2])).hunks.is_empty());
+    assert!(diff::from_bytes("x", Some(b"same".to_vec()), Some(b"same".to_vec())).hunks.is_empty());
+}
+
+#[test]
 fn diff_working_file_staged_in_unborn_repo() {
     let repo = TestRepo::new();
     repo.write("a.txt", "first\n");
@@ -787,7 +829,7 @@ fn demo_script_rebase_mode_and_refuses_non_empty_target() {
 
 #[test]
 fn workspace_relative_paths_and_deepest_repo() {
-    use super::workspace::{deepest_repo, relative_slash_path};
+    use super::workspace::{deepest_repo_index, relative_slash_path};
     use std::path::PathBuf;
 
     let base = Path::new("/w");
@@ -797,11 +839,11 @@ fn workspace_relative_paths_and_deepest_repo() {
     assert_eq!(relative_slash_path(base, Path::new("/w-other/x")), "");
 
     let roots = vec![PathBuf::from("/w/apps/web"), PathBuf::from("/w"), PathBuf::from("/w/apps/webby")];
-    assert_eq!(deepest_repo(&roots, Path::new("/w/apps/web/src/a.ts")), Some(&roots[0]));
-    assert_eq!(deepest_repo(&roots, Path::new("/w/apps/web")), Some(&roots[0]));
-    assert_eq!(deepest_repo(&roots, Path::new("/w/apps/webby/x")), Some(&roots[2]));
-    assert_eq!(deepest_repo(&roots, Path::new("/w/apps/other")), Some(&roots[1]));
-    assert_eq!(deepest_repo(&roots, Path::new("/x")), None);
+    assert_eq!(deepest_repo_index(&roots, Path::new("/w/apps/web/src/a.ts")), Some(0));
+    assert_eq!(deepest_repo_index(&roots, Path::new("/w/apps/web")), Some(0));
+    assert_eq!(deepest_repo_index(&roots, Path::new("/w/apps/webby/x")), Some(2));
+    assert_eq!(deepest_repo_index(&roots, Path::new("/w/apps/other")), Some(1));
+    assert_eq!(deepest_repo_index(&roots, Path::new("/x")), None);
 }
 
 #[test]

@@ -5,7 +5,7 @@
 // Values are computed on demand and never cached, so only the applied CSS
 // variables stay around.
 
-import { composite, contrastRatio, ensureContrast, fitTint, mix, withAlpha } from "./color";
+import { colorDistance, composite, contrastRatio, ensureContrast, fitTint, mix, withAlpha } from "./color";
 import {
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
@@ -62,12 +62,16 @@ interface ThemeSpec {
   };
 }
 
+/** How far (CIELAB distance) the frame behind rounded panels must be from the panels, or the gaps disappear. */
+const FRAME_DISTANCE = 5;
+
 const SHADOW_LIGHT = "0 8px 28px rgba(0, 0, 0, 0.16)";
 const SHADOW_DARK = "0 8px 28px rgba(0, 0, 0, 0.5)";
 
 /** The light set in src/app.css (a test keeps the two in sync). */
 const GM_LIGHT: ThemeColors = {
   "--bg": "#f7f8fa",
+  "--frame": "#ebecf0",
   "--panel": "#ffffff",
   "--panel-alt": "#f2f3f5",
   "--border": "#ebecf0",
@@ -134,11 +138,15 @@ const GM_LIGHT: ThemeColors = {
   "--tok-tag": "#0033b3",
   "--tok-attr": "#174ad4",
   "--tok-invalid": "#f50000",
+  "--bracket-1": "#0431fa",
+  "--bracket-2": "#319331",
+  "--bracket-3": "#7b3814",
 };
 
 /** The dark set in src/app.css (a test keeps the two in sync). */
 const GM_DARK: ThemeColors = {
   "--bg": "#1e1f22",
+  "--frame": "#1e1f22",
   "--panel": "#2b2d30",
   "--panel-alt": "#25272a",
   "--border": "#1e1f22",
@@ -205,12 +213,30 @@ const GM_DARK: ThemeColors = {
   "--tok-tag": "#d5b778",
   "--tok-attr": "#bababa",
   "--tok-invalid": "#fa6675",
+  "--bracket-1": "#ffd700",
+  "--bracket-2": "#da70d6",
+  "--bracket-3": "#179fff",
 };
 
 /** VS Code's default terminal colors, for themes that publish none. */
 const VSCODE_ANSI_LIGHT: Ansi = [
   "#000000", "#cd3131", "#00bc00", "#949800", "#0451a5", "#bc05bc", "#0598bc", "#555555",
   "#666666", "#cd3131", "#14ce14", "#b5ba00", "#0451a5", "#bc05bc", "#0598bc", "#a5a5a5",
+];
+
+const VSCODE_ANSI_DARK: Ansi = [
+  "#000000", "#cd3131", "#0dbc79", "#e5e510", "#2472c8", "#bc3fbc", "#11a8cd", "#e5e5e5",
+  "#666666", "#f14c4c", "#23d18b", "#f5f543", "#3b8eea", "#d670d6", "#29b8db", "#e5e5e5",
+];
+
+/** JetBrains' console colors: the Default (light) and Darcula editor schemes, which the Islands schemes inherit. */
+const JETBRAINS_ANSI_LIGHT: Ansi = [
+  "#000000", "#c91b00", "#00a000", "#a68a0d", "#0225c7", "#a771bf", "#00a3a3", "#808080",
+  "#595959", "#f0524f", "#4fc414", "#c7a600", "#3993d4", "#c930c7", "#00b0b0", "#ffffff",
+];
+const DARCULA_ANSI: Ansi = [
+  "#000000", "#ff6b68", "#a8c023", "#d6bf55", "#5394ec", "#ae8abe", "#299999", "#999999",
+  "#555555", "#ff8785", "#a8c023", "#ffff00", "#7eaef1", "#ff99ff", "#6cdada", "#ffffff",
 ];
 
 const SPECS: Record<string, ThemeSpec> = {
@@ -355,15 +381,41 @@ const SPECS: Record<string, ThemeSpec> = {
     foreground: "#080808",
     accent: "#2675bf",
     selection: "#a6d2ff",
-    ansi: [
-      "#000000", "#c91b00", "#00a000", "#a68a0d", "#0225c7", "#a771bf", "#00a3a3", "#808080",
-      "#595959", "#f0524f", "#4fc414", "#c7a600", "#3993d4", "#c930c7", "#00b0b0", "#ffffff",
-    ],
+    ansi: JETBRAINS_ANSI_LIGHT,
     syntax: {
       keyword: "#0033b3", string: "#067d17", number: "#1750eb", comment: "#8c8c8c", type: "#000000",
       function: "#00627a", property: "#871094", meta: "#9e880d", tag: "#0033b3", attr: "#174ad4", invalid: "#f50000",
     },
     ui: { bg: "#f2f2f2", panel: "#f2f2f2", panelAlt: "#e8e8e8", border: "#d1d1d1", borderStrong: "#c4c4c4", lineNumber: "#adadad", activeLine: "#fcfaed", success: "#067d17" },
+  },
+  // JetBrains Islands (IDEA 2025.3): white islands on a grey window. Colors from
+  // ManyIslandsLight.theme.json and its "Light" editor scheme in intellij-community.
+  "islands-light": {
+    background: "#ffffff",
+    foreground: "#000000",
+    accent: "#3871e1",
+    selection: "#a6d2ff",
+    ansi: JETBRAINS_ANSI_LIGHT,
+    syntax: {
+      keyword: "#0033b3", string: "#067d17", number: "#1750eb", comment: "#8c8c8c", type: "#000000",
+      function: "#00627a", property: "#871094", meta: "#9e880d", tag: "#0033b3", attr: "#174ad4", invalid: "#f50000",
+    },
+    ui: { bg: "#e9eaee", panel: "#ffffff", panelAlt: "#f7f8f9", border: "#e9eaee", borderStrong: "#dddfe4", lineNumber: "#aeb3c2", activeLine: "#f5f8fe", success: "#338555", danger: "#c54e58", warning: "#a56906", info: "#2f5eb9" },
+  },
+  // VS Code's Default Light+ and Dark+: tokens from extensions/theme-defaults in
+  // microsoft/vscode, UI colors from its workbench defaults. Meta is the pink of
+  // keyword.control, which Light+ and Dark+ give preprocessor directives.
+  "vscode-light-plus": {
+    background: "#ffffff",
+    foreground: "#000000",
+    accent: "#007acc",
+    selection: "#add6ff",
+    ansi: VSCODE_ANSI_LIGHT,
+    syntax: {
+      keyword: "#0000ff", string: "#a31515", number: "#098658", comment: "#008000", type: "#267f99",
+      function: "#795e26", property: "#001080", meta: "#af00db", tag: "#800000", attr: "#e50000", invalid: "#cd3131",
+    },
+    ui: { bg: "#dddddd", panel: "#f3f3f3", panelAlt: "#ececec", border: "#e7e7e7", lineNumber: "#237893", activeLine: "#eeeeee", success: "#587c0c", danger: "#e51400", warning: "#bf8803", info: "#2090d3" },
   },
 
   darcula: {
@@ -371,15 +423,39 @@ const SPECS: Record<string, ThemeSpec> = {
     foreground: "#a9b7c6",
     accent: "#4a88c7",
     selection: "#214283",
-    ansi: [
-      "#000000", "#ff6b68", "#a8c023", "#d6bf55", "#5394ec", "#ae8abe", "#299999", "#999999",
-      "#555555", "#ff8785", "#a8c023", "#ffff00", "#7eaef1", "#ff99ff", "#6cdada", "#ffffff",
-    ],
+    ansi: DARCULA_ANSI,
     syntax: {
       keyword: "#cc7832", string: "#6a8759", number: "#6897bb", comment: "#808080", type: "#a9b7c6",
       function: "#ffc66d", property: "#9876aa", meta: "#bbb529", tag: "#e8bf6a", attr: "#bababa", invalid: "#bc3f3c",
     },
     ui: { bg: "#2b2b2b", panel: "#3c3f41", panelAlt: "#313335", border: "#323232", borderStrong: "#515151", lineNumber: "#606366", activeLine: "#323232", cursor: "#bbbbbb" },
+  },
+  // Dark islands on a lighter grey window. Colors from ManyIslandsDark.theme.json
+  // and IslandSchemeDark.xml in intellij-community; selection and console colors
+  // are inherited from Darcula.
+  "islands-dark": {
+    background: "#191a1c",
+    foreground: "#d1d3d9",
+    accent: "#3871e1",
+    selection: "#214283",
+    ansi: DARCULA_ANSI,
+    syntax: {
+      keyword: "#cf8e6d", string: "#6aab73", number: "#2aacb8", comment: "#7a7e85", type: "#bcbec4",
+      function: "#56a8f5", property: "#c77dbb", meta: "#b3ae60", tag: "#d5b778", attr: "#bababa", invalid: "#f75464",
+    },
+    ui: { bg: "#26282c", panel: "#191a1c", panelAlt: "#212326", border: "#26282c", borderStrong: "#33353b", lineNumber: "#4b5059", activeLine: "#1f2024", cursor: "#ced0d6", success: "#6db083", danger: "#f57e84", warning: "#d59637", info: "#71a1fe" },
+  },
+  "vscode-dark-plus": {
+    background: "#1e1e1e",
+    foreground: "#d4d4d4",
+    accent: "#007acc",
+    selection: "#264f78",
+    ansi: VSCODE_ANSI_DARK,
+    syntax: {
+      keyword: "#569cd6", string: "#ce9178", number: "#b5cea8", comment: "#6a9955", type: "#4ec9b0",
+      function: "#dcdcaa", property: "#9cdcfe", meta: "#c586c0", tag: "#569cd6", attr: "#9cdcfe", invalid: "#f44747",
+    },
+    ui: { bg: "#3c3c3c", panel: "#252526", panelAlt: "#2d2d2d", border: "#1e1e1e", borderStrong: "#444444", lineNumber: "#858585", activeLine: "#282828", cursor: "#aeafad", success: "#81b88b", danger: "#f14c4c", warning: "#cca700", info: "#1b81a8" },
   },
   "one-dark-pro": {
     background: "#282c34",
@@ -747,19 +823,34 @@ const SPECS: Record<string, ThemeSpec> = {
   },
 };
 
+/**
+ * The window color behind rounded panels: the theme's own background when it
+ * differs enough from the panels, else the panel color darkened (dark themes)
+ * or greyed (light themes), and as a last resort moved toward the text.
+ */
+function frameColor(bg: string, panel: string, text: string, dark: boolean): string {
+  if (colorDistance(bg, panel) >= FRAME_DISTANCE) {
+    return bg;
+  }
+  const shaded = dark ? mix(panel, "#000000", 0.35) : mix(panel, text, 0.08);
+  return colorDistance(shaded, panel) >= FRAME_DISTANCE ? shaded : mix(panel, text, 0.12);
+}
+
 function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const dark = modeOfKind(kind) === "dark";
   const high = isHighContrast(kind);
   const ui = spec.ui ?? {};
-  const [, red, green, yellow, blue, , , , , brightRed, brightGreen, brightYellow, brightBlue] = spec.ansi;
+  const [, red, green, yellow, blue, magenta, , , , brightRed, brightGreen, brightYellow, brightBlue, brightMagenta] = spec.ansi;
   const editorBg = spec.background;
   const text = spec.foreground;
   const panel = ui.panel ?? (dark ? mix(editorBg, text, 0.05) : editorBg);
   const panelAlt = ui.panelAlt ?? (dark ? mix(editorBg, text, 0.025) : mix(editorBg, text, 0.035));
   const bg = ui.bg ?? (dark ? editorBg : mix(editorBg, text, 0.025));
+  const frame = frameColor(bg, panel, text, dark);
   const textMinimum = high ? 7 : 4.5;
   // Hints and status colors must read on every surface they sit on.
-  const legible = (color: string, minimum: number) => ensureContrast(ensureContrast(color, panel, minimum), bg, minimum);
+  const legible = (color: string, minimum: number) =>
+    ensureContrast(ensureContrast(ensureContrast(color, panel, minimum), bg, minimum), frame, minimum);
   const accent = legible(spec.accent, high ? 4.5 : 3);
   const accentText = ["#ffffff", dark ? editorBg : "#000000"].reduce((best, candidate) =>
     contrastRatio(candidate, accent) > contrastRatio(best, accent) ? candidate : best,
@@ -775,8 +866,10 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const tint = (dark ? 1 : 0.8) * (high ? 1.6 : 1);
   const diffTint = (color: string, alpha: number) => fitTint(color, editorBg, text, alpha * tint, 4.5);
   const syntax = (color: string) => (high ? ensureContrast(color, editorBg, 7) : color);
+  const bracket = (color: string) => ensureContrast(color, editorBg, high ? 7 : 3);
   return {
     "--bg": bg,
+    "--frame": frame,
     "--panel": panel,
     "--panel-alt": panelAlt,
     "--border": ui.border ?? (dark ? mix(panel, "#000000", 0.3) : mix(panel, text, 0.07)),
@@ -843,6 +936,10 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
     "--tok-tag": syntax(spec.syntax.tag ?? spec.syntax.keyword),
     "--tok-attr": syntax(spec.syntax.attr ?? spec.syntax.property),
     "--tok-invalid": syntax(spec.syntax.invalid ?? danger),
+    // Bracket depth colors from the terminal palette, like VS Code's gold, orchid and blue.
+    "--bracket-1": bracket(dark ? brightYellow : blue),
+    "--bracket-2": bracket(dark ? brightMagenta : green),
+    "--bracket-3": bracket(dark ? brightBlue : magenta),
   };
 }
 

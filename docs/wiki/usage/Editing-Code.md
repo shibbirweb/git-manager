@@ -1,6 +1,6 @@
 # Editing Code
 
-The editor has the everyday tools of an IDE editor: syntax colors, code completion, multiple cursors, line commands in a **Code** menu, folding, and settings for how text looks. Tabs, saving and change markers are on [Editor and Tabs](Editor-and-Tabs.md).
+The editor has the everyday tools of an IDE editor: syntax colors, code completion, multiple cursors, line commands in a **Code** menu, and folding. How text looks (line spacing, whitespace, the cursor, word wrap, indentation and zoom) is on [Code Appearance](Code-Appearance.md). Tabs, saving and change markers are on [Editor and Tabs](Editor-and-Tabs.md).
 
 ## The basics
 
@@ -90,59 +90,10 @@ Duplicate takes Shift+Cmd+D because Cmd+D adds the next occurrence, as in VS Cod
 
 **Code > Go to Line...** (Cmd+L) asks for a line number. Type `42`, or `42:7` for line 42 at column 7, and press **Go**. The field starts with where the cursor is now. The older key Option+Cmd+G still opens a small line field too.
 
-## How text looks
-
-These settings are in [Settings](Settings.md#editor), **Editor**. They apply to editors, diffs and the merge tool alike, and open editors change at once. The default font is JetBrains Mono at 13 px when it is installed, else Menlo.
-
-### Line spacing
-
-**Line spacing** sets the space between lines of code, as a multiple of the font size. Drag the slider from 1.00 (tight) to 2.50 (airy), in steps of 0.05. The default is 1.25. Double-click the slider to go back to it.
-
-### Render whitespace
-
-![Spaces and tabs drawn in the editor](../images/editor-whitespace.png)
-
-*Render whitespace set to All: a dot for each space and an arrow for each tab.*
-
-**Render whitespace** draws spaces as dots and tabs as arrows. Pick one:
-
-- **None**: nothing is drawn.
-- **Boundary**: all spaces and tabs except single spaces between words.
-- **Selection** (the default): only inside the text you select.
-- **Trailing**: only the spaces and tabs at the end of lines.
-- **All**: every space and tab.
-
-### The cursor
-
-The cursor settings work like VS Code's, plus Sublime Text's caret height:
-
-- **Cursor style**: **Line** (the default), **Line thin**, **Block**, **Block outline**, **Underline** or **Underline thin**. A block is see-through.
-- **Cursor width**: how thick the Line cursor is, 1 to 6 pixels (2 by default).
-- **Cursor blinking**: **Blink**, **Smooth** (fades), **Phase** (fades slowly), **Expand** (shrinks and grows back) or **Solid**. The cursor stays visible while you type.
-- **Smooth caret animation**: the cursor glides instead of jumping.
-- **Caret extra top** and **Caret extra bottom**: make the cursor up to 10 pixels taller above and below. Double-click a slider to set it back to 0.
-
-### The current line
-
-The line with the cursor has a soft background. While you select text, the highlight steps aside, so a selection inside one line is always easy to see.
-
-### Word wrap
-
-**Word wrap** breaks long lines at the edge of the editor. Turn it on or off with **View > Word Wrap** or **Option+Z**, like VS Code, or in Settings. The top line stays where it is. Diffs and the merge tool never wrap, so their sides stay lined up.
-
-### Tab size
-
-**Tab size** sets the spaces per indent level. It applies to files you open afterwards.
-
-## Zoom
-
-**View > Zoom In** (Cmd+=) and **Zoom Out** (Cmd+-) make the code font one pixel bigger or smaller everywhere. **Reset Zoom** (Cmd+0) goes back to the default size.
-
-With **Change font size with Ctrl + mouse wheel** on in Settings, hold Control (or Command) and scroll over an editor, diff or merge pane to resize the code. A trackpad pinch works too.
-
 ## Related
 
 - [Editor and Tabs](Editor-and-Tabs.md)
+- [Code Appearance](Code-Appearance.md)
 - [Find and Replace](Find-and-Replace.md)
 - [Menus](Menus.md)
 - [Keyboard Shortcuts](Keyboard-Shortcuts.md)

@@ -64,8 +64,9 @@ export default defineConfig(() => ({
 
   test: {
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
-    // Vitest blanks CSS by default; the theme tests read app.css's tokens (?raw).
-    css: { include: [/src\/app\.css/] },
+    // Vitest blanks CSS by default; the theme tests read app.css's tokens (?raw) and the file
+    // icon tests compare the committed minimal.css.
+    css: { include: [/src\/app\.css/, /static\/file-icons\/minimal\/minimal\.css/] },
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

@@ -84,3 +84,25 @@ describe("shortcutSections", () => {
     expect(filterShortcuts(all, "  ")).toBe(all);
   });
 });
+
+describe("commit box shortcuts", () => {
+  it("lists the message history keys for each platform", () => {
+    const commitBox = (platform: "macos" | "windows") =>
+      shortcutSections(platform)
+        .find((section) => section.title === "Commit box")
+        ?.rows.find((row) => row.label === "Message history");
+    expect(commitBox("macos")?.keys).toEqual(["⌘E", "↑"]);
+    expect(commitBox("windows")?.keys).toEqual(["Ctrl+E", "Up"]);
+  });
+});
+
+describe("shortcutSections with custom keys", () => {
+  it("shows changed keys and leaves out removed ones", () => {
+    const sections = shortcutSections("macos", { "git.push": "F5", "view.sidebar": null, "nav.goBack": "Ctrl+[", "terminal.new": null });
+    const rows = sections.flatMap((section) => section.rows);
+    expect(rows.find((row) => row.label === "Push")?.keys).toEqual(["F5"]);
+    expect(rows.some((row) => row.label === "Sidebar")).toBe(false);
+    expect(rows.find((row) => row.label === "Go Back")?.keys).toEqual(["⌃["]);
+    expect(rows.some((row) => row.label === "New terminal")).toBe(false);
+  });
+});

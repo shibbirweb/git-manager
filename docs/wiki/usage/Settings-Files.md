@@ -20,9 +20,9 @@ Your GitHub token is not in this folder: it is kept in the system keychain. See 
 
 Each key matches a setting in the dialog. Values in quotes must be one of the choices listed.
 
-**Appearance**: `theme` (`"system"`, `"light"`, `"dark"`), `uiFontSize`.
+**Appearance**: `theme` (`"system"`, `"light"`, `"dark"`), `roundedPanels`, `uiFontSize`.
 
-**Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `tabSize` (2, 4 or 8), `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
+**Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `tabSize` (2, 4 or 8), `detectIndentation`, `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
 
 **Git**: `ignoreWhitespace`, `logAllRefs`, `commitSignOff`, `commitGpgSign` (`"default"`, `"sign"`, `"noSign"`), `gitConsole`, and `updateMethod` (`"merge"` or `"rebase"`, default `"merge"`, saved by [Git > Update Project...](Git-Dialogs.md#update-project); there is no switch for it in Settings).
 
@@ -62,7 +62,7 @@ The exact ranges and defaults are in [Settings Reference](../developer/Settings-
 
 - **Recent and last session:** `recentFolders`, `recentWorkspaces`, `recentWorkspaceFiles`, `lastSession`, `lastSessionFile` and `activeRepos` (the active repository per folder).
 - **Updates:** `lastRunVersion` (for What's New) and `skippedVersion`.
-- **Layout:** `explorerOpen` (Files panel), `leftPanel` (`"changes"`, `"branches"`, `"scripts"` or `null` when hidden), `leftBarVisible` and `rightBarVisible` (the activity bars), `sidebarWidth`, `explorerWidth`, `terminalHeight`, `terminalListWidth`, `diffSplitRatio` (the left side's share of a side-by-side diff) and `markdownPreviewRatio` (the preview's share in Editor and Preview).
+- **Layout:** `explorerOpen` (Files panel), `leftPanel` (`"changes"`, `"branches"`, `"scripts"` or `null` when hidden), `leftBarVisible` and `rightBarVisible` (the activity bars), `sidebarWidth`, `explorerWidth`, `terminalHeight`, `terminalListWidth`, `changesListWidth` and `changesListVisible` (the Changes tab's file list), `diffSplitRatio` (the left side's share of a side-by-side diff) and `markdownPreviewRatio` (the preview's share in Editor and Preview).
 - **Scripts:** `scriptNodeVersions`, the Node version picked for each `package.json`. See [Scripts](Scripts.md).
 
 **Reset to Defaults** in Settings does not touch this file.

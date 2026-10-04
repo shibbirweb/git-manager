@@ -1,6 +1,6 @@
 # Editor and Tabs
 
-Git Manager has a light code editor for quick fixes. Open files in tabs, edit and save them, and jump straight to the lines you changed since the last commit.
+Git Manager has a light code editor. Open files in tabs, edit and save them, and jump to the lines you changed since the last commit.
 
 ![Editor tabs and the path bar](../images/editor-tabs.png)
 
@@ -16,31 +16,35 @@ A preview tab becomes a normal tab when you double-click the tab, start editing,
 
 Markdown files open with a formatting toolbar and a live preview; see [Markdown Editor](Markdown-Editor.md). Images and PDFs open in a preview; see [Image and PDF Preview](Image-and-PDF-Preview.md).
 
-Files larger than 4 MB and binary files (such as images) are not opened; the tab shows a short note instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
+Files over 4 MB and binary files are not opened; the tab shows a note instead. If a file is deleted on disk while its tab is open, the tab says **This file no longer exists on disk.** and offers **Close**.
 
 ## When nothing is open
 
 ![The empty editor area](../images/empty-main.png)
 
-*The empty editor area with the workspace name and three ways to start.*
+*The empty editor area: the Navigation Bar, the workspace name and six ways to start.*
 
-With no file, diff or Log open, the editor area shows the workspace name and three shortcuts:
+With no file, diff or Log open, the editor area shows the [Navigation Bar](Navigation-Bar.md), the workspace name and six shortcuts:
 
 - **Review changes** (Shift+Cmd+G) opens the Changes sidebar.
 - **Show the Log** (Shift+Cmd+L) opens the commit history. It is greyed out when there is no repository.
 - **Open a file from the Files panel** shows the Files panel.
+- **Go to File** (Cmd+P) finds a file by name.
+- **Search Everywhere** (press Shift twice) searches the whole workspace.
+- **Navigation Bar** (Cmd+Up) opens the bar's list.
 
 ## Tabs
 
 - Click a tab to show it. Every tab keeps its own cursor, scroll position and unsaved edits while you look at another one.
 - **Shift+Cmd+]** and **Shift+Cmd+[** show the next and previous tab (also **Window > Next Tab** and **Previous Tab**).
 - **Cmd+W** closes the tab on screen (**File > Close Tab**).
-- A new tab opens right after the current one.
-- A dot on the tab means unsaved changes. Hover it to see the close button. Middle-click a tab to close it.
-- Scroll with the mouse wheel over the tab strip to move through many tabs.
+- New tabs open after the current one.
+- A dot on the tab means unsaved changes; hover it for the close button. Middle-click a tab to close it.
+- Scroll the mouse wheel over the tab strip to move through many tabs.
 - When two tabs have the same file name, the folder name is shown next to each.
+- Drag a tab to move it, and pin the tabs you always need. See [Pin, Reorder and Wrap Tabs](Pin-Reorder-and-Wrap-Tabs.md).
 
-Right-click a tab for **Close**, **Close Others**, **Close to the Right**, **Close All**, **Copy Path** and **Copy Relative Path** (a preview tab also has **Keep Open**). If a tab you close has unsaved changes, you are asked before they are thrown away. Closing or switching the folder asks the same way.
+Right-click a tab for **Pin Tab**, **Close**, **Close Others**, **Close to the Right**, **Close All**, **Copy Path** and **Copy Relative Path** (a preview tab also has **Keep Open**). If a tab you close has unsaved changes, you are asked before they are thrown away. Closing or switching the folder asks the same way.
 
 There is also a **Diff** tab, always first, with the file name and the word Diff. It appears when you select a file in Changes and shows that file's [diff](Diffs.md). Its close button clears the selection.
 
@@ -60,7 +64,7 @@ They close like any other tab; closing a terminal tab stops its shell.
 
 One slim bar sits between the tabs and the code, like in JetBrains editors.
 
-On the left are the **breadcrumbs**: the workspace folder, then each folder down to the file. Repository folders are marked with a git icon. Hover the path to see it in full.
+On the left are the **breadcrumbs**: the workspace folder, then each folder down to the file. Repository folders are marked with a git icon. Hover it to see it in full; click it, or press Cmd+Up, to browse: see [Navigation Bar](Navigation-Bar.md).
 
 Badges next to the path tell you about the file:
 
@@ -77,13 +81,13 @@ On the right are small icon buttons. Hover one to see what it does:
 
 The arrows and Blame only appear for files inside a git repository.
 
-When the editor gets narrow, the bar never spills over. First the **2 of 5** label hides, then the badges shrink to colored dots (hover them for the text), and the folders in the path shorten to "..." from the left. The file name stays readable the longest.
+When the editor gets narrow, the **2 of 5** label hides first, then the badges shrink to colored dots (hover them for the text) and the folders shorten to "..." from the left. The file name stays readable the longest.
 
 A file with conflicts gets a second, tinted strip with **Accept All Current**, **Accept All Incoming**, **Resolve in Merge Tool** and **Mark as Resolved**. See [Resolving Conflicts](Resolving-Conflicts.md).
 
 ## Save and revert
 
-Saving lives in the **File** menu, like in other Mac editors:
+Saving is in the **File** menu:
 
 - **Save** (Cmd+S) writes the file. It is greyed out until you edit. Line endings (LF or CRLF) are kept as they were.
 - **Save All** (Option+Cmd+S) saves every tab with unsaved edits.
@@ -107,11 +111,11 @@ Files that change on disk (for example after a checkout, or an edit in another a
 
 ## Editing
 
-The editor has syntax colors, bracket matching, undo, multiple cursors and the commands of a **Code** menu. How to use them, plus line spacing, visible whitespace and zoom, is on [Editing Code](Editing-Code.md). To find and replace text, see [Find and Replace](Find-and-Replace.md).
+Syntax colors, multiple cursors, the **Code** menu, line spacing and zoom are on [Editing Code](Editing-Code.md). To find and replace text, see [Find and Replace](Find-and-Replace.md).
 
 ## Status bar
 
-While a file is shown, the right side of the status bar shows the cursor position (Ln and Col, plus the selection size), the indentation (**Spaces: 4**), the line endings and the language. Click **Spaces** to open Settings on the **Editor** section. See [Status Bar and Help](Status-Bar-and-Help.md).
+While a file is shown, the right side of the status bar shows the cursor position (Ln and Col, plus the selection size), the indentation (**Spaces: 4**, detected from the file), the line endings and the language. Click **Spaces** to open Settings on the **Editor** section. See [Status Bar and Help](Status-Bar-and-Help.md).
 
 ## Related
 

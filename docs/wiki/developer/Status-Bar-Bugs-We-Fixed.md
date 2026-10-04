@@ -7,6 +7,11 @@ The bugs we found in the status bar and the Help links, why they happened and ho
 - **Why it happened:** it read `repoStore.repo` directly.
 - **The fix and why we chose it:** `contextRepo` follows the visible file tab or diff, like VS Code, and falls back to the active repository.
 
+**Clicking the changes count did nothing.**
+- **The issue:** clicking **N changes** in the status bar seemed to do nothing.
+- **Why it happened:** it only switched the left sidebar to Changes. When that sidebar was already open, nothing on screen changed.
+- **The fix and why we chose it:** it now opens a Changes tab with every changed file and its diff (see [How the Changes Tab Works](How-the-Changes-Tab-Works.md)). A tab always shows something, and it gives the files the whole editor area, which is what you want when you click a count to see what is behind it.
+
 **Spaces opened the wrong Settings section.**
 - **The issue:** the Spaces item says the tab size is in Settings, Editor, but clicking it opened Settings on Appearance.
 - **Why it happened:** the Settings dialog always started on Appearance, and callers could only open it, not pick a section.

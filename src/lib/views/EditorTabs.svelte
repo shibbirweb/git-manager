@@ -1,11 +1,21 @@
-<!-- Tab bar above the editor area: the Diff tab plus every open file, commit and terminal tab. -->
+<!--
+  Tab bar of one editor group: the first group's strip starts with the Diff tab, then every
+  file, commit and terminal tab open in that group, pinned tabs first. Tabs reorder by drag
+  and, with Settings > Editor > Wrap tabs, wrap onto more rows instead of scrolling.
+-->
 <script lang="ts">
+  import { flip } from "svelte/animate";
+  import { localHistory } from "$lib/localHistory/localHistory.svelte";
   import { errorMessage } from "$lib/api";
   import { parseCommitTabPath } from "$lib/stores/commitTabs";
   import { gitTabTitle, parseGitTabPath } from "$lib/stores/gitTabs";
   import { branchTabTitle, parseBranchTabPath } from "$lib/stores/branchTabs";
+  import { isPseudoTab } from "$lib/stores/pseudoTabs";
+  import { compareStore, compareTabTooltip } from "$lib/compare/compareStore.svelte";
+  import { isCompareTab } from "$lib/compare/compareTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { tabLabels } from "$lib/stores/tabs";
+  import { settings } from "$lib/stores/settings.svelte";
+  import { moveTab, otherPaths, pathsToRight, tabLabels, unpinnedPaths } from "$lib/stores/tabs";
   import { shellNameFor } from "$lib/terminal/terminals";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { parseTerminalTabPath } from "$lib/terminal/terminalTabs";
@@ -14,11 +24,51 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { changesSelection } from "./changes/selection.svelte";
+  import { pastDragThreshold } from "./files/dragDrop";
+  import { dropGap, edgeScrollStep, type TabBox } from "./tabDrag";
+  import { moveEditorTab, splitEditorRight } from "./workspaceActions";
+
+  let { groupId }: { groupId: number } = $props();
 
   let stripEl = $state<HTMLDivElement | null>(null);
 
-  const shownView = $derived(changesSelection.shownView);
-  const labels = $derived(tabLabels(repoStore.tabs));
+  const group = $derived(repoStore.groupById(groupId));
+  const tabs = $derived(group?.tabs ?? []);
+  /** The first group: it has the Diff tab. */
+  const primary = $derived(repoStore.primaryGroupId === groupId);
+  const split = $derived(repoStore.groups.length > 1);
+  /** With two groups, the strip of the unfocused one is dimmed. */
+  const focused = $derived(!split || repoStore.focusedGroupId === groupId);
+  const diffShown = $derived(primary && changesSelection.primaryView === "diff");
+  const labels = $derived(tabLabels(tabs));
+  const wrap = $derived(settings.wrapTabs);
+
+  /** A press on a tab that may become a drag once the pointer moves a few pixels. */
+  interface TabPress {
+    tabPath: string;
+    pointerId: number;
+    startX: number;
+    startY: number;
+  }
+
+  /** A tab drag: boxes and grab offset are in the strip's content coordinates (see tabDrag.ts). */
+  interface TabDrag {
+    tabPath: string;
+    boxes: TabBox[];
+    grabX: number;
+    grabY: number;
+    clientX: number;
+    clientY: number;
+    gap: number;
+  }
+
+  let press: TabPress | null = null;
+  let drag = $state.raw<TabDrag | null>(null);
+  let scrollFrame = 0;
+  /** Set when a drag ends, so the click the browser sends after the pointerup is ignored. */
+  let swallowClick = false;
+  /** While dragging, the strip shows the order the drop would make. */
+  const shownTabs = $derived(drag ? moveTab({ tabs, active: group?.active ?? null }, drag.tabPath, drag.gap).tabs : tabs);
   const diffName = $derived(changesSelection.selected?.path.split("/").pop() ?? "Diff");
   const diffTitle = $derived(
     changesSelection.selected
@@ -28,8 +78,8 @@
 
   // Keep the active tab scrolled into view.
   $effect(() => {
-    const active = repoStore.openFilePath;
-    void shownView;
+    const active = group?.active ?? null;
+    void diffShown;
     if (!stripEl || !active) {
       return;
     }
@@ -38,14 +88,14 @@
   });
 
   function activate(filePath: string): void {
-    void repoStore.openFile(filePath);
+    repoStore.activateTab(groupId, filePath);
   }
 
   function onAuxClick(event: MouseEvent, filePath: string): void {
     // Middle click closes, like browsers and editors.
     if (event.button === 1) {
       event.preventDefault();
-      void repoStore.closeTab(filePath);
+      void repoStore.closeTab(filePath, groupId);
     }
   }
 
@@ -88,14 +138,16 @@
     if (commit) {
       return [{ label: "Copy Commit Hash", action: () => void copy(commit.commitId) }];
     }
-    if (parseBranchTabPath(filePath)) {
+    if (parseBranchTabPath(filePath) || isCompareTab(filePath)) {
       return [];
     }
     const gitTab = parseGitTabPath(filePath);
     if (gitTab) {
-      return [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
+      return gitTab.kind === "reflog" ? [] : [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
     }
     return [
+      { label: "Show Local History", action: () => localHistory.openFile(filePath) },
+      { separator: true },
       { label: "Copy Path", action: () => void copy(filePath) },
       {
         label: "Copy Relative Path",
@@ -104,38 +156,242 @@
           void copy(folder ? relativeTo(folder.root, filePath) : filePath);
         },
       },
+      ...compareStore.fileTabItems(filePath),
     ];
   }
 
+  /** Split Right, the move to the other group and Close Group, while the split editor setting is on. */
+  function groupItems(filePath: string): MenuItem[] {
+    if (!settings.splitEditor) {
+      return [];
+    }
+    const items: MenuItem[] = [];
+    if (primary && !isPseudoTab(filePath)) {
+      items.push({
+        label: "Split Right",
+        action: () => {
+          repoStore.activateTab(groupId, filePath);
+          splitEditorRight(filePath);
+        },
+      });
+    }
+    items.push({ label: primary ? "Move to Right Group" : "Move to Left Group", action: () => moveEditorTab(filePath, groupId) });
+    if (split) {
+      items.push({ label: "Close Group", action: () => void repoStore.closeGroup(groupId) });
+    }
+    return [...items, { separator: true }];
+  }
+
   function openMenu(event: MouseEvent, filePath: string, preview: boolean): void {
-    const index = repoStore.tabs.findIndex((tab) => tab.path === filePath);
+    const pinned = repoStore.isPinned(filePath);
+    const state = { tabs, active: group?.active ?? null };
+    // Close Others, Close to the Right and Close All leave pinned tabs open.
     contextMenu.open(event, [
-      ...(preview ? [{ label: "Keep Open", action: () => repoStore.pinFile(filePath) }, { separator: true as const }] : []),
-      { label: "Close", action: () => void repoStore.closeTab(filePath) },
-      { label: "Close Others", disabled: repoStore.tabs.length < 2, action: () => void repoStore.closeOtherTabs(filePath) },
+      ...(preview ? [{ label: "Keep Open", action: () => repoStore.pinFile(filePath, groupId) }] : []),
+      { label: pinned ? "Unpin Tab" : "Pin Tab", action: () => repoStore.setTabPinned(filePath, !pinned) },
+      { separator: true },
+      { label: "Close", action: () => void repoStore.closeTab(filePath, groupId) },
+      {
+        label: "Close Others",
+        disabled: otherPaths(state, filePath).length === 0,
+        action: () => void repoStore.closeOtherTabs(filePath, groupId),
+      },
       {
         label: "Close to the Right",
-        disabled: index < 0 || index === repoStore.tabs.length - 1,
-        action: () => void repoStore.closeTabsToRight(filePath),
+        disabled: pathsToRight(state, filePath).length === 0,
+        action: () => void repoStore.closeTabsToRight(filePath, groupId),
       },
-      { label: "Close All", action: () => void repoStore.closeAllTabs() },
+      { label: "Close All", disabled: unpinnedPaths(tabs).length === 0, action: () => void repoStore.closeAllTabs(groupId) },
       { separator: true },
+      ...groupItems(filePath),
       ...tabItems(filePath),
     ]);
   }
 
-  /** Vertical wheel scrolls the strip sideways. */
+  /** Vertical wheel scrolls the strip sideways (wrapped tabs never scroll). */
   function onWheel(event: WheelEvent): void {
-    if (stripEl && Math.abs(event.deltaY) > Math.abs(event.deltaX) && !event.ctrlKey && !event.metaKey) {
+    if (stripEl && !wrap && Math.abs(event.deltaY) > Math.abs(event.deltaX) && !event.ctrlKey && !event.metaKey) {
       stripEl.scrollLeft += event.deltaY;
     }
   }
+
+  // Dragging tabs, JetBrains style: the other tabs slide aside and the dragged one follows the
+  // pointer. Pointer events, so it works however the window handles native drags; the window
+  // listeners live only while a press or a drag does.
+
+  function onTabPointerDown(event: PointerEvent, tabPath: string): void {
+    if (event.button !== 0 || drag || (event.target as HTMLElement).closest(".tab-close")) {
+      return;
+    }
+    press = { tabPath, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", cancelDrag);
+    window.addEventListener("keydown", onDragKey, true);
+  }
+
+  /** The pointer in the strip's content coordinates. */
+  function contentPoint(clientX: number, clientY: number): { x: number; y: number } {
+    const rect = stripEl?.getBoundingClientRect();
+    return {
+      x: clientX - (rect?.left ?? 0) + (stripEl?.scrollLeft ?? 0),
+      y: clientY - (rect?.top ?? 0) + (stripEl?.scrollTop ?? 0),
+    };
+  }
+
+  function startDrag(current: TabPress): TabDrag | null {
+    if (!stripEl) {
+      return null;
+    }
+    const elements = Array.from(stripEl.querySelectorAll<HTMLElement>(".tab[data-path]"));
+    const index = elements.findIndex((element) => element.dataset.path === current.tabPath);
+    if (index < 0 || elements.length < 2) {
+      return null;
+    }
+    const boxes = elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      const topLeft = contentPoint(rect.left, rect.top);
+      return { left: topLeft.x, right: topLeft.x + rect.width, top: topLeft.y, bottom: topLeft.y + rect.height };
+    });
+    const start = contentPoint(current.startX, current.startY);
+    return {
+      tabPath: current.tabPath,
+      boxes,
+      grabX: start.x - boxes[index].left,
+      grabY: start.y - boxes[index].top,
+      clientX: current.startX,
+      clientY: current.startY,
+      gap: index,
+    };
+  }
+
+  function updateDrag(clientX: number, clientY: number): void {
+    if (!drag) {
+      return;
+    }
+    const point = contentPoint(clientX, clientY);
+    const gap = dropGap(drag.boxes, point.x, point.y, wrap);
+    drag = { ...drag, clientX, clientY, gap };
+  }
+
+  function onPointerMove(event: PointerEvent): void {
+    if (!press || event.pointerId !== press.pointerId) {
+      return;
+    }
+    if (!drag) {
+      if (!pastDragThreshold({ x: press.startX, y: press.startY }, { x: event.clientX, y: event.clientY })) {
+        return;
+      }
+      drag = startDrag(press);
+      if (!drag) {
+        endPress();
+        return;
+      }
+      scrollFrame = requestAnimationFrame(edgeScroll);
+    }
+    updateDrag(event.clientX, event.clientY);
+  }
+
+  /** Near the strip's ends, a single row of tabs scrolls while dragging. */
+  function edgeScroll(): void {
+    if (!drag || !stripEl) {
+      return;
+    }
+    if (!wrap) {
+      const rect = stripEl.getBoundingClientRect();
+      const step = edgeScrollStep(drag.clientX, rect.left, rect.right);
+      if (step !== 0) {
+        stripEl.scrollLeft += step;
+        updateDrag(drag.clientX, drag.clientY);
+      }
+    }
+    scrollFrame = requestAnimationFrame(edgeScroll);
+  }
+
+  function onPointerUp(event: PointerEvent): void {
+    if (!press || event.pointerId !== press.pointerId) {
+      return;
+    }
+    const finished = drag;
+    endPress();
+    if (finished) {
+      swallowClick = true;
+      setTimeout(() => (swallowClick = false), 0);
+      repoStore.moveTab(groupId, finished.tabPath, finished.gap);
+      // The dragged tab comes to the front, as a press on it does in JetBrains IDEs.
+      repoStore.activateTab(groupId, finished.tabPath);
+    }
+  }
+
+  function cancelDrag(): void {
+    endPress();
+  }
+
+  function onDragKey(event: KeyboardEvent): void {
+    if (event.key === "Escape" && drag) {
+      event.preventDefault();
+      event.stopPropagation();
+      endPress();
+    }
+  }
+
+  function endPress(): void {
+    press = null;
+    drag = null;
+    cancelAnimationFrame(scrollFrame);
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+    window.removeEventListener("pointercancel", cancelDrag);
+    window.removeEventListener("keydown", onDragKey, true);
+  }
+
+  function onClickCapture(event: MouseEvent): void {
+    if (swallowClick) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  // The dragged tab follows the pointer from wherever the new order put it (offsetLeft and
+  // offsetTop ignore the translate). In one row it only moves sideways, inside the strip.
+  $effect(() => {
+    const current = drag;
+    if (!current || !stripEl) {
+      return;
+    }
+    const element = stripEl.querySelector<HTMLElement>(`.tab[data-path="${CSS.escape(current.tabPath)}"]`);
+    if (!element) {
+      return;
+    }
+    const point = contentPoint(current.clientX, current.clientY);
+    let left = point.x - current.grabX;
+    if (!wrap) {
+      left = Math.max(0, Math.min(left, stripEl.scrollWidth - element.offsetWidth));
+    }
+    const top = wrap ? point.y - current.grabY - element.offsetTop : 0;
+    element.style.translate = `${left - element.offsetLeft}px ${top}px`;
+    return () => {
+      element.style.translate = "";
+    };
+  });
+
+  $effect(() => endPress);
 </script>
 
-<div class="tab-strip" bind:this={stripEl} onwheel={onWheel} role="tablist" aria-label="Open editors">
-  {#if changesSelection.selected}
-    <div class="tab diff" class:active={shownView === "diff"} title={diffTitle} role="presentation">
-      <button class="tab-main" role="tab" aria-selected={shownView === "diff"} onclick={() => (repoStore.view = "diff")}>
+<div
+  class="tab-strip"
+  class:unfocused={!focused}
+  class:wrap
+  class:dragging={drag !== null}
+  bind:this={stripEl}
+  onwheel={onWheel}
+  onclickcapture={onClickCapture}
+  role="tablist"
+  aria-label={split ? (primary ? "Open editors, left group" : "Open editors, right group") : "Open editors"}
+>
+  {#if primary && changesSelection.selected}
+    <div class="tab diff" class:active={diffShown} title={diffTitle} role="presentation">
+      <button class="tab-main" role="tab" aria-selected={diffShown} onclick={() => (repoStore.view = "diff")}>
         <Icon name="git-compare" size={13} />
         <span class="name">{diffName}</span>
         <span class="hint">Diff</span>
@@ -145,9 +401,9 @@
       </button>
     </div>
   {/if}
-  {#each repoStore.tabs as tab (tab.path)}
+  {#each shownTabs as tab (tab.path)}
     {@const label = labels.get(tab.path)}
-    {@const active = shownView === "file" && repoStore.openFilePath === tab.path}
+    {@const active = changesSelection.tabShown(groupId, tab.path)}
     {@const commit = parseCommitTabPath(tab.path) !== null}
     {@const gitTab = parseGitTabPath(tab.path)}
     {@const branchTab = parseBranchTabPath(tab.path)}
@@ -158,7 +414,10 @@
       class:active
       class:preview={tab.preview}
       class:dirty={tab.dirty}
+      class:pinned={tab.pinned}
+      class:lifted={drag?.tabPath === tab.path}
       data-path={tab.path}
+      animate:flip={{ duration: drag?.tabPath === tab.path ? 0 : 120 }}
       title={terminalKey !== null
         ? terminalTitle(terminalKey)
         : commit
@@ -167,8 +426,9 @@
             ? gitTabTitle(gitTab).title
             : branchTab
               ? branchTabTitle(branchTab).title
-              : `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`}
+              : (compareTabTooltip(tab.path) ?? `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`)}
       role="presentation"
+      onpointerdown={(event) => onTabPointerDown(event, tab.path)}
       onauxclick={(event) => onAuxClick(event, tab.path)}
       oncontextmenu={(event) => openMenu(event, tab.path, tab.preview)}
     >
@@ -177,7 +437,7 @@
         role="tab"
         aria-selected={active}
         onclick={() => activate(tab.path)}
-        ondblclick={() => repoStore.pinFile(tab.path)}
+        ondblclick={() => repoStore.pinFile(tab.path, groupId)}
       >
         <Icon
           name={terminalKey !== null
@@ -187,8 +447,10 @@
               : gitTab
                 ? gitTab.kind === "compare"
                   ? "git-compare"
-                  : "history"
-                : branchTab
+                  : gitTab.kind === "reflog"
+                    ? "undo"
+                    : "history"
+                : branchTab || isCompareTab(tab.path)
                   ? "git-compare"
                   : "file"}
           size={13}
@@ -198,15 +460,28 @@
           <span class="hint">{label.hint}</span>
         {/if}
       </button>
-      <button
-        class="tab-close"
-        onclick={() => void repoStore.closeTab(tab.path)}
-        aria-label={tab.dirty ? "Close (unsaved changes)" : "Close"}
-        title={tab.dirty ? "Unsaved changes. Close" : "Close"}
-      >
-        <span class="dot"></span>
-        <span class="x"><Icon name="x" size={12} /></span>
-      </button>
+      {#if tab.pinned}
+        <!-- A pinned tab's button unpins it, as in JetBrains IDEs; it still closes with a middle click or Close. -->
+        <button
+          class="tab-close"
+          onclick={() => repoStore.setTabPinned(tab.path, false)}
+          aria-label={tab.dirty ? "Unpin (unsaved changes)" : "Unpin"}
+          title={tab.dirty ? "Pinned, unsaved changes. Unpin" : "Pinned. Unpin"}
+        >
+          <span class="dot"></span>
+          <span class="x"><Icon name="pin" size={12} /></span>
+        </button>
+      {:else}
+        <button
+          class="tab-close"
+          onclick={() => void repoStore.closeTab(tab.path, groupId)}
+          aria-label={tab.dirty ? "Close (unsaved changes)" : "Close"}
+          title={tab.dirty ? "Unsaved changes. Close" : "Close"}
+        >
+          <span class="dot"></span>
+          <span class="x"><Icon name="x" size={12} /></span>
+        </button>
+      {/if}
     </div>
   {/each}
 </div>
@@ -214,6 +489,7 @@
 <style>
   .tab-strip {
     flex: none;
+    position: relative;
     display: flex;
     align-items: stretch;
     height: 34px;
@@ -222,6 +498,34 @@
     background: var(--panel-alt);
     border-bottom: 1px solid var(--border-strong);
     scrollbar-width: none;
+    user-select: none;
+  }
+
+  /* Wrap tabs: more rows instead of a sideways scroll; each row has its own bottom line. */
+  .tab-strip.wrap {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 34px;
+    overflow: hidden;
+  }
+
+  .tab-strip.wrap .tab {
+    height: 34px;
+    max-width: min(240px, 100%);
+    margin-bottom: -1px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .tab-strip.dragging,
+  .tab-strip.dragging .tab-main {
+    cursor: grabbing;
+  }
+
+  /* The tab being dragged floats above the others while they slide aside. */
+  .tab.lifted {
+    z-index: 2;
+    background: var(--editor-bg);
+    box-shadow: var(--shadow);
   }
 
   .tab-strip::-webkit-scrollbar {
@@ -257,6 +561,15 @@
     top: 0;
     height: 2px;
     background: var(--accent);
+  }
+
+  /* The group without the focus: its tab on screen keeps the editor color but no accent. */
+  .tab-strip.unfocused .tab.active::before {
+    background: var(--border-strong);
+  }
+
+  .tab-strip.unfocused .tab.active {
+    color: var(--text-dim);
   }
 
   .tab-main {
@@ -323,12 +636,9 @@
     opacity: 0;
   }
 
-  .tab.diff .tab-close {
-    opacity: 0;
-  }
-
   .tab:hover .tab-close .x,
   .tab.active .tab-close .x,
+  .tab.pinned .tab-close .x,
   .tab.diff:hover .tab-close,
   .tab.diff.active .tab-close {
     opacity: 1;
@@ -361,5 +671,44 @@
   .tab.dirty .tab-close:hover .x {
     display: flex;
     opacity: 1;
+  }
+
+  /* Rounded panels: rounded tabs on the editor color, the active one tinted and outlined, like JetBrains Islands. */
+  :global(html[data-rounded-panels]) .tab-strip {
+    align-items: center;
+    gap: 2px;
+    padding: 0 6px;
+    background: var(--editor-bg);
+    border-bottom-color: var(--border);
+  }
+
+  :global(html[data-rounded-panels]) .tab-strip.wrap {
+    padding: 4px 6px;
+    row-gap: 4px;
+  }
+
+  :global(html[data-rounded-panels]) .tab-strip .tab {
+    height: 26px;
+    margin-bottom: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+  }
+
+  :global(html[data-rounded-panels]) .tab-strip .tab.active {
+    background: var(--selected);
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--editor-bg));
+  }
+
+  :global(html[data-rounded-panels]) .tab.active::before {
+    display: none;
+  }
+
+  :global(html[data-rounded-panels]) .tab-strip.unfocused .tab.active {
+    background: var(--selected-inactive);
+    border-color: var(--border-strong);
+  }
+
+  :global(html[data-rounded-panels]) .tab-main {
+    padding-left: 10px;
   }
 </style>

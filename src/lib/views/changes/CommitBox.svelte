@@ -1,12 +1,19 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
+  import { platformFromUserAgent } from "$lib/menu/menuSpec";
+  import { settings } from "$lib/stores/settings.svelte";
+  import { dialogs } from "$lib/ui/dialog.svelte";
   import type { RepoInfo } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { syncRepo } from "../gitActions";
-  import { commitDraft } from "./commitDraft.svelte";
+  import { type CommitDraft, commitDraft } from "./commitDraft.svelte";
+  import { historyMenuItems, templateMenuItems } from "./commitMessageMenus";
+  import { MAX_MESSAGE_HISTORY, mergeHistory } from "./commitMessages";
+  import { expandTemplate, splitGitTemplate, subjectWarning } from "./commitTemplates";
   import CommitOptionsPopover from "./CommitOptionsPopover.svelte";
   import { commitRepo } from "./repoActions";
   import { type CommitChoice, commitChoiceSpec, commitDropdownItems } from "./repoMenu";
@@ -29,6 +36,11 @@
 
   /** Repository whose HEAD message is being loaded for amend. */
   let loadingRoot = $state<string | null>(null);
+  let messageEl = $state<HTMLTextAreaElement | null>(null);
+  let historyButton = $state<HTMLButtonElement | null>(null);
+  // Cmd+E on macOS, where Ctrl+E moves to the end of the line; Ctrl+E elsewhere, like JetBrains.
+  const onMac = platformFromUserAgent(navigator.userAgent) === "macos";
+  const historyShortcut = onMac ? "Cmd+E" : "Ctrl+E";
 
   const draft = $derived(commitDraft.for(repo.root));
   const status = $derived(repoStore.statuses[repo.root] ?? null);
@@ -36,7 +48,9 @@
   const branch = $derived(branchLabel(status?.head));
   const busy = $derived(repoStore.busy !== null);
   const loadingMessage = $derived(loadingRoot === repo.root);
-  const hasMessage = $derived(draft.message.trim() !== "");
+  const hasMessage = $derived(!draft.isBlank());
+  const subjectNote = $derived(settings.commitSubjectGuide ? subjectWarning(draft.message) : null);
+  const placeholder = $derived(draft.templateHint ?? (multiRepo ? `Message for ${repo.name}` : "Commit message"));
   const disabledReason = $derived.by(() => {
     if (conflictCount > 0) {
       return "Resolve conflicts before committing";
@@ -77,18 +91,18 @@
     target.amend = checked;
     if (!checked) {
       if (target.prefilled !== null && target.message === target.prefilled) {
-        target.message = "";
+        target.message = target.template ?? "";
       }
       target.prefilled = null;
       return;
     }
-    if (target.message.trim() !== "") {
+    if (!target.isBlank()) {
       return;
     }
     loadingRoot = repoRoot;
     try {
       const headMessage = (await api.getHeadMessage(repoRoot)).trimEnd();
-      if (target.amend && target.message.trim() === "") {
+      if (target.amend && target.isBlank()) {
         target.message = headMessage;
         target.prefilled = headMessage;
       }
@@ -133,10 +147,119 @@
     contextMenu.openBelow(anchor, items, { keyboard: event.detail === 0, alignEnd: true });
   }
 
+  // commit.template fills an empty box once per commit, like git's editor would.
+  $effect(() => {
+    const target = draft;
+    const repoRoot = repo.root;
+    if (target.templateChecked || target.amend || target.message !== "") {
+      return;
+    }
+    target.templateChecked = true;
+    void loadGitTemplate(repoRoot, target);
+  });
+
+  async function loadGitTemplate(repoRoot: string, target: CommitDraft): Promise<void> {
+    const raw = await api.getCommitTemplate(repoRoot).catch(() => null);
+    if (raw === null) {
+      return;
+    }
+    const { text, comments } = splitGitTemplate(raw);
+    target.templateHint = comments === "" ? null : comments;
+    if (text !== "" && target.message === "" && !target.amend) {
+      target.message = text;
+      target.template = text;
+    }
+  }
+
+  function onInput(event: Event): void {
+    const next = (event.currentTarget as HTMLTextAreaElement).value;
+    const previous = draft.message;
+    // A cleared box keeps its text in the history.
+    if (next.trim() === "" && !draft.isBlank()) {
+      settings.rememberCommitMessage(repo.root, previous);
+    }
+    draft.message = next;
+  }
+
+  /** Puts `text` into the box; what was typed goes to the history (or is confirmed away). */
+  async function replaceMessage(text: string, cursor: number | null): Promise<void> {
+    const target = draft;
+    const repoRoot = repo.root;
+    if (!target.isBlank() && target.message !== text) {
+      if (settings.commitMessageHistory) {
+        settings.rememberCommitMessage(repoRoot, target.message);
+      } else {
+        const confirmed = await dialogs.confirm({
+          title: "Replace Message",
+          message: "Replace the commit message you typed?",
+          confirmLabel: "Replace",
+          danger: true,
+        });
+        if (!confirmed) {
+          return;
+        }
+      }
+    }
+    target.message = text;
+    await tick();
+    const at = cursor ?? text.length;
+    messageEl?.focus();
+    messageEl?.setSelectionRange(at, at);
+  }
+
+  async function openHistory(anchor: HTMLElement, keyboard: boolean): Promise<void> {
+    const repoRoot = repo.root;
+    const saved = settings.commitMessages[repoRoot] ?? [];
+    const fromLog = await api.recentCommitMessages(repoRoot, MAX_MESSAGE_HISTORY).catch(() => []);
+    const entries = mergeHistory(saved, fromLog);
+    const items = historyMenuItems(entries, Date.now(), (message) => void replaceMessage(message, null));
+    contextMenu.openBelow(anchor, items, { keyboard, alignEnd: true });
+  }
+
+  async function applyTemplate(text: string): Promise<void> {
+    const repoRoot = repo.root;
+    let userName: string | null = null;
+    if (text.includes("{user}")) {
+      const identity = await api.getIdentity(repoRoot).catch(() => null);
+      userName = identity?.local.name ?? identity?.global.name ?? null;
+    }
+    const branchName = repoStore.statuses[repoRoot]?.head?.branch ?? null;
+    const expanded = expandTemplate(text, { branch: branchName, userName, date: new Date() });
+    await replaceMessage(expanded.text, expanded.cursor);
+  }
+
+  async function openTemplates(event: MouseEvent): Promise<void> {
+    const anchor = event.currentTarget as HTMLElement;
+    const keyboard = event.detail === 0;
+    const raw = await api.getCommitTemplate(repo.root).catch(() => null);
+    const gitTemplate = raw === null ? null : splitGitTemplate(raw).text;
+    const items = templateMenuItems(settings.commitTemplates, gitTemplate, {
+      onTemplate: (text) => void applyTemplate(text),
+      onGitTemplate: (text) => void replaceMessage(text, null),
+      onEdit: () => settings.openDialog("merge"),
+    });
+    contextMenu.openBelow(anchor, items, { keyboard, alignEnd: true });
+  }
+
   function onKeydown(event: KeyboardEvent): void {
-    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    const command = event.metaKey || event.ctrlKey;
+    if (event.key === "Enter" && command) {
       event.preventDefault();
       void commit();
+      return;
+    }
+    if (!settings.commitMessageHistory || event.altKey || event.shiftKey) {
+      return;
+    }
+    // JetBrains' Cmd+E, or Up in an empty box like a shell: the message history.
+    const historyModifier = onMac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
+    const historyKey = (historyModifier && event.code === "KeyE") || (!command && event.key === "ArrowUp" && draft.message === "");
+    if (historyKey) {
+      event.preventDefault();
+      const anchor = historyButton ?? messageEl;
+      if (anchor) {
+        void openHistory(anchor, true);
+      }
     }
   }
 </script>
@@ -165,14 +288,45 @@
       {/if}
     </div>
   {/if}
-  <textarea
-    class="input message"
-    placeholder={multiRepo ? `Message for ${repo.name}` : "Commit message"}
-    bind:value={draft.message}
-    onkeydown={onKeydown}
-    spellcheck="true"
-    aria-label="Commit message"
-  ></textarea>
+  <div class="message-wrap">
+    <textarea
+      bind:this={messageEl}
+      class="input message"
+      class:with-history={settings.commitMessageHistory}
+      {placeholder}
+      value={draft.message}
+      oninput={onInput}
+      onkeydown={onKeydown}
+      spellcheck="true"
+      aria-label="Commit message"
+    ></textarea>
+    <div class="message-tools">
+      {#if settings.commitMessageHistory}
+        <button
+          bind:this={historyButton}
+          class="icon-btn tool"
+          onclick={(event) => void openHistory(event.currentTarget, event.detail === 0)}
+          title="Message History ({historyShortcut})"
+          aria-label="Message History"
+          aria-haspopup="menu"
+        >
+          <Icon name="history" size={13} />
+        </button>
+      {/if}
+      <button
+        class="icon-btn tool"
+        onclick={(event) => void openTemplates(event)}
+        title="Message Templates"
+        aria-label="Message Templates"
+        aria-haspopup="menu"
+      >
+        <Icon name="file" size={13} />
+      </button>
+    </div>
+  </div>
+  {#if subjectNote}
+    <div class="subject-note" role="status">{subjectNote}</div>
+  {/if}
   <div class="footer">
     <label class="amend" title={unborn ? "There is no commit to amend yet" : "Amend the last commit"}>
       <input type="checkbox" checked={draft.amend} onchange={toggleAmend} disabled={unborn || busy} />
@@ -276,10 +430,45 @@
     font-size: 12px;
   }
 
+  .message-wrap {
+    position: relative;
+  }
+
   .message {
+    display: block;
     width: 100%;
     height: 96px;
     line-height: 1.45;
+    padding-right: 34px;
+  }
+
+  .message.with-history {
+    padding-right: 58px;
+  }
+
+  .message-tools {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    display: flex;
+    gap: 1px;
+  }
+
+  .tool {
+    height: 22px;
+    min-width: 22px;
+    padding: 0 4px;
+    color: var(--text-dim);
+  }
+
+  .tool:hover:not(:disabled) {
+    color: var(--text);
+  }
+
+  .subject-note {
+    margin-top: -4px;
+    font-size: 11.5px;
+    color: var(--warning);
   }
 
   .footer {

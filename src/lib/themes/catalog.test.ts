@@ -44,7 +44,7 @@ describe("catalog", () => {
   });
 
   it("covers every color token app.css defines", () => {
-    const appTokens = Object.keys(root).filter((token) => !/^--(font-|ui-size|code-size|radius)/.test(token));
+    const appTokens = Object.keys(root).filter((token) => !/^--(font-|ui-size|code-size|radius|panel-gap|panel-radius)/.test(token));
     expect([...COLOR_TOKENS].sort()).toEqual(appTokens.sort());
   });
 
@@ -105,6 +105,11 @@ describe.each(THEME_INDEX.map((theme) => [theme.name, theme] as const))("%s", (_
     expect(contrastRatio(text, editorBg)).toBeGreaterThanOrEqual(textMinimum);
     expect(contrastRatio(text, colors["--panel"])).toBeGreaterThanOrEqual(textMinimum);
     expect(contrastRatio(text, colors["--bg"])).toBeGreaterThanOrEqual(textMinimum);
+  });
+
+  it("has a frame for rounded panels that stands apart from the panels and keeps text readable", () => {
+    expect(colorDistance(colors["--frame"], colors["--panel"])).toBeGreaterThanOrEqual(5);
+    expect(contrastRatio(text, colors["--frame"])).toBeGreaterThanOrEqual(textMinimum);
   });
 
   it("has a visible selection that text stays readable on", () => {

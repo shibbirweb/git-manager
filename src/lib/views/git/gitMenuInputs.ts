@@ -29,6 +29,7 @@ export function gitRepoInputs(): GitRepoInputs | null {
     changes: status?.files.length ?? 0,
     remotes: repoStore.refs?.remotes.length ?? repoStore.remotes.length,
     github: pickGitHubRemote(repoStore.remotes, preferredRemote) !== null,
+    bisecting: (status?.bisect ?? null) !== null,
     remoteLinks: remoteLinks(repoStore.remotes).length,
   };
 }

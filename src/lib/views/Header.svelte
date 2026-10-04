@@ -6,7 +6,16 @@
   import LayoutToggleIcon from "./LayoutToggleIcon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { recentEntries, shortPath } from "./recentEntries";
-  import { openRecent, pickAndAddFolder, pickAndOpenRepo, pickAndOpenWorkspaceFile, pickAndSaveWorkspace } from "./repoPicker";
+  import {
+    openNewWindow,
+    openRecent,
+    openRecentInNewWindow,
+    pickAndAddFolder,
+    pickAndOpenInNewWindow,
+    pickAndOpenRepo,
+    pickAndOpenWorkspaceFile,
+    pickAndSaveWorkspace,
+  } from "./repoPicker";
   import { newBranchFrom } from "./sidebar/actions";
   import { navigation } from "$lib/stores/navigation.svelte";
 
@@ -27,14 +36,21 @@
 
   function workspaceMenu(event: MouseEvent): void {
     const openRoots = repoStore.workspace?.folders.map((folder) => folder.root) ?? [];
-    const items: MenuItem[] = recentEntries(settings, { file: repoStore.workspace?.file ?? null, folderRoots: openRoots }).map(
-      (entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecent(entry) }),
-    );
+    const recent = recentEntries(settings, { file: repoStore.workspace?.file ?? null, folderRoots: openRoots });
+    const items: MenuItem[] = recent.map((entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecent(entry) }));
     if (items.length > 0) {
-      items.push({ separator: true });
+      items.push(
+        {
+          label: "Open Recent in New Window",
+          submenu: recent.map((entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecentInNewWindow(entry) })),
+        },
+        { separator: true },
+      );
     }
     items.push(
+      { label: "New Window", action: () => void openNewWindow() },
       { label: "Open Folder...", action: () => void pickAndOpenRepo() },
+      { label: "Open Folder in New Window...", action: () => void pickAndOpenInNewWindow() },
       { label: "Open Workspace from File...", action: () => void pickAndOpenWorkspaceFile() },
       { label: "Add Folder to Workspace...", action: () => void pickAndAddFolder() },
       {
@@ -209,6 +225,12 @@
     padding: 0 8px;
     background: var(--panel);
     border-bottom: 1px solid var(--border-strong);
+  }
+
+  /* Rounded panels: the header is part of the window frame. */
+  :global(html[data-rounded-panels]) .header {
+    background: var(--frame);
+    border-bottom: none;
   }
 
   .left,

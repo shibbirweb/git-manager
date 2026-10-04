@@ -5,8 +5,9 @@
   import type { ChangeMark } from "$lib/editor/lineDiff";
   import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/scrollMarkers";
   import { baseExtensions, languageFor } from "$lib/editor/setup";
-  import type { FileDiff } from "$lib/types";
+  import type { FileDiff, LineAction, LineHunk, LineSelection } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
+  import { hunkDiff, SCAN_LIMIT } from "./hunkDiff";
   import { chunkKinds, diffTheme, revertButton } from "./mergeExtensions";
   import { diffPrefs } from "./prefs.svelte";
   import { type BlameTarget, blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
@@ -16,6 +17,12 @@
   import { clampDiffSplit, DEFAULT_DIFF_SPLIT, splitFromPointer } from "./split";
   import { lfsContentChanged, lfsSizeText } from "$lib/views/git/lfs/lfsModel";
   import { type PreviewSides, showsBinaryPreview } from "./binaryPreview";
+  import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
+  import { commandSpecs, currentPlatform, shortcutOverrides } from "$lib/commands/commandRuntime";
+  import { formatAccelerator } from "$lib/commands/keybinding";
+  import { effectiveShortcut } from "$lib/commands/registry";
+  import { diffLines } from "./diffLines.svelte";
+  import { type DiffSide, rangeLines, selectedChangeLines, selectionSize } from "./lineSelection";
 
   export type DiffMode = "unstaged" | "staged" | "readonly";
 
@@ -44,6 +51,11 @@
     workingFile?: { filePath: string; sameLines: boolean } | null;
     /** Where the two sides come from, so a binary image or PDF shows side by side. */
     previewSides?: PreviewSides | null;
+    /**
+     * Stage, Unstage or Discard Selected Lines (the Changes diff): called with the changed
+     * lines the selection picks. Without it the diff offers no line actions.
+     */
+    onLines?: ((action: LineAction, selection: LineSelection) => void) | null;
   }
 
   let {
@@ -57,6 +69,7 @@
     revealLine = null,
     workingFile = null,
     previewSides = null,
+    onLines = null,
   }: Props = $props();
 
   let revealedToken = -1;
@@ -101,6 +114,13 @@
   let findHostB = $state<HTMLDivElement | null>(null);
   let chunkCount = $state(0);
   let current = $state(-1);
+  /** Changed lines the selection picks, for the line action buttons. */
+  let selectedLines = $state(0);
+  let selectionFrame = 0;
+  /** The side the last selection was made in: the line actions read its selection. */
+  let activeSide: DiffSide = "new";
+  /** The backend's hunks of the texts on screen; null once a chunk control changed a side. */
+  let viewHunks: LineHunk[] | null = null;
 
   let view: MergeView | null = null;
   /** Change overview ruler beside the diff's scrollbar. */
@@ -119,6 +139,17 @@
   /** 0 while the diff is hidden (a background tab), so the preview frees its files. */
   let previewWidth = $state(0);
   const fileName = $derived(path.split("/").pop() ?? path);
+  /** Which line actions the diff offers: Stage and Discard (unstaged), Unstage (staged), or none. */
+  const lineMode = $derived(onLines && textual && !identical && mode !== "readonly" ? mode : null);
+
+  // The Git menu and the Command Palette run the line actions here while this diff is shown.
+  $effect(() => {
+    const target = lineMode;
+    if (!target) {
+      return;
+    }
+    return diffLines.attach({ mode: target, run: (action) => runLines(action) });
+  });
 
   /** The right side's line to open the file at: the cursor line when it is on screen, else the top line. */
   function lineOnScreen(merge: MergeView): number {
@@ -176,6 +207,9 @@
     }
     lastScroll = { key: scrollKey, top: view.dom.scrollTop };
     cancelAnimationFrame(stripFrame);
+    cancelAnimationFrame(selectionFrame);
+    viewHunks = null;
+    selectedLines = 0;
     stripObserver?.disconnect();
     stripObserver = null;
     strip?.remove();
@@ -210,14 +244,27 @@
       if (current >= chunkCount) {
         current = -1;
       }
+      // The hunks no longer fit this text; the reloaded diff brings new ones.
+      viewHunks = null;
+      scheduleSelectionCount();
       onChange?.(changedSide, update.state.doc.toString());
     });
+    const selectionWatch = (side: DiffSide) =>
+      EditorView.updateListener.of((update) => {
+        const picked = update.transactions.some((transaction) => transaction.isUserEvent("select"));
+        if (picked || (update.focusChanged && update.view.hasFocus)) {
+          activeSide = side;
+        }
+        if (update.selectionSet || update.focusChanged) {
+          scheduleSelectionCount();
+        }
+      });
     const geometry = EditorView.updateListener.of((update) => {
       if (update.docChanged || update.geometryChanged || update.heightChanged) {
         scheduleStrip();
       }
     });
-    const sideExtensions = (changes: boolean, findHost: HTMLElement | null): Extension[] =>
+    const sideExtensions = (changes: boolean, findHost: HTMLElement | null, side: DiffSide): Extension[] =>
       baseExtensions({
         readOnly: true,
         extensions: [
@@ -226,21 +273,27 @@
           chunkKinds,
           navigation,
           geometry,
+          selectionWatch(side),
           changes ? listener : [],
           findHost ? panels({ topContainer: findHost }) : [],
         ],
       });
 
     const merge = new MergeView({
-      a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged", findHostA) },
+      a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged", findHostA, "old") },
       b: {
         doc: fileDiff.modified,
         extensions: [
-          sideExtensions(diffMode === "staged", findHostB),
+          sideExtensions(diffMode === "staged", findHostB, "new"),
           blame ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }) : [],
         ],
       },
       parent: target,
+      // The backend's line hunks, refined to characters inside each one; without them (an older
+      // payload) CodeMirror diffs the whole texts itself.
+      diffConfig: fileDiff.hunks
+        ? { scanLimit: SCAN_LIMIT, override: hunkDiff(fileDiff.original, fileDiff.modified, fileDiff.hunks) }
+        : { scanLimit: SCAN_LIMIT },
       gutter: true,
       highlightChanges: true,
       collapseUnchanged: collapse ? { margin: 3, minSize: 4 } : undefined,
@@ -251,11 +304,14 @@
           : () => revertButton("Unstage this change", "chevrons-right"),
     });
     view = merge;
+    viewHunks = fileDiff.hunks ?? null;
+    activeSide = "new";
     if (blame) {
       void loadBlame(merge.b, blame, fileDiff.modifiedEol);
     }
     chunkCount = merge.chunks.length;
     current = -1;
+    scheduleSelectionCount();
     strip = createStrip((line) => jumpToLine(merge.b, line));
     target.appendChild(strip);
     stripObserver = new ResizeObserver(() => {
@@ -362,6 +418,95 @@
     });
   }
 
+  /** The changed lines the selection of the active side picks; none without fitting hunks. */
+  function currentSelection(): LineSelection {
+    const merge = view;
+    const hunks = viewHunks;
+    if (!merge || !hunks) {
+      return { oldLines: [], newLines: [] };
+    }
+    const side = activeSide;
+    const { doc, selection } = (side === "old" ? merge.a : merge.b).state;
+    const spans = selection.ranges.map((range) => rangeLines(doc, range.from, range.to));
+    return selectedChangeLines(hunks, side, spans);
+  }
+
+  function scheduleSelectionCount(): void {
+    cancelAnimationFrame(selectionFrame);
+    selectionFrame = requestAnimationFrame(() => {
+      selectedLines = selectionSize(currentSelection());
+    });
+  }
+
+  function runLines(action: LineAction): void {
+    const selection = currentSelection();
+    if (selectionSize(selection) === 0) {
+      toast.info("Select changed lines first", "Select lines in the diff, or put the cursor on a change.");
+      return;
+    }
+    onLines?.(action, selection);
+  }
+
+  const LINE_COMMANDS: Record<LineAction, "git.lines.stage" | "git.lines.unstage" | "git.lines.discard"> = {
+    stage: "git.lines.stage",
+    unstage: "git.lines.unstage",
+    discard: "git.lines.discard",
+  };
+
+  /** The action's key as the platform writes it ("⌥⇧⌘S"), or null without one. */
+  function lineShortcut(action: LineAction): string | null {
+    const spec = commandSpecs().find((candidate) => candidate.id === LINE_COMMANDS[action]);
+    const shortcut = spec ? effectiveShortcut(spec, shortcutOverrides()) : null;
+    return shortcut ? formatAccelerator(shortcut, currentPlatform()) : null;
+  }
+
+  function lineTitle(text: string, action: LineAction): string {
+    const shortcut = lineShortcut(action);
+    return shortcut ? `${text} (${shortcut})` : text;
+  }
+
+  /** Right-click in either side: the line actions for its selection, and Copy. */
+  function openLineMenu(event: MouseEvent): void {
+    const merge = view;
+    const target = lineMode;
+    const node = event.target instanceof Node ? event.target : null;
+    const editor = node && merge?.a.dom.contains(node) ? merge.a : node && merge?.b.dom.contains(node) ? merge.b : null;
+    if (!merge || !target || !editor) {
+      return;
+    }
+    activeSide = editor === merge.a ? "old" : "new";
+    // A click outside the selection moves the cursor there first, like other editors.
+    const position = editor.posAtCoords({ x: event.clientX, y: event.clientY });
+    if (position !== null && !editor.state.selection.ranges.some((range) => position >= range.from && position <= range.to)) {
+      editor.dispatch({ selection: { anchor: position } });
+    }
+    const count = selectionSize(currentSelection());
+    const item = (label: string, action: LineAction, danger = false): MenuItem => ({
+      label,
+      action: () => runLines(action),
+      disabled: count === 0,
+      danger,
+      hint: lineShortcut(action) ?? undefined,
+    });
+    const items: MenuItem[] =
+      target === "unstaged"
+        ? [item("Stage Selected Lines", "stage"), item("Discard Selected Lines...", "discard", true)]
+        : [item("Unstage Selected Lines", "unstage")];
+    const { state } = editor;
+    const copied = state.selection.ranges.filter((range) => !range.empty).map((range) => state.sliceDoc(range.from, range.to));
+    items.push(
+      { separator: true },
+      {
+        label: "Copy",
+        disabled: copied.length === 0,
+        action: () => {
+          navigator.clipboard.writeText(copied.join("\n")).catch(() => toast.error("Could not copy the selection"));
+        },
+      },
+    );
+    contextMenu.open(event, items);
+  }
+
   function revealChunk(merge: MergeView, chunk: Chunk): void {
     const posA = Math.min(chunk.fromA, merge.a.state.doc.length);
     const posB = Math.min(chunk.fromB, merge.b.state.doc.length);
@@ -439,6 +584,39 @@
         Open File
       </button>
     {/if}
+    {#if lineMode}
+      <div class="divider"></div>
+      {#if lineMode === "unstaged"}
+        <button
+          class="toggle"
+          onclick={() => runLines("stage")}
+          disabled={selectedLines === 0}
+          title={lineTitle("Stage the selected lines, or the change at the cursor", "stage")}
+        >
+          <Icon name="plus" size={13} />
+          Stage Lines
+        </button>
+        <button
+          class="toggle"
+          onclick={() => runLines("discard")}
+          disabled={selectedLines === 0}
+          title={lineTitle("Discard the selected lines in the work tree", "discard")}
+        >
+          <Icon name="discard" size={13} />
+          Discard Lines
+        </button>
+      {:else}
+        <button
+          class="toggle"
+          onclick={() => runLines("unstage")}
+          disabled={selectedLines === 0}
+          title={lineTitle("Unstage the selected lines, or the change at the cursor", "unstage")}
+        >
+          <Icon name="minus" size={13} />
+          Unstage Lines
+        </button>
+      {/if}
+    {/if}
     <span class="path truncate" title={path}>
       <span class="name">{fileName}</span>
       {#if directory}
@@ -477,7 +655,16 @@
       <span class="gap"></span>
       <div class="find-host" bind:this={findHostB}></div>
     </div>
-    <div class="body" bind:this={host}>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="body"
+      bind:this={host}
+      oncontextmenu={(event) => {
+        if (lineMode) {
+          openLineMenu(event);
+        }
+      }}
+    >
       {#if handleLeft !== null}
         <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
         <div

@@ -81,6 +81,15 @@ pub fn normalize_eol(text: &str) -> String {
     text.replace("\r\n", "\n")
 }
 
+/// Like `normalize_eol`, but keeps the string itself when it has no CRLF (no copy).
+pub fn into_lf(text: String) -> String {
+    if memchr::memmem::find(text.as_bytes(), b"\r\n").is_some() {
+        normalize_eol(&text)
+    } else {
+        text
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MergeDocument {

@@ -12,9 +12,13 @@ import {
   ignoreSide,
   initialChunks,
   isResolved,
+  lineStarts,
   mapChunks,
   mapLine,
+  rangeOfString,
+  rangeText,
   replaceLines,
+  sliceLines,
   sideToResultAnchors,
   splitLines,
   unresolvedCounts,
@@ -36,7 +40,7 @@ function linesOf(doc: Text, chunk: ChunkState): string[] {
 const base = "a\nb\nc\nd\ne\n";
 const ours = "a\nB\nC-ours\nd\ne\n";
 const theirs = "a\nb\nC-theirs\nd\nE\n";
-const sides = { ours: splitLines(ours), theirs: splitLines(theirs) };
+const sides = { ours: Text.of(splitLines(ours)), theirs: Text.of(splitLines(theirs)) };
 const engineChunks: MergeChunk[] = [
   { id: 0, kind: "conflict", base: { start: 1, end: 3 }, ours: { start: 1, end: 3 }, theirs: { start: 1, end: 3 } },
   { id: 1, kind: "theirsOnly", base: { start: 4, end: 5 }, ours: { start: 4, end: 5 }, theirs: { start: 4, end: 5 } },
@@ -232,5 +236,32 @@ describe("navigation and markers", () => {
   it("detects leftover conflict markers", () => {
     expect(hasConflictMarkers("a\n<<<<<<< HEAD\nb\n=======\nc\n>>>>>>> x\n")).toBe(true);
     expect(hasConflictMarkers("a\n<<<<<<<< not a marker\n")).toBe(false);
+  });
+});
+
+describe("line ranges without line arrays", () => {
+  const text = "zero\none\n\nthree";
+  const doc = Text.of(splitLines(text));
+  const starts = lineStarts(text);
+
+  it("slices the same lines from a document and from a string", () => {
+    for (const range of [
+      { start: 0, end: 1 },
+      { start: 1, end: 3 },
+      { start: 2, end: 4 },
+      { start: 0, end: 4 },
+      { start: 3, end: 9 },
+      { start: 2, end: 2 },
+    ]) {
+      const expected = splitLines(text).slice(range.start, range.end);
+      expect(sliceLines(doc, range)).toEqual(expected);
+      expect(rangeText(doc, range)).toBe(expected.join("\n"));
+      expect(rangeOfString(text, starts, range)).toBe(expected.join("\n"));
+    }
+  });
+
+  it("indexes every line start", () => {
+    expect([...lineStarts("a\nbc\n")]).toEqual([0, 2, 5]);
+    expect([...lineStarts("")]).toEqual([0]);
   });
 });

@@ -141,6 +141,15 @@ describe("rename_path", () => {
     await expect(renamePath(fake.deps, { entryPath: "/tmp/a", newName: "b" })).rejects.toThrow("Not inside an open workspace folder");
     await expect(renamePath(fake.deps, { entryPath: `${ROOT}/a` })).rejects.toThrow('"newName" is required');
   });
+
+  it("counts the bytes of a name, as the file system does", async () => {
+    const fake = fakeDeps();
+    // 128 characters, 256 bytes: short enough by characters, too long on disk.
+    await expect(renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "é".repeat(128) })).rejects.toThrow("at most 255 bytes");
+    expect(fake.calls).toEqual([]);
+    await renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "é".repeat(127) });
+    expect(fake.calls).toHaveLength(1);
+  });
 });
 
 describe("copy_paths", () => {

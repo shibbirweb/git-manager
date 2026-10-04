@@ -1,13 +1,21 @@
-<!-- Editor tab for a work tree file opened from the file explorer. -->
+<!--
+  Editor tab for a work tree file opened from the file explorer. With the editor split, the
+  same file can have one of these in each group: they share one document (sharedDocs.ts).
+-->
 <script lang="ts">
   import { EditorState, type Text, type TransactionSpec } from "@codemirror/state";
   import { EditorView, keymap } from "@codemirror/view";
   import { onMount, tick, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
+  import { usesDefaultKeys } from "$lib/commands/commandRuntime";
   import { wordWrap } from "$lib/editor/wordWrap";
+  import { editorIndent } from "$lib/editor/indentation";
+  import { type AutoSaveTrigger, shouldAutoSave } from "$lib/editor/autoSave";
+  import { caretLines, saveCleanupTransaction } from "$lib/editor/saveCleanup";
   import { blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
+  import { type DocMember, isReplay, type SharedDoc, sharedDocs, syncedDispatch } from "$lib/editor/sharedDocs";
   import { conflictField, conflictMarkers, resolveAllConflicts } from "$lib/editor/conflictDecorations";
-  import { type ChangeMark, changeMarks } from "$lib/editor/lineDiff";
+  import type { ChangeMark } from "$lib/editor/lineDiff";
   import { sectionAt, sectionTarget } from "$lib/editor/navigation";
   import {
     changeGutter,
@@ -27,22 +35,24 @@
   import { changesSelection } from "../changes/selection.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { MARKDOWN_PREVIEW_RATIO_RANGE, type MarkdownViewMode, settings } from "$lib/stores/settings.svelte";
-  import { folderFor, joinPath, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
+  import { folderFor, locateAbsolute, relativeTo } from "$lib/stores/workspacePaths";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { isMissingFileError } from "$lib/stores/navHistory";
-  import type { FileContent } from "$lib/types";
+  import { localHistory } from "$lib/localHistory/localHistory.svelte";
+  import type { FileContent, HeadVersion } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import type { IconName } from "$lib/ui/icons";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import MarkdownPreview from "./MarkdownPreview.svelte";
   import MarkdownToolbar from "./MarkdownToolbar.svelte";
   import RichMarkdownView from "./RichMarkdownView.svelte";
   import { tonesByPath } from "./tones";
   import { previewOf } from "./mediaPreview";
 
-  let { filePath }: { filePath: string } = $props();
+  let { filePath, groupId }: { filePath: string; groupId: number } = $props();
 
   let host = $state<HTMLDivElement | null>(null);
   let file = $state.raw<FileContent | null>(null);
@@ -54,16 +64,25 @@
   let view: EditorView | null = null;
   /** The same editor, for the Markdown preview's scroll sync. */
   let editorView = $state.raw<EditorView | null>(null);
-  /** The file as of the last commit, split into lines; null when unavailable. */
-  let headLines: string[] | null = null;
   let marksTimer: ReturnType<typeof setTimeout> | undefined;
-  /** Text as last loaded or saved, for the dirty check. */
-  let baseline: Text | null = null;
+  /** This editor in the file's shared document: the saved text, the disk version and the saving flag live there. */
+  const member: DocMember<EditorView> = { view: null };
+  const shared: SharedDoc<EditorView> = joinShared();
+  /** HEAD as last seen, and the text and HEAD the change marks and blame were made for. */
+  let headVersion: HeadVersion | null = null;
+  let marksFor: { doc: Text; blobId: string | null } | null = null;
+  let blameFor: { doc: Text; commitId: string | null } | null = null;
   let requestId = 0;
 
+  function joinShared(): SharedDoc<EditorView> {
+    return sharedDocs.join(filePath, member);
+  }
+
   const name = $derived(filePath.split("/").pop() ?? filePath);
-  /** This tab is the one on screen, so it feeds the status bar. */
-  const isActive = $derived(repoStore.openFilePath === filePath && changesSelection.shownView === "file");
+  /** This tab is the one its editor group shows. */
+  const shown = $derived(changesSelection.tabShown(groupId, filePath));
+  /** ...in the focused group, so it feeds the status bar. */
+  const isActive = $derived(shown && repoStore.focusedGroupId === groupId);
 
   function reportStatus(state: EditorState | undefined = view?.state): void {
     if (!state || !file || !isActive) {
@@ -79,6 +98,8 @@
       selectedLines: selection.empty ? 0 : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
       eol: file.eol,
       tabSize: state.tabSize,
+      indentTabs: editorIndent(state).useTabs,
+      indentDetected: editorIndent(state).detected,
       language: languageName(filePath),
     });
   }
@@ -201,19 +222,32 @@
       text: () => view?.state.doc.toString() ?? null,
       selection: () => (view ? selectionInfo(view.state) : null),
       focus: () => view?.focus(),
+      preferred: () => repoStore.focusedGroupId === groupId,
+      replaceText,
     });
     return () => {
       unregister();
-      editorStatus.clear(filePath);
+      member.view = null;
+      // Its text stays for a moment, for the editor that takes its place when the tab moves to the other group.
+      sharedDocs.leave(filePath, member, view?.state.doc ?? null);
+      // The file's editor in the other group keeps the status bar.
+      if (sharedDocs.peers(filePath, member).length === 0) {
+        editorStatus.clear(filePath);
+      }
       clearTimeout(marksTimer);
+      clearTimeout(positionTimer);
+      clearTimeout(autoSaveTimer);
+      // A closed tab keeps its caret for Reopen Closed Tab.
+      notePosition();
       view?.destroy();
       view = null;
       editorView = null;
     };
   });
 
-  // What the File and View menus may offer for this tab.
+  // What the File and View menus may offer for this tab; the editor in the focused group reports last.
   $effect(() => {
+    void isActive;
     const state = {
       editable: editable && loadError === null,
       markdownMode: isMarkdown && editable && loadError === null ? viewMode : null,
@@ -223,13 +257,23 @@
 
   // Pick up changes made outside the app while there are no local edits.
   let lastStatus: unknown = null;
+  let lastFileVersion = 0;
   $effect(() => {
     // Changes in the owning repository, or anywhere in a folder without git.
     const status = location ? repoStatus : repoStore.workspaceVersion;
-    if (lastStatus !== null && status !== lastStatus && !dirty && !saving) {
-      void load(true);
+    // An unchanged status keeps its object, so a file edited again outside the app shows here instead.
+    const fileVersion = location ? (repoStore.fileVersions[location.repo.root] ?? 0) : 0;
+    const changed = status !== lastStatus || fileVersion !== lastFileVersion;
+    if (lastStatus !== null && changed && !dirty && !saving && !shared.saving) {
+      // One editor of a file reads it again; the other follows its text and updates its marks.
+      if (sharedDocs.isLeader(filePath, member)) {
+        void load(true);
+      } else {
+        void refreshGitInfo();
+      }
     }
     lastStatus = status;
+    lastFileVersion = fileVersion;
   });
 
   async function load(quiet: boolean): Promise<void> {
@@ -244,14 +288,26 @@
     }
     const relative = relativeTo(root, filePath);
     const request = ++requestId;
+    // A refresh asks with the version on screen; Revert always reads the file again.
+    const known = quiet && file && (view || file.binary || file.tooLarge) ? shared.diskVersion : null;
     try {
-      const next = await api.readWorktreeFile(root, relative);
+      const next = await api.readWorktreeFile(root, relative, known);
       if (request !== requestId) {
         return;
       }
       loadError = null;
-      file = next;
-      void loadHead();
+      if (next.unchanged) {
+        // Same text on disk: only HEAD may have moved (a commit), which the git info checks.
+        void refreshGitInfo();
+        return;
+      }
+      // A second editor starts from the first one's text, so it leaves the version that text came from.
+      if (view || (sharedDocs.peers(filePath, member).length === 0 && !shared.text)) {
+        shared.diskVersion = next.version;
+      }
+      const previousEol = file?.eol ?? next.eol;
+      // The editor holds the text; the tab keeps only the file's details.
+      file = { ...next, content: "" };
       if (next.binary || next.tooLarge) {
         view?.destroy();
         view = null;
@@ -259,12 +315,19 @@
         return;
       }
       if (view) {
-        if (view.state.doc.toString() !== next.content) {
+        const previousText = view.state.doc.toString();
+        if (previousText !== next.content) {
+          // A change made outside the app: Local History keeps the text being replaced first
+          // (Revert keeps the unsaved edits itself, in revert()).
+          if (quiet) {
+            localHistory.noteReload(filePath, previousText, previousEol, "external");
+          }
           view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: next.content } });
         }
-        baseline = view.state.doc;
+        shared.baseline = view.state.doc;
         repoStore.setDirty(filePath, false);
         conflictCount = view.state.field(conflictField).length;
+        void refreshGitInfo();
         return;
       }
       await createEditor(next.content);
@@ -285,23 +348,39 @@
     }
   }
 
-  /** Fetches the committed version to compare against for change markers. */
-  async function loadHead(): Promise<void> {
+  /** The path HEAD has the file under: the old one for a staged rename. */
+  function headPath(repoPath: string): string | null {
+    return repoStatus?.files.find((entry) => entry.path === repoPath)?.origPath ?? null;
+  }
+
+  /**
+   * Brings the change marks and blame up to date with the text and HEAD. Each runs only when
+   * what it was made for changed, so a refresh of an unchanged tab costs one small call.
+   */
+  async function refreshGitInfo(): Promise<void> {
     const owner = location;
-    if (!owner) {
-      headLines = null;
-      updateMarks();
+    const shown = view;
+    if (!owner || !shown) {
+      void updateMarks();
       return;
     }
-    refreshBlame();
-    const origPath = repoStatus?.files.find((entry) => entry.path === owner.repoPath)?.origPath ?? null;
+    let head: HeadVersion;
     try {
-      const committed = await api.getFileDiff(owner.repo.root, owner.repoPath, origPath, "staged");
-      headLines = committed.binary || committed.tooLarge ? null : committed.original.split("\n");
+      head = await api.headFileVersion(owner.repo.root, owner.repoPath, headPath(owner.repoPath));
     } catch {
-      headLines = null;
+      return;
     }
-    updateMarks();
+    if (view !== shown) {
+      return;
+    }
+    headVersion = head;
+    const doc = shown.state.doc;
+    if (marksFor?.doc !== doc || marksFor.blobId !== head.blobId) {
+      void updateMarks();
+    }
+    if (blameFor?.doc !== doc || blameFor.commitId !== head.commitId) {
+      refreshBlame();
+    }
   }
 
   /** Blames the text on screen; unsaved edits show as uncommitted. */
@@ -310,6 +389,7 @@
     if (!view || !file || !owner) {
       return;
     }
+    blameFor = { doc: view.state.doc, commitId: headVersion?.commitId ?? null };
     void loadBlame(
       view,
       { repoRoot: owner.repo.root, filePath: owner.repoPath, revision: null, origin: (line) => ({ filePath, line }) },
@@ -325,17 +405,46 @@
     }
   });
 
-  function updateMarks(): void {
-    if (!view) {
+  /** Changed lines against HEAD, computed by the backend; results for text edited since are dropped. */
+  async function updateMarks(): Promise<void> {
+    const owner = location;
+    const shown = view;
+    if (!shown) {
       return;
     }
-    const marks = headLines ? changeMarks(headLines, view.state.doc.toString().split("\n")) : [];
-    view.dispatch({ effects: setChangeMarks.of(marks) });
+    const doc = shown.state.doc;
+    if (!owner) {
+      marksFor = null;
+      if (shown.state.field(changeMarkField).length > 0) {
+        shown.dispatch({ effects: setChangeMarks.of([]) });
+      }
+      return;
+    }
+    if (marksFor?.doc === doc && marksFor.blobId === (headVersion?.blobId ?? null)) {
+      return;
+    }
+    marksFor = { doc, blobId: headVersion?.blobId ?? null };
+    let marks: ChangeMark[] = [];
+    try {
+      const result = await api.lineChangeMarks(owner.repo.root, owner.repoPath, headPath(owner.repoPath), doc.toString());
+      marks = result.marks;
+      if (view === shown && shown.state.doc === doc) {
+        marksFor = { doc, blobId: result.head.blobId };
+      }
+    } catch {
+      // No marks, e.g. while the repository is being changed; the next refresh tries again.
+      marksFor = null;
+    }
+    // A newer edit schedules its own run.
+    if (view !== shown || shown.state.doc !== doc) {
+      return;
+    }
+    shown.dispatch({ effects: setChangeMarks.of(marks) });
   }
 
   function scheduleMarks(): void {
     clearTimeout(marksTimer);
-    marksTimer = setTimeout(updateMarks, 200);
+    marksTimer = setTimeout(() => void updateMarks(), 200);
   }
 
   // Conflict regions win over plain changes in the ruler and gutter.
@@ -389,9 +498,9 @@
   // Back / Forward to a location in this file while it is already open.
   $effect(() => {
     const request = navigation.reveal;
-    if (request && request.filePath === filePath && view) {
+    if (request && request.filePath === filePath && request.groupId === groupId && view) {
       untrack(() => {
-        const taken = navigation.takeReveal(filePath);
+        const taken = navigation.takeReveal(filePath, groupId);
         if (taken) {
           if (taken.line !== null) {
             revealLine(taken.line, taken.column ?? 0);
@@ -439,8 +548,11 @@
     const saveKeys = keymap.of([
       {
         key: "Mod-s",
-        preventDefault: true,
+        // With a custom key for Save, Cmd+S is free and the custom key runs File > Save.
         run: () => {
+          if (!usesDefaultKeys("file.save")) {
+            return false;
+          }
           void save();
           return true;
         },
@@ -450,9 +562,16 @@
       if (update.docChanged || update.selectionSet || update.transactions.some((tr) => tr.effects.length > 0)) {
         updateNav(update.state);
       }
+      // A changed Detect indentation or Tab size setting reads the file again.
+      if (editorIndent(update.startState) !== editorIndent(update.state)) {
+        reportStatus(update.state);
+      }
       if (update.selectionSet || update.docChanged) {
         reportStatus(update.state);
-        navigation.record({ filePath, line: update.state.doc.lineAt(update.state.selection.main.head).number - 1 });
+        // A change replayed from the file's other editor is not a place the user went to.
+        if (update.selectionSet || !isReplay(update)) {
+          navigation.record({ filePath, line: update.state.doc.lineAt(update.state.selection.main.head).number - 1 });
+        }
       }
     });
     // Cmd+B makes text bold here, like the rich editor: CodeMirror prevents the key's default,
@@ -491,8 +610,9 @@
       { key: "Shift-F7", run: () => goToSection(-1) },
     ]);
     const dirtyListener = EditorView.updateListener.of((update) => {
-      if (update.docChanged && baseline) {
-        repoStore.setDirty(filePath, !update.state.doc.eq(baseline));
+      // The editor that made the change reports unsaved edits, for both.
+      if (update.docChanged && shared.baseline && !isReplay(update)) {
+        repoStore.setDirty(filePath, !update.state.doc.eq(shared.baseline));
       }
       if (update.docChanged) {
         conflictCount = update.state.field(conflictField).length;
@@ -500,10 +620,16 @@
         docVersion++;
       }
     });
+    // The file is open in the other group too, or its tab just moved here: start from that text,
+    // unsaved edits included.
+    const peer = sharedDocs.peers(filePath, member)[0] ?? null;
+    const moved = !peer && shared.text && repoStore.isDirty(filePath) ? shared.text : null;
+    shared.text = null;
     view = new EditorView({
       parent: host,
+      dispatchTransactions: syncedDispatch(filePath, member),
       state: EditorState.create({
-        doc: content,
+        doc: peer ? peer.state.doc : (moved ?? content),
         extensions: [
           saveKeys,
           markdownKeys,
@@ -518,63 +644,206 @@
           changeGutter(markSource),
           scrollMarkers(markSource),
           dirtyListener,
+          sessionExtension,
         ],
       }),
     });
     editorView = view;
+    member.view = view;
     // The preview may have mounted before the editor existed; it renders the new text now.
     docVersion++;
-    baseline = view.state.doc;
+    if ((!peer && !moved) || !shared.baseline) {
+      shared.baseline = view.state.doc;
+    }
     conflictCount = view.state.field(conflictField).length;
-    updateMarks();
-    refreshBlame();
+    void refreshGitInfo();
     updateNav(view.state);
     reportStatus();
     // Opened by Back / Forward or Go to File: go to that line; otherwise this is a new history entry.
-    const reveal = navigation.takeReveal(filePath);
+    const reveal = navigation.takeReveal(filePath, groupId);
+    // A tab restored at start or reopened comes back where it was, unless asked for a line.
+    const restored = repoStore.takePendingPosition(filePath);
     if (reveal?.line != null) {
       revealLine(reveal.line, reveal.column ?? 0);
       initialLine = reveal.line;
+    } else if (restored) {
+      restorePosition(restored);
     }
     if (reveal?.focus) {
       view.focus();
     }
     navigation.record({ filePath, line: cursorLine() });
-    repoStore.setDirty(filePath, false);
+    repoStore.setDirty(filePath, !view.state.doc.eq(shared.baseline ?? view.state.doc));
   }
 
-  /** Writes the editor content; `quiet` skips the toast (Save All shows one for every file). */
-  async function save(options: { quiet?: boolean } = {}): Promise<boolean> {
+  /**
+   * Writes the editor content; `quiet` skips the toast (Save All shows one for every file),
+   * `auto` is an auto save, which leaves the lines with a caret alone in the clean-ups.
+   */
+  async function save(options: { quiet?: boolean; auto?: boolean } = {}): Promise<boolean> {
     const root = folder?.root;
-    if (!view || !file || !root || saving) {
+    if (!view || !file || !root || saving || shared.saving) {
       return false;
     }
     // Preview mode: the rich editor's last keystrokes are in the text before it is written.
     richRef?.flush();
+    applySaveCleanup(options.auto ?? false);
     const snapshot = view.state.doc;
     const eol = file.eol;
     saving = true;
+    shared.saving = true;
     let saved = false;
     try {
-      await api.writeWorktreeFile(root, relativeTo(root, filePath), snapshot.toString(), eol);
+      shared.diskVersion = await api.writeWorktreeFile(root, relativeTo(root, filePath), snapshot.toString(), eol);
       saved = true;
       if (!options.quiet) {
         toast.success(`Saved ${name}`);
       }
       refreshBlame();
       if (location) {
-        void repoStore.refreshRepoStatus(location.repo.root);
+        // One status read: the watcher's event for this write, or a fallback if none comes.
+        repoStore.fileSaved(location.repo.root);
       }
     } catch (error) {
       toast.error("Save failed", errorMessage(error));
     }
     saving = false;
+    shared.saving = false;
     if (saved && view) {
-      baseline = snapshot;
+      shared.baseline = snapshot;
       repoStore.setDirty(filePath, !view.state.doc.eq(snapshot));
     }
     return saved;
   }
+
+  /** Local History > Revert: the version's text as one change, so Undo brings the edits back. */
+  function replaceText(text: string): boolean {
+    if (!view || !editable || loadError !== null) {
+      return false;
+    }
+    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text }, userEvent: "input.revert" });
+    view.focus();
+    return true;
+  }
+
+  /** Settings > Editor > Saving: trim whitespace and fix final newlines as one undoable change. */
+  function applySaveCleanup(auto: boolean): void {
+    if (!view) {
+      return;
+    }
+    const spec = saveCleanupTransaction(view.state, {
+      trimTrailingWhitespace: settings.trimTrailingWhitespace,
+      insertFinalNewline: settings.insertFinalNewline,
+      trimFinalNewlines: settings.trimFinalNewlines,
+      markdown: isMarkdown,
+      keepLines: auto ? caretLines(view.state) : undefined,
+    });
+    if (spec) {
+      view.dispatch(spec);
+    }
+  }
+
+  // Auto save (Settings > Editor > Saving): after a pause in typing, or when the focus leaves
+  // this editor (another tab, another part of the window, another app). Conflicted files and
+  // a file open in the merge tool are only saved by hand.
+  let autoSaveTimer: ReturnType<typeof setTimeout> | undefined;
+
+  async function autoSave(trigger: AutoSaveTrigger): Promise<void> {
+    clearTimeout(autoSaveTimer);
+    const ok = shouldAutoSave({
+      mode: settings.autoSave,
+      trigger,
+      dirty: repoStore.isDirty(filePath),
+      editable: view !== null && editable && loadError === null,
+      saving,
+      conflicted: tone === "conflict",
+      inMergeTool: location !== null && repoStore.repo?.root === location.repo.root && repoStore.mergeTarget === location.repoPath,
+    });
+    if (!ok) {
+      return;
+    }
+    const saved = await save({ quiet: true, auto: true });
+    // Typing went on while it was written.
+    if (saved && repoStore.isDirty(filePath)) {
+      scheduleAutoSave();
+    }
+  }
+
+  function scheduleAutoSave(): void {
+    clearTimeout(autoSaveTimer);
+    if (settings.autoSave === "afterDelay") {
+      autoSaveTimer = setTimeout(() => void autoSave("delay"), settings.autoSaveDelayMs);
+    }
+  }
+
+  // Leaving this tab for another one is a focus change.
+  let wasActive = false;
+  $effect(() => {
+    const active = shown;
+    untrack(() => {
+      if (wasActive && !active) {
+        void autoSave("focus");
+      }
+      wasActive = active;
+    });
+  });
+
+  // So is switching to another app.
+  $effect(() => {
+    if (settings.autoSave !== "onFocusChange") {
+      return;
+    }
+    const onWindowBlur = () => void autoSave("focus");
+    window.addEventListener("blur", onWindowBlur);
+    return () => window.removeEventListener("blur", onWindowBlur);
+  });
+
+  // Tab session: where the caret and view are, for Reopen tabs on start and Reopen Closed Tab.
+  let positionTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function notePosition(): void {
+    if (!view) {
+      return;
+    }
+    const head = view.state.selection.main.head;
+    const line = view.state.doc.lineAt(head);
+    // A hidden editor measures nothing; the last top line is kept then.
+    const visible = view.scrollDOM.clientHeight > 0;
+    repoStore.noteTabPosition(filePath, line.number - 1, head - line.from, visible ? editorTopLine(view) : null);
+  }
+
+  function schedulePosition(): void {
+    clearTimeout(positionTimer);
+    positionTimer = setTimeout(notePosition, 500);
+  }
+
+  function restorePosition(position: { line: number; column: number; topLine: number }): void {
+    if (!view) {
+      return;
+    }
+    const doc = view.state.doc;
+    const target = doc.line(Math.max(1, Math.min(position.line + 1, doc.lines)));
+    const top = doc.line(Math.max(1, Math.min(Math.floor(position.topLine) + 1, doc.lines)));
+    view.dispatch({
+      selection: { anchor: target.from + Math.min(position.column, target.length) },
+      effects: EditorView.scrollIntoView(top.from, { y: "start" }),
+    });
+  }
+
+  const sessionExtension = [
+    EditorView.updateListener.of((update) => {
+      if (update.selectionSet || update.docChanged) {
+        schedulePosition();
+      }
+      if (update.docChanged && !isReplay(update)) {
+        scheduleAutoSave();
+      }
+    }),
+    EditorView.domEventObservers({
+      scroll: () => schedulePosition(),
+      blur: () => void autoSave("focus"),
+    }),
+  ];
 
   async function openMergeTool(): Promise<void> {
     if (tone !== "conflict") {
@@ -608,48 +877,24 @@
   /** Writes the editor content and stages it, which clears the conflict in git. */
   async function markResolved(): Promise<void> {
     const owner = location;
-    if (!view || !file || !owner || saving) {
+    if (!view || !file || !owner || saving || shared.saving) {
       return;
     }
     const snapshot = view.state.doc;
     const eol = file.eol;
     saving = true;
+    shared.saving = true;
     const done = await repoStore.run(
       "Mark resolved",
       (repoPath) => api.saveResolution(repoPath, owner.repoPath, snapshot.toString(), eol).then(() => true),
       { success: `Resolved ${name}`, repoPath: owner.repo.root },
     );
     saving = false;
+    shared.saving = false;
     if (done && view) {
-      baseline = snapshot;
+      shared.baseline = snapshot;
       repoStore.setDirty(filePath, !view.state.doc.eq(snapshot));
     }
-  }
-
-  // Breadcrumbs: every folder of the path, marking repository roots. When the bar is narrow the
-  // folders farthest from the file shrink first (much larger flex-shrink), so the file name and
-  // its parent stay readable longest.
-  const crumbs = $derived.by(() => {
-    const root = folder?.root ?? "";
-    const repoRoots = new Set(repoStore.repos.map((repo) => repo.root));
-    const parts = folderPath.split("/").filter(Boolean);
-    const segments = parts.map((part, index) => {
-      const path = parts.slice(0, index + 1).join("/");
-      const isFile = index === parts.length - 1;
-      return {
-        name: part,
-        path,
-        isFile,
-        isRepo: !isFile && repoRoots.has(joinPath(root, path)),
-        shrink: isFile ? 1 : crumbShrink(parts.length - 1 - index),
-      };
-    });
-    return { rootIsRepo: repoRoots.has(root), rootShrink: crumbShrink(parts.length), segments };
-  });
-
-  /** Shrink weight of a breadcrumb `distance` folders above the file. */
-  function crumbShrink(distance: number): number {
-    return 10 ** Math.min(Math.max(distance, 1), 6);
   }
 
   const conflictText = $derived(`${conflictCount} ${conflictCount === 1 ? "conflict" : "conflicts"}`);
@@ -680,6 +925,10 @@
       if (!ok) {
         return;
       }
+      // Local History keeps the edits being thrown away.
+      if (view && file) {
+        localHistory.noteReload(filePath, view.state.doc.toString(), file.eol, "revert");
+      }
     }
     repoStore.setDirty(filePath, false);
     await load(false);
@@ -699,29 +948,7 @@
 <div class="file-view">
   <!-- One slim bar, like JetBrains: the path and badges on the left, compact actions on the right. -->
   <div class="file-bar">
-    <div class="crumbs" title={filePath}>
-      <span class="crumb root has-icon" style:flex-shrink={crumbs.rootShrink}>
-        <Icon name={crumbs.rootIsRepo ? "folder-git" : "folder"} size={12} />
-        <span class="crumb-name">{folder?.name ?? ""}</span>
-      </span>
-      {#each crumbs.segments as segment (segment.path)}
-        <span class="sep" aria-hidden="true"><Icon name="chevron-right" size={11} /></span>
-        <span
-          class="crumb"
-          class:repo={segment.isRepo}
-          class:file={segment.isFile}
-          class:has-icon={segment.isRepo || segment.isFile}
-          style:flex-shrink={segment.shrink}
-        >
-          {#if segment.isRepo}
-            <Icon name="folder-git" size={12} />
-          {:else if segment.isFile}
-            <Icon name="file" size={12} />
-          {/if}
-          <span class="crumb-name">{segment.name}</span>
-        </span>
-      {/each}
-    </div>
+    <NavigationBar targetPath={filePath} claimed={isActive} />
     {#if dirty}
       <span class="badge unsaved" title="Unsaved changes"><span class="badge-text">Unsaved</span></span>
     {/if}
@@ -827,7 +1054,7 @@
 
   {#if preview}
     <!-- Only while the tab is on screen, so a hidden or closed tab frees the picture or document. -->
-    {#if isActive && folder}
+    {#if shown && folder}
       {#await import("./MediaPreview.svelte") then media}
         <media.default {filePath} {preview} reloadToken={previewToken} />
       {/await}
@@ -835,7 +1062,7 @@
   {:else if loadError}
     <div class="message">
       <p>{loadError}</p>
-      <button class="btn" onclick={() => void repoStore.closeTab(filePath)}>Close</button>
+      <button class="btn" onclick={() => void repoStore.closeTab(filePath, groupId)}>Close</button>
     </div>
   {:else if file?.tooLarge}
     <div class="message dim">This file is too large to open here ({formatSize(file.size)}).</div>
@@ -868,7 +1095,7 @@
           Only the tab on screen keeps its rendered document: a hidden tab frees it (with its
           diagrams and images) and draws it again when shown, at the same place.
         -->
-        {#if isActive && viewMode === "preview"}
+        {#if shown && viewMode === "preview"}
           <!-- Preview mode is the rendered document, editable in place. -->
           <RichMarkdownView
             bind:this={richRef}
@@ -880,14 +1107,14 @@
             onEdit={applyRichEdit}
             onSave={() => void save()}
           />
-        {:else if isActive}
+        {:else if shown}
           <MarkdownPreview
             bind:this={previewRef}
             {filePath}
             {docVersion}
             getSource={() => view?.state.doc.toString() ?? ""}
             view={editorView}
-            visible={isActive}
+            visible={shown}
             syncScroll={viewMode === "split"}
             {initialLine}
             onLeave={(topLine) => (initialLine = topLine)}
@@ -925,59 +1152,6 @@
     background: var(--panel);
     color: var(--text-dim);
     font-size: 12px;
-  }
-
-  /* Overflow goes off the left edge, so the file name is the last thing to disappear. */
-  .crumbs {
-    flex: 0 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 3px;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .sep {
-    flex: none;
-    display: inline-flex;
-    color: var(--text-faint);
-  }
-
-  .crumb {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    /* flex-shrink comes from the markup; a folder keeps room for an ellipsis. */
-    flex-grow: 0;
-    flex-basis: auto;
-    min-width: 1.4em;
-    overflow: hidden;
-    color: var(--text-dim);
-  }
-
-  .crumb.has-icon {
-    min-width: calc(16px + 1.4em);
-  }
-
-  .crumb :global(svg) {
-    flex: none;
-  }
-
-  .crumb-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .crumb.repo {
-    color: var(--accent);
-  }
-
-  .crumb.file {
-    color: var(--text);
-    font-weight: 600;
   }
 
   .badge {

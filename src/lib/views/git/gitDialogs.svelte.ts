@@ -2,13 +2,14 @@
 // Update Project, Interactive Rebase), one at a time, rendered by GitDialogHost.svelte.
 // Confirmations on top of them still come from dialogs (DialogHost.svelte).
 
-import type { RebasePlan } from "$lib/types";
+import type { Identity, RebasePlan } from "$lib/types";
 import type { GitHubDialog } from "../github/githubDialogs";
 
 export type GitDialog =
   | { kind: "push"; repoRoot: string }
   | { kind: "pull"; repoRoot: string }
-  | { kind: "reset"; repoRoot: string }
+  /** `revision` fills in the commit to reset to (the reflog's Reset Current Branch to Here). */
+  | { kind: "reset"; repoRoot: string; revision?: string | null }
   | { kind: "rollback"; repoRoot: string; filePaths: string[] | null }
   /** Shelve Changes: `filePaths` start ticked, null ticks every changed file. */
   | { kind: "shelve"; repoRoot: string; filePaths: string[] | null }
@@ -25,7 +26,9 @@ export type GitDialog =
   /** Git > GitHub: sign in, Share Project, Create Gist and their results (GitHubDialogHost.svelte). */
   | { kind: "github"; dialog: GitHubDialog }
   | { kind: "newWorktree"; repoRoot: string }
-  | { kind: "addSubmodule"; repoRoot: string };
+  | { kind: "addSubmodule"; repoRoot: string }
+  /** Before a commit in a repository without a name and email; `resolve(true)` once one is saved. */
+  | { kind: "identity"; repoRoot: string; identity: Identity; resolve: (saved: boolean) => void };
 
 class GitDialogStore {
   active = $state<GitDialog | null>(null);

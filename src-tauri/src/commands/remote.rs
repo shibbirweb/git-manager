@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use git2::{Repository, Sort};
 use serde::{Deserialize, Serialize};
 use tauri::ipc::Channel;
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 
 use super::{blocking, outcome, reject_option, OpOutcome};
 use crate::error::{AppError, AppResult};
@@ -22,11 +22,15 @@ struct Progress<'a> {
 /// Receives each progress line of a network command.
 pub(crate) type OnProgress<'a> = &'a mut dyn FnMut(&str);
 
+/// Progress lines go to the windows showing the repository (every window when none does).
 pub(super) fn emitter(app: &AppHandle, repo_path: &str) -> impl FnMut(&str) {
     let app = app.clone();
     let repo_path = repo_path.to_string();
+    let canonical = crate::windows::canonical(&repo_path);
     move |line| {
-        let _ = app.emit(
+        super::window::emit_for_path(
+            &app,
+            &canonical,
             "git-progress",
             Progress {
                 repo_path: &repo_path,

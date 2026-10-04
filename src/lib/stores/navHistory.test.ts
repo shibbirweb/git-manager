@@ -120,22 +120,6 @@ describe("NavigationHistory", () => {
   });
 });
 
-describe("NavigationHistory.recentFilePaths", () => {
-  it("lists visited files most recent first, once each, without Log or diff stops", () => {
-    const history = new NavigationHistory();
-    history.record({ filePath: "/w/a.ts", line: 0 });
-    history.record({ filePath: "/w/b.ts", line: 0 });
-    history.record({ kind: "diff", repoRoot: "/w", path: "c.ts", area: "unstaged", line: 0 });
-    history.record({ filePath: "/w/a.ts", line: 100 });
-    history.record({ filePath: "/w/d.ts", line: 0 });
-    expect(history.recentFilePaths()).toEqual(["/w/d.ts", "/w/a.ts", "/w/b.ts"]);
-    history.goBack();
-    // Forward stops were visited after the back ones.
-    expect(history.recentFilePaths()).toEqual(["/w/a.ts", "/w/d.ts", "/w/b.ts"]);
-    expect(new NavigationHistory().recentFilePaths()).toEqual([]);
-  });
-});
-
 describe("NavigationHistory.travel", () => {
   const shown = async () => "shown" as const;
 

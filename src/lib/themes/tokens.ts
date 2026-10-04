@@ -3,6 +3,7 @@
 
 export const COLOR_TOKENS = [
   "--bg",
+  "--frame",
   "--panel",
   "--panel-alt",
   "--border",
@@ -69,6 +70,9 @@ export const COLOR_TOKENS = [
   "--tok-tag",
   "--tok-attr",
   "--tok-invalid",
+  "--bracket-1",
+  "--bracket-2",
+  "--bracket-3",
 ] as const;
 
 export type ColorToken = (typeof COLOR_TOKENS)[number];

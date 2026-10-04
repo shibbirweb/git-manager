@@ -1,6 +1,6 @@
 # Docs and Screenshots
 
-This wiki is written in the main repository, in `docs/wiki/`, and published to the GitHub wiki by a workflow. Docs live next to the code, so a change and its docs are reviewed together. This page explains how the docs are checked and how screenshots are taken, then gives step by step recipes.
+This wiki is written in the main repository, in `docs/wiki/`, and published to the GitHub wiki by a workflow. Docs live next to the code, so a change and its docs are reviewed together. This page explains how the docs are checked and screenshots taken, then gives recipes.
 
 ## How `docs/wiki` is organized
 
@@ -31,7 +31,7 @@ CI runs this on every push and pull request, in the step "Wiki docs are complete
 
 - a listed page is missing, a page is not listed, two pages share a wiki name, or a feature id repeats;
 - a feature's usage page is not listed under `usage`, or it has no screenshots;
-- a screenshot is missing (the message prints the command that takes it), not shown on its usage page, or an image is unused;
+- a screenshot is missing (the message prints the command that takes it), not shown on its usage page, or an image is unused. Until a shot is taken, `[TODO:my-shot.png]` where it goes passes and is listed as still to take;
 - a link points to a missing file or to a page not in the manifest;
 - a page does not start with a `# Title` line, contains the em-dash character, has more than `MAX_WORDS` (1200) words of prose, or has a `mermaid` block that does not start with a diagram type.
 
@@ -56,7 +56,7 @@ What the script does, and why:
 - **It rebuilds the demo on every run.** It deletes `/tmp/gitmanager-docs` and runs `scripts/make-docs-demo.sh` there: a shop repository with four authors, branches, tags, a stash and a remote, a repository stopped in a merge, a plain folder, a second folder, a repository with a submodule and one with Git LFS images. Dates are relative to today, so blame always reads "2 days ago" and paths never change.
 - **It keeps your own setup out.** The page answers some commands itself: settings and state live in memory, the launch mode points at the demo, and folder pickers return a fixed answer. Dialog, opener and window calls never reach the app, and GitHub's API gets canned releases.
 - **It refuses anything outside the demo.** Any other command with an absolute path argument outside the demo folder fails with a "blocked" error, so a shot can never touch a real repository.
-- **It retries once.** A dev server reload can break a single attempt, so each shot gets a second try before it counts as failed. Any failure makes the script exit with an error.
+- **It retries once.** A dev server reload can break one attempt, so each shot gets a second try. Any failure makes the script exit with an error.
 
 You need, once, `bunx --bun playwright install webkit`.
 

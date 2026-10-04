@@ -8,6 +8,7 @@ const refs: GitTabRef[] = [
   { kind: "lineHistory", repoRoot: "/work/app", filePath: "src/main.ts", startLine: 3, endLine: 9 },
   { kind: "compare", repoRoot: "/work/app", filePath: "README.md", revision: "feature/x" },
   { kind: "shelf", repoRoot: "/work/app", filePath: "dir/new file.txt", shelfId: "1727780000000-0" },
+  { kind: "reflog", repoRoot: "/work/a|pp" },
 ];
 
 describe("git tabs", () => {
@@ -31,6 +32,8 @@ describe("git tabs", () => {
       "git-lineHistory:%2Fwork|a.ts|0-3",
       "git-compare:%2Fwork|a.ts",
       "git-compare:%E0%A4%A|a.ts|main",
+      "git-reflog:",
+      "git-reflog:%2Fwork|extra",
     ]) {
       expect(parseGitTabPath(tabPath), tabPath).toBeNull();
     }
@@ -41,6 +44,7 @@ describe("git tabs", () => {
     expect(gitTabTitle(refs[1])).toEqual({ name: "History: main.ts:3-9", title: "History of lines 3-9 of src/main.ts (app)" });
     expect(gitTabTitle(refs[2]).name).toBe("README.md vs feature/x");
     expect(gitTabTitle(refs[3])).toEqual({ name: "Shelved: new file.txt", title: "dir/new file.txt in shelved changes (app)" });
+    expect(gitTabTitle(refs[4])).toEqual({ name: "Reflog: a|pp", title: "Reflog of a|pp" });
     expect(revisionLabel("0123456789abcdef0123456789abcdef01234567")).toBe("01234567");
   });
 

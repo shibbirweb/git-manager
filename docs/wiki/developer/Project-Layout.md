@@ -10,7 +10,7 @@ This is a map of the repository. It lists the folders and files you will touch m
 ├── src-tauri/              Rust backend (Tauri 2)
 ├── scripts/                demo repositories, version and wiki tools
 ├── docs/wiki/              source of the GitHub wiki (this page lives here)
-├── static/                 files served as they are (favicon.png)
+├── static/                 files served as they are (favicon.png, file-icons/ sets)
 ├── .github/                workflows, issue forms, pull request template
 ├── .vscode/                recommended extensions (Svelte, Tauri, rust-analyzer) and settings
 ├── .gitignore              keeps node_modules, build and .svelte-kit out of git
@@ -148,6 +148,7 @@ scripts/
 ├── build-wiki.ts           checks docs/wiki (--check) or writes the wiki pages to a folder
 ├── wiki.ts                 pure helpers behind build-wiki.ts, including MAX_WORDS
 ├── wiki.test.ts            tests for wiki.ts
+├── file-icons.ts           writes and checks static/file-icons (Minimal and Material sets)
 └── screenshots.ts          retakes the wiki screenshots through the dev IPC bridge
 ```
 

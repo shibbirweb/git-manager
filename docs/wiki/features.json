@@ -5,11 +5,17 @@
     { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
     { "page": "usage/File-Operations.md", "summary": "Create, rename, copy, move and trash files and folders right in the Files panel." },
+    { "page": "usage/File-Icons.md", "summary": "Show an icon for each file type: no icons, simple Minimal shapes, or full Material Icons." },
+    { "page": "usage/Rounded-Panels.md", "summary": "Turn the sidebars, editors and terminal into rounded panels with space between them, in any color theme." },
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
-    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line, line spacing, visible whitespace and zoom." },
+    { "page": "usage/Pin-Reorder-and-Wrap-Tabs.md", "summary": "Drag tabs into the order you like, pin the ones you always need, and wrap a long row of tabs." },
+    { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line and the IDE features of the editor." },
+    { "page": "usage/Code-Appearance.md", "summary": "Font weight, line spacing, visible whitespace, the cursor, word wrap, indentation detected from each file, and zoom." },
     { "page": "usage/Markdown-Editor.md", "summary": "Edit Markdown with a toolbar, a live preview, diagrams, and a rich editor for the finished page." },
     { "page": "usage/Image-and-PDF-Preview.md", "summary": "Open images and PDFs in a preview tab that frees its memory when closed, and compare two versions in a diff." },
     { "page": "usage/Search-Everywhere.md", "summary": "Find files, classes, symbols and text in the whole workspace with double Shift." },
+    { "page": "usage/Recent-Files.md", "summary": "Jump back to the files you worked on last with Cmd+E, like in JetBrains IDEs." },
+    { "page": "usage/Navigation-Bar.md", "summary": "Move through your project's folders from the keyboard with Cmd+Up and search each folder, like in JetBrains IDEs." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
     { "page": "usage/Repository-Actions.md", "summary": "The buttons and the ... menu of each repository in Changes: branch, Sync, Commit and more." },
@@ -70,6 +76,7 @@
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/How-the-Changes-Tab-Works.md", "summary": "The Changes tab opened from the status bar: every uncommitted file compared with the last commit." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
     { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
     { "page": "developer/How-Editor-Features-Work.md", "summary": "Auto-close, completion, folding, indent guides, the margin line and the languages, each switchable and lazy." },
@@ -84,6 +91,7 @@
     { "page": "developer/Test-Suites.md", "summary": "Every Vitest and Rust test file, folder by folder, and what it covers." },
     { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
     { "page": "developer/Debugging-with-MCP.md", "summary": "Inspect, measure and drive the running app with the MCP tools and git-manager cli." },
+    { "page": "developer/Measuring-Setting-Memory.md", "summary": "How the memory cost of each setting was measured, the results, and the marks in Settings." },
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
     { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
@@ -113,6 +121,13 @@
       "screenshots": ["file-ops-menu.png", "file-ops-rename.png"]
     },
     {
+      "id": "file-icons",
+      "title": "File icons",
+      "usage": "usage/File-Icons.md",
+      "developer": "developer/How-File-Icons-Work.md",
+      "screenshots": ["file-icons.png"]
+    },
+    {
       "id": "editor",
       "title": "Editor and tabs",
       "usage": "usage/Editor-and-Tabs.md",
@@ -120,11 +135,25 @@
       "screenshots": ["editor-tabs.png", "editor-change-markers.png", "empty-main.png"]
     },
     {
+      "id": "tab-strip",
+      "title": "Pin, reorder and wrap tabs",
+      "usage": "usage/Pin-Reorder-and-Wrap-Tabs.md",
+      "developer": "developer/How-Tabs-Are-Arranged.md",
+      "screenshots": ["tabs-pinned.png", "tabs-wrapped.png"]
+    },
+    {
       "id": "code-editing",
       "title": "Editing code",
       "usage": "usage/Editing-Code.md",
       "developer": "developer/How-Editing-Code-Works.md",
-      "screenshots": ["editor-features.png", "editor-whitespace.png"]
+      "screenshots": ["editor-features.png"]
+    },
+    {
+      "id": "code-appearance",
+      "title": "Code appearance",
+      "usage": "usage/Code-Appearance.md",
+      "developer": "developer/How-Code-Appearance-Works.md",
+      "screenshots": ["editor-whitespace.png", "editor-font-weight.png"]
     },
     {
       "id": "markdown",
@@ -146,6 +175,20 @@
       "usage": "usage/Search-Everywhere.md",
       "developer": "developer/How-Search-Everywhere-Works.md",
       "screenshots": ["search-everywhere-all.png", "search-everywhere-recent.png", "search-everywhere-files.png", "search-everywhere-classes.png", "search-everywhere-symbols.png", "search-everywhere-text.png"]
+    },
+    {
+      "id": "recent-files",
+      "title": "Recent Files",
+      "usage": "usage/Recent-Files.md",
+      "developer": "developer/How-Recent-Files-Work.md",
+      "screenshots": ["recent-files.png"]
+    },
+    {
+      "id": "navigation-bar",
+      "title": "Navigation Bar",
+      "usage": "usage/Navigation-Bar.md",
+      "developer": "developer/How-the-Navigation-Bar-Works.md",
+      "screenshots": ["navigation-bar.png"]
     },
     {
       "id": "find-replace",
@@ -358,6 +401,13 @@
       "screenshots": ["color-theme-pickers.png", "color-theme-dracula.png", "color-theme-solarized-light.png", "color-theme-high-contrast.png"]
     },
     {
+      "id": "rounded-panels",
+      "title": "Rounded panels",
+      "usage": "usage/Rounded-Panels.md",
+      "developer": "developer/How-Rounded-Panels-Work.md",
+      "screenshots": ["rounded-panels.png", "rounded-panels-islands-light.png"]
+    },
+    {
       "id": "updates",
       "title": "Updates and release channels",
       "usage": "usage/Updates.md",
@@ -376,7 +426,7 @@
       "title": "Memory readout and memory log",
       "usage": "usage/Memory-Use.md",
       "developer": "developer/How-Memory-Is-Measured.md",
-      "screenshots": ["memory-log-settings.png"]
+      "screenshots": ["memory-log-settings.png", "settings-memory-flags.png"]
     },
     {
       "id": "mcp",

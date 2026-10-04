@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::Path;
 
 use super::merge::{self, Side};
@@ -5,6 +6,7 @@ use super::{branch, file_ops, files, history, repo as repo_commands, safe_join, 
 use crate::error::AppError;
 use crate::git::conflicts;
 use crate::git::diff::DiffArea;
+use crate::git::files::FolderListing;
 use crate::git::opstate::{self, OpKind};
 use crate::git::repo::RepoInfo;
 use crate::git::workspace::WorkspaceInfo;
@@ -298,7 +300,7 @@ fn reset_and_checkout_commit() {
     assert_eq!(repo.git(&["branch", "--show-current"]).trim(), "");
     assert_eq!(repo.head(), first);
 
-    let log = block_on(history::get_log(repo.path_string(), 0, usize::MAX, true)).unwrap();
+    let log = block_on(history::get_log(repo.path_string(), 0, usize::MAX, true, None)).unwrap().commits.unwrap();
     assert_eq!(log.len(), 1);
     let details = block_on(history::get_commit_details(repo.path_string(), first.clone())).unwrap();
     assert_eq!(details.files.len(), 1);
@@ -414,6 +416,52 @@ fn stage_files_stages_modifications_and_deletions() {
     repo.write("c.txt", "new\n");
     block_on(status::stage_files(repo.path_string(), strings(&["a.txt", "b.txt", "c.txt"]))).unwrap();
     assert_eq!(repo.porcelain(), "M  a.txt\nD  b.txt\nA  c.txt\n");
+}
+
+#[test]
+fn stage_unstage_and_discard_pass_any_number_of_paths_on_stdin() {
+    let repo = TestRepo::new();
+    repo.write("keep.txt", "keep\n");
+    repo.commit_all("first");
+    // Long names so the list is far over ARG_MAX (1 MB on macOS) as arguments.
+    let padding = "p".repeat(200);
+    let mut untracked: Vec<String> = (0..6000).map(|index| format!("many/{padding}-{index:05}.txt")).collect();
+    for file_path in &untracked {
+        repo.write(file_path, "x");
+    }
+    // Spaces, quotes and a newline reach git unchanged with NUL-separated pathspecs.
+    for odd in ["with space.txt", "quote\"d.txt", "new\nline.txt"] {
+        repo.write(odd, "odd");
+        untracked.push(odd.to_string());
+    }
+    assert!(untracked.iter().map(|file_path| file_path.len() + 1).sum::<usize>() > 1024 * 1024);
+
+    block_on(status::stage_files(repo.path_string(), untracked.clone())).unwrap();
+    let staged = repo.git(&["diff", "--cached", "--name-only", "-z"]);
+    assert_eq!(staged.split('\0').filter(|name| !name.is_empty()).count(), untracked.len());
+
+    block_on(status::unstage_files(repo.path_string(), untracked.clone())).unwrap();
+    assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "");
+
+    // An empty list never turns into "every file".
+    block_on(status::stage_files(repo.path_string(), Vec::new())).unwrap();
+    assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "");
+
+    repo.write("keep.txt", "changed\n");
+    block_on(status::discard_files(repo.path_string(), strings(&["keep.txt"]), Vec::new())).unwrap();
+    assert_eq!(repo.read_text("keep.txt"), "keep\n");
+}
+
+#[test]
+fn unstage_many_paths_in_an_unborn_repository() {
+    let repo = TestRepo::new();
+    let file_paths: Vec<String> = (0..50).map(|index| format!("dir/{index}.txt")).collect();
+    for file_path in &file_paths {
+        repo.write(file_path, "x");
+    }
+    repo.git(&["add", "-A"]);
+    block_on(status::unstage_files(repo.path_string(), file_paths)).unwrap();
+    assert_eq!(repo.porcelain(), "?? dir/\n");
 }
 
 #[test]
@@ -550,15 +598,60 @@ fn get_status_and_file_diff_commands() {
     repo.write("a.txt", "one\n");
     repo.commit_all("first");
     repo.write("a.txt", "two\n");
-    let status = block_on(status::get_status(repo.path_string())).unwrap();
+    let snapshot = block_on(status::get_status(repo.path_string(), None)).unwrap();
+    let status = snapshot.status.unwrap();
     assert_eq!(status.files.len(), 1);
     assert_eq!(status.head.branch.as_deref(), Some("main"));
-    let diff = block_on(status::get_file_diff(repo.path_string(), "a.txt".to_string(), None, DiffArea::Unstaged)).unwrap();
+    let diff_of = |known_version: Option<String>| {
+        block_on(status::get_file_diff(repo.path_string(), "a.txt".to_string(), None, DiffArea::Unstaged, known_version))
+            .unwrap()
+    };
+    let diff = diff_of(None).expect("a diff without a known version");
     assert_eq!((diff.original.as_str(), diff.modified.as_str()), ("one\n", "two\n"));
+    assert_eq!(diff.hunks, vec![[0, 1, 0, 1]]);
+    // The same sides again: nothing is sent.
+    assert!(diff_of(diff.version.clone()).is_none());
+    repo.write("a.txt", "three\n");
+    let changed = diff_of(diff.version.clone()).expect("the work tree changed");
+    assert_eq!(changed.modified, "three\n");
 
     let info = block_on(repo_commands::open_repo(repo.path_string())).unwrap();
     assert_eq!(canonical(Path::new(&info.root)), repo.path);
     assert_eq!(info.relative_path, "");
+}
+
+#[test]
+fn get_status_answers_unchanged_for_the_hash_the_caller_holds() {
+    let repo = TestRepo::new();
+    repo.write("a.txt", "one\n");
+    repo.commit_all("first");
+    repo.write("a.txt", "two\n");
+    let first = block_on(status::get_status(repo.path_string(), None)).unwrap();
+    assert!(first.status.is_some());
+
+    let same = block_on(status::get_status(repo.path_string(), Some(first.hash.clone()))).unwrap();
+    assert_eq!(same.hash, first.hash);
+    assert!(same.status.is_none());
+    // Editing a modified file again does not change what status shows.
+    repo.write("a.txt", "three\n");
+    assert!(block_on(status::get_status(repo.path_string(), Some(first.hash.clone()))).unwrap().status.is_none());
+
+    // Staging, a new file, a branch switch or a stale hash all send the status again.
+    let mut seen = vec![first.hash.clone()];
+    let mut expect_new = |label: &str| {
+        let next = block_on(status::get_status(repo.path_string(), Some(seen.last().unwrap().clone()))).unwrap();
+        assert!(next.status.is_some(), "{label}");
+        assert!(!seen.contains(&next.hash), "{label}");
+        seen.push(next.hash);
+    };
+    repo.git(&["add", "a.txt"]);
+    expect_new("staged");
+    repo.write("b.txt", "new\n");
+    expect_new("untracked");
+    repo.git(&["switch", "-q", "-c", "other"]);
+    expect_new("branch");
+    let stale = block_on(status::get_status(repo.path_string(), Some("0".to_string()))).unwrap();
+    assert!(stale.status.is_some());
 }
 
 // stash commands
@@ -608,6 +701,79 @@ fn stash_apply_clean_reports_no_conflicts() {
     assert_eq!(block_on(stash::get_stashes(repo.path_string())).unwrap().len(), 1);
 }
 
+// refresh fingerprints
+
+#[test]
+fn refs_snapshot_answers_unchanged_until_something_the_sidebar_shows_changes() {
+    let repo = TestRepo::new();
+    repo.write("a.txt", "a\n");
+    repo.commit_all("first");
+    let read = |known: Option<&str>| block_on(branch::get_refs_snapshot(repo.path_string(), known.map(str::to_string))).unwrap();
+    let first = read(None);
+    assert_eq!(first.refs.as_ref().map(|refs| refs.local.len()), Some(1));
+    assert!(read(Some(&first.fingerprint)).refs.is_none());
+
+    // Work tree and index changes leave branches alone.
+    repo.write("a.txt", "changed\n");
+    repo.write("new.txt", "new\n");
+    repo.git(&["add", "new.txt"]);
+    let staged = read(Some(&first.fingerprint));
+    assert!(staged.refs.is_none());
+    assert_eq!(staged.tips, first.tips);
+
+    // Each of these changes the fingerprint; only ref moves change the tips.
+    let mut current = first;
+    let mut step = |label: &str, change: &dyn Fn(), tips_change: bool| {
+        change();
+        let next = read(Some(&current.fingerprint));
+        assert!(next.refs.is_some(), "{label}");
+        assert_eq!(next.tips != current.tips, tips_change, "{label}");
+        current = next;
+    };
+    step("commit", &|| { repo.commit_all("second"); }, true);
+    step("branch", &|| repo.branch("topic"), true);
+    step("tag", &|| { repo.git(&["tag", "v1"]); }, true);
+    step("switch", &|| repo.checkout("topic"), true);
+    step("stash", &|| {
+        repo.write("a.txt", "stash me\n");
+        repo.git(&["stash", "push", "-q"]);
+        repo.write("a.txt", "stash me too\n");
+        repo.git(&["stash", "push", "-q"]);
+    }, false);
+    step("drop an older stash", &|| { repo.git(&["stash", "drop", "-q", "stash@{1}"]); }, false);
+    step("config", &|| { repo.git(&["config", "remote.origin.url", "https://example.com/x.git"]); }, false);
+    let linked = repo.path.parent().unwrap().join("linked").to_string_lossy().into_owned();
+    step("worktree", &|| { repo.git(&["worktree", "add", "-q", "-b", "linked", &linked]); }, true);
+    step("lock", &|| { repo.git(&["worktree", "lock", &linked]); }, false);
+}
+
+#[test]
+fn get_log_skips_the_walk_while_the_tips_are_unchanged() {
+    let repo = TestRepo::new();
+    repo.write("a.txt", "a\n");
+    repo.commit_all("first");
+    let log = |known: Option<&str>, all_refs: bool| {
+        block_on(history::get_log(repo.path_string(), 0, 100, all_refs, known.map(str::to_string))).unwrap()
+    };
+    let first = log(None, false);
+    assert_eq!(first.commits.as_ref().map(Vec::len), Some(1));
+    assert!(log(Some(&first.tips), false).commits.is_none());
+    // The other walk has its own fingerprint.
+    assert!(log(Some(&first.tips), true).commits.is_some());
+
+    repo.write("a.txt", "changed\n");
+    repo.git(&["add", "a.txt"]);
+    repo.git(&["stash", "push", "-q"]);
+    assert!(log(Some(&first.tips), false).commits.is_none(), "index and stash changes keep the log");
+
+    repo.git(&["tag", "v1"]);
+    let tagged = log(Some(&first.tips), false);
+    assert_eq!(tagged.commits.unwrap()[0].refs.len(), 2, "a new label reloads");
+    repo.write("b.txt", "b\n");
+    repo.commit_all("second");
+    assert_eq!(log(Some(&tagged.tips), false).commits.map(|commits| commits.len()), Some(2));
+}
+
 // branch commands
 
 #[test]
@@ -631,7 +797,8 @@ fn branch_create_switch_rename_delete() {
     assert_eq!(repo.git(&["branch", "--show-current"]).trim(), "renamed");
 
     block_on(branch::checkout_branch(repo.path_string(), "main".to_string())).unwrap();
-    block_on(branch::delete_branch(repo.path_string(), "renamed".to_string(), false)).unwrap();
+    let deleted_tip = block_on(branch::delete_branch(repo.path_string(), "renamed".to_string(), false)).unwrap();
+    assert_eq!(deleted_tip, first, "the deleted tip comes back for Restore");
     repo.git(&["switch", "-q", "-c", "unmerged", &first]);
     repo.write("c.txt", "c\n");
     repo.commit_all("unmerged");
@@ -680,8 +847,31 @@ fn checkout_remote_branch_tracks_or_switches() {
 
 // File explorer
 
+fn list_dirs(
+    root_path: &str,
+    dir_paths: &[&str],
+    repo_roots: &[String],
+    known: Option<HashMap<String, String>>,
+) -> Vec<FolderListing> {
+    block_on(files::list_directories(
+        root_path.to_string(),
+        strings(dir_paths),
+        repo_roots.to_vec(),
+        known,
+    ))
+    .unwrap()
+}
+
+fn list_one(root_path: &str, dir_path: &str, repo_roots: &[String]) -> FolderListing {
+    let mut listings = list_dirs(root_path, &[dir_path], repo_roots, None);
+    assert_eq!(listings.len(), 1);
+    let listing = listings.remove(0);
+    assert_eq!(listing.error, None, "{dir_path}");
+    listing
+}
+
 #[test]
-fn list_directory_sorts_folders_first_and_marks_ignored_entries() {
+fn list_directories_sorts_folders_first_and_marks_ignored_entries() {
     let repo = TestRepo::new();
     repo.write(".gitignore", "target/\n*.log\n");
     repo.write("src/main.rs", "fn main() {}\n");
@@ -689,8 +879,9 @@ fn list_directory_sorts_folders_first_and_marks_ignored_entries() {
     repo.write("b.txt", "b\n");
     repo.write("A.md", "a\n");
     repo.write("debug.log", "noise\n");
+    let repo_roots = vec![repo.path_string()];
 
-    let root = block_on(files::list_directory(repo.path_string(), String::new(), vec![repo.path_string()])).unwrap();
+    let root = list_one(&repo.path_string(), "", &repo_roots);
     let names: Vec<(&str, bool, bool)> = root
         .entries
         .iter()
@@ -708,18 +899,77 @@ fn list_directory_sorts_folders_first_and_marks_ignored_entries() {
         ]
     );
     assert!(root.entries.iter().all(|entry| !entry.is_repo));
-    assert!(!root.truncated);
+    assert!(!root.truncated && !root.unchanged);
 
-    let src = block_on(files::list_directory(repo.path_string(), "src".to_string(), vec![repo.path_string()])).unwrap();
+    let src = list_one(&repo.path_string(), "src", &repo_roots);
+    assert_eq!(src.dir_path, "src");
     assert_eq!(src.entries.len(), 1);
-    assert_eq!(src.entries[0].path, "src/main.rs");
+    assert_eq!(src.entries[0].name, "main.rs");
 }
 
 #[test]
-fn list_directory_rejects_paths_outside_the_work_tree() {
+fn list_directories_refuses_paths_outside_the_work_tree_per_folder() {
     let repo = TestRepo::new();
-    let result = block_on(files::list_directory(repo.path_string(), "../".to_string(), vec![repo.path_string()]));
-    assert!(matches!(result, Err(AppError::Invalid(_))));
+    repo.write("src/main.rs", "fn main() {}\n");
+    let listings = list_dirs(&repo.path_string(), &["../", "src", "gone", "src/main.rs"], &[repo.path_string()], None);
+    assert_eq!(listings.len(), 4);
+    assert!(listings[0].error.as_deref().is_some_and(|error| error.starts_with("Invalid path")), "{:?}", listings[0]);
+    assert_eq!(listings[1].error, None);
+    assert_eq!(listings[1].entries.len(), 1);
+    assert!(listings[2].error.is_some());
+    assert!(listings[3].error.as_deref().is_some_and(|error| error.starts_with("Not a folder")));
+
+    let missing = block_on(files::list_directories(format!("{}/nope", repo.path_string()), strings(&[""]), Vec::new(), None));
+    assert!(matches!(missing, Err(AppError::Invalid(_))));
+}
+
+#[test]
+fn list_directories_answers_unchanged_until_something_the_listing_depends_on_changes() {
+    let dir = TestDir::new();
+    let parent = dir.init_repo("parent");
+    dir.write("parent/src/a.txt", "a\n");
+    dir.write("parent/src/.gitignore", "");
+    let repo_roots = vec![text(&parent)];
+    let root_path = dir.path_string();
+    let check = |dir_path: &str, stamp: &str| -> FolderListing {
+        let known = HashMap::from([(dir_path.to_string(), stamp.to_string())]);
+        list_dirs(&root_path, &[dir_path], &repo_roots, Some(known)).remove(0)
+    };
+
+    let first = list_one(&root_path, "parent/src", &repo_roots);
+    assert!(!first.unchanged && !first.stamp.is_empty());
+    let again = check("parent/src", &first.stamp);
+    assert!(again.unchanged && again.entries.is_empty());
+    assert_eq!(again.stamp, first.stamp);
+    // A stamp for another folder is never taken for this one.
+    let other = list_dirs(
+        &root_path,
+        &["parent/src", "parent"],
+        &repo_roots,
+        Some(HashMap::from([("parent".to_string(), first.stamp.clone())])),
+    );
+    assert!(!other[1].unchanged);
+
+    // Each of these changes the listing or its flags, so each must change the stamp.
+    let mut stamp = first.stamp.clone();
+    let mut expect_change = |what: &str, change: &dyn Fn()| {
+        change();
+        let next = check("parent/src", &stamp);
+        assert!(!next.unchanged, "{what} kept the stamp");
+        assert_ne!(next.stamp, stamp, "{what}");
+        stamp = next.stamp;
+    };
+    expect_change("a new entry", &|| dir.write("parent/src/b.log", "b\n"));
+    // Edits inside files leave the folder's own time alone: these come from the ignore inputs.
+    expect_change("the folder's .gitignore", &|| dir.write("parent/src/.gitignore", "*.log\n"));
+    expect_change("the repository's .gitignore", &|| dir.write("parent/.gitignore", "*.txt\n"));
+    expect_change("info/exclude", &|| dir.write("parent/.git/info/exclude", "b.*\n"));
+    expect_change("a nested repository", &|| {
+        dir.init_repo("parent/src/inner");
+    });
+    let inner = list_dirs(&root_path, &["parent/src"], &[text(&parent), dir.file_string("parent/src/inner")], None);
+    assert!(inner[0].entries.iter().any(|entry| entry.name == "inner" && entry.is_repo));
+    assert_ne!(inner[0].stamp, stamp, "a repository root showing up");
 }
 
 #[test]
@@ -728,33 +978,14 @@ fn read_worktree_file_normalizes_crlf_and_detects_binary() {
     repo.write("win.txt", "one\r\ntwo\r\n");
     repo.write("image.bin", [0u8, 1, 2, 3]);
 
-    let text = block_on(files::read_worktree_file(repo.path_string(), "win.txt".to_string())).unwrap();
+    let text = block_on(files::read_worktree_file(repo.path_string(), "win.txt".to_string(), None)).unwrap();
     assert_eq!(text.content, "one\ntwo\n");
     assert_eq!(text.eol, Eol::Crlf);
     assert!(!text.binary);
 
-    let binary = block_on(files::read_worktree_file(repo.path_string(), "image.bin".to_string())).unwrap();
+    let binary = block_on(files::read_worktree_file(repo.path_string(), "image.bin".to_string(), None)).unwrap();
     assert!(binary.binary);
     assert!(binary.content.is_empty());
-}
-
-#[test]
-fn read_image_data_url_reads_workspace_images_only() {
-    let repo = TestRepo::new();
-    repo.write("docs/logo.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"/>");
-    repo.write("notes.md", "# Notes");
-
-    let url = block_on(files::read_image_data_url(repo.path_string(), "docs/logo.svg".to_string())).unwrap();
-    assert!(url.starts_with("data:image/svg+xml;base64,"));
-
-    let not_image = block_on(files::read_image_data_url(repo.path_string(), "notes.md".to_string()));
-    assert!(matches!(not_image, Err(AppError::Invalid(_))));
-    let escape = block_on(files::read_image_data_url(repo.path_string(), "../logo.png".to_string()));
-    assert!(matches!(escape, Err(AppError::Invalid(_))));
-    let absolute = block_on(files::read_image_data_url(repo.path_string(), "/etc/hosts.png".to_string()));
-    assert!(matches!(absolute, Err(AppError::Invalid(_))));
-    let missing = block_on(files::read_image_data_url(repo.path_string(), "docs/none.png".to_string()));
-    assert!(matches!(missing, Err(AppError::Io(_))));
 }
 
 // Workspaces
@@ -918,7 +1149,7 @@ fn init_repository_creates_a_repository_that_discovery_finds() {
 }
 
 #[test]
-fn list_directory_uses_the_deepest_repository_for_ignores() {
+fn list_directories_uses_the_deepest_repository_for_ignores() {
     let dir = TestDir::new();
     dir.write("notes.log", "outside every repository\n");
     dir.write("plain/debug.log", "plain folder\n");
@@ -930,43 +1161,43 @@ fn list_directory_uses_the_deepest_repository_for_ignores() {
     dir.write("parent/child/b.log", "not ignored by child\n");
     dir.write("parent/child/src/c.log", "not ignored by child\n");
     let repo_roots = vec![text(&parent), text(&child)];
+    let dir_paths = ["", "plain", "parent", "parent/child", "parent/child/src"];
 
-    let list = |dir_path: &str| -> Vec<(String, bool, bool, bool)> {
-        block_on(files::list_directory(dir.path_string(), dir_path.to_string(), repo_roots.clone()))
-            .unwrap()
+    // One call answers every folder, in the order asked.
+    let listings = list_dirs(&dir.path_string(), &dir_paths, &repo_roots, None);
+    assert_eq!(listings.iter().map(|listing| listing.dir_path.as_str()).collect::<Vec<_>>(), dir_paths);
+    let list = |index: usize| -> Vec<(String, bool, bool, bool)> {
+        listings[index]
             .entries
-            .into_iter()
-            .map(|entry| (entry.path, entry.is_dir, entry.ignored, entry.is_repo))
+            .iter()
+            .map(|entry| (entry.name.clone(), entry.is_dir, entry.ignored, entry.is_repo))
             .collect()
     };
-    let entry = |path: &str, is_dir: bool, ignored: bool, is_repo: bool| (path.to_string(), is_dir, ignored, is_repo);
+    let entry = |name: &str, is_dir: bool, ignored: bool, is_repo: bool| (name.to_string(), is_dir, ignored, is_repo);
 
     assert_eq!(
-        list(""),
+        list(0),
         vec![
             entry("parent", true, false, true),
             entry("plain", true, false, false),
             entry("notes.log", false, false, false),
         ]
     );
-    assert_eq!(list("plain"), vec![entry("plain/debug.log", false, false, false)]);
+    assert_eq!(list(1), vec![entry("debug.log", false, false, false)]);
     assert_eq!(
-        list("parent"),
+        list(2),
         vec![
-            entry("parent/build-out", true, true, false),
-            entry("parent/child", true, false, true),
-            entry("parent/.gitignore", false, false, false),
-            entry("parent/a.log", false, true, false),
+            entry("build-out", true, true, false),
+            entry("child", true, false, true),
+            entry(".gitignore", false, false, false),
+            entry("a.log", false, true, false),
         ]
     );
-    assert_eq!(
-        list("parent/child"),
-        vec![entry("parent/child/src", true, false, false), entry("parent/child/b.log", false, false, false)]
-    );
-    assert_eq!(list("parent/child/src"), vec![entry("parent/child/src/c.log", false, false, false)]);
+    assert_eq!(list(3), vec![entry("src", true, false, false), entry("b.log", false, false, false)]);
+    assert_eq!(list(4), vec![entry("c.log", false, false, false)]);
 
     // Without repositories nothing is ignored or flagged.
-    let bare = block_on(files::list_directory(dir.path_string(), "parent".to_string(), Vec::new())).unwrap();
+    let bare = list_one(&dir.path_string(), "parent", &[]);
     assert!(bare.entries.iter().all(|entry| !entry.ignored && !entry.is_repo));
 }
 
@@ -974,10 +1205,18 @@ fn list_directory_uses_the_deepest_repository_for_ignores() {
 fn worktree_file_commands_work_in_a_plain_folder() {
     let dir = TestDir::new();
     dir.write("docs/a.txt", "a\r\nb\r\n");
-    let file = block_on(files::read_worktree_file(dir.path_string(), "docs/a.txt".to_string())).unwrap();
+    let read = |known_version: Option<String>| {
+        block_on(files::read_worktree_file(dir.path_string(), "docs/a.txt".to_string(), known_version)).unwrap()
+    };
+    let file = read(None);
     assert_eq!((file.content.as_str(), file.eol), ("a\nb\n", Eol::Crlf));
+    assert!(!file.unchanged);
+    // Asked again with its version, the file answers unchanged and sends no text.
+    let again = read(Some(file.version.clone()));
+    assert!(again.unchanged);
+    assert_eq!(again.content, "");
 
-    block_on(status::write_worktree_file(
+    let written = block_on(status::write_worktree_file(
         dir.path_string(),
         "docs/a.txt".to_string(),
         "x\n".to_string(),
@@ -985,12 +1224,40 @@ fn worktree_file_commands_work_in_a_plain_folder() {
     ))
     .unwrap();
     assert_eq!(std::fs::read_to_string(dir.file("docs/a.txt")).unwrap(), "x\r\n");
+    // Save returns the new version, so the editor's next refresh reads nothing.
+    assert_ne!(written, file.version);
+    assert!(read(Some(written.clone())).unchanged);
+    // A change from outside the app, even of the same size, is a new version. The pause keeps
+    // the two writes in different clock ticks on file systems with coarse timestamps.
+    std::thread::sleep(std::time::Duration::from_millis(20));
+    std::fs::write(dir.file("docs/a.txt"), "y\r\n").unwrap();
+    let outside = read(Some(written));
+    assert!(!outside.unchanged);
+    assert_eq!(outside.content, "y\n");
 }
 
 // File operations (file_create, file_rename, file_copy, file_move, file_trash)
 
 fn file_error<T: std::fmt::Debug>(result: crate::error::AppResult<T>) -> String {
     result.expect_err("expected an error").to_string()
+}
+
+async fn move_files(
+    workspace_roots: Vec<String>,
+    source_paths: Vec<String>,
+    target_dir: String,
+) -> crate::error::AppResult<Vec<crate::file_ops::FileMove>> {
+    match file_ops::file_move(workspace_roots, source_paths, target_dir, None).await? {
+        file_ops::MoveAnswer::Moved(moved) => Ok(moved),
+        other => panic!("not a move: {other:?}"),
+    }
+}
+
+fn move_clash(workspace_roots: &[String], source_paths: Vec<String>, target_dir: String) -> crate::error::AppResult<Option<String>> {
+    match block_on(file_ops::file_move(workspace_roots.to_vec(), source_paths, target_dir, Some(true)))? {
+        file_ops::MoveAnswer::Clash(clash) => Ok(clash),
+        other => panic!("not a dry run: {other:?}"),
+    }
 }
 
 fn child_names(dir: &Path) -> Vec<String> {
@@ -1020,8 +1287,13 @@ fn file_create_makes_files_folders_and_nested_names() {
     assert_eq!(nested, dir.file_string("src/lib/cart.ts"));
     assert!(dir.file("src/lib/cart.ts").is_file());
 
-    // An existing folder in the name is reused; a new folder can be nested too.
-    let folder = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "src/lib/util/".to_string(), true))
+    // An existing folder in the name is reused; a new folder can be nested too. Empty parts are
+    // refused, as the dialog refuses them.
+    let trailing = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "src/lib/util/".to_string(), true));
+    assert_eq!(file_error(trailing), "Each part between slashes needs a name");
+    let doubled = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "src//util".to_string(), true));
+    assert_eq!(file_error(doubled), "Each part between slashes needs a name");
+    let folder = block_on(file_ops::file_create(roots.clone(), dir.path_string(), "src/lib/util".to_string(), true))
         .unwrap();
     assert_eq!(folder, dir.file_string("src/lib/util"));
     assert!(dir.file("src/lib/util").is_dir());
@@ -1147,7 +1419,7 @@ fn file_move_moves_entries_and_refuses_conflicts_before_moving_anything() {
     dir.mkdir("c");
 
     // The conflict on `lib` refuses the move before `cart.ts` moves.
-    let conflict = block_on(file_ops::file_move(
+    let conflict = block_on(move_files(
         roots.clone(),
         vec![dir.file_string("a/cart.ts"), dir.file_string("a/lib")],
         dir.file_string("b"),
@@ -1155,11 +1427,24 @@ fn file_move_moves_entries_and_refuses_conflicts_before_moving_anything() {
     assert_eq!(file_error(conflict), "lib already exists in b");
     assert!(dir.file("a/cart.ts").is_file());
 
-    let into_itself = block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("a")], dir.file_string("a/lib")));
+    // A dry run names the clash, gives other refusals as errors and moves nothing.
+    let sources = vec![dir.file_string("a/cart.ts"), dir.file_string("a/lib")];
+    assert_eq!(move_clash(&roots, sources.clone(), dir.file_string("b")).unwrap().as_deref(), Some("lib"));
+    assert_eq!(move_clash(&roots, sources.clone(), dir.file_string("c")).unwrap(), None);
+    let dry_into_itself = move_clash(&roots, vec![dir.file_string("a")], dir.file_string("a/lib"));
+    assert_eq!(file_error(dry_into_itself), "Cannot move a into itself");
+    assert!(dir.file("a/cart.ts").is_file() && dir.file("a/lib/x.ts").is_file());
+    assert_eq!(child_names(&dir.file("c")), Vec::<String>::new());
+    let as_json = |answer: file_ops::MoveAnswer| serde_json::to_string(&answer).unwrap();
+    assert_eq!(as_json(file_ops::MoveAnswer::Clash(None)), "null");
+    assert_eq!(as_json(file_ops::MoveAnswer::Clash(Some("lib".to_string()))), "\"lib\"");
+    assert_eq!(as_json(file_ops::MoveAnswer::Moved(Vec::new())), "[]");
+
+    let into_itself = block_on(move_files(roots.clone(), vec![dir.file_string("a")], dir.file_string("a/lib")));
     assert_eq!(file_error(into_itself), "Cannot move a into itself");
 
     // Already in the target: skipped. A file inside a moved folder goes with it.
-    let moved = block_on(file_ops::file_move(
+    let moved = block_on(move_files(
         roots.clone(),
         vec![
             dir.file_string("a/cart.ts"),
@@ -1172,7 +1457,7 @@ fn file_move_moves_entries_and_refuses_conflicts_before_moving_anything() {
     .unwrap_err();
     assert_eq!(moved.to_string(), "Cannot move c into itself");
 
-    let moved = block_on(file_ops::file_move(
+    let moved = block_on(move_files(
         roots.clone(),
         vec![dir.file_string("a/cart.ts"), dir.file_string("a/lib/x.ts"), dir.file_string("a/lib")],
         dir.file_string("c"),
@@ -1194,7 +1479,7 @@ fn file_move_moves_entries_and_refuses_conflicts_before_moving_anything() {
     assert_eq!(child_names(&dir.file("a")), Vec::<String>::new());
     assert_eq!(std::fs::read_to_string(dir.file("c/lib/x.ts")).unwrap(), "x");
 
-    let no_op = block_on(file_ops::file_move(roots, vec![dir.file_string("c/cart.ts")], dir.file_string("c"))).unwrap();
+    let no_op = block_on(move_files(roots, vec![dir.file_string("c/cart.ts")], dir.file_string("c"))).unwrap();
     assert!(no_op.is_empty());
     assert!(dir.file("c/cart.ts").is_file());
 }
@@ -1206,7 +1491,7 @@ fn file_move_works_across_the_folders_of_a_two_folder_workspace() {
     dir.write("two/readme.md", "readme");
     let roots = vec![dir.file_string("one"), dir.file_string("two")];
 
-    let moved = block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("one/src")], dir.file_string("two")))
+    let moved = block_on(move_files(roots.clone(), vec![dir.file_string("one/src")], dir.file_string("two")))
         .unwrap();
     assert_eq!(moved[0].to, dir.file_string("two/src"));
     assert!(dir.file("two/src/cart.ts").is_file());
@@ -1235,7 +1520,7 @@ fn file_operations_refuse_roots_git_folders_and_paths_outside() {
     let trash_root = block_on(file_ops::file_trash(roots.clone(), vec![dir.file_string("holder/nested")]));
     assert_eq!(file_error(trash_root), "nested is a workspace folder");
     let move_holder =
-        block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("holder")], dir.file_string("repo")));
+        block_on(move_files(roots.clone(), vec![dir.file_string("holder")], dir.file_string("repo")));
     assert_eq!(file_error(move_holder), "holder holds the workspace folder nested");
     let copy_root = block_on(file_ops::file_copy(roots.clone(), vec![dir.path_string()], dir.file_string("repo")));
     assert_eq!(file_error(copy_root), "workspace is a workspace folder");
@@ -1257,7 +1542,7 @@ fn file_operations_refuse_roots_git_folders_and_paths_outside() {
         block_on(file_ops::file_copy(roots.clone(), vec![outside_file.clone()], dir.file_string("repo")));
     assert_eq!(file_error(outside_source), format!("{outside_file} is outside the workspace"));
     let outside_target =
-        block_on(file_ops::file_move(roots.clone(), vec![dir.file_string("repo/a.ts")], outside_dir.clone()));
+        block_on(move_files(roots.clone(), vec![dir.file_string("repo/a.ts")], outside_dir.clone()));
     assert_eq!(file_error(outside_target), format!("{outside_dir} is outside the workspace"));
     #[cfg(unix)]
     {

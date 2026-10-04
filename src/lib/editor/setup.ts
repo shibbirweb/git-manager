@@ -2,7 +2,7 @@
 // grammars actually used end up in memory.
 
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { bracketMatching, indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language";
+import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { EditorState, type Extension } from "@codemirror/state";
 import {
   drawSelection,
@@ -14,12 +14,14 @@ import {
 } from "@codemirror/view";
 import { classHighlighter } from "@lezer/highlight";
 import { settings } from "$lib/stores/settings.svelte";
+import { commandKeys } from "./commandKeys";
 import { codeKeymap } from "./editorCommands";
 import { findBar } from "./findPanel.svelte";
 import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
 import { type EditorKind, featureOptions } from "./featurePlan";
 import { editorFeatures } from "./features";
+import { indentation } from "./indentation";
 import { renderWhitespace } from "./whitespace";
 
 export const editorTheme = EditorView.theme({
@@ -34,6 +36,7 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-scroller": {
     fontFamily: "var(--font-mono)",
+    fontWeight: "var(--code-weight, 400)",
     lineHeight: "var(--code-line-height, 1.25)",
   },
   ".cm-content": {
@@ -100,8 +103,8 @@ export function baseExtensions({ readOnly = false, kind, extensions = [] }: Edit
     highlightSpecialChars(),
     drawSelection(),
     syntaxHighlighting(classHighlighter),
-    bracketMatching(),
-    // Auto-close, completion, folding, guides, word highlight, margin line... each switchable in Settings.
+    // Auto-close, completion, folding, guides, word highlight, margin line, sticky scroll,
+    // minimap, bracket colors and matching... each switchable in Settings.
     editorFeatures(kind ?? (readOnly ? "diff" : "file"), featureOptions(settings)),
     // Select All Occurrences and Cmd+D add carets; Option+Shift+click adds one (JetBrains).
     EditorState.allowMultipleSelections.of(true),
@@ -110,9 +113,10 @@ export function baseExtensions({ readOnly = false, kind, extensions = [] }: Edit
     renderWhitespace(settings.renderWhitespace),
     editorCursor(cursorOptions(settings)),
     editorTheme,
-    // Read when the editor is created; open editors keep their values.
-    EditorState.tabSize.of(settings.tabSize),
-    indentUnit.of(" ".repeat(settings.tabSize)),
+    // The file's own indentation, or the Tab size setting; open editors follow both settings.
+    indentation({ detect: settings.detectIndentation, tabSize: settings.tabSize }),
+    // Custom keys from Settings > Keyboard Shortcuts, ahead of every default key.
+    commandKeys(),
     // The Code menu's keys (Duplicate, Join Lines, Toggle Case...), ahead of the defaults.
     keymap.of(codeKeymap),
     keymap.of(defaultKeymap),

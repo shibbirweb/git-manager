@@ -4,6 +4,10 @@
   import CommitDetails from "$lib/log/CommitDetails.svelte";
   import { logSelection } from "$lib/log/logSelection.svelte";
   import { startInteractiveRebase } from "./git/gitMenuActions";
+  import { bisectStore } from "./git/bisect.svelte";
+  import { markFromLog } from "./git/bisectActions";
+  import { bisectBadges } from "./git/bisectBanner";
+  import { undoAction } from "./git/undoActions";
   import { fullDate, relativeTime, sortRefs } from "$lib/log/format";
   import { GraphBuilder, type GraphRow } from "$lib/log/graph";
   import GraphCell, { LANE_COLORS, graphColumnWidth } from "$lib/log/GraphCell.svelte";
@@ -31,6 +35,8 @@
   let builder = new GraphBuilder(LANE_COLORS.length);
   let generation = 0;
   let loadedRepoPath: string | null = null;
+  /** Branch tips the loaded history was read at, and for which walk; a reload with the same tips walks nothing. */
+  let loadedTips: { tips: string; allRefs: boolean } | null = null;
   let firstTrigger = true;
 
   let version = $state(0);
@@ -50,6 +56,9 @@
   let now = $state(Date.now());
 
   const repoPath = $derived(repoStore.repo?.root ?? null);
+  const bisecting = $derived(repoPath !== null && (repoStore.statuses[repoPath]?.bisect ?? null) !== null);
+  /** Good, bad, skipped and tested commits while a bisect runs (BisectBanner keeps the state fresh). */
+  const bisectMarks = $derived(bisectBadges(bisecting ? bisectStore.forRepo(repoPath) : null));
   const query = $derived(filterText.trim().toLowerCase());
   const graphWidth = $derived(query ? graphColumnWidth(1) : graphColumnWidth(laneCount));
 
@@ -197,6 +206,7 @@
     if (!target) {
       resetData();
       loadedRepoPath = null;
+      loadedTips = null;
       selectedId = null;
       initialLoaded = false;
       version++;
@@ -206,22 +216,27 @@
     const sameRepo = target === loadedRepoPath;
     const targetCount = sameRepo ? Math.min(Math.max(commits.length, PAGE_SIZE), RELOAD_CAP) : PAGE_SIZE;
     const keepId = sameRepo ? selectedId : null;
+    // Only history that loaded without an error may be kept as it is.
+    const knownTips = sameRepo && !loadError && loadedTips?.allRefs === allRefs ? loadedTips.tips : null;
     loading = true;
     loadError = null;
 
-    const fresh: CommitSummary[] = [];
-    let more = true;
+    let fresh: CommitSummary[];
+    let more: boolean;
     try {
-      while (more && fresh.length < targetCount) {
-        const page = await api.getLog(target, fresh.length, PAGE_SIZE, allRefs);
-        if (token !== generation) {
-          return;
-        }
-        for (const commit of page ?? []) {
-          fresh.push(commit);
-        }
-        more = (page?.length ?? 0) >= PAGE_SIZE;
+      // One call: every topological page walks the whole history first.
+      const page = await api.getLogPage(target, 0, targetCount, allRefs, knownTips);
+      if (token !== generation) {
+        return;
       }
+      if (!page.commits) {
+        // The tips did not move: what is loaded is still the history.
+        loading = false;
+        return;
+      }
+      loadedTips = { tips: page.tips, allRefs };
+      fresh = page.commits;
+      more = fresh.length >= targetCount;
     } catch (error) {
       if (token !== generation) {
         return;
@@ -229,6 +244,7 @@
       loading = false;
       initialLoaded = true;
       loadError = errorMessage(error);
+      loadedTips = null;
       if (!sameRepo) {
         resetData();
         loadedRepoPath = target;
@@ -287,6 +303,8 @@
 
   function refresh(): void {
     loadError = null;
+    // Asked for: read the history again even when the tips did not move.
+    loadedTips = null;
     void reload();
   }
 
@@ -517,8 +535,10 @@
     if (!confirmed) {
       return;
     }
+    const undoRoot = repoPath;
     await repoStore.run("Checkout", (targetRepoPath) => api.checkoutCommit(targetRepoPath, commit.id), {
       success: `HEAD is now at ${commit.shortId}`,
+      action: () => (undoRoot ? undoAction(undoRoot, ["checkout"]) : null),
     });
   }
 
@@ -581,8 +601,10 @@
         return;
       }
     }
+    const undoRoot = repoPath;
     await repoStore.run("Reset", (targetRepoPath) => api.resetTo(targetRepoPath, commit.id, mode), {
       success: `Reset ${branch} to ${commit.shortId} (${mode})`,
+      action: () => (undoRoot ? undoAction(undoRoot, ["reset"]) : null),
     });
   }
 
@@ -623,6 +645,27 @@
       },
       { separator: true },
       { label: "Reset Current Branch to Here...", disabled: busy, action: () => void resetHere(commit) },
+      { separator: true },
+      {
+        label: "Bisect: Mark as Good",
+        disabled: busy || operation,
+        hint: bisecting ? undefined : "starts a bisect",
+        action: () => {
+          if (repoPath) {
+            void markFromLog(repoPath, commit.id, "good");
+          }
+        },
+      },
+      {
+        label: "Bisect: Mark as Bad",
+        disabled: busy || operation,
+        hint: bisecting ? undefined : "starts a bisect",
+        action: () => {
+          if (repoPath) {
+            void markFromLog(repoPath, commit.id, "bad");
+          }
+        },
+      },
     ];
     contextMenu.open(event, items);
   }
@@ -752,6 +795,9 @@
                   />
                 </div>
                 <div class="col-subject">
+                  {#each bisectMarks.get(commit.id) ?? [] as mark (mark.kind)}
+                    <span class="ref bisect-{mark.kind}" title="Bisect: {mark.label}">{mark.label}</span>
+                  {/each}
                   {#each refs.slice(0, MAX_BADGES) as ref (`${ref.kind}:${ref.name}`)}
                     <span class="ref ref-{ref.kind}" title={ref.name}>
                       {#if ref.kind === "tag"}<Icon name="tag" size={10} />{/if}
@@ -1069,6 +1115,22 @@
 
   .ref-more {
     --ref-color: var(--text-dim);
+  }
+
+  .bisect-bad {
+    --ref-color: var(--danger);
+  }
+
+  .bisect-good {
+    --ref-color: var(--success);
+  }
+
+  .bisect-skip {
+    --ref-color: var(--text-dim);
+  }
+
+  .bisect-current {
+    --ref-color: var(--warning);
   }
 
   .split {

@@ -34,6 +34,9 @@ jobs:
       - name: Version agrees in every file
         run: bun scripts/version.ts check
 
+      - name: File icon sets are up to date
+        run: bun scripts/file-icons.ts --check
+
       - name: Type-check (svelte-check)
         run: bun run check
 

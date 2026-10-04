@@ -1,9 +1,11 @@
 <!-- Right sidebar: the work tree, loaded one folder at a time. -->
 <script lang="ts">
+  import { localHistory } from "$lib/localHistory/localHistory.svelte";
   import { getCurrentWebview, type DragDropEvent } from "@tauri-apps/api/webview";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
   import { onMount, tick, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
+  import { compareStore } from "$lib/compare/compareStore.svelte";
   import { formatKeys } from "$lib/help/shortcuts";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { terminalKeyAt } from "$lib/terminal/dropPaths";
@@ -22,8 +24,8 @@
     type PathMove,
     relativeTo,
   } from "$lib/stores/workspacePaths";
-  import type { FileStatus } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
+  import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
@@ -32,7 +34,7 @@
   import { ignoreMenu } from "$lib/ignore/ignoreActions";
   import { centeredScrollTop, foldersToOpen } from "./locate";
   import { revealLabel, terminalFolderFor } from "./reveal";
-  import { deletedByFolder, type FileTone, marksByPath, tonesByPath } from "./tones";
+  import { type FileTone, type RepoTones, repoTones, workspaceTones } from "./tones";
   import { lfsStore } from "../git/lfs/lfsStore.svelte";
   import {
     autoScrollStep,
@@ -42,10 +44,10 @@
     dropPointToCss,
     type DropMode,
     HOVER_EXPAND_MS,
-    moveClash,
     pastDragThreshold,
   } from "./dragDrop";
   import { fileClipboard } from "./fileClipboard.svelte";
+  import { applyAnswers, type FolderAnswer, groupByFolder, knownStamps, type TreeEntry } from "./folderListings";
   import { nameProblem, renameSelection } from "./fileNames";
   import {
     FILE_OP_LABELS,
@@ -72,18 +74,6 @@
   } from "./selection";
 
   // Every path in the tree is absolute, so several workspace folders never collide.
-  interface TreeEntry {
-    name: string;
-    path: string;
-    isDir: boolean;
-    ignored: boolean;
-    isRepo: boolean;
-    /** Deleted from the work tree but still known to git. */
-    deleted: boolean;
-    /** A top-level workspace folder (multi-folder workspaces only). */
-    isFolderRoot: boolean;
-  }
-
   interface Row {
     entry: TreeEntry;
     depth: number;
@@ -123,34 +113,24 @@
   /** The workspace folder that takes drops and new files off the rows; none with several folders. */
   const singleRoot = $derived(!multiRoot && folders[0] ? folders[0].root : null);
 
-  /** Changed files of every repository, with absolute paths. */
-  const workspaceFiles = $derived.by(() => {
-    const files: FileStatus[] = [];
+  /** Status tones, marks and deleted files of every repository; a repository whose status did not change is not redone. */
+  const changes = $derived.by(() => {
+    const perRepo: RepoTones[] = [];
     for (const repo of repoStore.repos) {
-      for (const file of repoStore.statuses[repo.root]?.files ?? []) {
-        // A nested repository shows up in its parent as an untracked "dir/".
-        if (file.path.endsWith("/")) {
-          continue;
-        }
-        files.push({
-          ...file,
-          path: joinPath(repo.root, file.path),
-          origPath: file.origPath ? joinPath(repo.root, file.origPath) : null,
-        });
+      const status = repoStore.statuses[repo.root];
+      if (status) {
+        perRepo.push(repoTones(status, repo.root));
       }
     }
-    return files;
+    return workspaceTones(perRepo);
   });
-  const tones = $derived(tonesByPath(workspaceFiles));
-  const marks = $derived(marksByPath(workspaceFiles));
-  const deleted = $derived(deletedByFolder(workspaceFiles));
   const repoRoots = $derived(repoStore.repos.map((repo) => repo.root));
   const repoRootSet = $derived(new Set(repoRoots));
 
-  // LFS files, read once per status refresh while the panel is open, for the "LFS" badges.
+  // LFS files for the "LFS" badges, checked again while the panel is open when HEAD, the index or entries change.
   $effect(() => {
     for (const repo of repoStore.repos) {
-      lfsStore.follow(repo.root, repoStore.statuses[repo.root] ?? null);
+      lfsStore.follow(repo.root, repoStore.treeVersions[repo.root] ?? 0);
     }
     lfsStore.retain(repoRoots);
   });
@@ -186,7 +166,7 @@
     if (!onDisk) {
       return [];
     }
-    const gone = deleted.get(dirPath) ?? [];
+    const gone = changes.deletedIn(dirPath);
     if (gone.length === 0) {
       return onDisk;
     }
@@ -261,9 +241,7 @@
     }
     if (added.length > 0) {
       expanded = new Set([...expanded, ...added]);
-      for (const root of added) {
-        void loadDir(root);
-      }
+      void loadDirs(added);
     }
     if (current.size === 0) {
       selection = EMPTY_SELECTION;
@@ -292,65 +270,68 @@
     }
   });
 
-  // Repository events refresh status; reload the folders currently shown.
+  // Entries came or went (or ignore rules changed): reload the folders currently shown.
+  // Content edits and status changes never change a listing; tones and marks follow the statuses.
   let refreshTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
-    void repoStore.statuses;
-    void repoStore.workspaceVersion;
+    void repoStore.listingVersion;
     void repoStore.repos;
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(() => void refreshLoaded(), 250);
     return () => clearTimeout(refreshTimer);
   });
 
-  async function loadDir(dirPath: string): Promise<void> {
-    const folder = folderFor(folders, dirPath);
-    if (!folder) {
+  /** Each loaded folder's stamp from its last listing: a refresh sends them, and unchanged folders are not read. */
+  const stamps = new Map<string, string>();
+  /** The latest request per folder, so an older answer never overwrites a newer one. */
+  const requests = new Map<string, number>();
+  let requestCount = 0;
+
+  /** Lists folders (absolute paths) with one call per workspace folder and applies every answer at once. */
+  async function loadDirs(dirPaths: Iterable<string>): Promise<void> {
+    const groups = groupByFolder(dirPaths, (dirPath) => folderFor(folders, dirPath)?.root ?? null);
+    if (groups.size === 0) {
       return;
     }
-    try {
-      const listing = await api.listDirectory(folder.root, relativeTo(folder.root, dirPath), repoRoots);
-      if (!folderFor(repoStore.workspace?.folders ?? [], dirPath)) {
-        return;
+    const sent = new Map<string, number>();
+    for (const group of groups.values()) {
+      for (const dirPath of group) {
+        requests.set(dirPath, ++requestCount);
+        sent.set(dirPath, requestCount);
       }
-      const entries: TreeEntry[] = listing.entries.map((entry) => ({
-        ...entry,
-        path: joinPath(folder.root, entry.path),
-        deleted: false,
-        isFolderRoot: false,
-      }));
-      children = new Map(children).set(dirPath, entries);
-      const nextTruncated = new Set(truncated);
-      if (listing.truncated) {
-        nextTruncated.add(dirPath);
-      } else {
-        nextTruncated.delete(dirPath);
-      }
-      truncated = nextTruncated;
-      if (dirPath === folder.root && rootErrors.has(dirPath)) {
-        const nextErrors = new Map(rootErrors);
-        nextErrors.delete(dirPath);
-        rootErrors = nextErrors;
-      }
-    } catch (error) {
-      if (dirPath === folder.root) {
-        rootErrors = new Map(rootErrors).set(dirPath, errorMessage(error));
-        return;
-      }
-      // The directory disappeared: forget it.
-      const next = new Map(children);
-      next.delete(dirPath);
-      children = next;
-      const nextExpanded = new Set(expanded);
-      nextExpanded.delete(dirPath);
-      expanded = nextExpanded;
     }
+    const roots = repoRoots;
+    const answers = await Promise.all(
+      [...groups].map(async ([root, group]): Promise<FolderAnswer> => {
+        const relative = group.map((dirPath) => relativeTo(root, dirPath));
+        try {
+          const listings = await api.listDirectories(root, relative, roots, knownStamps(root, group, stamps, children));
+          return { root, dirPaths: group, listings, error: null };
+        } catch (error) {
+          return { root, dirPaths: group, listings: null, error: errorMessage(error) };
+        }
+      }),
+    );
+    const open = repoStore.workspace?.folders ?? [];
+    const current = new Set<string>();
+    for (const [dirPath, request] of sent) {
+      if (requests.get(dirPath) === request) {
+        requests.delete(dirPath);
+        if (folderFor(open, dirPath)) {
+          current.add(dirPath);
+        }
+      }
+    }
+    const next = applyAnswers({ children, expanded, truncated, rootErrors }, answers, stamps, (dirPath) => current.has(dirPath));
+    children = next.children;
+    expanded = next.expanded;
+    truncated = next.truncated;
+    rootErrors = next.rootErrors;
   }
 
   async function refreshLoaded(): Promise<void> {
     const roots = new Set(folders.map((folder) => folder.root));
-    const shown = [...children.keys()].filter((dirPath) => roots.has(dirPath) || expanded.has(dirPath));
-    await Promise.all(shown.map((dirPath) => loadDir(dirPath)));
+    await loadDirs([...children.keys()].filter((dirPath) => roots.has(dirPath) || expanded.has(dirPath)));
   }
 
   function toggle(dirPath: string): void {
@@ -359,7 +340,7 @@
       return;
     }
     expanded = new Set(expanded).add(dirPath);
-    void loadDir(dirPath);
+    void loadDirs([dirPath]);
   }
 
   /** Collapsing also drops loaded contents below it, keeping memory flat. */
@@ -423,7 +404,7 @@
     }
     const dirPaths = foldersToOpen(folder.root, filePath);
     expanded = new Set([...expanded, ...dirPaths]);
-    await Promise.all(dirPaths.filter((dirPath) => !children.has(dirPath)).map((dirPath) => loadDir(dirPath)));
+    await loadDirs(dirPaths.filter((dirPath) => !children.has(dirPath)));
     selection = selectOnly(filePath);
     // Wait for the list to grow, or the new scroll position would be cut short.
     await tick();
@@ -568,24 +549,6 @@
     return new Set((children.get(dirPath) ?? []).map((entry) => entry.name));
   }
 
-  /** Names in a folder: its loaded listing, or a fresh one (kept nowhere) for a folder that is not open. */
-  async function namesOnDisk(dirPath: string): Promise<Set<string>> {
-    if (children.has(dirPath)) {
-      return namesIn(dirPath);
-    }
-    const folder = folderFor(folders, dirPath);
-    if (!folder) {
-      return new Set();
-    }
-    try {
-      const listing = await api.listDirectory(folder.root, relativeTo(folder.root, dirPath), repoRoots);
-      return new Set(listing.entries.map((entry) => entry.name));
-    } catch {
-      // The backend checks again before anything moves.
-      return new Set();
-    }
-  }
-
   /** "a.ts, b.ts and 3 more" for messages about many entries. */
   function listNames(paths: string[]): string {
     const names = paths.slice(0, 5).map((path) => baseName(path));
@@ -593,8 +556,7 @@
   }
 
   async function reloadDirs(dirPaths: string[]): Promise<void> {
-    const shown = [...new Set(dirPaths)].filter((dirPath) => children.has(dirPath) || expanded.has(dirPath));
-    await Promise.all(shown.map((dirPath) => loadDir(dirPath)));
+    await loadDirs(dirPaths.filter((dirPath) => children.has(dirPath) || expanded.has(dirPath)));
   }
 
   /** After a write: reload the touched folders now, and let git and the open tabs catch up. */
@@ -613,7 +575,7 @@
       }
     }
     expanded = new Set([...expanded, ...dirPaths]);
-    await Promise.all([...dirPaths].map((dirPath) => loadDir(dirPath)));
+    await loadDirs(dirPaths);
     selection = selectAll(entryPaths);
     await tick();
     const index = order.indexOf(entryPaths[entryPaths.length - 1] ?? "");
@@ -636,9 +598,7 @@
     // Listings under the old paths are stale; open folders load again under their new paths.
     children = new Map([...children].filter(([path]) => !isMoved(path)));
     selection = retargetSelection(selection, moves);
-    for (const dirPath of reopened) {
-      void loadDir(dirPath);
-    }
+    void loadDirs(reopened);
   }
 
   async function createEntry(parentDir: string, isDir: boolean): Promise<void> {
@@ -649,7 +609,7 @@
       label: `In ${label}`,
       placeholder: isDir ? "Folder name, or a/b for nested folders" : "File name, or folder/file.ts",
       confirmLabel: "Create",
-      validate: (value) => nameProblem(value, { nested: true, taken, folderLabel: label }),
+      validate: (value) => nameProblem(value, { nested: true, taken, folderLabel: label, ignoreCase: PLATFORM !== "linux" }),
     });
     if (!result) {
       listEl?.focus();
@@ -683,7 +643,8 @@
       initial: name,
       selection: renameSelection(name, target.isDir),
       confirmLabel: "Rename",
-      validate: (value) => nameProblem(value, { nested: false, taken, folderLabel: label, current: name }),
+      validate: (value) =>
+        nameProblem(value, { nested: false, taken, folderLabel: label, current: name, ignoreCase: PLATFORM !== "linux" }),
     });
     if (!result || result.value === name) {
       listEl?.focus();
@@ -713,8 +674,15 @@
     if (!repoStore.checkUnsaved(sources)) {
       return false;
     }
-    // Refuse a taken name before asking: the backend would refuse it after the question.
-    const clash = moveClash(sources, targetDir, await namesOnDisk(targetDir), PLATFORM !== "linux");
+    // Refuse a taken name before asking: the backend would refuse it after the question. The dry run checks the
+    // folder on disk, so a closed folder is never listed for it.
+    let clash: string | null;
+    try {
+      clash = await api.fileMoveClash(workspaceRoots(), sources, targetDir);
+    } catch (error) {
+      toast.error("Could not move", errorMessage(error));
+      return false;
+    }
     if (clash) {
       toast.error("Could not move", `${clash} already exists in ${folderLabel(targetDir)}`);
       return false;
@@ -911,7 +879,9 @@
 
   function openMenu(event: MouseEvent, row: Row): void {
     const selected = selection.paths.has(row.entry.path) ? selectedEntries() : [];
-    const multiItems = selected.length > 1 ? fileOpMenu(selected).slice(1) : [];
+    // Two selected files offer Compare Selected above the file operations (whose first item is a separator).
+    const compareItems = selected.length > 1 ? compareStore.filesPanelItems(selected) : [];
+    const multiItems = selected.length > 1 ? [...compareItems, ...fileOpMenu(selected).slice(compareItems.length > 0 ? 0 : 1)] : [];
     if (multiItems.length > 0) {
       contextMenu.open(event, multiItems);
       return;
@@ -921,12 +891,18 @@
     const folder = folderFor(folders, absolute);
     const relative = folder ? relativeTo(folder.root, absolute) : absolute;
     const location = locateAbsolute(repoStore.repos, absolute);
-    const conflicted = tones.get(absolute) === "conflict";
+    const conflicted = changes.tone(absolute) === "conflict";
     let items: MenuItem[];
     if (row.entry.deleted) {
       items = [{ label: "Show in Changes", action: () => settings.setLeftPanel("changes") }];
+      if (!row.entry.isDir) {
+        items.push({ label: "Show Local History", action: () => localHistory.openFile(absolute) });
+      }
     } else if (row.entry.isDir) {
-      items = [{ label: row.expanded ? "Collapse" : "Expand", action: () => toggle(absolute) }];
+      items = [
+        { label: row.expanded ? "Collapse" : "Expand", action: () => toggle(absolute) },
+        { label: "Show Recently Deleted", action: () => localHistory.openDeleted([absolute]) },
+      ];
       if (row.entry.isRepo) {
         const isActive = repoStore.repo?.root === absolute;
         items.push({
@@ -948,6 +924,10 @@
       items = [
         { label: "Open", action: () => void repoStore.openFile(absolute, { pin: true }) },
         { label: "Open Preview", action: () => void repoStore.openFile(absolute) },
+        ...(settings.splitEditor
+          ? [{ label: "Open to the Side", action: () => void repoStore.openFile(absolute, { pin: true, toSide: true }) }]
+          : []),
+        { label: "Show Local History", action: () => localHistory.openFile(absolute) },
       ];
       if (conflicted && location) {
         items.push({
@@ -955,6 +935,7 @@
           action: () => void repoStore.openMerge(location.repoPath, location.repo.root),
         });
       }
+      items.push({ separator: true }, ...compareStore.filesPanelItems([row.entry]));
     }
     items.push(...fileOpMenu([row.entry]));
     const ignoreItem = location && !row.entry.deleted ? ignoreMenu(location.repo.root, location.repoPath, row.entry.isDir) : null;
@@ -995,7 +976,7 @@
     if (entry.ignored) {
       return "ignored";
     }
-    return tones.get(entry.path) ?? "";
+    return changes.tone(entry.path) ?? "";
   }
 
   // Drag and drop. Rows drag with pointer events: a press that moves a few pixels becomes a
@@ -1050,7 +1031,7 @@
       hoverTimer = setTimeout(() => {
         if (hoverPath === dirPath && !expanded.has(dirPath)) {
           expanded = new Set(expanded).add(dirPath);
-          void loadDir(dirPath);
+          void loadDirs([dirPath]);
         }
       }, HOVER_EXPAND_MS);
     }
@@ -1329,7 +1310,11 @@
               {/if}
             </span>
             <span class="icon">
-              <Icon name={row.entry.isRepo ? "folder-git" : row.entry.isDir ? "folder" : "file"} size={14} />
+              {#if row.entry.isDir}
+                <Icon name={row.entry.isRepo ? "folder-git" : "folder"} size={14} />
+              {:else}
+                <FileTypeIcon fileName={row.entry.name} />
+              {/if}
             </span>
             <span class="name truncate">{row.entry.name}</span>
             {#if row.entry.isRepo}
@@ -1345,12 +1330,12 @@
               <span class="dim more" title="Only the first 5000 entries are shown">5000+</span>
             {/if}
             {#if row.entry.isDir}
-              {@const folderTone = tones.get(row.entry.path)}
+              {@const folderTone = changes.tone(row.entry.path)}
               {#if folderTone}
                 <span class="dot {folderTone}" title="Contains changes"></span>
               {/if}
             {:else}
-              {@const mark = marks.get(row.entry.path)}
+              {@const mark = changes.mark(row.entry.path)}
               {#if mark}
                 <span class="letter {mark.tone}" title={mark.title}>{mark.letter}</span>
               {/if}
@@ -1618,5 +1603,10 @@
   .row.ignored .name,
   .row.ignored .icon {
     color: var(--text-faint);
+  }
+
+  .row.ignored .icon :global(.file-type-icon),
+  .row.ignored .icon :global(.file-type-image) {
+    opacity: 0.5;
   }
 </style>

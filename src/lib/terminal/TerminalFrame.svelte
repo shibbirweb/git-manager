@@ -6,7 +6,6 @@
 -->
 <script lang="ts">
   import { onMount, untrack } from "svelte";
-  import { repoStore } from "$lib/stores/repo.svelte";
   import { changesSelection } from "$lib/views/changes/selection.svelte";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { terminalPlacement, terminalTabPath } from "./terminalTabs";
@@ -19,10 +18,8 @@
 
   const slot = $derived(terminalStore.slotFor(terminal));
   const placement = $derived(terminalPlacement(terminal.location, slot !== null));
-  /** Its editor tab is the one on screen. */
-  const tabShown = $derived(
-    placement === "editor" && changesSelection.shownView === "file" && repoStore.openFilePath === terminalTabPath(terminal.key),
-  );
+  /** Its editor tab is on screen, in either editor group. */
+  const tabShown = $derived(placement === "editor" && changesSelection.tabOnScreen(terminalTabPath(terminal.key)));
   const visible = $derived(
     placement === "panel"
       ? terminalStore.panelOpen && terminalStore.panelTab === "terminal" && terminalStore.paneSlots[terminal.key] !== undefined

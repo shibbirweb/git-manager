@@ -17,7 +17,7 @@ type EngineModule = typeof Engine;
 export interface PreviewCallbacks {
   /** Where links and images are resolved. */
   linkContext: () => LinkContext;
-  /** A local image as a data URL. */
+  /** The URL of a local image (the `gmpreview` scheme, so its bytes stay out of JavaScript). */
   loadImage: (filePath: string) => Promise<string>;
   isDark: () => boolean;
 }
@@ -199,7 +199,7 @@ export class MarkdownPreviewDom {
       return;
     }
     image.dataset.gmFile = target.filePath;
-    // Loaded once it is scrolled near; data URLs of images far down are never made.
+    // Loaded once it is scrolled near, so images far down are never read.
     this.nearScreen.watch(image, () => {
       this.nearScreen.unwatch(image);
       this.loadLocalImage(image, target.filePath, alt, raw);
@@ -228,7 +228,7 @@ export class MarkdownPreviewDom {
       });
   }
 
-  /** Drops loaded images no block shows any more, so their data URLs can be freed. */
+  /** Forgets images no block shows any more; one shown again is read anew (it may have changed). */
   private forgetUnusedImages(): void {
     if (this.images.size === 0) {
       return;

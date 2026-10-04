@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { changeMarks, diffLines, type LineHunk } from "./lineDiff";
+import { diffLines, type LineHunk } from "./lineDiff";
 
 function apply(oldLines: string[], newLines: string[], hunks: LineHunk[]): string[] {
   const out: string[] = [];
@@ -46,13 +46,16 @@ describe("diffLines", () => {
       expect(apply(oldLines, newLines, diffLines(oldLines, newLines))).toEqual(newLines);
     }
   });
-});
 
-describe("changeMarks", () => {
-  it("classifies hunks for the new side", () => {
-    const marks = changeMarks(["a", "b", "c", "d"], ["a", "B", "c", "new", "d"].filter((line) => line !== "c"));
-    expect(marks.map((mark) => mark.kind)).toEqual(["modified"]);
-    expect(changeMarks(["a"], ["a", "b"])).toEqual([{ from: 1, to: 2, kind: "added" }]);
-    expect(changeMarks(["a", "b"], ["a"])).toEqual([{ from: 1, to: 1, kind: "deleted" }]);
+  it("recovers long edit paths in large texts", () => {
+    const base = Array.from({ length: 5000 }, (_, index) => `line ${index}`);
+    const edited = base.slice();
+    for (let index = 0; index < 400; index++) {
+      edited[(index * 37) % base.length] = `changed ${index}`;
+    }
+    edited.splice(100, 0, "inserted");
+    const hunks = diffLines(base, edited);
+    expect(apply(base, edited, hunks)).toEqual(edited);
+    expect(hunks.length).toBeGreaterThan(300);
   });
 });

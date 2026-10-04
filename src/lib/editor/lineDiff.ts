@@ -1,5 +1,6 @@
 // Line-level Myers diff, fast when the texts are mostly equal (the usual
-// case for "what changed in this file"). Used for live change markers.
+// case for "what changed in this file"). Used to number selected lines as in
+// HEAD; the editor's change marks come from the backend (line_change_marks).
 
 export interface LineHunk {
   /** Half-open line range in the old text. */
@@ -54,11 +55,13 @@ export function diffLines(oldLines: string[], newLines: string[]): LineHunk[] {
   const max = Math.min(n + m, MAX_EDITS);
   const offset = max + 1;
   const v = new Int32Array(2 * max + 3);
+  // Step d only ever reads diagonals -d..d of the step before, so each snapshot keeps just
+  // those 2d+1 values (indexed by k + d), not the whole array: memory follows the edits made.
   const trace: Int32Array[] = [];
   let found = false;
 
   for (let d = 0; d <= max && !found; d++) {
-    trace.push(v.slice());
+    trace.push(v.slice(offset - d, offset + d + 1));
     for (let k = -d; k <= d; k += 2) {
       let x = k === -d || (k !== d && v[offset + k - 1] < v[offset + k + 1]) ? v[offset + k + 1] : v[offset + k - 1] + 1;
       let y = x - k;
@@ -83,9 +86,11 @@ export function diffLines(oldLines: string[], newLines: string[]): LineHunk[] {
   let y = m;
   for (let d = trace.length - 1; d > 0; d--) {
     const previous = trace[d];
+    // The snapshot taken before step d, indexed by k + d.
+    const at = (diagonal: number) => previous[diagonal + d];
     const k = x - y;
-    const prevK = k === -d || (k !== d && previous[offset + k - 1] < previous[offset + k + 1]) ? k + 1 : k - 1;
-    const prevX = previous[offset + prevK];
+    const prevK = k === -d || (k !== d && at(k - 1) < at(k + 1)) ? k + 1 : k - 1;
+    const prevX = at(prevK);
     const prevY = prevX - prevK;
     while (x > prevX && y > prevY) {
       x--;
@@ -126,13 +131,4 @@ export interface ChangeMark {
   from: number;
   to: number;
   kind: ChangeMarkKind;
-}
-
-/** Marks for the new side of a diff: what was added, modified or deleted there. */
-export function changeMarks(oldLines: string[], newLines: string[]): ChangeMark[] {
-  return diffLines(oldLines, newLines).map((hunk) => ({
-    from: hunk.newStart,
-    to: hunk.newEnd,
-    kind: hunk.oldStart === hunk.oldEnd ? "added" : hunk.newStart === hunk.newEnd ? "deleted" : "modified",
-  }));
 }

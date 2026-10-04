@@ -6,6 +6,7 @@ import { tabLabels, tabsInFolder } from "./tabs";
 const refs: BranchTabRef[] = [
   { kind: "compare", repoRoot: "/work/app", branchName: "feature/a|b", baseName: "main" },
   { kind: "worktree", repoRoot: "/work/app", revision: "origin/release 1" },
+  { kind: "changes", repoRoot: "/work/app" },
 ];
 
 describe("branch tabs", () => {
@@ -28,6 +29,8 @@ describe("branch tabs", () => {
       "branches-worktree:%2Fwork",
       "branches-worktree:%2Fwork|a|b",
       "branches-worktree:%E0%A4%A|main",
+      "branches-changes:",
+      "branches-changes:%2Fwork|main",
     ]) {
       expect(parseBranchTabPath(tabPath), tabPath).toBeNull();
     }
@@ -36,6 +39,7 @@ describe("branch tabs", () => {
   it("titles each kind, labels it in the strip and closes with its folder", () => {
     expect(branchTabTitle(refs[0])).toEqual({ name: "feature/a|b vs main", title: "feature/a|b compared with main (app)" });
     expect(branchTabTitle(refs[1]).name).toBe("origin/release 1 vs Working Tree");
+    expect(branchTabTitle(refs[2])).toEqual({ name: "Changes: app", title: "Uncommitted changes in app" });
     const paths = refs.map(branchTabPath);
     const other = branchTabPath({ kind: "worktree", repoRoot: "/elsewhere", revision: "main" });
     expect(branchTabsInFolder([...paths, other], "/work")).toEqual(paths);
