@@ -135,6 +135,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The welcome screen fits short windows: the recent lists scroll inside the card instead of the card being cut off at the top and bottom.
 - The GPU acceleration and scrollback hints in Settings, Terminal gave wrong memory numbers ("a few MB" for GPU drawing); they now show measured ones: about 70 MB for the first GPU terminal, and about 2 KB per scrollback line.
 - The terminal's visual bell no longer keeps restarting its flash when a command prints binary data that rings it thousands of times.
 - Search Everywhere's All tab shows its Classes section again on big workspaces: the Classes and Symbols searches it runs at the same time no longer cancel each other.

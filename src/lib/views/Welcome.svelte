@@ -168,21 +168,31 @@
 </main>
 
 <style>
+  /* Margin auto centers the card but, unlike align-items: center, never pushes it past the top edge,
+     so a short window scrolls instead of clipping. */
   .welcome {
     height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 24px;
+    overflow: auto;
   }
 
+  /* The card fits the window: the recent lists shrink and scroll inside it. */
   .card {
+    margin: auto;
     width: min(520px, 100%);
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
     background: var(--panel);
     border: 1px solid var(--border-strong);
     border-radius: 12px;
     padding: 28px;
     box-shadow: var(--shadow);
+  }
+
+  .card > :global(*) {
+    flex: none;
   }
 
   .brand {
@@ -214,8 +224,9 @@
 
   .links {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 14px;
+    gap: 6px 14px;
     margin-top: 10px;
   }
 
@@ -279,7 +290,9 @@
     color: var(--text-dim);
   }
 
-  .recent {
+  .card > .recent {
+    flex: 0 1 auto;
+    min-height: 72px;
     list-style: none;
     margin: 0;
     padding: 0;
