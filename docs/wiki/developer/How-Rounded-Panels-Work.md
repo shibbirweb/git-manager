@@ -66,7 +66,7 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 | `src/lib/views/Header.svelte`, `StatusBar.svelte`, `ActivityBar.svelte`, `RightActivityBar.svelte` | frame color, no dividers |
 | `src/lib/views/EditorTabs.svelte` | pill tabs |
 | `src/lib/terminal/TerminalPanel.svelte` | the rounded bottom panel |
-| `src/lib/views/files/FileView.svelte` | the file toolbar's rounded corners |
+| `src/lib/views/files/FileView.svelte` | the file toolbar's rounded corners at the bottom |
 
 ## Design decisions
 
@@ -76,11 +76,9 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 **A derived frame instead of `--bg`.** Many themes paint `--bg` and `--panel` the same, which would hide the gaps. A tested token keeps the look working in all 41 themes.
 
+**The file toolbar is square at the top.** With the File toolbar at the Bottom, `FileView.svelte` gives the bar's two bottom corners `--panel-radius`, so they follow the panel's own corners. At the Top the bar sits right under the tabs, inside the panel, so it stays a square band joined to the tab strip. Rounding its top corners there was tried and made the bar look like a separate box.
+
 **Off by default.** Existing users keep the classic look until they choose otherwise.
-
-## Bugs we fixed
-
-**The file toolbar looked square at the top.** With the File toolbar at the Bottom, the bar's two bottom corners followed the panel's rounded corners. At the Top it sat under the tabs as a flat band with square corners, so the two placements did not match. The panel only clips its own outer corners, and at the top the tab strip sits between the bar and those corners. The fix gives the bar `--panel-radius` on the two corners on the side it faces (top or bottom) in `FileView.svelte`, under `html[data-rounded-panels]`. The corners show the editor background, which is also the tab strip's color in rounded mode, so the bar reads as a rounded header under the tabs. A CSS rule on the root attribute keeps it in line with the rest of the feature.
 
 ## Tests
 
