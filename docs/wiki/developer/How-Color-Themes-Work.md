@@ -1,6 +1,6 @@
 # How color themes work
 
-Git Manager has 37 color themes: the built-in Git Manager Light and Dark, 10 more light, 20 more dark and 5 high contrast themes. The user picks one for light mode and one for dark mode. For the user side, see [Color Themes](../usage/Color-Themes.md).
+Git Manager has 41 color themes: the built-in Git Manager Light and Dark, 12 more light, 22 more dark and 5 high contrast themes. The user picks one for light mode and one for dark mode. For the user side, see [Color Themes](../usage/Color-Themes.md).
 
 ## Why we need it
 
@@ -85,9 +85,11 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 **Two settings, not one.** `lightColorTheme` and `darkColorTheme` follow macOS without asking. A light theme can never be saved as the dark one: `pickThemeId` falls back to the mode's default.
 
-**Derive, do not hand-write.** 35 themes times 67 tokens would be thousands of values to keep right. Specs hold only what the theme publishes, and the derivation guarantees readable text.
+**Derive, do not hand-write.** 39 themes times 67 tokens would be thousands of values to keep right. Specs hold only what the theme publishes, and the derivation guarantees readable text.
 
 **The defaults cost nothing.** The built-in themes live in `app.css`, so the catalog chunk loads only for another theme or when Settings > Editor shows.
+
+**Colors come from the theme's own files.** Islands Light and Dark use JetBrains' `ManyIslandsLight.theme.json`, `ManyIslandsDark.theme.json` and their editor schemes in intellij-community (selection and console colors inherited from the parent schemes). VS Code Light+ and Dark+ use `light_plus.json` and `dark_plus.json` in microsoft/vscode plus VS Code's built-in workbench defaults. Islands' rounded, spaced panels are a layout, not colors, so only the colors are used.
 
 **Contrast is tested, not hoped for.** Every theme must pass the same checks as the built-ins.
 

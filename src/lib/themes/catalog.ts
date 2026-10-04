@@ -219,6 +219,21 @@ const VSCODE_ANSI_LIGHT: Ansi = [
   "#666666", "#cd3131", "#14ce14", "#b5ba00", "#0451a5", "#bc05bc", "#0598bc", "#a5a5a5",
 ];
 
+const VSCODE_ANSI_DARK: Ansi = [
+  "#000000", "#cd3131", "#0dbc79", "#e5e510", "#2472c8", "#bc3fbc", "#11a8cd", "#e5e5e5",
+  "#666666", "#f14c4c", "#23d18b", "#f5f543", "#3b8eea", "#d670d6", "#29b8db", "#e5e5e5",
+];
+
+/** JetBrains' console colors: the Default (light) and Darcula editor schemes, which the Islands schemes inherit. */
+const JETBRAINS_ANSI_LIGHT: Ansi = [
+  "#000000", "#c91b00", "#00a000", "#a68a0d", "#0225c7", "#a771bf", "#00a3a3", "#808080",
+  "#595959", "#f0524f", "#4fc414", "#c7a600", "#3993d4", "#c930c7", "#00b0b0", "#ffffff",
+];
+const DARCULA_ANSI: Ansi = [
+  "#000000", "#ff6b68", "#a8c023", "#d6bf55", "#5394ec", "#ae8abe", "#299999", "#999999",
+  "#555555", "#ff8785", "#a8c023", "#ffff00", "#7eaef1", "#ff99ff", "#6cdada", "#ffffff",
+];
+
 const SPECS: Record<string, ThemeSpec> = {
   "github-light": {
     background: "#ffffff",
@@ -361,15 +376,41 @@ const SPECS: Record<string, ThemeSpec> = {
     foreground: "#080808",
     accent: "#2675bf",
     selection: "#a6d2ff",
-    ansi: [
-      "#000000", "#c91b00", "#00a000", "#a68a0d", "#0225c7", "#a771bf", "#00a3a3", "#808080",
-      "#595959", "#f0524f", "#4fc414", "#c7a600", "#3993d4", "#c930c7", "#00b0b0", "#ffffff",
-    ],
+    ansi: JETBRAINS_ANSI_LIGHT,
     syntax: {
       keyword: "#0033b3", string: "#067d17", number: "#1750eb", comment: "#8c8c8c", type: "#000000",
       function: "#00627a", property: "#871094", meta: "#9e880d", tag: "#0033b3", attr: "#174ad4", invalid: "#f50000",
     },
     ui: { bg: "#f2f2f2", panel: "#f2f2f2", panelAlt: "#e8e8e8", border: "#d1d1d1", borderStrong: "#c4c4c4", lineNumber: "#adadad", activeLine: "#fcfaed", success: "#067d17" },
+  },
+  // JetBrains Islands (IDEA 2025.3): white islands on a grey window. Colors from
+  // ManyIslandsLight.theme.json and its "Light" editor scheme in intellij-community.
+  "islands-light": {
+    background: "#ffffff",
+    foreground: "#000000",
+    accent: "#3871e1",
+    selection: "#a6d2ff",
+    ansi: JETBRAINS_ANSI_LIGHT,
+    syntax: {
+      keyword: "#0033b3", string: "#067d17", number: "#1750eb", comment: "#8c8c8c", type: "#000000",
+      function: "#00627a", property: "#871094", meta: "#9e880d", tag: "#0033b3", attr: "#174ad4", invalid: "#f50000",
+    },
+    ui: { bg: "#e9eaee", panel: "#ffffff", panelAlt: "#f7f8f9", border: "#e9eaee", borderStrong: "#dddfe4", lineNumber: "#aeb3c2", activeLine: "#f5f8fe", success: "#338555", danger: "#c54e58", warning: "#a56906", info: "#2f5eb9" },
+  },
+  // VS Code's Default Light+ and Dark+: tokens from extensions/theme-defaults in
+  // microsoft/vscode, UI colors from its workbench defaults. Meta is the pink of
+  // keyword.control, which Light+ and Dark+ give preprocessor directives.
+  "vscode-light-plus": {
+    background: "#ffffff",
+    foreground: "#000000",
+    accent: "#007acc",
+    selection: "#add6ff",
+    ansi: VSCODE_ANSI_LIGHT,
+    syntax: {
+      keyword: "#0000ff", string: "#a31515", number: "#098658", comment: "#008000", type: "#267f99",
+      function: "#795e26", property: "#001080", meta: "#af00db", tag: "#800000", attr: "#e50000", invalid: "#cd3131",
+    },
+    ui: { bg: "#dddddd", panel: "#f3f3f3", panelAlt: "#ececec", border: "#e7e7e7", lineNumber: "#237893", activeLine: "#eeeeee", success: "#587c0c", danger: "#e51400", warning: "#bf8803", info: "#2090d3" },
   },
 
   darcula: {
@@ -377,15 +418,39 @@ const SPECS: Record<string, ThemeSpec> = {
     foreground: "#a9b7c6",
     accent: "#4a88c7",
     selection: "#214283",
-    ansi: [
-      "#000000", "#ff6b68", "#a8c023", "#d6bf55", "#5394ec", "#ae8abe", "#299999", "#999999",
-      "#555555", "#ff8785", "#a8c023", "#ffff00", "#7eaef1", "#ff99ff", "#6cdada", "#ffffff",
-    ],
+    ansi: DARCULA_ANSI,
     syntax: {
       keyword: "#cc7832", string: "#6a8759", number: "#6897bb", comment: "#808080", type: "#a9b7c6",
       function: "#ffc66d", property: "#9876aa", meta: "#bbb529", tag: "#e8bf6a", attr: "#bababa", invalid: "#bc3f3c",
     },
     ui: { bg: "#2b2b2b", panel: "#3c3f41", panelAlt: "#313335", border: "#323232", borderStrong: "#515151", lineNumber: "#606366", activeLine: "#323232", cursor: "#bbbbbb" },
+  },
+  // Dark islands on a lighter grey window. Colors from ManyIslandsDark.theme.json
+  // and IslandSchemeDark.xml in intellij-community; selection and console colors
+  // are inherited from Darcula.
+  "islands-dark": {
+    background: "#191a1c",
+    foreground: "#d1d3d9",
+    accent: "#3871e1",
+    selection: "#214283",
+    ansi: DARCULA_ANSI,
+    syntax: {
+      keyword: "#cf8e6d", string: "#6aab73", number: "#2aacb8", comment: "#7a7e85", type: "#bcbec4",
+      function: "#56a8f5", property: "#c77dbb", meta: "#b3ae60", tag: "#d5b778", attr: "#bababa", invalid: "#f75464",
+    },
+    ui: { bg: "#26282c", panel: "#191a1c", panelAlt: "#212326", border: "#26282c", borderStrong: "#33353b", lineNumber: "#4b5059", activeLine: "#1f2024", cursor: "#ced0d6", success: "#6db083", danger: "#f57e84", warning: "#d59637", info: "#71a1fe" },
+  },
+  "vscode-dark-plus": {
+    background: "#1e1e1e",
+    foreground: "#d4d4d4",
+    accent: "#007acc",
+    selection: "#264f78",
+    ansi: VSCODE_ANSI_DARK,
+    syntax: {
+      keyword: "#569cd6", string: "#ce9178", number: "#b5cea8", comment: "#6a9955", type: "#4ec9b0",
+      function: "#dcdcaa", property: "#9cdcfe", meta: "#c586c0", tag: "#569cd6", attr: "#9cdcfe", invalid: "#f44747",
+    },
+    ui: { bg: "#3c3c3c", panel: "#252526", panelAlt: "#2d2d2d", border: "#1e1e1e", borderStrong: "#444444", lineNumber: "#858585", activeLine: "#282828", cursor: "#aeafad", success: "#81b88b", danger: "#f14c4c", warning: "#cca700", info: "#1b81a8" },
   },
   "one-dark-pro": {
     background: "#282c34",

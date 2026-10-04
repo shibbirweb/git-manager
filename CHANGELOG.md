@@ -67,7 +67,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Code menu commands: comments, duplicate, delete, join, move, indent, toggle case and sort lines, folding, Go to Line, and Select Next Occurrence (Cmd+D) for multiple cursors.
 - Markdown editor: formatting toolbar, live preview with linked scrolling, mermaid diagrams and local images, as Editor Only, Editor and Preview, or Preview Only.
 - Preview Only edits the rendered Markdown page in place and keeps untouched text exactly as it was.
-- 37 color themes, with one pick for light mode and one for dark mode, in Settings > Editor.
+- 41 color themes, with one pick for light mode and one for dark mode, in Settings > Editor, including JetBrains Islands Light and Islands Dark and VS Code Light+ and Dark+.
 - Settings > Editor: Line spacing and Render whitespace, applied to the editor, diffs and the merge tool.
 - Resizable side-by-side diffs: drag the line between the two sides, or double-click it for 50/50.
 - Header buttons to show or hide the left and right activity bars (also in the View menu).

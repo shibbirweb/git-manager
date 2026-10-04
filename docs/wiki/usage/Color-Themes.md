@@ -2,7 +2,7 @@
 
 A color theme sets every color in Git Manager: panels, text, the editor and its syntax colors, diffs, the merge tool and the terminal. You pick one theme for light mode and one for dark mode, so the app keeps looking the way you like when macOS switches between day and night.
 
-There are 37 themes, including the two built-in ones, **Git Manager Light** and **Git Manager Dark**, which are the defaults.
+There are 41 themes, including the two built-in ones, **Git Manager Light** and **Git Manager Dark**, which are the defaults.
 
 ![The Light theme and Dark theme pickers](../images/color-theme-pickers.png)
 
@@ -33,11 +33,11 @@ The same three choices are in the menu bar under **View > Appearance**, and the 
 
 Light themes:
 
-- Git Manager Light, GitHub Light, One Light, Solarized Light, Quiet Light, Ayu Light, Catppuccin Latte, Gruvbox Light, Tokyo Night Day, Rosé Pine Dawn, IntelliJ Light.
+- Git Manager Light, GitHub Light, One Light, Solarized Light, Quiet Light, Ayu Light, Catppuccin Latte, Gruvbox Light, Tokyo Night Day, Rosé Pine Dawn, IntelliJ Light, Islands Light, VS Code Light+.
 
 Dark themes:
 
-- Git Manager Dark, Darcula, One Dark Pro, Dracula, Monokai, Monokai Pro, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
+- Git Manager Dark, Darcula, Islands Dark, VS Code Dark+, One Dark Pro, Dracula, Monokai, Monokai Pro, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
 
 High contrast themes have their own group at the end of each list:
 
@@ -73,6 +73,7 @@ The themes are new, and a few things do not follow them yet:
 - **The commit graph** in the Log keeps its own lane colors.
 - **Switches** in Settings keep a white knob.
 - **Diagrams in Preview Only** (the rich Markdown editor) keep their old colors until they are drawn again, for example after you scroll away and back.
+- **Islands Light and Islands Dark** use the colors of the JetBrains themes, but not their rounded, spaced-out panels.
 - **At startup** you may see the default colors for a moment before your theme is applied.
 
 ## Saved where
