@@ -11,7 +11,7 @@ export function pastDragThreshold(start: { x: number; y: number }, point: { x: n
   return Math.hypot(point.x - start.x, point.y - start.y) >= DRAG_THRESHOLD_PX;
 }
 
-/** Hovering a closed folder this long during a drag opens it, as in VS Code. */
+/** Hovering a closed folder this long during a drag opens it. */
 export const HOVER_EXPAND_MS = 600;
 /** Pointer distance from the list's top or bottom edge that scrolls it during a drag. */
 export const AUTO_SCROLL_EDGE_PX = 28;

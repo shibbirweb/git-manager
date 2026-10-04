@@ -218,7 +218,7 @@ const GM_DARK: ThemeColors = {
   "--bracket-3": "#179fff",
 };
 
-/** VS Code's default terminal colors, for themes that publish none. */
+/** The Light+ and Dark+ terminal colors, for themes that publish none. */
 const VSCODE_ANSI_LIGHT: Ansi = [
   "#000000", "#cd3131", "#00bc00", "#949800", "#0451a5", "#bc05bc", "#0598bc", "#555555",
   "#666666", "#cd3131", "#14ce14", "#b5ba00", "#0451a5", "#bc05bc", "#0598bc", "#a5a5a5",
@@ -229,7 +229,7 @@ const VSCODE_ANSI_DARK: Ansi = [
   "#666666", "#f14c4c", "#23d18b", "#f5f543", "#3b8eea", "#d670d6", "#29b8db", "#e5e5e5",
 ];
 
-/** JetBrains' console colors: the Default (light) and Darcula editor schemes, which the Islands schemes inherit. */
+/** Console colors of the Default (light) and Darcula editor schemes, which the Islands schemes inherit. */
 const JETBRAINS_ANSI_LIGHT: Ansi = [
   "#000000", "#c91b00", "#00a000", "#a68a0d", "#0225c7", "#a771bf", "#00a3a3", "#808080",
   "#595959", "#f0524f", "#4fc414", "#c7a600", "#3993d4", "#c930c7", "#00b0b0", "#ffffff",
@@ -388,8 +388,8 @@ const SPECS: Record<string, ThemeSpec> = {
     },
     ui: { bg: "#f2f2f2", panel: "#f2f2f2", panelAlt: "#e8e8e8", border: "#d1d1d1", borderStrong: "#c4c4c4", lineNumber: "#adadad", activeLine: "#fcfaed", success: "#067d17" },
   },
-  // JetBrains Islands (IDEA 2025.3): white islands on a grey window. Colors from
-  // ManyIslandsLight.theme.json and its "Light" editor scheme in intellij-community.
+  // Islands Light: white islands on a grey window. Colors from
+  // ManyIslandsLight.theme.json and its "Light" editor scheme.
   "islands-light": {
     background: "#ffffff",
     foreground: "#000000",
@@ -402,8 +402,8 @@ const SPECS: Record<string, ThemeSpec> = {
     },
     ui: { bg: "#e9eaee", panel: "#ffffff", panelAlt: "#f7f8f9", border: "#e9eaee", borderStrong: "#dddfe4", lineNumber: "#aeb3c2", activeLine: "#f5f8fe", success: "#338555", danger: "#c54e58", warning: "#a56906", info: "#2f5eb9" },
   },
-  // VS Code's Default Light+ and Dark+: tokens from extensions/theme-defaults in
-  // microsoft/vscode, UI colors from its workbench defaults. Meta is the pink of
+  // Light+ and Dark+: tokens and UI colors from the themes' published defaults.
+  // Meta is the pink of
   // keyword.control, which Light+ and Dark+ give preprocessor directives.
   "vscode-light-plus": {
     background: "#ffffff",
@@ -431,7 +431,7 @@ const SPECS: Record<string, ThemeSpec> = {
     ui: { bg: "#2b2b2b", panel: "#3c3f41", panelAlt: "#313335", border: "#323232", borderStrong: "#515151", lineNumber: "#606366", activeLine: "#323232", cursor: "#bbbbbb" },
   },
   // Dark islands on a lighter grey window. Colors from ManyIslandsDark.theme.json
-  // and IslandSchemeDark.xml in intellij-community; selection and console colors
+  // and IslandSchemeDark.xml; selection and console colors
   // are inherited from Darcula.
   "islands-dark": {
     background: "#191a1c",
@@ -936,7 +936,7 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
     "--tok-tag": syntax(spec.syntax.tag ?? spec.syntax.keyword),
     "--tok-attr": syntax(spec.syntax.attr ?? spec.syntax.property),
     "--tok-invalid": syntax(spec.syntax.invalid ?? danger),
-    // Bracket depth colors from the terminal palette, like VS Code's gold, orchid and blue.
+    // Bracket depth colors from the terminal palette: gold, orchid and blue.
     "--bracket-1": bracket(dark ? brightYellow : blue),
     "--bracket-2": bracket(dark ? brightMagenta : green),
     "--bracket-3": bracket(dark ? brightBlue : magenta),

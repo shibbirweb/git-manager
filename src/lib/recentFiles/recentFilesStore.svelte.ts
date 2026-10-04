@@ -1,4 +1,4 @@
-// Recent Files (JetBrains' Cmd+E): the open workspace's list, kept in state.json by
+// Recent Files (Cmd+E): the open workspace's list, kept in state.json by
 // stores/recentFiles.ts, and whether the popup (RecentFiles.svelte) shows. The list follows
 // the editor: the tab on screen moves to the top, a file with unsaved edits counts as edited.
 // With Settings > Editor > Recent Files off, nothing is followed and the list stays empty;

@@ -1,5 +1,5 @@
 <!--
-  Search Everywhere popup, like JetBrains: All, Classes, Files, Symbols and Text tabs.
+  Search Everywhere popup: All, Classes, Files, Symbols and Text tabs.
   Opened by double Shift (All), Cmd+O (Classes), Cmd+P or Shift+Cmd+O (Files),
   Option+Cmd+O (Symbols), Shift+Cmd+F (Text, Find in Files) and Shift+Cmd+R (Text with
   its Replace field, Replace in Files).
@@ -499,7 +499,7 @@
     if (event.isComposing) {
       return;
     }
-    // Option+C / W / X toggle Match case, Words and Regex, as in JetBrains.
+    // Option+C / W / X toggle Match case, Words and Regex.
     if (tab === "text" && event.altKey && !event.metaKey && !event.ctrlKey) {
       const option = event.code === "KeyC" ? "matchCase" : event.code === "KeyW" ? "wholeWords" : event.code === "KeyX" ? "regex" : null;
       if (option) {

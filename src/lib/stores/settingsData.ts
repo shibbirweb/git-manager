@@ -78,7 +78,7 @@ export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; 
   },
 ];
 
-/** Which spaces and tabs the editors draw as dots and arrows, like VS Code's editor.renderWhitespace. */
+/** Which spaces and tabs the editors draw as dots and arrows. */
 export type RenderWhitespace = "none" | "boundary" | "selection" | "trailing" | "all";
 
 export const RENDER_WHITESPACE_CHOICES: { value: RenderWhitespace; label: string; hint: string }[] = [
@@ -91,7 +91,7 @@ export const RENDER_WHITESPACE_CHOICES: { value: RenderWhitespace; label: string
 
 const RENDER_WHITESPACE_VALUES = RENDER_WHITESPACE_CHOICES.map((choice) => choice.value);
 
-/** How the editors draw the cursor, like VS Code's editor.cursorStyle. */
+/** How the editors draw the cursor. */
 export type EditorCursorStyle = "line" | "line-thin" | "block" | "block-outline" | "underline" | "underline-thin";
 
 export const EDITOR_CURSOR_STYLE_CHOICES: { value: EditorCursorStyle; label: string }[] = [
@@ -105,7 +105,7 @@ export const EDITOR_CURSOR_STYLE_CHOICES: { value: EditorCursorStyle; label: str
 
 const EDITOR_CURSOR_STYLES = EDITOR_CURSOR_STYLE_CHOICES.map((choice) => choice.value);
 
-/** How the editor cursor blinks, like VS Code's editor.cursorBlinking. */
+/** How the editor cursor blinks. */
 export type EditorCursorBlinking = "blink" | "smooth" | "phase" | "expand" | "solid";
 
 export const EDITOR_CURSOR_BLINKING_CHOICES: { value: EditorCursorBlinking; label: string; hint: string }[] = [
@@ -120,7 +120,7 @@ const EDITOR_CURSOR_BLINKINGS = EDITOR_CURSOR_BLINKING_CHOICES.map((choice) => c
 
 export type ConfigName = "settings" | "state";
 
-/** When the file editor saves by itself, like VS Code's files.autoSave. */
+/** When the file editor saves by itself. */
 export type AutoSaveMode = "off" | "afterDelay" | "onFocusChange";
 
 export const AUTO_SAVE_MODES = ["off", "afterDelay", "onFocusChange"] as const;
@@ -236,7 +236,7 @@ export interface Preferences {
   uiFontSize: number;
   /** File type icons in the Files panel, the Changes list and commit file lists. Off by default: an icon set loads only when chosen. */
   fileIcons: FileIconMode;
-  /** Sidebars, editor groups and the bottom panel as rounded panels with space between them, like JetBrains Islands. Any color theme. */
+  /** Sidebars, editor groups and the bottom panel as rounded panels with space between them. Any color theme. */
   roundedPanels: boolean;
   /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
   fileToolbar: FileToolbarPlacement;
@@ -252,26 +252,26 @@ export interface Preferences {
   editorLineHeight: number;
   /** CSS font-family list for code, e.g. "Menlo, Monaco, monospace". */
   editorFontFamily: string;
-  /** CSS font-weight of code, 100 (Thin) to 900 (Black), like VS Code's editor.fontWeight. */
+  /** CSS font-weight of code, 100 (Thin) to 900 (Black). */
   editorFontWeight: number;
   /** Render programming ligatures (=>, !=, ===) with fonts that provide them. */
   fontLigatures: boolean;
   tabSize: number;
-  /** Indent like the file already does (spaces or tabs, and how many), like VS Code's editor.detectIndentation. */
+  /** Indent like the file already does (spaces or tabs, and how many). */
   detectIndentation: boolean;
   wordWrap: boolean;
   renderWhitespace: RenderWhitespace;
   editorCursorStyle: EditorCursorStyle;
-  /** Width in pixels of the Line cursor (VS Code's editor.cursorWidth). */
+  /** Width in pixels of the Line cursor. */
   editorCursorWidth: number;
   editorCursorBlinking: EditorCursorBlinking;
-  /** Glide the cursor to its new place instead of jumping (VS Code's editor.cursorSmoothCaretAnimation). */
+  /** Glide the cursor to its new place instead of jumping. */
   editorCursorSmoothCaret: boolean;
   /** Pixels the cursor reaches above the text (Sublime Text's caret_extra_top). */
   editorCaretExtraTop: number;
   /** Pixels the cursor reaches below the text (Sublime Text's caret_extra_bottom). */
   editorCaretExtraBottom: number;
-  /** Type the closing bracket or quote with the opening one (VS Code's editor.autoClosingBrackets). */
+  /** Type the closing bracket or quote with the opening one. */
   editorAutoCloseBrackets: boolean;
   /** Code completion from the words of the file and the language's own lists. */
   editorCompletion: boolean;
@@ -279,23 +279,23 @@ export interface Preferences {
   editorCompletionOnTyping: boolean;
   /** Fold arrows beside the line numbers in the file editor. */
   editorFoldGutter: boolean;
-  /** Faint vertical lines at each indent level (VS Code's editor.guides.indentation). */
+  /** Faint vertical lines at each indent level. */
   editorIndentGuides: boolean;
-  /** Highlight other uses of the word at the cursor, like JetBrains. */
+  /** Highlight other uses of the word at the cursor. */
   editorHighlightWord: boolean;
-  /** Scroll the last line up to the top of the file editor (VS Code's editor.scrollBeyondLastLine). */
+  /** Scroll the last line up to the top of the file editor. */
   editorScrollPastEnd: boolean;
   /** Option+drag selects a rectangle (column selection). */
   editorColumnSelection: boolean;
-  /** Keep the headers of the blocks around the top line pinned above the file editor (VS Code's editor.stickyScroll). */
+  /** Keep the headers of the blocks around the top line pinned above the file editor. */
   editorStickyScroll: boolean;
-  /** A small picture of the whole file beside the scrollbar of the file editor (VS Code's editor.minimap). */
+  /** A small picture of the whole file beside the scrollbar of the file editor. */
   editorMinimap: boolean;
-  /** Color each pair of brackets by how deep it is nested (VS Code's editor.bracketPairColorization). */
+  /** Color each pair of brackets by how deep it is nested. */
   editorBracketPairColors: boolean;
   /** Highlight the bracket that matches the one at the cursor. */
   editorMatchBrackets: boolean;
-  /** Column of the right margin line (VS Code's editor.rulers); 0 hides it. */
+  /** Column of the right margin line; 0 hides it. */
   editorRulerColumn: number;
   /** Open the tabs a folder or workspace had when it was last open. */
   reopenTabsOnStart: boolean;
@@ -307,14 +307,14 @@ export interface Preferences {
   tabLimit: number;
   /** Two editor groups side by side (Window > Split Right). */
   splitEditor: boolean;
-  /** Tabs that do not fit wrap onto more rows instead of scrolling (VS Code's workbench.editor.wrapTabs). */
+  /** Tabs that do not fit wrap onto more rows instead of scrolling. */
   wrapTabs: boolean;
   /** A strip with one tab shows it as a centered name instead of a tab. */
   singleTabTitle: boolean;
   autoSave: AutoSaveMode;
   /** Pause after the last edit before an "afterDelay" auto save. */
   autoSaveDelayMs: number;
-  /** On save: remove spaces and tabs at line ends (VS Code's files.trimTrailingWhitespace). */
+  /** On save: remove spaces and tabs at line ends. */
   trimTrailingWhitespace: boolean;
   /** On save: end the file with a newline (files.insertFinalNewline). */
   insertFinalNewline: boolean;
@@ -352,7 +352,7 @@ export interface Preferences {
   gitConsole: boolean;
   /** Shell id (its absolute path) new terminals start; null is the login shell. */
   terminalShell: string | null;
-  /** CSS font-family list for the terminal; empty uses the editor font, like VS Code. */
+  /** CSS font-family list for the terminal; empty uses the editor font. */
   terminalFontFamily: string;
   terminalFontSize: number;
   /** Multiplier of the font's line height, xterm's `lineHeight`. */
@@ -369,7 +369,7 @@ export interface Preferences {
   terminalCursorBlink: boolean;
   /** Lines kept above the screen. */
   terminalScrollback: number;
-  /** Selecting text copies it, like VS Code's terminal.integrated.copyOnSelection. */
+  /** Selecting text copies it. */
   terminalCopyOnSelect: boolean;
   /** Find in the terminal (Cmd+F). Off, the search addon is never loaded. */
   terminalFind: boolean;
@@ -427,7 +427,7 @@ export const LOCAL_HISTORY_SIZE_MB_RANGE = [10, 2000] as const;
 
 /** Right margin columns; 0 means no margin line. */
 export const EDITOR_RULER_RANGE = [1, 500] as const;
-/** The column the margin line starts at when it is switched on, like JetBrains. */
+/** The column the margin line starts at when it is switched on. */
 export const DEFAULT_RULER_COLUMN = 120;
 
 export const defaultPreferences: Preferences = {
@@ -590,7 +590,7 @@ export interface UiState {
   /** Scripts panel: the Node version each package.json runs with, by file path: a bin folder, or "default" for the shell's. */
   scriptNodeVersions: Record<string, string>;
   explorerOpen: boolean;
-  /** The icon strips at the left and right edges of the window (VS Code's activity bars). */
+  /** The icon strips at the left and right edges of the window (the activity bars). */
   leftBarVisible: boolean;
   rightBarVisible: boolean;
   /** The left side's share of a side-by-side diff (see src/lib/diff/split.ts). */

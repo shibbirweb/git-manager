@@ -217,7 +217,7 @@
     }
   }
 
-  // Dragging tabs, JetBrains style: the other tabs slide aside and the dragged one follows the
+  // Dragging tabs: the other tabs slide aside and the dragged one follows the
   // pointer. Pointer events, so it works however the window handles native drags; the window
   // listeners live only while a press or a drag does.
 
@@ -320,7 +320,7 @@
       swallowClick = true;
       setTimeout(() => (swallowClick = false), 0);
       repoStore.moveTab(groupId, finished.tabPath, finished.gap);
-      // The dragged tab comes to the front, as a press on it does in JetBrains IDEs.
+      // The dragged tab comes to the front, as a press on it would.
       repoStore.activateTab(groupId, finished.tabPath);
     }
   }
@@ -464,7 +464,7 @@
         {/if}
       </button>
       {#if tab.pinned}
-        <!-- A pinned tab's button unpins it, as in JetBrains IDEs; it still closes with a middle click or Close. -->
+        <!-- A pinned tab's button unpins it; it still closes with a middle click or Close. -->
         <button
           class="tab-close"
           onclick={() => repoStore.setTabPinned(tab.path, false)}
@@ -588,7 +588,7 @@
     color: var(--text);
   }
 
-  /* Accent line on the active tab, like VS Code. */
+  /* Accent line on the active tab. */
   .tab.active::before {
     content: "";
     position: absolute;
@@ -709,7 +709,7 @@
     opacity: 1;
   }
 
-  /* Rounded panels: rounded tabs on the editor color, the active one tinted and outlined, like JetBrains Islands. */
+  /* Rounded panels: rounded tabs on the editor color, the active one tinted and outlined. */
   :global(html[data-rounded-panels]) .tab-strip {
     align-items: center;
     gap: 2px;

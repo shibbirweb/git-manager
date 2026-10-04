@@ -1,5 +1,5 @@
-// Detect Indentation without CodeMirror: how a file indents, read from its own lines, like
-// VS Code's editor.detectIndentation. indentation.ts applies the answer to the editor.
+// Detect Indentation without CodeMirror: how a file indents, read from its own lines.
+// indentation.ts applies the answer to the editor.
 
 /** Lines read from the top of a file; enough to decide, and quick on huge files. */
 export const MAX_DETECT_LINES = 10_000;

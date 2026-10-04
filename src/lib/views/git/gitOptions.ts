@@ -98,7 +98,7 @@ export function pullCommand(options: PullOptions): string {
 
 // Reset HEAD
 
-/** JetBrains' Reset HEAD modes with their one-line explanations. */
+/** The Reset HEAD modes with their one-line explanations. */
 export const RESET_MODES: { value: ResetMode; label: string; description: string; danger?: boolean }[] = [
   { value: "soft", label: "Soft", description: "Files won't change, differences will be staged for commit." },
   { value: "mixed", label: "Mixed", description: "Files won't change, differences won't be staged." },

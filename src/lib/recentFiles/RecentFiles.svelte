@@ -1,5 +1,5 @@
 <!--
-  Recent Files, like JetBrains' Cmd+E: the files shown in the editor, most recent first, with
+  Recent Files (Cmd+E): the files shown in the editor, most recent first, with
   the one before the file on screen selected, so Cmd+E then Enter goes back to it. Typing
   filters the list, Cmd+E again shows the edited files only and Delete takes a file off the
   list. Mounted only while open (Workspace.svelte); the list lives in recentFilesStore.svelte.ts.

@@ -1,5 +1,4 @@
-// Indent guides: faint vertical lines at each indent level, like VS Code's
-// editor.guides.indentation and JetBrains' indent guides. Only the lines on screen are
+// Indent guides: faint vertical lines at each indent level. Only the lines on screen are
 // measured, and a guide down a whole block is a single element in a CodeMirror layer.
 
 import { getIndentUnit } from "@codemirror/language";
@@ -32,7 +31,7 @@ export function levelsFor(columns: number, unitColumns: number): number {
 
 /**
  * Guides of a blank line from the levels of the nearest code above and below (null when
- * there is none), VS Code's rule: a guide runs on through the blank lines of a block.
+ * there is none): a guide runs on through the blank lines of a block.
  */
 export function blankLevels(above: number | null, below: number | null): number {
   if (above === null || below === null) {

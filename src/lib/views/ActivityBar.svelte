@@ -1,4 +1,4 @@
-<!-- VS Code style activity bar: picks what the left sidebar shows, or hides it. -->
+<!-- Activity bar: picks what the left sidebar shows, or hides it. -->
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
@@ -57,7 +57,7 @@
     <Icon name="history" size={19} strokeWidth={1.8} />
   </button>
   <div class="spacer"></div>
-  <!-- Scripts of package.json, composer.json, Makefiles and the like, run in a terminal (JetBrains' npm window). -->
+  <!-- Scripts of package.json, composer.json, Makefiles and the like, run in a terminal. -->
   <button
     class="item"
     class:active={settings.leftPanel === "scripts"}
@@ -68,7 +68,7 @@
   >
     <Icon name="play" size={18} strokeWidth={1.8} />
   </button>
-  <!-- The terminal panel opens below the editor, like VS Code's panel. -->
+  <!-- The terminal panel opens below the editor. -->
   <button
     class="item"
     class:active={terminalStore.panelOpen}

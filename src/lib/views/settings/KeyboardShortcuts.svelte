@@ -1,6 +1,6 @@
-<!-- Settings > Keyboard Shortcuts: every command with its keys, like VS Code's Keyboard Shortcuts and
-     JetBrains' Keymap. Search by name or by pressing keys; click the keys to record new ones. The
-     rules (reserved keys, conflicts, saving) live in commands/shortcutSettings.ts. -->
+<!-- Settings > Keyboard Shortcuts: every command with its keys. Search by name or by pressing
+     keys; click the keys to record new ones. The rules (reserved keys, conflicts, saving) live in
+     commands/shortcutSettings.ts. -->
 <script lang="ts">
   import { tick } from "svelte";
   import { commandSpecs, currentPlatform } from "$lib/commands/commandRuntime";

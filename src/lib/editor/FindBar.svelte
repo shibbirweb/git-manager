@@ -1,5 +1,5 @@
 <!--
-  The editor find and replace bar (JetBrains style), mounted as a CodeMirror panel by
+  The editor find and replace bar, mounted as a CodeMirror panel by
   findPanel.svelte.ts, which owns the state and the actions.
 -->
 <script lang="ts">

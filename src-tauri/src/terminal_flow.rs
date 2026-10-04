@@ -1,7 +1,7 @@
 //! How terminal output reaches the webview. PTY reads are small (about 1 KB, a few bytes for
 //! `yes`) and every Channel message costs the webview an eval, so reads are merged: output
 //! after a quiet moment goes out at once (typing echo stays instant), a burst goes out at
-//! most once per merge window. Flow control, like VS Code's: the view acknowledges what
+//! most once per merge window. Flow control: the view acknowledges what
 //! xterm has written, and reading pauses while too much is unacknowledged, so the backlog
 //! stays small and Ctrl+C shows at once.
 

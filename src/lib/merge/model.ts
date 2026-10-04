@@ -200,7 +200,7 @@ export interface SideTexts {
 
 /**
  * Applies one side of a chunk. The first apply replaces the base lines; a
- * second apply on a conflict appends the other side (JetBrains behaviour).
+ * second apply on a conflict appends the other side.
  */
 export function applySide(
   doc: Text,

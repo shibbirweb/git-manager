@@ -181,7 +181,7 @@ export const api = {
     invoke<RecentMessage[]>("recent_commit_messages", { repoPath, limit }),
   /** The text of the `commit.template` file, or null. */
   getCommitTemplate: (repoPath: string) => invoke<string | null>("get_commit_template", { repoPath }),
-  /** JetBrains' Rollback: staged and unstaged changes of tracked files go back to HEAD; added files are unstaged (and deleted when asked). */
+  /** Rollback: staged and unstaged changes of tracked files go back to HEAD; added files are unstaged (and deleted when asked). */
   rollbackFiles: (repoPath: string, filePaths: string[], deleteAdded: boolean) =>
     invoke<void>("rollback_files", { repoPath, filePaths, deleteAdded }),
 

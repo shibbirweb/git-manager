@@ -27,7 +27,7 @@
   let detailsOpen = $state(false);
   let memoryEl = $state<HTMLDivElement | null>(null);
 
-  // Like VS Code, the left side describes the active repository. With Auto (the
+  // The left side describes the active repository. With Auto (the
   // default) that follows the open tab, and a file outside every repository says so.
   const shownView = $derived(changesSelection.shownView);
   const screen = $derived(currentScreenRepo());
@@ -46,7 +46,7 @@
   const changes = $derived(contextStatus?.files.length ?? 0);
   const conflicts = $derived(contextStatus?.files.filter((file) => file.conflicted).length ?? 0);
   const op = $derived(contextStatus?.op ?? null);
-  // VS Code's Synchronize Changes item: sync with the upstream, or publish a branch without one.
+  // The Synchronize Changes item: sync with the upstream, or publish a branch without one.
   const sync = $derived(rowSync(head));
   const syncBadge = $derived(rowSyncBadge(sync));
   let syncing = $state(false);

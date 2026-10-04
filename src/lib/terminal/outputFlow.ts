@@ -1,4 +1,4 @@
-// Terminal output flow control, like VS Code: the backend stops reading a shell while about
+// Terminal output flow control: the backend stops reading a shell while about
 // 2 MB of its output are not acknowledged (src-tauri/src/terminal_flow.rs), so the view
 // acknowledges what xterm has written. That keeps the backlog small, so Ctrl+C shows at once.
 

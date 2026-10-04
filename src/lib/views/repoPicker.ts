@@ -25,7 +25,7 @@ export async function pickAndAddFolder(): Promise<void> {
   }
 }
 
-/** Opens a saved workspace file (ours or VS Code's). */
+/** Opens a saved workspace file (ours or any .code-workspace file). */
 export async function pickAndOpenWorkspaceFile(): Promise<void> {
   const selected = await open({
     multiple: false,

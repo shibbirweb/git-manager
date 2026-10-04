@@ -1,4 +1,4 @@
-<!-- Local History window, like JetBrains': a file's kept versions on the left, the selected one
+<!-- Local History window: a file's kept versions on the left, the selected one
      against the current text on the right, with Revert, Restore and Copy. Recently Deleted lists
      files that are gone from disk but still have versions. Loaded only while open. -->
 <script lang="ts">

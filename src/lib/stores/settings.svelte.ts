@@ -1,4 +1,4 @@
-// User preferences and UI state, stored like VS Code in the home folder:
+// User preferences and UI state, stored in the home folder:
 //   ~/.gitmanager/settings.json   preferences shown in the Settings dialog
 //   ~/.gitmanager/state.json      recent folders, panel sizes and similar
 // Values are validated on load so a hand-edited file can never break the app,
@@ -624,7 +624,7 @@ class SettingsStore {
     this.setPreference("keybindings", overrides);
   }
 
-  /** View > Word Wrap and Option+Z, like VS Code; open file editors follow at once. */
+  /** View > Word Wrap and Option+Z; open file editors follow at once. */
   toggleWordWrap(): void {
     this.setPreference("wordWrap", !this.wordWrap);
   }

@@ -192,7 +192,7 @@
       }
     };
     if (multiRoot) {
-      // Each workspace folder is a top-level row, like VS Code's multi-root explorer.
+      // Each workspace folder is a top-level row.
       for (const folder of folders) {
         const isOpen = expanded.has(folder.root);
         out.push({
@@ -1443,7 +1443,7 @@
     background: var(--selected);
   }
 
-  /* A pending cut, like VS Code. */
+  /* A pending cut. */
   .row.cut .name,
   .row.cut .icon {
     opacity: 0.5;
@@ -1506,7 +1506,7 @@
     font-weight: 600;
   }
 
-  /* Workspace folders in a multi-folder workspace, like VS Code's section headers. */
+  /* Workspace folders in a multi-folder workspace, as section headers. */
   .row.folder-root .name {
     font-weight: 700;
     text-transform: uppercase;

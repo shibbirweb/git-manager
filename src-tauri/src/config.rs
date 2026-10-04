@@ -1,4 +1,4 @@
-//! User configuration in `~/.gitmanager/`, like VS Code's `~/.vscode/`:
+//! User configuration in `~/.gitmanager/`:
 //! `settings.json` holds preferences, `state.json` holds UI state such as
 //! recent folders and panel sizes. The folder is created on first save.
 //!

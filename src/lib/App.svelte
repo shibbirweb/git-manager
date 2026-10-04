@@ -276,7 +276,7 @@
     }
   }
 
-  /** Reopens what was open at quit, like VS Code; nothing after an explicit Close Folder. */
+  /** Reopens what was open at quit; nothing after an explicit Close Folder. */
   async function restoreSession(): Promise<void> {
     for (const step of sessionSteps(settings)) {
       const opened =

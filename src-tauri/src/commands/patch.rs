@@ -98,7 +98,7 @@ fn run_apply_patch(repo_path: &str, patch_path: Option<&str>, patch_text: Option
     let root = Path::new(repo_path);
     let check = cli::run_raw(root, &["apply", "--check", "-"], Some(&bytes))?;
     if check.success {
-        // Like JetBrains: the work tree only, nothing is staged.
+        // The work tree only, nothing is staged.
         let applied = cli::run_with_stdin(root, &["apply", "-"], &bytes)?;
         return Ok(OpOutcome {
             output: applied.text(),

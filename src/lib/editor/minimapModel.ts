@@ -2,7 +2,7 @@
 // or a drag scrolls to, and the colored runs of one line. minimap.ts draws them on a canvas.
 // Everything is in lines (not pixels of the editor), so folds and wrapping only shift it a little.
 
-/** Pixels of minimap per document line, like VS Code's minimap without characters. */
+/** Pixels of minimap per document line (blocks, not characters). */
 export const MINIMAP_ROW = 2;
 
 /** Pixels of minimap per character. */
@@ -36,7 +36,7 @@ export interface MinimapLayout {
 
 /**
  * Lays the minimap out. A file that fits is drawn whole from the top; a longer one scrolls
- * with the editor so the top of the file is at the top and the end at the end, like VS Code.
+ * with the editor so the top of the file is at the top and the end at the end.
  */
 export function minimapLayout({ lineCount, topLine, visibleLines, height, row = MINIMAP_ROW }: MinimapInput): MinimapLayout {
   const lines = Math.max(1, lineCount);

@@ -87,7 +87,7 @@
   let linkProvider: IDisposable | null = null;
   let linkScroll: IDisposable | null = null;
   let linkCache: FileExistenceCache | null = null;
-  /** The decorations of the file link under the pointer: underlined only while Cmd (Ctrl) is held, like VS Code. */
+  /** The decorations of the file link under the pointer: underlined only while Cmd (Ctrl) is held. */
   let hoveredLink: ILinkDecorations | null = null;
   /** The folder the shell last reported with OSC 7; null until it does. */
   let reportedFolder: string | null = null;
@@ -183,9 +183,9 @@
     const instance = new xterm.Terminal({
       ...displayOptions,
       theme: currentTerminalTheme(),
-      // VS Code's default: keeps colored output readable in both themes.
+      // Keeps colored output readable in both themes.
       minimumContrastRatio: 4.5,
-      // Unicode versions and the search highlights are xterm's proposed API, as in VS Code.
+      // Unicode versions and the search highlights are xterm's proposed API.
       allowProposedApi: true,
     });
     const drawingKey = terminal.key;
@@ -199,7 +199,7 @@
     );
     fit = new xterm.FitAddon();
     instance.loadAddon(fit);
-    // Cmd+click (Ctrl+click elsewhere) opens a link, like VS Code.
+    // Cmd+click (Ctrl+click elsewhere) opens a link.
     instance.loadAddon(
       new xterm.WebLinksAddon((event, uri) => {
         if (isMac ? event.metaKey : event.ctrlKey) {
@@ -781,8 +781,8 @@
     }
   });
 
-  // A shell that ended with an error stays open with a note, like VS Code; a clean exit closes it.
-  // A run always ends with JetBrains' "Process finished with exit code N".
+  // A shell that ended with an error stays open with a note; a clean exit closes it.
+  // A run always ends with "Process finished with exit code N".
   $effect(() => {
     const instance = term;
     if (!instance || !terminal.exited) {
@@ -988,7 +988,7 @@
   /*
    * Ligatures are CSS on the rows: xterm's DOM renderer puts runs of equally
    * styled characters in one span, so WebKit can join them. WebKit turns them
-   * on by default, so off is set explicitly (VS Code's default).
+   * on by default, so off is set explicitly.
    */
   .terminal-view :global(.xterm-rows) {
     font-variant-ligatures: none;

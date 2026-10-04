@@ -80,7 +80,7 @@ export function pathRows(paths: string[], folders: FolderRef[]): SearchRow[] {
 export const RECENT_LIMIT = 50;
 
 /**
- * Recent Files, like JetBrains: the active tab, then the Recent Files list
+ * Recent Files: the active tab, then the Recent Files list
  * (most recent first), then the other open tabs. Terminal and commit tabs are
  * not files.
  */
@@ -98,8 +98,8 @@ export function recentFiles(activePath: string | null, recentPaths: string[], ta
 }
 
 /**
- * The row to select after a key: single steps wrap around the ends (as in
- * JetBrains), page steps stop at them.
+ * The row to select after a key: single steps wrap around the ends, page steps
+ * stop at them.
  */
 export function moveSelection(selected: number, count: number, step: number): number {
   if (count === 0) {

@@ -1,4 +1,4 @@
-<!-- Share Project on GitHub, as in JetBrains: creates the repository on GitHub (private by
+<!-- Share Project on GitHub: creates the repository on GitHub (private by
      default), adds it as a remote and pushes the current branch with upstream. A repository
      without commits gets an initial commit of every file first. -->
 <script lang="ts">

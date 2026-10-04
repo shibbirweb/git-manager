@@ -1,4 +1,4 @@
-<!-- JetBrains' Reset HEAD dialog: the revision to reset the current branch to (HEAD, a commit
+<!-- The Reset HEAD dialog: the revision to reset the current branch to (HEAD, a commit
      id or a branch) and the mode, each with its one-line explanation. Hard asks first. -->
 <script lang="ts">
   import { untrack } from "svelte";

@@ -1,5 +1,5 @@
 //! Stage, unstage or discard the lines selected in a diff (partial staging, like
-//! GitHub Desktop and JetBrains). The sides are read with git2, the patch is built in
+//! GitHub Desktop). The sides are read with git2, the patch is built in
 //! `git::partial`, and git applies it from stdin after a `--check`, so the index or the
 //! work tree is never left half changed.
 

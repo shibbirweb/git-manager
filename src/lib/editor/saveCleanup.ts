@@ -1,5 +1,5 @@
-// Clean-ups applied when a file is saved, like VS Code's files.trimTrailingWhitespace,
-// files.insertFinalNewline and files.trimFinalNewlines (Settings > Editor > Saving). They are
+// Clean-ups applied when a file is saved: trim trailing whitespace, insert a final newline
+// and trim final newlines (Settings > Editor > Saving). They are
 // computed as one list of changes and applied as one transaction, so a single undo brings
 // the text back. Pure apart from building that transaction.
 
@@ -14,7 +14,7 @@ export interface SaveCleanupOptions {
   markdown: boolean;
   /**
    * 1-based lines that hold a caret. An auto save leaves them as they are, so the space just
-   * typed before the next word is not taken away (VS Code does the same).
+   * typed before the next word is not taken away.
    */
   keepLines?: ReadonlySet<number>;
 }

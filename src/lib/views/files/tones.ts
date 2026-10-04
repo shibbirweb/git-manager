@@ -5,7 +5,7 @@ export type FileTone = "conflict" | "modified" | "added" | "deleted";
 
 export interface FileMark {
   tone: FileTone;
-  /** Single status letter, VS Code style: U, A, M, D, R, T or C. */
+  /** Single status letter: U, A, M, D, R, T or C. */
   letter: string;
   /** Tooltip describing the staged and unstaged state. */
   title: string;

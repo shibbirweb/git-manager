@@ -96,7 +96,7 @@ export class TerminalAddons {
     }
     try {
       const addon = new Addon();
-      // Too many contexts, a GPU reset or sleep can lose it: fall back for good, like VS Code.
+      // Too many contexts, a GPU reset or sleep can lose it: fall back for good.
       addon.onContextLoss(() => {
         this.webglBroken = true;
         this.disposeWebgl();

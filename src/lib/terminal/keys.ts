@@ -17,7 +17,7 @@ export type TerminalKeyAction =
   | "selectAll"
   /** Opens the terminal's find bar. */
   | "find"
-  /** Splits the terminal, like VS Code (Cmd+Backslash). */
+  /** Splits the terminal (Cmd+Backslash). */
   | "split";
 
 /** The parts of a KeyboardEvent the decision needs. */
@@ -108,7 +108,7 @@ export function terminalKeyAction(event: TerminalKey, context: TerminalKeyContex
       return "app";
     }
     if (!event.shiftKey && key === "c") {
-      // Without a selection Cmd+C does nothing, as in VS Code.
+      // Without a selection Cmd+C does nothing.
       return context.hasSelection ? "copy" : "app";
     }
     if (!event.shiftKey && key === "k") {
@@ -128,7 +128,7 @@ export function terminalKeyAction(event: TerminalKey, context: TerminalKeyContex
     // Every other Cmd key (Cmd+B, Cmd+, ...) is an app shortcut.
     return "app";
   }
-  // Windows and Linux: Ctrl+Shift+C / V like VS Code; plain Ctrl keys go to the shell.
+  // Windows and Linux: Ctrl+Shift+C / V; plain Ctrl keys go to the shell.
   if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
     if (key === "c") {
       return context.hasSelection ? "copy" : "app";
@@ -139,7 +139,7 @@ export function terminalKeyAction(event: TerminalKey, context: TerminalKeyContex
     if (key === "f" && context.findEnabled) {
       return "find";
     }
-    // VS Code's Ctrl+Shift+5, by the physical key (Shift turns 5 into another character).
+    // Ctrl+Shift+5, by the physical key (Shift turns 5 into another character).
     if (event.code === "Digit5" && context.canSplit) {
       return "split";
     }

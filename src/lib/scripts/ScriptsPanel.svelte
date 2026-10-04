@@ -1,5 +1,5 @@
 <!--
-  The Scripts tool window, like JetBrains' npm and Composer windows: every script of the workspace
+  The Scripts tool window: every script of the workspace
   folders' package.json, composer.json, Makefiles, deno.json and justfiles. Double-click or Enter
   runs one in a new terminal. Mounted only while it shows; the list is read again on every mount.
 -->

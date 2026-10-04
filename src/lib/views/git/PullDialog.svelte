@@ -1,4 +1,4 @@
-<!-- JetBrains' Pull dialog: the remote and branch to pull, and how: merge (the default),
+<!-- The Pull dialog: the remote and branch to pull, and how: merge (the default),
      rebase or fast-forward only, with "No commit" for a merge. -->
 <script lang="ts">
   import { untrack } from "svelte";

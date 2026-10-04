@@ -1,5 +1,5 @@
 <!--
-  Quick Open, like VS Code: Cmd+P finds files (recently opened first), Shift+Cmd+P opens it on
+  Quick Open: Cmd+P finds files (recently opened first), Shift+Cmd+P opens it on
   ">" for the Command Palette. ":" goes to a line, "@" to a symbol of the file, "#" to a
   symbol of the workspace and "?" lists the prefixes. Separate from Search Everywhere (double
   Shift, FileSearch.svelte); both use the Rust file and symbol indexes. Mounted only while open.
@@ -208,7 +208,7 @@
 
   onMount(() => {
     input?.focus();
-    // After the prefix, like VS Code, so typing goes on from ">".
+    // After the prefix, so typing goes on from ">".
     const end = input?.value.length ?? 0;
     input?.setSelectionRange(end, end);
     return () => {
@@ -447,7 +447,7 @@
     view.focus();
   }
 
-  /** `toSide` (Cmd+Enter) opens it in the other editor group, as in VS Code. */
+  /** `toSide` (Cmd+Enter) opens it in the other editor group. */
   function openFile(filePath: string, line: number | null, column: number | null, toSide = false): void {
     quickOpen.close();
     if (picker) {
@@ -461,7 +461,7 @@
   }
 
   function runPaletteCommand(command: PaletteItem): void {
-    // Go to File from the palette switches the popup to files, like VS Code.
+    // Go to File from the palette switches the popup to files.
     if (command.commandId === "edit.goToFile") {
       setValue("");
       return;
@@ -532,7 +532,7 @@
       selected = moveSelectableRow(rows, selected, step);
       return;
     }
-    // Cmd+P and Shift+Cmd+P again: switch to files or commands, or step down when already there (VS Code).
+    // Cmd+P and Shift+Cmd+P again: switch to files or commands, or step down when already there.
     const filesKey = shortcutFor("edit.goToFile");
     const commandsKey = shortcutFor("view.commandPalette");
     const files = filesKey !== null && matchesAccelerator(event, filesKey, platform);
@@ -551,7 +551,7 @@
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      // Cmd+Enter opens a file to the side (the other editor group), as in VS Code.
+      // Cmd+Enter opens a file to the side (the other editor group).
       const toSide = platform === "macos" ? event.metaKey : event.ctrlKey;
       const row = rows[selected];
       if (row && isSelectableRow(row)) {

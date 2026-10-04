@@ -118,7 +118,7 @@ export interface FindKey {
 }
 
 /**
- * Enter goes up to older output and Shift+Enter down, like VS Code's terminal,
+ * Enter goes up to older output and Shift+Enter down,
  * because the newest output is at the bottom. Option+C, W and X toggle the
  * options like the editor's find bar (by the physical key, since Option types
  * other characters on a Mac).

@@ -1,5 +1,5 @@
 // Files dropped from Finder on a terminal are typed at the prompt as quoted
-// paths, like Terminal.app and VS Code. Kept free of Svelte and Tauri so it
+// paths, like Terminal.app. Kept free of Svelte and Tauri so it
 // can be tested directly.
 
 export type QuoteStyle = "posix" | "windows";

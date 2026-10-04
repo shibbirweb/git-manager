@@ -1,4 +1,4 @@
-//! JetBrains' Merge and Rebase dialogs: `git merge` and `git rebase` with their options.
+//! The Merge and Rebase dialogs: `git merge` and `git rebase` with their options.
 
 use serde::Deserialize;
 

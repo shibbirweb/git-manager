@@ -1,5 +1,4 @@
-// The editors' cursor, like VS Code's cursor settings plus Sublime Text's extra caret height:
-// its shape, width, blinking, smooth movement and how far it reaches above and below the text.
+// The editors' cursor: its shape, width, blinking, smooth movement and how far it reaches above and below the text.
 // Open editors follow the settings through a compartment, like the whitespace setting.
 
 import { Compartment, type Extension } from "@codemirror/state";
@@ -80,7 +79,7 @@ function shapeOf(style: EditorCursorStyle, width: number): Declarations {
   }
 }
 
-/** Keyframes and timing of each blinking mode; the times follow VS Code. */
+/** Keyframes and timing of each blinking mode. */
 const BLINKS: Record<Exclude<EditorCursorBlinking, "solid">, { frames: Record<string, Declarations>; timing: string }> = {
   blink: {
     frames: { "0%": {}, "50%": { opacity: "0" }, "100%": {} },

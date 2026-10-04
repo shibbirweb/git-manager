@@ -179,7 +179,7 @@ function languageKey(filePath: string): string | null {
   if (Object.hasOwn(FILE_NAMES, name)) {
     return FILE_NAMES[name];
   }
-  // Dockerfile.dev, Dockerfile.prod and similar, like JetBrains.
+  // Dockerfile.dev, Dockerfile.prod and similar.
   if (name.startsWith("dockerfile.")) {
     return "dockerfile";
   }
@@ -187,7 +187,7 @@ function languageKey(filePath: string): string | null {
   return dot >= 0 ? name.slice(dot + 1) : null;
 }
 
-/** Display name of a file's language, like VS Code's status bar. */
+/** Display name of a file's language, for the status bar. */
 export function languageName(filePath: string): string {
   const key = languageKey(filePath);
   return key !== null && Object.hasOwn(LANGUAGE_NAMES, key) ? LANGUAGE_NAMES[key] : "Plain Text";

@@ -1,5 +1,5 @@
 // Pure logic of the Recent Files popup (RecentFiles.svelte): its rows, filtered as you type
-// and kept in recent order like JetBrains' speed search, and the row it starts on.
+// and kept in recent order, speed search style, and the row it starts on.
 
 import { matchRecentRow } from "$lib/quickOpen/quickOpenModel";
 import { pathRows, type SearchRow } from "$lib/search/fileSearchModel";
@@ -34,7 +34,7 @@ export function recentFileRows(
 
 /**
  * The row selected first: the file before the one on screen, so Cmd+E then Enter goes back
- * to it, as in JetBrains. While filtering, the best (first) match.
+ * to it. While filtering, the best (first) match.
  */
 export function initialRecentSelection(rows: readonly RecentRow[], activePath: string | null, query: string): number {
   if (query.trim() === "" && rows.length > 1 && rows[0].file.path === activePath) {

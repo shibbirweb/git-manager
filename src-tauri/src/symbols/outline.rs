@@ -1,5 +1,5 @@
-//! The symbols of one file, for Quick Open's "@" mode (VS Code's Go to Symbol
-//! in Editor): the scanners of the symbol index run on the editor's text, so
+//! The symbols of one file, for Quick Open's "@" mode (Go to Symbol in
+//! Editor): the scanners of the symbol index run on the editor's text, so
 //! unsaved edits count, plus the headings of Markdown files. Nothing is kept:
 //! the list is built per request and the frontend filters it.
 

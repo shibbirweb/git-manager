@@ -1,4 +1,4 @@
-<!-- JetBrains' Rebase dialog: "Rebase BRANCH" onto a branch or commit, with --interactive
+<!-- The Rebase dialog: "Rebase BRANCH" onto a branch or commit, with --interactive
      (opens the Interactive Rebase dialog), --rebase-merges, --keep-empty, --root,
      --update-refs and --onto with an upstream for the three-argument form. -->
 <script lang="ts">

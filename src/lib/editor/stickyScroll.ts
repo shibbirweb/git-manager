@@ -1,4 +1,4 @@
-// Sticky scroll, like VS Code's editor.stickyScroll and JetBrains' sticky lines: the first
+// Sticky scroll: the first
 // lines of the blocks around the top of the screen stay pinned above the file editor, at
 // most five. Blocks come from the syntax tree (the nodes a language can fold), markdown
 // uses its headings and files without a grammar their indentation. Only the line at the top

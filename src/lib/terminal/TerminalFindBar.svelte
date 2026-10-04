@@ -1,5 +1,5 @@
 <!--
-  Find in the terminal, a small bar over its top right corner like VS Code's: the query with Match Case, Words and
+  Find in the terminal, a small bar over its top right corner: the query with Match Case, Words and
   Regex, the match count, previous and next. TerminalView owns the search; this only shows it.
 -->
 <script lang="ts">

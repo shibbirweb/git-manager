@@ -1,4 +1,4 @@
-// Rows of the filterable pick dialog (dialogs.pick), like VS Code's quick pick.
+// Rows of the filterable pick dialog (dialogs.pick).
 
 export interface PickItem<T extends string = string> {
   value: T;
@@ -7,7 +7,7 @@ export interface PickItem<T extends string = string> {
   description?: string;
   /** Items with the same group are listed under one heading, in the order given. */
   group?: string;
-  /** Always listed, whatever the filter, like VS Code's "Create new branch..." entry. */
+  /** Always listed, whatever the filter, like a "Create new branch..." entry. */
   pinned?: boolean;
   disabled?: boolean;
 }

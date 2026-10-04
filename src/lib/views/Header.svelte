@@ -123,7 +123,7 @@
 
 <header class="header">
   <div class="left">
-    <!-- Back / Forward through file locations, like VS Code's Go Back / Go Forward. -->
+    <!-- Back / Forward through file locations. -->
     <div class="history" role="group" aria-label="Navigation history">
       <button
         class="icon-btn history-btn"
@@ -185,7 +185,7 @@
       </div>
     {/if}
     <!-- Fetch, Pull, Push and Stash are in the Git menu. -->
-    <!-- Like VS Code's layout controls: the filled side shows which edge bar is visible. -->
+    <!-- Layout controls: the filled side shows which edge bar is visible. -->
     <button
       class="icon-btn"
       onclick={() => settings.toggleActivityBar("left")}

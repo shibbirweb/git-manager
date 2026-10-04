@@ -105,7 +105,7 @@ export function fileOpAccelerator(op: FileOp, platform: MenuPlatform): string | 
 
 /**
  * The operation a key press in the tree means, or null. Cmd is Ctrl outside macOS. Both
- * Cmd+Backspace (macOS) and Delete trash, F2 (VS Code) and Shift+F6 (JetBrains) rename.
+ * Cmd+Backspace (macOS) and Delete trash, F2 and Shift+F6 rename.
  */
 export function fileKeyOp(event: FileKey, platform: MenuPlatform): FileKeyOp | null {
   const mod = platform === "macos" ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;

@@ -103,7 +103,7 @@ const foldTheme = EditorView.baseTheme({
     width: "14px",
     cursor: "pointer",
   },
-  // Like JetBrains: open blocks show their arrow while the pointer is over the gutter, folded ones always.
+  // Open blocks show their arrow while the pointer is over the gutter, folded ones always.
   ".cm-gm-fold": {
     width: "10px",
     height: "10px",
@@ -199,7 +199,7 @@ const completionTheme = EditorView.baseTheme({
     fontStyle: "normal",
     marginLeft: "1.2em",
   },
-  // Letter badges like JetBrains instead of CodeMirror's symbols and emoji.
+  // Letter badges instead of CodeMirror's symbols and emoji.
   ".cm-completionIcon": {
     width: "1.35em",
     height: "1.35em",

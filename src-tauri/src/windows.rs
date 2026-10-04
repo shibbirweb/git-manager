@@ -1,4 +1,4 @@
-//! The app's windows, like VS Code's New Window: which workspace each one shows, which one was
+//! The app's windows (File > New Window): which workspace each one shows, which one was
 //! focused last, where it sits on screen, and the window session kept in state.json so a
 //! restart reopens them. Everything here is plain bookkeeping (tested below); lib.rs and
 //! commands/window.rs apply it to the real windows.

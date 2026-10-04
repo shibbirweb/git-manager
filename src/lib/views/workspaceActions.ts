@@ -63,7 +63,7 @@ function editorSelection(): string {
   return queryFromSelection(view.state.sliceDoc(from, to));
 }
 
-/** Opens Search Everywhere; every tab starts with the editor's selection, like JetBrains. */
+/** Opens Search Everywhere; every tab starts with the editor's selection. */
 export function openFileSearch(opener: SearchOpener, replace = false): void {
   if (!overlayOpen()) {
     fileSearch.open(opener, editorSelection(), replace);
@@ -71,7 +71,7 @@ export function openFileSearch(opener: SearchOpener, replace = false): void {
 }
 
 /**
- * Opens Quick Open (VS Code's Cmd+P) with `prefix` typed: "" for files, ">" for the
+ * Opens Quick Open (Cmd+P) with `prefix` typed: "" for files, ">" for the
  * Command Palette. It never opens over Search Everywhere: the two popups stay apart.
  */
 export function openQuickOpen(prefix: string): void {
@@ -81,7 +81,7 @@ export function openQuickOpen(prefix: string): void {
 }
 
 /**
- * Opens Recent Files (JetBrains' Cmd+E); never over Search Everywhere or another popup.
+ * Opens Recent Files (Cmd+E); never over Search Everywhere or another popup.
  * Turned off in Settings, the key says so and offers the setting instead of doing nothing.
  */
 export function openRecentFiles(): void {
@@ -98,7 +98,7 @@ export function openRecentFiles(): void {
   recentFilesStore.open();
 }
 
-/** Jump to Navigation Bar (JetBrains' Cmd+Up): the path bar of the file on screen, or a floating one. */
+/** Jump to Navigation Bar (Cmd+Up): the path bar of the file on screen, or a floating one. */
 export function openNavigationBar(): void {
   if (!overlayOpen() && !fileSearch.isOpen) {
     navBarStore.jump();

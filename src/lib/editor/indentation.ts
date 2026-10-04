@@ -1,5 +1,5 @@
 // Indentation of every editor: what the file already uses when Settings > Editor > Detect
-// indentation is on (VS Code's editor.detectIndentation), else the Tab size setting. Read from
+// indentation is on, else the Tab size setting. Read from
 // the text when an editor opens, and again in every open editor when either setting changes.
 
 import { indentUnit } from "@codemirror/language";

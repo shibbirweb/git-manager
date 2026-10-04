@@ -1,4 +1,4 @@
-//! More than one window, like VS Code's New Window: opening, focusing and restoring windows,
+//! More than one window (File > New Window): opening, focusing and restoring windows,
 //! and the per-window services they own (watchers, terminals, search indexes, the preview
 //! allow-list). The bookkeeping lives in windows.rs; this applies it to the real windows.
 

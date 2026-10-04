@@ -1,4 +1,4 @@
-// Who answers Jump to Navigation Bar (JetBrains' Cmd+Up): the path bar of the file on screen
+// Who answers Jump to Navigation Bar (Cmd+Up): the path bar of the file on screen
 // (NavigationBar.svelte inside FileView), or, with no file on screen, a floating bar over the
 // editor area (Workspace.svelte). The bar that has the keyboard is `active`, so the window
 // shortcuts wait, a second bar (split editor) lets go, and the focus goes back where it was.

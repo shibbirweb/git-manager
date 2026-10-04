@@ -1,4 +1,4 @@
-// The Sync Changes button under the commit box, like VS Code's Source Control:
+// The Sync Changes button under the commit box:
 // pull what the remote has, then push what you have; or publish a new branch.
 
 import type { HeadInfo } from "$lib/types";
@@ -55,7 +55,7 @@ export function syncDoneMessage(pulled: number, pushed: number): string {
 /**
  * The Sync button of a repository row: hidden without a branch, Publish Branch
  * without an upstream, else Sync Changes, shown even when in step (a click then
- * pulls whatever the remote has, like VS Code).
+ * pulls whatever the remote has).
  */
 export type RowSync =
   | { kind: "hidden" }

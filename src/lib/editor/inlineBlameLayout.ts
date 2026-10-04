@@ -1,4 +1,4 @@
-// Where the current-line blame note goes, like GitLens and Zed: right after the end of the
+// Where the current-line blame note goes, like Zed: right after the end of the
 // cursor line's last visual row. It is drawn in its own layer, so it never takes room in the
 // text: lines never wrap or move because of it.
 // - Word wrap off: the note always follows the code, past the visible edge on a long line
@@ -6,7 +6,7 @@
 // - Word wrap on: there is no scrolling sideways, so a note that does not fit on the last row
 //   is cut short with an ellipsis; it keeps a small minimum so it never just disappears.
 
-/** The gap between the end of the code and the note, like GitLens. */
+/** The gap between the end of the code and the note. */
 export const NOTE_GAP = 36;
 /** With word wrap on, the note keeps at least this width, even when part of it is cut off. */
 export const MIN_NOTE_WIDTH = 72;

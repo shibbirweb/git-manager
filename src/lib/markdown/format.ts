@@ -1,4 +1,4 @@
-// Markdown formatting commands for the editor toolbar, JetBrains style. Each
+// Markdown formatting commands for the editor toolbar. Each
 // returns one transaction spec, so it works on every cursor at once and is a
 // single undo step. Applying a format that is already there removes it.
 

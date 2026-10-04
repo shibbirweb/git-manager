@@ -1,5 +1,4 @@
-// Settings > Editor > Tab limit, like VS Code's workbench.editor.limit and JetBrains' tab
-// limit: past the limit, opening a file closes the file tab used least recently. Single tab
+// Settings > Editor > Tab limit: past the limit, opening a file closes the file tab used least recently. Single tab
 // mode is a limit of 1, so a new file replaces the one on screen. Tabs with unsaved changes
 // and pinned tabs are never closed this way; when only those are left, the strip grows past
 // the limit. Only file tabs count: commit, history, branches and terminal tabs are opened on
@@ -8,7 +7,7 @@
 /** 0 is no limit, 1 is single tab mode, anything else the number of file tabs. */
 export const NO_TAB_LIMIT = 0;
 export const SINGLE_TAB = 1;
-/** A number limit lies in this range; VS Code starts at 10. */
+/** A number limit lies in this range. */
 export const TAB_LIMIT_RANGE = [2, 100] as const;
 export const DEFAULT_TAB_LIMIT_NUMBER = 10;
 

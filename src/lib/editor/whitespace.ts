@@ -1,4 +1,4 @@
-// Draws spaces as dots and tabs as arrows, like VS Code's editor.renderWhitespace. Only the
+// Draws spaces as dots and tabs as arrows. Only the
 // visible lines are decorated, and with "none" the extension adds nothing to the editor.
 
 import { Compartment, Facet, type Extension, RangeSetBuilder } from "@codemirror/state";
@@ -129,12 +129,12 @@ const renderer = ViewPlugin.fromClass(
 const theme = EditorView.baseTheme({
   // One dot per space: the tile is one character wide in the monospace font.
   ".cm-ws-space": {
-    // A small, light dot like JetBrains' (about 1.5 px across at the default size).
+    // A small, light dot (about 1.5 px across at the default size).
     backgroundImage: "radial-gradient(circle at 50% 52%, var(--text-faint) 0.045em, transparent 0.07em)",
     backgroundSize: "1ch 100%",
     backgroundRepeat: "repeat-x",
   },
-  // A thin line with an arrowhead across the whole tab, like JetBrains.
+  // A thin line with an arrowhead across the whole tab.
   ".cm-ws-tab": {
     position: "relative",
   },

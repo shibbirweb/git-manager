@@ -1,9 +1,9 @@
-//! Runs a project script as its own process in a PTY, like JetBrains' Run window: no shell
+//! Runs a project script as its own process in a PTY: no shell
 //! is typed into, so it works the same with zsh, fish, PowerShell or cmd. The Node version
 //! goes first on the process's PATH.
 //!
 //! Apps opened from Finder (or a Linux desktop launcher) get a bare PATH without Homebrew,
-//! nvm, pnpm or Composer. Like JetBrains, the login shell's environment is read once and
+//! nvm, pnpm or Composer. So the login shell's environment is read once and
 //! used for runs; the Scripts panel's Refresh reads it again.
 
 use std::ffi::OsString;

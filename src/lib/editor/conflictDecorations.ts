@@ -1,6 +1,6 @@
 // Inline conflict resolution for the file editor: colored sections and
 // "Accept Current | Accept Incoming | Accept Both | Merge Tool" links above
-// every conflict, like VS Code's CodeLens.
+// every conflict.
 
 import { type Extension, type Range, StateField, type Text } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from "@codemirror/view";

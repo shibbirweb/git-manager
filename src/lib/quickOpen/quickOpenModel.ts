@@ -15,7 +15,7 @@ export interface QuickOpenPrefix {
   label: string;
 }
 
-/** Like VS Code: no prefix finds files; the others switch mode as soon as they are typed. */
+/** No prefix finds files; the others switch mode as soon as they are typed. */
 export const PREFIXES: readonly QuickOpenPrefix[] = [
   { prefix: "", mode: "files", label: "Go to File" },
   { prefix: ">", mode: "commands", label: "Show and Run Commands" },
@@ -151,7 +151,7 @@ export function outlineRows(items: readonly OutlineItem[], query: string, limit 
 }
 
 /**
- * Recently opened files, like VS Code: the file on screen goes last, so Cmd+P then Enter
+ * Recently opened files: the file on screen goes last, so Cmd+P then Enter
  * returns to the file before it.
  */
 export function recentOrder(filePaths: readonly string[], activePath: string | null): string[] {
@@ -242,7 +242,7 @@ export function helpRows(): QuickRow[] {
   }));
 }
 
-/** The palette's rows, under "recently used" and "other commands" headings like VS Code. */
+/** The palette's rows, under "recently used" and "other commands" headings. */
 export function commandRows(recent: readonly PaletteItem[], other: readonly PaletteItem[]): QuickRow[] {
   const rows: QuickRow[] = [];
   if (recent.length > 0) {

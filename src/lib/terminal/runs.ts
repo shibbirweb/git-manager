@@ -1,4 +1,4 @@
-// Run sessions, like JetBrains' Run window: a script started as its own process (no shell),
+// Run sessions: a script started as its own process (no shell),
 // shown in the bottom panel's Run tab with Rerun and Stop. They reuse the terminal's xterm
 // view and PTY backend, so colors, progress bars and input work as in a terminal.
 
@@ -16,7 +16,7 @@ export interface RunSpec {
   description: string;
 }
 
-/** Written above a run's output, dimmed, like the command line JetBrains prints. */
+/** Written above a run's output, dimmed: the command line that was run. */
 export function runHeader(spec: RunSpec): string {
   return `\x1b[2m${spec.description}\x1b[0m\r\n\r\n`;
 }

@@ -1,4 +1,4 @@
-<!-- VS Code style layout icon: a window with one side marked; the side is filled while that sidebar is visible. -->
+<!-- Layout icon: a window with one side marked; the side is filled while that sidebar is visible. -->
 <script lang="ts">
   let { side, visible, size = 16 }: { side: "left" | "right"; visible: boolean; size?: number } = $props();
 

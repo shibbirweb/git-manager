@@ -1,4 +1,4 @@
-// A small fuzzy matcher for short labels (commands, symbols of one file), like VS Code's:
+// A small fuzzy matcher for short labels (commands, symbols of one file):
 // the query's letters must appear in order; matches at word starts and runs of adjacent
 // letters score higher, gaps cost a little. Each word of the query matches on its own, so
 // "push git" finds "Git: Push". Files and workspace symbols are matched in Rust instead.

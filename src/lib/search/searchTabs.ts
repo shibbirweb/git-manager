@@ -1,4 +1,4 @@
-// The tabs of the Search Everywhere popup (FileSearch.svelte), like JetBrains: which tab
+// The tabs of the Search Everywhere popup (FileSearch.svelte): which tab
 // each shortcut opens, Tab / Shift+Tab cycling and the keys that switch tabs while open.
 
 import { type ShortcutKey, type ShortcutKeys, type WorkspaceShortcut, workspaceShortcut } from "$lib/views/workspaceShortcuts";
@@ -22,7 +22,7 @@ export const SEARCH_TABS: readonly SearchTabInfo[] = [
   { id: "text", label: "Text", shortcut: "Shift+Cmd+F" },
 ];
 
-/** The next tab (step 1) or the previous one (step -1), wrapping around like JetBrains. */
+/** The next tab (step 1) or the previous one (step -1), wrapping around. */
 export function stepTab(tab: SearchTab, step: 1 | -1): SearchTab {
   const index = SEARCH_TABS.findIndex((info) => info.id === tab);
   const count = SEARCH_TABS.length;
@@ -71,7 +71,7 @@ export function usesSymbols(tab: SearchTab): boolean {
   return tab === "all" || tab === "classes" || tab === "symbols";
 }
 
-/** Longest editor selection that starts a search, like JetBrains; longer text is rarely a query. */
+/** Longest editor selection that starts a search; longer text is rarely a query. */
 export const MAX_SELECTION_QUERY = 200;
 
 /** The query a popup starts with for the editor's selected text: empty for blank, multi-line or long selections. */

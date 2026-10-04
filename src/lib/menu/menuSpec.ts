@@ -145,11 +145,11 @@ function editMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       item("edit.findInFiles", "Find in Files...", "CmdOrCtrl+Shift+F"),
       item("edit.replaceInFiles", "Replace in Files...", "CmdOrCtrl+Shift+R"),
       separator,
-      // Cmd+P is VS Code's Quick Open; JetBrains' Shift+Cmd+O still opens Search Everywhere on Files.
+      // Cmd+P is Quick Open; Shift+Cmd+O still opens Search Everywhere on Files.
       item("edit.goToFile", "Go to File...", "CmdOrCtrl+P"),
-      // JetBrains' Cmd+E; the commit message box keeps it for its history while focused.
+      // Cmd+E; the commit message box keeps it for its history while focused.
       item("edit.recentFiles", "Recent Files...", "CmdOrCtrl+E"),
-      // JetBrains' keys. On macOS the editor gives Cmd+Up up for it (Cmd+Home still goes to the top).
+      // On macOS the editor gives Cmd+Up up for it (Cmd+Home still goes to the top).
       item("edit.navigationBar", "Jump to Navigation Bar", mac ? "Cmd+Up" : "Alt+Home"),
       item("edit.goToClass", "Go to Class...", "CmdOrCtrl+O"),
       item("edit.goToSymbol", "Go to Symbol...", "CmdOrCtrl+Alt+O"),
@@ -162,7 +162,7 @@ function editMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
 
 function viewMenu(platform: MenuPlatform): TopMenu {
   const items: MenuEntry[] = [
-    // VS Code's place for it; Quick Open with ">" typed.
+    // Quick Open with ">" typed.
     item("view.commandPalette", "Command Palette...", "CmdOrCtrl+Shift+P"),
     separator,
     // Shift+Cmd+G is Find Previous in the Edit menu; outside an editor it still shows Changes.
@@ -252,7 +252,7 @@ function codeMenu(platform: MenuPlatform): TopMenu {
 }
 
 /**
- * JetBrains' Git menu. Its keys (Cmd+K, Cmd+T, Cmd+9, Option+Cmd+A) are macOS only: elsewhere
+ * The Git menu. Its keys (Cmd+K, Cmd+T, Cmd+9, Option+Cmd+A) are macOS only: elsewhere
  * Ctrl+K and Ctrl+T belong to the shell in the terminal. Cmd+K stays the Markdown link in a
  * Markdown editor and clears the terminal there (the page sees the key first). Shift+Cmd+K is
  * Delete Line in the Code menu, so Push has no key.
@@ -427,7 +427,7 @@ function windowMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       item("window.previousTab", "Previous Tab", mac ? "Cmd+Shift+[" : "Ctrl+PageUp"),
       item("window.pinTab", "Pin Tab"),
       separator,
-      // Editor groups, with VS Code's keys.
+      // Editor groups.
       item("window.splitRight", "Split Right", "CmdOrCtrl+\\"),
       item("window.moveTabToOtherGroup", "Move Tab to Other Group"),
       item("window.focusLeftGroup", "Focus Left Group", "CmdOrCtrl+1"),

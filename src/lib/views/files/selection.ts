@@ -1,4 +1,4 @@
-// Multi-selection in the Files panel, like VS Code's explorer: a click selects one row,
+// Multi-selection in the Files panel: a click selects one row,
 // Cmd-click (Ctrl-click elsewhere) toggles a row, Shift-click selects the range from the
 // anchor, and Shift+Up / Shift+Down extend it. `order` is always the visible rows, top down.
 

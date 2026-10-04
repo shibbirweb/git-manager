@@ -22,16 +22,16 @@ export const EDITOR_SHORTCUTS: Partial<Record<EditorAction, EditorShortcut>> = {
   "edit.replace": { key: "Mod-r", source: "find" },
   "edit.findNext": { key: "Mod-g", source: "find" },
   "edit.findPrevious": { key: "Shift-Mod-g", source: "find" },
-  // JetBrains: Ctrl+Cmd+G on macOS, Ctrl+Alt+Shift+J elsewhere.
+  // Ctrl+Cmd+G on macOS, Ctrl+Alt+Shift+J elsewhere.
   "edit.selectAllOccurrences": { key: "Ctrl-Alt-Shift-j", mac: "Ctrl-Meta-g", source: "find" },
   "code.lineComment": { key: "Mod-/", source: "default" },
   "code.blockComment": { key: "Mod-Alt-/", source: "code" },
-  // JetBrains' Cmd+D adds the next occurrence here, so Duplicate takes Shift+Cmd+D.
+  // Cmd+D adds the next occurrence here, so Duplicate takes Shift+Cmd+D.
   "code.duplicate": { key: "Mod-Shift-d", source: "code" },
   // Cmd+Backspace already deletes to the line start, as everywhere on macOS.
   "code.deleteLine": { key: "Shift-Mod-k", source: "default" },
   "code.joinLines": { key: "Ctrl-Shift-j", source: "code" },
-  // Option+Shift+Up / Down copy the line in this editor (VS Code), so moving keeps Option+Up / Down.
+  // Option+Shift+Up / Down copy the line in this editor, so moving keeps Option+Up / Down.
   "code.moveLineUp": { key: "Alt-ArrowUp", source: "default" },
   "code.moveLineDown": { key: "Alt-ArrowDown", source: "default" },
   "code.indent": { key: "Mod-]", source: "default" },

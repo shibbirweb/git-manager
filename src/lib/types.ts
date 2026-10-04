@@ -22,7 +22,7 @@ export interface RepoInfo {
   worktree?: boolean;
 }
 
-/** A saved `.gitmanager-workspace` (or VS Code `.code-workspace`) file. */
+/** A saved `.gitmanager-workspace` (or `.code-workspace`) file. */
 export interface WorkspaceFile {
   name: string;
   folders: string[];

@@ -1,4 +1,4 @@
-// What the Git menu's items do, JetBrains style. Each acts on the active repository (or the
+// What the Git menu's items do. Each acts on the active repository (or the
 // current file's repository for the Current File submenu) and reuses the actions of the
 // Changes view, the sidebar and the Log, so a menu item and its button run the same code.
 

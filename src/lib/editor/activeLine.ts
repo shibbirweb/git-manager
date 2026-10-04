@@ -1,6 +1,6 @@
 // The current-line highlight, but only while nothing is selected. CodeMirror draws the
 // selection behind the text, so an opaque line background would hide a selection made within
-// one line (the cursor's line); VS Code and JetBrains drop the highlight while selecting too.
+// one line (the cursor's line), so the highlight is dropped while selecting.
 
 import type { EditorState, Extension } from "@codemirror/state";
 import { RangeSetBuilder } from "@codemirror/state";

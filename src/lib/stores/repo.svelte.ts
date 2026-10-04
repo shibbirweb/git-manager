@@ -77,7 +77,7 @@ export interface WorkspaceFolder {
   repoRoots: string[];
 }
 
-/** One or more folders opened together, like a VS Code multi-root workspace. */
+/** One or more folders opened together as one workspace. */
 export interface OpenWorkspace {
   /** Key for remembered state: the folder roots joined. */
   id: string;
@@ -417,7 +417,7 @@ class RepoStore {
     return true;
   }
 
-  /** Adds a folder to the open workspace (VS Code's "Add Folder to Workspace"). */
+  /** Adds a folder to the open workspace ("Add Folder to Workspace"). */
   async addFolder(folderPath: string): Promise<void> {
     if (!this.workspace) {
       await this.open(folderPath);
@@ -494,7 +494,7 @@ class RepoStore {
     this.filesChanged();
   }
 
-  /** Opens a `.gitmanager-workspace` or VS Code `.code-workspace` file. */
+  /** Opens a `.gitmanager-workspace` or `.code-workspace` file. */
   async openWorkspaceFile(filePath: string, options: OpenOptions = {}): Promise<boolean> {
     let saved;
     try {
@@ -548,7 +548,7 @@ class RepoStore {
     return true;
   }
 
-  /** Keeps a linked workspace file in step with the folder list, like VS Code. */
+  /** Keeps a linked workspace file in step with the folder list. */
   private async syncWorkspaceFile(): Promise<void> {
     const workspace = this.workspace;
     if (!workspace?.file) {
@@ -1134,7 +1134,7 @@ class RepoStore {
   }
 
   /**
-   * Opens a commit in its own editor tab, like VS Code, so its diff gets the
+   * Opens a commit in its own editor tab, so its diff gets the
    * whole editor area. `filePath` (repo-relative) picks the file to show; an
    * open tab for the same commit is reused and switched to that file.
    */

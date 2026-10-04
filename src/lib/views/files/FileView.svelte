@@ -135,7 +135,7 @@
   /** Bumped when the previewed file may have changed on disk. */
   let previewToken = $state(0);
 
-  // Markdown: source, preview or both, like JetBrains. Each file keeps its mode for the session.
+  // Markdown: source, preview or both. Each file keeps its mode for the session.
   const isMarkdown = $derived(isMarkdownPath(filePath));
   let viewMode = $state<MarkdownViewMode>(initialViewMode());
   /** Bumped on every edit so the preview knows to render again. */
@@ -966,7 +966,7 @@
 <!-- Settings > Appearance > File toolbar: Bottom moves the whole bar under the code (CSS order), Hidden or every part off leaves it out. -->
 <div class="file-view" class:bar-bottom={settings.fileToolbar === "bottom"}>
   {#if toolbar.shown}
-    <!-- One slim bar, like JetBrains: the path and badges on the left, compact actions on the right. -->
+    <!-- One slim bar: the path and badges on the left, compact actions on the right. -->
     <div class="file-bar">
       {#if toolbar.breadcrumbs}
         <NavigationBar targetPath={filePath} claimed={isActive} />
@@ -1169,7 +1169,7 @@
     background: var(--editor-bg);
   }
 
-  /* About 28 px, like JetBrains' editor breadcrumbs, so the code starts right under the tabs. */
+  /* About 28 px, so the code starts right under the tabs. */
   .file-bar {
     flex: none;
     /* Container queries below collapse the bar's contents as the editor gets narrow. */

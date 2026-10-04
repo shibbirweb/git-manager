@@ -1,4 +1,4 @@
-// The minimap, like VS Code's editor.minimap: a small picture of the file beside the
+// The minimap: a small picture of the file beside the
 // scrollbar of the file editor. Written here rather than taken from a package, so it keeps
 // nothing per line: one canvas holds the lines that fit (two pixels each) plus a margin,
 // with the syntax colors of the editor. Scrolling moves the canvas and the slider (plain

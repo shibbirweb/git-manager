@@ -13,7 +13,7 @@ export function formatShelfDate(createdAt: number): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-/** JetBrains' default: "Changes from main 2026-10-01 14:03". */
+/** The default name: "Changes from main 2026-10-01 14:03". */
 export function defaultShelfName(branchName: string | null, now: Date): string {
   const when = formatShelfDate(now.getTime());
   return branchName ? `Changes from ${branchName} ${when}` : `Changes from ${when}`;

@@ -214,7 +214,7 @@ pub fn validate_name(name: &str) -> AppResult<()> {
     Ok(())
 }
 
-/// Splits a New File or New Folder name like VS Code: "a/b/c.ts" creates the folders
+/// Splits a New File or New Folder name: "a/b/c.ts" creates the folders
 /// `a` and `b`. An empty part ("a//b", a leading or trailing "/") is refused, as the
 /// dialog refuses it, rather than guessing what was meant.
 pub fn split_new_path(name: &str) -> AppResult<Vec<&str>> {
@@ -258,7 +258,7 @@ fn strip_copy_suffix(stem: &str) -> (&str, u32) {
     (stem, 1)
 }
 
-/// VS Code's copy names: "cart.ts", then "cart copy.ts", "cart copy 2.ts"; folders
+/// Copy names: "cart.ts", then "cart copy.ts", "cart copy 2.ts"; folders
 /// "src copy". Copying "cart copy.ts" again gives "cart copy 2.ts", not "cart copy copy.ts".
 pub fn copy_name(name: &str, is_dir: bool, taken: impl Fn(&str) -> bool) -> String {
     if !taken(name) {

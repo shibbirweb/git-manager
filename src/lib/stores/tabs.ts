@@ -1,4 +1,4 @@
-// Editor tabs with a VS Code / JetBrains style preview tab: a single click
+// Editor tabs with a preview tab: a single click
 // opens (or replaces) the one preview tab; double-clicking or editing pins it.
 // Pinned tabs (Pin Tab) always sit together at the start of the strip.
 

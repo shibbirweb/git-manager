@@ -3,7 +3,7 @@
 // whether the panel is open. Each terminal's xterm and shell live in
 // TerminalView.svelte, mounted once by TerminalHost.svelte and moved into the
 // place that shows it; this store only keeps the list and those places. Hiding
-// the panel keeps every shell running, like VS Code. Run sessions (runs.ts) are
+// the panel keeps every shell running. Run sessions (runs.ts) are
 // entries too, shown in the panel's Run tab instead of the Terminal tab.
 
 import { api } from "$lib/api";
@@ -66,7 +66,7 @@ export interface FocusRequest {
   token: number;
 }
 
-/** The tabs of the bottom panel, like JetBrains' bottom tool windows. */
+/** The tabs of the bottom panel. */
 export type PanelTab = "terminal" | "run" | "gitConsole" | "shelf";
 
 export interface NewTerminalOptions {
@@ -121,7 +121,7 @@ class TerminalStore {
   private generation = 0;
 
   constructor() {
-    // Closing a terminal's editor tab kills it, like VS Code (x, Close Others, Close All...).
+    // Closing a terminal's editor tab kills it (x, Close Others, Close All...).
     repoStore.onTabsClosed((tabPaths) => this.tabsClosed(tabPaths));
   }
 
@@ -359,7 +359,7 @@ class TerminalStore {
   }
 
   /**
-   * Runs a script in the Run tab, like JetBrains: a script that has a session already
+   * Runs a script in the Run tab: a script that has a session already
    * runs again in it. `askToStop` asks first when it is still running (the Scripts
    * panel); the Rerun button restarts it at once.
    */
@@ -397,7 +397,7 @@ class TerminalStore {
       if (current.terminalId !== null && !current.exited) {
         void api.terminalClose(current.terminalId).catch(() => undefined);
       }
-      // A new entry in the same place: a fresh view, as JetBrains clears the console on Rerun.
+      // A new entry in the same place: a fresh view, so Rerun starts with a clear console.
       this.terminals = this.terminals.map((terminal) => (terminal.key === current.key ? entry : terminal));
     } else {
       this.terminals = [...this.terminals, entry];
@@ -532,8 +532,8 @@ class TerminalStore {
 
   /**
    * The shell exited (TerminalView got the last message on its channel, after all of its output,
-   * possibly before its spawn call returned). A clean exit closes the terminal like VS Code; an
-   * error keeps it with a note. Runs always stay, like JetBrains' Run window.
+   * possibly before its spawn call returned). A clean exit closes the terminal; an
+   * error keeps it with a note. Runs always stay.
    */
   exited(terminalKey: number, exitCode: number | null): void {
     const entry = this.find(terminalKey);
@@ -575,7 +575,7 @@ class TerminalStore {
     this.update(terminalKey, { terminalId: null, exited: false, exitCode: null });
   }
 
-  /** Names are kept for the session only, like VS Code's. An invalid name is ignored. */
+  /** Names are kept for the session only. An invalid name is ignored. */
   rename(terminalKey: number, name: string): void {
     const trimmed = name.trim();
     if (trimmed && validateTerminalName(trimmed) === null) {
@@ -735,7 +735,7 @@ class TerminalStore {
     if (!entry) {
       return;
     }
-    // Like VS Code, the panel hides with its last terminal.
+    // The panel hides with its last terminal.
     const next = panelAfterLeave(this.terminals, terminalKey, { activeKey: this.activeKey, panelOpen: this.panelOpen });
     this.leaveGroup(entry);
     this.terminals = this.terminals.filter((terminal) => terminal.key !== terminalKey);

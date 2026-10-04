@@ -1,5 +1,5 @@
 <!--
-  The bottom panel's Run tab, like JetBrains' Run window: one tab per script, Rerun and
+  The bottom panel's Run tab: one tab per script, Rerun and
   Stop on the left, and the session's output (moved in here by TerminalHost) in the middle.
 -->
 <script lang="ts">

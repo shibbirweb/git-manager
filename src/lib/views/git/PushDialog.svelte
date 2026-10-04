@@ -1,4 +1,4 @@
-<!-- JetBrains' Push dialog: the commits the current branch would push, the target remote and
+<!-- The Push dialog: the commits the current branch would push, the target remote and
      branch, Force push (--force-with-lease) and Push tags. A branch without an upstream gets one. -->
 <script lang="ts">
   import { untrack } from "svelte";

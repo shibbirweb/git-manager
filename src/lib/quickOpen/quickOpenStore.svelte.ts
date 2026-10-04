@@ -1,4 +1,4 @@
-// Whether Quick Open (QuickOpen.svelte, VS Code's Cmd+P and Shift+Cmd+P) shows, what it
+// Whether Quick Open (QuickOpen.svelte, Cmd+P and Shift+Cmd+P) shows, what it
 // starts with, and what had the focus before: the element to give it back to and the text
 // editor its ":" and "@" modes and the editor commands act on. Read when it opens, before
 // the popup takes the focus.

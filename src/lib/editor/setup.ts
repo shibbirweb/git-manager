@@ -106,7 +106,7 @@ export function baseExtensions({ readOnly = false, kind, extensions = [] }: Edit
     // Auto-close, completion, folding, guides, word highlight, margin line, sticky scroll,
     // minimap, bracket colors and matching... each switchable in Settings.
     editorFeatures(kind ?? (readOnly ? "diff" : "file"), featureOptions(settings)),
-    // Select All Occurrences and Cmd+D add carets; Option+Shift+click adds one (JetBrains).
+    // Select All Occurrences and Cmd+D add carets; Option+Shift+click adds one.
     EditorState.allowMultipleSelections.of(true),
     EditorView.clickAddsSelectionRange.of((event) => event.altKey && event.shiftKey),
     findBar(),

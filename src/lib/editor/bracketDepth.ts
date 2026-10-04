@@ -1,7 +1,7 @@
 // Bracket pair colors without CodeMirror: which brackets of a range get which depth color.
 // bracketColors.ts finds the brackets on screen with the syntax tree and draws them.
 
-/** Depth colors, --bracket-1 to --bracket-3 in app.css, repeating like VS Code. */
+/** Depth colors, --bracket-1 to --bracket-3 in app.css, repeating. */
 export const BRACKET_LEVELS = 3;
 
 const OPENERS = "([{";

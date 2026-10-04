@@ -1,5 +1,5 @@
-// Which icon a file name gets from an icon set's type map, matched the way VS Code does it: the
-// whole name first, then the longest extension ("app.spec.ts" tries "spec.ts", then "ts").
+// Which icon a file name gets from an icon set's type map: the whole name first, then the
+// longest extension ("app.spec.ts" tries "spec.ts", then "ts").
 // The maps themselves are static files (static/file-icons/<set>/map.json), fetched only while
 // that set is chosen, so this matcher is the only icon code in the app bundle.
 

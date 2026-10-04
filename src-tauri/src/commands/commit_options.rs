@@ -1,4 +1,4 @@
-//! JetBrains' Commit Options: sign-off, another author, GPG signing and skipping hooks,
+//! Commit Options: sign-off, another author, GPG signing and skipping hooks,
 //! turned into `git commit` arguments for every commit path.
 
 use serde::Deserialize;

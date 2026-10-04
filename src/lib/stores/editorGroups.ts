@@ -1,4 +1,4 @@
-// Editor groups (Window > Split Right, like VS Code): the editor area holds one group of tabs,
+// Editor groups (Window > Split Right): the editor area holds one group of tabs,
 // or two side by side. Each group has its own strip and active tab. Only file tabs may be open
 // in both groups: a commit, Git, branch or terminal tab is one live view that cannot be shown
 // twice. Group ids never change, so the editors of the right group stay mounted when the left

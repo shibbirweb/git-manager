@@ -8,7 +8,7 @@ import { nodePickFor, scriptRunSpec } from "./scriptRun";
 import { terminalName } from "./scriptsModel";
 
 /**
- * Runs in the Run tab as its own process, like JetBrains; running it again reuses its tab.
+ * Runs in the Run tab as its own process; running it again reuses its tab.
  * `askToStop` asks before restarting a script that still runs.
  */
 export function runProjectScript(

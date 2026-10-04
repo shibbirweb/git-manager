@@ -126,7 +126,7 @@ async function closeTab(): Promise<void> {
   }
 }
 
-/** Focus Left / Right Group: the keyboard goes to that group's editor. Right with one group splits, as in VS Code. */
+/** Focus Left / Right Group: the keyboard goes to that group's editor. Right with one group splits. */
 async function focusGroupAt(index: number): Promise<void> {
   if (!settings.splitEditor) {
     return;
@@ -265,7 +265,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.zoomOut": zoom(-1),
   "view.zoomReset": zoom(0),
 
-  // JetBrains' Git menu, for the active repository; the Current File items act on the file on screen.
+  // The Git menu, for the active repository; the Current File items act on the file on screen.
   "git.commit": git(() => focusCommitMessage(repoStore.repo?.root)),
   "git.push": git(() => gitMenu.openPushDialog()),
   // Asks first, then pushes with --force-with-lease.

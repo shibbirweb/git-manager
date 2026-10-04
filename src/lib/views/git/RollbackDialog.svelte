@@ -1,4 +1,4 @@
-<!-- JetBrains' Rollback Changes: the changed tracked files with checkboxes; their staged and
+<!-- Rollback Changes: the changed tracked files with checkboxes; their staged and
      unstaged changes go back to HEAD. New files are removed from Git, and deleted when asked. -->
 <script lang="ts">
   import { untrack } from "svelte";

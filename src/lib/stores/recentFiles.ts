@@ -1,4 +1,4 @@
-// Recent Files of each workspace (JetBrains' Cmd+E), kept in state.json so they come back
+// Recent Files of each workspace (Cmd+E), kept in state.json so they come back
 // after a restart: the files shown in the editor, most recent first, and which of them were
 // edited. Pure, so the order rules and the validation of a hand-edited state.json can be tested.
 
@@ -8,11 +8,11 @@ import { isSavablePath, MAX_PATH_LENGTH, MAX_TAB_SESSIONS } from "./tabSession";
 export interface RecentFile {
   /** Absolute file path. */
   filePath: string;
-  /** Changed in the editor since it joined the list (JetBrains' "Show edited only"). */
+  /** Changed in the editor since it joined the list (for "Show edited only"). */
   edited: boolean;
 }
 
-/** Files kept per workspace, as in JetBrains' default "Recent files limit". */
+/** Files kept per workspace. */
 export const MAX_RECENT_FILES = 50;
 
 /** `files` with `filePath` first; the same array when it already is. Not a file (terminal, commit): unchanged. */

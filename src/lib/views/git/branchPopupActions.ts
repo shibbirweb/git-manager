@@ -142,7 +142,7 @@ function run(action: BranchAction, picked: PopupBranch, target: RepoTarget, repo
   }
 }
 
-/** The submenu of `picked`; choosing an item closes the popup first, like JetBrains. */
+/** The submenu of `picked`; choosing an item closes the popup first. */
 export function branchMenuItems(
   picked: PopupBranch,
   context: BranchPopupContext,

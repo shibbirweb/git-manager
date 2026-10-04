@@ -1,5 +1,5 @@
 <!--
-  The Navigation Bar, like JetBrains': the path as crumbs. Clicking a crumb, or Jump to
+  The Navigation Bar: the path as crumbs. Clicking a crumb, or Jump to
   Navigation Bar (Cmd+Up on macOS, Alt+Home elsewhere), opens a popup of what that folder
   holds. Typing filters it, Up and Down pick, Right or Enter goes into a folder, Left goes
   up, Enter opens a file. It lives in FileView's path bar, above the code or under it
@@ -281,7 +281,7 @@
     }
   }
 
-  /** The top left of the focused editor group (else the editor area), like JetBrains' hidden bar. */
+  /** The top left of the focused editor group (else the editor area), where the bar floats when hidden. */
   function floatingAnchor(): { top: number; left: number; maxWidth: number } | null {
     const area = document.querySelector<HTMLElement>(".editor-group.focused") ?? document.querySelector<HTMLElement>("main.main");
     const rect = area?.getBoundingClientRect();

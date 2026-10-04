@@ -1,6 +1,6 @@
 // Commit Options state: sign-off and GPG signing are settings (settings.json); the author
-// and Skip hooks are kept per repository for this session only, like JetBrains' commit
-// dialog. Every commit path asks `commitOptions.request(repoRoot)` for what to send.
+// and Skip hooks are kept per repository for this session only. Every commit path asks
+// `commitOptions.request(repoRoot)` for what to send.
 
 import { settings } from "$lib/stores/settings.svelte";
 import type { CommitOptions, GpgSign } from "$lib/types";

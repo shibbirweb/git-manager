@@ -1,5 +1,5 @@
 // Run With: the package manager picked for a package.json instead of the detected one.
-// Kept for the session only, like a JetBrains run configuration that was never saved.
+// Kept for the session only, like a run configuration that was never saved.
 
 import { SvelteMap } from "svelte/reactivity";
 

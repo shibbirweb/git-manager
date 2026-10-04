@@ -1,5 +1,4 @@
-// The actions of a repository row in the Changes view (VS Code's Source Control
-// repository actions). Each runs in the row's repository, never just the active one.
+// The actions of a repository row in the Changes view. Each runs in the row's repository, never just the active one.
 
 import { api } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
@@ -193,7 +192,7 @@ export async function undoLastCommit(repoRoot: string): Promise<void> {
     repoPath: repoRoot,
     success: "Undid the last commit; its changes are staged",
   });
-  // Like VS Code: offer the message again for the next commit.
+  // Offer the message again for the next commit.
   const draft = commitDraft.for(repoRoot);
   if (message !== undefined && draft.isBlank()) {
     draft.message = message.trimEnd();
@@ -280,7 +279,7 @@ export async function createBranchFrom(target: RepoTarget, repoRoot: string): Pr
   await newBranchFrom(picked.name, initialName, target);
 }
 
-/** Renames the current branch, like VS Code; with a detached HEAD, asks which branch. */
+/** Renames the current branch; with a detached HEAD, asks which branch. */
 export async function renameBranch(target: RepoTarget, repoRoot: string): Promise<void> {
   const current = repoStore.statuses[repoRoot]?.head.branch ?? null;
   if (current) {
@@ -308,12 +307,12 @@ export async function deleteBranch(target: RepoTarget, repoRoot: string): Promis
   }
 }
 
-/** JetBrains' Merge dialog: the branch to merge and the merge options. */
+/** The Merge dialog: the branch to merge and the merge options. */
 export function mergeBranch(repoRoot: string, branchName: string | null = null): void {
   gitDialogs.open({ kind: "merge", repoRoot, branchName });
 }
 
-/** JetBrains' Rebase dialog: what to rebase onto and the rebase options. */
+/** The Rebase dialog: what to rebase onto and the rebase options. */
 export function rebaseBranch(repoRoot: string, onto: string | null = null): void {
   gitDialogs.open({ kind: "rebaseBranch", repoRoot, onto });
 }
@@ -462,7 +461,7 @@ export async function repoMenuFor(repoRoot: string): Promise<MenuItem[]> {
   return withRepoExtras(repoMenuItems(stateOf(section, extrasOf(details)), handlersFor(repoRoot, details)), repoRoot);
 }
 
-/** The branch button and Git > Branches...: JetBrains' Branches popup. */
+/** The branch button and Git > Branches...: the Branches popup. */
 export function openBranchPicker(repoRoot: string): void {
   gitDialogs.open({ kind: "branches", repoRoot });
 }

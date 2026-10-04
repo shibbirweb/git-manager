@@ -1,4 +1,4 @@
-// The editor find and replace bar, JetBrains style, replacing CodeMirror's default search
+// The editor find and replace bar, replacing CodeMirror's default search
 // panel in every editor (setup.ts). The bar is FindBar.svelte mounted as a CodeMirror panel;
 // matching, highlighting, Next / Previous and Replace come from @codemirror/search.
 // Read-only editors get the find row only.
@@ -386,7 +386,7 @@ export function openFind(view: EditorView, replace: boolean): boolean {
   const main = state.selection.main;
   const seeded = selectionQuery(state.sliceDoc(main.from, main.to), previous.regexp);
   const existing = panels.get(view);
-  // Cmd+F inside the bar only selects the field text, like JetBrains.
+  // Cmd+F inside the bar only selects the field text.
   const fromBar = existing?.hasFocus() ?? false;
   if (existing) {
     existing.setReplaceOpen(replace);
@@ -463,7 +463,7 @@ export const findKeymap: readonly KeyBinding[] = [
   { key: "F3", run: findNext, shift: findPrevious, scope, preventDefault: true },
   { key: "Mod-g", run: findNext, shift: findPrevious, scope, preventDefault: true },
   { key: "Escape", run: closeFind, scope },
-  // JetBrains: Ctrl+Cmd+G on macOS, Ctrl+Alt+Shift+J elsewhere.
+  // Ctrl+Cmd+G on macOS, Ctrl+Alt+Shift+J elsewhere.
   { mac: "Ctrl-Meta-g", key: "Ctrl-Alt-Shift-j", run: selectAllOccurrences, scope, preventDefault: true },
   { key: "Mod-Shift-l", run: selectSelectionMatches },
   { key: "Mod-Alt-g", run: gotoLine },

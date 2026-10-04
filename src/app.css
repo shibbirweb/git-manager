@@ -47,7 +47,7 @@
   --term-foreground: var(--text);
   --term-cursor: var(--text);
   --term-selection: var(--editor-selection);
-  /* Integrated terminal ANSI colors (VS Code's light palette). */
+  /* Integrated terminal ANSI colors (light palette). */
   --term-black: #000000;
   --term-red: #cd3131;
   --term-green: #00bc00;
@@ -67,7 +67,7 @@
   --term-scrollbar: rgba(108, 112, 126, 0.35);
   --term-scrollbar-hover: rgba(108, 112, 126, 0.55);
 
-  /* Diff and merge colors, JetBrains style. */
+  /* Diff and merge colors. */
   --diff-modified: rgba(53, 116, 240, 0.13);
   --diff-modified-edge: #6f9cf5;
   --diff-added: rgba(76, 175, 80, 0.16);

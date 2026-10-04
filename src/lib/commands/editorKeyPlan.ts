@@ -25,8 +25,8 @@ function editorAction(spec: CommandSpec): EditorAction | null {
 }
 
 /**
- * Window commands whose key also works in an editor, over the editor's own binding: like
- * JetBrains, Cmd+Up jumps to the Navigation Bar (Cmd+Home still goes to the top).
+ * Window commands whose key also works in an editor, over the editor's own binding:
+ * Cmd+Up jumps to the Navigation Bar (Cmd+Home still goes to the top).
  */
 const IN_EDITOR = new Set<CommandId>(["edit.navigationBar"]);
 

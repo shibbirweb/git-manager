@@ -1,4 +1,4 @@
-// The status bar's repository picker and its Auto mode, like VS Code: with Auto
+// The status bar's repository picker and its Auto mode: with Auto
 // the active repository follows the open tab, otherwise it stays where the user
 // put it. The decisions themselves are in repoSelection.ts.
 

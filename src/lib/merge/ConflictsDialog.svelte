@@ -1,4 +1,4 @@
-<!-- JetBrains-style "Conflicts" list: pick a side per file or open the merge tool. -->
+<!-- The "Conflicts" list: pick a side per file or open the merge tool. -->
 <script lang="ts">
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";

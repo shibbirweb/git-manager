@@ -1,4 +1,4 @@
-//! JetBrains' Shelve Changes, Unshelve and the Shelf: changes saved as a patch in
+//! Shelve Changes, Unshelve and the Shelf: changes saved as a patch in
 //! `.git/gitmanager-shelf/` (see shelf/store.rs) and reverted from the work tree.
 
 use std::collections::HashSet;
@@ -527,7 +527,7 @@ mod tests {
         assert!(!outcome.conflicts);
         assert_eq!(snapshot(&repo), before, "every file is back as it was");
         assert!(block_list(&repo).is_empty(), "removed from the shelf once applied");
-        // Like JetBrains, unshelving does not stage: the new files are untracked again.
+        // Unshelving does not stage: the new files are untracked again.
         assert!(repo.porcelain().contains("?? added.txt"), "{}", repo.porcelain());
     }
 

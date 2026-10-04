@@ -4,7 +4,7 @@
 
 import { indentColumns } from "./indentGuides";
 
-/** Pinned lines at most, like VS Code's editor.stickyScroll.maxLineCount. */
+/** Pinned lines at most. */
 export const MAX_STICKY_LINES = 5;
 
 /** How many lines the indentation and heading rules look back from the top line. */
@@ -59,8 +59,8 @@ export function headerLines(scopes: readonly Scope[], topLine: number, lineText:
 /**
  * Pinned lines for a scroll position. The pinned lines cover the first lines on screen, so
  * the line under them decides: `scopesAt(n)` gives the scopes around line n and
- * `lineAfter(count)` the line just below `count` pinned rows. Two passes settle it, like
- * VS Code, without a loop that could flicker.
+ * `lineAfter(count)` the line just below `count` pinned rows. Two passes settle it,
+ * without a loop that could flicker.
  */
 export function stickyLinesFor(
   topLine: number,

@@ -174,7 +174,7 @@ pub async fn commit(
     blocking(move || run_commit(&repo_path, &message, amend, false, &options.unwrap_or_default())).await
 }
 
-/// VS Code's Commit All: stages every tracked change, then commits. Untracked files stay out.
+/// Commit All: stages every tracked change, then commits. Untracked files stay out.
 #[tauri::command]
 pub async fn commit_all(
     repo_path: String,
@@ -255,7 +255,7 @@ pub async fn commit_files(
     blocking(move || run_commit_files(&repo_path, &file_paths, &message, amend, &options.unwrap_or_default())).await
 }
 
-/// JetBrains' Rollback: files in HEAD get their HEAD version back in the index and
+/// Rollback: files in HEAD get their HEAD version back in the index and
 /// the work tree; files only in the index (added) are unstaged, and deleted from
 /// disk when `delete_added`. Untracked files are left alone.
 fn run_rollback(repo_path: &str, file_paths: &[String], delete_added: bool) -> AppResult<()> {

@@ -1,4 +1,4 @@
-//! Go to File (JetBrains' Search Everywhere for files): an in-memory index of
+//! Go to File (Search Everywhere for files): an in-memory index of
 //! the workspace folders' files, built off the main thread by the ripgrep
 //! walker, and fuzzy matching over it with nucleo-matcher.
 //!

@@ -1,4 +1,4 @@
-// Git blame in CodeMirror, like VS Code with GitLens: an inline note at the
+// Git blame in CodeMirror: an inline note at the
 // end of the cursor line ("Author, 3 months ago - summary") and an optional
 // gutter column with the commit, author and age of every block of lines.
 

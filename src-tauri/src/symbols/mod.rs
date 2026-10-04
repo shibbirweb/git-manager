@@ -1,4 +1,4 @@
-//! Classes and Symbols (JetBrains' Go to Class / Go to Symbol): definitions
+//! Classes and Symbols (Go to Class / Go to Symbol): definitions
 //! found by `extract` in the source files of the Go to File index, stored
 //! compactly and matched with nucleo-matcher.
 //!

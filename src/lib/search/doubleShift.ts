@@ -1,4 +1,4 @@
-// Detects a JetBrains style double Shift: two quick taps of Shift alone. Kept
+// Detects a double Shift: two quick taps of Shift alone. Kept
 // pure (fed plain key events with their time stamps) so it can be tested
 // without a DOM.
 

@@ -44,7 +44,7 @@ class CompareStore {
     this.open({ kind: "file", filePath: leftPath }, { kind: "file", filePath: rightPath });
   }
 
-  /** The chosen file on the left, `filePath` on the right, like VS Code. */
+  /** The chosen file on the left, `filePath` on the right. */
   compareWithSelected(filePath: string): void {
     const selected = this.selectedInWorkspace();
     if (selected && selected !== filePath) {

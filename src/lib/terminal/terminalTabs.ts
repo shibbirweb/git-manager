@@ -1,5 +1,4 @@
-// A terminal moved into the editor area, like VS Code's "Move Terminal into
-// Editor Area". It shares the tab strip with file tabs, so its "path" is a
+// A terminal moved into the editor area ("Move Terminal into Editor Area"). It shares the tab strip with file tabs, so its "path" is a
 // pseudo path that can never be a file (see stores/commitTabs.ts for the same
 // idea): it does not start with "/", so folder and repository lookups never
 // match it. Kept free of Svelte so it can be tested directly.
@@ -59,7 +58,7 @@ export interface PanelState {
 /**
  * The panel after `leavingKey` leaves it (moved into the editor, killed or
  * exited): the shown terminal follows the usual close rule among the panel's
- * terminals only, and like VS Code the panel hides with its last terminal.
+ * terminals only, and the panel hides with its last terminal.
  * A terminal in the editor never changes the panel.
  */
 export function panelAfterLeave(terminals: PlacedTerminal[], leavingKey: number, state: PanelState): PanelState {

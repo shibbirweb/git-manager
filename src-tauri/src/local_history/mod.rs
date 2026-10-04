@@ -1,4 +1,4 @@
-//! Local History, like JetBrains' and VS Code's Timeline: a copy of a file's text on every save
+//! Local History: a copy of a file's text on every save
 //! from the app, when an open file changes outside it, and before Discard, Rollback and Revert.
 //! Only on after the frontend switches it on (`configure`), so tests and the merge tool window
 //! never write to `~/.gitmanager`.

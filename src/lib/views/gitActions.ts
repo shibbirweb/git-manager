@@ -61,7 +61,7 @@ export function pushTags(repoRoot?: string): Promise<unknown> {
 }
 
 /**
- * Sync Changes, like VS Code: pull what the upstream has, then push what this
+ * Sync Changes: pull what the upstream has, then push what this
  * branch has; a branch without an upstream is published instead. A pull that
  * stops on conflicts stops the sync there (the Conflicts dialog opens).
  * Resolves true when everything went through.

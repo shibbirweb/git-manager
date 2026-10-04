@@ -1,4 +1,4 @@
-//! The per-branch actions of JetBrains' Branches popup that the plain branch commands lack:
+//! The per-branch actions of the Branches popup that the plain branch commands lack:
 //! Update and Push for a branch that is not checked out, Track / Unset upstream, Compare
 //! with Current and Show Diff with Working Tree.
 

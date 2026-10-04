@@ -5,7 +5,7 @@ import { buildCommandSpecs } from "./registry";
 
 const specs = buildCommandSpecs(menuSpec("macos", "app"));
 const linuxSpecs = buildCommandSpecs(menuSpec("linux", "app"));
-/** Jump to Navigation Bar works from an editor even with the default keys, like JetBrains. */
+/** Jump to Navigation Bar works from an editor even with the default keys. */
 const NAV_BAR = { commandId: "edit.navigationBar", key: "Meta-ArrowUp" };
 
 describe("editorKeyPlan", () => {

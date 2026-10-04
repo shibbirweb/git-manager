@@ -38,7 +38,7 @@
   let loadingRoot = $state<string | null>(null);
   let messageEl = $state<HTMLTextAreaElement | null>(null);
   let historyButton = $state<HTMLButtonElement | null>(null);
-  // Cmd+E on macOS, where Ctrl+E moves to the end of the line; Ctrl+E elsewhere, like JetBrains.
+  // Cmd+E on macOS, where Ctrl+E moves to the end of the line; Ctrl+E elsewhere.
   const onMac = platformFromUserAgent(navigator.userAgent) === "macos";
   const historyShortcut = onMac ? "Cmd+E" : "Ctrl+E";
 
@@ -251,7 +251,7 @@
     if (!settings.commitMessageHistory || event.altKey || event.shiftKey) {
       return;
     }
-    // JetBrains' Cmd+E, or Up in an empty box like a shell: the message history.
+    // Cmd+E, or Up in an empty box like a shell: the message history.
     const historyModifier = onMac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
     const historyKey = (historyModifier && event.code === "KeyE") || (!command && event.key === "ArrowUp" && draft.message === "");
     if (historyKey) {
@@ -351,7 +351,7 @@
     </span>
   </div>
   {#if sync.kind !== "none"}
-    <!-- Like VS Code's Sync Changes: pull, then push; or publish a branch that has no upstream yet. -->
+    <!-- Sync Changes: pull, then push; or publish a branch that has no upstream yet. -->
     <button class="btn sync" onclick={() => void syncRepo(repo.root)} disabled={busy} title={syncTooltip(sync)}>
       <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={13} />
       {#if sync.kind === "publish"}

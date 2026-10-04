@@ -1,4 +1,4 @@
-// Dragging a tab in an editor group's strip, JetBrains style: the other tabs slide aside
+// Dragging a tab in an editor group's strip: the other tabs slide aside
 // while the dragged one follows the pointer. The gap a drop lands in comes from where the
 // tabs were when the drag started, so the sliding does not feed back into the target.
 

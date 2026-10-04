@@ -1,5 +1,4 @@
-// Back / forward location history across files, like VS Code's Go Back / Go
-// Forward. Small cursor moves update the current location in place; opening
+// Back / forward location history across files. Small cursor moves update the current location in place; opening
 // another file or jumping far records a new entry.
 
 import { isPseudoTab } from "./pseudoTabs";

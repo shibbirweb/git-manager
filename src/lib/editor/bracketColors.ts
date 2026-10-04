@@ -1,4 +1,4 @@
-// Bracket pair colors, like VS Code's editor.bracketPairColorization: each pair of
+// Bracket pair colors: each pair of
 // brackets gets a color by how deep it is nested. Only the lines on screen are colored.
 // Brackets come from the syntax tree, so the ones inside strings and comments are skipped,
 // and the depth at the top of the screen comes from the bracketed nodes around it, so

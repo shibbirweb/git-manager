@@ -1,4 +1,4 @@
-// The Navigation Bar, like JetBrains': the path of the file on screen as crumbs, each folder
+// The Navigation Bar: the path of the file on screen as crumbs, each folder
 // with a popup of what it holds. Moving through the popups builds a trail of crumbs that
 // may leave the file's path ("browsing"); closing the bar goes back to the file's path.
 // Pure, so the key handling in NavigationBar.svelte stays small and tested.
@@ -131,7 +131,7 @@ export function folderItems(folders: readonly NavFolder[], repoRoots: ReadonlySe
 
 /**
  * The rows for `query`: all items in order when it is empty, else the names that match it
- * (letters in order, like JetBrains' speed search), best first, ties in listing order.
+ * (letters in order, speed search style), best first, ties in listing order.
  */
 export function navRows(items: readonly NavItem[], query: string): NavRow[] {
   const text = query.trim();

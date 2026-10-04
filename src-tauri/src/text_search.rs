@@ -1,4 +1,4 @@
-//! Find in Files (JetBrains' Text tab): ripgrep's searcher and regex matcher
+//! Find in Files (the Text tab): ripgrep's searcher and regex matcher
 //! over the Go to File index's files, on a few threads, streaming results in
 //! small batches as they are found.
 //!

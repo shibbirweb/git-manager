@@ -128,7 +128,7 @@
     });
   });
 
-  // Double Shift opens Search Everywhere, like JetBrains. Capture phase, so it is seen
+  // Double Shift opens Search Everywhere. Capture phase, so it is seen
   // even when an editor or the terminal handles the key itself.
   const doubleShift = new DoubleShift();
   onMount(() => {
@@ -154,7 +154,7 @@
   // Closing the workspace closes the popup too.
   onDestroy(() => fileSearch.close());
 
-  // Mouse side buttons navigate like in a browser or VS Code.
+  // Mouse side buttons navigate like in a browser.
   function onMouseUp(event: MouseEvent): void {
     if (event.button === 3) {
       event.preventDefault();

@@ -1,4 +1,4 @@
-<!-- JetBrains' Merge dialog: "Merge into BRANCH", the branch to merge, the merge options,
+<!-- The Merge dialog: "Merge into BRANCH", the branch to merge, the merge options,
      the commit message when a merge commit can be made, and the command it runs. -->
 <script lang="ts">
   import { onMount, untrack } from "svelte";

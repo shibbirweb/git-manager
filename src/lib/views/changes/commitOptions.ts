@@ -1,4 +1,4 @@
-// JetBrains' Commit Options, kept pure: the author check, the git arguments each option
+// Commit Options, kept pure: the author check, the git arguments each option
 // adds (mirroring commands/commit_options.rs) and what the gear shows.
 
 import type { CommitOptions, GpgSign } from "$lib/types";

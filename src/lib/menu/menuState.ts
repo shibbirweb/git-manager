@@ -268,7 +268,7 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["window.splitRight"] = { enabled: grouping && groups.canSplit };
   state["window.moveTabToOtherGroup"] = { enabled: grouping && inputs.shownView === "file" && inputs.tabCount > 0 };
   state["window.focusLeftGroup"] = { enabled: grouping && groups.count > 1 && groups.focusedIndex !== 0 };
-  // With one group it splits the tab on screen to the right, as in VS Code.
+  // With one group it splits the tab on screen to the right.
   state["window.focusRightGroup"] = { enabled: grouping && (groups.count > 1 ? groups.focusedIndex !== 1 : groups.canSplit) };
   state["window.closeGroup"] = { enabled: grouping && groups.count > 1 };
   // Works from the welcome screen too, with the server on or off.
@@ -322,7 +322,7 @@ export function gitMenuState(repo: GitRepoInputs | null, gitFile: GitFileInputs 
     state[action] = { enabled: ready && bisecting };
   }
 
-  // Shown only while they apply, named after the operation, like JetBrains.
+  // Shown only while they apply, named after the operation.
   const name = OPERATION_NAMES[operation] ?? null;
   const conflicts = repo?.conflicts ?? 0;
   state["git.resolveConflicts"] = { enabled: ready && conflicts > 0, visible: conflicts > 0 };

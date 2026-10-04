@@ -1,4 +1,4 @@
-// Which compare items the Files panel menu offers, like VS Code: "Select for Compare" on a
+// Which compare items the Files panel menu offers: "Select for Compare" on a
 // file, then "Compare with Selected" on another one, or "Compare Selected" with two files
 // selected. Pure, so the rules are tested; compareStore.svelte.ts keeps the chosen file.
 

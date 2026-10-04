@@ -1,4 +1,4 @@
-// Auto save, like VS Code's files.autoSave: off, a pause after the last edit, or when the
+// Auto save: off, a pause after the last edit, or when the
 // editor loses focus (another tab, another part of the window, another app). FileView.svelte
 // runs the timers and listeners; this decides whether a save may happen. Pure.
 

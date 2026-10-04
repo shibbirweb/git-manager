@@ -31,7 +31,7 @@ describe("buildQuery", () => {
     expect(query.wholeWord).toBe(true);
     expect(query.regexp).toBe(false);
     expect(query.literal).toBe(true);
-    // Without Regex a typed \n is two characters, as in JetBrains.
+    // Without Regex a typed \n is two characters.
     expect(countMatches(state("a\\nb a\nb"), query).total).toBe(1);
     expect(optionsOf(query)).toEqual({ matchCase: true, wholeWords: true, regex: false });
   });

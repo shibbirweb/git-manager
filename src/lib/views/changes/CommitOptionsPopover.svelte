@@ -1,4 +1,4 @@
-<!-- JetBrains' Commit Options behind a gear next to the Commit button: sign-off, author,
+<!-- Commit Options behind a gear next to the Commit button: sign-off, author,
      GPG signing and skipping hooks. Sign-off and GPG are settings; the author and Skip hooks
      stay with the repository until the app quits. -->
 <script lang="ts">

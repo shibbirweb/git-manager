@@ -153,7 +153,7 @@ fn parse_etc_shells(text: &str) -> Vec<String> {
     shells
 }
 
-/// Login shells read the user's profile so PATH matches Terminal.app, like VS Code on macOS.
+/// Login shells read the user's profile so PATH matches Terminal.app on macOS.
 #[cfg(unix)]
 fn login_args(shell_name: &str) -> Vec<String> {
     match shell_name {

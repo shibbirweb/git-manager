@@ -120,7 +120,7 @@ export function changedFeatures(previous: EditorFeatureOptions, next: EditorFeat
   });
 }
 
-/** Prose and plain text get words only on Ctrl+Space, like JetBrains, so writing a sentence opens no list. */
+/** Prose and plain text get words only on Ctrl+Space, so writing a sentence opens no list. */
 export function wordsWhileTyping(languageName: string | null): boolean {
   return languageName !== null && languageName !== "markdown";
 }

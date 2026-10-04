@@ -1,5 +1,5 @@
 <!--
-  The Git Console (JetBrains' Git tool window, Console tab): every git command the app ran, newest last.
+  The Git Console: every git command the app ran, newest last.
   Mounted only while it is on screen: it loads the backend's list, then follows the "git-command" events.
 -->
 <script lang="ts">
