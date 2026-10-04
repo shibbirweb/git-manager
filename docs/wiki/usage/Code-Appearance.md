@@ -4,6 +4,10 @@ These settings are in [Settings](Settings.md#editor), **Editor**. They apply to 
 
 ## Font weight
 
+[TODO:editor-font-weight.png]
+
+*Editor font weight set to Light, with the font preview above it.*
+
 **Editor font weight** sets how thick code is drawn. Drag the slider from **Thin** (100) to **Black** (900), in steps of 100. The default is **Regular** (400). Double-click the slider to go back to it. The preview above the slider shows the result before you close Settings.
 
 For a soft, calm look like JetBrains IDEs on a dark theme, try **Light** (300) with JetBrains Mono. Bold text in code, such as Markdown headings, stays a little heavier than the weight you pick.

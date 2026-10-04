@@ -151,7 +151,7 @@
       "title": "Code appearance",
       "usage": "usage/Code-Appearance.md",
       "developer": "developer/How-Code-Appearance-Works.md",
-      "screenshots": ["editor-whitespace.png"]
+      "screenshots": ["editor-whitespace.png", "editor-font-weight.png"]
     },
     {
       "id": "markdown",

@@ -2017,6 +2017,18 @@ define("settings-editor-fonts", async (shot) => {
   await shot.save(dialog);
 });
 
+define("editor-font-weight", async (shot) => {
+  const dialog = await openSettings(shot, "Editor");
+  await scrollSettingsTo(dialog, "Editor font family");
+  await shot.settle();
+  const preview = dialog.locator(".font-preview");
+  const weight = dialog.locator(".row", { hasText: "Editor font weight" }).first();
+  const across = await shot.clipAround([dialog.locator(".rows")], 0);
+  const down = await shot.clipAround([preview, weight], { top: 12, bottom: 12 });
+  await shot.page.mouse.move(5, 790);
+  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+}, () => ({ settings: { editorFontWeight: 300 } }));
+
 define("settings-automation", async (shot) => {
   const dialog = await openSettings(shot, "Automation");
   await shot.page.mouse.move(5, 790);
