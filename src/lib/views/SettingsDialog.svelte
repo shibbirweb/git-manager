@@ -312,7 +312,7 @@
 
   /** Sublime Text's caret_extra_top and caret_extra_bottom. */
   const caretExtras: { key: "editorCaretExtraTop" | "editorCaretExtraBottom"; label: string; hint: string }[] = [
-    { key: "editorCaretExtraTop", label: "Caret extra top", hint: "Pixels the cursor reaches above the text, so it is easier to see, like Sublime Text." },
+    { key: "editorCaretExtraTop", label: "Caret extra top", hint: "Pixels the cursor reaches above the text, so it is easier to see." },
     { key: "editorCaretExtraBottom", label: "Caret extra bottom", hint: "Pixels the cursor reaches below the text." },
   ];
 
@@ -341,7 +341,7 @@
     },
     { key: "editorFoldGutter", label: "Fold arrows", hint: "Arrows beside the line numbers fold and unfold blocks in the file editor." },
     { key: "editorIndentGuides", label: "Indent guides", hint: "Faint lines at each indent level, also in diffs and the merge tool." },
-    { key: "editorHighlightWord", label: "Highlight the word at the cursor", hint: "Mark the other uses of that word, like JetBrains." },
+    { key: "editorHighlightWord", label: "Highlight the word at the cursor", hint: "Mark the other uses of that word." },
     { key: "editorScrollPastEnd", label: "Scroll past the end", hint: "Scroll the last line up to the top of the file editor." },
     { key: "editorColumnSelection", label: "Column selection", hint: "Option+drag selects a rectangle of text." },
     { key: "editorStickyScroll", label: "Sticky scroll", hint: "Keep the lines of the blocks you are in pinned at the top of the file editor. Click one to jump to it." },
@@ -666,6 +666,21 @@
               {/each}
             </div>
           </div>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Rounded panels</span>
+              <span class="hint">
+                Show the sidebars, editors and the bottom panel as rounded panels with space between them. Works with every
+                color theme.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.roundedPanels}
+              onchange={(event) => set("roundedPanels", event.currentTarget.checked)}
+            />
+          </label>
           <div class="row">
             <div class="label">
               <span>Interface font size</span>
@@ -734,8 +749,8 @@
             <div class="label">
               <span>Editor font family</span>
               <span class="hint">
-                A comma-separated list, like VS Code's <code>editor.fontFamily</code>. The first installed font is used;
-                <code>monospace</code> is always added as the last fallback.
+                A comma-separated list. The first installed font is used; <code>monospace</code> is always added as the last
+                fallback.
               </span>
             </div>
             <div class="font-row">
@@ -929,7 +944,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Cursor style</span>
-              <span class="hint">The shape of the cursor in editors, diffs and the merge tool, like VS Code.</span>
+              <span class="hint">The shape of the cursor in editors, diffs and the merge tool.</span>
             </div>
             <select
               class="input select"
@@ -1045,7 +1060,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Right margin line</span>
-              <span class="hint">A thin line at a column, like VS Code's rulers, in editors, diffs and the merge tool.</span>
+              <span class="hint">A thin line at a column in editors, diffs and the merge tool.</span>
             </div>
             <input
               type="checkbox"
@@ -1058,7 +1073,7 @@
             <div class="row sub-row">
               <div class="label">
                 <span>Margin column</span>
-                <span class="hint">From {EDITOR_RULER_RANGE[0]} to {EDITOR_RULER_RANGE[1]}. JetBrains uses {DEFAULT_RULER_COLUMN}.</span>
+                <span class="hint">From {EDITOR_RULER_RANGE[0]} to {EDITOR_RULER_RANGE[1]}.</span>
               </div>
               <input
                 class="input number-input"
@@ -1099,7 +1114,7 @@
             <div class="label">
               <span>Recent Files<MemoryFlag setting="recentFiles" /></span>
               <span class="hint">
-                Cmd+E lists the files you worked on last, like JetBrains, and Quick Open and Search Everywhere show them first.
+                Cmd+E lists the files you worked on last, and Quick Open and Search Everywhere show them first.
                 Each workspace keeps up to 50 in state.json. Off, Cmd+E only says it is off.
               </span>
             </div>
@@ -1321,7 +1336,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
-              <span class="hint">Show the author, age and commit of the cursor line at its end, like VS Code with GitLens. Cmd+click it (Ctrl+click elsewhere) to show the commit in the Log; add Option to copy the commit hash.</span>
+              <span class="hint">Show the author, age and commit of the cursor line at its end. Cmd+click it (Ctrl+click elsewhere) to show the commit in the Log; add Option to copy the commit hash.</span>
             </div>
             <input
               type="checkbox"
@@ -1589,8 +1604,7 @@
             <div class="label">
               <span>Font family</span>
               <span class="hint">
-                A comma-separated list, like VS Code's <code>terminal.integrated.fontFamily</code>. Leave it empty to use
-                the editor font.
+                A comma-separated list. Leave it empty to use the editor font.
               </span>
             </div>
             <div class="font-row">
@@ -2026,7 +2040,7 @@
             <div class="row stacked">
               <div class="label">
                 <span>Other MCP clients</span>
-                <span class="hint">Most clients (Cursor, VS Code, Windsurf...) read a config like this one.</span>
+                <span class="hint">Most MCP clients read a config like this one.</span>
               </div>
               <div class="snippet">
                 <pre class="command selectable">{mcpJsonConfig(mcpUrl, showToken ? mcpToken : maskToken(mcpToken))}</pre>
@@ -2267,7 +2281,7 @@
             <div class="label">
               <span>Settings folder</span>
               <span class="hint">
-                Git Manager keeps its files here, like VS Code's <code>~/.vscode</code>. You can edit
+                Git Manager keeps its files here. You can edit
                 <code>settings.json</code> by hand; <code>state.json</code> remembers recent folders and panel sizes.
               </span>
             </div>

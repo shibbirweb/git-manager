@@ -204,6 +204,9 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ fileIcons: "material" }).preferences.fileIcons).toBe("material");
     expect(parsePreferences({ fileIcons: "minimal" }).preferences.fileIcons).toBe("minimal");
     expect(parsePreferences({ fileIcons: true }).preferences.fileIcons).toBe("off");
+    expect(defaultPreferences.roundedPanels).toBe(false);
+    expect(parsePreferences({ roundedPanels: true }).preferences.roundedPanels).toBe(true);
+    expect(parsePreferences({ roundedPanels: "yes" }).preferences.roundedPanels).toBe(false);
     expect(parsePreferences({ detectIndentation: false }).preferences.detectIndentation).toBe(false);
     expect(parsePreferences({ detectIndentation: "no" }).preferences.detectIndentation).toBe(true);
     expect(extras.editorBracketPairColors).toBe(true);

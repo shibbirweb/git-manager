@@ -1986,19 +1986,18 @@ define("color-theme-solarized-light", async (shot) => {
   await shot.save();
 }, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "solarized-light" } }));
 
-define("color-theme-islands-dark", async (shot) => {
-  await waitForColorTheme(shot, "islands-dark");
-  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-islands"));
+define("rounded-panels", async (shot) => {
+  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
   await overview(shot);
   await shot.save();
-}, () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "islands-dark" } }));
+}, () => ({ colorScheme: "dark", settings: { theme: "dark", roundedPanels: true } }));
 
-define("color-theme-islands-light", async (shot) => {
+define("rounded-panels-islands-light", async (shot) => {
   await waitForColorTheme(shot, "islands-light");
-  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-islands"));
+  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
   await overview(shot);
   await shot.save();
-}, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light" } }));
+}, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light", roundedPanels: true } }));
 
 define("color-theme-high-contrast", async (shot) => {
   await waitForColorTheme(shot, "high-contrast-dark");

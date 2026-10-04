@@ -155,16 +155,16 @@
     height: 3px;
   }
 
-  /* Islands themes: the handle covers the whole gap between two islands. */
-  :global(html[data-islands]) .handle {
-    width: var(--island-gap);
-    margin: 0 calc(-1 * var(--island-gap));
+  /* Rounded panels: the handle covers the whole gap between two panels. */
+  :global(html[data-rounded-panels]) .handle {
+    width: var(--panel-gap);
+    margin: 0 calc(-1 * var(--panel-gap));
   }
 
-  :global(html[data-islands]) .handle.horizontal {
+  :global(html[data-rounded-panels]) .handle.horizontal {
     width: auto;
-    height: var(--island-gap);
-    margin: calc(-1 * var(--island-gap)) 0;
+    height: var(--panel-gap);
+    margin: calc(-1 * var(--panel-gap)) 0;
   }
 
   /* Keep the resize cursor and stop text selection while dragging. */

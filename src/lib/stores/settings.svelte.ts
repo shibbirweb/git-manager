@@ -142,6 +142,7 @@ class SettingsStore {
   darkColorTheme = $state(initialPreferences.darkColorTheme);
   uiFontSize = $state(initialPreferences.uiFontSize);
   fileIcons = $state<FileIconMode>(initialPreferences.fileIcons);
+  roundedPanels = $state(initialPreferences.roundedPanels);
   editorFontSize = $state(initialPreferences.editorFontSize);
   editorLineHeight = $state(initialPreferences.editorLineHeight);
   editorFontFamily = $state(initialPreferences.editorFontFamily);
@@ -372,6 +373,7 @@ class SettingsStore {
       darkColorTheme: this.darkColorTheme,
       uiFontSize: this.uiFontSize,
       fileIcons: this.fileIcons,
+      roundedPanels: this.roundedPanels,
       editorFontSize: this.editorFontSize,
       editorLineHeight: this.editorLineHeight,
       editorFontFamily: this.editorFontFamily,
@@ -859,6 +861,7 @@ class SettingsStore {
     root.style.setProperty("--font-mono", this.editorFontFamily);
     root.style.setProperty("--code-weight", String(this.editorFontWeight));
     root.setAttribute("data-ligatures", this.fontLigatures ? "on" : "off");
+    root.toggleAttribute("data-rounded-panels", this.roundedPanels);
   }
 }
 

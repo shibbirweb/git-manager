@@ -4,20 +4,12 @@ import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "./themeIndex";
 
 describe("themeAttributes", () => {
   it("names the mode, the theme and high contrast", () => {
-    expect(themeAttributes("dark", "dracula")).toEqual({ theme: "dark", colorTheme: "dracula", contrast: null, islands: false });
+    expect(themeAttributes("dark", "dracula")).toEqual({ theme: "dark", colorTheme: "dracula", contrast: null });
     expect(themeAttributes("light", "high-contrast-light")).toEqual({
       theme: "light",
       colorTheme: "high-contrast-light",
       contrast: "high",
-      islands: false,
     });
-  });
-
-  it("asks for the islands layout only for the Islands themes", () => {
-    expect(themeAttributes("dark", "islands-dark").islands).toBe(true);
-    expect(themeAttributes("light", "islands-light").islands).toBe(true);
-    expect(themeAttributes("light", "islands-dark").islands).toBe(false);
-    expect(themeAttributes("dark", DEFAULT_DARK_THEME).islands).toBe(false);
   });
 
   it("falls back to the mode's default for ids of the other mode or unknown ones", () => {

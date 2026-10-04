@@ -9,11 +9,13 @@
   --ui-size: 13px;
   --code-size: 13px;
   --radius: 6px;
-  /* Islands themes (data-islands on <html>): the space between panels and their corner radius. */
-  --island-gap: 6px;
-  --island-radius: 10px;
+  /* Rounded panels (data-rounded-panels on <html>): the space between panels and their corner radius. */
+  --panel-gap: 6px;
+  --panel-radius: 10px;
 
   --bg: #f7f8fa;
+  /* The window behind rounded panels (Settings > Appearance); it must stand apart from --panel. */
+  --frame: #ebecf0;
   --panel: #ffffff;
   --panel-alt: #f2f3f5;
   --border: #ebecf0;
@@ -96,6 +98,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1e1f22;
+    --frame: #1e1f22;
     --panel: #2b2d30;
     --panel-alt: #25272a;
     --border: #1e1f22;
@@ -167,6 +170,7 @@
 
 :root[data-theme="dark"] {
   --bg: #1e1f22;
+  --frame: #1e1f22;
   --panel: #2b2d30;
   --panel-alt: #25272a;
   --border: #1e1f22;

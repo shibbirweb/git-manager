@@ -20,7 +20,7 @@ Your GitHub token is not in this folder: it is kept in the system keychain. See 
 
 Each key matches a setting in the dialog. Values in quotes must be one of the choices listed.
 
-**Appearance**: `theme` (`"system"`, `"light"`, `"dark"`), `uiFontSize`.
+**Appearance**: `theme` (`"system"`, `"light"`, `"dark"`), `roundedPanels`, `uiFontSize`.
 
 **Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `tabSize` (2, 4 or 8), `detectIndentation`, `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
 

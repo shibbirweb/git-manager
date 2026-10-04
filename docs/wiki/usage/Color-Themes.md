@@ -64,6 +64,8 @@ High contrast themes have their own group at the end of each list:
 - **The terminal:** its 16 colors, background, cursor and selection, also in terminals that are already open.
 - **Mermaid diagrams** in the Markdown preview. See [Markdown Editor](Markdown-Editor.md).
 
+Islands Light and Islands Dark bring the colors of the JetBrains themes. For their rounded, spaced-out panels, turn on **Rounded panels** in Settings > Appearance; it works with every theme. See [Rounded Panels](Rounded-Panels.md).
+
 Every theme is checked for readable text. Text on the editor and on panels has a contrast of at least 4.5 to 1 (7 to 1 in high contrast themes), selected text stays readable, and diff colors stand out from the background. Where a theme's own colors would fail, Git Manager adjusts them a little.
 
 ## Known gaps
@@ -73,7 +75,6 @@ The themes are new, and a few things do not follow them yet:
 - **The commit graph** in the Log keeps its own lane colors.
 - **Switches** in Settings keep a white knob.
 - **Diagrams in Preview Only** (the rich Markdown editor) keep their old colors until they are drawn again, for example after you scroll away and back.
-- **Islands Light and Islands Dark** use the colors of the JetBrains themes, but not their rounded, spaced-out panels.
 - **At startup** you may see the default colors for a moment before your theme is applied.
 
 ## Saved where

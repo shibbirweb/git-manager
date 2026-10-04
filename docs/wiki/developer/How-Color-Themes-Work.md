@@ -8,7 +8,7 @@ People spend hours a day in an editor, and they care a lot about its colors. Mos
 
 ## How it works
 
-Every color in the app is a CSS variable from `src/app.css`, such as `--panel`, `--text`, `--editor-bg`, `--diff-added`, `--tok-keyword` and `--term-red`. `src/lib/themes/tokens.ts` lists all 67 of them in `COLOR_TOKENS`. A theme is one value for each token.
+Every color in the app is a CSS variable from `src/app.css`, such as `--panel`, `--text`, `--editor-bg`, `--diff-added`, `--tok-keyword` and `--term-red`. `src/lib/themes/tokens.ts` lists all 71 of them in `COLOR_TOKENS`. A theme is one value for each token.
 
 - The **built-in themes** are the sets in `app.css`: `:root` for light, and the dark set twice, under `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` and `:root[data-theme="dark"]`. They need no JavaScript.
 - **Every other theme** is one generated `<style id="gm-color-theme">` element with the rule `html:root[data-color-theme="<id>"] { ... }`. `html:root` outranks `:root[data-theme]`, and the attribute scope means the rule only applies together with its attribute.
@@ -40,7 +40,7 @@ sequenceDiagram
 
 `themeIndex.ts` is small and always loaded: every theme's `id`, `name` and `kind` (`light`, `dark`, `high-contrast-light`, `high-contrast-dark`). Settings validation (`pickThemeId`) and the pickers (`themeGroups`) use it without loading any palette.
 
-`catalog.ts` is a lazy chunk with the palettes. Each `ThemeSpec` holds the theme's published colors: editor background and foreground, accent, selection, the 16 ANSI colors, syntax colors and, where the theme has them, UI colors. `deriveColors` builds all 67 tokens from that with the helpers in `color.ts` (`mix`, `composite`, `ensureContrast`, `fitTint`):
+`catalog.ts` is a lazy chunk with the palettes. Each `ThemeSpec` holds the theme's published colors: editor background and foreground, accent, selection, the 16 ANSI colors, syntax colors and, where the theme has them, UI colors. `deriveColors` builds all 71 tokens from that with the helpers in `color.ts` (`mix`, `composite`, `ensureContrast`, `fitTint`):
 
 - Hints, accent and status colors are pushed until they reach their contrast target on every surface they sit on.
 - Diff tints are faded (`fitTint`) until text on them stays readable.
@@ -75,7 +75,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 | `src/lib/themes/themeIndex.ts` | Ids, names, kinds, defaults, modes, groups, picker keys |
 | `src/lib/themes/catalog.ts` | Palettes, `deriveColors`, `themeCss`, `themeSwatch` |
 | `src/lib/themes/color.ts` | Parsing, mixing, WCAG contrast, Lab distance |
-| `src/lib/themes/tokens.ts` | The 67 color tokens |
+| `src/lib/themes/tokens.ts` | The 71 color tokens |
 | `src/lib/themes/apply.ts`, `watch.ts` | Putting a theme on the page; theme change watcher |
 | `src/lib/stores/settings.svelte.ts` | `lightColorTheme`, `darkColorTheme`, `colorMode`, `setColorTheme` |
 | `src/lib/views/settings/ColorThemePicker.svelte` | The pickers in Settings > Editor |
@@ -85,11 +85,11 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 **Two settings, not one.** `lightColorTheme` and `darkColorTheme` follow macOS without asking. A light theme can never be saved as the dark one: `pickThemeId` falls back to the mode's default.
 
-**Derive, do not hand-write.** 39 themes times 67 tokens would be thousands of values to keep right. Specs hold only what the theme publishes, and the derivation guarantees readable text.
+**Derive, do not hand-write.** 39 themes times 71 tokens would be thousands of values to keep right. Specs hold only what the theme publishes, and the derivation guarantees readable text.
 
 **The defaults cost nothing.** The built-in themes live in `app.css`, so the catalog chunk loads only for another theme or when Settings > Editor shows.
 
-**Colors come from the theme's own files.** Islands Light and Dark use JetBrains' `ManyIslandsLight.theme.json`, `ManyIslandsDark.theme.json` and their editor schemes in intellij-community (selection and console colors inherited from the parent schemes). VS Code Light+ and Dark+ use `light_plus.json` and `dark_plus.json` in microsoft/vscode plus VS Code's built-in workbench defaults. Islands' rounded, spaced panels are a layout, not colors, so only the colors are used.
+**Colors come from the theme's own files.** Islands Light and Dark use JetBrains' `ManyIslandsLight.theme.json`, `ManyIslandsDark.theme.json` and their editor schemes in intellij-community (selection and console colors inherited from the parent schemes). VS Code Light+ and Dark+ use `light_plus.json` and `dark_plus.json` in microsoft/vscode plus VS Code's built-in workbench defaults. Islands' rounded, spaced panels are a layout, not colors: that is the separate Rounded panels setting, see [How Rounded Panels Work](How-Rounded-Panels-Work.md). Its `--frame` token is derived here by `frameColor()`.
 
 **Contrast is tested, not hoped for.** Every theme must pass the same checks as the built-ins.
 
@@ -102,7 +102,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 ## Tests
 
-- `src/lib/themes/catalog.test.ts`: every listed theme has a palette and every token; the built-ins match `app.css` exactly, and its two dark blocks match each other. For every theme: text at 4.5:1 (7:1 for high contrast) on the editor, panels and background, a visible selection that text stays readable on, diff tints that stand out and keep text readable, and button text at 3:1.
+- `src/lib/themes/catalog.test.ts`: every listed theme has a palette and every token; the built-ins match `app.css` exactly, and its two dark blocks match each other. For every theme: text at 4.5:1 (7:1 for high contrast) on the editor, panels and background, a visible selection that text stays readable on, diff tints that stand out and keep text readable, a `--frame` that stands apart from the panels, and button text at 3:1.
 - `themeIndex.test.ts` (counts, unique ids, modes, `pickThemeId`, groups, `pickerMove`), `apply.test.ts` and `color.test.ts`.
 
 ## Keeping this page in sync

@@ -5,7 +5,7 @@
 // Values are computed on demand and never cached, so only the applied CSS
 // variables stay around.
 
-import { composite, contrastRatio, ensureContrast, fitTint, mix, withAlpha } from "./color";
+import { colorDistance, composite, contrastRatio, ensureContrast, fitTint, mix, withAlpha } from "./color";
 import {
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
@@ -62,12 +62,16 @@ interface ThemeSpec {
   };
 }
 
+/** How far (CIELAB distance) the frame behind rounded panels must be from the panels, or the gaps disappear. */
+const FRAME_DISTANCE = 5;
+
 const SHADOW_LIGHT = "0 8px 28px rgba(0, 0, 0, 0.16)";
 const SHADOW_DARK = "0 8px 28px rgba(0, 0, 0, 0.5)";
 
 /** The light set in src/app.css (a test keeps the two in sync). */
 const GM_LIGHT: ThemeColors = {
   "--bg": "#f7f8fa",
+  "--frame": "#ebecf0",
   "--panel": "#ffffff",
   "--panel-alt": "#f2f3f5",
   "--border": "#ebecf0",
@@ -142,6 +146,7 @@ const GM_LIGHT: ThemeColors = {
 /** The dark set in src/app.css (a test keeps the two in sync). */
 const GM_DARK: ThemeColors = {
   "--bg": "#1e1f22",
+  "--frame": "#1e1f22",
   "--panel": "#2b2d30",
   "--panel-alt": "#25272a",
   "--border": "#1e1f22",
@@ -818,6 +823,19 @@ const SPECS: Record<string, ThemeSpec> = {
   },
 };
 
+/**
+ * The window color behind rounded panels: the theme's own background when it
+ * differs enough from the panels, else the panel color darkened (dark themes)
+ * or greyed (light themes), and as a last resort moved toward the text.
+ */
+function frameColor(bg: string, panel: string, text: string, dark: boolean): string {
+  if (colorDistance(bg, panel) >= FRAME_DISTANCE) {
+    return bg;
+  }
+  const shaded = dark ? mix(panel, "#000000", 0.35) : mix(panel, text, 0.08);
+  return colorDistance(shaded, panel) >= FRAME_DISTANCE ? shaded : mix(panel, text, 0.12);
+}
+
 function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const dark = modeOfKind(kind) === "dark";
   const high = isHighContrast(kind);
@@ -828,9 +846,11 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const panel = ui.panel ?? (dark ? mix(editorBg, text, 0.05) : editorBg);
   const panelAlt = ui.panelAlt ?? (dark ? mix(editorBg, text, 0.025) : mix(editorBg, text, 0.035));
   const bg = ui.bg ?? (dark ? editorBg : mix(editorBg, text, 0.025));
+  const frame = frameColor(bg, panel, text, dark);
   const textMinimum = high ? 7 : 4.5;
   // Hints and status colors must read on every surface they sit on.
-  const legible = (color: string, minimum: number) => ensureContrast(ensureContrast(color, panel, minimum), bg, minimum);
+  const legible = (color: string, minimum: number) =>
+    ensureContrast(ensureContrast(ensureContrast(color, panel, minimum), bg, minimum), frame, minimum);
   const accent = legible(spec.accent, high ? 4.5 : 3);
   const accentText = ["#ffffff", dark ? editorBg : "#000000"].reduce((best, candidate) =>
     contrastRatio(candidate, accent) > contrastRatio(best, accent) ? candidate : best,
@@ -849,6 +869,7 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const bracket = (color: string) => ensureContrast(color, editorBg, high ? 7 : 3);
   return {
     "--bg": bg,
+    "--frame": frame,
     "--panel": panel,
     "--panel-alt": panelAlt,
     "--border": ui.border ?? (dark ? mix(panel, "#000000", 0.3) : mix(panel, text, 0.07)),

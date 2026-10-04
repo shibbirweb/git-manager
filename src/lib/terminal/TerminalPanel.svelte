@@ -387,10 +387,10 @@
     display: none;
   }
 
-  /* Islands themes: the bottom panel is its own island. */
-  :global(html[data-islands]) .panel {
+  /* Rounded panels: the bottom panel is a panel of its own. */
+  :global(html[data-rounded-panels]) .panel {
     border-top: none;
-    border-radius: var(--island-radius);
+    border-radius: var(--panel-radius);
     overflow: hidden;
   }
 

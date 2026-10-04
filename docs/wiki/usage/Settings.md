@@ -1,6 +1,6 @@
 # Settings
 
-Settings change how Git Manager looks and behaves. Changes apply at once and are saved. A mark such as **+70 MB** means a setting uses more memory when on ([Memory Use](Memory-Use.md#settings-that-use-more-memory)).
+Settings change how Git Manager looks and behaves, apply at once and are saved. A mark such as **+70 MB** means a setting uses more memory when on ([Memory Use](Memory-Use.md#settings-that-use-more-memory)).
 
 ## Open Settings
 
@@ -18,15 +18,16 @@ The sections are on the left: **Appearance**, **Editor**, **Git**, **Layout**, *
 
 ![Appearance settings](../images/settings-appearance.png)
 
-*Theme, interface font size and file icons.*
+*The Appearance section.*
 
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Theme | **System** follows the macOS appearance, or pick **Light** or **Dark**. The colors themselves are picked in **Editor**. | System |
+| Rounded panels | Rounded panels with space between them, in any color theme. See [Rounded Panels](Rounded-Panels.md). | Off |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
 | File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |
 
-The same choices are in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark in one click, so the theme stops following macOS until you pick **System** again.
+The theme is also in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark; macOS is followed again once you pick **System**.
 
 ![Dark theme](../images/dark-theme.png)
 
@@ -46,7 +47,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Editor font family | A comma-separated list, like VS Code's `editor.fontFamily`. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
+| Editor font family | A comma-separated list. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
 | Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. See [Zoom](Code-Appearance.md#zoom). | 13 px |
 | Editor font weight | Thin to Black. See [Font weight](Code-Appearance.md#font-weight). | Regular |
 | Line spacing | Space between lines, 1.0 to 2.5 times the font size. Double-click the slider to reset it. | 1.25 |
@@ -56,7 +57,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 | Detect indentation | Indent like the file does. Also View > Detect Indentation. See [Indentation](Code-Appearance.md#indentation). | On |
 | Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Code-Appearance.md#render-whitespace). | Selection |
 | Word wrap | Wraps long lines in the file editor, also with View > Word Wrap (Option+Z). Diffs and the merge tool never wrap. | Off |
-| Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Code-Appearance.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
+| Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor. See [The cursor](Code-Appearance.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
 | Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
 | Current line blame | Author, age and commit at the end of the cursor line. Cmd+click it to open the commit in the Log; Cmd+Option-click copies the hash. See [Blame](Blame.md). | On |

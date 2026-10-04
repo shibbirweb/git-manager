@@ -60,7 +60,7 @@ Validation lives in the pure functions `parsePreferences` and `parseState`:
 
 ### Applying a change
 
-`setPreference(key, value)` sets the field, calls `applyAppearance()` and saves. `applyAppearance()` pushes the look into the document: the color theme (`applyColorTheme`, see [How Color Themes Work](How-Color-Themes-Work.md)), `--ui-size`, `--code-size`, `--code-line-height`, `--font-mono` and `data-ligatures`. `data-theme` is now always set, also for System, which is watched with `matchMedia` (`systemDark`, `colorMode`).
+`setPreference(key, value)` sets the field, calls `applyAppearance()` and saves. `applyAppearance()` pushes the look into the document: the color theme (`applyColorTheme`, see [How Color Themes Work](How-Color-Themes-Work.md)), `--ui-size`, `--code-size`, `--code-line-height`, `--font-mono`, `data-ligatures` and `data-rounded-panels` (see [How Rounded Panels Work](How-Rounded-Panels-Work.md)). `data-theme` is now always set, also for System, which is watched with `matchMedia` (`systemDark`, `colorMode`).
 
 Settings that need the backend or a running service are applied by `$effect`s in `App.svelte` once settings have loaded:
 

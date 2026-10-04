@@ -424,27 +424,28 @@
     flex-direction: column;
   }
 
-  /* Islands themes: each panel is a rounded island on the window color. The resize
+  /* Rounded panels: each panel is rounded and sits on the window color. The resize
      handles fill the gaps (ResizeHandle.svelte), so flex gaps do the spacing. */
-  :global(html[data-islands]) .body {
-    gap: var(--island-gap);
-    padding: 0 var(--island-gap) var(--island-gap);
+  :global(html[data-rounded-panels]) .body {
+    gap: var(--panel-gap);
+    padding: 0 var(--panel-gap) var(--panel-gap);
+    background: var(--frame);
   }
 
-  :global(html[data-islands]) .sidebar,
-  :global(html[data-islands]) .explorer {
+  :global(html[data-rounded-panels]) .sidebar,
+  :global(html[data-rounded-panels]) .explorer {
     border: none;
-    border-radius: var(--island-radius);
+    border-radius: var(--panel-radius);
   }
 
-  :global(html[data-islands]) .main,
-  :global(html[data-islands]) .editor-area {
-    gap: var(--island-gap);
+  :global(html[data-rounded-panels]) .main,
+  :global(html[data-rounded-panels]) .editor-area {
+    gap: var(--panel-gap);
     background: transparent;
   }
 
-  :global(html[data-islands]) .editor-group {
-    border-radius: var(--island-radius);
+  :global(html[data-rounded-panels]) .editor-group {
+    border-radius: var(--panel-radius);
     overflow: hidden;
     background: var(--panel);
   }

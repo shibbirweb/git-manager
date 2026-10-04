@@ -11,8 +11,6 @@ export interface ThemeInfo {
   id: string;
   name: string;
   kind: ThemeKind;
-  /** Rounded panels with gaps between them, like JetBrains Islands (data-islands on <html>). */
-  islands?: boolean;
 }
 
 /** The built-in sets in src/app.css; they apply without loading the catalog. */
@@ -31,11 +29,11 @@ export const THEME_INDEX: readonly ThemeInfo[] = [
   { id: "tokyo-night-day", name: "Tokyo Night Day", kind: "light" },
   { id: "rose-pine-dawn", name: "Rosé Pine Dawn", kind: "light" },
   { id: "intellij-light", name: "IntelliJ Light", kind: "light" },
-  { id: "islands-light", name: "Islands Light", kind: "light", islands: true },
+  { id: "islands-light", name: "Islands Light", kind: "light" },
   { id: "vscode-light-plus", name: "VS Code Light+", kind: "light" },
   { id: DEFAULT_DARK_THEME, name: "Git Manager Dark", kind: "dark" },
   { id: "darcula", name: "Darcula", kind: "dark" },
-  { id: "islands-dark", name: "Islands Dark", kind: "dark", islands: true },
+  { id: "islands-dark", name: "Islands Dark", kind: "dark" },
   { id: "vscode-dark-plus", name: "VS Code Dark+", kind: "dark" },
   { id: "one-dark-pro", name: "One Dark Pro", kind: "dark" },
   { id: "dracula", name: "Dracula", kind: "dark" },

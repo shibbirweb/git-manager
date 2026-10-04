@@ -673,8 +673,8 @@
     opacity: 1;
   }
 
-  /* Islands themes: rounded tabs on the editor color, the active one tinted and outlined, like JetBrains Islands. */
-  :global(html[data-islands]) .tab-strip {
+  /* Rounded panels: rounded tabs on the editor color, the active one tinted and outlined, like JetBrains Islands. */
+  :global(html[data-rounded-panels]) .tab-strip {
     align-items: center;
     gap: 2px;
     padding: 0 6px;
@@ -682,33 +682,33 @@
     border-bottom-color: var(--border);
   }
 
-  :global(html[data-islands]) .tab-strip.wrap {
+  :global(html[data-rounded-panels]) .tab-strip.wrap {
     padding: 4px 6px;
     row-gap: 4px;
   }
 
-  :global(html[data-islands]) .tab-strip .tab {
+  :global(html[data-rounded-panels]) .tab-strip .tab {
     height: 26px;
     margin-bottom: 0;
     border: 1px solid transparent;
     border-radius: 6px;
   }
 
-  :global(html[data-islands]) .tab-strip .tab.active {
+  :global(html[data-rounded-panels]) .tab-strip .tab.active {
     background: var(--selected);
     border-color: color-mix(in srgb, var(--accent) 50%, var(--editor-bg));
   }
 
-  :global(html[data-islands]) .tab.active::before {
+  :global(html[data-rounded-panels]) .tab.active::before {
     display: none;
   }
 
-  :global(html[data-islands]) .tab-strip.unfocused .tab.active {
+  :global(html[data-rounded-panels]) .tab-strip.unfocused .tab.active {
     background: var(--selected-inactive);
     border-color: var(--border-strong);
   }
 
-  :global(html[data-islands]) .tab-main {
+  :global(html[data-rounded-panels]) .tab-main {
     padding-left: 10px;
   }
 </style>

@@ -201,6 +201,8 @@ export interface Preferences {
   uiFontSize: number;
   /** File type icons in the Files panel, the Changes list and commit file lists. Off by default: an icon set loads only when chosen. */
   fileIcons: FileIconMode;
+  /** Sidebars, editor groups and the bottom panel as rounded panels with space between them, like JetBrains Islands. Any color theme. */
+  roundedPanels: boolean;
   editorFontSize: number;
   /** Line height of code, as a multiple of the font size. */
   editorLineHeight: number;
@@ -388,6 +390,7 @@ export const defaultPreferences: Preferences = {
   darkColorTheme: DEFAULT_DARK_THEME,
   uiFontSize: 13,
   fileIcons: "off",
+  roundedPanels: false,
   editorFontSize: 13,
   editorLineHeight: 1.25,
   editorFontFamily: DEFAULT_EDITOR_FONT,
@@ -698,6 +701,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     darkColorTheme: pickThemeId(data.darkColorTheme, "dark"),
     uiFontSize: pickNumber(data.uiFontSize, defaultPreferences.uiFontSize, ...FONT_SIZE_RANGE.ui),
     fileIcons: pickOneOf(data.fileIcons, FILE_ICON_MODES, defaultPreferences.fileIcons),
+    roundedPanels: pickBoolean(data.roundedPanels, defaultPreferences.roundedPanels),
     editorFontSize: pickNumber(data.editorFontSize, defaultPreferences.editorFontSize, ...FONT_SIZE_RANGE.editor),
     editorLineHeight: roundTo(
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),

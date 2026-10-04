@@ -11,6 +11,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | Key | Default | Accepted | Used by |
 | --- | --- | --- | --- |
 | `theme` | `"system"` | `system`, `light`, `dark` | `applyAppearance`, `colorMode` |
+| `roundedPanels` | false | boolean | `data-rounded-panels` |
 | `uiFontSize` | 13 | 11 to 16 | `--ui-size` |
 | `fileIcons` | `"off"` | `off`, `minimal`, `material` | `fileIcons/fileIcons.svelte.ts`, View > File Icons |
 

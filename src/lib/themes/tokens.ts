@@ -3,6 +3,7 @@
 
 export const COLOR_TOKENS = [
   "--bg",
+  "--frame",
   "--panel",
   "--panel-alt",
   "--border",

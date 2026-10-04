@@ -94,10 +94,10 @@
     border-right: 1px solid var(--border-strong);
   }
 
-  /* Islands themes: a stripe on the window frame, flush with the window edge. */
-  :global(html[data-islands]) .activity {
-    margin-left: calc(-1 * var(--island-gap));
-    background: var(--bg);
+  /* Rounded panels: a stripe on the window frame, flush with the window edge. */
+  :global(html[data-rounded-panels]) .activity {
+    margin-left: calc(-1 * var(--panel-gap));
+    background: var(--frame);
     border-right: none;
   }
 

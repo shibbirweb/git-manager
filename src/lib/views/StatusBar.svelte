@@ -337,10 +337,10 @@
     color: var(--text-dim);
   }
 
-  /* Islands themes: the status bar is part of the window frame. */
-  :global(html[data-islands]) .status-bar {
+  /* Rounded panels: the status bar is part of the window frame. */
+  :global(html[data-rounded-panels]) .status-bar {
     border-top: none;
-    background: var(--bg);
+    background: var(--frame);
   }
 
   .left,
