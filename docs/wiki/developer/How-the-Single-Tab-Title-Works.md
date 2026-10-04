@@ -38,7 +38,7 @@ Nothing else in the markup changes. The title is the same `.tab` element with th
 - The tab loses its right border, its background and the accent line (`::before`).
 - The tab can shrink (`flex: 0 1 auto`, `min-width: 0`), so a long name ends in an ellipsis instead of overflowing a centered strip, which would cut off its start with no way to scroll to it.
 - The tab gets a left padding equal to the close button's width, so the name sits in the true middle, not 20 px to the left.
-- The close button shows on hover only, even on the active tab. A pinned tab keeps its pin in view.
+- The close button always shows, even when the tab is not the active one (for example while another view is open), so the lone file can be closed without hunting for it. A dirty tab still shows its dot until hover, like any tab.
 - Under [Rounded panels](How-Rounded-Panels-Work.md), the pill background and outline are cleared too.
 
 Dragging needs at least two tabs (`startDrag` returns null otherwise), so the title can never be dragged.
@@ -68,7 +68,7 @@ Dragging needs at least two tabs (`startDrag` returns null otherwise), so the ti
 - `src/lib/stores/tabs.test.ts`: `showsTabAsTitle` (one tab, the setting off, the Diff tab counted, empty and full strips).
 - `src/lib/stores/settingsData.test.ts`: the `singleTabTitle` default and validation.
 
-The centered look, the hover close button and the Rounded panels styles need a visual check in the app.
+The centered look, the always visible close button and the Rounded panels styles need a visual check in the app.
 
 ## Keeping this page in sync
 

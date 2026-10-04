@@ -546,10 +546,10 @@
     font-weight: 500;
   }
 
-  /* A pinned tab keeps its pin in view. */
-  .tab-strip.single .tab:not(:hover, .pinned) .tab-close .x,
-  .tab-strip.single .tab.diff:not(:hover) .tab-close {
-    opacity: 0;
+  /* The lone tab may not be the active one (another view shown), so its close button stays in view. */
+  .tab-strip.single .tab .tab-close .x,
+  .tab-strip.single .tab.diff .tab-close {
+    opacity: 1;
   }
 
   .tab-strip.dragging,

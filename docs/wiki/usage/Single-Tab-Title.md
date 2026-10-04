@@ -14,7 +14,7 @@ With **one tab** in the strip:
 - A preview tab (one you opened with a single click) still shows its name in italics, so you can tell it will be replaced by the next file you click.
 - A file with unsaved changes still shows a dot to the right of its name.
 - A pinned tab still shows its pin. Click the pin to unpin it.
-- The close button appears when you move the mouse over the name.
+- The close button always shows to the right of the name. With unsaved changes it shows the dot until you move the mouse over it.
 
 Everything else works the same as on a tab:
 
