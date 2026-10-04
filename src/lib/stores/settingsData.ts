@@ -309,6 +309,8 @@ export interface Preferences {
   splitEditor: boolean;
   /** Tabs that do not fit wrap onto more rows instead of scrolling (VS Code's workbench.editor.wrapTabs). */
   wrapTabs: boolean;
+  /** A strip with one tab shows it as a centered name instead of a tab. */
+  singleTabTitle: boolean;
   autoSave: AutoSaveMode;
   /** Pause after the last edit before an "afterDelay" auto save. */
   autoSaveDelayMs: number;
@@ -477,6 +479,7 @@ export const defaultPreferences: Preferences = {
   tabLimit: NO_TAB_LIMIT,
   splitEditor: true,
   wrapTabs: false,
+  singleTabTitle: true,
   autoSave: "off",
   autoSaveDelayMs: DEFAULT_AUTO_SAVE_DELAY,
   trimTrailingWhitespace: false,
@@ -802,6 +805,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     tabLimit: pickTabLimit(data.tabLimit),
     splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
     wrapTabs: pickBoolean(data.wrapTabs, defaultPreferences.wrapTabs),
+    singleTabTitle: pickBoolean(data.singleTabTitle, defaultPreferences.singleTabTitle),
     autoSave: pickOneOf(data.autoSave, AUTO_SAVE_MODES, defaultPreferences.autoSave),
     autoSaveDelayMs: pickInteger(data.autoSaveDelayMs, defaultPreferences.autoSaveDelayMs, ...AUTO_SAVE_DELAY_RANGE),
     trimTrailingWhitespace: pickBoolean(data.trimTrailingWhitespace, defaultPreferences.trimTrailingWhitespace),

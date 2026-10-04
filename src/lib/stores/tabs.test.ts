@@ -12,6 +12,7 @@ import {
   retargetTabs,
   setTabDirty,
   setTabPinned,
+  showsTabAsTitle,
   tabLabels,
   unpinnedPaths,
   type FileTab,
@@ -210,6 +211,23 @@ function strip(...names: string[]): TabsState {
 function order(state: TabsState): string[] {
   return state.tabs.map((tab) => `${tab.path}${tab.pinned ? "^" : ""}`);
 }
+
+describe("showsTabAsTitle", () => {
+  it("shows a lone tab as a title only while the setting is on", () => {
+    expect(showsTabAsTitle(true, 1, false)).toBe(true);
+    expect(showsTabAsTitle(false, 1, false)).toBe(false);
+  });
+
+  it("counts the Diff tab", () => {
+    expect(showsTabAsTitle(true, 0, true)).toBe(true);
+    expect(showsTabAsTitle(true, 1, true)).toBe(false);
+  });
+
+  it("keeps tabs for an empty strip and for two or more tabs", () => {
+    expect(showsTabAsTitle(true, 0, false)).toBe(false);
+    expect(showsTabAsTitle(true, 2, false)).toBe(false);
+  });
+});
 
 describe("pinned tabs", () => {
   it("pinning moves a tab to the end of the pinned ones, unpinning to the start of the others", () => {

@@ -43,6 +43,8 @@ By default, tabs that do not fit stay in one row and you scroll through them wit
 
 Turn the switch off to go back to one scrolling row. The setting is saved as `wrapTabs` in `settings.json`.
 
+With only one tab open, the strip shows its name in the middle instead of a tab. See [Single Tab Title](Single-Tab-Title.md).
+
 ## Related
 
 - [Editor and Tabs](Editor-and-Tabs.md)

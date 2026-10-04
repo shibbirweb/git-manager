@@ -187,6 +187,7 @@ class SettingsStore {
   tabLimit = $state(initialPreferences.tabLimit);
   splitEditor = $state(initialPreferences.splitEditor);
   wrapTabs = $state(initialPreferences.wrapTabs);
+  singleTabTitle = $state(initialPreferences.singleTabTitle);
   autoSave = $state<AutoSaveMode>(initialPreferences.autoSave);
   autoSaveDelayMs = $state(initialPreferences.autoSaveDelayMs);
   trimTrailingWhitespace = $state(initialPreferences.trimTrailingWhitespace);
@@ -426,6 +427,7 @@ class SettingsStore {
       tabLimit: this.tabLimit,
       splitEditor: this.splitEditor,
       wrapTabs: this.wrapTabs,
+      singleTabTitle: this.singleTabTitle,
       autoSave: this.autoSave,
       autoSaveDelayMs: this.autoSaveDelayMs,
       trimTrailingWhitespace: this.trimTrailingWhitespace,

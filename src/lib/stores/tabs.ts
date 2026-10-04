@@ -150,6 +150,14 @@ export function unpinnedPaths(tabs: readonly FileTab[]): string[] {
 }
 
 /**
+ * Single tab title: a strip holding exactly one tab (the Diff tab counts) shows it as a
+ * centered name instead of a tab, while the setting is on.
+ */
+export function showsTabAsTitle(enabled: boolean, tabCount: number, diffOpen: boolean): boolean {
+  return enabled && tabCount + (diffOpen ? 1 : 0) === 1;
+}
+
+/**
  * Next Tab (step 1) / Previous Tab (step -1), wrapping around. With no tab on screen
  * (`activePath` null) it starts from the first or the last tab.
  */

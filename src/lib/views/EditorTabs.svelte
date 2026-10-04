@@ -1,7 +1,8 @@
 <!--
   Tab bar of one editor group: the first group's strip starts with the Diff tab, then every
   file, commit and terminal tab open in that group, pinned tabs first. Tabs reorder by drag
-  and, with Settings > Editor > Wrap tabs, wrap onto more rows instead of scrolling.
+  and, with Settings > Editor > Wrap tabs, wrap onto more rows instead of scrolling. With
+  Single tab title on, a strip holding one tab shows it as a centered name.
 -->
 <script lang="ts">
   import { flip } from "svelte/animate";
@@ -15,7 +16,7 @@
   import { isCompareTab } from "$lib/compare/compareTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import { moveTab, otherPaths, pathsToRight, tabLabels, unpinnedPaths } from "$lib/stores/tabs";
+  import { moveTab, otherPaths, pathsToRight, showsTabAsTitle, tabLabels, unpinnedPaths } from "$lib/stores/tabs";
   import { shellNameFor } from "$lib/terminal/terminals";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { parseTerminalTabPath } from "$lib/terminal/terminalTabs";
@@ -42,6 +43,7 @@
   const diffShown = $derived(primary && changesSelection.primaryView === "diff");
   const labels = $derived(tabLabels(tabs));
   const wrap = $derived(settings.wrapTabs);
+  const single = $derived(showsTabAsTitle(settings.singleTabTitle, tabs.length, primary && changesSelection.selected !== null));
 
   /** A press on a tab that may become a drag once the pointer moves a few pixels. */
   interface TabPress {
@@ -382,6 +384,7 @@
   class="tab-strip"
   class:unfocused={!focused}
   class:wrap
+  class:single
   class:dragging={drag !== null}
   bind:this={stripEl}
   onwheel={onWheel}
@@ -514,6 +517,39 @@
     max-width: min(240px, 100%);
     margin-bottom: -1px;
     border-bottom: 1px solid var(--border-strong);
+  }
+
+  /* Single tab title: the lone tab is a centered name, without the tab's frame. */
+  .tab-strip.single {
+    justify-content: center;
+  }
+
+  /* The left padding matches the close button's width, so the name sits in the middle. */
+  .tab-strip.single .tab {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-left: 24px;
+    border-right: none;
+    background: transparent;
+  }
+
+  .tab-strip.single .tab::before {
+    display: none;
+  }
+
+  .tab-strip.single .tab-main {
+    padding: 0 6px;
+  }
+
+  .tab-strip.single .name {
+    font-weight: 500;
+  }
+
+  /* A pinned tab keeps its pin in view. */
+  .tab-strip.single .tab:not(:hover, .pinned) .tab-close .x,
+  .tab-strip.single .tab.diff:not(:hover) .tab-close {
+    opacity: 0;
   }
 
   .tab-strip.dragging,
@@ -710,5 +746,12 @@
 
   :global(html[data-rounded-panels]) .tab-main {
     padding-left: 10px;
+  }
+
+  :global(html[data-rounded-panels]) .tab-strip.single .tab,
+  :global(html[data-rounded-panels]) .tab-strip.single .tab.active,
+  :global(html[data-rounded-panels]) .tab-strip.unfocused.single .tab.active {
+    background: transparent;
+    border-color: transparent;
   }
 </style>

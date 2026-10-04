@@ -749,6 +749,12 @@ describe("split editor settings", () => {
     expect(parsePreferences({ wrapTabs: "yes" }).preferences.wrapTabs).toBe(false);
   });
 
+  it("shows a lone tab as a title by default and validates the switch", () => {
+    expect(defaultPreferences.singleTabTitle).toBe(true);
+    expect(parsePreferences({ singleTabTitle: false }).preferences.singleTabTitle).toBe(false);
+    expect(parsePreferences({ singleTabTitle: "no" }).preferences.singleTabTitle).toBe(true);
+  });
+
   it("keeps the split ratio in range", () => {
     expect(parseState({}).state.editorSplitRatio).toBe(0.5);
     expect(parseState({ editorSplitRatio: 0.3 }).state.editorSplitRatio).toBe(0.3);
