@@ -50,9 +50,13 @@ import {
   sameTabSession,
   type SavedTabGroup,
   sessionPaths,
+  sessionWithKept,
   type TabPosition,
   tabSessionOf,
 } from "./tabSession";
+import { fileCommands } from "./fileCommands.svelte";
+import { unsavedText } from "./unsavedText.svelte";
+import { isUntitledTab, newUntitledPath, untitledTitle } from "./untitledTabs";
 import { type TabSleepEntry, tabsToSleep } from "./tabSleep";
 import { isTerminalTab } from "$lib/terminal/terminalTabs";
 import {
@@ -63,6 +67,7 @@ import {
   pathsToRight,
   pinnedFirst,
   pinTab,
+  replaceTabPath,
   retargetTabs,
   setTabPinned,
   unpinnedPaths,
@@ -157,6 +162,11 @@ const TABS_SAVE_DELAY_MS = 1000;
 /** File tabs count for the tab limit and the saved session; commit, history, branches and terminal tabs do not. */
 function isFileTab(tabPath: string): boolean {
   return !isPseudoTab(tabPath);
+}
+
+/** The name a question about unsaved changes uses for a tab. */
+function tabName(tab: FileTab): string {
+  return isUntitledTab(tab.path) ? untitledTitle(fileCommands.text(tab.path) ?? "") : tab.path.slice(tab.path.lastIndexOf("/") + 1);
 }
 
 /** Key of a dormant tab: the same file can sleep in each editor group. */
@@ -443,6 +453,7 @@ class RepoStore {
     }
     const folders = [...this.workspace.folders, { root: added.root, name: added.name, repoRoots: added.repos.map((repo) => repo.root) }];
     this.workspace = describeWorkspace(folders, this.workspace.file);
+    this.workspaceIdChanged();
     this.repos = unionRepos([this.repos, added.repos]);
     settings.rememberSession(
       folders.map((folder) => folder.root),
@@ -479,6 +490,7 @@ class RepoStore {
     await api.unwatchWorkspace(folderRoot).catch(() => undefined);
     const folders = workspace.folders.filter((folder) => folder.root !== folderRoot);
     this.workspace = describeWorkspace(folders, workspace.file);
+    this.workspaceIdChanged();
     const keep = new Set(folders.flatMap((folder) => folder.repoRoots));
     this.repos = this.repos.filter((repo) => keep.has(repo.root));
     this.statuses = Object.fromEntries(Object.entries(this.statuses).filter(([root]) => keep.has(root)));
@@ -538,6 +550,7 @@ class RepoStore {
     }
     const previousId = workspace.id;
     this.workspace = describeWorkspace(workspace.folders, target);
+    this.workspaceIdChanged();
     // Keep the remembered active repository under the new id.
     const activeRoot = settings.activeRepos[previousId] ?? this.repo?.root;
     if (activeRoot) {
@@ -549,6 +562,16 @@ class RepoStore {
     );
     toast.success(`Saved workspace ${this.workspace.name}`, target);
     return true;
+  }
+
+  /** A folder was added or removed, or the workspace saved to a file: its id changed, so the kept text of its Untitled tabs moves to the new id. */
+  private workspaceIdChanged(): void {
+    const workspace = this.workspace;
+    if (!workspace) {
+      return;
+    }
+    const open = new Set(this.tabs.map((tab) => tab.path));
+    unsavedText.renameWorkspace(workspace.id, (tabPath) => (open.has(tabPath) ? fileCommands.text(tabPath) : null));
   }
 
   /** Keeps a linked workspace file in step with the folder list. */
@@ -611,6 +634,7 @@ class RepoStore {
   private async teardown(): Promise<void> {
     clearTimeout(this.rescanTimer);
     this.resetTabSession();
+    void unsavedText.open(null);
     for (const unlisten of this.unlisteners) {
       unlisten();
     }
@@ -1109,6 +1133,7 @@ class RepoStore {
     if (tabPaths.length === 0) {
       return;
     }
+    unsavedText.forgetTabs(tabPaths);
     for (const listener of this.tabsClosedListeners) {
       listener(tabPaths);
     }
@@ -1134,6 +1159,26 @@ class RepoStore {
    */
   openPseudoTab(tabPath: string): void {
     this.openIn(this.targetGroupFor(tabPath), tabPath, true, false);
+  }
+
+  /** File > New File: an empty Untitled tab in the focused group. */
+  newUntitledTab(): string | null {
+    if (!this.workspace) {
+      return null;
+    }
+    const tabPath = newUntitledPath();
+    this.openIn(this.focusedGroupId, tabPath, true, false);
+    return tabPath;
+  }
+
+  /** An Untitled tab was saved as `filePath` inside the workspace: its tab shows that file now, in every group. */
+  replaceUntitledTab(tabPath: string, filePath: string): void {
+    unsavedText.discard([tabPath]);
+    const next = mapGroups(this.groupsState, (group) => replaceTabPath(group, tabPath, filePath));
+    if (next !== this.groupsState) {
+      this.applyGroups(next);
+      this.showGroup(this.focusedGroupId);
+    }
   }
 
   /**
@@ -1219,11 +1264,13 @@ class RepoStore {
     if (this.groupsState.groups.length < 2) {
       return false;
     }
-    const dirty = closedBetween(this.groupsState, closeGroup(this.groupsState, groupId)).filter((tab) => tab.dirty);
+    const closed = closedBetween(this.groupsState, closeGroup(this.groupsState, groupId));
+    const dirty = closed.filter((tab) => tab.dirty);
     if (!(await this.confirmDiscard(dirty, dirty.length === 1 ? "Close it" : "Close them"))) {
       return false;
     }
     this.applyGroups(closeGroup(this.groupsState, groupId));
+    unsavedText.discard(closed.map((tab) => tab.path));
     return true;
   }
 
@@ -1244,6 +1291,10 @@ class RepoStore {
 
   /** The editor reports unsaved edits; editing also pins a preview tab. Every group's tab of the file follows. */
   setDirty(filePath: string, dirty: boolean): void {
+    if (!dirty) {
+      // Saved, reverted or edited back: no text to keep for it any more.
+      unsavedText.discard([filePath]);
+    }
     const next = setDirtyEverywhere(this.groupsState, filePath, dirty);
     if (next !== this.groupsState) {
       this.groupsState = next;
@@ -1256,27 +1307,60 @@ class RepoStore {
    * edits would close everywhere. Still open in the other group, a file keeps its edits.
    */
   async closeTabs(filePaths: string[], groupId: number | null = null): Promise<boolean> {
-    const dirty = closedBetween(this.groupsState, closeInGroups(this.groupsState, filePaths, groupId)).filter((tab) => tab.dirty);
+    const closed = closedBetween(this.groupsState, closeInGroups(this.groupsState, filePaths, groupId));
+    const dirty = closed.filter((tab) => tab.dirty);
     if (!(await this.confirmDiscard(dirty, dirty.length === 1 ? "Close it" : "Close them"))) {
       return false;
     }
     this.applyGroups(closeInGroups(this.groupsState, filePaths, groupId));
+    // A tab closed by hand gives up its unsaved text; one still open in the other group keeps it.
+    unsavedText.discard(closed.map((tab) => tab.path));
     return true;
   }
 
-  /** Before the window closes: asks when a tab has unsaved edits. */
+  /** Before the window closes: asks when a tab has unsaved edits, unless Remember unsaved changes keeps them. */
   confirmCloseWindow(): Promise<boolean> {
-    return this.confirmDiscard(
-      this.tabs.filter((tab) => tab.dirty),
-      "Close the window",
-    );
+    return this.confirmLeave("Close the window");
   }
 
   /** Before the whole workspace goes away (close, or opening another one). */
   private confirmDiscardAll(): Promise<boolean> {
-    const dirty = this.tabs.filter((tab) => tab.dirty);
     const what = (this.workspace?.folders.length ?? 0) > 1 ? "workspace" : "folder";
-    return this.confirmDiscard(dirty, `Close the ${what}`);
+    return this.confirmLeave(`Close the ${what}`);
+  }
+
+  /**
+   * The window or the workspace goes: with Remember unsaved changes every unsaved text is
+   * kept for next time without asking; otherwise the user confirms that it is thrown away.
+   */
+  private async confirmLeave(action: string): Promise<boolean> {
+    if (settings.rememberUnsaved) {
+      await this.keepUnsaved();
+      return true;
+    }
+    const dirty = this.tabs.filter((tab) => tab.dirty);
+    if (!(await this.confirmDiscard(dirty, action))) {
+      return false;
+    }
+    unsavedText.discard(dirty.map((tab) => tab.path));
+    await unsavedText.flush();
+    return true;
+  }
+
+  /**
+   * Remember unsaved changes: every unsaved text is written and the tabs are in state.json, so
+   * closing the window, the workspace or the page (Clear Cache) loses nothing.
+   */
+  async keepUnsaved(): Promise<void> {
+    for (const tab of this.tabs) {
+      // Edits made before the setting was turned on were never written.
+      if (tab.dirty && !unsavedText.has(tab.path)) {
+        unsavedText.schedule(tab.path, () => fileCommands.text(tab.path));
+      }
+    }
+    await unsavedText.flush();
+    this.saveTabSession();
+    await settings.flushNow();
   }
 
   /** Asks before unsaved edits in `dirty` are thrown away; `action` starts the question, e.g. "Close it". */
@@ -1284,7 +1368,7 @@ class RepoStore {
     if (dirty.length === 0) {
       return true;
     }
-    const names = dirty.map((tab) => tab.path.slice(tab.path.lastIndexOf("/") + 1));
+    const names = dirty.map((tab) => tabName(tab));
     return dialogs.confirm({
       title: "Unsaved Changes",
       message:
@@ -1397,7 +1481,8 @@ class RepoStore {
       const side = sideOf(before, tabPath);
       const group = before.groups[side];
       const index = group ? group.tabs.findIndex((tab) => tab.path === tabPath) : -1;
-      if (!group || index < 0 || isTerminalTab(tabPath)) {
+      // A terminal's shell is gone; an Untitled tab's text was discarded or saved as a file.
+      if (!group || index < 0 || isTerminalTab(tabPath) || isUntitledTab(tabPath)) {
         continue;
       }
       const tab = group.tabs[index];
@@ -1516,19 +1601,27 @@ class RepoStore {
     this.saveTabSession();
   }
 
-  /** Writes the open file tabs of this workspace to state.json, when Reopen tabs on start is on. */
+  /**
+   * Writes the open file tabs of this workspace to state.json, when Reopen tabs on start is on.
+   * With Remember unsaved changes the Untitled tabs with text are kept too, and with only that
+   * setting on, just the tabs with unsaved changes.
+   */
   private saveTabSession(): void {
     clearTimeout(this.tabsSaveTimer);
     const workspace = this.workspace;
-    if (!workspace || !settings.reopenTabsOnStart) {
+    const remember = settings.rememberUnsaved;
+    if (!workspace || (!settings.reopenTabsOnStart && !remember)) {
       return;
     }
+    const dirty = new Set(this.dirtyPaths);
+    const kept = (tabPath: string) => remember && dirty.has(tabPath) && (isFileTab(tabPath) || isUntitledTab(tabPath));
+    const saves = settings.reopenTabsOnStart ? (tabPath: string) => isFileTab(tabPath) || kept(tabPath) : kept;
     const positions = new Map([...this.pendingPositions, ...this.tabPositions]);
     const [left, right] = this.groupsState.groups;
     const session = tabSessionOf(
       left.tabs,
       left.active,
-      isFileTab,
+      saves,
       positions,
       right ? { tabs: right.tabs, active: right.active, focused: this.groupsState.focused === right.id } : null,
     );
@@ -1554,20 +1647,26 @@ class RepoStore {
    * limit applies.
    */
   private async restoreTabs(workspace: OpenWorkspace): Promise<void> {
-    const session = settings.reopenTabsOnStart ? (settings.openTabs[workspace.id] ?? null) : null;
-    if (!session || this.tabs.length > 0) {
+    const saved = settings.openTabs[workspace.id] ?? null;
+    const kept = await this.keptTabs(workspace, new Set(saved ? sessionPaths(saved) : []));
+    const keptPaths = new Set(kept);
+    const session = sessionWithKept(saved, kept, settings.reopenTabsOnStart);
+    if (!session || this.workspace !== workspace || this.tabs.length > 0) {
       return;
     }
-    const exists = await api
+    const paths = sessionPaths(session);
+    const onDisk = await api
       .filesExist(
         workspace.folders.map((folder) => folder.root),
-        sessionPaths(session),
+        paths,
       )
       .catch(() => [] as boolean[]);
     if (this.workspace !== workspace || this.tabs.length > 0) {
       return;
     }
-    const restored = restorableTabs(session, exists, (filePath) => folderFor(workspace.folders, filePath) !== null);
+    // An Untitled tab is there while its text is.
+    const exists = paths.map((tabPath, index) => (isUntitledTab(tabPath) ? keptPaths.has(tabPath) : onDisk[index] === true));
+    const restored = restorableTabs(session, exists, (tabPath) => isUntitledTab(tabPath) || folderFor(workspace.folders, tabPath) !== null);
     if (restored.tabs.length === 0) {
       return;
     }
@@ -1582,7 +1681,7 @@ class RepoStore {
       }
     }
     const tabsOf = (group: SavedTabGroup): TabsState => ({
-      tabs: pinnedFirst(group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: false, pinned: tab.pinned }))),
+      tabs: pinnedFirst(group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: keptPaths.has(tab.path), pinned: tab.pinned }))),
       active: group.active,
     });
     let state = restoredGroups(tabsOf(restored), restored.right ? tabsOf(restored.right) : null, restored.rightFocused ?? false);
@@ -1598,10 +1697,50 @@ class RepoStore {
       }
     }
     this.groupsState = state;
+    // Tabs with kept text load now, so they show their unsaved changes and Save All reaches them.
     this.dormantTabs = new Set(
-      state.groups.flatMap((group) => group.tabs.filter((tab) => tab.path !== group.active).map((tab) => dormantKey(group.id, tab.path))),
+      state.groups.flatMap((group) =>
+        group.tabs.filter((tab) => tab.path !== group.active && !keptPaths.has(tab.path)).map((tab) => dormantKey(group.id, tab.path)),
+      ),
     );
     this.viewState = "file";
+  }
+
+  /**
+   * Remember unsaved changes: the tabs with kept text that belong to `workspace`, oldest first.
+   * Untitled tabs filed under it (or listed in its saved session) and edited files in its
+   * folders; a file gone from disk gives its text to a new Untitled tab, so none is lost.
+   */
+  private async keptTabs(workspace: OpenWorkspace, sessionTabs: ReadonlySet<string>): Promise<string[]> {
+    const listed = (await unsavedText.open(workspace.id))
+      .filter((meta) =>
+        isUntitledTab(meta.tabPath)
+          ? meta.workspaceId === workspace.id || sessionTabs.has(meta.tabPath)
+          : folderFor(workspace.folders, meta.tabPath) !== null,
+      )
+      .map((meta) => meta.tabPath);
+    const files = listed.filter((tabPath) => !isUntitledTab(tabPath));
+    if (files.length === 0) {
+      return listed;
+    }
+    const onDisk = await api
+      .filesExist(
+        workspace.folders.map((folder) => folder.root),
+        files,
+      )
+      .catch(() => files.map(() => true));
+    const kept: string[] = [];
+    for (const tabPath of listed) {
+      if (isUntitledTab(tabPath) || onDisk[files.indexOf(tabPath)] !== false) {
+        kept.push(tabPath);
+        continue;
+      }
+      const untitled = await unsavedText.moveToUntitled(tabPath);
+      if (untitled) {
+        kept.push(untitled);
+      }
+    }
+    return kept;
   }
 
   /**

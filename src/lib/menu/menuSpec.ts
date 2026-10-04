@@ -89,6 +89,7 @@ function appMenu(mode: MenuMode): TopMenu {
 
 function fileMenu(platform: MenuPlatform): TopMenu {
   const items: MenuEntry[] = [
+    item("file.newFile", "New File", "CmdOrCtrl+N"),
     item("file.newWindow", "New Window", "CmdOrCtrl+Shift+N"),
     separator,
     item("file.openFolder", "Open Folder..."),

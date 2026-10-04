@@ -1239,6 +1239,19 @@ export interface LocalHistoryRecord {
   label: SnapshotLabel;
 }
 
+/** Unsaved text kept across restarts (unsaved.rs): whose it is. */
+export interface UnsavedMeta {
+  /** An absolute file path, or the path of an Untitled tab. */
+  tabPath: string;
+  workspaceId: string;
+  /** Milliseconds since the epoch. */
+  savedAt: number;
+}
+
+export interface UnsavedText extends UnsavedMeta {
+  text: string;
+}
+
 /** What moved a ref, read from the reflog message (git/reflog.rs). */
 export type ReflogAction =
   | "commit"

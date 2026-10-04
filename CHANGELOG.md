@@ -13,6 +13,9 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- New File, like Sublime Text: File > New File (Cmd+N) opens an empty Untitled tab named after its first line. Cmd+S asks where to save it; saved inside the folder, the tab becomes that file's tab.
+- Remember unsaved changes in Settings > Editor > Saving (on by default): closing the window, quitting, Close Folder and Clear Cache keep the text of Untitled tabs and the unsaved edits of files, without asking, and the tabs come back with them the next time the folder opens. The text is kept in `~/.gitmanager/unsaved` until you save, revert or discard it. Closing a tab yourself still asks.
+
 - Clear Cache: a brush button right of Memory in the status bar, and View > Clear Cache, restart the window's interface in a fresh WebKit process and give back all the memory it holds (measured: 328 MB with every file closed after a Markdown session, 127 MB after). The screen blinks once and the folder and tabs come back. Terminals and Run sessions keep running and come back in the same place with what they showed, so a dev server or a build never stops. It waits for unsaved files and running git operations.
 - Unload hidden tabs in Settings > Editor (on by default): a file tab you have not looked at for 15 minutes (or 5, 30, 60) frees its editor, about 4 MB each. The tab stays in the strip and opens again at the same line; tabs with unsaved changes are never unloaded. Undo history of an unloaded tab starts over.
 - Syntax highlighting switch in Settings > Editor (on by default). Off, code in editors, diffs, the merge tool and Markdown code blocks shows as plain text and no language grammar is loaded, which saves about 35 MB. Toggle Comment still works; fold arrows and bracket pair colors need highlighting, and sticky scroll follows the indentation instead.

@@ -1410,6 +1410,21 @@
               />
             </div>
           {/if}
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Remember unsaved changes</span>
+              <span class="hint">
+                Keep the text of new files and unsaved edits when you close the window or quit, and bring the tabs back with it
+                next time. Off, closing asks before unsaved changes are lost.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.rememberUnsaved}
+              onchange={(event) => set("rememberUnsaved", event.currentTarget.checked)}
+            />
+          </label>
           {#each SAVE_CLEANUP_ROWS as row (row.key)}
             <label class="row toggle-row">
               <div class="label">

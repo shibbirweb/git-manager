@@ -30,6 +30,7 @@ import { usableOverrides } from "$lib/commands/shortcutSettings";
 import { diffLines } from "$lib/diff/diffLines.svelte";
 import { fileCommands } from "$lib/stores/fileCommands.svelte";
 import { repoStore } from "$lib/stores/repo.svelte";
+import { isUntitledTab } from "$lib/stores/untitledTabs";
 import { settings } from "$lib/stores/settings.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 import { dialogs } from "$lib/ui/dialog.svelte";
@@ -113,7 +114,12 @@ export function currentMenuInputs(mode: MenuMode): MenuInputs {
     shownView,
     activeFile:
       fileState && activePath
-        ? { dirty: repoStore.isDirty(activePath), editable: fileState.editable, markdownMode: fileState.markdownMode }
+        ? {
+            dirty: repoStore.isDirty(activePath),
+            editable: fileState.editable,
+            markdownMode: fileState.markdownMode,
+            untitled: isUntitledTab(activePath),
+          }
         : null,
     dirtyCount: repoStore.dirtyPaths.length,
     tabCount: repoStore.tabs.length,

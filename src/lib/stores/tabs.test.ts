@@ -9,6 +9,7 @@ import {
   pathsToRight,
   pinnedFirst,
   pinTab,
+  replaceTabPath,
   retargetTabs,
   setTabDirty,
   setTabPinned,
@@ -304,5 +305,51 @@ describe("moveTab", () => {
     };
     expect(moveTab(state, "c", 0).tabs[1]).toEqual({ path: "c", preview: true, dirty: false });
     expect(moveTab(state, "b", 3).tabs[2]).toEqual({ path: "b", preview: false, dirty: true });
+  });
+});
+
+describe("replaceTabPath", () => {
+  const untitled = "untitled:abc1";
+
+  it("turns the Untitled tab into the file's tab at the same place", () => {
+    const state: TabsState = {
+      tabs: [
+        { path: "/w/a.ts", preview: false, dirty: false },
+        { path: untitled, preview: false, dirty: true, pinned: true },
+        { path: "/w/b.ts", preview: false, dirty: false },
+      ],
+      active: untitled,
+    };
+    expect(replaceTabPath(state, untitled, "/w/new.md")).toEqual({
+      tabs: [
+        { path: "/w/a.ts", preview: false, dirty: false },
+        { path: "/w/new.md", preview: false, dirty: false, pinned: true },
+        { path: "/w/b.ts", preview: false, dirty: false },
+      ],
+      active: "/w/new.md",
+    });
+  });
+
+  it("keeps the file's own tab when it has one", () => {
+    const state: TabsState = {
+      tabs: [
+        { path: "/w/a.ts", preview: false, dirty: false },
+        { path: untitled, preview: false, dirty: true },
+      ],
+      active: untitled,
+    };
+    expect(replaceTabPath(state, untitled, "/w/a.ts")).toEqual({ tabs: [{ path: "/w/a.ts", preview: false, dirty: false }], active: "/w/a.ts" });
+  });
+
+  it("leaves a group without the tab alone", () => {
+    const state: TabsState = { tabs: [{ path: "/w/a.ts", preview: false, dirty: false }], active: "/w/a.ts" };
+    expect(replaceTabPath(state, untitled, "/w/b.ts")).toBe(state);
+  });
+
+  it("labels Untitled tabs as pseudo tabs, never as files", () => {
+    const labels = tabLabels([{ path: untitled, preview: false, dirty: false }, { path: "/w/Untitled", preview: false, dirty: false }]);
+    expect(labels.get(untitled)).toEqual({ name: "Untitled", hint: null });
+    expect(labels.get("/w/Untitled")).toEqual({ name: "Untitled", hint: null });
+    expect(fileTabsUnder([untitled, "/w/a.ts"], ["/w"])).toEqual(["/w/a.ts"]);
   });
 });

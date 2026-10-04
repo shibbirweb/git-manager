@@ -1,6 +1,6 @@
 # Docs and Screenshots
 
-This wiki is written in the main repository, in `docs/wiki/`, and published to the GitHub wiki by a workflow. Docs live next to the code, so a change and its docs are reviewed together. This page explains how the docs are checked and screenshots taken, then gives recipes.
+This wiki lives in `docs/wiki/` and a workflow publishes it to the GitHub wiki. Docs sit next to the code, so a change and its docs are reviewed together. This page explains the checks and screenshots, then gives recipes.
 
 ## How `docs/wiki` is organized
 
@@ -53,10 +53,10 @@ Screenshots show the real app, because a mocked backend drifts from the truth. S
 
 What the script does, and why:
 
-- **It rebuilds the demo on every run.** It deletes `/tmp/gitmanager-docs` and runs `scripts/make-docs-demo.sh` there: a shop repository with four authors, branches, tags, a stash and a remote, a repository stopped in a merge, a plain folder, a second folder, a repository with a submodule and one with Git LFS images. Dates are relative to today, so blame always reads "2 days ago" and paths never change.
-- **It keeps your own setup out.** The page answers some commands itself: settings and state live in memory, the launch mode points at the demo, and folder pickers return a fixed answer. Dialog, opener and window calls never reach the app, and GitHub's API gets canned releases.
+- **It rebuilds the demo on every run.** It deletes `/tmp/gitmanager-docs` and runs `scripts/make-docs-demo.sh` there (repositories with history, a merge in progress, a submodule, Git LFS images and a plain folder). Dates are relative to today, so blame always reads "2 days ago" and paths never change.
+- **It keeps your own setup out.** The page answers some commands itself: settings, state (`update_config` too) and kept unsaved text live in memory, the launch mode points at the demo, and folder pickers return a fixed answer. Dialog, opener and window calls never reach the app, and GitHub's API gets canned releases.
 - **It refuses anything outside the demo.** Any other command with an absolute path argument outside the demo folder fails with a "blocked" error, so a shot can never touch a real repository.
-- **It retries once.** A dev server reload can break one attempt, so each shot gets a second try. Any failure makes the script exit with an error.
+- **It retries once,** since a dev server reload can break one attempt. Any failure makes the script exit with an error.
 
 You need, once, `bunx --bun playwright install webkit`.
 
@@ -118,6 +118,10 @@ bun scripts/build-wiki.ts /tmp/wiki-preview
 It checks first and writes nothing on a problem. You get the flat wiki: one `Page-Name.md` per page, `images/`, and the generated `Home.md`, `_Sidebar.md` and `_Footer.md`. Links between pages are wiki names without `.md`, so they only work on GitHub. The build does not empty the folder, which is why the first line clears it.
 
 Running the Wiki workflow by hand publishes to the live wiki for everyone, so do not use it as a preview.
+
+## Bugs we fixed
+
+**Shots opened the welcome screen and patched your state.json.** The page relayed `window_startup` (the app window's folders, refused) and `update_config` to the app. It now answers both itself.
 
 ## Writing style
 

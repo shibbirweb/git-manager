@@ -9,6 +9,7 @@ import { branchTabsInFolder, branchTabTitle, parseBranchTabPath } from "./branch
 import { gitTabsInFolder, gitTabTitle, parseGitTabPath } from "./gitTabs";
 import { isPseudoTab } from "./pseudoTabs";
 import { SINGLE_TAB } from "./tabLimit";
+import { isUntitledTab, UNTITLED_TITLE } from "./untitledTabs";
 import { movedPath, pathsUnder, type PathMove } from "./workspacePaths";
 
 export interface FileTab {
@@ -211,12 +212,33 @@ export function tabLabels(tabs: FileTab[]): Map<string, { name: string; hint: st
       if (isTerminalTab(tab.path)) {
         return [tab.path, { name: TERMINAL_TAB_LABEL, hint: null }];
       }
+      if (isUntitledTab(tab.path)) {
+        return [tab.path, { name: UNTITLED_TITLE, hint: null }];
+      }
       const name = nameOf(tab.path);
       const folder = tab.path.includes("/") ? tab.path.slice(0, tab.path.lastIndexOf("/")) : "";
       const duplicate = (counts.get(name) ?? 0) > 1;
       return [tab.path, { name, hint: duplicate ? folder.split("/").pop() || folder || null : null }];
     }),
   );
+}
+
+/**
+ * An Untitled tab saved as a file: the tab shows the file from now on, at the same place.
+ * When the file already has a tab, that one stays and the Untitled tab closes.
+ */
+export function replaceTabPath(state: TabsState, fromPath: string, toPath: string): TabsState {
+  if (!state.tabs.some((tab) => tab.path === fromPath)) {
+    return state;
+  }
+  if (state.tabs.some((tab) => tab.path === toPath)) {
+    const closed = closeTabs(state, [fromPath]);
+    return state.active === fromPath ? { ...closed, active: toPath } : closed;
+  }
+  return {
+    tabs: state.tabs.map((tab) => (tab.path === fromPath ? { ...tab, path: toPath, preview: false, dirty: false } : tab)),
+    active: state.active === fromPath ? toPath : state.active,
+  };
 }
 
 /**

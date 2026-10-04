@@ -320,6 +320,8 @@ export interface Preferences {
   autoSave: AutoSaveMode;
   /** Pause after the last edit before an "afterDelay" auto save. */
   autoSaveDelayMs: number;
+  /** Keep the text of Untitled tabs and unsaved edits across restarts (hot exit), without asking on close. */
+  rememberUnsaved: boolean;
   /** On save: remove spaces and tabs at line ends. */
   trimTrailingWhitespace: boolean;
   /** On save: end the file with a newline (files.insertFinalNewline). */
@@ -491,6 +493,7 @@ export const defaultPreferences: Preferences = {
   singleTabTitle: true,
   autoSave: "off",
   autoSaveDelayMs: DEFAULT_AUTO_SAVE_DELAY,
+  rememberUnsaved: true,
   trimTrailingWhitespace: false,
   insertFinalNewline: false,
   trimFinalNewlines: false,
@@ -820,6 +823,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     singleTabTitle: pickBoolean(data.singleTabTitle, defaultPreferences.singleTabTitle),
     autoSave: pickOneOf(data.autoSave, AUTO_SAVE_MODES, defaultPreferences.autoSave),
     autoSaveDelayMs: pickInteger(data.autoSaveDelayMs, defaultPreferences.autoSaveDelayMs, ...AUTO_SAVE_DELAY_RANGE),
+    rememberUnsaved: pickBoolean(data.rememberUnsaved, defaultPreferences.rememberUnsaved),
     trimTrailingWhitespace: pickBoolean(data.trimTrailingWhitespace, defaultPreferences.trimTrailingWhitespace),
     insertFinalNewline: pickBoolean(data.insertFinalNewline, defaultPreferences.insertFinalNewline),
     trimFinalNewlines: pickBoolean(data.trimFinalNewlines, defaultPreferences.trimFinalNewlines),

@@ -76,6 +76,16 @@ describe("menuState", () => {
     expect(menuState(inputs({ shownView: "log", activeFile: null }))["file.closeTab"]?.enabled).toBe(false);
   });
 
+  it("offers New File with a folder open, and no file actions for an Untitled tab", () => {
+    expect(menuState(idle)["file.newFile"]?.enabled).toBe(true);
+    expect(menuState(inputs({ workspace: null }))["file.newFile"]?.enabled).toBe(false);
+    const untitled = menuState(inputs({ activeFile: { dirty: true, editable: true, markdownMode: null, untitled: true } }));
+    expect(untitled["file.save"]?.enabled).toBe(true);
+    expect(untitled["file.compareWith"]?.enabled).toBe(false);
+    expect(untitled["file.compareWithClipboard"]?.enabled).toBe(false);
+    expect(untitled["file.localHistory"]?.enabled).toBe(false);
+  });
+
   it("offers Reopen Closed Tab after a tab closed, and names Pin Tab for the tab on screen", () => {
     expect(menuState(idle)["file.reopenClosedTab"]?.enabled).toBe(false);
     expect(menuState(inputs({ closedTabCount: 2 }))["file.reopenClosedTab"]?.enabled).toBe(true);

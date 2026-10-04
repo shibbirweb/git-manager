@@ -50,7 +50,9 @@ const filePathList = (description: string): Schema => ({
   description,
 });
 
-const optionalFilePath = absolutePath("Absolute path of an open file tab. Leave out for the file tab on screen.");
+const optionalFilePath = absolutePath(
+  "Absolute path of an open file tab, or the untitled: path of a New File tab as get_app_state lists it. Leave out for the tab on screen.",
+);
 
 function tool(
   name: string,

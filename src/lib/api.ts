@@ -100,6 +100,7 @@ import type { BranchComparison, CommitOptions, MergeOptions, RebaseOptions, Work
 import type { Identity, IdentityScope, RecentMessage } from "./types";
 import type { McpActivity, McpStatus, McpToolInfo, McpUiRequest, McpUiResult, McpUiToolDef } from "./types";
 import type { ConfigChangedEvent, WindowOpened } from "./types";
+import type { UnsavedMeta, UnsavedText } from "./types";
 
 export function errorMessage(error: unknown): string {
   if (typeof error === "string") {
@@ -537,6 +538,12 @@ export const api = {
   localHistoryDeleted: (folderPaths: string[]) => invoke<DeletedLocalFile[]>("local_history_deleted", { folderPaths }),
   localHistoryUsage: () => invoke<LocalHistoryUsage>("local_history_usage"),
   localHistoryClear: () => invoke<void>("local_history_clear"),
+  // Remember unsaved changes: the text of Untitled tabs and of files with unsaved edits, in ~/.gitmanager/unsaved.
+  unsavedWrite: (tabPath: string, workspaceId: string, text: string) =>
+    invoke<void>("unsaved_write", rawBody({ tabPath, workspaceId }, text)),
+  unsavedRead: (tabPath: string) => invoke<UnsavedText | null>("unsaved_read", { tabPath }),
+  unsavedRemove: (tabPaths: string[]) => invoke<void>("unsaved_remove", { tabPaths }),
+  unsavedList: () => invoke<UnsavedMeta[]>("unsaved_list"),
   /** A script as its own process (the Run tab); output and exit arrive like a terminal's. */
   runScript: (
     options: { program: string; args: string[]; cwd: string; nodeBinDir: string | null; cols: number; rows: number },

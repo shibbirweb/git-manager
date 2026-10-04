@@ -42,6 +42,8 @@
   import { isCompareTab } from "$lib/compare/compareTabs";
   import FileCompareTab from "$lib/compare/FileCompareTab.svelte";
   import FileView from "./files/FileView.svelte";
+  import UntitledView from "./files/UntitledView.svelte";
+  import { isUntitledTab } from "$lib/stores/untitledTabs";
   import ChangesView from "./ChangesView.svelte";
   import Header from "./Header.svelte";
   import LogView from "./LogView.svelte";
@@ -294,6 +296,8 @@
                   <BranchTab tabPath={tab.path} />
                 {:else if isCompareTab(tab.path)}
                   <FileCompareTab tabPath={tab.path} />
+                {:else if isUntitledTab(tab.path)}
+                  <UntitledView tabPath={tab.path} groupId={group.id} />
                 {:else if !repoStore.isDormant(tab.path, group.id)}
                   <FileView filePath={tab.path} groupId={group.id} />
                 {/if}

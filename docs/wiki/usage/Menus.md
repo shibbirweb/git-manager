@@ -13,6 +13,7 @@ On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Ed
 
 ## File
 
+- **New File** (Cmd+N) opens an empty Untitled tab; Save asks where to write it. See [New File and Unsaved Changes](New-File-and-Unsaved-Changes.md).
 - **Open Folder...** and **Open Workspace from File...** open something new. **Open Recent** lists your recent workspace files, workspaces and folders (not the one that is open now), and **Clear Recent** empties the list. See [Workspaces](Workspaces.md).
 - **Add Folder to Workspace...** and **Save Workspace As...** need an open folder.
 - **Save** (Cmd+S) saves the file on screen, **Save All** (Option+Cmd+S) saves every edited file, and **Revert File** throws away the unsaved edits of the file on screen. The editor has no Save and Revert buttons of its own: these menu items replace them.
