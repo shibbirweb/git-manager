@@ -2064,6 +2064,18 @@ define("memory-log-settings", async (shot) => {
   await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
 }, () => ({ settings: { memoryLogEnabled: true } }));
 
+define("settings-memory-flags", async (shot) => {
+  const dialog = await openSettings(shot, "Terminal");
+  await scrollSettingsTo(dialog, "Rendering");
+  await shot.settle();
+  const heading = dialog.locator(".group-title", { hasText: "Rendering" });
+  const gpu = dialog.locator(".row", { hasText: "GPU acceleration" }).first();
+  const across = await shot.clipAround([dialog.locator(".rows")], 0);
+  const down = await shot.clipAround([heading, gpu], { top: 12, bottom: 12 });
+  await shot.page.mouse.move(5, 790);
+  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+});
+
 // ---------------------------------------------------------------------------------------------
 // The Git menu, its dialogs and interactive rebase
 

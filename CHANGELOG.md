@@ -106,6 +106,7 @@ GitHub release notes, and the app shows it as "What's New".
 - Restore Defaults in Help > Available MCP Tools puts the tool switches back to how they start: destructive tools off, every other tool on (only the tools the filter shows).
 - Detect indentation, like VS Code, on by default: each file keeps the indentation it already has (tabs or spaces, and how many), so a file indented with 2 spaces is not edited with 4. The status bar shows Spaces: 2 or Tab Size: 4. Turn it off with View > Detect Indentation or in Settings > Editor; Tab size is used for files with nothing to follow.
 - File icons, off by default: View > File Icons or Settings > Appearance picks No icons, Minimal (simple shapes colored by the theme) or Material Icons (colored icons for over 1,000 file types, from Material Icon Theme) for the Files panel, the Changes list and commit file lists. Each level loads only its own icons, and switching releases the others.
+- Settings marks the settings that use clearly more memory with a small mark such as +70 MB, measured on the release app: GPU acceleration, scrollback, blame gutter, Markdown preview, file icons, render whitespace All and the tab limit. Point at a mark to see when the memory is used.
 
 ### Changed
 
@@ -134,6 +135,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The GPU acceleration and scrollback hints in Settings, Terminal gave wrong memory numbers ("a few MB" for GPU drawing); they now show measured ones: about 70 MB for the first GPU terminal, and about 2 KB per scrollback line.
 - The terminal's visual bell no longer keeps restarting its flash when a command prints binary data that rings it thousands of times.
 - Search Everywhere's All tab shows its Classes section again on big workspaces: the Classes and Symbols searches it runs at the same time no longer cancel each other.
 - Diffs of large files no longer merge many small edits into one giant change: the lines that changed come from git-style line hunks, and only those are compared character by character.

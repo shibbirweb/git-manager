@@ -50,6 +50,7 @@
   import CommitTemplateSettings from "./settings/CommitTemplateSettings.svelte";
   import GitIdentitySettings from "./settings/GitIdentitySettings.svelte";
   import KeyboardShortcuts from "./settings/KeyboardShortcuts.svelte";
+  import MemoryFlag from "./settings/MemoryFlag.svelte";
   import type { GpgSign } from "$lib/types";
   import { GPG_SIGN_CHOICES } from "./changes/commitOptions";
   import { AUTO_SAVE_DELAY_RANGE } from "$lib/editor/autoSave";
@@ -683,7 +684,7 @@
           </div>
           <div class="row">
             <div class="label">
-              <span>File icons</span>
+              <span>File icons<MemoryFlag setting="fileIcons" /></span>
               <span class="hint">
                 Icons by file type in the Files panel, the Changes list and commit file lists. Also in View > File Icons.
                 Minimal and Material Icons use more memory, Material Icons the most. An icon set loads only while it is chosen.
@@ -874,7 +875,7 @@
           </label>
           <div class="row">
             <div class="label">
-              <span>Render whitespace</span>
+              <span>Render whitespace<MemoryFlag setting="renderWhitespace" /></span>
               <span class="hint">
                 {RENDER_WHITESPACE_CHOICES.find((choice) => choice.value === settings.renderWhitespace)?.hint ?? ""}
                 Spaces show as dots and tabs as arrows, in editors, diffs and the merge tool.
@@ -1097,7 +1098,7 @@
           </label>
           <div class="row">
             <div class="label">
-              <span>Tab limit</span>
+              <span>Tab limit<MemoryFlag setting="tabLimit" /></span>
               <span class="hint">{tabLimitHint} Tabs with unsaved changes and pinned tabs always stay open.</span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Tab limit">
@@ -1261,7 +1262,7 @@
           <h4 class="group-title">Preview and blame</h4>
           <div class="row">
             <div class="label">
-              <span>Markdown preview</span>
+              <span>Markdown preview<MemoryFlag setting="markdownViewMode" /></span>
               <span class="hint">How Markdown files open. Each file can switch with the buttons at the top right of its editor and keeps its choice until the app restarts.</span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Markdown preview">
@@ -1291,7 +1292,7 @@
           </label>
           <label class="row toggle-row">
             <div class="label">
-              <span>Blame gutter</span>
+              <span>Blame gutter<MemoryFlag setting="blameGutter" /></span>
               <span class="hint">A column with the commit, author and age of every block of lines. Also toggled with the Blame button in the path bar and the diff toolbar.</span>
             </div>
             <input
@@ -1762,11 +1763,11 @@
           <h4 class="group-title">Behavior</h4>
           <div class="row">
             <div class="label">
-              <span>Scrollback</span>
+              <span>Scrollback<MemoryFlag setting="terminalScrollback" /></span>
               <span class="hint">
                 Lines kept for scrolling back, {TERMINAL_SCROLLBACK_RANGE[0].toLocaleString()} to
-                {TERMINAL_SCROLLBACK_RANGE[1].toLocaleString()}. Each terminal uses about 15 MB at 5,000 lines and up to
-                270 MB at 100,000.
+                {TERMINAL_SCROLLBACK_RANGE[1].toLocaleString()}. A full terminal uses about 2 KB per line in a wide window:
+                about 10 MB at 5,000 lines and 200 MB at 100,000.
               </span>
             </div>
             <input
@@ -1884,8 +1885,8 @@
           <h4 class="group-title">Rendering</h4>
           <label class="row toggle-row">
             <div class="label">
-              <span>GPU acceleration</span>
-              <span class="hint">Recommended. Draws with WebGL, which keeps busy output smooth and uses less CPU. Off saves a few MB of GPU memory per terminal. With font ligatures on, the regular renderer is used.</span>
+              <span>GPU acceleration<MemoryFlag setting="terminalGpuAcceleration" /></span>
+              <span class="hint">Recommended. Draws with WebGL, which keeps busy output smooth and uses less CPU. It uses about 70 MB more for the first terminal, mostly graphics memory, and about 10 MB for each other one. With font ligatures on, the regular renderer is used.</span>
             </div>
             <input
               type="checkbox"

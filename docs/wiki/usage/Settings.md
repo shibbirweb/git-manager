@@ -1,6 +1,6 @@
 # Settings
 
-Settings change how Git Manager looks and behaves. Every change applies right away and is saved for next time.
+Settings change how Git Manager looks and behaves. Changes apply at once and are saved. A mark such as **+70 MB** means a setting uses more memory when on ([Memory Use](Memory-Use.md#settings-that-use-more-memory)).
 
 ## Open Settings
 
@@ -56,7 +56,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 | Render whitespace | Draws spaces as dots and tabs as arrows: **None**, **Boundary**, **Selection**, **Trailing** or **All**. See [Render whitespace](Code-Appearance.md#render-whitespace). | Selection |
 | Word wrap | Wraps long lines in the file editor, also with View > Word Wrap (Option+Z). Diffs and the merge tool never wrap. | Off |
 | Cursor style, width, blinking, smooth caret, caret extra top and bottom | The shape, thickness, blinking and size of the cursor, like VS Code and Sublime Text. See [The cursor](Code-Appearance.md#the-cursor). | Line, 2 px, Blink, Off, 0, 0 |
-| Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. Off frees memory. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
+| Editing features | Auto-close brackets, completion, fold arrows, indent guides, word highlight, scroll past the end, column selection, a margin line. See [IDE features](Editing-Code.md#ide-features). | On; margin line off |
 | Markdown preview | How Markdown files open: **Editor only**, **Editor and preview** or **Preview only**. See [Markdown Editor](Markdown-Editor.md). | Editor and preview |
 | Current line blame | Author, age and commit at the end of the cursor line. Cmd+click it to open the commit in the Log; Cmd+Option-click copies the hash. See [Blame](Blame.md). | On |
 | Blame gutter | A blame column beside the line numbers. Also the **Blame** button in the editor path bar and the diff toolbar. | Off |
@@ -65,7 +65,7 @@ The same choices are in **View > Appearance**. The sun button in the header (**T
 
 *The lower part of the Editor section: render whitespace, word wrap, Markdown preview and blame.*
 
-Type a font list and press Enter (or click outside the box), or click a font name below it. **Reset** goes back to the default font. **View > Zoom In** (Cmd+=), **Zoom Out** (Cmd+-) and **Reset Zoom** (Cmd+0) change the editor font size too.
+Type a font list and press Enter, or click a font name below it. **Reset** goes back to the default font. **View > Zoom In** (Cmd+=), **Zoom Out** (Cmd+-) and **Reset Zoom** (Cmd+0) change the editor font size too.
 
 ## Git
 
@@ -83,7 +83,7 @@ Type a font list and press Enter (or click outside the box), or click a font nam
 
 See [Commit Options](Commit-Options.md) for signing and the other per-commit choices.
 
-**Git > Update Project...** also saves its last choice, merge or rebase, in `settings.json` (`updateMethod`, default merge). There is no switch for it here; see [Git Dialogs](Git-Dialogs.md#update-project).
+**Git > Update Project...** also saves its last choice, merge or rebase, in `settings.json` (`updateMethod`, default merge), with no switch here; see [Git Dialogs](Git-Dialogs.md#update-project).
 
 ## Layout
 

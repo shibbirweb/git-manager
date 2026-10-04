@@ -88,6 +88,7 @@
     { "page": "developer/Test-Suites.md", "summary": "Every Vitest and Rust test file, folder by folder, and what it covers." },
     { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
     { "page": "developer/Debugging-with-MCP.md", "summary": "Inspect, measure and drive the running app with the MCP tools and git-manager cli." },
+    { "page": "developer/Measuring-Setting-Memory.md", "summary": "How the memory cost of each setting was measured, the results, and the marks in Settings." },
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
     { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
@@ -401,7 +402,7 @@
       "title": "Memory readout and memory log",
       "usage": "usage/Memory-Use.md",
       "developer": "developer/How-Memory-Is-Measured.md",
-      "screenshots": ["memory-log-settings.png"]
+      "screenshots": ["memory-log-settings.png", "settings-memory-flags.png"]
     },
     {
       "id": "mcp",
