@@ -161,7 +161,7 @@ fn clipboard_commands() -> Vec<(&'static str, Vec<&'static str>)> {
 
 fn read_clipboard() -> AppResult<String> {
     for (program, args) in clipboard_commands() {
-        let output = Command::new(program)
+        let output = crate::child_process::hide_console(&mut Command::new(program))
             .args(args)
             .stdin(Stdio::null())
             .stderr(Stdio::null())

@@ -29,6 +29,8 @@ fn sandbox() -> &'static Sandbox {
             std::fs::write(&global_config, "").expect("write empty global config");
         }
         std::env::set_var("HOME", &home);
+        // config::home_dir() reads USERPROFILE first on Windows.
+        std::env::set_var("USERPROFILE", &home);
         std::env::set_var("XDG_CONFIG_HOME", home.join(".config"));
         std::env::set_var("GIT_CONFIG_NOSYSTEM", "1");
         std::env::set_var("GIT_CONFIG_GLOBAL", &global_config);
@@ -46,6 +48,7 @@ fn git_command(dir: &Path, time: i64) -> Command {
     let mut command = cli::command(dir);
     command
         .env("HOME", &sandbox.home)
+        .env("USERPROFILE", &sandbox.home)
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", &sandbox.global_config)
         .env("GIT_AUTHOR_DATE", &date)

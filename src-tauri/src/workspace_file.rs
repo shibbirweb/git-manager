@@ -112,7 +112,7 @@ fn name_of(file: &Path) -> String {
 /// Canonical path of an existing folder entry, relative to the workspace file's folder.
 fn resolve_folder(base: &Path, path: &str) -> Option<String> {
     let expanded = match path.strip_prefix("~/") {
-        Some(rest) => std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default().join(rest),
+        Some(rest) => crate::config::home_dir().unwrap_or_default().join(rest),
         None => PathBuf::from(path),
     };
     let full = if expanded.is_absolute() { expanded } else { base.join(expanded) };

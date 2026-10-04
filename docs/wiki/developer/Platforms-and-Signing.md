@@ -54,15 +54,15 @@ flowchart LR
 | Where | What | On other platforms |
 | --- | --- | --- |
 | `src-tauri/src/memory.rs` | the memory readout, using macOS process APIs (`proc_pid_rusage`, the "responsible" process) behind `#[cfg(target_os = "macos")]` | a stub returns zero bytes (marked approximate), so the status bar hides the item |
-| `src-tauri/src/git/cli.rs` | the git binary search (`/opt/homebrew/bin/git`, `/usr/local/bin/git`, `/usr/bin/git`) and the login shell `PATH` (`$SHELL -l -c`, default `/bin/zsh`, `:` separators) | falls back to `git` on the current `PATH`; the shell step needs its own Windows version |
+| `src-tauri/src/git/cli.rs` | the git binary search (`/opt/homebrew/bin/git`, `/usr/local/bin/git`, `/usr/bin/git`) and the login shell `PATH` (`$SHELL -l -c`, default `/bin/zsh`) | `git` on the app's own `PATH`, which Explorer fills, with no shell asked |
 | `src/lib/stores/workspacePaths.ts` and the Rust path helpers | paths use `/` separators | Windows paths use `\` and drive letters |
 | `src/lib/update/releases.ts` | `parseReleases` takes the first `.dmg` asset as the download | needs a per-platform asset |
 | `src-tauri/tauri.conf.json` | bundle targets `app` and `dmg` | needs Windows and Linux targets |
-| `.github/workflows/ci.yml`, `release.yml` | the test and build jobs run on `macos-latest` (release's `version` job and the release, publish and wiki workflows use `ubuntu-latest`) | needs a matrix |
+| `.github/workflows/ci.yml`, `release.yml` | the release build runs on `macos-latest`; CI also runs a `windows` job that may fail for now (`continue-on-error`) | Windows needs a build job; Linux needs CI jobs |
 | `scripts/*.sh` | bash demo scripts | need Git Bash or WSL on Windows |
 | Keyboard shortcuts | Cmd (`metaKey`), usually with Ctrl too | check each shortcut |
 
-A few pieces are already ready: `main.rs` hides the console window on Windows release builds, `os_info` in `commands/config.rs` names the OS for bug reports on macOS, Linux and Windows (with `platformName` in `releases.ts` as the fallback), and `tauri.conf.json` already lists an `icon.ico`.
+A few pieces are already ready: `main.rs` hides the console window on Windows release builds, `child_process::hide_console` starts git, gh and the clipboard reader without one (`CREATE_NO_WINDOW`), `config::home_dir` reads `USERPROFILE` first on Windows, `os_info` in `commands/config.rs` names the OS for bug reports on macOS, Linux and Windows (with `platformName` in `releases.ts` as the fallback), and `tauri.conf.json` already lists an `icon.ico`.
 
 ## Windows code that is written but never built
 
@@ -110,7 +110,7 @@ Concretely, the work is:
 
 1. **Backend:** a Windows way to find git and its `PATH`, path handling that accepts `\` and drive letters (and the `\\?\` form that `canonicalize` returns on Windows), and memory readouts per platform or an honest "not available".
 2. **Frontend:** separator-aware path helpers with tests, a review of shortcuts (most accept Cmd or Ctrl already, but Ctrl+Minus for Back is a macOS habit), and per-platform assets in `releases.ts`.
-3. **CI:** run `ci.yml` on a `strategy.matrix` of `macos-latest`, `windows-latest` and `ubuntu-latest`. The Linux runner needs the WebKitGTK and build packages that Tauri lists as prerequisites. The one `#[cfg(unix)]` symlink in `commands/tests.rs` already skips itself on Windows.
+3. **CI:** the `windows` job in `ci.yml` runs every check on `windows-latest`; once it passes, drop its `continue-on-error`. Linux needs the same on `ubuntu-latest`. The Linux runner needs the WebKitGTK and build packages that Tauri lists as prerequisites. The one `#[cfg(unix)]` symlink in `commands/tests.rs` already skips itself on Windows.
 4. **Releases:** add build jobs to `release.yml` next to `build-macos`, each running `tauri-action` for its platform against the same tag, and signing for Windows when a certificate is available.
 
 ## Where to go next

@@ -38,7 +38,7 @@ impl GhCli for SystemGh {
         let Some(binary) = gh_binary() else {
             return Err(AppError::invalid("The GitHub CLI (gh) is not installed."));
         };
-        let mut child = Command::new(binary)
+        let mut child = crate::child_process::hide_console(&mut Command::new(binary))
             .args(["auth", "token", "--hostname", host])
             .env("GH_PROMPT_DISABLED", "1")
             .env("NO_COLOR", "1")

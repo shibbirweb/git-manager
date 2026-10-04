@@ -1,3 +1,4 @@
+mod child_process;
 mod commands;
 mod config;
 mod error;

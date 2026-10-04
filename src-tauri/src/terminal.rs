@@ -224,14 +224,6 @@ fn pick_shell(profiles: Vec<ShellProfile>, shell_id: Option<&str>) -> ShellProfi
     profiles.into_iter().nth(index).unwrap_or_else(fallback_shell)
 }
 
-fn home_folder() -> Option<PathBuf> {
-    ["HOME", "USERPROFILE"]
-        .iter()
-        .filter_map(std::env::var_os)
-        .find(|home| !home.is_empty())
-        .map(PathBuf::from)
-}
-
 /// The requested folder when it exists, else the home folder.
 fn resolve_cwd(cwd: Option<&str>, home: Option<PathBuf>) -> PathBuf {
     cwd.filter(|folder| !folder.is_empty())
@@ -707,7 +699,7 @@ pub fn start_terminal(
     on_exit: impl FnOnce(u32, Option<i32>) + Send + 'static,
 ) -> AppResult<TerminalInfo> {
     let shell = pick_shell(shell_profiles(), shell_id);
-    let cwd = resolve_cwd(cwd, home_folder());
+    let cwd = resolve_cwd(cwd, crate::config::home_dir().ok());
     let options = SpawnOptions {
         program: shell.path.clone(),
         args: shell.args.clone(),

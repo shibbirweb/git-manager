@@ -81,3 +81,61 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --locked --all-targets -- -D warnings
+
+  windows:
+    name: Windows (check + Vitest + cargo test + clippy)
+    runs-on: windows-latest
+    # Windows support is still being built (docs/plans/windows-release.md). Until this job passes, a failure
+    # only reports: the run still counts as passed, so pull requests and releases are not blocked.
+    continue-on-error: true
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # The runner's git turns LF into CRLF on checkout, which breaks the shell scripts and the tests that
+      # compare file bytes.
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        id: install
+        run: bun install --frozen-lockfile
+
+      # Each check below runs even when an earlier one failed, so one run lists every Windows failure.
+      - name: Type-check (svelte-check)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run check
+
+      - name: Unit tests (Vitest)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run test
+
+      # tauri::generate_context! embeds the frontend build output, so it must exist.
+      - name: Build frontend
+        id: build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run build
+
+      - name: Tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        working-directory: src-tauri
+        run: cargo test --locked --no-fail-fast
+
+      - name: Clippy
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        working-directory: src-tauri
+        run: cargo clippy --locked --all-targets -- -D warnings

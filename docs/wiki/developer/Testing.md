@@ -29,7 +29,7 @@ Run them with `cd src-tauri && cargo test`. Add a filter to run a few, for examp
 
 `src-tauri/src/test_support.rs` builds repositories in temporary folders that vanish after the test. Before any test touches git, it points git at a sandbox:
 
-- `HOME` and `XDG_CONFIG_HOME` move to a temporary folder;
+- `HOME`, `USERPROFILE` (which Windows reads first) and `XDG_CONFIG_HOME` move to a temporary folder;
 - `GIT_CONFIG_GLOBAL` points at an empty file and `GIT_CONFIG_NOSYSTEM=1` skips the system config;
 - `LC_ALL=C` and `LANG=C`, so git messages are always in English.
 
