@@ -1029,12 +1029,12 @@ define("tabs-wrapped", async (shot) => {
   await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
 }, () => ({ settings: { wrapTabs: true }, viewport: { width: 900, height: 700 } }));
 
-// Settings > Editor > Single tab title: one open file shows its name centered above the code.
+// Settings > Editor > Tab limit > Single tab title: in single tab mode, one open file shows its name centered above the code.
 define("single-tab-title", async (shot) => {
   await shot.openFile(cartTs());
   await shot.page.mouse.move(5, 690);
   await shot.save(await shot.clipAround([shot.page.locator(".tab-strip.single").first()], { bottom: 60 }));
-});
+}, () => ({ settings: { tabLimit: 1 } }));
 
 define("unsaved-changes-close", async (shot) => {
   await shot.openFile(cartTs());

@@ -1,8 +1,8 @@
 <!--
   Tab bar of one editor group: the first group's strip starts with the Diff tab, then every
   file, commit and terminal tab open in that group, pinned tabs first. Tabs reorder by drag
-  and, with Settings > Editor > Wrap tabs, wrap onto more rows instead of scrolling. With
-  Single tab title on, a strip holding one tab shows it as a centered name.
+  and, with Settings > Editor > Wrap tabs, wrap onto more rows instead of scrolling. In single
+  tab mode with Single tab title on, a strip holding one tab shows it as a centered name.
 -->
 <script lang="ts">
   import { flip } from "svelte/animate";
@@ -43,7 +43,7 @@
   const diffShown = $derived(primary && changesSelection.primaryView === "diff");
   const labels = $derived(tabLabels(tabs));
   const wrap = $derived(settings.wrapTabs);
-  const single = $derived(showsTabAsTitle(settings.singleTabTitle, tabs.length, primary && changesSelection.selected !== null));
+  const single = $derived(showsTabAsTitle(settings.singleTabTitle, settings.tabLimit, tabs.length, primary && changesSelection.selected !== null));
 
   /** A press on a tab that may become a drag once the pointer moves a few pixels. */
   interface TabPress {

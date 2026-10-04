@@ -8,6 +8,7 @@ import { commitTabsInFolder, parseCommitTabPath } from "./commitTabs";
 import { branchTabsInFolder, branchTabTitle, parseBranchTabPath } from "./branchTabs";
 import { gitTabsInFolder, gitTabTitle, parseGitTabPath } from "./gitTabs";
 import { isPseudoTab } from "./pseudoTabs";
+import { SINGLE_TAB } from "./tabLimit";
 import { movedPath, pathsUnder, type PathMove } from "./workspacePaths";
 
 export interface FileTab {
@@ -150,11 +151,12 @@ export function unpinnedPaths(tabs: readonly FileTab[]): string[] {
 }
 
 /**
- * Single tab title: a strip holding exactly one tab (the Diff tab counts) shows it as a
- * centered name instead of a tab, while the setting is on.
+ * Single tab title: in single tab mode (Tab limit set to Single tab), a strip holding exactly
+ * one tab (the Diff tab counts) shows it as a centered name instead of a tab, while the
+ * setting is on.
  */
-export function showsTabAsTitle(enabled: boolean, tabCount: number, diffOpen: boolean): boolean {
-  return enabled && tabCount + (diffOpen ? 1 : 0) === 1;
+export function showsTabAsTitle(enabled: boolean, tabLimit: number, tabCount: number, diffOpen: boolean): boolean {
+  return enabled && tabLimit === SINGLE_TAB && tabCount + (diffOpen ? 1 : 0) === 1;
 }
 
 /**

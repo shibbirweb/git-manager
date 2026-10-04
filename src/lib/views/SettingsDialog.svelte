@@ -1267,18 +1267,6 @@
               onchange={(event) => set("wrapTabs", event.currentTarget.checked)}
             />
           </label>
-          <label class="row toggle-row">
-            <div class="label">
-              <span>Single tab title</span>
-              <span class="hint">With only one tab open, show its name in the middle of the strip instead of a tab.</span>
-            </div>
-            <input
-              type="checkbox"
-              class="switch"
-              checked={settings.singleTabTitle}
-              onchange={(event) => set("singleTabTitle", event.currentTarget.checked)}
-            />
-          </label>
           <div class="row">
             <div class="label">
               <span>Tab limit<MemoryFlag setting="tabLimit" /></span>
@@ -1321,6 +1309,20 @@
                 aria-label="Most file tabs"
               />
             </div>
+          {/if}
+          {#if tabLimitChoice === "single"}
+            <label class="row toggle-row sub-row">
+              <div class="label">
+                <span>Single tab title</span>
+                <span class="hint">With only one tab open, show its name in the middle of the strip instead of a tab.</span>
+              </div>
+              <input
+                type="checkbox"
+                class="switch"
+                checked={settings.singleTabTitle}
+                onchange={(event) => set("singleTabTitle", event.currentTarget.checked)}
+              />
+            </label>
           {/if}
           <label class="row toggle-row">
             <div class="label">

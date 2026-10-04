@@ -1,10 +1,10 @@
 # How the single tab title works
 
-This chapter explains how a tab strip with one tab turns into a centered title. The user side is in [Single Tab Title](../usage/Single-Tab-Title.md); the rest of the strip (drag, pin, wrap) is in [How tabs are arranged](How-Tabs-Are-Arranged.md).
+This chapter explains how a tab strip with one tab turns into a centered title in single tab mode. The user side is in [Single Tab Title](../usage/Single-Tab-Title.md); the rest of the strip (drag, pin, wrap) is in [How tabs are arranged](How-Tabs-Are-Arranged.md).
 
 ## Why we need it
 
-With one file open, the strip is a single tab on the left and empty space to the right. It looks unfinished, and the tab frame adds nothing when there is no other tab to tell it apart from. The user asked to move the lone tab to the center and show it like a name.
+With one file open, the strip is a single tab on the left and empty space to the right. It looks unfinished, and the tab frame adds nothing when there is no other tab to tell it apart from. The user asked to move the lone tab to the center and show it like a name, and then to keep it to single tab mode (Settings > Editor > Tab limit > Single tab): there one file at a time is the point, while with other limits a lone tab is just a moment before the next file opens.
 
 ## How it works
 
@@ -13,16 +13,18 @@ With one file open, the strip is a single tab on the left and empty space to the
 The decision is one pure function in `src/lib/stores/tabs.ts`:
 
 ```ts
-showsTabAsTitle(enabled, tabCount, diffOpen)
+showsTabAsTitle(enabled, tabLimit, tabCount, diffOpen)
 ```
 
-It is true when the setting is on and the strip holds exactly one item. The Diff tab of the Changes view counts as an item, because it sits in the same strip as the others.
+It is true when the setting is on, `tabLimit` is `SINGLE_TAB` (from `tabLimit.ts`) and the strip holds exactly one item. The Diff tab of the Changes view counts as an item, because it sits in the same strip as the others.
 
 ```mermaid
 flowchart TD
   Start["EditorTabs.svelte renders a group"] --> Setting{"settings.singleTabTitle?"}
   Setting -- no --> Tabs["normal tabs"]
-  Setting -- yes --> Count["items = tabs.length + (Diff tab shown ? 1 : 0)"]
+  Setting -- yes --> Mode{"settings.tabLimit == SINGLE_TAB?"}
+  Mode -- no --> Tabs
+  Mode -- yes --> Count["items = tabs.length + (Diff tab shown ? 1 : 0)"]
   Count --> One{"items == 1?"}
   One -- yes --> Title["strip gets the single class: centered title"]
   One -- no --> Tabs
@@ -51,13 +53,15 @@ Dragging needs at least two tabs (`startDrag` returns null otherwise), so the ti
 | `src/lib/views/EditorTabs.svelte` | the `single` class and its styles |
 | `src/lib/stores/settingsData.ts` | the `singleTabTitle` preference (on by default) |
 | `src/lib/stores/settings.svelte.ts` | the reactive `singleTabTitle` field and saving it |
-| `src/lib/views/SettingsDialog.svelte` | the Single tab title switch in Settings > Editor |
+| `src/lib/views/SettingsDialog.svelte` | the Single tab title switch, shown under Tab limit only while Single tab is chosen |
 
 ## Design decisions
 
 **A class, not a second component.** Rendering a separate title element would mean copying the tab's buttons, menu and handlers, and keeping both in sync. Styling the same element keeps every tab action working and costs nothing in memory.
 
-**On by default.** The user asked for it as the new look. Anyone who prefers a plain tab can turn it off in Settings > Editor.
+**Only in single tab mode.** With no limit or a number limit, the strip grows and shrinks as files open, and a title that turns into a tab and back each time would jump around. In single tab mode the strip almost always holds one file, so the title is stable.
+
+**On by default, under Tab limit.** The switch is a sub-row of Tab limit that shows only while Single tab is chosen, since it does nothing otherwise. Anyone who prefers a plain tab in single tab mode can turn it off.
 
 **The Diff tab counts.** It shares the strip with the file tabs. Not counting it would show a title next to a Diff tab, which is two items again.
 
@@ -65,7 +69,7 @@ Dragging needs at least two tabs (`startDrag` returns null otherwise), so the ti
 
 ## Tests
 
-- `src/lib/stores/tabs.test.ts`: `showsTabAsTitle` (one tab, the setting off, the Diff tab counted, empty and full strips).
+- `src/lib/stores/tabs.test.ts`: `showsTabAsTitle` (one tab, the setting off, other tab limits, the Diff tab counted, empty and full strips).
 - `src/lib/stores/settingsData.test.ts`: the `singleTabTitle` default and validation.
 
 The centered look, the always visible close button and the Rounded panels styles need a visual check in the app.

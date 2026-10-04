@@ -19,6 +19,7 @@ import {
   type TabsState,
 } from "./tabs";
 import { commitTabPath } from "./commitTabs";
+import { NO_TAB_LIMIT, SINGLE_TAB } from "./tabLimit";
 
 const empty: TabsState = { tabs: [], active: null };
 
@@ -214,18 +215,23 @@ function order(state: TabsState): string[] {
 
 describe("showsTabAsTitle", () => {
   it("shows a lone tab as a title only while the setting is on", () => {
-    expect(showsTabAsTitle(true, 1, false)).toBe(true);
-    expect(showsTabAsTitle(false, 1, false)).toBe(false);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 1, false)).toBe(true);
+    expect(showsTabAsTitle(false, SINGLE_TAB, 1, false)).toBe(false);
+  });
+
+  it("shows the title only in single tab mode", () => {
+    expect(showsTabAsTitle(true, NO_TAB_LIMIT, 1, false)).toBe(false);
+    expect(showsTabAsTitle(true, 5, 1, false)).toBe(false);
   });
 
   it("counts the Diff tab", () => {
-    expect(showsTabAsTitle(true, 0, true)).toBe(true);
-    expect(showsTabAsTitle(true, 1, true)).toBe(false);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 0, true)).toBe(true);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 1, true)).toBe(false);
   });
 
   it("keeps tabs for an empty strip and for two or more tabs", () => {
-    expect(showsTabAsTitle(true, 0, false)).toBe(false);
-    expect(showsTabAsTitle(true, 2, false)).toBe(false);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 0, false)).toBe(false);
+    expect(showsTabAsTitle(true, SINGLE_TAB, 2, false)).toBe(false);
   });
 });
 

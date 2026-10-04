@@ -1,6 +1,6 @@
 # Single Tab Title
 
-When only one file is open, a row with one lone tab in it looks a little empty. Git Manager shows that file's name in the middle of the strip instead, like a title above the code. Open a second file and the normal tabs come back.
+In single tab mode (**Tab limit** set to **Single tab**), you work on one file at a time, and a row with one lone tab in it looks a little empty. Git Manager shows that file's name in the middle of the strip instead, like a title above the code. With any other tab limit you always see normal tabs.
 
 [TODO:single-tab-title.png]
 
@@ -8,7 +8,7 @@ When only one file is open, a row with one lone tab in it looks a little empty. 
 
 ## What it looks like
 
-With **one tab** in the strip:
+In single tab mode, with **one tab** in the strip:
 
 - The file's icon and name sit in the middle of the strip, without the tab's frame, background or accent line.
 - A preview tab (one you opened with a single click) still shows its name in italics, so you can tell it will be replaced by the next file you click.
@@ -22,7 +22,7 @@ Everything else works the same as on a tab:
 - Middle-click the name to close the file.
 - Double-click the name to keep a preview tab open.
 
-As soon as the strip holds two tabs, it shows normal tabs again. Close all but one and the title comes back.
+Single tab mode limits file tabs only, so a terminal or a commit can still open next to the file. As soon as the strip holds two tabs, it shows normal tabs again. Close all but one and the title comes back.
 
 ## Which tabs count
 
@@ -34,10 +34,11 @@ The title works with [Rounded panels](Rounded-Panels.md) and with [Wrap tabs](Pi
 
 ## Turn it on or off
 
-The setting is **on by default**.
+The setting is **on by default**, and it only shows while **Tab limit** is set to **Single tab**.
 
 1. Open **Settings** (Cmd+,) and go to **Editor**.
-2. Turn **Single tab title** off to always show tabs, even when only one file is open.
+2. Set **Tab limit** to **Single tab**. The **Single tab title** switch appears below it.
+3. Turn **Single tab title** off to show a normal tab even in single tab mode.
 
 The setting is saved as `singleTabTitle` in `settings.json`.
 
