@@ -123,7 +123,7 @@ fn read_log(_ctx: &ToolCtx, args: &Args) -> ToolResult {
     let config_dir = crate::config::config_dir_in(&home);
     let text = crate::memory_log::read_tail(&config_dir, lines);
     json_out(json!({
-        "path": crate::memory_log::MemoryLog::path_in(&config_dir).to_string_lossy(),
+        "path": crate::paths::to_ui(crate::memory_log::MemoryLog::path_in(&config_dir)),
         "lines": text.lines().collect::<Vec<_>>(),
     }))
 }

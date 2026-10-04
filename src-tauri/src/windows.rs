@@ -7,6 +7,7 @@
 //! shows focuses that window instead. Ownership compares canonical paths (symlinks and `..`
 //! resolved), so two spellings of one folder count as the same folder.
 
+use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -103,7 +104,7 @@ impl Shown {
 
 /// The canonical form of a path, or the path itself when it cannot be resolved.
 pub fn canonical(path: &str) -> PathBuf {
-    Path::new(path).canonicalize().unwrap_or_else(|_| PathBuf::from(path))
+    Path::new(path).real_path().unwrap_or_else(|_| PathBuf::from(path))
 }
 
 #[derive(Debug, Clone)]

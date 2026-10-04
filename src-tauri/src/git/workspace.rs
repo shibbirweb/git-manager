@@ -1,6 +1,7 @@
 //! Workspace folders: any directory, holding zero or more (possibly nested)
 //! repositories, found by a bounded breadth-first scan.
 
+use crate::paths::RealPath;
 use std::collections::VecDeque;
 use std::path::{Component, Path, PathBuf};
 
@@ -61,7 +62,7 @@ pub fn canonical_dir(folder_path: &str) -> AppResult<PathBuf> {
     if !path.is_dir() {
         return Err(AppError::invalid(format!("Not a folder: {folder_path}")));
     }
-    Ok(path.canonicalize()?)
+    Ok(path.real_path()?)
 }
 
 /// `/`-separated path of `path` below `base`, or "" when it is not below it.
@@ -105,7 +106,7 @@ fn enclosing_repo(workspace_root: &Path) -> Option<PathBuf> {
     if repo.is_bare() {
         return None;
     }
-    let workdir = repo.workdir()?.canonicalize().ok()?;
+    let workdir = repo.workdir()?.real_path().ok()?;
     workspace_root.starts_with(&workdir).then_some(workdir)
 }
 

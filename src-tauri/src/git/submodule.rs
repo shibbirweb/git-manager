@@ -2,6 +2,7 @@
 //! their parent's status as one entry each (like `git status`), and changed
 //! through the git CLI.
 
+use crate::paths::RealPath;
 use std::path::{Component, Path};
 
 use git2::{Repository, SubmoduleIgnore, SubmoduleStatus};
@@ -314,9 +315,9 @@ pub fn remove(repo_path: &str, submodule_path: &str, envs: Envs) -> AppResult<()
     let module_git_dir = modules_dir.join(&name);
     // Only ever a folder inside .git/modules.
     let inside = module_git_dir
-        .canonicalize()
+        .real_path()
         .ok()
-        .zip(modules_dir.canonicalize().ok())
+        .zip(modules_dir.real_path().ok())
         .map(|(module, modules)| module.starts_with(&modules) && module != modules)
         .unwrap_or(false);
     if inside {

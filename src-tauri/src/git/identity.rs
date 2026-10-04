@@ -193,7 +193,7 @@ pub fn read_identity(repo_path: Option<&str>, global: &GlobalConfig) -> AppResul
         global: global_values,
         local,
         complete,
-        global_file: global.write_file().map(|file| file.to_string_lossy().into_owned()),
+        global_file: global.write_file().map(crate::paths::to_ui),
     })
 }
 

@@ -1,5 +1,6 @@
 //! Helpers for tests that drive real git repositories in temporary directories.
 
+use crate::paths::RealPath;
 use std::cell::Cell;
 use std::future::Future;
 use std::path::{Path, PathBuf};
@@ -23,7 +24,7 @@ fn sandbox() -> &'static Sandbox {
     SANDBOX.get_or_init(|| {
         let home = std::env::temp_dir().join("git-manager-test-home");
         std::fs::create_dir_all(&home).expect("create sandbox home");
-        let home = home.canonicalize().expect("canonicalize sandbox home");
+        let home = home.real_path().expect("canonicalize sandbox home");
         let global_config = home.join("gitconfig");
         if !global_config.exists() {
             std::fs::write(&global_config, "").expect("write empty global config");
@@ -78,7 +79,7 @@ pub fn block_on<F: Future>(future: F) -> F::Output {
 }
 
 pub fn canonical(path: &Path) -> PathBuf {
-    path.canonicalize().expect("canonicalize path")
+    path.real_path().expect("canonicalize path")
 }
 
 /// A bare repository usable as a local remote.
@@ -97,8 +98,9 @@ impl BareRemote {
         BareRemote { _root: root, path }
     }
 
+    /// The path as the page sends it (see paths.rs).
     pub fn path_string(&self) -> String {
-        self.path.to_string_lossy().into_owned()
+        crate::paths::to_ui(&self.path)
     }
 }
 
@@ -118,8 +120,9 @@ impl TestDir {
         TestDir { _root: root, path }
     }
 
+    /// The path as the page sends it (see paths.rs).
     pub fn path_string(&self) -> String {
-        self.path.to_string_lossy().into_owned()
+        crate::paths::to_ui(&self.path)
     }
 
     /// Absolute path of `relative_path` ("" is the folder itself).
@@ -132,7 +135,7 @@ impl TestDir {
     }
 
     pub fn file_string(&self, relative_path: &str) -> String {
-        self.file(relative_path).to_string_lossy().into_owned()
+        crate::paths::to_ui(self.file(relative_path))
     }
 
     pub fn mkdir(&self, relative_path: &str) {
@@ -223,8 +226,9 @@ impl TestRepo {
         }
     }
 
+    /// The path as the page sends it (see paths.rs).
     pub fn path_string(&self) -> String {
-        self.path.to_string_lossy().into_owned()
+        crate::paths::to_ui(&self.path)
     }
 
     pub fn open(&self) -> git2::Repository {

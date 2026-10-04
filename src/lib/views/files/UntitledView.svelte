@@ -20,7 +20,7 @@
   import { settings } from "$lib/stores/settings.svelte";
   import { unsavedText } from "$lib/stores/unsavedText.svelte";
   import { suggestedFileName, untitledTitle } from "$lib/stores/untitledTabs";
-  import { baseName, folderFor, joinPath, parentOf, relativeTo } from "$lib/stores/workspacePaths";
+  import { baseName, folderFor, fromNativePath, joinPath, parentOf, relativeTo } from "$lib/stores/workspacePaths";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { changesSelection } from "../changes/selection.svelte";
@@ -183,6 +183,7 @@
     if (!target) {
       return false;
     }
+    target = fromNativePath(target);
     const folder = folderFor(folders, target);
     try {
       if (folder) {

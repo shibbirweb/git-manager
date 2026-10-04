@@ -1,3 +1,4 @@
+use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use serde_json::{json, Value};
@@ -80,7 +81,7 @@ fn read_file(ctx: &ToolCtx, args: &Args) -> ToolResult {
     if full_path.is_dir() {
         return Err("This is a folder; use list_directory".to_string());
     }
-    let shown = full_path.to_string_lossy().into_owned();
+    let shown = crate::paths::to_ui(&full_path);
     let file = files::read_file(&full_path, &shown, None).map_err(|err| err.to_string())?;
     if file.too_large {
         return Err(format!("The file is too large to read ({} bytes)", file.size));
@@ -119,7 +120,7 @@ fn list_schema() -> Value {
 /// The repository whose work tree holds `dir`, which decides what is ignored there.
 fn enclosing_repo(dir: &Path) -> Option<(git2::Repository, PathBuf)> {
     let repo = git2::Repository::discover(dir).ok()?;
-    let workdir = repo.workdir()?.canonicalize().ok()?;
+    let workdir = repo.workdir()?.real_path().ok()?;
     Some((repo, workdir))
 }
 
@@ -139,7 +140,7 @@ fn list_directory(ctx: &ToolCtx, args: &Args) -> ToolResult {
     for candidate in page.iter().filter(|candidate| candidate.is_dir()) {
         let child = full_dir.join(&candidate.name);
         if child.join(".git").exists() {
-            if let Ok(canonical) = child.canonicalize() {
+            if let Ok(canonical) = child.real_path() {
                 repo_roots.push(canonical);
             }
         }
@@ -161,7 +162,7 @@ fn list_directory(ctx: &ToolCtx, args: &Args) -> ToolResult {
         .collect();
     let next = offset + shown;
     let mut out = json!({
-        "folderPath": full_dir.to_string_lossy(),
+        "folderPath": crate::paths::to_ui(&full_dir),
         "entries": entries,
         "total": total,
         "offset": offset,

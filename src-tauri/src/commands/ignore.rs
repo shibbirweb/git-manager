@@ -150,7 +150,7 @@ fn run_add_to_ignore(
         std::fs::write(&path, content)?;
     }
     Ok(IgnoreOutcome {
-        ignore_file: path.to_string_lossy().into_owned(),
+        ignore_file: crate::paths::to_ui(&path),
         added,
         existing,
         tracked_paths: tracked_matches(repo_path, file_paths, patterns)?,
@@ -165,7 +165,7 @@ fn run_ensure_ignore_file(repo_path: &str, target: IgnoreTarget) -> AppResult<St
         }
         std::fs::write(&path, "")?;
     }
-    Ok(path.to_string_lossy().into_owned())
+    Ok(crate::paths::to_ui(&path))
 }
 
 /// `git rm --cached`: the files stay on disk and leave the index. Paths go through stdin, so a

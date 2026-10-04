@@ -1,6 +1,7 @@
 // Pure helpers for submodules: how a submodule's change reads in its parent's
 // Changes list (git status wording), and the Add Submodule dialog's checks.
 
+import { isAbsolutePath } from "$lib/stores/workspacePaths";
 import type { FileStatus, RepoInfo, SubmoduleChange } from "$lib/types";
 import { cloneFolderName } from "../gitOptions";
 
@@ -37,7 +38,7 @@ export function validateSubmodulePath(submodulePath: string, existingPaths: stri
   if (trimmed === "") {
     return "Enter a path inside the repository";
   }
-  if (trimmed.startsWith("/") || trimmed.startsWith("-")) {
+  if (isAbsolutePath(trimmed) || trimmed.startsWith("-")) {
     return "Use a path relative to the repository";
   }
   if (trimmed.split("/").some((part) => part === ".." || part === "." || part === "")) {

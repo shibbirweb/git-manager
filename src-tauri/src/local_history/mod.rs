@@ -151,7 +151,7 @@ fn read_for_snapshot(entry_paths: &[PathBuf], label: Label, max_file_bytes: u64,
             continue;
         };
         total += bytes.len() as u64;
-        items.push((file.to_string_lossy().into_owned(), bytes, label));
+        items.push((crate::paths::to_ui(&file), bytes, label));
     }
     items
 }

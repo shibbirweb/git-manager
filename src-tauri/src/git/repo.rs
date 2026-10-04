@@ -44,12 +44,14 @@ pub fn discover(path: &str) -> AppResult<RepoInfo> {
     })
 }
 
+/// The path for the page (see paths.rs) without a trailing `/`, except for a root (`/`, `C:/`).
 pub fn strip_trailing_slash(path: &Path) -> String {
-    let text = path.to_string_lossy();
-    if text.len() > 1 {
-        text.trim_end_matches('/').to_string()
+    let text = crate::paths::to_ui(path);
+    let trimmed = text.trim_end_matches('/');
+    if trimmed.is_empty() || trimmed.ends_with(':') {
+        text
     } else {
-        text.into_owned()
+        trimmed.to_string()
     }
 }
 
@@ -104,4 +106,25 @@ pub fn resolve_commit<'repo>(repo: &'repo Repository, revision: &str) -> AppResu
     repo.revparse_single(revision)
         .and_then(|object| object.peel_to_commit())
         .map_err(|_| AppError::invalid(format!("Unknown revision: {revision}")))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::strip_trailing_slash;
+    use std::path::Path;
+
+    #[test]
+    fn roots_keep_their_slash_and_folders_lose_it() {
+        assert_eq!(strip_trailing_slash(Path::new("/")), "/");
+        assert_eq!(strip_trailing_slash(Path::new("/Users/me/repo/")), "/Users/me/repo");
+        assert_eq!(strip_trailing_slash(Path::new("/Users/me/repo")), "/Users/me/repo");
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_roots_use_slashes_and_keep_the_drive_root() {
+        assert_eq!(strip_trailing_slash(Path::new(r"C:\")), "C:/");
+        assert_eq!(strip_trailing_slash(Path::new(r"c:\Users\me\repo\")), "C:/Users/me/repo");
+        assert_eq!(strip_trailing_slash(Path::new(r"\\?\C:\Users\me\repo")), "C:/Users/me/repo");
+    }
 }

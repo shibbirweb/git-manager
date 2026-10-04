@@ -3,6 +3,7 @@
 //! folders are read; no `node` is started. An app opened from Finder does not get the
 //! shell's variables (NVM_DIR...), so each manager's default folder is checked as well.
 
+use crate::paths::RealPath;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
@@ -103,7 +104,7 @@ fn push_install(found: &mut Vec<NodeInstall>, seen: &mut HashSet<PathBuf>, versi
     if !bin_dir.join(NODE_PROGRAM).is_file() {
         return;
     }
-    let canonical = bin_dir.canonicalize().unwrap_or_else(|_| bin_dir.to_path_buf());
+    let canonical = bin_dir.real_path().unwrap_or_else(|_| bin_dir.to_path_buf());
     if seen.insert(canonical) {
         found.push(NodeInstall {
             version,
@@ -150,7 +151,7 @@ fn brew_installs(prefix: &Path, found: &mut Vec<NodeInstall>, seen: &mut HashSet
         if name != "node" && !name.starts_with("node@") {
             continue;
         }
-        let target = entry.path().canonicalize().ok();
+        let target = entry.path().real_path().ok();
         let version = target
             .as_deref()
             .and_then(Path::file_name)
@@ -188,6 +189,7 @@ pub fn installed_here() -> Vec<NodeInstall> {
 mod tests {
     use super::*;
 
+    #[cfg(unix)]
     fn node_at(bin_dir: &Path) {
         std::fs::create_dir_all(bin_dir).unwrap();
         std::fs::write(bin_dir.join("node"), "").unwrap();

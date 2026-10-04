@@ -1,0 +1,5 @@
+# On Windows canonicalize returns `\\?\C:\...`, which git and the page cannot use (see src/paths.rs).
+disallowed-methods = [
+    { path = "std::path::Path::canonicalize", reason = "use crate::paths::RealPath::real_path (drops Windows' \\\\?\\ prefix)" },
+    { path = "std::fs::canonicalize", reason = "use crate::paths::real (drops Windows' \\\\?\\ prefix)" },
+]

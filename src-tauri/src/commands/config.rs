@@ -96,7 +96,7 @@ pub fn memory_log_event(state: tauri::State<'_, crate::state::AppState>, label: 
 /// The config folder, for showing in the settings dialog.
 #[tauri::command]
 pub fn config_dir() -> AppResult<String> {
-    Ok(config::config_dir_in(&config::home_dir()?).to_string_lossy().into_owned())
+    Ok(crate::paths::to_ui(config::config_dir_in(&config::home_dir()?)))
 }
 
 /// The operating system for bug reports. The web view cannot tell: WebKit

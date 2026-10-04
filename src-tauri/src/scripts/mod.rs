@@ -190,7 +190,7 @@ fn collect_folder(workspace_index: usize, folder: &Path, found: &mut Vec<Found>,
         }
         let file_path = entry.path().to_path_buf();
         // A workspace folder inside another one would list its files twice.
-        let canonical = std::fs::canonicalize(&file_path).unwrap_or_else(|_| file_path.clone());
+        let canonical = crate::paths::real(&file_path).unwrap_or_else(|_| file_path.clone());
         if !seen.insert(canonical) {
             continue;
         }
@@ -237,7 +237,7 @@ fn read_source(file: &Found, workspace_folder: &str) -> Option<ScriptSource> {
             node_in_manifest.map(|(spec, source)| NodeWanted {
                 spec,
                 source: source.to_string(),
-                file_path: file.file_path.to_string_lossy().into_owned(),
+                file_path: crate::paths::to_ui(&file.file_path),
             })
         }),
         _ => None,
@@ -253,8 +253,8 @@ fn read_source(file: &Found, workspace_folder: &str) -> Option<ScriptSource> {
     };
     Some(ScriptSource {
         kind: file.kind,
-        file_path: file.file_path.to_string_lossy().into_owned(),
-        folder_path: folder.to_string_lossy().into_owned(),
+        file_path: crate::paths::to_ui(&file.file_path),
+        folder_path: crate::paths::to_ui(folder),
         workspace_folder: workspace_folder.to_string(),
         runner,
         package_name,

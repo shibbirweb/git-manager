@@ -374,7 +374,7 @@ impl Mcp {
             token: self.inner.shared.token(),
             error,
             cli_command: format!("{} cli", exe.display()),
-            cli_installed_path: installed.map(|link| link.to_string_lossy().into_owned()),
+            cli_installed_path: installed.map(crate::paths::to_ui),
             cli_on_path: on_path,
         }
     }

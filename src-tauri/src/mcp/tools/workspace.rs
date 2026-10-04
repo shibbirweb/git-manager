@@ -44,7 +44,7 @@ fn list_workspace(ctx: &ToolCtx, _args: &Args) -> ToolResult {
                 "label": window.label,
                 "title": window.title,
                 "focused": focused.as_deref() == Some(window.label.as_str()),
-                "folderPaths": window.folders.iter().map(|folder| folder.to_string_lossy().into_owned()).collect::<Vec<_>>(),
+                "folderPaths": window.folders.iter().map(crate::paths::to_ui).collect::<Vec<_>>(),
             })
         })
         .collect();

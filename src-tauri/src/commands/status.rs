@@ -137,7 +137,7 @@ pub async fn write_worktree_file(repo_path: String, file_path: String, content: 
         let bytes = eol.apply(&content).into_bytes();
         std::fs::write(&full, &bytes)?;
         let version = files::stat_version(&std::fs::metadata(&full)?);
-        local_history::record_save(full.to_string_lossy().into_owned(), before, bytes);
+        local_history::record_save(crate::paths::to_ui(&full), before, bytes);
         Ok(version)
     })
     .await

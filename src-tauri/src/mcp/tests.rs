@@ -1,5 +1,6 @@
 //! The MCP server over real HTTP on ephemeral ports, against real temporary repositories.
 
+use crate::paths::RealPath;
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::TcpStream;
@@ -77,7 +78,7 @@ impl Fixture {
 
     fn with_states(mcp_on: bool, cli_on: bool, tool_states: HashMap<String, bool>) -> Fixture {
         let home = TempDir::new().unwrap();
-        let config_dir = home.path().canonicalize().unwrap().join(".gitmanager");
+        let config_dir = home.path().real_path().unwrap().join(".gitmanager");
         let mcp = Mcp::for_test(config_dir.clone(), Duration::from_millis(300));
         let host = Arc::new(TestHost {
             ready: true,
@@ -789,7 +790,7 @@ fn clone_repository_starts_off_and_clones_outside_the_workspace() {
     source.write("readme.md", "hello\n");
     source.commit_all("first");
     let parent = TempDir::new().unwrap();
-    let parent_path = parent.path().canonicalize().unwrap();
+    let parent_path = parent.path().real_path().unwrap();
     let arguments = json!({ "url": source.path_string(), "parentPath": parent_path.to_string_lossy() });
 
     let off = Fixture::new(true, false);
@@ -862,7 +863,7 @@ fn the_cli_clones_into_the_given_or_current_folder() {
     source.write("a.txt", "a\n");
     source.commit_all("first");
     let parent = TempDir::new().unwrap();
-    let parent_path = parent.path().canonicalize().unwrap();
+    let parent_path = parent.path().real_path().unwrap();
     let off = Fixture::new(false, true);
     let (code, _, err) = run_cli(&off.config_dir, &["clone", &source.path_string(), "--into", &parent_path.to_string_lossy()]);
     assert_eq!(code, cli::EXIT_TOOL_ERROR);

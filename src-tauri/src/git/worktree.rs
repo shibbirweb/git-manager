@@ -2,6 +2,7 @@
 //! `worktrees/` folder the way `git worktree list --porcelain` does (no git
 //! process per refresh), changed through the git CLI.
 
+use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use git2::{Oid, Repository};
@@ -94,7 +95,7 @@ pub fn parse_porcelain(text: &str) -> Vec<WorktreeInfo> {
 }
 
 fn same_path(left: &Path, right: &Path) -> bool {
-    let canonical = |path: &Path| path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    let canonical = |path: &Path| path.real_path().unwrap_or_else(|_| path.to_path_buf());
     canonical(left) == canonical(right)
 }
 
@@ -116,13 +117,13 @@ fn read_head(repo: &Repository, head_file: &Path) -> (Option<String>, Option<Str
 
 /// The main work tree: the common git dir without its `/.git` (the git dir itself when bare).
 fn main_worktree(repo: &Repository, common_dir: &Path) -> WorktreeInfo {
-    let real = common_dir.canonicalize().unwrap_or_else(|_| common_dir.to_path_buf());
+    let real = common_dir.real_path().unwrap_or_else(|_| common_dir.to_path_buf());
     let path = if real.file_name().is_some_and(|name| name == ".git") {
         real.parent().map(Path::to_path_buf).unwrap_or(real)
     } else {
         real
     };
-    let mut info = WorktreeInfo::new(&path.to_string_lossy(), true);
+    let mut info = WorktreeInfo::new(&crate::paths::to_ui(&path), true);
     // Read from a linked work tree, a bare main repository is known from its config.
     let bare_config = repo.config().ok().and_then(|config| config.get_bool("core.bare").ok()).unwrap_or(false);
     info.bare = repo.is_bare() || bare_config;
@@ -145,7 +146,7 @@ fn linked_worktree(repo: &Repository, admin_dir: &Path) -> Option<WorktreeInfo> 
         PathBuf::from(gitdir)
     } else {
         let joined = admin_dir.join(gitdir);
-        joined.canonicalize().unwrap_or(joined)
+        joined.real_path().unwrap_or(joined)
     };
     let dot_git_text = dot_git.to_string_lossy();
     let path = dot_git_text.strip_suffix("/.git").unwrap_or(&dot_git_text);
@@ -234,7 +235,7 @@ pub fn add(repo_path: &str, worktree_path: &str, branch: &WorktreeBranch) -> App
         }
     }
     cli::run(Path::new(repo_path), &args)?;
-    let created = target.canonicalize().unwrap_or(target);
+    let created = target.real_path().unwrap_or(target);
     Ok(strip_trailing_slash(&created))
 }
 

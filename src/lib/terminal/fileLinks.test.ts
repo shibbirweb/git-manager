@@ -65,12 +65,19 @@ describe("resolveTerminalPath", () => {
     expect(resolveTerminalPath("src/a.ts", null)).toBeNull();
     expect(resolveTerminalPath("src/a.ts", "relative")).toBeNull();
   });
+
+  it("resolves against a Windows folder", () => {
+    expect(resolveTerminalPath("src/a.ts", "C:/work/shop")).toBe("C:/work/shop/src/a.ts");
+    expect(resolveTerminalPath("../../../a.ts", "C:/work")).toBe("C:/a.ts");
+    expect(resolveTerminalPath("D:/logs//x.log", null)).toBe("D:/logs/x.log");
+  });
 });
 
 describe("parseOsc7", () => {
   it("reads the folder of a file URL", () => {
     expect(parseOsc7("file://mac.local/Users/me/My%20Shop")).toBe("/Users/me/My Shop");
     expect(parseOsc7("file:///tmp")).toBe("/tmp");
+    expect(parseOsc7("file://pc/C:/Users/me/My%20Shop")).toBe("C:/Users/me/My Shop");
   });
 
   it("ignores anything else", () => {

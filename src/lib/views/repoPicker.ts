@@ -1,12 +1,13 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { api, errorMessage } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
+import { fromNativePath } from "$lib/stores/workspacePaths";
 import { toast } from "$lib/ui/toast.svelte";
 import type { RecentEntry } from "./recentEntries";
 
 async function pickFolder(title: string): Promise<string | null> {
   const selected = await open({ directory: true, multiple: false, title });
-  return typeof selected === "string" && selected ? selected : null;
+  return typeof selected === "string" && selected ? fromNativePath(selected) : null;
 }
 
 /** Shows a folder picker and opens the chosen folder, git or not, replacing the workspace. */
@@ -34,7 +35,7 @@ export async function pickAndOpenWorkspaceFile(): Promise<void> {
     filters: [{ name: "Workspace", extensions: ["gitmanager-workspace", "code-workspace"] }],
   });
   if (typeof selected === "string" && selected) {
-    await repoStore.openWorkspaceFile(selected);
+    await repoStore.openWorkspaceFile(fromNativePath(selected));
   }
 }
 
@@ -53,7 +54,7 @@ export async function pickAndSaveWorkspace(): Promise<void> {
     filters: [{ name: "Git Manager Workspace", extensions: ["gitmanager-workspace"] }],
   });
   if (target) {
-    await repoStore.saveWorkspaceAs(target);
+    await repoStore.saveWorkspaceAs(fromNativePath(target));
   }
 }
 

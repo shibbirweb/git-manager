@@ -20,9 +20,13 @@ pub enum LaunchMode {
     /// Launched by `git mergetool` with the four standard paths.
     #[serde(rename_all = "camelCase")]
     MergeTool {
+        #[serde(serialize_with = "crate::paths::serialize_ui")]
         base: PathBuf,
+        #[serde(serialize_with = "crate::paths::serialize_ui")]
         local: PathBuf,
+        #[serde(serialize_with = "crate::paths::serialize_ui")]
         remote: PathBuf,
+        #[serde(serialize_with = "crate::paths::serialize_ui")]
         merged: PathBuf,
     },
 }
@@ -44,8 +48,8 @@ impl LaunchMode {
             .first()
             .filter(|arg| !arg.starts_with('-'))
             .map(|arg| {
-                std::fs::canonicalize(arg.as_str())
-                    .map(|path| path.to_string_lossy().into_owned())
+                crate::paths::real(arg.as_str())
+                    .map(crate::paths::to_ui)
                     .unwrap_or_else(|_| arg.to_string())
             });
         LaunchMode::App { repo_path }
@@ -115,6 +119,7 @@ impl AppState {
 #[cfg(test)]
 mod tests {
     use super::LaunchMode;
+    use crate::paths::RealPath;
 
     fn args(values: &[&str]) -> Vec<String> {
         values.iter().map(|value| value.to_string()).collect()
@@ -152,7 +157,7 @@ mod tests {
     #[test]
     fn repo_path_argument_is_canonicalized() {
         let dir = tempfile::TempDir::new().unwrap();
-        let canonical = dir.path().canonicalize().unwrap().to_string_lossy().into_owned();
+        let canonical = dir.path().real_path().unwrap().to_string_lossy().into_owned();
         let given = dir.path().to_string_lossy().into_owned();
         assert_eq!(repo_path(LaunchMode::from_args(&args(&[&given]))), Some(canonical));
 

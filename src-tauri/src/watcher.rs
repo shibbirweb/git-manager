@@ -7,6 +7,7 @@
 //! Bursts (npm install, a big checkout) are held and merged so they cost one
 //! refresh every second or two instead of one every 300 ms.
 
+use crate::paths::RealPath;
 use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
 use std::sync::mpsc::{self, RecvTimeoutError};
@@ -374,7 +375,7 @@ fn has_git_entry(path: &Path) -> bool {
 }
 
 fn canonical_or_given(path: &str) -> PathBuf {
-    Path::new(path).canonicalize().unwrap_or_else(|_| PathBuf::from(path))
+    Path::new(path).real_path().unwrap_or_else(|_| PathBuf::from(path))
 }
 
 /// A repository whose git dir is not `<root>/.git`: a linked work tree (its
@@ -387,7 +388,7 @@ fn git_dir_links(repo_roots: &[PathBuf]) -> Vec<GitDirLink> {
         .iter()
         .filter_map(|repo_root| {
             let repo = Repository::open(repo_root).ok()?;
-            let git_dir = repo.path().canonicalize().ok()?;
+            let git_dir = repo.path().real_path().ok()?;
             let own = repo_root.join(".git");
             (git_dir != own).then_some((git_dir, own))
         })

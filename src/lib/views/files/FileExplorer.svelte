@@ -16,6 +16,7 @@
   import {
     baseName,
     folderFor,
+    fromNativePath,
     isInside,
     joinPath,
     locateAbsolute,
@@ -1167,7 +1168,7 @@
       return;
     }
     if (event.type === "enter") {
-      finderPaths = event.paths;
+      finderPaths = event.paths.map((nativePath) => fromNativePath(nativePath));
     }
     const point = dropPointToCss(event.position, window.devicePixelRatio, PLATFORM);
     // A terminal takes drops over it (TerminalHost), so the same drop never lands twice.
@@ -1178,7 +1179,7 @@
       clearDropFeedback();
       return;
     }
-    const paths = event.type === "over" ? (finderPaths ?? []) : event.paths;
+    const paths = event.type === "over" ? (finderPaths ?? []) : event.paths.map((nativePath) => fromNativePath(nativePath));
     if (event.type === "drop") {
       const hit = hitTest(point.x, point.y);
       const targetDir = hit.inside ? dropFolder(hit.row?.entry ?? null, singleRoot) : null;

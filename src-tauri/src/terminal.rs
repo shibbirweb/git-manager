@@ -172,7 +172,7 @@ fn executable_real_path(shell_path: &str) -> Option<PathBuf> {
     if !metadata.is_file() || metadata.permissions().mode() & 0o111 == 0 {
         return None;
     }
-    std::fs::canonicalize(shell_path).ok()
+    crate::paths::real(shell_path).ok()
 }
 
 /// One profile per real file, in /etc/shells order with the login shell first.
@@ -601,7 +601,7 @@ impl TerminalRegistry {
         drop(process);
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn close_all(&self) {
         let processes: Vec<PtyProcess> = self.inner.terminals().drain().map(|(_, process)| process).collect();
         self.inner.owners().clear();
@@ -678,12 +678,12 @@ impl TerminalRegistry {
         }
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn is_running(&self, terminal_id: u32) -> bool {
         self.inner.terminals().contains_key(&terminal_id)
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn owner_count(&self) -> usize {
         self.inner.owners().len()
     }
@@ -714,7 +714,7 @@ pub fn start_terminal(
         terminal_id,
         pid,
         shell,
-        cwd: cwd.to_string_lossy().into_owned(),
+        cwd: crate::paths::to_ui(&cwd),
     })
 }
 
@@ -770,6 +770,7 @@ mod tests {
         use std::time::{Duration, Instant};
 
         use super::super::*;
+        use crate::paths::RealPath;
 
         const WAIT: Duration = Duration::from_secs(10);
 
@@ -919,7 +920,7 @@ mod tests {
         #[test]
         fn shell_starts_in_the_given_folder() {
             let folder = tempfile::TempDir::new().unwrap();
-            let real_folder = folder.path().canonicalize().unwrap();
+            let real_folder = folder.path().real_path().unwrap();
             let (on_output, collected) = collector();
             let (exit_sender, exit_receiver) = mpsc::channel();
             let _process = spawn_pty(&sh("pwd -P", folder.path().to_path_buf()), on_output, move |exit_code| {

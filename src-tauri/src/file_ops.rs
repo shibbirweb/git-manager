@@ -6,6 +6,7 @@
 //! handled as links: they are renamed, moved, copied and trashed, never followed.
 //! Results use the caller's paths (not the canonical ones) so open tabs keep matching.
 
+use crate::paths::RealPath;
 use std::fs;
 use std::io;
 use std::path::{Component, Path, PathBuf};
@@ -48,7 +49,7 @@ impl WorkspaceRoots {
     pub fn new(workspace_roots: &[String]) -> AppResult<WorkspaceRoots> {
         let roots: Vec<PathBuf> = workspace_roots
             .iter()
-            .filter_map(|workspace_root| Path::new(workspace_root).canonicalize().ok())
+            .filter_map(|workspace_root| Path::new(workspace_root).real_path().ok())
             .filter(|root| root.is_dir())
             .collect();
         if roots.is_empty() {
@@ -94,7 +95,7 @@ impl WorkspaceRoots {
         let given = checked_absolute(dir_path)?;
         let shown = display_name(given);
         let real = given
-            .canonicalize()
+            .real_path()
             .map_err(|_| AppError::invalid(format!("{shown} does not exist")))?;
         self.check_inside(&real, dir_path)?;
         if !real.is_dir() {
@@ -111,7 +112,7 @@ impl WorkspaceRoots {
         };
         let name = file_name.to_string_lossy().into_owned();
         let missing = || AppError::invalid(format!("{name} does not exist"));
-        let real_parent = parent.canonicalize().map_err(|_| missing())?;
+        let real_parent = parent.real_path().map_err(|_| missing())?;
         let real = real_parent.join(file_name);
         let metadata = fs::symlink_metadata(&real).map_err(|_| missing())?;
         self.check_inside(&real, entry_path)?;
@@ -373,7 +374,7 @@ pub fn create_entry(workspace_roots: &[String], parent_dir: &str, name: &str, is
         if !creates_folders && exists_no_follow(&next) {
             // An existing part may be a symlink: resolve it so nothing lands outside.
             let resolved = next
-                .canonicalize()
+                .real_path()
                 .map_err(|_| AppError::invalid(format!("{folder} does not exist")))?;
             workspace.check_inside(&resolved, folder)?;
             if !resolved.is_dir() {
@@ -403,7 +404,7 @@ pub fn create_entry(workspace_roots: &[String], parent_dir: &str, name: &str, is
     for part in &parts {
         result.push(part);
     }
-    Ok(result.to_string_lossy().into_owned())
+    Ok(crate::paths::to_ui(&result))
 }
 
 /// Whether two paths name the same file system entry (a case-only rename).
@@ -455,7 +456,7 @@ pub fn rename_entry(workspace_roots: &[String], entry_path: &str, new_name: &str
     workspace.refuse_holding_root(&entry)?;
     validate_name(new_name)?;
     let given_parent = Path::new(entry_path).parent().unwrap_or(Path::new(entry_path));
-    let result = given_parent.join(new_name).to_string_lossy().into_owned();
+    let result = crate::paths::to_ui(given_parent.join(new_name));
     if new_name == entry.name {
         return Ok(result);
     }
@@ -561,7 +562,7 @@ pub fn copy_entries(workspace_roots: &[String], source_paths: &[String], target_
         let target = real_dir.join(&name);
         workspace.check_new(&target)?;
         copy_or_clean(&entry.real, &target, &entry.name)?;
-        copied.push(Path::new(target_dir).join(&name).to_string_lossy().into_owned());
+        copied.push(crate::paths::to_ui(Path::new(target_dir).join(&name)));
     }
     Ok(copied)
 }
@@ -634,7 +635,7 @@ pub fn move_entries(
         move_entry(entry, &target)?;
         moved.push(FileMove {
             from: entry.given.clone(),
-            to: Path::new(target_dir).join(&entry.name).to_string_lossy().into_owned(),
+            to: crate::paths::to_ui(Path::new(target_dir).join(&entry.name)),
         });
     }
     Ok(moved)
@@ -676,7 +677,7 @@ pub fn existing_files(workspace_roots: &[String], file_paths: &[String]) -> Vec<
             let Ok(given) = checked_absolute(file_path) else {
                 return false;
             };
-            let Ok(real) = given.canonicalize() else {
+            let Ok(real) = given.real_path() else {
                 return false;
             };
             workspace.check_inside(&real, file_path).is_ok() && real.is_file()

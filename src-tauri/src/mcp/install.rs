@@ -1,6 +1,7 @@
 //! Puts the command line tool on the PATH: a `git-manager` link in `~/.local/bin` to the
 //! running binary. Never sudo, never /usr/local.
 
+use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use crate::error::{AppError, AppResult};
@@ -31,8 +32,8 @@ pub fn installed_link(home: &Path, exe: &Path) -> Option<PathBuf> {
 /// `~/.local/bin` is one of the folders in `path_var`.
 pub fn on_path(home: &Path, path_var: &str) -> bool {
     let bin_dir = bin_dir_in(home);
-    let canonical = bin_dir.canonicalize().ok();
-    std::env::split_paths(path_var).any(|entry| entry == bin_dir || (canonical.is_some() && entry.canonicalize().ok() == canonical))
+    let canonical = bin_dir.real_path().ok();
+    std::env::split_paths(path_var).any(|entry| entry == bin_dir || (canonical.is_some() && entry.real_path().ok() == canonical))
 }
 
 #[cfg(unix)]
@@ -77,7 +78,7 @@ pub fn uninstall_in(_home: &Path, _exe: &Path) -> AppResult<()> {
 
 pub fn current_exe() -> PathBuf {
     std::env::current_exe()
-        .and_then(|exe| exe.canonicalize())
+        .and_then(|exe| exe.real_path())
         .unwrap_or_else(|_| PathBuf::from(LINK_NAME))
 }
 

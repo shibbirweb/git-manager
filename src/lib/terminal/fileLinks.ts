@@ -4,7 +4,7 @@
 // workspace folder. Kept free of Svelte, Tauri and xterm so it can be tested
 // directly; TerminalView turns the results into xterm links.
 
-import { folderFor, joinPath, normalizePath, type FolderRef } from "$lib/stores/workspacePaths";
+import { folderFor, isAbsolutePath, joinPath, normalizePath, type FolderRef } from "$lib/stores/workspacePaths";
 
 /** A path-like piece of one terminal line. */
 export interface PathCandidate {
@@ -107,10 +107,10 @@ export function findPathCandidates(lineText: string): PathCandidate[] {
 
 /** An absolute path for a printed one, or null when it cannot be resolved (relative without a folder). */
 export function resolveTerminalPath(pathText: string, folderPath: string | null): string | null {
-  if (pathText.startsWith("/")) {
+  if (isAbsolutePath(pathText)) {
     return normalizePath(pathText);
   }
-  if (!folderPath || !folderPath.startsWith("/")) {
+  if (!folderPath || !isAbsolutePath(folderPath)) {
     return null;
   }
   return normalizePath(joinPath(folderPath, pathText));
@@ -131,8 +131,10 @@ export function parseOsc7(data: string): string | null {
     return null;
   }
   try {
-    const folderPath = decodeURIComponent(rest.slice(slash));
-    return folderPath.startsWith("/") && !folderPath.includes("\0") ? folderPath : null;
+    // Windows shells send file://host/C:/Users/me: the drive follows the slash.
+    const decoded = decodeURIComponent(rest.slice(slash));
+    const folderPath = /^\/[A-Za-z]:\//.test(decoded) ? decoded.slice(1) : decoded;
+    return isAbsolutePath(folderPath) && !folderPath.includes("\0") ? folderPath : null;
   } catch {
     return null;
   }

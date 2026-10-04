@@ -45,6 +45,8 @@ httparse = "1"
 # The MCP token's random bytes and the screenshot's base64: both already in the tree through tauri.
 getrandom = "0.3"
 base64 = "0.22"
+# Real paths without the `\\?\` prefix on Windows (see paths.rs); already in the tree through tauri.
+dunce = "1.0.5"
 # Local History: snapshots are zlib-compressed (flate2 and miniz_oxide are already in the tree through tauri's png).
 flate2 = "1.1"
 # Files panel: Move to Trash (NSFileManager on macOS, the Recycle Bin on Windows, freedesktop trash on Linux).

@@ -3,6 +3,8 @@ import type { RepoInfo } from "$lib/types";
 import {
   baseName,
   folderFor,
+  fromNativePath,
+  isAbsolutePath,
   joinPath,
   locate,
   locateAbsolute,
@@ -11,6 +13,7 @@ import {
   parentOf,
   pathsUnder,
   repoForPath,
+  rootOf,
   toWorkspacePath,
 } from "./workspacePaths";
 
@@ -98,5 +101,45 @@ describe("pathsUnder", () => {
     expect(pathsUnder(paths, ["/w/a"])).toEqual(["/w/a/x.ts", "/w/a"]);
     expect(pathsUnder(paths, ["/w/b.ts", "/w/ab"])).toEqual(["/w/ab/y.ts", "/w/b.ts"]);
     expect(pathsUnder(paths, [])).toEqual([]);
+  });
+});
+
+describe("Windows paths", () => {
+  it("converts system paths only on Windows", () => {
+    expect(fromNativePath("C:\\Users\\me\\repo", true)).toBe("C:/Users/me/repo");
+    expect(fromNativePath("d:\\work\\a.txt", true)).toBe("D:/work/a.txt");
+    expect(fromNativePath("\\\\server\\share\\repo", true)).toBe("//server/share/repo");
+    expect(fromNativePath("/tmp/a\\b", false)).toBe("/tmp/a\\b");
+  });
+
+  it("knows drive and share roots", () => {
+    expect(isAbsolutePath("C:/Users")).toBe(true);
+    expect(isAbsolutePath("/Users")).toBe(true);
+    expect(isAbsolutePath("C:relative")).toBe(false);
+    expect(isAbsolutePath("src/main.ts")).toBe(false);
+    expect(rootOf("C:/Users/me")).toBe("C:/");
+    expect(rootOf("//server/share/repo", true)).toBe("//server/share/");
+    expect(rootOf("//server/share", true)).toBe("//server/share/");
+    expect(rootOf("//server/share/repo", false)).toBe("/");
+    expect(rootOf("/Users/me")).toBe("/");
+  });
+
+  it("finds parents without leaving the drive", () => {
+    expect(parentOf("C:/Users/me")).toBe("C:/Users");
+    expect(parentOf("C:/Users")).toBe("C:/");
+    expect(parentOf("C:/")).toBe("C:/");
+  });
+
+  it("normalizes below the drive root", () => {
+    expect(normalizePath("C:/repo/./src/../README.md")).toBe("C:/repo/README.md");
+    expect(normalizePath("C:/repo/../../..")).toBe("C:/");
+    expect(normalizePath("C://repo//src")).toBe("C:/repo/src");
+  });
+
+  it("maps drive paths to repositories", () => {
+    const windowsRepos = [repo("C:/work", ""), repo("C:/work/apps/web", "apps/web")];
+    expect(locateAbsolute(windowsRepos, "C:/work/apps/web/src/a.ts")).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
+    expect(joinPath("C:/", "work")).toBe("C:/work");
+    expect(baseName("C:/work/apps")).toBe("apps");
   });
 });

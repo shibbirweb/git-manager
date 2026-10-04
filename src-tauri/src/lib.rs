@@ -15,6 +15,7 @@ mod memory_log;
 mod merge;
 mod run_process;
 mod node_versions;
+mod paths;
 mod preview_scheme;
 mod scripts;
 mod shelf;

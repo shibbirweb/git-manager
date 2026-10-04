@@ -230,7 +230,7 @@ pub fn clone_arguments(url: &str, folder_name: Option<&str>, into: Option<&Path>
     };
     let mut arguments = Map::new();
     arguments.insert("url".to_string(), json!(url));
-    arguments.insert("parentPath".to_string(), json!(parent.to_string_lossy()));
+    arguments.insert("parentPath".to_string(), json!(crate::paths::to_ui(&parent)));
     if let Some(folder_name) = folder_name {
         arguments.insert("folderName".to_string(), json!(folder_name));
     }
