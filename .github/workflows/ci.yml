@@ -85,9 +85,6 @@ jobs:
   windows:
     name: Windows (check + Vitest + cargo test + clippy)
     runs-on: windows-latest
-    # Windows support is still being built (docs/plans/windows-release.md). Until this job passes, a failure
-    # only reports: the run still counts as passed, so pull requests and releases are not blocked.
-    continue-on-error: true
     defaults:
       run:
         shell: bash

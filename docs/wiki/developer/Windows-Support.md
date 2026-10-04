@@ -6,6 +6,10 @@ Windows support is being built (the work list is in `docs/plans/windows-release.
 
 A Windows program built as a GUI app has no console. When it starts a console program such as `git.exe`, Windows opens a new console window for it, so every git call would flash a black window. `child_process::hide_console` (`src-tauri/src/child_process.rs`) sets the `CREATE_NO_WINDOW` flag. `git::cli::command` uses it, so every git call gets it, and so do `gh auth token` and the PowerShell clipboard reader. Use it for any new helper process.
 
+## Cancel stops everything git started
+
+On macOS and Linux, a cancellable git command (Clone, Fetch and others with a Cancel button) runs in its own process group, and Cancel signals the whole group, so hooks and helpers such as `git-remote-https` stop too. Windows has no process groups. There `git/cancel.rs` puts git into a Job Object right after it starts. Every process git starts joins the job, and Cancel ends the whole job with `TerminateJobObject`. If the job cannot be made, Cancel falls back to killing git alone. The job only ends processes on Cancel: closing its handle after a normal finish leaves anything still running alone.
+
 ## The home folder and PATH
 
 - `config::home_dir` reads `USERPROFILE` first on Windows, then `HOME`. `HOME` is usually unset there, and when Git Bash sets it, an app started from the Start menu does not see it, so the app and the command line tool would use different config folders. The test sandbox in `test_support.rs` moves both.

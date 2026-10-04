@@ -111,3 +111,7 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   (`close_after_refusal`); tests: a `C:/` include path in git config, no `"` or newline in Windows file names and
   shorter names (git's 260 character limit), `C:/` paths where a test needs an absolute path, and the memory
   recorder test is macOS only.
+- Fifth Windows CI run (`b487204`): everything passes on Windows (svelte-check, Vitest, build, cargo test, clippy),
+  with the single instance code compiled for the first time. `continue-on-error` is dropped: the job is a gate now.
+- Cancel on Windows: `git/cancel.rs` puts git in a Job Object and Cancel ends the job, so hooks
+  and helpers stop too; the two cancel tests run on Windows again. Compiles only on Windows: check the CI run.
