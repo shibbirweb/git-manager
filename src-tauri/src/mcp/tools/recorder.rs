@@ -296,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(not(target_os = "macos"), ignore = "the memory readout is macOS only")]
+    #[cfg_attr(not(any(target_os = "macos", windows)), ignore = "the memory readout is for macOS and Windows")]
     fn records_marks_reads_new_samples_and_stops() {
         // One test owns the global recorder, so the steps run in order.
         let shared = crate::mcp::Shared::new(Duration::from_secs(1));

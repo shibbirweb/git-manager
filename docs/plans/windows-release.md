@@ -140,3 +140,6 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 - `--args-file <file>` and `--args-file -` for `cli call`, so JSON never passes through the shell.
 - Windows screenshot: `PrintWindow` with `PW_RENDERFULLCONTENT`, cropped to the DWM frame,
   PNG from `png_encode.rs` (flate2). Check on the PC with `git-manager cli screenshot`.
+- Memory readout on Windows: `memory.rs` walks the app's WebView2 processes and counts each
+  private working set (Task Manager's Memory), labels from `--type=`; the status bar hides Clear Cache outside
+  macOS and names Task Manager and WebView2 in its popup. Check on the PC with `get_memory_usage`.

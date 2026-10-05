@@ -21,10 +21,13 @@
   import { changesSelection } from "./changes/selection.svelte";
   import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
   import { updates } from "$lib/update/updates.svelte";
+  import { platformName } from "$lib/update/releases";
 
   const POLL_MS = 5000;
 
   let memory = $state.raw<MemoryUsage | null>(null);
+  /** Clear Cache and the WebKit wording are macOS only; Windows counts WebView2 like Task Manager. */
+  const onMac = platformName(navigator.userAgent) === "macOS";
   let detailsOpen = $state(false);
   let memoryEl = $state<HTMLDivElement | null>(null);
 
@@ -277,14 +280,16 @@
           <span class="chip"></span>
           <span>Memory {formatBytes(memory.totalBytes)}</span>
         </button>
-        <button
-          class="item icon-only"
-          onclick={() => void clearCache()}
-          title="Clear Cache: restart this window's interface to give back all the memory it holds. The screen blinks once; your folder and tabs come back."
-          aria-label="Clear Cache"
-        >
-          <Icon name="brush" size={12} />
-        </button>
+        {#if onMac}
+          <button
+            class="item icon-only"
+            onclick={() => void clearCache()}
+            title="Clear Cache: restart this window's interface to give back all the memory it holds. The screen blinks once; your folder and tabs come back."
+            aria-label="Clear Cache"
+          >
+            <Icon name="brush" size={12} />
+          </button>
+        {/if}
         {#if detailsOpen}
           <div class="details" role="dialog" aria-label="Memory usage">
             <div class="details-head">
@@ -313,13 +318,18 @@
                 <span class="gpu-value" title={webglLabel(webgl)}>{webglLabel(webgl)}</span>
               </div>
               <p class="gpu-note">
-                The window always draws with the GPU through macOS (the Graphics process above). Only terminals add
-                WebGL drawing, set in Settings, Terminal.
+                The window always draws with the GPU through {onMac ? "macOS" : "WebView2"} (the Graphics process above).
+                Only terminals add WebGL drawing, set in Settings, Terminal.
               </p>
             </div>
             <p class="note">
-              Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in macOS
-              WebKit helper processes, one web content process per window, which are counted too.
+              {#if onMac}
+                Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in macOS
+                WebKit helper processes, one web content process per window, which are counted too.
+              {:else}
+                Memory of the whole app, all windows together, as Task Manager shows it (private working set). The UI runs
+                in Microsoft Edge WebView2 processes, which are counted too.
+              {/if}
               {#if memory.approximate}
                 Started from a terminal, so helpers are matched by start time.
               {/if}
