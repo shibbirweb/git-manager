@@ -1620,6 +1620,29 @@ fn file_trash_checks_every_path_and_drops_nested_ones() {
 }
 
 #[test]
+fn real_files_name_files_the_way_the_disk_does() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("src/App.ts", "a");
+    let asked = vec![dir.file_string("src/App.ts"), dir.file_string("src/../src/App.ts"), dir.file_string("src/missing.ts")];
+    let answers = block_on(file_ops::real_files(roots.clone(), asked)).unwrap();
+    assert_eq!(answers, vec![Some(dir.file_string("src/App.ts")), None, None]);
+
+    // Other letter case: the same file where the disk ignores case (Windows, macOS), with its own name.
+    let other_case = dir.file_string("SRC/app.TS");
+    let real = block_on(file_ops::real_files(roots, vec![other_case.clone()])).unwrap();
+    if std::path::Path::new(&other_case).is_file() {
+        let found = real[0].clone().expect("the file, under any case");
+        assert!(found.eq_ignore_ascii_case(&dir.file_string("src/App.ts")), "{found}");
+        if cfg!(windows) {
+            assert_eq!(found, dir.file_string("src/App.ts"), "Windows reports the name as stored");
+        }
+    } else {
+        assert_eq!(real, vec![None], "a case-sensitive disk has no such file");
+    }
+}
+
+#[test]
 fn files_exist_reports_only_files_inside_the_workspace() {
     let dir = TestDir::new();
     let roots = vec![dir.path_string()];

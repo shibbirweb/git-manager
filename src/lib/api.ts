@@ -462,6 +462,9 @@ export const api = {
   fileTrash: (workspaceRoots: string[], entryPaths: string[]) => invoke<void>("file_trash", { workspaceRoots, entryPaths }),
   /** Which absolute paths are files inside the workspace folders (the terminal's clickable paths); never fails. */
   filesExist: (workspaceRoots: string[], filePaths: string[]) => invoke<boolean[]>("files_exist", { workspaceRoots, filePaths }),
+  /** Each path's real file path (the name as stored on disk) when it is a file inside the workspace, else null. */
+  realFiles: (workspaceRoots: string[], filePaths: string[]) =>
+    invoke<(string | null)[]>("real_files", { workspaceRoots, filePaths }),
 
   // Go to File. Indexing progress arrives on `progress` until the popup closes.
   fileSearchOpen: (workspaceRoots: string[], progress: Channel<FileSearchProgress>) =>

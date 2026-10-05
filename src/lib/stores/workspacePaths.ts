@@ -48,22 +48,34 @@ export function joinPath(root: string, relative: string): string {
   return root.endsWith("/") ? `${root}${relative}` : `${root}/${relative}`;
 }
 
-export function isInside(root: string, absolute: string): boolean {
-  return absolute === root || absolute.startsWith(root.endsWith("/") ? root : `${root}/`);
+/** Windows ignores letter case in paths; Unix file systems may not, so they compare exactly. */
+function foldCase(path: string, windows: boolean): string {
+  return windows ? path.toLowerCase() : path;
 }
 
-export function relativeTo(root: string, absolute: string): string {
-  if (absolute === root) {
+/** The same path, in any letter case on Windows. */
+export function samePath(first: string, second: string, windows = onWindows()): boolean {
+  return foldCase(first, windows) === foldCase(second, windows);
+}
+
+export function isInside(root: string, absolute: string, windows = onWindows()): boolean {
+  const folded = foldCase(absolute, windows);
+  const prefix = foldCase(root.endsWith("/") ? root : `${root}/`, windows);
+  return samePath(absolute, root, windows) || folded.startsWith(prefix);
+}
+
+export function relativeTo(root: string, absolute: string, windows = onWindows()): string {
+  if (samePath(absolute, root, windows)) {
     return "";
   }
   return absolute.slice(root.endsWith("/") ? root.length : root.length + 1);
 }
 
 /** The deepest repository containing an absolute path, or null. */
-export function repoForPath(repos: RepoInfo[], absolute: string): RepoInfo | null {
+export function repoForPath(repos: RepoInfo[], absolute: string, windows = onWindows()): RepoInfo | null {
   let best: RepoInfo | null = null;
   for (const repo of repos) {
-    if (isInside(repo.root, absolute) && (!best || repo.root.length > best.root.length)) {
+    if (isInside(repo.root, absolute, windows) && (!best || repo.root.length > best.root.length)) {
       best = repo;
     }
   }
@@ -101,10 +113,10 @@ export interface FolderRef {
 }
 
 /** The workspace folder containing an absolute path (the deepest one when folders nest). */
-export function folderFor<T extends FolderRef>(folders: T[], absolute: string): T | null {
+export function folderFor<T extends FolderRef>(folders: T[], absolute: string, windows = onWindows()): T | null {
   let best: T | null = null;
   for (const folder of folders) {
-    if (isInside(folder.root, absolute) && (!best || folder.root.length > best.root.length)) {
+    if (isInside(folder.root, absolute, windows) && (!best || folder.root.length > best.root.length)) {
       best = folder;
     }
   }
@@ -112,12 +124,12 @@ export function folderFor<T extends FolderRef>(folders: T[], absolute: string): 
 }
 
 /** Which repository an absolute path belongs to, and its path inside it. */
-export function locateAbsolute(repos: RepoInfo[], absolute: string): RepoLocation | null {
-  const repo = repoForPath(repos, absolute);
+export function locateAbsolute(repos: RepoInfo[], absolute: string, windows = onWindows()): RepoLocation | null {
+  const repo = repoForPath(repos, absolute, windows);
   if (!repo) {
     return null;
   }
-  return { repo, repoPath: relativeTo(repo.root, absolute) };
+  return { repo, repoPath: relativeTo(repo.root, absolute, windows) };
 }
 
 export function parentOf(absolute: string): string {
@@ -156,20 +168,19 @@ export interface PathMove {
  * Where an absolute path is after renames or moves: a moved entry itself, or anything
  * inside a moved folder, takes the new location. Other paths come back unchanged.
  */
-export function movedPath(absolute: string, moves: PathMove[]): string {
+export function movedPath(absolute: string, moves: PathMove[], windows = onWindows()): string {
   for (const move of moves) {
-    if (absolute === move.from) {
+    if (samePath(absolute, move.from, windows)) {
       return move.to;
     }
-    const prefix = move.from.endsWith("/") ? move.from : `${move.from}/`;
-    if (absolute.startsWith(prefix)) {
-      return joinPath(move.to, absolute.slice(prefix.length));
+    if (isInside(move.from, absolute, windows)) {
+      return joinPath(move.to, relativeTo(move.from, absolute, windows));
     }
   }
   return absolute;
 }
 
 /** The paths that are `entries` themselves or lie inside one of them. */
-export function pathsUnder(paths: string[], entries: string[]): string[] {
-  return paths.filter((path) => entries.some((entry) => isInside(entry, path)));
+export function pathsUnder(paths: string[], entries: string[], windows = onWindows()): string[] {
+  return paths.filter((path) => entries.some((entry) => isInside(entry, path, windows)));
 }

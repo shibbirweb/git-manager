@@ -28,6 +28,7 @@ Absolute paths always use `/`, on Windows too (`C:/Users/me/repo`), so the page'
 - the backend gets real paths only from `paths::real` or `RealPath::real_path` in `src-tauri/src/paths.rs` (built on `dunce`; `clippy.toml` forbids `canonicalize`);
 - every absolute path for the page goes through `paths::to_ui` (or `serialize_ui` on a serde field), which also writes the drive letter in upper case;
 - on the page, `fromNativePath` converts what the system hands over directly (dialogs, dropped files), and `isAbsolutePath`, `rootOf`, `parentOf` and `normalizePath` in `workspacePaths.ts` know the `C:/` and `//server/share/` roots.
+- `samePath`, `isInside`, `relativeTo`, `folderFor`, `locateAbsolute`, `movedPath` and `pathsUnder` ignore letter case on Windows, as Windows does; on macOS and Linux they compare exactly. Terminal links open under the file's real name (`real_files`).
 
 ## Installer and releases
 

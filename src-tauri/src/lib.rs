@@ -218,6 +218,7 @@ pub fn run() {
             commands::file_ops::file_move,
             commands::file_ops::file_trash,
             commands::file_ops::files_exist,
+            commands::file_ops::real_files,
             commands::search::file_search_open,
             commands::search::file_search_query,
             commands::search::file_search_close,

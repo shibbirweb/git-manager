@@ -106,30 +106,30 @@ describe("lineCells", () => {
 
 describe("FileExistenceCache", () => {
   it("asks once per path and remembers until cleared", async () => {
-    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => filePath.endsWith(".ts")));
+    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => (filePath.endsWith(".ts") ? filePath : null)));
     const cache = new FileExistenceCache(check);
-    const first = await cache.exists(["/w/a.ts", "/w/b.md", "/w/a.ts"]);
+    const first = await cache.realPaths(["/w/a.ts", "/w/b.md", "/w/a.ts"]);
     expect([...first]).toEqual([
-      ["/w/a.ts", true],
-      ["/w/b.md", false],
+      ["/w/a.ts", "/w/a.ts"],
+      ["/w/b.md", null],
     ]);
-    await cache.exists(["/w/a.ts"]);
+    await cache.realPaths(["/w/a.ts"]);
     expect(check).toHaveBeenCalledTimes(1);
     expect(check).toHaveBeenCalledWith(["/w/a.ts", "/w/b.md"]);
     cache.clear();
-    await cache.exists(["/w/a.ts"]);
+    await cache.realPaths(["/w/a.ts"]);
     expect(check).toHaveBeenCalledTimes(2);
   });
 
   it("shares a lookup that is still on its way", async () => {
-    let finish: (answers: boolean[]) => void = () => undefined;
-    const check = vi.fn(() => new Promise<boolean[]>((resolve) => (finish = resolve)));
+    let finish: (answers: (string | null)[]) => void = () => undefined;
+    const check = vi.fn(() => new Promise<(string | null)[]>((resolve) => (finish = resolve)));
     const cache = new FileExistenceCache(check);
-    const one = cache.exists(["/w/a.ts"]);
-    const two = cache.exists(["/w/a.ts"]);
-    finish([true]);
-    expect((await one).get("/w/a.ts")).toBe(true);
-    expect((await two).get("/w/a.ts")).toBe(true);
+    const one = cache.realPaths(["/w/a.ts"]);
+    const two = cache.realPaths(["/w/a.ts"]);
+    finish(["/w/a.ts"]);
+    expect((await one).get("/w/a.ts")).toBe("/w/a.ts");
+    expect((await two).get("/w/a.ts")).toBe("/w/a.ts");
     expect(check).toHaveBeenCalledTimes(1);
   });
 
@@ -137,8 +137,8 @@ describe("FileExistenceCache", () => {
     const cache = new FileExistenceCache(async () => {
       throw new Error("offline");
     }, 2);
-    expect((await cache.exists(["/w/a.ts"])).get("/w/a.ts")).toBe(false);
-    await cache.exists(["/w/b.ts", "/w/c.ts"]);
+    expect((await cache.realPaths(["/w/a.ts"])).get("/w/a.ts")).toBe(null);
+    await cache.realPaths(["/w/b.ts", "/w/c.ts"]);
     expect(cache.size).toBeLessThanOrEqual(2);
   });
 });
@@ -148,7 +148,7 @@ describe("fileLinksForLine", () => {
 
   it("links existing workspace files only", async () => {
     const existing = new Set(["/work/shop/src/cart.ts", "/work/shop/README.md"]);
-    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => existing.has(filePath)));
+    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => (existing.has(filePath) ? filePath : null)));
     const cache = new FileExistenceCache(check);
     const links = await fileLinksForLine("src/cart.ts:3:9 missing.ts /etc/hosts README.md", {
       folderPath: "/work/shop",
@@ -163,16 +163,48 @@ describe("fileLinksForLine", () => {
     expect(check.mock.calls.flat(2)).not.toContain("/etc/hosts");
   });
 
+  it("opens a file under its real name, whatever case the tool printed", async () => {
+    const cache = new FileExistenceCache(async (filePaths) =>
+      filePaths.map((filePath) => (filePath.toLowerCase() === "/work/shop/src/cart.ts" ? "/work/shop/src/Cart.ts" : null)),
+    );
+    const links = await fileLinksForLine("src/CART.ts:4", { folderPath: "/work/shop", workspaceFolders, cache });
+    expect(links.map((link) => link.filePath)).toEqual(["/work/shop/src/Cart.ts"]);
+  });
+
   it("falls back to the path without git's prefix", async () => {
-    const cache = new FileExistenceCache(async (filePaths) => filePaths.map((filePath) => filePath === "/work/shop/src/cart.ts"));
+    const cache = new FileExistenceCache(async (filePaths) => filePaths.map((filePath) => (filePath === "/work/shop/src/cart.ts" ? filePath : null)));
     const links = await fileLinksForLine("+++ b/src/cart.ts", { folderPath: "/work/shop", workspaceFolders, cache });
     expect(links.map((link) => link.filePath)).toEqual(["/work/shop/src/cart.ts"]);
   });
 
   it("asks nothing without a workspace", async () => {
-    const check = vi.fn(async (filePaths: string[]) => filePaths.map(() => true));
+    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => filePath));
     const links = await fileLinksForLine("src/a.ts", { folderPath: "/work/shop", workspaceFolders: [], cache: new FileExistenceCache(check) });
     expect(links).toEqual([]);
     expect(check).not.toHaveBeenCalled();
+  });
+});
+
+describe("Windows paths in the terminal", () => {
+  it("reads printed backslash paths as / paths", () => {
+    const [absolute] = findPathCandidates("error in C:\\work\\shop\\src\\cart.ts:12:5", true);
+    expect(absolute).toMatchObject({ text: "C:\\work\\shop\\src\\cart.ts:12:5", paths: ["C:/work/shop/src/cart.ts"], line: 12, column: 5 });
+    const [relative] = findPathCandidates("src\\cart.ts(3,9)", true);
+    expect(relative).toMatchObject({ paths: ["src/cart.ts"], line: 3, column: 9 });
+    const [noExtension] = findPathCandidates("c:\\work\\shop\\Makefile", true);
+    expect(noExtension?.paths).toEqual(["C:/work/shop/Makefile"]);
+  });
+
+  it("keeps backslashes elsewhere, where they are file name characters", () => {
+    expect(findPathCandidates("odd\\name.ts", false)[0]?.paths).toEqual(["odd\\name.ts"]);
+  });
+
+  it("links a Windows path printed in other case to the workspace file", async () => {
+    const windowsFolders = [{ root: "C:/Work/Shop", name: "shop" }];
+    const cache = new FileExistenceCache(async (filePaths) =>
+      filePaths.map((filePath) => (filePath.toLowerCase() === "c:/work/shop/src/cart.ts" ? "C:/Work/Shop/src/cart.ts" : null)),
+    );
+    const links = await fileLinksForLine("c:\\work\\shop\\src\\cart.ts:2", { folderPath: "C:/Work/Shop", workspaceFolders: windowsFolders, cache }, true);
+    expect(links.map((link) => link.filePath)).toEqual(["C:/Work/Shop/src/cart.ts"]);
   });
 });

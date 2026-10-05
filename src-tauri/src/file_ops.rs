@@ -660,27 +660,30 @@ pub fn trash_entries(
 pub const MAX_EXISTS_CHECKS: usize = 64;
 
 /// Which of `file_paths` are regular files inside an open workspace folder (not inside
-/// `.git`), for the terminal's clickable paths. Symlinks are followed, so a link that
-/// leads out of the workspace counts as missing. Never fails: anything odd is `false`,
-/// and paths past `MAX_EXISTS_CHECKS` are not looked at.
+/// `.git`). Symlinks are followed, so a link that leads out of the workspace counts as
+/// missing. Never fails: anything odd is `false`, and paths past `MAX_EXISTS_CHECKS` are
+/// not looked at.
 pub fn existing_files(workspace_roots: &[String], file_paths: &[String]) -> Vec<bool> {
+    real_files(workspace_roots, file_paths).iter().map(Option::is_some).collect()
+}
+
+/// `existing_files` with each file's real path as the page writes paths, for the terminal's
+/// clickable paths: a path printed in other letter case (Windows and macOS ignore case) or
+/// through a symlinked folder opens under the file's own name, so it never makes a second tab.
+pub fn real_files(workspace_roots: &[String], file_paths: &[String]) -> Vec<Option<String>> {
     let Ok(workspace) = WorkspaceRoots::new(workspace_roots) else {
-        return vec![false; file_paths.len()];
+        return vec![None; file_paths.len()];
     };
     file_paths
         .iter()
         .enumerate()
         .map(|(index, file_path)| {
             if index >= MAX_EXISTS_CHECKS {
-                return false;
+                return None;
             }
-            let Ok(given) = checked_absolute(file_path) else {
-                return false;
-            };
-            let Ok(real) = given.real_path() else {
-                return false;
-            };
-            workspace.check_inside(&real, file_path).is_ok() && real.is_file()
+            let given = checked_absolute(file_path).ok()?;
+            let real = given.real_path().ok()?;
+            (workspace.check_inside(&real, file_path).is_ok() && real.is_file()).then(|| crate::paths::to_ui(&real))
         })
         .collect()
 }

@@ -5,6 +5,7 @@ import {
   folderFor,
   fromNativePath,
   isAbsolutePath,
+  isInside,
   joinPath,
   locate,
   locateAbsolute,
@@ -14,6 +15,7 @@ import {
   pathsUnder,
   repoForPath,
   rootOf,
+  samePath,
   toWorkspacePath,
 } from "./workspacePaths";
 
@@ -141,5 +143,23 @@ describe("Windows paths", () => {
     expect(locateAbsolute(windowsRepos, "C:/work/apps/web/src/a.ts")).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
     expect(joinPath("C:/", "work")).toBe("C:/work");
     expect(baseName("C:/work/apps")).toBe("apps");
+  });
+});
+
+describe("letter case", () => {
+  const windowsRepos = [repo("C:/Work/Shop", ""), repo("C:/Work/Shop/apps/web", "apps/web")];
+
+  it("ignores case on Windows", () => {
+    expect(samePath("C:/Work/Shop", "c:/work/shop", true)).toBe(true);
+    expect(locateAbsolute(windowsRepos, "c:/work/shop/APPS/WEB/src/a.ts", true)).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
+    expect(folderFor([{ root: "C:/Work/Shop", name: "shop" }], "C:/WORK/shop/x.ts", true)?.name).toBe("shop");
+    expect(movedPath("c:/work/shop/old/a.ts", [{ from: "C:/Work/Shop/old", to: "C:/Work/Shop/new" }], true)).toBe("C:/Work/Shop/new/a.ts");
+    expect(pathsUnder(["C:/WORK/SHOP/a.ts", "D:/other/b.ts"], ["c:/work/shop"], true)).toEqual(["C:/WORK/SHOP/a.ts"]);
+  });
+
+  it("keeps case elsewhere, where two names may differ only in case", () => {
+    expect(samePath("/Work/Shop", "/work/shop", false)).toBe(false);
+    expect(locateAbsolute([repo("/Work/Shop", "")], "/work/shop/a.ts", false)).toBeNull();
+    expect(isInside("/Work/Shop", "/Work/Shop/a.ts", false)).toBe(true);
   });
 });

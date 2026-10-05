@@ -83,7 +83,7 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   `isAbsolutePath` and `rootOf` in `workspacePaths.ts` (`parentOf` and `normalizePath` keep the `C:/` root),
   Windows forms in terminal links (`parseOsc7` with `/C:/`), MCP path arguments, worktree and submodule checks.
   Docs: new developer page `Windows-Support.md`, CLAUDE.md path rule.
-  Left for the beta list: case-insensitive path comparisons, and terminal links printed with `\`.
+  Case-insensitive path comparisons and terminal links printed with `\` followed later (see below).
 - Second Windows CI run (`f34ac11`, before step 3): the build passes. Most git tests failed with "unknown error
   occurred while reading the configuration files": the sandbox home and `GIT_CONFIG_GLOBAL` were `\\?\` paths, fixed
   by step 3 (`real_path`). `git::compare` failed on `\` from joining onto a `\\?\` path (same fix; test strings
@@ -159,3 +159,5 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   none 4 s after Cancel, and the half-cloned folder removed.
 - Small finding: the Clone dialog's folder field is named "Clone into folder Browse..." for screen readers,
   because its label also holds the Browse button.
+- Terminal links and letter case: printed `\` paths link on Windows (`fromNativePath` in
+  `findPathCandidates`), the path helpers ignore case on Windows, and `real_files` gives each link its real path.
