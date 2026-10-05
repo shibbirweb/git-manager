@@ -19,13 +19,7 @@ On macOS and Linux, a cancellable git command (Clone, Fetch and others with a Ca
 
 On macOS, opening the app again brings the running copy forward. Windows starts a new process for every launch, and two copies would share `state.json` and the MCP port. So on Windows, `lib.rs` registers `tauri-plugin-single-instance` first. A second start hands its arguments to the running app and exits. `commands::window::on_second_launch` then opens the folder or workspace file it names (`windows::open_for_arguments`, resolved against the folder it was started in), or focuses the window that shows it already. With nothing to open, the last focused window comes forward. The merge tool never registers the plugin, because `git mergetool` starts it next to the running app on purpose, and `git-manager cli` exits before the app is built.
 
-## The command line tool
-
-A Windows GUI program has no console: `git-manager cli` would print nothing, and cmd and PowerShell would not wait for it or see its exit code. So the tool is its own crate, `src-tauri/cli` (`git-manager-cli`), in a Cargo workspace with the app. The app uses it as a library (`mcp::cli`), so nothing changes on macOS. Its `src/main.rs` builds `git-manager-cli.exe`, a console program: `git-manager-cli cli <command>` runs the tool, and anything else (a folder, nothing) starts the app next to it, which hands a folder to the copy already running.
-
-The crate holds what the tool and the app share: the config folder (`home`), the `mcp.json` format (`server_file`), the client header and the protocol version (a test in the app checks it). It has no build script, which matters: `tauri-build` copies a bundled program while the app compiles, so the program must exist before that.
-
-`build-windows` in `release.yml` therefore builds `git-manager-cli` first, copies it to `src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe` and passes `--config src-tauri/tauri.windows-release.conf.json`, which lists it in `bundle.externalBin`. The installer puts it next to the app. Install command line tool then writes `git-manager.cmd` into `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on every user's `PATH`, and the `.cmd` runs the console program with all its arguments. It never touches a file that is not ours (`SHIM_MARK`).
+The command line tool and the MCP screenshot on Windows are on [Windows MCP and CLI](Windows-MCP-and-CLI.md).
 
 ## Paths
 

@@ -96,7 +96,7 @@ git-manager cli memory --duration 10       # live memory, then the minimum, aver
 
 `clone` works like `git clone`: it clones into the folder you are in (or `--into <folder>`), names the new folder after the URL unless you give a name, and `--open window` or `--open workspace` shows it in Git Manager. Turn on `clone_repository` in Available MCP Tools first.
 
-Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
+Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. If your shell mangles the quotes, put all the arguments in a JSON file and pass `--args-file args.json`, or pipe them in with `--args-file -`. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
 
 The exit code is the number a command hands back to the shell or script that ran it:
 

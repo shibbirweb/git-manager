@@ -134,3 +134,7 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 - Admin-owned repositories: `git::repo::configure_libgit2` turns off libgit2's owner check on
   Windows at start. Verified on the PC with the `7679e88` installer: the test repository owned by
   `BUILTIN\Administrators` reads fine (`git_status`, `git_log`), and `get_app_info` shows "Windows 11 build 26200.8037".
+- Round of tool tests over SSH (2026-10-05): write_file with CRLF, diff, commit, terminal (Windows PowerShell 5.1
+  in the folder), Ctrl+C in the terminal, Scripts panel and npm.cmd in the Run tab, clone_repository, search,
+  menu shortcuts (47 Ctrl, no Cmd) all pass. Windows PowerShell 5.1 splits JSON arguments with spaces.
+- `--args-file <file>` and `--args-file -` for `cli call`, so JSON never passes through the shell.

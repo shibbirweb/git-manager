@@ -38,7 +38,7 @@ Commands:
   status                 Is the app running, its server address and which switches are on
   tools [--json] [--all] The tools you can call (--all also lists the ones turned off)
   describe <tool>        A tool's description and arguments
-  call <tool> [key=value ...] [--args '<json>'] [--json] [--out <file>]
+  call <tool> [key=value ...] [--args '<json>' | --args-file <file>] [--json] [--out <file>]
                          Runs a tool and prints its result
   clone <url> [folder] [--into <dir>] [--open window|workspace]
                          Clones a repository, like git clone, and can open it in the app
@@ -63,13 +63,16 @@ const DESCRIBE_HELP: &str = "Usage: git-manager cli describe <tool>
 
 Shows a tool's description, whether it changes anything, and its arguments (JSON Schema).";
 
-const CALL_HELP: &str = "Usage: git-manager cli call <tool> [key=value ...] [--args '<json>'] [--json] [--out <file>]
+const CALL_HELP: &str = "Usage: git-manager cli call <tool> [key=value ...] [--args '<json>' | --args-file <file>] [--json] [--out <file>]
 
 Runs a tool. Each key=value is one argument; the value is read as JSON when it is valid JSON
 (numbers, true, false, [\"a\",\"b\"], {...}) and as text otherwise. --args gives the arguments as
 one JSON object; key=value pairs win over it.
-  --json        Print the structured result as JSON
-  --out <file>  Where to save an image result (default: a temporary file, whose path is printed)
+  --args-file <file>  Reads that JSON object from a file, or from stdin with -. Use it where the
+                      shell mangles quotes, like Windows PowerShell 5.1:
+                      '{\"limit\": 5}' | git-manager cli call git_log --args-file -
+  --json              Print the structured result as JSON
+  --out <file>        Where to save an image result (default: a temporary file, whose path is printed)
 
 Example: git-manager cli call git_log repoPath=\"$PWD\" limit=5";
 
@@ -351,10 +354,11 @@ fn parse_call(rest: &[String]) -> Result<Command, String> {
             "--out" => out = Some(PathBuf::from(words.next().ok_or("--out needs a file path")?)),
             "--args" => {
                 let text = words.next().ok_or("--args needs a JSON object")?;
-                match serde_json::from_str::<Value>(text) {
-                    Ok(Value::Object(object)) => base.extend(object),
-                    _ => return Err("--args must be a JSON object, like '{\"repoPath\": \"/path\"}'".to_string()),
-                }
+                base.extend(json_object(text, "--args")?);
+            }
+            "--args-file" => {
+                let source = words.next().ok_or("--args-file needs a file path, or - for stdin")?;
+                base.extend(json_object(&read_args_file(source)?, "--args-file")?);
             }
             flag if flag.starts_with("--") => return Err(format!("Unknown option for call: {flag}")),
             pair => {
@@ -370,6 +374,23 @@ fn parse_call(rest: &[String]) -> Result<Command, String> {
         json,
         out,
     })
+}
+
+fn json_object(text: &str, option: &str) -> Result<Map<String, Value>, String> {
+    match serde_json::from_str::<Value>(text) {
+        Ok(Value::Object(object)) => Ok(object),
+        _ => Err(format!("{option} must be a JSON object, like '{{\"repoPath\": \"/path\"}}'")),
+    }
+}
+
+/// The text of `--args-file`: the file, or stdin for `-`.
+fn read_args_file(source: &str) -> Result<String, String> {
+    if source == "-" {
+        let mut text = String::new();
+        std::io::Read::read_to_string(&mut std::io::stdin(), &mut text).map_err(|err| format!("Could not read stdin: {err}"))?;
+        return Ok(text);
+    }
+    std::fs::read_to_string(source).map_err(|err| format!("Could not read {source}: {err}"))
 }
 
 fn agent_with_timeout(timeout: Duration) -> ureq::Agent {
@@ -746,6 +767,25 @@ mod tests {
         assert_eq!(app_next_to(&console), Some(dir.path().join("Git Manager.exe")));
         std::fs::write(dir.path().join("git-manager.exe"), "").unwrap();
         assert_eq!(app_next_to(&console), Some(dir.path().join("git-manager.exe")));
+    }
+
+    #[test]
+    fn call_arguments_can_come_from_a_file() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let file = dir.path().join("args.json");
+        std::fs::write(&file, r#"{"message": "two words", "limit": 5}"#).unwrap();
+        let args: Vec<String> = ["git_log", "--args-file", &file.to_string_lossy(), "limit=3"].iter().map(|word| word.to_string()).collect();
+        let Command::Call { arguments, .. } = parse_call(&args).unwrap() else {
+            panic!("not a call");
+        };
+        assert_eq!(arguments["message"], "two words");
+        assert_eq!(arguments["limit"], 3, "key=value wins over the file");
+
+        std::fs::write(&file, "[1, 2]").unwrap();
+        assert!(parse_call(&args).unwrap_err().contains("--args-file must be a JSON object"));
+        let missing: Vec<String> = ["git_log", "--args-file", "/no/such/file.json"].iter().map(|word| word.to_string()).collect();
+        assert!(parse_call(&missing).unwrap_err().contains("Could not read"));
+        assert!(parse_call(&["git_log".to_string(), "--args-file".to_string()]).is_err());
     }
 
     #[test]

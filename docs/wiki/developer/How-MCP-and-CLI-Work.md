@@ -53,7 +53,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 ### The CLI
 
-`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. The tool is its own crate, `src-tauri/cli` ([why](Windows-Support.md#the-command-line-tool)). It reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. Commands: `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (one line per `get_memory_usage` sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
+`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. The tool is its own crate, `src-tauri/cli` ([why](Windows-MCP-and-CLI.md#the-command-line-tool)). It reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. Commands: `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (one line per `get_memory_usage` sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
 
 ### The memory recorder
 
