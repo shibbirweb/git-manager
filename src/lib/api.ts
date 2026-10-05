@@ -601,7 +601,7 @@ export const api = {
   mcpRegenerateToken: () => invoke<McpStatus>("mcp_regenerate_token"),
   /** The last 50 calls, newest last. */
   mcpActivity: () => invoke<McpActivity[]>("mcp_activity"),
-  /** Links `git-manager` in ~/.local/bin (not supported on Windows yet). */
+  /** Links `git-manager` in ~/.local/bin, or writes `git-manager.cmd` into WindowsApps on Windows. */
   cliInstall: () => invoke<McpStatus>("cli_install"),
   cliUninstall: () => invoke<McpStatus>("cli_uninstall"),
 

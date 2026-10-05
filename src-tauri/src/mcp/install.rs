@@ -139,6 +139,16 @@ pub fn uninstall_in(home: &Path, exe: &Path) -> AppResult<()> {
 }
 
 
+/// The program that runs the command line tool: this binary, or on Windows the console program
+/// next to it, since the app itself has no console there.
+pub fn cli_program(exe: &Path) -> PathBuf {
+    if cfg!(windows) {
+        exe.with_file_name(CONSOLE_NAME)
+    } else {
+        exe.to_path_buf()
+    }
+}
+
 pub fn current_exe() -> PathBuf {
     std::env::current_exe()
         .and_then(|exe| exe.real_path())

@@ -8,7 +8,7 @@ A Windows GUI program has no console: `git-manager cli` would print nothing, and
 
 The crate holds what the tool and the app share: the config folder (`home`), the `mcp.json` format (`server_file`), the client header and the protocol version (a test in the app checks it). It has no build script, which matters: `tauri-build` copies a bundled program while the app compiles, so the program must exist before that.
 
-`build-windows` in `release.yml` therefore builds `git-manager-cli` first, copies it to `src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe` and passes `--config src-tauri/tauri.windows-release.conf.json`, which lists it in `bundle.externalBin`. The installer puts it next to the app. Install command line tool then writes `git-manager.cmd` into `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on every user's `PATH`, and the `.cmd` runs the console program with all its arguments. It never touches a file that is not ours (`SHIM_MARK`).
+`build-windows` in `release.yml` therefore builds `git-manager-cli` first, copies it to `src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe` and passes `--config src-tauri/tauri.windows-release.conf.json`, which lists it in `bundle.externalBin`. The installer puts it next to the app. Install command line tool then writes `git-manager.cmd` into `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on every user's `PATH`, and the `.cmd` runs the console program with all its arguments. It never touches a file that is not ours (`SHIM_MARK`). Settings names that folder from `McpStatus.cliFolder`, and its examples call `git-manager-cli.exe` (`cliCommand`) with PowerShell's `&`.
 
 ## The MCP screenshot
 

@@ -100,11 +100,11 @@ class McpStore {
   }
 
   installCli(): Promise<void> {
-    return this.change(() => api.cliInstall(), "Installed git-manager in ~/.local/bin");
+    return this.change(() => api.cliInstall(), "Installed the git-manager command");
   }
 
   uninstallCli(): Promise<void> {
-    return this.change(() => api.cliUninstall(), "Removed git-manager from ~/.local/bin");
+    return this.change(() => api.cliUninstall(), "Removed the git-manager command");
   }
 
   private async change(work: () => Promise<McpStatus>, success: string): Promise<void> {

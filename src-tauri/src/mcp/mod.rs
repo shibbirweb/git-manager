@@ -374,8 +374,9 @@ impl Mcp {
             url: format!("http://127.0.0.1:{port}/mcp"),
             token: self.inner.shared.token(),
             error,
-            cli_command: format!("{} cli", exe.display()),
+            cli_command: format!("{} cli", install::cli_program(&exe).display()),
             cli_installed_path: installed.map(crate::paths::to_ui),
+            cli_folder: home.as_deref().map(|home| crate::paths::to_ui(install::bin_dir_in(home))).unwrap_or_default(),
             cli_on_path: on_path,
         }
     }

@@ -613,6 +613,10 @@
   const onMac = platformName(navigator.userAgent) === "macOS";
   const clickModifier = onMac ? "Cmd" : "Ctrl";
   const optionKey = onMac ? "Option" : "Alt";
+  /** Windows has no login shell: its default is the first shell found (PowerShell 7, else Windows PowerShell). */
+  const defaultShellLabel = platformName(navigator.userAgent) === "Windows" ? "Default" : "Login shell";
+  /** Where Install puts the command, as the hint names it: ~/.local/bin, or WindowsApps on Windows. */
+  const cliFolderLabel = $derived(onMac ? "~/.local/bin" : "WindowsApps (on your PATH)");
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -1781,7 +1785,7 @@
               onchange={(event) => set("terminalShell", event.currentTarget.value || null)}
               aria-label="Default shell"
             >
-              <option value="">{loginShell ? `Login shell (${loginShell.name})` : "Login shell"}</option>
+              <option value="">{loginShell ? `${defaultShellLabel} (${loginShell.name})` : defaultShellLabel}</option>
               {#each terminalStore.shells as shell (shell.id)}
                 <option value={shell.id}>{shell.name} ({shell.path})</option>
               {/each}
@@ -2275,16 +2279,18 @@
                 <span class="hint selectable">
                   {mcpStatus.cliInstalledPath
                     ? `Installed at ${mcpStatus.cliInstalledPath}.`
-                    : "Adds git-manager to ~/.local/bin, so you can type it in any folder."}
+                    : `Adds git-manager to ${cliFolderLabel}, so you can type it in any folder.`}
                 </span>
               </div>
               {#if mcpStatus.cliInstalledPath}
                 <button class="btn small" onclick={() => void mcpStore.uninstallCli()} disabled={mcpStore.working}>Remove</button>
               {:else}
-                <button class="btn small" onclick={() => void mcpStore.installCli()} disabled={mcpStore.working}>Install in ~/.local/bin</button>
+                <button class="btn small" onclick={() => void mcpStore.installCli()} disabled={mcpStore.working}>
+                  {onMac ? "Install in ~/.local/bin" : "Install"}
+                </button>
               {/if}
             </div>
-            {#if !mcpStatus.cliOnPath}
+            {#if !mcpStatus.cliOnPath && onMac}
               <div class="row stacked">
                 <div class="label">
                   <span>~/.local/bin is not on your PATH</span>
@@ -2293,6 +2299,20 @@
                 <div class="snippet">
                   <pre class="command selectable">{LOCAL_BIN_PATH_LINE}</pre>
                   <button class="btn small" onclick={() => void copy(LOCAL_BIN_PATH_LINE)}>Copy</button>
+                </div>
+              </div>
+            {:else if !mcpStatus.cliOnPath}
+              <div class="row stacked">
+                <div class="label">
+                  <span>The folder is not on your PATH</span>
+                  <span class="hint">
+                    Windows keeps it there for every user unless it was removed. Add it back under Edit environment variables
+                    for your account (Path), then open a new terminal, to type <code>git-manager</code> anywhere.
+                  </span>
+                </div>
+                <div class="snippet">
+                  <pre class="command selectable">{mcpStatus.cliFolder}</pre>
+                  <button class="btn small" onclick={() => void copy(mcpStatus?.cliFolder ?? "")}>Copy</button>
                 </div>
               </div>
             {/if}

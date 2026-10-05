@@ -16,11 +16,14 @@ pub struct McpStatus {
     /// Only for the Settings page to show and copy.
     pub token: Option<String>,
     pub error: Option<String>,
-    /// The running binary followed by " cli", for display.
+    /// The program that runs the tool followed by " cli", for display: the running binary, or on
+    /// Windows the console program next to it (`git-manager-cli.exe`).
     pub cli_command: String,
-    /// `~/.local/bin/git-manager` when it is our link.
+    /// `~/.local/bin/git-manager` (Windows: `...\WindowsApps\git-manager.cmd`) when it is ours.
     pub cli_installed_path: Option<String>,
-    /// `~/.local/bin` is on the login shell's PATH.
+    /// The folder Install puts the command in: `~/.local/bin`, or WindowsApps on Windows.
+    pub cli_folder: String,
+    /// That folder is on the login shell's PATH.
     pub cli_on_path: bool,
 }
 

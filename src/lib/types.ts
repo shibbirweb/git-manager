@@ -1096,11 +1096,13 @@ export interface McpStatus {
   /** Only returned so Settings can show and copy it. */
   token: string | null;
   error: string | null;
-  /** The app binary's absolute path plus " cli", for display. */
+  /** The program that runs the tool plus " cli": the app binary, or `git-manager-cli.exe` on Windows. */
   cliCommand: string;
-  /** Where `git-manager` is linked, or null when it is not installed. */
+  /** Where `git-manager` is linked (`git-manager.cmd` on Windows), or null when it is not installed. */
   cliInstalledPath: string | null;
-  /** The install folder (~/.local/bin) is on PATH. */
+  /** Where Install puts the command: ~/.local/bin, or WindowsApps on Windows. */
+  cliFolder: string;
+  /** The install folder is on PATH. */
   cliOnPath: boolean;
 }
 
