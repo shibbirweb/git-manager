@@ -13,6 +13,8 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Git Manager for Windows 10 and 11: a per-user installer (the `-setup.exe` of a release, no administrator rights needed) with the same features as on macOS. Paths show as `C:/...`, shortcuts use Ctrl, the terminal starts PowerShell, Command Prompt or Git Bash, deleted files go to the Recycle Bin, the GitHub token is kept in Windows Credential Manager, a second launch opens its folder in the running app, Cancel stops git and everything it started, and the status bar counts memory like Task Manager. The installer is not signed yet, so Windows SmartScreen asks once (More info, Run anyway).
+- `git-manager cli call` reads its arguments from a JSON file with `--args-file <file>`, or from stdin with `--args-file -`, for shells that mangle quotes such as Windows PowerShell 5.1.
 - Clone Repository... on the welcome screen opens the Clone dialog, so you can start from a repository on GitHub or another server without opening a folder first. Scripts and AI tools can clone too: `git-manager cli clone <url> [folder] [--into <folder>] [--open window|workspace]` and the MCP tool `clone_repository`. The tool starts off, since it writes outside the open folders; turn it on in Help > Available MCP Tools.
 - The Changes tab (click **N changes** in the status bar) can stage, unstage and discard: hover a file for Stage, Unstage and Discard changes, right-click it for more, or use Stage all, Unstage all and Discard all next to **Changed files**. A **staged** or **partly staged** tag shows what is in the next commit.
 - New File, like Sublime Text: File > New File (Cmd+N) opens an empty Untitled tab named after its first line. Cmd+S asks where to save it; saved inside the folder, the tab becomes that file's tab.
@@ -154,6 +156,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- Screen readers read the fields with a button beside them in the Clone, New Worktree, Merge, Reset and Rebase dialogs by their label alone ("Clone into folder", not "Clone into folder Browse...").
 - In a narrow sidebar, the buttons in the Changes title bar no longer slide under its close button; the CHANGES title gets shorter instead.
 - Closing Markdown files with mermaid diagrams left the diagram library in memory until the app quit. Diagrams are now drawn in a hidden frame that goes away with the library and its cache 3 seconds after the last document with diagrams closes (after closing four such files: 264 MB instead of 342 MB, median of three runs).
 - The welcome screen fits short windows: the recent lists scroll inside the card instead of the card being cut off at the top and bottom.

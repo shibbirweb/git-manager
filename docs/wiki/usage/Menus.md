@@ -1,8 +1,8 @@
 # Menus
 
-Git Manager has a real menu bar, like every other Mac app. Every command lives in it, with its keyboard shortcut next to it.
+Git Manager has a real menu bar, like every other desktop app. Every command lives in it, with its keyboard shortcut next to it.
 
-On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Edit**, **View**, **Code**, **Git**, **Window** and **Help**. The planned Windows and Linux builds put the menu bar in the window and have no Git Manager menu: **Settings...** and **Exit** sit at the end of File, and **Check for Updates...** and **About Git Manager** at the end of Help.
+On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Edit**, **View**, **Code**, **Git**, **Window** and **Help**. On Windows (and the planned Linux build) the menu bar is in the window and has no Git Manager menu: **Settings...** and **Exit** sit at the end of File, and **Check for Updates...** and **About Git Manager** at the end of Help.
 
 ## Git Manager
 

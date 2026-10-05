@@ -84,7 +84,7 @@ Whether a plain pull merges or rebases follows your git settings (for example `p
 
 ## Signing in
 
-Git Manager runs your own `git`, so it uses the same sign-in as the Terminal: the macOS keychain for HTTPS, or your SSH keys and agent. It never shows a password prompt. If a push or pull fails with an authentication error, see [Troubleshooting](Troubleshooting.md).
+Git Manager runs your own `git`, so it uses the same sign-in as a terminal: the macOS keychain or, on Windows, Git Credential Manager for HTTPS, or your SSH keys and agent. It never shows a password prompt. If a push or pull fails with an authentication error, see [Troubleshooting](Troubleshooting.md).
 
 ## Related
 

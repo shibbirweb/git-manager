@@ -18,7 +18,7 @@ Open **Settings** (Cmd+,) and choose **GitHub**. There are two ways to sign in.
 2. Create the token on GitHub and copy it.
 3. Paste it into **Sign in with a token** and click **Sign In** (or press Enter).
 
-Git Manager checks the token with GitHub, then keeps it only in the macOS Keychain. The field is cleared at once and the token is never shown again.
+Git Manager checks the token with GitHub, then keeps it only in the system keychain: the Keychain on a Mac, Credential Manager on Windows. The field is cleared at once and the token is never shown again.
 
 **With the GitHub CLI.** If you use GitHub's `gh` command line tool, click **Use GitHub CLI**. Git Manager then asks `gh` for its login each time it needs it, and stores nothing. The button only shows when `gh` is installed; when `gh` is not signed in, it says to run `gh auth login` first.
 
@@ -28,7 +28,7 @@ Once signed in, the section shows your initials, your login, your name, the host
 
 If a classic token lacks the `repo` or `gist` scope, a warning says which one is missing: some GitHub actions will fail until you create a new token.
 
-**Sign Out** asks first. For a token, it removes it from the Keychain. For the GitHub CLI, it only stops using `gh`'s login; `gh` itself stays signed in.
+**Sign Out** asks first. For a token, it removes it from the keychain. For the GitHub CLI, it only stops using `gh`'s login; `gh` itself stays signed in.
 
 If you choose a GitHub action while signed out, a **Sign In to GitHub** dialog appears with the same choices, and the action continues once you are signed in.
 
@@ -76,7 +76,7 @@ The **Gist Created** dialog has **Copy Link** and **Open Gist**.
 
 ## Privacy
 
-- The token is kept only in the macOS Keychain, never in a settings file, the Git Console or an error message. `~/.gitmanager/github.json` holds only your login, name, host, the sign-in source and missing scopes.
+- The token is kept only in the system keychain (Keychain on a Mac, Credential Manager on Windows), never in a settings file, the Git Console or an error message. `~/.gitmanager/github.json` holds only your login, name, host, the sign-in source and missing scopes.
 - With the GitHub CLI, nothing is stored.
 - A development build may ask for Keychain access; choose **Always Allow**.
 

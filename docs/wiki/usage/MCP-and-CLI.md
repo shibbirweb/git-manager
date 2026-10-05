@@ -81,7 +81,7 @@ Your AI tool reads each tool's own description, so you can simply ask in plain w
 
 *The Command line tool section with Install in ~/.local/bin and example commands.*
 
-Turn on **Command line tool** in Settings, Automation. Then click **Install in ~/.local/bin** so you can type `git-manager` in any folder. If `~/.local/bin` is not on your PATH yet, Settings shows a line to add to `~/.zshrc`. **Remove** takes the link away again.
+Turn on **Command line tool** in Settings, Automation. Then click **Install in ~/.local/bin** (**Install** on Windows) so you can type `git-manager` anywhere. On a Mac, if that folder is not on your PATH, Settings shows a line for `~/.zshrc`; on Windows it goes into `WindowsApps`, which is on your PATH. **Remove** takes it away.
 
 ```sh
 git-manager cli status                     # is the app running, which switches are on
@@ -96,7 +96,7 @@ git-manager cli memory --duration 10       # live memory, then the minimum, aver
 
 `clone` works like `git clone`: it clones into the folder you are in (or `--into <folder>`), names the new folder after the URL unless you give a name, and `--open window` or `--open workspace` shows it in Git Manager. Turn on `clone_repository` in Available MCP Tools first.
 
-Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. If your shell mangles the quotes, put all the arguments in a JSON file and pass `--args-file args.json`, or pipe them in with `--args-file -`. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
+Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. If your shell mangles quotes, pass a JSON file with `--args-file args.json`, or pipe it in with `--args-file -`. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
 
 The exit code is the number a command hands back to the shell or script that ran it:
 
@@ -104,7 +104,7 @@ The exit code is the number a command hands back to the shell or script that ran
 - **1**: the tool reported an error.
 - **2**: the app cannot be reached or is switched off, or the command was used wrongly.
 
-The command line tool is for macOS (and later Linux). On Windows it prints nothing yet.
+On Windows, `git-manager` runs `git-manager-cli.exe`, a console program next to the app. Windows PowerShell 5.1 breaks JSON in `--args`, so pipe it in: `'{"limit": 5}' | git-manager cli call git_log --args-file -`.
 
 ## Is it safe?
 

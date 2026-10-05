@@ -24,7 +24,7 @@ You can also move through a list with the keyboard: click it (or Tab to it), the
 
 Which list is used is set by the **Theme** in **Settings > Appearance**:
 
-- **System** follows macOS: the Light theme in light mode, the Dark theme in dark mode.
+- **System** follows macOS or Windows: the Light theme in light mode, the Dark theme in dark mode.
 - **Light** or **Dark** always uses that list.
 
 The same three choices are in the menu bar under **View > Appearance**, and the sun button in the header (**Toggle light/dark theme**) switches between Light and Dark in one click. See [Settings](Settings.md).

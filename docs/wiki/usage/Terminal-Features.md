@@ -54,7 +54,7 @@ These forms work: `src/cart.ts`, `src/cart.ts:12`, `src/cart.ts:12:5` and `src/c
 
 ## Drop files from Finder
 
-Drag files or folders from Finder onto a terminal. A blue outline shows where they will land. Drop them, and their paths are typed at the prompt, quoted when they contain spaces or special characters, with a space after them. Nothing runs until you press Enter. Dropping on the Files panel still copies files, as before.
+Drag files or folders from Finder (File Explorer on Windows) onto a terminal. A blue outline shows where they will land. Drop them, and their paths are typed at the prompt, quoted when they contain spaces or special characters, with a space after them. Nothing runs until you press Enter. Dropping on the Files panel still copies files, as before.
 
 **Drop files to type their paths** in Settings turns this off.
 

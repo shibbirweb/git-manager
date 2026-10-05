@@ -20,13 +20,13 @@ The image starts **fitted** to the tab. A small image keeps its real size; a big
 - **Zoom out** and **Zoom in** (the minus and plus buttons), with the zoom in between, such as **62%**.
 - **Fit** to fit the image in the tab again, and **100%** to show it at its real size.
 - The image's width and height in pixels and the file size.
-- **Reveal in Finder** to show the file in Finder.
+- **Reveal in Finder** to show the file in Finder (**Reveal in File Explorer** on Windows).
 
 You can also zoom with a pinch on the trackpad, or with Cmd and the mouse wheel. A checkerboard behind the image shows its transparent parts.
 
 ## PDF documents
 
-PDFs use the viewer that is built into macOS, the same one Safari uses. Scroll through the pages, select and copy text, and use its own zoom. The bar above shows the file size and **Reveal in Finder**, which also lets you open the document in Preview.
+PDFs use the viewer built into the system: the one Safari uses on a Mac, the one Microsoft Edge uses on Windows. Scroll through the pages, select and copy text, and use its own zoom. The bar above shows the file size and **Reveal in Finder**, which also lets you open the document in Preview.
 
 ![A PDF in the preview](../images/media-preview-pdf.png)
 

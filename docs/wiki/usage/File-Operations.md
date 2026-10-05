@@ -24,7 +24,7 @@ On one file or folder:
 - **Paste** puts them into the folder you right-clicked, or into the folder of the file. A cut moves the rows; a copy copies them, and you can paste a copy again.
 - **Duplicate** makes a copy next to the original.
 - **Rename...** asks for the new name. The name is already selected without its extension, so typing replaces `cart` and keeps `.ts`.
-- **Move to Trash** asks first, then moves the rows to the system Trash. You can put them back from the Trash in the Finder.
+- **Move to Trash** asks first, then moves the rows to the system Trash. You can put them back from the Trash in the Finder (the Recycle Bin on Windows).
 
 With several rows selected, the menu has **Cut**, **Copy**, **Paste**, **Move to Trash** and **Copy Paths** (every full path, one per line).
 
@@ -61,7 +61,7 @@ While the tree has the keyboard, these keys act on files, not on text: the Edit 
 
 A move asks first ("Move cart.ts into src/lib?"). When the folder already has a file or folder of that name, you see the message at once, without the question. To skip that question, turn off **Confirm drag and drop** in Settings, Layout (see [Settings](Settings.md)). Copies never ask.
 
-**Files from the Finder:** drag files or folders from the Finder onto a folder in the panel, and they are copied there. The Finder keeps its own copies.
+**Files from the Finder:** drag files or folders from the Finder (File Explorer on Windows) onto a folder in the panel, and they are copied there. The originals stay where they were.
 
 ## Open tabs follow along
 

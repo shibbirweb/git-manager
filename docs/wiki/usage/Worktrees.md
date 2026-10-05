@@ -39,7 +39,7 @@ Right-click a worktree row:
 
 - **Open in This Window** opens its folder as your workspace.
 - **Add to Workspace** adds its folder next to the ones you have open. See [Workspaces](Workspaces.md).
-- **Reveal in Finder** shows the folder.
+- **Reveal in Finder** (**Reveal in File Explorer** on Windows) shows the folder.
 - **Lock...** asks for an optional reason (for example "On a removable disk") and locks it, so git will not prune or remove it. **Unlock** undoes that. The main worktree cannot be locked.
 - **Remove...** deletes the worktree's folder. The branch stays. You are asked first.
 - **Prune Stale Worktrees** cleans up worktrees whose folder you deleted by hand.
@@ -52,7 +52,7 @@ If the worktree has uncommitted or untracked changes, the question is titled **W
 
 ## Prune stale worktrees
 
-If you delete a worktree folder in Finder, git still remembers it, and its branch stays "checked out" there. Choose **Prune Stale Worktrees** in the section or row menu, or **Git > Worktrees > Prune Stale Worktrees**. A note says **Pruned stale worktrees**, or **No stale worktrees to prune**.
+If you delete a worktree folder in Finder or File Explorer, git still remembers it, and its branch stays "checked out" there. Choose **Prune Stale Worktrees** in the section or row menu, or **Git > Worktrees > Prune Stale Worktrees**. A note says **Pruned stale worktrees**, or **No stale worktrees to prune**.
 
 ## Example
 
