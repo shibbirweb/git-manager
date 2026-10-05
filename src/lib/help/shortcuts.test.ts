@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { actionEntries, menuSpec } from "$lib/menu/menuSpec";
-import { filterShortcuts, formatKeys, menuShortcuts, shortcutSections } from "./shortcuts";
+import { filterShortcuts, formatKeyWords, formatKeys, menuShortcuts, shortcutSections } from "./shortcuts";
 
 describe("formatKeys", () => {
   it("writes keys the macOS way", () => {
@@ -104,5 +104,23 @@ describe("shortcutSections with custom keys", () => {
     expect(rows.some((row) => row.label === "Sidebar")).toBe(false);
     expect(rows.find((row) => row.label === "Go Back")?.keys).toEqual(["⌃["]);
     expect(rows.some((row) => row.label === "New terminal")).toBe(false);
+  });
+});
+
+describe("formatKeyWords", () => {
+  it("writes macOS keys as words in Apple's order", () => {
+    expect(formatKeyWords("CmdOrCtrl+Shift+G", "macos")).toBe("Shift+Cmd+G");
+    expect(formatKeyWords("CmdOrCtrl+Alt+B", "macos")).toBe("Option+Cmd+B");
+    expect(formatKeyWords("Cmd+Up", "macos")).toBe("Cmd+Up");
+    expect(formatKeyWords("CmdOrCtrl+,", "macos")).toBe("Cmd+,");
+    expect(formatKeyWords("Mod-Enter", "macos")).toBe("Cmd+Enter");
+    expect(formatKeyWords("Ctrl+`", "macos")).toBe("Ctrl+`");
+  });
+
+  it("writes Ctrl and Alt elsewhere", () => {
+    expect(formatKeyWords("CmdOrCtrl+Shift+G", "windows")).toBe("Ctrl+Shift+G");
+    expect(formatKeyWords("CmdOrCtrl+Alt+B", "windows")).toBe("Ctrl+Alt+B");
+    expect(formatKeyWords("Alt+Home", "windows")).toBe("Alt+Home");
+    expect(formatKeyWords("CmdOrCtrl+-", "linux")).toBe("Ctrl+-");
   });
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import CommitDetails from "$lib/log/CommitDetails.svelte";
@@ -727,7 +728,7 @@
         Load more
       </button>
     {/if}
-    <button class="icon-btn" onclick={() => changesSelection.toggleLog()} title="Hide Log (Shift+Cmd+L)" aria-label="Hide log">
+    <button class="icon-btn" onclick={() => changesSelection.toggleLog()} title={withCommandKeys("Hide Log", "view.log")} aria-label="Hide log">
       <Icon name="x" size={14} />
     </button>
   </div>

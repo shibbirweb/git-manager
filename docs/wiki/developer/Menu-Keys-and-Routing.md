@@ -49,6 +49,10 @@ The Windows and Linux builds are not out yet, so the order of page and menu ther
 - Undo, Redo and Select All get no accelerator outside macOS, so Ctrl+Z and Ctrl+A stay with the page and the shell in the terminal.
 - The Git menu keys (Cmd+K, Cmd+T, Cmd+9, Option+Cmd+A) are macOS only, because Ctrl+K and Ctrl+T belong to the shell. Next Tab and Previous Tab use Ctrl+PageDown and Ctrl+PageUp there, since Ctrl+Shift+] and [ fold code.
 
+## Keys in labels and tooltips
+
+UI text never writes keys itself. `commandKeys(id)` in `commandRuntime.ts` gives a command's current keys in words, custom ones included ("Shift+Cmd+G" on macOS, "Ctrl+Shift+G" elsewhere, from `formatKeyWords`), `withCommandKeys(title, id)` makes "Title (keys)" for a tooltip, and `localKeys("CmdOrCtrl+Enter")` writes keys a view binds itself. All three are reactive reads, so labels follow Settings > Keyboard Shortcuts.
+
 ## The Keyboard Shortcuts window
 
 Help > Keyboard Shortcuts sets `helpDialogs.shortcutsOpen`, and `App.svelte` loads `ShortcutsDialog.svelte` only then. Its rows come from `shortcutSections` in `help/shortcuts.ts`:

@@ -149,3 +149,6 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   Clippy on Windows wanted `as_chunks::<4>()` in the screenshot's pixel loop (fixed).
 - Found in the screenshot: about 40 UI texts write shortcuts the macOS way (`Shift+Cmd+G`, `Cmd+P`, `Option+Cmd+B`)
   on Windows too: the empty editor area, tooltips, panel buttons and Settings hints.
+- Shortcut labels: `formatKeyWords`, `commandKeys`, `withCommandKeys` and `localKeys` replace every
+  typed shortcut in the UI (empty editor area, activity bars, panel buttons, Search Everywhere tabs, merge tool,
+  commit box, find bar, Markdown toolbar, Settings hints); the terminal hint has its own Windows wording.

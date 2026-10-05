@@ -66,7 +66,7 @@ export type FileToolbarSwitchKey =
   | "fileToolbarMarkdownFormat";
 
 export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; hint: string }[] = [
-  { key: "fileToolbarBreadcrumbs", label: "Breadcrumbs", hint: "The folders and file as a Navigation Bar. Off, Cmd+Up shows it over the editor." },
+  { key: "fileToolbarBreadcrumbs", label: "Breadcrumbs", hint: "The folders and file as a Navigation Bar. Off, Jump to Navigation Bar shows it over the editor." },
   { key: "fileToolbarBadges", label: "Badges", hint: "Unsaved, Modified, New file and the number of conflicts." },
   { key: "fileToolbarChanges", label: "Change arrows", hint: "Previous and next change with the counter. F7 and Shift+F7 work either way." },
   { key: "fileToolbarBlame", label: "Blame", hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame." },

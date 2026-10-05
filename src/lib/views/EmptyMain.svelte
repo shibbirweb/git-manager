@@ -1,5 +1,6 @@
 <!-- Main area when no diff, file or Log is open: the Navigation Bar on top, then ways to start. -->
 <script lang="ts">
+  import { commandKeys } from "$lib/commands/commandRuntime";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -9,6 +10,13 @@
 
   /** Jump to Navigation Bar lands here while the group showing this screen is focused. */
   const claimed = $derived(repoStore.focusedGroupId === repoStore.primaryGroupId);
+  /** The real keys of each action on this platform, custom ones included. */
+  const keys = $derived({
+    changes: commandKeys("view.changes"),
+    log: commandKeys("view.log"),
+    goToFile: commandKeys("edit.goToFile"),
+    navigationBar: commandKeys("edit.navigationBar"),
+  });
 </script>
 
 <div class="welcome">
@@ -25,12 +33,12 @@
       <button class="action" onclick={() => settings.setLeftPanel("changes")}>
         <Icon name="git-compare" size={15} />
         <span>Review changes</span>
-        <kbd>Shift+Cmd+G</kbd>
+        {#if keys.changes}<kbd>{keys.changes}</kbd>{/if}
       </button>
       <button class="action" onclick={() => changesSelection.toggleLog()} disabled={!repoStore.repo}>
         <Icon name="history" size={15} />
         <span>Show the Log</span>
-        <kbd>Shift+Cmd+L</kbd>
+        {#if keys.log}<kbd>{keys.log}</kbd>{/if}
       </button>
       <button
         class="action"
@@ -46,7 +54,7 @@
       <button class="action" onclick={() => openQuickOpen("")}>
         <Icon name="file" size={15} />
         <span>Go to File</span>
-        <kbd>Cmd+P</kbd>
+        {#if keys.goToFile}<kbd>{keys.goToFile}</kbd>{/if}
       </button>
       <button class="action" onclick={() => openFileSearch("everywhere")}>
         <Icon name="search" size={15} />
@@ -56,7 +64,7 @@
       <button class="action" onclick={openNavigationBar}>
         <Icon name="chevrons-right" size={15} />
         <span>Navigation Bar</span>
-        <kbd>Cmd+Up</kbd>
+        {#if keys.navigationBar}<kbd>{keys.navigationBar}</kbd>{/if}
       </button>
     </div>
   </div>

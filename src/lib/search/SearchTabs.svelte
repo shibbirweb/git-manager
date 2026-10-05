@@ -1,5 +1,6 @@
 <!-- The tab strip of the Search Everywhere popup; Tab and Shift+Tab are handled by the field. -->
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { SEARCH_TABS, type SearchTab } from "./searchTabs";
 
   let { tab, onSelect }: { tab: SearchTab; onSelect: (tab: SearchTab) => void } = $props();
@@ -14,7 +15,7 @@
       role="tab"
       aria-selected={info.id === tab}
       tabindex="-1"
-      title="{info.label} ({info.shortcut})"
+      title={info.commandId ? withCommandKeys(info.label, info.commandId) : `${info.label} (Double Shift)`}
       onmousedown={(event) => event.preventDefault()}
       onclick={() => onSelect(info.id)}
     >

@@ -50,6 +50,7 @@
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
   import { platformName } from "$lib/update/releases";
+  import { commandKeys, localKeys } from "$lib/commands/commandRuntime";
   import { revealLabel } from "$lib/views/files/reveal";
   import { MCP_PORT_RANGE, parseMcpPort } from "$lib/stores/settingsData";
   import GitHubSignInForm from "./github/GitHubSignInForm.svelte";
@@ -608,6 +609,10 @@
       close();
     }
   }
+  /** Shortcut words in the hints: the click modifier and the Option key differ on Windows and Linux. */
+  const onMac = platformName(navigator.userAgent) === "macOS";
+  const clickModifier = onMac ? "Cmd" : "Ctrl";
+  const optionKey = onMac ? "Option" : "Alt";
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -750,7 +755,8 @@
               <span>File toolbar</span>
               <span class="hint">
                 The bar with a file's path, badges and buttons: above the code, under it, or hidden. Pick its parts
-                below. Without the path, Cmd+Up shows the Navigation Bar over the editor.
+                below. Without the path, {commandKeys("edit.navigationBar") ?? "Jump to Navigation Bar"} shows the Navigation Bar
+                over the editor.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="File toolbar">
@@ -1232,8 +1238,8 @@
             <div class="label">
               <span>Recent Files<MemoryFlag setting="recentFiles" /></span>
               <span class="hint">
-                Cmd+E lists the files you worked on last, and Quick Open and Search Everywhere show them first.
-                Each workspace keeps up to 50 in state.json. Off, Cmd+E only says it is off.
+                {commandKeys("edit.recentFiles") ?? "Recent Files"} lists the files you worked on last, and Quick Open and
+                Search Everywhere show them first. Each workspace keeps up to 50 in state.json. Off, it only says it is off.
               </span>
             </div>
             <input
@@ -1519,7 +1525,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
-              <span class="hint">Show the author, age and commit of the cursor line at its end. Cmd+click it (Ctrl+click elsewhere) to show the commit in the Log; add Option to copy the commit hash.</span>
+              <span class="hint">Show the author, age and commit of the cursor line at its end. {clickModifier}+click it to show the commit in the Log; add {optionKey} to copy the commit hash.</span>
             </div>
             <input
               type="checkbox"
@@ -1655,7 +1661,7 @@
             <div class="label">
               <span>Message history</span>
               <span class="hint">
-                The clock in the commit box (Cmd+E, or Up in an empty box) lists your recent commit messages and messages
+                The clock in the commit box ({localKeys("CmdOrCtrl+E")}, or Up in an empty box) lists your recent commit messages and messages
                 that were not committed. They are kept in state.json, up to 30 per repository.
               </span>
               {#if settings.commitMessageHistory && Object.keys(settings.commitMessages).length > 0}
@@ -1707,7 +1713,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Files panel</span>
-              <span class="hint">Show the file tree on the right. Also toggled with Cmd+B.</span>
+              <span class="hint">
+                Show the file tree on the right.{#if commandKeys("view.filesPanel")}
+                  Also toggled with {commandKeys("view.filesPanel")}.{/if}
+              </span>
             </div>
             <input type="checkbox" class="switch" checked={settings.explorerOpen} onchange={() => settings.toggleExplorer()} />
           </label>
@@ -1726,7 +1735,9 @@
           <div class="row">
             <div class="label">
               <span>Left sidebar</span>
-              <span class="hint">Also toggled from the activity bar or with Option+Cmd+B.</span>
+              <span class="hint">
+                Also toggled from the activity bar{#if commandKeys("view.sidebar")} or with {commandKeys("view.sidebar")}{/if}.
+              </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Left sidebar">
               {#each [{ value: "changes", label: "Changes" }, { value: "branches", label: "Branches" }, { value: null, label: "Hidden" }] as const as option (option.label)}
@@ -2040,7 +2051,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Find in terminal</span>
-              <span class="hint">Cmd+F searches the output. Off, the search code is never loaded.</span>
+              <span class="hint">{localKeys(onMac ? "Cmd+F" : "Ctrl+Shift+F")} searches the output. Off, the search code is never loaded.</span>
             </div>
             <input
               type="checkbox"
@@ -2052,7 +2063,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Clickable file paths</span>
-              <span class="hint">Cmd+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
+              <span class="hint">{clickModifier}+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
             </div>
             <input
               type="checkbox"
@@ -2113,8 +2124,15 @@
             <div class="label">
               <span>Keyboard</span>
               <span class="hint">
-                Ctrl+` shows or hides the terminal, Ctrl+Shift+` opens a new one. In a terminal, Cmd+C copies the
-                selection, Cmd+V pastes, Cmd+K clears, Cmd+F finds and Cmd+\ splits; other Cmd shortcuts still work.
+                {commandKeys("view.terminal") ?? "View > Terminal"} shows or hides the terminal,
+                {commandKeys("terminal.new") ?? "New Terminal"} opens a new one.
+                {#if onMac}
+                  In a terminal, Cmd+C copies the selection, Cmd+V pastes, Cmd+K clears, Cmd+F finds and Cmd+\ splits;
+                  other Cmd shortcuts still work.
+                {:else}
+                  In a terminal, Ctrl+Shift+C copies the selection, Ctrl+Shift+V pastes, Ctrl+Shift+F finds and
+                  Ctrl+Shift+5 splits; the app's shortcuts still work, and other Ctrl keys go to the shell.
+                {/if}
               </span>
             </div>
           </div>

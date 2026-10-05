@@ -44,6 +44,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - Svelte 5 runes only (`$state`, `$derived`, `$effect`, `$props`), `onclick`-style attributes, no `export let`. Use `$state.raw` for large arrays and objects that are replaced, not mutated.
 - Colors come from the CSS tokens in `src/app.css` (light and dark); no hard-coded colors in components.
 - Keep UI text short and plain; confirm destructive actions (`dialogs.confirm({ danger: true })`).
+- Never type a shortcut into UI text (no "Cmd+P" in a label or tooltip): use `commandKeys(id)`, `withCommandKeys(title, id)` or `localKeys("CmdOrCtrl+...")` from `commands/commandRuntime.ts`, so Windows shows Ctrl and custom keys show up.
 
 ## Testing rules
 

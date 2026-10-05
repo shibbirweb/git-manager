@@ -3,6 +3,7 @@
   sits in FileView's bar; this row stays because it is a tool, and it is kept as low as possible.
 -->
 <script lang="ts">
+  import { localKeys } from "$lib/commands/commandRuntime";
   import type { EditorState, TransactionSpec } from "@codemirror/state";
   import {
     insertTable,
@@ -43,11 +44,11 @@
   }
 
   const inlineButtons: FormatButton[] = [
-    { icon: "bold", label: "Bold (Cmd+B)", command: (state) => toggleInline(state, "bold"), richAction: "bold" },
-    { icon: "italic", label: "Italic (Cmd+I)", command: (state) => toggleInline(state, "italic"), richAction: "italic" },
+    { icon: "bold", label: `Bold (${localKeys("CmdOrCtrl+B")})`, command: (state) => toggleInline(state, "bold"), richAction: "bold" },
+    { icon: "italic", label: `Italic (${localKeys("CmdOrCtrl+I")})`, command: (state) => toggleInline(state, "italic"), richAction: "italic" },
     { icon: "strikethrough", label: "Strikethrough", command: (state) => toggleInline(state, "strikethrough"), richAction: "strikethrough" },
     { icon: "code", label: "Inline code", command: (state) => toggleInline(state, "code"), richAction: "code" },
-    { icon: "link", label: "Link (Cmd+K)", command: toggleLink, richAction: null },
+    { icon: "link", label: `Link (${localKeys("CmdOrCtrl+K")})`, command: toggleLink, richAction: null },
   ];
 
   const blockButtons: FormatButton[] = [

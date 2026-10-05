@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { tick } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -76,7 +77,8 @@
   const operation = $derived((status?.op?.kind ?? "none") !== "none");
   const canAmend = $derived(!unborn && conflictCount === 0 && !operation && !loadingMessage);
   const sync = $derived(syncPlan(status?.head));
-  const commitHint = $derived(multiRepo ? `Commit to ${repo.name} (Cmd+Enter)` : "Commit (Cmd+Enter)");
+  const commitKeys = localKeys("CmdOrCtrl+Enter");
+  const commitHint = $derived(multiRepo ? `Commit to ${repo.name} (${commitKeys})` : `Commit (${commitKeys})`);
 
   function choiceLabel(choice: RepoSection): string {
     const name = showRelativePath(choice.repo) ? `${choice.repo.name} (${choice.repo.relativePath})` : choice.repo.name;

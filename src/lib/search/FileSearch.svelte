@@ -43,7 +43,7 @@
   import SearchTabs from "./SearchTabs.svelte";
   import { nothingToReplace, replaceConfirm, replaceSummary } from "./replaceModel";
   import { isReplaceKey, stepTab, tabForKey, type SearchTab, usesSymbols } from "./searchTabs";
-  import { windowKeys } from "$lib/commands/commandRuntime";
+  import { windowKeys, withCommandKeys } from "$lib/commands/commandRuntime";
   import SymbolResult from "./SymbolResult.svelte";
   import { symbolRows, type SymbolRow } from "./symbolSearchModel";
   import TextResult from "./TextResult.svelte";
@@ -681,7 +681,7 @@
       <button
         type="button"
         class="chevron"
-        title={replaceOpen ? "Hide Replace Field" : "Show Replace Field (Shift+Cmd+R)"}
+        title={replaceOpen ? "Hide Replace Field" : withCommandKeys("Show Replace Field", "edit.replaceInFiles")}
         aria-label={replaceOpen ? "Hide Replace Field" : "Show Replace Field"}
         aria-expanded={replaceOpen}
         onmousedown={(event) => event.preventDefault()}

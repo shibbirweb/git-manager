@@ -3,6 +3,7 @@
   findPanel.svelte.ts, which owns the state and the actions.
 -->
 <script lang="ts">
+  import { localKeys, withCommandKeys } from "$lib/commands/commandRuntime";
   import Icon from "$lib/ui/Icon.svelte";
   import SearchToggles from "$lib/ui/SearchToggles.svelte";
   import { type FindBarActions, type FindBarState, type FindField, focusLater } from "./findPanel.svelte";
@@ -88,7 +89,7 @@
       <button
         type="button"
         class="icon select-all"
-        title="Select All Occurrences (Ctrl+Cmd+G)"
+        title={withCommandKeys("Select All Occurrences", "edit.selectAllOccurrences")}
         aria-label="Select All Occurrences"
         disabled={!searchable}
         onmousedown={keepFocus}
@@ -135,7 +136,7 @@
         <button
           type="button"
           class="text"
-          title="Replace All (Shift+Cmd+Enter)"
+          title="Replace All ({localKeys('CmdOrCtrl+Shift+Enter')})"
           disabled={!searchable}
           onmousedown={keepFocus}
           onclick={() => actions.replaceAll()}>Replace All</button
