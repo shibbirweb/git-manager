@@ -161,3 +161,6 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   because its label also holds the Browse button.
 - Terminal links and letter case: printed `\` paths link on Windows (`fromNativePath` in
   `findPathCandidates`), the path helpers ignore case on Windows, and `real_files` gives each link its real path.
+- Checked on the PC (0e8d402): UI Automation names the Clone dialog field "Clone into folder"; a real
+  Ctrl+click on a printed `c:\users\...\HELLO.txt:1` in the terminal opened one tab, `.../hello.txt`, under its
+  real name.
