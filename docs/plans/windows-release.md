@@ -131,3 +131,6 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   accepts it, so the app says "Not a git repository" there. Decision: turn off libgit2's owner check on Windows
   (git keeps its own check for every write). Windows PowerShell 5.1 drops `"` inside arguments: `--args` JSON needs `\"`.
 - OS version: `os_info` reads `ver` on Windows ("11 build 26200.8037").
+- Admin-owned repositories: `git::repo::configure_libgit2` turns off libgit2's owner check on
+  Windows at start. Check on the PC with the next installer: make the test repository Administrators-owned again
+  and call `git_status` through the CLI.

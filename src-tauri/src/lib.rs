@@ -46,6 +46,7 @@ pub fn run() {
         std::process::exit(mcp::cli::run(&args[1..]));
     }
     let launch = LaunchMode::from_args(&args);
+    git::repo::configure_libgit2();
 
     let builder = tauri::Builder::default();
     // Registered first, as the plugin asks. Never for the merge tool: `git mergetool` starts it next to

@@ -35,6 +35,7 @@ fn sandbox() -> &'static Sandbox {
         std::env::set_var("XDG_CONFIG_HOME", home.join(".config"));
         std::env::set_var("GIT_CONFIG_NOSYSTEM", "1");
         std::env::set_var("GIT_CONFIG_GLOBAL", &global_config);
+        crate::git::repo::configure_libgit2();
         std::env::set_var("LC_ALL", "C");
         std::env::set_var("LANG", "C");
         Sandbox { home, global_config }
