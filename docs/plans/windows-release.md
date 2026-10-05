@@ -152,3 +152,10 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 - Shortcut labels: `formatKeyWords`, `commandKeys`, `withCommandKeys` and `localKeys` replace every
   typed shortcut in the UI (empty editor area, activity bars, panel buttons, Search Everywhere tabs, merge tool,
   commit box, find bar, Markdown toolbar, Settings hints); the terminal hint has its own Windows wording.
+- Checked on the PC (2888344): the shortcut labels say Ctrl (empty editor area, every tooltip on screen, no "Cmd").
+  No console window during 12 git operations through the app, fetch and a network clone included: a window
+  watcher in the desktop session polled 2792 times in 45 s and caught nothing, and caught a deliberate `cmd`
+  window at once. Cancel through UI Automation: 5 git processes (git-remote-https included) while cloning Linux,
+  none 4 s after Cancel, and the half-cloned folder removed.
+- Small finding: the Clone dialog's folder field is named "Clone into folder Browse..." for screen readers,
+  because its label also holds the Browse button.
