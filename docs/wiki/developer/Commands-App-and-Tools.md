@@ -28,7 +28,7 @@ The file operations take absolute paths and return them in the same form. Each p
 | `config_dir` | `configDir()` | `string` | app | the `~/.gitmanager` path |
 | `memory_usage` | `memoryUsage()` | `MemoryUsage` | app | memory of the app and its web view helpers |
 | `clear_cache` | `clearCache(stash)` | `void` | app | Clear Cache: keeps the terminals in `stash` running, then restarts the window's web content process ([How Clear Cache Works](How-Clear-Cache-Works.md)) |
-| `os_info` | `osInfo()` | `OsInfo` | app | OS name and version for bug reports (`sw_vers`, os-release) |
+| `os_info` | `osInfo()` | `OsInfo` | app | OS name and version for bug reports (`sw_vers`, os-release, `ver`) |
 | `memory_log_configure` | `memoryLogConfigure(enabled, intervalMs, thresholdMb)` | `MemoryLogStatus` | app | starts or stops the debug memory log in `~/.gitmanager/logs/memory.log` |
 | `memory_log_event` | `memoryLogEvent(label)` | `void` | app | a UI event (tab, view, scroll start or stop) for the next log line |
 

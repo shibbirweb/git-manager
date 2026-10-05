@@ -106,7 +106,7 @@ pub fn config_dir() -> AppResult<String> {
 pub struct OsInfo {
     /// "macOS", "Windows", or the Linux distribution name.
     pub name: String,
-    /// "15.4.1", "24.04"; None when it could not be read.
+    /// "15.4.1", "24.04", "11 build 26100.4652"; None when it could not be read.
     pub version: Option<String>,
 }
 
@@ -133,7 +133,12 @@ fn current_os() -> OsInfo {
         ),
         "windows" => OsInfo {
             name: "Windows".to_string(),
-            version: None,
+            version: crate::child_process::hide_console(&mut std::process::Command::new("cmd"))
+                .args(["/d", "/c", "ver"])
+                .output()
+                .ok()
+                .filter(|output| output.status.success())
+                .and_then(|output| parse_windows_ver(&String::from_utf8_lossy(&output.stdout))),
         },
         other => OsInfo {
             name: other.to_string(),
@@ -148,6 +153,24 @@ fn parse_product_version(output: &str) -> Option<String> {
     let valid = !version.is_empty()
         && version.split('.').all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()));
     valid.then(|| version.to_string())
+}
+
+/// `ver` output, e.g. "Microsoft Windows [Version 10.0.26100.4652]", as "11 build 26100.4652".
+/// Windows 11 still reports 10.0; its builds start at 22000.
+fn parse_windows_ver(output: &str) -> Option<String> {
+    let start = output.find("[Version ")? + "[Version ".len();
+    let end = start + output[start..].find(']')?;
+    let parts: Vec<&str> = output[start..end].trim().split('.').collect();
+    if parts.len() < 3 || parts.iter().any(|part| part.is_empty() || !part.chars().all(|c| c.is_ascii_digit())) {
+        return None;
+    }
+    let build: u32 = parts[2].parse().ok()?;
+    let release = match (parts[0], parts[1]) {
+        ("10", "0") if build >= 22000 => "11",
+        ("10", "0") => "10",
+        (major, minor) => return Some(format!("{major}.{minor} build {}", parts[2..].join("."))),
+    };
+    Some(format!("{release} build {}", parts[2..].join(".")))
 }
 
 /// NAME and VERSION_ID from `/etc/os-release`, falling back to plain "Linux".
@@ -167,6 +190,18 @@ fn parse_os_release(text: &str) -> OsInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_the_windows_version() {
+        assert_eq!(
+            parse_windows_ver("\r\nMicrosoft Windows [Version 10.0.26100.4652]\r\n").as_deref(),
+            Some("11 build 26100.4652")
+        );
+        assert_eq!(parse_windows_ver("Microsoft Windows [Version 10.0.19045.5737]").as_deref(), Some("10 build 19045.5737"));
+        assert_eq!(parse_windows_ver("Microsoft Windows [Version 6.3.9600]").as_deref(), Some("6.3 build 9600"));
+        assert_eq!(parse_windows_ver("Microsoft Windows"), None);
+        assert_eq!(parse_windows_ver("[Version 10.0.x]"), None);
+    }
 
     #[test]
     fn reads_the_macos_product_version() {

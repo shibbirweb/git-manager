@@ -124,3 +124,10 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 - Installer from CI: `windows-installer.yml` on every pull request builds the installer like
   `build-windows`, installs it silently, runs `git-manager-cli cli status` (must answer "not running", code 2)
   and keeps the `-setup.exe` as an artifact for 14 days. Use it for the manual test.
+- Manual test over SSH (2026-10-05, PC on 10.10.1.108): the installed app, `git-manager cli` (status, tools, call),
+  a second launch (opens the folder in the running app, still one process) and stage plus commit through the CLI
+  all work; paths come back as `C:/...`. Cancel can only be pressed in the app (CI covers it).
+  Found: libgit2 refuses a repository owned by the Administrators group (made in an elevated terminal) while git
+  accepts it, so the app says "Not a git repository" there. Decision: turn off libgit2's owner check on Windows
+  (git keeps its own check for every write). Windows PowerShell 5.1 drops `"` inside arguments: `--args` JSON needs `\"`.
+- OS version: `os_info` reads `ver` on Windows ("11 build 26200.8037").
