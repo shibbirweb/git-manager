@@ -52,6 +52,34 @@ Every feature has its own page with screenshots in the [wiki](https://github.com
 - **MCP server and command line tool** (off by default, local only) so AI tools such as Claude Code can use the app.
 - **Works as `git mergetool`** (see below).
 
+## Platforms
+
+Git Manager runs on macOS and Windows with the same features; Linux is planned. Each platform is built and tested on every pull request. Where they differ:
+
+| | macOS | Windows | Linux |
+| --- | --- | --- | --- |
+| Download | Universal `.dmg` (Apple Silicon and Intel) | `-setup.exe` for 64-bit Windows 10 and 11, installs for your account without admin rights | Planned |
+| First launch | Not signed yet: right-click the app, Open | Not signed yet: SmartScreen, More info, Run anyway | |
+| Web view | WebKit (WKWebView) | Microsoft Edge WebView2 (the installer adds it if missing) | |
+| Menu bar | Top of the screen, with a Git Manager menu | Inside the window; Settings and Exit in File, About in Help | |
+| Shortcuts | Cmd and Option | Ctrl and Alt; Navigation Bar is Alt+Home, tabs switch with Ctrl+PageDown and Ctrl+PageUp | |
+| Git menu keys (Commit, Update Project, Show Log) | Cmd+K, Cmd+T, Cmd+9 | None: Ctrl+K and Ctrl+T belong to the shell | |
+| Terminal shells | Your login shell and those in `/etc/shells` | PowerShell 7, Windows PowerShell, Command Prompt and Git Bash | |
+| Terminal copy and paste | Cmd+C, Cmd+V | Ctrl+Shift+C, Ctrl+Shift+V | |
+| Tools found on PATH | Read from your login shell (`~/.zprofile`) | The PATH Windows gives the app | |
+| Git sign-in | Your git setup (macOS keychain, SSH agent) | Your git setup (Git Credential Manager, SSH agent) | |
+| GitHub token | Keychain | Credential Manager | |
+| Deleted files | Trash | Recycle Bin | |
+| Settings folder | `~/.gitmanager` | `C:\Users\<you>\.gitmanager` | |
+| Command line tool | `git-manager` in the app, linked into `~/.local/bin` | `git-manager-cli.exe` next to the app, `git-manager.cmd` in WindowsApps | |
+| Memory readout | Activity Monitor's Memory (physical footprint) | Task Manager's Memory (private working set) | |
+| Clear Cache | Yes | Not yet (macOS only for now) | |
+| Option as Meta in the terminal, Enter Full Screen | Yes | No | |
+| PDF preview | Safari's built-in viewer | Microsoft Edge's built-in viewer | |
+| Opening the app again | Brings the running app forward | Hands its folder to the running app | |
+
+The user guide covers each difference where it matters ([Getting Started](https://github.com/shibbirweb/git-manager/wiki/Getting-Started) has the install steps); how the code handles them is in [Windows Support](https://github.com/shibbirweb/git-manager/wiki/Windows-Support).
+
 ## How it works
 
 ```
