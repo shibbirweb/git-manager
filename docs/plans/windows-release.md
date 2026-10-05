@@ -143,3 +143,9 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
 - Memory readout on Windows: `memory.rs` walks the app's WebView2 processes and counts each
   private working set (Task Manager's Memory), labels from `--type=`; the status bar hides Clear Cache outside
   macOS and names Task Manager and WebView2 in its popup. Check on the PC with `get_memory_usage`.
+- Checked on the PC with the `6cb3403` installer: the memory readout matches Windows' private working set counter
+  for all 7 processes to 0.1 MB (6 WebView2 helpers of the app, none of the other 12 on the PC); the screenshot
+  is the whole window at 1402x872; `--args-file` works from stdin and a file in Windows PowerShell 5.1.
+  Clippy on Windows wanted `as_chunks::<4>()` in the screenshot's pixel loop (fixed).
+- Found in the screenshot: about 40 UI texts write shortcuts the macOS way (`Shift+Cmd+G`, `Cmd+P`, `Option+Cmd+B`)
+  on Windows too: the empty editor area, tooltips, panel buttons and Settings hints.

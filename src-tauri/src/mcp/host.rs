@@ -233,8 +233,8 @@ mod screenshot {
     /// GDI's BGRA with an alpha that is often 0, as opaque RGBA.
     fn to_rgba(bgra: &[u8]) -> Vec<u8> {
         let mut rgba = Vec::with_capacity(bgra.len());
-        for pixel in bgra.chunks_exact(4) {
-            rgba.extend_from_slice(&[pixel[2], pixel[1], pixel[0], 255]);
+        for [blue, green, red, _] in bgra.as_chunks::<4>().0 {
+            rgba.extend_from_slice(&[*red, *green, *blue, 255]);
         }
         rgba
     }
