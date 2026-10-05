@@ -138,3 +138,5 @@ Estimate: about two weeks of focused work for a usable beta, plus manual testing
   in the folder), Ctrl+C in the terminal, Scripts panel and npm.cmd in the Run tab, clone_repository, search,
   menu shortcuts (47 Ctrl, no Cmd) all pass. Windows PowerShell 5.1 splits JSON arguments with spaces.
 - `--args-file <file>` and `--args-file -` for `cli call`, so JSON never passes through the shell.
+- Windows screenshot: `PrintWindow` with `PW_RENDERFULLCONTENT`, cropped to the DWM frame,
+  PNG from `png_encode.rs` (flate2). Check on the PC with `git-manager cli screenshot`.

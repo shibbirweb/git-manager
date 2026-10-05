@@ -67,7 +67,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 | `src-tauri/src/mcp/http.rs` | Listener, connection limits, `refusal` |
 | `src-tauri/src/mcp/protocol.rs` | JSON-RPC, `initialize`, `tools/list`, `tools/call` |
 | `src-tauri/src/mcp/registry.rs` | Backend plus UI tools with their on or off state |
-| `src-tauri/src/mcp/bridge.rs`, `host.rs` | UI calls through the window, events, the macOS screenshot (`screencapture -l`) |
+| `src-tauri/src/mcp/bridge.rs`, `host.rs` | UI calls through the window, events, the screenshot |
 | `src-tauri/src/mcp/paths.rs`, `token.rs`, `activity.rs` | Path safety, `mcp.json`, the last 50 calls |
 | `src-tauri/cli/`, `mcp/install.rs` | The command line tool and its link |
 | `src-tauri/src/mcp/tools/` | The 57 backend tools, by area, and the recorder |

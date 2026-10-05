@@ -16,6 +16,8 @@ mod merge;
 mod run_process;
 mod node_versions;
 mod paths;
+#[cfg(any(windows, test))]
+mod png_encode;
 mod preview_scheme;
 mod scripts;
 mod shelf;

@@ -73,7 +73,16 @@ keyring = { version = "3.6.3", features = ["windows-native"] }
 # Windows starts a new copy of the app for every launch; this hands its arguments to the running one.
 tauri-plugin-single-instance = "2"
 # Cancel stops git and everything it started through a Job Object (git/cancel.rs); already in the tree.
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects"] }
+# The MCP screenshot draws the window with PrintWindow and crops it to its DWM frame (mcp/host.rs).
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    "Win32_Graphics_Gdi",
+    "Win32_Graphics_Dwm",
+    "Win32_Storage_Xps",
+    "Win32_UI_WindowsAndMessaging",
+] }
 
 [dev-dependencies]
 tempfile = "3.27.0"
