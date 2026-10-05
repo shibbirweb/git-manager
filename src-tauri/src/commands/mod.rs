@@ -99,7 +99,8 @@ pub fn safe_join(repo_path: &str, file_path: &str) -> AppResult<PathBuf> {
     let escapes = relative.is_absolute()
         || relative
             .components()
-            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_)));
+            // RootDir too: on Windows `\etc` is not absolute, yet joining it lands at the drive root.
+            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_) | Component::RootDir));
     if escapes || file_path.is_empty() {
         return Err(AppError::invalid(format!("Invalid path: {file_path}")));
     }

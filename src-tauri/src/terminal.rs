@@ -21,6 +21,7 @@ const READ_CHUNK_BYTES: usize = 16 * 1024;
 /// How long the exit report waits for the last output once the shell has exited.
 const OUTPUT_GRACE: Duration = Duration::from_millis(500);
 /// Time a closed shell gets to handle SIGHUP before it is killed.
+#[cfg(unix)]
 const KILL_GRACE: Duration = Duration::from_secs(2);
 /// The same at app exit, kept short so quitting stays fast.
 const SHUTDOWN_GRACE: Duration = Duration::from_millis(300);
@@ -171,7 +172,7 @@ fn executable_real_path(shell_path: &str) -> Option<PathBuf> {
     if !metadata.is_file() || metadata.permissions().mode() & 0o111 == 0 {
         return None;
     }
-    std::fs::canonicalize(shell_path).ok()
+    crate::paths::real(shell_path).ok()
 }
 
 /// One profile per real file, in /etc/shells order with the login shell first.
@@ -222,14 +223,6 @@ fn pick_shell(profiles: Vec<ShellProfile>, shell_id: Option<&str>) -> ShellProfi
         .or_else(|| profiles.iter().position(|profile| profile.is_default))
         .unwrap_or(0);
     profiles.into_iter().nth(index).unwrap_or_else(fallback_shell)
-}
-
-fn home_folder() -> Option<PathBuf> {
-    ["HOME", "USERPROFILE"]
-        .iter()
-        .filter_map(std::env::var_os)
-        .find(|home| !home.is_empty())
-        .map(PathBuf::from)
 }
 
 /// The requested folder when it exists, else the home folder.
@@ -608,7 +601,7 @@ impl TerminalRegistry {
         drop(process);
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn close_all(&self) {
         let processes: Vec<PtyProcess> = self.inner.terminals().drain().map(|(_, process)| process).collect();
         self.inner.owners().clear();
@@ -685,12 +678,12 @@ impl TerminalRegistry {
         }
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn is_running(&self, terminal_id: u32) -> bool {
         self.inner.terminals().contains_key(&terminal_id)
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn owner_count(&self) -> usize {
         self.inner.owners().len()
     }
@@ -707,7 +700,7 @@ pub fn start_terminal(
     on_exit: impl FnOnce(u32, Option<i32>) + Send + 'static,
 ) -> AppResult<TerminalInfo> {
     let shell = pick_shell(shell_profiles(), shell_id);
-    let cwd = resolve_cwd(cwd, home_folder());
+    let cwd = resolve_cwd(cwd, crate::config::home_dir().ok());
     let options = SpawnOptions {
         program: shell.path.clone(),
         args: shell.args.clone(),
@@ -721,7 +714,7 @@ pub fn start_terminal(
         terminal_id,
         pid,
         shell,
-        cwd: cwd.to_string_lossy().into_owned(),
+        cwd: crate::paths::to_ui(&cwd),
     })
 }
 
@@ -777,6 +770,7 @@ mod tests {
         use std::time::{Duration, Instant};
 
         use super::super::*;
+        use crate::paths::RealPath;
 
         const WAIT: Duration = Duration::from_secs(10);
 
@@ -926,7 +920,7 @@ mod tests {
         #[test]
         fn shell_starts_in_the_given_folder() {
             let folder = tempfile::TempDir::new().unwrap();
-            let real_folder = folder.path().canonicalize().unwrap();
+            let real_folder = folder.path().real_path().unwrap();
             let (on_output, collected) = collector();
             let (exit_sender, exit_receiver) = mpsc::channel();
             let _process = spawn_pty(&sh("pwd -P", folder.path().to_path_buf()), on_output, move |exit_code| {

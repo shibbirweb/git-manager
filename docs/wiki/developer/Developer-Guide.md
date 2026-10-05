@@ -81,6 +81,9 @@ Before you say a change is done, run the checks listed in [Testing](Testing.md#w
 | [Releases and CI](Releases-and-CI.md) | CI, the beta and stable release workflows and the wiki deploy. |
 | [Versioning and Changelog](Versioning-and-Changelog.md) | Where the version lives, `scripts/version.ts` and the changelog rules. |
 | [Platforms and Signing](Platforms-and-Signing.md) | The universal macOS build, signing, and the Windows and Linux plan. |
+| [Windows Support](Windows-Support.md) | Console windows, the home folder, PATH and paths on Windows. |
+| [Windows Bugs We Fixed](Windows-Bugs-We-Fixed.md) | Bugs the Windows CI job found, and the fixes. |
+| [Windows MCP and CLI](Windows-MCP-and-CLI.md) | The console program, the screenshot and quoting on Windows. |
 | [Docs and Screenshots](Docs-and-Screenshots.md) | How this wiki is checked, how screenshots are taken, and recipes for keeping docs in sync. |
 | [Contributing](Contributing.md) | Code style, commits, pull requests and the docs checklist. |
 

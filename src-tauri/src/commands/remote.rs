@@ -1,3 +1,4 @@
+use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use git2::{Repository, Sort};
@@ -445,7 +446,7 @@ fn clone_into(
             cli::run_streaming(root, &args, on_progress)?;
         }
     }
-    let cloned = target.canonicalize().unwrap_or(target);
+    let cloned = target.real_path().unwrap_or(target);
     Ok(strip_trailing_slash(&cloned))
 }
 

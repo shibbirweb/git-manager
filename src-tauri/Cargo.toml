@@ -8,6 +8,10 @@ repository = "https://github.com/shibbirweb/git-manager"
 license = "MIT"
 edition = "2021"
 
+# The command line tool is its own crate (cli/), so Windows can ship it as a console program.
+[workspace]
+members = ["cli"]
+
 [lib]
 # The `_lib` suffix keeps the lib name distinct from the bin name (cargo#8519).
 name = "git_manager_lib"
@@ -17,6 +21,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+git-manager-cli = { path = "cli" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }
@@ -45,6 +50,8 @@ httparse = "1"
 # The MCP token's random bytes and the screenshot's base64: both already in the tree through tauri.
 getrandom = "0.3"
 base64 = "0.22"
+# Real paths without the `\\?\` prefix on Windows (see paths.rs); already in the tree through tauri.
+dunce = "1.0.5"
 # Local History: snapshots are zlib-compressed (flate2 and miniz_oxide are already in the tree through tauri's png).
 flate2 = "1.1"
 # Files panel: Move to Trash (NSFileManager on macOS, the Recycle Bin on Windows, freedesktop trash on Linux).
@@ -63,6 +70,24 @@ objc2 = "0.6"
 
 [target.'cfg(windows)'.dependencies]
 keyring = { version = "3.6.3", features = ["windows-native"] }
+# Windows starts a new copy of the app for every launch; this hands its arguments to the running one.
+tauri-plugin-single-instance = "2"
+# Cancel stops git and everything it started through a Job Object (git/cancel.rs); already in the tree.
+# The MCP screenshot draws the window with PrintWindow and crops it to its DWM frame (mcp/host.rs);
+# the memory readout walks the WebView2 processes and reads their private working set (memory.rs).
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    "Win32_Graphics_Gdi",
+    "Win32_Graphics_Dwm",
+    "Win32_Storage_Xps",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+    "Wdk_System_Threading",
+] }
 
 [dev-dependencies]
 tempfile = "3.27.0"

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { tick, untrack } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -127,7 +128,7 @@
         <Icon name="refresh" size={13} />
       </button>
     {/if}
-    <button class="icon-btn small" onclick={() => settings.setLeftPanel(null)} title="Hide (Option+Cmd+B)" aria-label="Hide changes">
+    <button class="icon-btn small" onclick={() => settings.setLeftPanel(null)} title={withCommandKeys("Hide", "view.sidebar")} aria-label="Hide changes">
       <Icon name="x" size={14} />
     </button>
   </div>

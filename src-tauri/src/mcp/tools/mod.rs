@@ -93,7 +93,7 @@ impl ToolCtx<'_> {
     pub fn folder_strings(&self) -> Vec<String> {
         self.folders()
             .iter()
-            .map(|folder| folder.to_string_lossy().into_owned())
+            .map(crate::paths::to_ui)
             .collect()
     }
 
@@ -105,7 +105,7 @@ impl ToolCtx<'_> {
     pub fn repo(&self, args: &Args) -> Result<String, String> {
         let repo_path = args.str("repoPath")?;
         let root = paths::checked_repo(&self.folders(), repo_path)?;
-        Ok(root.to_string_lossy().into_owned())
+        Ok(crate::paths::to_ui(&root))
     }
 
     /// An absolute path argument inside the workspace.

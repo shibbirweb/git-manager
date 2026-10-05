@@ -4,11 +4,11 @@ Git Manager is built to stay light. The **Memory** item at the right of the [sta
 
 ## The readout
 
-The readout lets you see that for yourself. It shows physical memory as Activity Monitor counts it. That includes the helper processes macOS runs for the app's web view, which draws the interface.
+The readout lets you see that for yourself. It shows physical memory as Activity Monitor counts it. That includes the helper processes macOS runs for the app's web view, which draws the interface. On Windows it counts like Task Manager's Memory column, for the app and the Microsoft Edge WebView2 processes it starts, which adds the rows **WebView2 (browser)**, **Utility** and **Crash reporter**.
 
-Click **Memory** for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphics** and **Networking**, each with its size and a bar. Below them, **GPU acceleration** answers two questions. **Terminals use the GPU** says yes (and in how many terminals) or no with the reason: turned off in Settings, font ligatures on, or the GPU failed and the terminal fell back to normal drawing. **WebGL support** says whether the web view can use the GPU for that at all, and names the graphics chip. The window itself always draws with the GPU through macOS; that is the Graphics row. GPU drawing in terminals is smoother and lighter on the CPU with a lot of output. It costs about 70 MB for the first terminal, mostly in the Graphics row, and about 10 MB for each other one. Turn it off in Settings, Terminal to save that memory, if you see drawing glitches, or if you want font ligatures. Opening it measures again at once. Press Esc or click elsewhere to close it.
+Click **Memory** for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphics** and **Networking**, each with its size and a bar. Below them, **GPU acceleration** answers two questions. **Terminals use the GPU** says yes (and in how many terminals) or no with the reason: turned off in Settings, font ligatures on, or the GPU failed and the terminal fell back to normal drawing. **WebGL support** says whether the web view can use the GPU for that at all, and names the graphics chip. The window itself always draws with the GPU through the system; that is the Graphics row. GPU drawing in terminals is smoother and lighter on the CPU with a lot of output. It costs about 70 MB for the first terminal, mostly in the Graphics row, and about 10 MB for each other one. Turn it off in Settings, Terminal to save that memory, if you see drawing glitches, or if you want font ligatures. Opening it measures again at once. Press Esc or click elsewhere to close it.
 
-The number updates every few seconds while the window is visible, and stops while it is hidden. The brush button right of it is [Clear Cache](Clear-Cache.md): it gives back the memory WebKit keeps after you close files. When the app was started from a Terminal, the helpers are matched by their start time, and the breakdown says so.
+The number updates every few seconds while the window is visible, and stops while it is hidden. The brush button right of it is [Clear Cache](Clear-Cache.md): it gives back the memory WebKit keeps after you close files. It is not on Windows. When the app was started from a Terminal, the helpers are matched by their start time, and the breakdown says so.
 
 ## Settings that use more memory
 
@@ -41,7 +41,7 @@ To find out what makes memory grow, turn on **Settings, Automation, Memory log, 
 
 *Settings, Automation, Memory log, with the path of the log file.*
 
-The file is `~/.gitmanager/logs/memory.log`. **Reveal in Finder** shows it. A line looks like `2026-10-02T04:20:31.512Z total 400.0 MB (+50.0) | Web content 300.0 | ...`, with times in UTC. Past 5 MB the log starts over and keeps the previous one as `memory.log.1`. AI tools can read it with the `read_memory_log` tool (see [MCP Server and Command Line Tool](MCP-and-CLI.md)). Turn it off when you are done: off, nothing runs.
+The file is `~/.gitmanager/logs/memory.log`. **Reveal in Finder** (**Reveal in File Explorer** on Windows) shows it. A line looks like `2026-10-02T04:20:31.512Z total 400.0 MB (+50.0) | Web content 300.0 | ...`, with times in UTC. Past 5 MB the log starts over and keeps the previous one as `memory.log.1`. AI tools can read it with the `read_memory_log` tool (see [MCP Server and Command Line Tool](MCP-and-CLI.md)). Turn it off when you are done: off, nothing runs.
 
 ## Related
 

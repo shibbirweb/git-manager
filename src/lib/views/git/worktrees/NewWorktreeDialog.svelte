@@ -6,7 +6,7 @@
   import { onMount, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { baseName, joinPath } from "$lib/stores/workspacePaths";
+  import { baseName, fromNativePath, joinPath } from "$lib/stores/workspacePaths";
   import type { Refs, WorktreeBranch, WorktreeInfo } from "$lib/types";
   import { toast } from "$lib/ui/toast.svelte";
   import { repoTarget, validateBranchName } from "../../sidebar/actions";
@@ -84,7 +84,7 @@
     const chosen = await open({ directory: true, multiple: false, title: "Worktree Location", defaultPath: mainRoot });
     if (typeof chosen === "string" && chosen) {
       // The picked folder holds the new worktree folder.
-      folder = joinPath(chosen.replace(/\/+$/, ""), baseName(defaultWorktreePath(mainRoot, branchName)));
+      folder = joinPath(fromNativePath(chosen).replace(/\/+$/, ""), baseName(defaultWorktreePath(mainRoot, branchName)));
       folderEdited = true;
     }
   }
@@ -189,6 +189,7 @@
         disabled={creating}
         spellcheck="false"
         autocomplete="off"
+        aria-label="Folder"
       />
       <button type="button" class="btn" onclick={() => void browse()} disabled={creating}>Browse...</button>
     </div>

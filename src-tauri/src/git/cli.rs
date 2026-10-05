@@ -49,9 +49,13 @@ fn git_binary() -> &'static PathBuf {
 
 /// GUI apps on macOS start with a minimal PATH, which breaks hooks that need
 /// tools like node or husky. Ask the login shell once for the real PATH.
+/// Windows apps get the user's full PATH from Explorer, and there is no login shell to ask.
 pub fn user_path() -> &'static String {
     static PATH: OnceLock<String> = OnceLock::new();
     PATH.get_or_init(|| {
+        if cfg!(windows) {
+            return std::env::var_os("PATH").unwrap_or_default().to_string_lossy().into_owned();
+        }
         let fallback = {
             let current = std::env::var("PATH").unwrap_or_default();
             format!("/opt/homebrew/bin:/usr/local/bin:{current}")
@@ -92,7 +96,7 @@ pub fn user_path() -> &'static String {
 
 pub fn command(repo_path: &Path) -> Command {
     let mut command = Command::new(git_binary());
-    command
+    crate::child_process::hide_console(&mut command)
         .current_dir(repo_path)
         .env("PATH", user_path())
         // Never block on an interactive prompt the GUI cannot answer.
@@ -298,4 +302,13 @@ pub fn run_streaming_with_env(
     };
     record.finish(status.code(), output.stdout.as_bytes(), output.stderr.as_bytes());
     ensure_success(output, args)
+}
+
+#[cfg(all(test, windows))]
+mod windows_tests {
+    #[test]
+    fn git_gets_the_apps_own_path() {
+        let own = std::env::var_os("PATH").unwrap_or_default().to_string_lossy().into_owned();
+        assert_eq!(super::user_path(), &own);
+    }
 }

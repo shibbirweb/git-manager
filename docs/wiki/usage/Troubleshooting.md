@@ -17,6 +17,10 @@ xattr -dr com.apple.quarantine "/Applications/Git Manager.app"
 
 You only need to do this once per download.
 
+## Windows will not run the installer
+
+The installer is not signed yet, so Windows SmartScreen shows "Windows protected your PC". Click **More info**, then **Run anyway**. If your browser blocked the download, keep it from the browser's downloads list first.
+
 ## A repository is missing
 
 The folder scan goes six levels deep and skips folders such as `node_modules`, `vendor`, `build`, `dist`, `target` and `.venv`. It does not follow symbolic links.
@@ -36,7 +40,7 @@ Files over 4 MB and binary files are not opened in the editor. Folders with more
 
 - **"settings.json could not be read"** at the top of Settings means the file has a mistake, such as a missing comma. Git Manager uses the defaults and does not overwrite your file. Fix it and click **Try Again**, or click **Reset to Defaults**.
 - **"state.json could not be read"** means recent folders, the last session and panel sizes could not be loaded. The file is not overwritten. Fix it and click **Try Again**, or click **Reset** in that banner to start a fresh one.
-- **"Could not save settings"** usually means `~/.gitmanager` is not writable. Check its permissions.
+- **"Could not save settings"** usually means `~/.gitmanager` (`C:\Users\<you>\.gitmanager` on Windows) is not writable. Check its permissions.
 
 See [Settings](Settings.md).
 
@@ -52,7 +56,7 @@ Check the command git uses:
 git config --global --get mergetool.gitmanager.cmd
 ```
 
-The path must point to `Contents/MacOS/git-manager` inside the app. See [Git Mergetool](Git-Mergetool.md).
+The path must point to `Contents/MacOS/git-manager` inside the app on a Mac, or to `git-manager.exe` in `AppData/Local/Git Manager` on Windows. See [Git Mergetool](Git-Mergetool.md).
 
 ## An AI tool or git-manager cannot connect
 
@@ -62,18 +66,18 @@ See [MCP Server and Command Line Tool](MCP-and-CLI.md) for the setup. Common mes
 - **"The command line tool is turned off in Git Manager settings"** or **"The MCP server is turned off..."**: each kind of client needs its own switch.
 - **"Missing or wrong bearer token"**: the token changed, for example after **New Token**. Copy the connect command again.
 - The **Status** line says the port is in use: another program has it. Pick another **Port**, then copy the connect command again.
-- **`git-manager: command not found`**: click **Install in ~/.local/bin**, add the line Settings shows to `~/.zshrc`, and open a new terminal.
+- **`git-manager: command not found`**: click **Install in ~/.local/bin** (**Install** on Windows), add the line Settings shows to `~/.zshrc` on a Mac, and open a new terminal.
 - **"This tool is turned off in Git Manager (Help > Available MCP Tools)."**: turn it on there.
 - **"Not inside an open workspace folder"**: tools only reach the folders open in the app. Open that folder first.
 - A screenshot fails: allow Git Manager in **System Settings, Privacy and Security, Screen Recording**.
 
 ## Memory keeps growing
 
-Turn on **Log memory changes** in Settings, Automation, Memory log, do what makes it grow, then turn it off. Attach `~/.gitmanager/logs/memory.log` (**Reveal in Finder** shows it) to your bug report: it shows each change next to what was on screen. See [Status Bar and Help](Status-Bar-and-Help.md).
+Turn on **Log memory changes** in Settings, Automation, Memory log, do what makes it grow, then turn it off. Attach `~/.gitmanager/logs/memory.log` (**Reveal in Finder**, or **Reveal in File Explorer** on Windows, shows it) to your bug report: it shows each change next to what was on screen. See [Status Bar and Help](Status-Bar-and-Help.md).
 
 ## The memory number looks different
 
-When started from a Terminal, macOS counts the app's helper processes differently, so they are matched by start time and the number is approximate.
+When started from a Terminal, macOS counts the app's helper processes differently, so they are matched by start time and the number is approximate. On Windows the number is Task Manager's Memory column (the private working set) for the app and its WebView2 processes.
 
 ## Related
 

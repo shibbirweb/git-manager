@@ -12,7 +12,7 @@ Install git, for example with `xcode-select --install` (Apple's command line too
 
 PATH is the list of folders where programs are looked up. Apps started from the Dock get a very short PATH, so tools like `node`, `npx` or `husky` used by hooks go missing. Git Manager asks your login shell for the real PATH the first time it runs git. A login shell is your shell started the way it is when you log in, reading your profile files.
 
-A login shell does not read `~/.zshrc`. If you add tools to your PATH only there (common with nvm), move those lines to `~/.zprofile`, then quit and reopen Git Manager.
+A login shell does not read `~/.zshrc`. If you add tools to your PATH only there (common with nvm), move those lines to `~/.zprofile`, then quit and reopen Git Manager. On Windows, Git Manager uses the PATH Windows gives it; after installing a tool, quit and reopen Git Manager.
 
 ## Push, pull or fetch fails to sign in
 
@@ -20,6 +20,7 @@ Git Manager never shows a password prompt, because it cannot answer one. You may
 
 - **HTTPS**: use a credential helper, for example `git config --global credential.helper osxkeychain`, then push once in the Terminal so the keychain stores your token. For GitHub, `gh auth login` from the GitHub CLI sets this up for you.
 - **SSH**: add your key to the agent and keychain, for example `ssh-add --apple-use-keychain ~/.ssh/id_ed25519`.
+- **On Windows**, Git for Windows comes with Git Credential Manager: push once in a terminal and sign in when it asks, and it remembers you.
 
 Test in the Terminal with `git fetch`. If it works there without asking anything, it works in Git Manager too.
 

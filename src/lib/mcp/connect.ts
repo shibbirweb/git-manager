@@ -32,26 +32,39 @@ export function maskToken(token: string): string {
   return "•".repeat(Math.min(token.length, 24));
 }
 
+function onWindows(): boolean {
+  return typeof navigator !== "undefined" && /Windows/.test(navigator.userAgent);
+}
+
+/** A program path the shell can run: quoted for zsh, and for PowerShell with its `&` call operator on Windows. */
+function programText(programPath: string, windows: boolean): string {
+  return windows ? `& "${programPath}"` : shellQuote(programPath);
+}
+
 /**
  * How to start the command line tool: `git-manager cli` once it is installed, else the full
- * binary path (quoted for the shell, since the app may live in a folder with spaces).
+ * program path (quoted for the shell, since the app may live in a folder with spaces).
  */
-export function cliPrefix(status: Pick<McpStatus, "cliCommand" | "cliInstalledPath" | "cliOnPath">): string {
+export function cliPrefix(
+  status: Pick<McpStatus, "cliCommand" | "cliInstalledPath" | "cliOnPath">,
+  windows = onWindows(),
+): string {
   if (status.cliInstalledPath && status.cliOnPath) {
     return "git-manager cli";
   }
   if (status.cliInstalledPath) {
-    return `${shellQuote(status.cliInstalledPath)} cli`;
+    return `${programText(status.cliInstalledPath, windows)} cli`;
   }
   const binary = status.cliCommand.replace(/\s+cli$/, "");
-  return binary ? `${shellQuote(binary)} cli` : "git-manager cli";
+  return binary ? `${programText(binary, windows)} cli` : "git-manager cli";
 }
 
-export function cliExamples(prefix: string): { command: string; hint: string }[] {
+export function cliExamples(prefix: string, windows = onWindows()): { command: string; hint: string }[] {
+  const screenshotPath = windows ? "$HOME\\Desktop\\gm.png" : "~/Desktop/gm.png";
   return [
     { command: `${prefix} status`, hint: "Is the app running and the server on?" },
     { command: `${prefix} tools`, hint: "Every tool that is on, with its arguments." },
     { command: `${prefix} call get_app_state`, hint: "Call one tool; arguments go as name=value." },
-    { command: `${prefix} screenshot ~/Desktop/gm.png`, hint: "Save a picture of the window." },
+    { command: `${prefix} screenshot ${screenshotPath}`, hint: "Save a picture of the window." },
   ];
 }

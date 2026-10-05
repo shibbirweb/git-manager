@@ -60,7 +60,7 @@ fn roots(ctx: &ToolCtx, args: &Args) -> Result<Vec<String>, String> {
         if !folder.is_dir() {
             return Err("folderPath is not a folder".to_string());
         }
-        return Ok(vec![folder.to_string_lossy().into_owned()]);
+        return Ok(vec![crate::paths::to_ui(&folder)]);
     }
     let folders = ctx.folder_strings();
     if folders.is_empty() {

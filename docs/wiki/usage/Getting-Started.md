@@ -1,15 +1,28 @@
 # Getting Started
 
-Git Manager is a small, fast Git app for macOS. It shows what changed in your projects, lets you commit, switch branches and sync with a server, and has a friendly three pane tool for fixing merge conflicts.
+Git Manager is a small, fast Git app for macOS and Windows. It shows what changed in your projects, lets you commit, switch branches and sync with a server, and has a friendly three pane tool for fixing merge conflicts.
 
 ## Install
 
-1. Open the [Releases page](https://github.com/shibbirweb/git-manager/releases) on GitHub.
-2. Under the newest release, download the `.dmg` file. It works on both Apple Silicon and Intel Macs.
-3. Open the `.dmg` and drag **Git Manager** into your **Applications** folder.
-4. The first time only: builds are not signed by Apple yet, so macOS warns about an "unidentified developer". Right-click (or Control-click) the app in Applications and choose **Open**, then **Open** again in the warning. After that it opens normally. If macOS still refuses, see [Troubleshooting](Troubleshooting.md).
+Open the [Releases page](https://github.com/shibbirweb/git-manager/releases) on GitHub and look under the newest release.
 
-Git Manager uses the `git` already installed on your Mac for every change it makes, so your hooks, passwords and signing keys work the same as in the Terminal. If you have never used git on this Mac, install it first (for example with `xcode-select --install`).
+### On a Mac
+
+1. Download the `.dmg` file. It works on both Apple Silicon and Intel Macs.
+2. Open the `.dmg` and drag **Git Manager** into your **Applications** folder.
+3. The first time only: builds are not signed by Apple yet, so macOS warns about an "unidentified developer". Right-click (or Control-click) the app in Applications and choose **Open**, then **Open** again in the warning. After that it opens normally. If macOS still refuses, see [Troubleshooting](Troubleshooting.md).
+
+### On Windows
+
+1. Download the file that ends in `-setup.exe`. It is for 64-bit Windows 10 and 11.
+2. Run it. It installs Git Manager for your account only, so it needs no administrator rights, and adds it to the Start menu.
+3. The first time only: the installer is not signed yet, so Windows SmartScreen says "Windows protected your PC". Click **More info**, then **Run anyway**.
+
+Git Manager draws its window with Microsoft Edge WebView2, which Windows 10 and 11 already have. If it is missing, the installer downloads it.
+
+### Git itself
+
+Git Manager uses the `git` already installed on your computer for every change it makes, so your hooks, passwords and signing keys work the same as in a terminal. If you have never used git on this computer, install it first: on a Mac with `xcode-select --install`, on Windows with [Git for Windows](https://git-scm.com/download/win).
 
 ## First launch
 
@@ -35,7 +48,7 @@ Next time you start the app, it reopens the folders you had open when you quit. 
 
 From top to bottom and left to right:
 
-- **Menu bar** (at the top of the screen, as in every Mac app). Git Manager, File, Edit, View, Code, Git, Window and Help. The **Git** menu holds commit, push, pull, fetch, merge, rebase, stash and the other git actions. See [Menus](Menus.md) and [Git Menu](Git-Menu.md). Fetch, pull, push and stash are also on each repository row in Changes (see [Repository Actions](Repository-Actions.md)).
+- **Menu bar** (at the top of the screen on a Mac, inside the window on Windows). Git Manager, File, Edit, View, Code, Git, Window and Help. The **Git** menu holds commit, push, pull, fetch, merge, rebase, stash and the other git actions. See [Menus](Menus.md) and [Git Menu](Git-Menu.md). Fetch, pull, push and stash are also on each repository row in Changes (see [Repository Actions](Repository-Actions.md)).
 - **Header** (the top bar of the window).
   - On the left: Back and Forward arrows, then the workspace name (click it for the folder menu).
   - Then the active repository and the number of repositories found. It shows when the workspace holds more than one repository, or when the repository is not the folder itself.

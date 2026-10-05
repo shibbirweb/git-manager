@@ -25,7 +25,7 @@ The bugs we found in the status bar and the Help links, why they happened and ho
 **Bug reports named the wrong macOS version.**
 - **The issue:** Report a Bug always filled in "macOS 10.15.7", whatever macOS you ran.
 - **Why it happened:** the platform came from the web view's user agent, and WebKit freezes the macOS version there at 10.15.7.
-- **The fix and why we chose it:** a small backend command, `os_info`, asks the system itself (`sw_vers` on macOS, `/etc/os-release` on Linux, just "Windows" on Windows). If it fails, the link falls back to the family name from the user agent, without the frozen version. A wrong version is worse than none.
+- **The fix and why we chose it:** a small backend command, `os_info`, asks the system itself (`sw_vers` on macOS, `/etc/os-release` on Linux, `ver` on Windows, read as "11 build 26200.8037" because Windows 11 still reports 10.0). If it fails, the link falls back to the family name from the user agent, without the frozen version. A wrong version is worse than none.
 
 ## Related
 

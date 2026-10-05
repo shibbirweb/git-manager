@@ -7,7 +7,7 @@
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { joinPath, parentOf } from "$lib/stores/workspacePaths";
+  import { fromNativePath, joinPath, parentOf } from "$lib/stores/workspacePaths";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import GitDialogFrame from "./GitDialogFrame.svelte";
@@ -58,7 +58,7 @@
   async function browse(): Promise<void> {
     const chosen = await open({ directory: true, multiple: false, title: "Clone Into", defaultPath: parentDir || undefined });
     if (typeof chosen === "string" && chosen) {
-      parentDir = chosen;
+      parentDir = fromNativePath(chosen);
     }
   }
 
@@ -160,7 +160,14 @@
   <label class="field">
     <span>Clone into folder</span>
     <div class="row">
-      <input class="input parent" bind:value={parentDir} disabled={cloning} spellcheck="false" autocomplete="off" />
+      <input
+        class="input parent"
+        bind:value={parentDir}
+        disabled={cloning}
+        spellcheck="false"
+        autocomplete="off"
+        aria-label="Clone into folder"
+      />
       <button type="button" class="btn" onclick={() => void browse()} disabled={cloning}>Browse...</button>
     </div>
   </label>

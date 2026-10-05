@@ -3,6 +3,7 @@
 // command the way its menu item or window shortcut does.
 
 import type { EditorView } from "@codemirror/view";
+import { formatKeyWords } from "$lib/help/shortcuts";
 import { currentMenuInputs } from "$lib/menu/appMenu.svelte";
 import { runMenuAction } from "$lib/menu/menuActions";
 import type { MenuPlatform } from "$lib/menu/menuIds";
@@ -68,6 +69,27 @@ export function shortcutFor(commandId: CommandId): string | null {
   const keys = windowKeys();
   const spec = keys.specs.find((candidate) => candidate.id === commandId) ?? null;
   return spec ? effectiveShortcut(spec, keys.overrides) : null;
+}
+
+/**
+ * A command's keys in words for labels and tooltips ("Shift+Cmd+G" on macOS, "Ctrl+Shift+G" on
+ * Windows), custom keys included; null when it has none here. A reactive read, so labels follow
+ * changes in Settings > Keyboard Shortcuts.
+ */
+export function commandKeys(commandId: CommandId): string | null {
+  const accelerator = shortcutFor(commandId);
+  return accelerator ? formatKeyWords(accelerator, currentPlatform()) : null;
+}
+
+/** "Title (keys)" for a tooltip, or the title alone when the command has no keys. */
+export function withCommandKeys(title: string, commandId: CommandId): string {
+  const keys = commandKeys(commandId);
+  return keys ? `${title} (${keys})` : title;
+}
+
+/** Keys a place binds itself (an editor's "CmdOrCtrl+Enter"), in words for this platform. */
+export function localKeys(accelerator: string): string {
+  return formatKeyWords(accelerator, currentPlatform());
 }
 
 let terminalKeys: { overrides: ShortcutOverrides; keys: Set<string> } | null = null;

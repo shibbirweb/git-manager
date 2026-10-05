@@ -1,0 +1,61 @@
+# Windows Support
+
+What the code does differently on Windows, and the rules that keep it working (work list: `docs/plans/windows-release.md`). Builds and signing: [Platforms and Signing](Platforms-and-Signing.md).
+
+## Helper processes without a console window
+
+A GUI program that starts a console program such as `git.exe` gets a new console window for it, so every git call would flash one. `child_process::hide_console` (`src-tauri/src/child_process.rs`) sets the `CREATE_NO_WINDOW` flag. `git::cli::command` uses it, so every git call gets it, and so do `gh auth token` and the PowerShell clipboard reader. Use it for any new helper process.
+
+## Cancel stops everything git started
+
+On macOS and Linux, a cancellable git command (Clone, Fetch and others with a Cancel button) runs in its own process group, and Cancel signals the whole group, so hooks and helpers such as `git-remote-https` stop too. Windows has no process groups. There `git/cancel.rs` puts git into a Job Object right after it starts. Every process git starts joins the job, and Cancel ends the whole job with `TerminateJobObject`. If the job cannot be made, Cancel falls back to killing git alone. The job only ends processes on Cancel: closing its handle after a normal finish leaves anything still running alone.
+
+## The home folder and PATH
+
+- `config::home_dir` reads `USERPROFILE` first on Windows, then `HOME`. `HOME` is usually unset there, and when Git Bash sets it, an app started from the Start menu does not see it, so the app and the command line tool would use different config folders. The test sandbox in `test_support.rs` moves both.
+- `git::cli::user_path` asks the login shell for `PATH` on macOS and Linux, because apps started from Finder get a short one. On Windows the app already gets the user's full `PATH`, so it is used as it is.
+
+## One copy at a time
+
+On macOS, opening the app again brings the running copy forward. Windows starts a new process for every launch, and two copies would share `state.json` and the MCP port. So on Windows, `lib.rs` registers `tauri-plugin-single-instance` first. A second start hands its arguments to the running app and exits. `commands::window::on_second_launch` then opens the folder or workspace file it names (`windows::open_for_arguments`, resolved against the folder it was started in), or focuses the window that shows it already. With nothing to open, the last focused window comes forward. The merge tool never registers the plugin, because `git mergetool` starts it next to the running app on purpose, and `git-manager cli` exits before the app is built.
+
+The command line tool and the MCP screenshot on Windows are on [Windows MCP and CLI](Windows-MCP-and-CLI.md).
+
+## Paths
+
+Absolute paths always use `/`, on Windows too (`C:/Users/me/repo`), so the page's path helpers work the same everywhere. On Windows, `canonicalize` returns `\\?\C:\...`, which git cannot use, and `Path::join` adds `\`. So:
+
+- the backend gets real paths only from `paths::real` or `RealPath::real_path` in `src-tauri/src/paths.rs` (built on `dunce`; `clippy.toml` forbids `canonicalize`);
+- every absolute path for the page goes through `paths::to_ui` (or `serialize_ui` on a serde field), which also writes the drive letter in upper case;
+- on the page, `fromNativePath` converts what the system hands over directly (dialogs, dropped files), and `isAbsolutePath`, `rootOf`, `parentOf` and `normalizePath` in `workspacePaths.ts` know the `C:/` and `//server/share/` roots.
+- `samePath`, `isInside`, `relativeTo`, `folderFor`, `locateAbsolute`, `movedPath` and `pathsUnder` ignore letter case on Windows, as Windows does; on macOS and Linux they compare exactly. Terminal links open under the file's real name (`real_files`).
+
+## Installer and releases
+
+`src-tauri/tauri.windows.conf.json` is merged over `tauri.conf.json` on Windows. Its bundle targets replace the macOS ones with `nsis`: a per-user installer (`installMode: currentUser`, no administrator rights) that downloads WebView2 when it is missing. `build-windows` in `release.yml` builds it on `windows-latest` and attaches the `-setup.exe` to the release, but only when the repository variable `WINDOWS_RELEASES` is `true`. That switch keeps betas from offering a Windows download before Windows support is finished. The update check offers that `-setup.exe` to Windows users (`downloadAsset` in `src/lib/update/releases.ts`).
+
+`windows-installer.yml` builds, installs and checks it for every pull request, and keeps the `-setup.exe` under the run's Artifacts. It is not signed yet, so SmartScreen warns about an unknown publisher.
+
+## Code written for Windows
+
+The terminal, the Scripts panel and the command line tool already have Windows paths behind `cfg(windows)` or runtime checks. The `windows-rust` job in `ci.yml` builds and tests them on every pull request.
+
+| Where | On Windows |
+| --- | --- |
+| `src-tauri/src/terminal.rs` | Shells: PowerShell (`pwsh.exe` on `PATH` or in `Program Files\PowerShell\7`), Windows PowerShell, Command Prompt (`%ComSpec%`, always listed) and Git Bash (`Git\bin\bash.exe` under Program Files or `%LOCALAPPDATA%\Programs`, never from `PATH`, where `bash.exe` is WSL). The first found is the default. Killing uses `TerminateProcess`. |
+| `src-tauri/src/node_versions.rs` | nvm-windows (`NVM_HOME` or `%APPDATA%\nvm`), fnm, Volta and Scoop, with `node.exe` right in each version folder. |
+| `src-tauri/src/run_process.rs` | No login shell is read (Explorer gives apps the full environment). Programs are found with `PATHEXT`, and `.cmd` files such as `npm.cmd` start through `cmd.exe /d /c`. |
+| `src/lib/terminal/keys.ts`, `src/lib/views/files/reveal.ts` | Ctrl+Shift+C and Ctrl+Shift+V copy and paste; "Reveal in File Explorer". |
+
+See [How the terminal works](How-the-Terminal-Works.md) and [How scripts work](How-Scripts-Work.md).
+
+## Tests
+
+- `paths.rs`: Windows paths get `/` and an upper case drive; Unix paths are left alone.
+- `config.rs`: the home folder lookup order on both platforms.
+- `git/repo.rs` and `git/cli.rs`: tests behind `cfg(windows)` that only the Windows CI job runs.
+- `workspacePaths.test.ts`, `fileLinks.test.ts` and `args.test.ts`: drive roots, `fromNativePath` and MCP paths.
+- The test sandbox (`test_support.rs`) takes its home folder from `real_path`, and `path_string` and `file_string` return paths the way the page sends them (`to_ui`). The first Windows CI run failed in most git tests because the sandbox used `canonicalize`: git cannot read its config files at a `\\?\` path.
+- `test_support::UiText` (`path.ui()`) gives a path the way the app returns it, for expected values. Tests that need a Unix-only tool or a missing Windows feature are marked `#[cfg_attr(windows, ignore = "why")]`, so they still show in the output.
+
+The bugs Windows CI found are on [Windows Bugs We Fixed](Windows-Bugs-We-Fixed.md).

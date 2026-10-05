@@ -1,6 +1,8 @@
 // Reading the arguments of a UI tool call. The server checks nothing for UI tools, so every
 // value is validated here and a bad one becomes a plain error the agent can act on.
 
+import { fromNativePath, isAbsolutePath } from "$lib/stores/workspacePaths";
+
 export class ToolArgError extends Error {}
 
 export type ToolArgs = Record<string, unknown>;
@@ -87,17 +89,19 @@ export function requiredEnum<T extends string>(args: ToolArgs, key: string, allo
 /**
  * An absolute path with "/" separators and no "." or ".." parts, so a prefix check
  * against the workspace folders cannot be walked around. A trailing "/" is dropped.
+ * On Windows a drive path is taken too, with backslashes turned into "/" first.
  */
-export function normalizeAbsolutePath(value: string, key: string): string {
-  if (!value.startsWith("/") || value.includes("\0") || value.includes("\\")) {
+export function normalizeAbsolutePath(value: string, key: string, windows?: boolean): string {
+  const path = fromNativePath(value, windows);
+  if (!isAbsolutePath(path) || path.includes("\0") || path.includes("\\")) {
     throw new ToolArgError(`"${key}" must be an absolute path`);
   }
-  const parts = value.split("/").slice(1);
-  if (parts.some((part) => part === "." || part === "..")) {
+  const root = /^[A-Za-z]:\//.test(path) ? path.slice(0, 3) : "/";
+  const rest = path.slice(root.length);
+  if (rest.split("/").some((part) => part === "." || part === "..")) {
     throw new ToolArgError(`"${key}" must not contain "." or ".." parts`);
   }
-  const trimmed = value.replace(/\/+$/, "").replace(/\/{2,}/g, "/");
-  return trimmed === "" ? "/" : trimmed;
+  return `${root}${rest.replace(/\/{2,}/g, "/").replace(/^\/+|\/+$/g, "")}`;
 }
 
 export function optionalPath(args: ToolArgs, key: string): string | null {

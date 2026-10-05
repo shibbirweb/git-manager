@@ -1,6 +1,7 @@
 //! Long streaming git commands the user can stop by an id, like the Clone dialog's Cancel
 //! button. The command runs in its own process group so git's helpers (remote-https,
 //! index-pack) stop with it, and git gets SIGTERM so it can clean up after itself.
+//! Windows has no process groups: there the command runs in a Job Object, which is ended.
 
 use std::collections::HashMap;
 use std::io::Read;
@@ -16,6 +17,9 @@ struct Running {
     child: Child,
     /// Reaped: its pid may belong to another process now, so it is never signalled again.
     exited: bool,
+    /// Holds git and every process it starts; None when it could not be made (git alone is killed then).
+    #[cfg(windows)]
+    job: Option<job::Job>,
 }
 
 #[derive(Default)]
@@ -36,13 +40,13 @@ fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
 fn stop(running: &Arc<Mutex<Running>>) {
     let mut state = lock(running);
     if !state.exited {
-        signal(&mut state.child);
+        signal(&mut state);
     }
 }
 
 #[cfg(unix)]
-fn signal(child: &mut Child) {
-    if let Ok(group) = i32::try_from(child.id()) {
+fn signal(state: &mut Running) {
+    if let Ok(group) = i32::try_from(state.child.id()) {
         // SAFETY: signals the process group this module started; it has not been reaped yet.
         unsafe {
             libc::kill(-group, libc::SIGTERM);
@@ -50,9 +54,67 @@ fn signal(child: &mut Child) {
     }
 }
 
-#[cfg(not(unix))]
-fn signal(child: &mut Child) {
-    let _ = child.kill();
+#[cfg(windows)]
+fn signal(state: &mut Running) {
+    match &state.job {
+        Some(job) => job.terminate(),
+        None => {
+            let _ = state.child.kill();
+        }
+    }
+}
+
+#[cfg(not(any(unix, windows)))]
+fn signal(state: &mut Running) {
+    let _ = state.child.kill();
+}
+
+#[cfg(windows)]
+mod job {
+    use std::os::windows::io::AsRawHandle;
+    use std::process::Child;
+
+    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
+    use windows_sys::Win32::System::JobObjects::{AssignProcessToJobObject, CreateJobObjectW, TerminateJobObject};
+
+    /// A Job Object holding a child; the processes it starts join the job too.
+    pub struct Job(HANDLE);
+
+    // SAFETY: a job handle may be used and closed from any thread.
+    unsafe impl Send for Job {}
+
+    impl Job {
+        pub fn for_child(child: &Child) -> Option<Job> {
+            // SAFETY: plain Win32 calls; the handle is closed by Drop, or here when assigning fails.
+            unsafe {
+                let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
+                if job.is_null() {
+                    return None;
+                }
+                if AssignProcessToJobObject(job, child.as_raw_handle() as HANDLE) == 0 {
+                    CloseHandle(job);
+                    return None;
+                }
+                Some(Job(job))
+            }
+        }
+
+        pub fn terminate(&self) {
+            // SAFETY: the handle is open until Drop.
+            unsafe {
+                TerminateJobObject(self.0, 1);
+            }
+        }
+    }
+
+    impl Drop for Job {
+        fn drop(&mut self) {
+            // SAFETY: closing only drops the handle; processes still running keep running.
+            unsafe {
+                CloseHandle(self.0);
+            }
+        }
+    }
 }
 
 /// Stops the command running under `cancel_id`; false when none is.
@@ -165,7 +227,14 @@ pub fn run_streaming(
     })?;
     let stdout_pipe = child.stdout.take();
     let stderr_pipe = child.stderr.take();
-    let running = Arc::new(Mutex::new(Running { child, exited: false }));
+    #[cfg(windows)]
+    let job = job::Job::for_child(&child);
+    let running = Arc::new(Mutex::new(Running {
+        child,
+        exited: false,
+        #[cfg(windows)]
+        job,
+    }));
     let cancelled_before_start = {
         let mut entries = lock(registry());
         let entry = entries.entry(cancel_id.to_string()).or_default();

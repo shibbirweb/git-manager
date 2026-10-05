@@ -193,7 +193,7 @@ pub fn read_identity(repo_path: Option<&str>, global: &GlobalConfig) -> AppResul
         global: global_values,
         local,
         complete,
-        global_file: global.write_file().map(|file| file.to_string_lossy().into_owned()),
+        global_file: global.write_file().map(crate::paths::to_ui),
     })
 }
 
@@ -281,6 +281,7 @@ pub fn write_identity(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::UiText;
     use crate::test_support::TestDir;
 
     /// A repository with no identity at all and its own empty global config file.
@@ -290,7 +291,7 @@ mod tests {
         let global_file = dir.file("global.gitconfig");
         std::fs::write(&global_file, "").expect("write global config");
         let global = GlobalConfig::at(&global_file);
-        (dir, repo_root.to_string_lossy().into_owned(), global, global_file)
+        (dir, repo_root.ui(), global, global_file)
     }
 
     #[test]
@@ -310,7 +311,7 @@ mod tests {
         assert_eq!(identity.global.email.as_deref(), Some("ann@example.com"));
         assert_eq!(identity.local, IdentityValues::default());
         assert!(identity.complete, "a global identity is enough to commit");
-        assert_eq!(identity.global_file.as_deref(), Some(global_file.to_string_lossy().as_ref()));
+        assert_eq!(identity.global_file.as_deref(), Some(global_file.ui().as_str()));
         let text = std::fs::read_to_string(&global_file).unwrap();
         assert!(text.contains("name = Ann Lee") && text.contains("email = ann@example.com"), "{text}");
         let repo_config = std::fs::read_to_string(dir.file("repo/.git/config")).unwrap();
@@ -361,7 +362,8 @@ mod tests {
         let (dir, repo_root, global, global_file) = bare_identity();
         let included = dir.file("identity.gitconfig");
         std::fs::write(&included, "[user]\n\tname = Included Name\n\temail = inc@example.com\n").unwrap();
-        std::fs::write(&global_file, format!("[include]\n\tpath = {}\n", included.display())).unwrap();
+        // "/" separators: a `\` in a git config value starts an escape.
+        std::fs::write(&global_file, format!("[include]\n\tpath = {}\n", included.ui())).unwrap();
         let identity = read_identity(Some(&repo_root), &global).unwrap();
         assert_eq!(identity.global.name.as_deref(), Some("Included Name"));
         assert!(identity.complete);

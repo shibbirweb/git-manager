@@ -7,6 +7,7 @@
 //! shows focuses that window instead. Ownership compares canonical paths (symlinks and `..`
 //! resolved), so two spellings of one folder count as the same folder.
 
+use crate::paths::RealPath;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -67,6 +68,28 @@ pub enum WindowStart {
     Default { label: String },
 }
 
+/// What a second start of the app asks for (Windows hands its arguments to the running app): its
+/// first argument, resolved against the folder it was started in, as a folder or a workspace file.
+/// None when it names nothing, like `LaunchMode::from_args` (an option, or the merge tool).
+#[cfg(any(windows, test))]
+pub fn open_for_arguments(args: &[String], cwd: &Path) -> Option<WindowOpen> {
+    let arg = args.first().filter(|arg| !arg.starts_with('-') && arg.as_str() != "merge")?;
+    let path = cwd.join(arg);
+    let shown = crate::paths::real(&path).map(crate::paths::to_ui).unwrap_or_else(|_| crate::paths::to_ui(&path));
+    let is_workspace_file = [".gitmanager-workspace", ".code-workspace"].iter().any(|suffix| shown.ends_with(suffix));
+    Some(if is_workspace_file {
+        WindowOpen {
+            folder_paths: Vec::new(),
+            workspace_file: Some(shown),
+        }
+    } else {
+        WindowOpen {
+            folder_paths: vec![shown],
+            workspace_file: None,
+        }
+    })
+}
+
 /// One window of a saved session.
 #[derive(Debug, Clone, PartialEq)]
 pub struct SessionEntry {
@@ -103,7 +126,7 @@ impl Shown {
 
 /// The canonical form of a path, or the path itself when it cannot be resolved.
 pub fn canonical(path: &str) -> PathBuf {
-    Path::new(path).canonicalize().unwrap_or_else(|_| PathBuf::from(path))
+    Path::new(path).real_path().unwrap_or_else(|_| PathBuf::from(path))
 }
 
 #[derive(Debug, Clone)]
@@ -465,6 +488,7 @@ pub fn cascade(from: &Bounds) -> (f64, f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::UiText;
 
     fn shown(folders: &[&str], file: Option<&str>) -> Shown {
         Shown {
@@ -578,11 +602,35 @@ mod tests {
     }
 
     #[test]
+    fn a_second_start_opens_its_folder_or_workspace_file() {
+        let dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(dir.path().join("repo")).unwrap();
+        std::fs::write(dir.path().join("team.code-workspace"), "{}").unwrap();
+        let cwd = dir.path();
+        let args = |values: &[&str]| values.iter().map(|value| value.to_string()).collect::<Vec<_>>();
+        let repo = crate::paths::real(cwd.join("repo")).unwrap().ui();
+
+        let relative = open_for_arguments(&args(&["repo"]), cwd).unwrap();
+        assert_eq!(relative.folder_paths, vec![repo.clone()]);
+        assert_eq!(relative.workspace_file, None);
+        let absolute = open_for_arguments(&args(&[&repo]), Path::new("/elsewhere")).unwrap();
+        assert_eq!(absolute.folder_paths, vec![repo]);
+
+        let file = open_for_arguments(&args(&["team.code-workspace"]), cwd).unwrap();
+        assert!(file.folder_paths.is_empty());
+        assert!(file.workspace_file.unwrap().ends_with("/team.code-workspace"));
+
+        assert_eq!(open_for_arguments(&args(&[]), cwd), None);
+        assert_eq!(open_for_arguments(&args(&["--flag"]), cwd), None);
+        assert_eq!(open_for_arguments(&args(&["merge", "a", "b", "c", "d"]), cwd), None);
+    }
+
+    #[test]
     fn resolving_canonicalizes_so_two_spellings_match() {
         let dir = tempfile::TempDir::new().unwrap();
         let real = dir.path().join("repo");
         std::fs::create_dir_all(real.join("sub")).unwrap();
-        let plain = real.to_string_lossy().into_owned();
+        let plain = real.ui();
         let roundabout = format!("{}/sub/..", plain);
         let mut book = WindowBook::default();
         book.add(MAIN_LABEL, None, None);

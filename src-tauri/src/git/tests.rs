@@ -1,3 +1,4 @@
+use crate::test_support::UiText;
 use std::path::Path;
 
 use super::diff::{self, DiffArea};
@@ -276,7 +277,7 @@ fn load_files_with_empty_base_is_both_added() {
     assert_eq!(document.ours, "ours\n");
     assert_eq!(document.theirs, "theirs\n");
     assert_eq!(document.eol, Eol::Crlf);
-    assert_eq!(document.path, merged.to_string_lossy());
+    assert_eq!(document.path, merged.ui());
     assert!(!document.binary);
 
     std::fs::remove_file(&base).unwrap();
@@ -731,13 +732,13 @@ fn run_reports_failure_and_stdin_is_passed() {
 fn repo_discover_finds_root_from_subdirectory() {
     let repo = TestRepo::new();
     repo.write("sub/dir/file.txt", "x\n");
-    let info = super::repo::discover(&repo.file("sub/dir").to_string_lossy()).unwrap();
+    let info = super::repo::discover(&repo.file("sub/dir").ui()).unwrap();
     assert_eq!(canonical(Path::new(&info.root)), repo.path);
     assert_eq!(info.name, "repo");
     assert!(!info.root.ends_with('/'));
 
     let outside = tempfile::TempDir::new().unwrap();
-    assert!(super::repo::discover(&outside.path().to_string_lossy()).is_err());
+    assert!(super::repo::discover(&outside.path().ui()).is_err());
 }
 
 // scripts/make-conflict-repo.sh
@@ -759,6 +760,7 @@ fn run_demo_script(extra_args: &[&str]) -> (tempfile::TempDir, std::path::PathBu
 }
 
 #[test]
+#[cfg_attr(windows, ignore = "the demo scripts are macOS and Linux tools")]
 fn demo_script_builds_every_conflict_type() {
     let (_dir, target) = run_demo_script(&[]);
     let git_repo = git2::Repository::open(&target).unwrap();
@@ -813,6 +815,7 @@ fn demo_script_builds_every_conflict_type() {
 }
 
 #[test]
+#[cfg_attr(windows, ignore = "the demo scripts are macOS and Linux tools")]
 fn demo_script_rebase_mode_and_refuses_non_empty_target() {
     let (_dir, target) = run_demo_script(&["--rebase"]);
     let op = opstate::read(&git2::Repository::open(&target).unwrap());

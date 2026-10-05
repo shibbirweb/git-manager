@@ -64,7 +64,7 @@ If the program is not installed, the Run tab says so with the reason and a **Ret
 
 ### Scripts run without a shell
 
-A script runs as its own program, not typed into a terminal, so it works the same whatever your shell is. Git Manager still finds your tools. It asks your shell once for its environment: the settings a new Terminal window starts with. That includes `PATH`, the list of folders where programs are looked up, as your `.zshrc` sets it up for nvm, Homebrew, pnpm or Composer. Opening the panel or clicking **Refresh** reads it again, so a tool you just installed is found.
+A script runs as its own program, not typed into a terminal, so it works the same whatever your shell is. Git Manager still finds your tools. It asks your shell once for its environment: the settings a new Terminal window starts with. That includes `PATH`, the list of folders where programs are looked up, as your `.zshrc` sets it up for nvm, Homebrew, pnpm or Composer. On Windows, scripts get the environment Windows gives Git Manager, and tools such as `npm` and `pnpm`, which are `.cmd` files there, start through Command Prompt. Opening the panel or clicking **Refresh** reads it again, so a tool you just installed is found.
 
 ## Right-click menus
 

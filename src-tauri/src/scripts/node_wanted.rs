@@ -24,7 +24,7 @@ pub(super) fn find(package_folder: &Path, workspace_folder: &Path) -> Option<Nod
                 return Some(NodeWanted {
                     spec,
                     source: (*name).to_string(),
-                    file_path: file_path.to_string_lossy().into_owned(),
+                    file_path: crate::paths::to_ui(&file_path),
                 });
             }
         }

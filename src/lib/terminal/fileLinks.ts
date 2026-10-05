@@ -4,7 +4,7 @@
 // workspace folder. Kept free of Svelte, Tauri and xterm so it can be tested
 // directly; TerminalView turns the results into xterm links.
 
-import { folderFor, joinPath, normalizePath, type FolderRef } from "$lib/stores/workspacePaths";
+import { folderFor, fromNativePath, isAbsolutePath, joinPath, normalizePath, type FolderRef } from "$lib/stores/workspacePaths";
 
 /** A path-like piece of one terminal line. */
 export interface PathCandidate {
@@ -49,6 +49,10 @@ function lineNumber(text: string | undefined): number | null {
   return Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 
+function onWindows(): boolean {
+  return typeof navigator !== "undefined" && /Windows/.test(navigator.userAgent);
+}
+
 /** Whether a printed path is worth asking about: it has a folder part or a file extension. */
 function looksLikePath(pathText: string): boolean {
   if (!pathText || pathText.includes("://") || pathText.startsWith("-") || pathText.startsWith("~")) {
@@ -63,8 +67,11 @@ function looksLikePath(pathText: string): boolean {
   return pathText.includes("/") || EXTENSION.test(pathText);
 }
 
-/** The path-like pieces of one line of terminal output, left to right. */
-export function findPathCandidates(lineText: string): PathCandidate[] {
+/**
+ * The path-like pieces of one line of terminal output, left to right. On Windows a printed
+ * `C:\repo\src\app.ts` or `src\app.ts` is tried as `C:/repo/src/app.ts` and `src/app.ts`.
+ */
+export function findPathCandidates(lineText: string, windows = onWindows()): PathCandidate[] {
   if (!lineText || lineText.length > MAX_LINK_LINE) {
     return [];
   }
@@ -92,6 +99,7 @@ export function findPathCandidates(lineText: string): PathCandidate[] {
       line = lineNumber(colon?.[2]);
       column = lineNumber(colon?.[3]);
     }
+    pathText = fromNativePath(pathText, windows);
     if (!looksLikePath(pathText)) {
       continue;
     }
@@ -107,10 +115,10 @@ export function findPathCandidates(lineText: string): PathCandidate[] {
 
 /** An absolute path for a printed one, or null when it cannot be resolved (relative without a folder). */
 export function resolveTerminalPath(pathText: string, folderPath: string | null): string | null {
-  if (pathText.startsWith("/")) {
+  if (isAbsolutePath(pathText)) {
     return normalizePath(pathText);
   }
-  if (!folderPath || !folderPath.startsWith("/")) {
+  if (!folderPath || !isAbsolutePath(folderPath)) {
     return null;
   }
   return normalizePath(joinPath(folderPath, pathText));
@@ -131,8 +139,10 @@ export function parseOsc7(data: string): string | null {
     return null;
   }
   try {
-    const folderPath = decodeURIComponent(rest.slice(slash));
-    return folderPath.startsWith("/") && !folderPath.includes("\0") ? folderPath : null;
+    // Windows shells send file://host/C:/Users/me: the drive follows the slash.
+    const decoded = decodeURIComponent(rest.slice(slash));
+    const folderPath = /^\/[A-Za-z]:\//.test(decoded) ? decoded.slice(1) : decoded;
+    return isAbsolutePath(folderPath) && !folderPath.includes("\0") ? folderPath : null;
   } catch {
     return null;
   }
@@ -168,17 +178,17 @@ export function lineCells(cells: CellText[]): { text: string; cellAt: number[] }
 }
 
 /**
- * Remembers which files exist for the lines on screen. Lookups for one line go
- * to the backend in one call, the same path is never asked twice at once, and
- * the cache is dropped when the terminal scrolls (TerminalView calls `clear`),
- * so it only ever holds what the viewport showed.
+ * Remembers which printed paths are files, by their real path (the name as stored on disk, so a
+ * path printed in other letter case opens the same tab). Lookups for one line go to the backend
+ * in one call, the same path is never asked twice at once, and the cache is dropped when the
+ * terminal scrolls (TerminalView calls `clear`), so it only ever holds what the viewport showed.
  */
 export class FileExistenceCache {
-  private known = new Map<string, boolean>();
-  private pending = new Map<string, Promise<boolean>>();
+  private known = new Map<string, string | null>();
+  private pending = new Map<string, Promise<string | null>>();
 
   constructor(
-    private readonly check: (filePaths: string[]) => Promise<boolean[]>,
+    private readonly check: (filePaths: string[]) => Promise<(string | null)[]>,
     private readonly limit = 400,
   ) {}
 
@@ -186,30 +196,31 @@ export class FileExistenceCache {
     return this.known.size;
   }
 
-  async exists(filePaths: string[]): Promise<Map<string, boolean>> {
+  /** Each path's real file path, or null when it is not a file in the workspace. */
+  async realPaths(filePaths: string[]): Promise<Map<string, string | null>> {
     const unique = [...new Set(filePaths)];
     const unknown = unique.filter((filePath) => !this.known.has(filePath) && !this.pending.has(filePath));
     if (unknown.length > 0) {
-      const request = this.check(unknown).catch(() => unknown.map(() => false));
+      const request = this.check(unknown).catch(() => unknown.map(() => null));
       unknown.forEach((filePath, index) => {
         this.pending.set(
           filePath,
           request.then((answers) => {
-            const exists = answers[index] === true;
+            const realPath = typeof answers[index] === "string" ? answers[index] : null;
             this.pending.delete(filePath);
             if (this.known.size >= this.limit) {
               this.known.clear();
             }
-            this.known.set(filePath, exists);
-            return exists;
+            this.known.set(filePath, realPath);
+            return realPath;
           }),
         );
       });
     }
-    const result = new Map<string, boolean>();
+    const result = new Map<string, string | null>();
     for (const filePath of unique) {
       const known = this.known.get(filePath);
-      result.set(filePath, known ?? (await (this.pending.get(filePath) ?? Promise.resolve(false))));
+      result.set(filePath, known !== undefined ? known : await (this.pending.get(filePath) ?? Promise.resolve(null)));
     }
     return result;
   }
@@ -227,24 +238,24 @@ export interface LinkContext {
 }
 
 /** The file links of one line: candidates resolved, kept inside the workspace and checked for existence. */
-export async function fileLinksForLine(lineText: string, context: LinkContext): Promise<FileLink[]> {
-  const candidates = findPathCandidates(lineText);
+export async function fileLinksForLine(lineText: string, context: LinkContext, windows = onWindows()): Promise<FileLink[]> {
+  const candidates = findPathCandidates(lineText, windows);
   if (candidates.length === 0 || context.workspaceFolders.length === 0) {
     return [];
   }
   const resolved = candidates.map((candidate) =>
     candidate.paths
       .map((pathText) => resolveTerminalPath(pathText, context.folderPath))
-      .filter((filePath): filePath is string => filePath !== null && folderFor(context.workspaceFolders, filePath) !== null),
+      .filter((filePath): filePath is string => filePath !== null && folderFor(context.workspaceFolders, filePath, windows) !== null),
   );
   const toCheck = resolved.flat();
   if (toCheck.length === 0) {
     return [];
   }
-  const exists = await context.cache.exists(toCheck);
+  const realPaths = await context.cache.realPaths(toCheck);
   const links: FileLink[] = [];
   candidates.forEach((candidate, index) => {
-    const filePath = resolved[index].find((candidatePath) => exists.get(candidatePath) === true);
+    const filePath = resolved[index].map((candidatePath) => realPaths.get(candidatePath) ?? null).find((realPath) => realPath !== null);
     if (filePath) {
       links.push({
         start: candidate.start,

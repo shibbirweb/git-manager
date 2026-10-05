@@ -103,6 +103,9 @@
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
     { "page": "developer/Platforms-and-Signing.md", "summary": "Code signing and notarization, and the plan for Windows and Linux." },
+    { "page": "developer/Windows-Support.md", "summary": "What the code does differently on Windows: console windows, the home folder, PATH and paths." },
+    { "page": "developer/Windows-Bugs-We-Fixed.md", "summary": "Bugs the Windows CI job found, why they happened and the fixes." },
+    { "page": "developer/Windows-MCP-and-CLI.md", "summary": "The command line tool as a console program, the screenshot and quoting on Windows." },
     { "page": "developer/Docs-and-Screenshots.md", "summary": "How this wiki is built, how screenshots are taken, and keeping docs in sync." },
     { "page": "developer/Contributing.md", "summary": "Code style, commits, pull requests and the docs checklist." }
   ],

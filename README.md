@@ -4,7 +4,7 @@ A native desktop Git client with a JetBrains-style 3-way merge tool, VS Code-sty
 
 ![Git Manager: Changes, the editor with blame, and the Files panel](docs/wiki/images/window-overview.png)
 
-**[Download the latest release](https://github.com/shibbirweb/git-manager/releases)** (macOS, Apple Silicon and Intel) · **[User guide and developer docs](https://github.com/shibbirweb/git-manager/wiki)** · **[Report a bug or request a feature](https://github.com/shibbirweb/git-manager/issues/new/choose)**
+**[Download the latest release](https://github.com/shibbirweb/git-manager/releases)** (macOS for Apple Silicon and Intel, Windows 10 and 11) · **[User guide and developer docs](https://github.com/shibbirweb/git-manager/wiki)** · **[Report a bug or request a feature](https://github.com/shibbirweb/git-manager/issues/new/choose)**
 
 ## Screenshots
 
@@ -80,7 +80,7 @@ bun install          # frontend dependencies
 bun tauri dev        # run the app with hot reload
 bun run check        # svelte-check / TypeScript
 bun run test         # frontend unit tests (Vitest)
-cd src-tauri && cargo test   # Rust unit and git integration tests
+cd src-tauri && cargo test --workspace   # Rust unit and git integration tests
 bun tauri build      # release .app and .dmg in src-tauri/target/release/bundle
 ```
 

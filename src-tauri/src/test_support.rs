@@ -1,5 +1,6 @@
 //! Helpers for tests that drive real git repositories in temporary directories.
 
+use crate::paths::RealPath;
 use std::cell::Cell;
 use std::future::Future;
 use std::path::{Path, PathBuf};
@@ -23,15 +24,18 @@ fn sandbox() -> &'static Sandbox {
     SANDBOX.get_or_init(|| {
         let home = std::env::temp_dir().join("git-manager-test-home");
         std::fs::create_dir_all(&home).expect("create sandbox home");
-        let home = home.canonicalize().expect("canonicalize sandbox home");
+        let home = home.real_path().expect("canonicalize sandbox home");
         let global_config = home.join("gitconfig");
         if !global_config.exists() {
             std::fs::write(&global_config, "").expect("write empty global config");
         }
         std::env::set_var("HOME", &home);
+        // config::home_dir() reads USERPROFILE first on Windows.
+        std::env::set_var("USERPROFILE", &home);
         std::env::set_var("XDG_CONFIG_HOME", home.join(".config"));
         std::env::set_var("GIT_CONFIG_NOSYSTEM", "1");
         std::env::set_var("GIT_CONFIG_GLOBAL", &global_config);
+        crate::git::repo::configure_libgit2();
         std::env::set_var("LC_ALL", "C");
         std::env::set_var("LANG", "C");
         Sandbox { home, global_config }
@@ -46,6 +50,7 @@ fn git_command(dir: &Path, time: i64) -> Command {
     let mut command = cli::command(dir);
     command
         .env("HOME", &sandbox.home)
+        .env("USERPROFILE", &sandbox.home)
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", &sandbox.global_config)
         .env("GIT_AUTHOR_DATE", &date)
@@ -70,12 +75,23 @@ pub fn git_in(dir: &Path, args: &[&str]) -> String {
     String::from_utf8_lossy(&output.stdout).into_owned()
 }
 
+/// A path as the app hands it to the page (`paths::to_ui`), for expected values and page-style arguments.
+pub trait UiText {
+    fn ui(&self) -> String;
+}
+
+impl UiText for Path {
+    fn ui(&self) -> String {
+        crate::paths::to_ui(self)
+    }
+}
+
 pub fn block_on<F: Future>(future: F) -> F::Output {
     tauri::async_runtime::block_on(future)
 }
 
 pub fn canonical(path: &Path) -> PathBuf {
-    path.canonicalize().expect("canonicalize path")
+    path.real_path().expect("canonicalize path")
 }
 
 /// A bare repository usable as a local remote.
@@ -94,8 +110,9 @@ impl BareRemote {
         BareRemote { _root: root, path }
     }
 
+    /// The path as the page sends it (see paths.rs).
     pub fn path_string(&self) -> String {
-        self.path.to_string_lossy().into_owned()
+        crate::paths::to_ui(&self.path)
     }
 }
 
@@ -115,8 +132,9 @@ impl TestDir {
         TestDir { _root: root, path }
     }
 
+    /// The path as the page sends it (see paths.rs).
     pub fn path_string(&self) -> String {
-        self.path.to_string_lossy().into_owned()
+        crate::paths::to_ui(&self.path)
     }
 
     /// Absolute path of `relative_path` ("" is the folder itself).
@@ -129,7 +147,7 @@ impl TestDir {
     }
 
     pub fn file_string(&self, relative_path: &str) -> String {
-        self.file(relative_path).to_string_lossy().into_owned()
+        crate::paths::to_ui(self.file(relative_path))
     }
 
     pub fn mkdir(&self, relative_path: &str) {
@@ -220,8 +238,9 @@ impl TestRepo {
         }
     }
 
+    /// The path as the page sends it (see paths.rs).
     pub fn path_string(&self) -> String {
-        self.path.to_string_lossy().into_owned()
+        crate::paths::to_ui(&self.path)
     }
 
     pub fn open(&self) -> git2::Repository {

@@ -53,30 +53,20 @@ flowchart LR
 
 | Where | What | On other platforms |
 | --- | --- | --- |
-| `src-tauri/src/memory.rs` | the memory readout, using macOS process APIs (`proc_pid_rusage`, the "responsible" process) behind `#[cfg(target_os = "macos")]` | a stub returns zero bytes (marked approximate), so the status bar hides the item |
-| `src-tauri/src/git/cli.rs` | the git binary search (`/opt/homebrew/bin/git`, `/usr/local/bin/git`, `/usr/bin/git`) and the login shell `PATH` (`$SHELL -l -c`, default `/bin/zsh`, `:` separators) | falls back to `git` on the current `PATH`; the shell step needs its own Windows version |
-| `src/lib/stores/workspacePaths.ts` and the Rust path helpers | paths use `/` separators | Windows paths use `\` and drive letters |
+| `src-tauri/src/memory.rs` | the memory readout, using macOS process APIs (`proc_pid_rusage`, the "responsible" process) | Windows: the WebView2 processes and their private working set; Linux: a stub returns zero bytes, so the status bar hides the item |
+| `src-tauri/src/git/cli.rs` | the git binary search (`/opt/homebrew/bin/git`, `/usr/local/bin/git`, `/usr/bin/git`) and the login shell `PATH` (`$SHELL -l -c`, default `/bin/zsh`) | `git` on the app's own `PATH`, which Explorer fills, with no shell asked |
+| `src/lib/stores/workspacePaths.ts` and `src-tauri/src/paths.rs` | paths use `/` separators | Windows paths leave Rust as `C:/...` (`to_ui`) and the page converts dialog paths (`fromNativePath`); comparisons are still case-sensitive |
 | `src/lib/update/releases.ts` | `parseReleases` takes the first `.dmg` asset as the download | needs a per-platform asset |
-| `src-tauri/tauri.conf.json` | bundle targets `app` and `dmg` | needs Windows and Linux targets |
-| `.github/workflows/ci.yml`, `release.yml` | the test and build jobs run on `macos-latest` (release's `version` job and the release, publish and wiki workflows use `ubuntu-latest`) | needs a matrix |
+| `src-tauri/tauri.conf.json` | bundle targets `app` and `dmg` | `tauri.windows.conf.json` builds an NSIS installer; Linux needs targets |
+| `.github/workflows/ci.yml`, `release.yml` | the release build runs on `macos-latest`; CI also runs every check in the `windows-frontend` and `windows-rust` jobs | `build-windows` in `release.yml`; Linux needs CI jobs |
 | `scripts/*.sh` | bash demo scripts | need Git Bash or WSL on Windows |
 | Keyboard shortcuts | Cmd (`metaKey`), usually with Ctrl too | check each shortcut |
 
-A few pieces are already ready: `main.rs` hides the console window on Windows release builds, `os_info` in `commands/config.rs` names the OS for bug reports on macOS, Linux and Windows (with `platformName` in `releases.ts` as the fallback), and `tauri.conf.json` already lists an `icon.ico`.
+A few pieces are already ready: `main.rs` hides the console window on Windows release builds, `child_process::hide_console` starts git, gh and the clipboard reader without one (`CREATE_NO_WINDOW`), `config::home_dir` reads `USERPROFILE` first on Windows, `os_info` in `commands/config.rs` names the OS for bug reports on macOS, Linux and Windows (with `platformName` in `releases.ts` as the fallback), and `tauri.conf.json` already lists an `icon.ico`.
 
-## Windows code that is written but never built
+Windows-only code, the path rules and the console windows are covered in [Windows Support](Windows-Support.md).
 
-The terminal, the Scripts panel and the command line tool already have Windows paths behind `cfg(windows)` or runtime checks. CI does not compile them yet, so expect small fixes on the first Windows build.
-
-| Where | On Windows |
-| --- | --- |
-| `src-tauri/src/terminal.rs` | Shells: PowerShell (`pwsh.exe` on `PATH` or in `Program Files\PowerShell\7`), Windows PowerShell, Command Prompt (`%ComSpec%`, always listed) and Git Bash (`Git\bin\bash.exe` under Program Files or `%LOCALAPPDATA%\Programs`, never from `PATH`, where `bash.exe` is WSL). The first found is the default. Killing uses `TerminateProcess`. |
-| `src-tauri/src/node_versions.rs` | nvm-windows (`NVM_HOME` or `%APPDATA%\nvm`), fnm, Volta and Scoop, with `node.exe` right in each version folder. |
-| `src-tauri/src/run_process.rs` | No login shell is read (Explorer gives apps the full environment). Programs are found with `PATHEXT`, and `.cmd` files such as `npm.cmd` start through `cmd.exe /d /c`. |
-| `src/lib/terminal/keys.ts`, `src/lib/views/files/reveal.ts` | Ctrl+Shift+C and Ctrl+Shift+V copy and paste; "Reveal in File Explorer". |
-| `src-tauri/src/mcp/cli.rs`, `install.rs` | `git-manager cli` prints nothing in a release build, which has no console; installing the command link is Unix only. |
-
-For Linux, the Linuxbrew prefix is checked for Node and added to the fallback `PATH` of script runs. See [How the terminal works](How-the-Terminal-Works.md) and [How scripts work](How-Scripts-Work.md).
+For Linux, the Linuxbrew prefix is checked for Node and added to the fallback `PATH` of script runs.
 
 ## The plan for Windows and Linux
 
@@ -110,8 +100,8 @@ Concretely, the work is:
 
 1. **Backend:** a Windows way to find git and its `PATH`, path handling that accepts `\` and drive letters (and the `\\?\` form that `canonicalize` returns on Windows), and memory readouts per platform or an honest "not available".
 2. **Frontend:** separator-aware path helpers with tests, a review of shortcuts (most accept Cmd or Ctrl already, but Ctrl+Minus for Back is a macOS habit), and per-platform assets in `releases.ts`.
-3. **CI:** run `ci.yml` on a `strategy.matrix` of `macos-latest`, `windows-latest` and `ubuntu-latest`. The Linux runner needs the WebKitGTK and build packages that Tauri lists as prerequisites. The one `#[cfg(unix)]` symlink in `commands/tests.rs` already skips itself on Windows.
-4. **Releases:** add build jobs to `release.yml` next to `build-macos`, each running `tauri-action` for its platform against the same tag, and signing for Windows when a certificate is available.
+3. **CI:** the `windows-frontend` and `windows-rust` jobs in `ci.yml` run every check on `windows-latest` and must pass like the macOS jobs. Linux needs the same on `ubuntu-latest`. The Linux runner needs the WebKitGTK and build packages that Tauri lists as prerequisites. The one `#[cfg(unix)]` symlink in `commands/tests.rs` already skips itself on Windows.
+4. **Releases:** `build-windows` in `release.yml` runs when the repository variable `WINDOWS_RELEASES` is `true`. Still to add: signing for Windows, and a Linux job.
 
 ## Where to go next
 

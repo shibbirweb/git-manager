@@ -135,6 +135,28 @@ pub async fn window_open(
     })
 }
 
+/// Windows: a second start of the app hands its arguments here and exits (tauri-plugin-single-instance).
+/// A folder or workspace file opens like Open Folder in New Window, or focuses the window showing it;
+/// with nothing to open, the last focused window comes to the front.
+#[cfg(windows)]
+pub fn on_second_launch(app: &AppHandle, args: &[String], cwd: &str) {
+    let state = app.state::<AppState>();
+    let Some(open) = windows::open_for_arguments(args.get(1..).unwrap_or_default(), Path::new(cwd)) else {
+        let window_label = state.window_book().focused().unwrap_or_else(|| windows::MAIN_LABEL.to_string());
+        focus_window(app, &window_label);
+        return;
+    };
+    let wanted = Shown::resolve(open.clone());
+    if let Some(window_label) = state.window_book().owner(&wanted, None) {
+        focus_window(app, &window_label);
+        return;
+    }
+    let window_label = state.window_book().new_label();
+    if create_window(app, &window_label, Some(open), None, None).is_ok() {
+        focus_window(app, &window_label);
+    }
+}
+
 /// Window > Close Window, or the close button after the page checked for unsaved edits.
 /// Closing the last window quits the app, and it comes back at the next start.
 #[tauri::command]

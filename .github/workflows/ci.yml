@@ -77,7 +77,80 @@ jobs:
           bun run build
 
       - name: Tests
-        run: cargo test --locked
+        run: cargo test --locked --workspace
 
       - name: Clippy
-        run: cargo clippy --locked --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
+
+  # Windows runs as two jobs, like macOS, so the frontend checks and the slower Rust build run side by side.
+  windows-frontend:
+    name: Windows frontend (check + Vitest)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # The runner's git turns LF into CRLF on checkout, which breaks the shell scripts and the tests that
+      # compare file bytes.
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        id: install
+        run: bun install --frozen-lockfile
+
+      # Both run even when the other failed, so one run lists every Windows failure.
+      - name: Type-check (svelte-check)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run check
+
+      - name: Unit tests (Vitest)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run test
+
+  windows-rust:
+    name: Windows Rust (cargo test + clippy)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # tauri::generate_context! embeds the frontend build output, so it must exist.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build frontend
+        id: build
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      # Clippy runs even when a test failed, so one run lists every Windows failure.
+      - name: Tests
+        working-directory: src-tauri
+        run: cargo test --locked --workspace --no-fail-fast
+
+      - name: Clippy
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        working-directory: src-tauri
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings

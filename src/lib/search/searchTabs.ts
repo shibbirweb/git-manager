@@ -1,6 +1,7 @@
 // The tabs of the Search Everywhere popup (FileSearch.svelte): which tab
 // each shortcut opens, Tab / Shift+Tab cycling and the keys that switch tabs while open.
 
+import type { CommandId } from "$lib/commands/registry";
 import { type ShortcutKey, type ShortcutKeys, type WorkspaceShortcut, workspaceShortcut } from "$lib/views/workspaceShortcuts";
 
 export type SearchTab = "all" | "classes" | "files" | "symbols" | "text";
@@ -11,15 +12,16 @@ export type SearchOpener = "everywhere" | "files" | "classes" | "symbols" | "tex
 export interface SearchTabInfo {
   id: SearchTab;
   label: string;
-  shortcut: string;
+  /** The command whose keys open this tab; null for All, which double Shift opens. */
+  commandId: CommandId | null;
 }
 
 export const SEARCH_TABS: readonly SearchTabInfo[] = [
-  { id: "all", label: "All", shortcut: "Double Shift" },
-  { id: "classes", label: "Classes", shortcut: "Cmd+O" },
-  { id: "files", label: "Files", shortcut: "Shift+Cmd+O" },
-  { id: "symbols", label: "Symbols", shortcut: "Option+Cmd+O" },
-  { id: "text", label: "Text", shortcut: "Shift+Cmd+F" },
+  { id: "all", label: "All", commandId: null },
+  { id: "classes", label: "Classes", commandId: "edit.goToClass" },
+  { id: "files", label: "Files", commandId: "search.files" },
+  { id: "symbols", label: "Symbols", commandId: "edit.goToSymbol" },
+  { id: "text", label: "Text", commandId: "edit.findInFiles" },
 ];
 
 /** The next tab (step 1) or the previous one (step -1), wrapping around. */

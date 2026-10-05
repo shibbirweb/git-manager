@@ -133,6 +133,8 @@ A workspace can hold several folders, and each folder can hold several repositor
 
 Convert between them only with `src/lib/stores/workspacePaths.ts`: `folderFor`, `locateAbsolute`, `relativeTo` and `joinPath`. Never glue strings by hand. On the Rust side, `commands::safe_join` refuses any repo-relative path that is absolute or contains `..`, so the UI can never reach outside a work tree.
 
+Windows paths: [Windows Support](Windows-Support.md#paths).
+
 ## Security
 
 - **Capabilities.** `src-tauri/capabilities/default.json` grants the main window a short list: `core:default`, setting the window title, the open, save, ask and message dialogs (ask and message are granted but unused today), opening URLs and revealing a file in Finder. Everything else goes through our own commands.

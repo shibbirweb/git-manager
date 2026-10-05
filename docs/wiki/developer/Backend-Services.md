@@ -61,7 +61,7 @@ A local MCP (Model Context Protocol) server lets AI tools and `git-manager cli` 
 - `http.rs` serves Streamable HTTP on `127.0.0.1` only, with our own loop around `httparse`, at most 8 connections and 1 MB bodies, so it can stop every thread when switched off.
 - `token.rs` keeps the bearer token in `~/.gitmanager/mcp.json`, readable by you only; `paths.rs` limits tools to the workspace folders open in the app.
 - `tools/` holds the backend tools, which call the same Rust functions as the app's own commands. `bridge.rs` sends tools the window must run as `mcp-ui-request` events and waits up to 30 seconds for `mcp_ui_respond`.
-- `cli.rs` is the command line client in the same binary: `lib.rs` hands `git-manager cli ...` to it before any window opens. `install.rs` links it into `~/.local/bin`.
+- `mcp::cli` is the command line client, its own crate in `src-tauri/cli`: `lib.rs` hands `git-manager cli ...` to it before any window opens. `install.rs` links it into `~/.local/bin` (a `git-manager.cmd` on Windows).
 
 See [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
 

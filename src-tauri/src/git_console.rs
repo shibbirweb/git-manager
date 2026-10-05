@@ -143,7 +143,7 @@ impl GitConsole {
             let entry = GitCommandEntry {
                 id,
                 started_at: now_ms(),
-                repo_path: repo_path.to_string_lossy().into_owned(),
+                repo_path: crate::paths::to_ui(repo_path),
                 args: redact_args(args),
                 running: true,
                 duration_ms: None,

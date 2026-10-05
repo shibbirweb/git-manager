@@ -18,7 +18,7 @@ If you are offline, or GitHub does not answer, the automatic check fails quietly
 
 The window's title names the new version, such as **Git Manager 0.1.0 is available**. Below it you see the version you have and the notes of every release since yours, newest first, each with its date. Beta releases carry a **Beta** tag. Its buttons:
 
-- **Download** opens the new `.dmg` in your browser (or the release page if there is no `.dmg`).
+- **Download** opens the new installer in your browser: the `.dmg` on a Mac, the `-setup.exe` on Windows (or the release page if there is none).
 - **Later** closes the window. The status bar keeps showing the update.
 - **Skip This Version** closes the window and stops announcing this version (see below).
 - **View on GitHub** opens the release page.
@@ -35,7 +35,7 @@ After **Skip This Version**, the status bar and the automatic checks stay quiet 
 
 **Stop Skipping** undoes the skip, and the status bar shows the update again.
 
-To install, open the downloaded `.dmg` and drag Git Manager into Applications, replacing the old copy. Your settings are kept, since they live in `~/.gitmanager` (see [Settings](Settings.md)).
+To install on a Mac, open the downloaded `.dmg` and drag Git Manager into Applications, replacing the old copy. On Windows, quit Git Manager and run the downloaded `-setup.exe`; it replaces the old version. Your settings are kept, since they live in `~/.gitmanager` (`C:\Users\<you>\.gitmanager` on Windows, see [Settings](Settings.md)).
 
 ## Settings, Updates
 

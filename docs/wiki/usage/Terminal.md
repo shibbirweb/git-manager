@@ -1,6 +1,6 @@
 # Terminal
 
-Git Manager has a terminal built in, like VS Code. Run git commands, a dev server or your tests without leaving the window. Each terminal runs a real shell (the program that reads your commands, such as zsh), with your usual prompt, colors and aliases.
+Git Manager has a terminal built in, like VS Code. Run git commands, a dev server or your tests without leaving the window. Each terminal runs a real shell (the program that reads your commands, such as zsh or PowerShell), with your usual prompt, colors and aliases.
 
 This page covers the panel and its terminals. Split terminals, find, clickable file paths, dropping files and the keys are on [Terminal Features](Terminal-Features.md).
 
@@ -29,7 +29,7 @@ The header has tabs on the left. **Terminal** shows your terminals. **Run** appe
 On the right of the Terminal tab you find:
 
 - **+** (New Terminal, **Ctrl+Shift+`**): starts another terminal with your default shell.
-- **The arrow next to +** (New Terminal With Shell...): a menu with every shell found on your Mac and its path. Below them are **New Terminal in Editor Area** and **Default Shell...**, which opens the Terminal section of Settings.
+- **The arrow next to +** (New Terminal With Shell...): a menu with every shell found on your computer and its path (on Windows: PowerShell, Windows PowerShell, Command Prompt and Git Bash). Below them are **New Terminal in Editor Area** and **Default Shell...**, which opens the Terminal section of Settings.
 - **Split Terminal** (**Cmd+\\**): opens a second terminal beside the shown one (see [Terminal Features](Terminal-Features.md#split-terminals)).
 - **Move Terminal into Editor Area**: moves the shown terminal into an editor tab (see below).
 - **Kill Terminal** (trash icon): stops the shown terminal and closes it.

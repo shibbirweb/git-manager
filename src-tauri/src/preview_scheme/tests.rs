@@ -1,3 +1,4 @@
+use crate::test_support::UiText;
 use std::path::PathBuf;
 
 use super::*;
@@ -257,7 +258,7 @@ fn shop() -> Shop {
     git_in(&root, &["add", "assets/logo.png", "assets/new.png"]);
     workspace.write("shop/assets/logo.png", image_bytes(b"v4"));
     Shop {
-        root: root.to_string_lossy().into_owned(),
+        root: root.ui(),
         workspace,
         first,
         second,

@@ -121,7 +121,7 @@ impl MemoryLog {
         if enabled && unchanged {
             return MemoryLogStatus {
                 enabled: true,
-                path: path.to_string_lossy().into_owned(),
+                path: crate::paths::to_ui(&path),
                 interval_ms,
                 threshold_mb,
             };
@@ -148,7 +148,7 @@ impl MemoryLog {
         }
         MemoryLogStatus {
             enabled: running.is_some(),
-            path: path.to_string_lossy().into_owned(),
+            path: crate::paths::to_ui(&path),
             interval_ms,
             threshold_mb,
         }

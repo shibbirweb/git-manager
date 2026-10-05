@@ -604,7 +604,7 @@
     if (linkProvider) {
       return;
     }
-    const cache = new FileExistenceCache((filePaths) => api.filesExist(workspaceRoots(), filePaths));
+    const cache = new FileExistenceCache((filePaths) => api.realFiles(workspaceRoots(), filePaths));
     linkCache = cache;
     // The cache only covers the lines on screen: scrolling shows others.
     linkScroll = instance.onScroll(() => cache.clear());

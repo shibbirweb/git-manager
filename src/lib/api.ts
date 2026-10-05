@@ -462,6 +462,9 @@ export const api = {
   fileTrash: (workspaceRoots: string[], entryPaths: string[]) => invoke<void>("file_trash", { workspaceRoots, entryPaths }),
   /** Which absolute paths are files inside the workspace folders (the terminal's clickable paths); never fails. */
   filesExist: (workspaceRoots: string[], filePaths: string[]) => invoke<boolean[]>("files_exist", { workspaceRoots, filePaths }),
+  /** Each path's real file path (the name as stored on disk) when it is a file inside the workspace, else null. */
+  realFiles: (workspaceRoots: string[], filePaths: string[]) =>
+    invoke<(string | null)[]>("real_files", { workspaceRoots, filePaths }),
 
   // Go to File. Indexing progress arrives on `progress` until the popup closes.
   fileSearchOpen: (workspaceRoots: string[], progress: Channel<FileSearchProgress>) =>
@@ -598,7 +601,7 @@ export const api = {
   mcpRegenerateToken: () => invoke<McpStatus>("mcp_regenerate_token"),
   /** The last 50 calls, newest last. */
   mcpActivity: () => invoke<McpActivity[]>("mcp_activity"),
-  /** Links `git-manager` in ~/.local/bin (not supported on Windows yet). */
+  /** Links `git-manager` in ~/.local/bin, or writes `git-manager.cmd` into WindowsApps on Windows. */
   cliInstall: () => invoke<McpStatus>("cli_install"),
   cliUninstall: () => invoke<McpStatus>("cli_uninstall"),
 

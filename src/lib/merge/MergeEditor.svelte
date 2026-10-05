@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { isolateHistory, redo, undo, undoDepth, redoDepth } from "@codemirror/commands";
   import { EditorSelection, EditorState, type Extension } from "@codemirror/state";
   import { EditorView } from "@codemirror/view";
@@ -633,10 +634,10 @@
     </div>
     <div class="divider"></div>
     <div class="group">
-      <button class="icon-btn" onclick={runUndo} disabled={!canUndo} title="Undo (Cmd+Z in the result)">
+      <button class="icon-btn" onclick={runUndo} disabled={!canUndo} title="Undo ({localKeys('CmdOrCtrl+Z')} in the result)">
         <Icon name="undo" size={15} />
       </button>
-      <button class="icon-btn" onclick={runRedo} disabled={!canRedo} title="Redo (Shift+Cmd+Z in the result)">
+      <button class="icon-btn" onclick={runRedo} disabled={!canRedo} title="Redo ({localKeys('CmdOrCtrl+Shift+Z')} in the result)">
         <Icon name="redo" size={15} />
       </button>
     </div>
@@ -721,7 +722,7 @@
       </button>
     </div>
     <div class="spacer"></div>
-    <span class="hint dim">F7 next change &middot; Cmd+Enter apply</span>
+    <span class="hint dim">F7 next change &middot; {localKeys("CmdOrCtrl+Enter")} apply</span>
     <button class="btn" onclick={cancel} disabled={saving}>Cancel</button>
     <button class="btn primary" onclick={() => save()} disabled={saving}>
       {saving ? "Saving..." : "Apply"}

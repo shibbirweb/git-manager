@@ -135,7 +135,7 @@ class UpdateStore {
       if (!response.ok) {
         throw new Error(response.status === 403 ? "GitHub rate limit reached, try again later" : `GitHub answered ${response.status}`);
       }
-      this.newer = newerReleases(this.current, this.channel, parseReleases(await response.json()));
+      this.newer = newerReleases(this.current, this.channel, parseReleases(await response.json(), platformName(navigator.userAgent)));
       this.checkedAt = Date.now();
       this.error = null;
       if (manual) {

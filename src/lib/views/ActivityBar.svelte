@@ -1,5 +1,7 @@
 <!-- Activity bar: picks what the left sidebar shows, or hides it. -->
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
+  import type { CommandId } from "$lib/commands/registry";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
@@ -11,12 +13,13 @@
     panel: Exclude<LeftPanel, null>;
     icon: IconName;
     label: string;
-    shortcut: string;
+    /** The command whose keys the tooltip shows. */
+    commandId: CommandId;
   }
 
   const items: Item[] = [
-    { panel: "changes", icon: "git-compare", label: "Changes", shortcut: "Shift+Cmd+G" },
-    { panel: "branches", icon: "branch", label: "Branches and Stashes", shortcut: "Shift+Cmd+E" },
+    { panel: "changes", icon: "git-compare", label: "Changes", commandId: "view.changes" },
+    { panel: "branches", icon: "branch", label: "Branches and Stashes", commandId: "view.branches" },
   ];
 
   const conflicts = $derived(
@@ -34,7 +37,7 @@
       class="item"
       class:active
       onclick={() => settings.toggleLeftPanel(item.panel)}
-      title="{item.label} ({item.shortcut}){active ? ', click to hide' : ''}"
+      title="{withCommandKeys(item.label, item.commandId)}{active ? ', click to hide' : ''}"
       aria-label={item.label}
       aria-pressed={active}
     >
@@ -50,7 +53,7 @@
     class="item"
     class:active={changesSelection.logShown}
     onclick={() => changesSelection.toggleLog()}
-    title="Log: commit history and graph (Shift+Cmd+L){changesSelection.logShown ? ', click to hide' : ''}"
+    title="{withCommandKeys('Log: commit history and graph', 'view.log')}{changesSelection.logShown ? ', click to hide' : ''}"
     aria-label="Log"
     aria-pressed={changesSelection.logShown}
   >
@@ -73,7 +76,7 @@
     class="item"
     class:active={terminalStore.panelOpen}
     onclick={() => terminalStore.toggle()}
-    title={terminalStore.panelOpen ? "Terminal (Ctrl+`), click to hide" : "Terminal (Ctrl+`)"}
+    title="{withCommandKeys('Terminal', 'view.terminal')}{terminalStore.panelOpen ? ', click to hide' : ''}"
     aria-label="Terminal"
     aria-pressed={terminalStore.panelOpen}
   >

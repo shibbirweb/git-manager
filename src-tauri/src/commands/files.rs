@@ -1,3 +1,4 @@
+use crate::paths::RealPath;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -27,7 +28,7 @@ pub async fn list_directories(
         let root_text = root.to_string_lossy().into_owned();
         let repo_roots: Vec<PathBuf> = repo_roots
             .iter()
-            .filter_map(|repo_root| PathBuf::from(repo_root).canonicalize().ok())
+            .filter_map(|repo_root| PathBuf::from(repo_root).real_path().ok())
             .collect();
         let known = known.unwrap_or_default();
         let mut lister = files::FolderLister::new(&repo_roots);

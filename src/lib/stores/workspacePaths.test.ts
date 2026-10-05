@@ -3,6 +3,9 @@ import type { RepoInfo } from "$lib/types";
 import {
   baseName,
   folderFor,
+  fromNativePath,
+  isAbsolutePath,
+  isInside,
   joinPath,
   locate,
   locateAbsolute,
@@ -11,6 +14,8 @@ import {
   parentOf,
   pathsUnder,
   repoForPath,
+  rootOf,
+  samePath,
   toWorkspacePath,
 } from "./workspacePaths";
 
@@ -98,5 +103,63 @@ describe("pathsUnder", () => {
     expect(pathsUnder(paths, ["/w/a"])).toEqual(["/w/a/x.ts", "/w/a"]);
     expect(pathsUnder(paths, ["/w/b.ts", "/w/ab"])).toEqual(["/w/ab/y.ts", "/w/b.ts"]);
     expect(pathsUnder(paths, [])).toEqual([]);
+  });
+});
+
+describe("Windows paths", () => {
+  it("converts system paths only on Windows", () => {
+    expect(fromNativePath("C:\\Users\\me\\repo", true)).toBe("C:/Users/me/repo");
+    expect(fromNativePath("d:\\work\\a.txt", true)).toBe("D:/work/a.txt");
+    expect(fromNativePath("\\\\server\\share\\repo", true)).toBe("//server/share/repo");
+    expect(fromNativePath("/tmp/a\\b", false)).toBe("/tmp/a\\b");
+  });
+
+  it("knows drive and share roots", () => {
+    expect(isAbsolutePath("C:/Users")).toBe(true);
+    expect(isAbsolutePath("/Users")).toBe(true);
+    expect(isAbsolutePath("C:relative")).toBe(false);
+    expect(isAbsolutePath("src/main.ts")).toBe(false);
+    expect(rootOf("C:/Users/me")).toBe("C:/");
+    expect(rootOf("//server/share/repo", true)).toBe("//server/share/");
+    expect(rootOf("//server/share", true)).toBe("//server/share/");
+    expect(rootOf("//server/share/repo", false)).toBe("/");
+    expect(rootOf("/Users/me")).toBe("/");
+  });
+
+  it("finds parents without leaving the drive", () => {
+    expect(parentOf("C:/Users/me")).toBe("C:/Users");
+    expect(parentOf("C:/Users")).toBe("C:/");
+    expect(parentOf("C:/")).toBe("C:/");
+  });
+
+  it("normalizes below the drive root", () => {
+    expect(normalizePath("C:/repo/./src/../README.md")).toBe("C:/repo/README.md");
+    expect(normalizePath("C:/repo/../../..")).toBe("C:/");
+    expect(normalizePath("C://repo//src")).toBe("C:/repo/src");
+  });
+
+  it("maps drive paths to repositories", () => {
+    const windowsRepos = [repo("C:/work", ""), repo("C:/work/apps/web", "apps/web")];
+    expect(locateAbsolute(windowsRepos, "C:/work/apps/web/src/a.ts")).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
+    expect(joinPath("C:/", "work")).toBe("C:/work");
+    expect(baseName("C:/work/apps")).toBe("apps");
+  });
+});
+
+describe("letter case", () => {
+  const windowsRepos = [repo("C:/Work/Shop", ""), repo("C:/Work/Shop/apps/web", "apps/web")];
+
+  it("ignores case on Windows", () => {
+    expect(samePath("C:/Work/Shop", "c:/work/shop", true)).toBe(true);
+    expect(locateAbsolute(windowsRepos, "c:/work/shop/APPS/WEB/src/a.ts", true)).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
+    expect(folderFor([{ root: "C:/Work/Shop", name: "shop" }], "C:/WORK/shop/x.ts", true)?.name).toBe("shop");
+    expect(movedPath("c:/work/shop/old/a.ts", [{ from: "C:/Work/Shop/old", to: "C:/Work/Shop/new" }], true)).toBe("C:/Work/Shop/new/a.ts");
+    expect(pathsUnder(["C:/WORK/SHOP/a.ts", "D:/other/b.ts"], ["c:/work/shop"], true)).toEqual(["C:/WORK/SHOP/a.ts"]);
+  });
+
+  it("keeps case elsewhere, where two names may differ only in case", () => {
+    expect(samePath("/Work/Shop", "/work/shop", false)).toBe(false);
+    expect(locateAbsolute([repo("/Work/Shop", "")], "/work/shop/a.ts", false)).toBeNull();
+    expect(isInside("/Work/Shop", "/Work/Shop/a.ts", false)).toBe(true);
   });
 });

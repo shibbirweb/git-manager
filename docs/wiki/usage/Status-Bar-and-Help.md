@@ -66,7 +66,7 @@ The **Help** menu in the menu bar has:
 
 Click the bug icon at the right of the status bar:
 
-- **Report a Bug** opens a new GitHub issue with a bug form. Your Git Manager version and your macOS version (for example macOS 15.4.1) are filled in for you.
+- **Report a Bug** opens a new GitHub issue with a bug form. Your Git Manager version and your system with its version (for example macOS 15.4.1 or Windows 11 build 26200.8037) are filled in for you.
 - **Request a Feature** opens a new GitHub issue with the feature form.
 
 Both open in your browser. You need a GitHub account to send them.

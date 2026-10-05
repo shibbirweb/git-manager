@@ -11,8 +11,8 @@ bun install                    # dependencies
 bun tauri dev                  # run the app (hot reload); add -- -- /path/to/folder to open a folder
 bun run check                  # svelte-check + TypeScript: must end with 0 errors and 0 warnings
 bun run test                   # Vitest (frontend unit tests)
-cd src-tauri && cargo test     # Rust unit and git integration tests
-cd src-tauri && cargo clippy --all-targets   # must report no warnings
+cd src-tauri && cargo test --workspace     # Rust unit and git integration tests (app and cli/)
+cd src-tauri && cargo clippy --workspace --all-targets   # must report no warnings
 bun tauri build --bundles app  # release .app in src-tauri/target/release/bundle/macos
 ```
 
@@ -29,7 +29,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - **Frontend bridge**: every command has a typed wrapper in `src/lib/api.ts`; DTO mirrors live in `src/lib/types.ts`. Keep both in sync with Rust (serde `rename_all = "camelCase"`).
 - **State**: `src/lib/stores/repo.svelte.ts` (`repoStore`) owns the workspace (one or more folders), repositories, per-repo statuses, the active repo, tabs and views. Mutations go through `repoStore.run(label, work, { success, repoPath })` / `runOp(...)` so busy state, error toasts and refreshes stay consistent.
 - **Settings** persist in `~/.gitmanager/settings.json` (preferences) and `state.json` (recent folders, layout) via `src/lib/stores/settings.svelte.ts`. Validate every loaded value; never overwrite a settings.json that failed to parse.
-- **Paths**: file tabs, the Files panel, Back/Forward and breadcrumbs use **absolute paths**. Git operations use **repo-relative paths** with the repo root. Convert with `src/lib/stores/workspacePaths.ts` (`folderFor`, `locateAbsolute`, `relativeTo`, `joinPath`); never concatenate strings by hand.
+- **Paths**: file tabs, the Files panel, Back/Forward and breadcrumbs use **absolute paths**. Git operations use **repo-relative paths** with the repo root. Convert with `src/lib/stores/workspacePaths.ts` (`folderFor`, `locateAbsolute`, `relativeTo`, `joinPath`); never concatenate strings by hand. Absolute paths use `/` on Windows too (`C:/Users/me`): in Rust, real paths come from `paths::real` / `RealPath::real_path` (clippy forbids `canonicalize`) and every absolute path sent to the page goes through `paths::to_ui`; on the page, dialog and drop paths go through `fromNativePath`, and absolute checks use `isAbsolutePath`, never `startsWith("/")`.
 - **Merge tool**: pure logic in `src/lib/merge/model.ts` (tested), CodeMirror glue in `extensions.ts`, UI in `MergeEditor.svelte`. The Rust engine is `src-tauri/src/merge/engine.rs`, checked against `git merge-file`.
 - **Memory is a feature**: lazy-load directories and languages, virtualize long lists, destroy CodeMirror views on unmount, no persistent backend caches, poll only while visible. Check `cargo build --release` size and the status bar memory readout after big changes.
 
@@ -44,12 +44,13 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - Svelte 5 runes only (`$state`, `$derived`, `$effect`, `$props`), `onclick`-style attributes, no `export let`. Use `$state.raw` for large arrays and objects that are replaced, not mutated.
 - Colors come from the CSS tokens in `src/app.css` (light and dark); no hard-coded colors in components.
 - Keep UI text short and plain; confirm destructive actions (`dialogs.confirm({ danger: true })`).
+- Never type a shortcut into UI text (no "Cmd+P" in a label or tooltip): use `commandKeys(id)`, `withCommandKeys(title, id)` or `localKeys("CmdOrCtrl+...")` from `commands/commandRuntime.ts`, so Windows shows Ctrl and custom keys show up.
 
 ## Testing rules
 
 - Put non-trivial logic in pure `.ts` modules next to their component and cover them with `*.test.ts` (Vitest). Examples: `merge/model.ts`, `editor/lineDiff.ts`, `stores/tabs.ts`, `stores/navHistory.ts`.
 - Rust tests use real temporary repositories via `src-tauri/src/test_support.rs` (isolated from the user's git config). Add tests with every backend change.
-- Before reporting work as done: `bun run check`, `bun run test`, `cargo test`, `cargo clippy --all-targets` all clean. Say plainly if something could not be verified (for example UI behavior that needs a visual check).
+- Before reporting work as done: `bun run check`, `bun run test`, `cargo test --workspace`, `cargo clippy --workspace --all-targets` all clean. Say plainly if something could not be verified (for example UI behavior that needs a visual check).
 
 ## Git and PRs
 

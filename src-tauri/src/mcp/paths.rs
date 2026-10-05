@@ -1,5 +1,6 @@
 //! Path safety: tools only reach the workspace folders open in the app.
 
+use crate::paths::RealPath;
 use std::ffi::OsString;
 use std::path::{Component, Path, PathBuf};
 
@@ -11,7 +12,7 @@ pub const OUTSIDE: &str = "Not inside an open workspace folder";
 pub fn canonical_folders(folder_paths: &[String]) -> Vec<PathBuf> {
     let mut folders: Vec<PathBuf> = Vec::new();
     for folder_path in folder_paths {
-        if let Ok(canonical) = Path::new(folder_path).canonicalize() {
+        if let Ok(canonical) = Path::new(folder_path).real_path() {
             if canonical.is_dir() && !folders.contains(&canonical) {
                 folders.push(canonical);
             }
@@ -33,7 +34,7 @@ pub fn resolve(path_text: &str) -> Result<PathBuf, String> {
     let mut existing = path;
     let mut rest: Vec<OsString> = Vec::new();
     loop {
-        if let Ok(canonical) = existing.canonicalize() {
+        if let Ok(canonical) = existing.real_path() {
             let mut resolved = canonical;
             for part in rest.iter().rev() {
                 resolved.push(part);
@@ -77,7 +78,7 @@ pub fn checked_repo(folders: &[PathBuf], repo_path: &str) -> Result<PathBuf, Str
     let repo = git2::Repository::discover(&resolved).map_err(|_| format!("Not a git repository: {repo_path}"))?;
     let root = repo
         .workdir()
-        .and_then(|workdir| workdir.canonicalize().ok())
+        .and_then(|workdir| workdir.real_path().ok())
         .ok_or_else(|| "Bare repositories are not supported".to_string())?;
     if !repo_allowed(folders, &root) {
         return Err(OUTSIDE.to_string());

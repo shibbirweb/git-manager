@@ -166,9 +166,9 @@ describe("parsePreferences", () => {
     expect(fontWeightName(350)).toBe("350");
   });
 
-  it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo", () => {
+  it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo, then Windows' code fonts", () => {
     expect(defaultPreferences.editorFontSize).toBe(13);
-    expect(DEFAULT_EDITOR_FONT).toBe("'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace");
+    expect(DEFAULT_EDITOR_FONT).toBe("'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace");
     // A saved value is kept, so changing a default never touches what the user picked.
     expect(parsePreferences({ editorFontSize: 12.5, editorLineHeight: 1.55 }).preferences).toMatchObject({
       editorFontSize: 12.5,

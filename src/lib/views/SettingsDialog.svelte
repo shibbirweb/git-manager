@@ -49,6 +49,9 @@
   import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
+  import { platformName } from "$lib/update/releases";
+  import { commandKeys, localKeys } from "$lib/commands/commandRuntime";
+  import { revealLabel } from "$lib/views/files/reveal";
   import { MCP_PORT_RANGE, parseMcpPort } from "$lib/stores/settingsData";
   import GitHubSignInForm from "./github/GitHubSignInForm.svelte";
   import ColorThemePicker from "./settings/ColorThemePicker.svelte";
@@ -606,6 +609,14 @@
       close();
     }
   }
+  /** Shortcut words in the hints: the click modifier and the Option key differ on Windows and Linux. */
+  const onMac = platformName(navigator.userAgent) === "macOS";
+  const clickModifier = onMac ? "Cmd" : "Ctrl";
+  const optionKey = onMac ? "Option" : "Alt";
+  /** Windows has no login shell: its default is the first shell found (PowerShell 7, else Windows PowerShell). */
+  const defaultShellLabel = platformName(navigator.userAgent) === "Windows" ? "Default" : "Login shell";
+  /** Where Install puts the command, as the hint names it: ~/.local/bin, or WindowsApps on Windows. */
+  const cliFolderLabel = $derived(onMac ? "~/.local/bin" : "WindowsApps (on your PATH)");
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -748,7 +759,8 @@
               <span>File toolbar</span>
               <span class="hint">
                 The bar with a file's path, badges and buttons: above the code, under it, or hidden. Pick its parts
-                below. Without the path, Cmd+Up shows the Navigation Bar over the editor.
+                below. Without the path, {commandKeys("edit.navigationBar") ?? "Jump to Navigation Bar"} shows the Navigation Bar
+                over the editor.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="File toolbar">
@@ -1230,8 +1242,8 @@
             <div class="label">
               <span>Recent Files<MemoryFlag setting="recentFiles" /></span>
               <span class="hint">
-                Cmd+E lists the files you worked on last, and Quick Open and Search Everywhere show them first.
-                Each workspace keeps up to 50 in state.json. Off, Cmd+E only says it is off.
+                {commandKeys("edit.recentFiles") ?? "Recent Files"} lists the files you worked on last, and Quick Open and
+                Search Everywhere show them first. Each workspace keeps up to 50 in state.json. Off, it only says it is off.
               </span>
             </div>
             <input
@@ -1517,7 +1529,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
-              <span class="hint">Show the author, age and commit of the cursor line at its end. Cmd+click it (Ctrl+click elsewhere) to show the commit in the Log; add Option to copy the commit hash.</span>
+              <span class="hint">Show the author, age and commit of the cursor line at its end. {clickModifier}+click it to show the commit in the Log; add {optionKey} to copy the commit hash.</span>
             </div>
             <input
               type="checkbox"
@@ -1653,7 +1665,7 @@
             <div class="label">
               <span>Message history</span>
               <span class="hint">
-                The clock in the commit box (Cmd+E, or Up in an empty box) lists your recent commit messages and messages
+                The clock in the commit box ({localKeys("CmdOrCtrl+E")}, or Up in an empty box) lists your recent commit messages and messages
                 that were not committed. They are kept in state.json, up to 30 per repository.
               </span>
               {#if settings.commitMessageHistory && Object.keys(settings.commitMessages).length > 0}
@@ -1705,7 +1717,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Files panel</span>
-              <span class="hint">Show the file tree on the right. Also toggled with Cmd+B.</span>
+              <span class="hint">
+                Show the file tree on the right.{#if commandKeys("view.filesPanel")}
+                  Also toggled with {commandKeys("view.filesPanel")}.{/if}
+              </span>
             </div>
             <input type="checkbox" class="switch" checked={settings.explorerOpen} onchange={() => settings.toggleExplorer()} />
           </label>
@@ -1724,7 +1739,9 @@
           <div class="row">
             <div class="label">
               <span>Left sidebar</span>
-              <span class="hint">Also toggled from the activity bar or with Option+Cmd+B.</span>
+              <span class="hint">
+                Also toggled from the activity bar{#if commandKeys("view.sidebar")} or with {commandKeys("view.sidebar")}{/if}.
+              </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Left sidebar">
               {#each [{ value: "changes", label: "Changes" }, { value: "branches", label: "Branches" }, { value: null, label: "Hidden" }] as const as option (option.label)}
@@ -1768,7 +1785,7 @@
               onchange={(event) => set("terminalShell", event.currentTarget.value || null)}
               aria-label="Default shell"
             >
-              <option value="">{loginShell ? `Login shell (${loginShell.name})` : "Login shell"}</option>
+              <option value="">{loginShell ? `${defaultShellLabel} (${loginShell.name})` : defaultShellLabel}</option>
               {#each terminalStore.shells as shell (shell.id)}
                 <option value={shell.id}>{shell.name} ({shell.path})</option>
               {/each}
@@ -2038,7 +2055,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Find in terminal</span>
-              <span class="hint">Cmd+F searches the output. Off, the search code is never loaded.</span>
+              <span class="hint">{localKeys(onMac ? "Cmd+F" : "Ctrl+Shift+F")} searches the output. Off, the search code is never loaded.</span>
             </div>
             <input
               type="checkbox"
@@ -2050,7 +2067,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Clickable file paths</span>
-              <span class="hint">Cmd+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
+              <span class="hint">{clickModifier}+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
             </div>
             <input
               type="checkbox"
@@ -2062,7 +2079,7 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Drop files to type their paths</span>
-              <span class="hint">Dropping files from Finder on a terminal types their paths, quoted for the shell.</span>
+              <span class="hint">Dropping files on a terminal types their paths, quoted for the shell.</span>
             </div>
             <input
               type="checkbox"
@@ -2111,8 +2128,15 @@
             <div class="label">
               <span>Keyboard</span>
               <span class="hint">
-                Ctrl+` shows or hides the terminal, Ctrl+Shift+` opens a new one. In a terminal, Cmd+C copies the
-                selection, Cmd+V pastes, Cmd+K clears, Cmd+F finds and Cmd+\ splits; other Cmd shortcuts still work.
+                {commandKeys("view.terminal") ?? "View > Terminal"} shows or hides the terminal,
+                {commandKeys("terminal.new") ?? "New Terminal"} opens a new one.
+                {#if onMac}
+                  In a terminal, Cmd+C copies the selection, Cmd+V pastes, Cmd+K clears, Cmd+F finds and Cmd+\ splits;
+                  other Cmd shortcuts still work.
+                {:else}
+                  In a terminal, Ctrl+Shift+C copies the selection, Ctrl+Shift+V pastes, Ctrl+Shift+F finds and
+                  Ctrl+Shift+5 splits; the app's shortcuts still work, and other Ctrl keys go to the shell.
+                {/if}
               </span>
             </div>
           </div>
@@ -2255,16 +2279,18 @@
                 <span class="hint selectable">
                   {mcpStatus.cliInstalledPath
                     ? `Installed at ${mcpStatus.cliInstalledPath}.`
-                    : "Adds git-manager to ~/.local/bin, so you can type it in any folder."}
+                    : `Adds git-manager to ${cliFolderLabel}, so you can type it in any folder.`}
                 </span>
               </div>
               {#if mcpStatus.cliInstalledPath}
                 <button class="btn small" onclick={() => void mcpStore.uninstallCli()} disabled={mcpStore.working}>Remove</button>
               {:else}
-                <button class="btn small" onclick={() => void mcpStore.installCli()} disabled={mcpStore.working}>Install in ~/.local/bin</button>
+                <button class="btn small" onclick={() => void mcpStore.installCli()} disabled={mcpStore.working}>
+                  {onMac ? "Install in ~/.local/bin" : "Install"}
+                </button>
               {/if}
             </div>
-            {#if !mcpStatus.cliOnPath}
+            {#if !mcpStatus.cliOnPath && onMac}
               <div class="row stacked">
                 <div class="label">
                   <span>~/.local/bin is not on your PATH</span>
@@ -2273,6 +2299,20 @@
                 <div class="snippet">
                   <pre class="command selectable">{LOCAL_BIN_PATH_LINE}</pre>
                   <button class="btn small" onclick={() => void copy(LOCAL_BIN_PATH_LINE)}>Copy</button>
+                </div>
+              </div>
+            {:else if !mcpStatus.cliOnPath}
+              <div class="row stacked">
+                <div class="label">
+                  <span>The folder is not on your PATH</span>
+                  <span class="hint">
+                    Windows keeps it there for every user unless it was removed. Add it back under Edit environment variables
+                    for your account (Path), then open a new terminal, to type <code>git-manager</code> anywhere.
+                  </span>
+                </div>
+                <div class="snippet">
+                  <pre class="command selectable">{mcpStatus.cliFolder}</pre>
+                  <button class="btn small" onclick={() => void copy(mcpStatus?.cliFolder ?? "")}>Copy</button>
                 </div>
               </div>
             {/if}
@@ -2350,7 +2390,7 @@
                 <span>Log file</span>
                 <code class="path selectable">{memoryLog.status.path}</code>
               </div>
-              <button class="btn small" onclick={() => void revealMemoryLog()}>Reveal in Finder</button>
+              <button class="btn small" onclick={() => void revealMemoryLog()}>{revealLabel(platformName(navigator.userAgent))}</button>
             </div>
           {/if}
         {:else if section === "updates"}

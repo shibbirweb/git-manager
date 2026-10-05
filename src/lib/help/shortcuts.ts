@@ -70,11 +70,8 @@ function modifierOf(part: string, platform: MenuPlatform): string | null {
   }
 }
 
-/**
- * Writes an accelerator ("CmdOrCtrl+Shift+E", "Ctrl+`", also CodeMirror's "Mod-Shift-d") the
- * way the platform shows keys: "⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere.
- */
-export function formatKeys(accelerator: string, platform: MenuPlatform): string {
+/** An accelerator's modifiers (normalized) and its key. */
+function splitKeys(accelerator: string, platform: MenuPlatform): { modifiers: Set<string>; key: string } {
   const separator = accelerator.includes("+") ? "+" : "-";
   // A trailing separator is the key itself ("CmdOrCtrl+-", "Ctrl-+").
   const raw = accelerator.endsWith(`${separator}${separator}`)
@@ -90,12 +87,41 @@ export function formatKeys(accelerator: string, platform: MenuPlatform): string 
       key = part;
     }
   }
+  return { modifiers, key };
+}
+
+function keyText(key: string, mac: boolean): string {
   const named = KEY_NAMES[key.toLowerCase()];
-  const keyText = named ? (platform === "macos" ? named.mac : named.other) : key.length === 1 ? key.toUpperCase() : key;
-  if (platform === "macos") {
-    return MAC_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => MAC_SYMBOLS[modifier]).join("") + keyText;
+  if (named) {
+    return mac ? named.mac : named.other;
   }
-  return [...OTHER_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => OTHER_NAMES[modifier]), keyText].join("+");
+  return key.length === 1 ? key.toUpperCase() : key;
+}
+
+/**
+ * Writes an accelerator ("CmdOrCtrl+Shift+E", "Ctrl+`", also CodeMirror's "Mod-Shift-d") the
+ * way the platform shows keys: "⇧⌘E" on macOS, "Ctrl+Shift+E" elsewhere.
+ */
+export function formatKeys(accelerator: string, platform: MenuPlatform): string {
+  const { modifiers, key } = splitKeys(accelerator, platform);
+  if (platform === "macos") {
+    return MAC_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => MAC_SYMBOLS[modifier]).join("") + keyText(key, true);
+  }
+  return [...OTHER_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => OTHER_NAMES[modifier]), keyText(key, false)].join("+");
+}
+
+const MAC_WORDS: Record<string, string> = { ctrl: "Ctrl", alt: "Option", shift: "Shift", cmd: "Cmd" };
+
+/**
+ * An accelerator in words for running text and tooltips: "Shift+Cmd+E" on macOS (Apple's
+ * modifier order), "Ctrl+Shift+E" elsewhere.
+ */
+export function formatKeyWords(accelerator: string, platform: MenuPlatform): string {
+  if (platform !== "macos") {
+    return formatKeys(accelerator, platform);
+  }
+  const { modifiers, key } = splitKeys(accelerator, platform);
+  return [...MAC_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => MAC_WORDS[modifier]), keyText(key, false)].join("+");
 }
 
 /** Custom keys by command id (registry.ts's ShortcutOverrides): an accelerator, or null for none. */

@@ -30,6 +30,10 @@ sequenceDiagram
 
 When the app is started from a terminal (as `bun tauri dev` does), macOS makes the **terminal** the responsible process, so its other WebKit helpers would match too. Then `approximate` is set and a helper must also have started after our process (`proc_start_abstime`). The popover says so. Polling stops on `visibilitychange` while the window is hidden. On other platforms `usage()` returns zero and the item is hidden.
 
+### On Windows
+
+There is no "responsible process" on Windows. `memory.rs` takes a process snapshot (`CreateToolhelp32Snapshot`) and walks down from our pid: the `msedgewebview2.exe` browser the app started, then that browser's helpers (`webview_processes`, tested on every platform). Terminal shells and git are left out, as on macOS. Each process counts its private working set (`PROCESS_MEMORY_COUNTERS_EX2`), Task Manager's "Memory" column. The role comes from `--type=` on the helper's command line (`webview_label`): renderer is Web content (UI), gpu-process is Graphics, the network utility is Networking. Clear Cache stays macOS only, so the status bar hides its button elsewhere.
+
 ### GPU acceleration in the popup
 
 The popup also shows whether the GPU is used. `probeWebgl` (`src/lib/ui/webglProbe.ts`) asks the web view for a WebGL 2 context each time the popup opens, reads the renderer name, and releases the context with `WEBGL_lose_context` at once, so the check holds no GPU memory. Each terminal reports how it draws to `gpuRenderers` (`src/lib/terminal/gpuRenderers.svelte.ts`): `TerminalAddons` calls back with `gpu` when the WebGL addon loads, `fallback` when it fails or loses its context, and `normal` when GPU drawing is off; a closed terminal is forgotten. `terminalDrawingSummary` in `gpuStatus.ts` turns that and the two settings (GPU acceleration, font ligatures) into one line. GPU drawing costs about 70 MB for the first terminal ([Measuring Setting Memory](Measuring-Setting-Memory.md)). The Graphics row above is the memory of WebKit's GPU process.
@@ -86,7 +90,7 @@ flowchart LR
 
 - `src/lib/terminal/gpuStatus.test.ts`: the GPU lines for every terminal state and setting, and the WebGL label.
 
-- `src-tauri/src/memory.rs`: `labels_web_kit_helpers` checks the role names; `measures_the_current_process` (macOS only) checks that our pid comes first and has memory.
+- `src-tauri/src/memory.rs`: `labels_web_kit_helpers` and `names_webview2_processes_by_their_type` check the role names, `finds_only_the_webview2_processes_below_the_app` the Windows process walk; `measures_the_current_process` (macOS and Windows) checks that our pid comes first and has memory.
 - `src-tauri/src/memory_log.rs`: UTC timestamps, the line format, and a run that logs changes and events, then stops.
 - `src/lib/debug/memoryEvents.test.ts`: `viewLabel` names the view, the tab file and the panels. `scrollAreaName` and `watchScrolling` have no unit test yet.
 - `src-tauri/src/mcp/tools/recorder.rs`: a recording with marks, new samples only, and stop.

@@ -135,6 +135,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Other MCP clients", "mcp json config", "MCP server"],
     ["Command line tool", "cli terminal scripts git-manager"],
     ["Install", "cli command line tool", "Command line tool"],
+    ["The folder is not on your PATH", "cli command line tool windows environment variables", "Command line tool"],
     ["Examples", "cli command line tool", "Command line tool"],
     ["Memory log", "ram debug"],
     ["Log memory changes", "ram debug"],

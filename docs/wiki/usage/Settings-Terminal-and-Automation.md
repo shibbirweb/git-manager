@@ -14,7 +14,7 @@ The section has five groups. A preview under the font box shows a prompt, a comm
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Default shell | The shell new terminals start: **Login shell** (your account's own shell, the one Terminal.app uses) or any shell found on your Mac, shown with its path. | Login shell, shown with its name, such as **Login shell (zsh)** |
+| Default shell | The shell new terminals start: **Login shell** (your account's own shell, the one Terminal.app uses) or any shell found on your computer, shown with its path. On Windows the first choice is **Default**: PowerShell 7, else Windows PowerShell. | Login shell, shown with its name, such as **Login shell (zsh)** |
 
 A saved shell that is gone says **(not found, the login shell is used)**. The arrow next to + in the terminal panel starts any other shell once.
 
@@ -46,7 +46,7 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 | Copy on selection | Selecting text copies it to the clipboard. | Off |
 | Find in terminal | Cmd+F searches the output. Off, the search code is never loaded. | On |
 | Clickable file paths | Cmd+click a path such as `src/app.ts:12:5` to open it at that line. Only files inside an open folder become links. | On |
-| Drop files to type their paths | Dropping files from Finder on a terminal types their paths, quoted for the shell. | On |
+| Drop files to type their paths | Dropping files on a terminal types their paths, quoted for the shell. | On |
 | Visual bell | A short flash when the shell rings the bell, or a dot on a terminal that is out of sight. | On |
 | Smooth scrolling | Animates scrolling with the mouse wheel. | Off |
 | Option as Meta key | Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as å. | Off |
@@ -92,7 +92,7 @@ While the server runs you also see the **Secret token** (**Show**, **Copy**, **N
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Command line tool | Lets scripts and AI agents in a terminal use the same tools, for example `git-manager cli tools`. Git Manager must be running. | Off |
-| Install | **Install in ~/.local/bin** adds the `git-manager` command; **Remove** takes it away. If that folder is not on your PATH, a line to add to `~/.zshrc` is shown. | |
+| Install | **Install in ~/.local/bin** (**Install** on Windows) adds the `git-manager` command; **Remove** takes it away. If that folder is not on your PATH, a line to add to `~/.zshrc` is shown (on Windows, the folder to add to your PATH). | |
 
 The tool switches in **Help > Available MCP Tools...** apply here too. See [MCP and CLI](MCP-and-CLI.md).
 
@@ -105,7 +105,7 @@ A debugging aid: it writes a line whenever the app's memory changes, next to wha
 | Log memory changes | Turns the log on. AI tools can read it with `read_memory_log`. | Off |
 | Read memory every | **250 ms**, **500 ms**, **1 s** or **2 s**. | 500 ms |
 | Write a line when it changes by | **0 MB** (every reading), **1 MB**, **5 MB** or **20 MB**. | 5 MB |
-| Log file | Where the log is, `~/.gitmanager/logs/memory.log`, with **Reveal in Finder**. | |
+| Log file | Where the log is, `~/.gitmanager/logs/memory.log`, with **Reveal in Finder** (**Reveal in File Explorer** on Windows). | |
 
 The log starts over when it passes 5 MB, and the previous one is kept as `memory.log.1`. See [Debugging](../developer/Debugging.md).
 

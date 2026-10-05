@@ -37,7 +37,7 @@ fn list_schema() -> Value {
 
 fn scan_project_scripts(ctx: &ToolCtx, args: &Args) -> ToolResult {
     let folders = match args.opt_str("folderPath")? {
-        Some(_) => vec![ctx.path(args, "folderPath")?.to_string_lossy().into_owned()],
+        Some(_) => vec![crate::paths::to_ui(ctx.path(args, "folderPath")?)],
         None => ctx.folder_strings(),
     };
     json_out(json!({ "sources": scripts::list_project_scripts(&folders) }))

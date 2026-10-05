@@ -1,3 +1,4 @@
+mod child_process;
 mod commands;
 mod config;
 mod error;
@@ -14,6 +15,9 @@ mod memory_log;
 mod merge;
 mod run_process;
 mod node_versions;
+mod paths;
+#[cfg(any(windows, test))]
+mod png_encode;
 mod preview_scheme;
 mod scripts;
 mod shelf;
@@ -44,8 +48,20 @@ pub fn run() {
         std::process::exit(mcp::cli::run(&args[1..]));
     }
     let launch = LaunchMode::from_args(&args);
+    git::repo::configure_libgit2();
 
-    let app = tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // Registered first, as the plugin asks. Never for the merge tool: `git mergetool` starts it next to
+    // the running app on purpose.
+    #[cfg(windows)]
+    let builder = if launch.is_mergetool() {
+        builder
+    } else {
+        builder.plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+            commands::window::on_second_launch(app, &args, &cwd);
+        }))
+    };
+    let app = builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(launch))
@@ -202,6 +218,7 @@ pub fn run() {
             commands::file_ops::file_move,
             commands::file_ops::file_trash,
             commands::file_ops::files_exist,
+            commands::file_ops::real_files,
             commands::search::file_search_open,
             commands::search::file_search_query,
             commands::search::file_search_close,

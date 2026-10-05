@@ -4,6 +4,7 @@
   runs one in a new terminal. Mounted only while it shows; the list is read again on every mount.
 -->
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { tick } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { navigation } from "$lib/stores/navigation.svelte";
@@ -302,7 +303,7 @@
 </script>
 
 <div class="scripts-view">
-  <PanelHead title="Scripts" hideTitle="Hide (Option+Cmd+B)" onhide={() => settings.setLeftPanel(null)}>
+  <PanelHead title="Scripts" hideTitle={withCommandKeys("Hide", "view.sidebar")} onhide={() => settings.setLeftPanel(null)}>
     <button class="icon-btn small" title="Collapse All" aria-label="Collapse all" onclick={collapseAll} disabled={sources.length === 0}>
       <Icon name="chevrons-left" size={14} />
     </button>

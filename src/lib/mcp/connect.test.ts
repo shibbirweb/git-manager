@@ -27,24 +27,33 @@ describe("cliPrefix", () => {
   const binary = "/Applications/Git Manager.app/Contents/MacOS/git-manager";
 
   it("uses the short name once installed on PATH", () => {
-    expect(cliPrefix({ cliCommand: `${binary} cli`, cliInstalledPath: "/Users/me/.local/bin/git-manager", cliOnPath: true })).toBe(
+    expect(cliPrefix({ cliCommand: `${binary} cli`, cliInstalledPath: "/Users/me/.local/bin/git-manager", cliOnPath: true }, false)).toBe(
       "git-manager cli",
     );
   });
 
   it("uses the link's full path when its folder is not on PATH", () => {
-    expect(cliPrefix({ cliCommand: `${binary} cli`, cliInstalledPath: "/Users/me/.local/bin/git-manager", cliOnPath: false })).toBe(
+    expect(cliPrefix({ cliCommand: `${binary} cli`, cliInstalledPath: "/Users/me/.local/bin/git-manager", cliOnPath: false }, false)).toBe(
       "/Users/me/.local/bin/git-manager cli",
     );
   });
 
   it("quotes the app's own path when it is not installed", () => {
-    expect(cliPrefix({ cliCommand: `${binary} cli`, cliInstalledPath: null, cliOnPath: true })).toBe(`'${binary}' cli`);
-    expect(cliPrefix({ cliCommand: "", cliInstalledPath: null, cliOnPath: false })).toBe("git-manager cli");
+    expect(cliPrefix({ cliCommand: `${binary} cli`, cliInstalledPath: null, cliOnPath: true }, false)).toBe(`'${binary}' cli`);
+    expect(cliPrefix({ cliCommand: "", cliInstalledPath: null, cliOnPath: false }, false)).toBe("git-manager cli");
+  });
+
+  it("writes Windows paths for PowerShell", () => {
+    const windowsBinary = "C:/Users/me/AppData/Local/Git Manager/git-manager-cli.exe";
+    expect(cliPrefix({ cliCommand: `${windowsBinary} cli`, cliInstalledPath: null, cliOnPath: true }, true)).toBe(`& "${windowsBinary}" cli`);
+    const shim = "C:/Users/me/AppData/Local/Microsoft/WindowsApps/git-manager.cmd";
+    expect(cliPrefix({ cliCommand: `${windowsBinary} cli`, cliInstalledPath: shim, cliOnPath: false }, true)).toBe(`& "${shim}" cli`);
+    expect(cliPrefix({ cliCommand: `${windowsBinary} cli`, cliInstalledPath: shim, cliOnPath: true }, true)).toBe("git-manager cli");
+    expect(cliExamples("git-manager cli", true).at(-1)?.command).toBe("git-manager cli screenshot $HOME\\Desktop\\gm.png");
   });
 
   it("gives the examples with that prefix", () => {
-    const commands = cliExamples("git-manager cli").map((example) => example.command);
+    const commands = cliExamples("git-manager cli", false).map((example) => example.command);
     expect(commands).toEqual([
       "git-manager cli status",
       "git-manager cli tools",

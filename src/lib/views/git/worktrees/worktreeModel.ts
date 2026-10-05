@@ -1,7 +1,7 @@
 // Pure helpers for worktrees: labels, the default folder of a new worktree and
 // the New Worktree dialog's validation.
 
-import { baseName, joinPath, parentOf } from "$lib/stores/workspacePaths";
+import { baseName, isAbsolutePath, joinPath, parentOf } from "$lib/stores/workspacePaths";
 import type { WorktreeInfo } from "$lib/types";
 
 /** What a worktree has checked out: its branch, a detached commit, or "bare". */
@@ -58,7 +58,7 @@ export function validateWorktreePath(worktreePath: string, worktrees: WorktreeIn
   if (trimmed === "") {
     return "Choose a folder for the worktree";
   }
-  if (!trimmed.startsWith("/")) {
+  if (!isAbsolutePath(trimmed)) {
     return "Use an absolute path";
   }
   if (worktrees.some((worktree) => worktree.path.replace(/\/+$/, "") === trimmed)) {

@@ -1,5 +1,6 @@
 <!-- Activity bar on the right edge, mirroring the left one: toggles the Files panel. -->
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
 </script>
@@ -9,7 +10,7 @@
     class="item"
     class:active={settings.explorerOpen}
     onclick={() => settings.toggleExplorer()}
-    title="Files (Cmd+B){settings.explorerOpen ? ', click to hide' : ''}"
+    title="{withCommandKeys('Files', 'view.filesPanel')}{settings.explorerOpen ? ', click to hide' : ''}"
     aria-label="Files"
     aria-pressed={settings.explorerOpen}
   >

@@ -2,6 +2,7 @@
 //! `.code-workspace` format (`{"folders": [{"path": "..."}]}`, JSON with
 //! comments). Paths are stored relative to the file when they share a parent.
 
+use crate::paths::RealPath;
 use std::path::{Component, Path, PathBuf};
 
 use serde::Serialize;
@@ -112,12 +113,12 @@ fn name_of(file: &Path) -> String {
 /// Canonical path of an existing folder entry, relative to the workspace file's folder.
 fn resolve_folder(base: &Path, path: &str) -> Option<String> {
     let expanded = match path.strip_prefix("~/") {
-        Some(rest) => std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default().join(rest),
+        Some(rest) => crate::config::home_dir().unwrap_or_default().join(rest),
         None => PathBuf::from(path),
     };
     let full = if expanded.is_absolute() { expanded } else { base.join(expanded) };
-    match full.canonicalize() {
-        Ok(canonical) if canonical.is_dir() => Some(canonical.to_string_lossy().into_owned()),
+    match full.real_path() {
+        Ok(canonical) if canonical.is_dir() => Some(crate::paths::to_ui(&canonical)),
         _ => None,
     }
 }
@@ -161,8 +162,8 @@ fn folder_entries(existing: &[Value], base: &Path, folders: &[String]) -> Vec<Va
     let mut entries = Vec::new();
     for folder in folders {
         let canonical = Path::new(folder)
-            .canonicalize()
-            .map(|path| path.to_string_lossy().into_owned())
+            .real_path()
+            .map(crate::paths::to_ui)
             .unwrap_or_else(|_| folder.clone());
         let reused = (0..existing.len()).find(|&index| !used[index] && resolved[index].as_deref() == Some(canonical.as_str()));
         match reused {
@@ -328,7 +329,7 @@ fn splice_folders(text: &str, entries: &Value, has_folders: bool) -> AppResult<O
 /// Temp file then rename, like the config files, so a crash never leaves half a file.
 fn write_atomically(file: &Path, text: &str) -> AppResult<()> {
     // Writing to a symlink's target keeps the link itself in place.
-    let target = file.canonicalize().unwrap_or_else(|_| file.to_path_buf());
+    let target = file.real_path().unwrap_or_else(|_| file.to_path_buf());
     let parent = target.parent().map(Path::to_path_buf).unwrap_or_else(|| PathBuf::from("."));
     std::fs::create_dir_all(&parent)?;
     let name = target.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
@@ -362,7 +363,7 @@ pub fn write(file: &Path, folders: &[String]) -> AppResult<()> {
     }
     let base = file
         .parent()
-        .map(|parent| parent.canonicalize().unwrap_or_else(|_| parent.to_path_buf()))
+        .map(|parent| parent.real_path().unwrap_or_else(|_| parent.to_path_buf()))
         .unwrap_or_else(|| PathBuf::from("/"));
     let old_entries = root.get("folders").and_then(Value::as_array).cloned().unwrap_or_default();
     let entries = Value::Array(folder_entries(&old_entries, &base, folders));
@@ -389,9 +390,10 @@ pub fn write(file: &Path, folders: &[String]) -> AppResult<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::UiText;
 
     fn canonical(path: &Path) -> String {
-        path.canonicalize().unwrap().to_string_lossy().into_owned()
+        path.real_path().unwrap().ui()
     }
 
     #[test]

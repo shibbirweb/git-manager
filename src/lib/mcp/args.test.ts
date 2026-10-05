@@ -57,6 +57,11 @@ describe("paths", () => {
     expect(normalizeAbsolutePath("/Users/me/project/", "filePath")).toBe("/Users/me/project");
     expect(normalizeAbsolutePath("/Users//me", "filePath")).toBe("/Users/me");
     expect(normalizeAbsolutePath("/", "filePath")).toBe("/");
+    expect(normalizeAbsolutePath("C:\\Users\\me\\project\\", "filePath", true)).toBe("C:/Users/me/project");
+    expect(normalizeAbsolutePath("c:/Users//me", "filePath", true)).toBe("C:/Users/me");
+    expect(normalizeAbsolutePath("C:/", "filePath", true)).toBe("C:/");
+    expect(() => normalizeAbsolutePath("C:\\repo\\..\\Windows", "filePath", true)).toThrow('"." or ".."');
+    expect(() => normalizeAbsolutePath("C:\\Users", "filePath", false)).toThrow("absolute path");
     expect(requiredPath({ filePath: "/a/b.txt" }, "filePath")).toBe("/a/b.txt");
   });
 

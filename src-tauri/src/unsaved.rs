@@ -169,6 +169,9 @@ mod tests {
     use super::*;
     use crate::test_support::TestDir;
 
+    /// A tab path the platform calls absolute.
+    const A_TXT: &str = if cfg!(windows) { "C:/work/app/a.txt" } else { "/work/app/a.txt" };
+
     fn meta(tab_path: &str, saved_at: u64) -> UnsavedMeta {
         UnsavedMeta {
             tab_path: tab_path.to_string(),
@@ -181,19 +184,19 @@ mod tests {
     fn writes_reads_and_removes_a_text() {
         let dir = TestDir::new();
         let store = dir.file("unsaved");
-        assert_eq!(read(&store, "/work/app/a.txt").unwrap(), None);
-        write(&store, &meta("/work/app/a.txt", 5), "one\ntwo\n".as_bytes()).unwrap();
-        let kept = read(&store, "/work/app/a.txt").unwrap().unwrap();
-        assert_eq!(kept.meta, meta("/work/app/a.txt", 5));
+        assert_eq!(read(&store, A_TXT).unwrap(), None);
+        write(&store, &meta(A_TXT, 5), "one\ntwo\n".as_bytes()).unwrap();
+        let kept = read(&store, A_TXT).unwrap().unwrap();
+        assert_eq!(kept.meta, meta(A_TXT, 5));
         assert_eq!(kept.text, "one\ntwo\n");
 
-        write(&store, &meta("/work/app/a.txt", 6), "three".as_bytes()).unwrap();
-        assert_eq!(read(&store, "/work/app/a.txt").unwrap().unwrap().text, "three");
+        write(&store, &meta(A_TXT, 6), "three".as_bytes()).unwrap();
+        assert_eq!(read(&store, A_TXT).unwrap().unwrap().text, "three");
         assert_eq!(std::fs::read_dir(&store).unwrap().count(), 1, "one file per tab, no temporary left");
 
-        remove(&store, "/work/app/a.txt").unwrap();
-        assert_eq!(read(&store, "/work/app/a.txt").unwrap(), None);
-        remove(&store, "/work/app/a.txt").unwrap();
+        remove(&store, A_TXT).unwrap();
+        assert_eq!(read(&store, A_TXT).unwrap(), None);
+        remove(&store, A_TXT).unwrap();
     }
 
     #[test]
@@ -212,24 +215,24 @@ mod tests {
         let store = dir.file("unsaved");
         assert!(list(&store).is_empty(), "a missing folder lists nothing");
         write(&store, &meta("untitled:b", 20), b"later").unwrap();
-        write(&store, &meta("/work/app/a.txt", 10), b"first").unwrap();
+        write(&store, &meta(A_TXT, 10), b"first").unwrap();
         std::fs::write(store.join("notes.txt"), "{\"tabPath\":\"/x\",\"workspaceId\":\"w\",\"savedAt\":1}\nhi").unwrap();
         std::fs::write(store.join("broken.txt"), "not json").unwrap();
         std::fs::write(store.join("other.json"), "{}").unwrap();
         let listed: Vec<String> = list(&store).into_iter().map(|meta| meta.tab_path).collect();
-        assert_eq!(listed, ["/work/app/a.txt", "untitled:b"]);
+        assert_eq!(listed, [A_TXT, "untitled:b"]);
     }
 
     #[test]
     fn a_damaged_file_reads_as_nothing() {
         let dir = TestDir::new();
         let store = dir.file("unsaved");
-        write(&store, &meta("/work/app/a.txt", 1), b"text").unwrap();
-        let path = file_for(&store, "/work/app/a.txt").unwrap();
+        write(&store, &meta(A_TXT, 1), b"text").unwrap();
+        let path = file_for(&store, A_TXT).unwrap();
         std::fs::write(&path, "no newline").unwrap();
-        assert_eq!(read(&store, "/work/app/a.txt").unwrap(), None);
+        assert_eq!(read(&store, A_TXT).unwrap(), None);
         std::fs::write(&path, "{\"tabPath\":\"/other\",\"workspaceId\":\"w\",\"savedAt\":1}\ntext").unwrap();
-        assert_eq!(read(&store, "/work/app/a.txt").unwrap(), None, "a file for another tab is not this one's");
+        assert_eq!(read(&store, A_TXT).unwrap(), None, "a file for another tab is not this one's");
     }
 
     #[test]

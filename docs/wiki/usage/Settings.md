@@ -22,13 +22,13 @@ The sections are on the left, with a [search field](Settings-Search.md) above th
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Theme | **System** follows macOS, or pick **Light** or **Dark**. Colors are picked in **Editor**. | System |
+| Theme | **System** follows the system, or pick **Light** or **Dark**. Colors are picked in **Editor**. | System |
 | Rounded panels | Rounded panels with space between them, in any color theme. See [Rounded Panels](Rounded-Panels.md). | Off |
 | File toolbar | **Top**, **Bottom** or **Hidden**, plus switches. See [Navigation Bar](Navigation-Bar.md#the-file-toolbar-top-bottom-or-hidden). | Top |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
 | File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |
 
-The theme is also in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark; macOS is followed again once you pick **System**.
+The theme is also in **View > Appearance**. The sun button in the header (**Toggle light/dark theme**) switches between Light and Dark; pick **System** to follow the system again.
 
 ![Dark theme](../images/dark-theme.png)
 
@@ -48,7 +48,7 @@ The theme is also in **View > Appearance**. The sun button in the header (**Togg
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Editor font family | A comma-separated list. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace |
+| Editor font family | A comma-separated list. The first installed font is used; `monospace` is always added last. | 'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace |
 | Editor font size | Code in the editor, diffs and the merge tool, 10 to 20 px in half steps. See [Zoom](Code-Appearance.md#zoom). | 13 px |
 | Editor font weight | Thin to Black. See [Font weight](Code-Appearance.md#font-weight). | Regular |
 | Line spacing | Space between lines, 1.0 to 2.5 times the font size. Double-click the slider to reset it. | 1.25 |

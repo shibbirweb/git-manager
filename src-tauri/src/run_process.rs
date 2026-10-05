@@ -9,6 +9,7 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+#[cfg(unix)]
 use std::time::Duration;
 
 use crate::error::{AppError, AppResult};
@@ -86,6 +87,7 @@ fn capture_login_env() -> Option<Vec<(String, String)>> {
 
 /// The app's own environment, with the usual tool folders added to a bare PATH.
 fn fallback_env() -> Vec<(String, String)> {
+    #[cfg_attr(not(unix), allow(unused_mut))]
     let mut env: Vec<(String, String)> = std::env::vars().filter(|(key, _)| !SKIPPED_VARIABLES.contains(&key.as_str())).collect();
     #[cfg(unix)]
     {

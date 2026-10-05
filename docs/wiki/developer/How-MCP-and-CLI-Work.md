@@ -53,7 +53,7 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 
 ### The CLI
 
-`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. `mcp/cli.rs` reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. It has `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (which calls `get_memory_usage` every interval and prints one line per sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
+`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. The tool is its own crate, `src-tauri/cli` ([why](Windows-MCP-and-CLI.md#the-command-line-tool)). It reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. Commands: `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (one line per `get_memory_usage` sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
 
 ### The memory recorder
 
@@ -67,9 +67,9 @@ The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.js
 | `src-tauri/src/mcp/http.rs` | Listener, connection limits, `refusal` |
 | `src-tauri/src/mcp/protocol.rs` | JSON-RPC, `initialize`, `tools/list`, `tools/call` |
 | `src-tauri/src/mcp/registry.rs` | Backend plus UI tools with their on or off state |
-| `src-tauri/src/mcp/bridge.rs`, `host.rs` | UI calls through the window, events, the macOS screenshot (`screencapture -l`) |
+| `src-tauri/src/mcp/bridge.rs`, `host.rs` | UI calls through the window, events, the screenshot |
 | `src-tauri/src/mcp/paths.rs`, `token.rs`, `activity.rs` | Path safety, `mcp.json`, the last 50 calls |
-| `src-tauri/src/mcp/cli.rs`, `install.rs` | The command line tool and its link |
+| `src-tauri/cli/`, `mcp/install.rs` | The command line tool and its link |
 | `src-tauri/src/mcp/tools/` | The 57 backend tools, by area, and the recorder |
 | `src-tauri/src/commands/mcp.rs` | `mcp_*` and `cli_install` / `cli_uninstall` commands |
 | `src/lib/mcp/toolDefs.ts` | The 30 UI tools with their schemas |

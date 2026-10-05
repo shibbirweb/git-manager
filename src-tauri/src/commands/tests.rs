@@ -1,3 +1,4 @@
+use crate::test_support::UiText;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -338,6 +339,8 @@ fn stage_content_updates_index_for_tracked_file() {
     assert_eq!(repo.index_bytes("a.txt"), b"crlf\r\nlines\r\n".to_vec());
 }
 
+// Windows has no executable bit (git runs with core.filemode=false there).
+#[cfg(unix)]
 #[test]
 fn stage_content_adds_new_file_and_keeps_executable_mode() {
     let repo = TestRepo::new();
@@ -379,6 +382,7 @@ fn stage_content_adds_new_file_and_keeps_executable_mode() {
     assert!(matches!(escape, Err(AppError::Invalid(_))), "{escape:?}");
 }
 
+#[cfg(unix)]
 fn set_executable(path: &Path) {
     use std::os::unix::fs::PermissionsExt;
     let mut permissions = std::fs::metadata(path).unwrap().permissions();
@@ -423,18 +427,22 @@ fn stage_unstage_and_discard_pass_any_number_of_paths_on_stdin() {
     let repo = TestRepo::new();
     repo.write("keep.txt", "keep\n");
     repo.commit_all("first");
-    // Long names so the list is far over ARG_MAX (1 MB on macOS) as arguments.
-    let padding = "p".repeat(200);
+    // Long names so the list is far over ARG_MAX (1 MB on macOS, 32 KB on Windows) as arguments.
+    // Shorter on Windows, where git refuses paths over 260 characters by default.
+    let padding = "p".repeat(if cfg!(windows) { 100 } else { 200 });
     let mut untracked: Vec<String> = (0..6000).map(|index| format!("many/{padding}-{index:05}.txt")).collect();
     for file_path in &untracked {
         repo.write(file_path, "x");
     }
     // Spaces, quotes and a newline reach git unchanged with NUL-separated pathspecs.
-    for odd in ["with space.txt", "quote\"d.txt", "new\nline.txt"] {
+    // Windows file names cannot hold `"` or a newline.
+    let odd_names: &[&str] = if cfg!(windows) { &["with space.txt", "it's.txt"] } else { &["with space.txt", "quote\"d.txt", "new\nline.txt"] };
+    for odd in odd_names {
         repo.write(odd, "odd");
         untracked.push(odd.to_string());
     }
-    assert!(untracked.iter().map(|file_path| file_path.len() + 1).sum::<usize>() > 1024 * 1024);
+    let arg_max = if cfg!(windows) { 32 * 1024 } else { 1024 * 1024 };
+    assert!(untracked.iter().map(|file_path| file_path.len() + 1).sum::<usize>() > arg_max);
 
     block_on(status::stage_files(repo.path_string(), untracked.clone())).unwrap();
     let staged = repo.git(&["diff", "--cached", "--name-only", "-z"]);
@@ -742,7 +750,7 @@ fn refs_snapshot_answers_unchanged_until_something_the_sidebar_shows_changes() {
     }, false);
     step("drop an older stash", &|| { repo.git(&["stash", "drop", "-q", "stash@{1}"]); }, false);
     step("config", &|| { repo.git(&["config", "remote.origin.url", "https://example.com/x.git"]); }, false);
-    let linked = repo.path.parent().unwrap().join("linked").to_string_lossy().into_owned();
+    let linked = repo.path.parent().unwrap().join("linked").ui();
     step("worktree", &|| { repo.git(&["worktree", "add", "-q", "-b", "linked", &linked]); }, true);
     step("lock", &|| { repo.git(&["worktree", "lock", &linked]); }, false);
 }
@@ -991,7 +999,7 @@ fn read_worktree_file_normalizes_crlf_and_detects_binary() {
 // Workspaces
 
 fn open_workspace(folder: &Path) -> WorkspaceInfo {
-    block_on(workspace::open_workspace(folder.to_string_lossy().into_owned())).unwrap()
+    block_on(workspace::open_workspace(folder.ui())).unwrap()
 }
 
 /// `(root, relative_path)` of each repository, in order.
@@ -1003,7 +1011,7 @@ fn repo_list(repos: &[RepoInfo]) -> Vec<(String, String)> {
 }
 
 fn text(path: &Path) -> String {
-    path.to_string_lossy().into_owned()
+    path.ui()
 }
 
 #[test]
@@ -1512,8 +1520,8 @@ fn file_operations_refuse_roots_git_folders_and_paths_outside() {
     std::fs::create_dir_all(&outside).unwrap();
     std::fs::write(outside.join("o.ts"), "o").unwrap();
     let roots = vec![dir.path_string(), dir.file_string("holder/nested")];
-    let outside_dir = outside.to_string_lossy().into_owned();
-    let outside_file = outside.join("o.ts").to_string_lossy().into_owned();
+    let outside_dir = outside.ui();
+    let outside_file = outside.join("o.ts").ui();
 
     let rename_root = block_on(file_ops::file_rename(roots.clone(), dir.path_string(), "x".to_string()));
     assert_eq!(file_error(rename_root), "workspace is a workspace folder");
@@ -1612,6 +1620,29 @@ fn file_trash_checks_every_path_and_drops_nested_ones() {
 }
 
 #[test]
+fn real_files_name_files_the_way_the_disk_does() {
+    let dir = TestDir::new();
+    let roots = vec![dir.path_string()];
+    dir.write("src/App.ts", "a");
+    let asked = vec![dir.file_string("src/App.ts"), dir.file_string("src/../src/App.ts"), dir.file_string("src/missing.ts")];
+    let answers = block_on(file_ops::real_files(roots.clone(), asked)).unwrap();
+    assert_eq!(answers, vec![Some(dir.file_string("src/App.ts")), None, None]);
+
+    // Other letter case: the same file where the disk ignores case (Windows, macOS), with its own name.
+    let other_case = dir.file_string("SRC/app.TS");
+    let real = block_on(file_ops::real_files(roots, vec![other_case.clone()])).unwrap();
+    if std::path::Path::new(&other_case).is_file() {
+        let found = real[0].clone().expect("the file, under any case");
+        assert!(found.eq_ignore_ascii_case(&dir.file_string("src/App.ts")), "{found}");
+        if cfg!(windows) {
+            assert_eq!(found, dir.file_string("src/App.ts"), "Windows reports the name as stored");
+        }
+    } else {
+        assert_eq!(real, vec![None], "a case-sensitive disk has no such file");
+    }
+}
+
+#[test]
 fn files_exist_reports_only_files_inside_the_workspace() {
     let dir = TestDir::new();
     let roots = vec![dir.path_string()];
@@ -1629,7 +1660,7 @@ fn files_exist_reports_only_files_inside_the_workspace() {
         dir.file_string("src/missing.ts"),
         dir.file_string("src/lib"),
         dir.file_string(".git/config"),
-        outside.to_string_lossy().into_owned(),
+        outside.ui(),
         dir.file_string("out-link.ts"),
         "src/a.ts".to_string(),
         dir.file_string("src/../src/a.ts"),

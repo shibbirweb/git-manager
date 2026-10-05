@@ -135,7 +135,7 @@ Click in the Files panel first. See [File Operations](File-Operations.md).
 
 ## On Windows and Linux
 
-Builds for Windows and Linux are planned. There Cmd is Ctrl. A few keys differ, because there Ctrl keys belong to the shell or the editor:
+On Windows (and the planned Linux build) Cmd is Ctrl and Option is Alt. A few keys differ, because there Ctrl keys belong to the shell or the editor:
 
 - Tabs switch with Ctrl+PageDown and Ctrl+PageUp.
 - A terminal copies and pastes with Ctrl+Shift+C and Ctrl+Shift+V.

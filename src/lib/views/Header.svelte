@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -208,7 +209,7 @@
     <button class="icon-btn" onclick={toggleTheme} title="Toggle light/dark theme">
       <Icon name="sun" size={15} />
     </button>
-    <button class="icon-btn" onclick={() => settings.openDialog()} title="Settings (Cmd+,)" aria-label="Settings">
+    <button class="icon-btn" onclick={() => settings.openDialog()} title={withCommandKeys("Settings", "app.settings")} aria-label="Settings">
       <Icon name="settings" size={15} />
     </button>
   </div>

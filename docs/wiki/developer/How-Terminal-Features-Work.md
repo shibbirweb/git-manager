@@ -1,6 +1,6 @@
 # How terminal features work
 
-The parts that make the terminal feel like VS Code's and JetBrains': split terminals, find, clickable file paths, dropped files, rename, the visual bell and the optional xterm addons. The shell, the PTY and the placing of views are in [How the terminal works](How-the-Terminal-Works.md); the user side is in [Terminal Features](../usage/Terminal-Features.md).
+Split terminals, find, clickable file paths, dropped files, rename, the visual bell and the optional xterm addons. The shell, the PTY and the views are in [How the terminal works](How-the-Terminal-Works.md); the user side is in [Terminal Features](../usage/Terminal-Features.md).
 
 ## Why we need it
 
@@ -10,7 +10,7 @@ People coming from VS Code expect to split a terminal, search its output with Cm
 
 ### Optional addons
 
-`terminalAddonPlan` in `options.ts` turns the settings into what one terminal loads: WebGL, Unicode 11, search and file links. `TerminalAddons` in `addons.ts` (shipped inside the lazy `xterm.ts` chunk) owns them per terminal, and each addon package is its own chunk, imported with `import()` the first time it is needed.
+`terminalAddonPlan` in `options.ts` turns the settings into what one terminal loads: WebGL, Unicode 11, search and file links. `TerminalAddons` in `addons.ts` (inside the lazy `xterm.ts` chunk) owns them per terminal; each addon is its own chunk, imported the first time it is needed.
 
 ```mermaid
 flowchart LR
@@ -40,18 +40,18 @@ sequenceDiagram
   participant V as TerminalView provider
   participant L as fileLinks.ts
   participant C as FileExistenceCache
-  participant R as files_exist (Rust)
+  participant R as real_files (Rust)
   X->>V: provideLinks(line)
   V->>L: lineCells(cells), then fileLinksForLine
   L->>L: findPathCandidates, resolve, keep inside the workspace
-  L->>C: exists(paths)
+  L->>C: realPaths(paths)
   C->>R: unknown paths, one call per line
-  R-->>C: boolean per path
+  R-->>C: real path or null per path
   L-->>V: links with string offsets
   V-->>X: ILink ranges in cells
 ```
 
-xterm asks the link provider only for the line under the pointer, so there is no scanning of the whole buffer. `findPathCandidates` finds `path`, `path:line`, `path:line:col` and `path(line,col)`, skips URLs (the web links addon has them) and adds git's `a/` and `b/` paths without the prefix. Relative paths resolve against the folder the shell last reported with OSC 7 (`parseOsc7`), else the start folder. Only paths inside an open workspace folder are checked, with `files_exist` in `file_ops.rs` (canonical path inside a root, not in `.git`, a regular file, at most 64 per call, never an error). The cache keeps answers only for what is on screen: `onScroll` clears it. `lineCells` maps string offsets to cells, because wide characters take two cells.
+xterm asks the link provider only for the line under the pointer, so there is no scanning of the whole buffer. `findPathCandidates` finds `path`, `path:line`, `path:line:col` and `path(line,col)`, skips URLs (the web links addon has them) and adds git's `a/` and `b/` paths without the prefix. Relative paths resolve against the folder the shell last reported with OSC 7 (`parseOsc7`), else the start folder. Only paths inside an open workspace folder are checked, with `real_files` in `file_ops.rs` (canonical path inside a root, not in `.git`, a regular file, at most 64 per call, never an error). Its real path answer keeps other letter case to one tab ([Windows paths](Windows-Support.md#paths)). The cache keeps answers only for what is on screen: `onScroll` clears it. `lineCells` maps string offsets to cells, because wide characters take two cells.
 
 Each link starts without an underline. Hovering adds key listeners, and Cmd (Ctrl) down or up flips `decorations.underline` and `pointerCursor`, which xterm tracks, so the underline shows only with the modifier, like VS Code. Activating calls `navigation.openFileAt`.
 
@@ -75,13 +75,13 @@ Every `TerminalEntry` has a `group`. Panel terminals with the same group form a 
 | `src/lib/terminal/splitPanes.ts` | Groups and pane sizes |
 | `src/lib/terminal/dropPaths.ts` | Quoting and the drop events |
 | `src/lib/terminal/TerminalView.svelte`, `TerminalPanel.svelte`, `TerminalHost.svelte` | The glue |
-| `src-tauri/src/file_ops.rs` (`existing_files`), `commands/file_ops.rs` (`files_exist`) | The existence check |
+| `src-tauri/src/file_ops.rs` (`real_files`, `existing_files`), `commands/file_ops.rs` (`real_files`) | The existence check and real path |
 
 ## Design decisions
 
 **Lazy and disposable.** Each addon is its own chunk. With every switch off, a terminal loads only xterm, fit and web links, as before. Off frees memory at once, even for hidden terminals; WebGL waits until the terminal shows.
 
-**One backend call per hovered line**, not a file system watcher or a list of every file: hovering is rare and cheap, and the answers go when the screen scrolls.
+**One backend call per hovered line**, not a watcher or a file list: hovering is rare and cheap, and the answers go on scroll.
 
 **Splits in groups, not a tree.** VS Code splits side by side in a row, which covers the common case; a row per group keeps the rules small and testable.
 
@@ -91,7 +91,7 @@ Every `TerminalEntry` has a `group`. Panel terminals with the same group form a 
 
 - `src/lib/terminal/find.test.ts`, `fileLinks.test.ts`, `splitPanes.test.ts`, `dropPaths.test.ts`.
 - `keys.test.ts` (find and split keys), `options.test.ts` (`terminalAddonPlan`, Option as Meta, smooth scrolling), `terminalTabs.test.ts` (the split rule of `panelAfterLeave`), `settingsData.test.ts` (the new keys and defaults).
-- `files_exist_reports_only_files_inside_the_workspace` in `src-tauri/src/commands/tests.rs`.
+- `files_exist_reports_only_files_inside_the_workspace` and `real_files_name_files_the_way_the_disk_does` in `commands/tests.rs`.
 
 WebGL fallback, hover underlines, drops from Finder and dragging the divider need a check in the real app.
 

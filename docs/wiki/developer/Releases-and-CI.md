@@ -1,6 +1,6 @@
 # Releases and CI
 
-Releases are cut by GitHub workflows, not by hand. A person decides two things: start a release, and merge its pull request. The workflows do the rest and refuse anything unsafe.
+Releases are cut by GitHub workflows, not by hand. A person only starts a release and merges its pull request; the workflows do the rest and refuse anything unsafe.
 
 ## Branches
 
@@ -50,14 +50,16 @@ gitGraph
 | `stable-promote.yml` (Promote stable) | CI finishing on `develop` | opens the `develop` to `master` pull request |
 | `stable-publish.yml` (Publish stable) | CI finishing on `master` | publishes the stable release as the latest one |
 | `release.yml` (Release) | a call, a release published by hand, or a manual run | builds the macOS app and attaches it |
+| `windows-installer.yml` (Windows installer) | any pull request | builds, installs and keeps the Windows installer |
 | `wiki.yml` (Wiki) | push to `master` that touches the docs, or a manual run | publishes `docs/wiki` to the GitHub wiki |
 
 ## CI
 
-`ci.yml` runs two jobs on `macos-latest`, because the app targets macOS and some backend code is macOS only.
+`ci.yml` runs two jobs on `macos-latest`, because the app ships for macOS, and the same two on Windows.
 
 - **Frontend:** `bun install --frozen-lockfile`, `bun scripts/version.ts check`, `bun scripts/file-icons.ts --check` (see [How file icons work](How-File-Icons-Work.md)), `bun run check`, `bun run test` and, in the step "Wiki docs are complete", `bun scripts/build-wiki.ts --check`.
-- **Rust:** builds the frontend first (`tauri::generate_context!` embeds it, so it must exist), then `cargo test --locked` and `cargo clippy --locked --all-targets -- -D warnings`.
+- **Rust:** builds the frontend first (`tauri::generate_context!` embeds it, so it must exist), then `cargo test --locked --workspace` and `cargo clippy --locked --workspace --all-targets -- -D warnings`.
+- **Windows:** the same checks in `windows-frontend` and `windows-rust`, side by side on `windows-latest`; a failed check never skips the next. Both must pass ([Windows Support](Windows-Support.md)).
 
 `--frozen-lockfile` and `--locked` fail when `bun.lock` or `Cargo.lock` is out of date, so always commit them.
 
@@ -115,7 +117,7 @@ sequenceDiagram
 
 ## Building: `release.yml`
 
-It checks that every file agrees on the version, that the tag is exactly `v` plus the version in `src-tauri/Cargo.toml`, and that the pre-release flag matches (betas must be pre-releases, stable versions must not). Empty or GitHub-generated notes are replaced with the changelog section. Unless the caller says CI already passed, it runs `ci.yml` first. Then `tauri-action` builds a universal app (Apple Silicon and Intel) and attaches the `.dmg` and zipped `.app`. Run workflow with a tag rebuilds an existing release. Signing is optional: add the `APPLE_*` secrets named at the top of the file and uncomment the matching lines.
+It checks that every file agrees on the version, that the tag is exactly `v` plus the version in `src-tauri/Cargo.toml`, and that the pre-release flag matches (betas must be pre-releases, stable versions must not). Empty or GitHub-generated notes are replaced with the changelog section. Unless the caller says CI already passed, it runs `ci.yml` first. Then `tauri-action` builds a universal app (Apple Silicon and Intel) and attaches the `.dmg` and zipped `.app`. When the repository variable `WINDOWS_RELEASES` is `true`, `build-windows` also attaches the Windows installer. Run workflow with a tag rebuilds an existing release. Signing is optional: add the `APPLE_*` secrets named at the top of the file and uncomment the matching lines.
 
 ## Publishing the wiki: `wiki.yml`
 

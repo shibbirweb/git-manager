@@ -24,6 +24,12 @@ What each line does:
 
 Leave out `--global` to set it up for one repository only. If the app lives somewhere else, change the `APP` path.
 
+On Windows, run the same lines in Git Bash (it comes with Git for Windows), with this `APP` line instead:
+
+```sh
+APP="$(cygpath -m "$LOCALAPPDATA")/Git Manager/git-manager.exe"
+```
+
 ## Use it
 
 1. Run a merge, rebase or pull that stops on conflicts.

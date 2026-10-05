@@ -23,13 +23,13 @@ flowchart TB
 
 ## Rust tests
 
-Run them with `cd src-tauri && cargo test`. Add a filter to run a few, for example `cargo test watcher`.
+Run them with `cd src-tauri && cargo test --workspace` (the workspace includes the command line tool's crate, `cli/`). Add a filter to run a few, for example `cargo test watcher`.
 
 ### Real repositories, isolated from your config
 
 `src-tauri/src/test_support.rs` builds repositories in temporary folders that vanish after the test. Before any test touches git, it points git at a sandbox:
 
-- `HOME` and `XDG_CONFIG_HOME` move to a temporary folder;
+- `HOME`, `USERPROFILE` (which Windows reads first) and `XDG_CONFIG_HOME` move to a temporary folder;
 - `GIT_CONFIG_GLOBAL` points at an empty file and `GIT_CONFIG_NOSYSTEM=1` skips the system config;
 - `LC_ALL=C` and `LANG=C`, so git messages are always in English.
 
@@ -91,8 +91,8 @@ A change is done when all of these pass on your machine:
 ```sh
 bun run check                                  # 0 errors and 0 warnings
 bun run test
-cd src-tauri && cargo test
-cd src-tauri && cargo clippy --all-targets -- -D warnings
+cd src-tauri && cargo test --workspace
+cd src-tauri && cargo clippy --workspace --all-targets -- -D warnings
 bun scripts/build-wiki.ts --check              # when docs changed
 bun scripts/version.ts check                   # when versions changed
 ```

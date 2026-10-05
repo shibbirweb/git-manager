@@ -5,7 +5,7 @@ import { applyChangedOptions, changesMetrics, SMOOTH_SCROLL_MS, terminalAddonPla
 describe("terminalDisplayOptions", () => {
   it("maps the defaults to xterm options", () => {
     const options = terminalDisplayOptions(defaultPreferences);
-    expect(options.fontFamily.startsWith("'JetBrains Mono', Menlo, Monaco, 'Courier New', 'Symbols Nerd Font Mono'")).toBe(true);
+    expect(options.fontFamily.startsWith("'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', 'Symbols Nerd Font Mono'")).toBe(true);
     expect(options.fontFamily.endsWith(", monospace")).toBe(true);
     expect(options).toMatchObject({
       fontSize: 13,

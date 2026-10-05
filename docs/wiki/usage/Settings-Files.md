@@ -13,7 +13,7 @@ Like VS Code keeps its files in `~/.vscode`, Git Manager keeps its own in a fold
   unsaved/        unsaved text kept until it is saved (Remember unsaved changes)
 ```
 
-The folder is created the first time a setting is saved. **Settings > Settings Files** shows the **Settings folder** path, a **Copy settings.json Path** button and **Changed from defaults**: each setting you changed, such as `tabSize: 2`, or **Nothing yet**.
+On Windows the folder is `C:\Users\<you>\.gitmanager`. It is created the first time a setting is saved. **Settings > Settings Files** shows the **Settings folder** path, a **Copy settings.json Path** button and **Changed from defaults**: each setting you changed, such as `tabSize: 2`, or **Nothing yet**.
 
 Your GitHub token is not in this folder: it is kept in the system keychain. See [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md).
 
