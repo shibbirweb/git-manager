@@ -50,7 +50,7 @@ gitGraph
 | `stable-promote.yml` (Promote stable) | CI finishing on `develop` | opens the `develop` to `master` pull request |
 | `stable-publish.yml` (Publish stable) | CI finishing on `master` | publishes the stable release as the latest one |
 | `release.yml` (Release) | a call, a release published by hand, or a manual run | builds the macOS app and attaches it |
-| `windows-installer.yml` (Windows installer) | any pull request | builds, installs and keeps the Windows installer |
+| `windows-installer.yml`, `macos-app.yml` | any pull request | build, check and keep the Windows and macOS apps |
 | `wiki.yml` (Wiki) | push to `master` that touches the docs, or a manual run | publishes `docs/wiki` to the GitHub wiki |
 
 ## CI
