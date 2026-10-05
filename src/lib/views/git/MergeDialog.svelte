@@ -98,6 +98,7 @@
         placeholder="feature/my-change"
         spellcheck="false"
         autocomplete="off"
+        aria-label="Branch to merge"
         data-autofocus
       />
       <button type="button" class="btn" onclick={() => void chooseBranch()}>Choose...</button>

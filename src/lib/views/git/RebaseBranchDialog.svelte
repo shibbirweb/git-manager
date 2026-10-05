@@ -134,6 +134,7 @@
           placeholder="main"
           spellcheck="false"
           autocomplete="off"
+          aria-label={options.useOnto ? "New base (--onto)" : "Onto branch or commit"}
           data-autofocus
         />
         <button type="button" class="btn" onclick={() => void choose("onto")}>Choose...</button>
@@ -151,6 +152,7 @@
           placeholder="old-base"
           spellcheck="false"
           autocomplete="off"
+          aria-label="Upstream: only the commits after it move"
         />
         <button type="button" class="btn" onclick={() => void choose("upstream")}>Choose...</button>
       </div>

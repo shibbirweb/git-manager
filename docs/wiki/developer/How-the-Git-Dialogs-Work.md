@@ -101,7 +101,7 @@ sequenceDiagram
 
 ## Bugs we fixed
 
-None yet.
+**Screen readers read the Browse button as part of the folder field.** Found while driving the Clone dialog with Windows UI Automation: the folder field was named "Clone into folder Browse...". A `<label>` names its field with all the text inside it, and these labels also hold a button. The fields with a button beside them (Clone, New Worktree, Merge, Reset, Rebase) now carry an `aria-label` with just their label text. We kept the wrapping labels, so a click on the label text still focuses the field.
 
 ## Tests
 

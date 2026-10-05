@@ -189,6 +189,7 @@
         disabled={creating}
         spellcheck="false"
         autocomplete="off"
+        aria-label="Folder"
       />
       <button type="button" class="btn" onclick={() => void browse()} disabled={creating}>Browse...</button>
     </div>

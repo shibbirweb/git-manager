@@ -127,7 +127,14 @@
   <label class="field">
     <span>Reset {branch} to</span>
     <div class="row">
-      <input class="input mono revision" bind:value={revision} spellcheck="false" autocomplete="off" placeholder="HEAD, a commit id or a branch" />
+      <input
+        class="input mono revision"
+        bind:value={revision}
+        spellcheck="false"
+        autocomplete="off"
+        placeholder="HEAD, a commit id or a branch"
+        aria-label="Reset {branch} to"
+      />
       <button type="button" class="btn" onclick={() => void pickCommit()}>Commit...</button>
       <button type="button" class="btn" onclick={() => void pickBranch()}>Branch...</button>
     </div>

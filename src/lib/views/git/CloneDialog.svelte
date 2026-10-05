@@ -160,7 +160,14 @@
   <label class="field">
     <span>Clone into folder</span>
     <div class="row">
-      <input class="input parent" bind:value={parentDir} disabled={cloning} spellcheck="false" autocomplete="off" />
+      <input
+        class="input parent"
+        bind:value={parentDir}
+        disabled={cloning}
+        spellcheck="false"
+        autocomplete="off"
+        aria-label="Clone into folder"
+      />
       <button type="button" class="btn" onclick={() => void browse()} disabled={cloning}>Browse...</button>
     </div>
   </label>
