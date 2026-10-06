@@ -2,8 +2,10 @@
 // colors by kind of change, changed words, the old and new number columns, a Stage or Unstage
 // button per change, and folded runs of unchanged lines.
 
-import { type EditorState, type Extension, type Range, StateEffect, StateField } from "@codemirror/state";
-import { Decoration, type DecorationSet, EditorView, GutterMarker, gutter, WidgetType } from "@codemirror/view";
+import { type EditorState, type Extension, type Range, StateField } from "@codemirror/state";
+import { Decoration, type DecorationSet, EditorView, GutterMarker, gutter } from "@codemirror/view";
+import { inlineFolds } from "./foldField";
+import { FOLD_MARGIN, FOLD_MIN_SIZE } from "./foldModel";
 import { collapsedRuns, type InlineBlock, type InlineDoc, inlineWordMarks } from "./inlineDoc";
 import { revertButton } from "./mergeExtensions";
 
@@ -138,68 +140,6 @@ function controlGutter(doc: InlineDoc, control: "stage" | "unstage", run: (block
   });
 }
 
-/** Opens a folded run: the effect carries the run's start position. */
-const expandRun = StateEffect.define<number>();
-
-class CollapsedWidget extends WidgetType {
-  constructor(readonly count: number) {
-    super();
-  }
-
-  eq(other: CollapsedWidget): boolean {
-    return other.count === this.count;
-  }
-
-  toDOM(view: EditorView): HTMLElement {
-    const element = document.createElement("div");
-    element.className = "cm-collapsedLines";
-    element.textContent = `${this.count} unchanged lines`;
-    element.addEventListener("click", () => {
-      view.dispatch({ effects: expandRun.of(view.posAtDOM(element)) });
-    });
-    return element;
-  }
-
-  ignoreEvent(): boolean {
-    return true;
-  }
-}
-
-/**
- * Folded runs as block widgets (a StateField, since block decorations cannot come from a
- * plugin). A run opens when clicked, or when the cursor lands in it, so a Find match or a
- * reveal inside a folded run is never hidden.
- */
-function collapsedField(runs: readonly [number, number][]): StateField<DecorationSet> {
-  return StateField.define<DecorationSet>({
-    create: (state) =>
-      Decoration.set(
-        runs
-          .filter(([, to]) => to <= state.doc.lines)
-          .map(([from, to]) =>
-            Decoration.replace({ widget: new CollapsedWidget(to - from), block: true }).range(
-              state.doc.line(from + 1).from,
-              state.doc.line(to).to,
-            ),
-          ),
-      ),
-    update(value, tr) {
-      let next = value;
-      for (const effect of tr.effects) {
-        if (effect.is(expandRun)) {
-          next = next.update({ filter: (from) => from !== effect.value });
-        }
-      }
-      if (tr.selection) {
-        const head = tr.selection.main.head;
-        next = next.update({ filter: (from, to) => head < from || head > to });
-      }
-      return next;
-    },
-    provide: (field) => EditorView.decorations.from(field),
-  });
-}
-
 const inlineTheme = EditorView.theme({
   ".cm-content .cm-line.cm-inlineAdded": {
     backgroundColor: "var(--diff-added)",
@@ -272,6 +212,6 @@ export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
     numberGutter("old", doc, kinds),
     numberGutter("new", doc, kinds),
     control ? controlGutter(doc, control, onControl) : [],
-    collapse ? collapsedField(collapsedRuns(doc, 3, 4)) : [],
+    collapse ? inlineFolds(collapsedRuns(doc, FOLD_MARGIN, FOLD_MIN_SIZE).map(([from, to]) => ({ first: from + 1, last: to }))) : [],
   ];
 }

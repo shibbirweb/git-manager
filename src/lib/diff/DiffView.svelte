@@ -19,6 +19,7 @@
     newLineAt,
   } from "./inlineDoc";
   import { inlineDiffExtensions } from "./inlineView";
+  import { splitFolds } from "./foldField";
   import { chunkKinds, diffTheme, revertButton } from "./mergeExtensions";
   import { diffPrefs } from "./prefs.svelte";
   import { type BlameTarget, blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
@@ -321,7 +322,6 @@
       ? { scanLimit: SCAN_LIMIT, override: hunkDiff(fileDiff.original, fileDiff.modified, fileDiff.hunks) }
       : { scanLimit: SCAN_LIMIT };
     const blameExtensions = blame ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }) : [];
-    const collapseUnchanged = collapse ? { margin: 3, minSize: 4 } : undefined;
 
     let editor: EditorView;
     let shown: InlineDoc | null = null;
@@ -355,13 +355,15 @@
       inlineDoc = inlineShown;
     } else {
       const merge = new MergeView({
-        a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged", findHostA, "old") },
-        b: { doc: fileDiff.modified, extensions: [sideExtensions(diffMode === "staged", findHostB, "new"), blameExtensions] },
+        a: { doc: fileDiff.original, extensions: [sideExtensions(diffMode === "unstaged", findHostA, "old"), collapse ? splitFolds() : []] },
+        b: {
+          doc: fileDiff.modified,
+          extensions: [sideExtensions(diffMode === "staged", findHostB, "new"), blameExtensions, collapse ? splitFolds() : []],
+        },
         parent: target,
         diffConfig,
         gutter: true,
         highlightChanges: true,
-        collapseUnchanged,
         revertControls: diffMode === "unstaged" ? "b-to-a" : diffMode === "staged" ? "a-to-b" : undefined,
         renderRevertControl:
           diffMode === "unstaged"
