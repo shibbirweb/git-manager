@@ -4,11 +4,7 @@ A workspace is the set of folders you have open, like a multi-root workspace in 
 
 ## Open a folder
 
-![Welcome screen](../images/welcome.png)
-
-*Open Folder, Open Workspace from File, and your recent workspaces and folders.*
-
-1. On the welcome screen click **Open Folder...** (or use the folder menu in the header, see below).
+1. On the [welcome screen](Welcome-Screen.md) click **Open** (or use the folder menu in the header, see below).
 2. Pick any folder.
 
 Git Manager then looks for repositories (folders that git tracks) inside it:
@@ -67,7 +63,7 @@ With several folders, the workspace name joins the folder names, for example **a
 
 To remove one, use **Remove "name" from Workspace** in the folder menu, or right-click the folder in the Files panel and choose **Remove Folder from Workspace**. Open tabs from that folder are closed first (you are asked if one has unsaved edits). Removing the last folder closes the workspace.
 
-Workspaces with more than one folder are listed under **Recent Workspaces** on the welcome screen.
+Workspaces with more than one folder are listed under **Projects** on the [welcome screen](Welcome-Screen.md).
 
 ## The active repository
 

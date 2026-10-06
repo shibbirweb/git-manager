@@ -26,17 +26,17 @@ Git Manager uses the `git` already installed on your computer for every change i
 
 ## First launch
 
-When nothing is open you see the welcome screen.
+When nothing is open you see the welcome screen, laid out like the one in JetBrains IDEs (see [Welcome Screen](Welcome-Screen.md)).
 
 ![Welcome screen](../images/welcome.png)
 
-*The welcome screen with recent workspaces and folders.*
+*The welcome screen with its sidebar and your recent projects.*
 
-- **Open Folder...** picks any folder. It can be one repository (a project folder that git tracks), a folder with many repositories inside, or a plain folder with no git at all.
-- **Clone Repository...** copies a repository from a server, such as GitHub, into a new folder and can open it right away (see [Clone](Git-Dialogs.md#clone)).
-- **Open Workspace from File...** opens a saved workspace (see [Workspaces](Workspaces.md)).
-- **Recent Workspaces** (saved workspace files and sets of several folders) and **Recent Folders** reopen what you used before. Hover a row and click the x (**Remove from list**) to drop it.
-- **Settings**, **Star on GitHub**, **Report a Bug** and **Request a Feature** are small links under the big button.
+- **Open** picks any folder. It can be one repository (a project folder that git tracks), a folder with many repositories inside, or a plain folder with no git at all.
+- **Clone** copies a repository from a server, such as GitHub, into a new folder and can open it right away (see [Clone](Git-Dialogs.md#clone)).
+- **...** has **Open Workspace from File...**, which opens a saved workspace (see [Workspaces](Workspaces.md)).
+- The list below reopens what you used before: workspaces and folders, each with a colored badge. Type to search it.
+- **Customize** in the sidebar sets the theme and font sizes, and **Learn** has the docs, the shortcuts and the GitHub links.
 
 Next time you start the app, it reopens the folders you had open when you quit. If you closed the folder before quitting, it starts on the welcome screen.
 
