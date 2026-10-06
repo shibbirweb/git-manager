@@ -1157,6 +1157,15 @@ export interface McpUiRequest {
   arguments: Record<string, unknown>;
 }
 
+/** A credential prompt of git or ssh (src-tauri/src/askpass.rs), shown by AskpassDialog. */
+export interface AskpassQuestion {
+  id: number;
+  /** The prompt as git or ssh wrote it, such as "Username for 'https://github.com': ". */
+  prompt: string;
+  /** The repository (or, for a clone, the folder) of the git command that asks. */
+  repoPath: string;
+}
+
 export interface McpActivity {
   tool: string;
   /** Milliseconds since the epoch. */

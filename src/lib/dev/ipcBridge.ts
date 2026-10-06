@@ -56,8 +56,11 @@ interface EncodedBytes {
 
 type Override = (args: unknown) => unknown;
 
-/** Backend events the page needs: the Git Console got a command (a terminal's exit comes on its channel). */
-const RELAYED_EVENTS = ["git-command"];
+/**
+ * Backend events the page needs: the Git Console got a command (a terminal's exit comes on its
+ * channel), and git asks for credentials (askpass).
+ */
+const RELAYED_EVENTS = ["git-command", "askpass-request", "askpass-done"];
 
 const CHANNEL_PREFIX = "__CHANNEL__:";
 
