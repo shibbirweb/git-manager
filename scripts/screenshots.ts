@@ -1162,6 +1162,42 @@ define("commit-box-per-repo", async (shot) => {
   await shot.save(shot.page.locator("aside.sidebar"));
 }, () => ({ viewport: { width: 1280, height: 720 }, settings: { commitBoxLayout: "perRepo" }, state: { sidebarWidth: 360 } }));
 
+// A remote that wants a login: git asks through askpass, and the app shows the sign-in dialog.
+define("askpass-sign-in", async (shot) => {
+  // Answers every request with "401, log in", like a private repository over HTTPS.
+  const server = Bun.serve({
+    port: 0,
+    hostname: "127.0.0.1",
+    fetch: () => new Response("Authentication required", { status: 401, headers: { "WWW-Authenticate": 'Basic realm="Git"' } }),
+  });
+  try {
+    // A retry finds the remote of the first try, with an older port.
+    try {
+      execFileSync("git", ["-C", storefront, "remote", "remove", "private"], { stdio: "ignore" });
+    } catch {
+      // Not there yet.
+    }
+    await invokeApp(shot, "add_remote", {
+      repoPath: storefront,
+      remoteName: "private",
+      fetchUrl: `http://127.0.0.1:${server.port}/acme/storefront.git`,
+      pushUrl: null,
+    });
+    // Fetching every remote reaches the private one, which asks; the call ends once the dialog is cancelled.
+    const fetching = invokeApp(shot, "fetch_all", { repoPath: storefront }).catch(() => null);
+    const dialog = shot.page.getByRole("dialog", { name: /^Sign in to 127\.0\.0\.1/ });
+    await dialog.waitFor();
+    await dialog.getByLabel("Username").fill("octocat");
+    // Exact, or it also finds the "Show password" button.
+    await dialog.getByLabel("Password", { exact: true }).fill("ghp_example_token");
+    await shot.save(dialog);
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await fetching;
+  } finally {
+    server.stop(true);
+  }
+});
+
 define("diff-view", async (shot) => {
   await collapseRepo(shot, "payments-api");
   // More room for the two sides.
@@ -1547,10 +1583,21 @@ async function menuAction(shot: Shot, action: string): Promise<void> {
 
 /** A real backend command through the page's gate, so the demo-only rule still applies. */
 async function invokeApp<T = unknown>(shot: Shot, cmd: string, args: Record<string, unknown>): Promise<T> {
-  return (await shot.page.evaluate(
-    ([name, values]) => (window as unknown as { __TAURI_INTERNALS__: { invoke: (c: string, a: unknown) => Promise<unknown> } }).__TAURI_INTERNALS__.invoke(name, values),
+  // The backend's errors are plain objects, which Playwright would print as [object Object].
+  const result = (await shot.page.evaluate(
+    ([name, values]) =>
+      (window as unknown as { __TAURI_INTERNALS__: { invoke: (c: string, a: unknown) => Promise<unknown> } }).__TAURI_INTERNALS__
+        .invoke(name, values)
+        .then(
+          (value) => ({ ok: true, value }),
+          (error: unknown) => ({ ok: false, value: typeof error === "string" ? error : JSON.stringify(error) }),
+        ),
     [cmd, args] as const,
-  )) as T;
+  )) as { ok: boolean; value: unknown };
+  if (!result.ok) {
+    throw new Error(`${cmd}: ${String(result.value)}`);
+  }
+  return result.value as T;
 }
 
 /** The topmost modal dialog. */

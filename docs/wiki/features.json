@@ -23,6 +23,7 @@
     { "page": "usage/Navigation-Bar.md", "summary": "Move through your project's folders from the keyboard with Cmd+Up and search each folder, like in JetBrains IDEs." },
     { "page": "usage/Find-and-Replace.md", "summary": "The editor's find and replace bar, and Replace in Files across the workspace." },
     { "page": "usage/Changes-and-Commits.md", "summary": "Stage what you want, write a message and commit, per repository." },
+    { "page": "usage/Sign-In-Prompts.md", "summary": "Answer a remote's username, password or SSH passphrase question in a dialog instead of a failed push." },
     { "page": "usage/Commit-Box-Layout.md", "summary": "One commit box at the bottom like JetBrains, or one per repository like VS Code." },
     { "page": "usage/Repository-Actions.md", "summary": "The buttons and the ... menu of each repository in Changes: branch, Sync, Commit and more." },
     { "page": "usage/Commit-Options.md", "summary": "Commit and push in one go, and sign-off, author, GPG signing and skipping hooks." },
@@ -255,6 +256,13 @@
       "usage": "usage/Changes-and-Commits.md",
       "developer": "developer/How-Changes-and-Commits-Work.md",
       "screenshots": ["changes-sidebar.png", "commit-box.png"]
+    },
+    {
+      "id": "sign-in-prompts",
+      "title": "Sign-in prompts",
+      "usage": "usage/Sign-In-Prompts.md",
+      "developer": "developer/How-Sign-In-Prompts-Work.md",
+      "screenshots": ["askpass-sign-in.png"]
     },
     {
       "id": "commit-box-layout",

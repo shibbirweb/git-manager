@@ -1,3 +1,4 @@
+mod askpass;
 mod child_process;
 mod commands;
 mod config;
@@ -43,6 +44,10 @@ use state::{AppState, LaunchMode};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Started by git or ssh as their askpass program: ask the running app, print the answer, exit.
+    if let Some(code) = askpass::client_main() {
+        std::process::exit(code);
+    }
     let args: Vec<String> = std::env::args().skip(1).collect();
     // `git-manager cli ...` is the command line tool: no window, just its exit code.
     if args.first().map(String::as_str) == Some("cli") {
@@ -77,11 +82,13 @@ pub fn run() {
         .setup(|app| {
             let host = std::sync::Arc::new(mcp::TauriHost::new(app.handle().clone()));
             app.state::<AppState>().mcp.attach_host(host);
+            askpass::install(Box::new(commands::askpass::WindowHooks::new(app.handle().clone())));
             commands::window::restore_at_start(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::repo::get_launch_mode,
+            commands::askpass::askpass_respond,
             commands::repo::open_repo,
             commands::workspace::open_workspace,
             commands::workspace::discover_repositories,
