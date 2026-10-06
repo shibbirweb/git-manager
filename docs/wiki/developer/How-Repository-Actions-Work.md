@@ -116,6 +116,8 @@ New for these menus: `commit_all` (`commit --all`), `undo_last_commit`, `fetch` 
 
 **Shared actions with an optional repository.** One `push` serves the Git menu (active repository) and the row (its own), so behavior and messages never drift apart.
 
+**The branch name takes the free room.** The branch button has no width cap. In **No Changes** rows and the title bar the actions get `flex-shrink: 1000` and `min-width: auto`, so the branch shortens before the repository name and no button is cut off.
+
 **Delete Tag is local.** Deleting a tag on the server is rarer and harder to undo, so it stays a terminal job; the dialog says the pushed copy remains.
 
 ## Tests
