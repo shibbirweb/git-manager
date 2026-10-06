@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
   import { api, currentWindowLabel, errorMessage } from "$lib/api";
+  import AskpassDialog from "$lib/askpass/AskpassDialog.svelte";
+  import { askpass } from "$lib/askpass/askpass.svelte";
   import { viewLabel, watchScrolling } from "$lib/debug/memoryEvents";
   import { helpDialogs } from "$lib/help/helpDialogs.svelte";
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
@@ -216,6 +218,8 @@
 
   onMount(() => {
     settings.applyTheme();
+    // Username, password and passphrase prompts of git and ssh (askpass.rs).
+    askpass.start();
     void (async () => {
       // Shells left running by a reload of the window would otherwise leak; the ones Clear
       // Cache left for this page come back once the workspace is open.
@@ -332,6 +336,8 @@
 {#if updates.whatsNewOpen}
   <WhatsNewDialog />
 {/if}
+
+<AskpassDialog />
 
 {#if helpDialogs.shortcutsOpen}
   {#await import("$lib/help/ShortcutsDialog.svelte") then module}

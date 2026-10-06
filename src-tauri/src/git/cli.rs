@@ -246,6 +246,8 @@ pub fn run_streaming_with_env(
 ) -> AppResult<GitOutput> {
     let mut command = command(repo_path);
     command.args(args).envs(envs.iter().copied());
+    // Commands the user starts (push, pull, fetch, clone) may ask for a username or password.
+    crate::askpass::apply(&mut command, repo_path);
     let record = git_console::record(repo_path, args);
     let mut child = command.spawn().map_err(|err| {
         record.fail(AppError::Command {

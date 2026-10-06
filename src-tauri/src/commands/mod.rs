@@ -1,3 +1,4 @@
+pub mod askpass;
 pub mod auto_fetch;
 pub mod bisect;
 pub mod branch;

@@ -6,6 +6,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { ConfigPatch } from "./stores/configPatch";
 import type {
   AppError,
+  AskpassQuestion,
   DeletedLocalFile,
   FileLocalHistory,
   LocalHistoryRecord,
@@ -680,6 +681,21 @@ export function onMcpUiRequest(handler: (request: McpUiRequest) => void): Promis
 /** clone_repository finished and asks this window to open the clone. */
 export function onMcpOpenFolder(handler: (request: McpOpenFolderRequest) => void): Promise<UnlistenFn> {
   return listenHere<McpOpenFolderRequest>("mcp-open-folder", handler);
+}
+
+/** Git or ssh asks for a username, password or passphrase; answer with `askpassRespond`. */
+export function onAskpassRequest(handler: (question: AskpassQuestion) => void): Promise<UnlistenFn> {
+  return listenHere<AskpassQuestion>("askpass-request", handler);
+}
+
+/** A credential question was answered (maybe in another window) or timed out. */
+export function onAskpassDone(handler: (id: number) => void): Promise<UnlistenFn> {
+  return listen<number>("askpass-done", (event) => handler(event.payload));
+}
+
+/** Answers a credential question; null cancels it, and git then fails as before. */
+export function askpassRespond(id: number, answer: string | null): Promise<void> {
+  return invoke<void>("askpass_respond", { id, answer });
 }
 
 /** A tool call finished (MCP or CLI), for the live Recent calls list. */

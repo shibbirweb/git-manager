@@ -213,6 +213,7 @@ pub fn run_streaming(
     let describe = format!("git {}", args.join(" "));
     let mut command = cli::command(repo_path);
     command.args(args);
+    crate::askpass::apply(&mut command, repo_path);
     #[cfg(unix)]
     {
         use std::os::unix::process::CommandExt;
