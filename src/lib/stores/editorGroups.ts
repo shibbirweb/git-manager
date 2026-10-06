@@ -1,23 +1,35 @@
-// Editor groups (Window > Split Right): the editor area holds one group of tabs,
-// or two side by side. Each group has its own strip and active tab. Only file tabs may be open
-// in both groups: a commit, Git, branch or terminal tab is one live view that cannot be shown
-// twice. Group ids never change, so the editors of the right group stay mounted when the left
-// group closes and the right one takes its place. Pure; repo.svelte.ts holds the state.
+// Editor groups (Window > Split Right / Split Down): the editor area holds one group of tabs,
+// or several arranged by a split tree (groupLayout.ts), like JetBrains. Each group has its own
+// strip and active tab. Only file tabs may be open in several groups: a commit, Git, branch or
+// terminal tab is one live view that cannot be shown twice. Group ids never change, so a
+// group's editors stay mounted when another group closes and it takes the room. Pure;
+// repo.svelte.ts holds the state.
 
+import {
+  type GroupLayout,
+  keepInLayout,
+  layoutGroupIds,
+  leafLayout,
+  MAX_GROUPS,
+  parseGroupLayout,
+  rowLayout,
+  type SplitDirection,
+  setSplitRatio,
+  splitLayout,
+} from "./groupLayout";
 import { isPseudoTab } from "./pseudoTabs";
 import { tabsToEvict } from "./tabLimit";
 import { closeTabs, type FileTab, openTab, setTabDirty, type TabsState } from "./tabs";
-
-/** Two groups side by side; more would leave too little room for code. */
-export const MAX_GROUPS = 2;
 
 export interface EditorGroup extends TabsState {
   id: number;
 }
 
 export interface GroupsState {
-  /** Left to right; the first one also shows the Diff tab and the Log. */
+  /** In layout order (left to right, top to bottom); the first one also shows the Diff tab and the Log. */
   groups: EditorGroup[];
+  /** Where each group sits; its leaves are exactly the groups. */
+  layout: GroupLayout;
   /** Id of the group that has (or last had) the keyboard focus. */
   focused: number;
   /** The id the next new group gets. */
@@ -30,7 +42,7 @@ export interface GroupTab {
 }
 
 export function initialGroups(): GroupsState {
-  return { groups: [{ id: 0, tabs: [], active: null }], focused: 0, nextId: 1 };
+  return { groups: [{ id: 0, tabs: [], active: null }], layout: leafLayout(0), focused: 0, nextId: 1 };
 }
 
 export function groupById(state: GroupsState, groupId: number): EditorGroup | null {
@@ -42,16 +54,29 @@ export function focusedGroup(state: GroupsState): EditorGroup {
   return groupById(state, state.focused) ?? state.groups[0];
 }
 
-/** With two groups, the one that is not `groupId`. */
+/** The group after `groupId` in layout order, going round; null with one group. */
 export function otherGroup(state: GroupsState, groupId: number): EditorGroup | null {
-  return state.groups.find((group) => group.id !== groupId) ?? null;
+  if (state.groups.length < 2) {
+    return null;
+  }
+  const index = state.groups.findIndex((group) => group.id === groupId);
+  return state.groups[(index + 1) % state.groups.length] ?? null;
+}
+
+/** `state` with a new layout, the groups put in its order (groups it lacks are dropped). */
+function withLayout(state: GroupsState, layout: GroupLayout): GroupsState {
+  const byId = new Map(state.groups.map((group) => [group.id, group]));
+  const groups = layoutGroupIds(layout)
+    .map((groupId) => byId.get(groupId))
+    .filter((group): group is EditorGroup => group !== undefined);
+  return { ...state, layout, groups };
 }
 
 export function hasTab(group: TabsState, tabPath: string): boolean {
   return group.tabs.some((tab) => tab.path === tabPath);
 }
 
-/** Every open tab once, left group first: what the window has open, whatever the group. */
+/** Every open tab once, first group first: what the window has open, whatever the group. */
 export function allTabs(state: GroupsState): FileTab[] {
   if (state.groups.length === 1) {
     return state.groups[0].tabs;
@@ -78,7 +103,7 @@ export function closedBetween(before: GroupsState, after: GroupsState): FileTab[
 /**
  * The group an open of `tabPath` goes to. A plain open shows the tab where it already is
  * (the focused group first), else in the focused group. `toSide` (Open to the Side) picks the
- * other group, or the id of the right group it would create.
+ * next group, or the id of the group a split to the right would create.
  */
 export function openTarget(state: GroupsState, tabPath: string, toSide = false): number {
   const focused = focusedGroup(state);
@@ -98,12 +123,17 @@ function withGroup(state: GroupsState, groupId: number, next: TabsState): Groups
   };
 }
 
-/** Adds the right group when `groupId` is the next id and there is room. */
-function ensureGroup(state: GroupsState, groupId: number): GroupsState {
+/**
+ * Adds group `groupId` when it is the next id and there is room, by splitting `anchorId`
+ * (the focused group by default) in `direction`.
+ */
+function ensureGroup(state: GroupsState, groupId: number, direction: SplitDirection, anchorId = state.focused): GroupsState {
   if (groupById(state, groupId) || groupId !== state.nextId || state.groups.length >= MAX_GROUPS) {
     return state;
   }
-  return { ...state, groups: [...state.groups, { id: groupId, tabs: [], active: null }], nextId: state.nextId + 1 };
+  const anchor = groupById(state, anchorId) ?? focusedGroup(state);
+  const added = { ...state, groups: [...state.groups, { id: groupId, tabs: [], active: null }], nextId: state.nextId + 1 };
+  return withLayout(added, splitLayout(state.layout, anchor.id, groupId, direction));
 }
 
 /** Removes a pseudo tab from every group but `groupId`, so it lives in one group only. */
@@ -121,11 +151,18 @@ function moveOutOfOthers(state: GroupsState, groupId: number, tabPath: string): 
 }
 
 /**
- * Opens (or shows) `tabPath` in `groupId` and focuses that group. A new right group is made
- * when `groupId` is `nextId`; an unknown id means the focused group. `pin` as in openTab.
+ * Opens (or shows) `tabPath` in `groupId` and focuses that group. When `groupId` is `nextId`
+ * the focused group splits in `direction` to make it; an unknown id means the focused group.
+ * `pin` as in openTab.
  */
-export function openInGroup(state: GroupsState, groupId: number, tabPath: string, pin: boolean): GroupsState {
-  const ensured = ensureGroup(state, groupId);
+export function openInGroup(
+  state: GroupsState,
+  groupId: number,
+  tabPath: string,
+  pin: boolean,
+  direction: SplitDirection = "right",
+): GroupsState {
+  const ensured = ensureGroup(state, groupId, direction);
   const target = groupById(ensured, groupId) ?? focusedGroup(ensured);
   const moved = moveOutOfOthers(ensured, target.id, tabPath);
   const group = groupById(moved, target.id) ?? target;
@@ -178,49 +215,52 @@ export function dropEmptyGroups(state: GroupsState, keepFirst: boolean): GroupsS
     return state;
   }
   const groups = kept.length > 0 ? kept : [state.groups[0]];
+  const layout = keepInLayout(state.layout, new Set(groups.map((group) => group.id))) ?? leafLayout(groups[0].id);
   if (groups.some((group) => group.id === state.focused)) {
-    return { ...state, groups };
+    return withLayout(state, layout);
   }
   const oldIndex = Math.max(
     0,
     state.groups.findIndex((group) => group.id === state.focused),
   );
-  return { ...state, groups, focused: groups[Math.min(oldIndex, groups.length - 1)].id };
+  return { ...withLayout(state, layout), focused: groups[Math.min(oldIndex, groups.length - 1)].id };
 }
 
 export function focusGroup(state: GroupsState, groupId: number): GroupsState {
   return state.focused !== groupId && groupById(state, groupId) ? { ...state, focused: groupId } : state;
 }
 
-/** Split Right: possible from the focused group's tab on screen, unless it already is the right group. */
-export function canSplitRight(state: GroupsState, shownTab: string | null): boolean {
-  return shownTab !== null && state.groups.findIndex((group) => group.id === state.focused) < MAX_GROUPS - 1;
+/** Split Right / Split Down: possible with a tab on screen while there is room for another group. */
+export function canSplit(state: GroupsState, shownTab: string | null): boolean {
+  return shownTab !== null && state.groups.length < MAX_GROUPS;
 }
 
 /**
- * Split Right: the focused group's tab on screen also opens in the right group (a file) or
- * moves there (a commit, Git, branch or terminal tab), and the right group takes the focus.
+ * Split Right / Split Down: the focused group splits in `direction`, and its tab on screen
+ * also opens in the new group (a file) or moves there (a commit, Git, branch or terminal
+ * tab), which takes the focus.
  */
-export function splitRight(state: GroupsState, shownTab: string | null): GroupsState {
-  if (!canSplitRight(state, shownTab) || shownTab === null) {
+export function splitGroup(state: GroupsState, shownTab: string | null, direction: SplitDirection): GroupsState {
+  if (!canSplit(state, shownTab) || shownTab === null) {
     return state;
   }
-  const right = otherGroup(state, state.focused)?.id ?? state.nextId;
-  return openInGroup(state, right, shownTab, true);
+  return openInGroup(state, state.nextId, shownTab, true, direction);
 }
 
-/** Move Tab to Other Group: out of `groupId` into the other group, made when there is none. */
+/** Move Tab to Other Group: out of `groupId` into the next group, made to its right when there is none. */
 export function moveToOtherGroup(state: GroupsState, groupId: number, tabPath: string): GroupsState {
   const source = groupById(state, groupId);
   if (!source || !hasTab(source, tabPath)) {
     return state;
   }
-  const target = otherGroup(state, groupId)?.id ?? (state.groups.length < MAX_GROUPS ? state.nextId : null);
-  if (target === null) {
+  const existing = otherGroup(state, groupId)?.id ?? null;
+  if (existing === null && state.groups.length >= MAX_GROUPS) {
     return state;
   }
+  const target = existing ?? state.nextId;
+  const withTarget = existing === null ? ensureGroup(state, target, "right", groupId) : state;
   const tab = source.tabs.find((candidate) => candidate.path === tabPath) as FileTab;
-  const closed = withGroup(state, groupId, closeTabs(source, [tabPath]));
+  const closed = withGroup(withTarget, groupId, closeTabs(source, [tabPath]));
   const opened = openInGroup(closed, target, tabPath, true);
   // The moved tab keeps its flags, unsaved edits included.
   return mapGroups(opened, (group) =>
@@ -236,7 +276,15 @@ export function closeGroup(state: GroupsState, groupId: number): GroupsState {
     return state;
   }
   const groups = state.groups.filter((group) => group.id !== groupId);
-  return { ...state, groups, focused: state.focused === groupId ? groups[0].id : state.focused };
+  const layout = keepInLayout(state.layout, new Set(groups.map((group) => group.id))) ?? leafLayout(groups[0].id);
+  const next = withLayout(state, layout);
+  return { ...next, focused: state.focused === groupId ? (otherGroup(state, groupId) ?? next.groups[0]).id : state.focused };
+}
+
+/** A splitter was dragged: the split at `path` (see groupLayout.ts) gets `ratio`. */
+export function setGroupRatio(state: GroupsState, path: string, ratio: number): GroupsState {
+  const layout = setSplitRatio(state.layout, path, ratio);
+  return layout === state.layout ? state : { ...state, layout };
 }
 
 /** Setting turned off: one group with every tab, the focused group's tab on screen. */
@@ -246,13 +294,18 @@ export function mergeGroups(state: GroupsState): GroupsState {
   }
   const [first] = state.groups;
   const tabs = allTabs(state);
-  return { ...state, groups: [{ id: first.id, tabs, active: focusedGroup(state).active ?? first.active }], focused: first.id };
+  return {
+    ...state,
+    groups: [{ id: first.id, tabs, active: focusedGroup(state).active ?? first.active }],
+    layout: leafLayout(first.id),
+    focused: first.id,
+  };
 }
 
 const keyOf = (groupId: number, tabPath: string) => `${groupId}\n${tabPath}`;
 
 /**
- * The tab limit over both groups: every group's tab counts, the least recently used close
+ * The tab limit over all groups: every group's tab counts, the least recently used close
  * first. A group's tab on screen and `keep` (the tab just opened) never close, so a group
  * never empties this way and single tab mode keeps one tab per group.
  */
@@ -300,7 +353,7 @@ export function applyEvictions(state: GroupsState, evictions: readonly GroupTab[
   });
 }
 
-/** Index (0 left, 1 right) of the group holding `tabPath`, the focused one first; -1 when none does. */
+/** Index (in layout order) of the group holding `tabPath`, the focused one first; -1 when none does. */
 export function sideOf(state: GroupsState, tabPath: string): number {
   const focusedIndex = state.groups.findIndex((group) => group.id === state.focused);
   if (focusedIndex >= 0 && hasTab(state.groups[focusedIndex], tabPath)) {
@@ -309,20 +362,15 @@ export function sideOf(state: GroupsState, tabPath: string): number {
   return state.groups.findIndex((group) => hasTab(group, tabPath));
 }
 
-/** Two restored groups as one state; an empty right group means no split. */
-export function restoredGroups(left: TabsState, right: TabsState | null, rightFocused: boolean): GroupsState {
-  if (!right || right.tabs.length === 0) {
-    return { groups: [{ id: 0, tabs: left.tabs, active: left.active }], focused: 0, nextId: 1 };
-  }
-  if (left.tabs.length === 0) {
-    return { groups: [{ id: 0, tabs: right.tabs, active: right.active }], focused: 0, nextId: 1 };
-  }
-  return {
-    groups: [
-      { id: 0, tabs: left.tabs, active: left.active },
-      { id: 1, tabs: right.tabs, active: right.active },
-    ],
-    focused: rightFocused ? 1 : 0,
-    nextId: 2,
-  };
+/**
+ * Restored groups as one state: group `index` gets id `index`, `layout` uses those ids
+ * (side by side when it is missing or does not fit), and groups left without tabs close.
+ */
+export function restoredGroups(saved: readonly TabsState[], layout: GroupLayout | null, focusedIndex: number): GroupsState {
+  const all = (saved.length > 0 ? saved : [{ tabs: [], active: null }]).slice(0, MAX_GROUPS);
+  const groups: EditorGroup[] = all.map((group, index) => ({ id: index, tabs: group.tabs, active: group.active }));
+  const fitting = layout && parseGroupLayout(layout, groups.length) ? layout : rowLayout(groups.map((group) => group.id));
+  const state: GroupsState = withLayout({ groups, layout: fitting, focused: 0, nextId: groups.length }, fitting);
+  const focused = groupById(state, focusedIndex) ? focusedIndex : state.groups[0].id;
+  return dropEmptyGroups({ ...state, focused }, false);
 }

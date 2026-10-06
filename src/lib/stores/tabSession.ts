@@ -4,6 +4,15 @@
 // text lives in ~/.gitmanager/unsaved (unsavedText.svelte.ts). Pure, so the validation of a
 // hand-edited state.json can be tested.
 
+import {
+  type GroupLayout,
+  keepInLayout,
+  layoutGroupIds,
+  MAX_GROUPS,
+  parseGroupLayout,
+  renameGroups,
+  rowLayout,
+} from "./groupLayout";
 import { isUntitledTab } from "./untitledTabs";
 
 /** Where the caret and the view were in a file tab. Lines and columns are 0-based. */
@@ -28,12 +37,14 @@ export interface SavedTabGroup {
   active: string | null;
 }
 
-/** The left (or only) editor group, plus the right one of a split editor. */
+/** The first (or only) editor group, plus the others of a split editor. */
 export interface SavedTabSession extends SavedTabGroup {
-  /** The right editor group; missing without a split. */
-  right?: SavedTabGroup;
-  /** The right group had the focus. */
-  rightFocused?: boolean;
+  /** The other editor groups in layout order; missing without a split. */
+  groups?: SavedTabGroup[];
+  /** How the groups sit (groupLayout.ts); its group ids are indexes: 0 this group, 1 the first of `groups`, and so on. */
+  layout?: GroupLayout;
+  /** Index of the group that had the focus. */
+  focused?: number;
 }
 
 /** Tabs kept per workspace; more than anyone keeps open, and small enough for state.json. */
@@ -110,19 +121,52 @@ function parseTabGroup(value: unknown): SavedTabGroup {
   return { tabs, active };
 }
 
+/** Every group of a session, the first one first. */
+export function sessionGroups(session: SavedTabSession): SavedTabGroup[] {
+  return [{ tabs: session.tabs, active: session.active }, ...(session.groups ?? [])];
+}
+
+/**
+ * A session from `groups` (indexes as in `layout`, side by side without one): groups without
+ * tabs drop out, the rest are put in layout order and numbered again, and a lone group is
+ * saved without a layout.
+ */
+export function sessionOf(groups: readonly SavedTabGroup[], layout: GroupLayout | null, focused: number): SavedTabSession {
+  const kept = groups.flatMap((group, index) => (group.tabs.length > 0 ? [index] : []));
+  if (kept.length <= 1) {
+    const only = groups[kept[0] ?? 0] ?? { tabs: [], active: null };
+    return { tabs: only.tabs, active: only.active };
+  }
+  const fitting = (layout && parseGroupLayout(layout, groups.length)) ?? rowLayout(groups.map((_, index) => index));
+  const trimmed = keepInLayout(fitting, new Set(kept)) ?? rowLayout(kept);
+  const order = layoutGroupIds(trimmed);
+  const [first, ...rest] = order.map((index) => groups[index]);
+  return {
+    tabs: first.tabs,
+    active: first.active,
+    groups: rest,
+    layout: renameGroups(trimmed, (index) => order.indexOf(index)),
+    focused: Math.max(0, order.indexOf(focused)),
+  };
+}
+
 /** One workspace's saved tabs, each group validated; null when nothing usable is left. */
 export function parseTabSession(value: unknown): SavedTabSession | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
   const data = value as Record<string, unknown>;
-  const left = parseTabGroup(data);
-  const right = parseTabGroup(data.right);
-  if (left.tabs.length === 0) {
-    // A right group alone is just the tabs.
-    return right.tabs.length > 0 ? right : null;
+  const first = parseTabGroup(data);
+  let session: SavedTabSession;
+  if (Array.isArray(data.groups)) {
+    const groups = [first, ...data.groups.slice(0, MAX_GROUPS - 1).map(parseTabGroup)];
+    const focused = typeof data.focused === "number" && Number.isInteger(data.focused) ? data.focused : 0;
+    session = sessionOf(groups, parseGroupLayout(data.layout, groups.length), focused);
+  } else {
+    // Before Split Down a session had at most one right group.
+    session = sessionOf([first, parseTabGroup(data.right)], null, data.rightFocused === true ? 1 : 0);
   }
-  return right.tabs.length > 0 ? { ...left, right, rightFocused: data.rightFocused === true } : left;
+  return session.tabs.length > 0 ? session : null;
 }
 
 /** Every workspace's saved tabs, by workspace id, the most recently saved last. */
@@ -170,24 +214,20 @@ export interface SessionGroup {
 
 /**
  * The session to save for the open tabs: file tabs only (`isFile`), in order, capped, with
- * their known positions. `right` is the right editor group of a split editor.
+ * their known positions. `groups` are the editor groups, numbered by their index in `layout`.
  */
 export function tabSessionOf(
-  tabs: readonly SessionTab[],
-  active: string | null,
+  groups: readonly SessionGroup[],
+  layout: GroupLayout | null,
+  focused: number,
   isFile: (tabPath: string) => boolean,
   positions: ReadonlyMap<string, TabPosition>,
-  right: (SessionGroup & { focused: boolean }) | null = null,
 ): SavedTabSession {
-  const left = savedGroup(tabs, active, isFile, positions);
-  const saved = right ? savedGroup(right.tabs, right.active, isFile, positions) : null;
-  if (!saved || saved.tabs.length === 0) {
-    return left;
-  }
-  if (left.tabs.length === 0) {
-    return saved;
-  }
-  return { ...left, right: saved, rightFocused: right?.focused ?? false };
+  return sessionOf(
+    groups.map((group) => savedGroup(group.tabs, group.active, isFile, positions)),
+    layout,
+    focused,
+  );
 }
 
 function savedGroup(
@@ -214,41 +254,36 @@ export function sameTabSession(a: SavedTabSession | null, b: SavedTabSession | n
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
-/** Every path a session holds, left group first: what `restorableTabs` needs answers for. */
+/** Every path a session holds, first group first: what `restorableTabs` needs answers for. */
 export function sessionPaths(session: SavedTabSession): string[] {
-  return [...session.tabs, ...(session.right?.tabs ?? [])].map((tab) => tab.path);
+  return sessionGroups(session).flatMap((group) => group.tabs.map((tab) => tab.path));
 }
 
 /**
  * What to reopen: the saved tabs that still exist (`exists` answers per path, in the order of
  * `sessionPaths`) and lie in the workspace (`inWorkspace`). The active tab falls back to the
- * first one left; a right group left empty is dropped.
+ * first one left; a group left empty is dropped.
  */
 export function restorableTabs(
   session: SavedTabSession,
   exists: readonly boolean[],
   inWorkspace: (filePath: string) => boolean,
 ): SavedTabSession {
-  const pick = (group: SavedTabGroup, offset: number): SavedTabGroup => {
-    const tabs = group.tabs.filter((tab, index) => exists[offset + index] === true && inWorkspace(tab.path));
+  let offset = 0;
+  const groups = sessionGroups(session).map((group) => {
+    const start = offset;
+    offset += group.tabs.length;
+    const tabs = group.tabs.filter((tab, index) => exists[start + index] === true && inWorkspace(tab.path));
     const active = tabs.some((tab) => tab.path === group.active) ? group.active : (tabs[0]?.path ?? null);
     return { tabs, active };
-  };
-  const left = pick(session, 0);
-  const right = session.right ? pick(session.right, session.tabs.length) : null;
-  if (!right || right.tabs.length === 0) {
-    return left;
-  }
-  if (left.tabs.length === 0) {
-    return right;
-  }
-  return { ...left, right, rightFocused: session.rightFocused ?? false };
+  });
+  return sessionOf(groups, session.layout ?? null, session.focused ?? 0);
 }
 
 /**
  * Remember unsaved changes: the session to restore once the tabs with kept text are known.
  * With `reopenAll` off (Reopen tabs on start) only those tabs come back. A kept tab the
- * session lacks (the window closed before the session was written) joins the left group.
+ * session lacks (the window closed before the session was written) joins the first group.
  */
 export function sessionWithKept(
   session: SavedTabSession | null,
@@ -260,19 +295,13 @@ export function sessionWithKept(
     const tabs = reopenAll ? group.tabs : group.tabs.filter((tab) => kept.has(tab.path));
     return { tabs, active: tabs.some((tab) => tab.path === group.active) ? group.active : null };
   };
-  const left = session ? pick(session) : { tabs: [], active: null };
-  const right = session?.right ? pick(session.right) : null;
-  const present = new Set([...left.tabs, ...(right?.tabs ?? [])].map((tab) => tab.path));
+  const [first, ...others] = (session ? sessionGroups(session) : [{ tabs: [], active: null }]).map(pick);
+  const present = new Set([first, ...others].flatMap((group) => group.tabs.map((tab) => tab.path)));
   const added: SavedTab[] = keptPaths
     .filter((tabPath) => !present.has(tabPath) && isSessionTabPath(tabPath))
     .map((tabPath) => ({ path: tabPath, preview: false, pinned: false, position: null }));
-  const merged: SavedTabGroup = { tabs: [...left.tabs, ...added].slice(0, MAX_SAVED_TABS), active: left.active };
-  const active = merged.active ?? merged.tabs[0]?.path ?? null;
-  if (!right || right.tabs.length === 0) {
-    return merged.tabs.length > 0 ? { ...merged, active } : null;
-  }
-  if (merged.tabs.length === 0) {
-    return { ...right, active: right.active ?? right.tabs[0]?.path ?? null };
-  }
-  return { ...merged, active, right, rightFocused: session?.rightFocused ?? false };
+  const merged: SavedTabGroup = { tabs: [...first.tabs, ...added].slice(0, MAX_SAVED_TABS), active: first.active };
+  const groups = [merged, ...others].map((group) => ({ ...group, active: group.active ?? group.tabs[0]?.path ?? null }));
+  const result = sessionOf(groups, session?.layout ?? null, session?.focused ?? 0);
+  return result.tabs.length > 0 ? result : null;
 }

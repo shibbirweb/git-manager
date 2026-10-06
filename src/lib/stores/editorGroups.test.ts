@@ -3,7 +3,7 @@ import { commitTabPath } from "./commitTabs";
 import {
   allTabs,
   applyEvictions,
-  canSplitRight,
+  canSplit,
   closedBetween,
   closeGroup,
   closeInGroups,
@@ -19,9 +19,11 @@ import {
   openTarget,
   restoredGroups,
   setDirtyEverywhere,
+  setGroupRatio,
   sideOf,
-  splitRight,
+  splitGroup,
 } from "./editorGroups";
+import { groupRects, layoutGroupIds, MAX_GROUPS } from "./groupLayout";
 import type { FileTab } from "./tabs";
 
 const isFile = (tabPath: string) => tabPath.startsWith("/");
@@ -57,10 +59,20 @@ describe("editor groups", () => {
     expect(focusedGroup(state).active).toBe("/c.ts");
   });
 
-  it("never makes a third group", () => {
-    const state = openInGroup(split(), 2, "/d.ts", true);
-    expect(state.groups).toHaveLength(2);
-    expect(paths(state)[1]).toEqual(["/c.ts", "/d.ts"]);
+  it("makes a new group by splitting the focused one", () => {
+    const state = openInGroup(split(), 2, "/d.ts", true, "down");
+    expect(paths(state)).toEqual([["/a.ts", "/b.ts"], ["/c.ts"], ["/d.ts"]]);
+    expect(groupRects(state.layout).get(2)).toEqual({ x: 0.5, y: 0.5, width: 0.5, height: 0.5 });
+  });
+
+  it("never makes more than the most groups", () => {
+    let state = split();
+    for (let index = 0; index < MAX_GROUPS; index++) {
+      state = splitGroup(state, "/c.ts", index % 2 === 0 ? "down" : "right");
+    }
+    expect(state.groups).toHaveLength(MAX_GROUPS);
+    expect(canSplit(state, "/c.ts")).toBe(false);
+    expect(openInGroup(state, state.nextId, "/d.ts", true).groups).toHaveLength(MAX_GROUPS);
   });
 
   it("shows a tab where it is open, the focused group first", () => {
@@ -125,17 +137,42 @@ describe("editor groups", () => {
 
   it("splits the tab on screen to the right", () => {
     const state = open(initialGroups(), "/a.ts", "/b.ts");
-    const next = splitRight(state, "/b.ts");
+    const next = splitGroup(state, "/b.ts", "right");
     expect(paths(next)).toEqual([["/a.ts", "/b.ts"], ["/b.ts"]]);
     expect(next.focused).toBe(1);
-    expect(canSplitRight(next, "/b.ts")).toBe(false);
-    expect(splitRight(next, "/b.ts")).toBe(next);
-    expect(canSplitRight(state, null)).toBe(false);
+    expect(groupRects(next.layout).get(1)).toEqual({ x: 0.5, y: 0, width: 0.5, height: 1 });
+    expect(canSplit(state, null)).toBe(false);
+    expect(splitGroup(state, null, "right")).toBe(state);
   });
 
-  it("splits into the existing right group from the left one", () => {
-    const state = focusGroup(split(), 0);
-    expect(paths(splitRight(state, "/a.ts"))).toEqual([["/a.ts", "/b.ts"], ["/c.ts", "/a.ts"]]);
+  it("splits a tab that is not on screen without changing the first group's tab", () => {
+    const state = open(initialGroups(), "/a.ts", "/b.ts");
+    const next = splitGroup(state, "/a.ts", "down");
+    expect(paths(next)).toEqual([["/a.ts", "/b.ts"], ["/a.ts"]]);
+    expect(next.groups[0].active).toBe("/b.ts");
+    expect(groupRects(next.layout).get(1)).toEqual({ x: 0, y: 0.5, width: 1, height: 0.5 });
+  });
+
+  it("splits the focused group again, so the groups form a grid", () => {
+    // Left a.ts | right c.ts; splitting the left group down puts the new group under it.
+    const state = splitGroup(focusGroup(split(), 0), "/a.ts", "down");
+    expect(paths(state)).toEqual([["/a.ts", "/b.ts"], ["/a.ts"], ["/c.ts"]]);
+    expect(layoutGroupIds(state.layout)).toEqual([0, 2, 1]);
+    expect(groupRects(state.layout).get(2)).toEqual({ x: 0, y: 0.5, width: 0.5, height: 0.5 });
+    expect(state.focused).toBe(2);
+  });
+
+  it("gives a closed group's room to its neighbour in the split", () => {
+    const state = splitGroup(focusGroup(split(), 0), "/a.ts", "down");
+    const closed = closeGroup(state, 2);
+    expect(paths(closed)).toEqual([["/a.ts", "/b.ts"], ["/c.ts"]]);
+    expect(groupRects(closed.layout).get(0)).toEqual({ x: 0, y: 0, width: 0.5, height: 1 });
+  });
+
+  it("moves a splitter", () => {
+    const state = setGroupRatio(split(), "", 0.3);
+    expect(groupRects(state.layout).get(1)?.x).toBeCloseTo(0.3);
+    expect(setGroupRatio(state, "", 0.3)).toBe(state);
   });
 
   it("moves a tab to the other group with its flags", () => {
@@ -191,12 +228,28 @@ describe("editor groups", () => {
     expect(sideOf(state, "/x.ts")).toBe(-1);
   });
 
-  it("restores two groups, or one when the right one is empty", () => {
+  it("restores the groups side by side, dropping empty ones", () => {
     const left = { tabs: [tab("/a.ts")], active: "/a.ts" };
     const right = { tabs: [tab("/b.ts")], active: "/b.ts" };
-    expect(paths(restoredGroups(left, right, true))).toEqual([["/a.ts"], ["/b.ts"]]);
-    expect(restoredGroups(left, right, true).focused).toBe(1);
-    expect(paths(restoredGroups(left, { tabs: [], active: null }, true))).toEqual([["/a.ts"]]);
-    expect(paths(restoredGroups({ tabs: [], active: null }, right, false))).toEqual([["/b.ts"]]);
+    const empty = { tabs: [], active: null };
+    expect(paths(restoredGroups([left, right], null, 1))).toEqual([["/a.ts"], ["/b.ts"]]);
+    expect(restoredGroups([left, right], null, 1).focused).toBe(1);
+    expect(paths(restoredGroups([left, empty], null, 1))).toEqual([["/a.ts"]]);
+    expect(paths(restoredGroups([empty, right], null, 0))).toEqual([["/b.ts"]]);
+    expect(restoredGroups([], null, 0).groups).toHaveLength(1);
+  });
+
+  it("restores a saved layout", () => {
+    const groups = [
+      { tabs: [tab("/a.ts")], active: "/a.ts" },
+      { tabs: [tab("/b.ts")], active: "/b.ts" },
+    ];
+    const state = restoredGroups(
+      groups,
+      { kind: "split", direction: "down", ratio: 0.25, first: { kind: "group", groupId: 0 }, second: { kind: "group", groupId: 1 } },
+      0,
+    );
+    expect(groupRects(state.layout).get(1)).toEqual({ x: 0, y: 0.25, width: 1, height: 0.75 });
+    expect(state.nextId).toBe(2);
   });
 });

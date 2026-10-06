@@ -1258,7 +1258,7 @@
             <div class="label">
               <span>Split editor</span>
               <span class="hint">
-                Show two groups of tabs side by side with Window > Split Right. Turning it off moves every tab into one group.
+                Show groups of tabs side by side or stacked with Window > Split Right and Split Down. Turning it off moves every tab into one group.
               </span>
             </div>
             <input

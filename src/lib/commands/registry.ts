@@ -11,6 +11,7 @@ import { fuzzyMatch } from "./fuzzy";
 import { formatAccelerator, type KeyPress, matchesAccelerator } from "./keybinding";
 import { recentRanks } from "./recentCommands";
 import { highlight, type TextPart } from "$lib/search/fileSearchModel";
+import { MAX_GROUPS } from "$lib/stores/groupLayout";
 import { isEditorAction, type MenuAction, type MenuPlatform } from "$lib/menu/menuIds";
 import type { MenuInputs, MenuState } from "$lib/menu/menuState";
 import { actionEntries, APP_NAME, type MenuEntry, type TopMenu } from "$lib/menu/menuSpec";
@@ -304,9 +305,12 @@ export function disabledReason(spec: CommandSpec, inputs: MenuInputs): string {
 /** The editor group commands of the Window menu. */
 const GROUP_COMMANDS = new Set<CommandId>([
   "window.splitRight",
+  "window.splitDown",
   "window.moveTabToOtherGroup",
   "window.focusLeftGroup",
   "window.focusRightGroup",
+  "window.focusNextGroup",
+  "window.focusPreviousGroup",
   "window.closeGroup",
 ]);
 
@@ -315,11 +319,17 @@ function groupReason(commandId: CommandId, inputs: MenuInputs): string {
   if (!groups?.enabled) {
     return "Split editor is off in Settings";
   }
-  if (commandId === "window.closeGroup" || commandId === "window.focusLeftGroup") {
-    return groups.count > 1 ? "Already in the left group" : "The editor is not split";
+  if (commandId === "window.closeGroup" || commandId === "window.focusNextGroup" || commandId === "window.focusPreviousGroup") {
+    return "The editor is not split";
   }
-  if (commandId !== "window.moveTabToOtherGroup" && groups.count > 1 && groups.focusedIndex === 1) {
-    return "Already in the right group";
+  if (commandId === "window.focusLeftGroup") {
+    return groups.count > 1 ? "Already in the first group" : "The editor is not split";
+  }
+  if (commandId === "window.focusRightGroup" && groups.count > 1) {
+    return "Already in the second group";
+  }
+  if ((commandId === "window.splitRight" || commandId === "window.splitDown") && groups.count >= MAX_GROUPS) {
+    return `No room for more than ${MAX_GROUPS} groups`;
   }
   return "No tab is shown";
 }

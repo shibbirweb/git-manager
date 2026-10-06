@@ -20,7 +20,7 @@ import { type ClosedTab, popClosedTab, pushClosedTabs, reopenAt, updateClosedPos
 import {
   allTabs,
   applyEvictions,
-  canSplitRight,
+  canSplit,
   closedBetween,
   closeGroup,
   closeInGroups,
@@ -39,16 +39,20 @@ import {
   moveToOtherGroup,
   openInGroup,
   openTarget,
+  otherGroup,
   restoredGroups,
   setDirtyEverywhere,
+  setGroupRatio,
   sideOf,
-  splitRight,
+  splitGroup,
   updateGroup,
 } from "./editorGroups";
+import { type GroupLayout, renameGroups, type SplitDirection } from "./groupLayout";
 import {
   restorableTabs,
   sameTabSession,
   type SavedTabGroup,
+  sessionGroups,
   sessionPaths,
   sessionWithKept,
   type TabPosition,
@@ -234,7 +238,7 @@ class RepoStore {
   conflictsOpen = $state(false);
   /** The editor groups and which one has the focus (editorGroups.ts). */
   private groupsState = $state.raw<GroupsState>(initialGroups());
-  /** Every open editor tab once, left group first. */
+  /** Every open editor tab once, first group first. */
   tabs = $derived(allTabs(this.groupsState));
   /** The files open in any tab, sorted and once each, for the watcher (api.watchOpenFiles). */
   openFilePaths = $derived([...new Set(this.tabs.map((tab) => tab.path).filter(isFileTab))].sort());
@@ -1060,9 +1064,14 @@ class RepoStore {
     return filePath !== null && this.tabs.some((tab) => tab.path === filePath && tab.dirty);
   }
 
-  /** The editor groups, left to right (editorGroups.ts). */
+  /** The editor groups in layout order, left to right and top to bottom (editorGroups.ts). */
   get groups(): readonly EditorGroup[] {
     return this.groupsState.groups;
+  }
+
+  /** Where each editor group sits (groupLayout.ts). */
+  get groupLayout(): GroupLayout {
+    return this.groupsState.layout;
   }
 
   get focusedGroupId(): number {
@@ -1103,7 +1112,7 @@ class RepoStore {
     this.rememberClosedTabs(closedTabs, before);
     this.groupsState = groups;
     const primary = groups.groups[0];
-    // The right group took the left one's place: it shows its tabs there.
+    // Another group took the first one's place: it shows its tabs there.
     if (primary.id !== before.groups[0].id && primary.tabs.length > 0) {
       this.viewState = "file";
     }
@@ -1252,16 +1261,37 @@ class RepoStore {
     return true;
   }
 
-  /** Split Right: `shownTab` (the focused group's tab on screen) also opens in the right group. */
-  splitRight(shownTab: string | null): void {
-    if (!settings.splitEditor || !canSplitRight(this.groupsState, shownTab)) {
+  /** Split Right / Split Down: the focused group splits and `shownTab` (its tab on screen) also opens in the new group. */
+  split(shownTab: string | null, direction: SplitDirection): void {
+    if (!this.canSplit(shownTab)) {
       return;
     }
-    this.applyGroups(splitRight(this.groupsState, shownTab));
+    this.applyGroups(splitGroup(this.groupsState, shownTab, direction));
   }
 
-  canSplitRight(shownTab: string | null): boolean {
-    return settings.splitEditor && canSplitRight(this.groupsState, shownTab);
+  canSplit(shownTab: string | null): boolean {
+    return settings.splitEditor && canSplit(this.groupsState, shownTab);
+  }
+
+  /** The id the group a split makes now gets. */
+  get nextGroupId(): number {
+    return this.groupsState.nextId;
+  }
+
+  /** A splitter between groups moved; `persist` (the drag ended) saves the layout with the tabs. */
+  setGroupRatio(path: string, ratio: number, persist: boolean): void {
+    const next = setGroupRatio(this.groupsState, path, ratio);
+    if (next !== this.groupsState) {
+      this.groupsState = next;
+    }
+    if (persist) {
+      this.scheduleTabsSave();
+    }
+  }
+
+  /** The group Move Tab to Other Group sends a tab of `groupId` to: the next one, or a new one. */
+  moveTargetFor(groupId: number): number {
+    return otherGroup(this.groupsState, groupId)?.id ?? this.groupsState.nextId;
   }
 
   /** Move Tab to Other Group, made when there is only one. */
@@ -1634,14 +1664,9 @@ class RepoStore {
     const kept = (tabPath: string) => remember && dirty.has(tabPath) && (isFileTab(tabPath) || isUntitledTab(tabPath));
     const saves = settings.reopenTabsOnStart ? (tabPath: string) => isFileTab(tabPath) || kept(tabPath) : kept;
     const positions = new Map([...this.pendingPositions, ...this.tabPositions]);
-    const [left, right] = this.groupsState.groups;
-    const session = tabSessionOf(
-      left.tabs,
-      left.active,
-      saves,
-      positions,
-      right ? { tabs: right.tabs, active: right.active, focused: this.groupsState.focused === right.id } : null,
-    );
+    const { groups, layout, focused } = this.groupsState;
+    const indexOf = (groupId: number) => groups.findIndex((group) => group.id === groupId);
+    const session = tabSessionOf(groups, renameGroups(layout, indexOf), indexOf(focused), saves, positions);
     if (!sameTabSession(settings.openTabs[workspace.id] ?? null, session.tabs.length > 0 ? session : null)) {
       settings.rememberTabs(workspace.id, session);
     }
@@ -1659,7 +1684,7 @@ class RepoStore {
   }
 
   /**
-   * Reopen tabs on start: the file tabs this workspace had, in both editor groups, without
+   * Reopen tabs on start: the file tabs this workspace had, in every editor group, without
    * loading any file yet. Files that are gone or outside the workspace are skipped; the tab
    * limit applies.
    */
@@ -1687,7 +1712,7 @@ class RepoStore {
     if (restored.tabs.length === 0) {
       return;
     }
-    const savedGroups = [restored, ...(restored.right ? [restored.right] : [])];
+    const savedGroups = sessionGroups(restored);
     // The saved order stands in for use: later tabs are newer, the active ones newest.
     for (const group of savedGroups) {
       group.tabs.forEach((tab) => this.tabUse.set(tab.path, ++this.tabUseClock));
@@ -1701,7 +1726,7 @@ class RepoStore {
       tabs: pinnedFirst(group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: keptPaths.has(tab.path), pinned: tab.pinned }))),
       active: group.active,
     });
-    let state = restoredGroups(tabsOf(restored), restored.right ? tabsOf(restored.right) : null, restored.rightFocused ?? false);
+    let state = restoredGroups(savedGroups.map(tabsOf), restored.layout ?? null, restored.focused ?? 0);
     if (!settings.splitEditor) {
       state = mergeGroups(state);
     }

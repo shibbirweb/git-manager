@@ -146,9 +146,6 @@ export const MARKDOWN_VIEW_MODES = ["editor", "split", "preview"] as const;
 /** Share of the editor area the Markdown preview takes in split mode. */
 export const DEFAULT_MARKDOWN_PREVIEW_RATIO = 0.5;
 export const MARKDOWN_PREVIEW_RATIO_RANGE = [0.15, 0.85] as const;
-/** Share of the editor area the left editor group takes when the editor is split. */
-export const DEFAULT_EDITOR_SPLIT_RATIO = 0.5;
-export const EDITOR_SPLIT_RATIO_RANGE = [0.2, 0.8] as const;
 
 /** Sections of the Settings dialog, in the order the dialog lists them. */
 export const SETTINGS_SECTIONS = [
@@ -323,7 +320,7 @@ export interface Preferences {
   /** A file tab hidden for `unloadHiddenTabsMinutes`, without unsaved edits, gives its editor back. */
   unloadHiddenTabs: boolean;
   unloadHiddenTabsMinutes: number;
-  /** Two editor groups side by side (Window > Split Right). */
+  /** Editor groups side by side or stacked (Window > Split Right / Split Down). */
   splitEditor: boolean;
   /** Tabs that do not fit wrap onto more rows instead of scrolling. */
   wrapTabs: boolean;
@@ -634,8 +631,6 @@ export interface UiState {
   changesListVisible: boolean;
   /** Share of the editor area the Markdown preview takes beside the source. */
   markdownPreviewRatio: number;
-  /** Share of the editor area the left group takes in a split editor. */
-  editorSplitRatio: number;
   /** Command Palette: recently used command ids, most recent first. */
   recentCommands: string[];
   /** Commit messages typed but not committed, and committed from the app, by repository root. */
@@ -765,7 +760,6 @@ const STATE_KEYS = [
   "changesListWidth",
   "changesListVisible",
   "markdownPreviewRatio",
-  "editorSplitRatio",
   "recentCommands",
   "commitMessages",
   "openTabs",
@@ -963,7 +957,6 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     changesListWidth: pickNumber(data.changesListWidth, DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, 2000),
     changesListVisible: pickBoolean(data.changesListVisible, true),
     markdownPreviewRatio: pickNumber(data.markdownPreviewRatio, DEFAULT_MARKDOWN_PREVIEW_RATIO, ...MARKDOWN_PREVIEW_RATIO_RANGE),
-    editorSplitRatio: pickNumber(data.editorSplitRatio, DEFAULT_EDITOR_SPLIT_RATIO, ...EDITOR_SPLIT_RATIO_RANGE),
     recentCommands: pickRecentCommands(data.recentCommands),
     commitMessages: parseMessageHistory(data.commitMessages),
     openTabs: parseTabSessions(data.openTabs),
@@ -993,7 +986,6 @@ export const WINDOW_STATE_KEYS = [
   "terminalHeight",
   "terminalListWidth",
   "markdownPreviewRatio",
-  "editorSplitRatio",
   "windows",
 ] as const;
 
@@ -1021,7 +1013,6 @@ export function stateToJson(state: UiState, extra: Json): Json {
     changesListWidth: state.changesListWidth,
     changesListVisible: state.changesListVisible,
     markdownPreviewRatio: state.markdownPreviewRatio,
-    editorSplitRatio: state.editorSplitRatio,
     recentCommands: state.recentCommands,
     commitMessages: state.commitMessages,
     openTabs: state.openTabs,

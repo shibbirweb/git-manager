@@ -36,7 +36,7 @@ An unpinned tab dragged to the far left stops after the last pinned tab. A drop 
 
 ### Keeping pinned tabs first everywhere
 
-Many paths change a strip: Split editor turned off merges two groups, Reopen Closed Tab puts a tab back at its old index, and a saved session from an older version may have pinned tabs in the middle. Instead of fixing each path, `repoStore.applyGroups` runs `pinnedFirst` on every group before it stores the new groups, and the session restore does the same. Since `pinnedFirst` returns the same array when the order is right, this costs nothing in the common case.
+Many paths change a strip: Split editor turned off merges the groups, Reopen Closed Tab puts a tab back at its old index, and a saved session from an older version may have pinned tabs in the middle. Instead of fixing each path, `repoStore.applyGroups` runs `pinnedFirst` on every group before it stores the new groups, and the session restore does the same. Since `pinnedFirst` returns the same array when the order is right, this costs nothing in the common case.
 
 ### Dragging
 
@@ -96,7 +96,7 @@ A pinned tab gets the `pinned` class. Its close button becomes an unpin button w
 
 **Bulk closes keep pinned tabs.** Pinning says "I want this one". Close Others, Close to the Right and Close All skip them, as in VS Code; closing one tab on purpose still works.
 
-**Move inside a group only.** Dragging to the other group would need a shared drag between two strips. The tab menu already has Move to Right Group and Move to Left Group.
+**Move inside a group only.** Dragging to another group would need a shared drag between strips. The tab menu already moves a tab to another group ([How the split editor works](How-the-Split-Editor-Works.md)).
 
 **The dragged tab becomes active.** JetBrains selects a tab when you press on it. Activating it on the drop gives the same result without changing the tab on screen for a plain press.
 

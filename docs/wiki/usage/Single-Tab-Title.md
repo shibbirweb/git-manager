@@ -18,7 +18,7 @@ In single tab mode, with **one tab** in the strip:
 
 Everything else works the same as on a tab:
 
-- Right-click the name for the tab menu: Pin Tab, Close, Split Right, Copy Path and the rest.
+- Right-click the name for the tab menu: Pin Tab, Close, Split Right, Split Down, Copy Path and the rest.
 - Middle-click the name to close the file.
 - Double-click the name to keep a preview tab open.
 
@@ -28,7 +28,7 @@ Single tab mode limits file tabs only, so a terminal or a commit can still open 
 
 Every kind of tab counts: files, commits, terminals, compare tabs and the **Diff** tab you get by clicking a changed file in the Changes sidebar. So a diff on its own also shows as a title, and a diff next to an open file shows two tabs.
 
-With the [split editor](Editor-and-Tabs.md#tabs) on, each group decides for itself. A group with one tab shows a title, while the other group can still show several tabs.
+With the [split editor](Split-Editor.md) on, each group decides for itself. A group with one tab shows a title, while the other groups can still show several tabs.
 
 The title works with [Rounded panels](Rounded-Panels.md) and with [Wrap tabs](Pin-Reorder-and-Wrap-Tabs.md#wrap-tabs) too.
 

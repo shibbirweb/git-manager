@@ -4,13 +4,8 @@
   import { api } from "$lib/api";
   import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import {
-    DEFAULT_PANEL_WIDTH,
-    DEFAULT_TERMINAL_HEIGHT,
-    EDITOR_SPLIT_RATIO_RANGE,
-    MIN_TERMINAL_HEIGHT,
-    settings,
-  } from "$lib/stores/settings.svelte";
+  import { DEFAULT_PANEL_WIDTH, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, settings } from "$lib/stores/settings.svelte";
+  import { groupRects, layoutSplitters, type Rect, type Splitter } from "$lib/stores/groupLayout";
   import TerminalHost from "$lib/terminal/TerminalHost.svelte";
   import TerminalPanel from "$lib/terminal/TerminalPanel.svelte";
   import TerminalSlot from "$lib/terminal/TerminalSlot.svelte";
@@ -78,16 +73,57 @@
   /** What the first editor group shows besides its tabs. */
   const primaryView = $derived(changesSelection.primaryView);
   const split = $derived(repoStore.groups.length > 1);
-  let groupsWidth = $state(0);
-  const leftGroupWidth = $derived(Math.round(settings.editorSplitRatio * groupsWidth));
+  let areaWidth = $state(0);
+  let areaHeight = $state(0);
+  const rects = $derived(groupRects(repoStore.groupLayout));
+  const splitters = $derived(layoutSplitters(repoStore.groupLayout));
+  /** Each side of a split keeps at least this many pixels. */
+  const MIN_GROUP_SIZE = 120;
+  const EPSILON = 1e-6;
 
-  function resizeGroups(width: number, persist: boolean): void {
-    if (groupsWidth > 0) {
-      settings.setEditorSplitRatio(width / groupsWidth, persist);
+  /**
+   * A group's place in the editor area. Edges that touch another group give up half the gap
+   * between rounded panels (none otherwise), so every group stays in the one flat list and
+   * keeps its editors mounted however the splits change.
+   */
+  function groupStyle(rect: Rect): string {
+    const edge = (inner: boolean) => (inner ? "var(--group-gap-half)" : "0px");
+    const left = edge(rect.x > EPSILON);
+    const top = edge(rect.y > EPSILON);
+    const right = edge(rect.x + rect.width < 1 - EPSILON);
+    const bottom = edge(rect.y + rect.height < 1 - EPSILON);
+    return [
+      `left: calc(${rect.x * 100}% + ${left})`,
+      `top: calc(${rect.y * 100}% + ${top})`,
+      `width: calc(${rect.width * 100}% - ${left} - ${right})`,
+      `height: calc(${rect.height * 100}% - ${top} - ${bottom})`,
+    ].join("; ");
+  }
+
+  /** The bar of a split: a zero-size line at `ratio` of the split's area, the handle centered on it. */
+  function splitterStyle(splitter: Splitter): string {
+    const { rect, ratio } = splitter;
+    if (splitter.direction === "right") {
+      return `left: ${(rect.x + rect.width * ratio) * 100}%; top: ${rect.y * 100}%; height: ${rect.height * 100}%`;
+    }
+    return `top: ${(rect.y + rect.height * ratio) * 100}%; left: ${rect.x * 100}%; width: ${rect.width * 100}%`;
+  }
+
+  /** The split's length in pixels along its direction. */
+  function splitterLength(splitter: Splitter): number {
+    return splitter.direction === "right" ? splitter.rect.width * areaWidth : splitter.rect.height * areaHeight;
+  }
+
+  /** A drag moved a bar: the handle reports the first side's width, or the second side's height for a bar going across. */
+  function resizeSplit(splitter: Splitter, size: number, persist: boolean): void {
+    const length = splitterLength(splitter);
+    if (length > 0) {
+      const ratio = splitter.direction === "right" ? size / length : 1 - size / length;
+      repoStore.setGroupRatio(splitter.path, ratio, persist);
     }
   }
 
-  // Settings > Editor > Split editor turned off: the right group's tabs join the left group.
+  // Settings > Editor > Split editor turned off: every group's tabs join the first group.
   $effect(() => {
     if (!settings.splitEditor) {
       untrack(() => repoStore.mergeGroups());
@@ -252,27 +288,20 @@
     />
     {/if}
     <main class="main" bind:clientHeight={mainHeight}>
-      <div class="editor-area" bind:clientWidth={groupsWidth}>
-        <!-- One editor group, or two side by side (Window > Split Right); the first one also shows the diff and the Log. -->
+      <div class="editor-area" bind:clientWidth={areaWidth} bind:clientHeight={areaHeight}>
+        <!--
+          One editor group, or several placed by the split tree (Window > Split Right / Split Down);
+          the first one also shows the diff and the Log.
+        -->
         {#each repoStore.groups as group, index (group.id)}
-          {#if index > 0}
-            <ResizeHandle
-              label="Resize editor groups"
-              panel="left"
-              size={leftGroupWidth}
-              min={Math.round(groupsWidth * EDITOR_SPLIT_RATIO_RANGE[0])}
-              max={Math.round(groupsWidth * EDITOR_SPLIT_RATIO_RANGE[1])}
-              defaultSize={Math.round(groupsWidth / 2)}
-              onResize={(width) => resizeGroups(width, false)}
-              onCommit={(width) => resizeGroups(width, true)}
-            />
-          {/if}
+          {@const rect = rects.get(group.id) ?? { x: 0, y: 0, width: 1, height: 1 }}
           <section
             class="editor-group"
-            class:split
+            class:inner-left={rect.x > EPSILON}
+            class:inner-top={rect.y > EPSILON}
             class:focused={repoStore.focusedGroupId === group.id}
-            style:flex-basis={split && index === 0 ? `${settings.editorSplitRatio * 100}%` : null}
-            aria-label={split ? (index === 0 ? "Left editor group" : "Right editor group") : "Editor"}
+            style={groupStyle(rect)}
+            aria-label={split ? `Editor group ${index + 1}` : "Editor"}
             onfocusin={() => repoStore.focusGroup(group.id)}
             onpointerdown={() => repoStore.focusGroup(group.id)}
           >
@@ -317,6 +346,23 @@
               </div>
             {/each}
           </section>
+        {/each}
+        {#each splitters as splitter (splitter.path)}
+          {@const length = splitterLength(splitter)}
+          {@const min = Math.min(MIN_GROUP_SIZE, Math.round(length / 2))}
+          <div class="group-splitter" class:down={splitter.direction === "down"} style={splitterStyle(splitter)}>
+            <ResizeHandle
+              label="Resize editor groups"
+              panel={splitter.direction === "right" ? "left" : "bottom"}
+              size={Math.round(length * (splitter.direction === "right" ? splitter.ratio : 1 - splitter.ratio))}
+              {min}
+              max={Math.max(min, Math.round(length) - min)}
+              defaultSize={Math.round(length / 2)}
+              onResize={(size) => resizeSplit(splitter, size, false)}
+              onCommit={(size) => resizeSplit(splitter, size, true)}
+              inPanel
+            />
+          </div>
         {/each}
       </div>
       {#if terminalStore.started}
@@ -420,22 +466,39 @@
   }
 
   .editor-area {
+    --group-gap-half: 0px;
+    position: relative;
     flex: 1;
     min-height: 0;
-    display: flex;
   }
 
   .editor-group {
-    flex: 1 1 0;
-    min-width: 0;
-    min-height: 0;
+    position: absolute;
     display: flex;
     flex-direction: column;
   }
 
-  .editor-group.split:first-child {
-    flex-grow: 0;
-    flex-shrink: 0;
+  /* Without rounded panels a line parts groups that touch. */
+  .editor-group.inner-left {
+    border-left: 1px solid var(--border-strong);
+  }
+
+  .editor-group.inner-top {
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .group-splitter {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    width: 0;
+  }
+
+  .group-splitter.down {
+    flex-direction: column;
+    width: auto;
+    height: 0;
   }
 
   .file-host {
@@ -472,13 +535,17 @@
     border-radius: var(--panel-radius);
   }
 
-  :global(html[data-rounded-panels]) .main,
-  :global(html[data-rounded-panels]) .editor-area {
+  :global(html[data-rounded-panels]) .main {
     gap: var(--panel-gap);
     background: transparent;
   }
 
+  :global(html[data-rounded-panels]) .editor-area {
+    --group-gap-half: calc(var(--panel-gap) / 2);
+  }
+
   :global(html[data-rounded-panels]) .editor-group {
+    border: none;
     border-radius: var(--panel-radius);
     overflow: hidden;
     background: var(--panel);

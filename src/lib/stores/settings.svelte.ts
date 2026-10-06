@@ -39,7 +39,6 @@ import {
   type Json,
   type LeftPanel,
   type LoadErrors,
-  EDITOR_SPLIT_RATIO_RANGE,
   MARKDOWN_PREVIEW_RATIO_RANGE,
   type MarkdownViewMode,
   MAX_RECENT,
@@ -73,7 +72,6 @@ export {
   MEMORY_LOG_THRESHOLD_RANGE,
   clampTerminalScrollback,
   DEFAULT_EDITOR_FONT,
-  DEFAULT_EDITOR_SPLIT_RATIO,
   DEFAULT_MARKDOWN_PREVIEW_RATIO,
   DEFAULT_MCP_PORT,
   DEFAULT_PANEL_WIDTH,
@@ -95,7 +93,6 @@ export {
   FILE_TOOLBAR_SWITCHES,
   FONT_SIZE_RANGE,
   fontWeightName,
-  EDITOR_SPLIT_RATIO_RANGE,
   MARKDOWN_PREVIEW_RATIO_RANGE,
   MARKDOWN_VIEW_MODES,
   MCP_PORT_RANGE,
@@ -285,7 +282,6 @@ class SettingsStore {
   changesListWidth = $state(initialState.changesListWidth);
   changesListVisible = $state(initialState.changesListVisible);
   markdownPreviewRatio = $state(initialState.markdownPreviewRatio);
-  editorSplitRatio = $state(initialState.editorSplitRatio);
   /** Command Palette: recently used command ids, most recent first. */
   recentCommands = $state.raw<string[]>(initialState.recentCommands);
   /** Commit box message history by repository root (see views/changes/commitMessages.ts). */
@@ -530,7 +526,6 @@ class SettingsStore {
       changesListWidth: this.changesListWidth,
       changesListVisible: this.changesListVisible,
       markdownPreviewRatio: this.markdownPreviewRatio,
-      editorSplitRatio: this.editorSplitRatio,
       recentCommands: this.recentCommands,
       commitMessages: this.commitMessages,
       openTabs: this.openTabs,
@@ -756,14 +751,6 @@ class SettingsStore {
     }
   }
 
-  /** Share of the editor area the left editor group takes, clamped; saved with state.json. */
-  setEditorSplitRatio(ratio: number, persist: boolean): void {
-    const [min, max] = EDITOR_SPLIT_RATIO_RANGE;
-    this.editorSplitRatio = Number.isFinite(ratio) ? Math.min(max, Math.max(min, ratio)) : this.editorSplitRatio;
-    if (persist) {
-      this.save();
-    }
-  }
 
   /** Shows or hides the Changes tab's file list. */
   toggleChangesList(): void {

@@ -10,6 +10,7 @@
     { "page": "usage/Editor-and-Tabs.md", "summary": "Edit files in tabs, jump between changes and keep an eye on what you changed." },
     { "page": "usage/Pin-Reorder-and-Wrap-Tabs.md", "summary": "Drag tabs into the order you like, pin the ones you always need, and wrap a long row of tabs." },
     { "page": "usage/Single-Tab-Title.md", "summary": "With one file open, see its name centered above the code instead of a lone tab." },
+    { "page": "usage/Split-Editor.md", "summary": "Show several files at once: split the editor right or down, again and again, like JetBrains." },
     { "page": "usage/New-File-and-Unsaved-Changes.md", "summary": "Open a new tab with Cmd+N, save it later, and get your unsaved work back after a restart, like Sublime Text." },
     { "page": "usage/Unload-Hidden-Tabs.md", "summary": "Free the memory of tabs you have not looked at for a while; they open again where you left them." },
     { "page": "usage/Editing-Code.md", "summary": "Multiple cursors, the Code menu, Go to Line and the IDE features of the editor." },
@@ -161,6 +162,13 @@
       "usage": "usage/Single-Tab-Title.md",
       "developer": "developer/How-the-Single-Tab-Title-Works.md",
       "screenshots": ["single-tab-title.png"]
+    },
+    {
+      "id": "split-editor",
+      "title": "Split editor",
+      "usage": "usage/Split-Editor.md",
+      "developer": "developer/How-the-Split-Editor-Works.md",
+      "screenshots": ["split-editor-grid.png"]
     },
     {
       "id": "new-file-and-unsaved-changes",

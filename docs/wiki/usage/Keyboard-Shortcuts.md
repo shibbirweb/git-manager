@@ -61,6 +61,8 @@ Window shortcuts do nothing while a dialog or the merge tool is open: the key is
 | Option+Cmd+A | Git > Current File > Add to Git |
 | Cmd+M | Window > Minimize |
 | Shift+Cmd+] and Shift+Cmd+[ | Window > Next Tab and Previous Tab |
+| Cmd+\ | Window > Split Right (in a terminal: Split Terminal) |
+| Cmd+1 and Cmd+2 | Window > Focus First Group and Focus Second Group ([Split Editor](Split-Editor.md)) |
 
 The Code menu's keys (comments, duplicate, move and delete lines, folding, Go to Line) work in the editor and are listed on [Editor and List Shortcuts](Keyboard-Shortcuts-Editor.md#code-menu). Push and Force Push have no key, since Shift+Cmd+K is Delete Line. Every menu is explained in [Menus](Menus.md), the Git menu in [Git Menu](Git-Menu.md) and its dialogs in [Git Dialogs](Git-Dialogs.md).
 

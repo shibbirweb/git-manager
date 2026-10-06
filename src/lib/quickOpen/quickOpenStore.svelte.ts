@@ -37,7 +37,7 @@ function editorTarget(): EditorTarget | null {
   if (!filePath || typeof document === "undefined") {
     return null;
   }
-  // The focused editor group's tab on screen (with the editor split, both groups show one).
+  // The focused editor group's tab on screen (with the editor split, every group shows one).
   const root = document.querySelector<HTMLElement>(".editor-group.focused .file-host:not(.hidden) .cm-editor");
   const view = root ? EditorView.findFromDOM(root) : null;
   return view ? { view, filePath, focused: false, inText: true } : null;

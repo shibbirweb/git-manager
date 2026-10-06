@@ -10,6 +10,7 @@ import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { focusedEditor } from "$lib/editor/editorCommands";
 import { openerForShortcut, queryFromSelection, type SearchOpener } from "$lib/search/searchTabs";
 import { navigation } from "$lib/stores/navigation.svelte";
+import type { SplitDirection } from "$lib/stores/groupLayout";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
 import { isPseudoTab } from "$lib/stores/pseudoTabs";
@@ -182,13 +183,13 @@ function focusEditorIn(tabPath: string, groupId: number): void {
   }
 }
 
-/** Split Right: the tab on screen also opens in the right group, which takes the keyboard. */
-export function splitEditorRight(tabPath: string | null): void {
-  if (!tabPath || !repoStore.canSplitRight(tabPath)) {
+/** Split Right / Split Down: the tab on screen also opens in a new group, which takes the keyboard. */
+export function splitEditor(tabPath: string | null, direction: SplitDirection): void {
+  if (!tabPath || !repoStore.canSplit(tabPath)) {
     return;
   }
-  focusEditorIn(tabPath, repoStore.targetGroupFor(tabPath, true));
-  repoStore.splitRight(tabPath);
+  focusEditorIn(tabPath, repoStore.nextGroupId);
+  repoStore.split(tabPath, direction);
 }
 
 /** Move Tab to Other Group, the keyboard going with it. */
@@ -196,7 +197,6 @@ export function moveEditorTab(tabPath: string, groupId: number = repoStore.focus
   if (!settings.splitEditor) {
     return;
   }
-  const target = repoStore.groups.find((group) => group.id !== groupId)?.id ?? repoStore.targetGroupFor(tabPath, true);
-  focusEditorIn(tabPath, target);
+  focusEditorIn(tabPath, repoStore.moveTargetFor(groupId));
   repoStore.moveTabToOtherGroup(tabPath, groupId);
 }

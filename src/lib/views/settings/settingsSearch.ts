@@ -51,7 +51,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Tabs", "editor tabs"],
     ["Reopen tabs on start", "restore session files"],
     ["Recent Files", "cmd e recently opened mru"],
-    ["Split editor", "split right side by side groups"],
+    ["Split editor", "split right down side by side stacked vertically horizontally groups"],
     ["Wrap tabs", "multiple rows"],
     ["Tab limit", "max close least recently used"],
     ["Most file tabs", "tab limit number", "Tab limit"],

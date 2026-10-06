@@ -26,7 +26,7 @@ export interface MenuInputs {
   activeTabPinned?: boolean;
   /** The Log is on screen (in the first editor group), whichever group has the focus. */
   logShown?: boolean;
-  /** Editor groups (Window > Split Right); missing means one group with splitting off. */
+  /** Editor groups (Window > Split Right / Split Down); missing means one group with splitting off. */
   editorGroups?: EditorGroupInputs;
   leftPanel: LeftPanel;
   explorerOpen: boolean;
@@ -68,9 +68,9 @@ export interface EditorGroupInputs {
   /** Settings > Editor > Split editor. */
   enabled: boolean;
   count: number;
-  /** 0 the left group, 1 the right one. */
+  /** Index of the focused group in layout order (left to right, top to bottom). */
   focusedIndex: number;
-  /** Split Right can open the tab on screen in the right group. */
+  /** Split Right / Split Down can open the tab on screen in a new group. */
   canSplit: boolean;
 }
 
@@ -270,10 +270,13 @@ export function menuState(inputs: MenuInputs): MenuState {
   const groups = inputs.editorGroups ?? { enabled: false, count: 1, focusedIndex: 0, canSplit: false };
   const grouping = workspace && groups.enabled;
   state["window.splitRight"] = { enabled: grouping && groups.canSplit };
+  state["window.splitDown"] = { enabled: grouping && groups.canSplit };
   state["window.moveTabToOtherGroup"] = { enabled: grouping && inputs.shownView === "file" && inputs.tabCount > 0 };
   state["window.focusLeftGroup"] = { enabled: grouping && groups.count > 1 && groups.focusedIndex !== 0 };
   // With one group it splits the tab on screen to the right.
   state["window.focusRightGroup"] = { enabled: grouping && (groups.count > 1 ? groups.focusedIndex !== 1 : groups.canSplit) };
+  state["window.focusNextGroup"] = { enabled: grouping && groups.count > 1 };
+  state["window.focusPreviousGroup"] = { enabled: grouping && groups.count > 1 };
   state["window.closeGroup"] = { enabled: grouping && groups.count > 1 };
   // Works from the welcome screen too, with the server on or off.
   state["help.mcpTools"] = { enabled: true };
