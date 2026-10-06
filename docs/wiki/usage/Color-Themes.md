@@ -37,7 +37,7 @@ Light themes:
 
 Dark themes:
 
-- Git Manager Dark, Darcula, Islands Dark, VS Code Dark+, One Dark Pro, Dracula, Monokai, Monokai Pro, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
+- Git Manager Dark, Darcula, Islands Dark, VS Code Dark+, One Dark Pro, Dracula, Monokai, Monokai Pro, Monokai Charcoal, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
 
 High contrast themes have their own group at the end of each list:
 

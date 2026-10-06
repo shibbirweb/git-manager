@@ -32,6 +32,10 @@ interface Syntax {
   tag?: string;
   attr?: string;
   invalid?: string;
+  /** true, false, null; the keyword color when unset. */
+  constant?: string;
+  /** =, +, ==; the text color when unset. */
+  operator?: string;
 }
 
 interface ThemeSpec {
@@ -138,6 +142,8 @@ const GM_LIGHT: ThemeColors = {
   "--tok-tag": "#0033b3",
   "--tok-attr": "#174ad4",
   "--tok-invalid": "#f50000",
+  "--tok-constant": "#0033b3",
+  "--tok-operator": "#1e1f22",
   "--bracket-1": "#0431fa",
   "--bracket-2": "#319331",
   "--bracket-3": "#7b3814",
@@ -213,6 +219,8 @@ const GM_DARK: ThemeColors = {
   "--tok-tag": "#d5b778",
   "--tok-attr": "#bababa",
   "--tok-invalid": "#fa6675",
+  "--tok-constant": "#cf8e6d",
+  "--tok-operator": "#dfe1e5",
   "--bracket-1": "#ffd700",
   "--bracket-2": "#da70d6",
   "--bracket-3": "#179fff",
@@ -516,6 +524,24 @@ const SPECS: Record<string, ThemeSpec> = {
       function: "#a9dc76", property: "#fc9867", meta: "#ab9df2", tag: "#ff6188", attr: "#78dce8", invalid: "#ff6188",
     },
     ui: { bg: "#221f22", panel: "#221f22", panelAlt: "#272427", border: "#19181a", borderStrong: "#403e41", lineNumber: "#5b595c", activeLine: "#363337", info: "#78dce8" },
+  },
+  // Monokai as photographed on a dark screen: charcoal background, red keywords and operators,
+  // lavender constants, white function calls, properties and <?php.
+  "monokai-charcoal": {
+    background: "#24262d",
+    foreground: "#e8e8e3",
+    accent: "#4cc8e4",
+    selection: "#3e4250",
+    ansi: [
+      "#2b2d33", "#f8505c", "#8ad15f", "#e8cc6f", "#6a9ff2", "#a3a8f0", "#4cc8e4", "#e8e8e3",
+      "#6b6e76", "#ff6b76", "#a2e07a", "#f2da8a", "#8bb6ff", "#bcc0ff", "#72d8ef", "#ffffff",
+    ],
+    syntax: {
+      keyword: "#f8505c", string: "#e8cc6f", number: "#a3a8f0", comment: "#857f74", type: "#4cc8e4",
+      function: "#8ad15f", property: "#e8e8e3", meta: "#e8e8e3", tag: "#f8505c", attr: "#8ad15f", invalid: "#ff6b76",
+      constant: "#a3a8f0", operator: "#f8505c",
+    },
+    ui: { bg: "#1d1f23", panel: "#1d1f23", panelAlt: "#212327", border: "#16171a", borderStrong: "#3a3d45", lineNumber: "#7b7a78", activeLine: "#2c2e35", cursor: "#f8f8f0", info: "#4cc8e4" },
   },
   nord: {
     background: "#2e3440",
@@ -939,6 +965,8 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
     "--tok-tag": syntax(spec.syntax.tag ?? spec.syntax.keyword),
     "--tok-attr": syntax(spec.syntax.attr ?? spec.syntax.property),
     "--tok-invalid": syntax(spec.syntax.invalid ?? danger),
+    "--tok-constant": syntax(spec.syntax.constant ?? spec.syntax.keyword),
+    "--tok-operator": syntax(spec.syntax.operator ?? text),
     // Bracket depth colors from the terminal palette: gold, orchid and blue.
     "--bracket-1": bracket(dark ? brightYellow : blue),
     "--bracket-2": bracket(dark ? brightMagenta : green),

@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Monokai Charcoal color theme: Monokai on a charcoal background, with red keywords, tags and operators, green attributes, gold strings, lavender constants and plain white function calls and variables.
 - Commit box per repository, like VS Code: the new button in the Changes title bar, or Settings > Git > Commit box, switches between one commit box under the Changes list (Single, like JetBrains, the default) and a commit box at the top of each repository (Per repository). Each repository keeps its own message in both layouts, and the Changes tab follows the setting with its box above the files.
 - Git Manager for Windows 10 and 11: a per-user installer (the `-setup.exe` of a release, no administrator rights needed) with the same features as on macOS. Paths show as `C:/...`, shortcuts use Ctrl, the terminal starts PowerShell, Command Prompt or Git Bash, deleted files go to the Recycle Bin, the GitHub token is kept in Windows Credential Manager, a second launch opens its folder in the running app, Cancel stops git and everything it started, and the status bar counts memory like Task Manager. The installer is not signed yet, so Windows SmartScreen asks once (More info, Run anyway).
 - `git-manager cli call` reads its arguments from a JSON file with `--args-file <file>`, or from stdin with `--args-file -`, for shells that mangle quotes such as Windows PowerShell 5.1.

@@ -8,7 +8,7 @@ People spend hours a day in an editor, and they care a lot about its colors. Mos
 
 ## How it works
 
-Every color in the app is a CSS variable from `src/app.css`, such as `--panel`, `--text`, `--editor-bg`, `--diff-added`, `--tok-keyword` and `--term-red`. `src/lib/themes/tokens.ts` lists all 71 of them in `COLOR_TOKENS`. A theme is one value for each token.
+Every color in the app is a CSS variable from `src/app.css`, such as `--panel`, `--text`, `--editor-bg`, `--diff-added`, `--tok-keyword` and `--term-red`. `src/lib/themes/tokens.ts` lists all 73 of them in `COLOR_TOKENS`. A theme is one value for each token.
 
 - The **built-in themes** are the sets in `app.css`: `:root` for light, and the dark set twice, under `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` and `:root[data-theme="dark"]`. They need no JavaScript.
 - **Every other theme** is one generated `<style id="gm-color-theme">` element with the rule `html:root[data-color-theme="<id>"] { ... }`. `html:root` outranks `:root[data-theme]`, and the attribute scope means the rule only applies together with its attribute.
@@ -40,9 +40,10 @@ sequenceDiagram
 
 `themeIndex.ts` is small and always loaded: every theme's `id`, `name` and `kind` (`light`, `dark`, `high-contrast-light`, `high-contrast-dark`). Settings validation (`pickThemeId`) and the pickers (`themeGroups`) use it without loading any palette.
 
-`catalog.ts` is a lazy chunk with the palettes. Each `ThemeSpec` holds the theme's published colors: editor background and foreground, accent, selection, the 16 ANSI colors, syntax colors and, where the theme has them, UI colors. `deriveColors` builds all 71 tokens from that with the helpers in `color.ts` (`mix`, `composite`, `ensureContrast`, `fitTint`):
+`catalog.ts` is a lazy chunk with the palettes. Each `ThemeSpec` holds the theme's published colors: editor background and foreground, accent, selection, the 16 ANSI colors, syntax colors and, where the theme has them, UI colors. `deriveColors` builds all 73 tokens from that with the helpers in `color.ts` (`mix`, `composite`, `ensureContrast`, `fitTint`):
 
 - Hints, accent and status colors are pushed until they reach their contrast target on every surface they sit on.
+- Optional syntax colors: `constant` (`true`) falls back to the keyword color, `operator` (`=`) to the text.
 - Diff tints are faded (`fitTint`) until text on them stays readable.
 - High contrast themes get 7:1 text targets, syntax colors pushed to 7:1 and stronger diff tints.
 

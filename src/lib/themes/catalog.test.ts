@@ -69,6 +69,15 @@ describe("catalog", () => {
     expect(css).not.toContain("undefined");
   });
 
+  it("colors constants like keywords and operators like text unless a theme sets them", () => {
+    const dracula = colorsOf("dracula");
+    expect(dracula["--tok-constant"]).toBe(dracula["--tok-keyword"]);
+    expect(dracula["--tok-operator"]).toBe(dracula["--text"]);
+    const charcoal = colorsOf("monokai-charcoal");
+    expect(charcoal["--tok-constant"]).toBe("#a3a8f0");
+    expect(charcoal["--tok-operator"]).toBe(charcoal["--tok-keyword"]);
+  });
+
   it("gives swatches the editor colors", () => {
     expect(themeSwatch("dracula")).toEqual({
       background: "#282a36",
