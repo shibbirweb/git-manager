@@ -822,6 +822,11 @@ export interface WorkspaceChangedEvent {
   outsideRepos: boolean;
 }
 
+/** Files open in a tab that changed where no status follows them (git ignores them). */
+export interface OpenFilesChangedEvent {
+  filePaths: string[];
+}
+
 export interface GitProgressEvent {
   repoPath: string;
   line: string;

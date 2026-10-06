@@ -6,7 +6,7 @@
 // refreshes are handled in one place.
 
 import type { UnlistenFn } from "@tauri-apps/api/event";
-import { api, errorMessage, onGitProgress, onRepoChanged, onWorkspaceChanged } from "$lib/api";
+import { api, errorMessage, onGitProgress, onOpenFilesChanged, onRepoChanged, onWorkspaceChanged } from "$lib/api";
 import type { OpOutcome, Refs, RemoteInfo, RepoInfo, RepoStatus, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast, type ToastAction } from "$lib/ui/toast.svelte";
@@ -214,6 +214,11 @@ class RepoStore {
   /** Incremented when entries are created, deleted or renamed, or ignore rules change; the Files panel re-lists. */
   listingVersion = $state(0);
   /**
+   * Per absolute file path: incremented when a file open in a tab changes where git ignores it (a log file),
+   * so its tab reloads although no status changed.
+   */
+  openFileVersions = $state.raw<Record<string, number>>({});
+  /**
    * Per repository root: incremented when its work tree, index or HEAD changes. An unchanged status keeps its object,
    * so open tabs and the Changes diff follow this to see a file edited or staged again while its status stays the same.
    */
@@ -231,6 +236,8 @@ class RepoStore {
   private groupsState = $state.raw<GroupsState>(initialGroups());
   /** Every open editor tab once, left group first. */
   tabs = $derived(allTabs(this.groupsState));
+  /** The files open in any tab, sorted and once each, for the watcher (api.watchOpenFiles). */
+  openFilePaths = $derived([...new Set(this.tabs.map((tab) => tab.path).filter(isFileTab))].sort());
   /** Absolute path of the focused group's active tab. */
   openFilePath = $derived(focusedGroup(this.groupsState).active);
   /** Set by the changes view: a selected change keeps the first group's Diff tab. */
@@ -420,6 +427,16 @@ class RepoStore {
         if (plan.rescan) {
           this.scheduleRescan();
         }
+      }),
+      await onOpenFilesChanged((event) => {
+        this.watcherEventAt = this.stamp();
+        // Files no tab shows any more are dropped here, so the record stays small.
+        const open = new Set(this.openFilePaths);
+        const next = Object.fromEntries(Object.entries(this.openFileVersions).filter(([filePath]) => open.has(filePath)));
+        for (const filePath of event.filePaths) {
+          next[filePath] = (next[filePath] ?? 0) + 1;
+        }
+        this.openFileVersions = next;
       }),
       await onGitProgress((event) => {
         if (event.repoPath === this.repo?.root) {

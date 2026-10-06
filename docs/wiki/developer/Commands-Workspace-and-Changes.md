@@ -13,6 +13,7 @@ Commands for opening folders, reading status, staging, committing, diffs, confli
 | `init_repository` | `initRepository(folderPath)` | `RepoInfo` | CLI | `git init` in a plain folder |
 | `watch_workspace` | `watchWorkspace(workspaceRoot, repoRoots)` | `void` | app | starts the file watcher for one folder, off the main thread |
 | `unwatch_workspace` | `unwatchWorkspace(workspaceRoot)` | `void` | app | stops it, also off the main thread |
+| `watch_open_files` | `watchOpenFiles(filePaths)` | `void` | app | the files open in the window's tabs, reported even when git ignores them |
 | `read_workspace_file` | `readWorkspaceFile(filePath)` | `WorkspaceFile` | file | reads a `.gitmanager-workspace` or `.code-workspace` file |
 | `write_workspace_file` | `writeWorkspaceFile(filePath, folders)` | `void` | file | saves the folders atomically, keeping other keys, entries and comments |
 

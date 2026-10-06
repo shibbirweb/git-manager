@@ -87,6 +87,8 @@ pub struct AppState {
     pub memory_log: crate::memory_log::MemoryLog,
     /// The workspace folders the `gmpreview` scheme may serve files from, per window.
     pub preview_folders: crate::preview_scheme::PreviewFolders,
+    /// The files open in each window's tabs, which the watcher reports even when git ignores them.
+    pub open_files: crate::open_files::OpenFiles,
     /// The open windows: what each shows, the last focused one, the session to restore.
     pub windows: Mutex<crate::windows::WindowBook>,
     /// The app is quitting (Cmd+Q): closing windows no longer changes the saved session.
@@ -106,6 +108,7 @@ impl AppState {
             mcp: Mcp::default(),
             memory_log: crate::memory_log::MemoryLog::default(),
             preview_folders: crate::preview_scheme::PreviewFolders::default(),
+            open_files: crate::open_files::OpenFiles::default(),
             windows: Mutex::new(crate::windows::WindowBook::default()),
             quitting: std::sync::atomic::AtomicBool::new(false),
         }

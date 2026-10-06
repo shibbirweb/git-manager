@@ -33,6 +33,7 @@ The backend emits seven events. The `api.ts` helpers return an unlisten function
 | --- | --- | --- | --- |
 | `repo-changed` | `onRepoChanged` | `RepoChangedEvent { repoPath, gitDir, workTree }` | `watcher.rs`, once per changed repository per 300 ms batch |
 | `workspace-changed` | `onWorkspaceChanged` | `WorkspaceChangedEvent { workspaceRoot, reposChanged }` | `watcher.rs`, when visible files or a `.git` folder appear or vanish |
+| `open-files-changed` | `onOpenFilesChanged` | `OpenFilesChangedEvent { filePaths }` | `watcher.rs`, when a file open in a tab changes while git ignores it |
 | `git-progress` | `onGitProgress` | `GitProgressEvent { repoPath, line }` | each progress line of fetch, pull, push, Update and Push in the Branches popup, submodule update and LFS pull or fetch |
 | `terminal-exited` | `onTerminalExited` | `TerminalExitedEvent { terminalId, exitCode }` | `commands/terminal.rs` and `commands/scripts.rs`, when a shell or a script run ends; `exitCode` is null when killed |
 | `git-command` | `onGitCommand` | `GitCommandEntry` | `commands/console.rs`, when a git command starts and when it ends, only after `git_console_entries` was called once |

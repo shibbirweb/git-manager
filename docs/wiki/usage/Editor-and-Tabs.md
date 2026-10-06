@@ -107,7 +107,7 @@ While you edit, Git Manager compares the text with the last commit:
 
 F7 and Shift+F7 (or the arrows in the path bar) move between these changes and conflicts.
 
-Files that change on disk (for example after a checkout, or an edit in another app) reload on their own, as long as you have no unsaved edits in that tab.
+Files that change on disk (a checkout, another app writing, even to an ignored log) reload by themselves unless they have unsaved edits; scrolled to the end, a log follows new lines.
 
 ## Editing
 

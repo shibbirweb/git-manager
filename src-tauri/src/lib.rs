@@ -15,6 +15,7 @@ mod memory_log;
 mod merge;
 mod run_process;
 mod node_versions;
+mod open_files;
 mod paths;
 #[cfg(any(windows, test))]
 mod png_encode;
@@ -87,6 +88,7 @@ pub fn run() {
             commands::workspace::init_repository,
             commands::workspace::watch_workspace,
             commands::workspace::unwatch_workspace,
+            commands::workspace::watch_open_files,
             commands::status::get_status,
             commands::status::get_file_diff,
             commands::status::stage_files,

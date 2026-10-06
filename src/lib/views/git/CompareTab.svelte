@@ -42,8 +42,10 @@
   });
 
   $effect(() => {
-    // A new status object means files changed on disk.
+    // A new status object means files changed on disk; the file version also covers an edit
+    // that leaves the status as it was.
     void repoStore.statuses[repoRoot];
+    void repoStore.fileVersions[repoRoot];
     void load(repoRoot, filePath, revision);
   });
 

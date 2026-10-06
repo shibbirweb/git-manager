@@ -63,6 +63,13 @@ pub async fn unwatch_workspace(window: Window, state: State<'_, AppState>, works
     Ok(())
 }
 
+/// The files open in the asking window's tabs: the watcher reports a change to one of them
+/// even when git ignores it, so an open log file follows what another app writes.
+#[tauri::command]
+pub fn watch_open_files(window: Window, state: State<'_, AppState>, file_paths: Vec<String>) {
+    state.open_files.set(window.label(), &file_paths);
+}
+
 /// Takes every watcher of a window out of the map (it closed); the caller drops them off the main thread.
 pub fn take_window_watchers(state: &AppState, window_label: &str) -> Vec<crate::state::RepoWatcher> {
     let mut watchers = state.watchers.lock().unwrap_or_else(|poisoned| poisoned.into_inner());

@@ -70,10 +70,11 @@
     stage: { icon: "plus", title: "Stage" },
   };
 
-  // A new status object means files changed on disk, so the diff loads again.
+  // A new status object, or a file edited again with the same status, loads the diff again.
   $effect(() => {
     const file = selected;
     void status;
+    void repoStore.fileVersions[repoRoot];
     untrack(() => void loadDiff(file));
   });
 

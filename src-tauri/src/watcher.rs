@@ -76,6 +76,13 @@ struct WorkspaceChanged {
     outside_repos: bool,
 }
 
+/// Open files that changed where no status follows them (git ignores them).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OpenFilesChanged {
+    file_paths: Vec<String>,
+}
+
 /// What one debounced batch changed.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Attribution {
@@ -88,6 +95,8 @@ pub struct Attribution {
     /// A `.git` appeared or disappeared, a repository (or a folder holding
     /// one) was removed or moved, or a folder with a `.git` was moved in.
     pub repos_changed: bool,
+    /// Files open in a tab that changed while git ignores them, as the page named them.
+    pub open_files: Vec<String>,
 }
 
 impl Attribution {
@@ -103,6 +112,11 @@ impl Attribution {
         self.structure |= other.structure;
         self.outside_repos |= other.outside_repos;
         self.repos_changed |= other.repos_changed;
+        for file_path in other.open_files {
+            if !self.open_files.contains(&file_path) {
+                self.open_files.push(file_path);
+            }
+        }
     }
 
     fn workspace_changed(&self) -> bool {
@@ -193,12 +207,15 @@ fn is_gitattributes(path: &Path) -> bool {
 /// renamed visible entries, `.gitignore` edits and any `.git` appearing or
 /// disappearing change the structure; content edits outside every repository
 /// are `outside_repos`. `has_git_entry(path)` is asked only for renamed paths,
-/// to notice a repository moved into the workspace.
+/// to notice a repository moved into the workspace. `open_file(path)` gives the
+/// page's path of a file open in a tab; an ignored one is still reported in
+/// `open_files`, since no status change brings it up to date.
 pub fn attribute<'a>(
     repo_roots: &[PathBuf],
     events: impl IntoIterator<Item = (&'a EventKind, &'a [PathBuf])>,
     mut is_ignored: impl FnMut(usize, &Path) -> bool,
     mut has_git_entry: impl FnMut(&Path) -> bool,
+    mut open_file: impl FnMut(&Path) -> Option<String>,
 ) -> Attribution {
     let mut changes = vec![RepoChange::default(); repo_roots.len()];
     let mut attribution = Attribution::default();
@@ -258,6 +275,10 @@ pub fn attribute<'a>(
                     change.structure = true;
                     attribution.structure = true;
                 }
+            } else if let Some(file_path) = open_file(path) {
+                if !attribution.open_files.contains(&file_path) {
+                    attribution.open_files.push(file_path);
+                }
             }
         }
     }
@@ -267,6 +288,29 @@ pub fn attribute<'a>(
         .filter(|(_, change)| *change != RepoChange::default())
         .collect();
     attribution
+}
+
+/// Asks one repository whether a work tree path is ignored, for one batch of events.
+pub struct IgnoreCheck {
+    repo: Repository,
+    /// Read on the first ignored path only: most batches never need it.
+    index: Option<Option<git2::Index>>,
+}
+
+impl IgnoreCheck {
+    pub fn open(repo_root: &Path) -> Option<IgnoreCheck> {
+        Repository::open(repo_root).ok().map(|repo| IgnoreCheck { repo, index: None })
+    }
+
+    /// Ignored and untracked: git keeps following a tracked file that an ignore rule
+    /// matches (a log committed before it was ignored), so its status and diffs must too.
+    pub fn is_ignored(&mut self, relative: &Path) -> bool {
+        if !self.repo.status_should_ignore(relative).unwrap_or(false) {
+            return false;
+        }
+        let index = self.index.get_or_insert_with(|| self.repo.index().ok());
+        !index.as_ref().is_some_and(|index| index.get_path(relative, 0).is_some())
+    }
 }
 
 /// A batch with more paths than this is a burst (npm install, a big checkout).
@@ -529,6 +573,15 @@ pub fn watch(app: AppHandle, window_label: &str, workspace_root: &str, repo_root
                 },
             );
         }
+        if !attribution.open_files.is_empty() {
+            let _ = app_for_emit.emit_to(
+                target.clone(),
+                "open-files-changed",
+                OpenFilesChanged {
+                    file_paths: attribution.open_files,
+                },
+            );
+        }
     };
     let batches = spawn_burst_gate(emit)?;
     let roots = canonical_roots.clone();
@@ -556,19 +609,20 @@ pub fn watch(app: AppHandle, window_label: &str, workspace_root: &str, repo_root
             .collect();
         let path_count = relinked.iter().map(|(_, paths)| paths.len()).sum();
         // Opened lazily for this batch only.
-        let mut repos: HashMap<usize, Option<Repository>> = HashMap::new();
+        let mut repos: HashMap<usize, Option<IgnoreCheck>> = HashMap::new();
+        let open_files = app.state::<AppState>().open_files.get(&search_label);
         let mut attribution = attribute(
             &roots,
             relinked.iter().map(|(kind, paths)| (kind, paths.as_slice())),
             |index, relative| {
                 repos
                     .entry(index)
-                    .or_insert_with(|| Repository::open(&roots[index]).ok())
-                    .as_ref()
-                    .map(|repo| repo.status_should_ignore(relative).unwrap_or(false))
-                    .unwrap_or(false)
+                    .or_insert_with(|| IgnoreCheck::open(&roots[index]))
+                    .as_mut()
+                    .is_some_and(|check| check.is_ignored(relative))
             },
             has_git_entry,
+            |path| open_files.get(path).cloned(),
         );
         attribution.repos = with_submodule_parents(attribution.repos, &parents);
         if attribution != Attribution::default() {
@@ -596,9 +650,9 @@ mod tests {
 
     use super::{
         adds_or_removes_files, attribute, edits_source_files, git_dir_links, has_git_entry, relink, submodule_parents,
-        with_submodule_parents, Attribution, BurstGate, RepoChange, BURST_PATHS,
+        with_submodule_parents, Attribution, BurstGate, IgnoreCheck, RepoChange, BURST_PATHS,
     };
-    use crate::test_support::TestDir;
+    use crate::test_support::{TestDir, TestRepo};
 
     fn content() -> RepoChange {
         RepoChange { work_tree: true, ..RepoChange::default() }
@@ -635,6 +689,7 @@ mod tests {
             events.iter().map(|(kind, paths)| (kind, paths.as_slice())),
             |_, relative: &Path| relative.extension().map(|ext| ext == "log").unwrap_or(false),
             |path: &Path| path.to_string_lossy().ends_with("-repo"),
+            |path: &Path| path.file_name().is_some_and(|name| name.to_string_lossy().starts_with("open")).then(|| path.to_string_lossy().to_string()),
         )
     }
 
@@ -725,9 +780,26 @@ mod tests {
         let result = attribute(&roots, events.iter().map(|(kind, paths)| (kind, paths.as_slice())), |index, relative| {
             asked.push((index, relative.to_path_buf()));
             true
-        }, |_| false);
+        }, |_| false, |_| None);
         assert_eq!(result, Attribution::default());
         assert_eq!(asked, vec![(1, PathBuf::from("debug.log")), (0, PathBuf::from("target/out.log"))]);
+    }
+
+    #[test]
+    fn ignored_files_open_in_a_tab_are_still_reported() {
+        // An open log that git ignores has no status to follow, so the page is told directly.
+        let events = [(MODIFY, paths(&["/w/apps/web/open.log", "/w/apps/web/debug.log", "/w/apps/web/open.log"]))];
+        let result = run(NESTED, &events);
+        assert_eq!(result, Attribution { open_files: vec!["/w/apps/web/open.log".into()], ..Attribution::default() });
+
+        // An open file git sees follows its status instead, without a second reload.
+        let result = run(NESTED, &[(MODIFY, paths(&["/w/apps/web/open.ts"]))]);
+        assert_eq!(result, Attribution { repos: vec![(1, content())], ..Attribution::default() });
+
+        // Held bursts keep every open file once.
+        let mut held = Attribution { open_files: vec!["/w/a/open.log".into()], ..Attribution::default() };
+        held.merge(Attribution { open_files: vec!["/w/a/open.log".into(), "/w/b/open.log".into()], ..Attribution::default() });
+        assert_eq!(held.open_files, vec!["/w/a/open.log".to_string(), "/w/b/open.log".to_string()]);
     }
 
     #[test]
@@ -847,7 +919,7 @@ mod tests {
         // Relinked, a work tree commit refreshes the work tree, not the main repository.
         let roots = paths(&["/w/app", "/w/app/lib", "/w/wt"]);
         let relinked = [relink(Path::new("/main/.git/worktrees/wt/index"), &links).unwrap()];
-        let result = attribute(&roots, [(&MODIFY, &relinked[..])], |_, _| false, |_| false);
+        let result = attribute(&roots, [(&MODIFY, &relinked[..])], |_, _| false, |_| false, |_| None);
         assert_eq!(result.repos, vec![(2, index())]);
     }
 
@@ -867,7 +939,7 @@ mod tests {
         let both = RepoChange { refs: true, index: true, ..RepoChange::default() };
         assert_eq!(
             first,
-            Attribution { repos: vec![(0, content()), (1, both)], structure: true, outside_repos: true, repos_changed: false },
+            Attribution { repos: vec![(0, content()), (1, both)], structure: true, outside_repos: true, repos_changed: false, open_files: vec![] },
         );
     }
 
@@ -939,6 +1011,19 @@ mod tests {
         assert_eq!(links[0].1, worktree.join(".git"));
         assert!(links[0].0.ends_with(".git/worktrees/wt"));
         assert_eq!(submodule_parents(&roots), vec![None, Some(0), None]);
+    }
+
+    #[test]
+    fn tracked_files_matching_an_ignore_rule_are_not_ignored() {
+        let repo = TestRepo::new();
+        repo.write("app.log", "one\n");
+        repo.commit_all("track the log");
+        repo.write(".gitignore", "*.log\n");
+        repo.write("debug.log", "new\n");
+        let mut check = IgnoreCheck::open(&repo.path).unwrap();
+        assert!(!check.is_ignored(Path::new("app.log")));
+        assert!(check.is_ignored(Path::new("debug.log")));
+        assert!(!check.is_ignored(Path::new("readme.md")));
     }
 
     #[test]

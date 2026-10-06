@@ -59,7 +59,7 @@ The list's width is `changesListWidth` in `state.json` (default 320 px, at least
 
 `compare_with_revision` takes the file, `HEAD` and an optional `orig_path`. The backend (`diff::against_revision`) reads the old side from HEAD under `orig_path` when given, else under the path, and the new side from the work tree. Without `orig_path` a renamed file would look brand new.
 
-A new status object means files changed on disk, so an `$effect` loads the diff again. The loaded diff and any error are stored with their file path, so picking another file never shows the previous file's diff while the new one loads. Submodules, and repositories with no commits yet, show a short note instead of a diff.
+A new status object, or a new `repoStore.fileVersions[repoRoot]` (a file edited again keeps its status), means files changed on disk, so an `$effect` loads the diff again. The loaded diff and any error are stored with their file path, so picking another file never shows the previous file's diff while the new one loads. Submodules, and repositories with no commits yet, show a short note instead of a diff.
 
 ## Where the code lives
 

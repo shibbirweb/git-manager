@@ -16,6 +16,7 @@
   import { type DocMember, isReplay, type SharedDoc, sharedDocs, syncedDispatch } from "$lib/editor/sharedDocs";
   import { conflictField, conflictMarkers, resolveAllConflicts } from "$lib/editor/conflictDecorations";
   import type { ChangeMark } from "$lib/editor/lineDiff";
+  import { reloadChange } from "$lib/editor/reloadChange";
   import { sectionAt, sectionTarget } from "$lib/editor/navigation";
   import {
     changeGutter,
@@ -262,12 +263,15 @@
   // Pick up changes made outside the app while there are no local edits.
   let lastStatus: unknown = null;
   let lastFileVersion = 0;
+  let lastOpenFileVersion = 0;
   $effect(() => {
     // Changes in the owning repository, or anywhere in a folder without git.
     const status = location ? repoStatus : repoStore.workspaceVersion;
     // An unchanged status keeps its object, so a file edited again outside the app shows here instead.
     const fileVersion = location ? (repoStore.fileVersions[location.repo.root] ?? 0) : 0;
-    const changed = status !== lastStatus || fileVersion !== lastFileVersion;
+    // A file git ignores (a log) has no status: the watcher reports it as an open file.
+    const openFileVersion = repoStore.openFileVersions[filePath] ?? 0;
+    const changed = status !== lastStatus || fileVersion !== lastFileVersion || openFileVersion !== lastOpenFileVersion;
     if (lastStatus !== null && changed && !dirty && !saving && !shared.saving) {
       // One editor of a file reads it again; the other follows its text and updates its marks.
       if (sharedDocs.isLeader(filePath, member)) {
@@ -278,6 +282,7 @@
     }
     lastStatus = status;
     lastFileVersion = fileVersion;
+    lastOpenFileVersion = openFileVersion;
   });
 
   async function load(quiet: boolean): Promise<void> {
@@ -320,13 +325,20 @@
       }
       if (view) {
         const previousText = view.state.doc.toString();
-        if (previousText !== next.content) {
+        const change = reloadChange(previousText, next.content);
+        if (change) {
           // A change made outside the app: Local History keeps the text being replaced first
           // (Revert keeps the unsaved edits itself, in revert()).
           if (quiet) {
             localHistory.noteReload(filePath, previousText, previousEol, "external");
           }
-          view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: next.content } });
+          // Only the changed part is replaced, so the caret and scroll stay; scrolled to the end, a growing log is followed.
+          const scroller = view.scrollDOM;
+          const following = change.to === previousText.length && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
+          view.dispatch({ changes: change });
+          if (following) {
+            view.dispatch({ effects: EditorView.scrollIntoView(view.state.doc.length, { y: "end" }) });
+          }
         }
         shared.baseline = view.state.doc;
         repoStore.setDirty(filePath, false);

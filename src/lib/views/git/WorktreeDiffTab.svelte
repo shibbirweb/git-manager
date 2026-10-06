@@ -34,8 +34,10 @@
   let firstLoad = true;
 
   $effect(() => {
-    // A new status object means files changed on disk (an unchanged status keeps its object).
+    // A new status object means files changed on disk; an unchanged status keeps its object,
+    // so a file edited again shows through the file version.
     void repoStore.statuses[repoRoot];
+    void repoStore.fileVersions[repoRoot];
     void repoStore.historyVersion;
     void revision;
     untrack(() => {
