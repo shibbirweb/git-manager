@@ -164,6 +164,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- HTML, XML, Vue and JSX tag and attribute names now use the color theme's own tag and attribute colors. Before, every theme showed tags in its type color and attributes in its property color, so Monokai tags were cyan instead of pink.
 - A file open in a tab (a preview tab too) now updates when another app changes it, also when git ignores it, like a log file. Only the new text is added, so the view stays where it is, and when it is scrolled to the end it follows the new lines.
 - Diffs in the Changes tab, Show Diff with Working Tree and Compare with Revision now update while the file keeps changing; before, a file that was already modified showed its first diff until something else changed.
 - A tracked file that matches a `.gitignore` rule (a log committed before it was ignored) now refreshes its status, diff and tab when it changes.

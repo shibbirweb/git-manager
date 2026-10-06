@@ -12,11 +12,11 @@ import {
   keymap,
   lineNumbers,
 } from "@codemirror/view";
-import { classHighlighter } from "@lezer/highlight";
 import { settings } from "$lib/stores/settings.svelte";
 import { commandKeys } from "./commandKeys";
 import { codeKeymap } from "./editorCommands";
 import { findBar } from "./findPanel.svelte";
+import { codeHighlighters } from "./highlighter";
 import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
 import { type EditorKind, featureOptions } from "./featurePlan";
@@ -104,7 +104,7 @@ export function baseExtensions({ readOnly = false, kind, extensions = [], lineNu
     numbered ? lineNumbers() : [],
     highlightSpecialChars(),
     drawSelection(),
-    syntaxHighlighting(classHighlighter),
+    ...codeHighlighters.map((highlighter) => syntaxHighlighting(highlighter)),
     // Auto-close, completion, folding, guides, word highlight, margin line, sticky scroll,
     // minimap, bracket colors and matching... each switchable in Settings.
     editorFeatures(kind ?? (readOnly ? "diff" : "file"), featureOptions(settings)),

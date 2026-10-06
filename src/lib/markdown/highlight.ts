@@ -3,7 +3,8 @@
 // light and dark), so no second highlighting library is loaded.
 
 import type { Language } from "@codemirror/language";
-import { classHighlighter, highlightCode } from "@lezer/highlight";
+import { highlightCode } from "@lezer/highlight";
+import { codeHighlighters } from "$lib/editor/highlighter";
 
 type Parser = Language["parser"];
 
@@ -94,7 +95,7 @@ export function highlightToHtml(code: string, parser: Parser): string {
   highlightCode(
     code,
     parser.parse(code),
-    classHighlighter,
+    codeHighlighters,
     (text, classes) => {
       parts.push(classes ? `<span class="${classes}">${escapeHtml(text)}</span>` : escapeHtml(text));
     },
