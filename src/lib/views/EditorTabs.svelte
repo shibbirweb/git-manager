@@ -29,7 +29,8 @@
   import { changesSelection } from "./changes/selection.svelte";
   import { pastDragThreshold } from "./files/dragDrop";
   import { dropGap, edgeScrollStep, type TabBox } from "./tabDrag";
-  import { moveEditorTab, splitEditorRight } from "./workspaceActions";
+  import { type GroupDirection, groupDirection, type SplitDirection } from "$lib/stores/groupLayout";
+  import { moveEditorTab, splitEditor } from "./workspaceActions";
 
   let { groupId }: { groupId: number } = $props();
 
@@ -40,7 +41,7 @@
   /** The first group: it has the Diff tab. */
   const primary = $derived(repoStore.primaryGroupId === groupId);
   const split = $derived(repoStore.groups.length > 1);
-  /** With two groups, the strip of the unfocused one is dimmed. */
+  /** With several groups, the strips of the unfocused ones are dimmed. */
   const focused = $derived(!split || repoStore.focusedGroupId === groupId);
   const diffShown = $derived(primary && changesSelection.primaryView === "diff");
   const labels = $derived(tabLabels(tabs));
@@ -164,22 +165,34 @@
     ];
   }
 
-  /** Split Right, the move to the other group and Close Group, while the split editor setting is on. */
+  /** "Move to Right Group" names the group a tab moves to while there are at most two. */
+  function moveLabel(): string {
+    const target = repoStore.moveTargetFor(groupId);
+    if (repoStore.groups.length > 2) {
+      return "Move to Next Group";
+    }
+    const direction = repoStore.groups.length === 2 ? groupDirection(repoStore.groupLayout, groupId, target) : "right";
+    const names: Record<GroupDirection, string> = { left: "Left", right: "Right", up: "Top", down: "Bottom" };
+    return `Move to ${names[direction ?? "right"]} Group`;
+  }
+
+  /** Split Right and Split Down, the move to another group and Close Group, while the split editor setting is on. */
   function groupItems(filePath: string): MenuItem[] {
     if (!settings.splitEditor) {
       return [];
     }
     const items: MenuItem[] = [];
-    if (primary && !isPseudoTab(filePath)) {
-      items.push({
-        label: "Split Right",
-        action: () => {
-          repoStore.activateTab(groupId, filePath);
-          splitEditorRight(filePath);
-        },
-      });
+    if (!isPseudoTab(filePath)) {
+      // Focus only: this group keeps the file it shows, the clicked tab opens in the new group.
+      const splitTo = (direction: SplitDirection) => {
+        repoStore.focusGroup(groupId);
+        splitEditor(filePath, direction);
+      };
+      const disabled = !repoStore.canSplit(filePath);
+      items.push({ label: "Split Right", disabled, action: () => splitTo("right") });
+      items.push({ label: "Split Down", disabled, action: () => splitTo("down") });
     }
-    items.push({ label: primary ? "Move to Right Group" : "Move to Left Group", action: () => moveEditorTab(filePath, groupId) });
+    items.push({ label: moveLabel(), action: () => moveEditorTab(filePath, groupId) });
     if (split) {
       items.push({ label: "Close Group", action: () => void repoStore.closeGroup(groupId) });
     }
@@ -392,7 +405,7 @@
   onwheel={onWheel}
   onclickcapture={onClickCapture}
   role="tablist"
-  aria-label={split ? (primary ? "Open editors, left group" : "Open editors, right group") : "Open editors"}
+  aria-label={split ? `Open editors, group ${repoStore.groups.findIndex((candidate) => candidate.id === groupId) + 1}` : "Open editors"}
 >
   {#if primary && changesSelection.selected}
     <div class="tab diff" class:active={diffShown} title={diffTitle} role="presentation">

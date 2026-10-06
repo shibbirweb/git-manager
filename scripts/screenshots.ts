@@ -1097,6 +1097,20 @@ define("single-tab-title", async (shot) => {
   await shot.save(await shot.clipAround([shot.page.locator(".tab-strip.single").first()], { bottom: 60 }));
 }, () => ({ settings: { tabLimit: 1 } }));
 
+// Window > Split Right, then Split Down: cart.ts on the left, pricing.ts above checkout.ts on the right.
+define("split-editor-grid", async (shot) => {
+  await shot.openFile(cartTs());
+  await shot.openFile(join(storefront, "src/pricing.ts"));
+  await menuAction(shot, "window.splitRight");
+  await shot.openFile(join(storefront, "src/checkout.ts"));
+  await menuAction(shot, "window.splitDown");
+  const groups = shot.page.locator(".editor-group");
+  await groups.nth(1).locator('.tab[data-path$="/pricing.ts"]').click();
+  await groups.nth(0).locator('.tab[data-path$="/cart.ts"]').click();
+  await shot.page.mouse.move(640, 790);
+  await shot.save();
+});
+
 define("unsaved-changes-close", async (shot) => {
   await shot.openFile(cartTs());
   await clickLine(shot, "setQuantity(productId");

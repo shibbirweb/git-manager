@@ -11,7 +11,7 @@ Drag a tab left or right, like in JetBrains IDEs:
 - Press **Escape** while dragging to put it back where it was.
 - When the tabs scroll, drag near the left or right end of the strip to scroll it.
 
-A tab moves inside its own group. With the [split editor](Editor-and-Tabs.md#tabs) on, use **Move to Right Group** or **Move to Left Group** in the tab's right-click menu to move it to the other group.
+A tab moves inside its own group. With the [split editor](Split-Editor.md) on, use the move item in the tab's right-click menu, such as **Move to Right Group**, to move it to another group.
 
 The **Diff** tab is always first and cannot be moved.
 

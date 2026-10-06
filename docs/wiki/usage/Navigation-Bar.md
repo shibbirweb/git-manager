@@ -52,7 +52,7 @@ The list shows folders first, then files, with the same icons and git colors as 
 | Right | Go into the selected folder: it becomes the last part of the path and its list opens |
 | Left | Go up to the folder above, with the folder you came from selected |
 | Enter | Open the selected file, or go into the selected folder |
-| Cmd+Enter (Ctrl+Enter) | Open the file in the other editor group, when the [split editor](Editor-and-Tabs.md#tabs) is on |
+| Cmd+Enter (Ctrl+Enter) | Open the file in another editor group, when the [split editor](Split-Editor.md) is on |
 | Esc | Clear what you typed; press again to close |
 
 A click on an entry does the same as Enter. A click on another part of the path opens that folder's list instead. A click anywhere else closes the bar.

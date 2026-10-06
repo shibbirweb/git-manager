@@ -431,9 +431,12 @@ function windowMenu(platform: MenuPlatform, mode: MenuMode): TopMenu {
       separator,
       // Editor groups.
       item("window.splitRight", "Split Right", "CmdOrCtrl+\\"),
-      item("window.moveTabToOtherGroup", "Move Tab to Other Group"),
-      item("window.focusLeftGroup", "Focus Left Group", "CmdOrCtrl+1"),
-      item("window.focusRightGroup", "Focus Right Group", "CmdOrCtrl+2"),
+      item("window.splitDown", "Split Down"),
+      item("window.moveTabToOtherGroup", "Move Tab to Next Group"),
+      item("window.focusLeftGroup", "Focus First Group", "CmdOrCtrl+1"),
+      item("window.focusRightGroup", "Focus Second Group", "CmdOrCtrl+2"),
+      item("window.focusNextGroup", "Focus Next Group"),
+      item("window.focusPreviousGroup", "Focus Previous Group"),
       item("window.closeGroup", "Close Group"),
     );
   } else {

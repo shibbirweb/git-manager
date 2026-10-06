@@ -49,7 +49,7 @@ import {
   openQuickOpen,
   runWorkspaceShortcut,
   shortcutsBlocked,
-  splitEditorRight,
+  splitEditor,
 } from "$lib/views/workspaceActions";
 import type { WorkspaceShortcut } from "$lib/views/workspaceShortcuts";
 import { closeThisWindow } from "$lib/windows/windowActions";
@@ -132,13 +132,20 @@ async function closeTab(): Promise<void> {
   }
 }
 
-/** Focus Left / Right Group: the keyboard goes to that group's editor. Right with one group splits. */
+/** Focus Next / Previous Group: the group `step` away from the focused one in layout order, going round. */
+function nextGroupIndex(step: 1 | -1): number {
+  const count = repoStore.groups.length;
+  const index = repoStore.groups.findIndex((group) => group.id === repoStore.focusedGroupId);
+  return (Math.max(0, index) + step + count) % count;
+}
+
+/** Focus First / Second Group (and Next, Previous): the keyboard goes to that group's editor. Second with one group splits. */
 async function focusGroupAt(index: number): Promise<void> {
   if (!settings.splitEditor) {
     return;
   }
   if (index > 0 && repoStore.groups.length < 2) {
-    splitEditorRight(activeFilePath());
+    splitEditor(activeFilePath(), "right");
     return;
   }
   if (!repoStore.focusGroupAt(index)) {
@@ -364,7 +371,8 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
       repoStore.setTabPinned(tabPath, !repoStore.isPinned(tabPath));
     }
   }),
-  "window.splitRight": workspace(() => splitEditorRight(activeFilePath())),
+  "window.splitRight": workspace(() => splitEditor(activeFilePath(), "right")),
+  "window.splitDown": workspace(() => splitEditor(activeFilePath(), "down")),
   "window.moveTabToOtherGroup": workspace(() => {
     const tabPath = activeFilePath();
     if (tabPath) {
@@ -373,6 +381,8 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   }),
   "window.focusLeftGroup": workspace(() => focusGroupAt(0)),
   "window.focusRightGroup": workspace(() => focusGroupAt(1)),
+  "window.focusNextGroup": workspace(() => focusGroupAt(nextGroupIndex(1))),
+  "window.focusPreviousGroup": workspace(() => focusGroupAt(nextGroupIndex(-1))),
   "window.closeGroup": workspace(() => repoStore.closeGroup()),
 
   "help.docs": openUrl(WIKI_URL),

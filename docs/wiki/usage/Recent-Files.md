@@ -26,7 +26,7 @@ This is the quickest way to move between the two files you are working on.
 - Type to filter the list. The letters you type must appear in order in the file's folder and name, but not next to each other: `crt` finds `cart.ts`. The list keeps its order, newest first.
 - **Up** and **Down** (or Ctrl+N and Ctrl+P) move the selection. They wrap around at the ends. **Page Up** and **Page Down** jump ten rows.
 - **Enter** opens the selected file. A click does the same.
-- **Cmd+Enter** opens it in the other editor group, when the [split editor](Editor-and-Tabs.md#tabs) is on.
+- **Cmd+Enter** opens it in another editor group, when the [split editor](Split-Editor.md) is on.
 - **Esc**, or a click outside the popup, closes it and puts the focus back where it was.
 
 ## Edited files only

@@ -133,7 +133,7 @@ export function currentMenuInputs(mode: MenuMode): MenuInputs {
         0,
         repoStore.groups.findIndex((group) => group.id === repoStore.focusedGroupId),
       ),
-      canSplit: repoStore.canSplitRight(activePath),
+      canSplit: repoStore.canSplit(activePath),
     },
     leftPanel: settings.leftPanel,
     explorerOpen: settings.explorerOpen,

@@ -257,7 +257,7 @@ class ChangesSelection {
 
   /**
    * The main view of the focused editor group: the first group shows the Diff tab, the Log,
-   * a file tab or nothing; the right group always shows a tab.
+   * a file tab or nothing; the other groups always show a tab.
    */
   get shownView(): "diff" | "log" | "file" | "none" {
     if (repoStore.focusedGroupId !== repoStore.primaryGroupId) {

@@ -53,7 +53,7 @@ The Git menu has everything git: commit, push, pull, merge, rebase, patches, the
 
 ## Window
 
-**Minimize** (Cmd+M), **Zoom**, **Next Tab** (Shift+Cmd+]), **Previous Tab** (Shift+Cmd+[) and **Bring All to Front**. On Windows and Linux the tab keys are Ctrl+PageDown and Ctrl+PageUp.
+**Minimize** (Cmd+M), **Zoom**, **Next Tab** (Shift+Cmd+]), **Previous Tab** (Shift+Cmd+[) and **Bring All to Front**. On Windows and Linux the tab keys are Ctrl+PageDown and Ctrl+PageUp. **Split Right** (Cmd+\\), **Split Down** and the other editor group items are explained in [Split Editor](Split-Editor.md).
 
 ## Help
 

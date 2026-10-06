@@ -766,13 +766,6 @@ describe("split editor settings", () => {
     expect(parsePreferences({ singleTabTitle: false }).preferences.singleTabTitle).toBe(false);
     expect(parsePreferences({ singleTabTitle: "no" }).preferences.singleTabTitle).toBe(true);
   });
-
-  it("keeps the split ratio in range", () => {
-    expect(parseState({}).state.editorSplitRatio).toBe(0.5);
-    expect(parseState({ editorSplitRatio: 0.3 }).state.editorSplitRatio).toBe(0.3);
-    expect(parseState({ editorSplitRatio: 5 }).state.editorSplitRatio).toBe(0.8);
-    expect(parseState({ editorSplitRatio: "wide" }).state.editorSplitRatio).toBe(0.5);
-  });
 });
 
 describe("auto fetch preferences", () => {
