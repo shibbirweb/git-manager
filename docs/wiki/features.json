@@ -2,6 +2,7 @@
   "$comment": "The map of the wiki. Every feature has a usage page, a developer chapter and its screenshots; scripts/build-wiki.ts fails CI when a page, a screenshot or a link is missing, so a feature cannot land without its docs. Order here is the order in the sidebar.",
   "usage": [
     { "page": "usage/Getting-Started.md", "summary": "Install Git Manager, open your first folder and find your way around the window." },
+    { "page": "usage/Welcome-Screen.md", "summary": "Find a recent project, open or clone one, and set up the look before your first folder." },
     { "page": "usage/Workspaces.md", "summary": "Open folders with many repositories, add more folders, and save a workspace to a file." },
     { "page": "usage/Files-Panel.md", "summary": "Browse your files and see at a glance what git thinks of each one." },
     { "page": "usage/File-Operations.md", "summary": "Create, rename, copy, move and trash files and folders right in the Files panel." },
@@ -115,11 +116,18 @@
   ],
   "features": [
     {
+      "id": "welcome-screen",
+      "title": "Welcome screen",
+      "usage": "usage/Welcome-Screen.md",
+      "developer": "developer/How-the-Welcome-Screen-Works.md",
+      "screenshots": ["welcome.png"]
+    },
+    {
       "id": "workspaces",
       "title": "Workspaces and folders",
       "usage": "usage/Workspaces.md",
       "developer": "developer/How-Workspaces-Work.md",
-      "screenshots": ["welcome.png", "window-overview.png", "workspace-folders.png", "repository-switcher.png", "init-repository.png", "scan-repositories.png", "unsaved-changes-close.png", "workspace-opening.png"]
+      "screenshots": ["window-overview.png", "workspace-folders.png", "repository-switcher.png", "init-repository.png", "scan-repositories.png", "unsaved-changes-close.png", "workspace-opening.png"]
     },
     {
       "id": "files-panel",

@@ -121,7 +121,7 @@ Type HEAD, a commit id or a branch, or use **Commit...** and **Branch...** to pi
 
 ## Clone
 
-**Git > Clone...** copies a repository from a server into a new folder, even with no folder open. **Clone Repository...** on the welcome screen opens the same dialog.
+**Git > Clone...** copies a repository from a server into a new folder, even with no folder open. **Clone** on the [welcome screen](Welcome-Screen.md) opens the same dialog.
 
 ![The Clone dialog](../images/git-clone-dialog.png)
 

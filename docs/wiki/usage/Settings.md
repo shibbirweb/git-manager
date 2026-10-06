@@ -6,7 +6,7 @@ Settings change how Git Manager looks and behaves, apply at once and are saved. 
 
 - Click the gear at the top right of the header (**Settings (Cmd+,)**).
 - Or press Cmd+,, or choose **Git Manager > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
-- Or click **Settings** on the welcome screen.
+- Or click the gear on the [welcome screen](Welcome-Screen.md).
 
 Settings opens on **Appearance**. The **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
 

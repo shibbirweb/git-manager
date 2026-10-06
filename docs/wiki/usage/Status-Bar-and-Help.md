@@ -85,7 +85,7 @@ A good bug report says what you did, what you expected and what happened. A scre
 - **Report a Bug** and **Request a Feature**, as above.
 - **Release Notes**: what changed in this version.
 
-The welcome screen has these links too.
+The welcome screen has these links too, at the bottom of its sidebar.
 
 ## Notes and errors
 

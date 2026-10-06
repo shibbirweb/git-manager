@@ -99,11 +99,6 @@ The activity bars are the icon strips at each edge. Two header buttons left of t
 - **Why it happened:** `openFolders` caught errors only around `api.openWorkspace`. Anything that threw later, such as a bad reply, rejected a promise nobody caught.
 - **The fix and why we chose it:** `openFolders` never throws: any error is a toast from the pure `openFailure` (`openingProgress.ts`) naming the folder and the error. One catch in the store covers every caller.
 
-**The welcome screen did not fit a short window.**
-- **The issue:** in a short window the card was cut off at the top and bottom.
-- **Why it happened:** `align-items: center` on a `100vh` screen with `overflow: hidden` pushes a taller card past both edges.
-- **The fix and why we chose it:** `Welcome.svelte` centers with `margin: auto` (never past the top), caps the card at the window height and lets the recent lists scroll inside it. Plain CSS, no resize code.
-
 **Option+Cmd+B did not match.**
 - **The issue:** a check on `event.key` never fired, so the Files panel did not toggle.
 - **Why it happened:** on macOS, Option changes the typed character, so `event.key` is not `b`.
@@ -121,4 +116,4 @@ The opening card, live watchers and the unsaved-changes dialog need a check by h
 
 - Update this page when scanning, opening progress or rescans change, and [How workspace files work](How-Workspace-Files-Work.md) or [How folder watching works](How-Folder-Watching-Works.md) for their parts.
 - Update [Workspaces](../usage/Workspaces.md) for visible changes.
-- Retake `welcome.png`, `window-overview.png`, `workspace-folders.png`, `repository-switcher.png`, `init-repository.png`, `scan-repositories.png`, `unsaved-changes-close.png` and `workspace-opening.png` when they change. See [Docs and Screenshots](Docs-and-Screenshots.md).
+- Retake `window-overview.png`, `workspace-folders.png`, `repository-switcher.png`, `init-repository.png`, `scan-repositories.png`, `unsaved-changes-close.png` and `workspace-opening.png` when they change. See [Docs and Screenshots](Docs-and-Screenshots.md).
