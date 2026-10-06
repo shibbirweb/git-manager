@@ -76,19 +76,18 @@ Type a font list and press Enter, or click a font name below it. **Reset** goes 
 
 ![Git settings](../images/settings-merge.png)
 
-*Defaults for the merge tool, the Log, commits and the Git Console.*
+*Defaults for diffs, the merge tool, the Log, commits and the Git Console.*
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Ignore whitespace in the merge tool | Starts merges with whitespace-only differences hidden. The **Ignore whitespace** button in the [Merge Tool](Merge-Tool.md) changes this setting too. | Off |
+| Diff layout | Every diff **Side by side** or **Inline** ([Inline Diffs](Inline-Diffs.md)); the diff toolbar's buttons set it too. | Side by side |
+| Ignore whitespace in the merge tool | Starts merges with whitespace-only differences hidden. The **Ignore whitespace** button in the [Merge Tool](Merge-Tool.md) sets it too. | Off |
 | Show all branches in the log | Includes every local and remote branch in the [Log](History-and-Log.md). | On |
-| Sign off commits | Adds a `Signed-off-by` line to every commit (`--signoff`). Also in Commit Options. | Off |
+| Sign off commits | Adds a `Signed-off-by` line to every commit (`--signoff`). Also in [Commit Options](Commit-Options.md). | Off |
 | GPG sign commits | **Default** follows git's `commit.gpgSign`, **Sign** adds `-S`, **Do not sign** adds `--no-gpg-sign`. | Default |
-| Git Console | Keeps a list of the git commands the app runs, in a **Git Console** tab next to Terminal. While it is off, nothing is recorded. See [Git Console](Git-Console.md). | Off |
+| Git Console | Lists the git commands the app runs in a **Git Console** tab next to Terminal; off, nothing is recorded ([Git Console](Git-Console.md)). | Off |
 
-See [Commit Options](Commit-Options.md) for signing and the other per-commit choices.
-
-**Git > Update Project...** also saves its last choice, merge or rebase, in `settings.json` (`updateMethod`, default merge), with no switch here; see [Git Dialogs](Git-Dialogs.md#update-project).
+**Git > Update Project...** remembers merge or rebase (`updateMethod` in `settings.json`, default merge) without a switch here; see [Git Dialogs](Git-Dialogs.md#update-project).
 
 ## Layout
 

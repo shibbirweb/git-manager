@@ -8,6 +8,7 @@
     DEFAULT_EDITOR_FONT,
     DEFAULT_RULER_COLUMN,
     defaultPreferences,
+    DIFF_LAYOUT_CHOICES,
     EDITOR_CURSOR_BLINKING_CHOICES,
     EDITOR_CURSOR_STYLE_CHOICES,
     EDITOR_CURSOR_WIDTH_RANGE,
@@ -1551,6 +1552,27 @@
             />
           </label>
         {:else if section === "merge"}
+          <div class="row">
+            <div class="label">
+              <span>Diff layout</span>
+              <span class="hint">
+                Show every diff side by side, or inline in one column with removed lines above the lines that replace them.
+                The two buttons in the diff toolbar change this setting too.
+              </span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Diff layout">
+              {#each DIFF_LAYOUT_CHOICES as choice (choice.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.diffLayout === choice.value}
+                  class:on={settings.diffLayout === choice.value}
+                  onclick={() => set("diffLayout", choice.value)}
+                >
+                  {choice.label}
+                </button>
+              {/each}
+            </div>
+          </div>
           <label class="row toggle-row">
             <div class="label">
               <span>Ignore whitespace in the merge tool</span>

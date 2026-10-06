@@ -25,7 +25,7 @@
     { "page": "usage/Commit-Options.md", "summary": "Commit and push in one go, and sign-off, author, GPG signing and skipping hooks." },
     { "page": "usage/Ignoring-Files.md", "summary": "Add files, folders or extensions to .gitignore from a right-click." },
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
-    { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, removed lines above the new ones, like the JetBrains unified viewer." },
+    { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, with removed lines above the new ones." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },

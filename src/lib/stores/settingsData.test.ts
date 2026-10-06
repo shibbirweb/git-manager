@@ -176,6 +176,12 @@ describe("parsePreferences", () => {
     });
   });
 
+  it("validates the diff layout", () => {
+    expect(parsePreferences({}).preferences.diffLayout).toBe("sideBySide");
+    expect(parsePreferences({ diffLayout: "inline" }).preferences.diffLayout).toBe("inline");
+    expect(parsePreferences({ diffLayout: "unified" }).preferences.diffLayout).toBe("sideBySide");
+  });
+
   it("turns the editor features on by default and keeps hand-edited switches", () => {
     const { preferences } = parsePreferences({});
     expect(preferences).toMatchObject({
@@ -539,13 +545,6 @@ describe("parseState", () => {
     const saved = stateToJson(parseState({ changesListWidth: 420, changesListVisible: false }).state, {});
     expect(saved.changesListWidth).toBe(420);
     expect(saved.changesListVisible).toBe(false);
-  });
-
-  it("validates the diff layout", () => {
-    expect(parseState({}).state.diffLayout).toBe("sideBySide");
-    expect(parseState({ diffLayout: "inline" }).state.diffLayout).toBe("inline");
-    expect(parseState({ diffLayout: "unified" }).state.diffLayout).toBe("sideBySide");
-    expect(stateToJson(parseState({ diffLayout: "inline" }).state, {}).diffLayout).toBe("inline");
   });
 
   it("reads the old recentRepos name", () => {

@@ -83,6 +83,7 @@ export {
   DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
   CARET_EXTRA_RANGE,
+  DIFF_LAYOUT_CHOICES,
   EDITOR_CURSOR_BLINKING_CHOICES,
   EDITOR_CURSOR_STYLE_CHOICES,
   EDITOR_CURSOR_WIDTH_RANGE,
@@ -205,6 +206,7 @@ class SettingsStore {
   checkForUpdates = $state(initialPreferences.checkForUpdates);
   updateChannel = $state<UpdateChannelSetting>(initialPreferences.updateChannel);
   ignoreWhitespace = $state(initialPreferences.ignoreWhitespace);
+  diffLayout = $state<DiffLayout>(initialPreferences.diffLayout);
   logAllRefs = $state(initialPreferences.logAllRefs);
   autoFetch = $state(initialPreferences.autoFetch);
   autoFetchIntervalMinutes = $state(initialPreferences.autoFetchIntervalMinutes);
@@ -275,7 +277,6 @@ class SettingsStore {
   leftBarVisible = $state(initialState.leftBarVisible);
   rightBarVisible = $state(initialState.rightBarVisible);
   diffSplitRatio = $state(initialState.diffSplitRatio);
-  diffLayout = $state<DiffLayout>(initialState.diffLayout);
   leftPanel = $state<LeftPanel>(initialState.leftPanel);
   sidebarWidth = $state(initialState.sidebarWidth);
   explorerWidth = $state(initialState.explorerWidth);
@@ -450,6 +451,7 @@ class SettingsStore {
       checkForUpdates: this.checkForUpdates,
       updateChannel: this.updateChannel,
       ignoreWhitespace: this.ignoreWhitespace,
+      diffLayout: this.diffLayout,
       logAllRefs: this.logAllRefs,
       autoFetch: this.autoFetch,
       autoFetchIntervalMinutes: this.autoFetchIntervalMinutes,
@@ -520,7 +522,6 @@ class SettingsStore {
       leftBarVisible: this.leftBarVisible,
       rightBarVisible: this.rightBarVisible,
       diffSplitRatio: this.diffSplitRatio,
-      diffLayout: this.diffLayout,
       leftPanel: this.leftPanel,
       sidebarWidth: this.sidebarWidth,
       explorerWidth: this.explorerWidth,
@@ -765,11 +766,6 @@ class SettingsStore {
   }
 
   /** Shows or hides the Changes tab's file list. */
-  setDiffLayout(layout: DiffLayout): void {
-    this.diffLayout = layout;
-    this.save();
-  }
-
   toggleChangesList(): void {
     this.changesListVisible = !this.changesListVisible;
     this.save();

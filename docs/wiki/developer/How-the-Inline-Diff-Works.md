@@ -1,18 +1,19 @@
 # How the inline diff works
 
-This chapter explains the inline layout of the diff view: one column with each change's removed lines above the lines that replace them, and two line number columns, like the unified viewer of JetBrains IDEs. The user side is in [Inline Diffs](../usage/Inline-Diffs.md); the diff view itself (side by side, hunk staging, the split) is in [How Diffs Work](How-Diffs-Work.md).
+This chapter explains the inline layout of the diff view: one column with each change's removed lines above the lines that replace them, and two line number columns. The user side is in [Inline Diffs](../usage/Inline-Diffs.md); the diff view itself (side by side, hunk staging, the split) is in [How Diffs Work](How-Diffs-Work.md).
 
 ## Why we need it
 
-Two columns halve the width of each version. In a narrow window, or with long lines, a lot of the change scrolls out of sight. One column gives the text the whole width and still shows what was removed. The same switch is in JetBrains IDEs, and it was asked for in the toolbar next to Open File.
+Two columns halve the width of each version. In a narrow window, or with long lines, a lot of the change scrolls out of sight. One column gives the text the whole width and still shows what was removed. It was asked for in the diff toolbar, next to Open File, and in Settings > Git.
 
 ## How it works
 
 ### One setting, every diff
 
-The layout is `settings.diffLayout` in `state.json`: `"sideBySide"` (the default) or `"inline"`, read with `pickOneOf` against `DIFF_LAYOUTS` in `settingsData.ts`, so any other value falls back to side by side. `settings.setDiffLayout` sets and saves it. It is a shared key, not a per-window one, so every window and every `DiffView` follows the same choice.
+The layout is the `diffLayout` preference in `settings.json`: `"sideBySide"` (the default) or `"inline"`, read with `pickOneOf` against `DIFF_LAYOUT_CHOICES` in `settingsData.ts`, so any other value falls back to side by side. Two places set it with `settings.setPreference("diffLayout", ...)`, so they always agree:
 
-The two buttons sit in a `role="group"` in the diff toolbar of `DiffView.svelte`, with the `split-view` and `split-rows` icons. They are disabled when the diff has no text to show (binary, too large, LFS or identical). The build effect reads the setting, so a click tears the old view down and builds the other one; the layout is part of the scroll key.
+- **Diff layout** in Settings > Git, a segmented control like File toolbar, found by Settings search under words such as "unified" and "split".
+- Two buttons in a `role="group"` in the diff toolbar of `DiffView.svelte`, with the `split-view` and `split-rows` icons. They are disabled when the diff has no text to show (binary, too large, LFS or identical). The build effect reads the setting, so a click tears the old view down and builds the other one; the layout is part of the scroll key.
 
 ### The inline document
 
@@ -58,23 +59,25 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 | `src/lib/diff/DiffView.svelte` | The toolbar buttons and building either layout |
 | `src/lib/editor/blame.ts`, `blameModel.ts` | `loadBlame` for an inline source, `expandBlame`, `REMOVED_LINE` |
 | `src/lib/editor/setup.ts` | The `lineNumbers` option of `baseExtensions` |
-| `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | `diffLayout` in `state.json`, `setDiffLayout` |
+| `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `diffLayout` preference and `DIFF_LAYOUT_CHOICES` |
+| `src/lib/views/SettingsDialog.svelte`, `settings/settingsSearch.ts` | The Diff layout row and its search words |
 
 ## Design decisions
 
 **Our own document, not CodeMirror's unified view.** `unifiedMergeView` from `@codemirror/merge` draws removed lines as widgets. Widgets have no line numbers, cannot be selected and are not searched, which is why the first version had all three limits. Putting both versions into the text fixes them at once and keeps one source of line facts for every feature.
 
-**The same colors as side by side.** Green, grey and blue by kind of change, so switching layouts does not change what a color means; the two number columns say which lines are old and which are new, as in JetBrains IDEs.
+**The same colors as side by side.** Green, grey and blue by kind of change, so switching layouts does not change what a color means; the two number columns say which lines are old and which are new.
 
 **Exact selections.** Side by side, a selection on one side also takes the facing lines of the other. Inline, both are on screen, so a selection takes only what it covers.
 
-**One toggle for all diffs.** The layout is a reading habit, like the split ratio, so it lives in `state.json` and applies everywhere.
+**One preference for all diffs.** The layout is a choice people make once, so it is a preference in `settings.json`, shown in Settings > Git, and applies to every diff and window. The toolbar buttons are a shortcut to the same value.
 
 ## Tests
 
 - `src/lib/diff/inlineDoc.test.ts`: document order and numbers, line mapping, new and unchanged files, exact selections, stage and unstage text, word marks only in modified blocks, ruler ticks, folds with margins, the fallback hunks.
 - `src/lib/editor/blameModel.test.ts`: `expandBlame` blanks removed lines and records new lines for Back and Forward.
-- `src/lib/stores/settingsData.test.ts`: `diffLayout` defaults to side by side, rejects unknown values and is saved.
+- `src/lib/stores/settingsData.test.ts`: the `diffLayout` preference defaults to side by side and rejects unknown values.
+- `src/lib/views/settings/settingsSearch.test.ts`: the Diff layout row is in the dialog and its search index.
 - The look needs a visual check: `diff-inline` in `scripts/screenshots.ts`.
 
 ## Keeping this page in sync

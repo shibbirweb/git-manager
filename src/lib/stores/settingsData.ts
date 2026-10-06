@@ -21,9 +21,13 @@ export type ThemeSetting = "system" | "light" | "dark";
 /** Which panel the left sidebar shows; null hides it. */
 export type LeftPanel = "changes" | "branches" | "scripts" | null;
 
-/** How a diff shows its two sides: in two columns, or in one with deleted lines above added ones. */
+/** How a diff shows its two versions: in two columns, or in one with removed lines above added ones. */
 export type DiffLayout = "sideBySide" | "inline";
-export const DIFF_LAYOUTS: readonly DiffLayout[] = ["sideBySide", "inline"];
+export const DIFF_LAYOUT_CHOICES: { value: DiffLayout; label: string }[] = [
+  { value: "sideBySide", label: "Side by side" },
+  { value: "inline", label: "Inline" },
+];
+const DIFF_LAYOUTS = DIFF_LAYOUT_CHOICES.map((choice) => choice.value);
 
 export type UpdateChannelSetting = "auto" | "stable" | "beta";
 
@@ -347,6 +351,8 @@ export interface Preferences {
   /** "auto" follows betas only when this build is a beta. */
   updateChannel: UpdateChannelSetting;
   ignoreWhitespace: boolean;
+  /** Every diff side by side or inline; Settings > Git and the diff toolbar both set it. */
+  diffLayout: DiffLayout;
   logAllRefs: boolean;
   /** Fetch every remote in the background while the window is in use. */
   autoFetch: boolean;
@@ -511,6 +517,7 @@ export const defaultPreferences: Preferences = {
   checkForUpdates: true,
   updateChannel: "auto",
   ignoreWhitespace: false,
+  diffLayout: "sideBySide",
   logAllRefs: true,
   autoFetch: true,
   autoFetchIntervalMinutes: DEFAULT_AUTO_FETCH_MINUTES,
@@ -615,7 +622,6 @@ export interface UiState {
   rightBarVisible: boolean;
   /** The left side's share of a side-by-side diff (see src/lib/diff/split.ts). */
   diffSplitRatio: number;
-  diffLayout: DiffLayout;
   leftPanel: LeftPanel;
   sidebarWidth: number;
   explorerWidth: number;
@@ -751,7 +757,6 @@ const STATE_KEYS = [
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
-  "diffLayout",
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
@@ -846,6 +851,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     checkForUpdates: pickBoolean(data.checkForUpdates, defaultPreferences.checkForUpdates),
     updateChannel: channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
     ignoreWhitespace: pickBoolean(data.ignoreWhitespace, defaultPreferences.ignoreWhitespace),
+    diffLayout: pickOneOf(data.diffLayout, DIFF_LAYOUTS, defaultPreferences.diffLayout),
     logAllRefs: pickBoolean(data.logAllRefs, defaultPreferences.logAllRefs),
     autoFetch: pickBoolean(data.autoFetch, defaultPreferences.autoFetch),
     autoFetchIntervalMinutes: pickInteger(
@@ -949,7 +955,6 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     leftBarVisible: pickBoolean(data.leftBarVisible, true),
     rightBarVisible: pickBoolean(data.rightBarVisible, true),
     diffSplitRatio: pickNumber(data.diffSplitRatio, 0.5, 0.15, 0.85),
-    diffLayout: pickOneOf(data.diffLayout, DIFF_LAYOUTS, "sideBySide"),
     leftPanel: panel === "changes" || panel === "branches" || panel === "scripts" || panel === null ? panel : "changes",
     sidebarWidth: pickNumber(data.sidebarWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
     explorerWidth: pickNumber(data.explorerWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
@@ -1008,7 +1013,6 @@ export function stateToJson(state: UiState, extra: Json): Json {
     leftBarVisible: state.leftBarVisible,
     rightBarVisible: state.rightBarVisible,
     diffSplitRatio: state.diffSplitRatio,
-    diffLayout: state.diffLayout,
     leftPanel: state.leftPanel,
     sidebarWidth: state.sidebarWidth,
     explorerWidth: state.explorerWidth,

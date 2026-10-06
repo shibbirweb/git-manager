@@ -25,7 +25,7 @@ Each key matches a setting in the dialog. Values in quotes must be one of the ch
 
 **Editor**: `lightColorTheme` and `darkColorTheme` (theme ids such as `"github-light"` or `"dracula"`, see [Color Themes](Color-Themes.md)), `editorFontFamily`, `editorFontSize`, `editorLineHeight`, `mouseWheelZoom`, `fontLigatures`, `syntaxHighlighting`, `tabSize` (2, 4 or 8), `detectIndentation`, `renderWhitespace` (`"none"`, `"boundary"`, `"selection"`, `"trailing"`, `"all"`), `wordWrap`, `unloadHiddenTabs`, `unloadHiddenTabsMinutes` (5, 15, 30 or 60), `rememberUnsaved`, `markdownViewMode` (`"editor"`, `"split"`, `"preview"`), `currentLineBlame`, `blameGutter`.
 
-**Git**: `ignoreWhitespace`, `logAllRefs`, `commitSignOff`, `commitGpgSign` (`"default"`, `"sign"`, `"noSign"`), `gitConsole`, and `updateMethod` (`"merge"` or `"rebase"`, default `"merge"`, saved by [Git > Update Project...](Git-Dialogs.md#update-project); there is no switch for it in Settings).
+**Git**: `diffLayout` (`"sideBySide"` or `"inline"`, see [Inline Diffs](Inline-Diffs.md)), `ignoreWhitespace`, `logAllRefs`, `commitSignOff`, `commitGpgSign` (`"default"`, `"sign"`, `"noSign"`), `gitConsole`, and `updateMethod` (`"merge"` or `"rebase"`, default `"merge"`, saved by [Git > Update Project...](Git-Dialogs.md#update-project); there is no switch for it in Settings).
 
 **Terminal**: `terminalShell` (the shell's full path, or `null` for the login shell), `terminalFontFamily` (empty for the editor font), `terminalFontSize`, `terminalLineHeight`, `terminalLetterSpacing`, `terminalFontWeight` and `terminalFontWeightBold` (`"normal"`, `"medium"`, `"bold"`), `terminalLigatures`, `terminalNerdFontIcons`, `terminalCursorStyle` (`"block"`, `"bar"`, `"underline"`), `terminalCursorBlink`, `terminalScrollback`, `terminalCopyOnSelect`, and the switches `terminalFind`, `terminalFileLinks`, `terminalGpuAcceleration`, `terminalUnicode11`, `terminalOptionAsMeta`, `terminalVisualBell`, `terminalSmoothScrolling` and `terminalDropPaths` (`true` or `false`).
 
@@ -63,7 +63,7 @@ The exact ranges and defaults are in [Settings Reference](../developer/Settings-
 
 - **Recent and last session:** `recentFolders`, `recentWorkspaces`, `recentWorkspaceFiles`, `lastSession`, `lastSessionFile` and `activeRepos` (the active repository per folder).
 - **Updates:** `lastRunVersion` (for What's New) and `skippedVersion`.
-- **Layout:** `explorerOpen` (Files panel), `leftPanel` (`"changes"`, `"branches"`, `"scripts"` or `null` when hidden), `leftBarVisible` and `rightBarVisible` (the activity bars), `sidebarWidth`, `explorerWidth`, `terminalHeight`, `terminalListWidth`, `changesListWidth` and `changesListVisible` (the Changes tab's file list), `diffSplitRatio` (the left side's share of a side-by-side diff), `diffLayout` (`"sideBySide"` or `"inline"`, see [Inline Diffs](Inline-Diffs.md)) and `markdownPreviewRatio` (the preview's share in Editor and Preview).
+- **Layout:** `explorerOpen` (Files panel), `leftPanel` (`"changes"`, `"branches"`, `"scripts"` or `null` when hidden), `leftBarVisible` and `rightBarVisible` (the activity bars), `sidebarWidth`, `explorerWidth`, `terminalHeight`, `terminalListWidth`, `changesListWidth` and `changesListVisible` (the Changes tab's file list), `diffSplitRatio` (the left side's share of a side-by-side diff) and `markdownPreviewRatio` (the preview's share in Editor and Preview).
 - **Scripts:** `scriptNodeVersions`, the Node version picked for each `package.json`. See [Scripts](Scripts.md).
 
 **Reset to Defaults** in Settings does not touch this file.

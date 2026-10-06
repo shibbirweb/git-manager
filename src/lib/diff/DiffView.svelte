@@ -643,7 +643,7 @@
       <button
         class="toggle layout-button"
         class:active={!inline}
-        onclick={() => settings.setDiffLayout("sideBySide")}
+        onclick={() => settings.setPreference("diffLayout", "sideBySide")}
         aria-pressed={!inline}
         disabled={!textual || identical}
         title="Side by side: old text on the left, new on the right"
@@ -654,7 +654,7 @@
       <button
         class="toggle layout-button"
         class:active={inline}
-        onclick={() => settings.setDiffLayout("inline")}
+        onclick={() => settings.setPreference("diffLayout", "inline")}
         aria-pressed={inline}
         disabled={!textual || identical}
         title="Inline: removed lines above the lines that replace them"
