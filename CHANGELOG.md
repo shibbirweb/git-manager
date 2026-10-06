@@ -158,6 +158,8 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- With Rounded panels on, the terminal list and split terminals no longer cover the right edge of the terminal beside them.
+- The terminal no longer shows a thin black strip below its last row.
 - Screen readers read the fields with a button beside them in the Clone, New Worktree, Merge, Reset and Rebase dialogs by their label alone ("Clone into folder", not "Clone into folder Browse...").
 - In a narrow sidebar, the buttons in the Changes title bar no longer slide under its close button; the CHANGES title gets shorter instead.
 - Closing Markdown files with mermaid diagrams left the diagram library in memory until the app quit. Diagrams are now drawn in a hidden frame that goes away with the library and its cache 3 seconds after the last document with diagrams closes (after closing four such files: 264 MB instead of 342 MB, median of three runs).

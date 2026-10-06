@@ -73,6 +73,7 @@
     { "page": "developer/How-the-Preview-Scheme-Works.md", "summary": "The gmpreview URL scheme: how previews stream images and PDFs to the web view, safely and in pieces." },
     { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
     { "page": "developer/How-Terminal-Features-Work.md", "summary": "Split groups, find, file links, drops and the terminal addons, each lazy and switchable." },
+    { "page": "developer/Terminal-Bugs-We-Fixed.md", "summary": "The terminal bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
     { "page": "developer/Git-Menu-Links.md", "summary": "How Open Repository in Browser and the GitHub link items turn remote URLs into web pages." },

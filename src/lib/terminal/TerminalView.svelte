@@ -1054,6 +1054,12 @@
     height: 100%;
   }
 
+  /* xterm 6 colors its scroll area, which ends at the last whole row, but its CSS leaves the
+     viewport under it #000: that showed as a black strip below the rows. */
+  .terminal-view :global(.xterm .xterm-viewport) {
+    background-color: var(--term-background);
+  }
+
   /*
    * Ligatures are CSS on the rows: xterm's DOM renderer puts runs of equally
    * styled characters in one span, so WebKit can join them. WebKit turns them
