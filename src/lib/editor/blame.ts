@@ -18,7 +18,9 @@ import {
   type BlameState,
   commitAt,
   commitLineTarget,
+  expandBlame,
   fromInfo,
+  isRemoved,
   isUncommitted,
   mapBlame,
 } from "./blameModel";
@@ -189,6 +191,9 @@ function inlineMarkers(view: EditorView): readonly LayerMarker[] {
     view.lineWrapping,
   );
   const index = line.number - 1;
+  if (isRemoved(state, index)) {
+    return [];
+  }
   const commit = isUncommitted(state, index) ? null : commitAt(state, index);
   const { label, title } = describe(commit);
   return [new InlineBlameMarker(view, placement, commit, label, title, state, index)];
@@ -297,6 +302,9 @@ function markerFor(state: EditorState, lineIndex: number): BlameGutterMarker | n
     ranks = ageRanks(blame.commits);
     rankCache.set(blame, ranks);
   }
+  if (isRemoved(blame, lineIndex)) {
+    return null;
+  }
   const owner = blame.lines[lineIndex] ?? -1;
   const first = lineIndex === 0 || blame.lines[lineIndex - 1] !== owner;
   const uncommitted = isUncommitted(blame, lineIndex);
@@ -318,6 +326,9 @@ const blameGutter = gutter({
         return false;
       }
       const index = view.state.doc.lineAt(line.from).number - 1;
+      if (isRemoved(blame, index)) {
+        return false;
+      }
       openBlame(view, blame, isUncommitted(blame, index) ? null : commitAt(blame, index), event as MouseEvent, index);
       return true;
     },
@@ -412,24 +423,36 @@ export interface BlameTarget {
   origin?: (line: number) => NavLocation;
 }
 
+/** An inline diff's editor: blame its new text, then spread it over the shown lines. */
+export interface InlineBlameSource {
+  text: string;
+  /** Per document line, its line in `text`, or null for a removed line. */
+  newLineOf: readonly (number | null)[];
+}
+
 /**
- * Fetches blame for the editor's current text. Results for text that changed
- * while the request ran are dropped; the caller asks again later.
+ * Fetches blame for the editor's current text (or an inline diff's new text). Results for
+ * text that changed while the request ran are dropped; the caller asks again later.
  */
-export async function loadBlame(view: EditorView, target: BlameTarget, eol: Eol): Promise<void> {
+export async function loadBlame(view: EditorView, target: BlameTarget, eol: Eol, inline: InlineBlameSource | null = null): Promise<void> {
   const doc = view.state.doc;
+  const text = inline?.text ?? doc.toString();
+  const lineCount = inline ? text.split("\n").length : doc.lines;
   let blame: BlameState;
   try {
     const info =
       target.revision === null
-        ? await api.blameContents(target.repoRoot, target.filePath, doc.toString(), eol)
+        ? await api.blameContents(target.repoRoot, target.filePath, text, eol)
         : await api.blameFile(target.repoRoot, target.filePath, target.revision);
-    blame = fromInfo(info, doc.lines);
+    blame = fromInfo(info, lineCount);
   } catch {
     // Typically a file git does not track yet: all of it is uncommitted work.
-    blame = allUncommitted(doc.lines);
+    blame = allUncommitted(lineCount);
   }
   blame = { ...blame, repoRoot: target.repoRoot, filePath: target.filePath, origin: target.origin };
+  if (inline) {
+    blame = expandBlame(blame, inline.newLineOf);
+  }
   if (view.state.doc !== doc) {
     return;
   }

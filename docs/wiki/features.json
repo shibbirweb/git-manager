@@ -25,6 +25,7 @@
     { "page": "usage/Commit-Options.md", "summary": "Commit and push in one go, and sign-off, author, GPG signing and skipping hooks." },
     { "page": "usage/Ignoring-Files.md", "summary": "Add files, folders or extensions to .gitignore from a right-click." },
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
+    { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, removed lines above the new ones, like the JetBrains unified viewer." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
@@ -264,6 +265,13 @@
       "usage": "usage/Diffs.md",
       "developer": "developer/How-Diffs-Work.md",
       "screenshots": ["diff-view.png", "diff-hunk-staging.png", "diff-split-resize.png", "diff-binary-image.png"]
+    },
+    {
+      "id": "inline-diffs",
+      "title": "Inline diffs",
+      "usage": "usage/Inline-Diffs.md",
+      "developer": "developer/How-the-Inline-Diff-Works.md",
+      "screenshots": ["diff-inline.png"]
     },
     {
       "id": "conflicts",

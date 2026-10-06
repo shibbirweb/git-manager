@@ -22,6 +22,8 @@ Which two versions you see depends on the group you clicked:
 
 Commits in the [Log](History-and-Log.md) use the same view, read-only, comparing the commit with its parent. So do commit tabs, the compare tabs of the Git menu and the Branches popup, and shelved changes.
 
+To see both versions in one column instead, click **Inline** in the toolbar. See [Inline Diffs](Inline-Diffs.md).
+
 ## Reading the diff
 
 - New lines are green on the right, changed lines are blue on both sides, and lines that were only removed are grey on the left.
@@ -101,6 +103,7 @@ Diffs and the merge tool never wrap long lines, so both sides stay aligned. Scro
 
 ## Related
 
+- [Inline Diffs](Inline-Diffs.md)
 - [Changes and Commits](Changes-and-Commits.md)
 - [Editor and Tabs](Editor-and-Tabs.md)
 - [History and Log](History-and-Log.md)

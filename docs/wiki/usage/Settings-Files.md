@@ -63,7 +63,7 @@ The exact ranges and defaults are in [Settings Reference](../developer/Settings-
 
 - **Recent and last session:** `recentFolders`, `recentWorkspaces`, `recentWorkspaceFiles`, `lastSession`, `lastSessionFile` and `activeRepos` (the active repository per folder).
 - **Updates:** `lastRunVersion` (for What's New) and `skippedVersion`.
-- **Layout:** `explorerOpen` (Files panel), `leftPanel` (`"changes"`, `"branches"`, `"scripts"` or `null` when hidden), `leftBarVisible` and `rightBarVisible` (the activity bars), `sidebarWidth`, `explorerWidth`, `terminalHeight`, `terminalListWidth`, `changesListWidth` and `changesListVisible` (the Changes tab's file list), `diffSplitRatio` (the left side's share of a side-by-side diff) and `markdownPreviewRatio` (the preview's share in Editor and Preview).
+- **Layout:** `explorerOpen` (Files panel), `leftPanel` (`"changes"`, `"branches"`, `"scripts"` or `null` when hidden), `leftBarVisible` and `rightBarVisible` (the activity bars), `sidebarWidth`, `explorerWidth`, `terminalHeight`, `terminalListWidth`, `changesListWidth` and `changesListVisible` (the Changes tab's file list), `diffSplitRatio` (the left side's share of a side-by-side diff), `diffLayout` (`"sideBySide"` or `"inline"`, see [Inline Diffs](Inline-Diffs.md)) and `markdownPreviewRatio` (the preview's share in Editor and Preview).
 - **Scripts:** `scriptNodeVersions`, the Node version picked for each `package.json`. See [Scripts](Scripts.md).
 
 **Reset to Defaults** in Settings does not touch this file.

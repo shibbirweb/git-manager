@@ -145,6 +145,7 @@ The other Layout choices are in `state.json`, below.
 | `changesListWidth` | 320 | 160 to 2000 | Changes tab file list |
 | `changesListVisible` | true | true or false | Changes tab file list shown |
 | `diffSplitRatio` | 0.5 | 0.15 to 0.85 | `diff/DiffView.svelte` |
+| `diffLayout` | `"sideBySide"` | `"sideBySide"` or `"inline"` | `diff/DiffView.svelte` |
 | `markdownPreviewRatio` | 0.5 | 0.15 to 0.85 | `FileView.svelte` |
 
 `stateToJson` writes these keys and keeps any others it found. Unknown keys of either file are kept, so a newer version's keys survive an older app.

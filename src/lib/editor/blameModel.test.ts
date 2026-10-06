@@ -6,10 +6,13 @@ import {
   commitAt,
   commitLineAt,
   commitLineTarget,
+  expandBlame,
   fromInfo,
+  isRemoved,
   isUncommitted,
   LOCAL_EDIT,
   mapBlame,
+  REMOVED_LINE,
   UNKNOWN_LINE,
 } from "./blameModel";
 
@@ -103,5 +106,25 @@ describe("commit-side lines", () => {
     expect(commitLineTarget(known, 0, "one")).toEqual({ line: 7 });
     expect(commitLineTarget(known, 1, "two")).toEqual({ line: 1, lineText: "two" });
     expect(commitLineTarget({ commits, lines: [0] }, 0, "one")).toEqual({ line: 0, lineText: "one" });
+  });
+});
+
+describe("expandBlame", () => {
+  it("spreads the new text's blame over an inline diff and leaves removed lines blank", () => {
+    const visited: number[] = [];
+    const state = { ...fromInfo({ commits, runs: [1, 0, 5, 1, 1, 0] }, 2), origin: (line: number) => {
+      visited.push(line);
+      return { kind: "file" as const, filePath: "/a", line: 0 };
+    } };
+    // Document: new line 0, a removed line, new line 1.
+    const inline = expandBlame(state, [0, null, 1]);
+    expect(inline.lines).toEqual([0, REMOVED_LINE, 1]);
+    expect(inline.origins).toEqual([5, UNKNOWN_LINE, 0]);
+    expect(isRemoved(inline, 1)).toBe(true);
+    expect(isRemoved(inline, 2)).toBe(false);
+    // Back and Forward record the new text's line, not the document's.
+    inline.origin?.(2);
+    inline.origin?.(1);
+    expect(visited).toEqual([1, 1]);
   });
 });

@@ -1,0 +1,39 @@
+# Inline Diffs
+
+Every diff can show its two versions side by side, or inline in one column like the unified viewer of JetBrains IDEs. Inline is handy in a narrow window, or when long lines get cut off in two columns.
+
+[TODO:diff-inline.png]
+
+*An inline diff of cart.ts: the old and new line numbers on the left, each change's removed lines above the lines that replace them, and the layout buttons in the toolbar.*
+
+## Switch the layout
+
+The diff toolbar has two buttons after the change counter:
+
+- **Side by side** (a box split down the middle): the old version on the left, the new one on the right. This is the default.
+- **Inline** (a box split across): one column. Each change shows the lines it removed, then the lines it added.
+
+The highlighted button is the layout in use. Your choice is remembered and used for every diff: in [Changes](Changes-and-Commits.md), the [Log](History-and-Log.md), commit tabs, compare tabs and the Changes tab of the status bar. The buttons are greyed out for images, PDFs and files without text changes.
+
+## Reading an inline diff
+
+- The colors are the same as side by side: added lines are green, removed lines are grey, and a changed block (old lines followed by their new lines) is blue.
+- Inside a changed block, the exact words that changed are highlighted, in the old lines and in the new ones.
+- Two columns of line numbers sit on the left, like in JetBrains IDEs: the old version's number, then the new version's. A removed line has only an old number, an added line only a new one.
+- The label above the diff names both versions, such as **Index** and **Working Tree**, with an arrow between them.
+
+Removed lines are real text: you can select them, copy them and find them. Cmd+F searches both versions, and a match inside folded unchanged lines opens them.
+
+Everything else works as in the side by side layout: the Up and Down arrows (F7 and Shift+F7), the counter, **Collapse unchanged**, **Open File**, the strip of change ticks and **Blame**, which shows who wrote each new line (removed lines have no blame).
+
+## Stage or unstage one change
+
+In a diff from **Changes**, the first line of each change has a small **+** button between the line numbers and the code, **Stage this change**. In a diff from **Staged**, the button is **-**, **Unstage this change**. They do the same as the **«** and **»** buttons of the side by side layout (see [Diffs](Diffs.md#stage-or-unstage-one-change)).
+
+**Stage Lines**, **Unstage Lines** and **Discard Lines** take exactly the lines you select: select only the new lines to add them while keeping the old ones, select only removed lines to remove just those, or both. With no selection, they take the line the cursor is on.
+
+## Related
+
+- [Diffs](Diffs.md)
+- [Changes and Commits](Changes-and-Commits.md)
+- [How the inline diff works (developer)](../developer/How-the-Inline-Diff-Works.md)

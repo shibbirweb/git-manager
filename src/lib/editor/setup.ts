@@ -95,11 +95,13 @@ export interface EditorOptions {
   kind?: EditorKind;
   /** Extra extensions appended after the defaults. */
   extensions?: Extension[];
+  /** False when the editor draws its own numbers (the inline diff shows old and new ones). */
+  lineNumbers?: boolean;
 }
 
-export function baseExtensions({ readOnly = false, kind, extensions = [] }: EditorOptions = {}): Extension[] {
+export function baseExtensions({ readOnly = false, kind, extensions = [], lineNumbers: numbered = true }: EditorOptions = {}): Extension[] {
   const common: Extension[] = [
-    lineNumbers(),
+    numbered ? lineNumbers() : [],
     highlightSpecialChars(),
     drawSelection(),
     syntaxHighlighting(classHighlighter),

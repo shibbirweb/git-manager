@@ -1995,6 +1995,20 @@ define("diff-binary-image", async (shot) => {
 // (git-manager cli screenshot, or Cmd+Shift+4 then Space), then crop to the document. See
 // docs/wiki/developer/How-the-Image-and-PDF-Preview-Works.md.
 
+define("diff-inline", async (shot) => {
+  await collapseRepo(shot, "payments-api");
+  await shot.page.getByRole("button", { name: "Hide files" }).click();
+  await shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("cart.ts").click();
+  await shot.page.locator(".diff-view .cm-inlineDiff .cm-inlineModified").first().waitFor();
+  await shot.settle(500);
+  const view = shot.page.locator(".diff-view");
+  const box = await view.boundingBox();
+  if (!box) {
+    throw new Error("diff-inline: no diff view");
+  }
+  await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 560) });
+}, () => ({ state: { diffLayout: "inline" } }));
+
 define("diff-split-resize", async (shot) => {
   await collapseRepo(shot, "payments-api");
   await shot.page.getByRole("button", { name: "Hide files" }).click();
