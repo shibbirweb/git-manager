@@ -59,6 +59,7 @@ import type {
   RemoteInfo,
   ReplaceOutcome,
   ReplaceRequest,
+  OpenFilesChangedEvent,
   RepoChangedEvent,
   RepoInfo,
   RepoStatus,
@@ -125,6 +126,8 @@ export const api = {
   watchWorkspace: (workspaceRoot: string, repoRoots: string[]) =>
     invoke<void>("watch_workspace", { workspaceRoot, repoRoots }),
   unwatchWorkspace: (workspaceRoot: string) => invoke<void>("unwatch_workspace", { workspaceRoot }),
+  /** The files open in this window's tabs: the watcher reports their changes even when git ignores them. */
+  watchOpenFiles: (filePaths: string[]) => invoke<void>("watch_open_files", { filePaths }),
   readWorkspaceFile: (filePath: string) => invoke<WorkspaceFile>("read_workspace_file", { filePath }),
   writeWorkspaceFile: (filePath: string, folders: string[]) =>
     invoke<void>("write_workspace_file", { filePath, folders }),
@@ -654,6 +657,10 @@ export function onRepoChanged(handler: (event: RepoChangedEvent) => void): Promi
 
 export function onWorkspaceChanged(handler: (event: WorkspaceChangedEvent) => void): Promise<UnlistenFn> {
   return listenHere<WorkspaceChangedEvent>("workspace-changed", handler);
+}
+
+export function onOpenFilesChanged(handler: (event: OpenFilesChangedEvent) => void): Promise<UnlistenFn> {
+  return listenHere<OpenFilesChangedEvent>("open-files-changed", handler);
 }
 
 export function onGitProgress(handler: (event: GitProgressEvent) => void): Promise<UnlistenFn> {

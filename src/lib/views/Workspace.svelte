@@ -1,6 +1,7 @@
 <script lang="ts">
   import ConflictsDialog from "$lib/merge/ConflictsDialog.svelte";
   import MergeView from "$lib/merge/MergeView.svelte";
+  import { api } from "$lib/api";
   import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import {
@@ -114,6 +115,18 @@
     void repoStore.repos;
     untrack(() => changesSelection.sync());
   });
+
+  // The watcher reports changes to the open files even where git ignores them (a log file).
+  let watchedFiles = "";
+  $effect(() => {
+    const filePaths = repoStore.openFilePaths;
+    const key = filePaths.join("\0");
+    if (key !== watchedFiles) {
+      watchedFiles = key;
+      void api.watchOpenFiles(filePaths).catch(() => undefined);
+    }
+  });
+  onDestroy(() => void api.watchOpenFiles([]).catch(() => undefined));
 
   // With Auto (status bar repository picker), the active repository follows the open tab.
   followOpenTab();

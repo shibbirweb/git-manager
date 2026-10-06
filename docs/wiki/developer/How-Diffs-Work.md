@@ -120,7 +120,7 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 ## Bugs we fixed
 
-None are recorded for the diff view itself yet. The Diff tab that could not be closed is covered in [How the editor works](How-the-Editor-Works.md), and staged renames in [How changes and commits work](How-Changes-and-Commits-Work.md).
+See [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md) (diffs not following edits), [How the editor works](How-the-Editor-Works.md) (the Diff tab that would not close) and [How changes and commits work](How-Changes-and-Commits-Work.md) (staged renames).
 
 ## Tests
 

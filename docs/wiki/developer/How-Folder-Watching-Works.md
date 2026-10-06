@@ -23,12 +23,21 @@ flowchart TD
   D -->|yes| N{"objects, logs, lfs or *.lock?"}
   N -->|yes| X["Dropped"]
   N -->|no| RG["repo-changed, gitDir"]
-  D -->|no| I{"Ignored by .gitignore?"}
-  I -->|yes| X
+  D -->|no| I{"Ignored by .gitignore<br/>and not tracked?"}
+  I -->|"yes, open in a tab"| OF["open-files-changed"]
+  I -->|"yes, not open"| X
   I -->|no| RW["repo-changed, workTree<br/>plus workspace-changed"]
 ```
 
 Other paths inside an unknown `.git` are dropped. Removing or moving a folder that holds a known repository, or moving in a folder with a `.git` (`has_git_entry`), also sets `reposChanged`. A changed submodule also refreshes its parent repository (`with_submodule_parents`), since the parent's status shows it. Batches that add, remove or rename files mark the Go to File index stale, and edits to source files mark the symbol index, so search stays current (see [How Search Everywhere works](How-Search-Everywhere-Works.md)).
+
+A path counts as ignored only when a `.gitignore` rule matches it and it is not tracked (`IgnoreCheck`): git still follows a tracked file that a rule matches, so its status and diffs must too. The index is read once per batch, and only when a path matched a rule.
+
+### Open files git ignores
+
+An ignored file has no status, so nothing told its tab that it changed: an open log file showed only what it had when it opened. The page sends the files open in any tab (preview tabs too) with `watch_open_files`, whenever that list changes. `OpenFiles` (`open_files.rs`) keeps them per window, by real path. An ignored path that is open is not dropped: the batch reports it, and the watcher sends `open-files-changed` with the paths as the page named them. The store bumps `openFileVersions[filePath]`, and `FileView` reloads that tab like any other change from outside.
+
+A reload replaces only the part that changed (`editor/reloadChange.ts`), so the caret and scroll stay. When the view is scrolled to the end and the text grew there, it scrolls to the new end, so a growing log is followed.
 
 In the store, `repo-changed` calls `refreshRepo`. `workspace-changed` reloads the Files panel, and with `reposChanged` the store runs a quiet `rescan` one second later (`RESCAN_DELAY_MS`). That changes nothing unless the list of repositories changed; then it rewatches, refreshes and shows "Found repository NAME" (or "Found N new repositories"). Scan for Repositories (`rediscover`) still works too.
 
@@ -42,10 +51,13 @@ The watcher type is `Debouncer<RecommendedWatcher, NoCache>` (`state.rs`). The d
 
 | File | What it does |
 | --- | --- |
-| `src-tauri/src/watcher.rs` | `watch`, `attribute`, `has_git_entry`, linked git folders, submodule parents |
+| `src-tauri/src/watcher.rs` | `watch`, `attribute`, `IgnoreCheck`, `has_git_entry`, linked git folders, submodule parents |
+| `src-tauri/src/open_files.rs` | `OpenFiles`: the files open in each window's tabs |
 | `src-tauri/src/state.rs` | `RepoWatcher` (with `NoCache`) and the `watchers` map |
 | `src-tauri/src/commands/workspace.rs` | `watch_workspace`, `unwatch_workspace`, `stop_watcher` |
-| `src/lib/stores/repo.svelte.ts` | `watchAll`, `refreshRepo`, `scheduleRescan`, `rescan` |
+| `src/lib/stores/repo.svelte.ts` | `watchAll`, `refreshRepo`, `scheduleRescan`, `rescan`, `openFilePaths`, `openFileVersions` |
+| `src/lib/views/Workspace.svelte` | sends `openFilePaths` to `watch_open_files` when it changes |
+| `src/lib/editor/reloadChange.ts` | the smallest edit from the text on screen to the text on disk |
 
 ## Design decisions
 
@@ -57,23 +69,17 @@ The watcher type is `Debouncer<RecommendedWatcher, NoCache>` (`state.rs`). The d
 
 **No file id cache.** Pairing renames is not worth a walk of every file and a copy of every path in memory.
 
+**Report only open ignored files.** Sending every ignored path would flood the page during a build or `npm install`. The open tabs are the only ignored files anyone looks at, and the list is a few paths.
+
 ## Bugs we fixed
 
-**Adding a second folder stopped watching the first.**
-- **The issue:** only the newest folder refreshed on its own.
-- **Why it happened:** `watch_workspace` still called `watchers.clear()`.
-- **The fix and why we chose it:** watchers are keyed by folder root, so each folder stays independent.
-
-**A new repository only showed up after Scan for Repositories.**
-- **The issue:** after `git init` or a clone in an open folder from outside the app, the repository did not appear.
-- **Why it happened:** a new `.git` only reloaded the Files panel, and changes inside an unknown `.git` were dropped.
-- **The fix and why we chose it:** `attribute` sets `reposChanged` in the cases above, and the store rescans only then, once the burst settles, doing nothing more if the list is the same.
-
-The freeze when watching a big folder started is in [How workspaces work](How-Workspaces-Work.md#bugs-we-fixed).
+The watching bugs and their fixes are in [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md). The freeze when watching a big folder started is in [How workspaces work](How-Workspaces-Work.md#bugs-we-fixed).
 
 ## Tests
 
-- `src-tauri/src/watcher.rs`: fifteen tests: `attribute` cases (noise, ignored paths, an enclosing repository, `reposChanged` for new, removed and moved repositories), the search index hints, linked git folders, submodule parents, and `has_git_entry` on a real folder.
+- `src-tauri/src/watcher.rs`: `attribute` cases (noise, ignored paths, ignored files open in a tab, an enclosing repository, `reposChanged` for new, removed and moved repositories), the search index hints, linked git folders, submodule parents, `IgnoreCheck` with a tracked ignored file, and `has_git_entry` on a real folder.
+- `src-tauri/src/open_files.rs`: open files kept by real path per window, also a file that does not exist yet.
+- `src/lib/editor/reloadChange.test.ts`: appended lines, a changed middle, emptied, truncated and repeated text.
 
 Live watchers need a check by hand with `scripts/make-workspace-demo.sh`. See [Testing](Testing.md).
 

@@ -70,6 +70,7 @@
     { "page": "developer/Project-Layout.md", "summary": "What lives in which folder and file." },
     { "page": "developer/Backend.md", "summary": "Tauri commands, the git read and write split, errors, the CLI runner and the file watcher." },
     { "page": "developer/How-Folder-Watching-Works.md", "summary": "The file watcher: how each file event becomes a repository or folder refresh." },
+    { "page": "developer/Folder-Watching-Bugs-We-Fixed.md", "summary": "The watcher bugs we found, why they happened and how we fixed them." },
     { "page": "developer/How-Workspace-Files-Work.md", "summary": "Workspace files, VS Code compatibility and which folders reopen at start." },
     { "page": "developer/How-the-Preview-Scheme-Works.md", "summary": "The gmpreview URL scheme: how previews stream images and PDFs to the web view, safely and in pieces." },
     { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
