@@ -151,14 +151,16 @@
     cursor: default;
   }
 
-  /* A grid, so the name's track can shrink to nothing and the row's min-content leaves it out. */
+  /*
+   * A grid, so the name's track can shrink to nothing and the row's min-content leaves it out.
+   * No width cap: a long name takes all the room the row leaves it, up to the repository name.
+   */
   .branch {
     flex: 0 1 auto;
     display: inline-grid;
     grid-auto-flow: column;
     grid-template-columns: auto minmax(0, max-content);
     min-width: 20px;
-    max-width: 140px;
     padding: 0 4px;
     font-size: 12px;
   }

@@ -142,6 +142,12 @@
     container: repo-row / inline-size;
   }
 
+  /* The branch name gives way before the repository name, but never cuts off a button. */
+  .clean-row > :global(.repo-row-actions) {
+    flex-shrink: 1000;
+    min-width: auto;
+  }
+
   .kind-badge {
     flex: none;
     padding: 0 5px;

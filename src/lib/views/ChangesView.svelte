@@ -236,8 +236,12 @@
     color: var(--text-dim);
   }
 
-  /* RepoActions may shrink in a repository row, but here it keeps its buttons whole (the branch name still hides). */
+  /*
+   * RepoActions may shrink in a repository row, but here it keeps its buttons whole (the branch
+   * name still hides). A long branch name shortens before the title does.
+   */
   .head > :global(.repo-row-actions) {
+    flex-shrink: 1000;
     min-width: auto;
   }
 
