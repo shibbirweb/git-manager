@@ -59,7 +59,7 @@ Click into one side and press Cmd+F. That side's find bar opens above the diff, 
 
 ## Collapse unchanged lines
 
-**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a bar such as **23 unchanged lines**. Click it to expand it, or turn the button off to see the whole file. Git Manager remembers your choice for every diff.
+**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a bar such as **23 unchanged lines**. Its up and down **10 lines** buttons show 10 more lines at the top or bottom of the run, and a click on the rest of the bar shows all of it. Turn the button off to see the whole file. Git Manager remembers your choice for every diff.
 
 ## Stage or unstage one change
 

@@ -36,13 +36,13 @@ flowchart LR
 `DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, and optionally `onChange`, a `blame` target, `revealLine` (Back and Forward), `workingFile` (Open File) and `previewSides` (binary images and PDFs). Its `build` function:
 
 - loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`,
-- collapses unchanged lines (`margin: 3`, `minSize: 4`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
+- folds unchanged lines with `splitFolds` (`foldField.ts`, rules in `foldModel.ts`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
 - adds `chunkKinds` and `diffTheme` from `mergeExtensions.ts`, so pure additions, pure deletions and mixed chunks get their own `--diff-*` colors from `src/app.css`,
 - adds revert controls: `b-to-a` with a "Stage this change" button in unstaged mode, `a-to-b` with "Unstage this change" in staged mode, none when read-only,
 - draws the overview ruler with `createStrip`, `layoutTicks` and `renderTicks` from `scrollMarkers.ts`, next to the merge view's scroll container,
 - binds F7 and Shift+F7 to `goToChunk` and restores the scroll position on a rebuild.
 
-**Open File** gets `workingFile` from every diff view: the work tree path, with `sameLines` when the right side is the work tree. `openWorkingFile` checks `navigation.fileExists`, then opens it with `navigation.openFileAt`, at the cursor or top visible line (`lineOnScreen`) when `sameLines` is set.
+**Open File** (`openWorkingFile`) checks `navigation.fileExists` for `workingFile`, then calls `navigation.openFileAt`, at the cursor or top visible line (`lineOnScreen`) when `sameLines` says the right side is the work tree.
 
 The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)). With `previewSides`, a binary image or PDF shows both versions side by side ([How the Image and PDF Preview Works](How-the-Image-and-PDF-Preview-Works.md) lists every caller's sides).
 
@@ -116,7 +116,9 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 **Let the UI compute the diff.** One diff engine draws what you see, and the hunk buttons come free with `@codemirror/merge`. Hunks from Rust would mean two engines that could disagree.
 
-**One split for every diff.** The ratio is layout state, like panel widths, so it lives in `state.json` and every diff shares it. A split per file would be lost with the next file.
+**Our own folds.** The library's `collapseUnchanged` opens only whole runs; ours opens 10 lines at a time, on both sides.
+
+**One split for every diff.** The ratio is layout state, like panel widths, so it lives in `state.json` and every diff shares it.
 
 ## Bugs we fixed
 
@@ -127,6 +129,7 @@ See [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md) (diffs not
 - `src-tauri/src/git/tests.rs`: `diff_working_file_staged_and_unstaged`, `diff_working_file_staged_in_unborn_repo` and `diff_commit_file_sides`.
 - `src-tauri/src/commands/tests.rs`: `stage_content_updates_index_for_tracked_file`, `stage_content_adds_new_file_and_keeps_executable_mode` and `get_status_and_file_diff_commands`.
 - `src/lib/diff/split.test.ts`: the range, and the pointer math that leaves out the buttons column.
+- `src/lib/diff/foldModel.test.ts`: fold placement and steps.
 
 Hunk buttons, the drag and Open File need a manual check in the app. See [Testing](Testing.md).
 
