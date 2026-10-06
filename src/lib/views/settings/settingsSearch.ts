@@ -74,6 +74,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Blame gutter", "annotate author column"],
   ],
   merge: [
+    ["Diff layout", "side by side inline unified split one column compare view"],
     ["Ignore whitespace in the merge tool", "conflicts spaces"],
     ["Show all branches in the log", "history graph remotes"],
     ["Auto fetch", "background fetch remotes"],

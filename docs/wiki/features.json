@@ -25,6 +25,7 @@
     { "page": "usage/Commit-Options.md", "summary": "Commit and push in one go, and sign-off, author, GPG signing and skipping hooks." },
     { "page": "usage/Ignoring-Files.md", "summary": "Add files, folders or extensions to .gitignore from a right-click." },
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
+    { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, with removed lines above the new ones." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
@@ -73,6 +74,7 @@
     { "page": "developer/How-the-Preview-Scheme-Works.md", "summary": "The gmpreview URL scheme: how previews stream images and PDFs to the web view, safely and in pieces." },
     { "page": "developer/Backend-Services.md", "summary": "The terminal, search, scripts, Git Console, GitHub, MCP and other Rust services, and how they stay idle until used." },
     { "page": "developer/How-Terminal-Features-Work.md", "summary": "Split groups, find, file links, drops and the terminal addons, each lazy and switchable." },
+    { "page": "developer/Terminal-Bugs-We-Fixed.md", "summary": "The terminal bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How Preview Only edits the page and writes changes back block by block without reformatting the file." },
     { "page": "developer/Git-Menu-Links.md", "summary": "How Open Repository in Browser and the GitHub link items turn remote URLs into web pages." },
@@ -263,6 +265,13 @@
       "usage": "usage/Diffs.md",
       "developer": "developer/How-Diffs-Work.md",
       "screenshots": ["diff-view.png", "diff-hunk-staging.png", "diff-split-resize.png", "diff-binary-image.png"]
+    },
+    {
+      "id": "inline-diffs",
+      "title": "Inline diffs",
+      "usage": "usage/Inline-Diffs.md",
+      "developer": "developer/How-the-Inline-Diff-Works.md",
+      "screenshots": ["diff-inline.png"]
     },
     {
       "id": "conflicts",

@@ -7,12 +7,23 @@
   import { baseExtensions, editorLanguage } from "$lib/editor/setup";
   import type { FileDiff, LineAction, LineHunk, LineSelection } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
-  import { hunkDiff, SCAN_LIMIT } from "./hunkDiff";
+  import { hunkDiff, hunkRanges, SCAN_LIMIT } from "./hunkDiff";
+  import {
+    applyBlock,
+    buildInlineDoc,
+    docLineOf,
+    fallbackHunks,
+    inlineChangeMarks,
+    type InlineDoc,
+    inlineSelection,
+    newLineAt,
+  } from "./inlineDoc";
+  import { inlineDiffExtensions } from "./inlineView";
   import { chunkKinds, diffTheme, revertButton } from "./mergeExtensions";
   import { diffPrefs } from "./prefs.svelte";
   import { type BlameTarget, blameExtension, loadBlame, setBlameDisplay } from "$lib/editor/blame";
   import { navigation } from "$lib/stores/navigation.svelte";
-  import { settings } from "$lib/stores/settings.svelte";
+  import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { clampDiffSplit, DEFAULT_DIFF_SPLIT, splitFromPointer } from "./split";
   import { lfsContentChanged, lfsSizeText } from "$lib/views/git/lfs/lfsModel";
@@ -74,30 +85,33 @@
 
   let revealedToken = -1;
 
-  function applyReveal(merge: MergeView): boolean {
+  function applyReveal(editor: EditorView): boolean {
     if (!revealLine || revealLine.token === revealedToken) {
       return false;
     }
     revealedToken = revealLine.token;
-    const doc = merge.b.state.doc;
-    const position = doc.line(Math.max(1, Math.min(revealLine.line + 1, doc.lines))).from;
-    merge.b.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
+    const doc = editor.state.doc;
+    const line = inlineDoc ? docLineOf(inlineDoc, revealLine.line) : revealLine.line;
+    const position = doc.line(Math.max(1, Math.min(line + 1, doc.lines))).from;
+    editor.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
     return true;
   }
 
   // A reveal for the diff that is already on screen.
   $effect(() => {
     void revealLine;
-    if (view) {
-      applyReveal(view);
+    const editor = newEditor();
+    if (editor) {
+      applyReveal(editor);
     }
   });
 
   // Apply the blame preferences to the open diff as they change.
   $effect(() => {
     const display = { inline: settings.currentLineBlame, gutter: settings.blameGutter };
-    if (view && blame) {
-      setBlameDisplay(view.b, display);
+    const editor = newEditor();
+    if (editor && blame) {
+      setBlameDisplay(editor, display);
     }
   });
 
@@ -123,6 +137,10 @@
   let viewHunks: LineHunk[] | null = null;
 
   let view: MergeView | null = null;
+  /** The inline layout's one editor, and its document of old and new lines (inlineDoc.ts). */
+  let inlineView: EditorView | null = null;
+  let inlineDoc: InlineDoc | null = null;
+  const inline = $derived(settings.diffLayout === "inline");
   /** Change overview ruler beside the diff's scrollbar. */
   let strip: HTMLDivElement | null = null;
   let stripFrame = 0;
@@ -151,15 +169,25 @@
     return diffLines.attach({ mode: target, run: (action) => runLines(action) });
   });
 
-  /** The right side's line to open the file at: the cursor line when it is on screen, else the top line. */
-  function lineOnScreen(merge: MergeView): number {
-    const editor = merge.b;
+  /** The editor with the new text: the right side, or the inline layout's only editor. */
+  function newEditor(): EditorView | null {
+    return view?.b ?? inlineView;
+  }
+
+  function changeCount(): number {
+    return view ? view.chunks.length : (inlineDoc?.blocks.length ?? 0);
+  }
+
+  /** The new text's line to open the file at: the cursor line when it is on screen, else the top line. */
+  function lineOnScreen(editor: EditorView): number {
     const head = editor.state.selection.main.head;
+    let line: number;
     if (editor.hasFocus || editor.visibleRanges.some((range) => head >= range.from && head <= range.to)) {
-      return editor.state.doc.lineAt(head).number - 1;
+      line = editor.state.doc.lineAt(head).number - 1;
+    } else {
+      line = editor.state.doc.lineAt(editor.lineBlockAtHeight(editor.scrollDOM.scrollTop).from).number - 1;
     }
-    const top = editor.lineBlockAtHeight(editor.scrollDOM.scrollTop);
-    return editor.state.doc.lineAt(top.from).number - 1;
+    return inlineDoc ? newLineAt(inlineDoc, line) : line;
   }
 
   /** Opens the real file in an editor tab, at the same line when the right side is the work tree. */
@@ -172,7 +200,8 @@
       toast.info(`${fileName} is not in the work tree`, "It was deleted or never existed there, so there is no file to open.");
       return;
     }
-    const line = target.sameLines && view ? lineOnScreen(view) : null;
+    const editor = newEditor();
+    const line = target.sameLines && editor ? lineOnScreen(editor) : null;
     await navigation.openFileAt(target.filePath, line, null, { pin: true });
   }
   const directory = $derived(path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
@@ -193,8 +222,9 @@
     }
     const token = ++buildToken;
     const collapse = diffPrefs.collapseUnchanged;
-    const scrollKey = `${mode}:${collapse}:${path}`;
-    void build(target, diff, path, mode, collapse, token, scrollKey);
+    const layout = settings.diffLayout;
+    const scrollKey = `${mode}:${collapse}:${layout}:${path}`;
+    void build(target, diff, path, mode, collapse, layout, token, scrollKey);
     return () => {
       buildToken++;
       teardown(scrollKey);
@@ -202,10 +232,11 @@
   });
 
   function teardown(scrollKey: string): void {
-    if (!view) {
+    const scroller = view?.dom ?? inlineView?.scrollDOM;
+    if (!scroller) {
       return;
     }
-    lastScroll = { key: scrollKey, top: view.dom.scrollTop };
+    lastScroll = { key: scrollKey, top: scroller.scrollTop };
     cancelAnimationFrame(stripFrame);
     cancelAnimationFrame(selectionFrame);
     viewHunks = null;
@@ -214,8 +245,11 @@
     stripObserver = null;
     strip?.remove();
     strip = null;
-    view.destroy();
+    view?.destroy();
     view = null;
+    inlineView?.destroy();
+    inlineView = null;
+    inlineDoc = null;
   }
 
   async function build(
@@ -224,6 +258,7 @@
     filePath: string,
     diffMode: DiffMode,
     collapse: boolean,
+    layout: DiffLayout,
     token: number,
     scrollKey: string,
   ): Promise<void> {
@@ -264,9 +299,10 @@
         scheduleStrip();
       }
     });
-    const sideExtensions = (changes: boolean, findHost: HTMLElement | null, side: DiffSide): Extension[] =>
+    const sideExtensions = (changes: boolean, findHost: HTMLElement | null, side: DiffSide, numbered = true): Extension[] =>
       baseExtensions({
         readOnly: true,
+        lineNumbers: numbered,
         extensions: [
           language,
           diffTheme,
@@ -279,40 +315,72 @@
         ],
       });
 
-    const merge = new MergeView({
-      a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged", findHostA, "old") },
-      b: {
-        doc: fileDiff.modified,
+    // The backend's line hunks, refined to characters inside each one; without them (an older
+    // payload) CodeMirror diffs the whole texts itself.
+    const diffConfig = fileDiff.hunks
+      ? { scanLimit: SCAN_LIMIT, override: hunkDiff(fileDiff.original, fileDiff.modified, fileDiff.hunks) }
+      : { scanLimit: SCAN_LIMIT };
+    const blameExtensions = blame ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }) : [];
+    const collapseUnchanged = collapse ? { margin: 3, minSize: 4 } : undefined;
+
+    let editor: EditorView;
+    let shown: InlineDoc | null = null;
+    if (layout === "inline") {
+      // Hunks that do not fit the texts (or an older payload without them) are found again here.
+      const fits = fileDiff.hunks && hunkRanges(fileDiff.original, fileDiff.modified, fileDiff.hunks) !== null;
+      const hunks = fits && fileDiff.hunks ? fileDiff.hunks : fallbackHunks(fileDiff.original, fileDiff.modified);
+      const inlineShown = buildInlineDoc(fileDiff.original, fileDiff.modified, hunks);
+      const control = diffMode === "unstaged" ? "stage" : diffMode === "staged" ? "unstage" : null;
+      shown = inlineShown;
+      editor = new EditorView({
+        doc: inlineShown.text,
+        parent: target,
         extensions: [
-          sideExtensions(diffMode === "staged", findHostB, "new"),
-          blame ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }) : [],
+          sideExtensions(false, findHostB, "new", false),
+          blameExtensions,
+          inlineDiffExtensions({
+            doc: inlineShown,
+            collapse,
+            control,
+            onControl: (block) => {
+              if (control) {
+                const next = applyBlock(fileDiff.original, fileDiff.modified, block, control);
+                onChange?.(next.target, next.text);
+              }
+            },
+          }),
         ],
-      },
-      parent: target,
-      // The backend's line hunks, refined to characters inside each one; without them (an older
-      // payload) CodeMirror diffs the whole texts itself.
-      diffConfig: fileDiff.hunks
-        ? { scanLimit: SCAN_LIMIT, override: hunkDiff(fileDiff.original, fileDiff.modified, fileDiff.hunks) }
-        : { scanLimit: SCAN_LIMIT },
-      gutter: true,
-      highlightChanges: true,
-      collapseUnchanged: collapse ? { margin: 3, minSize: 4 } : undefined,
-      revertControls: diffMode === "unstaged" ? "b-to-a" : diffMode === "staged" ? "a-to-b" : undefined,
-      renderRevertControl:
-        diffMode === "unstaged"
-          ? () => revertButton("Stage this change", "chevrons-left")
-          : () => revertButton("Unstage this change", "chevrons-right"),
-    });
-    view = merge;
+      });
+      inlineView = editor;
+      inlineDoc = inlineShown;
+    } else {
+      const merge = new MergeView({
+        a: { doc: fileDiff.original, extensions: sideExtensions(diffMode === "unstaged", findHostA, "old") },
+        b: { doc: fileDiff.modified, extensions: [sideExtensions(diffMode === "staged", findHostB, "new"), blameExtensions] },
+        parent: target,
+        diffConfig,
+        gutter: true,
+        highlightChanges: true,
+        collapseUnchanged,
+        revertControls: diffMode === "unstaged" ? "b-to-a" : diffMode === "staged" ? "a-to-b" : undefined,
+        renderRevertControl:
+          diffMode === "unstaged"
+            ? () => revertButton("Stage this change", "chevrons-left")
+            : () => revertButton("Unstage this change", "chevrons-right"),
+      });
+      view = merge;
+      editor = merge.b;
+    }
     viewHunks = fileDiff.hunks ?? null;
     activeSide = "new";
     if (blame) {
-      void loadBlame(merge.b, blame, fileDiff.modifiedEol);
+      const inlineBlame = shown ? { text: fileDiff.modified, newLineOf: shown.lines.map((line) => line.new) } : null;
+      void loadBlame(editor, blame, fileDiff.modifiedEol, inlineBlame);
     }
-    chunkCount = merge.chunks.length;
+    chunkCount = changeCount();
     current = -1;
     scheduleSelectionCount();
-    strip = createStrip((line) => jumpToLine(merge.b, line));
+    strip = createStrip((line) => jumpToLine(editor, line));
     target.appendChild(strip);
     stripObserver = new ResizeObserver(() => {
       scheduleStrip();
@@ -322,27 +390,28 @@
     scheduleStrip();
 
     const restore = lastScroll?.key === scrollKey ? lastScroll.top : null;
+    const scroller = view?.dom ?? editor.scrollDOM;
     requestAnimationFrame(() => {
-      if (view !== merge) {
+      if (newEditor() !== editor) {
         return;
       }
       placeSplitHandle();
-      if (applyReveal(merge)) {
+      if (applyReveal(editor)) {
         return;
       }
       if (restore !== null) {
-        merge.dom.scrollTop = restore;
-      } else if (merge.chunks.length > 0) {
+        scroller.scrollTop = restore;
+      } else if (changeCount() > 0) {
         current = 0;
-        revealChunk(merge, merge.chunks[0]);
+        revealChange(0);
       }
     });
   }
 
-  /** Change marks on the right side, in its line numbers. */
-  function diffMarks(merge: MergeView): ChangeMark[] {
-    const doc = merge.b.state.doc;
-    return merge.chunks.map((chunk) => {
+  /** Change marks in the new text's line numbers. */
+  function diffMarks(editor: EditorView, chunks: readonly Chunk[]): ChangeMark[] {
+    const doc = editor.state.doc;
+    return chunks.map((chunk) => {
       const from = doc.lineAt(Math.min(chunk.fromB, doc.length)).number - 1;
       if (chunk.fromB === chunk.toB) {
         return { from, to: from, kind: "deleted" };
@@ -412,23 +481,26 @@
   function scheduleStrip(): void {
     cancelAnimationFrame(stripFrame);
     stripFrame = requestAnimationFrame(() => {
-      if (view && strip) {
-        renderTicks(strip, layoutTicks(view.b, diffMarks(view), strip.clientHeight));
+      const editor = newEditor();
+      if (editor && strip) {
+        const marks = view ? diffMarks(editor, view.chunks) : inlineDoc ? inlineChangeMarks(inlineDoc) : [];
+        renderTicks(strip, layoutTicks(editor, marks, strip.clientHeight));
       }
     });
   }
 
   /** The changed lines the selection of the active side picks; none without fitting hunks. */
   function currentSelection(): LineSelection {
-    const merge = view;
+    const side = activeSide;
+    const editor = side === "old" ? (view?.a ?? null) : newEditor();
     const hunks = viewHunks;
-    if (!merge || !hunks) {
+    if (!editor || !hunks) {
       return { oldLines: [], newLines: [] };
     }
-    const side = activeSide;
-    const { doc, selection } = (side === "old" ? merge.a : merge.b).state;
+    const { doc, selection } = editor.state;
     const spans = selection.ranges.map((range) => rangeLines(doc, range.from, range.to));
-    return selectedChangeLines(hunks, side, spans);
+    // Inline, removed and added lines are both in the text: a selection picks exactly its lines.
+    return inlineDoc ? inlineSelection(inlineDoc, spans) : selectedChangeLines(hunks, side, spans);
   }
 
   function scheduleSelectionCount(): void {
@@ -467,14 +539,15 @@
 
   /** Right-click in either side: the line actions for its selection, and Copy. */
   function openLineMenu(event: MouseEvent): void {
-    const merge = view;
     const target = lineMode;
     const node = event.target instanceof Node ? event.target : null;
-    const editor = node && merge?.a.dom.contains(node) ? merge.a : node && merge?.b.dom.contains(node) ? merge.b : null;
-    if (!merge || !target || !editor) {
+    const oldEditor = view?.a ?? null;
+    const shownNew = newEditor();
+    const editor = node && oldEditor?.dom.contains(node) ? oldEditor : node && shownNew?.dom.contains(node) ? shownNew : null;
+    if (!target || !editor) {
       return;
     }
-    activeSide = editor === merge.a ? "old" : "new";
+    activeSide = editor === oldEditor ? "old" : "new";
     // A click outside the selection moves the cursor there first, like other editors.
     const position = editor.posAtCoords({ x: event.clientX, y: event.clientY });
     if (position !== null && !editor.state.selection.ranges.some((range) => position >= range.from && position <= range.to)) {
@@ -507,28 +580,39 @@
     contextMenu.open(event, items);
   }
 
-  function revealChunk(merge: MergeView, chunk: Chunk): void {
-    const posA = Math.min(chunk.fromA, merge.a.state.doc.length);
-    const posB = Math.min(chunk.fromB, merge.b.state.doc.length);
-    merge.a.dispatch({ selection: { anchor: posA } });
-    merge.b.dispatch({
-      selection: { anchor: posB },
-      effects: EditorView.scrollIntoView(posB, { y: "center" }),
+  function revealChange(index: number): void {
+    const editor = newEditor();
+    let position: number | null = null;
+    if (view) {
+      const chunk = view.chunks[index];
+      if (chunk) {
+        view.a.dispatch({ selection: { anchor: Math.min(chunk.fromA, view.a.state.doc.length) } });
+        position = Math.min(chunk.fromB, view.b.state.doc.length);
+      }
+    } else if (editor && inlineDoc?.blocks[index]) {
+      const doc = editor.state.doc;
+      position = doc.line(Math.min(inlineDoc.blocks[index].from + 1, doc.lines)).from;
+    }
+    if (!editor || position === null) {
+      return;
+    }
+    editor.dispatch({
+      selection: { anchor: position },
+      effects: EditorView.scrollIntoView(position, { y: "center" }),
     });
   }
 
   function goToChunk(direction: 1 | -1): boolean {
-    const merge = view;
-    if (!merge || merge.chunks.length === 0) {
+    const count = changeCount();
+    if (count === 0) {
       return false;
     }
-    const count = merge.chunks.length;
     if (current < 0 || current >= count) {
       current = direction > 0 ? 0 : count - 1;
     } else {
       current = (current + direction + count) % count;
     }
-    revealChunk(merge, merge.chunks[current]);
+    revealChange(current);
     return true;
   }
 </script>
@@ -555,6 +639,30 @@
       <span class="counter dim">{counterLabel}</span>
     {/if}
     <div class="divider"></div>
+    <span class="layout" role="group" aria-label="Diff layout">
+      <button
+        class="toggle layout-button"
+        class:active={!inline}
+        onclick={() => settings.setPreference("diffLayout", "sideBySide")}
+        aria-pressed={!inline}
+        disabled={!textual || identical}
+        title="Side by side: old text on the left, new on the right"
+        aria-label="Side by side"
+      >
+        <Icon name="split-view" size={13} />
+      </button>
+      <button
+        class="toggle layout-button"
+        class:active={inline}
+        onclick={() => settings.setPreference("diffLayout", "inline")}
+        aria-pressed={inline}
+        disabled={!textual || identical}
+        title="Inline: removed lines above the lines that replace them"
+        aria-label="Inline"
+      >
+        <Icon name="split-rows" size={13} />
+      </button>
+    </span>
     <button
       class="toggle"
       class:active={diffPrefs.collapseUnchanged}
@@ -645,16 +753,29 @@
   {:else if identical}
     <div class="message dim">No content changes</div>
   {:else}
-    <div class="labels" class:with-controls={mode !== "readonly"}>
-      <span class="label truncate" title={leftLabel}>{leftLabel}</span>
-      <span class="gap"></span>
-      <span class="label truncate" title={rightLabel}>{rightLabel}</span>
-    </div>
-    <div class="find-bars" class:with-controls={mode !== "readonly"}>
-      <div class="find-host" bind:this={findHostA}></div>
-      <span class="gap"></span>
-      <div class="find-host" bind:this={findHostB}></div>
-    </div>
+    {#if inline}
+      <div class="labels">
+        <span class="label inline-label" title={`${leftLabel} to ${rightLabel}`}>
+          <span class="truncate">{leftLabel}</span>
+          <Icon name="arrow-right" size={11} />
+          <span class="truncate">{rightLabel}</span>
+        </span>
+      </div>
+      <div class="find-bars">
+        <div class="find-host" bind:this={findHostB}></div>
+      </div>
+    {:else}
+      <div class="labels" class:with-controls={mode !== "readonly"}>
+        <span class="label truncate" title={leftLabel}>{leftLabel}</span>
+        <span class="gap"></span>
+        <span class="label truncate" title={rightLabel}>{rightLabel}</span>
+      </div>
+      <div class="find-bars" class:with-controls={mode !== "readonly"}>
+        <div class="find-host" bind:this={findHostA}></div>
+        <span class="gap"></span>
+        <div class="find-host" bind:this={findHostB}></div>
+      </div>
+    {/if}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="body"
@@ -758,6 +879,16 @@
     cursor: default;
   }
 
+  .layout {
+    display: inline-flex;
+    gap: 1px;
+    margin-right: 4px;
+  }
+
+  .layout-button {
+    padding: 0 6px;
+  }
+
   .path {
     flex: 1;
     min-width: 0;
@@ -786,6 +917,17 @@
     flex: 1 1 0;
     min-width: 0;
     padding: 0 12px;
+  }
+
+  .inline-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .inline-label .truncate {
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   /* The labels, find bars and editors share the split, so they stay lined up. */
@@ -898,6 +1040,12 @@
     position: absolute;
     inset: 0;
     overflow-y: auto;
+  }
+
+  /* The inline layout scrolls itself; it stops short of the change overview ruler. */
+  .body :global(.cm-editor.cm-inlineDiff) {
+    position: absolute;
+    inset: 0 12px 0 0;
   }
 
   .body :global(.cm-mergeViewEditor + .cm-mergeViewEditor) {

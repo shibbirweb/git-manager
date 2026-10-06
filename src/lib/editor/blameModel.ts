@@ -19,6 +19,8 @@ export interface BlameState {
 
 export const LOCAL_EDIT = -1;
 export const UNKNOWN_LINE = -1;
+/** A line the inline diff shows from the old text: it has no blame of its own. */
+export const REMOVED_LINE = -2;
 
 export function fromInfo(info: BlameInfo, lineCount: number): BlameState {
   const lines: number[] = [];
@@ -102,6 +104,33 @@ export function commitLineAt(state: BlameState, line: number): number | null {
 export function commitLineTarget(state: BlameState, line: number, lineText: string): { line: number; lineText?: string } {
   const exact = commitLineAt(state, line);
   return exact !== null ? { line: exact } : { line, lineText };
+}
+
+/** True for a removed line of an inline diff, which shows no blame. */
+export function isRemoved(state: BlameState, line: number): boolean {
+  return state.lines[line] === REMOVED_LINE;
+}
+
+/**
+ * Blame of the new text, spread over an inline diff's lines: `newLineOf` gives each document
+ * line its new text line, or null for a removed line. Clicked lines report their new line.
+ */
+export function expandBlame(state: BlameState, newLineOf: readonly (number | null)[]): BlameState {
+  const lines = newLineOf.map((line) => (line === null ? REMOVED_LINE : (state.lines[line] ?? LOCAL_EDIT)));
+  const origins = state.origins
+    ? newLineOf.map((line) => (line === null ? UNKNOWN_LINE : (state.origins?.[line] ?? UNKNOWN_LINE)))
+    : undefined;
+  const origin = state.origin;
+  const nearestNewLine = (docLine: number): number => {
+    for (let index = docLine; index < newLineOf.length; index++) {
+      const line = newLineOf[index];
+      if (line !== null && line !== undefined) {
+        return line;
+      }
+    }
+    return 0;
+  };
+  return { ...state, lines, origins, origin: origin ? (docLine) => origin(nearestNewLine(docLine)) : undefined };
 }
 
 /** True when a line is not committed (local edit or git's uncommitted marker). */

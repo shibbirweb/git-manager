@@ -35,6 +35,7 @@ import {
   type AutoSaveMode,
   changedPreferenceKeys,
   type ConfigName,
+  type DiffLayout,
   type Json,
   type LeftPanel,
   type LoadErrors,
@@ -82,6 +83,7 @@ export {
   DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
   CARET_EXTRA_RANGE,
+  DIFF_LAYOUT_CHOICES,
   EDITOR_CURSOR_BLINKING_CHOICES,
   EDITOR_CURSOR_STYLE_CHOICES,
   EDITOR_CURSOR_WIDTH_RANGE,
@@ -116,6 +118,7 @@ export {
 } from "./settingsData";
 export type {
   AutoSaveMode,
+  DiffLayout,
   EditorCursorBlinking,
   EditorCursorStyle,
   LeftPanel,
@@ -203,6 +206,7 @@ class SettingsStore {
   checkForUpdates = $state(initialPreferences.checkForUpdates);
   updateChannel = $state<UpdateChannelSetting>(initialPreferences.updateChannel);
   ignoreWhitespace = $state(initialPreferences.ignoreWhitespace);
+  diffLayout = $state<DiffLayout>(initialPreferences.diffLayout);
   logAllRefs = $state(initialPreferences.logAllRefs);
   autoFetch = $state(initialPreferences.autoFetch);
   autoFetchIntervalMinutes = $state(initialPreferences.autoFetchIntervalMinutes);
@@ -447,6 +451,7 @@ class SettingsStore {
       checkForUpdates: this.checkForUpdates,
       updateChannel: this.updateChannel,
       ignoreWhitespace: this.ignoreWhitespace,
+      diffLayout: this.diffLayout,
       logAllRefs: this.logAllRefs,
       autoFetch: this.autoFetch,
       autoFetchIntervalMinutes: this.autoFetchIntervalMinutes,

@@ -176,6 +176,12 @@ describe("parsePreferences", () => {
     });
   });
 
+  it("validates the diff layout", () => {
+    expect(parsePreferences({}).preferences.diffLayout).toBe("sideBySide");
+    expect(parsePreferences({ diffLayout: "inline" }).preferences.diffLayout).toBe("inline");
+    expect(parsePreferences({ diffLayout: "unified" }).preferences.diffLayout).toBe("sideBySide");
+  });
+
   it("turns the editor features on by default and keeps hand-edited switches", () => {
     const { preferences } = parsePreferences({});
     expect(preferences).toMatchObject({

@@ -21,6 +21,14 @@ export type ThemeSetting = "system" | "light" | "dark";
 /** Which panel the left sidebar shows; null hides it. */
 export type LeftPanel = "changes" | "branches" | "scripts" | null;
 
+/** How a diff shows its two versions: in two columns, or in one with removed lines above added ones. */
+export type DiffLayout = "sideBySide" | "inline";
+export const DIFF_LAYOUT_CHOICES: { value: DiffLayout; label: string }[] = [
+  { value: "sideBySide", label: "Side by side" },
+  { value: "inline", label: "Inline" },
+];
+const DIFF_LAYOUTS = DIFF_LAYOUT_CHOICES.map((choice) => choice.value);
+
 export type UpdateChannelSetting = "auto" | "stable" | "beta";
 
 /** How Git > Update Project pulls each repository. */
@@ -343,6 +351,8 @@ export interface Preferences {
   /** "auto" follows betas only when this build is a beta. */
   updateChannel: UpdateChannelSetting;
   ignoreWhitespace: boolean;
+  /** Every diff side by side or inline; Settings > Git and the diff toolbar both set it. */
+  diffLayout: DiffLayout;
   logAllRefs: boolean;
   /** Fetch every remote in the background while the window is in use. */
   autoFetch: boolean;
@@ -507,6 +517,7 @@ export const defaultPreferences: Preferences = {
   checkForUpdates: true,
   updateChannel: "auto",
   ignoreWhitespace: false,
+  diffLayout: "sideBySide",
   logAllRefs: true,
   autoFetch: true,
   autoFetchIntervalMinutes: DEFAULT_AUTO_FETCH_MINUTES,
@@ -840,6 +851,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     checkForUpdates: pickBoolean(data.checkForUpdates, defaultPreferences.checkForUpdates),
     updateChannel: channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
     ignoreWhitespace: pickBoolean(data.ignoreWhitespace, defaultPreferences.ignoreWhitespace),
+    diffLayout: pickOneOf(data.diffLayout, DIFF_LAYOUTS, defaultPreferences.diffLayout),
     logAllRefs: pickBoolean(data.logAllRefs, defaultPreferences.logAllRefs),
     autoFetch: pickBoolean(data.autoFetch, defaultPreferences.autoFetch),
     autoFetchIntervalMinutes: pickInteger(

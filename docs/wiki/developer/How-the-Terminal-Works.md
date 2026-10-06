@@ -106,7 +106,4 @@ Typing, colors and Cmd+V need a manual check.
 
 ## Bugs we fixed
 
-**The window froze while a terminal started.**
-- **The issue:** typing in a terminal, or resizing the window, could hang while another terminal was starting.
-- **Why it happened:** `TerminalRegistry::spawn` held the registry lock for the whole shell start. `terminal_write` and `terminal_resize` are sync commands on the main thread, and they waited for that lock.
-- **The fix and why we chose it:** `spawn` now starts the shell without the lock and takes it only to insert the terminal. A shell that exits before it was added is noted in `exited_early` and removed right after the insert (`shells_that_exit_at_once_never_stay_in_the_registry`). Keeping slow work out of the lock was safer than making the keystroke commands async, which could reorder input.
+The terminal bugs and their fixes are in [Terminal Bugs We Fixed](Terminal-Bugs-We-Fixed.md).

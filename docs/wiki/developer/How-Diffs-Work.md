@@ -133,5 +133,5 @@ Hunk buttons, the drag and Open File need a manual check in the app. See [Testin
 ## Keeping this page in sync
 
 - Update this page when a diff area, the size limit, the hunk staging path or the `DiffView` props change.
-- Update [Diffs](../usage/Diffs.md) for visible changes.
+- Update [Diffs](../usage/Diffs.md) for visible changes, and [How the Inline Diff Works](How-the-Inline-Diff-Works.md) for the inline layout.
 - Retake `diff-view.png`, `diff-hunk-staging.png`, `diff-split-resize.png` and `diff-binary-image.png`. See [Docs and Screenshots](Docs-and-Screenshots.md).

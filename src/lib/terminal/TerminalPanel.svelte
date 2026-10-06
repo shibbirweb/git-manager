@@ -274,6 +274,7 @@
             <ResizeHandle
               label="Resize split terminals"
               panel="left"
+              inPanel={true}
               size={(paneSizes[index - 1] ?? 0) * panesWidth}
               min={MIN_PANE_WIDTH}
               max={Math.max(MIN_PANE_WIDTH, pair * panesWidth - MIN_PANE_WIDTH)}
@@ -312,6 +313,7 @@
       <ResizeHandle
         label="Resize terminal list"
         panel="right"
+        inPanel={true}
         size={listWidth}
         min={MIN_TERMINAL_LIST_WIDTH}
         max={listMax}

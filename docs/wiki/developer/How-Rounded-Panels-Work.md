@@ -84,6 +84,8 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 **The editor did not stand out in Git Manager Dark.** In Git Manager Light the editor's tab strip showed as a white rounded panel on the grey window. In Git Manager Dark the frame and the editor were both `#1e1f22`, so the tabs and the top of the editor melted into the window and only the file toolbar showed. The frame was only checked against `--panel`, but in rounded mode the tab strip and the code take `--editor-bg`. The fix sets the Git Manager Dark frame to `#131416` (darker, like the gaps in the JetBrains Islands themes) and makes `frameColor()` and its test keep the frame apart from the editor color too. That also fixed Darcula, Nord, Gruvbox Dark and Rose Pine. Dark themes shade the darker surface, so the frame sits below both.
 
+**The Changes tab lost the line between its list and the diff.** Its handle sits inside one panel but took the gap margins, pulling the diff 6px over the list's border. `ResizeHandle` now takes `inPanel` to keep its normal size, a prop so any handle inside a panel can opt out.
+
 ## Tests
 
 - `settingsData.test.ts`: the default, `true`, and a non-boolean value falling back to off.
@@ -93,5 +95,5 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 ## Keeping in sync
 
 - A new top-level panel in the workspace needs its own rounded rule under `html[data-rounded-panels]` and must sit in a flex container with the panel gap.
-- A new resize handle works as is if it is a `ResizeHandle` between two flex children of such a container.
+- A new resize handle works as is if it is a `ResizeHandle` between two flex children of such a container. Inside one panel, pass `inPanel`.
 - New UI on the frame (header, status bar, activity bars) should use `--frame` in rounded mode, not `--bg`.

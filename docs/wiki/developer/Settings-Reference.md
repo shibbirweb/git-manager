@@ -58,6 +58,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 
 | Key | Default | Accepted | Used by |
 | --- | --- | --- | --- |
+| `diffLayout` | `"sideBySide"` | `"sideBySide"` or `"inline"` | `diff/DiffView.svelte` |
 | `ignoreWhitespace` | false | boolean | `merge/MergeEditor.svelte` |
 | `logAllRefs` | true | boolean | `views/LogView.svelte` |
 | `commitSignOff` | false | boolean | `views/changes/commitOptions.svelte.ts` |

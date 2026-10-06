@@ -12,9 +12,11 @@
     /** Called once when a drag ends, e.g. to persist the size. */
     onCommit?: (size: number) => void;
     label: string;
+    /** Sits on a border inside one panel, not in the gap between two rounded panels. */
+    inPanel?: boolean;
   }
 
-  let { size, panel, min, max, defaultSize, onResize, onCommit, label }: Props = $props();
+  let { size, panel, min, max, defaultSize, onResize, onCommit, label, inPanel = false }: Props = $props();
 
   const horizontal = $derived(panel === "bottom");
   let dragging = $state(false);
@@ -84,6 +86,7 @@
   class="handle"
   class:horizontal
   class:dragging
+  class:in-panel={inPanel}
   role="separator"
   aria-orientation={horizontal ? "horizontal" : "vertical"}
   aria-label={label}
@@ -155,13 +158,14 @@
     height: 3px;
   }
 
-  /* Rounded panels: the handle covers the whole gap between two panels. */
-  :global(html[data-rounded-panels]) .handle {
+  /* Rounded panels: the handle covers the whole gap between two panels. Inside a panel there is
+     no gap, and the negative margins would slide the next pane over the border. */
+  :global(html[data-rounded-panels]) .handle:not(.in-panel) {
     width: var(--panel-gap);
     margin: 0 calc(-1 * var(--panel-gap));
   }
 
-  :global(html[data-rounded-panels]) .handle.horizontal {
+  :global(html[data-rounded-panels]) .handle.horizontal:not(.in-panel) {
     width: auto;
     height: var(--panel-gap);
     margin: calc(-1 * var(--panel-gap)) 0;

@@ -102,7 +102,4 @@ WebGL fallback, hover underlines, drops from Finder and dragging the divider nee
 
 ## Bugs we fixed
 
-**The GPU acceleration hint said it costs a few MB.**
-- **The issue:** Settings, Terminal said turning GPU acceleration off "saves a few MB of GPU memory per terminal", far too little.
-- **Why it happened:** the number was a guess, written before anything was measured.
-- **The fix and why we chose it:** three cold starts each way measured about 70 MB for the first terminal, mostly graphics memory, and 10 MB for each other one. Settings and the usage pages now show measured numbers ([Measuring Setting Memory](Measuring-Setting-Memory.md)).
+The terminal bugs and their fixes are in [Terminal Bugs We Fixed](Terminal-Bugs-We-Fixed.md).

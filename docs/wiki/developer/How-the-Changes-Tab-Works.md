@@ -47,6 +47,10 @@ flowchart LR
     S --> L["changesTabFiles"]
 ```
 
+### Committing
+
+Below the list sits the sidebar's own `CommitBox.svelte`, with `multiRepo` off. Its staged count is `bulkTargets(files).unstage`, the files with staged changes, and its conflict count the conflicted rows, so it enables Commit exactly when the sidebar would. The message lives in `commitDraft`, keyed by repository, so the tab and the sidebar edit one draft. Hiding the list hides the box too.
+
 ### Resizing and hiding the list
 
 The list's width is `changesListWidth` in `state.json` (default 320 px, at least 160) and whether it shows is `changesListVisible`, both on `settings` and saved like the terminal list width. A `ResizeHandle` sits between the list and the diff; it writes the width while dragging and saves on release. `changesListBounds` (pure, tested) caps the width so the diff keeps `MIN_CHANGES_DIFF_WIDTH` (240 px) in a narrow tab; the saved width stays as dragged. The toolbar's layout button calls `settings.toggleChangesList()`. With the list hidden, the toolbar shows the selected file, its letter and "2 of 5", so you still know where you are.
@@ -64,6 +68,7 @@ A new status object means files changed on disk, so an `$effect` loads the diff 
 | `src/lib/views/git/ChangesTab.svelte` | The tab: file list, row and header actions, menu, keyboard, diff loading |
 | `src/lib/views/git/changesTab.ts` | `changeAgainstHead`, `changesTabFiles`, `fileActions`, `stagedState`, `bulkTargets`, `pickSelected`, `stepSelection`, `changesListBounds` |
 | `src/lib/views/changes/mutations.ts` | `stage`, `unstage`, `discard`, shared with the Changes sidebar |
+| `src/lib/views/changes/CommitBox.svelte` | The commit box, shared with the Changes sidebar |
 | `src/lib/stores/settingsData.ts` | `changesListWidth` and `changesListVisible`, validated |
 | `src/lib/stores/branchTabs.ts` | The `changes` kind: path, title, folder cleanup |
 | `src/lib/views/StatusBar.svelte` | Opens the tab from the changes count |
@@ -72,7 +77,7 @@ A new status object means files changed on disk, so an `$effect` loads the diff 
 
 ## Design decisions
 
-**Compare with HEAD, not the index.** The question the tab answers is "what did I change since the last commit", so staged and unstaged edits show as one diff. Staging stays in the Changes sidebar.
+**Compare with HEAD, not the index.** The question the tab answers is "what did I change since the last commit", so staged and unstaged edits show as one diff.
 
 **Read-only diff, file-level staging.** Hunk staging needs a side (index or work tree), and this diff compares HEAD with the work tree, so it stays read-only. Whole files can be staged, unstaged and discarded from the list, which covers the common "clean up before committing" pass without switching to the sidebar. The diff's Open File button and a double-click lead to editing.
 
@@ -93,6 +98,6 @@ A new status object means files changed on disk, so an `$effect` loads the diff 
 
 ## Keeping this page in sync
 
-- Update this page when `ChangesTab.svelte`, `changesTab.ts`, `mutations.ts` or `compare_with_revision` change.
+- Update this page when `ChangesTab.svelte`, `changesTab.ts`, `mutations.ts`, `CommitBox.svelte` or `compare_with_revision` change.
 - Update [Status Bar and Help](../usage/Status-Bar-and-Help.md) for new clicks or keys.
 - Related: [How the Status Bar Works](How-the-Status-Bar-Works.md), [How the Branches Popup Works](How-the-Branches-Popup-Works.md).
