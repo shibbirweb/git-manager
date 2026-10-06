@@ -38,11 +38,11 @@ Always on the right:
 - **Reading changes 2 of 5** with a spinner, right after a folder opens, while the changes of each repository load. You can already work. See [Workspaces](Workspaces.md).
 - A star: opens the project on GitHub, where you can star it.
 - A bug icon: the feedback menu (below).
-- **Memory**, such as **Memory 597 MB**: how much memory Git Manager uses right now. See [Memory Use](Memory-Use.md).
+- **Memory**, a memory stick icon with a size such as **597 MB**: how much memory Git Manager uses right now. See [Memory Use](Memory-Use.md).
 
 ## Memory use
 
-**Memory** on the right shows how much memory Git Manager uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
+The memory item on the right (the memory stick icon and a size) shows how much memory Git Manager uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
 
 ## The Help menu
 

@@ -131,6 +131,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- The memory readout in the status bar shows a memory icon and the size (such as 597 MB) instead of the word Memory, so it takes less room. The tooltip still says what it is.
 - The welcome screen looks like the JetBrains one: a sidebar with Projects, Customize and Learn, and the app version. Projects is one searchable list of recent workspaces and folders with a colored badge each; the arrow keys and Enter open one, and its ... menu can open it in a new window, reveal it in Finder, copy its path or remove it. Open, Clone and Open Workspace from File sit next to the search. Customize sets the theme, color theme, font sizes and rounded panels, Learn links to the docs, the shortcuts and What's New, and Star on GitHub, Report a Bug and Request a Feature stay at the bottom of the sidebar.
 - Collapse unchanged in diffs opens a folded run 10 lines at a time: the up and down buttons on its bar show 10 more lines at the top or the bottom of the run, and a click on the rest of the bar still shows all of it.
 - A long branch name in the Changes sidebar uses all the free room up to the repository name before it shortens, instead of stopping at a fixed width.

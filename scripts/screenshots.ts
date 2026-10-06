@@ -1485,7 +1485,7 @@ define("whats-new", async (shot) => {
 define("status-bar", async (shot) => {
   await shot.openFile(cartTs());
   await clickLine(shot, "useDiscount(code");
-  await shot.page.locator("footer.status-bar").getByText(/Memory/).waitFor();
+  await shot.page.locator("footer.status-bar").getByRole("button", { name: /^Memory / }).waitFor();
   await shot.save(shot.page.locator("footer.status-bar"));
 });
 

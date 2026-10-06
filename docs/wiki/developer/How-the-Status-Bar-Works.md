@@ -91,7 +91,7 @@ The file details come from `editorStatus` (`stores/editorStatus.svelte.ts`). The
 
 ### Memory
 
-The memory item calls `memory_usage` every 5 seconds while the window is visible and shows the total, as Activity Monitor counts it, with a breakdown popover. How the number is measured, the debug memory log and the live recorder are in [How memory is measured](How-Memory-Is-Measured.md).
+The memory item calls `memory_usage` every 5 seconds while the window is visible and shows the total, as Activity Monitor counts it, with a breakdown popover. It shows the `memory` icon and the size only; the word Memory is in its tooltip and `aria-label`, so it takes less room. How the number is measured, the debug memory log and the live recorder are in [How memory is measured](How-Memory-Is-Measured.md).
 
 ### Help links
 
