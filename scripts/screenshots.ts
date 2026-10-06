@@ -1148,6 +1148,20 @@ define("commit-box", async (shot) => {
   await shot.save(shot.page.locator(".commit-box"));
 }, () => ({ state: { sidebarWidth: 360 } }));
 
+// Settings > Git > Commit box > Per repository: a message box at the top of each repository.
+define("commit-box-per-repo", async (shot) => {
+  // payments-api's long file lists fold away, so both repositories and their boxes fit.
+  const payments = shot.page.getByRole("group", { name: "payments-api", exact: true });
+  for (const group of ["Conflicts", "Staged", "Changes"]) {
+    await payments.locator(".group-toggle", { hasText: group }).click();
+  }
+  const box = shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("textbox", { name: "Commit message" });
+  await box.click();
+  await shot.page.keyboard.type("Cart: set line quantities");
+  await shot.page.mouse.move(640, 300);
+  await shot.save(shot.page.locator("aside.sidebar"));
+}, () => ({ viewport: { width: 1280, height: 720 }, settings: { commitBoxLayout: "perRepo" }, state: { sidebarWidth: 360 } }));
+
 define("diff-view", async (shot) => {
   await collapseRepo(shot, "payments-api");
   // More room for the two sides.

@@ -3,6 +3,7 @@
   import type { FileStatus } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
+  import CommitBox from "./CommitBox.svelte";
   import FileRow from "./FileRow.svelte";
   import { kindIn, rowElementId, sameSelection, type FileSelection, type GroupId, type RowAction } from "./fileStatus";
   import { changesLayout } from "./layout.svelte";
@@ -25,9 +26,11 @@
     /** The selection when it belongs to this repository, else null. */
     selected: FileSelection | null;
     onselect: (selection: FileSelection) => void;
+    /** Settings > Git > Commit box is Per repository: this section has its own commit box at the top. */
+    commitBox?: boolean;
   }
 
-  let { section, multiRepo, active, selected, onselect }: Props = $props();
+  let { section, multiRepo, active, selected, onselect, commitBox = false }: Props = $props();
 
   const repo = $derived(section.repo);
   const repoRoot = $derived(section.repo.root);
@@ -250,6 +253,19 @@
     </div>
   {/if}
   {#if !collapsed}
+    {#if commitBox}
+      <div class="section-commit" class:nested={multiRepo}>
+        <CommitBox
+          {repo}
+          stagedCount={section.staged.length}
+          conflictCount={section.conflicts.length}
+          {multiRepo}
+          choices={[]}
+          onpick={() => {}}
+          placement="section"
+        />
+      </div>
+    {/if}
     {@render fileGroup("conflicts", "Conflicts", section.conflicts)}
     {@render fileGroup("staged", "Staged", section.staged)}
     {@render fileGroup("unstaged", "Changes", section.unstaged)}
@@ -414,6 +430,11 @@
 
   .group-header.nested {
     padding-left: 16px;
+  }
+
+  /* Lined up with the group headers below it. */
+  .section-commit.nested {
+    padding-left: 12px;
   }
 
   .group-header:hover {

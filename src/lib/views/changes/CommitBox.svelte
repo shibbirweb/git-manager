@@ -31,9 +31,15 @@
     /** Repositories offered by the picker. */
     choices: RepoSection[];
     onpick: (repoRoot: string) => void;
+    /**
+     * Under the file list (the single commit box), above it, or at the top of a repository's
+     * section (one box per repository): no picker, a smaller message and no sync button, since
+     * the section's header has the push and pull buttons.
+     */
+    placement?: "bottom" | "top" | "section";
   }
 
-  let { repo, stagedCount, conflictCount, multiRepo, choices, onpick }: Props = $props();
+  let { repo, stagedCount, conflictCount, multiRepo, choices, onpick, placement = "bottom" }: Props = $props();
 
   /** Repository whose HEAD message is being loaded for amend. */
   let loadingRoot = $state<string | null>(null);
@@ -43,6 +49,7 @@
   const onMac = platformFromUserAgent(navigator.userAgent) === "macos";
   const historyShortcut = onMac ? "Cmd+E" : "Ctrl+E";
 
+  const commitKeys = localKeys("CmdOrCtrl+Enter");
   const draft = $derived(commitDraft.for(repo.root));
   const status = $derived(repoStore.statuses[repo.root] ?? null);
   const unborn = $derived(status?.head?.unborn ?? false);
@@ -51,7 +58,16 @@
   const loadingMessage = $derived(loadingRoot === repo.root);
   const hasMessage = $derived(!draft.isBlank());
   const subjectNote = $derived(settings.commitSubjectGuide ? subjectWarning(draft.message) : null);
-  const placeholder = $derived(draft.templateHint ?? (multiRepo ? `Message for ${repo.name}` : "Commit message"));
+  const inSection = $derived(placement === "section");
+  const placeholder = $derived.by(() => {
+    if (draft.templateHint) {
+      return draft.templateHint;
+    }
+    if (inSection) {
+      return branch ? `Message (${commitKeys} to commit on ${branch})` : `Message (${commitKeys} to commit)`;
+    }
+    return multiRepo ? `Message for ${repo.name}` : "Commit message";
+  });
   const disabledReason = $derived.by(() => {
     if (conflictCount > 0) {
       return "Resolve conflicts before committing";
@@ -77,7 +93,6 @@
   const operation = $derived((status?.op?.kind ?? "none") !== "none");
   const canAmend = $derived(!unborn && conflictCount === 0 && !operation && !loadingMessage);
   const sync = $derived(syncPlan(status?.head));
-  const commitKeys = localKeys("CmdOrCtrl+Enter");
   const commitHint = $derived(multiRepo ? `Commit to ${repo.name} (${commitKeys})` : `Commit (${commitKeys})`);
 
   function choiceLabel(choice: RepoSection): string {
@@ -266,8 +281,8 @@
   }
 </script>
 
-<div class="commit-box">
-  {#if multiRepo}
+<div class="commit-box" class:top={placement === "top"} class:in-section={inSection}>
+  {#if multiRepo && !inSection}
     <div class="target">
       <span class="target-label dim">Commit to</span>
       {#if choices.length > 1}
@@ -352,7 +367,7 @@
       </button>
     </span>
   </div>
-  {#if sync.kind !== "none"}
+  {#if sync.kind !== "none" && !inSection}
     <!-- Sync Changes: pull, then push; or publish a branch that has no upstream yet. -->
     <button class="btn sync" onclick={() => void syncRepo(repo.root)} disabled={busy} title={syncTooltip(sync)}>
       <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={13} />
@@ -397,6 +412,24 @@
     padding: 10px;
     border-top: 1px solid var(--border-strong);
     background: var(--panel);
+  }
+
+  /* Above the file list (the Changes tab with a commit box per repository). */
+  .commit-box.top {
+    border-top: none;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  /* At the top of a repository's section, lined up with its file rows. */
+  .commit-box.in-section {
+    gap: 6px;
+    padding: 4px 10px 8px;
+    border-top: none;
+    background: transparent;
+  }
+
+  .commit-box.in-section .message {
+    height: 56px;
   }
 
   .target {

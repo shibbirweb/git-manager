@@ -29,6 +29,14 @@ export const DIFF_LAYOUT_CHOICES: { value: DiffLayout; label: string }[] = [
 ];
 const DIFF_LAYOUTS = DIFF_LAYOUT_CHOICES.map((choice) => choice.value);
 
+/** Where the Changes view puts its commit box: one at the bottom (JetBrains), or one per repository (VS Code). */
+export type CommitBoxLayout = "single" | "perRepo";
+export const COMMIT_BOX_LAYOUT_CHOICES: { value: CommitBoxLayout; label: string }[] = [
+  { value: "single", label: "Single" },
+  { value: "perRepo", label: "Per repository" },
+];
+const COMMIT_BOX_LAYOUTS = COMMIT_BOX_LAYOUT_CHOICES.map((choice) => choice.value);
+
 export type UpdateChannelSetting = "auto" | "stable" | "beta";
 
 /** How Git > Update Project pulls each repository. */
@@ -365,6 +373,8 @@ export interface Preferences {
   commitMessageHistory: boolean;
   /** Soft warning under the commit box when the subject line passes 72 characters. */
   commitSubjectGuide: boolean;
+  /** One commit box under the Changes list, or one at the top of each repository; Settings > Git and the Changes title bar both set it. */
+  commitBoxLayout: CommitBoxLayout;
   /** Commit message templates picked from the commit box, with {branch}, {ticket} and other placeholders. */
   commitTemplates: CommitTemplate[];
   /** Record the git commands the app runs (Git Console). Off, the console is not loaded at all. */
@@ -523,6 +533,7 @@ export const defaultPreferences: Preferences = {
   commitGpgSign: "default",
   commitMessageHistory: true,
   commitSubjectGuide: true,
+  commitBoxLayout: "single",
   commitTemplates: [],
   gitConsole: false,
   terminalShell: null,
@@ -858,6 +869,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     commitGpgSign: pickOneOf(data.commitGpgSign, COMMIT_GPG_SIGNS, defaultPreferences.commitGpgSign),
     commitMessageHistory: pickBoolean(data.commitMessageHistory, defaultPreferences.commitMessageHistory),
     commitSubjectGuide: pickBoolean(data.commitSubjectGuide, defaultPreferences.commitSubjectGuide),
+    commitBoxLayout: pickOneOf(data.commitBoxLayout, COMMIT_BOX_LAYOUTS, defaultPreferences.commitBoxLayout),
     commitTemplates: parseCommitTemplates(data.commitTemplates),
     gitConsole: pickBoolean(data.gitConsole, defaultPreferences.gitConsole),
     terminalShell: pickShell(data.terminalShell),

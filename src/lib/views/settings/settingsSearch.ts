@@ -85,6 +85,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Commit identity", "author"],
     ["Name and email", "user name email author identity"],
     ["Commit messages", "message"],
+    ["Commit box", "commit box per repository single bottom vs code jetbrains layout"],
     ["Message history", "recent commit messages"],
     ["Subject line guide", "72 characters length commit message"],
     ["Templates", "commit message template"],

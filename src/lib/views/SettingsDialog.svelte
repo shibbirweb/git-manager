@@ -8,6 +8,7 @@
     DEFAULT_EDITOR_FONT,
     DEFAULT_RULER_COLUMN,
     defaultPreferences,
+    COMMIT_BOX_LAYOUT_CHOICES,
     DIFF_LAYOUT_CHOICES,
     EDITOR_CURSOR_BLINKING_CHOICES,
     EDITOR_CURSOR_STYLE_CHOICES,
@@ -1683,6 +1684,28 @@
             <GitIdentitySettings />
           </div>
           <h4 class="group-title">Commit messages</h4>
+          <div class="row">
+            <div class="label">
+              <span>Commit box</span>
+              <span class="hint">
+                Single puts one commit box under the Changes list, with a picker for the repository, like JetBrains IDEs. Per
+                repository puts a commit box at the top of each repository, like VS Code. The button in the Changes title bar
+                changes this setting too.
+              </span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Commit box">
+              {#each COMMIT_BOX_LAYOUT_CHOICES as choice (choice.value)}
+                <button
+                  role="radio"
+                  aria-checked={settings.commitBoxLayout === choice.value}
+                  class:on={settings.commitBoxLayout === choice.value}
+                  onclick={() => set("commitBoxLayout", choice.value)}
+                >
+                  {choice.label}
+                </button>
+              {/each}
+            </div>
+          </div>
           <label class="row toggle-row">
             <div class="label">
               <span>Message history</span>
