@@ -1,16 +1,16 @@
 # Clear Cache
 
-Git Manager draws its window with WebKit, the engine behind Safari. When you close files, the app lets go of everything they used, but WebKit often keeps that memory for itself instead of giving it back to macOS. After a busy session, for example many Markdown files with diagrams, the **Memory** readout can stay hundreds of MB above where it started even with every tab closed.
+Git Manager draws its window with WebKit, the engine behind Safari. When you close files, the app lets go of everything they used, but WebKit often keeps that memory for itself instead of giving it back to macOS. After a busy session, for example many Markdown files with diagrams, the memory readout in the status bar can stay hundreds of MB above where it started even with every tab closed.
 
 **Clear Cache** gives all of it back. It restarts the window's interface in a fresh WebKit process, so the window starts again as light as when you opened the project.
 
-[TODO:status-bar-clear-cache.png]
+![The Clear Cache button](../images/status-bar-clear-cache.png)
 
-*The Clear Cache button beside the Memory readout in the status bar.*
+*The Clear Cache button (the brush) beside the memory readout in the status bar.*
 
 ## Use it
 
-- Click the **Clear Cache** button (a brush) right of **Memory** in the status bar, or
+- Click the **Clear Cache** button (a brush) right of the memory readout in the status bar, or
 - choose **View > Clear Cache**, which also works from the Command Palette.
 
 The screen blinks once. Your folder, the open tabs (when **Reopen tabs on start** is on), the sidebar and the panels come back as they were. A tab you were looking at loads again like a file you just opened.

@@ -276,9 +276,10 @@
           class:open={detailsOpen}
           onclick={toggleDetails}
           title="Memory used by Git Manager and its web view processes. Click for details."
+          aria-label="Memory {formatBytes(memory.totalBytes)}"
         >
-          <span class="chip"></span>
-          <span>Memory {formatBytes(memory.totalBytes)}</span>
+          <Icon name="memory" size={13} />
+          <span>{formatBytes(memory.totalBytes)}</span>
         </button>
         {#if onMac}
           <button
@@ -468,13 +469,6 @@
     position: relative;
     display: flex;
     align-items: center;
-  }
-
-  .chip {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    background: var(--success);
   }
 
   .details {

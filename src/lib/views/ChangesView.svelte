@@ -6,6 +6,7 @@
   import Icon from "$lib/ui/Icon.svelte";
   import CleanRepoList from "./changes/CleanRepoList.svelte";
   import CommitBox from "./changes/CommitBox.svelte";
+  import CommitLayoutIcon from "./changes/CommitLayoutIcon.svelte";
   import { commitDraft } from "./changes/commitDraft.svelte";
   import { rowElementId, sameSelection, type FileSelection, type GroupId } from "./changes/fileStatus";
   import { changesLayout } from "./changes/layout.svelte";
@@ -24,6 +25,8 @@
   const changed = $derived(split.changed);
   const busy = $derived(repoStore.busy !== null);
   const selected = $derived(changesSelection.selected);
+  /** Settings > Git > Commit box: a box at the top of each repository instead of one under the list. */
+  const perRepo = $derived(settings.commitBoxLayout === "perRepo");
 
   let listEl = $state<HTMLDivElement | null>(null);
 
@@ -71,6 +74,10 @@
   // Keyboard
 
   async function onListKeydown(event: KeyboardEvent): Promise<void> {
+    // Keys typed in a repository's commit box stay there.
+    if ((event.target as HTMLElement | null)?.closest("input, textarea, select")) {
+      return;
+    }
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       if (visibleRows.length === 0) {
@@ -120,6 +127,17 @@
       <span class="count">{repoStore.totalChanges}</span>
     {/if}
     <div class="spacer"></div>
+    {#if repos.length > 0}
+      <button
+        class="icon-btn small"
+        onclick={() => settings.setPreference("commitBoxLayout", perRepo ? "single" : "perRepo")}
+        title={perRepo ? "Show One Commit Box" : "Show a Commit Box per Repository"}
+        aria-label="Commit box per repository"
+        aria-pressed={perRepo}
+      >
+        <CommitLayoutIcon {perRepo} />
+      </button>
+    {/if}
     {#if !multiRepo && sections[0]?.status}
       <!-- One repository: its actions sit in the title bar. -->
       <RepoActions section={sections[0]} />
@@ -154,6 +172,10 @@
       onkeydown={onListKeydown}
     >
       {#if !multiRepo}
+        {#if perRepo && commitTarget && sections[0]?.status && sections[0].changeCount === 0}
+          <!-- A clean repository keeps its box, for Amend. -->
+          <CommitBox repo={commitTarget} stagedCount={0} conflictCount={0} multiRepo={false} choices={[]} onpick={() => {}} placement="section" />
+        {/if}
         {#if sections[0]?.status && sections[0].changeCount === 0}
           <div class="list-empty">
             <div class="clean-icon"><Icon name="check" size={18} /></div>
@@ -166,6 +188,7 @@
             active={true}
             selected={selected?.repoRoot === sections[0].repo.root ? selected : null}
             onselect={clickRow}
+            commitBox={perRepo}
           />
         {/if}
       {:else}
@@ -182,6 +205,7 @@
             active={section.repo.root === activeRoot}
             selected={selected?.repoRoot === section.repo.root ? selected : null}
             onselect={clickRow}
+            commitBox={perRepo}
           />
         {/each}
         {#if split.clean.length > 0}
@@ -189,7 +213,7 @@
         {/if}
       {/if}
     </div>
-    {#if commitTarget}
+    {#if commitTarget && !perRepo}
       <CommitBox
         repo={commitTarget}
         stagedCount={commitSection?.staged.length ?? 0}

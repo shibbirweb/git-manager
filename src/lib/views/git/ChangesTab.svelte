@@ -18,6 +18,7 @@
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import LayoutToggleIcon from "../LayoutToggleIcon.svelte";
   import CommitBox from "../changes/CommitBox.svelte";
+  import CommitLayoutIcon from "../changes/CommitLayoutIcon.svelte";
   import { splitPath, statusLetter, statusTitle } from "../changes/fileStatus";
   import { copyText, discard, stage, unstage } from "../changes/mutations";
   import {
@@ -62,6 +63,8 @@
   const bulk = $derived(bulkTargets(files));
   const conflictCount = $derived(files.filter((file) => file.status.conflicted).length);
   const repoName = $derived(repo?.name ?? splitPath(repoRoot).name);
+  /** Settings > Git > Commit box: Per repository puts the box above the files, as in the sidebar. */
+  const perRepo = $derived(settings.commitBoxLayout === "perRepo");
 
   const actionButtons: Record<ChangesTabAction, { icon: IconName; title: string; danger?: boolean }> = {
     resolve: { icon: "merge", title: "Resolve in merge tool" },
@@ -242,6 +245,16 @@
     <button
       type="button"
       class="btn"
+      onclick={() => settings.setPreference("commitBoxLayout", perRepo ? "single" : "perRepo")}
+      title={perRepo ? "Show One Commit Box" : "Show a Commit Box per Repository"}
+      aria-label="Commit box per repository"
+      aria-pressed={perRepo}
+    >
+      <CommitLayoutIcon {perRepo} size={14} />
+    </button>
+    <button
+      type="button"
+      class="btn"
       onclick={() => settings.toggleChangesList()}
       title={listVisible ? "Hide file list" : "Show file list"}
       aria-label={listVisible ? "Hide file list" : "Show file list"}
@@ -261,6 +274,10 @@
     <div class="body" bind:clientWidth={bodyWidth}>
       {#if listVisible}
         <div class="side" style="width: {list.width}px">
+          {#if perRepo}
+            <!-- Commit box per repository: above the files, like the sidebar. -->
+            <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} placement="top" />
+          {/if}
           <div class="section-title">
             <span class="truncate">Changed files <span class="dim">({files.length})</span></span>
             <span class="bulk-actions">
@@ -345,7 +362,9 @@
             {/each}
           </div>
           <!-- The sidebar's commit box: the draft is kept per repository, so both show the same message. -->
-          <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} />
+          {#if !perRepo}
+            <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} />
+          {/if}
         </div>
         <ResizeHandle
           label="Resize file list"

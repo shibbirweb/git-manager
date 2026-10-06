@@ -2,7 +2,7 @@
 
 The split editor shows several files at once, like the editor splits in JetBrains IDEs. Each part of the split is an **editor group**: its own row of tabs with its own file on screen. Split a group to the right or down, and split the new parts again, to build a grid such as one tall file on the left and two files stacked on the right.
 
-[TODO:split-editor-grid.png]
+![Three editor groups](../images/split-editor-grid.png)
 
 *Three editor groups: cart.ts on the left, pricing.ts above and checkout.ts below on the right.*
 

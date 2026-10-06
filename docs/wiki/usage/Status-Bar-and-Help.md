@@ -16,7 +16,7 @@ Like in VS Code, the left side describes the active repository, the one the side
   - Each repository shows its branch, and its folder when that differs from its name. The current choice says **selected**.
 - **Branch**. A checked-out commit shows as "detached" and its short hash. A long name is cut short with "..."; hover it for the full name. Click it to open the [Branches popup](Branches-Popup.md) for that repository and check out another branch, like in JetBrains.
 - **Sync**, right after the branch, like VS Code. It shows the commits to pull and to push, such as **1↓ 2↑**. Click it to pull, then push. When nothing is waiting, a click pulls whatever the remote has. A branch that is not on the remote yet shows a cloud icon instead: click it to publish the branch (push it and track it). Hover it to see what a click will do.
-- **4 changes**: the number of changed files, hidden when there are none. Click it to open a **Changes** tab: the changed files on the left, and the selected file compared with the last commit on the right (staged and unstaged edits together). Use Up and Down to move through the files; double-click a file or press Enter to open it. The list updates as you work. Drag the line between the list and the diff to make the list wider or narrower (double-click the line to reset it). The layout button in the tab's toolbar hides the list to give the diff the whole width; the toolbar then names the file shown, and its up and down arrows move to the previous or next file. Hover a file for **Stage** (+), **Unstage** (-) and **Discard changes**, or right-click it for more. A **staged** or **partly staged** tag shows what is already in the next commit. The buttons next to **Changed files** stage, unstage or discard every file at once. Discard asks first and keeps staged changes. Below the list is the same commit box as in the Changes sidebar, sharing its message, so you can commit the staged files without leaving the tab.
+- **4 changes**: the number of changed files, hidden when there are none. Click it to open a **Changes** tab: the changed files on the left, and the selected file compared with the last commit on the right (staged and unstaged edits together). Use Up and Down to move through the files; double-click a file or press Enter to open it. The list updates as you work. Drag the line between the list and the diff to make the list wider or narrower (double-click the line to reset it). The layout button in the tab's toolbar hides the list to give the diff the whole width; the toolbar then names the file shown, and its up and down arrows move to the previous or next file. Hover a file for **Stage** (+), **Unstage** (-) and **Discard changes**, or right-click it for more. A **staged** or **partly staged** tag shows what is already in the next commit. The buttons next to **Changed files** stage, unstage or discard every file at once. Discard asks first and keeps staged changes. Below the list (above it with a [commit box per repository](Commit-Box-Layout.md)) is the same commit box as in the Changes sidebar, sharing its message, so you can commit the staged files without leaving the tab.
 - **2 conflicts**, in red, while files are in conflict. Click it to open the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
 - A note such as **Merging feature into main** while a merge, rebase, cherry-pick or revert is in progress. See [Resolving Conflicts](Resolving-Conflicts.md).
 
@@ -38,11 +38,11 @@ Always on the right:
 - **Reading changes 2 of 5** with a spinner, right after a folder opens, while the changes of each repository load. You can already work. See [Workspaces](Workspaces.md).
 - A star: opens the project on GitHub, where you can star it.
 - A bug icon: the feedback menu (below).
-- **Memory**, such as **Memory 597 MB**: how much memory Git Manager uses right now. See [Memory Use](Memory-Use.md).
+- **Memory**, a memory stick icon with a size such as **597 MB**: how much memory Git Manager uses right now. See [Memory Use](Memory-Use.md).
 
 ## Memory use
 
-**Memory** on the right shows how much memory Git Manager uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
+The memory item on the right (the memory stick icon and a size) shows how much memory Git Manager uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
 
 ## The Help menu
 

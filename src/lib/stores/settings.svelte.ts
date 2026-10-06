@@ -34,6 +34,7 @@ import {
   asObject,
   type AutoSaveMode,
   changedPreferenceKeys,
+  type CommitBoxLayout,
   type ConfigName,
   type DiffLayout,
   type Json,
@@ -81,6 +82,7 @@ export {
   DEFAULT_CHANGES_LIST_WIDTH,
   defaultPreferences,
   CARET_EXTRA_RANGE,
+  COMMIT_BOX_LAYOUT_CHOICES,
   DIFF_LAYOUT_CHOICES,
   EDITOR_CURSOR_BLINKING_CHOICES,
   EDITOR_CURSOR_STYLE_CHOICES,
@@ -115,6 +117,7 @@ export {
 } from "./settingsData";
 export type {
   AutoSaveMode,
+  CommitBoxLayout,
   DiffLayout,
   EditorCursorBlinking,
   EditorCursorStyle,
@@ -212,6 +215,7 @@ class SettingsStore {
   commitGpgSign = $state<CommitGpgSign>(initialPreferences.commitGpgSign);
   commitMessageHistory = $state(initialPreferences.commitMessageHistory);
   commitSubjectGuide = $state(initialPreferences.commitSubjectGuide);
+  commitBoxLayout = $state<CommitBoxLayout>(initialPreferences.commitBoxLayout);
   commitTemplates = $state.raw<CommitTemplate[]>(initialPreferences.commitTemplates);
   gitConsole = $state(initialPreferences.gitConsole);
   terminalShell = $state<string | null>(initialPreferences.terminalShell);
@@ -456,6 +460,7 @@ class SettingsStore {
       commitGpgSign: this.commitGpgSign,
       commitMessageHistory: this.commitMessageHistory,
       commitSubjectGuide: this.commitSubjectGuide,
+      commitBoxLayout: this.commitBoxLayout,
       commitTemplates: this.commitTemplates,
       gitConsole: this.gitConsole,
       terminalShell: this.terminalShell,

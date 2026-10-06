@@ -182,6 +182,12 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ diffLayout: "unified" }).preferences.diffLayout).toBe("sideBySide");
   });
 
+  it("validates the commit box layout", () => {
+    expect(parsePreferences({}).preferences.commitBoxLayout).toBe("single");
+    expect(parsePreferences({ commitBoxLayout: "perRepo" }).preferences.commitBoxLayout).toBe("perRepo");
+    expect(parsePreferences({ commitBoxLayout: "both" }).preferences.commitBoxLayout).toBe("single");
+  });
+
   it("turns the editor features on by default and keeps hand-edited switches", () => {
     const { preferences } = parsePreferences({});
     expect(preferences).toMatchObject({
