@@ -1,6 +1,6 @@
 <!-- The Changes tab (status bar > N changes): the uncommitted files of a repository, each
      compared with HEAD, staged and unstaged together. Follows the live status, and stages,
-     unstages and discards like the Changes sidebar. -->
+     unstages, discards and commits like the Changes sidebar. -->
 <script lang="ts">
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
@@ -17,6 +17,7 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import LayoutToggleIcon from "../LayoutToggleIcon.svelte";
+  import CommitBox from "../changes/CommitBox.svelte";
   import { splitPath, statusLetter, statusTitle } from "../changes/fileStatus";
   import { copyText, discard, stage, unstage } from "../changes/mutations";
   import {
@@ -59,6 +60,7 @@
   const selectedIndex = $derived(selected ? files.findIndex((file) => file.path === selected.path) : -1);
   const busy = $derived(repoStore.busy !== null);
   const bulk = $derived(bulkTargets(files));
+  const conflictCount = $derived(files.filter((file) => file.status.conflicted).length);
   const repoName = $derived(repo?.name ?? splitPath(repoRoot).name);
 
   const actionButtons: Record<ChangesTabAction, { icon: IconName; title: string; danger?: boolean }> = {
@@ -341,10 +343,13 @@
               <div class="empty dim">No uncommitted changes</div>
             {/each}
           </div>
+          <!-- The sidebar's commit box: the draft is kept per repository, so both show the same message. -->
+          <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} />
         </div>
         <ResizeHandle
           label="Resize file list"
           panel="left"
+          inPanel={true}
           size={list.width}
           min={MIN_CHANGES_LIST_WIDTH}
           max={list.max}
@@ -443,16 +448,20 @@
   .side {
     flex: none;
     min-width: 0;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     border-right: 1px solid var(--border-strong);
   }
 
+  /* As tall as the diff's toolbar, so the lines under both meet. */
   .section-title {
+    flex: none;
     display: flex;
     align-items: center;
     gap: 6px;
-    min-height: 26px;
-    padding: 3px 6px 0 10px;
+    height: 34px;
+    padding: 0 6px 0 10px;
+    border-bottom: 1px solid var(--border-strong);
     font-size: 12px;
     font-weight: 600;
     color: var(--text-dim);
@@ -515,6 +524,10 @@
   }
 
   .files {
+    flex: 1;
+    min-height: 0;
+    padding: 2px 0;
+    overflow-y: auto;
     outline: none;
   }
 
