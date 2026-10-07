@@ -1,6 +1,6 @@
 // The window: the shell measured from the current app (Shell.swift) in its theme, with the header, activity bars,
-// Changes list, commit box and status bar (UI/). The main area and the Files panel are still placeholders; phase 2
-// replaces them part by part, each checked against swiftui/Reference.
+// Changes list, commit box, Files panel and status bar (UI/). The main area is still a placeholder; phase 2 replaces
+// it next, checked against swiftui/Reference.
 
 import AppKit
 import SwiftUI
@@ -31,7 +31,7 @@ struct ContentView: View {
                 Color.clear
             }
         } files: {
-            Color.clear
+            FilesPanel()
         } rightBar: {
             RightActivityBar()
         } status: {

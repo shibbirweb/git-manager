@@ -64,6 +64,14 @@ final class AppModel: ObservableObject {
         case .success(let snapshot):
             self.snapshot = snapshot
             errorText = nil
+            // The Files panel shows the open folder, toned by its status.
+            let files = FilesModel.shared
+            if let repoPath, files.rootPath != repoPath {
+                Task {
+                    await files.open(rootPath: repoPath)
+                }
+            }
+            files.updateTones(snapshot.status?.files ?? [])
         case .failure(let error):
             snapshot = nil
             errorText = error.message

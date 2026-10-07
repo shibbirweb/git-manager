@@ -209,7 +209,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
-| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a, 2b done (352f6e4); 2c built, waiting for the check |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a to 2c done (24bac1f); 2d built, waiting for the check |
 | 3 First slice | | not started |
 
 Notes:
@@ -240,4 +240,9 @@ Notes:
   commit box. Pixel diff 98.05% (light) and 98.15% (dark). WebKit's own form looks (the #a9a9a9 placeholder, the
   12-point checkbox) are measured constants (WebKitDefaults), as no theme token holds them. Known gap: the heading
   title is cut to "CHA..." where WebKit cuts it to "CH...", same width, different ellipsis rule.
-- Next parts: 2d the Files panel tree, 2e the welcome screen.
+- 2d Files panel (FilesModel.swift, UI/FilesPanel.swift; bridge `list_directories` with the shared FolderLister):
+  the heading with its five buttons, the tree with chevrons, icons and names, folders that open and close, and the
+  status tones (a folder's dot and name take the strongest tone inside it). Pixel diff 98.08% (light) and 98.17%
+  (dark). Not yet: deleted files in the tree (the current app lists them though they are gone from disk), and a
+  file's letter by its exact change (U for untracked) instead of its tone's letter.
+- Next part: 2e the welcome screen.

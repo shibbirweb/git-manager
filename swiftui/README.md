@@ -123,7 +123,7 @@ src-tauri's test helpers.
 | 1b Tokens and layout snapshots (gm-measure tokens, reference) | built, waiting for the check |
 | 2a Window shell: layout, theme colors, title bar | done |
 | 2b Edges: icons, header, activity bars, status bar | done |
-| 2c Changes list and commit box | built, waiting for the check |
-| 2d Files panel tree | not started |
+| 2c Changes list and commit box | done |
+| 2d Files panel tree | built, waiting for the check |
 | 2e Welcome screen | not started |
 | 3 First slice | not started |

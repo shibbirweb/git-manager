@@ -74,6 +74,26 @@ fn get_status_reads_a_repository() {
 }
 
 #[test]
+fn list_directories_lists_folders_first_and_refuses_paths_outside() {
+    let repo = repository("listing");
+    std::fs::create_dir(repo.join("docs")).unwrap();
+    std::fs::write(repo.join("docs/guide.md"), "# Guide\n").unwrap();
+    let args = json!({ "rootPath": repo, "dirPaths": ["", "docs", "../outside"], "repoRoots": [repo] });
+    let reply = call("list_directories", &args.to_string());
+    assert_eq!(reply["ok"], true, "{reply}");
+    let listings = reply["value"].as_array().unwrap();
+    let names = |index: usize| -> Vec<String> {
+        let entries = listings[index]["entries"].as_array().unwrap();
+        entries.iter().map(|entry| entry["name"].as_str().unwrap().to_string()).collect()
+    };
+    // Folders first, then files; .git is not listed.
+    assert_eq!(names(0), ["docs", "a.txt", "b.txt"]);
+    assert_eq!(listings[0]["entries"][0]["isDir"], true);
+    assert_eq!(names(1), ["guide.md"]);
+    assert_eq!(listings[2]["error"], "Invalid path: ../outside");
+}
+
+#[test]
 fn errors_come_back_as_kind_and_message() {
     let plain = temp_dir("plain");
     let not_repo = call("get_status", &json!({ "repoPath": plain }).to_string());
