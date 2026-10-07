@@ -51,6 +51,8 @@ public enum AppLauncher {
         home: String,
         folderPath: String,
         appPath: String,
+        /// Extra settings.json values for the current app, such as ["theme": "dark"].
+        settings extraSettings: [String: Any] = [:],
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -60,7 +62,8 @@ public enum AppLauncher {
         if kind == .current {
             let configDir = (home as NSString).appendingPathComponent(".gitmanager")
             try files.createDirectory(atPath: configDir, withIntermediateDirectories: true)
-            let settings: [String: Any] = ["mcpEnabled": true, "cliEnabled": true, "mcpPort": try freePort()]
+            var settings: [String: Any] = ["mcpEnabled": true, "cliEnabled": true, "mcpPort": try freePort()]
+            settings.merge(extraSettings) { _, extra in extra }
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
         }

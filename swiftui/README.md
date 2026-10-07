@@ -23,6 +23,8 @@ The app's bundle id is `shibbirweb.github.io.gitmanager.native`, so it installs 
 
 ```
 App/Sources/     SwiftUI app (Backend.swift calls the bridge, Control.swift answers the control server)
+  Generated/     Themes.swift, written by gm-measure tokens
+Reference/       layout snapshots of the current app (gm-measure reference)
 App/Bridge/      module map and C header for the bridge
 bridge/          Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
 Tools/           gm-measure: Measure/ (commands), MeasureKit/ (library), Tests/
@@ -74,11 +76,24 @@ cd swiftui
 swift run -c release gm-measure measure --duration 20   # both apps on the docs demo: memory, start time, screenshots
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
+swift run -c release gm-measure tokens                  # writes App/Sources/Generated/Themes.swift (--check: is it up to date)
+swift run -c release gm-measure reference               # what to match: Reference/*.json and build/reference/*.png
 ```
+
+- `tokens` runs the theme catalog (`src/lib/themes/catalog.ts`) with Bun and writes every theme's 73 color tokens
+  to `Generated/Themes.swift`, so SwiftUI colors are never typed by hand. Run it after any theme change; CI fails
+  when the file is out of date.
+- `reference` starts the current app isolated, in light and dark, on the Changes screen and the diff of
+  `src/cart.ts`. For each it writes a layout snapshot to `Reference/<screen>-<mode>.json` (every visible
+  element of the header, activity bars, status bar, changes list, commit box and diff, with its box and
+  computed styles, read with the app's `inspect_elements` tool) and a screenshot to
+  `build/reference/<screen>-<mode>.png` (captured by gm-measure, like `measure` does). Snapshots are committed, so a change to the current UI shows up in
+  review; regenerate them on purpose (the status bar's memory text differs on every run).
 
 `measure` compares the installed `/Applications/Git Manager.app` (or `--current-app <path>`) with the native
 build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `report.json`, both screenshots and
-`diff.png`. The current app's screenshot needs Screen Recording permission for Git Manager.
+`diff.png`. gm-measure captures both windows itself, the same way, so the pixel diff compares like with like;
+that needs Screen Recording permission for the app that runs it (your terminal), once, then a restart of it.
 
 ## Checks
 
@@ -101,7 +116,7 @@ src-tauri's test helpers.
 |---|---|
 | 0 Skeleton: window, bridge, one command (`get_status`) | built, UI checked |
 | 0b Control server: CLI and MCP drive and measure the app | built, waiting for the check |
-| 1a Measuring tools: gm-measure (measure, diff, smoke) and CI | built, waiting for the check |
-| 1b Tokens and layout snapshot | not started |
+| 1a Measuring tools: gm-measure (measure, diff, smoke) and CI | done |
+| 1b Tokens and layout snapshots (gm-measure tokens, reference) | built, waiting for the check |
 | 2 Design foundation | not started |
 | 3 First slice | not started |

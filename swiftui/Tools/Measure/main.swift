@@ -5,6 +5,8 @@
 //                                [--current-app <path>] [--native-app <path>]
 //   swift run gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
 //   swift run gm-measure smoke [--app <path>]
+//   swift run gm-measure tokens [--check]
+//   swift run gm-measure reference [--modes light,dark] [--current-app <path>]
 
 import Foundation
 import MeasureKit
@@ -22,6 +24,8 @@ let usage = """
       gm-measure measure [--duration <s>] [--settle <s>] [--only current|native] [--current-app <path>] [--native-app <path>]
       gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
       gm-measure smoke [--app <path>]
+      gm-measure tokens [--check]
+      gm-measure reference [--modes light,dark] [--current-app <path>]
     """
 
 var arguments = Array(CommandLine.arguments.dropFirst())
@@ -34,6 +38,10 @@ do {
         exit(try Diff.run(arguments))
     case "smoke":
         exit(try await Smoke.run(arguments))
+    case "tokens":
+        exit(try Tokens.run(arguments))
+    case "reference":
+        exit(try await Reference.run(arguments))
     default:
         print(usage)
         exit(2)

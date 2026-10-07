@@ -36,6 +36,9 @@ enum Measure {
             print(usage)
             exit(2)
         }
+        if !WindowCapture.ensureAccess() {
+            print("Screenshots need Screen Recording permission for the app running gm-measure; measuring memory without them.")
+        }
 
         let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
         let outDir = (swiftuiDir as NSString).appendingPathComponent("build/measure/\(stamp)")
@@ -123,15 +126,16 @@ enum Measure {
 
         var screenshotPath: String?
         var screenshotSize: String?
-        let shot = try await app.client.call("take_screenshot")
-        if let png = shot.image {
+        // gm-measure captures both windows itself, the same way, so the pixel diff compares like with like.
+        do {
+            let png = try WindowCapture.capture(pid: app.pid)
             let path = (outDir as NSString).appendingPathComponent("\(kind.rawValue).png")
             try png.write(to: URL(fileURLWithPath: path))
             let image = try RGBAImage.decode(pngData: png)
             screenshotPath = path
             screenshotSize = "\(image.width)x\(image.height)"
-        } else {
-            print("\(kind.rawValue): no screenshot (\(shot.text))")
+        } catch {
+            print("\(kind.rawValue): no screenshot (\(error))")
         }
 
         print("\(kind.rawValue): sampling memory for \(durationS) s")

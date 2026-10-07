@@ -63,15 +63,22 @@ turned on in a throwaway home), so it measures the real windows, not a browser c
    for, the same way `src-tauri/src/memory.rs` does (for the current app that includes WebKit's web content
    and GPU processes). Reports go to `swiftui/build/measure/<time>/`.
 3. **Pixel diff** (`gm-measure diff`): compares two PNGs, prints the share of identical pixels and the box
-   around the differences, and writes a red-overlay image. Both apps' screenshots are the window as the window
-   server draws it, without its shadow. The current app uses `screencapture -o -l`, which needs Screen
-   Recording permission for Git Manager; the native app captures its own window, which needs none.
+   around the differences, and writes a red-overlay image. gm-measure captures both apps' windows itself
+   (`MeasureKit/WindowCapture.swift`): the window as the window server draws it, without its shadow, with the
+   same code for both. That needs Screen Recording permission once for the app that runs gm-measure (the
+   terminal). The current app's own take_screenshot is refused even with permission (most likely its ad-hoc
+   release signing on recent macOS), which also affects users: a separate follow-up.
 4. **Smoke test** (`gm-measure smoke`): starts the built native app on a small test repository and checks
    every control tool. CI runs it on every pull request that touches the native app
    (`.github/workflows/native.yml`).
-5. **Token export and layout snapshot** (part 1b): the theme colors and the boxes, fonts and colors of the
-   current UI's elements, written to JSON for the SwiftUI side. To be built in Swift on the current app's MCP
-   tools (`inspect_elements`, `get_app_state`), so `src/` needs no change.
+5. **Token export** (`gm-measure tokens`, part 1b): runs the theme catalog with Bun (it is TypeScript; the
+   tool runs Bun the way it runs git and open) and writes `swiftui/App/Sources/Generated/Themes.swift`: 42
+   themes, 73 tokens each. CI fails when it is out of date, and runs when `src/lib/themes` changes.
+6. **Layout snapshots** (`gm-measure reference`, part 1b): the current app, isolated, light and dark, on the
+   Changes screen and a diff. Every visible element of each part (header, activity bars, status bar, changes
+   list, commit box, diff) with its box and 30 computed styles, read with the app's `inspect_elements` tool,
+   so `src/` needs no change. Committed as `swiftui/Reference/<screen>-<mode>.json`; screenshots (captured by
+   gm-measure) go to `swiftui/build/reference/`.
 
 ## Folder layout
 
@@ -196,7 +203,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 |---|---|---|---|
 | 0 Skeleton | feat/GM-31-swiftui-skeleton | UI checked | 1.5 MB app; get_status through the bridge |
 | 0b Control server | feat/GM-31-swiftui-skeleton | built, waiting for the check | 22 MB idle vs 350 MB for the current app (not yet a fair scenario) |
-| 1a Measuring tools | feat/GM-31-swiftui-skeleton | built, waiting for the check | Demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen 1.7 s vs 1.0 s |
-| 1b Tokens and layout | | not started | |
+| 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) | Demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen 1.7 s vs 1.0 s |
+| 1b Tokens and layout | feat/GM-31-swiftui-skeleton | built, waiting for the check | Themes.swift 42 themes; snapshots and screenshots of changes and diff, light and dark (window content 1400 x 848); first pixel diff 0.03% identical (native is plain text); memory 142 MB vs 24 MB |
 | 2 Design foundation | | not started | |
 | 3 First slice | | not started | |

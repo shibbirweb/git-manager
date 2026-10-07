@@ -17,6 +17,8 @@ on:
       - "src-tauri/src/askpass.rs"
       - "src-tauri/src/git_console.rs"
       - "src-tauri/src/child_process.rs"
+      # The source of swiftui/App/Sources/Generated/Themes.swift (gm-measure tokens).
+      - "src/lib/themes/**"
   workflow_dispatch:
 
 permissions:
@@ -37,6 +39,11 @@ jobs:
         with:
           workspaces: swiftui/bridge
 
+      # gm-measure tokens runs the theme catalog (TypeScript) with Bun; it needs no packages.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Bridge clippy
         working-directory: swiftui/bridge
         run: cargo clippy --locked --lib --examples --tests -- -D warnings
@@ -51,6 +58,10 @@ jobs:
 
       - name: Swift tests (gm-measure)
         run: swiftui/scripts/test.sh
+
+      - name: Theme tokens are up to date
+        working-directory: swiftui
+        run: swift run -c release gm-measure tokens --check
 
       # Starts the built app on a test repository and checks every control tool end to end.
       - name: Smoke test
