@@ -29,6 +29,9 @@ struct WindowChrome: NSViewRepresentable {
             // apply again once that is done.
             DispatchQueue.main.async { [weak self] in
                 self?.apply()
+                // Like the current app, the window starts with nothing focused (SwiftUI would focus the commit
+                // message).
+                self?.window?.makeFirstResponder(nil)
             }
         }
 

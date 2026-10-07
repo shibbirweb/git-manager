@@ -122,8 +122,8 @@ src-tauri's test helpers.
 | 1a Measuring tools: gm-measure (measure, diff, smoke) and CI | done |
 | 1b Tokens and layout snapshots (gm-measure tokens, reference) | built, waiting for the check |
 | 2a Window shell: layout, theme colors, title bar | done |
-| 2b Edges: icons, header, activity bars, status bar | built, waiting for the check |
-| 2c Changes list and commit box | not started |
+| 2b Edges: icons, header, activity bars, status bar | done |
+| 2c Changes list and commit box | built, waiting for the check |
 | 2d Files panel tree | not started |
 | 2e Welcome screen | not started |
 | 3 First slice | not started |

@@ -1,6 +1,6 @@
-// The window: the shell measured from the current app (Shell.swift) in its theme, with the header, activity bars
-// and status bar (UI/). The Changes list, main area and Files panel are still placeholders; phase 2 replaces
-// them part by part, each checked against swiftui/Reference.
+// The window: the shell measured from the current app (Shell.swift) in its theme, with the header, activity bars,
+// Changes list, commit box and status bar (UI/). The main area and the Files panel are still placeholders; phase 2
+// replaces them part by part, each checked against swiftui/Reference.
 
 import AppKit
 import SwiftUI
@@ -23,9 +23,7 @@ struct ContentView: View {
         } leftBar: {
             LeftActivityBar(changeCount: model.changeCount)
         } sidebar: {
-            statusText
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+            ChangesPanel(status: model.snapshot?.status, errorText: model.errorText)
         } main: {
             EditorArea {
                 Color.clear
@@ -70,64 +68,6 @@ struct ContentView: View {
     /// The header's theme button: switches between light and dark for this app.
     private func toggleAppearance() {
         NSApp.appearance = NSAppearance(named: colorScheme == .dark ? .aqua : .darkAqua)
-    }
-
-    @ViewBuilder
-    private var statusText: some View {
-        if let errorText = model.errorText {
-            Text(errorText)
-                .foregroundStyle(.red)
-                .textSelection(.enabled)
-        } else if let status = model.snapshot?.status {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(headLine(status.head))
-                    .fontWeight(.semibold)
-                Text(status.files.isEmpty ? "No changes" : "\(status.files.count) changed files")
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
-                        ForEach(status.files, id: \.path) { file in
-                            Text("\(statusLetters(file))  \(file.path)")
-                                .font(.system(size: 12, design: .monospaced))
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-            .textSelection(.enabled)
-        } else if model.repoPath == nil {
-            Text("Open a folder with a git repository to see its status.")
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private func headLine(_ head: HeadInfo) -> String {
-        var line = head.unborn ? "No commits yet" : (head.branch ?? "Detached at \(head.shortId ?? "?")")
-        if head.ahead > 0 {
-            line += "  \(head.ahead) ahead"
-        }
-        if head.behind > 0 {
-            line += "  \(head.behind) behind"
-        }
-        return line
-    }
-
-    private func statusLetters(_ file: FileStatus) -> String {
-        if file.conflicted {
-            return "C "
-        }
-        return "\(letter(file.staged))\(letter(file.unstaged))"
-    }
-
-    private func letter(_ changeKind: String?) -> String {
-        switch changeKind {
-        case "added": return "A"
-        case "modified": return "M"
-        case "deleted": return "D"
-        case "renamed": return "R"
-        case "typechange": return "T"
-        case "untracked": return "U"
-        default: return "."
-        }
     }
 
     private func chooseFolder() {

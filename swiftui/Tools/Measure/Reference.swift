@@ -40,6 +40,7 @@ enum Reference {
 
     static let screens = [
         Screen(name: "changes", parts: chrome + [
+            Part(name: "changes head", selector: ".sidebar .head, .sidebar .head *"),
             Part(name: "repository header", selector: ".repo-header, .repo-header *"),
             Part(name: "group headers", selector: ".group-header, .group-header *"),
             Part(name: "file rows", selector: ".sidebar .row, .sidebar .row *"),

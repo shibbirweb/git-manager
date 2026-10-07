@@ -209,7 +209,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
-| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a done (db76a0c); 2b built, waiting for the check |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a, 2b done (352f6e4); 2c built, waiting for the check |
 | 3 First slice | | not started |
 
 Notes:
@@ -235,4 +235,9 @@ Notes:
   (light) and 97.83% (dark). Disabled buttons use 40% opacity without SwiftUI's .disabled(), which dimmed them a
   second time. gm-measure brings each app to the front before capturing, as macOS stops painting a covered web
   view. The status bar follows the installed release (the word "Memory"), not the GM-26 icon on develop.
-- Next parts: 2c the Changes list and commit box, 2d the Files panel tree, 2e the welcome screen.
+- 2c Changes list and commit box (UI/ChangesPanel.swift, FileRows.swift, CommitBox.swift): the heading with its
+  count and repository actions, the Staged and Changes groups, the rows with their status letter colors, and the
+  commit box. Pixel diff 98.05% (light) and 98.15% (dark). WebKit's own form looks (the #a9a9a9 placeholder, the
+  12-point checkbox) are measured constants (WebKitDefaults), as no theme token holds them. Known gap: the heading
+  title is cut to "CHA..." where WebKit cuts it to "CH...", same width, different ellipsis rule.
+- Next parts: 2d the Files panel tree, 2e the welcome screen.

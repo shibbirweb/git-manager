@@ -31,6 +31,21 @@ struct Theme {
         Theme.parse(tokens[tokenName] ?? "") ?? .clear
     }
 
+    /// CSS color-mix(in srgb, first weight%, second): the channels mixed as numbers, like the browser does.
+    func mix(_ first: String, _ weight: Double, _ second: String) -> Color {
+        guard let one = Theme.parse(tokens[first] ?? ""), let two = Theme.parse(tokens[second] ?? "") else {
+            return .clear
+        }
+        let channel = { (left: CGFloat, right: CGFloat) in left * weight + right * (1 - weight) }
+        let mixed = NSColor(
+            displayP3Red: channel(one.redComponent, two.redComponent),
+            green: channel(one.greenComponent, two.greenComponent),
+            blue: channel(one.blueComponent, two.blueComponent),
+            alpha: channel(one.alphaComponent, two.alphaComponent)
+        )
+        return Color(nsColor: mixed)
+    }
+
     /// The token as a color-managed sRGB color, for what macOS itself draws in the current app: its title bar
     /// comes from the window's sRGB background and is converted (#1e1f22 shows as #1e1f21), unlike the web view.
     func systemColor(_ tokenName: String) -> Color {
