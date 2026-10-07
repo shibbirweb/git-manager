@@ -9,6 +9,7 @@ open the file for the part you are doing.
 | [docs-and-screenshots.md](docs-and-screenshots.md) | The wiki pages, developer chapters and screenshots we did not write yet |
 | [screenshots-to-retake.txt](screenshots-to-retake.txt) | The screenshot list from the earlier editor change (49 retaken, the rest still to take) |
 | [windows-release.md](windows-release.md) | The Windows audit: what is ready, the blockers, and the work in order |
+| [swiftui-experiment.md](swiftui-experiment.md) | A second Mac app with a pixel-identical SwiftUI UI over the same Rust backend, built in `swiftui/` beside the current app, to measure memory and look |
 | [doc-notes/](doc-notes/) | One note per feature, written by the agent that built it: pages to add or change, mermaid ideas, settings lines, "Bugs we fixed" drafts, screenshots |
 
 ## How to resume

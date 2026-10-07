@@ -1,0 +1,11 @@
+// The Rust bridge (swiftui/bridge) and the system libraries its static library needs
+// (from `cargo rustc --release -- --print native-static-libs`).
+module GMBridge [system] {
+    header "gm_bridge.h"
+    link "gm_bridge"
+    link "iconv"
+    link "z"
+    link framework "Security"
+    link framework "CoreFoundation"
+    export *
+}

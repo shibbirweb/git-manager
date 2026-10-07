@@ -1,0 +1,5 @@
+# Build output of the SwiftUI experiment (see docs/plans/swiftui-experiment.md).
+/bridge/target
+/.build
+/.swiftpm
+/build

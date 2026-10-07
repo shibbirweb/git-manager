@@ -1,0 +1,41 @@
+[package]
+name = "gm-bridge"
+version = "0.1.0"
+description = "C entry points over the Git Manager backend for the SwiftUI app"
+edition = "2021"
+publish = false
+
+# Its own workspace: src-tauri's `cargo test --workspace`, clippy and CI never build this crate.
+[workspace]
+
+[lib]
+name = "gm_bridge"
+# rlib too, so examples/call.rs can run commands from the terminal.
+crate-type = ["staticlib", "rlib"]
+# The shared modules carry their own unit tests, which need src-tauri's test_support and already
+# run there (cargo test --workspace in src-tauri), so they are not built here.
+test = false
+doctest = false
+
+# The dependencies of the shared backend modules (src/lib.rs), at src-tauri's versions.
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2.0.21"
+imara-diff = "0.2.0"
+git2 = { version = "0.21.0", default-features = false }
+getrandom = "0.3"
+dunce = "1.0.5"
+memchr = "2.7.4"
+# The screenshot tool's PNG, sent as base64 like the current app does.
+base64 = "0.22"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+# Small and fast like the Tauri app, but panics unwind so gm_call can turn one into an error.
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
