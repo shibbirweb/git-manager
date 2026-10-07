@@ -124,6 +124,6 @@ src-tauri's test helpers.
 | 2a Window shell: layout, theme colors, title bar | done |
 | 2b Edges: icons, header, activity bars, status bar | done |
 | 2c Changes list and commit box | done |
-| 2d Files panel tree | built, waiting for the check |
-| 2e Welcome screen | not started |
+| 2d Files panel tree | done |
+| 2e Welcome screen, exact color conversion | built, waiting for the check |
 | 3 First slice | not started |

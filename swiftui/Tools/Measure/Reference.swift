@@ -45,6 +45,7 @@ enum Reference {
             Part(name: "group headers", selector: ".group-header, .group-header *"),
             Part(name: "file rows", selector: ".sidebar .row, .sidebar .row *"),
             Part(name: "commit box", selector: ".commit-box, .commit-box *"),
+            Part(name: "nav strip", selector: ".nav-strip, .nav-strip *"),
             Part(name: "main area", selector: ".empty, .empty *"),
         ]),
         Screen(name: "diff", parts: chrome + [

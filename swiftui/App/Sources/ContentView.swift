@@ -1,6 +1,6 @@
-// The window: the shell measured from the current app (Shell.swift) in its theme, with the header, activity bars,
-// Changes list, commit box, Files panel and status bar (UI/). The main area is still a placeholder; phase 2 replaces
-// it next, checked against swiftui/Reference.
+// The window: the shell measured from the current app (Shell.swift) in its theme, with every part of the Changes
+// screen (UI/): header, activity bars, Changes list, commit box, welcome screen, Files panel and status bar, each
+// matched against swiftui/Reference.
 
 import AppKit
 import SwiftUI
@@ -26,9 +26,11 @@ struct ContentView: View {
             ChangesPanel(status: model.snapshot?.status, errorText: model.errorText)
         } main: {
             EditorArea {
-                Color.clear
+                if model.repoPath != nil {
+                    RepoCrumb(name: model.folderName, hasChanges: model.changeCount > 0)
+                }
             } content: {
-                Color.clear
+                WelcomeView(title: model.folderName)
             }
         } files: {
             FilesPanel()

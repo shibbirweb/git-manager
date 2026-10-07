@@ -209,7 +209,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
-| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a to 2c done (24bac1f); 2d built, waiting for the check |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a to 2d done (ea3882b); 2e built, waiting for the check |
 | 3 First slice | | not started |
 
 Notes:
@@ -225,9 +225,8 @@ Notes:
 - 2a window shell: the native window has the current app's layout (header 42, activity bars 44, sidebars 260,
   1-point gaps, main area with its 28-point breadcrumb strip and line, status bar 24) and colors, and its title
   bar (--bg, 32 points, no separator). Pixel diff against the current app, contents still missing: 97.6% (light)
-  and 97.68% (dark) identical. Colors are given as Display P3 values: the current app's web view hands CSS
-  colors to the display unconverted, so sRGB colors came out one step off (#25272a as #262729); only the title
-  bar, which macOS draws in both apps, uses the converted sRGB color. The Files panel is in the shell; its tree
+  and 97.68% (dark) identical. Colors: see 2e (the first finding here, that WebKit passes colors unconverted,
+  was wrong; it held only for near-grays). The Files panel is in the shell; its tree
   comes with the components.
 - 2b edges: the 76 icons generated from src/lib/ui/icons.ts (`gm-measure icons`, checked in CI) and drawn from their
   SVG paths (UI/SVGPath.swift, SVGArc.swift, Icon.swift); the header, both activity bars and the status bar
@@ -245,4 +244,11 @@ Notes:
   status tones (a folder's dot and name take the strongest tone inside it). Pixel diff 98.08% (light) and 98.17%
   (dark). Not yet: deleted files in the tree (the current app lists them though they are gone from disk), and a
   file's letter by its exact change (U for untracked) instead of its tone's letter.
-- Next part: 2e the welcome screen.
+- 2e welcome screen (UI/WelcomeView.swift): the breadcrumb crumb, the logo tile, the folder name and the six
+  actions with their shortcuts. Colors corrected (CSSColor.swift): WebKit converts each sRGB color to Display P3
+  with exact math and rounds to 8 bits (#3574f0 shows as #4573e8; near-grays stay as written), and blends
+  translucent colors after that conversion. The native app does the same conversion and hands macOS the rounded
+  Display P3 value; macOS's own conversion rounded some colors one step off. The title bar alone keeps macOS's
+  conversion, as macOS draws it in both apps. Pixel diff with every part of the Changes screen: 98.23% (light) and
+  98.59% (dark); with tolerance 1, 98.9% and 98.93%. What remains is the edges of text and icons: glyph
+  anti-aliasing and sub-point text positions, the next topic (Core Text layout matching the browser's).
