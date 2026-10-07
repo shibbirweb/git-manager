@@ -1,0 +1,5 @@
+{
+  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront", "elements": [], "limit": 100,
+  "mode": "dark", "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "repository header", "piece": "1 of 1", "screen": "changes", "selector": ".repo-header, .repo-header *"
+}

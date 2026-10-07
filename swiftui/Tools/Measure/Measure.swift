@@ -1,116 +1,76 @@
-// gm-measure measure: the side-by-side scenario. Both apps, one after the other, do the same steps
-// on a fresh copy of the docs demo (scripts/make-docs-demo.sh): start isolated on acme/storefront,
-// wait until its status is on screen, settle, screenshot, sample memory, quit. Steps the native
-// app cannot do yet (open files, scroll, diffs) join the scenario for both apps as it learns them.
-// Writes swiftui/build/measure/<time>/report.md, report.json, both screenshots and their diff.
+// gm-measure measure: the side-by-side scenario. Both apps, one after the other, do the same steps on a fresh
+// copy of the docs demo (scripts/make-docs-demo.sh): start isolated on acme/storefront, wait until its status is
+// on screen, settle, screenshot, sample memory, quit. Steps the native app cannot do yet (open files, scroll,
+// diffs) join the scenario for both apps as it learns them. Writes swiftui/build/measure/<time>/report.md,
+// report.json, both screenshots and their pixel diff (MeasureReport.swift).
 
 import Foundation
 import MeasureKit
 
 enum Measure {
-    struct AppReport {
-        let kind: AppKind
-        let appPath: String
-        let name: String
-        let version: String
-        let serverMs: Int
-        let readyMs: Int
-        let screenshotPath: String?
-        let screenshotSize: String?
-        let avgMb: Double
-        let minMb: Double
-        let maxMb: Double
-        let approximate: Bool
-        /// Label without the pid, then average and peak MB.
-        let processes: [(label: String, avgMb: Double, maxMb: Double)]
+    struct Options {
+        var durationS = 20
+        var settleS = 5
+        var mode = "light"
     }
 
     static func run(_ arguments: [String]) async throws {
         var arguments = arguments
-        let durationS = min(60, max(1, Int(option("--duration", in: &arguments) ?? "20") ?? 20))
-        let settleS = max(0, Int(option("--settle", in: &arguments) ?? "5") ?? 5)
+        var options = Options()
+        options.durationS = min(60, max(1, Int(option("--duration", in: &arguments) ?? "20") ?? 20))
+        options.settleS = max(0, Int(option("--settle", in: &arguments) ?? "5") ?? 5)
+        options.mode = option("--mode", in: &arguments) ?? "light"
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
-        let currentApp = option("--current-app", in: &arguments)
-        let nativeApp = option("--native-app", in: &arguments)
-        guard arguments.isEmpty else {
+        let appPaths: [AppKind: String?] = [
+            .current: option("--current-app", in: &arguments),
+            .native: option("--native-app", in: &arguments),
+        ]
+        guard arguments.isEmpty, options.mode == "light" || options.mode == "dark" else {
             print(usage)
             exit(2)
         }
         if !WindowCapture.ensureAccess() {
-            print("Screenshots need Screen Recording permission for the app running gm-measure; measuring memory without them.")
+            print("Screenshots need Screen Recording permission (\(Reference.permissionHint)); measuring without.")
         }
 
         let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
         let outDir = (swiftuiDir as NSString).appendingPathComponent("build/measure/\(stamp)")
         try FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
         let workDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-measure-\(stamp)")
+        let folderPath = try buildDemo(in: workDir)
+
+        var reports: [MeasureReport.App] = []
+        for kind in only.map({ [$0] }) ?? AppKind.allCases {
+            let appPath = (appPaths[kind] ?? nil) ?? AppLauncher.defaultAppPath(kind, swiftuiDir: swiftuiDir)
+            reports.append(try await measure(
+                kind, appPath: appPath, workDir: workDir, folderPath: folderPath, outDir: outDir, options: options
+            ))
+        }
+        try MeasureReport.write(reports, stamp: stamp, options: options, outDir: outDir)
+    }
+
+    /// Builds the docs demo in `workDir`/demo and returns its acme/storefront repository.
+    static func buildDemo(in workDir: String) throws -> String {
         let demoDir = (workDir as NSString).appendingPathComponent("demo")
         print("Building the demo in \(demoDir) ...")
-        let demo = try AppLauncher.run("/bin/bash", [(repoRoot as NSString).appendingPathComponent("scripts/make-docs-demo.sh"), demoDir])
+        let script = (repoRoot as NSString).appendingPathComponent("scripts/make-docs-demo.sh")
+        let demo = try AppLauncher.run("/bin/bash", [script, demoDir])
         if demo.status != 0 {
             throw ToolError("The demo did not build:\n\(demo.output)")
         }
-        let folderPath = (demoDir as NSString).appendingPathComponent("acme/storefront")
-
-        var reports: [AppReport] = []
-        for kind in only.map({ [$0] }) ?? AppKind.allCases {
-            let appPath = (kind == .current ? currentApp : nativeApp) ?? AppLauncher.defaultAppPath(kind, swiftuiDir: swiftuiDir)
-            reports.append(try await measure(kind, appPath: appPath, workDir: workDir, folderPath: folderPath, outDir: outDir, durationS: durationS, settleS: settleS))
-        }
-
-        var diffLine = "Pixel diff: needs both screenshots."
-        var diffJSON: [String: Any] = [:]
-        if let current = reports.first(where: { $0.kind == .current })?.screenshotPath,
-           let native = reports.first(where: { $0.kind == .native })?.screenshotPath {
-            let result = diffImages(try RGBAImage.load(path: current), try RGBAImage.load(path: native))
-            try result.overlay.write(path: (outDir as NSString).appendingPathComponent("diff.png"))
-            diffLine = "Pixel diff: \(Diff.describe(result, tolerance: 0)). Overlay: diff.png."
-            diffJSON = ["identicalPercent": result.identicalPercent, "sizeMismatch": result.sizeMismatch ?? NSNull(), "differentPixels": result.differentPixels]
-        }
-
-        let markdown = render(reports, stamp: stamp, durationS: durationS, settleS: settleS, diffLine: diffLine)
-        try markdown.write(toFile: (outDir as NSString).appendingPathComponent("report.md"), atomically: true, encoding: .utf8)
-        let json: [String: Any] = [
-            "stamp": stamp,
-            "durationS": durationS,
-            "settleS": settleS,
-            "apps": reports.map { report in
-                [
-                    "kind": report.kind.rawValue,
-                    "appPath": report.appPath,
-                    "name": report.name,
-                    "version": report.version,
-                    "serverMs": report.serverMs,
-                    "readyMs": report.readyMs,
-                    "screenshotSize": report.screenshotSize ?? NSNull(),
-                    "avgMb": report.avgMb,
-                    "minMb": report.minMb,
-                    "maxMb": report.maxMb,
-                    "approximate": report.approximate,
-                    "processes": Dictionary(uniqueKeysWithValues: report.processes.map { ($0.label, ["avgMb": $0.avgMb, "maxMb": $0.maxMb]) }),
-                ] as [String: Any]
-            },
-            "pixelDiff": diffJSON,
-        ]
-        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
-        try jsonData.write(to: URL(fileURLWithPath: (outDir as NSString).appendingPathComponent("report.json")))
-        print("\n\(markdown)\nSaved in \(outDir)")
+        return (demoDir as NSString).appendingPathComponent("acme/storefront")
     }
 
     static func measure(
-        _ kind: AppKind,
-        appPath: String,
-        workDir: String,
-        folderPath: String,
-        outDir: String,
-        durationS: Int,
-        settleS: Int
-    ) async throws -> AppReport {
+        _ kind: AppKind, appPath: String, workDir: String, folderPath: String, outDir: String, options: Options
+    ) async throws -> MeasureReport.App {
         print("\(kind.rawValue): starting \(appPath)")
         let home = (workDir as NSString).appendingPathComponent("\(kind.rawValue)-home")
-        let app = try await AppLauncher.launch(kind: kind, home: home, folderPath: folderPath, appPath: appPath)
+        let app = try await AppLauncher.launch(
+            kind: kind, home: home, folderPath: folderPath, appPath: appPath, mode: options.mode
+        )
         do {
-            let report = try await steps(app, appPath: appPath, outDir: outDir, durationS: durationS, settleS: settleS)
+            let report = try await steps(app, appPath: appPath, outDir: outDir, options: options)
             await app.stop()
             return report
         } catch {
@@ -119,10 +79,12 @@ enum Measure {
         }
     }
 
-    private static func steps(_ app: RunningApp, appPath: String, outDir: String, durationS: Int, settleS: Int) async throws -> AppReport {
+    private static func steps(
+        _ app: RunningApp, appPath: String, outDir: String, options: Options
+    ) async throws -> MeasureReport.App {
         let kind = app.kind
         let info = try await app.client.call("get_app_info").structured ?? [:]
-        try await Task.sleep(nanoseconds: UInt64(settleS) * 1_000_000_000)
+        try await Task.sleep(nanoseconds: UInt64(options.settleS) * 1_000_000_000)
 
         var screenshotPath: String?
         var screenshotSize: String?
@@ -138,8 +100,12 @@ enum Measure {
             print("\(kind.rawValue): no screenshot (\(error))")
         }
 
-        print("\(kind.rawValue): sampling memory for \(durationS) s")
-        let sample = try await app.client.call("sample_memory", ["durationMs": durationS * 1000, "intervalMs": 500], timeout: TimeInterval(durationS + 30))
+        print("\(kind.rawValue): sampling memory for \(options.durationS) s")
+        let sample = try await app.client.call(
+            "sample_memory",
+            ["durationMs": options.durationS * 1000, "intervalMs": 500],
+            timeout: TimeInterval(options.durationS + 30)
+        )
         let memory = sample.structured ?? [:]
         let total = memory["total"] as? [String: Any] ?? [:]
         let processes = (memory["processes"] as? [String: [String: Any]] ?? [:])
@@ -151,7 +117,7 @@ enum Measure {
                 )
             }
             .sorted { $0.avgMb > $1.avgMb }
-        return AppReport(
+        return MeasureReport.App(
             kind: kind,
             appPath: appPath,
             name: info["name"] as? String ?? (kind == .current ? "Git Manager" : "Git Manager Native"),
@@ -166,33 +132,5 @@ enum Measure {
             approximate: memory["approximate"] as? Bool ?? true,
             processes: processes
         )
-    }
-
-    static func render(_ apps: [AppReport], stamp: String, durationS: Int, settleS: Int, diffLine: String) -> String {
-        func row(_ title: String, _ value: (AppReport) -> String) -> String {
-            "| \(title) | " + apps.map(value).joined(separator: " | ") + " |"
-        }
-        var lines = [
-            "# Side by side: \(stamp)",
-            "",
-            "Scenario: open demo/acme/storefront, wait until its status is on screen, settle \(settleS) s, screenshot, sample memory for \(durationS) s (every 0.5 s).",
-            "",
-            "| | " + apps.map { "\($0.name) \($0.version)" }.joined(separator: " | ") + " |",
-            "|---|" + apps.map { _ in "---" }.joined(separator: "|") + "|",
-            row("Server answers") { "\($0.serverMs) ms" },
-            row("Status on screen") { "\($0.readyMs) ms" },
-            row("Memory, average") { "\($0.avgMb) MB" },
-            row("Memory, min to peak") { "\($0.minMb) to \($0.maxMb) MB" },
-            row("Measured exactly") { $0.approximate ? "no (helpers matched by start time)" : "yes" },
-            row("Screenshot") { $0.screenshotSize ?? "none" },
-            "",
-            "Memory by process (average / peak):",
-            "",
-        ]
-        for app in apps {
-            lines.append("- \(app.name): " + app.processes.map { "\($0.label) \($0.avgMb) / \($0.maxMb) MB" }.joined(separator: ", "))
-        }
-        lines.append(contentsOf: ["", diffLine, ""])
-        return lines.joined(separator: "\n")
     }
 }

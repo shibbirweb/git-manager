@@ -19,7 +19,8 @@ public enum WindowCapture {
 
     /// The largest normal window of `pid` (menu bar extras and panels are smaller).
     public static func mainWindowID(pid: Int32) -> CGWindowID? {
-        let list = CGWindowListCopyWindowInfo([.optionAll, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        let info = CGWindowListCopyWindowInfo([.optionAll, .excludeDesktopElements], kCGNullWindowID)
+        let list = info as? [[String: Any]] ?? []
         let windows = list.compactMap { window -> (id: CGWindowID, area: CGFloat)? in
             guard (window[kCGWindowOwnerPID as String] as? Int32) == pid,
                   (window[kCGWindowLayer as String] as? Int) == 0,
@@ -38,7 +39,10 @@ public enum WindowCapture {
     public static func capture(pid: Int32) throws -> Data {
         // Without the permission macOS still returns an image, just without the window in it.
         guard CGPreflightScreenCaptureAccess() else {
-            throw ToolError("No Screen Recording permission. Allow the app that runs gm-measure (your terminal) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart it.")
+            throw ToolError(
+                "No Screen Recording permission. Allow the app that runs gm-measure (your terminal) in System "
+                    + "Settings > Privacy & Security > Screen & System Audio Recording, then restart it."
+            )
         }
         // A window being redrawn or replaced can fail once; find it again and retry.
         var lastWindowID: CGWindowID?
@@ -50,12 +54,14 @@ public enum WindowCapture {
                 continue
             }
             lastWindowID = windowID
-            if let image = CGWindowListCreateImage(.null, .optionIncludingWindow, windowID, [.boundsIgnoreFraming, .bestResolution]),
+            let options: CGWindowImageOption = [.boundsIgnoreFraming, .bestResolution]
+            if let image = CGWindowListCreateImage(.null, .optionIncludingWindow, windowID, options),
                image.width > 1 {
                 return try pngData(image)
             }
         }
-        throw ToolError(lastWindowID.map { "Could not capture window \($0) of process \(pid)" } ?? "No window of process \(pid)")
+        let reason = lastWindowID.map { "Could not capture window \($0) of process \(pid)" }
+        throw ToolError(reason ?? "No window of process \(pid)")
     }
 
     /// The image as PNG with its own color profile (the display's), unchanged.

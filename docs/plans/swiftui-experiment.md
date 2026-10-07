@@ -34,13 +34,17 @@ Mostly yes, if we draw our own controls instead of using the stock ones. What he
 
 What makes it hard, and how we handle it:
 
-| Area | Problem | Plan |
-|---|---|---|
-| Text layout | SwiftUI `Text` picks its own line height, baseline and kerning | Draw text with Core Text (`CTLine`) in custom views with CSS's line-height rules; use SwiftUI `Text` only where a test shows it matches |
-| Controls | Stock buttons, fields, lists, scrollbars and focus rings look like AppKit | Custom-drawn components (button, input, checkbox, select, list row, tree, tabs, split handle, overlay scrollbar, tooltip, menu, dialog, toast) |
-| Code editor | No CodeMirror in Swift | Custom editor on TextKit 2 (or STTextView), with tree-sitter for syntax and our `tok-*` colors; built in its own phase |
-| Terminal | No xterm.js | SwiftTerm, themed with our `--term-*` tokens |
-| Icons | `src/lib/ui/icons.ts` holds 76 SVG icons, plus file icon sets | Generate Swift `Path` code (or PDF assets) from the same SVG data with a script |
+- **Text layout.** SwiftUI `Text` picks its own line height, baseline and kerning. Plan: draw text with Core
+  Text (`CTLine`) in custom views with CSS's line-height rules; use SwiftUI `Text` only where a test shows it
+  matches.
+- **Controls.** Stock buttons, fields, lists, scrollbars and focus rings look like AppKit. Plan: custom-drawn
+  components (button, input, checkbox, select, list row, tree, tabs, split handle, overlay scrollbar, tooltip,
+  menu, dialog, toast).
+- **Code editor.** There is no CodeMirror in Swift. Plan: a custom editor on TextKit 2 (or STTextView), with
+  tree-sitter for syntax and our `tok-*` colors, built in its own phase.
+- **Terminal.** There is no xterm.js. Plan: SwiftTerm, themed with our `--term-*` tokens.
+- **Icons.** `src/lib/ui/icons.ts` holds 76 SVG icons, plus file icon sets. Plan: generate Swift `Path` code (or
+  PDF assets) from the same SVG data with the tool.
 
 **Target we can test:** layout boxes equal to the pixel, colors exact, and at least 99.5 percent of pixels
 identical on every reference screen. Text edges may still differ by a pixel or two of antialiasing; the diff
@@ -199,11 +203,29 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 
 ## Status
 
-| Phase | Branch | State | Notes |
-|---|---|---|---|
-| 0 Skeleton | feat/GM-31-swiftui-skeleton | UI checked | 1.5 MB app; get_status through the bridge |
-| 0b Control server | feat/GM-31-swiftui-skeleton | built, waiting for the check | 22 MB idle vs 350 MB for the current app (not yet a fair scenario) |
-| 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) | Demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen 1.7 s vs 1.0 s |
-| 1b Tokens and layout | feat/GM-31-swiftui-skeleton | built, waiting for the check | Themes.swift 42 themes; snapshots and screenshots of changes and diff, light and dark (window content 1400 x 848); first pixel diff 0.03% identical (native is plain text); memory 142 MB vs 24 MB |
-| 2 Design foundation | | not started | |
-| 3 First slice | | not started | |
+| Phase | Branch | State |
+|---|---|---|
+| 0 Skeleton | feat/GM-31-swiftui-skeleton | done (d4ec236) |
+| 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
+| 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
+| 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | in progress: 2a window shell |
+| 3 First slice | | not started |
+
+Notes:
+
+- 0: the app is 1.5 MB; get_status goes through the bridge.
+- 0b: 22 MB idle against 350 MB for the current app (not yet a fair scenario).
+- 1a: demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen
+  1.7 s against 1.0 s.
+- 1b: 42 generated themes; snapshots and screenshots of the Changes and diff screens, light and dark (window
+  content 1400 x 848); first pixel diff 0.03% identical, as the native window was still plain text.
+- Line standard (2026-10-07): every file at most 120 columns and 300 lines, generated data included;
+  `swiftui/scripts/check-lines.sh` checks it in CI.
+- 2a window shell: the native window has the current app's layout (header 42, activity bars 44, sidebars 260,
+  1-point gaps, main area with its 28-point breadcrumb strip and line, status bar 24) and colors, and its title
+  bar (--bg, 32 points, no separator). Pixel diff against the current app, contents still missing: 97.6% (light)
+  and 97.68% (dark) identical. Colors are given as Display P3 values: the current app's web view hands CSS
+  colors to the display unconverted, so sRGB colors came out one step off (#25272a as #262729); only the title
+  bar, which macOS draws in both apps, uses the converted sRGB color. The Files panel is in the shell; its tree
+  comes with the components.

@@ -110,7 +110,8 @@ fn post(port: u16, token: Option<&str>, body: &Value) -> (u16, Value) {
     let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
     let body = body.to_string();
     let auth = token.map(|token| format!("Authorization: Bearer {token}\r\n")).unwrap_or_default();
-    write!(stream, "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n{auth}Content-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}", body.len()).unwrap();
+    let head = format!("POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n{auth}Content-Type: application/json");
+    write!(stream, "{head}\r\nContent-Length: {}\r\n\r\n{body}", body.len()).unwrap();
     let mut response = String::new();
     stream.read_to_string(&mut response).unwrap();
     let status: u16 = response.split_whitespace().nth(1).unwrap().parse().unwrap();
@@ -133,7 +134,8 @@ fn control_server_answers_like_the_current_app() {
     assert!(port > 0);
     let port = port as u16;
 
-    let file: Value = serde_json::from_str(&std::fs::read_to_string(home.join(".gitmanager-native/.gitmanager/mcp.json")).unwrap()).unwrap();
+    let server_file = std::fs::read_to_string(home.join(".gitmanager-native/.gitmanager/mcp.json")).unwrap();
+    let file: Value = serde_json::from_str(&server_file).unwrap();
     assert_eq!(file["port"], port);
     assert_eq!(file["pid"], std::process::id());
     let token = file["token"].as_str().unwrap();
@@ -149,7 +151,8 @@ fn control_server_answers_like_the_current_app() {
     assert_eq!(init["result"]["_meta"]["gitManager/cliEnabled"], true);
 
     let (_, list) = post(port, Some(token), &rpc("tools/list", json!({})));
-    let names: Vec<&str> = list["result"]["tools"].as_array().unwrap().iter().map(|tool| tool["name"].as_str().unwrap()).collect();
+    let tools = list["result"]["tools"].as_array().unwrap();
+    let names: Vec<&str> = tools.iter().map(|tool| tool["name"].as_str().unwrap()).collect();
     assert_eq!(names, ["get_app_info", "app", "git_status", "get_memory_usage", "sample_memory", "take_screenshot"]);
 
     // git_status without repoPath asks the window which folder is open.
@@ -157,14 +160,15 @@ fn control_server_answers_like_the_current_app() {
     assert_eq!(status["result"]["isError"], false, "{status}");
     assert_eq!(status["result"]["structuredContent"]["files"].as_array().unwrap().len(), 2);
 
-    let (_, memory) = post(port, Some(token), &rpc("tools/call", json!({ "name": "get_memory_usage", "arguments": {} })));
+    let call = |name: &str, arguments: Value| rpc("tools/call", json!({ "name": name, "arguments": arguments }));
+    let (_, memory) = post(port, Some(token), &call("get_memory_usage", json!({})));
     assert!(memory["result"]["structuredContent"]["totalBytes"].as_u64().unwrap() > 0);
     assert_eq!(memory["result"]["structuredContent"]["processes"][0]["label"], "Git Manager Native (app)");
 
     let (_, unknown) = post(port, Some(token), &rpc("tools/call", json!({ "name": "nope", "arguments": {} })));
     assert_eq!(unknown["result"]["isError"], true);
 
-    let (_, refused) = post(port, Some(token), &rpc("tools/call", json!({ "name": "app", "arguments": { "action": "open_folder" } })));
+    let (_, refused) = post(port, Some(token), &call("app", json!({ "action": "open_folder" })));
     assert_eq!(refused["result"]["isError"], true);
 
     let (_, method) = post(port, Some(token), &rpc("no/such/method", json!({})));

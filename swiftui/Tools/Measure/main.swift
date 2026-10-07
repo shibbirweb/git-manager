@@ -1,7 +1,7 @@
 // gm-measure: drives and measures Git Manager and Git Manager Native from the outside
 // (docs/plans/swiftui-experiment.md).
 //
-//   swift run gm-measure measure [--duration <s>] [--settle <s>] [--only current|native]
+//   swift run gm-measure measure [--mode light|dark] [--duration <s>] [--settle <s>] [--only current|native]
 //                                [--current-app <path>] [--native-app <path>]
 //   swift run gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
 //   swift run gm-measure smoke [--app <path>]
@@ -21,7 +21,8 @@ let repoRoot = (swiftuiDir as NSString).deletingLastPathComponent
 
 let usage = """
     Usage:
-      gm-measure measure [--duration <s>] [--settle <s>] [--only current|native] [--current-app <path>] [--native-app <path>]
+      gm-measure measure [--mode light|dark] [--duration <s>] [--settle <s>] [--only current|native]
+                         [--current-app <path>] [--native-app <path>]
       gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
       gm-measure smoke [--app <path>]
       gm-measure tokens [--check]

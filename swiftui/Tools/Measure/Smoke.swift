@@ -1,6 +1,6 @@
-// gm-measure smoke: starts the built native app on a small test repository and checks every
-// control tool end to end. CI runs it after the build (.github/workflows/native.yml).
-// Exit code 0 when every check passes, 1 otherwise.
+// gm-measure smoke: starts the built native app on a small test repository and checks every control tool end
+// to end. CI runs it after the build (.github/workflows/native.yml). Exit code 0 when every check passes, 1
+// otherwise.
 
 import Foundation
 import MeasureKit
@@ -8,16 +8,19 @@ import MeasureKit
 enum Smoke {
     static func run(_ arguments: [String]) async throws -> Int32 {
         var arguments = arguments
-        let appPath = option("--app", in: &arguments) ?? AppLauncher.defaultAppPath(.native, swiftuiDir: swiftuiDir)
+        let appPath = option("--app", in: &arguments)
+            ?? AppLauncher.defaultAppPath(.native, swiftuiDir: swiftuiDir)
         guard arguments.isEmpty else {
             print(usage)
             return 2
         }
-        let workDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-smoke-\(ProcessInfo.processInfo.processIdentifier)")
+        let processID = ProcessInfo.processInfo.processIdentifier
+        let workDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-smoke-\(processID)")
         let repoPath = (workDir as NSString).appendingPathComponent("repo")
         try makeRepository(at: repoPath)
 
-        let app = try await AppLauncher.launch(kind: .native, home: (workDir as NSString).appendingPathComponent("home"), folderPath: repoPath, appPath: appPath)
+        let home = (workDir as NSString).appendingPathComponent("home")
+        let app = try await AppLauncher.launch(kind: .native, home: home, folderPath: repoPath, appPath: appPath)
         var failures = 0
         func check(_ name: String, _ passed: Bool, _ detail: String = "") {
             print("\(passed ? "PASS" : "FAIL")  \(name)\(detail.isEmpty ? "" : ": \(detail)")")
@@ -35,7 +38,9 @@ enum Smoke {
             check("get_app_info", info["name"] as? String == "Git Manager Native", "\(info["name"] ?? "nil")")
 
             let state = try await app.client.call("app", ["action": "get_state"]).structured ?? [:]
-            check("app get_state", state["repoPath"] as? String == repoPath && state["changedFiles"] as? Int == 2, "\(state["changedFiles"] ?? "nil") changed files")
+            let changedFiles = state["changedFiles"] as? Int
+            let stateMatches = state["repoPath"] as? String == repoPath && changedFiles == 2
+            check("app get_state", stateMatches, "\(changedFiles.map(String.init) ?? "nil") changed files")
 
             let status = try await app.client.call("git_status").structured ?? [:]
             let files = (status["files"] as? [[String: Any]] ?? []).compactMap { $0["path"] as? String }.sorted()
@@ -44,13 +49,15 @@ enum Smoke {
             let notRepo = try await app.client.call("app", ["action": "open_folder", "folderPath": workDir])
             check("open_folder on a plain folder fails", notRepo.isError, notRepo.text)
             let reopened = try await app.client.call("app", ["action": "open_folder", "folderPath": repoPath])
-            check("open_folder on the repository", !reopened.isError && reopened.structured?["branch"] as? String == "main")
+            let branch = reopened.structured?["branch"] as? String
+            check("open_folder on the repository", !reopened.isError && branch == "main")
 
             let memory = try await app.client.call("get_memory_usage").structured ?? [:]
             let totalMb = memory["totalMb"] as? Double ?? 0
             check("get_memory_usage", totalMb > 0, "\(totalMb) MB")
 
-            let samples = try await app.client.call("sample_memory", ["durationMs": 1000, "intervalMs": 250]).structured ?? [:]
+            let sampleArgs = ["durationMs": 1000, "intervalMs": 250]
+            let samples = try await app.client.call("sample_memory", sampleArgs).structured ?? [:]
             check("sample_memory", (samples["samples"] as? [Any])?.count ?? 0 >= 4)
 
             let shot = try await app.client.call("take_screenshot")
@@ -73,13 +80,17 @@ enum Smoke {
                 throw ToolError("git \(arguments.joined(separator: " ")): \(result.output)")
             }
         }
+        let write = { (fileName: String, text: String) throws in
+            let filePath = (repoPath as NSString).appendingPathComponent(fileName)
+            try text.write(toFile: filePath, atomically: true, encoding: .utf8)
+        }
         try git(["init", "-q", "-b", "main"])
         try git(["config", "user.name", "Smoke Test"])
         try git(["config", "user.email", "smoke@example.com"])
-        try "# Smoke\n".write(toFile: (repoPath as NSString).appendingPathComponent("readme.md"), atomically: true, encoding: .utf8)
+        try write("readme.md", "# Smoke\n")
         try git(["add", "readme.md"])
         try git(["commit", "-q", "-m", "first"])
-        try "# Smoke\n\nChanged.\n".write(toFile: (repoPath as NSString).appendingPathComponent("readme.md"), atomically: true, encoding: .utf8)
-        try "new\n".write(toFile: (repoPath as NSString).appendingPathComponent("notes.txt"), atomically: true, encoding: .utf8)
+        try write("readme.md", "# Smoke\n\nChanged.\n")
+        try write("notes.txt", "new\n")
     }
 }

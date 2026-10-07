@@ -1,0 +1,294 @@
+{
+  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "", "rect": {"height": 6, "width": 3, "x": 1110, "y": 89},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "icon", "rect": {"height": 14, "width": 14, "x": 1121, "y": 85},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 14, "width": 14, "x": 1121, "y": 85},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 10, "width": 12, "x": 1122, "y": 87},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 29, "x": 1139, "y": 84},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "docs"
+    },
+    {
+      "classes": "row modified", "rect": {"height": 24, "width": 259, "x": 1097, "y": 104},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "8px", "padding-right": "8px",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "src"
+    },
+    {
+      "classes": "chevron", "rect": {"height": 12, "width": 12, "x": 1105, "y": 110},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 12, "width": 12, "x": 1105, "y": 110},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 6, "width": 3, "x": 1110, "y": 113},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "icon", "rect": {"height": 14, "width": 14, "x": 1121, "y": 109},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 14, "width": 14, "x": 1121, "y": 109},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 10, "width": 12, "x": 1122, "y": 111},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 19, "x": 1139, "y": 108},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "src"
+    },
+    {
+      "classes": "dot modified", "rect": {"height": 6, "width": 6, "x": 1337, "y": 113},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "50%", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "margin-left": "175.375px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "row", "rect": {"height": 24, "width": 259, "x": 1097, "y": 128},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "8px", "padding-right": "8px",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": ".nvmrc"
+    },
+    {
+      "classes": "icon", "rect": {"height": 14, "width": 14, "x": 1121, "y": 133},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 14, "width": 14, "x": 1121, "y": 133},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 12, "width": 9, "x": 1123, "y": 134},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 4, "width": 4, "x": 1129, "y": 134},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 41, "x": 1139, "y": 132},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": ".nvmrc"
+    },
+    {
+      "classes": "row", "rect": {"height": 24, "width": 259, "x": 1097, "y": 152},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "8px", "padding-right": "8px",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "package.json"
+    },
+    {
+      "classes": "icon", "rect": {"height": 14, "width": 14, "x": 1121, "y": 157},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 14, "width": 14, "x": 1121, "y": 157},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 12, "width": 9, "x": 1123, "y": 158},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 4, "width": 4, "x": 1129, "y": 158},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 80, "x": 1139, "y": 156},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "package.json"
+    }
+  ],
+  "limit": 100, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "files panel", "piece": "2 of 3", "screen": "changes", "selector": ".explorer, .explorer *"
+}

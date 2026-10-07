@@ -76,19 +76,20 @@ cd swiftui
 swift run -c release gm-measure measure --duration 20   # both apps on the docs demo: memory, start time, screenshots
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
-swift run -c release gm-measure tokens                  # writes App/Sources/Generated/Themes.swift (--check: is it up to date)
-swift run -c release gm-measure reference               # what to match: Reference/*.json and build/reference/*.png
+swift run -c release gm-measure tokens                  # writes App/Sources/Generated (--check: up to date?)
+swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
 ```
 
 - `tokens` runs the theme catalog (`src/lib/themes/catalog.ts`) with Bun and writes every theme's 73 color tokens
-  to `Generated/Themes.swift`, so SwiftUI colors are never typed by hand. Run it after any theme change; CI fails
-  when the file is out of date.
+  to `Generated/Themes/<id>.swift` (one small file per theme) and the list to `Generated/Themes.swift`, so SwiftUI
+  colors are never typed by hand. Run it after any theme change; CI fails when the files are out of date.
 - `reference` starts the current app isolated, in light and dark, on the Changes screen and the diff of
-  `src/cart.ts`. For each it writes a layout snapshot to `Reference/<screen>-<mode>.json` (every visible
-  element of the header, activity bars, status bar, changes list, commit box and diff, with its box and
-  computed styles, read with the app's `inspect_elements` tool) and a screenshot to
-  `build/reference/<screen>-<mode>.png` (captured by gm-measure, like `measure` does). Snapshots are committed, so a change to the current UI shows up in
-  review; regenerate them on purpose (the status bar's memory text differs on every run).
+  `src/cart.ts`. For each it writes a layout snapshot to `Reference/<screen>-<mode>/<part>.json` (every visible
+  element of the layout, header, activity bars, status bar, Files panel, changes list, commit box and diff, with
+  its box and computed styles, read with the app's `inspect_elements` tool; a part longer than 300 lines
+  continues in `<part>-2.json`) and a screenshot to `build/reference/<screen>-<mode>.png` (captured by
+  gm-measure, like `measure` does). Snapshots are committed, so a change to the current UI shows up in review;
+  regenerate them on purpose (the status bar's memory text differs on every run).
 
 `measure` compares the installed `/Applications/Git Manager.app` (or `--current-app <path>`) with the native
 build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `report.json`, both screenshots and
@@ -98,6 +99,7 @@ that needs Screen Recording permission for the app that runs it (your terminal),
 ## Checks
 
 ```sh
+swiftui/scripts/check-lines.sh                    # every file at most 120 columns and 300 lines
 cd swiftui/bridge && cargo clippy --locked --lib --examples --tests -- -D warnings
 cd swiftui/bridge && cargo test --locked          # gm_call and the control server, over real repositories
 swiftui/scripts/build-app.sh
@@ -118,5 +120,6 @@ src-tauri's test helpers.
 | 0b Control server: CLI and MCP drive and measure the app | built, waiting for the check |
 | 1a Measuring tools: gm-measure (measure, diff, smoke) and CI | done |
 | 1b Tokens and layout snapshots (gm-measure tokens, reference) | built, waiting for the check |
-| 2 Design foundation | not started |
+| 2a Window shell: layout, theme colors, title bar | built, waiting for the check |
+| 2b Components and contents | not started |
 | 3 First slice | not started |

@@ -33,7 +33,9 @@ public final class McpClient {
         self.token = token
     }
 
-    public func request(_ method: String, _ params: [String: Any] = [:], timeout: TimeInterval = 90) async throws -> [String: Any] {
+    public func request(
+        _ method: String, _ params: [String: Any] = [:], timeout: TimeInterval = 90
+    ) async throws -> [String: Any] {
         guard let url = URL(string: "http://127.0.0.1:\(port)/mcp") else {
             throw ToolError("Bad port \(port)")
         }
@@ -72,10 +74,14 @@ public final class McpClient {
         return tools.compactMap { $0["name"] as? String }
     }
 
-    public func call(_ toolName: String, _ args: [String: Any] = [:], timeout: TimeInterval = 90) async throws -> ToolAnswer {
+    public func call(
+        _ toolName: String, _ args: [String: Any] = [:], timeout: TimeInterval = 90
+    ) async throws -> ToolAnswer {
         let result = try await request("tools/call", ["name": toolName, "arguments": args], timeout: timeout)
         let content = result["content"] as? [[String: Any]] ?? []
-        let text = content.filter { $0["type"] as? String == "text" }.compactMap { $0["text"] as? String }.joined(separator: "\n")
+        let text = content.filter { $0["type"] as? String == "text" }
+            .compactMap { $0["text"] as? String }
+            .joined(separator: "\n")
         let image = content.first { $0["type"] as? String == "image" }
             .flatMap { $0["data"] as? String }
             .flatMap { Data(base64Encoded: $0) }

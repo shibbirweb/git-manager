@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // HOME=~/.gitmanager-native git-manager cli ... drives and measures this app (Control.swift).
         Control.start()
+        AppearanceOption.apply()
         // Started as a bare binary (swift run), the app is not in the Dock and its window stays behind the terminal.
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)

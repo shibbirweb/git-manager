@@ -44,6 +44,10 @@ jobs:
         with:
           bun-version: latest
 
+      # Every file at most 120 columns and 300 lines, generated data included.
+      - name: Line standard
+        run: swiftui/scripts/check-lines.sh
+
       - name: Bridge clippy
         working-directory: swiftui/bridge
         run: cargo clippy --locked --lib --examples --tests -- -D warnings

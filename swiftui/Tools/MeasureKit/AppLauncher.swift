@@ -53,6 +53,8 @@ public enum AppLauncher {
         appPath: String,
         /// Extra settings.json values for the current app, such as ["theme": "dark"].
         settings extraSettings: [String: Any] = [:],
+        /// "light" or "dark" for both apps: the current app's theme setting, the native app's -appearance.
+        mode: String? = nil,
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -63,11 +65,15 @@ public enum AppLauncher {
             let configDir = (home as NSString).appendingPathComponent(".gitmanager")
             try files.createDirectory(atPath: configDir, withIntermediateDirectories: true)
             var settings: [String: Any] = ["mcpEnabled": true, "cliEnabled": true, "mcpPort": try freePort()]
+            if let mode {
+                settings["theme"] = mode
+            }
             settings.merge(extraSettings) { _, extra in extra }
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
         }
-        let appArgs = kind == .current ? [folderPath] : ["-folder", folderPath]
+        let nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? [])
+        let appArgs = kind == .current ? [folderPath] : nativeArgs
         let started = Date()
         let opener = try run("/usr/bin/open", ["-n", "-a", appPath, "--env", "HOME=\(home)", "--args"] + appArgs)
         if opener.status != 0 {
@@ -89,7 +95,7 @@ public enum AppLauncher {
             }
         }
         guard let connected else {
-            throw ToolError("\(kind.rawValue): the app's server did not answer within \(Int(timeout)) s (\(serverFile))")
+            throw ToolError("\(kind.rawValue): no server answer within \(Int(timeout)) s (\(serverFile))")
         }
 
         while Date().timeIntervalSince(started) < timeout {
@@ -164,7 +170,9 @@ public enum AppLauncher {
 
     /// Runs a program to the end and returns its exit status and combined output.
     @discardableResult
-    public static func run(_ executablePath: String, _ arguments: [String], in directoryPath: String? = nil) throws -> (status: Int32, output: String) {
+    public static func run(
+        _ executablePath: String, _ arguments: [String], in directoryPath: String? = nil
+    ) throws -> (status: Int32, output: String) {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = arguments

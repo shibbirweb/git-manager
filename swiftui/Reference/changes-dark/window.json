@@ -1,0 +1,19 @@
+{
+  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "", "rect": {"height": 848, "width": 1400, "x": 0, "y": 0},
+      "styles": {
+        "background-color": "rgb(30, 31, 34)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden"
+      },
+      "tag": "html", "text": "Git Manager { __sveltekit_1"
+    }
+  ],
+  "limit": 100, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "window", "piece": "1 of 1", "screen": "changes", "selector": "html"
+}

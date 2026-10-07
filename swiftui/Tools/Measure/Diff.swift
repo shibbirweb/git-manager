@@ -13,7 +13,9 @@ enum Diff {
             print(usage)
             return 2
         }
-        let result = diffImages(try RGBAImage.load(path: arguments[0]), try RGBAImage.load(path: arguments[1]), tolerance: tolerance)
+        let first = try RGBAImage.load(path: arguments[0])
+        let second = try RGBAImage.load(path: arguments[1])
+        let result = diffImages(first, second, tolerance: tolerance)
         if let out {
             try result.overlay.write(path: out)
         }
@@ -25,12 +27,14 @@ enum Diff {
     }
 
     static func describe(_ result: DiffResult, tolerance: Int) -> String {
-        var lines = ["\(result.identicalPercent)% identical (\(result.identicalPixels) of \(result.comparedPixels) pixels, tolerance \(tolerance))"]
+        let counts = "\(result.identicalPixels) of \(result.comparedPixels) pixels, tolerance \(tolerance)"
+        var lines = ["\(result.identicalPercent)% identical (\(counts))"]
         if let mismatch = result.sizeMismatch {
             lines.append("Sizes differ: \(mismatch); compared the top-left \(result.width)x\(result.height)")
         }
         if let box = result.box {
-            lines.append("Differences inside x \(box.x), y \(box.y), \(box.width)x\(box.height); largest channel difference \(result.maxChannelDelta)")
+            let area = "x \(box.x), y \(box.y), \(box.width)x\(box.height)"
+            lines.append("Differences inside \(area); largest channel difference \(result.maxChannelDelta)")
         }
         return lines.joined(separator: "\n")
     }

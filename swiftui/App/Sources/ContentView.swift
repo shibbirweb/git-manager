@@ -1,5 +1,6 @@
-// Phase 0 screen: plain text on purpose. The pixel-matched UI starts in phase 2, once the
-// measuring tools exist (docs/plans/swiftui-experiment.md).
+// The window: the shell measured from the current app (Shell.swift) in its theme. The parts inside are
+// still the phase 0 placeholders (the Open Folder button, the status as text); phase 2 replaces them
+// part by part, each checked against swiftui/Reference.
 
 import AppKit
 import SwiftUI
@@ -8,31 +9,45 @@ struct ContentView: View {
     let initialRepoPath: String?
 
     @ObservedObject private var model = AppModel.shared
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let theme = Theme.standard(for: colorScheme)
+        Shell {
             HStack(spacing: 8) {
                 Button("Open Folder...") {
                     chooseFolder()
                 }
-                if let repoPath = model.repoPath {
-                    Text(repoPath)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                Spacer()
                 if model.loading {
                     ProgressView()
                         .controlSize(.small)
                 }
             }
-            Divider()
+            .padding(.horizontal, 8)
+        } sidebar: {
             statusText
-            Spacer()
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+        } main: {
+            EditorArea {
+                Color.clear
+            } content: {
+                Color.clear
+            }
+        } files: {
+            Color.clear
+        } status: {
+            Color.clear
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(theme.color("--bg").ignoresSafeArea())
+        // SwiftUI paints its own toolbar background where the title bar is; make it the current app's --bg.
+        .toolbarBackground(theme.systemColor("--bg"), for: .windowToolbar)
+        .toolbarBackground(.visible, for: .windowToolbar)
+        .foregroundStyle(theme.color("--text"))
+        .font(.system(size: 13))
+        .environment(\.theme, theme)
+        .background(WindowChrome(background: theme.nsColor("--bg")))
+        .navigationTitle(model.repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native")
         .task {
             if let initialRepoPath {
                 await model.open(repoPath: initialRepoPath)
@@ -49,7 +64,7 @@ struct ContentView: View {
         } else if let status = model.snapshot?.status {
             VStack(alignment: .leading, spacing: 6) {
                 Text(headLine(status.head))
-                    .font(.headline)
+                    .fontWeight(.semibold)
                 Text(status.files.isEmpty ? "No changes" : "\(status.files.count) changed files")
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
