@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 // Git Manager Native: the SwiftUI experiment (docs/plans/swiftui-experiment.md).
 // Build the Rust bridge first (scripts/build-app.sh does both).
 
@@ -15,6 +15,11 @@ let bridgeLibrary = URL(fileURLWithPath: #filePath)
 let package = Package(
     name: "GitManagerNative",
     platforms: [.macOS(.v13)],
+    products: [
+        .executable(name: "GitManagerNative", targets: ["GitManagerNative"]),
+        // Drives and measures both apps from the outside: swift run gm-measure <measure|diff|smoke>.
+        .executable(name: "gm-measure", targets: ["GMMeasure"]),
+    ],
     targets: [
         .systemLibrary(name: "GMBridge", path: "App/Bridge"),
         .executableTarget(
@@ -23,5 +28,10 @@ let package = Package(
             path: "App/Sources",
             linkerSettings: [.unsafeFlags(["-L", bridgeLibrary])]
         ),
-    ]
+        .target(name: "MeasureKit", path: "Tools/MeasureKit"),
+        .executableTarget(name: "GMMeasure", dependencies: ["MeasureKit"], path: "Tools/Measure"),
+        .testTarget(name: "MeasureKitTests", dependencies: ["MeasureKit"], path: "Tools/Tests"),
+    ],
+    // Swift 6 tools for Swift Testing (the Command Line Tools have no XCTest); the code stays in Swift 5 mode.
+    swiftLanguageModes: [.v5]
 )

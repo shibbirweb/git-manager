@@ -14,7 +14,7 @@ here=$(cd "$(dirname "$0")/.." && pwd)
 export MACOSX_DEPLOYMENT_TARGET=13.0
 
 # The bridge is always a release build: Package.swift links bridge/target/release.
-cargo build --release --manifest-path "$here/bridge/Cargo.toml"
+cargo build --release --locked --manifest-path "$here/bridge/Cargo.toml"
 
 # SwiftPM does not track the Rust library, so drop the old binary to force a relink.
 rm -f "$here/.build/$config/GitManagerNative"

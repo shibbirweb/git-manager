@@ -49,37 +49,44 @@ not the promise.
 
 ## Tools we build first
 
-1. **Reference screenshots.** The current app, real window, fixed size (1400 x 880 points, the default window),
-   the demo built by `scripts/make-docs-demo.sh`, light and dark. Captured with `screencapture -l <window id>`
-   on both apps, so both go through the same macOS path. The terminal running it needs Screen Recording
-   permission (System Settings > Privacy & Security).
-2. **Pixel diff.** `swiftui/tools/pixel-diff.ts` (Bun): compares two PNGs, prints the percentage of identical
-   pixels and writes a red-overlay image of the differences.
-3. **Layout snapshot.** `swiftui/tools/layout-snapshot.ts`: opens the current UI through the existing dev IPC
-   bridge (as `scripts/screenshots.ts` does) and dumps the box (x, y, width, height), font, colors and radius of
-   the elements on a screen to JSON, found by CSS selectors in the script, so `src/` needs no new attributes.
-   The SwiftUI app can dump its own frames in the same format, and a test compares them.
-4. **Token export.** `swiftui/tools/export-tokens.ts`: calls `themeColors()` from `src/lib/themes/catalog.ts`
-   for every theme and writes `swiftui/App/Sources/Generated/Themes.swift`. Run again whenever themes change,
-   so colors are never typed by hand.
-5. **Memory scenario.** One script per app does the same steps: open the demo workspace, open 10 files, scroll
-   a long file, show a diff, then idle for 60 seconds. Memory counts every process the app is responsible
+All of them are one Swift command, `gm-measure` (`swiftui/Tools/`), so `swiftui/` stays Swift and Rust. It
+drives both apps through their MCP servers (the native one from phase 0b, the current one with its server
+turned on in a throwaway home), so it measures the real windows, not a browser copy.
+
+1. **Isolated launches.** Each app starts from macOS (`open -n`) with HOME pointing at a fresh folder, so its
+   settings and server file never touch the real `~/.gitmanager`, and macOS counts its memory exactly. The
+   current app gets a free MCP port, because the real app usually holds its default (48731).
+2. **Memory scenario** (`gm-measure measure`): both apps, one after the other, do the same steps on a fresh
+   copy of the docs demo (`scripts/make-docs-demo.sh`): open `acme/storefront`, wait until its status is on
+   screen, settle, screenshot, sample memory. The steps grow (open 10 files, scroll a long file, show a diff)
+   as the native app learns them, for both apps at once. Memory counts every process the app is responsible
    for, the same way `src-tauri/src/memory.rs` does (for the current app that includes WebKit's web content
-   and GPU processes).
+   and GPU processes). Reports go to `swiftui/build/measure/<time>/`.
+3. **Pixel diff** (`gm-measure diff`): compares two PNGs, prints the share of identical pixels and the box
+   around the differences, and writes a red-overlay image. Both apps' screenshots are the window as the window
+   server draws it, without its shadow. The current app uses `screencapture -o -l`, which needs Screen
+   Recording permission for Git Manager; the native app captures its own window, which needs none.
+4. **Smoke test** (`gm-measure smoke`): starts the built native app on a small test repository and checks
+   every control tool. CI runs it on every pull request that touches the native app
+   (`.github/workflows/native.yml`).
+5. **Token export and layout snapshot** (part 1b): the theme colors and the boxes, fonts and colors of the
+   current UI's elements, written to JSON for the SwiftUI side. To be built in Swift on the current app's MCP
+   tools (`inspect_elements`, `get_app_state`), so `src/` needs no change.
 
 ## Folder layout
 
 ```
 swiftui/
   README.md            how to build, run and test
-  Package.swift        Swift package: the app target and its tests
+  Package.swift        Swift package: the app, gm-measure and its tests
   App/Sources/         SwiftUI app
     Generated/         Themes.swift, Icons.swift (from the tools, not edited by hand)
   bridge/              Rust crate with its own Cargo workspace
     Cargo.toml
     src/lib.rs         gm_call and gm_free_string over the shared backend modules
-  tools/               Bun scripts above, with their own package.json
+  Tools/               gm-measure (Measure/), its library (MeasureKit/) and tests (Tests/)
   scripts/build-app.sh builds the Rust bridge, the Swift package, and the .app bundle
+  scripts/test.sh      runs the Swift tests (finds Swift Testing with the Command Line Tools too)
 ```
 
 **Toolchain:** this Mac has the Command Line Tools (Swift 6.3) but not full Xcode. A Swift package builds
@@ -126,8 +133,10 @@ Each phase is one branch and one PR. A phase is done when its checks pass and it
 
 ### Phase 1: measuring tools
 
-- Pixel diff, layout snapshot, token export, memory scenario (see "Tools we build first").
-- Reference screenshots of the slice-1 screens from the current app, light and dark.
+- Part 1a: isolated launches, memory scenario, pixel diff, smoke test, and CI for the native app
+  (`.github/workflows/native.yml`: bridge clippy and tests, app build, Swift tests, smoke test, the zipped
+  app as a download on the pull request).
+- Part 1b: token export, layout snapshot, reference screenshots of the slice-1 screens, light and dark.
 - Done when: the tools run against the current app and produce reference data.
 
 ### Phase 2: design foundation
@@ -187,6 +196,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 |---|---|---|---|
 | 0 Skeleton | feat/GM-31-swiftui-skeleton | UI checked | 1.5 MB app; get_status through the bridge |
 | 0b Control server | feat/GM-31-swiftui-skeleton | built, waiting for the check | 22 MB idle vs 350 MB for the current app (not yet a fair scenario) |
-| 1 Measuring tools | | not started | |
+| 1a Measuring tools | feat/GM-31-swiftui-skeleton | built, waiting for the check | Demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen 1.7 s vs 1.0 s |
+| 1b Tokens and layout | | not started | |
 | 2 Design foundation | | not started | |
 | 3 First slice | | not started | |

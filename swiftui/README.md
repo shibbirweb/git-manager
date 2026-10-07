@@ -22,10 +22,11 @@ The app's bundle id is `shibbirweb.github.io.gitmanager.native`, so it installs 
 ## How it fits together
 
 ```
-App/Sources/     SwiftUI app (Backend.swift calls the bridge, Status.swift mirrors the DTOs)
+App/Sources/     SwiftUI app (Backend.swift calls the bridge, Control.swift answers the control server)
 App/Bridge/      module map and C header for the bridge
 bridge/          Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
-scripts/         build-app.sh
+Tools/           gm-measure: Measure/ (commands), MeasureKit/ (library), Tests/
+scripts/         build-app.sh, test.sh
 ```
 
 - **One entry point.** `gm_call` takes a command name and camelCase JSON arguments, like `invoke` in
@@ -62,16 +63,37 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `get_app_info` | native fields (name, version, pid, bundle id) |
 | `app` | native only for now: `get_state`, `open_folder` |
 
+## Measure both apps (gm-measure)
+
+`Tools/` holds `gm-measure`, a Swift command that drives and measures both apps from the outside through their
+MCP servers. Each app starts isolated: macOS launches it with HOME set to a throwaway folder, so the real
+`~/.gitmanager` is never touched.
+
+```sh
+cd swiftui
+swift run -c release gm-measure measure --duration 20   # both apps on the docs demo: memory, start time, screenshots
+swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
+swift run -c release gm-measure smoke                   # checks every control tool of the built native app
+```
+
+`measure` compares the installed `/Applications/Git Manager.app` (or `--current-app <path>`) with the native
+build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `report.json`, both screenshots and
+`diff.png`. The current app's screenshot needs Screen Recording permission for Git Manager.
+
 ## Checks
 
 ```sh
-cd swiftui/bridge && cargo clippy --lib --examples -- -D warnings
-cd swiftui/bridge && cargo run --example call -- get_status '{"repoPath":"/path/to/repo"}'
-cd swiftui && swift build
+cd swiftui/bridge && cargo clippy --locked --lib --examples --tests -- -D warnings
+cd swiftui/bridge && cargo test --locked          # gm_call and the control server, over real repositories
+swiftui/scripts/build-app.sh
+swiftui/scripts/test.sh                           # Swift tests (pixel diff, PNG, launcher)
+cd swiftui && swift run -c release gm-measure smoke
 ```
 
-The shared modules' own unit tests run in `src-tauri` (`cargo test --workspace`); the bridge does not build
-them (`test = false`), because they need src-tauri's test helpers.
+CI runs the same steps on pull requests that touch `swiftui/` or the backend files the bridge shares
+(`.github/workflows/native.yml`), and attaches the zipped app to the run. The shared modules' own unit tests run
+in `src-tauri` (`cargo test --workspace`); the bridge does not build them (`test = false`), because they need
+src-tauri's test helpers.
 
 ## Status
 
@@ -79,6 +101,7 @@ them (`test = false`), because they need src-tauri's test helpers.
 |---|---|
 | 0 Skeleton: window, bridge, one command (`get_status`) | built, UI checked |
 | 0b Control server: CLI and MCP drive and measure the app | built, waiting for the check |
-| 1 Measuring tools | not started |
+| 1a Measuring tools: gm-measure (measure, diff, smoke) and CI | built, waiting for the check |
+| 1b Tokens and layout snapshot | not started |
 | 2 Design foundation | not started |
 | 3 First slice | not started |
