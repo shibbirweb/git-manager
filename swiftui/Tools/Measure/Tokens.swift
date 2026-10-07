@@ -79,8 +79,10 @@ enum Tokens {
         guard let found = FileManager.default.enumerator(atPath: generatedDir) else {
             return []
         }
+        // Only the theme files: Generated/ also holds the icons (gm-measure icons).
         return found.compactMap { $0 as? String }
-            .filter { $0.hasSuffix(".swift") && !wanted.contains($0) }
+            .filter { ($0 == "Themes.swift" || $0.hasPrefix("Themes/")) && $0.hasSuffix(".swift") }
+            .filter { !wanted.contains($0) }
             .sorted()
     }
 }

@@ -209,7 +209,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
-| 2 Design foundation | feat/GM-31-swiftui-skeleton | in progress: 2a window shell |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a done (db76a0c); 2b built, waiting for the check |
 | 3 First slice | | not started |
 
 Notes:
@@ -229,3 +229,10 @@ Notes:
   colors to the display unconverted, so sRGB colors came out one step off (#25272a as #262729); only the title
   bar, which macOS draws in both apps, uses the converted sRGB color. The Files panel is in the shell; its tree
   comes with the components.
+- 2b edges: the 76 icons generated from src/lib/ui/icons.ts (`gm-measure icons`, checked in CI) and drawn from their
+  SVG paths (UI/SVGPath.swift, SVGArc.swift, Icon.swift); the header, both activity bars and the status bar
+  (UI/HeaderBar.swift, ActivityBars.swift, StatusBarView.swift) with the snapshot's sizes. Pixel diff 97.74%
+  (light) and 97.83% (dark). Disabled buttons use 40% opacity without SwiftUI's .disabled(), which dimmed them a
+  second time. gm-measure brings each app to the front before capturing, as macOS stops painting a covered web
+  view. The status bar follows the installed release (the word "Memory"), not the GM-26 icon on develop.
+- Next parts: 2c the Changes list and commit box, 2d the Files panel tree, 2e the welcome screen.

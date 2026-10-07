@@ -77,6 +77,7 @@ swift run -c release gm-measure measure --duration 20   # both apps on the docs 
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes App/Sources/Generated (--check: up to date?)
+swift run -c release gm-measure icons                   # writes Generated/Icons*.swift from src/lib/ui/icons.ts
 swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
 ```
 
@@ -120,6 +121,9 @@ src-tauri's test helpers.
 | 0b Control server: CLI and MCP drive and measure the app | built, waiting for the check |
 | 1a Measuring tools: gm-measure (measure, diff, smoke) and CI | done |
 | 1b Tokens and layout snapshots (gm-measure tokens, reference) | built, waiting for the check |
-| 2a Window shell: layout, theme colors, title bar | built, waiting for the check |
-| 2b Components and contents | not started |
+| 2a Window shell: layout, theme colors, title bar | done |
+| 2b Edges: icons, header, activity bars, status bar | built, waiting for the check |
+| 2c Changes list and commit box | not started |
+| 2d Files panel tree | not started |
+| 2e Welcome screen | not started |
 | 3 First slice | not started |

@@ -11,6 +11,25 @@ final class AppModel: ObservableObject {
     @Published private(set) var snapshot: StatusSnapshot?
     @Published private(set) var errorText: String?
     @Published private(set) var loading = false
+    /// The status bar's memory readout, read every 2 seconds while the window shows (refreshMemory).
+    @Published private(set) var memoryMb: Double?
+
+    var folderName: String {
+        repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native"
+    }
+
+    var changeCount: Int {
+        snapshot?.status?.files.count ?? 0
+    }
+
+    func refreshMemory() async {
+        let usage = await Task.detached { () -> MemoryUsage? in
+            try? Backend.call("memory_usage", [String: String]()) as MemoryUsage
+        }.value
+        if let usage {
+            memoryMb = Double(usage.totalBytes) / (1024 * 1024)
+        }
+    }
 
     /// Opens a folder from the UI: reads its status off the main thread.
     func open(repoPath folderPath: String) async {

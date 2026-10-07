@@ -90,6 +90,7 @@ enum Measure {
         var screenshotSize: String?
         // gm-measure captures both windows itself, the same way, so the pixel diff compares like with like.
         do {
+            WindowCapture.bringToFront(pid: app.pid)
             let png = try WindowCapture.capture(pid: app.pid)
             let path = (outDir as NSString).appendingPathComponent("\(kind.rawValue).png")
             try png.write(to: URL(fileURLWithPath: path))

@@ -6,6 +6,7 @@
 //   swift run gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
 //   swift run gm-measure smoke [--app <path>]
 //   swift run gm-measure tokens [--check]
+//   swift run gm-measure icons [--check]
 //   swift run gm-measure reference [--modes light,dark] [--current-app <path>]
 
 import Foundation
@@ -26,6 +27,7 @@ let usage = """
       gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
       gm-measure smoke [--app <path>]
       gm-measure tokens [--check]
+      gm-measure icons [--check]
       gm-measure reference [--modes light,dark] [--current-app <path>]
     """
 
@@ -41,6 +43,8 @@ do {
         exit(try await Smoke.run(arguments))
     case "tokens":
         exit(try Tokens.run(arguments))
+    case "icons":
+        exit(try Icons.run(arguments))
     case "reference":
         exit(try await Reference.run(arguments))
     default:

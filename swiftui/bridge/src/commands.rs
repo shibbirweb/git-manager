@@ -12,6 +12,8 @@ use crate::git::status::{self, RepoStatus};
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
     match command {
         "get_status" => to_json(get_status(parse(command, args)?)?),
+        // The status bar's readout: this app and any helpers, counted like the current app counts itself.
+        "memory_usage" => to_json(crate::memory::usage()),
         _ => Err(AppError::invalid(format!("Unknown command: {command}"))),
     }
 }

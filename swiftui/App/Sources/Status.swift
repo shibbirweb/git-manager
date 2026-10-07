@@ -31,3 +31,7 @@ struct FileStatus: Decodable {
     let unstaged: String?
     let conflicted: Bool
 }
+
+struct MemoryUsage: Decodable {
+    let totalBytes: UInt64
+}

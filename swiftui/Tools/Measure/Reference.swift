@@ -134,6 +134,7 @@ enum Reference {
     /// Captured by gm-measure itself, like `measure` does for both apps.
     private static func screenshot(_ app: RunningApp, to filePath: String) async throws -> Bool {
         do {
+            WindowCapture.bringToFront(pid: app.pid)
             try WindowCapture.capture(pid: app.pid).write(to: URL(fileURLWithPath: filePath))
             return true
         } catch {

@@ -1,6 +1,6 @@
-// The window: the shell measured from the current app (Shell.swift) in its theme. The parts inside are
-// still the phase 0 placeholders (the Open Folder button, the status as text); phase 2 replaces them
-// part by part, each checked against swiftui/Reference.
+// The window: the shell measured from the current app (Shell.swift) in its theme, with the header, activity bars
+// and status bar (UI/). The Changes list, main area and Files panel are still placeholders; phase 2 replaces
+// them part by part, each checked against swiftui/Reference.
 
 import AppKit
 import SwiftUI
@@ -14,16 +14,14 @@ struct ContentView: View {
     var body: some View {
         let theme = Theme.standard(for: colorScheme)
         Shell {
-            HStack(spacing: 8) {
-                Button("Open Folder...") {
-                    chooseFolder()
-                }
-                if model.loading {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-            }
-            .padding(.horizontal, 8)
+            HeaderBar(
+                folderName: model.folderName,
+                head: model.snapshot?.status?.head,
+                chooseFolder: chooseFolder,
+                toggleAppearance: toggleAppearance
+            )
+        } leftBar: {
+            LeftActivityBar(changeCount: model.changeCount)
         } sidebar: {
             statusText
                 .padding(8)
@@ -36,8 +34,15 @@ struct ContentView: View {
             }
         } files: {
             Color.clear
+        } rightBar: {
+            RightActivityBar()
         } status: {
-            Color.clear
+            StatusBarView(
+                folderName: model.folderName,
+                head: model.snapshot?.status?.head,
+                changeCount: model.changeCount,
+                memoryMb: model.memoryMb
+            )
         }
         .background(theme.color("--bg").ignoresSafeArea())
         // SwiftUI paints its own toolbar background where the title bar is; make it the current app's --bg.
@@ -47,12 +52,24 @@ struct ContentView: View {
         .font(.system(size: 13))
         .environment(\.theme, theme)
         .background(WindowChrome(background: theme.nsColor("--bg")))
-        .navigationTitle(model.repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native")
+        .navigationTitle(model.folderName)
         .task {
             if let initialRepoPath {
                 await model.open(repoPath: initialRepoPath)
             }
         }
+        .task {
+            // The status bar's memory readout, like the current app's (every 2 seconds while the window shows).
+            while !Task.isCancelled {
+                await model.refreshMemory()
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+            }
+        }
+    }
+
+    /// The header's theme button: switches between light and dark for this app.
+    private func toggleAppearance() {
+        NSApp.appearance = NSAppearance(named: colorScheme == .dark ? .aqua : .darkAqua)
     }
 
     @ViewBuilder

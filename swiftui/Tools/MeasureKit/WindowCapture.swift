@@ -3,11 +3,20 @@
 // covered (what `screencapture -o -l` and the native app's take_screenshot give). Needs Screen
 // Recording permission for the app that runs gm-measure (the terminal), not for the measured apps.
 
+import AppKit
 import CoreGraphics
 import Foundation
 import ImageIO
 
 public enum WindowCapture {
+    /// Brings the app with `pid` to the front and waits a moment. macOS pauses drawing in a covered web view, so the
+    /// current app must be in front to be captured with its page painted. By process id, never by name, so the
+    /// user's own running Git Manager is left alone.
+    public static func bringToFront(pid: Int32) {
+        NSRunningApplication(processIdentifier: pid)?.activate(options: [.activateAllWindows])
+        Thread.sleep(forTimeInterval: 0.8)
+    }
+
     /// True when this process may capture other apps' windows. Without it, macOS is asked to show
     /// the permission request for the app that runs the tool.
     public static func ensureAccess() -> Bool {

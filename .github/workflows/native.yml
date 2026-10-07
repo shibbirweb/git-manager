@@ -17,8 +17,9 @@ on:
       - "src-tauri/src/askpass.rs"
       - "src-tauri/src/git_console.rs"
       - "src-tauri/src/child_process.rs"
-      # The source of swiftui/App/Sources/Generated/Themes.swift (gm-measure tokens).
+      # The sources of swiftui/App/Sources/Generated (gm-measure tokens and icons).
       - "src/lib/themes/**"
+      - "src/lib/ui/icons.ts"
   workflow_dispatch:
 
 permissions:
@@ -66,6 +67,10 @@ jobs:
       - name: Theme tokens are up to date
         working-directory: swiftui
         run: swift run -c release gm-measure tokens --check
+
+      - name: Icons are up to date
+        working-directory: swiftui
+        run: swift run -c release gm-measure icons --check
 
       # Starts the built app on a test repository and checks every control tool end to end.
       - name: Smoke test

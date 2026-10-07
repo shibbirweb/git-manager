@@ -44,26 +44,32 @@ struct EditorArea<Breadcrumb: View, Content: View>: View {
     }
 }
 
-struct Shell<Header: View, Sidebar: View, Main: View, Files: View, Status: View>: View {
+struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View, RightBar: View, Status: View>: View {
     @Environment(\.theme) private var theme
 
     let header: Header
+    let leftBar: LeftBar
     let sidebar: Sidebar
     let main: Main
     let files: Files
+    let rightBar: RightBar
     let status: Status
 
     init(
         @ViewBuilder header: () -> Header,
+        @ViewBuilder leftBar: () -> LeftBar,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder main: () -> Main,
         @ViewBuilder files: () -> Files,
+        @ViewBuilder rightBar: () -> RightBar,
         @ViewBuilder status: () -> Status
     ) {
         self.header = header()
+        self.leftBar = leftBar()
         self.sidebar = sidebar()
         self.main = main()
         self.files = files()
+        self.rightBar = rightBar()
         self.status = status()
     }
 
@@ -75,7 +81,7 @@ struct Shell<Header: View, Sidebar: View, Main: View, Files: View, Status: View>
                 .background(theme.color("--panel"))
             horizontalLine
             HStack(spacing: 0) {
-                activityBar
+                activityBar(leftBar)
                 verticalLine
                 sidebar
                     .frame(width: ShellMetrics.sidebarWidth - ShellMetrics.border)
@@ -93,7 +99,7 @@ struct Shell<Header: View, Sidebar: View, Main: View, Files: View, Status: View>
                     .frame(maxHeight: .infinity, alignment: .top)
                     .background(theme.color("--panel"))
                 verticalLine
-                activityBar
+                activityBar(rightBar)
             }
             horizontalLine
             status
@@ -112,8 +118,10 @@ struct Shell<Header: View, Sidebar: View, Main: View, Files: View, Status: View>
         theme.color("--border-strong").frame(width: ShellMetrics.border)
     }
 
-    private var activityBar: some View {
-        theme.color("--panel-alt")
+    private func activityBar(_ content: some View) -> some View {
+        content
             .frame(width: ShellMetrics.activityWidth - ShellMetrics.border)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .background(theme.color("--panel-alt"))
     }
 }
