@@ -89,6 +89,8 @@
   --tok-tag: #0033b3;
   --tok-attr: #174ad4;
   --tok-invalid: #f50000;
+  --tok-constant: #0033b3;
+  --tok-operator: #1e1f22;
   --bracket-1: #0431fa;
   --bracket-2: #319331;
   --bracket-3: #7b3814;
@@ -161,6 +163,8 @@
     --tok-tag: #d5b778;
     --tok-attr: #bababa;
     --tok-invalid: #fa6675;
+    --tok-constant: #cf8e6d;
+    --tok-operator: #dfe1e5;
     --bracket-1: #ffd700;
     --bracket-2: #da70d6;
     --bracket-3: #179fff;
@@ -233,6 +237,8 @@
   --tok-tag: #d5b778;
   --tok-attr: #bababa;
   --tok-invalid: #fa6675;
+  --tok-constant: #cf8e6d;
+  --tok-operator: #dfe1e5;
   --bracket-1: #ffd700;
   --bracket-2: #da70d6;
   --bracket-3: #179fff;
@@ -451,10 +457,17 @@ textarea.input {
 }
 
 /* Syntax colors for @lezer/highlight classHighlighter. */
-.tok-keyword,
+.tok-keyword {
+  color: var(--tok-keyword);
+}
+
 .tok-bool,
 .tok-atom {
-  color: var(--tok-keyword);
+  color: var(--tok-constant);
+}
+
+.tok-operator {
+  color: var(--tok-operator);
 }
 
 .tok-string,

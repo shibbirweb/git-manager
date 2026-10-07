@@ -7,7 +7,8 @@
 import { foldNodeProp, language, StreamLanguage, syntaxTree } from "@codemirror/language";
 import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import { classHighlighter, highlightTree } from "@lezer/highlight";
+import { highlightTree } from "@lezer/highlight";
+import { codeHighlighters } from "./highlighter";
 import { headingScopes, indentScopes, type LineText, MAX_STICKY_LINES, type Scope, stickyLinesFor } from "./stickyScope";
 
 /** Longest stretch of a pinned line that is drawn; the rest is off screen anyway. */
@@ -78,7 +79,7 @@ function renderLine(state: EditorState, lineNumber: number): DocumentFragment {
   };
   highlightTree(
     syntaxTree(state),
-    classHighlighter,
+    codeHighlighters,
     (from, end, className) => {
       text(position, from, "");
       text(Math.max(from, position), Math.min(end, to), className);

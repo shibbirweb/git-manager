@@ -14,6 +14,7 @@ GitHub release notes, and the app shows it as "What's New".
 ### Added
 
 - Sign-in prompts: when a push, pull, fetch or clone needs a username and password (HTTPS), an SSH key passphrase or a yes for a new SSH host, a dialog asks for it instead of the command failing with "terminal prompts disabled". Username and password come in one dialog, with a reminder that GitHub, GitLab and Bitbucket take a token. Git saves the login with your credential helper; background auto fetch never asks.
+- Monokai Charcoal color theme: Monokai on a charcoal background, with red keywords, tags and operators, green attributes, gold strings, lavender constants and plain white function calls and variables.
 - Commit box per repository, like VS Code: the new button in the Changes title bar, or Settings > Git > Commit box, switches between one commit box under the Changes list (Single, like JetBrains, the default) and a commit box at the top of each repository (Per repository). Each repository keeps its own message in both layouts, and the Changes tab follows the setting with its box above the files.
 - Git Manager for Windows 10 and 11: a per-user installer (the `-setup.exe` of a release, no administrator rights needed) with the same features as on macOS. Paths show as `C:/...`, shortcuts use Ctrl, the terminal starts PowerShell, Command Prompt or Git Bash, deleted files go to the Recycle Bin, the GitHub token is kept in Windows Credential Manager, a second launch opens its folder in the running app, Cancel stops git and everything it started, and the status bar counts memory like Task Manager. The installer is not signed yet, so Windows SmartScreen asks once (More info, Run anyway).
 - `git-manager cli call` reads its arguments from a JSON file with `--args-file <file>`, or from stdin with `--args-file -`, for shells that mangle quotes such as Windows PowerShell 5.1.
@@ -165,6 +166,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- HTML, XML, Vue and JSX tag and attribute names now use the color theme's own tag and attribute colors. Before, every theme showed tags in its type color and attributes in its property color, so Monokai tags were cyan instead of pink.
 - A file open in a tab (a preview tab too) now updates when another app changes it, also when git ignores it, like a log file. Only the new text is added, so the view stays where it is, and when it is scrolled to the end it follows the new lines.
 - Diffs in the Changes tab, Show Diff with Working Tree and Compare with Revision now update while the file keeps changing; before, a file that was already modified showed its first diff until something else changed.
 - A tracked file that matches a `.gitignore` rule (a log committed before it was ignored) now refreshes its status, diff and tab when it changes.

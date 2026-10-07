@@ -8,7 +8,8 @@
 import { syntaxTree } from "@codemirror/language";
 import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import { classHighlighter, highlightTree } from "@lezer/highlight";
+import { highlightTree } from "@lezer/highlight";
+import { codeHighlighters } from "./highlighter";
 import {
   canvasShift,
   lineRuns,
@@ -81,7 +82,7 @@ const theme = EditorView.theme({
 /** Syntax styles of `from` to `to`, in order. */
 function styledRanges(state: EditorState, from: number, to: number): StyledRange[] {
   const ranges: StyledRange[] = [];
-  highlightTree(syntaxTree(state), classHighlighter, (start, end, className) => ranges.push({ from: start, to: end, className }), from, to);
+  highlightTree(syntaxTree(state), codeHighlighters, (start, end, className) => ranges.push({ from: start, to: end, className }), from, to);
   return ranges;
 }
 

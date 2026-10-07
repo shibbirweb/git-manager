@@ -39,6 +39,7 @@ export const THEME_INDEX: readonly ThemeInfo[] = [
   { id: "dracula", name: "Dracula", kind: "dark" },
   { id: "monokai", name: "Monokai", kind: "dark" },
   { id: "monokai-pro", name: "Monokai Pro", kind: "dark" },
+  { id: "monokai-charcoal", name: "Monokai Charcoal", kind: "dark" },
   { id: "nord", name: "Nord", kind: "dark" },
   { id: "solarized-dark", name: "Solarized Dark", kind: "dark" },
   { id: "github-dark", name: "GitHub Dark", kind: "dark" },

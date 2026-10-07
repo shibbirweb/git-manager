@@ -70,6 +70,8 @@ export const COLOR_TOKENS = [
   "--tok-tag",
   "--tok-attr",
   "--tok-invalid",
+  "--tok-constant",
+  "--tok-operator",
   "--bracket-1",
   "--bracket-2",
   "--bracket-3",
