@@ -209,7 +209,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
-| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a to 2d done (ea3882b); 2e built, waiting for the check |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a to 2e done (30bb074); 2f (99%) built, waiting for the check |
 | 3 First slice | | not started |
 
 Notes:
@@ -250,5 +250,20 @@ Notes:
   translucent colors after that conversion. The native app does the same conversion and hands macOS the rounded
   Display P3 value; macOS's own conversion rounded some colors one step off. The title bar alone keeps macOS's
   conversion, as macOS draws it in both apps. Pixel diff with every part of the Changes screen: 98.23% (light) and
-  98.59% (dark); with tolerance 1, 98.9% and 98.93%. What remains is the edges of text and icons: glyph
-  anti-aliasing and sub-point text positions, the next topic (Core Text layout matching the browser's).
+  98.59% (dark); with tolerance 1, 98.9% and 98.93%.
+- 2f matching to 99%: light 99.06% and dark 99.12% exactly identical (99.4% and 99.45% with tolerance 1). What
+  closed the gap, each found by measuring both screenshots (gm-measure plus ink-position scripts):
+  - Font smoothing off for the app (AppleFontSmoothing 0), as the page's -webkit-font-smoothing: antialiased;
+    macOS's default smoothing made every glyph a pixel wider and taller.
+  - Translucent fills and CSS opacity drawn as one solid color blended the way WebKit blends (each converted 8-bit
+    channel mixed and rounded; Theme.over): the active activity tile, the logo tile, the half-opacity Commit button,
+    disabled buttons, deleted letters. macOS's compositing landed one step off over the whole area.
+  - A centered column placed on whole points, as WebKit lays out a centered flex column (WholePointCenter).
+  - A file's smaller folder name on the name's baseline, as one line of text on the page.
+  - Two measured one-pixel corrections on the welcome screen's text. WebKit's line boxes are whole points while
+    SwiftUI's are fractional, so text can round to the neighboring pixel row; a general Core Text text view is the
+    fix if more text needs it.
+  - What remains: the edges of text, icons and rounded corners (anti-aliasing), the title bar's title as macOS
+    draws it in each window, the live memory readout (the apps really differ), and the Changes title cut to "CHA..."
+    where WebKit cuts it to "CH...". Text positions come from the screenshots, not the snapshots: inspect_elements
+    rounds boxes to whole points, while WebKit places them at fractions.

@@ -93,7 +93,6 @@ struct FileTreeRow: View {
             Text(entry.name)
                 .foregroundStyle(nameColor)
                 .fontWeight(tone == .conflict ? .medium : .regular)
-                .opacity(tone == .deleted ? 0.85 : 1)
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 0)
@@ -116,8 +115,11 @@ struct FileTreeRow: View {
             return theme.color("--accent")
         case .added:
             return theme.color("--success")
-        case .conflict, .deleted:
+        case .conflict:
             return theme.color("--danger")
+        case .deleted:
+            // 85% opacity in the current app, blended as WebKit does.
+            return theme.over("--danger", 0.85, on: "--panel")
         case nil:
             return theme.color("--text")
         }

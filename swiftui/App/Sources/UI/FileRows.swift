@@ -59,9 +59,9 @@ struct FileRow: View {
             Text(Self.letter(kind))
                 .font(.custom("JetBrains Mono", size: 11.5).weight(.bold))
                 .foregroundStyle(letterColor)
-                .opacity(kind == "deleted" ? 0.8 : 1)
                 .frame(width: 12)
-            HStack(spacing: 6) {
+            // One text line on the page: the smaller folder name sits on the file name's baseline.
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 // The name, then the space the page puts between the two spans (13-point, not struck through).
                 Text(parts.name)
                     .foregroundColor(kind == "deleted" ? theme.color("--text-dim") : theme.color("--text"))
@@ -90,7 +90,8 @@ struct FileRow: View {
         case "modified", "typechange":
             return theme.color("--accent")
         case "deleted":
-            return theme.color("--danger")
+            // 80% opacity in the current app, blended as WebKit does.
+            return theme.over("--danger", 0.8, on: "--panel")
         case "renamed":
             return theme.color("--tok-property")
         case "untracked":

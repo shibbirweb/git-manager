@@ -87,12 +87,13 @@ struct CommitBox: View {
     /// The accent Commit button and its chevron, joined, at half opacity while there is nothing to commit.
     private var commitButton: some View {
         HStack(spacing: 1) {
+            // At half opacity while there is no message, as one solid color the way WebKit blends it.
             Text("Commit")
-                .foregroundStyle(Color.white)
+                .foregroundStyle(message.isEmpty ? theme.over("#ffffff", 0.5, on: "--panel") : Color.white)
                 .padding(.horizontal, 12)
                 .frame(width: 73, height: 28)
-                .background(HalfRoundedRectangle(roundedSide: .leading).fill(theme.color("--accent")))
-                .opacity(message.isEmpty ? 0.5 : 1)
+                .background(HalfRoundedRectangle(roundedSide: .leading)
+                    .fill(message.isEmpty ? theme.over("--accent", 0.5, on: "--panel") : theme.color("--accent")))
             Icon(name: "chevron-down", size: 13)
                 .foregroundStyle(Color.white)
                 .frame(width: 25, height: 28)

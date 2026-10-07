@@ -39,6 +39,15 @@ struct Theme {
         return Color(nsColor: one.mixed(weight, with: two).displayP3)
     }
 
+    /// `foreground` (a token or a literal such as "#ffffff") at `opacity` over the `background` token, as one solid
+    /// color the way WebKit blends it: for CSS opacity and translucent fills over a known surface.
+    func over(_ foreground: String, _ opacity: Double, on background: String) -> Color {
+        guard let top = css(foreground) ?? CSSColor.parse(foreground), let bottom = css(background) else {
+            return .clear
+        }
+        return Color(nsColor: top.over(bottom, opacity: opacity))
+    }
+
     /// The token converted by macOS itself, for what macOS draws in the current app too: its title bar shows the
     /// window's sRGB background, converted by macOS (#1e1f22 as #1e1f21), not by WebKit.
     func systemColor(_ tokenName: String) -> Color {

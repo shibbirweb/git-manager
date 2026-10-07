@@ -30,10 +30,15 @@ struct ActivityItem: View {
             }
             .frame(width: 36, height: 36)
             .foregroundStyle(active ? theme.color("--accent") : theme.color("--text-dim"))
-            .background(RoundedRectangle(cornerRadius: 8).fill(active ? theme.color("--accent").opacity(0.12) : .clear))
+            .background(RoundedRectangle(cornerRadius: 8).fill(activeFill))
             .contentShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+    }
+
+    /// The accent at 12% over the bar, as one solid color the way WebKit blends it.
+    private var activeFill: Color {
+        active ? theme.over("--accent", 0.12, on: "--panel-alt") : .clear
     }
 }
 

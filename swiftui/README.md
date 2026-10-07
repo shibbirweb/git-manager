@@ -125,5 +125,6 @@ src-tauri's test helpers.
 | 2b Edges: icons, header, activity bars, status bar | done |
 | 2c Changes list and commit box | done |
 | 2d Files panel tree | done |
-| 2e Welcome screen, exact color conversion | built, waiting for the check |
+| 2e Welcome screen, exact color conversion | done |
+| 2f Matching to 99% (font smoothing, blends, alignment) | built, waiting for the check |
 | 3 First slice | not started |

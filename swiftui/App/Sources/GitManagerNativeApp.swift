@@ -8,6 +8,12 @@ import SwiftUI
 struct GitManagerNativeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    init() {
+        // The current app's CSS turns font smoothing off (-webkit-font-smoothing: antialiased): thinner strokes than
+        // macOS draws by default. The same switch for this app, before any text is drawn.
+        UserDefaults.standard.set(0, forKey: "AppleFontSmoothing")
+    }
+
     var body: some Scene {
         Window("Git Manager Native", id: "main") {
             ContentView(initialRepoPath: AppDelegate.launchFolder())

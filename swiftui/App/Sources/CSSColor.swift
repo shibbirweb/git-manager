@@ -51,9 +51,25 @@ struct CSSColor: Equatable {
 
     /// The pixels the web view paints: converted to Display P3 here, rounded to 8 bits, shown unchanged.
     var displayP3: NSColor {
-        let converted = CSSColor.toDisplayP3([red, green, blue]).map { ($0 * 255).rounded() / 255 }
-        return NSColor(
-            displayP3Red: CGFloat(converted[0]), green: CGFloat(converted[1]), blue: CGFloat(converted[2]),
+        CSSColor.p3Color(p3Bytes, alpha: alpha)
+    }
+
+    /// The converted channels as the web view stores them: Display P3, rounded to 0...255.
+    var p3Bytes: [Double] {
+        CSSColor.toDisplayP3([red, green, blue]).map { ($0 * 255).rounded() }
+    }
+
+    /// This color at `opacity` over `background`, as WebKit blends: each converted 8-bit channel mixed and rounded
+    /// (12% of #3574f0 over #f2f3f5 is #dde4f3). Drawn as a solid color, since macOS's own compositing lands one step
+    /// off.
+    func over(_ background: CSSColor, opacity: Double) -> NSColor {
+        let blended = zip(p3Bytes, background.p3Bytes).map { (opacity * $0 + (1 - opacity) * $1).rounded() }
+        return CSSColor.p3Color(blended, alpha: 1)
+    }
+
+    private static func p3Color(_ bytes: [Double], alpha: Double) -> NSColor {
+        NSColor(
+            displayP3Red: CGFloat(bytes[0] / 255), green: CGFloat(bytes[1] / 255), blue: CGFloat(bytes[2] / 255),
             alpha: CGFloat(alpha)
         )
     }

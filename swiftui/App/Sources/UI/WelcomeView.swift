@@ -46,10 +46,14 @@ struct WelcomeView: View {
             Icon(name: "merge", size: 28)
                 .foregroundStyle(theme.color("--accent"))
                 .frame(width: 56, height: 56)
-                .background(RoundedRectangle(cornerRadius: 14).fill(theme.color("--accent").opacity(0.12)))
+                .background(
+                    RoundedRectangle(cornerRadius: 14).fill(theme.over("--accent", 0.12, on: "--editor-bg"))
+                )
             Text(title)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(theme.color("--text"))
+                // Measured against the current app (gm-measure, textpos): WebKit sets this title one pixel lower.
+                .offset(y: 0.5)
                 .padding(.bottom, 6)
             VStack(spacing: 4) {
                 ForEach(Self.actions, id: \.label) { action in
@@ -58,8 +62,9 @@ struct WelcomeView: View {
             }
             .frame(width: 300)
         }
-        .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Centered on whole points as WebKit centers the column (220, not 220.5): half a point lower would move
+        // every label a pixel. The page's 24-point padding is on both sides, so it does not move the center.
+        .modifier(WholePointCenter())
     }
 
     /// .action: 32 points tall, 12 points in, the 15-point icon 10 points from the label, the shortcut on the right.
@@ -69,6 +74,8 @@ struct WelcomeView: View {
             Text(label)
                 .font(.system(size: 13))
                 .lineLimit(1)
+                // Measured the same way: WebKit sets these labels one pixel higher.
+                .offset(y: -0.5)
             Spacer(minLength: 0)
             if !keys.isEmpty {
                 Text(keys)

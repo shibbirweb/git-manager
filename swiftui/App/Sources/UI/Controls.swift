@@ -5,10 +5,14 @@ import SwiftUI
 
 /// A borderless button with an icon: 28 x 28 with 6-point corners in the header (.icon-btn).
 struct IconButton<Label: View>: View {
+    @Environment(\.theme) private var theme
+
     var width: CGFloat = 28
     var height: CGFloat = 28
     var cornerRadius: CGFloat = 6
     var disabled = false
+    /// The surface under the button, for its disabled look.
+    var surface = "--panel"
     let action: () -> Void
     @ViewBuilder let label: () -> Label
 
@@ -19,10 +23,10 @@ struct IconButton<Label: View>: View {
                 .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
         .buttonStyle(.plain)
-        // The current app's .icon-btn:disabled is 40% opacity. SwiftUI's .disabled() would dim the button once
-        // more on top of that, so clicks are blocked without it.
+        // The current app's .icon-btn:disabled is 40% opacity, drawn as the solid color WebKit blends from it.
+        // SwiftUI's .disabled() would dim the button once more, so clicks are blocked without it.
         .allowsHitTesting(!disabled)
-        .opacity(disabled ? 0.4 : 1)
+        .foregroundStyle(disabled ? theme.over("--text", 0.4, on: surface) : theme.color("--text"))
     }
 }
 
@@ -52,5 +56,32 @@ struct HeaderDivider: View {
         theme.color("--border-strong")
             .frame(width: 1, height: 18)
             .padding(.horizontal, 4)
+    }
+}
+
+/// Centers its content in the space offered and rounds the position down to whole points, as WebKit lays out a
+/// centered flex column (220.5 becomes 220); SwiftUI would keep the half point.
+struct WholePointCenter: ViewModifier {
+    func body(content: Content) -> some View {
+        WholePointCenterLayout {
+            content
+        }
+    }
+}
+
+private struct WholePointCenterLayout: Layout {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        proposal.replacingUnspecifiedDimensions()
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            let origin = CGPoint(
+                x: bounds.minX + ((bounds.width - size.width) / 2).rounded(.down),
+                y: bounds.minY + ((bounds.height - size.height) / 2).rounded(.down)
+            )
+            subview.place(at: origin, proposal: ProposedViewSize(size))
+        }
     }
 }
