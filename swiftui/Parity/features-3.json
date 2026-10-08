@@ -86,7 +86,7 @@
       "scenario": "changes",
       "check": "Repository, branch, sync and changes on the left; bell, star, bug, memory and brush on the right",
       "native": "partial",
-      "gaps": ["the items do nothing when clicked", "cursor and file details of an open file"]
+      "gaps": ["the items do nothing when clicked", "the selection count next to the cursor position"]
     },
     {
       "id": "memory", "name": "Memory readout and memory log", "usage": "Memory-Use.md",

@@ -297,3 +297,4 @@ the numbers. Newest last.
   HDR-off rules and the extendedRange plumbing are gone; the fold steps' icons snap like an <svg> (SVGSnap). Below
   the title bar, HDR off, ae0479e to GM-48: diff folded 99.61 to 99.66% (light), 99.61 to 99.67% (dark); every line
   99.59 to 99.64%, 99.56 to 99.65%; Changes and staged unchanged (99.73 to 99.74%).
+- Continued in [swiftui-status-2.md](swiftui-status-2.md) (GM-52 on).

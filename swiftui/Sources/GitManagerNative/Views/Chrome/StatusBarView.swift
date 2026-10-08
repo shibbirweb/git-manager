@@ -12,6 +12,8 @@ struct StatusBarView: View {
     let head: HeadInfo?
     let changeCount: Int
     let memoryBytes: UInt64?
+    /// The shown file's items ("Ln 1, Col 1", "Spaces: 2", "LF", "TypeScript"), before the bell.
+    var fileItems: [String] = []
     /// The write running now ("Stage"), shown before the bell.
     var busy: String?
     /// Unread errors and warnings on the bell's badge, red when one is an error.
@@ -36,6 +38,15 @@ struct StatusBarView: View {
                 BusyLabel(label: busy, spinnerSize: 10, gap: 5)
                     .padding(.horizontal, 7)
                     .frame(height: 20)
+            }
+            ForEach(Array(fileItems.enumerated()), id: \.offset) { _, text in
+                ExactText(text: text)
+                    .padding(.horizontal, 7)
+                    .frame(height: 20)
+            }
+            if !fileItems.isEmpty {
+                // .gap: 6 points after the file's items.
+                Color.clear.frame(width: 6, height: 1)
             }
             bell
             iconOnly("star")

@@ -3,6 +3,7 @@
 // matched against swiftui/Reference.
 
 import AppKit
+import NativeCore
 import SwiftUI
 
 struct ContentView: View {
@@ -10,6 +11,7 @@ struct ContentView: View {
 
     @ObservedObject private var model = AppModel.shared
     @ObservedObject private var toasts = ToastCenter.shared
+    @ObservedObject private var editor = EditorModel.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -27,19 +29,7 @@ struct ContentView: View {
         } sidebar: {
             ChangesPanel()
         } main: {
-            if let open = model.openDiff {
-                DiffScreen(open: open, close: model.closeDiff)
-                    // Each file and area keeps its own folds, change and scroll, as the current app rebuilds per file.
-                    .id("\(open.staged ? "staged" : "unstaged"):\(open.filePath)")
-            } else {
-                EditorArea {
-                if model.repoPath != nil {
-                    RepoCrumb(name: model.folderName, hasChanges: model.changeCount > 0)
-                }
-                } content: {
-                    WelcomeView(title: model.folderName)
-                }
-            }
+            MainArea()
         } files: {
             FilesPanel()
         } rightBar: {
@@ -50,6 +40,7 @@ struct ContentView: View {
                 head: model.snapshot?.status?.head,
                 changeCount: model.changeCount,
                 memoryBytes: model.memoryBytes,
+                fileItems: fileItems,
                 busy: model.busy,
                 unread: toasts.unread,
                 unreadError: toasts.unreadError,
@@ -80,6 +71,17 @@ struct ContentView: View {
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
             }
         }
+    }
+
+    /// The shown file's cursor, indentation, line ends and language, as the status bar lists them.
+    private var fileItems: [String] {
+        guard let file = editor.file, !editor.diffActive || model.openDiff == nil else {
+            return []
+        }
+        let cursor = editor.cursor
+        let column = file.lines.indices.contains(cursor.line) ? cursor.column + 1 : 1
+        let position = "Ln \(cursor.line + 1), Col \(column)"
+        return [position, EditorInfo.indentLabel(file.indent), file.eolLabel, file.language]
     }
 
     /// The header's theme button: switches between light and dark for this app.

@@ -90,7 +90,9 @@ enum Reference {
         let appPath = option("--current-app", in: &arguments)
             ?? AppLauncher.defaultAppPath(.current, swiftuiDir: swiftuiDir)
         let gate = try Display.gate(from: &arguments)
-        guard arguments.isEmpty, modes.allSatisfy({ $0 == "light" || $0 == "dark" }) else {
+        let names = option("--screens", in: &arguments).map { $0.split(separator: ",").map(String.init) }
+        let chosen = chosenScreens(names)
+        guard arguments.isEmpty, !chosen.isEmpty, modes.allSatisfy({ $0 == "light" || $0 == "dark" }) else {
             print(usage)
             return 2
         }
@@ -118,9 +120,11 @@ enum Reference {
             do {
                 let info = try await app.client.call("get_app_info").structured ?? [:]
                 let version = (info["version"] ?? info["appVersion"]).map { "\($0)" } ?? "?"
-                for screen in screens {
+                for screen in chosen {
                     if screen.name == "diff" {
                         try await showDiff(app, fallbackRepoPath: folderPath)
+                    } else if screen.name == "file" {
+                        try await Measure.openFile(app)
                     }
                     try await Task.sleep(nanoseconds: 1_500_000_000)
                     let name = "\(screen.name)-\(mode)"

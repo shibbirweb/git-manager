@@ -42,10 +42,14 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Shows a changed file's staged or unstaged diff in the main area.
-    func showDiff(_ file: FileStatus, staged: Bool) async {
+    /// Shows a changed file's staged or unstaged diff in the main area; `reveal` brings the diff tab to the front
+    /// (a click), where a refresh that follows the file leaves the tab on screen as it is.
+    func showDiff(_ file: FileStatus, staged: Bool, reveal: Bool = true) async {
         guard let repoPath else {
             return
+        }
+        if reveal {
+            EditorModel.shared.diffActive = true
         }
         let args = GetFileDiffArgs(
             repoPath: repoPath, filePath: file.path, origPath: file.origPath, area: staged ? "staged" : "unstaged"
@@ -75,6 +79,7 @@ final class AppModel: ObservableObject {
 
     func closeDiff() {
         openDiff = nil
+        EditorModel.shared.diffActive = false
     }
 
     /// Reads the status again after a write or a click on Refresh; an unchanged status keeps the one on screen.
@@ -112,7 +117,7 @@ final class AppModel: ObservableObject {
             closeDiff()
             return
         }
-        await showDiff(file, staged: next.staged)
+        await showDiff(file, staged: next.staged, reveal: false)
     }
 
     /// Opens a folder from the UI: reads its status off the main thread.
@@ -140,6 +145,10 @@ final class AppModel: ObservableObject {
     }
 
     func begin(_ folderPath: String) {
+        if repoPath != folderPath {
+            openDiff = nil
+            EditorModel.shared.reset()
+        }
         repoPath = folderPath
         loading = true
     }

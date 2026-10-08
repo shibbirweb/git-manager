@@ -86,9 +86,12 @@ extension MemoryBench {
             + "paint \(ms(draw, "averageMs")) ms average, \(ms(draw, "p95Ms")) ms p95, \(ms(draw, "maxMs")) ms max"
     }
 
-    static func write(_ runs: [AppRun], lines: Int, speed: Int, gate: Display.Gate, outDir: String) throws {
+    static func write(
+        _ runs: [AppRun], lines: Int, speed: Int, screen: String, gate: Display.Gate, outDir: String
+    ) throws {
         var text = "# Memory with a big file\n\n"
-        text += "A \(lines)-line PHP file with every eighth line changed, shown as a diff (nothing folds) and "
+        let shown = screen == "file" ? "open in a file tab" : "shown as a diff (nothing folds)"
+        text += "A \(lines)-line PHP file with every eighth line changed, \(shown) and "
         text += "scrolled down and back at \(speed) points a frame. Memory as Activity Monitor counts it, all "
         text += "processes of the app; deltas against idle.\n\n"
         text += gate.markdownLine + "\n\n"
@@ -110,7 +113,9 @@ extension MemoryBench {
         text += "\nScrolling: " + runs.map(scrollSummary).joined(separator: "; ") + ".\n"
         let reportPath = (outDir as NSString).appendingPathComponent("report.md")
         try text.write(toFile: reportPath, atomically: true, encoding: .utf8)
-        let report: [String: Any] = ["lines": lines, "speed": speed, "apps": json, "display": gate.json]
+        let report: [String: Any] = [
+            "lines": lines, "speed": speed, "screen": screen, "apps": json, "display": gate.json,
+        ]
         let data = try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
         try data.write(to: URL(fileURLWithPath: (outDir as NSString).appendingPathComponent("report.json")))
         print(text)

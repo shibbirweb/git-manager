@@ -18,6 +18,7 @@ use crate::paths::RealPath;
 
 #[path = "../../../../src-tauri/src/commands/commit_options.rs"]
 mod commit_options;
+mod editor;
 mod write;
 
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
@@ -27,6 +28,8 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "memory_usage" => to_json(crate::memory::usage()),
         "list_directories" => to_json(list_directories(parse(command, args)?)?),
         "get_file_diff" => to_json(get_file_diff(parse(command, args)?)?),
+        "read_worktree_file" => to_json(editor::read_worktree_file(parse(command, args)?)?),
+        "blame_contents" => to_json(editor::blame_contents(parse(command, args)?)?),
         "stage_files" => to_json(write::stage_files(parse(command, args)?)?),
         "unstage_files" => to_json(write::unstage_files(parse(command, args)?)?),
         "commit" => to_json(write::commit(parse(command, args)?)?),

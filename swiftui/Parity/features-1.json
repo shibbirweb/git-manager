@@ -24,11 +24,10 @@
       ]
     },
     {
-      "id": "files-panel", "name": "Files panel", "usage": "Files-Panel.md", "scenario": "changes",
+      "id": "files-panel", "name": "Files panel", "usage": "Files-Panel.md", "scenario": "file",
       "check": "The tree with chevrons, icons, names and status colors; folders open and close",
       "native": "partial",
       "gaps": [
-        "opening a file from the tree",
         "deleted files in the tree and the exact status letter (U for untracked)",
         "the heading buttons, resizing and hiding the panel"
       ]
@@ -46,11 +45,13 @@
       "gaps": ["the Minimal and Material Icons levels (the default, no icons, matches)"]
     },
     {
-      "id": "editor", "name": "Editor and tabs", "usage": "Editor-and-Tabs.md", "scenario": "editor-file",
-      "check": "A file in a tab with the path bar and change markers; the empty editor area without one",
+      "id": "editor", "name": "Editor and tabs", "usage": "Editor-and-Tabs.md", "scenario": "file",
+      "check": "A file in a tab with the path bar, the code and the blame note; the empty editor area without one",
       "native": "partial",
       "gaps": [
-        "opening, editing and saving files (only the empty editor area and the Diff tab exist)",
+        "editing and saving (the file view is read only: the cursor moves, the text does not change)",
+        "a changed file's gutter markers, badge and previous and next change; Blame in the file bar",
+        "binary files, images and Markdown previews show only a message",
         "the six actions of the empty editor area do nothing"
       ]
     },
@@ -58,8 +59,10 @@
       "id": "tab-strip", "name": "Pin, reorder and wrap tabs", "usage": "Pin-Reorder-and-Wrap-Tabs.md",
       "scenario": "tabs",
       "check": "A pinned tab first, dragging tabs, wrapped rows",
-      "native": "missing",
-      "gaps": ["more than the one Diff tab"]
+      "native": "partial",
+      "gaps": [
+        "file tabs open (preview and kept), switch and close; pinning, dragging, wrapping and the tab menu are missing"
+      ]
     },
     {
       "id": "single-tab-title", "name": "Single tab title", "usage": "Single-Tab-Title.md",
@@ -123,7 +126,7 @@
       "id": "navigation-bar", "name": "Navigation Bar", "usage": "Navigation-Bar.md", "scenario": "navigation-bar",
       "check": "The path of the open file; Cmd+Up opens the folder's list with search",
       "native": "partial",
-      "gaps": ["only the repository crumb over the empty editor area", "folder lists, search and keys"]
+      "gaps": ["the crumbs of an open file show, but do nothing when clicked", "folder lists, search and keys"]
     },
     {
       "id": "find-replace", "name": "Find and replace", "usage": "Find-and-Replace.md", "scenario": "find-replace",

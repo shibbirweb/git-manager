@@ -108,6 +108,17 @@
       ]
     },
     {
+      "id": "file",
+      "title": "src/catalog.ts in a file tab",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Double-click src/catalog.ts in the Files panel: it opens in a kept tab.",
+        "The tab shows the path bar, the code and the cursor line's blame note (the file has no changes)."
+      ],
+      "run": { "openFile": "src/catalog.ts" }
+    },
+    {
       "id": "tabs",
       "title": "Tab strip: pinned and wrapped tabs",
       "folder": "acme/storefront",

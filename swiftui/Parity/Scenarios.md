@@ -16,16 +16,13 @@ Measured: light 99.18% (150 MB / 32 MB, 2026-10-08), dark 99.13% (136 MB / 32 MB
 
 - Window shell (`window-shell`, done): Title bar, header, activity bars, sidebars, gaps and status bar at the same
   sizes and colors.
-- Files panel (`files-panel`, partial): The tree with chevrons, icons, names and status colors; folders open and
-  close. Native lacks: opening a file from the tree; deleted files in the tree and the exact status letter (U for
-  untracked); the heading buttons, resizing and hiding the panel.
 - Commit box layout (`commit-box-layout`, partial): The single commit box at the bottom of Changes and the layout
   button in its title bar. Native lacks: the layout button does nothing; the Per repository layout.
 - Repository actions (`repo-actions`, partial): Branch, Sync, Commit, Refresh and ... in the Changes title bar. Native
   lacks: Branch and Sync are drawn but do nothing (Commit and Refresh work); the ... menu.
 - Status bar and help links (`status-bar`, partial): Repository, branch, sync and changes on the left; bell, star,
-  bug, memory and brush on the right. Native lacks: the items do nothing when clicked; cursor and file details of an
-  open file.
+  bug, memory and brush on the right. Native lacks: the items do nothing when clicked; the selection count next to the
+  cursor position.
 
 ## diff: Side-by-side diff of src/cart.ts (runs in both apps)
 
@@ -130,11 +127,26 @@ Folder: demo `acme/storefront`
 2. Double-click src/cart.ts in the Files panel: a tab with the code and the change markers in the gutter.
 3. Put the cursor on line 10.
 
-- Editor and tabs (`editor`, partial): A file in a tab with the path bar and change markers; the empty editor area
-  without one. Native lacks: opening, editing and saving files (only the empty editor area and the Diff tab exist);
-  the six actions of the empty editor area do nothing.
 - Editing code (`code-editing`, missing): Multiple cursors, the Code menu, Go to Line, folding and completion. Native
   lacks: an editor (the native diff panes are read-only drawings).
+
+## file: src/catalog.ts in a file tab (runs in both apps)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Double-click src/catalog.ts in the Files panel: it opens in a kept tab.
+3. The tab shows the path bar, the code and the cursor line's blame note (the file has no changes).
+
+Measured: light 99.63% (233 MB / 43 MB, 2026-10-08), dark 99.63% (234 MB / 43 MB, 2026-10-08).
+
+- Files panel (`files-panel`, partial): The tree with chevrons, icons, names and status colors; folders open and
+  close. Native lacks: deleted files in the tree and the exact status letter (U for untracked); the heading buttons,
+  resizing and hiding the panel.
+- Editor and tabs (`editor`, partial): A file in a tab with the path bar, the code and the blame note; the empty
+  editor area without one. Native lacks: editing and saving (the file view is read only: the cursor moves, the text
+  does not change); a changed file's gutter markers, badge and previous and next change; Blame in the file bar; binary
+  files, images and Markdown previews show only a message; the six actions of the empty editor area do nothing.
 
 ## tabs: Tab strip: pinned and wrapped tabs (native app cannot show it yet)
 
@@ -144,8 +156,8 @@ Folder: demo `acme/storefront`
 2. Double-click src/cart.ts, src/checkout.ts, README.md, package.json and docs/checkout.md.
 3. Right-click the README.md tab, choose Pin Tab, and turn on Settings > Editor > Wrap tabs.
 
-- Pin, reorder and wrap tabs (`tab-strip`, missing): A pinned tab first, dragging tabs, wrapped rows. Native lacks:
-  more than the one Diff tab.
+- Pin, reorder and wrap tabs (`tab-strip`, partial): A pinned tab first, dragging tabs, wrapped rows. Native lacks:
+  file tabs open (preview and kept), switch and close; pinning, dragging, wrapping and the tab menu are missing.
 
 ## single-tab: Single tab mode (native app cannot show it yet)
 
@@ -219,7 +231,7 @@ Folder: demo `acme/storefront`
 2. Press Cmd+Up (Edit > Jump to Navigation Bar): the list of src opens with cart.ts selected.
 
 - Navigation Bar (`navigation-bar`, partial): The path of the open file; Cmd+Up opens the folder's list with search.
-  Native lacks: only the repository crumb over the empty editor area; folder lists, search and keys.
+  Native lacks: the crumbs of an open file show, but do nothing when clicked; folder lists, search and keys.
 
 ## find-replace: Find and replace bar (native app cannot show it yet)
 
@@ -257,22 +269,3 @@ Folder: demo `acme/storefront`
 2. Click Inline in the diff toolbar.
 
 - Inline diffs (`inline-diffs`, missing): Removed lines above the new ones in one column.
-
-## conflicts: Conflicts dialog (native app cannot show it yet)
-
-Folder: demo `acme/payments-api`
-
-1. Start the app on demo/acme/payments-api, which is stopped in a merge with conflicts.
-2. Click Resolve... on the Conflicts group in Changes.
-
-- Resolving conflicts (`conflicts`, missing): The operation banner, the Conflicts group and dialog, Abort and
-  Continue.
-
-## merge-tool: Merge tool (native app cannot show it yet)
-
-Folder: demo `acme/payments-api`
-
-1. Start the app on demo/acme/payments-api.
-2. Click the first file of the Conflicts group: the three pane merge tool.
-
-- Merge tool (`merge-tool`, missing): Three panes, taking changes from either side, the result.

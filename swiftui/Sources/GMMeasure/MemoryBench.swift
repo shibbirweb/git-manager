@@ -1,7 +1,8 @@
 // gm-measure memory: what a big file costs in each app. A fresh repository holds a generated PHP file of --lines
 // lines (4000 by default) with every eighth line changed, so the diff folds nothing. Each app, isolated, opens the
-// repository and is sampled four times: idle, with the file's diff open, while scrolling it down and back (the
-// current app's scroll_view tool, the native app's scroll action), and after scrolling. Writes
+// repository and is sampled four times: idle, with the file's diff open (or, with --screen file, the file itself in a
+// tab), while scrolling it down and back (the current app's scroll_view tool, the native app's scroll action), and
+// after scrolling. Writes
 // swiftui/build/measure/<time>-memory/report.md and report.json.
 
 import Foundation
@@ -29,8 +30,13 @@ enum MemoryBench {
         let speed = max(5, Int(option("--speed", in: &arguments) ?? "200") ?? 200)
         let mode = option("--mode", in: &arguments) ?? "light"
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
+        let screen = option("--screen", in: &arguments) ?? "diff"
+        let appPaths: [AppKind: String?] = [
+            .current: option("--current-app", in: &arguments),
+            .native: option("--native-app", in: &arguments),
+        ]
         let gate = try Display.gate(from: &arguments)
-        guard arguments.isEmpty, mode == "light" || mode == "dark" else {
+        guard arguments.isEmpty, mode == "light" || mode == "dark", screen == "diff" || screen == "file" else {
             print(usage)
             return 2
         }
@@ -43,38 +49,43 @@ enum MemoryBench {
 
         var runs: [AppRun] = []
         for kind in only.map({ [$0] }) ?? AppKind.allCases {
-            let appPath = AppLauncher.defaultAppPath(kind, swiftuiDir: swiftuiDir)
+            let appPath = (appPaths[kind] ?? nil) ?? AppLauncher.defaultAppPath(kind, swiftuiDir: swiftuiDir)
             print("\(kind.rawValue): starting \(appPath)")
             let home = (workDir as NSString).appendingPathComponent("\(kind.rawValue)-home")
             let app = try await AppLauncher.launch(
                 kind: kind, home: home, folderPath: repoPath, appPath: appPath, mode: mode
             )
             do {
-                runs.append(try await phases(app, sampleS: sampleS, speed: speed, gate: gate))
+                runs.append(try await phases(app, screen: screen, sampleS: sampleS, speed: speed, gate: gate))
                 await app.stop()
             } catch {
                 await app.stop()
                 throw error
             }
         }
-        try write(runs, lines: lines, speed: speed, gate: gate, outDir: outDir)
+        try write(runs, lines: lines, speed: speed, screen: screen, gate: gate, outDir: outDir)
         return 0
     }
 
     /// Each phase starts once the display meets the run's HDR requirement (the scroll's frame times and the GPU's
     /// memory depend on it too).
     private static func phases(
-        _ app: RunningApp, sampleS: Int, speed: Int, gate: Display.Gate
+        _ app: RunningApp, screen: String, sampleS: Int, speed: Int, gate: Display.Gate
     ) async throws -> AppRun {
         let name = app.kind.rawValue
         var phases: [Phase] = []
         try await Task.sleep(nanoseconds: 3_000_000_000)
         try await gate.require("before \(name) idle")
         phases.append(try await sample(app, "idle", seconds: sampleS))
-        try await showDiff(app)
+        let opened = screen == "file" ? "file open" : "diff open"
+        if screen == "file" {
+            try await Measure.openFile(app, filePath: fileName)
+        } else {
+            try await showDiff(app)
+        }
         try await Task.sleep(nanoseconds: 3_000_000_000)
-        try await gate.require("before \(name) diff open")
-        phases.append(try await sample(app, "diff open", seconds: sampleS))
+        try await gate.require("before \(name) \(opened)")
+        phases.append(try await sample(app, opened, seconds: sampleS))
 
         print("\(name): scrolling")
         try await gate.require("before \(name) scrolling")

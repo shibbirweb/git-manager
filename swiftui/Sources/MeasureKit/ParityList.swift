@@ -96,6 +96,8 @@ public struct ParityRunSpec: Codable, Equatable {
     /// "Collapse unchanged" in both apps' diffs: the current app's localStorage and the native app's
     /// ~/.gitmanager-native/diff.json, checked on screen in both before the capture.
     public var collapseUnchanged: Bool?
+    /// A file of the folder opened in a kept tab in both apps (open_file / app open_file).
+    public var openFile: String?
     /// Checked in the current app before capturing; the scenario fails when one does not hold.
     public var expectCurrent: [ParityExpectation]?
 

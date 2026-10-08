@@ -34,7 +34,8 @@ enum ReferenceSnapshot {
             "mode": mode,
             "app": "Git Manager \(version)",
             "demo": "scripts/make-docs-demo.sh, acme/storefront"
-                + (screen.name == "diff" ? ", diff of \(Reference.diffFile)" : ""),
+                + (screen.name == "diff" ? ", diff of \(Reference.diffFile)" : "")
+                + (screen.name == "file" ? ", \(Measure.shownFile) in an editor tab" : ""),
             "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
         ]
         var total = 0

@@ -76,9 +76,13 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `take_screenshot` | yes: the window without its shadow; captured in-app, so no Screen Recording permission |
 | `git_status` | yes |
 | `get_app_info` | native fields (name, version, pid, bundle id) |
-| `app` | native only: `get_state`, `open_folder`, `show_diff`, `diff`, `scroll`, `stage`, `unstage`, `commit` |
+| `app` | native only, with the actions below |
 
-`diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
+The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `scroll`, `stage`, `unstage` and
+`commit`. `diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
+`open_file` opens `filePath` (relative to the folder, or absolute) in a kept tab, like a double click in the Files
+panel (`preview` true: the preview tab), and answers once the text, its colors and its blame note are on screen;
+`get_state` lists the tabs and the shown file under `editor`.
 
 `stage` and `unstage` take `filePaths` (without them, the whole group, like Stage all and Unstage all); `commit`
 takes `message` and `amend`. They run through the window like a click, so the busy state, the toasts and the status
@@ -103,7 +107,9 @@ swift run -c release gm-measure measure --screen diff  # the same on the diff of
 swift run -c release gm-measure measure --screen diff --collapse off   # every line, the first change centered
 swift run -c release gm-measure measure --screen diff --walk 37        # scroll down and back before the shot
 swift run -c release gm-measure measure --screen staged  # the Changes screen after staging src/cart.ts
+swift run -c release gm-measure measure --screen file    # src/catalog.ts in a file tab
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
+swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)
@@ -228,3 +234,4 @@ src-tauri's test helpers.
 | GM-45 Diff interactions (collapse, fold steps, previous and next change), smooth scrolling | done |
 | 3c Stage, unstage and commit through the bridge: hover buttons, busy state, toasts, Amend, Undo | done |
 | GM-51 HDR gate in gm-measure (`--hdr`), parity list and run specs for 3c and GM-45 | done |
+| GM-52 File tabs and the read-only file view: open from the Files panel, file bar, editor canvas, status items | done |

@@ -1,0 +1,64 @@
+{
+  "app": "Git Manager 0.1.0-beta.7",
+  "demo": "scripts/make-docs-demo.sh, acme/storefront, src/catalog.ts in an editor tab",
+  "elements": [
+    {
+      "classes": "cm-gutterElement cm-activeLineGutter", "rect": {"height": 16, "width": 5, "x": 345, "y": 109},
+      "styles": {
+        "background-color": "rgb(38, 40, 46)", "border-bottom-color": "rgb(140, 144, 153)",
+        "border-left-color": "rgb(140, 144, 153)", "border-right-color": "rgb(140, 144, 153)",
+        "border-top-color": "rgb(140, 144, 153)", "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "4px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gutterElement cm-activeLineGutter", "rect": {"height": 16, "width": 14, "x": 350, "y": 109},
+      "styles": {
+        "background-color": "rgb(38, 40, 46)", "border-bottom-color": "rgb(140, 144, 153)",
+        "border-left-color": "rgb(140, 144, 153)", "border-right-color": "rgb(140, 144, 153)",
+        "border-top-color": "rgb(140, 144, 153)", "color": "rgb(140, 144, 153)", "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "4px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 14, "x": 350, "y": 253},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "128px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 14, "x": 350, "y": 349},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "80px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 14, "x": 350, "y": 413},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "48px"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 60, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "file gutters", "piece": "2 of 2", "screen": "file", "selector": [".file-view .cm-gutterElement"]
+}

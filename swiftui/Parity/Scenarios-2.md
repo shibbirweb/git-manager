@@ -1,5 +1,24 @@
 # Parity scenarios (continued)
 
+## conflicts: Conflicts dialog (native app cannot show it yet)
+
+Folder: demo `acme/payments-api`
+
+1. Start the app on demo/acme/payments-api, which is stopped in a merge with conflicts.
+2. Click Resolve... on the Conflicts group in Changes.
+
+- Resolving conflicts (`conflicts`, missing): The operation banner, the Conflicts group and dialog, Abort and
+  Continue.
+
+## merge-tool: Merge tool (native app cannot show it yet)
+
+Folder: demo `acme/payments-api`
+
+1. Start the app on demo/acme/payments-api.
+2. Click the first file of the Conflicts group: the three pane merge tool.
+
+- Merge tool (`merge-tool`, missing): Three panes, taking changes from either side, the result.
+
 ## mergetool-mode: git mergetool window (native app cannot show it yet)
 
 Folder: demo `acme/payments-api`

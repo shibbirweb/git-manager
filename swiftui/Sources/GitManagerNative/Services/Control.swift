@@ -52,6 +52,8 @@ enum Control {
             return reply(ok: true, structured: onMain { state() })
         case "diff":
             return diff(args)
+        case "open_file":
+            return openFile(args)
         case "scroll":
             return scroll(speed: args["speed"] as? Double ?? 80, rounds: args["rounds"] as? Int ?? 1)
         case "open_folder":
@@ -115,6 +117,7 @@ enum Control {
             "collapseUnchanged": DiffPrefs.shared.collapseUnchanged,
         ]
         state.merge(changesState()) { _, changes in changes }
+        state["editor"] = editorState()
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
             state["window"] = [

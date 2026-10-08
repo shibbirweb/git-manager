@@ -144,7 +144,7 @@ enum ParityRun {
     }
 
     /// The run spec's steps: stage files, open a diff (checking "Collapse unchanged" in both apps when the spec
-    /// sets it), then check what the current app must show.
+    /// sets it), open a file, then check what the current app must show.
     private static func follow(_ spec: ParityRunSpec, in app: RunningApp) async throws {
         if let filePaths = spec.stageFiles, !filePaths.isEmpty {
             try await Measure.stageFiles(app, filePaths)
@@ -153,6 +153,9 @@ enum ParityRun {
             try await Measure.showDiff(
                 app, filePath: filePath, staged: spec.staged ?? false, collapse: spec.collapseUnchanged
             )
+        }
+        if let filePath = spec.openFile {
+            try await Measure.openFile(app, filePath: filePath)
         }
         if app.kind == .current {
             for expectation in spec.expectCurrent ?? [] {

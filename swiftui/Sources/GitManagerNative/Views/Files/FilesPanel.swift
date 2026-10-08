@@ -7,6 +7,7 @@ import SwiftUI
 struct FilesPanel: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var files = FilesModel.shared
+    @ObservedObject private var editor = EditorModel.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,8 +35,8 @@ struct FilesPanel: View {
                     .offset(y: 0.5)
                 Spacer(minLength: 0)
                 headButton("plus", size: 14)
-                // Locate the open file: off until a file is open, as in the current app.
-                headButton("locate", size: 14, disabled: true)
+                // Locate the open file: off until a file is shown, as in the current app.
+                headButton("locate", size: 14, disabled: editor.file == nil || editor.diffActive)
                 headButton("chevron-up", size: 14)
                 headButton("refresh", size: 13)
                 headButton("x", size: 14)
@@ -60,12 +61,21 @@ struct FilesPanel: View {
             let path = dirPath.isEmpty ? entry.name : "\(dirPath)/\(entry.name)"
             FileTreeRow(entry: entry, depth: depth, expanded: files.expanded.contains(path), tone: files.tones[path])
                 .onTapGesture {
-                    if entry.isDir {
-                        Task {
+                    Task {
+                        if entry.isDir {
                             await files.toggle(path)
+                        } else if let rootPath = files.rootPath {
+                            // A single click opens the preview tab, as in the current app.
+                            let filePath = (rootPath as NSString).appendingPathComponent(path)
+                            await EditorModel.shared.open(filePath, pin: false)
                         }
                     }
                 }
+                .simultaneousGesture(TapGesture(count: 2).onEnded {
+                    if !entry.isDir, let rootPath = files.rootPath {
+                        EditorModel.shared.keep((rootPath as NSString).appendingPathComponent(path))
+                    }
+                })
             if entry.isDir && files.expanded.contains(path) {
                 rows(in: path, depth: depth + 1)
             }

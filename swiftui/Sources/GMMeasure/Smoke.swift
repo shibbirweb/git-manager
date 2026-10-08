@@ -61,6 +61,7 @@ enum Smoke {
             check("sample_memory", (samples["samples"] as? [Any])?.count ?? 0 >= 4)
 
             try await checkDiff(app, check: check)
+            try await checkFiles(app.client, check: check)
 
             let shot = try await app.client.call("take_screenshot")
             let image = try shot.image.map(RGBAImage.decode(pngData:))
@@ -107,7 +108,6 @@ enum Smoke {
         let collapseWorks = !off.collapse && off.folds.isEmpty && on.collapse && on.folds == folded
         check("collapse unchanged", collapseWorks && off.counter == "1 of 2", "\(off.folds) \(on.folds)")
     }
-
 
     /// Stage, unstage and commit through the window (app action=stage, unstage, commit), each answered once the
     /// status is read again.

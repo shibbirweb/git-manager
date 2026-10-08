@@ -1,6 +1,6 @@
-// A file's diff in the main area (src/lib/views/EditorTabs.svelte, src/lib/diff/DiffView.svelte), measured in
-// swiftui/Reference/diff-<mode>/editor-tabs.json, diff-toolbar.json and diff-header.json: the tab strip, the
-// toolbar, the two pane labels, then the panes (DiffPanes.swift).
+// A file's diff in the main area under the tab strip (src/lib/diff/DiffView.svelte), measured in
+// swiftui/Reference/diff-<mode>/diff-toolbar.json and diff-header.json: the toolbar, the two pane labels, then the
+// panes (DiffPanes.swift).
 
 import NativeCore
 import SwiftUI
@@ -12,13 +12,11 @@ struct DiffScreen: View {
     @StateObject private var state = DiffState()
 
     let open: OpenDiff
-    let close: () -> Void
 
     var body: some View {
         let parts = FileRow.split(open.filePath)
         let content = state.content(open: open, collapse: prefs.collapseUnchanged, theme: theme)
         VStack(spacing: 0) {
-            tabStrip(name: parts.name)
             DiffToolbar(
                 name: parts.name, directory: parts.directory, changeCount: state.changeCount, current: state.current,
                 staged: open.staged, collapse: prefs.collapseUnchanged, go: state.go,
@@ -27,43 +25,6 @@ struct DiffScreen: View {
             labels
             DiffPanes(content: content, scroll: state.scroll, onFold: state.stepFold)
         }
-    }
-
-    /// 34 points on --panel-alt with a bottom line; the active tab on --editor-bg with a 2-point accent line on top
-    /// and a right border: icon, name, the dim "Diff", close.
-    private func tabStrip(name: String) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                HStack(spacing: 6) {
-                    Icon(name: "git-compare", size: 13)
-                        .opacity(0.8)
-                    ExactText(text: name, size: 13)
-                    // 11.5-point text with the normal line height: WebKit sets it half a point lower (measured).
-                    ExactText(text: "Diff", size: 11.5)
-                        .foregroundStyle(theme.ink("--text-faint"))
-                        .offset(y: 0.5)
-                }
-                .padding(.leading, 12)
-                .padding(.trailing, 6)
-                // .tab-close is --text-dim, unlike .icon-btn.
-                Icon(name: "x", size: 12)
-                    .foregroundStyle(theme.ink("--text-dim"))
-                    .frame(width: 20, height: 20)
-                    .contentShape(Rectangle())
-                    .onTapGesture(perform: close)
-                    .padding(.trailing, 4)
-                theme.color("--border-strong").frame(width: 1)
-            }
-            .frame(height: 33)
-            .background(theme.color("--editor-bg"))
-            .overlay(alignment: .top) {
-                theme.color("--accent").frame(height: 2)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            theme.color("--border-strong").frame(height: 1)
-        }
-        .frame(height: 34)
-        .background(theme.color("--panel-alt"))
     }
 
     /// "Index" and "Working Tree" (HEAD and Index for a staged diff): 24 points on --panel-alt with a --border line
