@@ -1,5 +1,5 @@
-// gm-measure tokens: writes App/Sources/Generated/, every theme's 73 color tokens exactly as the current app
-// computes them (src/lib/themes/catalog.ts), so SwiftUI colors are never typed by hand. The catalog is
+// gm-measure tokens: writes Sources/GitManagerNative/Generated/, every theme's 73 color tokens exactly as the
+// current app computes them (src/lib/themes/catalog.ts), so SwiftUI colors are never typed by hand. The catalog is
 // TypeScript, so this runs it with Bun, the way the tool runs git and open. One small file per theme keeps
 // every file within the line standard. --check fails (exit 1) when the files are out of date; CI runs it.
 
@@ -7,7 +7,7 @@ import Foundation
 import MeasureKit
 
 enum Tokens {
-    static let generatedDir = (swiftuiDir as NSString).appendingPathComponent("App/Sources/Generated")
+    static let generatedDir = (swiftuiDir as NSString).appendingPathComponent("Sources/GitManagerNative/Generated")
 
     /// Prints the token names and every theme with its kind and colors as JSON.
     private static let exportScript = """

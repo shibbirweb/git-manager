@@ -1,4 +1,5 @@
-// gm-measure icons: writes App/Sources/Generated/Icons*.swift, the current app's stroke icons (src/lib/ui/icons.ts:
+// gm-measure icons: writes Sources/GitManagerNative/Generated/Icons*.swift, the current app's stroke icons
+// (src/lib/ui/icons.ts:
 // SVG paths on a 24-point grid) as plain text, so the native app draws the very same shapes. Like `tokens`, it
 // runs the TypeScript with Bun. --check fails (exit 1) when the files are out of date; CI runs it.
 
@@ -6,7 +7,7 @@ import Foundation
 import MeasureKit
 
 enum Icons {
-    static let generatedDir = (swiftuiDir as NSString).appendingPathComponent("App/Sources/Generated")
+    static let generatedDir = (swiftuiDir as NSString).appendingPathComponent("Sources/GitManagerNative/Generated")
     /// Lines per generated file, under the 300-line standard with room for the header.
     static let chunkLines = 270
 

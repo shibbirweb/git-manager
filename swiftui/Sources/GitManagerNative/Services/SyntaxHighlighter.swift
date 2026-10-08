@@ -1,4 +1,4 @@
-// Syntax highlighting with the current app's grammars: Resources/highlight.js (App/Highlight/entry.ts, bundled by
+// Syntax highlighting with the current app's grammars: Resources/highlight.js (Highlight/entry.ts, bundled by
 // scripts/build-app.sh) runs in JavaScriptCore on its own queue and answers the spans for a whole text. The
 // context is made on first use and dropped after a few idle seconds, so its memory is only held while needed.
 

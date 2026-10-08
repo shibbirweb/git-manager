@@ -61,7 +61,7 @@ the numbers. Newest last.
   tab, the toolbar, the Index and Working Tree labels, both panes with line numbers, tinted changes, folded
   unchanged runs, the revert column and the change overview ruler. The bridge's `get_file_diff` reads the texts
   and hunks with the shared `diff` module; the rows, folds, ruler ticks and row positions are pure logic in
-  `App/Core` (NativeCore, tested). Pixel diff of the diff screen: 97.03% (light) and 97.02% (dark). Findings:
+  `Sources/NativeCore` (NativeCore, tested). Pixel diff of the diff screen: 97.03% (light) and 97.02% (dark). Findings:
   - CodeMirror's 16.25-point lines land on 16-point rows, the text centered in them.
   - rgba() fills are blended premultiplied (each part rounded on its own, CSSColor.filled), one step away from
     the opacity blend in some channels.
@@ -69,7 +69,7 @@ the numbers. Newest last.
   - Not yet (3b): syntax colors, changed-word highlights, indent guides; that is most of what still differs.
 - 3b diff screen to 99%, against 0.1.0-beta.7 (the installed release, plus the GM-40 fold fix, measured with
   `--current-app`):
-  - Syntax colors from the current app's own grammars and highlighters (App/Highlight/entry.ts, bundled with Bun
+  - Syntax colors from the current app's own grammars and highlighters (Highlight/entry.ts, bundled with Bun
     into highlight.js and run in JavaScriptCore, dropped after 5 idle seconds), bracket pair colors, indent guides
     (IndentGuides), and CodeMirror's character diff ported line by line (CharDiff*, checked against 560 random
     CodeMirror cases) for the changed-word boxes.

@@ -22,14 +22,21 @@ The app's bundle id is `shibbirweb.github.io.gitmanager.native`, so it installs 
 ## How it fits together
 
 ```
-App/Sources/     SwiftUI app (Backend.swift calls the bridge, Control.swift answers the control server)
-  Generated/     Themes.swift, written by gm-measure tokens
-App/Core/        NativeCore: pure, tested logic (diff rows, folds, ruler ticks, row index); tests in App/CoreTests/
-Reference/       layout snapshots of the current app (gm-measure reference)
-App/Bridge/      module map and C header for the bridge
-bridge/          Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
-Tools/           gm-measure: Measure/ (commands), MeasureKit/ (library), Tests/
-scripts/         build-app.sh, test.sh
+Sources/GitManagerNative/   the SwiftUI app
+  App/                     app entry, window model, layout (Shell.swift) and title bar
+  Models/                  mirrors of the backend's types (Status.swift) and view state (FilesModel.swift)
+  Services/                Backend.swift calls the bridge, Control.swift answers the control server, highlighting
+  Theme/                   theme tokens as colors, and CSS color math as WebKit does it
+  Views/<screen>/          Chrome, Changes, Files, Diff, Welcome; shared pieces in Components
+  Generated/               Themes and Icons, written by gm-measure tokens and icons
+Sources/NativeCore/        pure, tested logic (diff rows, folds, ruler ticks, row index, character diff)
+Sources/GMBridge/          module map and C header for the bridge
+Sources/GMMeasure/         gm-measure commands; Sources/MeasureKit/ is its library
+Tests/                     NativeCoreTests/ and MeasureKitTests/ (Swift Testing)
+Highlight/entry.ts         the current app's highlighters, bundled into the app's highlight.js
+Reference/                 layout snapshots of the current app (gm-measure reference)
+bridge/                    Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
+scripts/                   build-app.sh, test.sh, check-lines.sh
 ```
 
 - **One entry point.** `gm_call` takes a command name and camelCase JSON arguments, like `invoke` in
@@ -44,9 +51,10 @@ scripts/         build-app.sh, test.sh
 
 ## Control and measure (CLI and MCP)
 
-The app runs a small MCP server (`bridge/src/control/`, UI side in `App/Sources/Control.swift`), so the
-same `git-manager cli` drives and measures both apps. It writes `~/.gitmanager-native/.gitmanager/mcp.json`,
-never the real app's file, and the CLI finds it when `HOME` points at `~/.gitmanager-native`:
+The app runs a small MCP server (`bridge/src/control/`, UI side in
+`Sources/GitManagerNative/Services/Control.swift`), so the same `git-manager cli` drives and measures both apps.
+It writes `~/.gitmanager-native/.gitmanager/mcp.json`, never the real app's file, and the CLI finds it when
+`HOME` points at `~/.gitmanager-native`:
 
 ```sh
 N=~/.gitmanager-native
@@ -68,8 +76,8 @@ git-manager cli memory --duration 10               # the same measurement on the
 
 ## Measure both apps (gm-measure)
 
-`Tools/` holds `gm-measure`, a Swift command that drives and measures both apps from the outside through their
-MCP servers. Each app starts isolated: macOS launches it with HOME set to a throwaway folder, so the real
+`Sources/GMMeasure` holds `gm-measure`, a Swift command that drives and measures both apps from the outside
+through their MCP servers. Each app starts isolated: macOS launches it with HOME set to a throwaway folder, so the real
 `~/.gitmanager` is never touched.
 
 ```sh
@@ -79,7 +87,7 @@ swift run -c release gm-measure measure --screen diff  # the same on the diff of
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
-swift run -c release gm-measure tokens                  # writes App/Sources/Generated (--check: up to date?)
+swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)
 swift run -c release gm-measure icons                   # writes Generated/Icons*.swift from src/lib/ui/icons.ts
 swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
 ```

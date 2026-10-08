@@ -53,7 +53,7 @@ not the promise.
 
 ## Tools we build first
 
-All of them are one Swift command, `gm-measure` (`swiftui/Tools/`), so `swiftui/` stays Swift and Rust. It
+All of them are one Swift command, `gm-measure` (`swiftui/Sources/GMMeasure`), so `swiftui/` stays Swift and Rust. It
 drives both apps through their MCP servers (the native one from phase 0b, the current one with its server
 turned on in a throwaway home), so it measures the real windows, not a browser copy.
 
@@ -76,7 +76,7 @@ turned on in a throwaway home), so it measures the real windows, not a browser c
    every control tool. CI runs it on every pull request that touches the native app
    (`.github/workflows/native.yml`).
 5. **Token export** (`gm-measure tokens`, part 1b): runs the theme catalog with Bun (it is TypeScript; the
-   tool runs Bun the way it runs git and open) and writes `swiftui/App/Sources/Generated/Themes.swift`: 42
+   tool runs Bun the way it runs git and open) and writes `swiftui/Sources/GitManagerNative/Generated/Themes.swift`: 42
    themes, 73 tokens each. CI fails when it is out of date, and runs when `src/lib/themes` changes.
 6. **Layout snapshots** (`gm-measure reference`, part 1b): the current app, isolated, light and dark, on the
    Changes screen and a diff. Every visible element of each part (header, activity bars, status bar, changes
@@ -89,13 +89,18 @@ turned on in a throwaway home), so it measures the real windows, not a browser c
 ```
 swiftui/
   README.md            how to build, run and test
-  Package.swift        Swift package: the app, gm-measure and its tests
-  App/Sources/         SwiftUI app
-    Generated/         Themes.swift, Icons.swift (from the tools, not edited by hand)
+  Package.swift        Swift package in the standard layout: Sources/<target>, Tests/<target>
+  Sources/
+    GitManagerNative/  the SwiftUI app: App/, Models/, Services/, Theme/, Views/<screen>/, Generated/
+    NativeCore/        pure, tested logic (diff rows, folds, ruler, character diff)
+    GMBridge/          module map and C header for the Rust bridge
+    GMMeasure/         gm-measure, the command that drives and measures both apps
+    MeasureKit/        gm-measure's library (launching, MCP client, window capture, pixel diff)
+  Tests/               NativeCoreTests/, MeasureKitTests/ (Swift Testing)
+  Highlight/entry.ts   the current app's highlighters, bundled by Bun into the app's highlight.js
   bridge/              Rust crate with its own Cargo workspace
     Cargo.toml
     src/lib.rs         gm_call and gm_free_string over the shared backend modules
-  Tools/               gm-measure (Measure/), its library (MeasureKit/) and tests (Tests/)
   scripts/build-app.sh builds the Rust bridge, the Swift package, and the .app bundle
   scripts/test.sh      runs the Swift tests (finds Swift Testing with the Command Line Tools too)
 ```

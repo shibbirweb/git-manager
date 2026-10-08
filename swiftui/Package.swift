@@ -21,21 +21,19 @@ let package = Package(
         .executable(name: "gm-measure", targets: ["GMMeasure"]),
     ],
     targets: [
-        .systemLibrary(name: "GMBridge", path: "App/Bridge"),
+        // Standard layout: each target in Sources/<name>, each test target in Tests/<name>.
+        .systemLibrary(name: "GMBridge"),
         // Pure logic of the native app (diff layout...), kept apart so it can be tested.
-        .target(name: "NativeCore", path: "App/Core"),
-        .testTarget(
-            name: "NativeCoreTests", dependencies: ["NativeCore"], path: "App/CoreTests", exclude: ["Fixtures"]
-        ),
+        .target(name: "NativeCore"),
+        .testTarget(name: "NativeCoreTests", dependencies: ["NativeCore"], exclude: ["Fixtures"]),
         .executableTarget(
             name: "GitManagerNative",
             dependencies: ["GMBridge", "NativeCore"],
-            path: "App/Sources",
             linkerSettings: [.unsafeFlags(["-L", bridgeLibrary])]
         ),
-        .target(name: "MeasureKit", path: "Tools/MeasureKit"),
-        .executableTarget(name: "GMMeasure", dependencies: ["MeasureKit"], path: "Tools/Measure"),
-        .testTarget(name: "MeasureKitTests", dependencies: ["MeasureKit"], path: "Tools/Tests"),
+        .target(name: "MeasureKit"),
+        .executableTarget(name: "GMMeasure", dependencies: ["MeasureKit"]),
+        .testTarget(name: "MeasureKitTests", dependencies: ["MeasureKit"]),
     ],
     // Swift 6 tools for Swift Testing (the Command Line Tools have no XCTest); the code stays in Swift 5 mode.
     swiftLanguageModes: [.v5]

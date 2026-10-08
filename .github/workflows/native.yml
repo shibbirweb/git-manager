@@ -17,7 +17,7 @@ on:
       - "src-tauri/src/askpass.rs"
       - "src-tauri/src/git_console.rs"
       - "src-tauri/src/child_process.rs"
-      # The sources of swiftui/App/Sources/Generated (gm-measure tokens and icons).
+      # The sources of swiftui/Sources/GitManagerNative/Generated (gm-measure tokens and icons).
       - "src/lib/themes/**"
       - "src/lib/ui/icons.ts"
   workflow_dispatch:
