@@ -97,7 +97,14 @@ the numbers. Newest last.
     screen is compared with the fixed build instead: 99.04% light, 98.28% dark. The dark drop comes from the
     current app, not the native one: on the same builds, beta.7 painted the scrollbar thumb as red 68 (69 the day
     before) and a changed word's box as 57, 79, 133 (58, 79, 134 before), while the native pixels did not move.
-    The Mac ran on battery in Low Power Mode that day, the likely cause (not yet checked on power).
+    Not Low Power Mode, not battery (re-measured on the charger), not a system update, not WebKit itself (the
+    WebKit test page with the same tints renders 100% identical to the day before), not localStorage. Beta.7's
+    own screenshots differ by 4.4% between the two days, its diff layer one step lower; every run today gives the
+    same variant. The reference drifts by one step, so exact dark scores move with it.
+    From then on the reference is a local build of the latest develop (0.1.0-beta.7) plus the GM-40 fix, the
+    default of gm-measure when it exists. Against it: diff 99.14% light, 98.29% dark; Changes 99.12% dark. In dark,
+    only the fills at alpha 0.35 and some code text edges moved: the thumb fits an unrounded alpha (89.25), the
+    changed-word box fits no model tried.
 - Memory with a big file (`gm-measure memory`, from 3a on, after every feature): a 4000-line PHP file with every
   eighth line changed, shown as a diff that folds nothing and scrolled down and back at 200 points a frame:
 

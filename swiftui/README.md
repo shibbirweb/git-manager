@@ -109,7 +109,9 @@ swift run -c release gm-measure parity                  # UI match per scenario,
   gm-measure, like `measure` does). Snapshots are committed, so a change to the current UI shows up in review;
   regenerate them on purpose (the status bar's memory text differs on every run).
 
-`measure` compares the installed `/Applications/Git Manager.app` (or `--current-app <path>`) with the native
+`measure` compares the current app (or `--current-app <path>`) with the native build. The current app is the local
+build in `src-tauri/target/release/bundle/macos` when there is one (latest develop plus unreleased fixes, built
+with `bun tauri build --bundles app`), else the installed `/Applications/Git Manager.app`. The native app is the
 build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `report.json`, both screenshots and
 `diff.png`. gm-measure captures both windows itself, the same way, so the pixel diff compares like with like;
 that needs Screen Recording permission for the app that runs it (your terminal), once, then a restart of it. The

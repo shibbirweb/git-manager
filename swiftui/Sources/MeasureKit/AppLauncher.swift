@@ -27,10 +27,17 @@ public struct RunningApp {
 }
 
 public enum AppLauncher {
-    /// `swiftuiDir` is the swiftui/ folder of the checkout.
+    /// `swiftuiDir` is the swiftui/ folder of the checkout. The current app is the local build when there is one
+    /// (`bun tauri build --bundles app`: develop plus fixes not released yet, the reference the user chose), else
+    /// the installed release.
     public static func defaultAppPath(_ kind: AppKind, swiftuiDir: String) -> String {
         switch kind {
         case .current:
+            let localBuild = ((swiftuiDir as NSString).deletingLastPathComponent as NSString)
+                .appendingPathComponent("src-tauri/target/release/bundle/macos/Git Manager.app")
+            if FileManager.default.fileExists(atPath: localBuild) {
+                return localBuild
+            }
             return "/Applications/Git Manager.app"
         case .native:
             return (swiftuiDir as NSString).appendingPathComponent("build/Git Manager Native.app")
