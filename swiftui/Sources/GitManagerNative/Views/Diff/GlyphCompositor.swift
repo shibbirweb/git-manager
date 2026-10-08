@@ -35,6 +35,7 @@ final class GlyphCompositor {
     /// The band a line's glyphs can reach: from 4 points above its row to 20 below the row's top.
     private static let above: CGFloat = 4
     private static let band: CGFloat = 24
+    private static let overhang: CGFloat = 6
 
     /// Draws `line` at `x` in the row at `rowTop` (canvas points) into `target`, inside `clip`. Code text passes
     /// what is `under` it (the layer model); without it, the plain model (line numbers).
@@ -47,7 +48,15 @@ final class GlyphCompositor {
             return
         }
         let bandTop = Int(((rowTop - Self.above) * scale).rounded(.down))
-        buffer.clear(CGRect(x: 0, y: 0, width: buffer.width, height: buffer.height))
+        // Only the columns the line can ink are cleared and blended: a line number is a few pixels of a canvas-wide
+        // buffer. Glyphs overhang their advances a little (italics), so a margin on each side.
+        let advance = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
+        let inkFirst = max(0, Int(((x - Self.overhang) * scale).rounded(.down)))
+        let inkLast = min(buffer.width, Int(((x + advance + Self.overhang) * scale).rounded(.up)))
+        guard inkFirst < inkLast else {
+            return
+        }
+        buffer.clear(CGRect(x: inkFirst, y: 0, width: inkLast - inkFirst, height: buffer.height))
         buffer.saveGState()
         // Buffer pixel (column, row) is canvas pixel (column, bandTop + row), y down.
         buffer.translateBy(x: 0, y: CGFloat(buffer.height))
@@ -64,8 +73,8 @@ final class GlyphCompositor {
         guard let source = buffer.data else {
             return
         }
-        let firstColumn = max(0, Int((clip.minX * scale).rounded(.down)))
-        let lastColumn = min(target.width, Int((clip.maxX * scale).rounded(.up)))
+        let firstColumn = max(inkFirst, Int((clip.minX * scale).rounded(.down)))
+        let lastColumn = min(target.width, inkLast, Int((clip.maxX * scale).rounded(.up)))
         let firstRow = max(0, bandTop, Int((clip.minY * scale).rounded(.down)))
         let lastRow = min(target.height, bandTop + buffer.height, Int((clip.maxY * scale).rounded(.up)))
         guard firstColumn < lastColumn, firstRow < lastRow else {
@@ -86,17 +95,16 @@ final class GlyphCompositor {
                 let fill = under?.fill(at: column)
                 // The canvas is BGRA (32-bit little-endian, alpha first); the buffer is RGBA.
                 let pixel = canvasLine + column * 4
-                for (channel, slot) in [(0, 2), (1, 1), (2, 0)] {
+                for channel in 0..<3 {
                     let ink = Double(glyphs[glyph + channel]) / Double(alpha)
+                    let slot = pixel + 2 - channel
                     if let under, let fill {
-                        canvas[pixel + slot] = Self.layered(
+                        canvas[slot] = Self.layered(
                             ink: ink, coverage: coverage, fill: (fill.color[channel], fill.alpha),
                             editor: under.editor[channel]
                         )
                     } else {
-                        canvas[pixel + slot] = Self.plain(
-                            ink: ink, under: Double(canvas[pixel + slot]) / 255, coverage: coverage
-                        )
+                        canvas[slot] = Self.plain(ink: ink, under: Double(canvas[slot]) / 255, coverage: coverage)
                     }
                 }
             }

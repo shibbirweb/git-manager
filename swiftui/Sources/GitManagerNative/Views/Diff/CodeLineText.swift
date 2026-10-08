@@ -39,16 +39,16 @@ enum CodeLineText {
     /// One character's width in the code font (7.8 points at 13).
     static let advance: CGFloat = (" " as NSString).size(withAttributes: [.font: CodeFonts.shared.regular]).width
 
-    static func line(_ text: String, spans: [SyntaxSpans.Span], theme: Theme) -> CTLine {
+    static func line(_ text: String, spans: [SyntaxSpans.Span], colors: CanvasColors) -> CTLine {
         let fonts = CodeFonts.shared
         let string = NSMutableAttributedString(string: text, attributes: [
-            .font: fonts.regular, .foregroundColor: theme.textColor("--text"),
+            .font: fonts.regular, .foregroundColor: colors.textColor("--text"),
         ])
         let length = (text as NSString).length
         for span in spans where span.to <= length {
             let range = NSRange(location: span.from, length: span.to - span.from)
             if let token = span.style.colorToken {
-                string.addAttribute(.foregroundColor, value: theme.textColor(token), range: range)
+                string.addAttribute(.foregroundColor, value: colors.textColor(token), range: range)
             }
             if span.style.italic {
                 string.addAttribute(.font, value: fonts.italic, range: range)

@@ -39,12 +39,12 @@ enum Smoke {
 
             let state = try await app.client.call("app", ["action": "get_state"]).structured ?? [:]
             let changedFiles = state["changedFiles"] as? Int
-            let stateMatches = state["repoPath"] as? String == repoPath && changedFiles == 2
+            let stateMatches = state["repoPath"] as? String == repoPath && changedFiles == 3
             check("app get_state", stateMatches, "\(changedFiles.map(String.init) ?? "nil") changed files")
 
             let status = try await app.client.call("git_status").structured ?? [:]
             let files = (status["files"] as? [[String: Any]] ?? []).compactMap { $0["path"] as? String }.sorted()
-            check("git_status", files == ["notes.txt", "readme.md"], files.joined(separator: ", "))
+            check("git_status", files == ["long.txt", "notes.txt", "readme.md"], files.joined(separator: ", "))
 
             let notRepo = try await app.client.call("app", ["action": "open_folder", "folderPath": workDir])
             check("open_folder on a plain folder fails", notRepo.isError, notRepo.text)
@@ -60,6 +60,8 @@ enum Smoke {
             let samples = try await app.client.call("sample_memory", sampleArgs).structured ?? [:]
             check("sample_memory", (samples["samples"] as? [Any])?.count ?? 0 >= 4)
 
+            try await checkDiff(app, check: check)
+
             let shot = try await app.client.call("take_screenshot")
             let image = try shot.image.map(RGBAImage.decode(pngData:))
             check("take_screenshot", (image?.width ?? 0) > 0, image.map { "\($0.width)x\($0.height)" } ?? shot.text)
@@ -71,7 +73,41 @@ enum Smoke {
         return failures == 0 ? 0 : 1
     }
 
-    /// One commit with readme.md, then readme.md changed and notes.txt new.
+    /// The diff of long.txt (lines 10 and 50 of 60 changed): the counter, the previous and next change, fold steps
+    /// and "Collapse unchanged", through the `app` tool's `diff` action.
+    private static func checkDiff(_ app: RunningApp, check: (String, Bool, String) -> Void) async throws {
+        let shown = try await app.client.call("app", ["action": "show_diff", "filePath": "long.txt"])
+        let opened = !shown.isError && shown.structured?["collapseUnchanged"] as? Bool == true
+        check("show_diff", opened, shown.isError ? shown.text : "")
+        func diff(_ args: [String: Any]) async throws -> (counter: String, folds: [[Int]], collapse: Bool) {
+            let answer = try await app.client.call("app", args.merging(["action": "diff"]) { first, _ in first })
+            let value = answer.structured ?? [:]
+            return (value["counter"] as? String ?? answer.text, value["folds"] as? [[Int]] ?? [],
+                    value["collapseUnchanged"] as? Bool ?? false)
+        }
+        let folded = [[1, 6], [14, 46], [54, 61]]
+        let start = try await diff([:])
+        check("diff opens on the first change, folded", start.counter == "1 of 2" && start.folds == folded,
+              "\(start.counter) \(start.folds)")
+        var counters: [String] = []
+        for step in ["next", "next", "previous"] {
+            counters.append(try await diff(["step": step]).counter)
+        }
+        check("next and previous change", counters == ["2 of 2", "1 of 2", "2 of 2"], counters.joined(separator: ", "))
+        let bottom = try await diff(["fold": 1, "edge": "bottom"])
+        let top = try await diff(["fold": 1, "edge": "top"])
+        let all = try await diff(["fold": 0, "edge": "all"])
+        let stepsMatch = bottom.folds.count == 3 && bottom.folds[1] == [14, 36] && top.folds.count == 3
+            && top.folds[1] == [24, 36] && all.folds == [[24, 36], [54, 61]]
+        check("fold steps", stepsMatch, "\(bottom.folds) \(top.folds) \(all.folds)")
+        let off = try await diff(["collapse": "toggle"])
+        let on = try await diff(["collapse": "toggle"])
+        let collapseWorks = !off.collapse && off.folds.isEmpty && on.collapse && on.folds == folded
+        check("collapse unchanged", collapseWorks && off.counter == "1 of 2", "\(off.folds) \(on.folds)")
+    }
+
+    /// One commit with readme.md and long.txt, then readme.md and lines 10 and 50 of long.txt changed, and
+    /// notes.txt new.
     static func makeRepository(at repoPath: String) throws {
         try FileManager.default.createDirectory(atPath: repoPath, withIntermediateDirectories: true)
         let git = { (arguments: [String]) throws in
@@ -87,10 +123,14 @@ enum Smoke {
         try git(["init", "-q", "-b", "main"])
         try git(["config", "user.name", "Smoke Test"])
         try git(["config", "user.email", "smoke@example.com"])
+        let long = (1...60).map { "line \($0)" }
         try write("readme.md", "# Smoke\n")
-        try git(["add", "readme.md"])
+        try write("long.txt", long.joined(separator: "\n") + "\n")
+        try git(["add", "readme.md", "long.txt"])
         try git(["commit", "-q", "-m", "first"])
         try write("readme.md", "# Smoke\n\nChanged.\n")
+        let changed = long.enumerated().map { [9, 49].contains($0.offset) ? "\($0.element) changed" : $0.element }
+        try write("long.txt", changed.joined(separator: "\n") + "\n")
         try write("notes.txt", "new\n")
     }
 }

@@ -103,7 +103,7 @@ enum MemoryBench {
     }
 
     /// The current app scrolls the merge view (its largest scrollable area); both walk at `speed` points a frame.
-    private static func scroll(_ app: RunningApp, speed: Int) async throws -> [String: Any] {
+    static func scroll(_ app: RunningApp, speed: Int) async throws -> [String: Any] {
         let answer: ToolAnswer
         if app.kind == .current {
             answer = try await app.client.call("scroll_view", ["target": "auto", "speed": speed], timeout: 40)

@@ -35,6 +35,8 @@ struct ContentView: View {
         } main: {
             if let open = model.openDiff {
                 DiffScreen(open: open, close: model.closeDiff)
+                    // Each file and area keeps its own folds, change and scroll, as the current app rebuilds per file.
+                    .id("\(open.staged ? "staged" : "unstaged"):\(open.filePath)")
             } else {
                 EditorArea {
                 if model.repoPath != nil {

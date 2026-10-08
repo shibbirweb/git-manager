@@ -50,6 +50,8 @@ enum Control {
             }
             semaphore.wait()
             return reply(ok: true, structured: onMain { state() })
+        case "diff":
+            return diff(args)
         case "scroll":
             return scroll(speed: args["speed"] as? Double ?? 80, rounds: args["rounds"] as? Int ?? 1)
         case "open_folder":
@@ -92,6 +94,8 @@ enum Control {
             "slowFrames": result?.slowFrames ?? 0,
             "scrollHeight": result?.scrollHeight ?? 0,
             "clientHeight": result?.clientHeight ?? 0,
+            "frameMs": result?.frameMs ?? [:],
+            "draw": result?.draw ?? [:],
         ])
     }
 
@@ -106,6 +110,7 @@ enum Control {
             "branch": orNull(status?.head.branch),
             "changedFiles": status?.files.count ?? 0,
             "files": status?.files.map(\.path) ?? [],
+            "collapseUnchanged": DiffPrefs.shared.collapseUnchanged,
         ]
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
@@ -148,13 +153,13 @@ enum Control {
         value ?? NSNull()
     }
 
-    private static func onMain<Value>(_ work: @MainActor () -> Value) -> Value {
+    static func onMain<Value>(_ work: @MainActor () -> Value) -> Value {
         DispatchQueue.main.sync {
             MainActor.assumeIsolated(work)
         }
     }
 
-    private static func reply(ok: Bool, text: String = "", structured: [String: Any] = [:]) -> String {
+    static func reply(ok: Bool, text: String = "", structured: [String: Any] = [:]) -> String {
         let body: [String: Any] = ["ok": ok, "text": text, "structured": structured]
         guard let data = try? JSONSerialization.data(withJSONObject: body) else {
             return "{\"ok\":false,\"text\":\"Could not encode the answer\"}"

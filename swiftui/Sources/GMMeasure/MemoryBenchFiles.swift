@@ -65,18 +65,25 @@ extension MemoryBench {
         return Array(out.prefix(lines - 1)) + ["}"]
     }
 
-    /// The walk's time and frames: the current app reports its frame stats, the native app its frame and slow
-    /// frame counts.
+    /// The walk's time and frames: the current app reports its frame stats, the native app its frame times, slow
+    /// frames (over 25 ms) and how long the diff canvas took to paint.
     private static func scrollSummary(_ run: AppRun) -> String {
         let duration = run.scroll["durationMs"] as? Int ?? 0
         if let stats = run.scroll["frames"] as? [String: Any] {
             let frames = stats["frames"] as? Int ?? 0
             let dropped = stats["droppedFrames"] as? Int ?? 0
-            return "\(run.kind.rawValue) \(duration) ms, \(frames) frames, \(dropped) dropped"
+            let average = stats["avgFrameMs"] as? Double ?? 0, p95 = stats["p95FrameMs"] as? Double ?? 0
+            return "\(run.kind.rawValue) \(duration) ms, \(frames) frames, \(dropped) dropped, "
+                + "frame \(average) ms average, \(p95) ms p95"
         }
         let frames = run.scroll["frames"] as? Int ?? 0
         let slow = run.scroll["slowFrames"] as? Int ?? 0
-        return "\(run.kind.rawValue) \(duration) ms, \(frames) frames, \(slow) slow"
+        let frameMs = run.scroll["frameMs"] as? [String: Any] ?? [:]
+        let draw = run.scroll["draw"] as? [String: Any] ?? [:]
+        let ms = { (values: [String: Any], key: String) in "\(values[key] as? Double ?? 0)" }
+        return "\(run.kind.rawValue) \(duration) ms, \(frames) frames, \(slow) slow, "
+            + "frame \(ms(frameMs, "average")) ms average, \(ms(frameMs, "p95")) ms p95, "
+            + "paint \(ms(draw, "averageMs")) ms average, \(ms(draw, "p95Ms")) ms p95, \(ms(draw, "maxMs")) ms max"
     }
 
     static func write(_ runs: [AppRun], lines: Int, speed: Int, outDir: String) throws {

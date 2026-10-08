@@ -107,20 +107,26 @@ public struct DiffLayout: Equatable, Sendable {
     /// Where each line starts in its text, in UTF-16 units (line 1 at index 0), to find its syntax spans.
     public let leftLineStarts: [Int]
     public let rightLineStarts: [Int]
+    /// The runs folded in the original text; the modified text folds the same runs.
+    public let leftFolds: [FoldRange]
 
     /// Both panes, level with each other: unchanged lines side by side, each chunk padded on its shorter side, and
-    /// the unchanged runs folded. The chunks are CodeMirror's for these texts and git hunks (DiffChunks).
-    public init(original: String, modified: String, hunks: [DiffHunk], collapse: Bool = true) {
+    /// the unchanged runs folded. The chunks are CodeMirror's for these texts and git hunks (DiffChunks). `folds`
+    /// replaces the original text's default folds once some were opened (DiffFold.reveal).
+    public init(
+        original: String, modified: String, hunks: [DiffHunk], collapse: Bool = true, folds: [FoldRange]? = nil
+    ) {
         let oldLines = DiffLayout.lines(original)
         let newLines = DiffLayout.lines(modified)
         let tableA = LineTable(Array(original.utf16)), tableB = LineTable(Array(modified.utf16))
         let chunks = DiffChunks.build(original: original, modified: modified, hunks: hunks)
         let lineHunks = chunks.map { DiffLayout.lineRange($0, tableA, tableB) }
         // foldField.ts: each chunk's first line and the line at its end, 1-based.
-        let leftFolds = collapse ? DiffFold.ranges(changes: chunks.map { chunk in
+        let leftFolds = !collapse ? [] : folds ?? DiffFold.ranges(changes: chunks.map { chunk in
             (tableA.line(at: min(chunk.fromA, tableA.length)).number + 1,
              tableA.line(at: min(tableA.length, chunk.toA)).number + 1)
-        }, lineCount: oldLines.count) : []
+        }, lineCount: oldLines.count)
+        self.leftFolds = leftFolds
         var left: [DiffRow] = []
         var right: [DiffRow] = []
         var oldIndex = 0

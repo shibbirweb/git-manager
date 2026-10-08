@@ -59,6 +59,8 @@ enum MeasureReport {
             "mode": options.mode,
             "durationS": options.durationS,
             "settleS": options.settleS,
+            "screen": options.screen,
+            "collapse": options.collapse,
             "apps": apps.map(appJSON),
             "pixelDiff": diffJSON,
         ]
@@ -90,10 +92,11 @@ enum MeasureReport {
         func row(_ title: String, _ value: (App) -> String) -> String {
             "| \(title) | " + apps.map(value).joined(separator: " | ") + " |"
         }
+        let diff = options.screen == "diff" ? ", diff with collapse \(options.collapse ? "on" : "off")" : ""
         var lines = [
             "# Side by side: \(stamp)",
             "",
-            "Scenario (\(options.mode) mode): open demo/acme/storefront, wait until its status is on screen,",
+            "Scenario (\(options.mode) mode\(diff)): open demo/acme/storefront, wait until its status is on screen,",
             "settle \(options.settleS) s, screenshot, sample memory for \(options.durationS) s (every 0.5 s).",
             "",
             "| | " + apps.map { "\($0.name) \($0.version)" }.joined(separator: " | ") + " |",

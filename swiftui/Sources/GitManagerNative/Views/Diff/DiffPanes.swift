@@ -44,32 +44,15 @@ struct DiffPanes: View {
         return CGFloat(widest) * advance + 8
     }
 
-    let original: String
-    let modified: String
-    let hunks: [DiffHunk]
-    /// A staged diff moves changes back to the working tree (chevrons right) instead of staging them (chevrons left).
-    var staged = false
-    var originalSpans: SyntaxColors?
-    var modifiedSpans: SyntaxColors?
+    let content: DiffCanvas.Content
+    var scroll: DiffState.ScrollRequest?
+    /// A click on a fold: its index among the original text's folds and the part clicked.
+    var onFold: (Int, FoldEdge) -> Void = { _, _ in }
 
     var body: some View {
-        let layout = DiffLayout(original: original, modified: modified, hunks: hunks)
-        let content = DiffCanvas.Content(
-            layout: layout,
-            left: RowIndex(rows: layout.left, metrics: Self.metrics),
-            right: RowIndex(rows: layout.right, metrics: Self.metrics),
-            staged: staged,
-            theme: theme,
-            leftSpans: originalSpans,
-            rightSpans: modifiedSpans,
-            leftGuides: Self.guides(layout.left, text: original),
-            rightGuides: Self.guides(layout.right, text: modified),
-            leftWidth: Self.contentWidth(layout.left),
-            rightWidth: Self.contentWidth(layout.right)
-        )
-        DiffScrollView(content: content)
+        DiffScrollView(content: content, scroll: scroll, onFold: onFold)
             .overlay(alignment: .trailing) {
-                ruler(layout.right, hunks: layout.lineHunks)
+                ruler(content.layout.right, hunks: content.layout.lineHunks)
             }
     }
 
@@ -109,6 +92,8 @@ struct DiffPanes: View {
 /// canvas below it redraws the viewport at each new offset.
 struct DiffScrollView: NSViewRepresentable {
     let content: DiffCanvas.Content
+    let scroll: DiffState.ScrollRequest?
+    let onFold: (Int, FoldEdge) -> Void
 
     func makeNSView(context: Context) -> Host {
         Host()
@@ -118,6 +103,14 @@ struct DiffScrollView: NSViewRepresentable {
         host.canvas.content = content
         let rowsBottom = max(content.left.rowsBottom, content.right.rowsBottom)
         host.document.frame.size.height = DiffPanes.editorHeight(rowsBottom: rowsBottom)
+        host.document.click = { [weak host] point in
+            if let hit = host?.canvas.foldHit(at: point) {
+                onFold(hit.foldIndex, hit.edge)
+            }
+        }
+        if let scroll, scroll.token != host.scrolledToken {
+            host.pendingScroll = scroll
+        }
         host.needsLayout = true
     }
 
@@ -150,11 +143,24 @@ struct DiffScrollView: NSViewRepresentable {
             true
         }
 
+        /// A centering asked for and not yet done: it needs the viewport's height, known after layout.
+        var pendingScroll: DiffState.ScrollRequest?
+        private(set) var scrolledToken = 0
+
         override func layout() {
             super.layout()
             canvas.frame = bounds
             scrollView.frame = bounds
             document.frame.size.width = bounds.width
+            if let request = pendingScroll, bounds.height > 0 {
+                pendingScroll = nil
+                scrolledToken = request.token
+                let offset = DiffNavigation.centeredOffset(
+                    rowTop: request.rowTop, viewport: bounds.height, contentHeight: document.frame.height
+                )
+                scrollView.contentView.scroll(to: NSPoint(x: 0, y: offset))
+                scrollView.reflectScrolledClipView(scrollView.contentView)
+            }
             scrolled()
         }
 
@@ -163,9 +169,16 @@ struct DiffScrollView: NSViewRepresentable {
         }
     }
 
+    /// The scrolled document: its coordinates are the content's, so a click lands on the row under it.
     final class FlippedView: NSView {
+        var click: ((NSPoint) -> Void)?
+
         override var isFlipped: Bool {
             true
+        }
+
+        override func mouseDown(with event: NSEvent) {
+            click?(convert(event.locationInWindow, from: nil))
         }
     }
 }

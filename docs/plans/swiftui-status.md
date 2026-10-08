@@ -145,3 +145,33 @@ the numbers. Newest last.
   The diff scores low because beta.7 never folds side-by-side diffs (GM-40, not released); against the fixed build
   it scored 99.04% and 98.28%. The control server binds port 0, so native builds from several worktrees never
   collide.
+- GM-45 diff interactions and scrolling, measured 2026-10-08 against a local build of 0.1.0-beta.7 plus the
+  GM-40 fold fix (the installed beta.7 never folds side by side, so its folded diff is not a fair reference):
+  - "Collapse unchanged" works and is kept in `~/.gitmanager-native/diff.json` (on by default, like
+    src/lib/diff/prefs.svelte.ts). A new diff, or the toggle, centers the first change as DiffView.svelte does
+    (CodeMirror's scrollIntoView with y "center": the 17-point cursor box from a point above the row, WebKit
+    dropping the fraction; beta.7 scrolls src/cart.ts to 82). Previous and next change move the counter and center
+    their change; a fold bar's "10 lines" buttons open 10 lines at their edge and the rest of the bar opens the
+    fold (DiffNavigation in NativeCore, tested; the `app` tool's `diff` action and `gm-measure smoke` drive them).
+  - Found while matching: once the rows are taller than the view, the merge view's 10-point vertical scrollbar
+    (hidden under the ruler) takes its room from the panes, 5 points each. The right pane's horizontal thumb was
+    5 points long because its scroll width includes the cursor line's blame note ("You, Uncommitted changes" 36
+    points after the line, in a layer of the scroller), and WebKit sizes thumbs in whole points.
+  - Pixel diff below the title bar: collapse off 99.11% (light) against both the local build and the installed
+    beta.7; folded 99.13% (light). Dark: folded 98.16%, collapse off 85.23% (99.39% with tolerance 1): once the
+    merge view scrolls, the current app paints the right pane's code area #1e1f22 as 30, 31, 33, one step off from
+    its own gutter and left pane (30, 31, 34), the way macOS converts the title bar; not chased, like the other
+    dark one-step fills of that day.
+  - Scrolling: the walk's frames took 31.8 ms (633 of 634 over 25 ms), of which painting the canvas was 13.4 ms.
+    A sample of the app (`sample`, outside the sandbox) showed the rest: Core Animation converted the whole Display
+    P3 image to the screen's color space (Color LCD) on the main thread every frame (about 1570 of 4780 samples).
+    The canvas now paints in the window's own color space, which leaves every pixel the same and skips the
+    conversion; on a scroll it moves the pixels it has and paints only the rows that came into view (each row with
+    what spills from its neighbors, so a band paints the same pixels as a whole paint: `measure --walk` shows no
+    canvas pixel change after scrolling down and back); and glyphs are cleared and blended only over the columns
+    a line can ink, not the canvas width. Colors are worked out once per theme (CanvasColors). After: frames 16.7
+    ms (one display frame, 1 of 634 over 25 ms), paint 4.5 ms average (5.1 ms p95). Beta.7 in the same run: 16.9
+    ms, 13 frames dropped.
+  - Memory (`gm-measure memory`, idle / diff open / scrolling / after, MB): before, current 145 / 222 / 896 / 276,
+    native 34 / 84 / 81 / 98; after, current 142 / 222 / 894 / 264, native 34 / 52 / 46 / 45. The converted copy
+    of the canvas Core Animation kept is gone.

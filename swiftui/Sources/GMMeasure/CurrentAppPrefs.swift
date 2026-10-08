@@ -7,15 +7,23 @@ import Foundation
 import MeasureKit
 
 struct CurrentAppPrefs {
-    /// What the native app always does: diffs fold unchanged lines (src/lib/diff/prefs.svelte.ts).
-    static let scenario = ["git-manager:diff": "{\"collapseUnchanged\":true}"]
+    /// The run's "Collapse unchanged" choice, stored as src/lib/diff/prefs.svelte.ts stores it.
+    static func scenario(collapse: Bool) -> [String: String] {
+        ["git-manager:diff": "{\"collapseUnchanged\":\(collapse)}"]
+    }
 
     private let storage: WebKitLocalStorage
     private let saved: [String: String?]
 
-    /// Sets `values` (the scenario's by default) for the app at `appPath`. Nil when there is nothing to set (the app
-    /// never stored anything, so its defaults apply). Refuses while any copy of that app runs, since it holds the file.
-    static func apply(appPath: String, values: [String: String] = scenario) throws -> CurrentAppPrefs? {
+    /// Sets the run's "Collapse unchanged" choice for the app at `appPath` (see `apply(appPath:values:)`).
+    static func apply(appPath: String, collapse: Bool = true) throws -> CurrentAppPrefs? {
+        try apply(appPath: appPath, values: scenario(collapse: collapse))
+    }
+
+    /// Sets `values` for the app at `appPath`. Nil when there is nothing to set (the app never stored anything, so
+    /// its defaults apply; the run checks the toggle on screen). Refuses while any copy of that app runs, since it
+    /// holds the file.
+    static func apply(appPath: String, values: [String: String]) throws -> CurrentAppPrefs? {
         guard let bundle = Bundle(path: appPath), let bundleID = bundle.bundleIdentifier,
               let executable = bundle.executableURL?.lastPathComponent else {
             return nil

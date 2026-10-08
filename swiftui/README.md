@@ -73,7 +73,7 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `take_screenshot` | yes: the window without its shadow; captured in-app, so no Screen Recording permission |
 | `git_status` | yes |
 | `get_app_info` | native fields (name, version, pid, bundle id) |
-| `app` | native only for now: `get_state`, `open_folder`, `show_diff`, `scroll` |
+| `app` | native only: `get_state`, `open_folder`, `show_diff`, `diff` (next change, fold steps, collapse), `scroll` |
 
 The server listens on a port macOS picks (port 0), so two native builds (from two worktrees, say) never fight over
 one; each writes its port to the `mcp.json` under its own HOME. gm-measure starts every app with a throwaway HOME, so
@@ -89,6 +89,8 @@ through their MCP servers. Each app starts isolated: macOS launches it with HOME
 cd swiftui
 swift run -c release gm-measure measure --duration 20   # both apps on the docs demo: memory, start time, screenshots
 swift run -c release gm-measure measure --screen diff  # the same on the diff of src/cart.ts
+swift run -c release gm-measure measure --screen diff --collapse off   # every line, the first change centered
+swift run -c release gm-measure measure --screen diff --walk 37        # scroll down and back before the shot
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
@@ -117,8 +119,13 @@ build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `repo
 that needs Screen Recording permission for the app that runs it (your terminal), once, then a restart of it. The
 report gives the whole window and the content below the title bar, which macOS draws in both apps and which
 renders one step off in some runs. The current app keeps "Collapse unchanged" in WebKit localStorage under the
-real `~/Library` (shared with your own Git Manager), so `measure` and `reference` turn it on for the run and put
-your value back; they wait for, and then refuse to run beside, a running Git Manager.
+real `~/Library` (shared with your own Git Manager), so `measure` and `reference` set it for the run (`measure
+--collapse on|off`, on by default) and put your value back; they wait for, and then refuse to run beside, a
+running Git Manager. The native app keeps the same choice in `~/.gitmanager-native/diff.json`
+(`{"collapseUnchanged":true}`), which `measure` writes in the run's throwaway HOME. `--walk <points>` scrolls both
+apps down and back (each ends where it started) before the screenshot, to check that scrolling leaves the same
+pixels. `memory` reports each app's frame times during its scroll walk, and for the native app how long the diff
+canvas took to paint.
 
 ## Parity list and UI match per scenario (gm-measure parity)
 
@@ -188,3 +195,4 @@ src-tauri's test helpers.
 | 3a Diff screen: tab, toolbar, panes drawn per viewport, folds, ruler (97%) | done |
 | 3b Diff screen to 99%: syntax colors, brackets, guides, changed words, text blending | done |
 | 1c Parity list and UI match per scenario (gm-measure parity, native-parity.yml) | built, CI run not yet tried |
+| GM-45 Diff interactions (collapse, fold steps, previous and next change), smooth scrolling | done |

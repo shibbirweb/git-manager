@@ -7,21 +7,25 @@ import SwiftUI
 
 struct DiffScreen: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var prefs = DiffPrefs.shared
+    /// One per open file: ContentView gives each file and area its own identity.
+    @StateObject private var state = DiffState()
 
     let open: OpenDiff
     let close: () -> Void
 
     var body: some View {
         let parts = FileRow.split(open.filePath)
-        let hunks = open.diff.hunks.compactMap(DiffHunk.init)
+        let content = state.content(open: open, collapse: prefs.collapseUnchanged, theme: theme)
         VStack(spacing: 0) {
             tabStrip(name: parts.name)
-            DiffToolbar(name: parts.name, directory: parts.directory, changeCount: hunks.count, staged: open.staged)
-            labels
-            DiffPanes(
-                original: open.diff.original, modified: open.diff.modified, hunks: hunks, staged: open.staged,
-                originalSpans: open.originalSpans, modifiedSpans: open.modifiedSpans
+            DiffToolbar(
+                name: parts.name, directory: parts.directory, changeCount: state.changeCount, current: state.current,
+                staged: open.staged, collapse: prefs.collapseUnchanged, go: state.go,
+                toggleCollapse: prefs.toggleCollapse
             )
+            labels
+            DiffPanes(content: content, scroll: state.scroll, onFold: state.stepFold)
         }
     }
 
@@ -99,17 +103,22 @@ struct DiffToolbar: View {
     let name: String
     let directory: String
     let changeCount: Int
+    let current: Int
     let staged: Bool
+    let collapse: Bool
+    /// The previous (-1) or next (1) change.
+    let go: (Int) -> Void
+    let toggleCollapse: () -> Void
 
     var body: some View {
         HStack(spacing: 2) {
-            IconButton(width: 24, height: 24, action: {}) {
+            IconButton(width: 24, height: 24, disabled: changeCount == 0, action: { go(-1) }) {
                 Icon(name: "arrow-up", size: 14)
             }
-            IconButton(width: 24, height: 24, action: {}) {
+            IconButton(width: 24, height: 24, disabled: changeCount == 0, action: { go(1) }) {
                 Icon(name: "arrow-down", size: 14)
             }
-            Text(changeCount == 0 ? "No changes" : "1 of \(changeCount)")
+            Text(DiffNavigation.counterLabel(count: changeCount, current: current))
                 .font(.system(size: 12))
                 .foregroundStyle(theme.color("--text-dim"))
                 .padding(.leading, 6)
@@ -119,7 +128,9 @@ struct DiffToolbar: View {
                 toggle(icon: "split-rows", padding: 6)
             }
             .padding(.trailing, 4)
-            toggle(icon: "list-tree", title: "Collapse unchanged", active: true)
+            toggle(icon: "list-tree", title: "Collapse unchanged", active: collapse)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: toggleCollapse)
             toggle(icon: "history", title: "Blame")
             toggle(icon: "external-link", title: "Open File")
             divider
