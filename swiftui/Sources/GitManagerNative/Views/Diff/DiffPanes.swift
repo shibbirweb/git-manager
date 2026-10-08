@@ -23,6 +23,11 @@ struct DiffPanes: View {
     /// The custom ::-webkit-scrollbar height in app.css, below each editor's rows.
     static let scrollbarHeight: CGFloat = 10
 
+    /// Between the panes: the revert column, or a 1-point --border-strong line in a read-only (commit) diff.
+    static func gap(readonly: Bool) -> CGFloat {
+        readonly ? 1 : gapWidth
+    }
+
     /// An editor's height: the rows, CodeMirror's padding below them and the horizontal scrollbar.
     static func editorHeight(rowsBottom: Double) -> CGFloat {
         CGFloat(rowsBottom) + topPadding + scrollbarHeight

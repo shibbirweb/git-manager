@@ -15,6 +15,8 @@ final class DiffCanvas: NSView {
         var right: RowIndex
         var staged: Bool
         var theme: Theme
+        /// A commit's diff in the Log: no revert column, a 1-point line between the panes (DiffPanes.gap).
+        var readonly = false
         var leftSpans: SyntaxColors?
         var rightSpans: SyntaxColors?
         var leftGuides: [IndentGuides.Run] = []
@@ -28,7 +30,8 @@ final class DiffCanvas: NSView {
         /// True when `other` paints the same pixels: the same rows, colors and widths. Arrays compare by their
         /// storage first, so a content SwiftUI hands over again unchanged costs next to nothing.
         func drawsLike(_ other: Content) -> Bool {
-            layout == other.layout && staged == other.staged && theme.id == other.theme.id
+            layout == other.layout && staged == other.staged && readonly == other.readonly
+                && theme.id == other.theme.id
                 && leftSpans == other.leftSpans && rightSpans == other.rightSpans && leftWidth == other.leftWidth
                 && rightWidth == other.rightWidth && rightNoteEnd == other.rightNoteEnd
         }
@@ -170,7 +173,7 @@ final class DiffCanvas: NSView {
 
     func panes(_ content: Content, paneWidth: CGFloat, scale: CGFloat) -> [Pane] {
         let layout = content.layout
-        let rightX = paneWidth + DiffPanes.gapWidth
+        let rightX = paneWidth + DiffPanes.gap(readonly: content.readonly)
         return [
             Pane(rows: layout.left, index: content.left, x: 0, spans: content.leftSpans, marks: layout.leftMarks,
                  lineStarts: layout.leftLineStarts, guides: content.leftGuides, contentWidth: content.leftWidth),
@@ -188,7 +191,8 @@ final class DiffCanvas: NSView {
     /// taller than the view: the ruler hides that scrollbar, but it still takes its room from the panes.
     func paneWidth(_ content: Content) -> CGFloat {
         let scrolls = mergeViewScrolls(content)
-        return max(0, (bounds.width - DiffPanes.gapWidth - (scrolls ? DiffPanes.scrollbarHeight : 0)) / 2)
+        let gap = DiffPanes.gap(readonly: content.readonly)
+        return max(0, (bounds.width - gap - (scrolls ? DiffPanes.scrollbarHeight : 0)) / 2)
     }
 
     /// Whether the rows are taller than the view, so the merge view scrolls.

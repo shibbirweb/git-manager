@@ -64,7 +64,8 @@ extension DiffCanvas {
             return nil
         }
         let paneWidth = self.paneWidth(content)
-        let right = point.x >= paneWidth + DiffPanes.gapWidth
+        let gap = DiffPanes.gap(readonly: content.readonly)
+        let right = point.x >= paneWidth + gap
         let layout = content.layout
         let index = right ? content.right : content.left
         guard right || point.x < paneWidth,
@@ -74,7 +75,7 @@ extension DiffCanvas {
               let foldIndex = layout.leftFolds.firstIndex(of: leftRange) else {
             return nil
         }
-        let x = point.x - (right ? paneWidth + DiffPanes.gapWidth : 0)
+        let x = point.x - (right ? paneWidth + gap : 0)
         let textX = DiffPanes.gutterWidth + DiffPanes.markerWidth
         let lineCount = (right ? layout.rightLineStarts : layout.leftLineStarts).count
         let edges = DiffFold.edges(range, lineCount: lineCount)

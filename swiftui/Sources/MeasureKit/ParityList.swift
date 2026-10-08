@@ -100,6 +100,9 @@ public struct ParityRunSpec: Codable, Equatable {
     public var openFile: String?
     /// Checked in the current app before capturing; the scenario fails when one does not hold.
     public var expectCurrent: [ParityExpectation]?
+    /// Opens the Log in both apps on this revision (such as "HEAD~5"): the current app's show_commit, the native
+    /// app's `app action=show_log commitId=...`.
+    public var logCommit: String?
 
     public init() {}
 }

@@ -19,6 +19,7 @@ use crate::paths::RealPath;
 #[path = "../../../../src-tauri/src/commands/commit_options.rs"]
 mod commit_options;
 mod editor;
+mod log;
 mod write;
 
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
@@ -37,6 +38,10 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "get_head_message" => to_json(write::get_head_message(parse(command, args)?)?),
         "last_action" => to_json(write::last_action(parse(command, args)?)?),
         "move_head_back" => to_json(write::move_head_back(parse(command, args)?)?),
+        "get_log" => to_json(log::get_log(parse(command, args)?)?),
+        "get_commit_details" => to_json(log::get_commit_details(parse(command, args)?)?),
+        "get_commit_file_diff" => to_json(log::get_commit_file_diff(parse(command, args)?)?),
+        "resolve_revision" => to_json(log::resolve_revision(parse(command, args)?)?),
         _ => Err(AppError::invalid(format!("Unknown command: {command}"))),
     }
 }

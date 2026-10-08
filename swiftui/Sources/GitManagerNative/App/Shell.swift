@@ -92,6 +92,9 @@ struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View
                 main
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(theme.color("--panel"))
+                    // What spills out of the main area (the Log's commit toolbar) paints over the Files panel, as
+                    // on the page.
+                    .zIndex(1)
                 Color.clear.frame(width: ShellMetrics.gap)
                 verticalLine
                 files

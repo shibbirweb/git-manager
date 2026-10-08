@@ -1,0 +1,20 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "", "rect": {"height": 8, "width": 8, "x": 310, "y": 427},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "white-space": "nowrap"
+      },
+      "tag": "circle", "text": ""
+    }
+  ],
+  "limit": 100, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "log nodes", "piece": "2 of 2", "screen": "log",
+  "selector": [".log-view .col-graph svg", ".log-view .col-graph circle"]
+}

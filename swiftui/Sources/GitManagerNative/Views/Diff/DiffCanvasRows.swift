@@ -127,10 +127,14 @@ extension DiffCanvas {
         let index = content.left
         // .cm-merge-revert is as tall as the editors: the rows, their padding and the scrollbar below them.
         let columnRect = NSRect(
-            x: x, y: -offset, width: DiffPanes.gapWidth, height: DiffPanes.editorHeight(rowsBottom: index.rowsBottom)
+            x: x, y: -offset, width: DiffPanes.gap(readonly: content.readonly),
+            height: DiffPanes.editorHeight(rowsBottom: max(index.rowsBottom, content.right.rowsBottom))
         )
         colors.nsColor("--border-strong").setFill()
         columnRect.fill()
+        if content.readonly {
+            return
+        }
         colors.nsColor("--panel-alt").setFill()
         columnRect.insetBy(dx: 1, dy: 0).fill()
         let rows = content.layout.left

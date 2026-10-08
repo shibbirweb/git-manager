@@ -13,7 +13,8 @@ enum Measure {
         var settleS = 5
         var mode = "light"
         /// "changes" (the folder as it opens), "diff" (the diff of Reference.diffFile), "staged" (the Changes
-        /// screen after staging Reference.diffFile) or "file" (Measure.shownFile in an editor tab).
+        /// screen after staging Reference.diffFile), "file" (Measure.shownFile in an editor tab)
+        /// or "log" (the Log with its newest commit selected).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -40,7 +41,7 @@ enum Measure {
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = ["changes", "diff", "staged", "file"].contains(options.screen)
+        let validScreen = ["changes", "diff", "staged", "file", "log"].contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -113,6 +114,8 @@ enum Measure {
             try await stageFiles(app)
         } else if options.screen == "file" {
             try await openFile(app)
+        } else if options.screen == "log" {
+            try await showLog(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

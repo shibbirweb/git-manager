@@ -34,7 +34,7 @@ extension Reference {
 
     /// The screens to capture: every one, or those named by --screens.
     static func chosenScreens(_ names: [String]?) -> [Screen] {
-        let all = screens + [fileScreen]
+        let all = allScreens + [fileScreen]
         guard let names else {
             return all
         }

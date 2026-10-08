@@ -70,8 +70,12 @@
     {
       "id": "log", "name": "History and log", "usage": "History-and-Log.md", "scenario": "log",
       "check": "The commit graph, the commit details and the right-click menu",
-      "native": "missing",
-      "gaps": ["the Log button of the activity bar is drawn but does nothing"]
+      "native": "partial",
+      "gaps": [
+        "the right-click menu and its actions (new branch, checkout, cherry-pick, revert, rebase, reset, bisect)",
+        "the filter box takes text but is not tested; Load more, the keyboard in the file list and resizing the panes",
+        "blame in the commit diff, Open in Tab and Open File, the inline layout and binary or LFS previews"
+      ]
     },
     {
       "id": "commit-tabs", "name": "Commit tabs", "usage": "History-and-Log.md", "scenario": "commit-tab",

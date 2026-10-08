@@ -1,0 +1,292 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "ref ref-head", "rect": {"height": 17, "width": 41, "x": 341, "y": 111},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(53, 116, 240)",
+        "border-bottom-width": "1px", "border-left-color": "rgb(53, 116, 240)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "rgb(53, 116, 240)", "border-right-width": "1px",
+        "border-top-color": "rgb(53, 116, 240)", "border-top-width": "1px", "color": "rgb(255, 255, 255)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "700", "gap": "3px", "line-height": "15px", "padding-left": "6px",
+        "padding-right": "6px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "main"
+    },
+    {
+      "classes": "truncate", "rect": {"height": 15, "width": 27, "x": 348, "y": 112},
+      "styles": {
+        "border-bottom-color": "rgb(255, 255, 255)", "border-left-color": "rgb(255, 255, 255)",
+        "border-right-color": "rgb(255, 255, 255)", "border-top-color": "rgb(255, 255, 255)",
+        "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11px",
+        "font-weight": "700", "line-height": "15px", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "main"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 215, "x": 386, "y": 111},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "600", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Catalog: lazy load product images"
+    },
+    {
+      "classes": "ref ref-remote", "rect": {"height": 17, "width": 72, "x": 341, "y": 137},
+      "styles": {
+        "background-color": "color(srgb 0.211259 0.202769 0.2864)",
+        "border-bottom-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)", "border-bottom-width": "1px",
+        "border-left-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)",
+        "border-right-width": "1px", "border-top-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)",
+        "border-top-width": "1px", "color": "color(srgb 0.553412 0.467922 0.891137)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11px",
+        "font-weight": "400", "gap": "3px", "line-height": "15px", "padding-left": "6px", "padding-right": "6px",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "origin/main"
+    },
+    {
+      "classes": "truncate", "rect": {"height": 15, "width": 58, "x": 348, "y": 138},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.553412 0.467922 0.891137)",
+        "border-left-color": "color(srgb 0.553412 0.467922 0.891137)",
+        "border-right-color": "color(srgb 0.553412 0.467922 0.891137)",
+        "border-top-color": "color(srgb 0.553412 0.467922 0.891137)", "color": "color(srgb 0.553412 0.467922 0.891137)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "overflow": "hidden",
+        "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "origin/main"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 155, "x": 417, "y": 137},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Docs: explain the cart API"
+    },
+    {
+      "classes": "ref ref-local", "rect": {"height": 17, "width": 78, "x": 341, "y": 163},
+      "styles": {
+        "background-color": "color(srgb 0.197176 0.252784 0.217333)",
+        "border-bottom-color": "color(srgb 0.372549 0.721569 0.396078 / 0.45)", "border-bottom-width": "1px",
+        "border-left-color": "color(srgb 0.372549 0.721569 0.396078 / 0.45)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "color(srgb 0.372549 0.721569 0.396078 / 0.45)",
+        "border-right-width": "1px", "border-top-color": "color(srgb 0.372549 0.721569 0.396078 / 0.45)",
+        "border-top-width": "1px", "color": "color(srgb 0.472941 0.753726 0.496471)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11px",
+        "font-weight": "400", "gap": "3px", "line-height": "15px", "padding-left": "6px", "padding-right": "6px",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fix/tax-rates"
+    },
+    {
+      "classes": "truncate", "rect": {"height": 15, "width": 64, "x": 348, "y": 164},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.472941 0.753726 0.496471)",
+        "border-left-color": "color(srgb 0.472941 0.753726 0.496471)",
+        "border-right-color": "color(srgb 0.472941 0.753726 0.496471)",
+        "border-top-color": "color(srgb 0.472941 0.753726 0.496471)", "color": "color(srgb 0.472941 0.753726 0.496471)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "overflow": "hidden",
+        "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fix/tax-rates"
+    },
+    {
+      "classes": "ref ref-remote", "rect": {"height": 17, "width": 111, "x": 423, "y": 163},
+      "styles": {
+        "background-color": "color(srgb 0.211259 0.202769 0.2864)",
+        "border-bottom-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)", "border-bottom-width": "1px",
+        "border-left-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)",
+        "border-right-width": "1px", "border-top-color": "color(srgb 0.473137 0.364314 0.889412 / 0.45)",
+        "border-top-width": "1px", "color": "color(srgb 0.553412 0.467922 0.891137)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11px",
+        "font-weight": "400", "gap": "3px", "line-height": "15px", "padding-left": "6px", "padding-right": "6px",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "origin/fix/tax-rates"
+    },
+    {
+      "classes": "truncate", "rect": {"height": 15, "width": 97, "x": 430, "y": 164},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.553412 0.467922 0.891137)",
+        "border-left-color": "color(srgb 0.553412 0.467922 0.891137)",
+        "border-right-color": "color(srgb 0.553412 0.467922 0.891137)",
+        "border-top-color": "color(srgb 0.553412 0.467922 0.891137)", "color": "color(srgb 0.553412 0.467922 0.891137)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "overflow": "hidden",
+        "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "origin/fix/tax-rates"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 107, "x": 537, "y": 163},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Tax: EU VAT rates"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 296, "x": 341, "y": 189},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Cart: discount codes and totals rounded to cents"
+    },
+    {
+      "classes": "ref ref-tag", "rect": {"height": 17, "width": 56, "x": 341, "y": 215},
+      "styles": {
+        "background-color": "color(srgb 0.269647 0.242902 0.203059)",
+        "border-bottom-color": "color(srgb 0.890196 0.65098 0.294118 / 0.45)", "border-bottom-width": "1px",
+        "border-left-color": "color(srgb 0.890196 0.65098 0.294118 / 0.45)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "color(srgb 0.890196 0.65098 0.294118 / 0.45)",
+        "border-right-width": "1px", "border-top-color": "color(srgb 0.890196 0.65098 0.294118 / 0.45)",
+        "border-top-width": "1px", "color": "color(srgb 0.887059 0.697255 0.414902)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11px",
+        "font-weight": "400", "gap": "3px", "line-height": "15px", "padding-left": "6px", "padding-right": "6px",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "v1.1.0"
+    },
+    {
+      "classes": "", "rect": {"height": 10, "width": 10, "x": 348, "y": 218},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-left-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-right-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-top-color": "color(srgb 0.887059 0.697255 0.414902)", "color": "color(srgb 0.887059 0.697255 0.414902)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 8, "width": 8, "x": 349, "y": 219},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-left-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-right-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-top-color": "color(srgb 0.887059 0.697255 0.414902)", "color": "color(srgb 0.887059 0.697255 0.414902)",
+        "display": "inline", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 0, "width": 0, "x": 351, "y": 221},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-left-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-right-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-top-color": "color(srgb 0.887059 0.697255 0.414902)", "color": "color(srgb 0.887059 0.697255 0.414902)",
+        "display": "inline", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "white-space": "nowrap"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "truncate", "rect": {"height": 15, "width": 29, "x": 361, "y": 216},
+      "styles": {
+        "border-bottom-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-left-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-right-color": "color(srgb 0.887059 0.697255 0.414902)",
+        "border-top-color": "color(srgb 0.887059 0.697255 0.414902)", "color": "color(srgb 0.887059 0.697255 0.414902)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11px", "font-weight": "400", "line-height": "15px", "overflow": "hidden",
+        "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "v1.1.0"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 77, "x": 401, "y": 215},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Release 1.1.0"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 168, "x": 341, "y": 241},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Pricing: add discount codes"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 198, "x": 341, "y": 267},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Merge branch 'feature/checkout'"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 196, "x": 341, "y": 293},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Checkout: validate the postcode"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 150, "x": 341, "y": 319},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Catalog: search by name"
+    },
+    {
+      "classes": "summary truncate", "rect": {"height": 16, "width": 145, "x": 341, "y": 345},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Checkout: address form"
+    }
+  ],
+  "limit": 100, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "log labels", "piece": "1 of 2", "screen": "log",
+  "selector": [".log-view .row .ref", ".log-view .row .ref *", ".log-view .row .summary"]
+}

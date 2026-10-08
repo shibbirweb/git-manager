@@ -69,6 +69,8 @@ enum Control {
             return reply(ok: true, structured: onMain { state() })
         case "stage", "unstage", "commit":
             return git(action, args)
+        case "show_log":
+            return showLog(args)
         default:
             return reply(ok: false, text: "Unknown action: \(action)")
         }

@@ -11,9 +11,12 @@ struct ActivityItem: View {
     var iconSize: CGFloat = 19
     var active = false
     var badge: Int?
+    var action: () -> Void = {}
+    /// The right bar's items mark the active one on their right (.item.active::after).
+    var markTrailing = false
 
     var body: some View {
-        Button(action: {}) {
+        Button(action: action) {
             ZStack(alignment: .topLeading) {
                 // A <button> keeps WebKit's own padding here (2 points above, 3 below), so the icon is centered
                 // half a point above the item's middle.
@@ -38,6 +41,16 @@ struct ActivityItem: View {
             .contentShape(RoundedRectangle(cornerRadius: 8, style: .circular))
         }
         .buttonStyle(.plain)
+        .overlay(alignment: markTrailing ? .trailing : .leading) {
+            // .item.active::before (::after on the right): a 2-point accent bar with round ends, 4 points outside
+            // the item, 8 from its top and bottom, on the window's edge.
+            if active {
+                RoundedRectangle(cornerRadius: 1, style: .circular)
+                    .fill(theme.color("--accent"))
+                    .frame(width: 2, height: 20)
+                    .offset(x: markTrailing ? 4 : -4)
+            }
+        }
     }
 
     /// The accent at 12% over the bar, as one solid color the way WebKit blends it.
@@ -51,6 +64,8 @@ struct LeftActivityBar: View {
     @Environment(\.theme) private var theme
 
     let changeCount: Int
+    var logShown = false
+    var toggleLog: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 2) {
@@ -59,7 +74,7 @@ struct LeftActivityBar: View {
             theme.color("--border-strong")
                 .frame(width: 22, height: 1)
                 .padding(.vertical, 4)
-            ActivityItem(icon: "history")
+            ActivityItem(icon: "history", active: logShown, action: toggleLog)
             Spacer(minLength: 0)
             // Anchored to the window's bottom: the page lays them out a quarter point higher (SVGBiasKey).
             Group {
@@ -78,7 +93,7 @@ struct LeftActivityBar: View {
 struct RightActivityBar: View {
     var body: some View {
         VStack(spacing: 2) {
-            ActivityItem(icon: "list-tree", active: true)
+            ActivityItem(icon: "list-tree", active: true, markTrailing: true)
             Spacer(minLength: 0)
         }
         .padding(.top, 6)

@@ -37,15 +37,19 @@ Folder: demo `acme/storefront`
 
 - Blame (`blame`, missing): The current line note and the blame gutter.
 
-## log: Log (native app cannot show it yet)
+## log: Log (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront.
 2. Press Shift+Cmd+L (View > Log) and click the merge commit of feature/checkout.
 
-- History and log (`log`, missing): The commit graph, the commit details and the right-click menu. Native lacks: the
-  Log button of the activity bar is drawn but does nothing.
+Measured: light 99.46% (191 MB / 52 MB, 2026-10-08), dark 99.33% (190 MB / 52 MB, 2026-10-08).
+
+- History and log (`log`, partial): The commit graph, the commit details and the right-click menu. Native lacks: the
+  right-click menu and its actions (new branch, checkout, cherry-pick, revert, rebase, reset, bisect); the filter box
+  takes text but is not tested; Load more, the keyboard in the file list and resizing the panes; blame in the commit
+  diff, Open in Tab and Open File, the inline layout and binary or LFS previews.
 
 ## commit-tab: Commit tab (native app cannot show it yet)
 

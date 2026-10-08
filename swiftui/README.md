@@ -78,11 +78,13 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `get_app_info` | native fields (name, version, pid, bundle id) |
 | `app` | native only, with the actions below |
 
-The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `scroll`, `stage`, `unstage` and
-`commit`. `diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
+The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `show_log`, `scroll`, `stage`,
+`unstage` and `commit`. `diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
 `open_file` opens `filePath` (relative to the folder, or absolute) in a kept tab, like a double click in the Files
 panel (`preview` true: the preview tab), and answers once the text, its colors and its blame note are on screen;
-`get_state` lists the tabs and the shown file under `editor`.
+`get_state` lists the tabs and the shown file under `editor`. `show_log` shows the Log like the History activity
+(`visible` false hides it), selects the commit at `position` in the list or a revision (`commitId`, such as HEAD~5),
+and answers once the history, the commit's details and its first file's diff are shown.
 
 `stage` and `unstage` take `filePaths` (without them, the whole group, like Stage all and Unstage all); `commit`
 takes `message` and `amend`. They run through the window like a click, so the busy state, the toasts and the status
@@ -108,13 +110,16 @@ swift run -c release gm-measure measure --screen diff --collapse off   # every l
 swift run -c release gm-measure measure --screen diff --walk 37        # scroll down and back before the shot
 swift run -c release gm-measure measure --screen staged  # the Changes screen after staging src/cart.ts
 swift run -c release gm-measure measure --screen file    # src/catalog.ts in a file tab
+swift run -c release gm-measure measure --screen log     # the Log, the newest commit and its diff selected
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
+swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)
 swift run -c release gm-measure icons                   # writes Generated/Icons*.swift from src/lib/ui/icons.ts
 swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
+swift run -c release gm-measure reference --screens log # only some screens (changes, log, diff)
 swift run -c release gm-measure parity                  # UI match per scenario, light and dark (see below)
 swift run -c release gm-measure display                 # HDR headroom, screen and color space; exit 1 with HDR on
 ```
@@ -235,3 +240,4 @@ src-tauri's test helpers.
 | 3c Stage, unstage and commit through the bridge: hover buttons, busy state, toasts, Amend, Undo | done |
 | GM-51 HDR gate in gm-measure (`--hdr`), parity list and run specs for 3c and GM-45 | done |
 | GM-52 File tabs and the read-only file view: open from the Files panel, file bar, editor canvas, status items | done |
+| GM-53 Log and history: graph, refs, commit details and its read-only diff, `show_log`, `--screen log` | done |

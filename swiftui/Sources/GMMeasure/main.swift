@@ -1,17 +1,18 @@
 // gm-measure: drives and measures Git Manager and Git Manager Native from the outside
 // (docs/plans/swiftui-experiment.md).
 //
-//   swift run gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file] [--collapse on|off]
+//   swift run gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file|log] [--collapse on|off]
 //                                [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
 //                                [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark]
 //                               [--screen diff|file] [--only current|native] [--current-app <path>]
 //                               [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
+//   swift run gm-measure memory --screen log [--commits <n>] [--current-app <path>] (and the options above)
 //   swift run gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
 //   swift run gm-measure smoke [--app <path>]
 //   swift run gm-measure tokens [--check]
 //   swift run gm-measure icons [--check]
-//   swift run gm-measure reference [--modes light,dark] [--screens changes,diff,file] [--current-app <path>]
+//   swift run gm-measure reference [--modes light,dark] [--screens changes,log,diff,file] [--current-app <path>]
 //                                  [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
 //                               [--current-app <path>] [--native-app <path>] [--record] [--hdr off|any]
@@ -35,17 +36,18 @@ let repoRoot = (swiftuiDir as NSString).deletingLastPathComponent
 
 let usage = """
     Usage:
-      gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file] [--collapse on|off]
+      gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file|log] [--collapse on|off]
                          [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
                          [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
-      gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark] [--screen diff|file]
-                        [--only current|native] [--current-app <path>] [--native-app <path>]
+      gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark] [--screen diff|file|log]
+                        [--only current|native] [--current-app <path>] [--native-app <path>] [--commits <n>]
                         [--hdr off|any] [--hdr-wait <s>]
+      gm-measure memory --screen log [--commits <n>] [--current-app <path>] (and the options above)
       gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
       gm-measure smoke [--app <path>]
       gm-measure tokens [--check]
       gm-measure icons [--check]
-      gm-measure reference [--modes light,dark] [--screens changes,diff,file] [--current-app <path>]
+      gm-measure reference [--modes light,dark] [--screens changes,log,diff,file] [--current-app <path>]
                            [--hdr off|any] [--hdr-wait <s>]
       gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
                         [--current-app <path>] [--native-app <path>] [--record] [--hdr off|any] [--hdr-wait <s>]

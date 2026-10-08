@@ -52,7 +52,8 @@
       "steps": [
         "Start the app on demo/acme/storefront.",
         "Press Shift+Cmd+L (View > Log) and click the merge commit of feature/checkout."
-      ]
+      ],
+      "run": { "logCommit": "HEAD~5" }
     },
     {
       "id": "commit-tab",

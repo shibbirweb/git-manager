@@ -108,6 +108,11 @@ struct Theme {
         CSSColor.parse(text)?.displayP3
     }
 
+    /// A token, or a literal such as "#b04ad8", as a CSS color, for color-mix() chains (LogColors.swift).
+    func cssColor(_ tokenOrLiteral: String) -> CSSColor? {
+        css(tokenOrLiteral) ?? CSSColor.parse(tokenOrLiteral)
+    }
+
     private func css(_ tokenName: String) -> CSSColor? {
         CSSColor.parse(tokens[tokenName] ?? "")
     }

@@ -22,22 +22,32 @@ struct DiffScreen: View {
                 staged: open.staged, collapse: prefs.collapseUnchanged, go: state.go,
                 toggleCollapse: prefs.toggleCollapse
             )
-            labels
+            DiffLabels(left: open.staged ? "HEAD" : "Index", right: open.staged ? "Index" : "Working Tree")
             DiffPanes(content: content, scroll: state.scroll, onFold: state.stepFold)
         }
     }
+}
 
-    /// "Index" and "Working Tree" (HEAD and Index for a staged diff): 24 points on --panel-alt with a --border line
-    /// below, 11.5-point dim text.
-    private var labels: some View {
+/// "Index" and "Working Tree" (HEAD and Index for a staged diff, Parent and the commit in the Log): 24 points on
+/// --panel-alt with a --border line below, 11.5-point dim text.
+struct DiffLabels: View {
+    @Environment(\.theme) private var theme
+
+    let left: String
+    let right: String
+    var readonly = false
+
+    var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                label(open.staged ? "HEAD" : "Index")
-                // .gap: the revert column's width, with its --border-strong sides.
+                label(left)
+                // .gap: the revert column's width with its --border-strong sides, or one line when read-only.
                 theme.color("--border-strong").frame(width: 1)
-                Color.clear.frame(width: DiffPanes.gapWidth - 2)
-                theme.color("--border-strong").frame(width: 1)
-                label(open.staged ? "Index" : "Working Tree")
+                if !readonly {
+                    Color.clear.frame(width: DiffPanes.gapWidth - 2)
+                    theme.color("--border-strong").frame(width: 1)
+                }
+                label(right)
             }
             theme.color("--border").frame(height: 1)
         }
@@ -68,6 +78,8 @@ struct DiffToolbar: View {
     let current: Int
     let staged: Bool
     let collapse: Bool
+    /// A commit's diff: no line actions after the toggles.
+    var readonly = false
     /// The previous (-1) or next (1) change.
     let go: (Int) -> Void
     let toggleCollapse: () -> Void
@@ -94,31 +106,39 @@ struct DiffToolbar: View {
                 .onTapGesture(perform: toggleCollapse)
             toggle(icon: "history", title: "Blame")
             toggle(icon: "external-link", title: "Open File")
-            divider
-            if staged {
-                toggle(icon: "minus", title: "Unstage Lines")
-            } else {
-                toggle(icon: "plus", title: "Stage Lines")
-                toggle(icon: "discard", title: "Discard Lines")
+            if !readonly {
+                divider
+                if staged {
+                    toggle(icon: "minus", title: "Unstage Lines")
+                } else {
+                    toggle(icon: "plus", title: "Stage Lines")
+                    toggle(icon: "discard", title: "Discard Lines")
+                }
             }
-            // .path's 12-point margin after the toolbar's 2-point gap.
-            PathLabel(name: name, directory: directory)
-                .padding(.leading, 12)
+            // .path's 12-point margin after the toolbar's 2-point gap. In the Log's narrow commit pane flexbox
+            // shrinks it to nothing (not built yet for a pane wide enough to show it).
+            if !readonly {
+                PathLabel(name: name, directory: directory)
+                    .padding(.leading, 12)
+            }
         }
         .padding(.horizontal, 8)
         // The controls center in the 33 points above the --border-strong bottom line.
         .frame(height: 33)
         .frame(maxHeight: .infinity, alignment: .top)
+        // A commit's toolbar runs past its narrow pane: CommitDiffView paints the box, the buttons spill over.
         .overlay(alignment: .bottom) {
-            theme.color("--border-strong").frame(height: 1)
+            theme.color("--border-strong").frame(height: readonly ? 0 : 1)
         }
         .frame(height: 34)
-        .background(theme.color("--panel"))
+        .background(readonly ? Color.clear : theme.color("--panel"))
     }
 
+    /// In the Log's narrow commit pane the toolbar overflows, and flexbox shrinks the 1-point divider to nothing
+    /// (its margins stay).
     private var divider: some View {
         theme.color("--border-strong")
-            .frame(width: 1, height: 16)
+            .frame(width: readonly ? 0 : 1, height: 16)
             .padding(.horizontal, 8)
     }
 

@@ -16,12 +16,14 @@ struct ExactText: View {
     var tabular = false
     /// letter-spacing, which WebKit adds after every character, the last one included.
     var tracking: CGFloat = 0
+    /// Another face than the UI font, such as the mono one (size, weight and tabular then do not apply).
+    var face: NSFont?
 
     /// Where the layout puts the text past the pixel SwiftUI draws it on, in points (-0.25 to 0.25).
     @State private var fraction: CGFloat = 0
 
     var body: some View {
-        let font = PageFont.ui(size, weight: weight, tabular: tabular)
+        let font = face ?? PageFont.ui(size, weight: weight, tabular: tabular)
         // letter-spacing would also space the leading space, so tracked text stays on the pixel.
         Text(Self.shifted(text, font: font, by: tracking == 0 ? fraction : 0))
             .font(Font(font))

@@ -1,0 +1,246 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 553},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "4px",
+        "padding-left": "12px", "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "1"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 569},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "2"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 585},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "3"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 601},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "4"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 617},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "5"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 665},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "32px",
+        "padding-left": "12px", "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "6"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 681},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "7"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 666, "y": 697},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "8"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 553},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "4px",
+        "padding-left": "12px", "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "1"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 569},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "2"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 585},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "3"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 601},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "4"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 617},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "5"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 633},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "6"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 649},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "7"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 665},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "8"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 681},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "9"
+    },
+    {
+      "classes": "cm-gutterElement", "rect": {"height": 16, "width": 40, "x": 881, "y": 697},
+      "styles": {
+        "border-bottom-color": "rgb(75, 80, 89)", "border-left-color": "rgb(75, 80, 89)",
+        "border-right-color": "rgb(75, 80, 89)", "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "12px",
+        "padding-right": "10px", "text-align": "right", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "10"
+    },
+    {
+      "classes": "cm-gutterElement cm-changedLineGutter", "rect": {"height": 16, "width": 2, "x": 922, "y": 633},
+      "styles": {
+        "background-color": "rgb(74, 120, 214)", "border-bottom-color": "rgb(75, 80, 89)",
+        "border-left-color": "rgb(75, 80, 89)", "border-right-color": "rgb(75, 80, 89)",
+        "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "margin-top": "84px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gutterElement cm-changedLineGutter", "rect": {"height": 16, "width": 2, "x": 922, "y": 649},
+      "styles": {
+        "background-color": "rgb(74, 120, 214)", "border-bottom-color": "rgb(75, 80, 89)",
+        "border-left-color": "rgb(75, 80, 89)", "border-right-color": "rgb(75, 80, 89)",
+        "border-top-color": "rgb(75, 80, 89)", "color": "rgb(75, 80, 89)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 80, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "commit diff gutters", "piece": "1 of 1", "screen": "log", "selector": [".details .cm-gutterElement"]
+}

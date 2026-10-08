@@ -25,12 +25,15 @@ enum MemoryBench {
 
     static func run(_ arguments: [String]) async throws -> Int32 {
         var arguments = arguments
+        let screen = option("--screen", in: &arguments) ?? "diff"
+        if screen == "log" {
+            return try await runLog(arguments)
+        }
         let lines = max(100, Int(option("--lines", in: &arguments) ?? "4000") ?? 4000)
         let sampleS = min(30, max(1, Int(option("--sample", in: &arguments) ?? "5") ?? 5))
         let speed = max(5, Int(option("--speed", in: &arguments) ?? "200") ?? 200)
         let mode = option("--mode", in: &arguments) ?? "light"
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
-        let screen = option("--screen", in: &arguments) ?? "diff"
         let appPaths: [AppKind: String?] = [
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
@@ -100,7 +103,7 @@ enum MemoryBench {
         return AppRun(kind: app.kind, phases: phases, scroll: scroll)
     }
 
-    private static func sample(_ app: RunningApp, _ name: String, seconds: Int) async throws -> Phase {
+    static func sample(_ app: RunningApp, _ name: String, seconds: Int) async throws -> Phase {
         let answer = try await app.client.call(
             "sample_memory", ["durationMs": seconds * 1000, "intervalMs": 250], timeout: TimeInterval(seconds + 30)
         )

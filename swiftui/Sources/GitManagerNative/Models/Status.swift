@@ -66,4 +66,16 @@ struct OpenDiff {
     /// Syntax colors of each side, once SyntaxHighlighter has them (the text shows plain until then).
     var originalSpans: SyntaxColors?
     var modifiedSpans: SyntaxColors?
+    /// A commit's diff in the Log: read-only, "Parent" against the commit's first 8 hash characters.
+    var commitLabel: String?
+    /// The cursor line's blame note (blame.ts noteFor): the commit's "Author, 2 d ago • summary" in the Log.
+    var commitNote: String?
+
+    var blameNote: String {
+        commitNote ?? "You, Uncommitted changes"
+    }
+
+    var readonly: Bool {
+        commitLabel != nil
+    }
 }

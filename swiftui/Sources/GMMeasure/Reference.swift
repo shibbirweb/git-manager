@@ -120,7 +120,9 @@ enum Reference {
             do {
                 let info = try await app.client.call("get_app_info").structured ?? [:]
                 let version = (info["version"] ?? info["appVersion"]).map { "\($0)" } ?? "?"
+                var logShown = false
                 for screen in chosen {
+                    try await prepare(screen, app, logShown: &logShown)
                     if screen.name == "diff" {
                         try await showDiff(app, fallbackRepoPath: folderPath)
                     } else if screen.name == "file" {

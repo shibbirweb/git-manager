@@ -157,6 +157,9 @@ enum ParityRun {
         if let filePath = spec.openFile {
             try await Measure.openFile(app, filePath: filePath)
         }
+        if let revision = spec.logCommit {
+            try await Measure.showLog(app, revision: revision)
+        }
         if app.kind == .current {
             for expectation in spec.expectCurrent ?? [] {
                 try await expect(expectation, in: app)

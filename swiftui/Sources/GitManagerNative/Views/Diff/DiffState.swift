@@ -70,9 +70,10 @@ final class DiffState: ObservableObject {
             requestScroll(to: current, in: content)
         }
         content.theme = theme
+        content.readonly = open.readonly
         content.leftSpans = open.originalSpans
         content.rightSpans = open.modifiedSpans
-        content.rightNoteEnd = Self.noteEnd(content, change: current)
+        content.rightNoteEnd = Self.noteEnd(content, change: current, note: open.blameNote)
         return content
     }
 
@@ -127,7 +128,7 @@ final class DiffState: ObservableObject {
     /// the line, "You, Uncommitted changes" in 11.7-point italic. It lies in a layer of the scroller, so it widens
     /// what the horizontal scrollbar scrolls, though it starts out of sight. Only a changed line is known to be
     /// uncommitted without running git blame; other lines give 0.
-    private static func noteEnd(_ content: DiffCanvas.Content, change: Int) -> CGFloat {
+    private static func noteEnd(_ content: DiffCanvas.Content, change: Int, note: String) -> CGFloat {
         let hunks = content.layout.lineHunks
         guard hunks.indices.contains(change),
               let row = DiffNavigation.row(ofLine: hunks[change].newStart + 1, in: content.layout.right),
@@ -136,7 +137,7 @@ final class DiffState: ObservableObject {
         }
         let base = NSFont.systemFont(ofSize: 11.7)
         let italic = NSFont(descriptor: base.fontDescriptor.withSymbolicTraits(.italic), size: 11.7) ?? base
-        let note = ("You, Uncommitted changes" as NSString).size(withAttributes: [.font: italic]).width
-        return 6 + CGFloat(text.utf16.count) * CodeLineText.advance + 36 + note
+        let noteWidth = (note as NSString).size(withAttributes: [.font: italic]).width
+        return 6 + CGFloat(text.utf16.count) * CodeLineText.advance + 36 + noteWidth
     }
 }

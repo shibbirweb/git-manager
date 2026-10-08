@@ -51,3 +51,41 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
   - The other screens after the tab strip moved out of DiffScreen (light / dark, below the title bar): Changes
     99.74 / 99.73%, after staging 99.74 / 99.73%, diff folded 99.66 / 99.66%, diff every line 99.64 / 99.65%, as
     before GM-52 within 0.01.
+- GM-53 Log and history (the History activity; src/lib/views/LogView.svelte, src/lib/log/):
+  - Built: bridge `get_log`, `get_commit_details`, `get_commit_file_diff` and `resolve_revision`
+    (bridge/src/commands/log.rs over the shared git::log and git::diff, tests in bridge/tests/log.rs); NativeCore
+    LogGraph (graph.ts's lanes, its test cases ported), LogGraphCell (GraphCell.svelte's strokes and nodes), LogFormat
+    (Intl's en-US dates, relative times, ref order, counts, message split) and LogList (visible range with 12 rows of
+    overscan, filter, keys, ensure-visible, near-end loading), all tested; the Log screen (Views/Log): toolbar with
+    filter, All branches, Refresh, count and close; column heads; rows with graph, ref labels, subject, author, date
+    and hash, built only around the viewport under a transparent scroll view (LogScrollHost) that takes the wheel,
+    clicks, hover and keys; 300 commits a page, more near the end; the 55% split, the commit's details (subject, Open
+    in Tab drawn, Author, Date, Hash with copy, Parent links, changed files) and the file's read-only diff on the
+    diff canvas ("Parent" against the commit, no revert column). The History item toggles it; `app action=show_log`
+    (`visible`, `position`, `commitId`) drives it; `gm-measure measure --screen log`, `reference --screens log`,
+    `memory --screen log` and the parity scenario `log` (the feature-checkout merge, HEAD~5) measure it.
+  - Rules found: each Log row is a composited layer (translateY), so a ref label's color-mix fill passes through
+    half precision (235.507 red stores as 235); 11-point label text sits half a point lower; text after labels of
+    fractional width (and the details' values after the 37.875-point terms) needs ExactText's fraction, mono text
+    included (ExactText takes a `face`); WebKit cuts the hash to whole characters and an ellipsis; the commit
+    toolbar overflows its 429-point pane, so flexbox shrinks its dividers to 0 (margins stay) and the path to
+    nothing, and the buttons that do not fit paint over the Files panel (the main area now draws above it); the
+    blame note is the commit's "Author, 2 d ago • subject", which sets the right pane's scroll width; the split
+    lines are gradients that Core Graphics dithers one step at random, so the token is the closest. Also the
+    activity bar's active mark (2-point accent bar, on the right for the right bar) was missing on every screen.
+  - Diff canvas changes (minimal, for the read-only diff): `Content.readonly` and `DiffPanes.gap(readonly:)` (1
+    point instead of the 24-point revert column), the toolbar without line actions, `DiffLabels` shared, and the
+    blame note text per diff (`OpenDiff.commitNote`). The 8 existing scores did not move.
+  - Pixel diff below the title bar (HDR off, local reference build): Log 99.52% light, 99.39% dark (parity
+    scenario on the merge commit 99.46% / 99.33%); Changes 99.74 / 99.73, staged 99.75 / 99.73, diff folded
+    99.66 / 99.67, every line 99.65 / 99.65. Left: dim row text and code text edges one step off (WebKit blends
+    glyphs in the rows' layers), the commit diff toolbar's icons and text (in the current app that pane sits at a
+    fractional 491.1 points and is resampled), the dithered split lines, rounded corners, the memory readout.
+  - Memory (`gm-measure memory --screen log`, 3000 commits with a merged branch every 40, scrolled at 200 points
+    a frame), average MB: current 138 idle, 170 Log open, 250 scrolling (518 peak), 204 after; native 34, 50, 51
+    (53 peak), 50.
+  - Not built: the right-click menu (Open in Tab, Copy Revision Hash, New Branch Here, Checkout Revision,
+    Cherry-Pick, Revert, Interactively Rebase, Reset, Bisect), commit tabs, Open in Tab and Open File, the filter
+    beyond typing (Esc, Down into the list), Load more, keyboard in the file list, resizing the details split,
+    blame in the commit diff, the inline layout, binary and LFS previews, refreshing after commits and fetches, the
+    toolbar's path when the pane is wide enough to show it, and the empty and error states' icons.

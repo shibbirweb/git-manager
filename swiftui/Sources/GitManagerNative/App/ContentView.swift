@@ -12,6 +12,7 @@ struct ContentView: View {
     @ObservedObject private var model = AppModel.shared
     @ObservedObject private var toasts = ToastCenter.shared
     @ObservedObject private var editor = EditorModel.shared
+    @ObservedObject private var log = LogModel.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -25,11 +26,17 @@ struct ContentView: View {
                 busy: model.busy
             )
         } leftBar: {
-            LeftActivityBar(changeCount: model.changeCount)
+            LeftActivityBar(changeCount: model.changeCount, logShown: log.shown) {
+                log.toggle(repoPath: model.repoPath)
+            }
         } sidebar: {
             ChangesPanel()
         } main: {
-            MainArea()
+            if log.shown {
+                LogScreen()
+            } else {
+                MainArea()
+            }
         } files: {
             FilesPanel()
         } rightBar: {

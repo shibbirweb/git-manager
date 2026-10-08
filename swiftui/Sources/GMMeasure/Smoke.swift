@@ -68,6 +68,7 @@ enum Smoke {
             check("take_screenshot", (image?.width ?? 0) > 0, image.map { "\($0.width)x\($0.height)" } ?? shot.text)
 
             try await checkWrites(app.client, check: check)
+            try await checkLog(app.client, check: check)
         } catch {
             check("tool calls", false, "\(error)")
         }
