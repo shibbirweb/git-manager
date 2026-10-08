@@ -1,0 +1,237 @@
+{
+  "scenarios": [
+    {
+      "id": "diff-inline",
+      "title": "Inline diff of src/cart.ts",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and click src/cart.ts under Changes.",
+        "Click Inline in the diff toolbar."
+      ]
+    },
+    {
+      "id": "conflicts",
+      "title": "Conflicts dialog",
+      "folder": "acme/payments-api",
+      "steps": [
+        "Start the app on demo/acme/payments-api, which is stopped in a merge with conflicts.",
+        "Click Resolve... on the Conflicts group in Changes."
+      ]
+    },
+    {
+      "id": "merge-tool",
+      "title": "Merge tool",
+      "folder": "acme/payments-api",
+      "steps": [
+        "Start the app on demo/acme/payments-api.",
+        "Click the first file of the Conflicts group: the three pane merge tool."
+      ]
+    },
+    {
+      "id": "mergetool-mode",
+      "title": "git mergetool window",
+      "folder": "acme/payments-api",
+      "steps": [
+        "Set Git Manager up as git's mergetool (docs/wiki/usage/Git-Mergetool.md).",
+        "Run git mergetool in demo/acme/payments-api: a merge window opens for the first conflicted file."
+      ]
+    },
+    {
+      "id": "blame",
+      "title": "Blame",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and double-click src/cart.ts.",
+        "Click Blame (the clock button) in the path bar: the blame gutter beside the line numbers."
+      ]
+    },
+    {
+      "id": "log",
+      "title": "Log",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Press Shift+Cmd+L (View > Log) and click the merge commit of feature/checkout."
+      ]
+    },
+    {
+      "id": "commit-tab",
+      "title": "Commit tab",
+      "folder": "acme/storefront",
+      "steps": [
+        "Open the Log of demo/acme/storefront.",
+        "Double-click the merge commit of feature/checkout: it opens in a commit tab."
+      ]
+    },
+    {
+      "id": "branches-sidebar",
+      "title": "Branches and Stashes sidebar",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Press Shift+Cmd+E: branches, tags, the stash WIP: free shipping threshold and Worktrees."
+      ]
+    },
+    {
+      "id": "branches-popup",
+      "title": "Branches popup",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Click the branch button (main) in the Changes title bar and point at feature/checkout."
+      ]
+    },
+    {
+      "id": "remotes",
+      "title": "Pull and push menu",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront (one commit ahead of origin).",
+        "Click the arrow next to Sync in the Changes title bar: Pull, Push, Fetch."
+      ]
+    },
+    {
+      "id": "shelf",
+      "title": "Shelf",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Choose Git > Uncommitted Changes > Shelve Changes... and shelve src/cart.ts.",
+        "Choose Git > Uncommitted Changes > Show Shelf: the Shelf tab of the bottom panel."
+      ]
+    },
+    {
+      "id": "menu-bar",
+      "title": "Menu bar and Git menu",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Open each menu of the menu bar (File, Edit, View, Code, Git, Window, Help); compare items, not pixels."
+      ]
+    },
+    {
+      "id": "git-dialogs",
+      "title": "Push dialog",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Choose Git > Push...: the Push dialog with one commit to push."
+      ]
+    },
+    {
+      "id": "interactive-rebase",
+      "title": "Interactive rebase",
+      "folder": "acme/storefront",
+      "steps": [
+        "Open the Log of demo/acme/storefront.",
+        "Right-click the third commit and choose Interactively Rebase from Here..."
+      ]
+    },
+    {
+      "id": "submodules",
+      "title": "Submodule changes",
+      "folder": "extras/shop-app",
+      "steps": [
+        "Start the app on demo/extras/shop-app.",
+        "Changes shows the submodule themes/acme with new commits and modified content."
+      ]
+    },
+    {
+      "id": "git-lfs",
+      "title": "Git LFS diff",
+      "folder": "extras/media-site",
+      "steps": [
+        "Start the app on demo/extras/media-site.",
+        "Click assets/hero.png under Changes: the LFS tag and both sizes in the diff."
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Press Cmd+, (Git Manager > Settings...) and look at Appearance, then Editor, Git and Automation."
+      ]
+    },
+    {
+      "id": "settings-search",
+      "title": "Search in Settings",
+      "folder": "acme/storefront",
+      "steps": [
+        "Open Settings (Cmd+,) and type font in the search field."
+      ]
+    },
+    {
+      "id": "color-themes",
+      "title": "Color theme Dracula",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "In Settings > Editor, pick Dracula as the Dark theme; switch to dark mode."
+      ]
+    },
+    {
+      "id": "github",
+      "title": "GitHub settings",
+      "folder": "acme/storefront",
+      "steps": [
+        "Open Settings (Cmd+,) and choose GitHub: the sign-in choices."
+      ]
+    },
+    {
+      "id": "git-console",
+      "title": "Git Console",
+      "folder": "acme/storefront",
+      "steps": [
+        "Turn on Settings > Git > Git Console, then click Refresh in Changes.",
+        "Choose View > Git Console: the commands the app ran, with their output."
+      ]
+    },
+    {
+      "id": "back-forward",
+      "title": "Back and Forward",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront; open src/cart.ts at line 30, then docs/checkout.md.",
+        "Click Go Back in the header: cart.ts at line 30 again."
+      ]
+    },
+    {
+      "id": "terminal",
+      "title": "Terminal panel",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Click Terminal at the bottom of the left activity bar."
+      ]
+    },
+    {
+      "id": "scripts",
+      "title": "Scripts panel",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Click the play button in the left activity bar (View > Scripts): the scripts of package.json."
+      ]
+    },
+    {
+      "id": "update-dialog",
+      "title": "Update available",
+      "folder": "acme/storefront",
+      "steps": [
+        "Run a build older than the newest release on its channel and wait about 30 seconds.",
+        "Click Update available in the status bar: the update window."
+      ]
+    },
+    {
+      "id": "memory-breakdown",
+      "title": "Memory breakdown",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Click the memory readout at the right of the status bar."
+      ]
+    }
+  ]
+}

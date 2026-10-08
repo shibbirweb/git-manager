@@ -1,0 +1,117 @@
+{
+  "features": [
+    {
+      "id": "changes", "name": "Changes and commits", "usage": "Changes-and-Commits.md", "scenario": "changes",
+      "check": "The Staged and Changes groups with status letters, a click shows the diff, the commit box",
+      "native": "partial",
+      "gaps": [
+        "stage, unstage and discard",
+        "commit, amend and the message history",
+        "right-click menus, arrow keys, the Conflicts group and several repositories"
+      ]
+    },
+    {
+      "id": "sign-in-prompts", "name": "Sign-in prompts", "usage": "Sign-In-Prompts.md", "scenario": "sign-in",
+      "check": "The Sign in dialog for a username and password or an SSH passphrase",
+      "native": "missing"
+    },
+    {
+      "id": "commit-box-layout", "name": "Commit box layout", "usage": "Commit-Box-Layout.md", "scenario": "changes",
+      "check": "The single commit box at the bottom of Changes and the layout button in its title bar",
+      "native": "partial",
+      "gaps": ["the layout button does nothing", "the Per repository layout"]
+    },
+    {
+      "id": "repo-actions", "name": "Repository actions", "usage": "Repository-Actions.md", "scenario": "changes",
+      "check": "Branch, Sync, Commit, Refresh and ... in the Changes title bar",
+      "native": "partial",
+      "gaps": ["every button is drawn but does nothing", "the ... menu"]
+    },
+    {
+      "id": "commit-options", "name": "Commit options", "usage": "Commit-Options.md", "scenario": "commit-options",
+      "check": "Commit & Push, Commit & Sync, sign-off, author, GPG signing, skip hooks",
+      "native": "missing"
+    },
+    {
+      "id": "gitignore", "name": "Ignoring files", "usage": "Ignoring-Files.md", "scenario": "files-menu",
+      "check": "Add to .gitignore and its choices in the right-click menu",
+      "native": "missing"
+    },
+    {
+      "id": "diffs", "name": "Diffs", "usage": "Diffs.md", "scenario": "diff",
+      "check": "The Diff tab, toolbar, Index and Working Tree labels, folds, tinted changes and the ruler",
+      "native": "partial",
+      "gaps": [
+        "the stage and revert buttons per change and the fold step buttons are drawn, not clickable",
+        "the toolbar buttons, arrow keys through files, diffs of commits"
+      ]
+    },
+    {
+      "id": "inline-diffs", "name": "Inline diffs", "usage": "Inline-Diffs.md", "scenario": "diff-inline",
+      "check": "Removed lines above the new ones in one column",
+      "native": "missing"
+    },
+    {
+      "id": "conflicts", "name": "Resolving conflicts", "usage": "Resolving-Conflicts.md", "scenario": "conflicts",
+      "check": "The operation banner, the Conflicts group and dialog, Abort and Continue",
+      "native": "missing"
+    },
+    {
+      "id": "merge-tool", "name": "Merge tool", "usage": "Merge-Tool.md", "scenario": "merge-tool",
+      "check": "Three panes, taking changes from either side, the result",
+      "native": "missing"
+    },
+    {
+      "id": "blame", "name": "Blame", "usage": "Blame.md", "scenario": "blame",
+      "check": "The current line note and the blame gutter",
+      "native": "missing"
+    },
+    {
+      "id": "log", "name": "History and log", "usage": "History-and-Log.md", "scenario": "log",
+      "check": "The commit graph, the commit details and the right-click menu",
+      "native": "missing",
+      "gaps": ["the Log button of the activity bar is drawn but does nothing"]
+    },
+    {
+      "id": "commit-tabs", "name": "Commit tabs", "usage": "History-and-Log.md", "scenario": "commit-tab",
+      "check": "A commit in its own tab with its files and diff",
+      "native": "missing"
+    },
+    {
+      "id": "branches", "name": "Branches and tags", "usage": "Branches-and-Tags.md", "scenario": "branches-sidebar",
+      "check": "Local and remote branches, tags, and their right-click actions",
+      "native": "missing"
+    },
+    {
+      "id": "branches-popup", "name": "Branches popup", "usage": "Branches-Popup.md", "scenario": "branches-popup",
+      "check": "The branch list with a submenu of actions per branch",
+      "native": "missing"
+    },
+    {
+      "id": "remotes", "name": "Remotes", "usage": "Remotes.md", "scenario": "remotes",
+      "check": "Ahead and behind numbers; fetch, pull and push",
+      "native": "partial",
+      "gaps": ["only the ahead and behind numbers in the header and status bar", "fetch, pull and push"]
+    },
+    {
+      "id": "stashes", "name": "Stashes", "usage": "Stashes.md", "scenario": "branches-sidebar",
+      "check": "The stash in the sidebar; stash, apply, pop and drop",
+      "native": "missing"
+    },
+    {
+      "id": "shelf", "name": "Shelf", "usage": "Shelf.md", "scenario": "shelf",
+      "check": "The Shelve Changes dialog and the Shelf tab",
+      "native": "missing"
+    },
+    {
+      "id": "git-menu", "name": "Git menu", "usage": "Git-Menu.md", "scenario": "menu-bar",
+      "check": "Every item of the Git menu, grey when it cannot run",
+      "native": "missing"
+    },
+    {
+      "id": "git-dialogs", "name": "Git dialogs", "usage": "Git-Dialogs.md", "scenario": "git-dialogs",
+      "check": "Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes and Clone",
+      "native": "missing"
+    }
+  ]
+}

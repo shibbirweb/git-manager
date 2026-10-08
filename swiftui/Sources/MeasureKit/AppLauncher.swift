@@ -55,6 +55,8 @@ public enum AppLauncher {
         settings extraSettings: [String: Any] = [:],
         /// "light" or "dark" for both apps: the current app's theme setting, the native app's -appearance.
         mode: String? = nil,
+        /// Extra launch arguments for the native app.
+        nativeArguments: [String] = [],
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -72,7 +74,7 @@ public enum AppLauncher {
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
         }
-        let nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? [])
+        let nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? []) + nativeArguments
         let appArgs = kind == .current ? [folderPath] : nativeArgs
         let started = Date()
         let opener = try run("/usr/bin/open", ["-n", "-a", appPath, "--env", "HOME=\(home)", "--args"] + appArgs)

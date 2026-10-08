@@ -119,3 +119,22 @@ the numbers. Newest last.
   Re-run with 3b (syntax colors in JavaScriptCore, beta.7 as the current app): current 141 / 216 / 921 / 321 MB
   (idle, diff open, scrolling, after), native 34 / 85 / 80 / 78 MB. JavaScriptCore adds about 24 MB while a diff
   is open.
+- GM-43 parity list and UI match per scenario: `swiftui/Parity` lists all 59 features of docs/wiki/features.json
+  plus the window shell, each with a scenario (steps that reach it in both apps on the docs demo), the native status
+  and the last numbers; README.md and Scenarios*.md there are generated from the JSON (`gm-measure parity summary`),
+  and a Swift test fails when a wiki feature is missing or the pages are stale. Today: 1 done (window shell),
+  14 partial, 45 missing; 2 of 46 scenarios run in both apps. `gm-measure parity` runs those scenarios in both apps
+  and both modes and reports per scenario the match below the title bar, the overlay, memory and what is missing in
+  native; a failed launch or capture is written next to its scenario. `.github/workflows/native-parity.yml` does the
+  same on GitHub against the newest beta release, after granting Screen Recording through TCC entries
+  (`swiftui/scripts/ci-allow-screen-capture.sh`); it has not run there yet. Measured 2026-10-08 against the
+  installed 0.1.0-beta.7 (on battery, Low Power Mode):
+
+  | Scenario | Light | Dark | Memory current / native (light) |
+  |---|---|---|---|
+  | changes | 99.18% | 99.13% | 150 / 32 MB |
+  | diff (src/cart.ts) | 81.35% | 74.95% | 207 / 68 MB |
+
+  The diff scores low because beta.7 never folds side-by-side diffs (GM-40, not released); against the fixed build
+  it scored 99.04% and 98.28%. The control server binds port 0, so native builds from several worktrees never
+  collide.

@@ -13,9 +13,9 @@ struct CurrentAppPrefs {
     private let storage: WebKitLocalStorage
     private let saved: [String: String?]
 
-    /// Sets the scenario values for the app at `appPath`. Nil when there is nothing to set (the app never stored
-    /// anything, so its defaults already match). Refuses while any copy of that app runs, since it holds the file.
-    static func apply(appPath: String) throws -> CurrentAppPrefs? {
+    /// Sets `values` (the scenario's by default) for the app at `appPath`. Nil when there is nothing to set (the app
+    /// never stored anything, so its defaults apply). Refuses while any copy of that app runs, since it holds the file.
+    static func apply(appPath: String, values: [String: String] = scenario) throws -> CurrentAppPrefs? {
         guard let bundle = Bundle(path: appPath), let bundleID = bundle.bundleIdentifier,
               let executable = bundle.executableURL?.lastPathComponent else {
             return nil
@@ -32,7 +32,7 @@ struct CurrentAppPrefs {
             return nil
         }
         var saved: [String: String?] = [:]
-        for (key, value) in scenario {
+        for (key, value) in values {
             saved[key] = try storage.value(forKey: key)
             try storage.setValue(value, forKey: key)
         }

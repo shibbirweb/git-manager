@@ -35,8 +35,9 @@ Sources/GMMeasure/         gm-measure commands; Sources/MeasureKit/ is its libra
 Tests/                     NativeCoreTests/ and MeasureKitTests/ (Swift Testing)
 Highlight/entry.ts         the current app's highlighters, bundled into the app's highlight.js
 Reference/                 layout snapshots of the current app (gm-measure reference)
+Parity/                    the parity list: every feature of the current app, its scenario and native status
 bridge/                    Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
-scripts/                   build-app.sh, test.sh, check-lines.sh
+scripts/                   build-app.sh, test.sh, check-lines.sh, ci-allow-screen-capture.sh (CI only)
 ```
 
 - **One entry point.** `gm_call` takes a command name and camelCase JSON arguments, like `invoke` in
@@ -74,6 +75,10 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `get_app_info` | native fields (name, version, pid, bundle id) |
 | `app` | native only for now: `get_state`, `open_folder`, `show_diff`, `scroll` |
 
+The server listens on a port macOS picks (port 0), so two native builds (from two worktrees, say) never fight over
+one; each writes its port to the `mcp.json` under its own HOME. gm-measure starts every app with a throwaway HOME, so
+runs side by side stay apart. Started by hand with the same HOME, the last app to start owns that `mcp.json`.
+
 ## Measure both apps (gm-measure)
 
 `Sources/GMMeasure` holds `gm-measure`, a Swift command that drives and measures both apps from the outside
@@ -90,6 +95,7 @@ swift run -c release gm-measure smoke                   # checks every control t
 swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)
 swift run -c release gm-measure icons                   # writes Generated/Icons*.swift from src/lib/ui/icons.ts
 swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
+swift run -c release gm-measure parity                  # UI match per scenario, light and dark (see below)
 ```
 
 - `tokens` runs the theme catalog (`src/lib/themes/catalog.ts`) with Bun and writes every theme's 73 color tokens
@@ -111,6 +117,41 @@ report gives the whole window and the content below the title bar, which macOS d
 renders one step off in some runs. The current app keeps "Collapse unchanged" in WebKit localStorage under the
 real `~/Library` (shared with your own Git Manager), so `measure` and `reference` turn it on for the run and put
 your value back; they wait for, and then refuse to run beside, a running Git Manager.
+
+## Parity list and UI match per scenario (gm-measure parity)
+
+[Parity/README.md](Parity/README.md) lists every feature of the current app (all of `docs/wiki/features.json`, plus
+the window shell) with its scenario, the native status (done, partial, missing), the last pixel match and memory;
+[Parity/Scenarios.md](Parity/Scenarios.md) gives each scenario's steps and what each feature still lacks. Both are
+generated: edit the JSON (`features-*.json`, `scenarios-*.json`) and run `gm-measure parity summary`. A test fails
+when a wiki feature is missing from the list or the pages are stale.
+
+```sh
+cd swiftui
+swift run -c release gm-measure parity                      # every scenario the native app can show, light and dark
+swift run -c release gm-measure parity --scenarios diff --modes dark --current-app /path/to/Git\ Manager.app
+swift run -c release gm-measure parity --record             # also keep the numbers in Parity/results.json
+swift run -c release gm-measure parity list                 # the scenarios, and which ones run
+swift run -c release gm-measure parity summary [--check]    # write (or check) Parity/README.md and Scenarios*.md
+```
+
+Each scenario runs in both apps like `measure` does (isolated launches, gm-measure's own window capture, settle 3 s,
+memory sampled 5 s; `--settle`, `--sample` change that) and writes `build/parity/<time>/report.md`, `report.json`
+and per scenario and mode both screenshots and `diff.png` (the overlay below the title bar). The report lists, per
+scenario, the features missing or partial in native, and the scenarios the native app cannot show yet. A launch,
+step or capture that fails is written next to its scenario, and the exit code is then 1.
+
+A scenario runs in both apps once it has a `run` spec: the file whose diff to open (`showDiff`, `staged`),
+localStorage values and settings for the current app (`currentStorage`, `currentSettings`), launch arguments for
+the native app (`nativeArguments`) and elements the current app must show before the capture (`expectCurrent`).
+A new screen of the native app usually needs only a `run` spec in its scenario.
+
+`.github/workflows/native-parity.yml` runs it on pull requests that touch `swiftui/` and by hand (scenarios, modes
+and the release to compare with are inputs). It builds the native app, downloads the current app from the newest
+beta release (`Git.Manager_universal.app.tar.gz`, else the `.dmg`; built from the commit when no release has one),
+grants Screen Recording with `scripts/ci-allow-screen-capture.sh` (TCC entries for the runner's process chain;
+the runner images keep SIP off, which allows that), posts the report as the job summary and uploads
+`build/parity/`. The workflow has not run on GitHub yet, so the permission step is untried there.
 
 ## Checks
 
@@ -144,3 +185,4 @@ src-tauri's test helpers.
 | 2f Matching to 99% (font smoothing, blends, alignment) | done |
 | 3a Diff screen: tab, toolbar, panes drawn per viewport, folds, ruler (97%) | done |
 | 3b Diff screen to 99%: syntax colors, brackets, guides, changed words, text blending | done |
+| 1c Parity list and UI match per scenario (gm-measure parity, native-parity.yml) | built, CI run not yet tried |

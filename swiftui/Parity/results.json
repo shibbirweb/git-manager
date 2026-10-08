@@ -1,0 +1,44 @@
+{
+  "scenarios" : {
+    "changes" : {
+      "dark" : {
+        "contentPercent" : 99.13,
+        "currentMb" : 135.9,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-08",
+        "nativeMb" : 31.9,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.14
+      },
+      "light" : {
+        "contentPercent" : 99.18,
+        "currentMb" : 149.8,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-08",
+        "nativeMb" : 31.9,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.05
+      }
+    },
+    "diff" : {
+      "dark" : {
+        "contentPercent" : 74.95,
+        "currentMb" : 200.2,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-08",
+        "nativeMb" : 66,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 72.33
+      },
+      "light" : {
+        "contentPercent" : 81.35,
+        "currentMb" : 206.6,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-08",
+        "nativeMb" : 68,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 81.9
+      }
+    }
+  }
+}

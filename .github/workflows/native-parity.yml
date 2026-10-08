@@ -1,0 +1,176 @@
+# Git Manager Native, the SwiftUI experiment: how closely the native app matches the current app, per scenario of the
+# parity list (swiftui/Parity). Builds the native app like native.yml, takes the current app from the newest beta
+# release (or builds it when no release has a macOS asset), runs gm-measure parity in light and dark, posts the
+# per-scenario table as the job summary and uploads the report with both screenshots and the diff overlay of each
+# scenario. Separate from ci.yml, native.yml and the release workflows, which never depend on it.
+
+name: Native parity (SwiftUI)
+
+on:
+  pull_request:
+    paths:
+      - "swiftui/**"
+      - ".github/workflows/native-parity.yml"
+  workflow_dispatch:
+    inputs:
+      scenarios:
+        description: "Scenario ids, comma separated (empty: every scenario the native app can show)"
+        required: false
+        default: ""
+      modes:
+        description: "light, dark or light,dark"
+        required: false
+        default: "light,dark"
+      release:
+        description: "Release tag of the current app (empty: the newest beta with a macOS asset)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-parity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  parity:
+    name: Native parity (UI match per scenario)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: swiftui/bridge
+
+      # build-app.sh bundles the current app's grammars into highlight.js with Bun, which needs the packages.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install packages
+        run: bun install --frozen-lockfile
+
+      # The Rust bridge, the Swift app and the .app bundle, as in native.yml.
+      - name: Build the native app
+        run: swiftui/scripts/build-app.sh
+
+      - name: Build gm-measure
+        working-directory: swiftui
+        run: swift build -c release --product gm-measure
+
+      # Every feature of docs/wiki/features.json is listed, and README.md and Scenarios*.md match the JSON.
+      - name: Parity list is complete and its summary up to date
+        working-directory: swiftui
+        run: .build/release/gm-measure parity summary --check
+
+      # The asset names come from tauri-action in release.yml: Git.Manager_universal.app.tar.gz (the .app) and
+      # Git.Manager_<version>_universal.dmg (src/lib/update/releases.ts offers the .dmg to users).
+      - name: Download the current app
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          dest="$RUNNER_TEMP/current"
+          mkdir -p "$dest/download"
+          tag="$RELEASE_TAG"
+          if [ -z "$tag" ]; then
+            for candidate in $(gh release list --repo "$GITHUB_REPOSITORY" --limit 30 \
+                --json tagName,isPrerelease,isDraft \
+                --jq '.[] | select(.isPrerelease and (.isDraft | not)) | .tagName'); do
+              names=$(gh release view "$candidate" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+              if echo "$names" | grep -qE '\.app\.tar\.gz$|\.dmg$'; then
+                tag="$candidate"
+                break
+              fi
+            done
+          fi
+          if [ -z "$tag" ]; then
+            echo "No beta release with a macOS asset; the current app is built from this commit."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          download() {
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$1" --dir "$dest/download"
+          }
+          if download '*.app.tar.gz'; then
+            tar -xzf "$dest"/download/*.app.tar.gz -C "$dest"
+          else
+            download '*.dmg'
+            hdiutil attach -nobrowse -readonly -mountpoint "$dest/mount" "$dest"/download/*.dmg
+            ditto "$dest/mount/Git Manager.app" "$dest/Git Manager.app"
+            hdiutil detach "$dest/mount"
+          fi
+          xattr -cr "$dest/Git Manager.app"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "app=$dest/Git Manager.app" >> "$GITHUB_OUTPUT"
+          echo "Current app: release $tag" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.current.outputs.found != 'true'
+        with:
+          workspaces: src-tauri
+
+      - name: Build the current app (no release asset)
+        id: built
+        if: steps.current.outputs.found != 'true'
+        run: |
+          set -euo pipefail
+          bun tauri build --bundles app
+          echo "app=$PWD/src-tauri/target/release/bundle/macos/Git Manager.app" >> "$GITHUB_OUTPUT"
+          echo "Current app: built from ${GITHUB_SHA::7}" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # gm-measure captures both windows itself (CGWindowListCreateImage), which needs Screen Recording permission.
+      - name: Allow screen capture
+        run: swiftui/scripts/ci-allow-screen-capture.sh "$PWD/swiftui/.build/release/gm-measure"
+
+      # A scenario that could not be captured or compared is marked so in the report; the job fails at the end.
+      - name: Measure every scenario in both apps
+        id: measure
+        working-directory: swiftui
+        env:
+          CURRENT_APP: ${{ steps.current.outputs.app || steps.built.outputs.app }}
+          SCENARIOS: ${{ inputs.scenarios }}
+          MODES: ${{ inputs.modes || 'light,dark' }}
+        run: |
+          set +e
+          args=(--current-app "$CURRENT_APP" --modes "$MODES")
+          if [ -n "$SCENARIOS" ]; then
+            args+=(--scenarios "$SCENARIOS")
+          fi
+          .build/release/gm-measure parity "${args[@]}"
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Job summary
+        if: always()
+        run: |
+          report=$(find swiftui/build/parity -name report.md 2>/dev/null | sort | tail -n 1)
+          if [ -n "$report" ]; then
+            {
+              cat "$report"
+              echo ""
+              echo "Screenshots and overlays: the native-parity artifact of this run."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "gm-measure parity wrote no report; see the Measure step's log." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-parity
+          path: swiftui/build/parity/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Every scenario was measured
+        if: steps.measure.outputs.status != '0'
+        run: |
+          echo "::error::Some scenarios could not be captured or compared; the job summary lists why."
+          exit 1

@@ -10,7 +10,7 @@ max_columns=120
 max_lines=300
 
 files=$(git ls-files --cached --others --exclude-standard -- swiftui .github/workflows/native.yml \
-  docs/plans/swiftui-experiment.md | grep -vE '\.(png|lock)$|/Cargo\.lock$' || true)
+  .github/workflows/native-parity.yml docs/plans/swiftui-experiment.md | grep -vE '\.(png|lock)$|/Cargo\.lock$' || true)
 
 failed=0
 for file in $files; do

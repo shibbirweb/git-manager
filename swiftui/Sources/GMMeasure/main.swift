@@ -10,6 +10,9 @@
 //   swift run gm-measure tokens [--check]
 //   swift run gm-measure icons [--check]
 //   swift run gm-measure reference [--modes light,dark] [--current-app <path>]
+//   swift run gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
+//                               [--current-app <path>] [--native-app <path>] [--record]
+//   swift run gm-measure parity list | summary [--check]
 
 import Foundation
 import MeasureKit
@@ -32,6 +35,9 @@ let usage = """
       gm-measure tokens [--check]
       gm-measure icons [--check]
       gm-measure reference [--modes light,dark] [--current-app <path>]
+      gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
+                        [--current-app <path>] [--native-app <path>] [--record]
+      gm-measure parity list | summary [--check]
     """
 
 var arguments = Array(CommandLine.arguments.dropFirst())
@@ -52,6 +58,8 @@ do {
         exit(try Icons.run(arguments))
     case "reference":
         exit(try await Reference.run(arguments))
+    case "parity":
+        exit(try await Parity.run(arguments))
     default:
         print(usage)
         exit(2)
