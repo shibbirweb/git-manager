@@ -284,3 +284,16 @@ the numbers. Newest last.
 
     Left: the status bar's right end (the memory readout is real data and moves the icons after it), text and
     icon edges one step off, the diff canvas (GM-48).
+- GM-48 the diff canvas as the page's layer stack: a dylib inserted into the current app dumped its layer tree and
+  copied each WebKit layer out through Metal (wry/tao set nothing special: no color space, depth or private WebKit
+  setting). Each editor's code (tints, changed-word boxes, text, fold bars, indent guides) is one see-through 8-bit
+  layer over the page's opaque tiles; the gutter and each scrollbar thumb are layers of their own. Those layer bytes
+  over a background inside the native window captured 100% identical to the current app, so the canvas now builds
+  the same stack (CanvasSurface.swift, DiffCanvasLayers.swift) and macOS composites it: no rule for the final blend.
+  What a code layer stores, checked byte for byte against the dumps (light and dark): a tint is the converted color
+  times its 8-bit alpha, rounded (rgba(84, 170, 84, 0.2) is 21, 34, 19, 51); text, boxes and guides blend in half
+  precision over the layer, the box with its alpha in 8 bits (light 0.28 is 71: 26, 43, 86, 95 on its tint). About
+  1500 of 1.2 million layer pixels still differ by a step (glyph edges on a rounding boundary). TextUnder, the dark
+  HDR-off rules and the extendedRange plumbing are gone; the fold steps' icons snap like an <svg> (SVGSnap). Below
+  the title bar, HDR off, ae0479e to GM-48: diff folded 99.61 to 99.66% (light), 99.61 to 99.67% (dark); every line
+  99.59 to 99.64%, 99.56 to 99.65%; Changes and staged unchanged (99.73 to 99.74%).

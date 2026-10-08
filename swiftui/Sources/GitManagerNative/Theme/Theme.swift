@@ -6,12 +6,10 @@ import SwiftUI
 
 struct Theme {
     let id: String
-    let kind: ThemeKind
     private let tokens: [String: String]
 
     init(_ themeTokens: ThemeTokens) {
         id = themeTokens.id
-        kind = themeTokens.kind
         tokens = themeTokens.colors
     }
 
@@ -60,66 +58,36 @@ struct Theme {
         Color(nsColor: nsSolid(tokenName, on: background))
     }
 
-    /// Translucent layers painted one over another on `background`, as the diff shows them. A layer is a token, or
-    /// a token and an alpha for CSS color-mix(in srgb, token alpha%, transparent). The current app blends them
-    /// differently by theme kind, measured on its diff:
-    /// - Light: one layer lands where the premultiplied 8-bit fill does (CSSColor.filled), while two (a changed
-    ///   word's box on its line's tint) or an `overlay` (an indent guide, drawn above the content) land where exact,
-    ///   unrounded blending does.
-    /// - Dark, on a display without HDR headroom: each layer is composited and stored in 8 bits before the next
-    ///   (CSSColor.composited); `boxOnTop` marks the last layer as a changed word's box, painted into the text's
-    ///   layer, whose premultiplied color is cut rather than rounded. While the display shows HDR content
-    ///   (`extendedRange`), macOS composites the page in extended range and dark follows the light rules.
-    func nsLayers(
-        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false,
-        boxOnTop: Bool = false, extendedRange: Bool = false
-    ) -> NSColor {
-        guard let base = css(background) else {
-            return .clear
+    /// A token (at `alpha` when given, for CSS color-mix(in srgb, token alpha%, transparent)) as WebKit hands it to
+    /// Core Graphics for a fill in a see-through layer: converted to Display P3, not rounded, with its alpha.
+    func translucent(_ tokenName: String, alpha: Double? = nil) -> CGColor {
+        guard let color = css(tokenName), let space = CGColorSpace(name: CGColorSpace.displayP3) else {
+            return CGColor(gray: 0, alpha: 0)
         }
-        let colors = layers.compactMap { layer -> CSSColor? in
-            guard let color = css(layer.token) else {
-                return nil
-            }
-            return layer.alpha.map { CSSColor(red: color.red, green: color.green, blue: color.blue, alpha: $0) }
-                ?? color
-        }
-        if kind == .dark, !extendedRange {
-            var bytes = base.p3Bytes
-            for (index, color) in colors.enumerated() {
-                bytes = color.composited(overBytes: bytes, cut: boxOnTop && index == colors.count - 1)
-            }
-            return CSSColor.color(p3Bytes: bytes)
-        }
-        if colors.count == 1, !overlay, let only = colors.first {
-            return only.filled(over: base)
-        }
-        var exact = base.p3Exact
-        for color in colors {
-            exact = zip(color.p3Exact, exact).map { color.alpha * $0 + (1 - color.alpha) * $1 }
-        }
-        return CSSColor.color(p3Bytes: exact.map { $0.rounded() })
+        let exact = color.p3Exact.map { CGFloat($0 / 255) }
+        return CGColor(colorSpace: space, components: exact + [CGFloat(alpha ?? color.alpha)])
+            ?? CGColor(gray: 0, alpha: 0)
     }
 
-    /// The fill a code line's layer holds under its text (TextUnder): one translucent token as its premultiplied
-    /// 8-bit color (as CSSColor.filled stores it), or two (a changed word on its line's tint) blended exactly.
-    func layerFill(_ tokenNames: [String]) -> TextUnder.Fill {
-        let colors = tokenNames.compactMap(css)
-        if colors.count == 1, let only = colors.first {
-            let weight = (only.alpha * 255).rounded()
-            return TextUnder.Fill(color: only.p3Bytes.map { ($0 * weight / 255).rounded() }, alpha: weight)
-        }
-        var color = [0.0, 0.0, 0.0], alpha = 0.0
-        for layer in colors {
-            color = zip(layer.p3Exact, color).map { layer.alpha * $0 + (1 - layer.alpha) * $1 }
-            alpha = layer.alpha + alpha * (1 - layer.alpha)
-        }
-        return TextUnder.Fill(color: color, alpha: alpha * 255)
+    /// A token converted to Display P3, not rounded, 0...255.
+    func exact(_ tokenName: String) -> [Double] {
+        css(tokenName)?.p3Exact ?? [0, 0, 0]
     }
 
-    /// A token's Display P3 bytes, as the page paints it.
-    func bytes(_ tokenName: String) -> [Double] {
-        css(tokenName)?.p3Bytes ?? [0, 0, 0]
+    /// A token's alpha, 0...1 (1 when it has none).
+    func alpha(_ tokenName: String) -> Double {
+        css(tokenName)?.alpha ?? 1
+    }
+
+    /// The bytes a see-through layer stores for a translucent token filled over nothing: its converted color times
+    /// its alpha, rounded, and the alpha in 8 bits (red, green, blue, alpha in 0...255). Measured in the current
+    /// app's layers: rgba(84, 170, 84, 0.2) is stored as 21, 34, 19, 51.
+    func layerFill(_ tokenName: String) -> [Double] {
+        guard let color = css(tokenName) else {
+            return [0, 0, 0, 0]
+        }
+        let weight = (color.alpha * 255).rounded()
+        return color.p3Bytes.map { ($0 * weight / 255).rounded() } + [weight]
     }
 
     func nsSolid(_ tokenName: String, on background: String) -> NSColor {

@@ -1,6 +1,9 @@
 // Draws what is on screen of a side-by-side diff, and nothing else: one view the size of the viewport that paints
 // the rows crossing it from the scroll offset (RowIndex), so memory stays the same however long the file is or
 // however far it scrolls. The look is measured from the current app (DiffPanes.swift has the sizes).
+// The pixels are layers as the current app's page has them (CanvasSurface.swift): the view's own bitmap holds what
+// lies under the editors' content (the background, the gutters, the revert column), each pane has a see-through
+// content layer over it, and each pane's scrollbar thumb is a layer of its own (DiffCanvasLayers.swift).
 
 import AppKit
 import NativeCore
@@ -42,6 +45,8 @@ final class DiffCanvas: NSView {
         let guides: [IndentGuides.Run]
         let contentWidth: CGFloat
         var noteEnd: CGFloat = 0
+        /// Where the pane's content layer starts, in canvas points: glyphs are written into that layer's pixels.
+        var surfaceX: CGFloat = 0
     }
 
     var content: Content? {
@@ -50,7 +55,7 @@ final class DiffCanvas: NSView {
                 return
             }
             if content?.theme.id != colors?.theme.id {
-                colors = content.map { CanvasColors(theme: $0.theme, extendedRange: extendedRange) }
+                colors = content.map { CanvasColors(theme: $0.theme) }
             }
             paintedOffset = nil
             needsDisplay = true
@@ -66,14 +71,18 @@ final class DiffCanvas: NSView {
         }
     }
 
-    /// The viewport's pixels, reused while the size stays the same.
-    private var bitmap: CGContext?
-    /// The offset the bitmap shows, so a scroll moves those pixels and paints only the rows that came into view;
-    /// nil when it must be painted whole.
-    private var paintedOffset: CGFloat?
-    private var colors: CanvasColors?
+    /// What lies under the panes' content: the view's own layer shows it.
+    let base = CanvasSurface()
+    /// Each pane's content layer (WebKit's .cm-content layer), see-through where nothing is painted.
+    let paneSurfaces = [CanvasSurface(), CanvasSurface()]
+    /// Each pane's horizontal scrollbar thumb, a layer over the pane as on the page.
+    let thumbSurfaces = [CanvasSurface(), CanvasSurface()]
+    /// The offset the bitmaps show, so a scroll moves those pixels and paints only the rows that came into view;
+    /// nil when they must be painted whole.
+    var paintedOffset: CGFloat?
+    private(set) var colors: CanvasColors?
     /// The part of the canvas being painted: glyphs, which GlyphCompositor writes straight into the pixels, stay in it.
-    private(set) var paintBand = CGRect.zero
+    var paintBand = CGRect.zero
     let glyphs = GlyphCompositor()
 
     override init(frame: NSRect) {
@@ -86,25 +95,12 @@ final class DiffCanvas: NSView {
         nil
     }
 
-    /// macOS posts nothing when the display gains or loses HDR headroom, so a visible canvas looks every two
-    /// seconds and repaints when the page's blends would change (Theme.nsLayers).
-    private var rangeCheck: Timer?
-
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        rangeCheck?.invalidate()
-        rangeCheck = nil
-        guard window != nil else {
-            return
+    override func makeBackingLayer() -> CALayer {
+        let layer = super.makeBackingLayer()
+        for surface in paneSurfaces + thumbSurfaces {
+            layer.addSublayer(surface.layer)
         }
-        rangeCheck = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            guard let self, let colors = self.colors, self.window?.occlusionState.contains(.visible) == true else {
-                return
-            }
-            if colors.extendedRange != self.extendedRange {
-                self.needsDisplay = true
-            }
-        }
+        return layer
     }
 
     override var isFlipped: Bool {
@@ -117,133 +113,87 @@ final class DiffCanvas: NSView {
         true
     }
 
-    /// Paints into a bitmap in the window's color space and hands the layer the image: AppKit's own backing store
+    /// Paints into bitmaps in the window's color space and hands the layers the images: AppKit's own backing store
     /// converted every color one step off, while these values pass through unchanged, as they do for SwiftUI's
     /// fills. In any other space (Display P3 at first) Core Animation converted the whole image on every frame.
     override func updateLayer() {
         DrawStats.measure {
-            paintLayer()
+            paintLayers()
         }
     }
 
-    /// The page's blends as the display composes them, with or without HDR headroom. Theme.nsLayers' other dark
-    /// rules came from captures by CGWindowListCreateImage, which composites the window again and, without HDR
-    /// headroom, often lands one step off (the current app's right editor as 30, 31, 33): not what the display shows
-    /// (GM-50; gm-measure captures through ScreenCaptureKit since).
-    private let extendedRange = true
-
-    private func paintLayer() {
-        if let colors, colors.extendedRange != extendedRange {
-            self.colors = CanvasColors(theme: colors.theme, extendedRange: extendedRange)
-            paintedOffset = nil
-        }
-        let scale = window?.backingScaleFactor ?? 2
-        let width = Int((bounds.width * scale).rounded())
-        let height = Int((bounds.height * scale).rounded())
-        let windowSpace = window?.colorSpace?.cgColorSpace
-        guard width > 0, height > 0, let space = windowSpace ?? CGColorSpace(name: CGColorSpace.displayP3) else {
-            layer?.contents = nil
+    /// Paints `band` of the canvas whole: what lies there is the same whether the canvas is painted at once or band
+    /// by band, as each row is drawn with what spills over from its neighbors (a glyph's tail, a changed word's box a
+    /// point above its row, a chevron 4 points above).
+    func paint(_ band: NSRect, scale: CGFloat) {
+        guard let content, let colors, let baseContext = base.context else {
             return
         }
-        if bitmap?.width != width || bitmap?.height != height || bitmap?.colorSpace != space {
-            bitmap = CGContext(
-                data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: space,
-                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
-            )
-            paintedOffset = nil
-        }
-        guard let bitmap else {
-            return
-        }
-        var band = bounds
-        if let paintedOffset, let moved = shift(bitmap, by: (offset - paintedOffset) * scale) {
-            if moved == 0 {
-                return
-            }
-            // Rows of pixels, not points, so the band's edges are the edges of what moved.
-            let exposed = CGFloat(min(abs(moved), height)) / scale
-            band = moved > 0 ? CGRect(x: 0, y: CGFloat(height) / scale - exposed, width: bounds.width, height: exposed)
-                : CGRect(x: 0, y: 0, width: bounds.width, height: exposed)
-        }
-        bitmap.saveGState()
-        bitmap.translateBy(x: 0, y: CGFloat(height))
-        bitmap.scaleBy(x: scale, y: -scale)
-        // The page's -webkit-font-smoothing: antialiased, as the app's AppleFontSmoothing 0 gives the other views.
-        bitmap.setShouldSmoothFonts(false)
-        let previous = NSGraphicsContext.current
-        NSGraphicsContext.current = NSGraphicsContext(cgContext: bitmap, flipped: true)
-        paint(band)
-        NSGraphicsContext.current = previous
-        bitmap.restoreGState()
-        paintedOffset = offset
-        layer?.contentsScale = scale
-        layer?.contents = bitmap.makeImage()
-    }
-
-    /// Moves the bitmap's pixels up (a positive `pixels`, scrolling down) or down, and returns the whole rows moved;
-    /// nil when the move is not a whole number of rows or leaves nothing to keep, so everything is painted.
-    private func shift(_ bitmap: CGContext, by pixels: CGFloat) -> Int? {
-        guard pixels == pixels.rounded(), abs(pixels) < CGFloat(bitmap.height), let data = bitmap.data else {
-            return nil
-        }
-        let rows = Int(pixels), rowBytes = bitmap.bytesPerRow
-        let kept = (bitmap.height - abs(rows)) * rowBytes
-        if rows > 0 {
-            memmove(data, data + rows * rowBytes, kept)
-        } else if rows < 0 {
-            memmove(data + -rows * rowBytes, data, kept)
-        }
-        return rows
-    }
-
-    /// Paints `dirtyRect` of the canvas whole: what lies there is the same whether the canvas is painted at once or
-    /// band by band, as each row is drawn with what spills over from its neighbors (a glyph's tail, a changed word's
-    /// box a point above its row, a chevron 4 points above).
-    private func paint(_ dirtyRect: NSRect) {
-        guard let content, let colors, let context = NSGraphicsContext.current?.cgContext else {
-            return
-        }
-        paintBand = dirtyRect
-        context.saveGState()
-        dirtyRect.clip()
-        colors.nsColor("--editor-bg").setFill()
-        dirtyRect.fill()
+        paintBand = band
         let paneWidth = self.paneWidth(content)
-        let top = Double(offset + dirtyRect.minY)
-        let bottom = Double(offset + dirtyRect.maxY)
-        let layout = content.layout
-        let panes = [
-            Pane(rows: layout.left, index: content.left, x: 0, spans: content.leftSpans, marks: layout.leftMarks,
-                 lineStarts: layout.leftLineStarts, guides: content.leftGuides, contentWidth: content.leftWidth),
-            Pane(rows: layout.right, index: content.right, x: paneWidth + DiffPanes.gapWidth,
-                 spans: content.rightSpans, marks: layout.rightMarks, lineStarts: layout.rightLineStarts,
-                 guides: content.rightGuides, contentWidth: content.rightWidth, noteEnd: content.rightNoteEnd),
-        ]
-        for pane in panes {
-            context.saveGState()
-            NSRect(x: pane.x, y: dirtyRect.minY, width: paneWidth, height: dirtyRect.height).clip()
-            for row in pane.index.visible(from: top - Self.spill, to: bottom + Self.spill) {
-                let y = CGFloat(pane.index.tops[row]) - offset
-                let previousTinted = row > 0 && DiffCanvas.isTinted(pane.rows[row - 1])
-                drawRow(pane.rows[row], pane: pane, y: y, width: paneWidth, colors: colors, context: context,
-                        previousTinted: previousTinted)
-            }
-            drawGuides(pane, top: top, bottom: bottom, colors: colors)
-            drawScrollbar(pane, width: paneWidth, colors: colors)
-            context.restoreGState()
+        let top = Double(offset + band.minY)
+        let bottom = Double(offset + band.maxY)
+        let panes = self.panes(content, paneWidth: paneWidth, scale: scale)
+        withContext(baseContext, scale: scale, originX: 0) {
+            colors.nsColor("--editor-bg").setFill()
+            band.fill()
+            drawRevertColumn(content, colors: colors, x: paneWidth, top: top, bottom: bottom)
         }
-        drawRevertColumn(content, colors: colors, x: paneWidth, top: top, bottom: bottom)
+        for (pane, surface) in zip(panes, paneSurfaces) {
+            guard let context = surface.context else {
+                continue
+            }
+            withContext(context, scale: scale, originX: pane.surfaceX) {
+                context.clear(band)
+                drawContent(pane, top: top, bottom: bottom, width: paneWidth, colors: colors, context: context,
+                            scale: scale)
+            }
+        }
+    }
+
+    /// Runs `draw` with `context` as the current graphics context, in canvas points (y down) shifted so `originX`
+    /// is the bitmap's left edge, and clipped to the paint band.
+    private func withContext(_ context: CGContext, scale: CGFloat, originX: CGFloat, _ draw: () -> Void) {
+        context.saveGState()
+        context.translateBy(x: 0, y: CGFloat(context.height))
+        context.scaleBy(x: scale, y: -scale)
+        context.translateBy(x: -originX, y: 0)
+        // The page's -webkit-font-smoothing: antialiased, as the app's AppleFontSmoothing 0 gives the other views.
+        context.setShouldSmoothFonts(false)
+        let previous = NSGraphicsContext.current
+        NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: true)
+        NSRect(x: originX, y: paintBand.minY, width: CGFloat(context.width) / scale, height: paintBand.height).clip()
+        draw()
+        NSGraphicsContext.current = previous
         context.restoreGState()
     }
 
+    func panes(_ content: Content, paneWidth: CGFloat, scale: CGFloat) -> [Pane] {
+        let layout = content.layout
+        let rightX = paneWidth + DiffPanes.gapWidth
+        return [
+            Pane(rows: layout.left, index: content.left, x: 0, spans: content.leftSpans, marks: layout.leftMarks,
+                 lineStarts: layout.leftLineStarts, guides: content.leftGuides, contentWidth: content.leftWidth),
+            Pane(rows: layout.right, index: content.right, x: rightX, spans: content.rightSpans,
+                 marks: layout.rightMarks, lineStarts: layout.rightLineStarts, guides: content.rightGuides,
+                 contentWidth: content.rightWidth, noteEnd: content.rightNoteEnd,
+                 surfaceX: (rightX * scale).rounded(.down) / scale),
+        ]
+    }
+
     /// How far a row's drawing reaches past its own 16 points: its glyphs' band (GlyphCompositor) and more.
-    private static let spill = 24.0
+    static let spill = 24.0
 
     /// Half of what the revert column leaves, less the merge view's 10-point vertical scrollbar once the rows are
     /// taller than the view: the ruler hides that scrollbar, but it still takes its room from the panes.
     func paneWidth(_ content: Content) -> CGFloat {
-        let rowsBottom = max(content.left.rowsBottom, content.right.rowsBottom)
-        let scrolls = DiffPanes.editorHeight(rowsBottom: rowsBottom) > bounds.height
+        let scrolls = mergeViewScrolls(content)
         return max(0, (bounds.width - DiffPanes.gapWidth - (scrolls ? DiffPanes.scrollbarHeight : 0)) / 2)
+    }
+
+    /// Whether the rows are taller than the view, so the merge view scrolls.
+    func mergeViewScrolls(_ content: Content) -> Bool {
+        let rowsBottom = max(content.left.rowsBottom, content.right.rowsBottom)
+        return DiffPanes.editorHeight(rowsBottom: rowsBottom) > bounds.height
     }
 }

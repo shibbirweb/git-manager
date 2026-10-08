@@ -1,5 +1,5 @@
-// The diff canvas's fold bars (foldField.ts), and its layers over the rows: indent guides (indentGuides.ts, a layer
-// above the text) and each pane's horizontal scrollbar thumb (app.css ::-webkit-scrollbar-thumb).
+// The diff canvas's fold bars (foldField.ts) and indent guides (indentGuides.ts), both painted into a pane's content
+// layer: the bars with the rows' backgrounds, the guides over the text.
 
 import AppKit
 import NativeCore
@@ -25,18 +25,15 @@ extension DiffCanvas {
         if edges.top {
             labelX += drawFoldStep("chevron-up", x: textX + 8, y: y, textY: textY, colors: colors) + 8
         }
-        // The label is text in the code's layer, on the bar's opaque fill: blended like code text.
+        // The label is text in the code's layer, on the bar's opaque fill.
         let label = CTLineCreateWithAttributedString(NSAttributedString(
             string: "\(range.count) unchanged lines",
             attributes: [.font: foldFont, .foregroundColor: colors.textColor("--text-dim")]
         ))
-        let under = TextUnder(
-            editor: colors.bytes("--editor-bg"), fill: TextUnder.Fill(color: colors.bytes("--panel-alt"), alpha: 255)
-        )
+        let scale = window?.backingScaleFactor ?? 2
         glyphs.draw(
-            label, x: labelX, rowTop: y,
-            clip: CGRect(x: pane.x, y: paintBand.minY, width: width, height: paintBand.height),
-            into: context, scale: window?.backingScaleFactor ?? 2, under: under, baseline: textY + foldFont.ascender
+            label, x: labelX - pane.surfaceX, rowTop: y, clip: localClip(context, scale: scale), into: context,
+            scale: scale, layer: true, baseline: textY + foldFont.ascender
         )
         if edges.bottom {
             let barRight = textX + max(shown, pane.contentWidth)
@@ -49,7 +46,9 @@ extension DiffCanvas {
     @discardableResult
     private func drawFoldStep(_ icon: String, x: CGFloat, y: CGFloat, textY: CGFloat, colors: CanvasColors) -> CGFloat {
         let color = colors.nsColor("--accent")
-        let iconRect = NSRect(x: x + 6, y: y + (DiffPanes.foldHeight - 12) / 2, width: 12, height: 12)
+        // An <svg>: WebKit paints it at its box rounded to whole points (SVGSnap).
+        let iconRect = NSRect(x: SVGSnap.whole(x + 6), y: SVGSnap.whole(y + (DiffPanes.foldHeight - 12) / 2),
+                              width: 12, height: 12)
         drawIcon(icon, in: iconRect, color: color)
         let text = NSAttributedString(string: "\(DiffFold.step) lines", attributes: [
             .font: foldFont, .foregroundColor: color,
@@ -95,8 +94,9 @@ extension DiffCanvas {
         return 6 + 12 + 3 + text.size().width + 6
     }
 
-    /// A 1-point line per run, color-mix(--text-faint 38%, transparent) over whatever the row shows (the editor,
-    /// a tinted line, a fold bar), at its exact x (369.6 points shows as two partly covered pixels, as on the page).
+    /// A 1-point line per run, color-mix(--text-faint 38%, transparent), painted into the content layer over
+    /// whatever the row holds there (a tint, a fold bar, nothing), at its exact x (369.6 points shows as two partly
+    /// covered pixels, as on the page).
     func drawGuides(_ pane: Pane, top: Double, bottom: Double, colors: CanvasColors) {
         let runs = pane.guides.filter { $0.bottom > top && $0.top < bottom }
         guard !runs.isEmpty else {
@@ -105,51 +105,28 @@ extension DiffCanvas {
         let originX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth + 6
         let step = CodeLineText.advance * 2
         let scale = window?.backingScaleFactor ?? 2
-        for row in pane.index.visible(from: top, to: bottom) {
-            let rowTop = pane.index.tops[row], rowBottom = pane.index.tops[row + 1]
-            let base: [(token: String, alpha: Double?)]
-            let background: String
-            switch pane.rows[row] {
-            case .line(_, _, let kind) where kind != .unchanged:
-                (base, background) = ([(DiffCanvas.tintToken(kind), nil)], "--editor-bg")
-            case .fold:
-                (base, background) = ([], "--panel-alt")
-            default:
-                (base, background) = ([], "--editor-bg")
+        for run in runs {
+            let segmentTop = max(run.top, top), segmentBottom = min(run.bottom, bottom)
+            guard segmentBottom > segmentTop else {
+                continue
             }
-            for run in runs where run.bottom > rowTop && run.top < rowBottom {
-                let segmentTop = max(run.top, rowTop), segmentBottom = min(run.bottom, rowBottom)
-                let height = CGFloat(segmentBottom - segmentTop)
-                // The page draws the 1-point guide at a fraction of a pixel; each pixel column it touches takes the
-                // guide's alpha times its coverage, blended as the page blends a translucent layer.
-                // WebKit lays out in 1/64 of a point (LayoutUnit), so 15.6 points of indent are 15.59375.
-                let indent = (CGFloat(run.level) * step * 64).rounded(.down) / 64
-                let left = (originX + indent) * scale, right = left + scale
-                var column = left.rounded(.down)
-                while column < right {
-                    let coverage = Double(min(right, column + 1) - max(left, column))
-                    let guide: (token: String, alpha: Double?) = ("--text-faint", 0.38 * coverage)
-                    colors.nsLayers(base + [guide], on: background, overlay: true).setFill()
-                    NSRect(x: column / scale, y: CGFloat(segmentTop) - offset, width: 1 / scale, height: height).fill()
-                    column += 1
-                }
+            // Each pixel column the guide touches takes its alpha times its coverage. WebKit lays out in 1/64 of a
+            // point (LayoutUnit), so 15.6 points of indent are 15.59375.
+            let indent = (CGFloat(run.level) * step * 64).rounded(.down) / 64
+            let left = (originX + indent) * scale, right = left + scale
+            var column = left.rounded(.down)
+            let surface = pane.x == 0 ? paneSurfaces[0] : paneSurfaces[1]
+            let segment = CGRect(
+                x: 0, y: CGFloat(segmentTop) - offset, width: 1, height: CGFloat(segmentBottom - segmentTop)
+            )
+            let rows = segment.intersection(CGRect(x: 0, y: paintBand.minY, width: 1, height: paintBand.height))
+            while column < right, !rows.isNull {
+                let coverage = Double(min(right, column + 1) - max(left, column))
+                surface.blend(colors.exact("--text-faint"), alpha: 0.38 * coverage, in: CGRect(
+                    x: column - pane.surfaceX * scale, y: rows.minY * scale, width: 1, height: rows.height * scale
+                ))
+                column += 1
             }
         }
-    }
-
-    /// The thumb as long as the visible share of the content, 2 points in from each edge of its 10-point track, at
-    /// the start (the panes do not scroll sideways yet). The content reaches to its widest line or to the blame
-    /// note, whichever ends further right.
-    func drawScrollbar(_ pane: Pane, width: CGFloat, colors: CanvasColors) {
-        let scrollWidth = DiffPanes.gutterWidth + DiffPanes.markerWidth + max(pane.contentWidth, pane.noteEnd)
-        guard scrollWidth > width + 0.5 else {
-            return
-        }
-        // WebKit sizes the thumb in whole points.
-        let length = (width * width / scrollWidth).rounded()
-        let trackTop = DiffPanes.editorHeight(rowsBottom: pane.index.rowsBottom) - DiffPanes.scrollbarHeight - offset
-        let rect = NSRect(x: pane.x + 2, y: trackTop + 2, width: length - 4, height: DiffPanes.scrollbarHeight - 4)
-        colors.nsLayers([("--text-dim", 0.35)], on: "--editor-bg").setFill()
-        NSBezierPath(roundedRect: rect, xRadius: rect.height / 2, yRadius: rect.height / 2).fill()
     }
 }

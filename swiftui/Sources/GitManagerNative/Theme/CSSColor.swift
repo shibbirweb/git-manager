@@ -84,20 +84,6 @@ struct CSSColor: Equatable {
         }
     }
 
-    /// This translucent color composited over painted Display P3 bytes as the diff's layers are (measured on the
-    /// current app's diff on 2026-10-08): the unrounded alpha (0.35 is 89.25 of 255), the premultiplied color stored
-    /// in 8 bits, rounded for a composited layer (a scrollbar thumb, an indent guide) and cut for a fill painted into
-    /// the text's layer (a changed word's box), then mixed in half precision and stored in 8 bits.
-    func composited(overBytes background: [Double], cut: Bool = false) -> [Double] {
-        let weight = alpha * 255
-        return zip(p3Exact, background).map { color, under in
-            let premultiplied = color * weight / 255
-            let stored = cut ? premultiplied.rounded(.down) : premultiplied.rounded()
-            let mixed = GlyphCompositor.half(stored / 255 + GlyphCompositor.half(under / 255 * (1 - weight / 255)))
-            return (mixed * 255).rounded()
-        }
-    }
-
     /// The converted channels before rounding, 0...255.
     var p3Exact: [Double] {
         CSSColor.toDisplayP3([red, green, blue]).map { $0 * 255 }

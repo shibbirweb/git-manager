@@ -1,33 +1,14 @@
 // Text blended into the diff canvas the way the page blends it, measured against WebKit with a test page (each ink
 // on its background, with white-on-black rows for the coverage). Glyph coverage is the same 8-bit mask in both
 // apps, but WebKit blends with the text color's exact converted value (not its rounded bytes) on the GPU, in half
-// precision. Code text (.cm-content, its own layer) is drawn on see-through pixels first, rounded to 8 bits there,
-// then composited over the line; the gutter's line numbers blend straight onto their background. So a line is
-// drawn into a 16-bit buffer one row tall, and each pixel is blended here. One row-sized buffer is kept, so the
-// cost does not grow with the file.
+// precision. Code text is drawn into its editor's see-through content layer (CanvasSurface.swift) over what that
+// layer holds there (a line's tint, a changed word's box, a fold bar, or nothing) and stored in 8 bits; macOS then
+// composites the layer. The gutter's line numbers blend straight onto its opaque background. So a line is drawn
+// into a 16-bit buffer one row tall, and each pixel is blended here. One row-sized buffer is kept, so the cost does
+// not grow with the file.
 
 import AppKit
 import CoreText
-
-/// What lies under code text on the page: inside the text's layer, a line's tint (and a changed word's box over
-/// it) as premultiplied color and alpha in 0...255; under the layer, the editor's background bytes.
-struct TextUnder {
-    struct Fill {
-        var color: [Double]
-        var alpha: Double
-
-        static let none = Fill(color: [0, 0, 0], alpha: 0)
-    }
-
-    var editor: [Double]
-    var fill = Fill.none
-    /// Canvas pixel columns with a different fill (changed words).
-    var marks: [(columns: Range<Int>, fill: Fill)] = []
-
-    func fill(at column: Int) -> Fill {
-        marks.first { $0.columns.contains(column) }?.fill ?? fill
-    }
-}
 
 final class GlyphCompositor {
     private var buffer: CGContext?
@@ -37,12 +18,12 @@ final class GlyphCompositor {
     private static let band: CGFloat = 24
     private static let overhang: CGFloat = 6
 
-    /// Draws `line` at `x` in the row at `rowTop` (canvas points) into `target`, inside `clip`. Code text passes
-    /// what is `under` it (the layer model); without it, the plain model (line numbers).
-    /// `baseline` defaults to a code row's (CodeLineText.baseline below `rowTop`).
+    /// Draws `line` at `x` in the row at `rowTop` (the target's points) into `target`, inside `clip`. Code text is
+    /// drawn into a see-through `layer` (stored premultiplied, over what the layer holds); without it, onto opaque
+    /// pixels (line numbers). `baseline` defaults to a code row's (CodeLineText.baseline below `rowTop`).
     func draw(
         _ line: CTLine, x: CGFloat, rowTop: CGFloat, clip: CGRect, into target: CGContext, scale: CGFloat,
-        under: TextUnder? = nil, baseline: CGFloat? = nil
+        layer: Bool = false, baseline: CGFloat? = nil
     ) {
         guard let data = target.data, let buffer = buffer(width: target.width, height: Int(Self.band * scale)) else {
             return
@@ -92,30 +73,29 @@ final class GlyphCompositor {
                     continue
                 }
                 let coverage = Double(alpha) / 65535
-                let fill = under?.fill(at: column)
                 // The canvas is BGRA (32-bit little-endian, alpha first); the buffer is RGBA.
                 let pixel = canvasLine + column * 4
+                let below = Double(canvas[pixel + 3])
                 for channel in 0..<3 {
                     let ink = Double(glyphs[glyph + channel]) / Double(alpha)
                     let slot = pixel + 2 - channel
-                    if let under, let fill {
-                        canvas[slot] = Self.layered(
-                            ink: ink, coverage: coverage, fill: (fill.color[channel], fill.alpha),
-                            editor: under.editor[channel]
-                        )
+                    if layer {
+                        canvas[slot] = Self.stored(ink: ink, coverage: coverage, below: Double(canvas[slot]))
                     } else {
                         canvas[slot] = Self.plain(ink: ink, under: Double(canvas[slot]) / 255, coverage: coverage)
                     }
+                }
+                if layer {
+                    canvas[pixel + 3] = UInt8(min(255, (255 * (coverage + below / 255 * (1 - coverage))).rounded()))
                 }
             }
         }
     }
 
-    /// In the text's layer: the text over the layer's fill, stored in 8 bits, then composited over the editor.
-    static func layered(ink: Double, coverage: Double, fill: (color: Double, alpha: Double), editor: Double) -> UInt8 {
-        let color = (255 * half(half(half(ink) * coverage) + half(fill.color / 255 * (1 - coverage)))).rounded()
-        let alpha = (255 * (coverage + fill.alpha / 255 * (1 - coverage))).rounded()
-        return byte(half(color / 255 + half(editor / 255 * (1 - alpha / 255))))
+    /// In a see-through layer: the text over the premultiplied color `below` (0...255) the layer holds there, as
+    /// WebKit stores it.
+    static func stored(ink: Double, coverage: Double, below: Double) -> UInt8 {
+        byte(half(half(half(ink) * coverage) + half(below / 255 * (1 - coverage))))
     }
 
     /// Straight onto an opaque background, every step in half precision.

@@ -70,37 +70,4 @@ enum CodeLineText {
         CTLineDraw(line, context)
         context.restoreGState()
     }
-
-    /// The changed text's boxes behind the line: 17 points from a point above the row (the font's content area as
-    /// the page lays it out), 2-point corners, edges on whole device pixels. The point above the row lies over the
-    /// row before, so it takes `colors.above`; the rest lies over this line's tint.
-    /// The canvas pixel columns each changed-word box covers (its edges snapped as drawMarks draws them).
-    static func markColumns(_ marks: [Range<Int>], of line: CTLine, x: CGFloat, scale: CGFloat) -> [Range<Int>] {
-        marks.map { mark in
-            let start = Int(((x + CTLineGetOffsetForStringIndex(line, mark.lowerBound, nil)) * scale).rounded())
-            let end = Int(((x + CTLineGetOffsetForStringIndex(line, mark.upperBound, nil)) * scale).rounded())
-            return start..<max(start, end)
-        }
-    }
-
-    static func drawMarks(
-        _ marks: [Range<Int>], of line: CTLine, x: CGFloat, rowTop: CGFloat,
-        colors: (above: NSColor, onLine: NSColor), scale: CGFloat
-    ) {
-        let snap = { (value: CGFloat) in (value * scale).rounded() / scale }
-        for mark in marks {
-            let start = snap(x + CTLineGetOffsetForStringIndex(line, mark.lowerBound, nil))
-            let end = snap(x + CTLineGetOffsetForStringIndex(line, mark.upperBound, nil))
-            let rect = NSRect(x: start, y: rowTop - 1, width: end - start, height: 17)
-            let path = NSBezierPath(roundedRect: rect, xRadius: 2, yRadius: 2)
-            for (color, band) in [(colors.above, NSRect(x: start, y: rowTop - 1, width: rect.width, height: 1)),
-                                  (colors.onLine, NSRect(x: start, y: rowTop, width: rect.width, height: 16))] {
-                NSGraphicsContext.saveGraphicsState()
-                band.clip()
-                color.setFill()
-                path.fill()
-                NSGraphicsContext.restoreGraphicsState()
-            }
-        }
-    }
 }

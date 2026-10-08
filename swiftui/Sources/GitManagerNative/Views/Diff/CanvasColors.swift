@@ -5,15 +5,12 @@ import AppKit
 
 final class CanvasColors {
     let theme: Theme
-    /// Whether the display composites in extended range (it shows HDR content), which changes the page's blends.
-    let extendedRange: Bool
     private var colors: [String: NSColor] = [:]
-    private var fills: [String: TextUnder.Fill] = [:]
-    private var byteValues: [String: [Double]] = [:]
+    private var translucents: [String: CGColor] = [:]
+    private var fills: [String: [Double]] = [:]
 
-    init(theme: Theme, extendedRange: Bool) {
+    init(theme: Theme) {
         self.theme = theme
-        self.extendedRange = extendedRange
     }
 
     func nsColor(_ tokenName: String) -> NSColor {
@@ -24,37 +21,41 @@ final class CanvasColors {
         color("t" + tokenName) { theme.textColor(tokenName) }
     }
 
-    func nsSolid(_ tokenName: String, on background: String) -> NSColor {
-        color("s\(tokenName) \(background)") { theme.nsSolid(tokenName, on: background) }
-    }
-
-    func nsLayers(
-        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false,
-        boxOnTop: Bool = false
-    ) -> NSColor {
-        let names = layers.map { "\($0.token)@\($0.alpha.map { "\($0)" } ?? "")" }.joined(separator: ",")
-        return color("l\(names) \(background) \(overlay) \(boxOnTop)") {
-            theme.nsLayers(layers, on: background, overlay: overlay, boxOnTop: boxOnTop, extendedRange: extendedRange)
+    /// A token (at `alpha`, for CSS color-mix(in srgb, token alpha%, transparent), else its own) as the page paints
+    /// it into a see-through layer: the exact converted color with its alpha, blended by Core Graphics there.
+    func translucent(_ tokenName: String, alpha: Double? = nil) -> CGColor {
+        let key = "\(tokenName)@\(alpha.map { "\($0)" } ?? "")"
+        if let color = translucents[key] {
+            return color
         }
+        let color = theme.translucent(tokenName, alpha: alpha)
+        translucents[key] = color
+        return color
     }
 
-    func layerFill(_ tokenNames: [String]) -> TextUnder.Fill {
-        let key = tokenNames.joined(separator: ",")
-        if let fill = fills[key] {
-            return fill
-        }
-        let fill = theme.layerFill(tokenNames)
-        fills[key] = fill
-        return fill
-    }
-
-    func bytes(_ tokenName: String) -> [Double] {
-        if let value = byteValues[tokenName] {
+    /// A token's converted color, not rounded, 0...255 (CSSColor.p3Exact).
+    func exact(_ tokenName: String) -> [Double] {
+        if let value = fills["exact" + tokenName] {
             return value
         }
-        let value = theme.bytes(tokenName)
-        byteValues[tokenName] = value
+        let value = theme.exact(tokenName)
+        fills["exact" + tokenName] = value
         return value
+    }
+
+    /// A token's alpha, 0...1.
+    func alpha(_ tokenName: String) -> Double {
+        theme.alpha(tokenName)
+    }
+
+    /// A translucent token's premultiplied bytes and alpha as a layer stores the fill (Theme.layerFill).
+    func layerFill(_ tokenName: String) -> [Double] {
+        if let fill = fills[tokenName] {
+            return fill
+        }
+        let fill = theme.layerFill(tokenName)
+        fills[tokenName] = fill
+        return fill
     }
 
     private func color(_ key: String, _ make: () -> NSColor) -> NSColor {
