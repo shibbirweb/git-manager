@@ -15,23 +15,27 @@ struct ActivityItem: View {
     var body: some View {
         Button(action: {}) {
             ZStack(alignment: .topLeading) {
+                // A <button> keeps WebKit's own padding here (2 points above, 3 below), so the icon is centered
+                // half a point above the item's middle.
                 Icon(name: icon, size: iconSize, strokeWidth: 1.8)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 36, height: 31)
+                    .padding(.top, 2)
+                    .padding(.bottom, 3)
                 if let badge, badge > 0 {
                     // .badge: 16 points tall, 10-point semibold white text on the accent color, 19 x 17 in.
                     Text("\(badge)")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(PageFont.font(10, weight: .semibold))
                         .foregroundStyle(Color.white)
                         .padding(.horizontal, 4)
                         .frame(minWidth: 16, minHeight: 16)
-                        .background(Capsule().fill(theme.color("--accent")))
+                        .background(Capsule(style: .circular).fill(theme.color("--accent")))
                         .offset(x: 19, y: 17)
                 }
             }
             .frame(width: 36, height: 36)
-            .foregroundStyle(active ? theme.color("--accent") : theme.color("--text-dim"))
-            .background(RoundedRectangle(cornerRadius: 8).fill(activeFill))
-            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .foregroundStyle(active ? theme.ink("--accent") : theme.ink("--text-dim"))
+            .background(RoundedRectangle(cornerRadius: 8, style: .circular).fill(activeFill))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .circular))
         }
         .buttonStyle(.plain)
     }
@@ -57,8 +61,12 @@ struct LeftActivityBar: View {
                 .padding(.vertical, 4)
             ActivityItem(icon: "history")
             Spacer(minLength: 0)
-            ActivityItem(icon: "play", iconSize: 18)
-            ActivityItem(icon: "terminal")
+            // Anchored to the window's bottom: the page lays them out a quarter point higher (SVGBiasKey).
+            Group {
+                ActivityItem(icon: "play", iconSize: 18)
+                ActivityItem(icon: "terminal")
+            }
+            .svgBias(-0.25)
         }
         .padding(.top, 6)
         .padding(.bottom, 6)

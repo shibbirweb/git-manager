@@ -47,7 +47,9 @@ struct StatusBarView: View {
         }
         .padding(.horizontal, 6)
         .font(.system(size: 12))
-        .foregroundStyle(theme.color("--text-dim"))
+        .foregroundStyle(theme.ink("--text-dim"))
+        // Anchored to the window's bottom: the page lays the bar out a quarter point higher (SVGBiasKey).
+        .svgBias(-0.25)
     }
 
     private func syncText(_ head: HeadInfo) -> String {
@@ -63,9 +65,7 @@ struct StatusBarView: View {
 
     private func item(icon: String, text: String) -> some View {
         HStack(spacing: 5) {
-            // Half a point above the item's center, where the page draws its 12-point icons (measured).
             Icon(name: icon, size: 12)
-                .offset(y: -0.5)
             ExactText(text: text)
         }
         .padding(.horizontal, 7)
@@ -81,11 +81,11 @@ struct StatusBarView: View {
                 HStack(spacing: 3) {
                     Icon(name: "bell", size: 12)
                     Text(Notices.badgeText(unread))
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(theme.color("--accent-text"))
+                        .font(PageFont.font(10, weight: .semibold))
+                        .foregroundStyle(theme.ink("--accent-text"))
                         .padding(.horizontal, 4)
                         .frame(minWidth: 14, minHeight: 14)
-                        .background(Capsule().fill(theme.color(unreadError ? "--danger" : "--warning")))
+                        .background(Capsule(style: .circular).fill(theme.color(unreadError ? "--danger" : "--warning")))
                 }
                 .padding(.horizontal, 5)
                 .frame(height: 20)

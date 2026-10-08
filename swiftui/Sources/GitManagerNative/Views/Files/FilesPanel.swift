@@ -25,11 +25,13 @@ struct FilesPanel: View {
         VStack(spacing: 0) {
             HStack(spacing: 2) {
                 Text((files.rootPath.map { ($0 as NSString).lastPathComponent } ?? "").uppercased())
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(PageFont.font(11, weight: .semibold))
                     .tracking(0.66)
-                    .foregroundStyle(theme.color("--text-dim"))
+                    .foregroundStyle(theme.ink("--text-dim"))
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    // 11-point text with the normal line height: WebKit sets it half a point lower (measured).
+                    .offset(y: 0.5)
                 Spacer(minLength: 0)
                 headButton("plus", size: 14)
                 // Locate the open file: off until a file is open, as in the current app.
@@ -89,17 +91,17 @@ struct FileTreeRow: View {
             }
             .frame(width: 12, height: 12)
             Icon(name: entry.isDir ? (entry.isRepo ? "folder-git" : "folder") : "file", size: 14)
-                .foregroundStyle(entry.ignored ? theme.color("--text-faint") : theme.color("--text-dim"))
+                .foregroundStyle(entry.ignored ? theme.ink("--text-faint") : theme.ink("--text-dim"))
             Text(entry.name)
                 .foregroundStyle(nameColor)
-                .fontWeight(tone == .conflict ? .medium : .regular)
+                .font(PageFont.font(13, weight: tone == .conflict ? .medium : .regular))
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 0)
             marker
         }
         .font(.system(size: 13))
-        .foregroundStyle(theme.color("--text-dim"))
+        .foregroundStyle(theme.ink("--text-dim"))
         .padding(.leading, 8 + CGFloat(depth) * 14)
         .padding(.trailing, 8)
         .frame(height: 24)
@@ -108,20 +110,20 @@ struct FileTreeRow: View {
 
     private var nameColor: Color {
         if entry.ignored {
-            return theme.color("--text-faint")
+            return theme.ink("--text-faint")
         }
         switch tone {
         case .modified:
-            return theme.color("--accent")
+            return theme.ink("--accent")
         case .added:
-            return theme.color("--success")
+            return theme.ink("--success")
         case .conflict:
-            return theme.color("--danger")
+            return theme.ink("--danger")
         case .deleted:
             // 85% opacity in the current app, blended as WebKit does.
             return theme.over("--danger", 0.85, on: "--panel")
         case nil:
-            return theme.color("--text")
+            return theme.ink("--text")
         }
     }
 

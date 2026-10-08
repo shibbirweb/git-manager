@@ -63,7 +63,7 @@ struct ContentView: View {
         // SwiftUI paints its own toolbar background where the title bar is; make it the current app's --bg.
         .toolbarBackground(theme.systemColor("--bg"), for: .windowToolbar)
         .toolbarBackground(.visible, for: .windowToolbar)
-        .foregroundStyle(theme.color("--text"))
+        .foregroundStyle(theme.ink("--text"))
         .font(.system(size: 13))
         .environment(\.theme, theme)
         .background(WindowChrome(background: theme.nsColor("--bg")))

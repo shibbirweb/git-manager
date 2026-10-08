@@ -32,8 +32,8 @@ private struct ToastView: View {
         HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(toast.title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(theme.color("--text"))
+                    .font(PageFont.font(13, weight: .semibold))
+                    .foregroundStyle(theme.ink("--text"))
                 if let detail = toast.detail {
                     // pre-wrap in a box of at most 160 points that scrolls past that.
                     ClampedHeight(maxHeight: 160) {
@@ -72,7 +72,7 @@ private struct ToastView: View {
     private func detailText(_ detail: String) -> some View {
         Text(detail)
             .font(.custom("JetBrains Mono", size: 11.5))
-            .foregroundStyle(theme.color("--text-dim"))
+            .foregroundStyle(theme.ink("--text-dim"))
             .textSelection(.enabled)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -124,8 +124,8 @@ private struct ToastFrame: View {
         GeometryReader { geometry in
             let size = geometry.size
             ZStack {
-                RoundedRectangle(cornerRadius: 8).fill(line)
-                RoundedRectangle(cornerRadius: 8).fill(edge)
+                RoundedRectangle(cornerRadius: 8, style: .circular).fill(line)
+                RoundedRectangle(cornerRadius: 8, style: .circular).fill(edge)
                     .mask(Path { path in
                         path.addLines([
                             .zero, CGPoint(x: 4, y: 1),

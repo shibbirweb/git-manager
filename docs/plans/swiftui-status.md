@@ -255,3 +255,32 @@ the numbers. Newest last.
     buttons and the other toolbar buttons still missing); Repository actions has Commit and Refresh working. Code
     appearance moved to the new `diff-every-line` scenario. Run specs gained `stageFiles` and `collapseUnchanged`
     (both apps set and checked), so `parity` now runs changes, diff, diff-every-line and staged.
+- GM-49 chrome to the page's pixels (header, activity bars, Changes panel, commit box, Files panel, welcome,
+  status bar, diff tab strip and toolbar; the diff panes untouched). Rules found against the current app and a
+  WKWebView harness, each applied where the page has it:
+  - Icons: WebKit paints an `<svg>` at its box rounded to whole points, halves up (SVGSnap). A `<button>` without
+    its own vertical padding keeps WebKit's 2 above and 3 below (activity items). What the page anchors to the
+    window's bottom (status bar, commit box, lower activity items) or centers (welcome) sits a fraction higher
+    than SwiftUI lays it out, so those icons snap with a bias (`svgBias`).
+  - Text: ExactText takes the exact advance and now sets its glyphs at the exact fraction of a point (a leading
+    space kerned to the fraction; a view's offset is rounded to the pixel), and truncates when squeezed. Used for
+    every label followed by other items. WebKit's font-weight 600 is the system font's wght axis at 600, heavier
+    than NSFont's .semibold (PageFont). Foregrounds use the converted, unrounded color (`theme.ink`), as WebKit
+    hands glyphs and strokes; Text's own foregroundColor dithered, so colors are styles on views.
+  - Small text (11 and 11.5 points, normal line height) sits half a point lower on the page. CSS corners are
+    circular (SwiftUI's default is continuous); borders are filled rings, not strokes. The toolbar's path keeps
+    WebKit's ellipsis ("cart.ts …", clipped), the Changes title clips without one, the strikethrough is drawn at
+    the page's place, and the commit, sync and count labels take their exact widths.
+  - Tried and dropped: Core Graphics icon masks (no closer than shapes in the app), a redraw after launch (the
+    launch-to-launch noise was the old capture, GM-50).
+  - Pixel diff below the title bar (ScreenCaptureKit capture, HDR off), before (f0aa35b) and after:
+
+    | Screen | Light | Dark |
+    |---|---|---|
+    | Changes | 99.35% to 99.74% | 99.33% to 99.73% |
+    | After staging | 99.35% to 99.74% | 99.33% to 99.73% |
+    | Diff, folded | 99.26% to 99.61% | 99.24% to 99.6% |
+    | Diff, every line | 99.25% to 99.6% | 99.2% to 99.56% |
+
+    Left: the status bar's right end (the memory readout is real data and moves the icons after it), text and
+    icon edges one step off, the diff canvas (GM-48).

@@ -20,16 +20,13 @@ struct HeaderBar: View {
             HeaderDivider()
             PillButton(action: chooseFolder) {
                 Icon(name: "folder", size: 14)
-                Text(folderName)
-                    .font(.system(size: 13, weight: .semibold))
-                    .lineLimit(1)
+                ExactText(text: folderName, size: 13, weight: .semibold)
                 Icon(name: "chevron-down", size: 12)
             }
             if let head {
                 PillButton(action: {}) {
                     Icon(name: "branch", size: 14)
-                    Text(head.branch ?? head.shortId ?? "")
-                        .lineLimit(1)
+                    ExactText(text: head.branch ?? head.shortId ?? "", size: 13)
                     counts(head)
                     Icon(name: "chevron-down", size: 12)
                 }
@@ -57,7 +54,7 @@ struct HeaderBar: View {
         }
         .padding(.horizontal, 8)
         .font(.system(size: 13))
-        .foregroundStyle(theme.color("--text"))
+        .foregroundStyle(theme.ink("--text"))
     }
 
     /// Back and forward (.history: 27 x 26 buttons, 2 apart); there is no navigation history yet, so both are
@@ -73,26 +70,29 @@ struct HeaderBar: View {
         }
     }
 
-    /// Commits to push and pull, small and dim (.counts: 11.5 points, 4 apart).
+    /// Commits to push and pull, small and dim (.counts: 11.5 points, 4 apart). WebKit sets the digits half a point
+    /// lower than SwiftUI (measured), as for other small text with the normal line height.
     @ViewBuilder
     private func counts(_ head: HeadInfo) -> some View {
         if head.ahead > 0 || head.behind > 0 {
             HStack(spacing: 4) {
                 if head.ahead > 0 {
                     HStack(spacing: 0) {
-                        Text("\(head.ahead)")
+                        ExactText(text: "\(head.ahead)", size: 11.5)
+                            .offset(y: 0.5)
                         Icon(name: "arrow-up", size: 11)
                     }
                 }
                 if head.behind > 0 {
                     HStack(spacing: 0) {
-                        Text("\(head.behind)")
+                        ExactText(text: "\(head.behind)", size: 11.5)
+                            .offset(y: 0.5)
                         Icon(name: "arrow-down", size: 11)
                     }
                 }
             }
             .font(.system(size: 11.5))
-            .foregroundStyle(theme.color("--text-dim"))
+            .foregroundStyle(theme.ink("--text-dim"))
         }
     }
 }

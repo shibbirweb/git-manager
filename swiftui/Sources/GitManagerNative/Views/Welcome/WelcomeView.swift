@@ -18,7 +18,7 @@ struct RepoCrumb: View {
                 .lineLimit(1)
         }
         .font(.system(size: 12))
-        .foregroundStyle(hasChanges ? theme.color("--accent") : theme.color("--text-dim"))
+        .foregroundStyle(hasChanges ? theme.ink("--accent") : theme.ink("--text-dim"))
         .padding(.horizontal, 3)
         .frame(height: 22)
         .padding(.leading, 10)
@@ -44,14 +44,18 @@ struct WelcomeView: View {
         VStack(spacing: 10) {
             // .logo: 56 points, 14-point corners, the accent at 12% behind a 28-point icon.
             Icon(name: "merge", size: 28)
-                .foregroundStyle(theme.color("--accent"))
+                .foregroundStyle(theme.ink("--accent"))
                 .frame(width: 56, height: 56)
                 .background(
-                    RoundedRectangle(cornerRadius: 14).fill(theme.over("--accent", 0.12, on: "--editor-bg"))
+                    RoundedRectangle(cornerRadius: 14, style: .circular)
+                        .fill(theme.over("--accent", 0.12, on: "--editor-bg"))
+                        // The page's column sits a fraction above the whole point used here: its tile snaps to the
+                        // half point below, its icon (an <svg>, on whole points) to the same point (measured).
+                        .offset(y: 0.5)
                 )
             Text(title)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(theme.color("--text"))
+                .font(PageFont.font(15, weight: .semibold))
+                .foregroundStyle(theme.ink("--text"))
                 // Measured against the current app (gm-measure, textpos): WebKit sets this title one pixel lower.
                 .offset(y: 0.5)
                 .padding(.bottom, 6)
@@ -65,6 +69,8 @@ struct WelcomeView: View {
         // Centered on whole points as WebKit centers the column (220, not 220.5): half a point lower would move
         // every label a pixel. The page's 24-point padding is on both sides, so it does not move the center.
         .modifier(WholePointCenter())
+        // The page centers the column a fraction above the whole point used here (SVGBiasKey).
+        .svgBias(-0.25)
     }
 
     /// .action: 32 points tall, 12 points in, the 15-point icon 10 points from the label, the shortcut on the right.
@@ -78,14 +84,13 @@ struct WelcomeView: View {
                 .offset(y: -0.5)
             Spacer(minLength: 0)
             if !keys.isEmpty {
-                Text(keys)
-                    .font(.system(size: 11))
-                    .foregroundStyle(theme.color("--text-faint"))
+                ExactText(text: keys, size: 11)
+                    .foregroundStyle(theme.ink("--text-faint"))
             }
         }
-        .foregroundStyle(theme.color("--text-dim"))
+        .foregroundStyle(theme.ink("--text-dim"))
         .padding(.horizontal, 12)
         .frame(height: 32)
-        .contentShape(RoundedRectangle(cornerRadius: 7))
+        .contentShape(RoundedRectangle(cornerRadius: 7, style: .circular))
     }
 }

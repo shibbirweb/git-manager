@@ -20,13 +20,13 @@ struct IconButton<Label: View>: View {
         Button(action: action) {
             label()
                 .frame(width: width, height: height)
-                .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .circular))
         }
         .buttonStyle(.plain)
         // The current app's .icon-btn:disabled is 40% opacity, drawn as the solid color WebKit blends from it.
         // SwiftUI's .disabled() would dim the button once more, so clicks are blocked without it.
         .allowsHitTesting(!disabled)
-        .foregroundStyle(disabled ? theme.over("--text", 0.4, on: surface) : theme.color("--text"))
+        .foregroundStyle(disabled ? theme.over("--text", 0.4, on: surface) : theme.ink("--text"))
     }
 }
 
@@ -42,7 +42,7 @@ struct PillButton<Label: View>: View {
             }
             .padding(.horizontal, 8)
             .frame(height: 28)
-            .contentShape(RoundedRectangle(cornerRadius: 6))
+            .contentShape(RoundedRectangle(cornerRadius: 6, style: .circular))
         }
         .buttonStyle(.plain)
     }
@@ -83,5 +83,26 @@ private struct WholePointCenterLayout: Layout {
             )
             subview.place(at: origin, proposal: ProposedViewSize(size))
         }
+    }
+}
+
+/// A CSS border as WebKit paints a rounded one: the ring between the box and the box inset by the border width,
+/// filled, with circular corners. A stroked border comes out a step lighter along its straight edges.
+struct BorderRing: Shape {
+    var cornerRadius: CGFloat
+    var width: CGFloat = 1
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path(roundedRect: rect, cornerRadius: cornerRadius, style: .circular)
+        let inner = rect.insetBy(dx: width, dy: width)
+        path.addPath(Path(roundedRect: inner, cornerRadius: max(0, cornerRadius - width), style: .circular))
+        return path
+    }
+}
+
+extension View {
+    /// The border of a box with `cornerRadius` corners, in `color`, drawn over it.
+    func borderRing(_ color: Color, cornerRadius: CGFloat, width: CGFloat = 1) -> some View {
+        overlay(BorderRing(cornerRadius: cornerRadius, width: width).fill(color, style: FillStyle(eoFill: true)))
     }
 }

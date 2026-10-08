@@ -1,6 +1,7 @@
 // The Changes list's group headers and file rows (src/lib/views/changes/RepoSection.svelte, FileRow.svelte), measured
 // in swiftui/Reference/changes-<mode>/group-headers.json and file-rows.json.
 
+import AppKit
 import SwiftUI
 
 /// The staged and unstaged files of a status, as the Changes list groups them.
@@ -41,11 +42,9 @@ struct GroupHeader: View {
         HStack(spacing: 0) {
             HStack(spacing: 5) {
                 Icon(name: "chevron-down", size: 13)
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                Text("\(count)")
-                    .font(.system(size: 12))
-                    .foregroundStyle(theme.color("--text-dim"))
+                ExactText(text: title, size: 13, weight: .semibold)
+                ExactText(text: "\(count)", size: 12)
+                    .foregroundStyle(theme.ink("--text-dim"))
                 Spacer(minLength: 0)
             }
             // The toggle's own 4 points, then the header's gap of 4 before the actions.
@@ -100,7 +99,10 @@ private struct RowActionButton: View {
         Button(action: action.run) {
             Icon(name: action.icon, size: 13)
                 .frame(width: 20, height: 20)
-                .background(RoundedRectangle(cornerRadius: 4).fill(active ? theme.color("--border-strong") : .clear))
+                .background(
+                    RoundedRectangle(cornerRadius: 4, style: .circular)
+                        .fill(active ? theme.color("--border-strong") : .clear)
+                )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -115,9 +117,9 @@ private struct RowActionButton: View {
             return theme.over("--text-dim", 0.4, on: surface)
         }
         if active {
-            return theme.color(action.danger ? "--danger" : "--text")
+            return theme.ink(action.danger ? "--danger" : "--text")
         }
-        return theme.color("--text-dim")
+        return theme.ink("--text-dim")
     }
 }
 
@@ -153,20 +155,29 @@ struct FileRow: View {
         let parts = Self.split(file.path)
         HStack(spacing: 8) {
             Text(Self.letter(kind))
-                .font(.custom("JetBrains Mono", size: 11.5).weight(.bold))
+                .font(Font(NSFont(name: "JetBrainsMono-Regular_Bold", size: 11.5) ?? .boldSystemFont(ofSize: 11.5)))
                 .foregroundStyle(letterColor)
                 .frame(width: 12)
             // One text line on the page: the smaller folder name sits on the file name's baseline.
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 // The name, then the space the page puts between the two spans (13-point, not struck through).
-                Text(parts.name)
-                    .foregroundColor(kind == "deleted" ? theme.color("--text-dim") : theme.color("--text"))
-                    .strikethrough(kind == "deleted", color: theme.color("--text-faint"))
-                    + Text(parts.directory.isEmpty ? "" : " ")
+                let name = parts.name + (parts.directory.isEmpty ? "" : " ")
+                // The color as a style on the view: Text's own foregroundColor dithered --text-dim (measured).
+                Text(name)
+                    .foregroundStyle(kind == "deleted" ? theme.ink("--text-dim") : theme.ink("--text"))
+                    .exactWidth(ExactText.width(name, font: .systemFont(ofSize: 13)))
+                    .overlay(alignment: .topLeading) {
+                        // line-through: 1 point thick, 8.5 points down the 16-point line box (measured), across
+                        // the name only; SwiftUI's strikethrough sits half a point lower.
+                        if kind == "deleted" {
+                            theme.color("--text-faint")
+                                .frame(width: ExactText.width(parts.name, font: .systemFont(ofSize: 13)), height: 1)
+                                .offset(y: 8.5)
+                        }
+                    }
                 if !parts.directory.isEmpty {
-                    Text(parts.directory)
-                        .font(.system(size: 12))
-                        .foregroundStyle(theme.color("--text-dim"))
+                    ExactText(text: parts.directory, size: 12)
+                        .foregroundStyle(theme.ink("--text-dim"))
                 }
             }
             .lineLimit(1)
@@ -185,18 +196,18 @@ struct FileRow: View {
     private var letterColor: Color {
         switch kind {
         case "added":
-            return theme.color("--success")
+            return theme.ink("--success")
         case "modified", "typechange":
-            return theme.color("--accent")
+            return theme.ink("--accent")
         case "deleted":
             // 80% opacity in the current app, blended as WebKit does.
             return theme.over("--danger", 0.8, on: "--panel")
         case "renamed":
-            return theme.color("--tok-property")
+            return theme.ink("--tok-property")
         case "untracked":
             return theme.mix("--success", 0.6, "--text-faint")
         default:
-            return theme.color("--danger")
+            return theme.ink("--danger")
         }
     }
 

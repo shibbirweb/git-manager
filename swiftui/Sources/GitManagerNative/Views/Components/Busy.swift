@@ -47,6 +47,6 @@ struct BusyLabel: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
-        .foregroundStyle(theme.color("--text-dim"))
+        .foregroundStyle(theme.ink("--text-dim"))
     }
 }

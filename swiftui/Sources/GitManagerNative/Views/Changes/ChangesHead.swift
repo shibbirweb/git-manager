@@ -18,25 +18,35 @@ struct ChangesHead: View {
     var commit: () -> Void = {}
     var refresh: () -> Void = {}
 
+    private static let titleFont = PageFont.ui(11, weight: .semibold)
+    private static let titleWidth = ExactText.width("CHANGES", font: titleFont, tracking: 0.66)
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 6) {
+                // The title gives way first. WebKit's ellipsis does not fit in what is left, so the page shows the
+                // first letters clipped at the title's edge ("C"), not SwiftUI's "C…".
                 Text("CHANGES")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(Font(Self.titleFont))
                     .tracking(0.66)
-                    .foregroundStyle(theme.color("--text-dim"))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .foregroundStyle(theme.ink("--text-dim"))
+                    .fixedSize()
+                    // 11-point text with the normal line height: WebKit sets it half a point lower (measured).
+                    .offset(y: 0.5)
+                    .frame(minWidth: 0, maxWidth: Self.titleWidth, alignment: .leading)
+                    .clipped()
                     .layoutPriority(-1)
                 if count > 0 {
-                    Text("\(count)")
-                        .font(.system(size: 11))
+                    // .count: at least 18 wide with 5 points of padding, the digits centered.
+                    ExactText(text: "\(count)", size: 11)
                         .padding(.horizontal, 5)
                         .frame(minWidth: 18, minHeight: 16)
-                        .background(Capsule().fill(theme.color("--hover")))
+                        .background(Capsule(style: .circular).fill(theme.color("--hover")))
                 }
-                // The current app leaves 12 points before the actions: the gap on each side of this spacer.
+                // The current app leaves 12 points before the actions: the gap on each side of this spacer. It takes
+                // what the title leaves, so the title is sized before it.
                 Spacer(minLength: 0)
+                    .layoutPriority(-2)
                 // Settings > Git > Commit box: one box under the list (the default) or one per repository.
                 IconButton(width: 24, height: 24, action: {}) {
                     CommitLayoutIcon(perRepo: false)
@@ -62,8 +72,7 @@ struct ChangesHead: View {
             HeadAction(disabled: busy) {
                 HStack(spacing: 4) {
                     Icon(name: "branch", size: 12)
-                    Text(decorations)
-                        .font(.system(size: 12, weight: .semibold))
+                    ExactText(text: decorations, size: 12, weight: .semibold)
                 }
                 .padding(.horizontal, 4)
                 .frame(height: 20)
@@ -73,8 +82,9 @@ struct ChangesHead: View {
                     HStack(spacing: 2) {
                         Icon(name: "sync", size: 13)
                         // .sync-badge: tabular digits, wider than the default ones.
-                        Text(head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓")
-                            .font(.system(size: 11).monospacedDigit())
+                        let badge = head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓"
+                        ExactText(text: badge, size: 11, tabular: true)
+                            .offset(y: 0.5)
                     }
                     .padding(.horizontal, 3)
                     .frame(height: 20)
@@ -107,14 +117,17 @@ private struct HeadAction<Label: View>: View {
         let active = hovered && !disabled
         Button(action: action) {
             label()
-                .background(RoundedRectangle(cornerRadius: 4).fill(active ? theme.color("--border-strong") : .clear))
+                .background(
+                    RoundedRectangle(cornerRadius: 4, style: .circular)
+                        .fill(active ? theme.color("--border-strong") : .clear)
+                )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .allowsHitTesting(!disabled)
         .foregroundStyle(disabled
             ? theme.over("--text-dim", 0.4, on: "--panel")
-            : theme.color(active ? "--text" : "--text-dim"))
+            : theme.ink(active ? "--text" : "--text-dim"))
         .onHover { hovered = $0 }
     }
 }

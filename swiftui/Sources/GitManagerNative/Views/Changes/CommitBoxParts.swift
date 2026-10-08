@@ -43,13 +43,13 @@ struct BorderedButton<Label: View>: View {
             label()
                 .frame(maxWidth: width == nil ? .infinity : nil)
                 .frame(width: width, height: height)
-                .background(RoundedRectangle(cornerRadius: 6).fill(theme.color("--panel")))
-                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(line, lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: 6, style: .circular).fill(theme.color("--panel")))
+                .borderRing(line, cornerRadius: 6)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .allowsHitTesting(!disabled)
-        .foregroundStyle(disabled ? theme.over("--text", 0.5, on: "--panel") : theme.color("--text"))
+        .foregroundStyle(disabled ? theme.over("--text", 0.5, on: "--panel") : theme.ink("--text"))
     }
 
     private var line: Color {
@@ -79,9 +79,9 @@ struct WebKitCheckbox: View {
         let border = Theme.parse(dark ? WebKitDefaults.checkboxBorderDark : WebKitDefaults.checkboxBorderLight)
         let fill = Theme.parse(dark ? WebKitDefaults.checkboxFillDark : WebKitDefaults.checkboxFillLight)
         ZStack {
-            RoundedRectangle(cornerRadius: 2.5)
+            RoundedRectangle(cornerRadius: 2.5, style: .circular)
                 .fill(checked ? theme.color("--accent") : Color(nsColor: fill ?? .white))
-            RoundedRectangle(cornerRadius: 2.5)
+            RoundedRectangle(cornerRadius: 2.5, style: .circular)
                 .strokeBorder(checked ? theme.color("--accent") : Color(nsColor: border ?? .gray), lineWidth: 1.5)
             if checked {
                 Icon(name: "check", size: 10, strokeWidth: 3)

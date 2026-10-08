@@ -29,6 +29,8 @@ struct CommitBox: View {
             .padding(10)
         }
         .background(theme.color("--panel"))
+        // At the foot of the window: the page lays it out a quarter point higher (SVGBiasKey).
+        .svgBias(-0.25)
         .onChange(of: model.messageFocusRequests) { _ in
             messageFocused = true
         }
@@ -62,16 +64,15 @@ struct CommitBox: View {
                 Icon(name: "history", size: 13).frame(width: 22, height: 22)
                 Icon(name: "file", size: 13).frame(width: 22, height: 22)
             }
-            .foregroundStyle(theme.color("--text-dim"))
+            .foregroundStyle(theme.ink("--text-dim"))
             .frame(maxWidth: .infinity, alignment: .topTrailing)
             .padding(3)
         }
         .frame(height: 96)
-        .background(RoundedRectangle(cornerRadius: 6).fill(theme.color("--panel")))
-        .overlay(RoundedRectangle(cornerRadius: 6)
-            .strokeBorder(theme.color(messageFocused ? "--accent" : "--border-strong"), lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 6, style: .circular).fill(theme.color("--panel")))
+        .borderRing(theme.color(messageFocused ? "--accent" : "--border-strong"), cornerRadius: 6)
         // box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent), outside the border.
-        .background(RoundedRectangle(cornerRadius: 8)
+        .background(RoundedRectangle(cornerRadius: 8, style: .circular)
             .fill(messageFocused ? theme.over("--accent", 0.25, on: "--panel") : .clear)
             .padding(-2))
     }
@@ -85,7 +86,7 @@ struct CommitBox: View {
                     WebKitCheckbox(
                         checked: draft.amend, dark: colorScheme == .dark, disabled: !CommitRules.amendEnabled(state)
                     )
-                    Text("Amend")
+                    ExactText(text: "Amend", size: 13)
                 }
             }
             .buttonStyle(.plain)
@@ -95,7 +96,7 @@ struct CommitBox: View {
             .fixedSize()
             Text(CommitRules.summary(state))
                 .font(.system(size: 12))
-                .foregroundStyle(theme.color("--text-dim"))
+                .foregroundStyle(theme.ink("--text-dim"))
                 .lineLimit(1)
                 .truncationMode(.tail)
                 // The summary takes the room left between Amend and the buttons, cut off with an ellipsis.
@@ -117,12 +118,13 @@ struct CommitBox: View {
             Button {
                 Task { await model.commit() }
             } label: {
-                Text(title)
+                ExactText(text: title, size: 13)
                     .foregroundStyle(enabled ? Color.white : theme.over("#ffffff", 0.5, on: "--panel"))
-                    // 12 points of padding inside a 1-point border. "Commit" is 73 points wide in the current app,
-                    // where SwiftUI's text width lands a fraction off, so that one keeps the measured width.
-                    .padding(.horizontal, title == "Commit" ? 12 : 13)
-                    .frame(width: title == "Commit" ? 73 : nil, height: 28)
+                    // 12 points of padding inside a 1-point border, around the label's exact width.
+                    .padding(.horizontal, 13)
+                    // .split never shrinks: the summary gives way.
+                    .fixedSize()
+                    .frame(height: 28)
                     .background(HalfRoundedRectangle(roundedSide: .leading).fill(fill(enabled)))
                     .contentShape(Rectangle())
             }
@@ -142,15 +144,16 @@ struct CommitBox: View {
 
     private var syncButton: some View {
         BorderedButton(width: nil, disabled: state.busy) {
+            // .sync: 6 points apart; .counts: 2 more before it, tabular digits, 1 point to the arrow.
             HStack(spacing: 6) {
                 Icon(name: "sync", size: 13)
-                Text("Sync Changes")
-                    .padding(.trailing, ahead > 0 ? 4 : 0)
+                ExactText(text: "Sync Changes", size: 13)
                 if ahead > 0 {
                     HStack(spacing: 1) {
-                        Text("\(ahead)")
+                        ExactText(text: "\(ahead)", size: 13, tabular: true)
                         Icon(name: "arrow-up", size: 11)
                     }
+                    .padding(.leading, 2)
                 }
             }
         }

@@ -22,7 +22,7 @@ struct ChangesPanel: View {
             )
             if let errorText = model.errorText {
                 Text(errorText)
-                    .foregroundStyle(theme.color("--danger"))
+                    .foregroundStyle(theme.ink("--danger"))
                     .padding(12)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
@@ -104,11 +104,11 @@ private struct CleanTree: View {
     var body: some View {
         VStack(spacing: 8) {
             Icon(name: "check", size: 18)
-                .foregroundStyle(theme.color("--success"))
+                .foregroundStyle(theme.ink("--success"))
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(theme.over("--success", 0.14, on: "--panel")))
             Text("Working tree clean")
-                .foregroundStyle(theme.color("--text-dim"))
+                .foregroundStyle(theme.ink("--text-dim"))
         }
         .padding(.vertical, 28)
         .padding(.horizontal, 16)

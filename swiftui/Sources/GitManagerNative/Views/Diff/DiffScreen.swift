@@ -37,16 +37,17 @@ struct DiffScreen: View {
                 HStack(spacing: 6) {
                     Icon(name: "git-compare", size: 13)
                         .opacity(0.8)
-                    Text(name)
-                    Text("Diff")
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(theme.color("--text-faint"))
+                    ExactText(text: name, size: 13)
+                    // 11.5-point text with the normal line height: WebKit sets it half a point lower (measured).
+                    ExactText(text: "Diff", size: 11.5)
+                        .foregroundStyle(theme.ink("--text-faint"))
+                        .offset(y: 0.5)
                 }
                 .padding(.leading, 12)
                 .padding(.trailing, 6)
                 // .tab-close is --text-dim, unlike .icon-btn.
                 Icon(name: "x", size: 12)
-                    .foregroundStyle(theme.color("--text-dim"))
+                    .foregroundStyle(theme.ink("--text-dim"))
                     .frame(width: 20, height: 20)
                     .contentShape(Rectangle())
                     .onTapGesture(perform: close)
@@ -86,7 +87,7 @@ struct DiffScreen: View {
     private func label(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11.5))
-            .foregroundStyle(theme.color("--text-dim"))
+            .foregroundStyle(theme.ink("--text-dim"))
             .lineLimit(1)
             // The page puts the 13-point line box 5 points down the 23-point row, half a point below center.
             .offset(y: 0.5)
@@ -118,9 +119,8 @@ struct DiffToolbar: View {
             IconButton(width: 24, height: 24, disabled: changeCount == 0, action: { go(1) }) {
                 Icon(name: "arrow-down", size: 14)
             }
-            Text(DiffNavigation.counterLabel(count: changeCount, current: current))
-                .font(.system(size: 12))
-                .foregroundStyle(theme.color("--text-dim"))
+            ExactText(text: DiffNavigation.counterLabel(count: changeCount, current: current))
+                .foregroundStyle(theme.ink("--text-dim"))
                 .padding(.leading, 6)
             divider
             HStack(spacing: 1) {
@@ -140,8 +140,9 @@ struct DiffToolbar: View {
                 toggle(icon: "plus", title: "Stage Lines")
                 toggle(icon: "discard", title: "Discard Lines")
             }
-            path
-                .padding(.leading, 10)
+            // .path's 12-point margin after the toolbar's 2-point gap.
+            PathLabel(name: name, directory: directory)
+                .padding(.leading, 12)
         }
         .padding(.horizontal, 8)
         // The controls center in the 33 points above the --border-strong bottom line.
@@ -152,19 +153,6 @@ struct DiffToolbar: View {
         }
         .frame(height: 34)
         .background(theme.color("--panel"))
-    }
-
-    /// .path: takes the rest of the row after a 12-point margin and ends in an ellipsis when it does not fit.
-    private var path: some View {
-        var text = Text(name).fontWeight(.semibold)
-        if !directory.isEmpty {
-            text = text + Text(" ") + Text(directory).foregroundColor(theme.color("--text-dim"))
-        }
-        return text
-            .font(.system(size: 12))
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var divider: some View {
@@ -183,10 +171,13 @@ struct DiffToolbar: View {
             }
         }
         .font(.system(size: 12))
-        .foregroundStyle(active ? theme.color("--text") : theme.color("--text-dim"))
+        .foregroundStyle(active ? theme.ink("--text") : theme.ink("--text-dim"))
         .padding(.horizontal, padding)
         .frame(height: 24)
         .fixedSize()
-        .background(RoundedRectangle(cornerRadius: 6).fill(active ? theme.color("--selected-inactive") : .clear))
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .circular)
+                .fill(active ? theme.color("--selected-inactive") : .clear)
+        )
     }
 }
