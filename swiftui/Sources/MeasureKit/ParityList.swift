@@ -90,6 +90,12 @@ public struct ParityRunSpec: Codable, Equatable {
     public var currentSettings: [String: ParityValue]?
     /// Extra launch arguments for the native app, such as ["-someOption", "NO"].
     public var nativeArguments: [String]?
+    /// Files of the folder staged in both apps before the capture (and unstaged after it, since the scenarios
+    /// share one copy of the demo).
+    public var stageFiles: [String]?
+    /// "Collapse unchanged" in both apps' diffs: the current app's localStorage and the native app's
+    /// ~/.gitmanager-native/diff.json, checked on screen in both before the capture.
+    public var collapseUnchanged: Bool?
     /// Checked in the current app before capturing; the scenario fails when one does not hold.
     public var expectCurrent: [ParityExpectation]?
 

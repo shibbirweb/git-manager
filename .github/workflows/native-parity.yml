@@ -126,6 +126,16 @@ jobs:
           echo "app=$PWD/src-tauri/target/release/bundle/macos/Git Manager.app" >> "$GITHUB_OUTPUT"
           echo "Current app: built from ${GITHUB_SHA::7}" | tee -a "$GITHUB_STEP_SUMMARY"
 
+      # Captures count only in the state the user gates on: no HDR headroom (1.0). Runners show no HDR content; if
+      # one ever reports headroom above 1 (or no screen), stop here with the reason instead of measuring.
+      - name: Display has no HDR headroom
+        working-directory: swiftui
+        run: |
+          if ! .build/release/gm-measure display --hdr off; then
+            echo "::error::The display reports HDR headroom above 1.0 (or no screen): captures would not compare."
+            exit 1
+          fi
+
       # gm-measure captures both windows itself (ScreenCaptureKit), which needs Screen Recording permission.
       - name: Allow screen capture
         run: swiftui/scripts/ci-allow-screen-capture.sh "$PWD/swiftui/.build/release/gm-measure"
@@ -140,7 +150,7 @@ jobs:
           MODES: ${{ inputs.modes || 'light,dark' }}
         run: |
           set +e
-          args=(--current-app "$CURRENT_APP" --modes "$MODES")
+          args=(--current-app "$CURRENT_APP" --modes "$MODES" --hdr off)
           if [ -n "$SCENARIOS" ]; then
             args+=(--scenarios "$SCENARIOS")
           fi

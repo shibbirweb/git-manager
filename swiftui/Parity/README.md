@@ -9,7 +9,7 @@ after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 1 done, 14 partial, 45 missing (60 features). 2 of 46 scenarios run in both apps.
+Native: 1 done, 14 partial, 45 missing (60 features). 4 of 48 scenarios run in both apps.
 
 Last measured 2026-10-08 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -29,14 +29,14 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | New File and unsaved changes | new-file-and-unsaved-changes | missing | new-file | - | - |
 | Unload hidden tabs | unload-hidden-tabs | missing | settings | - | - |
 | Editing code | code-editing | missing | editor-file | - | - |
-| Code appearance | code-appearance | partial | diff | 81.35% / 74.95% | 207 MB / 68 MB |
+| Code appearance | code-appearance | partial | diff-every-line | - | - |
 | Markdown editor | markdown | missing | markdown | - | - |
 | Image and PDF preview | media-preview | missing | media-preview | - | - |
 | Search Everywhere | search-everywhere | missing | search-everywhere | - | - |
 | Recent Files | recent-files | missing | recent-files | - | - |
 | Navigation Bar | navigation-bar | partial | navigation-bar | - | - |
 | Find and replace | find-replace | missing | find-replace | - | - |
-| Changes and commits | changes | partial | changes | 99.18% / 99.13% | 150 MB / 32 MB |
+| Changes and commits | changes | partial | staged | - | - |
 | Sign-in prompts | sign-in-prompts | missing | sign-in | - | - |
 | Commit box layout | commit-box-layout | partial | changes | 99.18% / 99.13% | 150 MB / 32 MB |
 | Repository actions | repo-actions | partial | changes | 99.18% / 99.13% | 150 MB / 32 MB |

@@ -234,3 +234,24 @@ the numbers. Newest last.
     | Diff, every line (`--collapse off`) | 99.25% | 99.19% to 99.2% (85.42% to 85.49%, or 99.2% by chance) |
     | Changes | 99.35% | 99.33% |
     | After staging | 99.35% | 99.34% |
+- GM-51 HDR gate in gm-measure, and the parity list for 3c and GM-45:
+  - Why: the user's gate is HDR off, so a capture only counts with headroom 1.0 (any app showing HDR content gives
+    the screen EDR headroom). Written while the dark drift was blamed on HDR; GM-50 then found it was
+    CGWindowListCreateImage, but measuring in one known display state stays the rule.
+  - `measure`, `memory`, `reference` and `parity` check the main screen before the run and before each capture
+    (each memory phase). `--hdr off`, the default, waits up to `--hdr-wait` (30 s) for headroom 1.0, then stops
+    with the cause ("Some app shows HDR content ..."); `--hdr any` only records. Reports add a line such as
+    "Display: HDR off at every capture (headroom 1, potential 16), Built-in Retina Display, color space Color
+    LCD, brightness not readable. Required: --hdr off." and report.json a `display` object with every capture's
+    headroom; `measure` also gives the headroom per app. Brightness has no public API on Apple silicon's built-in
+    display, so it reads as not readable there. `gm-measure display` prints the state (exit 1 with HDR on).
+  - NSScreen takes new EDR values on a run loop, which gm-measure never runs, so each check reads them from a new
+    `gm-measure display --json` process. The waiting and the report text are pure logic in MeasureKit
+    (DisplayGate, DisplayReport), tested with a fake display and clock.
+  - native-parity.yml stops with an error if the runner's display reports headroom above 1, and passes `--hdr off`.
+  - Parity list: Changes and commits now uses the new `staged` scenario (stage, unstage, Commit, Amend, Undo,
+    busy state and toasts; Discard, the identity check and the message history still missing); Diffs lists
+    Collapse unchanged, fold steps, previous and next change and smooth scrolling (the per-change stage and revert
+    buttons and the other toolbar buttons still missing); Repository actions has Commit and Refresh working. Code
+    appearance moved to the new `diff-every-line` scenario. Run specs gained `stageFiles` and `collapseUnchanged`
+    (both apps set and checked), so `parity` now runs changes, diff, diff-every-line and staged.

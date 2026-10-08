@@ -86,6 +86,27 @@ final class DiffCanvas: NSView {
         nil
     }
 
+    /// macOS posts nothing when the display gains or loses HDR headroom, so a visible canvas looks every two
+    /// seconds and repaints when the page's blends would change (Theme.nsLayers).
+    private var rangeCheck: Timer?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        rangeCheck?.invalidate()
+        rangeCheck = nil
+        guard window != nil else {
+            return
+        }
+        rangeCheck = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            guard let self, let colors = self.colors, self.window?.occlusionState.contains(.visible) == true else {
+                return
+            }
+            if colors.extendedRange != self.extendedRange {
+                self.needsDisplay = true
+            }
+        }
+    }
+
     override var isFlipped: Bool {
         true
     }
@@ -112,6 +133,10 @@ final class DiffCanvas: NSView {
     private let extendedRange = true
 
     private func paintLayer() {
+        if let colors, colors.extendedRange != extendedRange {
+            self.colors = CanvasColors(theme: colors.theme, extendedRange: extendedRange)
+            paintedOffset = nil
+        }
         let scale = window?.backingScaleFactor ?? 2
         let width = Int((bounds.width * scale).rounded())
         let height = Int((bounds.height * scale).rounded())

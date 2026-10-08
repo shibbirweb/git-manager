@@ -1,5 +1,23 @@
 # Parity scenarios (continued)
 
+## mergetool-mode: git mergetool window (native app cannot show it yet)
+
+Folder: demo `acme/payments-api`
+
+1. Set Git Manager up as git's mergetool (docs/wiki/usage/Git-Mergetool.md).
+2. Run git mergetool in demo/acme/payments-api: a merge window opens for the first conflicted file.
+
+- git mergetool mode (`mergetool`, missing): git mergetool opens a merge window per conflicted file.
+
+## blame: Blame (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront and double-click src/cart.ts.
+2. Click Blame (the clock button) in the path bar: the blame gutter beside the line numbers.
+
+- Blame (`blame`, missing): The current line note and the blame gutter.
+
 ## log: Log (native app cannot show it yet)
 
 Folder: demo `acme/storefront`

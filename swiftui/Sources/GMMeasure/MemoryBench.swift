@@ -29,10 +29,12 @@ enum MemoryBench {
         let speed = max(5, Int(option("--speed", in: &arguments) ?? "200") ?? 200)
         let mode = option("--mode", in: &arguments) ?? "light"
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
+        let gate = try Display.gate(from: &arguments)
         guard arguments.isEmpty, mode == "light" || mode == "dark" else {
             print(usage)
             return 2
         }
+        try await gate.require("before the run starts", record: false)
         let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
         let outDir = (swiftuiDir as NSString).appendingPathComponent("build/measure/\(stamp)-memory")
         try FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
@@ -48,32 +50,41 @@ enum MemoryBench {
                 kind: kind, home: home, folderPath: repoPath, appPath: appPath, mode: mode
             )
             do {
-                runs.append(try await phases(app, sampleS: sampleS, speed: speed))
+                runs.append(try await phases(app, sampleS: sampleS, speed: speed, gate: gate))
                 await app.stop()
             } catch {
                 await app.stop()
                 throw error
             }
         }
-        try write(runs, lines: lines, speed: speed, outDir: outDir)
+        try write(runs, lines: lines, speed: speed, gate: gate, outDir: outDir)
         return 0
     }
 
-    private static func phases(_ app: RunningApp, sampleS: Int, speed: Int) async throws -> AppRun {
+    /// Each phase starts once the display meets the run's HDR requirement (the scroll's frame times and the GPU's
+    /// memory depend on it too).
+    private static func phases(
+        _ app: RunningApp, sampleS: Int, speed: Int, gate: Display.Gate
+    ) async throws -> AppRun {
+        let name = app.kind.rawValue
         var phases: [Phase] = []
         try await Task.sleep(nanoseconds: 3_000_000_000)
+        try await gate.require("before \(name) idle")
         phases.append(try await sample(app, "idle", seconds: sampleS))
         try await showDiff(app)
         try await Task.sleep(nanoseconds: 3_000_000_000)
+        try await gate.require("before \(name) diff open")
         phases.append(try await sample(app, "diff open", seconds: sampleS))
 
-        print("\(app.kind.rawValue): scrolling")
+        print("\(name): scrolling")
+        try await gate.require("before \(name) scrolling")
         WindowCapture.bringToFront(pid: app.pid)
         async let scrolled = scroll(app, speed: speed)
         async let during = sample(app, "scrolling", seconds: 12)
         let (scroll, scrollPhase) = try await (scrolled, during)
         phases.append(scrollPhase)
         try await Task.sleep(nanoseconds: 3_000_000_000)
+        try await gate.require("before \(name) after scrolling")
         phases.append(try await sample(app, "after scrolling", seconds: sampleS))
         return AppRun(kind: app.kind, phases: phases, scroll: scroll)
     }

@@ -19,13 +19,10 @@ Measured: light 99.18% (150 MB / 32 MB, 2026-10-08), dark 99.13% (136 MB / 32 MB
 - Files panel (`files-panel`, partial): The tree with chevrons, icons, names and status colors; folders open and
   close. Native lacks: opening a file from the tree; deleted files in the tree and the exact status letter (U for
   untracked); the heading buttons, resizing and hiding the panel.
-- Changes and commits (`changes`, partial): The Staged and Changes groups with status letters, a click shows the diff,
-  the commit box. Native lacks: stage, unstage and discard; commit, amend and the message history; right-click menus,
-  arrow keys, the Conflicts group and several repositories.
 - Commit box layout (`commit-box-layout`, partial): The single commit box at the bottom of Changes and the layout
   button in its title bar. Native lacks: the layout button does nothing; the Per repository layout.
 - Repository actions (`repo-actions`, partial): Branch, Sync, Commit, Refresh and ... in the Changes title bar. Native
-  lacks: every button is drawn but does nothing; the ... menu.
+  lacks: Branch and Sync are drawn but do nothing (Commit and Refresh work); the ... menu.
 - Status bar and help links (`status-bar`, partial): Repository, branch, sync and changes on the left; bell, star,
   bug, memory and brush on the right. Native lacks: the items do nothing when clicked; cursor and file details of an
   open file.
@@ -39,15 +36,39 @@ Folder: demo `acme/storefront`
 
 Note: 0.1.0-beta.7 never folds side-by-side diffs (fixed as GM-40, not released yet), so against it this scenario
 scores about 81% (light) and 75% (dark). Against a build with the fix it scored 99.04% (light) and 98.28% (dark) on
-2026-10-08. In dark mode on battery (Low Power Mode) beta.7 also paints some translucent fills one step lower.
+2026-10-08. In dark mode beta.7 paints some fills and text one step differently while the display has HDR headroom
+(any HDR content on screen), so gm-measure captures with HDR off (--hdr off, the default).
 
 Measured: light 81.35% (207 MB / 68 MB, 2026-10-08), dark 74.95% (200 MB / 66 MB, 2026-10-08).
 
+- Diffs (`diffs`, partial): Diff tab, toolbar, labels, folds and fold steps, Collapse unchanged, next change, smooth
+  scrolling. Native lacks: the stage and revert buttons per change are drawn, not clickable; Inline, Blame, Open File
+  and Stage Lines in the toolbar; arrow keys through files; diffs of commits.
+
+## diff-every-line: Side-by-side diff of src/cart.ts, every line (runs in both apps)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront and click src/cart.ts under Changes.
+2. Turn off Collapse unchanged in the diff toolbar: every line shows, the first change centered.
+
+Note: With HDR off, beta.7 in dark mode puts the right pane in its own layer once the merge view scrolls and paints
+its #1e1f22 as 30, 31, 33 (followed in GM-50).
+
 - Code appearance (`code-appearance`, partial): Code font, syntax colors, bracket colors and indent guides in the diff
   panes. Native lacks: the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom.
-- Diffs (`diffs`, partial): The Diff tab, toolbar, Index and Working Tree labels, folds, tinted changes and the ruler.
-  Native lacks: the stage and revert buttons per change and the fold step buttons are drawn, not clickable; the
-  toolbar buttons, arrow keys through files, diffs of commits.
+
+## staged: Changes after staging src/cart.ts (runs in both apps)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Point at src/cart.ts under Changes and click its Stage button (+): it moves to the Staged group.
+
+- Changes and commits (`changes`, partial): Staged and Changes groups, stage and unstage (row buttons, double click),
+  Commit, Amend, Undo, toasts. Native lacks: Discard (drawn, only says it is not built yet); the identity check before
+  a commit, the message history and templates; the Undo of a pushed commit asks with a plain macOS alert; right-click
+  menus, arrow keys, the Conflicts group and several repositories.
 
 ## welcome: Welcome screen (no folder) (native app cannot show it yet)
 
@@ -255,21 +276,3 @@ Folder: demo `acme/payments-api`
 2. Click the first file of the Conflicts group: the three pane merge tool.
 
 - Merge tool (`merge-tool`, missing): Three panes, taking changes from either side, the result.
-
-## mergetool-mode: git mergetool window (native app cannot show it yet)
-
-Folder: demo `acme/payments-api`
-
-1. Set Git Manager up as git's mergetool (docs/wiki/usage/Git-Mergetool.md).
-2. Run git mergetool in demo/acme/payments-api: a merge window opens for the first conflicted file.
-
-- git mergetool mode (`mergetool`, missing): git mergetool opens a merge window per conflicted file.
-
-## blame: Blame (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront and double-click src/cart.ts.
-2. Click Blame (the clock button) in the path bar: the blame gutter beside the line numbers.
-
-- Blame (`blame`, missing): The current line note and the blame gutter.

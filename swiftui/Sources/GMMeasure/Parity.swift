@@ -3,7 +3,7 @@
 // match, the overlay, memory, and the features listed as missing in native.
 //
 //   gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
-//                     [--current-app <path>] [--native-app <path>] [--record]
+//                     [--current-app <path>] [--native-app <path>] [--record] [--hdr off|any] [--hdr-wait <s>]
 //   gm-measure parity list              the scenarios, and which ones run
 //   gm-measure parity summary [--check] writes (or checks) Parity/README.md and Scenarios*.md from the JSON
 
@@ -48,6 +48,7 @@ enum Parity {
         options.sampleS = max(0, Int(option("--sample", in: &arguments) ?? "5") ?? 5)
         options.appPaths[.current] = option("--current-app", in: &arguments)
         options.appPaths[.native] = option("--native-app", in: &arguments)
+        options.gate = try Display.gate(from: &arguments)
         let record = arguments.contains("--record")
         arguments.removeAll { $0 == "--record" }
         guard arguments.isEmpty else {
@@ -61,6 +62,8 @@ enum Parity {
                 + "the report marks every scenario as not compared.")
         }
 
+        try await options.gate.require("before the run starts", record: false)
+
         let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
         let outDir = (swiftuiDir as NSString).appendingPathComponent("build/parity/\(stamp)")
         try FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
@@ -70,17 +73,25 @@ enum Parity {
         let demoDir = (workDir as NSString).appendingPathComponent("demo")
 
         var outcomes: [ParityOutcome] = []
-        for mode in modes {
+        var gateError: DisplayGateError?
+        runs: for mode in modes {
             for scenario in scenarios {
-                outcomes.append(await ParityRun.run(
+                let run = await ParityRun.run(
                     scenario, mode: mode, demoDir: demoDir, workDir: workDir, outDir: outDir, options: options
-                ))
+                )
+                outcomes.append(run.outcome)
+                if let error = run.gateError {
+                    gateError = error
+                    break runs
+                }
             }
         }
         let info = ParityRunInfo(
             stamp: stamp,
             currentApp: options.appPaths[.current] ?? AppLauncher.defaultAppPath(.current, swiftuiDir: swiftuiDir),
-            nativeApp: options.appPaths[.native] ?? AppLauncher.defaultAppPath(.native, swiftuiDir: swiftuiDir)
+            nativeApp: options.appPaths[.native] ?? AppLauncher.defaultAppPath(.native, swiftuiDir: swiftuiDir),
+            hdr: options.gate.requirement,
+            displays: options.gate.states
         )
         let markdown = ParityReport.markdown(outcomes, list: list, info: info)
         let markdownPath = (outDir as NSString).appendingPathComponent("report.md")
@@ -88,6 +99,10 @@ enum Parity {
         let jsonPath = (outDir as NSString).appendingPathComponent("report.json")
         try ParityReport.json(outcomes, info: info).write(toFile: jsonPath, atomically: true, encoding: .utf8)
         print("\n\(markdown)\nSaved in \(outDir)")
+        if let gateError {
+            print("Stopped: \(gateError)")
+            return 1
+        }
 
         if record {
             var results = try ParityResults.load(path: resultsPath)

@@ -14,6 +14,8 @@ enum MeasureReport {
         let readyMs: Int
         let screenshotPath: String?
         let screenshotSize: String?
+        /// The display's HDR headroom just before the screenshot (1.0: HDR off).
+        let headroom: Double?
         let avgMb: Double
         let minMb: Double
         let maxMb: Double
@@ -63,6 +65,7 @@ enum MeasureReport {
             "collapse": options.collapse,
             "apps": apps.map(appJSON),
             "pixelDiff": diffJSON,
+            "display": options.gate.json,
         ]
         let jsonPath = (outDir as NSString).appendingPathComponent("report.json")
         try WrappedJSON.string(json).write(toFile: jsonPath, atomically: true, encoding: .utf8)
@@ -78,6 +81,7 @@ enum MeasureReport {
             "serverMs": app.serverMs,
             "readyMs": app.readyMs,
             "screenshotSize": app.screenshotSize ?? NSNull(),
+            "headroom": app.headroom ?? NSNull(),
             "avgMb": app.avgMb,
             "minMb": app.minMb,
             "maxMb": app.maxMb,
@@ -119,6 +123,9 @@ enum MeasureReport {
             row("Memory, min to peak") { "\($0.minMb) to \($0.maxMb) MB" },
             row("Measured exactly") { $0.approximate ? "no (helpers matched by start time)" : "yes" },
             row("Screenshot") { $0.screenshotSize ?? "none" },
+            row("HDR headroom at the screenshot") { $0.headroom.map(DisplayReport.number) ?? "not read" },
+            "",
+            options.gate.markdownLine,
             "",
             "Memory by process (average / peak):",
             "",

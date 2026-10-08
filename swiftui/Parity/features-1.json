@@ -91,7 +91,8 @@
       "gaps": ["an editor (the native diff panes are read-only drawings)"]
     },
     {
-      "id": "code-appearance", "name": "Code appearance", "usage": "Code-Appearance.md", "scenario": "diff",
+      "id": "code-appearance", "name": "Code appearance", "usage": "Code-Appearance.md",
+      "scenario": "diff-every-line",
       "check": "Code font, syntax colors, bracket colors and indent guides in the diff panes",
       "native": "partial",
       "gaps": ["the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom"]

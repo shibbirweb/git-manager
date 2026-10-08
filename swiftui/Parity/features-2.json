@@ -1,12 +1,13 @@
 {
   "features": [
     {
-      "id": "changes", "name": "Changes and commits", "usage": "Changes-and-Commits.md", "scenario": "changes",
-      "check": "The Staged and Changes groups with status letters, a click shows the diff, the commit box",
+      "id": "changes", "name": "Changes and commits", "usage": "Changes-and-Commits.md", "scenario": "staged",
+      "check": "Staged and Changes groups, stage and unstage (row buttons, double click), Commit, Amend, Undo, toasts",
       "native": "partial",
       "gaps": [
-        "stage, unstage and discard",
-        "commit, amend and the message history",
+        "Discard (drawn, only says it is not built yet)",
+        "the identity check before a commit, the message history and templates",
+        "the Undo of a pushed commit asks with a plain macOS alert",
         "right-click menus, arrow keys, the Conflicts group and several repositories"
       ]
     },
@@ -25,7 +26,7 @@
       "id": "repo-actions", "name": "Repository actions", "usage": "Repository-Actions.md", "scenario": "changes",
       "check": "Branch, Sync, Commit, Refresh and ... in the Changes title bar",
       "native": "partial",
-      "gaps": ["every button is drawn but does nothing", "the ... menu"]
+      "gaps": ["Branch and Sync are drawn but do nothing (Commit and Refresh work)", "the ... menu"]
     },
     {
       "id": "commit-options", "name": "Commit options", "usage": "Commit-Options.md", "scenario": "commit-options",
@@ -39,11 +40,11 @@
     },
     {
       "id": "diffs", "name": "Diffs", "usage": "Diffs.md", "scenario": "diff",
-      "check": "The Diff tab, toolbar, Index and Working Tree labels, folds, tinted changes and the ruler",
+      "check": "Diff tab, toolbar, labels, folds and fold steps, Collapse unchanged, next change, smooth scrolling",
       "native": "partial",
       "gaps": [
-        "the stage and revert buttons per change and the fold step buttons are drawn, not clickable",
-        "the toolbar buttons, arrow keys through files, diffs of commits"
+        "the stage and revert buttons per change are drawn, not clickable",
+        "Inline, Blame, Open File and Stage Lines in the toolbar; arrow keys through files; diffs of commits"
       ]
     },
     {

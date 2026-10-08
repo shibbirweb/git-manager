@@ -23,8 +23,14 @@ private func outcome(_ scenario: String, _ mode: String, content: Double?, probl
         outcome("changes", "light", content: 99.17),
         outcome("diff", "dark", content: nil, problems: ["current: capture failed: No Screen Recording permission"]),
     ]
-    let info = ParityRunInfo(stamp: "2026-10-08T10-00-00Z", currentApp: "/A/Current.app", nativeApp: "/B/Native.app")
+    let display = DisplayState(headroom: 1, potentialHeadroom: 16, colorSpaceName: "Color LCD")
+    let info = ParityRunInfo(
+        stamp: "2026-10-08T10-00-00Z", currentApp: "/A/Current.app", nativeApp: "/B/Native.app", hdr: .off,
+        displays: [display, display]
+    )
     let text = ParityReport.markdown(outcomes, list: list, info: info)
+    #expect(text.contains("Display: HDR off at every capture (headroom 1, potential 16), color space Color LCD, "
+        + "brightness not readable. Required: --hdr off."))
     #expect(text.contains("| changes: Changes | light | 99.17% | 98.97% | 141 MB | 33 MB | changes-light/diff.png |"))
     #expect(text.contains("| diff: Diff | dark | not compared | - | 141 MB | 33 MB | - |"))
     #expect(text.contains("- diff, dark: current: capture failed: No Screen Recording permission"))
@@ -37,6 +43,8 @@ private func outcome(_ scenario: String, _ mode: String, content: Double?, probl
     let decoded = (json as? [String: Any])?["outcomes"] as? [[String: Any]]
     #expect(decoded?.count == 2)
     #expect(decoded?.first?["contentPercent"] as? Double == 99.17)
+    #expect((json as? [String: Any])?["hdr"] as? String == "off")
+    #expect(((json as? [String: Any])?["displays"] as? [Any])?.count == 2)
 }
 
 @Test func resultsKeepEarlierRunsAndRoundTrip() throws {

@@ -89,10 +89,12 @@ enum Reference {
         let modes = (option("--modes", in: &arguments) ?? "light,dark").split(separator: ",").map(String.init)
         let appPath = option("--current-app", in: &arguments)
             ?? AppLauncher.defaultAppPath(.current, swiftuiDir: swiftuiDir)
+        let gate = try Display.gate(from: &arguments)
         guard arguments.isEmpty, modes.allSatisfy({ $0 == "light" || $0 == "dark" }) else {
             print(usage)
             return 2
         }
+        try await gate.require("before the run starts", record: false)
         let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
         let workDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-reference-\(stamp)")
         let folderPath = try Measure.buildDemo(in: workDir)
@@ -104,6 +106,7 @@ enum Reference {
         }
 
         var missingShots = 0
+        var shots: [(name: String, headroom: Double?)] = []
         for mode in modes {
             print("\(mode): starting \(appPath)")
             let home = (workDir as NSString).appendingPathComponent("home-\(mode)")
@@ -122,6 +125,8 @@ enum Reference {
                     try await Task.sleep(nanoseconds: 1_500_000_000)
                     let name = "\(screen.name)-\(mode)"
                     let pngPath = (pngDir as NSString).appendingPathComponent("\(name).png")
+                    let display = try await gate.require("before the \(name) screenshot")
+                    shots.append((name, display?.headroom))
                     if try await screenshot(app, to: pngPath) == false {
                         missingShots += 1
                     }
@@ -137,7 +142,8 @@ enum Reference {
             }
             await app.stop()
         }
-        print("Layout snapshots: \(jsonDir)\nScreenshots: \(pngDir)")
+        try writeReport(shots, gate: gate, stamp: stamp, into: pngDir)
+        print("Layout snapshots: \(jsonDir)\nScreenshots: \(pngDir)\n\(gate.markdownLine)")
         if missingShots > 0 {
             print("\(missingShots) screenshots are missing: \(permissionHint).")
         }
@@ -153,6 +159,27 @@ enum Reference {
         if shown.isError {
             throw ToolError("show_changes_diff: \(shown.text)")
         }
+    }
+
+    /// build/reference/report.md and report.json: the display state of each screenshot (the layout snapshots
+    /// do not depend on it, the pixels do).
+    private static func writeReport(
+        _ shots: [(name: String, headroom: Double?)], gate: Display.Gate, stamp: String, into pngDir: String
+    ) throws {
+        var lines = ["# Reference screenshots: \(stamp)", "", gate.markdownLine, "", "| Screenshot | HDR headroom |",
+                     "|---|---|"]
+        lines += shots.map { "| \($0.name).png | \($0.headroom.map(DisplayReport.number) ?? "not read") |" }
+        let markdown = lines.joined(separator: "\n") + "\n"
+        try markdown.write(toFile: (pngDir as NSString).appendingPathComponent("report.md"), atomically: true,
+                           encoding: .utf8)
+        let json: [String: Any] = [
+            "stamp": stamp,
+            "display": gate.json,
+            "screenshots": shots.map { ["name": $0.name, "headroom": $0.headroom ?? NSNull()] as [String: Any] },
+        ]
+        try WrappedJSON.string(json).write(
+            toFile: (pngDir as NSString).appendingPathComponent("report.json"), atomically: true, encoding: .utf8
+        )
     }
 
     /// Captured by gm-measure itself, like `measure` does for both apps.

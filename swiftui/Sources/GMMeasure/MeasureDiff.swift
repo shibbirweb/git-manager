@@ -5,21 +5,30 @@ import Foundation
 import MeasureKit
 
 extension Measure {
-    /// Opens the diff: the current app by its own tool, the native app by its `app` tool.
+    /// Opens the diff of Reference.diffFile with the run's "Collapse unchanged" choice.
     static func showDiff(_ app: RunningApp, collapse: Bool) async throws {
+        try await showDiff(app, filePath: Reference.diffFile, staged: false, collapse: collapse)
+    }
+
+    /// Opens the diff of `filePath` (its staged side with `staged`): the current app by its own tool, the native
+    /// app by its `app` tool. With `collapse`, checks that each app shows that "Collapse unchanged" choice.
+    static func showDiff(_ app: RunningApp, filePath: String, staged: Bool, collapse: Bool?) async throws {
         let shown: ToolAnswer
         if app.kind == .current {
             // The current app knows the repository by its real path (/private/var/..., not /var/...).
             let state = try await app.client.call("get_app_state").structured ?? [:]
             let repoRoot = (state["activeRepository"] as? [String: Any])?["root"] as? String ?? ""
             shown = try await app.client.call(
-                "show_changes_diff", ["repoPath": repoRoot, "filePath": Reference.diffFile]
+                "show_changes_diff", ["repoPath": repoRoot, "filePath": filePath, "staged": staged]
             )
         } else {
-            shown = try await app.client.call("app", ["action": "show_diff", "filePath": Reference.diffFile])
+            shown = try await app.client.call("app", ["action": "show_diff", "filePath": filePath, "staged": staged])
         }
         if shown.isError {
-            throw ToolError("\(app.kind.rawValue): could not show the diff: \(shown.text)")
+            throw ToolError("\(app.kind.rawValue): could not show the diff of \(filePath): \(shown.text)")
+        }
+        guard let collapse else {
+            return
         }
         if app.kind == .current {
             try await requireCollapse(app, on: collapse)

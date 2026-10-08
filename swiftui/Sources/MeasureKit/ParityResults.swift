@@ -16,6 +16,8 @@ public struct ParityOutcome: Codable, Equatable {
     public var nativeMb: Double?
     public var currentVersion: String?
     public var nativeVersion: String?
+    /// The highest HDR headroom of the display at this scenario's captures (1.0: HDR off).
+    public var headroom: Double?
     /// Screenshots and the overlay, relative to the report folder.
     public var files: [String]
     /// Per app: what failed (launch, steps, capture, memory).

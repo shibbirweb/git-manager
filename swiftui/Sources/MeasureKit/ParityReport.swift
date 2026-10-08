@@ -7,11 +7,19 @@ public struct ParityRunInfo {
     public let stamp: String
     public let currentApp: String
     public let nativeApp: String
+    /// --hdr of the run, and the display state at every capture.
+    public let hdr: HDRRequirement
+    public let displays: [DisplayState]
 
-    public init(stamp: String, currentApp: String, nativeApp: String) {
+    public init(
+        stamp: String, currentApp: String, nativeApp: String, hdr: HDRRequirement = .off,
+        displays: [DisplayState] = []
+    ) {
         self.stamp = stamp
         self.currentApp = currentApp
         self.nativeApp = nativeApp
+        self.hdr = hdr
+        self.displays = displays
     }
 }
 
@@ -25,6 +33,8 @@ public enum ParityReport {
             "Current app \(currentVersion) (`\(info.currentApp)`), native app \(nativeVersion) (`\(info.nativeApp)`).",
             "Both apps run each scenario isolated on the docs demo, and gm-measure captures both windows the same way.",
             "Match is the share of identical pixels below the title bar (macOS draws the title bar in both apps).",
+            "",
+            DisplayReport.markdownLine(info.displays, requirement: info.hdr),
             "",
             "| Scenario | Mode | Match | Whole window | Memory current | Memory native | Overlay |",
             "|---|---|---|---|---|---|---|",
@@ -91,12 +101,16 @@ public enum ParityReport {
             let stamp: String
             let currentApp: String
             let nativeApp: String
+            let hdr: String
+            /// The display state at every capture, in order.
+            let displays: [DisplayState]
             let outcomes: [ParityOutcome]
         }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         let report = Report(
-            stamp: info.stamp, currentApp: info.currentApp, nativeApp: info.nativeApp, outcomes: outcomes
+            stamp: info.stamp, currentApp: info.currentApp, nativeApp: info.nativeApp, hdr: info.hdr.rawValue,
+            displays: info.displays, outcomes: outcomes
         )
         return String(decoding: try encoder.encode(report), as: UTF8.self) + "\n"
     }

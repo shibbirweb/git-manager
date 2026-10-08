@@ -23,15 +23,34 @@
         "0.1.0-beta.7 never folds side-by-side diffs (fixed as GM-40, not released yet),",
         "so against it this scenario scores about 81% (light) and 75% (dark).",
         "Against a build with the fix it scored 99.04% (light) and 98.28% (dark) on 2026-10-08.",
-        "In dark mode on battery (Low Power Mode) beta.7 also paints some translucent fills one step lower."
+        "In dark mode beta.7 paints some fills and text one step differently while the display has HDR headroom",
+        "(any HDR content on screen), so gm-measure captures with HDR off (--hdr off, the default)."
       ],
-      "run": {
-        "showDiff": "src/cart.ts",
-        "currentStorage": { "git-manager:diff": "{\"collapseUnchanged\":true}" },
-        "expectCurrent": [
-          { "selector": "button.toggle.active[title=\"Collapse unchanged fragments\"]", "present": true }
-        ]
-      }
+      "run": { "showDiff": "src/cart.ts", "collapseUnchanged": true }
+    },
+    {
+      "id": "diff-every-line",
+      "title": "Side-by-side diff of src/cart.ts, every line",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and click src/cart.ts under Changes.",
+        "Turn off Collapse unchanged in the diff toolbar: every line shows, the first change centered."
+      ],
+      "note": [
+        "With HDR off, beta.7 in dark mode puts the right pane in its own layer once the merge view scrolls",
+        "and paints its #1e1f22 as 30, 31, 33 (followed in GM-50)."
+      ],
+      "run": { "showDiff": "src/cart.ts", "collapseUnchanged": false }
+    },
+    {
+      "id": "staged",
+      "title": "Changes after staging src/cart.ts",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Point at src/cart.ts under Changes and click its Stage button (+): it moves to the Staged group."
+      ],
+      "run": { "stageFiles": ["src/cart.ts"] }
     },
     {
       "id": "welcome",

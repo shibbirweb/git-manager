@@ -20,6 +20,8 @@ enum Measure {
         /// Points a frame of a scroll walk down and back before the screenshot (--walk), 0 for none: what the
         /// screen shows after scrolling should not change.
         var walkSpeed = 0
+        /// --hdr and --hdr-wait: the display state each capture needs.
+        var gate = Display.Gate(requirement: .off, waitS: 30)
     }
 
     static func run(_ arguments: [String]) async throws {
@@ -32,6 +34,7 @@ enum Measure {
         let collapse = option("--collapse", in: &arguments) ?? "on"
         options.collapse = collapse == "on"
         options.walkSpeed = max(0, Int(option("--walk", in: &arguments) ?? "0") ?? 0)
+        options.gate = try Display.gate(from: &arguments)
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
         let appPaths: [AppKind: String?] = [
             .current: option("--current-app", in: &arguments),
@@ -46,6 +49,7 @@ enum Measure {
         if !WindowCapture.ensureAccess() {
             print("Screenshots need Screen Recording permission (\(Reference.permissionHint)); measuring without.")
         }
+        try await options.gate.require("before the run starts", record: false)
 
         let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
         let outDir = (swiftuiDir as NSString).appendingPathComponent("build/measure/\(stamp)")
@@ -106,7 +110,7 @@ enum Measure {
         if options.screen == "diff" {
             try await showDiff(app, collapse: options.collapse)
         } else if options.screen == "staged" {
-            try await stageFile(app)
+            try await stageFiles(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)
@@ -115,6 +119,7 @@ enum Measure {
         }
         try await Task.sleep(nanoseconds: UInt64(options.settleS) * 1_000_000_000)
 
+        let display = try await options.gate.require("before the \(kind.rawValue) screenshot")
         var screenshotPath: String?
         var screenshotSize: String?
         // gm-measure captures both windows itself, the same way, so the pixel diff compares like with like.
@@ -148,7 +153,7 @@ enum Measure {
             }
             .sorted { $0.avgMb > $1.avgMb }
         if options.screen == "staged" {
-            try await unstageFile(app)
+            try await unstageFiles(app)
         }
         return MeasureReport.App(
             kind: kind,
@@ -159,6 +164,7 @@ enum Measure {
             readyMs: app.readyMs,
             screenshotPath: screenshotPath,
             screenshotSize: screenshotSize,
+            headroom: display?.headroom,
             avgMb: total["avgMb"] as? Double ?? 0,
             minMb: total["minMb"] as? Double ?? 0,
             maxMb: total["maxMb"] as? Double ?? 0,

@@ -98,3 +98,14 @@ let sampleFeatures = """
     #expect(throws: ToolError.self) { try parseModes("light,sepia") }
     #expect(throws: ToolError.self) { try parseModes("") }
 }
+
+@Test func theStagedAndEveryLineScenariosRunInBothApps() throws {
+    let list = try ParityList.load(directoryPath: parityPath)
+    let runnable = try list.select(nil).map(\.id)
+    #expect(runnable.contains("staged"))
+    #expect(runnable.contains("diff-every-line"))
+    #expect(list.scenario("staged")?.run?.stageFiles == ["src/cart.ts"])
+    #expect(list.scenario("diff-every-line")?.run?.collapseUnchanged == false)
+    #expect(list.scenario("diff")?.run?.collapseUnchanged == true)
+    #expect(list.features(in: "staged").map(\.id) == ["changes"])
+}

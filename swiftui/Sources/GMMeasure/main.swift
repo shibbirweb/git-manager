@@ -3,17 +3,22 @@
 //
 //   swift run gm-measure measure [--mode light|dark] [--screen changes|diff|staged] [--collapse on|off]
 //                                [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
-//                                [--current-app <path>] [--native-app <path>]
+//                                [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark]
-//                               [--only current|native]
+//                               [--only current|native] [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
 //   swift run gm-measure smoke [--app <path>]
 //   swift run gm-measure tokens [--check]
 //   swift run gm-measure icons [--check]
-//   swift run gm-measure reference [--modes light,dark] [--current-app <path>]
+//   swift run gm-measure reference [--modes light,dark] [--current-app <path>] [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
-//                               [--current-app <path>] [--native-app <path>] [--record]
+//                               [--current-app <path>] [--native-app <path>] [--record] [--hdr off|any]
+//                               [--hdr-wait <s>]
 //   swift run gm-measure parity list | summary [--check]
+//   swift run gm-measure display [--hdr off|any] [--json]
+//
+// --hdr off (the default) waits before each capture until the display has no HDR headroom (1.0), up to --hdr-wait
+// seconds (30), then stops; --hdr any only records the state. Reports give the headroom of every capture.
 
 import Foundation
 import MeasureKit
@@ -30,16 +35,20 @@ let usage = """
     Usage:
       gm-measure measure [--mode light|dark] [--screen changes|diff|staged] [--collapse on|off] [--walk <points>]
                          [--duration <s>] [--settle <s>] [--only current|native] [--current-app <path>]
-                         [--native-app <path>]
+                         [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
       gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark] [--only current|native]
+                        [--hdr off|any] [--hdr-wait <s>]
       gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
       gm-measure smoke [--app <path>]
       gm-measure tokens [--check]
       gm-measure icons [--check]
-      gm-measure reference [--modes light,dark] [--current-app <path>]
+      gm-measure reference [--modes light,dark] [--current-app <path>] [--hdr off|any] [--hdr-wait <s>]
       gm-measure parity [--scenarios a,b] [--modes light,dark] [--settle <s>] [--sample <s>]
-                        [--current-app <path>] [--native-app <path>] [--record]
+                        [--current-app <path>] [--native-app <path>] [--record] [--hdr off|any] [--hdr-wait <s>]
       gm-measure parity list | summary [--check]
+      gm-measure display [--hdr off|any] [--json]
+
+    --hdr off (the default) needs HDR headroom 1.0 before each capture (waits up to --hdr-wait, 30 s); any records it.
     """
 
 var arguments = Array(CommandLine.arguments.dropFirst())
@@ -62,6 +71,8 @@ do {
         exit(try await Reference.run(arguments))
     case "parity":
         exit(try await Parity.run(arguments))
+    case "display":
+        exit(try Display.run(arguments))
     default:
         print(usage)
         exit(2)

@@ -110,6 +110,7 @@ swift run -c release gm-measure tokens                  # writes the app's Gener
 swift run -c release gm-measure icons                   # writes Generated/Icons*.swift from src/lib/ui/icons.ts
 swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
 swift run -c release gm-measure parity                  # UI match per scenario, light and dark (see below)
+swift run -c release gm-measure display                 # HDR headroom, screen and color space; exit 1 with HDR on
 ```
 
 - `tokens` runs the theme catalog (`src/lib/themes/catalog.ts`) with Bun and writes every theme's 73 color tokens
@@ -140,6 +141,17 @@ run's throwaway HOME. `--walk <points>` scrolls both apps down and back (each en
 screenshot, to check that scrolling leaves the same pixels. `memory` reports each app's frame times during its
 scroll walk, and for the native app how long the diff canvas took to paint.
 
+**HDR state.** The current app (WebKit) renders some dark colors one step differently while the display has HDR
+headroom, which macOS gives it whenever any app shows HDR content (a video, an HDR photo). So `measure`, `memory`,
+`reference` and `parity` check the main screen before the run and before each capture (each memory phase): with
+`--hdr off`, the default, the headroom must be 1.0. A capture waits up to `--hdr-wait <s>` (30) for it, then the
+command stops and names the cause; close or hide the HDR content and run again. `--hdr any` skips the check. Every
+report gives the state at the captures (`Display: HDR off at every capture (headroom 1, potential 16), Built-in
+Retina Display, color space Color LCD, brightness not readable. Required: --hdr off.`) and report.json the same as
+`display` (each capture's headroom). Brightness comes only from public APIs (IOKit), which Apple silicon's built-in
+display does not answer. NSScreen updates these values only on a run loop, so gm-measure reads them from a new
+`gm-measure display --json` process each time. `reference` writes its line to `build/reference/report.md`.
+
 ## Parity list and UI match per scenario (gm-measure parity)
 
 [Parity/README.md](Parity/README.md) lists every feature of the current app (all of `docs/wiki/features.json`, plus
@@ -163,16 +175,21 @@ and per scenario and mode both screenshots and `diff.png` (the overlay below the
 scenario, the features missing or partial in native, and the scenarios the native app cannot show yet. A launch,
 step or capture that fails is written next to its scenario, and the exit code is then 1.
 
-A scenario runs in both apps once it has a `run` spec: the file whose diff to open (`showDiff`, `staged`),
+A scenario runs in both apps once it has a `run` spec: files to stage in both apps first (`stageFiles`, unstaged
+again after the capture, since the scenarios share one demo), the file whose diff to open (`showDiff`, `staged`),
+"Collapse unchanged" in both apps (`collapseUnchanged`, set and checked on screen as `measure --collapse` does),
 localStorage values and settings for the current app (`currentStorage`, `currentSettings`), launch arguments for
 the native app (`nativeArguments`) and elements the current app must show before the capture (`expectCurrent`).
-A new screen of the native app usually needs only a `run` spec in its scenario.
+A new screen of the native app usually needs only a `run` spec in its scenario. `staged` (Changes after staging
+src/cart.ts) and `diff-every-line` (collapse off) are the parity side of `measure --screen staged` and
+`--collapse off`. A display with HDR on stops the run (`--hdr`, as above); the report keeps what ran.
 
 `.github/workflows/native-parity.yml` runs it on pull requests that touch `swiftui/` and by hand (scenarios, modes
 and the release to compare with are inputs). It builds the native app, downloads the current app from the newest
 beta release (`Git.Manager_universal.app.tar.gz`, else the `.dmg`; built from the commit when no release has one),
 grants Screen Recording with `scripts/ci-allow-screen-capture.sh` (TCC entries for the runner's process chain;
-the runner images keep SIP off, which allows that), posts the report as the job summary and uploads
+the runner images keep SIP off, which allows that), fails at once if the runner's display reports HDR headroom
+(`gm-measure display --hdr off`), runs with `--hdr off`, posts the report as the job summary and uploads
 `build/parity/`. The workflow has not run on GitHub yet, so the permission step is untried there.
 
 ## Checks
@@ -210,3 +227,4 @@ src-tauri's test helpers.
 | 1c Parity list and UI match per scenario (gm-measure parity, native-parity.yml) | built, CI run not yet tried |
 | GM-45 Diff interactions (collapse, fold steps, previous and next change), smooth scrolling | done |
 | 3c Stage, unstage and commit through the bridge: hover buttons, busy state, toasts, Amend, Undo | done |
+| GM-51 HDR gate in gm-measure (`--hdr`), parity list and run specs for 3c and GM-45 | done |
