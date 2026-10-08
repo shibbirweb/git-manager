@@ -17,6 +17,18 @@ enum Backend {
     }
 
     static func call<Args: Encodable, Value: Decodable>(_ command: String, _ args: Args) throws -> Value {
+        guard let value: Value = try reply(command, args) else {
+            throw BackendError(kind: "bridge", message: "\(command) returned nothing")
+        }
+        return value
+    }
+
+    /// For commands that answer nothing on success (stage_files, unstage_files).
+    static func perform<Args: Encodable>(_ command: String, _ args: Args) throws {
+        let _: NoValue? = try reply(command, args)
+    }
+
+    private static func reply<Args: Encodable, Value: Decodable>(_ command: String, _ args: Args) throws -> Value? {
         let encoder = JSONEncoder()
         let argsText = String(decoding: try encoder.encode(args), as: UTF8.self)
         guard let raw = gm_call(command, argsText) else {
@@ -29,9 +41,9 @@ enum Backend {
         if let error = reply.error {
             throw error
         }
-        guard reply.ok, let value = reply.value else {
-            throw BackendError(kind: "bridge", message: "\(command) returned nothing")
+        guard reply.ok else {
+            throw BackendError(kind: "bridge", message: "\(command) failed without a reason")
         }
-        return value
+        return reply.value
     }
 }

@@ -11,6 +11,8 @@ struct HeaderBar: View {
     let head: HeadInfo?
     let chooseFolder: () -> Void
     let toggleAppearance: () -> Void
+    /// The write running now, shown before the layout buttons (.busy: at most 280 wide, 6 points before them).
+    var busy: String?
 
     var body: some View {
         HStack(spacing: 4) {
@@ -33,6 +35,12 @@ struct HeaderBar: View {
                 }
             }
             Spacer(minLength: 0)
+            if let busy {
+                BusyLabel(label: busy, spinnerSize: 12, gap: 6)
+                    .frame(maxWidth: 280)
+                    .fixedSize()
+                    .padding(.trailing, 6)
+            }
             IconButton(action: {}) {
                 LayoutToggleIcon(side: .left, visible: true)
             }

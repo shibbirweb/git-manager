@@ -175,3 +175,37 @@ the numbers. Newest last.
   - Memory (`gm-measure memory`, idle / diff open / scrolling / after, MB): before, current 145 / 222 / 896 / 276,
     native 34 / 84 / 81 / 98; after, current 142 / 222 / 894 / 264, native 34 / 52 / 46 / 45. The converted copy
     of the canvas Core Animation kept is gone.
+- 3c stage, unstage and commit (GM-44), measured against the local reference build (origin/develop 0.1.0-beta.7
+  plus the GM-40 fold fix, `--current-app`):
+  - Bridge: `stage_files`, `unstage_files`, `commit`, `commit_all`, `get_head_message`, `last_action` and
+    `move_head_back` (soft only) in `bridge/src/commands/write.rs`, named and shaped like the Tauri commands and
+    run through the shared git CLI code; commit options come from src-tauri's own `commit_options.rs` by path.
+    Tests over real repositories with an empty global git config (`bridge/tests/writes.rs`): stage and unstage
+    (deletions, before the first commit), commit, Commit All, Amend with an empty message, Undo of a commit and of
+    an amend, and failures (nothing staged, a bad author, a pre-commit hook's own message).
+  - The window: rows and group headers show --hover and their buttons under the mouse (Discard and Stage, Unstage;
+    Stage all, Unstage all and Discard all), a double click stages or unstages, writes run like repoStore.run (the
+    label with a spinner in the header and the status bar, the branch, sync, commit and Amend controls off, an
+    error toast "<label> failed" with git's text, the status read again after), the open diff follows its file
+    into the other group, the commit box follows CommitBox.svelte (Commit only with a message and staged files,
+    Amend fills a blank box with the last message, Cmd+Return), "Committed" comes with an Undo button, and a clean
+    tree shows "Working tree clean". Discard is drawn but only says it is not built yet.
+  - The rules are pure logic in NativeCore with tests: CommitRules, ChangeSelection, Notices, CommitUndo.
+  - Toasts as measured in beta.7 (inspect_elements on a "Fetched all remotes" and a "Fetch failed" toast): 16
+    points from the corner, at most 420 wide, 10 and 12 points of padding, a 4-point left edge in the kind's color,
+    the detail in 11.5-point mono scrolling past 160 points, and the bell's red or amber badge for unread alerts.
+    Hover and busy looks come from the CSS: beta.7 cannot be hovered from outside (posting mouse events needs
+    Accessibility access) and its busy state lasts a few milliseconds.
+  - Pixel diff below the title bar: Changes 99.17% (light) and 99.29% (dark); after staging src/cart.ts in both
+    apps (`gm-measure measure --screen staged`) 99.17% (light) and 99.12% (dark). An earlier light run of the same
+    code gave 99.31% and 99.33%: the one-step SwiftUI noise of 3b.
+  - Memory, native: idle 36.0 MB (34.2 before), 36.4 MB after staging, 36.7 MB after staging and bringing the
+    window forward, 36 to 38 MB after a commit and its toasts. Each change of the screen (the busy label, a toast
+    appearing) costs about 50 MB of GPU drawables for about a second. Big file (`gm-measure memory`): 34.2 / 86.0 /
+    82.0 / 79.8 MB (idle, diff open, scrolling, after), as before. Two findings on the way: a hidden shortcut button
+    for Cmd+Return, and macOS window restoration, each left a 19 MB window snapshot in memory (AppKit's
+    NSPersistentUIWindowSnapshotter, found with malloc stack logging) once the window became active. Cmd+Return is
+    now a key monitor that lives only while the message has the focus, and the window is not restorable
+    (WindowSizer puts the saved frame back itself).
+  - Not yet: the identity check before a commit (git's own error shows instead), Commit Options, the message
+    history and templates, and Discard; the Undo of a pushed commit asks with a plain macOS alert.

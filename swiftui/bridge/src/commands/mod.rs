@@ -16,6 +16,10 @@ use crate::git::status::{self, RepoStatus};
 use crate::git::workspace;
 use crate::paths::RealPath;
 
+#[path = "../../../../src-tauri/src/commands/commit_options.rs"]
+mod commit_options;
+mod write;
+
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
     match command {
         "get_status" => to_json(get_status(parse(command, args)?)?),
@@ -23,6 +27,13 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "memory_usage" => to_json(crate::memory::usage()),
         "list_directories" => to_json(list_directories(parse(command, args)?)?),
         "get_file_diff" => to_json(get_file_diff(parse(command, args)?)?),
+        "stage_files" => to_json(write::stage_files(parse(command, args)?)?),
+        "unstage_files" => to_json(write::unstage_files(parse(command, args)?)?),
+        "commit" => to_json(write::commit(parse(command, args)?)?),
+        "commit_all" => to_json(write::commit_all(parse(command, args)?)?),
+        "get_head_message" => to_json(write::get_head_message(parse(command, args)?)?),
+        "last_action" => to_json(write::last_action(parse(command, args)?)?),
+        "move_head_back" => to_json(write::move_head_back(parse(command, args)?)?),
         _ => Err(AppError::invalid(format!("Unknown command: {command}"))),
     }
 }

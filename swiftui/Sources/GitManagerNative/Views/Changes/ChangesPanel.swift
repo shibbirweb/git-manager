@@ -1,23 +1,26 @@
 // The Changes sidebar (src/lib/views/ChangesView.svelte): the heading row, the grouped file list and the commit box,
 // measured in swiftui/Reference/changes-<mode>/changes-head.json, group-headers.json and file-rows.json.
 
+import NativeCore
 import SwiftUI
 
 struct ChangesPanel: View {
     @Environment(\.theme) private var theme
-
-    let status: RepoStatus?
-    let errorText: String?
-    /// The row whose diff is open: its path and whether it is the staged change.
-    var selected: (path: String, staged: Bool)?
-    /// A click on a row: the file and whether it is the staged change.
-    var select: (FileStatus, Bool) -> Void = { _, _ in }
+    @ObservedObject private var model = AppModel.shared
+    @ObservedObject private var draft = AppModel.shared.draft
 
     var body: some View {
+        let status = model.snapshot?.status
         let groups = FileGroups(status?.files ?? [])
+        let state = model.commitState
         VStack(spacing: 0) {
-            ChangesHead(count: status?.files.count ?? 0, head: status?.head, decorations: groups.decorations)
-            if let errorText {
+            ChangesHead(
+                count: status?.files.count ?? 0, head: status?.head, decorations: groups.decorations,
+                busy: model.busy != nil, commitBlocked: CommitRules.blocked(state) != nil,
+                commit: { Task { await model.commitFromHead() } },
+                refresh: { Task { await model.refreshStatus() } }
+            )
+            if let errorText = model.errorText {
                 Text(errorText)
                     .foregroundStyle(theme.color("--danger"))
                     .padding(12)
@@ -25,6 +28,9 @@ struct ChangesPanel: View {
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
+                        if status != nil && groups.isEmpty {
+                            CleanTree()
+                        }
                         group("Staged", groups.staged, kind: \.staged, staged: true)
                         group("Changes", groups.unstaged, kind: \.unstaged, staged: false)
                     }
@@ -32,7 +38,7 @@ struct ChangesPanel: View {
                 }
                 .scrollIndicators(.never)
             }
-            CommitBox(stagedCount: groups.staged.count, ahead: status?.head.ahead ?? 0)
+            CommitBox(state: state, ahead: status?.head.ahead ?? 0)
         }
     }
 
@@ -42,99 +48,70 @@ struct ChangesPanel: View {
         _ title: String, _ files: [FileStatus], kind: KeyPath<FileStatus, String?>, staged: Bool
     ) -> some View {
         if !files.isEmpty {
-            GroupHeader(title: title, count: files.count)
+            GroupHeader(title: title, count: files.count, actions: groupActions(files, staged: staged),
+                        busy: model.busy != nil)
             ForEach(files, id: \.path) { file in
-                FileRow(file: file, kind: file[keyPath: kind])
-                    .background(isSelected(file, staged) ? theme.color("--selected-inactive") : .clear)
-                    .contentShape(Rectangle())
+                FileRow(file: file, kind: file[keyPath: kind], selected: isSelected(file, staged),
+                        actions: rowActions(file, staged: staged))
                     .onTapGesture {
-                        select(file, staged)
+                        Task { await model.showDiff(file, staged: staged) }
                     }
+                    // A double click stages or unstages, like Enter on the row.
+                    .simultaneousGesture(TapGesture(count: 2).onEnded {
+                        act { _ = staged ? await model.unstage([file]) : await model.stage([file]) }
+                    })
             }
             Color.clear.frame(height: 4)
         }
     }
 
+    private func groupActions(_ files: [FileStatus], staged: Bool) -> [RowAction] {
+        if staged {
+            return [RowAction(icon: "minus", title: "Unstage all") { act { await model.unstage(files) } }]
+        }
+        return [
+            RowAction(icon: "discard", title: "Discard all", danger: true) { model.discard(files) },
+            RowAction(icon: "plus", title: "Stage all") { act { await model.stage(files) } },
+        ]
+    }
+
+    private func rowActions(_ file: FileStatus, staged: Bool) -> [RowAction] {
+        if staged {
+            return [RowAction(icon: "minus", title: "Unstage") { act { await model.unstage([file]) } }]
+        }
+        return [
+            RowAction(icon: "discard", title: "Discard changes", danger: true) { model.discard([file]) },
+            RowAction(icon: "plus", title: "Stage") { act { await model.stage([file]) } },
+        ]
+    }
+
+    private func act(_ work: @escaping @MainActor () async -> Void) {
+        Task {
+            await work()
+        }
+    }
+
     /// The list never has focus while the diff is shown, so the row takes .row.selected's --selected-inactive.
     private func isSelected(_ file: FileStatus, _ staged: Bool) -> Bool {
-        selected?.path == file.path && selected?.staged == staged
+        model.openDiff?.filePath == file.path && model.openDiff?.staged == staged
     }
 }
 
-/// "CHANGES 4", the commit box layout button, the repository's actions (branch with its markers, sync, commit,
-/// refresh, more) and close; 34 points tall with a bottom line.
-struct ChangesHead: View {
+/// "Working tree clean": a 36-point tinted circle with a check, centered under the list's top padding.
+private struct CleanTree: View {
     @Environment(\.theme) private var theme
 
-    let count: Int
-    let head: HeadInfo?
-    let decorations: String
-
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 6) {
-                Text("CHANGES")
-                    .font(.system(size: 11, weight: .semibold))
-                    .tracking(0.66)
-                    .foregroundStyle(theme.color("--text-dim"))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .layoutPriority(-1)
-                Text("\(count)")
-                    .font(.system(size: 11))
-                    .padding(.horizontal, 5)
-                    .frame(minWidth: 18, minHeight: 16)
-                    .background(Capsule().fill(theme.color("--hover")))
-                // The current app leaves 12 points before the actions: the gap on each side of this spacer.
-                Spacer(minLength: 0)
-                // Settings > Git > Commit box: one box under the list (the default) or one per repository.
-                IconButton(width: 24, height: 24, action: {}) {
-                    CommitLayoutIcon(perRepo: false)
-                }
-                actions
-                IconButton(width: 24, height: 24, action: {}) {
-                    Icon(name: "x", size: 14)
-                }
-            }
-            .padding(.leading, 12)
-            .padding(.trailing, 6)
-            .frame(maxHeight: .infinity)
-            theme.color("--border-strong").frame(height: 1)
+        VStack(spacing: 8) {
+            Icon(name: "check", size: 18)
+                .foregroundStyle(theme.color("--success"))
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(theme.over("--success", 0.14, on: "--panel")))
+            Text("Working tree clean")
+                .foregroundStyle(theme.color("--text-dim"))
         }
-        .frame(height: 34)
-    }
-
-    /// The repository's row actions in --text-dim: 20 points tall, 4-point corners, 1 apart.
-    private var actions: some View {
-        HStack(spacing: 1) {
-            // .branch is a grid (icon, name, markers) with 2-point gaps; a narrow sidebar hides the name, but its
-            // empty column keeps both gaps: 4 points from the icon to the markers.
-            HStack(spacing: 4) {
-                Icon(name: "branch", size: 12)
-                Text(decorations)
-                    .font(.system(size: 12, weight: .semibold))
-            }
-            .padding(.horizontal, 4)
-            .frame(height: 20)
-            if let head, head.ahead > 0 || head.behind > 0 {
-                HStack(spacing: 2) {
-                    Icon(name: "sync", size: 13)
-                    // .sync-badge: tabular digits, wider than the default ones.
-                    Text(head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓")
-                        .font(.system(size: 11).monospacedDigit())
-                }
-                .padding(.horizontal, 3)
-                .frame(height: 20)
-            }
-            action("check", size: 14)
-            action("refresh", size: 13)
-            action("more", size: 14)
-        }
-        .foregroundStyle(theme.color("--text-dim"))
-    }
-
-    private func action(_ icon: String, size: CGFloat) -> some View {
-        Icon(name: icon, size: size)
-            .frame(width: 20, height: 20)
+        .padding(.vertical, 28)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
     }
 }

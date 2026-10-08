@@ -12,6 +12,12 @@ struct StatusBarView: View {
     let head: HeadInfo?
     let changeCount: Int
     let memoryBytes: UInt64?
+    /// The write running now ("Stage"), shown before the bell.
+    var busy: String?
+    /// Unread errors and warnings on the bell's badge, red when one is an error.
+    var unread = 0
+    var unreadError = false
+    var openBell: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 2) {
@@ -22,9 +28,16 @@ struct StatusBarView: View {
                     item(icon: "sync", text: syncText(head))
                 }
             }
-            item(icon: "git-compare", text: changeCount == 1 ? "1 change" : "\(changeCount) changes")
+            if changeCount > 0 {
+                item(icon: "git-compare", text: changeCount == 1 ? "1 change" : "\(changeCount) changes")
+            }
             Spacer(minLength: 0)
-            iconOnly("bell")
+            if let busy {
+                BusyLabel(label: busy, spinnerSize: 10, gap: 5)
+                    .padding(.horizontal, 7)
+                    .frame(height: 20)
+            }
+            bell
             iconOnly("star")
             iconOnly("bug")
             if let memoryBytes, memoryBytes > 0 {
@@ -56,6 +69,31 @@ struct StatusBarView: View {
         }
         .padding(.horizontal, 7)
         .frame(height: 20)
+    }
+
+    /// The bell (NotificationBell.svelte): 22 x 20 alone; with unread alerts, its badge 3 points after the icon, in
+    /// --danger for an error or --warning, 14 points tall with 10-point semibold digits.
+    @ViewBuilder
+    private var bell: some View {
+        if unread > 0 {
+            Button(action: openBell) {
+                HStack(spacing: 3) {
+                    Icon(name: "bell", size: 12)
+                    Text(Notices.badgeText(unread))
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(theme.color("--accent-text"))
+                        .padding(.horizontal, 4)
+                        .frame(minWidth: 14, minHeight: 14)
+                        .background(Capsule().fill(theme.color(unreadError ? "--danger" : "--warning")))
+                }
+                .padding(.horizontal, 5)
+                .frame(height: 20)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            iconOnly("bell")
+        }
     }
 
     /// .item.icon-only: 22 x 20 with the 12-point icon in the middle.

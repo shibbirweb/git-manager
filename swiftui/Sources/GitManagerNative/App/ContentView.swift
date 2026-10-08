@@ -9,6 +9,7 @@ struct ContentView: View {
     let initialRepoPath: String?
 
     @ObservedObject private var model = AppModel.shared
+    @ObservedObject private var toasts = ToastCenter.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -18,20 +19,13 @@ struct ContentView: View {
                 folderName: model.folderName,
                 head: model.snapshot?.status?.head,
                 chooseFolder: chooseFolder,
-                toggleAppearance: toggleAppearance
+                toggleAppearance: toggleAppearance,
+                busy: model.busy
             )
         } leftBar: {
             LeftActivityBar(changeCount: model.changeCount)
         } sidebar: {
-            ChangesPanel(
-                status: model.snapshot?.status,
-                errorText: model.errorText,
-                selected: model.openDiff.map { ($0.filePath, $0.staged) }
-            ) { file, staged in
-                Task {
-                    await model.showDiff(file, staged: staged)
-                }
-            }
+            ChangesPanel()
         } main: {
             if let open = model.openDiff {
                 DiffScreen(open: open, close: model.closeDiff)
@@ -55,8 +49,15 @@ struct ContentView: View {
                 folderName: model.folderName,
                 head: model.snapshot?.status?.head,
                 changeCount: model.changeCount,
-                memoryBytes: model.memoryBytes
+                memoryBytes: model.memoryBytes,
+                busy: model.busy,
+                unread: toasts.unread,
+                unreadError: toasts.unreadError,
+                openBell: toasts.markRead
             )
+        }
+        .overlay(alignment: .bottomTrailing) {
+            ToastStack(center: toasts)
         }
         .background(theme.color("--bg").ignoresSafeArea())
         // SwiftUI paints its own toolbar background where the title bar is; make it the current app's --bg.

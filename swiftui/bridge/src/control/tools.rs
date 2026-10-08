@@ -24,9 +24,11 @@ pub(super) const TOOLS: &[Tool] = &[
         name: "app",
         title: "Drive the app",
         description: "Reads or changes what the native app shows. action: get_state (the open folder, its branch \
-                      and changed files, the window size), open_folder (folderPath), show_diff (filePath, \
-                      staged) or scroll (speed, rounds: scrolls the largest area down and back, for memory \
-                      sampling).",
+                      and changed files, the staged and unstaged groups, the commit box, toasts and the window \
+                      size), open_folder (folderPath), show_diff (filePath, staged), scroll (speed, rounds: \
+                      scrolls the largest area down and back, for memory sampling), stage or unstage (filePaths; \
+                      without them the whole group) and commit (message, amend). stage, unstage and commit run \
+                      like a click in the window: busy state, toasts and the status refresh included.",
         category: "ui",
         read_only: false,
         schema: app_schema,
@@ -90,9 +92,16 @@ fn app_schema() -> Value {
     object(
         json!({
             "action": {
-                "type": "string", "enum": ["get_state", "open_folder", "show_diff", "scroll"],
+                "type": "string",
+                "enum": ["get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit"],
                 "description": "What to do."
             },
+            "filePaths": {
+                "type": "array", "items": { "type": "string" },
+                "description": "stage, unstage: changed files relative to the repository (default: the whole group)."
+            },
+            "message": { "type": "string", "description": "commit: the message typed into the commit box." },
+            "amend": { "type": "boolean", "description": "commit: tick Amend first (default: as the box has it)." },
             "folderPath": { "type": "string", "description": "open_folder: absolute path of the folder to open." },
             "filePath": { "type": "string", "description": "show_diff: the changed file, relative to the repository." },
             "staged": { "type": "boolean", "description": "show_diff: the staged change instead of the unstaged one." },

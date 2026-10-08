@@ -65,6 +65,8 @@ enum Control {
                 return reply(ok: false, text: error.message, structured: onMain { state() })
             }
             return reply(ok: true, structured: onMain { state() })
+        case "stage", "unstage", "commit":
+            return git(action, args)
         default:
             return reply(ok: false, text: "Unknown action: \(action)")
         }
@@ -100,7 +102,7 @@ enum Control {
     }
 
     @MainActor
-    private static func state() -> [String: Any] {
+    static func state() -> [String: Any] {
         let model = AppModel.shared
         let status = model.snapshot?.status
         var state: [String: Any] = [
@@ -112,6 +114,7 @@ enum Control {
             "files": status?.files.map(\.path) ?? [],
             "collapseUnchanged": DiffPrefs.shared.collapseUnchanged,
         ]
+        state.merge(changesState()) { _, changes in changes }
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
             state["window"] = [
@@ -149,7 +152,7 @@ enum Control {
     }
 
     /// JSONSerialization cannot write a Swift nil; JSON null is NSNull.
-    private static func orNull(_ value: Any?) -> Any {
+    static func orNull(_ value: Any?) -> Any {
         value ?? NSNull()
     }
 

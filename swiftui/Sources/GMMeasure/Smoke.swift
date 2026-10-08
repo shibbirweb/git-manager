@@ -65,6 +65,8 @@ enum Smoke {
             let shot = try await app.client.call("take_screenshot")
             let image = try shot.image.map(RGBAImage.decode(pngData:))
             check("take_screenshot", (image?.width ?? 0) > 0, image.map { "\($0.width)x\($0.height)" } ?? shot.text)
+
+            try await checkWrites(app.client, check: check)
         } catch {
             check("tool calls", false, "\(error)")
         }
@@ -104,6 +106,35 @@ enum Smoke {
         let on = try await diff(["collapse": "toggle"])
         let collapseWorks = !off.collapse && off.folds.isEmpty && on.collapse && on.folds == folded
         check("collapse unchanged", collapseWorks && off.counter == "1 of 2", "\(off.folds) \(on.folds)")
+    }
+
+
+    /// Stage, unstage and commit through the window (app action=stage, unstage, commit), each answered once the
+    /// status is read again.
+    private static func checkWrites(_ client: McpClient, check: (String, Bool, String) -> Void) async throws {
+        let paths = { (state: [String: Any], key: String) in (state[key] as? [String] ?? []).sorted() }
+        // A passing call answers with the whole state; only a failure's text is worth printing.
+        let detail = { (answer: ToolAnswer) in answer.isError ? answer.text : "" }
+        let staged = try await client.call("app", ["action": "stage", "filePaths": ["notes.txt"]])
+        let afterStage = staged.structured ?? [:]
+        check("app stage", !staged.isError && paths(afterStage, "staged") == ["notes.txt"], detail(staged))
+
+        let unstaged = try await client.call("app", ["action": "unstage"])
+        let afterUnstage = unstaged.structured ?? [:]
+        check("app unstage (the whole group)", paths(afterUnstage, "staged").isEmpty, detail(unstaged))
+
+        let refused = try await client.call("app", ["action": "commit", "message": "Nothing staged"])
+        check("commit with nothing staged is refused", refused.isError, refused.text)
+        let missing = try await client.call("app", ["action": "stage", "filePaths": ["nope.txt"]])
+        check("stage of an unchanged file is refused", missing.isError, missing.text)
+
+        _ = try await client.call("app", ["action": "stage"])
+        let committed = try await client.call("app", ["action": "commit", "message": "Smoke commit"])
+        let afterCommit = committed.structured ?? [:]
+        let toast = (afterCommit["toasts"] as? [[String: Any]] ?? []).last
+        let clean = afterCommit["changedFiles"] as? Int == 0 && afterCommit["commitMessage"] as? String == ""
+        let toastOk = toast?["title"] as? String == "Committed" && toast?["action"] as? String == "Undo"
+        check("app commit", !committed.isError && clean && toastOk, detail(committed))
     }
 
     /// One commit with readme.md and long.txt, then readme.md and lines 10 and 50 of long.txt changed, and

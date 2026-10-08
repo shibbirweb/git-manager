@@ -88,6 +88,17 @@ enum MeasureReport {
         ]
     }
 
+    private static func screenStep(_ screen: String) -> String {
+        switch screen {
+        case "diff":
+            return "show the diff of \(Reference.diffFile)"
+        case "staged":
+            return "stage \(Reference.diffFile) and wait until the Staged group shows it"
+        default:
+            return "stay on the Changes screen"
+        }
+    }
+
     static func render(_ apps: [App], stamp: String, options: Measure.Options, diffLine: String) -> String {
         func row(_ title: String, _ value: (App) -> String) -> String {
             "| \(title) | " + apps.map(value).joined(separator: " | ") + " |"
@@ -97,7 +108,8 @@ enum MeasureReport {
             "# Side by side: \(stamp)",
             "",
             "Scenario (\(options.mode) mode\(diff)): open demo/acme/storefront, wait until its status is on screen,",
-            "settle \(options.settleS) s, screenshot, sample memory for \(options.durationS) s (every 0.5 s).",
+            "\(screenStep(options.screen)), settle \(options.settleS) s, screenshot, sample memory for "
+                + "\(options.durationS) s (every 0.5 s).",
             "",
             "| | " + apps.map { "\($0.name) \($0.version)" }.joined(separator: " | ") + " |",
             "|---|" + apps.map { _ in "---" }.joined(separator: "|") + "|",

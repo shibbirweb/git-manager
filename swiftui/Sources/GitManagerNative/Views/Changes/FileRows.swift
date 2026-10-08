@@ -16,44 +16,140 @@ struct FileGroups {
         unstaged = sorted.filter { !$0.conflicted && $0.unstaged != nil }
     }
 
+    var isEmpty: Bool {
+        staged.isEmpty && unstaged.isEmpty && conflicts.isEmpty
+    }
+
     /// The branch button's markers: * for changes, + for staged files, ! for conflicts.
     var decorations: String {
         (unstaged.isEmpty ? "" : "*") + (staged.isEmpty ? "" : "+") + (conflicts.isEmpty ? "" : "!")
     }
 }
 
-/// "Staged 1": a 13-point chevron, the semibold label and the dim count; 26 points tall.
+/// "Staged 1": a 13-point chevron, the semibold label and the dim count; 26 points tall. On hover it shows
+/// --hover and its actions (Unstage all; Discard all and Stage all), which are off while a write runs.
 struct GroupHeader: View {
     @Environment(\.theme) private var theme
+    @State private var hovered = false
 
     let title: String
     let count: Int
+    var actions: [RowAction] = []
+    var busy = false
 
     var body: some View {
-        HStack(spacing: 5) {
-            Icon(name: "chevron-down", size: 13)
-            Text(title)
-                .font(.system(size: 13, weight: .semibold))
-            Text("\(count)")
-                .font(.system(size: 12))
-                .foregroundStyle(theme.color("--text-dim"))
-            Spacer(minLength: 0)
+        HStack(spacing: 0) {
+            HStack(spacing: 5) {
+                Icon(name: "chevron-down", size: 13)
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                Text("\(count)")
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.color("--text-dim"))
+                Spacer(minLength: 0)
+            }
+            // The toggle's own 4 points, then the header's gap of 4 before the actions.
+            .padding(.trailing, 4)
+            if hovered && !actions.isEmpty {
+                RowActions(actions: actions, disabled: busy, surface: "--hover")
+                    .padding(.leading, 4)
+            }
         }
         .padding(.leading, 8)
-        .padding(.trailing, 10)
+        .padding(.trailing, 6)
         .frame(height: 26)
+        .background(hovered ? theme.color("--hover") : Color.clear)
+        .contentShape(Rectangle())
+        .onHover { hovered = $0 }
     }
 }
 
-/// One file: its status letter, name and folder; 24 points tall, 28 points in.
+/// A row's or a group header's buttons (Discard, Stage, Unstage): 20 x 20 with 4-point corners, 1 point apart.
+struct RowAction {
+    let icon: String
+    let title: String
+    var danger = false
+    let run: () -> Void
+}
+
+struct RowActions: View {
+    let actions: [RowAction]
+    var disabled = false
+    /// What the buttons sit on, for the disabled look (40% opacity, drawn as the solid color WebKit blends).
+    var surface = "--hover"
+
+    var body: some View {
+        HStack(spacing: 1) {
+            ForEach(actions, id: \.title) { action in
+                RowActionButton(action: action, disabled: disabled, surface: surface)
+            }
+        }
+    }
+}
+
+private struct RowActionButton: View {
+    @Environment(\.theme) private var theme
+    @State private var hovered = false
+
+    let action: RowAction
+    let disabled: Bool
+    let surface: String
+
+    var body: some View {
+        let active = hovered && !disabled
+        Button(action: action.run) {
+            Icon(name: action.icon, size: 13)
+                .frame(width: 20, height: 20)
+                .background(RoundedRectangle(cornerRadius: 4).fill(active ? theme.color("--border-strong") : .clear))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .allowsHitTesting(!disabled)
+        .foregroundStyle(color(active: active))
+        .help(action.title)
+        .onHover { hovered = $0 }
+    }
+
+    private func color(active: Bool) -> Color {
+        if disabled {
+            return theme.over("--text-dim", 0.4, on: surface)
+        }
+        if active {
+            return theme.color(action.danger ? "--danger" : "--text")
+        }
+        return theme.color("--text-dim")
+    }
+}
+
+/// One file: its status letter, name and folder; 24 points tall, 28 points in. On hover it shows --hover (unless
+/// selected) and its actions at the right end.
 struct FileRow: View {
     @Environment(\.theme) private var theme
+    @State private var hovered = false
 
     let file: FileStatus
     /// The change shown in this group: the staged one in Staged, the unstaged one in Changes.
     let kind: String?
+    var selected = false
+    var actions: [RowAction] = []
 
     var body: some View {
+        content
+            .background(background)
+            .contentShape(Rectangle())
+            .onHover { hovered = $0 }
+    }
+
+    /// .row.selected comes after .row:hover in the page's CSS, so a selected row keeps its color under the mouse.
+    private var background: Color {
+        if selected {
+            return theme.color("--selected-inactive")
+        }
+        return hovered ? theme.color("--hover") : .clear
+    }
+
+    @ViewBuilder
+    private var content: some View {
         let parts = Self.split(file.path)
         HStack(spacing: 8) {
             Text(Self.letter(kind))
@@ -76,6 +172,9 @@ struct FileRow: View {
             .lineLimit(1)
             .truncationMode(.tail)
             Spacer(minLength: 0)
+            if hovered && !actions.isEmpty {
+                RowActions(actions: actions, surface: selected ? "--selected-inactive" : "--hover")
+            }
         }
         .font(.system(size: 13))
         .padding(.leading, 28)

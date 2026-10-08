@@ -2,6 +2,7 @@
 // the control server (Control.swift) always see and change the same state.
 
 import Foundation
+import NativeCore
 
 @MainActor
 final class AppModel: ObservableObject {
@@ -15,6 +16,14 @@ final class AppModel: ObservableObject {
     @Published private(set) var memoryBytes: UInt64?
     /// The file diff open in the main area (a click on a Changes row); nil shows the welcome screen.
     @Published private(set) var openDiff: OpenDiff?
+    /// The write running now ("Stage", "Commit"), shown in the header and the status bar; nil when idle.
+    @Published var busy: String?
+    /// Asks the commit box to put the cursor in its message (the heading's Commit button with no message).
+    @Published var messageFocusRequests = 0
+    let toasts = ToastCenter.shared
+    let draft = CommitDraft()
+    /// Where the open diff's row was in the list, so the selection stays at that place when its file goes away.
+    private var lastRowIndex = 0
 
     var folderName: String {
         repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native"
@@ -47,6 +56,12 @@ final class AppModel: ObservableObject {
         guard let diff else {
             return
         }
+        lastRowIndex = rows().firstIndex(of: ChangeRow(path: file.path, staged: staged)) ?? lastRowIndex
+        // A refresh that leaves the texts as they were keeps the diff and its colors.
+        if let open = openDiff, open.filePath == file.path, open.staged == staged,
+           open.diff.original == diff.original, open.diff.modified == diff.modified {
+            return
+        }
         openDiff = OpenDiff(filePath: file.path, staged: staged, diff: diff)
         async let original = SyntaxHighlighter.shared.spans(filePath: file.path, text: diff.original)
         async let modified = SyntaxHighlighter.shared.spans(filePath: file.path, text: diff.modified)
@@ -62,6 +77,44 @@ final class AppModel: ObservableObject {
         openDiff = nil
     }
 
+    /// Reads the status again after a write or a click on Refresh; an unchanged status keeps the one on screen.
+    /// The open diff then follows its file, into the other group when it was just staged or unstaged.
+    func refreshStatus() async {
+        guard let repoPath else {
+            return
+        }
+        let knownHash = snapshot?.hash
+        let result = await Task.detached {
+            Self.readStatus(repoPath: repoPath, knownHash: knownHash)
+        }.value
+        guard self.repoPath == repoPath else {
+            return
+        }
+        if case .success(let next) = result, next.status == nil {
+            return
+        }
+        finish(result)
+        await followSelection()
+    }
+
+    private func rows() -> [ChangeRow] {
+        let groups = FileGroups(snapshot?.status?.files ?? [])
+        return ChangeSelection.rows(staged: groups.staged.map(\.path), unstaged: groups.unstaged.map(\.path))
+    }
+
+    private func followSelection() async {
+        guard let open = openDiff else {
+            return
+        }
+        let current = ChangeRow(path: open.filePath, staged: open.staged)
+        guard let next = ChangeSelection.follow(current, rows: rows(), lastIndex: lastRowIndex),
+              let file = snapshot?.status?.files.first(where: { $0.path == next.path }) else {
+            closeDiff()
+            return
+        }
+        await showDiff(file, staged: next.staged)
+    }
+
     /// Opens a folder from the UI: reads its status off the main thread.
     func open(repoPath folderPath: String) async {
         begin(folderPath)
@@ -73,9 +126,11 @@ final class AppModel: ObservableObject {
 
     /// Reads the status on the caller's thread (the control server's) and returns it, so a tool call
     /// can answer with what the window then shows.
-    nonisolated static func readStatus(repoPath folderPath: String) -> Result<StatusSnapshot, BackendError> {
+    nonisolated static func readStatus(
+        repoPath folderPath: String, knownHash: String? = nil
+    ) -> Result<StatusSnapshot, BackendError> {
         do {
-            let args = GetStatusArgs(repoPath: folderPath, knownHash: nil)
+            let args = GetStatusArgs(repoPath: folderPath, knownHash: knownHash)
             return .success(try Backend.call("get_status", args) as StatusSnapshot)
         } catch let error as BackendError {
             return .failure(error)

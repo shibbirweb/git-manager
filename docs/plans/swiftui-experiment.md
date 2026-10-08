@@ -215,7 +215,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
 | 2 Design foundation | feat/GM-31-swiftui-skeleton | done (2caa362) |
-| 3 First slice | feat/GM-31-swiftui-skeleton | 3a and 3b diff screen at 99% (GM-41); 3c next |
+| 3 First slice | feat/GM-31-swiftui-skeleton | 3a and 3b diff screen at 99% (GM-41); 3c stage and commit (GM-44) |
 
 The notes for each phase (what was built, the measured findings and the numbers) are in
 [swiftui-status.md](swiftui-status.md).

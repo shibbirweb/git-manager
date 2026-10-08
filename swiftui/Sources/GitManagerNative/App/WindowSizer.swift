@@ -1,6 +1,6 @@
 // Gives the first window the current app's default size (1400 x 880), shrunk to fit the screen.
 // SwiftUI's defaultSize falls back to the minimum size when the default does not fit, which on a
-// 14-inch MacBook it does not once the menu bar and Dock are taken off. Later launches keep the
+// 14-inch MacBook it does not once the menu bar and Dock are taken off. Later launches take the
 // frame macOS saved.
 
 import AppKit
@@ -26,7 +26,11 @@ struct WindowSizer: NSViewRepresentable {
                 return
             }
             sized = true
-            if UserDefaults.standard.string(forKey: WindowSizer.savedFrameKey) != nil {
+            // The window is not restorable (WindowChrome), so macOS does not put the saved frame back by itself.
+            if let saved = UserDefaults.standard.string(forKey: WindowSizer.savedFrameKey) {
+                DispatchQueue.main.async {
+                    window.setFrame(from: saved)
+                }
                 return
             }
             DispatchQueue.main.async {

@@ -1,7 +1,7 @@
 //! C entry points over the Git Manager backend, for the SwiftUI app in swiftui/Sources/GitManagerNative.
 //!
 //! The backend modules are the Tauri app's own files, included by path, so src-tauri stays unchanged
-//! and both apps run the same git code. Only the command layer is rewritten here (src/commands.rs),
+//! and both apps run the same git code. Only the command layer is rewritten here (src/commands/),
 //! because the Tauri one is tied to tauri::command. Calls look like the page's `invoke`: a command
 //! name and camelCase JSON arguments in, JSON out.
 

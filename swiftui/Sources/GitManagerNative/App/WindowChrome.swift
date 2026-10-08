@@ -45,6 +45,9 @@ struct WindowChrome: NSViewRepresentable {
             window.titlebarAppearsTransparent = true
             window.titlebarSeparatorStyle = .none
             window.backgroundColor = background
+            // No macOS window restoration: its snapshotter copies the whole window into a 19 MB buffer whenever
+            // the window's state is saved (focus moving after a stage, for one), and that memory stays with the app.
+            window.isRestorable = false
         }
     }
 }

@@ -42,8 +42,9 @@ scripts/                   build-app.sh, test.sh, check-lines.sh, ci-allow-scree
 
 - **One entry point.** `gm_call` takes a command name and camelCase JSON arguments, like `invoke` in
   `src/lib/api.ts`, and returns `{"ok":true,"value":...}` or `{"ok":false,"error":{"kind","message"}}`.
-  The commands live in `bridge/src/commands.rs`, named and shaped like the Tauri ones, so `api.ts` and
-  `types.ts` stay the reference for both apps.
+  The commands live in `bridge/src/commands/` (the writes, stage, unstage, commit and the commit toast's Undo, in
+  `write.rs`), named and shaped like the Tauri ones, so `api.ts` and `types.ts` stay the reference for both apps.
+  Writes go through the shared git CLI code (`git/cli.rs`), as in the current app.
 - **Shared backend, unchanged.** `bridge/src/lib.rs` includes `src-tauri/src/git`, `merge`, `error`, `paths`,
   `askpass`, `git_console` and `child_process` by path. They do not use Tauri, so the same git code runs in
   both apps and `src-tauri/` does not change. If one of them starts using Tauri, the bridge build fails.
@@ -64,6 +65,8 @@ HOME=$N git-manager cli memory --duration 10       # live memory, same counting 
 HOME=$N git-manager cli screenshot shot.png        # the window, even when covered
 HOME=$N git-manager cli call app action=get_state  # open folder, branch, files, window size
 HOME=$N git-manager cli call app action=open_folder folderPath=/path/to/repo
+HOME=$N git-manager cli call app action=stage --args '{"filePaths":["src/cart.ts"]}'   # like the row's Stage
+HOME=$N git-manager cli call app action=commit message="Fix the cart"                  # types, then Commit
 git-manager cli memory --duration 10               # the same measurement on the current app
 ```
 
@@ -73,7 +76,15 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `take_screenshot` | yes: the window without its shadow; captured in-app, so no Screen Recording permission |
 | `git_status` | yes |
 | `get_app_info` | native fields (name, version, pid, bundle id) |
-| `app` | native only: `get_state`, `open_folder`, `show_diff`, `diff` (next change, fold steps, collapse), `scroll` |
+| `app` | native only: `get_state`, `open_folder`, `show_diff`, `diff`, `scroll`, `stage`, `unstage`, `commit` |
+
+`diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
+
+`stage` and `unstage` take `filePaths` (without them, the whole group, like Stage all and Unstage all); `commit`
+takes `message` and `amend`. They run through the window like a click, so the busy state, the toasts and the status
+refresh happen as for a user, and they answer with `get_state` once the refresh is done (the Staged and Changes
+groups, the commit box, the toasts on screen). The current app's own `git_stage` and `git_commit` tools write
+without its window, which then follows from its file watcher.
 
 The server listens on a port macOS picks (port 0), so two native builds (from two worktrees, say) never fight over
 one; each writes its port to the `mcp.json` under its own HOME. gm-measure starts every app with a throwaway HOME, so
@@ -91,6 +102,7 @@ swift run -c release gm-measure measure --duration 20   # both apps on the docs 
 swift run -c release gm-measure measure --screen diff  # the same on the diff of src/cart.ts
 swift run -c release gm-measure measure --screen diff --collapse off   # every line, the first change centered
 swift run -c release gm-measure measure --screen diff --walk 37        # scroll down and back before the shot
+swift run -c release gm-measure measure --screen staged  # the Changes screen after staging src/cart.ts
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
@@ -196,3 +208,4 @@ src-tauri's test helpers.
 | 3b Diff screen to 99%: syntax colors, brackets, guides, changed words, text blending | done |
 | 1c Parity list and UI match per scenario (gm-measure parity, native-parity.yml) | built, CI run not yet tried |
 | GM-45 Diff interactions (collapse, fold steps, previous and next change), smooth scrolling | done |
+| 3c Stage, unstage and commit through the bridge: hover buttons, busy state, toasts, Amend, Undo | done |

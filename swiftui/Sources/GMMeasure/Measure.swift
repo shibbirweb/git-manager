@@ -12,7 +12,8 @@ enum Measure {
         var durationS = 20
         var settleS = 5
         var mode = "light"
-        /// "changes" (the folder as it opens) or "diff" (the diff of Reference.diffFile).
+        /// "changes" (the folder as it opens), "diff" (the diff of Reference.diffFile) or "staged" (the Changes
+        /// screen after staging Reference.diffFile).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -36,7 +37,7 @@ enum Measure {
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = options.screen == "changes" || options.screen == "diff"
+        let validScreen = ["changes", "diff", "staged"].contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -104,6 +105,8 @@ enum Measure {
         let info = try await app.client.call("get_app_info").structured ?? [:]
         if options.screen == "diff" {
             try await showDiff(app, collapse: options.collapse)
+        } else if options.screen == "staged" {
+            try await stageFile(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)
@@ -144,6 +147,9 @@ enum Measure {
                 )
             }
             .sorted { $0.avgMb > $1.avgMb }
+        if options.screen == "staged" {
+            try await unstageFile(app)
+        }
         return MeasureReport.App(
             kind: kind,
             appPath: appPath,
