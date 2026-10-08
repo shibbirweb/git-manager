@@ -180,6 +180,25 @@ Write the results here: memory (idle, after the scenario, peak while scrolling),
 diff, app size, pixel scores, and how long phases 0 to 3 took. The user decides: stop, continue, or plan the
 switch.
 
+Results (2026-10-08, Phase 3 done: GM-31 to GM-46, about 25 hours from the first commit). Reference: a local
+build of develop (0.1.0-beta.7) plus the GM-40 fold fix, on an M-series MacBook with its built-in XDR display.
+
+| Measure | Current app | Native app |
+|---|---|---|
+| Idle, folder open | 135 MB | 35 MB |
+| 4000-line diff open (average, peak) | 217, 266 MB | 54, 59 MB |
+| Scrolling that diff (average, peak) | 907, 1103 MB | 48, 56 MB |
+| After scrolling | 260 MB | 47 MB |
+| Scroll frames (average, p95) | 16.7, 21.0 ms, 4 dropped | 16.67, 16.68 ms, none slow |
+| Server answers after launch | about 1.2 s | about 1.1 s |
+| App size (arm64 build; the release is universal, 23 MB) | 11 MB | 5.8 MB |
+
+Pixels identical below the title bar: Changes 99.17% light and 99.29% dark, after staging 99.18% and 99.12%,
+diff folded 99.04% light, diff with every line 99.11% light. The dark diff stays at about 98.2% folded and 85%
+with every line: on 2026-10-08 the current app's dark diff layer started to render one step lower (fills at
+35% alpha, code text edges, and the right pane's background after a scroll) on unchanged builds; tolerance 1
+gives 99.39%. Time to show a diff was not timed separately; both apps show it within the settle time.
+
 ### Later phases (only after the decision)
 
 In order, each with the same pixel and memory checks: Files panel and file tabs; code editor (editing,
@@ -215,7 +234,7 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
 | 2 Design foundation | feat/GM-31-swiftui-skeleton | done (2caa362) |
-| 3 First slice | feat/GM-31-swiftui-skeleton | 3a and 3b diff screen at 99% (GM-41); 3c stage and commit (GM-44) |
+| 3 First slice | feat/GM-31-swiftui-skeleton | done (GM-41 to GM-46); decision point written, waiting for the user |
 
 The notes for each phase (what was built, the measured findings and the numbers) are in
 [swiftui-status.md](swiftui-status.md).
