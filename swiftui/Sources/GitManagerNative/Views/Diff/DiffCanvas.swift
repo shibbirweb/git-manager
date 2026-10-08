@@ -50,7 +50,7 @@ final class DiffCanvas: NSView {
                 return
             }
             if content?.theme.id != colors?.theme.id {
-                colors = content.map { CanvasColors(theme: $0.theme) }
+                colors = content.map { CanvasColors(theme: $0.theme, extendedRange: extendedRange) }
             }
             paintedOffset = nil
             needsDisplay = true
@@ -104,6 +104,12 @@ final class DiffCanvas: NSView {
             paintLayer()
         }
     }
+
+    /// The page's blends as the display composes them, with or without HDR headroom. Theme.nsLayers' other dark
+    /// rules came from captures by CGWindowListCreateImage, which composites the window again and, without HDR
+    /// headroom, often lands one step off (the current app's right editor as 30, 31, 33): not what the display shows
+    /// (GM-50; gm-measure captures through ScreenCaptureKit since).
+    private let extendedRange = true
 
     private func paintLayer() {
         let scale = window?.backingScaleFactor ?? 2

@@ -5,12 +5,15 @@ import AppKit
 
 final class CanvasColors {
     let theme: Theme
+    /// Whether the display composites in extended range (it shows HDR content), which changes the page's blends.
+    let extendedRange: Bool
     private var colors: [String: NSColor] = [:]
     private var fills: [String: TextUnder.Fill] = [:]
     private var byteValues: [String: [Double]] = [:]
 
-    init(theme: Theme) {
+    init(theme: Theme, extendedRange: Bool) {
         self.theme = theme
+        self.extendedRange = extendedRange
     }
 
     func nsColor(_ tokenName: String) -> NSColor {
@@ -26,11 +29,12 @@ final class CanvasColors {
     }
 
     func nsLayers(
-        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false
+        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false,
+        boxOnTop: Bool = false
     ) -> NSColor {
         let names = layers.map { "\($0.token)@\($0.alpha.map { "\($0)" } ?? "")" }.joined(separator: ",")
-        return color("l\(names) \(background) \(overlay)") {
-            theme.nsLayers(layers, on: background, overlay: overlay)
+        return color("l\(names) \(background) \(overlay) \(boxOnTop)") {
+            theme.nsLayers(layers, on: background, overlay: overlay, boxOnTop: boxOnTop, extendedRange: extendedRange)
         }
     }
 

@@ -209,3 +209,28 @@ the numbers. Newest last.
     (WindowSizer puts the saved frame back itself).
   - Not yet: the identity check before a commit (git's own error shows instead), Commit Options, the message
     history and templates, and Discard; the Undo of a pushed commit asks with a plain macOS alert.
+- GM-50 the dark "every line" diff at 85%, found to be the capture, not the page (2026-10-08, HDR off):
+  - What was seen: with Collapse unchanged off, the current app's right editor showed #1e1f22 as 30, 31, 33, its
+    text and guide edges one step off, and the title bar 30, 31, 33; some runs scored 99.2%, others 85.5%.
+  - Probing the real app (isolated launches, many captures of one window): the same window, untouched, flips
+    between two results from one CGWindowListCreateImage call to the next. The second result changes only the
+    surfaces macOS must convert or blend: the title bar, WebKit's composited layer of the right editor (once the
+    merge view scrolls) and the translucent code text layers of both panes. A test window with plain layers does
+    the same: an sRGB-tagged layer of 30, 31, 34 comes back as 30, 31, 33, a translucent Display P3 layer one step
+    off, while opaque layers in the display's space never move. The native app flips too (its title bar and
+    SwiftUI text), which was the "one-step SwiftUI noise in some launches" of 3b.
+  - ScreenCaptureKit and full-screen captures always give the first result, so that is what the display shows.
+    With HDR headroom, CGWindowListCreateImage also gave it, which is why HDR on looked "right".
+  - Fix: gm-measure captures through ScreenCaptureKit (MeasureKit/LiveWindowCapture.swift, macOS 14 and later;
+    CGWindowListCreateImage stays only as the fallback before 14). The dark rules that the diff canvas used without
+    HDR headroom (Theme.nsLayers, CSSColor.composited) were fitted to the second result, so the canvas now always
+    uses the rules of the live composition (DiffCanvas.extendedRange); no separate rules for the right editor are
+    needed.
+  - Pixel diff below the title bar, against the local reference build, HDR headroom 1.0, every run the same:
+
+    | Screen | Light | Dark |
+    |---|---|---|
+    | Diff, folded | 99.26% | 99.22% to 99.24% (98.65% to 98.89% before) |
+    | Diff, every line (`--collapse off`) | 99.25% | 99.19% to 99.2% (85.42% to 85.49%, or 99.2% by chance) |
+    | Changes | 99.35% | 99.33% |
+    | After staging | 99.35% | 99.34% |

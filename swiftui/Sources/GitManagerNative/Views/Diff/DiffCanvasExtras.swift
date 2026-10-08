@@ -104,24 +104,35 @@ extension DiffCanvas {
         }
         let originX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth + 6
         let step = CodeLineText.advance * 2
-        let guide: (token: String, alpha: Double?) = ("--text-faint", 0.38)
+        let scale = window?.backingScaleFactor ?? 2
         for row in pane.index.visible(from: top, to: bottom) {
             let rowTop = pane.index.tops[row], rowBottom = pane.index.tops[row + 1]
-            let color: NSColor
+            let base: [(token: String, alpha: Double?)]
+            let background: String
             switch pane.rows[row] {
             case .line(_, _, let kind) where kind != .unchanged:
-                color = colors.nsLayers([(DiffCanvas.tintToken(kind), nil), guide], on: "--editor-bg", overlay: true)
+                (base, background) = ([(DiffCanvas.tintToken(kind), nil)], "--editor-bg")
             case .fold:
-                color = colors.nsLayers([guide], on: "--panel-alt", overlay: true)
+                (base, background) = ([], "--panel-alt")
             default:
-                color = colors.nsLayers([guide], on: "--editor-bg", overlay: true)
+                (base, background) = ([], "--editor-bg")
             }
-            color.setFill()
             for run in runs where run.bottom > rowTop && run.top < rowBottom {
-                let x = originX + CGFloat(run.level) * step
                 let segmentTop = max(run.top, rowTop), segmentBottom = min(run.bottom, rowBottom)
-                NSRect(x: x, y: CGFloat(segmentTop) - offset, width: 1, height: CGFloat(segmentBottom - segmentTop))
-                    .fill()
+                let height = CGFloat(segmentBottom - segmentTop)
+                // The page draws the 1-point guide at a fraction of a pixel; each pixel column it touches takes the
+                // guide's alpha times its coverage, blended as the page blends a translucent layer.
+                // WebKit lays out in 1/64 of a point (LayoutUnit), so 15.6 points of indent are 15.59375.
+                let indent = (CGFloat(run.level) * step * 64).rounded(.down) / 64
+                let left = (originX + indent) * scale, right = left + scale
+                var column = left.rounded(.down)
+                while column < right {
+                    let coverage = Double(min(right, column + 1) - max(left, column))
+                    let guide: (token: String, alpha: Double?) = ("--text-faint", 0.38 * coverage)
+                    colors.nsLayers(base + [guide], on: background, overlay: true).setFill()
+                    NSRect(x: column / scale, y: CGFloat(segmentTop) - offset, width: 1 / scale, height: height).fill()
+                    column += 1
+                }
             }
         }
     }

@@ -127,17 +127,18 @@ swift run -c release gm-measure parity                  # UI match per scenario,
 build in `src-tauri/target/release/bundle/macos` when there is one (latest develop plus unreleased fixes, built
 with `bun tauri build --bundles app`), else the installed `/Applications/Git Manager.app`. The native app is the
 build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `report.json`, both screenshots and
-`diff.png`. gm-measure captures both windows itself, the same way, so the pixel diff compares like with like;
-that needs Screen Recording permission for the app that runs it (your terminal), once, then a restart of it. The
-report gives the whole window and the content below the title bar, which macOS draws in both apps and which
-renders one step off in some runs. The current app keeps "Collapse unchanged" in WebKit localStorage under the
-real `~/Library` (shared with your own Git Manager), so `measure` and `reference` set it for the run (`measure
---collapse on|off`, on by default) and put your value back; they wait for, and then refuse to run beside, a
-running Git Manager. The native app keeps the same choice in `~/.gitmanager-native/diff.json`
-(`{"collapseUnchanged":true}`), which `measure` writes in the run's throwaway HOME. `--walk <points>` scrolls both
-apps down and back (each ends where it started) before the screenshot, to check that scrolling leaves the same
-pixels. `memory` reports each app's frame times during its scroll walk, and for the native app how long the diff
-canvas took to paint.
+`diff.png`. gm-measure captures both windows itself, the same way, through ScreenCaptureKit, so the pixel diff
+compares like with like; that needs Screen Recording permission for the app that runs it (your terminal), once,
+then a restart of it. ScreenCaptureKit gives the pixels the display shows; CGWindowListCreateImage, used before,
+composited the window again and landed one step off on some surfaces in some calls (MeasureKit/LiveWindowCapture).
+The report gives the whole window and the content below the title bar, which macOS draws in both apps. The current
+app keeps "Collapse unchanged" in WebKit localStorage under the real `~/Library` (shared with your own Git
+Manager), so `measure` and `reference` set it for the run (`measure --collapse on|off`, on by default) and put
+your value back; they wait for, and then refuse to run beside, a running Git Manager. The native app keeps the
+same choice in `~/.gitmanager-native/diff.json` (`{"collapseUnchanged":true}`), which `measure` writes in the
+run's throwaway HOME. `--walk <points>` scrolls both apps down and back (each ends where it started) before the
+screenshot, to check that scrolling leaves the same pixels. `memory` reports each app's frame times during its
+scroll walk, and for the native app how long the diff canvas took to paint.
 
 ## Parity list and UI match per scenario (gm-measure parity)
 

@@ -1,6 +1,6 @@
 // Captures an app's main window from outside the app, the same way for both apps, so the pixel diff
-// compares like with like: the window as the window server draws it, without its shadow, even when
-// covered (what `screencapture -o -l` and the native app's take_screenshot give). Needs Screen
+// compares like with like: the window as the display shows it (LiveWindowCapture), without its shadow, even
+// when covered. Needs Screen
 // Recording permission for the app that runs gm-measure (the terminal), not for the measured apps.
 
 import AppKit
@@ -71,6 +71,15 @@ public enum WindowCapture {
                 continue
             }
             lastWindowID = windowID
+            // The live composition (LiveWindowCapture); the older call below only where ScreenCaptureKit is missing.
+            if #available(macOS 14.0, *) {
+                do {
+                    return try pngData(LiveWindowCapture.image(windowID: windowID))
+                } catch {
+                    FileHandle.standardError.write(Data("ScreenCaptureKit: \(error)\n".utf8))
+                    continue
+                }
+            }
             let options: CGWindowImageOption = [.boundsIgnoreFraming, .bestResolution]
             if let image = CGWindowListCreateImage(.null, .optionIncludingWindow, windowID, options),
                image.width > 1 {

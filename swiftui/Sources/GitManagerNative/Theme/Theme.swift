@@ -6,10 +6,12 @@ import SwiftUI
 
 struct Theme {
     let id: String
+    let kind: ThemeKind
     private let tokens: [String: String]
 
     init(_ themeTokens: ThemeTokens) {
         id = themeTokens.id
+        kind = themeTokens.kind
         tokens = themeTokens.colors
     }
 
@@ -58,13 +60,19 @@ struct Theme {
         Color(nsColor: nsSolid(tokenName, on: background))
     }
 
-    /// Translucent layers painted one over another on `background`, as the page shows them. A layer is a token, or
-    /// a token and an alpha for CSS color-mix(in srgb, token alpha%, transparent). Measured on the diff screen: one
-    /// layer lands where the premultiplied 8-bit fill does (CSSColor.filled), while two (a changed word's box on its
-    /// line's tint) land where exact, unrounded blending does.
-    /// `overlay` marks a layer drawn above the content (an indent guide), which blends exactly even alone.
+    /// Translucent layers painted one over another on `background`, as the diff shows them. A layer is a token, or
+    /// a token and an alpha for CSS color-mix(in srgb, token alpha%, transparent). The current app blends them
+    /// differently by theme kind, measured on its diff:
+    /// - Light: one layer lands where the premultiplied 8-bit fill does (CSSColor.filled), while two (a changed
+    ///   word's box on its line's tint) or an `overlay` (an indent guide, drawn above the content) land where exact,
+    ///   unrounded blending does.
+    /// - Dark, on a display without HDR headroom: each layer is composited and stored in 8 bits before the next
+    ///   (CSSColor.composited); `boxOnTop` marks the last layer as a changed word's box, painted into the text's
+    ///   layer, whose premultiplied color is cut rather than rounded. While the display shows HDR content
+    ///   (`extendedRange`), macOS composites the page in extended range and dark follows the light rules.
     func nsLayers(
-        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false
+        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false,
+        boxOnTop: Bool = false, extendedRange: Bool = false
     ) -> NSColor {
         guard let base = css(background) else {
             return .clear
@@ -75,6 +83,13 @@ struct Theme {
             }
             return layer.alpha.map { CSSColor(red: color.red, green: color.green, blue: color.blue, alpha: $0) }
                 ?? color
+        }
+        if kind == .dark, !extendedRange {
+            var bytes = base.p3Bytes
+            for (index, color) in colors.enumerated() {
+                bytes = color.composited(overBytes: bytes, cut: boxOnTop && index == colors.count - 1)
+            }
+            return CSSColor.color(p3Bytes: bytes)
         }
         if colors.count == 1, !overlay, let only = colors.first {
             return only.filled(over: base)

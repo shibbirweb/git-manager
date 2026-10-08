@@ -35,8 +35,11 @@ extension DiffCanvas {
                 under.fill = colors.layerFill([Self.tintToken(kind)])
             }
             if let marks = pane.marks[number], kind == .changed {
-                let onLine = colors.nsLayers([("--diff-modified", nil), ("--diff-inline", nil)], on: "--editor-bg")
-                let above = previousTinted ? onLine : colors.nsLayers([("--diff-inline", nil)], on: "--editor-bg")
+                let onLine = colors.nsLayers(
+                    [("--diff-modified", nil), ("--diff-inline", nil)], on: "--editor-bg", boxOnTop: true
+                )
+                let above = previousTinted
+                    ? onLine : colors.nsLayers([("--diff-inline", nil)], on: "--editor-bg", boxOnTop: true)
                 CodeLineText.drawMarks(
                     marks, of: line, x: textX + 6, rowTop: y, colors: (above: above, onLine: onLine), scale: scale
                 )

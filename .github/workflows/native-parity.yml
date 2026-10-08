@@ -126,7 +126,7 @@ jobs:
           echo "app=$PWD/src-tauri/target/release/bundle/macos/Git Manager.app" >> "$GITHUB_OUTPUT"
           echo "Current app: built from ${GITHUB_SHA::7}" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      # gm-measure captures both windows itself (CGWindowListCreateImage), which needs Screen Recording permission.
+      # gm-measure captures both windows itself (ScreenCaptureKit), which needs Screen Recording permission.
       - name: Allow screen capture
         run: swiftui/scripts/ci-allow-screen-capture.sh "$PWD/swiftui/.build/release/gm-measure"
 

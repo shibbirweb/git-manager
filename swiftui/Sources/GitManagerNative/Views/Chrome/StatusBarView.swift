@@ -63,9 +63,10 @@ struct StatusBarView: View {
 
     private func item(icon: String, text: String) -> some View {
         HStack(spacing: 5) {
+            // Half a point above the item's center, where the page draws its 12-point icons (measured).
             Icon(name: icon, size: 12)
-            Text(text)
-                .lineLimit(1)
+                .offset(y: -0.5)
+            ExactText(text: text)
         }
         .padding(.horizontal, 7)
         .frame(height: 20)

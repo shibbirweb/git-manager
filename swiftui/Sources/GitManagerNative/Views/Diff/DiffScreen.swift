@@ -179,7 +179,7 @@ struct DiffToolbar: View {
         HStack(spacing: 5) {
             Icon(name: icon, size: 13)
             if let title {
-                Text(title)
+                ExactText(text: title)
             }
         }
         .font(.system(size: 12))
