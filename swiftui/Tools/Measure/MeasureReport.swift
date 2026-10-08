@@ -33,13 +33,20 @@ enum MeasureReport {
             // A tolerance of 1 leaves out the one-step rounding the system adds to some colors on the way to the
             // display (#dfe1e5 shown as #dfe1e4), so what remains is a real difference.
             let loose = diffImages(first, second, tolerance: 1)
+            // The title bar sometimes renders one step off in either app from run to run (#1e1f22 as 30,31,33),
+            // which alone moves the dark score by about 4 points; the content score leaves it out.
+            let content = diffImages(first, second, fromRow: WindowCapture.titleBarRows)
             try result.overlay.write(path: (outDir as NSString).appendingPathComponent("diff.png"))
             try loose.overlay.write(path: (outDir as NSString).appendingPathComponent("diff-tolerance-1.png"))
             diffLine = "Pixel diff: \(Diff.describe(result, tolerance: 0)). Overlay: diff.png.\n\n"
-                + "With tolerance 1: \(loose.identicalPercent)% identical. Overlay: diff-tolerance-1.png."
+                + "With tolerance 1: \(loose.identicalPercent)% identical. Overlay: diff-tolerance-1.png.\n\n"
+                + "Content only (below the title bar): \(content.identicalPercent)% identical "
+                + "(\(content.differentPixels) pixels differ)."
             diffJSON = [
                 "identicalPercent": result.identicalPercent,
                 "identicalPercentTolerance1": loose.identicalPercent,
+                "contentIdenticalPercent": content.identicalPercent,
+                "contentDifferentPixels": content.differentPixels,
                 "sizeMismatch": result.sizeMismatch ?? NSNull(),
                 "differentPixels": result.differentPixels,
             ]

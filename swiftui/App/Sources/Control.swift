@@ -34,6 +34,24 @@ enum Control {
                 return reply(ok: false, text: "Could not capture the window")
             }
             return reply(ok: true, structured: ["pngBase64": png.base64EncodedString()])
+        case "show_diff":
+            guard let filePath = args["filePath"] as? String else {
+                return reply(ok: false, text: "filePath is required")
+            }
+            let staged = args["staged"] as? Bool ?? false
+            let found = onMain { AppModel.shared.snapshot?.status?.files.first { $0.path == filePath } }
+            guard let file = found else {
+                return reply(ok: false, text: "\(filePath) has no changes")
+            }
+            let semaphore = DispatchSemaphore(value: 0)
+            Task { @MainActor in
+                await AppModel.shared.showDiff(file, staged: staged)
+                semaphore.signal()
+            }
+            semaphore.wait()
+            return reply(ok: true, structured: onMain { state() })
+        case "scroll":
+            return scroll(speed: args["speed"] as? Double ?? 80, rounds: args["rounds"] as? Int ?? 1)
         case "open_folder":
             guard let folderPath = args["folderPath"] as? String, !folderPath.isEmpty else {
                 return reply(ok: false, text: "folderPath is required")
@@ -48,6 +66,33 @@ enum Control {
         default:
             return reply(ok: false, text: "Unknown action: \(action)")
         }
+    }
+
+    /// Waits for the walk on the server's thread; the walk itself runs on the main thread's timer.
+    private static func scroll(speed: Double, rounds: Int) -> String {
+        let semaphore = DispatchSemaphore(value: 0)
+        var walked: ScrollWalk.Result?
+        let started = onMain { () -> Bool in
+            guard let window = mainWindow() else {
+                return false
+            }
+            return ScrollWalk.start(in: window, speed: max(5, speed), rounds: max(1, rounds)) { result in
+                walked = result
+                semaphore.signal()
+            }
+        }
+        guard started else {
+            return reply(ok: false, text: "Nothing on screen can scroll")
+        }
+        semaphore.wait()
+        let result = onMain { walked }
+        return reply(ok: true, structured: [
+            "durationMs": result?.durationMs ?? 0,
+            "frames": result?.frames ?? 0,
+            "slowFrames": result?.slowFrames ?? 0,
+            "scrollHeight": result?.scrollHeight ?? 0,
+            "clientHeight": result?.clientHeight ?? 0,
+        ])
     }
 
     @MainActor
@@ -65,8 +110,11 @@ enum Control {
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
             state["window"] = [
+                "x": window.frame.minX,
+                "y": window.frame.minY,
                 "width": window.frame.width,
                 "height": window.frame.height,
+                "colorSpace": orNull(window.colorSpace?.localizedName),
                 "contentWidth": content.width,
                 "contentHeight": content.height,
                 "scale": window.backingScaleFactor,

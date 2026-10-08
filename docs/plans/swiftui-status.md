@@ -1,0 +1,121 @@
+# SwiftUI experiment: status notes
+
+What each phase of [the SwiftUI experiment](swiftui-experiment.md) built, what measuring both apps showed, and
+the numbers. Newest last.
+
+
+- 0: the app is 1.5 MB; get_status goes through the bridge.
+- 0b: 22 MB idle against 350 MB for the current app (not yet a fair scenario).
+- 1a: demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen
+  1.7 s against 1.0 s.
+- 1b: 42 generated themes; snapshots and screenshots of the Changes and diff screens, light and dark (window
+  content 1400 x 848); first pixel diff 0.03% identical, as the native window was still plain text.
+- Line standard (2026-10-07): every file at most 120 columns and 300 lines, generated data included;
+  `swiftui/scripts/check-lines.sh` checks it in CI.
+- 2a window shell: the native window has the current app's layout (header 42, activity bars 44, sidebars 260,
+  1-point gaps, main area with its 28-point breadcrumb strip and line, status bar 24) and colors, and its title
+  bar (--bg, 32 points, no separator). Pixel diff against the current app, contents still missing: 97.6% (light)
+  and 97.68% (dark) identical. Colors: see 2e (the first finding here, that WebKit passes colors unconverted,
+  was wrong; it held only for near-grays). The Files panel is in the shell; its tree
+  comes with the components.
+- 2b edges: the 76 icons generated from src/lib/ui/icons.ts (`gm-measure icons`, checked in CI) and drawn from their
+  SVG paths (UI/SVGPath.swift, SVGArc.swift, Icon.swift); the header, both activity bars and the status bar
+  (UI/HeaderBar.swift, ActivityBars.swift, StatusBarView.swift) with the snapshot's sizes. Pixel diff 97.74%
+  (light) and 97.83% (dark). Disabled buttons use 40% opacity without SwiftUI's .disabled(), which dimmed them a
+  second time. gm-measure brings each app to the front before capturing, as macOS stops painting a covered web
+  view. The status bar follows the installed release (the word "Memory"), not the GM-26 icon on develop.
+- 2c Changes list and commit box (UI/ChangesPanel.swift, FileRows.swift, CommitBox.swift): the heading with its
+  count and repository actions, the Staged and Changes groups, the rows with their status letter colors, and the
+  commit box. Pixel diff 98.05% (light) and 98.15% (dark). WebKit's own form looks (the #a9a9a9 placeholder, the
+  12-point checkbox) are measured constants (WebKitDefaults), as no theme token holds them. Known gap: the heading
+  title is cut to "CHA..." where WebKit cuts it to "CH...", same width, different ellipsis rule.
+- 2d Files panel (FilesModel.swift, UI/FilesPanel.swift; bridge `list_directories` with the shared FolderLister):
+  the heading with its five buttons, the tree with chevrons, icons and names, folders that open and close, and the
+  status tones (a folder's dot and name take the strongest tone inside it). Pixel diff 98.08% (light) and 98.17%
+  (dark). Not yet: deleted files in the tree (the current app lists them though they are gone from disk), and a
+  file's letter by its exact change (U for untracked) instead of its tone's letter.
+- 2e welcome screen (UI/WelcomeView.swift): the breadcrumb crumb, the logo tile, the folder name and the six
+  actions with their shortcuts. Colors corrected (CSSColor.swift): WebKit converts each sRGB color to Display P3
+  with exact math and rounds to 8 bits (#3574f0 shows as #4573e8; near-grays stay as written), and blends
+  translucent colors after that conversion. The native app does the same conversion and hands macOS the rounded
+  Display P3 value; macOS's own conversion rounded some colors one step off. The title bar alone keeps macOS's
+  conversion, as macOS draws it in both apps. Pixel diff with every part of the Changes screen: 98.23% (light) and
+  98.59% (dark); with tolerance 1, 98.9% and 98.93%.
+- 2f matching to 99%: light 99.06% and dark 99.12% exactly identical (99.4% and 99.45% with tolerance 1). What
+  closed the gap, each found by measuring both screenshots (gm-measure plus ink-position scripts):
+  - Font smoothing off for the app (AppleFontSmoothing 0), as the page's -webkit-font-smoothing: antialiased;
+    macOS's default smoothing made every glyph a pixel wider and taller.
+  - Translucent fills and CSS opacity drawn as one solid color blended the way WebKit blends (each converted 8-bit
+    channel mixed and rounded; Theme.over): the active activity tile, the logo tile, the half-opacity Commit button,
+    disabled buttons, deleted letters. macOS's compositing landed one step off over the whole area.
+  - A centered column placed on whole points, as WebKit lays out a centered flex column (WholePointCenter).
+  - A file's smaller folder name on the name's baseline, as one line of text on the page.
+  - Two measured one-pixel corrections on the welcome screen's text. WebKit's line boxes are whole points while
+    SwiftUI's are fractional, so text can round to the neighboring pixel row; a general Core Text text view is the
+    fix if more text needs it.
+  - What remains: the edges of text, icons and rounded corners (anti-aliasing), the title bar's title as macOS
+    draws it in each window, the live memory readout (the apps really differ), and the Changes title cut to "CHA..."
+    where WebKit cuts it to "CH...". Text positions come from the screenshots, not the snapshots: inspect_elements
+    rounds boxes to whole points, while WebKit places them at fractions.
+- 3a diff screen: a click on a changed file (or `app action=show_diff`) opens its side-by-side diff: the editor
+  tab, the toolbar, the Index and Working Tree labels, both panes with line numbers, tinted changes, folded
+  unchanged runs, the revert column and the change overview ruler. The bridge's `get_file_diff` reads the texts
+  and hunks with the shared `diff` module; the rows, folds, ruler ticks and row positions are pure logic in
+  `App/Core` (NativeCore, tested). Pixel diff of the diff screen: 97.03% (light) and 97.02% (dark). Findings:
+  - CodeMirror's 16.25-point lines land on 16-point rows, the text centered in them.
+  - rgba() fills are blended premultiplied (each part rounded on its own, CSSColor.filled), one step away from
+    the opacity blend in some channels.
+  - Ligatures stay off by a zero-width non-joiner between symbols (JetBrains Mono joins <= and =>).
+  - Not yet (3b): syntax colors, changed-word highlights, indent guides; that is most of what still differs.
+- 3b diff screen to 99%, against 0.1.0-beta.7 (the installed release, plus the GM-40 fold fix, measured with
+  `--current-app`):
+  - Syntax colors from the current app's own grammars and highlighters (App/Highlight/entry.ts, bundled with Bun
+    into highlight.js and run in JavaScriptCore, dropped after 5 idle seconds), bracket pair colors, indent guides
+    (IndentGuides), and CodeMirror's character diff ported line by line (CharDiff*, checked against 560 random
+    CodeMirror cases) for the changed-word boxes.
+  - Beta.7's look: fold bars without the marks, with "10 lines" step buttons drawn (not clickable yet), the
+    commit box layout button in the Changes header, the memory icon in the status bar (ByteText).
+  - Text, measured with a WebKit test page (each color on its background, with white-on-black rows for the
+    coverage): the glyph coverage is the same 8-bit mask in both apps, but WebKit blends with the text color's
+    exact converted value, not its rounded bytes, on the GPU in half precision (#ffd700 shows green 217, not 216).
+    Code text is in its own layer: the text over the line's tint is stored in 8 bits there, then composited over
+    the editor; the gutter's line numbers blend straight onto their background. GlyphCompositor does both
+    (TextUnder), from a 16-bit buffer, so no text pixel is off by Core Text's 8-bit rounding.
+  - rgba() fills are stored premultiplied in 8 bits and composited in half precision (CSSColor.filled), which
+    changed one color: a changed word's box over the editor.
+  - Pixel diff below the title bar (`gm-measure measure` reports it next to the whole window): diff screen 99.04%
+    (light) and 99.01% (dark), Changes screen 99.31% and 99.3%. Whole window: diff 98.92% and 95.51%, Changes
+    99.21% and 99.31%. The title bar is drawn by macOS in both apps; in dark it renders one step off in some runs,
+    which alone costs about four points.
+  - Run-to-run noise: the native app's SwiftUI parts render one step off in some launches (about one in four, at
+    random), while DiffCanvas and the whole current app stay identical. It moves the score by about 0.1%; the
+    numbers above are from the worse kind of run. Not the window's color space, depth, position or EDR headroom.
+  - The current app keeps "Collapse unchanged" in WebKit localStorage under the real ~/Library, shared with the
+    user's own Git Manager; gm-measure sets it for a run and puts the user's value back (CurrentAppPrefs).
+  - Re-measured 2026-10-08 against the installed 0.1.0-beta.7: Changes 99.17% (light) and 99.13% (dark). The
+    installed beta.7 never folds side by side diffs (the GM-40 bug), so its diff screen scores 81.4%; the diff
+    screen is compared with the fixed build instead: 99.04% light, 98.28% dark. The dark drop comes from the
+    current app, not the native one: on the same builds, beta.7 painted the scrollbar thumb as red 68 (69 the day
+    before) and a changed word's box as 57, 79, 133 (58, 79, 134 before), while the native pixels did not move.
+    The Mac ran on battery in Low Power Mode that day, the likely cause (not yet checked on power).
+- Memory with a big file (`gm-measure memory`, from 3a on, after every feature): a 4000-line PHP file with every
+  eighth line changed, shown as a diff that folds nothing and scrolled down and back at 200 points a frame:
+
+  | Phase | Current app | Native app |
+  |---|---|---|
+  | Idle, folder open | 136 MB | 32 MB |
+  | Diff open | 218 MB (+82) | 60 MB (+29) |
+  | Scrolling (average, peak) | 651 MB, 782 peak (+515) | 71 MB, 81 peak (+40) |
+  | After scrolling | 247 MB (+111) | 61 MB (+30) |
+
+  The panes are drawn by one view the size of the viewport (UI/DiffCanvas.swift): it paints only the rows on
+  screen, found by binary search (RowIndex in NativeCore), into a Display P3 bitmap. The first version used
+  SwiftUI's lazy stack, which kept every row it had built: 113 MB while scrolling and 110 MB after, against 71 and
+  61 now. AppKit's own backing store converted the colors one step off (#1e1f22 as 31, 32, 34), so the canvas
+  paints into its own P3 bitmap, where the values pass through as SwiftUI's do. Frame counts depend on the window
+  staying in front and on what else the Mac is doing (both apps dropped frames in the same run), so only memory is
+  compared; the scroll walk holds off App Nap so its timer keeps time.
+
+  Re-run with 3b (syntax colors in JavaScriptCore, beta.7 as the current app): current 141 / 216 / 921 / 321 MB
+  (idle, diff open, scrolling, after), native 34 / 85 / 80 / 78 MB. JavaScriptCore adds about 24 MB while a diff
+  is open.

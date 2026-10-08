@@ -23,14 +23,26 @@ struct ContentView: View {
         } leftBar: {
             LeftActivityBar(changeCount: model.changeCount)
         } sidebar: {
-            ChangesPanel(status: model.snapshot?.status, errorText: model.errorText)
+            ChangesPanel(
+                status: model.snapshot?.status,
+                errorText: model.errorText,
+                selected: model.openDiff.map { ($0.filePath, $0.staged) }
+            ) { file, staged in
+                Task {
+                    await model.showDiff(file, staged: staged)
+                }
+            }
         } main: {
-            EditorArea {
+            if let open = model.openDiff {
+                DiffScreen(open: open, close: model.closeDiff)
+            } else {
+                EditorArea {
                 if model.repoPath != nil {
                     RepoCrumb(name: model.folderName, hasChanges: model.changeCount > 0)
                 }
-            } content: {
-                WelcomeView(title: model.folderName)
+                } content: {
+                    WelcomeView(title: model.folderName)
+                }
             }
         } files: {
             FilesPanel()
@@ -41,7 +53,7 @@ struct ContentView: View {
                 folderName: model.folderName,
                 head: model.snapshot?.status?.head,
                 changeCount: model.changeCount,
-                memoryMb: model.memoryMb
+                memoryBytes: model.memoryBytes
             )
         }
         .background(theme.color("--bg").ignoresSafeArea())

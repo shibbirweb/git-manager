@@ -1,0 +1,131 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
+  "elements": [
+    {
+      "classes": "", "rect": {"height": 3, "width": 6, "x": 1289, "y": 148},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "text-align": "center", "white-space": "pre"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "cm-diffFold", "rect": {"height": 22, "width": 601, "x": 755, "y": 448},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(140, 144, 153)", "border-right-color": "rgb(140, 144, 153)",
+        "border-top-color": "rgb(30, 31, 34)", "border-top-width": "1px", "color": "rgb(140, 144, 153)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11.5px", "font-weight": "400", "gap": "8px", "line-height": "14.375px", "padding-bottom": "2px",
+        "padding-left": "8px", "padding-right": "8px", "padding-top": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "13 unchanged lines"
+    },
+    {
+      "classes": "cm-diffFoldLabel", "rect": {"height": 16, "width": 585, "x": 763, "y": 451},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "padding-bottom": "1px", "padding-left": "4px",
+        "padding-right": "4px", "padding-top": "1px", "white-space": "pre"
+      },
+      "tag": "span", "text": "13 unchanged lines"
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 390, "width": 1, "x": 761, "y": 160},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 16, "width": 1, "x": 777, "y": 160},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 128, "width": 1, "x": 777, "y": 240},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 16, "width": 1, "x": 777, "y": 416},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 32, "width": 1, "x": 777, "y": 502},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 32, "width": 1, "x": 792, "y": 256},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 16, "width": 1, "x": 792, "y": 336},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 60, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "diff widgets", "piece": "2 of 2", "screen": "diff",
+  "selector": [
+    ".diff-view .cm-diffFold", ".diff-view .cm-diffFold *", ".diff-view .diff-revert", ".diff-view .diff-revert *",
+    ".diff-view .cm-gm-indentGuide"
+  ]
+}

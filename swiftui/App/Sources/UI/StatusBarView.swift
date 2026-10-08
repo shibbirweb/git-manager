@@ -1,7 +1,8 @@
-// The status bar (src/lib/views/StatusBar.svelte as in the installed release, 0.1.0-beta.6), measured in
+// The status bar (src/lib/views/StatusBar.svelte as in the installed release, 0.1.0-beta.7), measured in
 // swiftui/Reference/<screen>-<mode>/status-bar.json: 12-point text in --text-dim, items 20 points tall with 7
 // points of padding and 5 between icon and text, 2 apart, 6 from the window edges.
 
+import NativeCore
 import SwiftUI
 
 struct StatusBarView: View {
@@ -10,7 +11,7 @@ struct StatusBarView: View {
     let folderName: String
     let head: HeadInfo?
     let changeCount: Int
-    let memoryMb: Double?
+    let memoryBytes: UInt64?
 
     var body: some View {
         HStack(spacing: 2) {
@@ -26,7 +27,9 @@ struct StatusBarView: View {
             iconOnly("bell")
             iconOnly("star")
             iconOnly("bug")
-            memory
+            if let memoryBytes, memoryBytes > 0 {
+                memory(memoryBytes)
+            }
             iconOnly("brush")
         }
         .padding(.horizontal, 6)
@@ -61,13 +64,11 @@ struct StatusBarView: View {
             .frame(width: 22, height: 20)
     }
 
-    /// The memory readout: an 8-point --success chip with 2-point corners, then "Memory N MB".
-    private var memory: some View {
+    /// The memory readout: the 13-point memory icon, then the size as formatBytes writes it.
+    private func memory(_ bytes: UInt64) -> some View {
         HStack(spacing: 5) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(theme.color("--success"))
-                .frame(width: 8, height: 8)
-            Text(memoryMb.map { "Memory \(Int($0.rounded())) MB" } ?? "Memory")
+            Icon(name: "memory", size: 13)
+            Text(ByteText.status(bytes))
         }
         .padding(.horizontal, 7)
         .frame(height: 20)

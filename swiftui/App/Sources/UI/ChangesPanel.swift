@@ -8,6 +8,10 @@ struct ChangesPanel: View {
 
     let status: RepoStatus?
     let errorText: String?
+    /// The row whose diff is open: its path and whether it is the staged change.
+    var selected: (path: String, staged: Bool)?
+    /// A click on a row: the file and whether it is the staged change.
+    var select: (FileStatus, Bool) -> Void = { _, _ in }
 
     var body: some View {
         let groups = FileGroups(status?.files ?? [])
@@ -21,8 +25,8 @@ struct ChangesPanel: View {
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
-                        group("Staged", groups.staged, kind: \.staged)
-                        group("Changes", groups.unstaged, kind: \.unstaged)
+                        group("Staged", groups.staged, kind: \.staged, staged: true)
+                        group("Changes", groups.unstaged, kind: \.unstaged, staged: false)
                     }
                     .padding(.top, 4)
                 }
@@ -34,19 +38,31 @@ struct ChangesPanel: View {
 
     /// A group with its header and rows, then 4 points before the next one; nothing when it is empty.
     @ViewBuilder
-    private func group(_ title: String, _ files: [FileStatus], kind: KeyPath<FileStatus, String?>) -> some View {
+    private func group(
+        _ title: String, _ files: [FileStatus], kind: KeyPath<FileStatus, String?>, staged: Bool
+    ) -> some View {
         if !files.isEmpty {
             GroupHeader(title: title, count: files.count)
             ForEach(files, id: \.path) { file in
                 FileRow(file: file, kind: file[keyPath: kind])
+                    .background(isSelected(file, staged) ? theme.color("--selected-inactive") : .clear)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        select(file, staged)
+                    }
             }
             Color.clear.frame(height: 4)
         }
     }
+
+    /// The list never has focus while the diff is shown, so the row takes .row.selected's --selected-inactive.
+    private func isSelected(_ file: FileStatus, _ staged: Bool) -> Bool {
+        selected?.path == file.path && selected?.staged == staged
+    }
 }
 
-/// "CHANGES 4", the repository's actions (branch with its markers, sync, commit, refresh, more) and close; 34 points
-/// tall with a bottom line.
+/// "CHANGES 4", the commit box layout button, the repository's actions (branch with its markers, sync, commit,
+/// refresh, more) and close; 34 points tall with a bottom line.
 struct ChangesHead: View {
     @Environment(\.theme) private var theme
 
@@ -71,6 +87,10 @@ struct ChangesHead: View {
                     .background(Capsule().fill(theme.color("--hover")))
                 // The current app leaves 12 points before the actions: the gap on each side of this spacer.
                 Spacer(minLength: 0)
+                // Settings > Git > Commit box: one box under the list (the default) or one per repository.
+                IconButton(width: 24, height: 24, action: {}) {
+                    CommitLayoutIcon(perRepo: false)
+                }
                 actions
                 IconButton(width: 24, height: 24, action: {}) {
                     Icon(name: "x", size: 14)
@@ -87,7 +107,9 @@ struct ChangesHead: View {
     /// The repository's row actions in --text-dim: 20 points tall, 4-point corners, 1 apart.
     private var actions: some View {
         HStack(spacing: 1) {
-            HStack(spacing: 2) {
+            // .branch is a grid (icon, name, markers) with 2-point gaps; a narrow sidebar hides the name, but its
+            // empty column keeps both gaps: 4 points from the icon to the markers.
+            HStack(spacing: 4) {
                 Icon(name: "branch", size: 12)
                 Text(decorations)
                     .font(.system(size: 12, weight: .semibold))
@@ -97,8 +119,9 @@ struct ChangesHead: View {
             if let head, head.ahead > 0 || head.behind > 0 {
                 HStack(spacing: 2) {
                     Icon(name: "sync", size: 13)
+                    // .sync-badge: tabular digits, wider than the default ones.
                     Text(head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓")
-                        .font(.system(size: 11))
+                        .font(.system(size: 11).monospacedDigit())
                 }
                 .padding(.horizontal, 3)
                 .frame(height: 20)

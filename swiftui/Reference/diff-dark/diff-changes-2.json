@@ -1,0 +1,46 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
+  "elements": [
+    {
+      "classes": "cm-line cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 518},
+      "styles": {
+        "background-color": "rgba(53, 116, 240, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "return Math.max(0, Math.round(discounted * 100) / 100);"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 94, "x": 886, "y": 517},
+      "styles": {
+        "background-color": "rgba(80, 140, 255, 0.35)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "max(0, Math."
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 8, "x": 1206, "y": 517},
+      "styles": {
+        "background-color": "rgba(80, 140, 255, 0.35)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": ")"
+    }
+  ],
+  "limit": 60, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "diff changes", "piece": "2 of 2", "screen": "diff",
+  "selector": [
+    ".diff-view .cm-changedLine", ".diff-view .cm-changedText", ".diff-view .cm-deletedChunk",
+    ".diff-view .cm-collapsedLines", ".diff-view .cm-merge-revert"
+  ]
+}

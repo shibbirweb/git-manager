@@ -40,10 +40,14 @@ jobs:
         with:
           workspaces: swiftui/bridge
 
-      # gm-measure tokens runs the theme catalog (TypeScript) with Bun; it needs no packages.
+      # gm-measure tokens runs the theme catalog (TypeScript) with Bun; build-app.sh bundles the current app's
+      # grammars into highlight.js with Bun, which needs the packages.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      - name: Install packages
+        run: bun install --frozen-lockfile
 
       # Every file at most 120 columns and 300 lines, generated data included.
       - name: Line standard

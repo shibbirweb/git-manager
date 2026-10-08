@@ -24,7 +24,9 @@ pub(super) const TOOLS: &[Tool] = &[
         name: "app",
         title: "Drive the app",
         description: "Reads or changes what the native app shows. action: get_state (the open folder, its branch \
-                      and changed files, the window size) or open_folder (folderPath).",
+                      and changed files, the window size), open_folder (folderPath), show_diff (filePath, \
+                      staged) or scroll (speed, rounds: scrolls the largest area down and back, for memory \
+                      sampling).",
         category: "ui",
         read_only: false,
         schema: app_schema,
@@ -87,8 +89,15 @@ fn repo_only() -> Value {
 fn app_schema() -> Value {
     object(
         json!({
-            "action": { "type": "string", "enum": ["get_state", "open_folder"], "description": "What to do." },
+            "action": {
+                "type": "string", "enum": ["get_state", "open_folder", "show_diff", "scroll"],
+                "description": "What to do."
+            },
             "folderPath": { "type": "string", "description": "open_folder: absolute path of the folder to open." },
+            "filePath": { "type": "string", "description": "show_diff: the changed file, relative to the repository." },
+            "staged": { "type": "boolean", "description": "show_diff: the staged change instead of the unstaged one." },
+            "speed": { "type": "number", "description": "scroll: points per frame (default 80)." },
+            "rounds": { "type": "integer", "description": "scroll: down-and-back passes (default 1)." },
         }),
         &["action"],
     )

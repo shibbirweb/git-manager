@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::{AppError, AppResult};
+use crate::git::diff::{self, DiffArea, FileDiff};
 use crate::git::files::{FolderLister, FolderListing};
 use crate::git::repo as git_repo;
 use crate::git::status::{self, RepoStatus};
@@ -21,6 +22,7 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         // The status bar's readout: this app and any helpers, counted like the current app counts itself.
         "memory_usage" => to_json(crate::memory::usage()),
         "list_directories" => to_json(list_directories(parse(command, args)?)?),
+        "get_file_diff" => to_json(get_file_diff(parse(command, args)?)?),
         _ => Err(AppError::invalid(format!("Unknown command: {command}"))),
     }
 }
@@ -97,4 +99,27 @@ fn safe_join(root_path: &str, relative_path: &str) -> AppResult<PathBuf> {
         return Err(AppError::invalid(format!("Invalid path: {relative_path}")));
     }
     Ok(Path::new(root_path).join(relative))
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GetFileDiffArgs {
+    repo_path: String,
+    file_path: String,
+    orig_path: Option<String>,
+    area: DiffArea,
+    known_version: Option<String>,
+}
+
+/// Same as the Tauri command in src-tauri/src/commands/status.rs: one file's staged or unstaged diff, with the
+/// changed line ranges already computed; None when `known_version` still matches.
+fn get_file_diff(args: GetFileDiffArgs) -> AppResult<Option<FileDiff>> {
+    let repo = git_repo::open(&args.repo_path)?;
+    diff::working_file_if_changed(
+        &repo,
+        &args.file_path,
+        args.orig_path.as_deref(),
+        args.area,
+        args.known_version.as_deref(),
+    )
 }

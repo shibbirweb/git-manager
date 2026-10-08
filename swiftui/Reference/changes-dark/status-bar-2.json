@@ -1,5 +1,5 @@
 {
-  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
   "elements": [
     {
       "classes": "", "rect": {"height": 15, "width": 59, "x": 227, "y": 829},
@@ -13,7 +13,7 @@
       "tag": "span", "text": "4 changes"
     },
     {
-      "classes": "right", "rect": {"height": 20, "width": 212, "x": 1182, "y": 826},
+      "classes": "right", "rect": {"height": 20, "width": 170, "x": 1224, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -21,10 +21,10 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
         "font-weight": "400", "gap": "2px"
       },
-      "tag": "div", "text": "Memory 241 MB"
+      "tag": "div", "text": "229 MB"
     },
     {
-      "classes": "bell", "rect": {"height": 20, "width": 22, "x": 1182, "y": 826},
+      "classes": "bell", "rect": {"height": 20, "width": 22, "x": 1224, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -35,7 +35,7 @@
       "tag": "div", "text": ""
     },
     {
-      "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1182, "y": 826},
+      "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1224, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "4px",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -46,7 +46,7 @@
       "tag": "button", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 12, "width": 12, "x": 1187, "y": 830},
+      "classes": "", "rect": {"height": 12, "width": 12, "x": 1229, "y": 830},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -57,7 +57,7 @@
       "tag": "svg", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 0, "width": 2, "x": 1192, "y": 841},
+      "classes": "", "rect": {"height": 0, "width": 2, "x": 1234, "y": 841},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -68,7 +68,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 8, "width": 9, "x": 1188, "y": 831},
+      "classes": "", "rect": {"height": 8, "width": 9, "x": 1231, "y": 831},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -79,7 +79,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1206, "y": 826},
+      "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1248, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "4px",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -91,7 +91,7 @@
       "tag": "button", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 12, "width": 12, "x": 1211, "y": 830},
+      "classes": "", "rect": {"height": 12, "width": 12, "x": 1253, "y": 830},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -102,7 +102,7 @@
       "tag": "svg", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 10, "width": 10, "x": 1212, "y": 831},
+      "classes": "", "rect": {"height": 10, "width": 10, "x": 1254, "y": 831},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -113,7 +113,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1230, "y": 826},
+      "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1272, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "4px",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -125,7 +125,7 @@
       "tag": "button", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 12, "width": 12, "x": 1235, "y": 830},
+      "classes": "", "rect": {"height": 12, "width": 12, "x": 1277, "y": 830},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -136,7 +136,7 @@
       "tag": "svg", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 1, "width": 1, "x": 1239, "y": 831},
+      "classes": "", "rect": {"height": 1, "width": 1, "x": 1281, "y": 831},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -147,7 +147,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 1, "width": 1, "x": 1242, "y": 831},
+      "classes": "", "rect": {"height": 1, "width": 1, "x": 1284, "y": 831},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -158,7 +158,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 2, "width": 3, "x": 1239, "y": 832},
+      "classes": "", "rect": {"height": 2, "width": 3, "x": 1282, "y": 832},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -169,7 +169,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 7, "width": 6, "x": 1238, "y": 834},
+      "classes": "", "rect": {"height": 7, "width": 6, "x": 1280, "y": 834},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -180,7 +180,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 2, "width": 2, "x": 1236, "y": 833},
+      "classes": "", "rect": {"height": 2, "width": 2, "x": 1279, "y": 833},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -191,7 +191,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 2, "width": 2, "x": 1236, "y": 839},
+      "classes": "", "rect": {"height": 2, "width": 2, "x": 1279, "y": 839},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -202,7 +202,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 2, "width": 2, "x": 1243, "y": 833},
+      "classes": "", "rect": {"height": 2, "width": 2, "x": 1286, "y": 833},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -213,7 +213,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 2, "width": 2, "x": 1243, "y": 839},
+      "classes": "", "rect": {"height": 2, "width": 2, "x": 1286, "y": 839},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -224,7 +224,7 @@
       "tag": "path", "text": ""
     },
     {
-      "classes": "memory", "rect": {"height": 20, "width": 140, "x": 1254, "y": 826},
+      "classes": "memory", "rect": {"height": 20, "width": 98, "x": 1296, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -232,10 +232,10 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
         "font-weight": "400"
       },
-      "tag": "div", "text": "Memory 241 MB"
+      "tag": "div", "text": "229 MB"
     },
     {
-      "classes": "item", "rect": {"height": 20, "width": 118, "x": 1254, "y": 826},
+      "classes": "item", "rect": {"height": 20, "width": 76, "x": 1296, "y": 826},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "4px",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -244,21 +244,32 @@
         "font-weight": "400", "gap": "5px", "padding-left": "7px", "padding-right": "7px", "text-align": "center",
         "white-space": "nowrap"
       },
-      "tag": "button", "text": "Memory 241 MB"
+      "tag": "button", "text": "229 MB"
     },
     {
-      "classes": "chip", "rect": {"height": 8, "width": 8, "x": 1261, "y": 832},
+      "classes": "", "rect": {"height": 13, "width": 13, "x": 1303, "y": 830},
       "styles": {
-        "background-color": "rgb(95, 184, 101)", "border-bottom-color": "rgb(140, 144, 153)",
-        "border-left-color": "rgb(140, 144, 153)", "border-radius": "2px", "border-right-color": "rgb(140, 144, 153)",
-        "border-top-color": "rgb(140, 144, 153)", "color": "rgb(140, 144, 153)", "display": "block",
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "overflow": "hidden", "text-align": "center", "white-space": "nowrap"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 8, "width": 11, "x": 1304, "y": 833},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "inline",
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
         "font-weight": "400", "text-align": "center", "white-space": "nowrap"
       },
-      "tag": "span", "text": ""
+      "tag": "path", "text": ""
     },
     {
-      "classes": "", "rect": {"height": 15, "width": 91, "x": 1274, "y": 829},
+      "classes": "", "rect": {"height": 15, "width": 44, "x": 1321, "y": 829},
       "styles": {
         "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
         "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
@@ -266,7 +277,7 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
         "font-weight": "400", "text-align": "center", "white-space": "nowrap"
       },
-      "tag": "span", "text": "Memory 241 MB"
+      "tag": "span", "text": "229 MB"
     },
     {
       "classes": "item icon-only", "rect": {"height": 20, "width": 22, "x": 1372, "y": 826},
@@ -279,20 +290,9 @@
         "white-space": "nowrap"
       },
       "tag": "button", "text": ""
-    },
-    {
-      "classes": "", "rect": {"height": 12, "width": 12, "x": 1377, "y": 830},
-      "styles": {
-        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
-        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
-        "color": "rgb(140, 144, 153)", "display": "block",
-        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
-        "font-weight": "400", "overflow": "hidden", "text-align": "center", "white-space": "nowrap"
-      },
-      "tag": "svg", "text": ""
     }
   ],
   "limit": 100, "mode": "dark",
   "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
-  "part": "status bar", "piece": "2 of 3", "screen": "changes", "selector": ".status-bar, .status-bar *"
+  "part": "status bar", "piece": "2 of 3", "screen": "changes", "selector": [".status-bar", ".status-bar *"]
 }

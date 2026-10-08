@@ -1,5 +1,5 @@
 {
-  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
   "elements": [
     {
       "classes": "toolbar", "rect": {"height": 34, "width": 790, "x": 305, "y": 76},
@@ -63,5 +63,5 @@
   "limit": 100, "mode": "light",
   "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
   "part": "diff header", "piece": "1 of 1", "screen": "diff",
-  "selector": ".diff-view > :not(.body), .diff-view .labels, .diff-view .labels *"
+  "selector": [".diff-view > :not(.body)", ".diff-view .labels", ".diff-view .labels *"]
 }

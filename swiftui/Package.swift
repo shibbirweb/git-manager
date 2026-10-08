@@ -22,9 +22,14 @@ let package = Package(
     ],
     targets: [
         .systemLibrary(name: "GMBridge", path: "App/Bridge"),
+        // Pure logic of the native app (diff layout...), kept apart so it can be tested.
+        .target(name: "NativeCore", path: "App/Core"),
+        .testTarget(
+            name: "NativeCoreTests", dependencies: ["NativeCore"], path: "App/CoreTests", exclude: ["Fixtures"]
+        ),
         .executableTarget(
             name: "GitManagerNative",
-            dependencies: ["GMBridge"],
+            dependencies: ["GMBridge", "NativeCore"],
             path: "App/Sources",
             linkerSettings: [.unsafeFlags(["-L", bridgeLibrary])]
         ),

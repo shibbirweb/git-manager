@@ -67,6 +67,43 @@ struct CSSColor: Equatable {
         return CSSColor.p3Color(blended, alpha: 1)
     }
 
+    /// This translucent color filled over `background` as WebKit paints an rgba() background: stored premultiplied
+    /// in 8 bits with its alpha in 8 bits, then composited on the GPU in half precision (rgba(84, 170, 84, 0.2) over
+    /// #1e1f22 gives green 59, not 58; rgba(80, 140, 255, 0.35) gives green 68, not 69).
+    func filled(over background: CSSColor) -> NSColor {
+        CSSColor.p3Color(filled(overBytes: background.p3Bytes), alpha: 1)
+    }
+
+    /// The same fill over already painted Display P3 bytes, for layers (a line's tint, then its changed text).
+    func filled(overBytes background: [Double]) -> [Double] {
+        let weight = (alpha * 255).rounded()
+        return zip(p3Exact, background).map { color, under in
+            let stored = (color * weight / 255).rounded()
+            let mixed = GlyphCompositor.half(stored / 255 + GlyphCompositor.half(under / 255 * (1 - weight / 255)))
+            return (mixed * 255).rounded()
+        }
+    }
+
+    /// The converted channels before rounding, 0...255.
+    var p3Exact: [Double] {
+        CSSColor.toDisplayP3([red, green, blue]).map { $0 * 255 }
+    }
+
+    /// The converted color before rounding: what WebKit hands Core Graphics for text, which blends glyph edges
+    /// with the exact value (a #cf8e6d edge is 196.79 red, not 196.34 from the rounded 197).
+    var displayP3Exact: NSColor {
+        let exact = p3Exact
+        return NSColor(
+            displayP3Red: CGFloat(exact[0] / 255), green: CGFloat(exact[1] / 255), blue: CGFloat(exact[2] / 255),
+            alpha: CGFloat(alpha)
+        )
+    }
+
+    /// Display P3 bytes as a color.
+    static func color(p3Bytes bytes: [Double]) -> NSColor {
+        p3Color(bytes, alpha: 1)
+    }
+
     private static func p3Color(_ bytes: [Double], alpha: Double) -> NSColor {
         NSColor(
             displayP3Red: CGFloat(bytes[0] / 255), green: CGFloat(bytes[1] / 255), blue: CGFloat(bytes[2] / 255),

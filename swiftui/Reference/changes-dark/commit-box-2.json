@@ -1,5 +1,5 @@
 {
-  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
   "elements": [
     {
       "classes": "", "rect": {"height": 13, "width": 13, "x": 274, "y": 757},
@@ -116,5 +116,5 @@
   ],
   "limit": 100, "mode": "dark",
   "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
-  "part": "commit box", "piece": "2 of 2", "screen": "changes", "selector": ".commit-box, .commit-box *"
+  "part": "commit box", "piece": "2 of 2", "screen": "changes", "selector": [".commit-box", ".commit-box *"]
 }

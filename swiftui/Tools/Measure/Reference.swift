@@ -49,9 +49,29 @@ enum Reference {
             Part(name: "main area", selector: ".empty, .empty *"),
         ]),
         Screen(name: "diff", parts: chrome + [
+            Part(name: "editor tabs", selector: ".tab-strip, .tab-strip *"),
+            Part(name: "diff toolbar", selector: ".diff-view .toolbar, .diff-view .toolbar *"),
             Part(
                 name: "diff header",
                 selector: ".diff-view > :not(.body), .diff-view .labels, .diff-view .labels *"
+            ),
+            Part(
+                name: "diff layout",
+                selector: ".diff-view .cm-mergeView, .diff-view .cm-editor, .diff-view .cm-gutters, "
+                    + ".diff-view .cm-scroller",
+                limit: 20
+            ),
+            Part(
+                name: "diff changes",
+                selector: ".diff-view .cm-changedLine, .diff-view .cm-changedText, .diff-view .cm-deletedChunk, "
+                    + ".diff-view .cm-collapsedLines, .diff-view .cm-merge-revert",
+                limit: 60
+            ),
+            Part(
+                name: "diff widgets",
+                selector: ".diff-view .cm-diffFold, .diff-view .cm-diffFold *, .diff-view .diff-revert, "
+                    + ".diff-view .diff-revert *, .diff-view .cm-gm-indentGuide",
+                limit: 60
             ),
             Part(name: "diff gutters", selector: ".diff-view .cm-gutterElement", limit: 40),
             Part(name: "diff lines", selector: ".diff-view .cm-line", limit: 40),
@@ -87,6 +107,8 @@ enum Reference {
         for mode in modes {
             print("\(mode): starting \(appPath)")
             let home = (workDir as NSString).appendingPathComponent("home-\(mode)")
+            let prefs = try CurrentAppPrefs.apply(appPath: appPath)
+            defer { prefs?.restore() }
             let app = try await AppLauncher.launch(
                 kind: .current, home: home, folderPath: folderPath, appPath: appPath, mode: mode
             )

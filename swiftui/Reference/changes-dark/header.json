@@ -1,5 +1,5 @@
 {
-  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
   "elements": [
     {
       "classes": "header", "rect": {"height": 42, "width": 1400, "x": 0, "y": 0},
@@ -294,5 +294,5 @@
   ],
   "limit": 100, "mode": "dark",
   "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
-  "part": "header", "piece": "1 of 2", "screen": "changes", "selector": ".header, .header *"
+  "part": "header", "piece": "1 of 2", "screen": "changes", "selector": [".header", ".header *"]
 }

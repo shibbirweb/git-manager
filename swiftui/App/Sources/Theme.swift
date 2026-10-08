@@ -31,6 +31,11 @@ struct Theme {
         css(tokenName)?.displayP3 ?? .clear
     }
 
+    /// A text color as WebKit draws glyphs with it: converted, not rounded (CSSColor.displayP3Exact).
+    func textColor(_ tokenName: String) -> NSColor {
+        css(tokenName)?.displayP3Exact ?? .clear
+    }
+
     /// CSS color-mix(in srgb, first weight%, second), mixed in sRGB before the conversion, as the browser does.
     func mix(_ first: String, _ weight: Double, _ second: String) -> Color {
         guard let one = css(first), let two = css(second) else {
@@ -46,6 +51,67 @@ struct Theme {
             return .clear
         }
         return Color(nsColor: top.over(bottom, opacity: opacity))
+    }
+
+    /// A translucent token (such as --diff-added) over the `background` token, at its own alpha, as one solid color.
+    func solid(_ tokenName: String, on background: String) -> Color {
+        Color(nsColor: nsSolid(tokenName, on: background))
+    }
+
+    /// Translucent layers painted one over another on `background`, as the page shows them. A layer is a token, or
+    /// a token and an alpha for CSS color-mix(in srgb, token alpha%, transparent). Measured on the diff screen: one
+    /// layer lands where the premultiplied 8-bit fill does (CSSColor.filled), while two (a changed word's box on its
+    /// line's tint) land where exact, unrounded blending does.
+    /// `overlay` marks a layer drawn above the content (an indent guide), which blends exactly even alone.
+    func nsLayers(
+        _ layers: [(token: String, alpha: Double?)], on background: String, overlay: Bool = false
+    ) -> NSColor {
+        guard let base = css(background) else {
+            return .clear
+        }
+        let colors = layers.compactMap { layer -> CSSColor? in
+            guard let color = css(layer.token) else {
+                return nil
+            }
+            return layer.alpha.map { CSSColor(red: color.red, green: color.green, blue: color.blue, alpha: $0) }
+                ?? color
+        }
+        if colors.count == 1, !overlay, let only = colors.first {
+            return only.filled(over: base)
+        }
+        var exact = base.p3Exact
+        for color in colors {
+            exact = zip(color.p3Exact, exact).map { color.alpha * $0 + (1 - color.alpha) * $1 }
+        }
+        return CSSColor.color(p3Bytes: exact.map { $0.rounded() })
+    }
+
+    /// The fill a code line's layer holds under its text (TextUnder): one translucent token as its premultiplied
+    /// 8-bit color (as CSSColor.filled stores it), or two (a changed word on its line's tint) blended exactly.
+    func layerFill(_ tokenNames: [String]) -> TextUnder.Fill {
+        let colors = tokenNames.compactMap(css)
+        if colors.count == 1, let only = colors.first {
+            let weight = (only.alpha * 255).rounded()
+            return TextUnder.Fill(color: only.p3Bytes.map { ($0 * weight / 255).rounded() }, alpha: weight)
+        }
+        var color = [0.0, 0.0, 0.0], alpha = 0.0
+        for layer in colors {
+            color = zip(layer.p3Exact, color).map { layer.alpha * $0 + (1 - layer.alpha) * $1 }
+            alpha = layer.alpha + alpha * (1 - layer.alpha)
+        }
+        return TextUnder.Fill(color: color, alpha: alpha * 255)
+    }
+
+    /// A token's Display P3 bytes, as the page paints it.
+    func bytes(_ tokenName: String) -> [Double] {
+        css(tokenName)?.p3Bytes ?? [0, 0, 0]
+    }
+
+    func nsSolid(_ tokenName: String, on background: String) -> NSColor {
+        guard let top = css(tokenName), let bottom = css(background) else {
+            return .clear
+        }
+        return top.filled(over: bottom)
     }
 
     /// The token converted by macOS itself, for what macOS draws in the current app too: its title bar shows the

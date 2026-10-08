@@ -47,6 +47,18 @@ private func setPixel(_ image: inout RGBAImage, x: Int, y: Int, _ rgba: [UInt8])
     #expect(loose.identicalPercent == 93.75)
 }
 
+@Test func rowsAboveFromRowAreLeftOut() {
+    let first = solid(4, 4, [100, 100, 100, 255])
+    var second = first
+    setPixel(&second, x: 1, y: 0, [0, 0, 0, 255])
+    setPixel(&second, x: 3, y: 2, [100, 104, 100, 255])
+    let result = diffImages(first, second, fromRow: 1)
+    #expect(result.comparedPixels == 12)
+    #expect(result.differentPixels == 1)
+    #expect(result.maxChannelDelta == 4)
+    #expect(result.box == PixelBox(x: 3, y: 2, width: 1, height: 1))
+}
+
 @Test func onlyTheOverlapIsComparedWhenSizesDiffer() {
     let result = diffImages(solid(4, 4, [0, 0, 0, 255]), solid(2, 3, [0, 0, 0, 255]))
     #expect(result.sizeMismatch == "4x4 vs 2x3")

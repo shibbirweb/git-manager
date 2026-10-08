@@ -1,5 +1,5 @@
 {
-  "app": "Git Manager 0.1.0-beta.6", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
   "elements": [
     {
       "classes": "workspace", "rect": {"height": 848, "width": 1400, "x": 0, "y": 0},
@@ -10,7 +10,7 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
         "font-weight": "400"
       },
-      "tag": "div", "text": "storefront main 1 4 Changes 4 main *+ 1↑ Staged 1"
+      "tag": "div", "text": "storefront main 1 4 Changes 4 main *+ 1↑ Stage"
     },
     {
       "classes": "header", "rect": {"height": 42, "width": 1400, "x": 0, "y": 0},
@@ -32,7 +32,7 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
         "font-weight": "400"
       },
-      "tag": "div", "text": "4 Changes 4 main *+ 1↑ Staged 1 A shipping.ts src Changes"
+      "tag": "div", "text": "4 Changes 4 main *+ 1↑ Staged 1 A shipping.ts src Chang"
     },
     {
       "classes": "activity", "rect": {"height": 782, "width": 44, "x": 0, "y": 42},
@@ -54,7 +54,7 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
         "font-weight": "400", "overflow": "hidden"
       },
-      "tag": "aside", "text": "Changes 4 main *+ 1↑ Staged 1 A shipping.ts src Changes 3 M c"
+      "tag": "aside", "text": "Changes 4 main *+ 1↑ Staged 1 A shipping.ts src Changes 3 M"
     },
     {
       "classes": "btn primary main", "rect": {"height": 28, "width": 73, "x": 194, "y": 750},
@@ -96,7 +96,7 @@
       "styles": {
         "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
         "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
-        "color": "rgb(223, 225, 229)", "display": "flex",
+        "color": "rgb(223, 225, 229)", "display": "block",
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
         "font-weight": "400"
       },
@@ -111,7 +111,7 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
         "font-weight": "400", "padding-right": "12px"
       },
-      "tag": "div", "text": "992425262728294344454647484923 unchanged lines this.lines = this.lines.filter"
+      "tag": "div", "text": "992425262728294344454647484923 unchanged lines10 lines this.lines = this.line"
     },
     {
       "classes": "split-handle", "rect": {"height": 690, "width": 7, "x": 685, "y": 134},
@@ -133,7 +133,7 @@
         "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
         "font-weight": "400"
       },
-      "tag": "div", "text": "992425262728294344454647484923 unchanged lines this.lines = this.lines.filter"
+      "tag": "div", "text": "992425262728294344454647484923 unchanged lines10 lines this.lines = this.line"
     },
     {
       "classes": "cm-scroll-markers", "rect": {"height": 690, "width": 12, "x": 1083, "y": 134},
@@ -199,11 +199,11 @@
         "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
         "font-size": "12px", "font-weight": "400", "gap": "12px", "padding-left": "6px", "padding-right": "6px"
       },
-      "tag": "footer", "text": "storefront main 1↑ 4 changes Memory 177 MB"
+      "tag": "footer", "text": "storefront main 1↑ 4 changes 256 MB"
     }
   ],
   "limit": 40, "mode": "dark",
   "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
   "part": "layout", "piece": "1 of 1", "screen": "diff",
-  "selector": ".workspace, .workspace > *, .body, .body > *, .sidebar, .main, .editor-area, .explorer"
+  "selector": [".workspace", ".workspace > *", ".body", ".body > *", ".sidebar", ".main", ".editor-area", ".explorer"]
 }

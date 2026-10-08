@@ -33,8 +33,9 @@ public struct DiffResult {
     public let overlay: RGBAImage
 }
 
-/// `tolerance` is the largest channel difference still counted as identical (0 = exact).
-public func diffImages(_ first: RGBAImage, _ second: RGBAImage, tolerance: Int = 0) -> DiffResult {
+/// `tolerance` is the largest channel difference still counted as identical (0 = exact). Rows above `fromRow`
+/// (for example the system title bar) are left out of the counts.
+public func diffImages(_ first: RGBAImage, _ second: RGBAImage, tolerance: Int = 0, fromRow: Int = 0) -> DiffResult {
     let width = min(first.width, second.width)
     let height = min(first.height, second.height)
     let sizeMismatch = first.width != second.width || first.height != second.height
@@ -56,9 +57,14 @@ public func diffImages(_ first: RGBAImage, _ second: RGBAImage, tolerance: Int =
             for channel in 0..<4 {
                 delta = max(delta, abs(Int(first.pixels[at + channel]) - Int(second.pixels[other + channel])))
             }
-            maxDelta = max(maxDelta, delta)
-            if delta <= tolerance {
-                identical += 1
+            let counted = y >= fromRow
+            if counted {
+                maxDelta = max(maxDelta, delta)
+            }
+            if !counted || delta <= tolerance {
+                if counted {
+                    identical += 1
+                }
                 for channel in 0..<3 {
                     overlay[out + channel] = UInt8(255 - (255 - Int(first.pixels[at + channel])) / 4)
                 }
@@ -74,7 +80,7 @@ public func diffImages(_ first: RGBAImage, _ second: RGBAImage, tolerance: Int =
             overlay[out + 3] = 255
         }
     }
-    let compared = width * height
+    let compared = width * max(0, height - fromRow)
     let percent = compared == 0 ? 0 : (Double(identical) / Double(compared) * 10_000).rounded(.down) / 100
     return DiffResult(
         width: width,

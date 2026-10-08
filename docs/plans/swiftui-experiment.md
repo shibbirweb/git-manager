@@ -209,61 +209,8 @@ switching; search and quick open; workspaces and windows; welcome screen; GitHub
 | 0b Control server | feat/GM-31-swiftui-skeleton | done (d4ec236) |
 | 1a Measuring tools | feat/GM-31-swiftui-skeleton | done (88d2b00) |
 | 1b Tokens and layout | feat/GM-31-swiftui-skeleton | done (58992af) |
-| 2 Design foundation | feat/GM-31-swiftui-skeleton | 2a to 2e done (30bb074); 2f (99%) built, waiting for the check |
-| 3 First slice | | not started |
+| 2 Design foundation | feat/GM-31-swiftui-skeleton | done (2caa362) |
+| 3 First slice | feat/GM-31-swiftui-skeleton | 3a and 3b diff screen at 99% (GM-41); 3c next |
 
-Notes:
-
-- 0: the app is 1.5 MB; get_status goes through the bridge.
-- 0b: 22 MB idle against 350 MB for the current app (not yet a fair scenario).
-- 1a: demo storefront, 20 s: current app 142 MB average (188 peak), native 24 MB (26 peak); status on screen
-  1.7 s against 1.0 s.
-- 1b: 42 generated themes; snapshots and screenshots of the Changes and diff screens, light and dark (window
-  content 1400 x 848); first pixel diff 0.03% identical, as the native window was still plain text.
-- Line standard (2026-10-07): every file at most 120 columns and 300 lines, generated data included;
-  `swiftui/scripts/check-lines.sh` checks it in CI.
-- 2a window shell: the native window has the current app's layout (header 42, activity bars 44, sidebars 260,
-  1-point gaps, main area with its 28-point breadcrumb strip and line, status bar 24) and colors, and its title
-  bar (--bg, 32 points, no separator). Pixel diff against the current app, contents still missing: 97.6% (light)
-  and 97.68% (dark) identical. Colors: see 2e (the first finding here, that WebKit passes colors unconverted,
-  was wrong; it held only for near-grays). The Files panel is in the shell; its tree
-  comes with the components.
-- 2b edges: the 76 icons generated from src/lib/ui/icons.ts (`gm-measure icons`, checked in CI) and drawn from their
-  SVG paths (UI/SVGPath.swift, SVGArc.swift, Icon.swift); the header, both activity bars and the status bar
-  (UI/HeaderBar.swift, ActivityBars.swift, StatusBarView.swift) with the snapshot's sizes. Pixel diff 97.74%
-  (light) and 97.83% (dark). Disabled buttons use 40% opacity without SwiftUI's .disabled(), which dimmed them a
-  second time. gm-measure brings each app to the front before capturing, as macOS stops painting a covered web
-  view. The status bar follows the installed release (the word "Memory"), not the GM-26 icon on develop.
-- 2c Changes list and commit box (UI/ChangesPanel.swift, FileRows.swift, CommitBox.swift): the heading with its
-  count and repository actions, the Staged and Changes groups, the rows with their status letter colors, and the
-  commit box. Pixel diff 98.05% (light) and 98.15% (dark). WebKit's own form looks (the #a9a9a9 placeholder, the
-  12-point checkbox) are measured constants (WebKitDefaults), as no theme token holds them. Known gap: the heading
-  title is cut to "CHA..." where WebKit cuts it to "CH...", same width, different ellipsis rule.
-- 2d Files panel (FilesModel.swift, UI/FilesPanel.swift; bridge `list_directories` with the shared FolderLister):
-  the heading with its five buttons, the tree with chevrons, icons and names, folders that open and close, and the
-  status tones (a folder's dot and name take the strongest tone inside it). Pixel diff 98.08% (light) and 98.17%
-  (dark). Not yet: deleted files in the tree (the current app lists them though they are gone from disk), and a
-  file's letter by its exact change (U for untracked) instead of its tone's letter.
-- 2e welcome screen (UI/WelcomeView.swift): the breadcrumb crumb, the logo tile, the folder name and the six
-  actions with their shortcuts. Colors corrected (CSSColor.swift): WebKit converts each sRGB color to Display P3
-  with exact math and rounds to 8 bits (#3574f0 shows as #4573e8; near-grays stay as written), and blends
-  translucent colors after that conversion. The native app does the same conversion and hands macOS the rounded
-  Display P3 value; macOS's own conversion rounded some colors one step off. The title bar alone keeps macOS's
-  conversion, as macOS draws it in both apps. Pixel diff with every part of the Changes screen: 98.23% (light) and
-  98.59% (dark); with tolerance 1, 98.9% and 98.93%.
-- 2f matching to 99%: light 99.06% and dark 99.12% exactly identical (99.4% and 99.45% with tolerance 1). What
-  closed the gap, each found by measuring both screenshots (gm-measure plus ink-position scripts):
-  - Font smoothing off for the app (AppleFontSmoothing 0), as the page's -webkit-font-smoothing: antialiased;
-    macOS's default smoothing made every glyph a pixel wider and taller.
-  - Translucent fills and CSS opacity drawn as one solid color blended the way WebKit blends (each converted 8-bit
-    channel mixed and rounded; Theme.over): the active activity tile, the logo tile, the half-opacity Commit button,
-    disabled buttons, deleted letters. macOS's compositing landed one step off over the whole area.
-  - A centered column placed on whole points, as WebKit lays out a centered flex column (WholePointCenter).
-  - A file's smaller folder name on the name's baseline, as one line of text on the page.
-  - Two measured one-pixel corrections on the welcome screen's text. WebKit's line boxes are whole points while
-    SwiftUI's are fractional, so text can round to the neighboring pixel row; a general Core Text text view is the
-    fix if more text needs it.
-  - What remains: the edges of text, icons and rounded corners (anti-aliasing), the title bar's title as macOS
-    draws it in each window, the live memory readout (the apps really differ), and the Changes title cut to "CHA..."
-    where WebKit cuts it to "CH...". Text positions come from the screenshots, not the snapshots: inspect_elements
-    rounds boxes to whole points, while WebKit places them at fractions.
+The notes for each phase (what was built, the measured findings and the numbers) are in
+[swiftui-status.md](swiftui-status.md).

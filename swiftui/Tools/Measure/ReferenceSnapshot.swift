@@ -45,7 +45,8 @@ enum ReferenceSnapshot {
             let pieces = try split(elements) { chunk, piece, pieceCount in
                 var file = about
                 file["part"] = part.name
-                file["selector"] = part.selector
+                // A list of the selector's parts, so a long one wraps within the line standard.
+                file["selector"] = part.selector.components(separatedBy: ", ")
                 file["limit"] = part.limit
                 file["piece"] = "\(piece) of \(pieceCount)"
                 file["elements"] = chunk
@@ -60,7 +61,7 @@ enum ReferenceSnapshot {
         return total
     }
 
-    /// The part's visible elements, without default styles and without Svelte's per-build class names.
+    /// The part's visible elements, without default styles and without per-build class names.
     private static func read(_ app: RunningApp, part: Reference.Part) async throws -> [[String: Any]] {
         let answer = try await app.client.call(
             "inspect_elements", ["selector": part.selector, "styles": styles, "limit": part.limit]
@@ -75,7 +76,9 @@ enum ReferenceSnapshot {
             let text = (element["text"] as? String ?? "").split(whereSeparator: \.isWhitespace)
             element["text"] = text.joined(separator: " ")
             let classes = (element["classes"] as? String ?? "").split(separator: " ")
-            element["classes"] = classes.filter { !$0.hasPrefix("svelte-") }.joined(separator: " ")
+            // Svelte's svelte-xxxx and CodeMirror's generated theme classes (ͼ1, ͼ2...) change with every build.
+            element["classes"] = classes.filter { !$0.hasPrefix("svelte-") && !$0.hasPrefix("ͼ") }
+                .joined(separator: " ")
             let values = element["styles"] as? [String: String] ?? [:]
             element["styles"] = values.filter { !defaultStyleValues.contains($0.value) }
             return element

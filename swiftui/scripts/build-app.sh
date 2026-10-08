@@ -24,6 +24,10 @@ app="$here/build/Git Manager Native.app"
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS"
 cp "$here/.build/$config/GitManagerNative" "$app/Contents/MacOS/GitManagerNative"
+# Syntax highlighting runs the current app's own grammars (App/Highlight/entry.ts) in JavaScriptCore.
+mkdir -p "$app/Contents/Resources"
+(cd "$here/.." && bun build swiftui/App/Highlight/entry.ts --target=browser --format=iife --minify \
+  --outfile "$app/Contents/Resources/highlight.js" > /dev/null)
 cat > "$app/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

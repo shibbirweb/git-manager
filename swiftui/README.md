@@ -24,6 +24,7 @@ The app's bundle id is `shibbirweb.github.io.gitmanager.native`, so it installs 
 ```
 App/Sources/     SwiftUI app (Backend.swift calls the bridge, Control.swift answers the control server)
   Generated/     Themes.swift, written by gm-measure tokens
+App/Core/        NativeCore: pure, tested logic (diff rows, folds, ruler ticks, row index); tests in App/CoreTests/
 Reference/       layout snapshots of the current app (gm-measure reference)
 App/Bridge/      module map and C header for the bridge
 bridge/          Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
@@ -43,7 +44,7 @@ scripts/         build-app.sh, test.sh
 
 ## Control and measure (CLI and MCP)
 
-The app runs a small MCP server (`bridge/src/control.rs`, UI side in `App/Sources/Control.swift`), so the
+The app runs a small MCP server (`bridge/src/control/`, UI side in `App/Sources/Control.swift`), so the
 same `git-manager cli` drives and measures both apps. It writes `~/.gitmanager-native/.gitmanager/mcp.json`,
 never the real app's file, and the CLI finds it when `HOME` points at `~/.gitmanager-native`:
 
@@ -63,7 +64,7 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `take_screenshot` | yes: the window without its shadow; captured in-app, so no Screen Recording permission |
 | `git_status` | yes |
 | `get_app_info` | native fields (name, version, pid, bundle id) |
-| `app` | native only for now: `get_state`, `open_folder` |
+| `app` | native only for now: `get_state`, `open_folder`, `show_diff`, `scroll` |
 
 ## Measure both apps (gm-measure)
 
@@ -74,6 +75,8 @@ MCP servers. Each app starts isolated: macOS launches it with HOME set to a thro
 ```sh
 cd swiftui
 swift run -c release gm-measure measure --duration 20   # both apps on the docs demo: memory, start time, screenshots
+swift run -c release gm-measure measure --screen diff  # the same on the diff of src/cart.ts
+swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes App/Sources/Generated (--check: up to date?)
@@ -95,7 +98,11 @@ swift run -c release gm-measure reference               # what to match: Referen
 `measure` compares the installed `/Applications/Git Manager.app` (or `--current-app <path>`) with the native
 build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `report.json`, both screenshots and
 `diff.png`. gm-measure captures both windows itself, the same way, so the pixel diff compares like with like;
-that needs Screen Recording permission for the app that runs it (your terminal), once, then a restart of it.
+that needs Screen Recording permission for the app that runs it (your terminal), once, then a restart of it. The
+report gives the whole window and the content below the title bar, which macOS draws in both apps and which
+renders one step off in some runs. The current app keeps "Collapse unchanged" in WebKit localStorage under the
+real `~/Library` (shared with your own Git Manager), so `measure` and `reference` turn it on for the run and put
+your value back; they wait for, and then refuse to run beside, a running Git Manager.
 
 ## Checks
 
@@ -126,5 +133,6 @@ src-tauri's test helpers.
 | 2c Changes list and commit box | done |
 | 2d Files panel tree | done |
 | 2e Welcome screen, exact color conversion | done |
-| 2f Matching to 99% (font smoothing, blends, alignment) | built, waiting for the check |
-| 3 First slice | not started |
+| 2f Matching to 99% (font smoothing, blends, alignment) | done |
+| 3a Diff screen: tab, toolbar, panes drawn per viewport, folds, ruler (97%) | done |
+| 3b Diff screen to 99%: syntax colors, brackets, guides, changed words, text blending | done |
