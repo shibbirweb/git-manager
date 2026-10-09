@@ -78,7 +78,9 @@ struct ContentView: View {
             }
             SearchOverlay()
             MergeOverlay()
+            ContextMenuOverlay()
         }
+        .coordinateSpace(name: HeaderMenus.pageSpace)
         .overlay(alignment: .bottomTrailing) {
             ToastStack(center: toasts)
         }

@@ -85,3 +85,30 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
   - Not built: those menus, Add and Remove Folder, workspace files, Scan for Repositories, Close Folder, the clean
     repositories' list, the "No git repository" placeholder, several windows. The Changes scrollbar's length was
     stale once at start (the last section arrived after the list was measured); it did not come back in later runs.
+- GM-62 the header's folder menu and repository switcher (Header.svelte workspaceMenu and repoPickerMenu,
+  ContextMenuHost.svelte, menuNav.ts):
+  - Built: a native context menu (ContextMenuCenter, ContextMenuView: PopupFrame's panel, ring and shadow, rows of
+    5 by 10 points around a 16-point line, hints in --text-faint, submenus beside their row, separators), with the
+    page's hover, click, type-ahead and arrow, Return, Escape and Tab keys; a press outside or the window losing focus
+    closes it. The folder pill opens New Window, Open Folder..., Add Folder to Workspace..., a Remove row per folder
+    with two or more, Scan for Repositories and Close Folder or Close Workspace; the repository pill lists the
+    repositories (a check before the active one, path and change count as hint) and switches. NativeCore MenuNav
+    ports menuNav.ts (tested). gm-measure `--screen foldermenu` and `--screen repomenu`.
+  - Rules found:
+    - Clicks posted to an app's process (CGEvent postToPid) never reach AppKit's windows, even with the app in front
+      and the window fields set; posted keys do. Pressing the button through Accessibility (AXPress) works in both
+      apps and leaves the pointer alone (MeasureKit AccessibilityPress; WebKit builds the page's tree after
+      AXManualAccessibility). WebKit names a button by AXTitle, SwiftUI by AXDescription.
+    - WebKit runs an AXPress as a click on the innermost element at the button's center (the pill's name span),
+      at that element's center cut to whole points: the menu opens at (126, 20) for acme, (250, 20) for payments-api.
+    - HTML drops the leading spaces of "   storefront" (white-space: nowrap collapses them).
+    - The shadow keeps a one-level banding against the page (it paints the menu's shadow into its own layer, the
+      native app composites a layer): a float layer is dithered by macOS, truncated alpha is worse (98.6%).
+  - Pixel diff below the title bar (HDR off): foldermenu 99.48% light, 99.34% dark; repomenu 99.48 / 99.27. The
+    parity scenario `workspace` stays without the menu: two folders' Remove rows carry the demo's long temp paths,
+    and that wide menu's shadow drops dark to 98.66%. workspace, folders and Changes kept their floors.
+  - Memory with a menu open (5 s samples): current 145 to 166 MB, native 47 to 51 MB (44 MB without a menu).
+  - Measuring brings each app to the front, so typing on another screen during a run lands in it (a run had "pdate"
+    in the native commit box and its menu closed); such a run is thrown away.
+  - Not built: recent folders in the folder menu, New Window, Open Folder in New Window, workspace files and Close
+    Folder (their rows do nothing); the branch pill's menu.

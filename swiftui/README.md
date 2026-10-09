@@ -138,6 +138,7 @@ swift run -c release gm-measure measure --screen blame   # src/catalog.ts with t
 swift run -c release gm-measure measure --screen merge   # git mergetool on the conflict demo's src/app.ts
 swift run -c release gm-measure measure --screen merge --file src/report.ts --walk 200  # a 2400-line file's memory
 swift run -c release gm-measure measure --screen conflicts  # the conflict demo with its conflicts list open
+swift run -c release gm-measure measure --screen foldermenu  # demo/acme with the header's folder menu (repomenu)
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
@@ -174,6 +175,8 @@ build (`--native-app <path>`) and writes `build/measure/<time>/report.md`, `repo
 compares like with like; that needs Screen Recording permission for the app that runs it (your terminal), once,
 then a restart of it. ScreenCaptureKit gives the pixels the display shows; CGWindowListCreateImage, used before,
 composited the window again and landed one step off on some surfaces in some calls (MeasureKit/LiveWindowCapture).
+Screens that open a menu press its button through Accessibility (MeasureKit/AccessibilityPress), which needs
+Accessibility permission for the terminal too; posted mouse clicks never reach either app, and the pointer stays put.
 The report gives the whole window and the content below the title bar, which macOS draws in both apps. The current
 app keeps "Collapse unchanged" in WebKit localStorage under the real `~/Library` (shared with your own Git
 Manager), so `measure` and `reference` set it for the run (`measure --collapse on|off`, on by default) and put

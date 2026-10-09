@@ -112,4 +112,12 @@ public enum WorkspaceRules {
             return nil
         }
     }
+
+    /// A row of the repository menu (Header.svelte repoPickerMenu): a check before the active one, three spaces
+    /// before the rest, and as hint its path in the folder when that is not just its name, then its change count.
+    public static func repoMenuRow(_ repo: WorkspaceRepo, active: Bool, changes: Int) -> (label: String, hint: String) {
+        let path = !repo.relativePath.isEmpty && repo.relativePath != repo.name ? repo.relativePath : ""
+        let hint = [path, changes > 0 ? "\(changes)" : ""].filter { !$0.isEmpty }.joined(separator: "  ")
+        return ((active ? "\u{2713} " : "   ") + repo.name, hint)
+    }
 }

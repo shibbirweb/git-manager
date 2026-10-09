@@ -17,7 +17,8 @@ enum Measure {
         /// "log" (the Log with its newest commit selected), "terminal" (the terminal panel, MeasureTerminal.swift),
         /// "merge" (git mergetool on Measure.mergeFile), "conflicts" (the conflict demo's conflicts list) or
         /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings),
-        /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift).
+        /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
+        /// and design-system), "foldermenu" and "repomenu" (the workspace with a header menu open).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -155,6 +156,8 @@ enum Measure {
             try await showEditScreen(app, screen: options.screen)
         } else if searchScreens.contains(options.screen) {
             try await showSearchScreen(app, screen: options.screen)
+        } else if menuScreens.contains(options.screen) {
+            try await openHeaderMenu(app, screen: options.screen)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

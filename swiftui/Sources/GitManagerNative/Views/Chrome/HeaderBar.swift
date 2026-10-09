@@ -1,6 +1,7 @@
 // The header (src/lib/views/Header.svelte), measured in swiftui/Reference/<screen>-<mode>/header.json:
 // back and forward, a divider, the folder and branch pills on the left; the two layout toggles, a divider, the theme
-// and Settings buttons on the right. 8 points of padding at both ends, 4 between items.
+// and Settings buttons on the right. 8 points of padding at both ends, 4 between items. The folder and repository
+// pills open their menus (HeaderMenus.swift).
 
 import SwiftUI
 
@@ -22,17 +23,19 @@ struct HeaderBar: View {
         HStack(spacing: 4) {
             history
             HeaderDivider()
-            PillButton(action: chooseFolder) {
+            MenuPill(title: folderName, items: { HeaderMenus.folderMenu(chooseFolder: chooseFolder) }) {
                 Icon(name: "folder", size: 14)
                 ExactText(text: folderName, size: 13, weight: .semibold)
+                    .menuPillTarget()
                 Icon(name: "chevron-down", size: 12)
             }
             if let repoPill {
                 ExactText(text: "/", size: 13)
                     .foregroundStyle(theme.ink("--text-faint"))
-                PillButton(action: {}) {
+                MenuPill(title: "\(repoPill.name) \(repoPill.count)", items: HeaderMenus.repoMenu) {
                     Icon(name: "folder-git", size: 14)
                     ExactText(text: repoPill.name, size: 13)
+                        .menuPillTarget()
                     // .repo-count: 11 points in --text-dim, half a point lower as WebKit sets small text.
                     ExactText(text: "\(repoPill.count)", size: 11)
                         .foregroundStyle(theme.ink("--text-dim"))
