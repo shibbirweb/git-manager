@@ -4,6 +4,7 @@
 // diffs) join the scenario for both apps as it learns them. Writes swiftui/build/measure/<time>/report.md,
 // report.json, both screenshots and their pixel diff (MeasureReport.swift).
 
+import AppKit
 import Foundation
 import MeasureKit
 
@@ -18,7 +19,7 @@ enum Measure {
         /// "merge" (git mergetool on Measure.mergeFile), "conflicts" (the conflict demo's conflicts list) or
         /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings),
         /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
-        /// and design-system), "foldermenu" and "repomenu" (the workspace with a header menu open).
+        /// and design-system), "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -173,6 +174,10 @@ enum Measure {
         do {
             WindowCapture.bringToFront(pid: app.pid)
             let png = try WindowCapture.capture(pid: app.pid)
+            // Typing or clicking on another screen moves the focus and closes open menus: such a run is spoiled.
+            if let front = NSWorkspace.shared.frontmostApplication?.processIdentifier, front != app.pid {
+                print("\(kind.rawValue): another app was in front at the screenshot; rerun if a menu or focus matters")
+            }
             let path = (outDir as NSString).appendingPathComponent("\(kind.rawValue).png")
             try png.write(to: URL(fileURLWithPath: path))
             let image = try RGBAImage.decode(pngData: png)

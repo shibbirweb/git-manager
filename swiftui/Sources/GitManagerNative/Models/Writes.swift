@@ -1,5 +1,6 @@
 // Arguments and results of the bridge's write commands (swiftui/bridge/src/commands/write.rs), shaped like
-// `stageFiles`, `unstageFiles`, `commit`, `getHeadMessage`, `lastAction` and `moveHeadBack` in src/lib/api.ts.
+// `stageFiles`, `unstageFiles`, `commit`, `getHeadMessage`, `lastAction`, `moveHeadBack`, `getRefs` and
+// `checkoutBranch` in src/lib/api.ts (branches.rs for the last two).
 
 import NativeCore
 
@@ -42,4 +43,19 @@ struct LastAction: Decodable {
 /// A command that answers nothing (`()` in Rust, null in JSON).
 struct NoValue: Decodable {
     init(from decoder: Decoder) throws {}
+}
+
+struct CheckoutArgs: Encodable {
+    let repoPath: String
+    let branchName: String
+}
+
+/// The local branches of get_refs (src-tauri/src/git/refs.rs Refs), all the branch menu needs.
+struct BranchRefs: Decodable {
+    struct Local: Decodable {
+        let name: String
+        let isHead: Bool
+    }
+
+    let local: [Local]
 }

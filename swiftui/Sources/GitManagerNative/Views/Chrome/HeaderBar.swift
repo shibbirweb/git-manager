@@ -1,7 +1,7 @@
 // The header (src/lib/views/Header.svelte), measured in swiftui/Reference/<screen>-<mode>/header.json:
 // back and forward, a divider, the folder and branch pills on the left; the two layout toggles, a divider, the theme
-// and Settings buttons on the right. 8 points of padding at both ends, 4 between items. The folder and repository
-// pills open their menus (HeaderMenus.swift).
+// and Settings buttons on the right. 8 points of padding at both ends, 4 between items. The folder, repository and
+// branch pills open their menus (HeaderMenus.swift).
 
 import SwiftUI
 
@@ -44,9 +44,10 @@ struct HeaderBar: View {
                 }
             }
             if let head {
-                PillButton(action: {}) {
+                MenuPill(title: Self.branchLabel(head), items: HeaderMenus.branchMenu) {
                     Icon(name: "branch", size: 14)
-                    ExactText(text: head.branch ?? head.shortId ?? "", size: 13)
+                    ExactText(text: Self.branchLabel(head), size: 13)
+                        .menuPillTarget()
                     counts(head)
                     Icon(name: "chevron-down", size: 12)
                 }
@@ -88,6 +89,11 @@ struct HeaderBar: View {
                 Icon(name: "arrow-right", size: 15)
             }
         }
+    }
+
+    /// The branch pill's text (Header.svelte branchLabel).
+    static func branchLabel(_ head: HeadInfo) -> String {
+        head.branch ?? head.shortId.map { "HEAD detached at \($0)" } ?? "No branch"
     }
 
     /// Commits to push and pull, small and dim (.counts: 11.5 points, 4 apart). WebKit sets the digits half a point

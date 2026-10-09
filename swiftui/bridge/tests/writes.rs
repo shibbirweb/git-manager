@@ -190,3 +190,22 @@ fn a_failed_commit_comes_back_with_gits_message() {
     let refused = call("move_head_back", json!({ "repoPath": repo, "headId": "-x", "commitId": "1", "mode": "soft" }));
     assert_eq!(refused["error"]["kind"], "invalid");
 }
+
+#[test]
+fn get_refs_lists_local_branches_and_checkout_branch_switches() {
+    let repo = repository("branches");
+    git(&repo, &["branch", "feature"]);
+    let refs = ok(call("get_refs", json!({ "repoPath": repo })));
+    let names: Vec<(String, bool)> = refs["local"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|branch| (branch["name"].as_str().unwrap_or_default().to_string(), branch["isHead"] == true))
+        .collect();
+    assert_eq!(names, vec![("feature".to_string(), false), ("main".to_string(), true)]);
+
+    ok(call("checkout_branch", json!({ "repoPath": repo, "branchName": "feature" })));
+    assert_eq!(git(&repo, &["branch", "--show-current"]).trim(), "feature");
+    let missing = call("checkout_branch", json!({ "repoPath": repo, "branchName": "nope" }));
+    assert_eq!(missing["ok"], false, "{missing}");
+}

@@ -100,7 +100,11 @@
     {
       "id": "branches", "name": "Branches and tags", "usage": "Branches-and-Tags.md", "scenario": "branches-sidebar",
       "check": "Local and remote branches, tags, and their right-click actions",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "only the header's branch menu (local branches, switching); the Branches sidebar, remote branches and tags",
+        "New Branch and every right-click action"
+      ]
     },
     {
       "id": "branches-popup", "name": "Branches popup", "usage": "Branches-Popup.md", "scenario": "branches-popup",

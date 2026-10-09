@@ -1,76 +1,10 @@
-// The header's folder and repository menus (Header.svelte workspaceMenu and repoPickerMenu) and the pill that opens
-// one. The current app opens them at the click (contextMenu.open), so a pill pressed without the pointer
-// (Accessibility) opens it where WebKit puts that click: WebKit hit-tests the button's center and clicks the center of
-// the innermost element there, the pill's name (marked with menuPillTarget, MenuNav.simulatedClickPoint).
-// Not built yet: recent folders, New Window, Open Folder in New Window, workspace files and Close Folder (their rows
-// show and do nothing).
+// The header's menus (Header.svelte workspaceMenu, repoPickerMenu and branchMenu), opened by MenuPill. Rows the native
+// app cannot run yet (recent folders are not listed; New Window, Open Folder in New Window, workspace files, Close
+// Folder and New Branch) say so in a toast.
 
 import AppKit
 import NativeCore
 import SwiftUI
-
-/// A header pill that opens a context menu.
-struct MenuPill<Label: View>: View {
-    /// What Accessibility reads, as the page's button title.
-    let title: String
-    let items: () -> [MenuItem]
-    @ViewBuilder let label: () -> Label
-
-    @State private var pageFrame = CGRect.zero
-    @State private var windowFrame = CGRect.zero
-    @State private var targetFrame: CGRect?
-
-    var body: some View {
-        PillButton(action: open, label: label)
-            .accessibilityLabel(title)
-            .onPreferenceChange(MenuPillTargetKey.self) { targetFrame = $0 }
-            .background(GeometryReader { proxy in
-                let frames = [proxy.frame(in: .named(HeaderMenus.pageSpace)), proxy.frame(in: .global)]
-                Color.clear
-                    .onAppear { remember(frames) }
-                    .onChange(of: frames) { remember($0) }
-            })
-    }
-
-    private func remember(_ frames: [CGRect]) {
-        pageFrame = frames[0]
-        windowFrame = frames[1]
-    }
-
-    private func open() {
-        let center = ContextMenuCenter.shared
-        center.pageTop = windowFrame.minY - pageFrame.minY
-        var point = MenuNav.simulatedClickPoint(targetFrame ?? pageFrame)
-        // A click of the pointer opens it there; Accessibility presses come with no event of their own.
-        if let event = NSApp.currentEvent, event.type == .leftMouseUp,
-           ProcessInfo.processInfo.systemUptime - event.timestamp < 1,
-           let height = event.window?.contentView?.bounds.height {
-            let inWindow = CGPoint(x: event.locationInWindow.x, y: height - event.locationInWindow.y)
-            if windowFrame.contains(inWindow) {
-                point = CGPoint(x: inWindow.x.rounded(.down), y: (inWindow.y - center.pageTop).rounded(.down))
-            }
-        }
-        center.open(items(), at: point)
-    }
-}
-
-/// The frame of the part of a MenuPill that WebKit's simulated click lands on.
-struct MenuPillTargetKey: PreferenceKey {
-    static var defaultValue: CGRect?
-
-    static func reduce(value: inout CGRect?, nextValue: () -> CGRect?) {
-        value = value ?? nextValue()
-    }
-}
-
-extension View {
-    /// Marks the pill's name as where a press without the pointer clicks.
-    func menuPillTarget() -> some View {
-        background(GeometryReader { proxy in
-            Color.clear.preference(key: MenuPillTargetKey.self, value: proxy.frame(in: .named(HeaderMenus.pageSpace)))
-        })
-    }
-}
 
 @MainActor
 enum HeaderMenus {
@@ -82,10 +16,10 @@ enum HeaderMenus {
         let model = AppModel.shared
         let roots = workspace.folders.map(\.root)
         var items: [MenuItem] = [
-            .command("New Window") {},
+            notBuilt("New Window"),
             .command("Open Folder...", action: chooseFolder),
-            .command("Open Folder in New Window...") {},
-            .command("Open Workspace from File...") {},
+            notBuilt("Open Folder in New Window..."),
+            notBuilt("Open Workspace from File..."),
             .command("Add Folder to Workspace...") {
                 if let folderPath = pickFolder() {
                     Task {
@@ -93,7 +27,7 @@ enum HeaderMenus {
                     }
                 }
             },
-            .command("Save Workspace to File...") {},
+            notBuilt("Save Workspace to File..."),
         ]
         if roots.count > 1 {
             items.append(.separator)
@@ -112,7 +46,7 @@ enum HeaderMenus {
                     await model.openFolders(roots)
                 }
             },
-            .command(roots.count > 1 ? "Close Workspace" : "Close Folder") {},
+            notBuilt(roots.count > 1 ? "Close Workspace" : "Close Folder"),
         ]
         return items
     }
@@ -138,6 +72,36 @@ enum HeaderMenus {
             },
         ]
         return items
+    }
+
+    /// The branch pill's menu (branchMenu): New Branch..., then the local branches, the current one disabled.
+    static func branchMenu() async -> [MenuItem] {
+        let model = AppModel.shared
+        guard let repoPath = model.repoPath else {
+            return []
+        }
+        let refs = await Task.detached {
+            try? Backend.call("get_refs", RepoArgs(repoPath: repoPath)) as BranchRefs
+        }.value
+        let branches: [MenuItem] = (refs?.local ?? []).map { branch in
+            .command(branch.isHead ? "\(branch.name)  (current)" : branch.name, disabled: branch.isHead) {
+                Task {
+                    await model.run("Checkout", success: "Switched to \(branch.name)") { repoPath in
+                        let args = CheckoutArgs(repoPath: repoPath, branchName: branch.name)
+                        try Backend.perform("checkout_branch", args)
+                    }
+                }
+            }
+        }
+        return [notBuilt("New Branch..."), .separator] + branches
+    }
+
+    /// A row the native app cannot run yet: it says so, as the Discard button does.
+    static func notBuilt(_ label: String) -> MenuItem {
+        .command(label) {
+            let name = label.replacingOccurrences(of: "...", with: "")
+            ToastCenter.shared.show(.info, "\(name) is not in the native app yet")
+        }
     }
 
     /// A path with /Users/<name> as "~" (recentEntries.ts shortPath).

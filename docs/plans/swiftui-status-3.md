@@ -112,3 +112,16 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     in the native commit box and its menu closed); such a run is thrown away.
   - Not built: recent folders in the folder menu, New Window, Open Folder in New Window, workspace files and Close
     Folder (their rows do nothing); the branch pill's menu.
+- GM-63 the branch pill's menu (Header.svelte branchMenu):
+  - Built: bridge `get_refs` and `checkout_branch` (branches.rs, shaped like src-tauri's branch.rs, tested in
+    tests/writes.rs). The branch pill reads the branches when pressed (no polling) and opens New Branch..., a
+    separator and the local branches, the current one as "main (current)" and disabled; a branch runs Checkout as
+    repoStore.run does ("Switched to fix/tax-rates", or "Checkout failed" with git's message while merging, both
+    seen in the app). Rows the native app cannot run yet (New Branch, New Window, workspace files, Close Folder)
+    now say so in a toast. Menu rows are accessible buttons, as the page's menuitems are. The pill shows "HEAD
+    detached at <id>" or "No branch" as branchLabel does. gm-measure `--screen branchmenu`.
+  - Rules found: the page closes its menu when another app takes the focus too (checked by activating Finder), so a
+    run where focus moved is spoiled; gm-measure now warns when another app was in front at the screenshot.
+  - Pixel diff below the title bar (HDR off): branchmenu 99.39 to 99.42% light, 99.24% dark (shadow banding as
+    GM-62); foldermenu 99.47 and repomenu dark 99.34 after the change.
+  - Memory with the menu open: current 147 to 157 MB, native 49 MB.

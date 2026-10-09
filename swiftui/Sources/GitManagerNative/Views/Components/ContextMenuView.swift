@@ -108,6 +108,13 @@ private struct MenuLevel: View {
                         .onTapGesture {
                             center.activate(level: level, index: index, fromKeyboard: false)
                         }
+                        // A menu item to Accessibility, as the page's role="menuitem" buttons are.
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(MenuNav.shownLabel(item.label))
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction {
+                            center.activate(level: level, index: index, fromKeyboard: false)
+                        }
                 }
             }
         }

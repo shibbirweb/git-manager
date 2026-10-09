@@ -9,7 +9,7 @@ and the pages after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 26 partial, 34 missing (62 features). 17 of 51 scenarios run in both apps.
+Native: 2 done, 27 partial, 33 missing (62 features). 17 of 51 scenarios run in both apps.
 
 Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -51,7 +51,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Blame | blame | partial | blame | 99.43% / 99.33% | 268 MB / 42 MB |
 | History and log | log | partial | log | 99.46% / 99.33% | 191 MB / 52 MB |
 | Commit tabs | commit-tabs | missing | commit-tab | - | - |
-| Branches and tags | branches | missing | branches-sidebar | - | - |
+| Branches and tags | branches | partial | branches-sidebar | - | - |
 | Branches popup | branches-popup | missing | branches-popup | - | - |
 | Remotes | remotes | partial | remotes | - | - |
 | Stashes | stashes | missing | branches-sidebar | - | - |

@@ -102,7 +102,9 @@ Folder: demo `acme/storefront`
 1. Start the app on demo/acme/storefront.
 2. Press Shift+Cmd+E: branches, tags, the stash WIP: free shipping threshold and Worktrees.
 
-- Branches and tags (`branches`, missing): Local and remote branches, tags, and their right-click actions.
+- Branches and tags (`branches`, partial): Local and remote branches, tags, and their right-click actions. Native
+  lacks: only the header's branch menu (local branches, switching); the Branches sidebar, remote branches and tags;
+  New Branch and every right-click action.
 - Stashes (`stashes`, missing): The stash in the sidebar; stash, apply, pop and drop.
 - Worktrees (`worktrees`, missing): The Worktrees section and the New Worktree dialog.
 
