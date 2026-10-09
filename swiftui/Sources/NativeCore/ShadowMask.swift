@@ -56,12 +56,9 @@ public struct ShadowBox: Equatable, Sendable {
 }
 
 public enum ShadowMask {
-    /// The Gaussian's sigma in device pixels for a CSS blur radius at `scale`. A stronger shadow shows more of
-    /// WebKit's tail, so the fit widens with its alpha: 0.4964 at the light dialog's 0.16, 0.5063 at the dark one's
-    /// 0.5 (each measured against the current app), straight between them and held past them.
-    public static func sigma(blur: Double, scale: Double, alpha: Double = 0.16) -> Double {
-        let share = min(1, max(0, (alpha - 0.16) / (0.5 - 0.16)))
-        return blur * scale * (0.4964 + share * (0.5063 - 0.4964))
+    /// The Gaussian's sigma in device pixels for a CSS blur radius at `scale`.
+    public static func sigma(blur: Double, scale: Double) -> Double {
+        blur * scale * 0.4964
     }
 
     /// How far the shadow reaches past its box, in device pixels.

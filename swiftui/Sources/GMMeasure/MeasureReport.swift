@@ -98,6 +98,8 @@ enum MeasureReport {
             return "show the diff of \(Reference.diffFile)"
         case "staged":
             return "stage \(Reference.diffFile) and wait until the Staged group shows it"
+        case "merge", "conflicts":
+            return Measure.mergeStep(screen)
         default:
             return "stay on the Changes screen"
         }

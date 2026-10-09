@@ -1,5 +1,23 @@
 # Parity scenarios (continued)
 
+## scripts: Scripts panel (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Click the play button in the left activity bar (View > Scripts): the scripts of package.json.
+
+- Scripts tool window (`scripts`, missing): The scripts of package.json with run buttons and the Node version.
+
+## update-dialog: Update available (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Run a build older than the newest release on its channel and wait about 30 seconds.
+2. Click Update available in the status bar: the update window.
+
+- Updates and release channels (`updates`, missing): Update available in the status bar and the update window.
+
 ## memory-breakdown: Memory breakdown (native app cannot show it yet)
 
 Folder: demo `acme/storefront`

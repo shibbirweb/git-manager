@@ -92,6 +92,17 @@ enum ParityRun {
         let folderPath = (demoDir as NSString).appendingPathComponent(scenario.folder ?? "")
         let home = (workDir as NSString).appendingPathComponent("\(scenario.id)-\(mode)-\(kind.rawValue)")
         print("\(scenario.id) \(mode) \(kind.rawValue): starting \(appPath)")
+        if let filePath = spec.mergetool {
+            let shot = try await ParityMergetool.run(
+                kind, filePath: filePath, repoPath: folderPath, home: home, appPath: appPath, mode: mode,
+                shotPath: (shotDir as NSString).appendingPathComponent("\(kind.rawValue).png"),
+                settleS: options.settleS, sampleS: options.sampleS, gate: options.gate,
+                moment: "before the \(kind.rawValue) screenshot of \(scenario.id) (\(mode))"
+            )
+            (result.version, result.memoryMb) = (shot.version, shot.memoryMb)
+            (result.screenshotPath, result.headroom) = (shot.screenshotPath, shot.headroom)
+            return
+        }
         var storage = spec.currentStorage ?? [:]
         if let collapse = spec.collapseUnchanged {
             storage.merge(CurrentAppPrefs.scenario(collapse: collapse)) { _, collapseValue in collapseValue }
@@ -155,6 +166,9 @@ enum ParityRun {
     private static func follow(_ spec: ParityRunSpec, in app: RunningApp) async throws {
         if let filePaths = spec.stageFiles, !filePaths.isEmpty {
             try await Measure.stageFiles(app, filePaths)
+        }
+        if spec.openConflicts == true {
+            try await Measure.openConflicts(app)
         }
         if let filePath = spec.showDiff {
             try await Measure.showDiff(

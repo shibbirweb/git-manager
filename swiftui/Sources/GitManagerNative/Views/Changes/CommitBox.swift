@@ -17,6 +17,8 @@ struct CommitBox: View {
     /// The commit rules' view of the repository and this box (AppModel.commitState).
     let state: CommitBoxState
     let ahead: Int
+    /// The branch has no upstream yet: Publish Branch with the cloud icon instead of Sync Changes (sync.ts).
+    var publish = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -146,9 +148,9 @@ struct CommitBox: View {
         BorderedButton(width: nil, disabled: state.busy) {
             // .sync: 6 points apart; .counts: 2 more before it, tabular digits, 1 point to the arrow.
             HStack(spacing: 6) {
-                Icon(name: "sync", size: 13)
-                ExactText(text: "Sync Changes", size: 13)
-                if ahead > 0 {
+                Icon(name: publish ? "cloud-upload" : "sync", size: 13)
+                ExactText(text: publish ? "Publish Branch" : "Sync Changes", size: 13)
+                if ahead > 0 && !publish {
                     HStack(spacing: 1) {
                         ExactText(text: "\(ahead)", size: 13, tabular: true)
                         Icon(name: "arrow-up", size: 11)

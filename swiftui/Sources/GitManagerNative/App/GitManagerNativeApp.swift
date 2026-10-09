@@ -16,7 +16,14 @@ struct GitManagerNativeApp: App {
 
     var body: some Scene {
         Window("Git Manager Native", id: "main") {
-            ContentView(initialRepoPath: AppDelegate.launchFolder())
+            Group {
+                // Started by git mergetool with its four files: the merge tool alone (MergeToolApp.svelte).
+                if MergeCenter.shared.mergetool != nil {
+                    MergetoolRoot()
+                } else {
+                    ContentView(initialRepoPath: AppDelegate.launchFolder())
+                }
+            }
                 .frame(minWidth: 960, minHeight: 600)
                 .background(WindowSizer())
         }

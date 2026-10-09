@@ -57,7 +57,7 @@ struct FilesPanel: View {
     }
 
     private func rows(in dirPath: String, depth: Int) -> AnyView {
-        AnyView(ForEach(files.listings[dirPath] ?? [], id: \.self) { entry in
+        AnyView(ForEach(files.entries(in: dirPath), id: \.self) { entry in
             let path = dirPath.isEmpty ? entry.name : "\(dirPath)/\(entry.name)"
             FileTreeRow(entry: entry, depth: depth, expanded: files.expanded.contains(path), tone: files.tones[path])
                 .onTapGesture {
@@ -107,6 +107,15 @@ struct FileTreeRow: View {
                 .font(PageFont.font(13, weight: tone == .conflict ? .medium : .regular))
                 .lineLimit(1)
                 .truncationMode(.tail)
+                .overlay(alignment: .topLeading) {
+                    // line-through in the name's color, 8.5 points down its 16-point line box, as on the Changes
+                    // rows (SwiftUI's strikethrough sits half a point lower).
+                    if tone == .deleted && !entry.isDir {
+                        nameColor
+                            .frame(width: ExactText.width(entry.name, font: PageFont.ui(13)), height: 1)
+                            .offset(y: 8.5)
+                    }
+                }
             Spacer(minLength: 0)
             marker
         }

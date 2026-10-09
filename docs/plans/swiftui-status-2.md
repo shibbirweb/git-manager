@@ -189,3 +189,53 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
     both apps list cart.ts, README.md, pricing.ts.
   - Memory (`gm-measure memory-search`), MB average: current 136 idle, 207 palette open, 188 Go to File with its
     index, 193 Find in Files results (240 peak); native 32, 53, 44, 57.
+- GM-54 the merge tool (src/lib/merge/), against the local reference build, HDR off:
+  - Logic: model.ts ported to NativeCore (MergeModel, MergeText, MergeNavigation; the result is a list of lines, so
+    each action returns the next lines and chunks and undo keeps both), inline.ts as WordDiff, plus the panes'
+    decorations, ruler ticks and connector spans (MergePaneLayout) and "highlight the word" (WordMatches); every
+    case of model.test.ts and inline.test.ts in Swift Testing. The Rust engine runs as it is: the bridge's
+    merge.rs serves list_conflicts, load_conflict, save_resolution, accept_side, load_mergetool, save_mergetool
+    over the shared git/conflicts.rs and merge/ modules (bridge/tests/merge.rs, real repositories).
+  - Window: the merge tool over the window (MergeView.svelte, 40-point title bar with close) and, started with
+    -mergeBase/-mergeLocal/-mergeRemote/-mergeMerged, the git mergetool window (MergeToolApp.svelte, 38 points):
+    toolbar (apply non-conflicting from the left, all, from the right; previous and next; undo and redo; Ignore
+    whitespace, which reloads), labels, three panes drawn like the diff canvas (only the rows on screen, the page's
+    layer stack), the connectors with ribbons and apply/ignore buttons, the overview rulers, the footer (Accept
+    Left/Right, Cancel, Apply with the current app's questions), F7, Shift+F7, Cmd+Return and Esc. The conflicts
+    list dialog, the operation banner, the Conflicts group in Changes and the status bar's conflict count.
+  - Rules found: a tint is the exact converted color times its 8-bit alpha (--diff-conflict's 0.15 gives blue 16,
+    the rounded color 15); a connector ribbon's fill is the GPU's half-precision blend of the exact color at its
+    8-bit alpha over the background's bytes (dark --diff-modified: blue 74, not 73); each side pane keeps its cursor
+    at the start, so "import" is marked wherever it stands (cm-selectionMatch, square, 17 points from a point
+    above the row); the gutter is 12 + digits + 10 points, at least 40; CodeMirror's content width is the widest
+    line it has measured in the lines it draws (viewport and 1000 points), kept while they overlap, so a pane centered
+    on a change never measures the file's top and a pane synced later keeps a long first line's scrollbar; a reveal
+    centers in the scroller's client height, the other panes follow a frame later; thumbs are at least 17 points.
+  - Why git mergetool for the gate: no control tool of the current app opens its merge tool over the window and
+    posting a click needs Accessibility access, while git mergetool shows the same MergeEditor.svelte. That mode
+    runs no control server, so gm-measure finds the app by its arguments and reads its memory from outside
+    (ExternalMemory, the same counting as get_memory_usage).
+  - The conflicts list over the conflict demo, found against the reference (58% / 66% before):
+    - The dialog is a child of the overlay on the page, so its box-shadow is painted into the overlay's own layer:
+      the dim and the shadow blend there in 8 bits, at the shadow color's exact alpha through the 8-bit blur mask,
+      rounded once, and reach the window as one layer (DialogBackdrop shadowInOverlay; the plain dim is masked out
+      of the shadow's area). The Settings dialog keeps its own shadow layer. The mask is GM-57's measured BoxShadow
+      table for both dialogs now (Settings went to 99.5 / 99.11 with it); the table's last three entries are 1, not
+      2: the popups' 8-bit alpha cannot tell them apart, this dark shadow can.
+    - A SwiftUI .shadow on the dialog shaded every label and button in it; the page's padding (14, 16, 12) starts
+      inside its 1-point border; the selected row is --selected as macOS converts it (LayerFill).
+    - Behind the dialog: theme.mix takes a fraction and was given percents (the banner came out black; GM-56's
+      Settings search highlight had the same bug, 40 for 0.4); the Files panel lists the files git knows were
+      deleted, struck through (FileExplorer's entriesOf); the status bar's Synchronize item follows sync.ts
+      (cloud-upload without an upstream, pulls before pushes, shown even when even); the Changes list has the
+      page's classic scrollbar, whose track takes 10 points only while the rows overflow (SettingsScroll became
+      Components/PageScroll); the change badge is --danger while a file is in conflict and anchored by its right
+      edge, so "20" grows to the left.
+  - Pixel diff below the title bar (HDR off): merge 99.66% light, 99.59% dark; a 2400-line file (report.ts) 99.25%
+    light; conflicts list 99.21% / 99.16% (parity 99.2 / 99.16). Others unchanged or better: Changes 99.74 / 99.73,
+    staged 99.74 / 99.73, diff folded 99.66 / 99.67, every line 99.65 / 99.65, file 99.65 / 99.64, Log 99.52 /
+    99.39, Settings 99.5 / 99.11, Monokai 99.49, terminal 99.5 / 99.38, quickopen 99.64 / 99.62, palette 99.5 /
+    99.29, search 99.6 / 99.13.
+  - Memory (git mergetool on report.ts, scrolled at 200 points a frame), MB: current 185 open (WebContent 133);
+    native 32 open, 51 scrolling (59 peak), 32 after.
+  - Not built: typing in the result pane, the find bar, clicking ruler ticks, Abort and Continue doing real work.

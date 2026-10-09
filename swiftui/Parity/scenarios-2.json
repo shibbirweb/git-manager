@@ -16,7 +16,8 @@
       "steps": [
         "Start the app on demo/acme/payments-api, which is stopped in a merge with conflicts.",
         "Click Resolve... on the Conflicts group in Changes."
-      ]
+      ],
+      "run": { "openConflicts": true }
     },
     {
       "id": "merge-tool",
@@ -25,7 +26,12 @@
       "steps": [
         "Start the app on demo/acme/payments-api.",
         "Click the first file of the Conflicts group: the three pane merge tool."
-      ]
+      ],
+      "note": [
+        "No control tool opens the current app's merge tool over its window, so the run starts both apps as git",
+        "mergetool on src/app.ts (MergeToolApp.svelte shows the same MergeEditor.svelte under a 38-point title bar)."
+      ],
+      "run": { "mergetool": "src/app.ts" }
     },
     {
       "id": "mergetool-mode",

@@ -94,6 +94,13 @@ opens Quick Open (`prefix` "" for files, ">" for the Command Palette; `recentFil
 the popup's rows. The bridge's `file_search_*` and `text_search` are the current app's Go to File index and Find in
 Files (`file_search.rs`, `text_search.rs`, `symbols/`, included by path).
 
+The merge tool (GM-54) adds `open_conflicts` (the conflicts list), `open_merge` (`filePath`: the merge tool on one
+conflicted file), `merge` (`step` next or previous, `apply` or `ignore` a chunk id with `side` ours or theirs,
+`nonConflicting` all, ours or theirs, `undo`, `redo`, `accept` ours or theirs) and `close_dialog` (refused while the
+merge holds edits). `get_state` answers with a `merge` object: the status text, the chunks, each pane's scroll.
+Started with `-mergeBase BASE -mergeLocal LOCAL -mergeRemote REMOTE -mergeMerged MERGED`, the app is git mergetool:
+only the merge tool, saving MERGED and quitting with status 0 on Apply (1 on Cancel).
+
 `stage` and `unstage` take `filePaths` (without them, the whole group, like Stage all and Unstage all); `commit`
 takes `message` and `amend`. They run through the window like a click, so the busy state, the toasts and the status
 refresh happen as for a user, and they answer with `get_state` once the refresh is done (the Staged and Changes
@@ -123,6 +130,9 @@ swift run -c release gm-measure measure --screen settings  # Settings open on Ap
 swift run -c release gm-measure measure --mode dark --theme monokai-charcoal  # a color theme in both apps
 swift run -c release gm-measure measure --screen search  # Find in Files for "lines" (also quickopen, palette)
 swift run -c release gm-measure memory-search           # Quick Open, the palette and Find in Files on 4000 files
+swift run -c release gm-measure measure --screen merge   # git mergetool on the conflict demo's src/app.ts
+swift run -c release gm-measure measure --screen merge --file src/report.ts --walk 200  # a 2400-line file's memory
+swift run -c release gm-measure measure --screen conflicts  # the conflict demo with its conflicts list open
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
@@ -264,3 +274,4 @@ src-tauri's test helpers.
 | GM-56 Settings dialog, settings.json, live color themes (`--screen settings`, `--theme`) | done |
 | GM-55 Terminal panel: the current app's PTY through the bridge, an xterm.js-like emulator, its WebGL canvas | done |
 | GM-57 Quick Open, Command Palette and Find in Files (search, quickopen, palette screens) | done |
+| GM-54 Merge tool: three panes, chunk actions, conflicts list, git mergetool mode | done (result typing missing) |

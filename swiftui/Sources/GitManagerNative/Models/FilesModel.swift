@@ -1,6 +1,7 @@
 // The Files panel's state: the listed folders of the open folder (bridge `list_directories`, as the current app's
 // FileExplorer lists them), which ones are open, and each path's tone from the git status (src/lib/views/files/
-// tones.ts): a file's own tone, a folder's the strongest tone inside it.
+// tones.ts): a file's own tone, a folder's the strongest tone inside it. Files git knows were deleted are listed in
+// their folder too (FileExplorer's entriesOf), struck through.
 
 import Foundation
 
@@ -57,6 +58,28 @@ final class FilesModel: ObservableObject {
     @Published private(set) var expanded: Set<String> = []
     /// Relative path to tone, for changed files and the folders that hold them.
     @Published private(set) var tones: [String: FileTone] = [:]
+    /// Folder (relative, "" for the root) to the names of the files deleted from it (tones.ts deletedByFolder).
+    @Published private(set) var deleted: [String: [String]] = [:]
+
+    /// A folder's entries on disk plus the files deleted from it, folders first, then by name ignoring case.
+    func entries(in dirPath: String) -> [DirEntry] {
+        guard let onDisk = listings[dirPath] else {
+            return []
+        }
+        let gone = deleted[dirPath] ?? []
+        if gone.isEmpty {
+            return onDisk
+        }
+        let present = Set(onDisk.map(\.name))
+        let extra = gone.filter { !present.contains($0) }
+            .map { DirEntry(name: $0, isDir: false, ignored: false, isRepo: false) }
+        return (onDisk + extra).sorted { left, right in
+            if left.isDir != right.isDir {
+                return left.isDir
+            }
+            return left.name.lowercased() < right.name.lowercased()
+        }
+    }
 
     func open(rootPath folderPath: String) async {
         rootPath = folderPath
@@ -78,7 +101,14 @@ final class FilesModel: ObservableObject {
 
     func updateTones(_ files: [FileStatus]) {
         var next: [String: FileTone] = [:]
+        var gone: [String: [String]] = [:]
         for file in files {
+            if FileTone(file) == .deleted {
+                let slash = file.path.lastIndex(of: "/")
+                let folder = slash.map { String(file.path[..<$0]) } ?? ""
+                let name = slash.map { String(file.path[file.path.index(after: $0)...]) } ?? file.path
+                gone[folder, default: []].append(name)
+            }
             let tone = FileTone(file)
             next[file.path] = max(next[file.path] ?? tone, tone)
             var folder = file.path
@@ -88,6 +118,7 @@ final class FilesModel: ObservableObject {
             }
         }
         tones = next
+        deleted = gone
     }
 
     private func list(_ dirPaths: [String]) async {

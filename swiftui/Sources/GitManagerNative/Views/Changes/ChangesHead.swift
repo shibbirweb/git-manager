@@ -16,6 +16,10 @@ struct ChangesHead: View {
     var busy = false
     /// The commit button has nothing to do (no changes, or conflicts).
     var commitBlocked = false
+    /// The sync button publishes the branch (cloud icon, no badge).
+    var publish = false
+    /// A merge or rebase is in progress: the sync button is off (RepoActions.svelte).
+    var operation = false
     var commit: () -> Void = {}
     var refresh: () -> Void = {}
 
@@ -83,14 +87,16 @@ struct ChangesHead: View {
                 .padding(.horizontal, 4)
                 .frame(height: 20)
             }
-            if let head, head.ahead > 0 || head.behind > 0 {
-                HeadAction(disabled: busy) {
+            if let head, publish || head.ahead > 0 || head.behind > 0 {
+                HeadAction(disabled: busy || operation) {
                     HStack(spacing: 2) {
-                        Icon(name: "sync", size: 13)
-                        // .sync-badge: tabular digits, wider than the default ones.
-                        let badge = head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓"
-                        ExactText(text: badge, size: 11, tabular: true)
-                            .offset(y: 0.5)
+                        Icon(name: publish ? "cloud-upload" : "sync", size: 13)
+                        if !publish {
+                            // .sync-badge: tabular digits, wider than the default ones.
+                            let badge = head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓"
+                            ExactText(text: badge, size: 11, tabular: true)
+                                .offset(y: 0.5)
+                        }
                     }
                     .padding(.horizontal, 3)
                     .frame(height: 20)

@@ -55,12 +55,23 @@
     {
       "id": "conflicts", "name": "Resolving conflicts", "usage": "Resolving-Conflicts.md", "scenario": "conflicts",
       "check": "The operation banner, the Conflicts group and dialog, Abort and Continue",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "the operation banner, the Conflicts group in Changes and the status bar's conflict count",
+        "Continue and Abort run nothing yet (the dialog's Continue only closes it)",
+        "deleted files in the Files panel, Publish Branch in the commit box"
+      ]
     },
     {
       "id": "merge-tool", "name": "Merge tool", "usage": "Merge-Tool.md", "scenario": "merge-tool",
       "check": "Three panes, taking changes from either side, the result",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "typing in the result pane (it shows the result and takes chunk actions, undo and redo)",
+        "the find bar, clicking a ruler tick, and keeping Ignore whitespace between launches",
+        "the current app's merge tool over its window cannot be opened from outside, so the scenario runs both",
+        "apps as git mergetool, which shows the same editor"
+      ]
     },
     {
       "id": "blame", "name": "Blame", "usage": "Blame.md", "scenario": "blame",

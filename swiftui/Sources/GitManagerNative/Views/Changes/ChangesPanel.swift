@@ -17,6 +17,8 @@ struct ChangesPanel: View {
             ChangesHead(
                 count: status?.files.count ?? 0, head: status?.head, decorations: groups.decorations,
                 busy: model.busy != nil, commitBlocked: CommitRules.blocked(state) != nil,
+                publish: status.map(Self.publishes) ?? false,
+                operation: status?.op.map { $0.kind != "none" } ?? false,
                 commit: { Task { await model.commitFromHead() } },
                 refresh: { Task { await model.refreshStatus() } }
             )
@@ -26,20 +28,26 @@ struct ChangesPanel: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
-                ScrollView {
+                // The page's classic scrollbar takes its 10 points from the rows while they overflow.
+                PageScroll {
                     VStack(spacing: 0) {
                         if status != nil && groups.isEmpty {
                             CleanTree()
                         }
+                        ConflictsGroup(files: groups.conflicts)
                         group("Staged", groups.staged, kind: \.staged, staged: true)
                         group("Changes", groups.unstaged, kind: \.unstaged, staged: false)
                     }
                     .padding(.top, 4)
                 }
-                .scrollIndicators(.never)
             }
-            CommitBox(state: state, ahead: status?.head.ahead ?? 0)
+            CommitBox(state: state, ahead: status?.head.ahead ?? 0, publish: status.map(Self.publishes) ?? false)
         }
+    }
+
+    /// A branch without an upstream is published rather than synced (syncPlan in sync.ts).
+    static func publishes(_ status: RepoStatus) -> Bool {
+        !status.head.unborn && status.head.branch != nil && status.head.upstream == nil
     }
 
     /// A group with its header and rows, then 4 points before the next one; nothing when it is empty.

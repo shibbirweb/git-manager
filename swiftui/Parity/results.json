@@ -60,6 +60,26 @@
         "windowPercent" : 99.4
       }
     },
+    "conflicts" : {
+      "dark" : {
+        "contentPercent" : 99.16,
+        "currentMb" : 167.1,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 46.9,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.17
+      },
+      "light" : {
+        "contentPercent" : 99.2,
+        "currentMb" : 166.9,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 46.6,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.09
+      }
+    },
     "diff" : {
       "dark" : {
         "contentPercent" : 74.95,
@@ -118,6 +138,24 @@
         "nativeMb" : 51.8,
         "nativeVersion" : "0.1.0",
         "windowPercent" : 99.35
+      }
+    },
+    "merge-tool" : {
+      "dark" : {
+        "contentPercent" : 99.59,
+        "currentMb" : 156.7,
+        "date" : "2026-10-09",
+        "nativeMb" : 35.1,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.59
+      },
+      "light" : {
+        "contentPercent" : 99.66,
+        "currentMb" : 157.1,
+        "date" : "2026-10-09",
+        "nativeMb" : 35.4,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.53
       }
     },
     "quick-open" : {

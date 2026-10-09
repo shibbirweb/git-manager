@@ -1,6 +1,6 @@
 // What a modal dialog puts over the window, as the current app's page has it (measured on the Settings dialog): the
 // .overlay is a layer of its own, black at --overlay's alpha in 8 bits (71 light, 115 dark), and the dialog's
-// box-shadow lies in another see-through layer above it (black at the bytes ShadowMask works out), both composited by
+// box-shadow lies in another see-through layer above it (black at the bytes BoxShadow works out), both composited by
 // macOS over the window, so the pixels under them darken as the page's do. The shadow is kept in four strips around
 // the dialog rather than one bitmap the dialog's size, most of which the dialog would cover.
 
@@ -15,6 +15,9 @@ struct DialogBackdrop: NSViewRepresentable {
     /// --overlay's alpha and --shadow's offset, blur and alpha.
     let overlayAlpha: Double
     let shadow: (offsetY: CGFloat, blur: CGFloat, alpha: Double)
+    /// The dialog is a child of the overlay on the page (the conflicts list), so its shadow is painted into the
+    /// overlay's own layer: dim and shadow blend there in 8 bits and reach the window as one layer.
+    var shadowInOverlay = false
 
     func makeNSView(context: Context) -> DialogBackdropView {
         DialogBackdropView()
@@ -22,7 +25,8 @@ struct DialogBackdrop: NSViewRepresentable {
 
     func updateNSView(_ view: DialogBackdropView, context: Context) {
         view.spec = .init(dialog: dialog, cornerRadius: cornerRadius, overlayAlpha: overlayAlpha,
-                          offsetY: shadow.offsetY, blur: shadow.blur, shadowAlpha: shadow.alpha)
+                          offsetY: shadow.offsetY, blur: shadow.blur, shadowAlpha: shadow.alpha,
+                          shadowInOverlay: shadowInOverlay)
     }
 
     /// "0 8px 28px rgba(0, 0, 0, 0.16)" as offset, blur and alpha; the page's --shadow when it does not parse.
@@ -45,6 +49,7 @@ final class DialogBackdropView: NSView {
         var offsetY: CGFloat
         var blur: CGFloat
         var shadowAlpha: Double
+        var shadowInOverlay: Bool
     }
 
     var spec: Spec? {
@@ -103,9 +108,10 @@ final class DialogBackdropView: NSView {
     }
 
     private func buildStrips(_ spec: Spec, scale: CGFloat) {
-        let sigma = ShadowMask.sigma(blur: Double(spec.blur), scale: Double(scale), alpha: spec.shadowAlpha)
+        // GM-57's measured mask of the page's shadow (BoxShadow), which fits light and dark; the Gaussian
+        // (ShadowMask) only sizes the region and cuts the box out.
         let offset = Int((spec.offsetY * scale).rounded())
-        let reach = ShadowMask.reach(sigma: sigma)
+        let reach = ShadowMask.reach(sigma: ShadowMask.sigma(blur: Double(spec.blur), scale: Double(scale))) + 10
         // The dialog in device pixels, snapped as WebKit snaps a box.
         let left = Int((spec.dialog.minX * scale).rounded()), top = Int((spec.dialog.minY * scale).rounded())
         let right = Int((spec.dialog.maxX * scale).rounded()), bottom = Int((spec.dialog.maxY * scale).rounded())
@@ -114,9 +120,51 @@ final class DialogBackdropView: NSView {
                       height: bottom - top + 2 * reach + abs(offset))
         let box = ShadowBox(x: Double(left), y: Double(top), width: Double(right - left),
                             height: Double(bottom - top), radius: Double(spec.cornerRadius * scale))
-        let alpha = ShadowMask.alphaBytes(box: box, offsetY: Double(offset), sigma: sigma, alpha: spec.shadowAlpha,
-                                          regionX: region.x, regionY: region.y, width: region.width,
-                                          height: region.height)
+        let model = BoxShadow(
+            box: CGRect(x: Double(left), y: Double(top + offset), width: Double(right - left),
+                        height: Double(bottom - top)),
+            radius: Double(spec.cornerRadius * scale),
+            sigma: BoxShadow.sigma(blur: Double(spec.blur), scale: Double(scale)), alpha: spec.shadowAlpha
+        )
+        var alpha = model.alphaMap(CGRect(x: region.x, y: region.y, width: region.width, height: region.height))
+        for row in 0..<region.height {
+            for column in 0..<region.width {
+                let cover = box.coverage(column: region.x + column, row: region.y + row)
+                if cover > 0 {
+                    let index = row * region.width + column
+                    alpha[index] = UInt8((Double(alpha[index]) * (1 - cover)).rounded())
+                }
+            }
+        }
+        let regionRect = CGRect(x: CGFloat(region.x) / scale, y: CGFloat(region.y) / scale,
+                                width: CGFloat(region.width) / scale, height: CGFloat(region.height) / scale)
+        if spec.shadowInOverlay {
+            // Shadow over the dim in one 8-bit layer; the plain dim stays out of the shadow's area.
+            let dim = (spec.overlayAlpha * 255).rounded()
+            // The shadow color's exact alpha through the 8-bit mask over the dim, rounded once (measured: the
+            // mask times the 8-bit alpha first leaves the dark shadow a step too strong).
+            let blurMask = BoxShadow(
+                box: CGRect(x: Double(left), y: Double(top + offset), width: Double(right - left),
+                            height: Double(bottom - top)),
+                radius: Double(spec.cornerRadius * scale),
+                sigma: BoxShadow.sigma(blur: Double(spec.blur), scale: Double(scale)), alpha: 1
+            ).alphaMap(CGRect(x: region.x, y: region.y, width: region.width, height: region.height))
+            for index in alpha.indices {
+                let row = index / region.width, column = index % region.width
+                let cover = box.coverage(column: region.x + column, row: region.y + row)
+                let shadow = Double(blurMask[index]) / 255 * (1 - cover) * spec.shadowAlpha
+                alpha[index] = UInt8((255 * shadow + dim * (1 - shadow)).rounded())
+            }
+            let mask = CAShapeLayer()
+            let path = CGMutablePath()
+            path.addRect(bounds)
+            path.addRect(regionRect)
+            mask.path = path
+            mask.fillRule = .evenOdd
+            overlay.mask = mask
+        } else {
+            overlay.mask = nil
+        }
         // Top and bottom across the whole width, left and right between them; each reaches past the corners' curve.
         let topRows = top - region.y + radius, bottomStart = bottom - region.y - radius
         let sideColumns = left - region.x + radius

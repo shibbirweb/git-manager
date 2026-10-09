@@ -76,11 +76,16 @@ enum Control {
         case "quick_open", "search":
             return search(action, args)
         case "close_dialog":
-            // Settings and the search popups each close their own; whichever is open goes, like Escape. The answer
-            // has both states.
+            // The merge tool or its conflicts list answers for itself (an edited merge refuses, as in the app);
+            // otherwise Settings and the search popups each close their own, like Escape, and the answer has both.
+            if onMain({ MergeCenter.shared.mergePath != nil || MergeCenter.shared.conflictsOpen }) {
+                return merge(action, args)
+            }
             _ = search(action, args)
             _ = settings(action, args)
             return reply(ok: true, structured: onMain { popupState().merging(settingsState()) { popup, _ in popup } })
+        case "open_conflicts", "open_merge", "merge":
+            return merge(action, args)
         default:
             return ControlTerminal.answer(action, args) ?? reply(ok: false, text: "Unknown action: \(action)")
         }
@@ -131,6 +136,7 @@ enum Control {
         state.merge(changesState()) { _, changes in changes }
         state["editor"] = editorState()
         state.merge(settingsState()) { _, settings in settings }
+        state["merge"] = mergeState()
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
             state["window"] = [

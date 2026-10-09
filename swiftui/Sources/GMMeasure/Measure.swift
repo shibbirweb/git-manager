@@ -14,8 +14,8 @@ enum Measure {
         var mode = "light"
         /// "changes" (the folder as it opens), "diff" (the diff of Reference.diffFile), "staged" (the Changes
         /// screen after staging Reference.diffFile), "file" (Measure.shownFile in an editor tab)
-        /// "log" (the Log with its newest commit selected)
-        /// or "terminal" (the terminal panel, MeasureTerminal.swift).
+        /// "log" (the Log with its newest commit selected), "terminal" (the terminal panel, MeasureTerminal.swift),
+        /// "merge" (git mergetool on Measure.mergeFile) or "conflicts" (the conflict demo's conflicts list).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -24,6 +24,8 @@ enum Measure {
         var walkSpeed = 0
         /// --theme: the color theme of the run's mode in both apps (a theme id such as monokai-charcoal).
         var colorTheme: String?
+        /// --file: the conflicted file of --screen merge (src/app.ts by default).
+        var mergeFile = Measure.mergeFile
         /// --hdr and --hdr-wait: the display state each capture needs.
         var gate = Display.Gate(requirement: .off, waitS: 30)
     }
@@ -39,14 +41,15 @@ enum Measure {
         options.collapse = collapse == "on"
         options.walkSpeed = max(0, Int(option("--walk", in: &arguments) ?? "0") ?? 0)
         options.colorTheme = option("--theme", in: &arguments)
+        options.mergeFile = option("--file", in: &arguments) ?? Measure.mergeFile
         options.gate = try Display.gate(from: &arguments)
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
         let appPaths: [AppKind: String?] = [
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = (["changes", "diff", "staged", "file", "log", "settings", "terminal"] + searchScreens)
-            .contains(options.screen)
+        let validScreen = (["changes", "diff", "staged", "file", "log", "settings", "terminal", "merge", "conflicts"]
+            + searchScreens).contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -61,6 +64,10 @@ enum Measure {
         let outDir = (swiftuiDir as NSString).appendingPathComponent("build/measure/\(stamp)")
         try FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
         let workDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-measure-\(stamp)")
+        if options.screen == "merge" || options.screen == "conflicts" {
+            try await runMerge(options, only: only, appPaths: appPaths, workDir: workDir, outDir: outDir, stamp: stamp)
+            return
+        }
         let folderPath = try buildDemo(in: workDir)
 
         var reports: [MeasureReport.App] = []

@@ -29,7 +29,11 @@ struct ContentView: View {
                 busy: model.busy
             )
         } leftBar: {
-            LeftActivityBar(changeCount: model.changeCount, logShown: log.shown) {
+            LeftActivityBar(
+                changeCount: model.changeCount,
+                conflicts: model.snapshot?.status?.files.contains(where: \.conflicted) ?? false,
+                logShown: log.shown
+            ) {
                 log.toggle(repoPath: model.repoPath)
             }
         } sidebar: {
@@ -68,6 +72,7 @@ struct ContentView: View {
                 SettingsDialog(settings: settings)
             }
             SearchOverlay()
+            MergeOverlay()
         }
         .overlay(alignment: .bottomTrailing) {
             ToastStack(center: toasts)

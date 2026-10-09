@@ -9,7 +9,7 @@ after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 21 partial, 39 missing (62 features). 12 of 51 scenarios run in both apps.
+Native: 2 done, 24 partial, 36 missing (62 features). 14 of 51 scenarios run in both apps.
 
 Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -46,8 +46,8 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Ignoring files | gitignore | missing | files-menu | - | - |
 | Diffs | diffs | partial | diff | 81.35% / 74.95% | 207 MB / 68 MB |
 | Inline diffs | inline-diffs | missing | diff-inline | - | - |
-| Resolving conflicts | conflicts | missing | conflicts | - | - |
-| Merge tool | merge-tool | missing | merge-tool | - | - |
+| Resolving conflicts | conflicts | partial | conflicts | 99.2% / 99.16% | 167 MB / 47 MB |
+| Merge tool | merge-tool | partial | merge-tool | 99.66% / 99.59% | 157 MB / 35 MB |
 | Blame | blame | missing | blame | - | - |
 | History and log | log | partial | log | 99.46% / 99.33% | 191 MB / 52 MB |
 | Commit tabs | commit-tabs | missing | commit-tab | - | - |
@@ -77,4 +77,4 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Memory readout and memory log | memory | partial | memory-breakdown | - | - |
 | Clear Cache | clear-cache | missing | memory-breakdown | - | - |
 | MCP server and command line tool | mcp | partial | settings | 99.42% / 99.03% | 213 MB / 46 MB |
-| git mergetool mode | mergetool | missing | mergetool-mode | - | - |
+| git mergetool mode | mergetool | partial | mergetool-mode | - | - |

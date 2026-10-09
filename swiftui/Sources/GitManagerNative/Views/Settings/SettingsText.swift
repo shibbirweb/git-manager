@@ -132,7 +132,7 @@ struct WrappedText: View {
             }
             let lower = result.index(result.startIndex, offsetByCharacters: overlap.lowerBound - line.start)
             let upper = result.index(result.startIndex, offsetByCharacters: overlap.upperBound - line.start)
-            result[lower..<upper].backgroundColor = theme.mix("--warning", 40, "--panel")
+            result[lower..<upper].backgroundColor = theme.mix("--warning", 0.4, "--panel")
         }
         return result
     }

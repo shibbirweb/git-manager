@@ -37,6 +37,7 @@ struct Theme {
     }
 
     /// CSS color-mix(in srgb, first weight%, second), mixed in sRGB before the conversion, as the browser does.
+    /// `weight` is a fraction (0.12 for 12%).
     func mix(_ first: String, _ weight: Double, _ second: String) -> Color {
         guard let one = css(first), let two = css(second) else {
             return .clear

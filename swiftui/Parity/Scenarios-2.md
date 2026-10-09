@@ -28,24 +28,36 @@ Folder: demo `acme/storefront`
 
 - Inline diffs (`inline-diffs`, missing): Removed lines above the new ones in one column.
 
-## conflicts: Conflicts dialog (native app cannot show it yet)
+## conflicts: Conflicts dialog (runs in both apps)
 
 Folder: demo `acme/payments-api`
 
 1. Start the app on demo/acme/payments-api, which is stopped in a merge with conflicts.
 2. Click Resolve... on the Conflicts group in Changes.
 
-- Resolving conflicts (`conflicts`, missing): The operation banner, the Conflicts group and dialog, Abort and
-  Continue.
+Measured: light 99.2% (167 MB / 47 MB, 2026-10-09), dark 99.16% (167 MB / 47 MB, 2026-10-09).
 
-## merge-tool: Merge tool (native app cannot show it yet)
+- Resolving conflicts (`conflicts`, partial): The operation banner, the Conflicts group and dialog, Abort and
+  Continue. Native lacks: the operation banner, the Conflicts group in Changes and the status bar's conflict count;
+  Continue and Abort run nothing yet (the dialog's Continue only closes it); deleted files in the Files panel, Publish
+  Branch in the commit box.
+
+## merge-tool: Merge tool (runs in both apps)
 
 Folder: demo `acme/payments-api`
 
 1. Start the app on demo/acme/payments-api.
 2. Click the first file of the Conflicts group: the three pane merge tool.
 
-- Merge tool (`merge-tool`, missing): Three panes, taking changes from either side, the result.
+Note: No control tool opens the current app's merge tool over its window, so the run starts both apps as git mergetool
+on src/app.ts (MergeToolApp.svelte shows the same MergeEditor.svelte under a 38-point title bar).
+
+Measured: light 99.66% (157 MB / 35 MB, 2026-10-09), dark 99.59% (157 MB / 35 MB, 2026-10-09).
+
+- Merge tool (`merge-tool`, partial): Three panes, taking changes from either side, the result. Native lacks: typing
+  in the result pane (it shows the result and takes chunk actions, undo and redo); the find bar, clicking a ruler
+  tick, and keeping Ignore whitespace between launches; the current app's merge tool over its window cannot be opened
+  from outside, so the scenario runs both; apps as git mergetool, which shows the same editor.
 
 ## mergetool-mode: git mergetool window (native app cannot show it yet)
 
@@ -54,7 +66,9 @@ Folder: demo `acme/payments-api`
 1. Set Git Manager up as git's mergetool (docs/wiki/usage/Git-Mergetool.md).
 2. Run git mergetool in demo/acme/payments-api: a merge window opens for the first conflicted file.
 
-- git mergetool mode (`mergetool`, missing): git mergetool opens a merge window per conflicted file.
+- git mergetool mode (`mergetool`, partial): git mergetool opens a merge window per conflicted file. Native lacks: the
+  native app takes the four files as -mergeBase, -mergeLocal, -mergeRemote and -mergeMerged, not the; current app's
+  `merge BASE LOCAL REMOTE MERGED` command line, and installs no mergetool settings.
 
 ## blame: Blame (native app cannot show it yet)
 
@@ -260,21 +274,3 @@ Measured: light 99.5% (270 MB / 44 MB, 2026-10-09), dark 99.38% (271 MB / 49 MB,
   one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing; selection,
   find, file links, the scrollbar, dropping files and terminals in editor tabs; Settings, Terminal (font, cursor,
   scrollback) and the Shelf tab's view.
-
-## scripts: Scripts panel (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Click the play button in the left activity bar (View > Scripts): the scripts of package.json.
-
-- Scripts tool window (`scripts`, missing): The scripts of package.json with run buttons and the Node version.
-
-## update-dialog: Update available (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Run a build older than the newest release on its channel and wait about 30 seconds.
-2. Click Update available in the status bar: the update window.
-
-- Updates and release channels (`updates`, missing): Update available in the status bar and the update window.

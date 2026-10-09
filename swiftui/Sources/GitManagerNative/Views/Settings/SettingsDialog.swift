@@ -101,7 +101,9 @@ struct SettingsDialog: View {
                 if let error = settings.loadError {
                     SettingsErrorBanner(message: error, retry: settings.reload)
                 }
-                SettingsScroll(resetKey: current + "\n" + query, reportsMetrics: true) {
+                PageScroll(resetKey: current + "\n" + query, onMetrics: { offset, contentHeight, viewport in
+                    SettingsStore.shared.scrollMetrics = [offset, contentHeight, viewport]
+                }) {
                     SettingsSectionView(settings: settings, section: current,
                                         showSection: { settings.dialogSection = $0 })
                         .environment(\.settingsSearchWords, searchWords)

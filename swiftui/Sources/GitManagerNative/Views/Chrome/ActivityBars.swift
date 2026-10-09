@@ -11,13 +11,15 @@ struct ActivityItem: View {
     var iconSize: CGFloat = 19
     var active = false
     var badge: Int?
+    /// .badge.conflict: --danger while a file is in conflict.
+    var badgeConflict = false
     var action: () -> Void = {}
     /// The right bar's items mark the active one on their right (.item.active::after).
     var markTrailing = false
 
     var body: some View {
         Button(action: action) {
-            ZStack(alignment: .topLeading) {
+            ZStack(alignment: .bottomTrailing) {
                 // A <button> keeps WebKit's own padding here (2 points above, 3 below), so the icon is centered
                 // half a point above the item's middle.
                 Icon(name: icon, size: iconSize, strokeWidth: 1.8)
@@ -25,14 +27,18 @@ struct ActivityItem: View {
                     .padding(.top, 2)
                     .padding(.bottom, 3)
                 if let badge, badge > 0 {
-                    // .badge: 16 points tall, 10-point semibold white text on the accent color, 19 x 17 in.
-                    Text("\(badge)")
+                    // .badge: 16 points tall, 10-point semibold white text on the accent color, anchored 1 point from
+                    // the item's right and 3 from its bottom, so a wider count grows to the left.
+                    Text(badge > 99 ? "99+" : "\(badge)")
                         .font(PageFont.font(10, weight: .semibold))
                         .foregroundStyle(Color.white)
                         .padding(.horizontal, 4)
                         .frame(minWidth: 16, minHeight: 16)
-                        .background(Capsule(style: .circular).fill(theme.color("--accent")))
-                        .offset(x: 19, y: 17)
+                        .background(
+                            Capsule(style: .circular).fill(theme.color(badgeConflict ? "--danger" : "--accent"))
+                        )
+                        .padding(.trailing, 1)
+                        .padding(.bottom, 3)
                 }
             }
             .frame(width: 36, height: 36)
@@ -65,12 +71,13 @@ struct LeftActivityBar: View {
     @ObservedObject private var terminal = TerminalStore.shared
 
     let changeCount: Int
+    var conflicts = false
     var logShown = false
     var toggleLog: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 2) {
-            ActivityItem(icon: "git-compare", active: true, badge: changeCount)
+            ActivityItem(icon: "git-compare", active: true, badge: changeCount, badgeConflict: conflicts)
             ActivityItem(icon: "branch")
             theme.color("--border-strong")
                 .frame(width: 22, height: 1)

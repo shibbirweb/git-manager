@@ -113,6 +113,11 @@ public struct ParityRunSpec: Codable, Equatable {
     /// A search popup opened in both apps before the capture, as `measure --screen` opens it: "quickopen",
     /// "palette" or "search" (Measure.searchScreens).
     public var searchScreen: String?
+    /// Opens the conflicts list in both apps (the current app's Git > Resolve Conflicts, the native app's
+    /// open_conflicts) before the capture.
+    public var openConflicts: Bool?
+    /// Starts both apps as git mergetool on this conflicted file of the folder instead of on the folder.
+    public var mergetool: String?
 
     public init() {}
 }

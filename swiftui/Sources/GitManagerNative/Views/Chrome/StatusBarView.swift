@@ -26,13 +26,19 @@ struct StatusBarView: View {
             item(icon: "folder-git", text: folderName)
             if let head {
                 item(icon: "branch", text: head.branch ?? head.shortId ?? "")
-                if head.ahead > 0 || head.behind > 0 {
-                    item(icon: "sync", text: syncText(head))
+                // Synchronize Changes (changes/sync.ts rowSync): Publish Branch without an upstream, else the counts.
+                if !head.unborn, head.branch != nil {
+                    if head.upstream == nil {
+                        item(icon: "cloud-upload", text: "")
+                    } else {
+                        item(icon: "sync", text: syncText(head))
+                    }
                 }
             }
             if changeCount > 0 {
                 item(icon: "git-compare", text: changeCount == 1 ? "1 change" : "\(changeCount) changes")
             }
+            StatusBarConflicts()
             Spacer(minLength: 0)
             if let busy {
                 BusyLabel(label: busy, spinnerSize: 10, gap: 5)
@@ -63,13 +69,14 @@ struct StatusBarView: View {
         .svgBias(-0.25)
     }
 
+    /// rowSyncBadge: pulls, then pushes ("2↓ 1↑"); empty when even.
     private func syncText(_ head: HeadInfo) -> String {
         var parts: [String] = []
-        if head.ahead > 0 {
-            parts.append("\(head.ahead)↑")
-        }
         if head.behind > 0 {
             parts.append("\(head.behind)↓")
+        }
+        if head.ahead > 0 {
+            parts.append("\(head.ahead)↑")
         }
         return parts.joined(separator: " ")
     }
@@ -77,7 +84,9 @@ struct StatusBarView: View {
     private func item(icon: String, text: String) -> some View {
         HStack(spacing: 5) {
             Icon(name: icon, size: 12)
-            ExactText(text: text)
+            if !text.isEmpty {
+                ExactText(text: text)
+            }
         }
         .padding(.horizontal, 7)
         .frame(height: 20)

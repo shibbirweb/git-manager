@@ -80,6 +80,7 @@ struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View
                 .frame(height: ShellMetrics.headerHeight - ShellMetrics.border)
                 .background(theme.color("--panel"))
             horizontalLine
+            OpBanner()
             HStack(spacing: 0) {
                 activityBar(leftBar)
                 verticalLine

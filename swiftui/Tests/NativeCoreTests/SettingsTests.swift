@@ -131,10 +131,6 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
     let sigma = ShadowMask.sigma(blur: 28, scale: 2)
     #expect(abs(sigma - 27.8) < 0.01)
     #expect(ShadowMask.reach(sigma: sigma) == 80)
-    // The dark dialog's stronger shadow is fitted 2% wider; past the measured alphas the fit holds.
-    #expect(abs(ShadowMask.sigma(blur: 28, scale: 2, alpha: 0.5) - 28.35) < 0.01)
-    #expect(ShadowMask.sigma(blur: 28, scale: 2, alpha: 0.9) == ShadowMask.sigma(blur: 28, scale: 2, alpha: 0.5))
-    #expect(ShadowMask.sigma(blur: 28, scale: 2, alpha: 0.05) == sigma)
     let width = 400, height = 340
     let bytes = ShadowMask.alphaBytes(box: box, offsetY: 16, sigma: sigma, alpha: 0.16,
                                       regionX: 0, regionY: 0, width: width, height: height)

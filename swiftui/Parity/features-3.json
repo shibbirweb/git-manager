@@ -122,7 +122,11 @@
     {
       "id": "mergetool", "name": "git mergetool mode", "usage": "Git-Mergetool.md", "scenario": "mergetool-mode",
       "check": "git mergetool opens a merge window per conflicted file",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "the native app takes the four files as -mergeBase, -mergeLocal, -mergeRemote and -mergeMerged, not the",
+        "current app's `merge BASE LOCAL REMOTE MERGED` command line, and installs no mergetool settings"
+      ]
     }
   ]
 }

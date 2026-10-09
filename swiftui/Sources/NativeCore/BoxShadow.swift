@@ -25,12 +25,14 @@ public struct BoxShadow: Sendable {
 
     /// The edge sits this many pixels outside the box (measured).
     static let edgeShift = 0.2
-    /// The measured mask of a 28-point blur at 2x, from 16 pixels inside the edge (index 0) to 69 outside.
+    /// The measured mask of a 28-point blur at 2x, from 16 pixels inside the edge (index 0) to 69 outside. The last
+    /// three are 1, not 2: the popups' 8-bit alpha cannot tell them apart, the conflicts dialog's dark shadow (blended
+    /// over the dim at the exact alpha) can.
     static let measuredEdge: [Int] = [
         182, 178, 176, 171, 169, 166, 163, 158, 156, 152, 148, 144, 141, 137, 133, 130, 126, 122, 119, 115, 112, 108,
         104, 101, 97, 94, 90, 87, 84, 80, 77, 74, 71, 68, 65, 62, 59, 56, 53, 51, 48, 46, 43, 41, 39, 37, 35, 33, 31,
         29, 27, 26, 24, 22, 21, 20, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4, 3, 3, 3,
-        3, 2, 2, 2, 2, 2,
+        3, 2, 2, 1, 1, 1,
     ]
     static let measuredStart = -16
 

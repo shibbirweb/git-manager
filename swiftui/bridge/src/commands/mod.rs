@@ -21,6 +21,7 @@ mod commit_options;
 mod editor;
 mod log;
 mod search;
+mod merge;
 mod write;
 
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
@@ -51,12 +52,25 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "file_search_close" => to_json(search::file_search_close()?),
         "text_search" => to_json(search::text_search(parse(command, args)?)?),
         "text_search_cancel" => to_json(search::text_search_cancel(parse(command, args)?)?),
+        "list_conflicts" | "load_conflict" | "save_resolution" | "accept_side" => merge_command(command, args),
+        "load_mergetool" | "save_mergetool" => merge_command(command, args),
         _ => unknown(command),
     }
 }
 
 fn unknown(command: &str) -> AppResult<Value> {
     Err(AppError::invalid(format!("Unknown command: {command}")))
+}
+
+fn merge_command(command: &str, args: Value) -> AppResult<Value> {
+    match command {
+        "list_conflicts" => to_json(merge::list_conflicts(parse(command, args)?)?),
+        "load_conflict" => to_json(merge::load_conflict(parse(command, args)?)?),
+        "save_resolution" => to_json(merge::save_resolution(parse(command, args)?)?),
+        "accept_side" => to_json(merge::accept_side(parse(command, args)?)?),
+        "load_mergetool" => to_json(merge::load_mergetool(parse(command, args)?)?),
+        _ => to_json(merge::save_mergetool(parse(command, args)?)?),
+    }
 }
 
 fn parse<T: DeserializeOwned>(command: &str, args: Value) -> AppResult<T> {

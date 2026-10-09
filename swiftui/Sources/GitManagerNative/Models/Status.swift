@@ -15,6 +15,8 @@ struct StatusSnapshot: Decodable {
 
 struct RepoStatus: Decodable {
     let head: HeadInfo
+    /// The merge, rebase, cherry-pick or revert in progress (kind "none" without one).
+    let op: OpStateDTO?
     let files: [FileStatus]
 }
 

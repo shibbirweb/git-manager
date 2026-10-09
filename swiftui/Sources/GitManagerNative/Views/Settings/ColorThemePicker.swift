@@ -64,7 +64,7 @@ struct ColorThemePicker: View {
                 }
             }
             .frame(height: 18)
-            SettingsScroll(resetKey: mode.rawValue) {
+            PageScroll(resetKey: mode.rawValue) {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(groups, id: \.0) { label, themes in
                         if !themes.isEmpty {

@@ -73,6 +73,7 @@ enum Smoke {
             try await checkLog(app.client, check: check)
             try await checkSettings(app.client, check: check)
             try await SmokeTerminal.check(app.client, check: check)
+            try await checkMerge(app.client, workDir: workDir, check: check)
         } catch {
             check("tool calls", false, "\(error)")
         }
