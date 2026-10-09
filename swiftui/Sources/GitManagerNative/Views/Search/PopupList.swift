@@ -52,13 +52,25 @@ struct PopupList<Row: View>: View {
         })
     }
 
-    /// The vertical thumb at the right edge of the list.
     private var thumb: some View {
+        PopupScrollThumb(height: height, contentHeight: contentHeight, scrollTop: scrollTop)
+    }
+}
+
+/// The vertical thumb at the right edge of a popup's list.
+struct PopupScrollThumb: View {
+    @Environment(\.theme) private var theme
+
+    let height: CGFloat
+    let contentHeight: CGFloat
+    let scrollTop: Double
+
+    var body: some View {
         let length = (height * height / contentHeight).rounded()
         let travel = height - length
         let limit = max(1, Double(contentHeight - height))
         let top = (travel * CGFloat(scrollTop / limit)).rounded()
-        return HStack {
+        HStack {
             Spacer(minLength: 0)
             Capsule(style: .circular)
                 .fill(theme.over("--text-dim", 0.35, on: "--panel"))

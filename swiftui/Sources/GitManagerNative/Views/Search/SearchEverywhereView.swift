@@ -38,11 +38,9 @@ struct SearchEverywhereView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 47)
             } else {
-                PopupList(count: rows.count, height: listHeight, paddingTop: 2, scrollTop: $popups.scrollTop) { index in
-                    TextResultRow(row: rows[index], selected: index == popups.selected,
-                                  textWidth: textWidth(popup: width, rows: rows.count, list: listHeight))
-                        .onTapGesture { popups.activate(index) }
-                }
+                TextResultsList(rows: rows, selected: popups.selected, height: listHeight,
+                                textWidth: textWidth(popup: width, rows: rows.count, list: listHeight),
+                                scrollTop: $popups.scrollTop, activate: popups.activate)
             }
         }
         // Its heights: no results yet, whole rows, and the capped list (a fraction of the window).

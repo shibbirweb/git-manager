@@ -46,4 +46,27 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     Log 99.52 / 99.39, search 99.6 / 99.14, quickopen 99.64 / 99.63, palette 99.5 / 99.3, Changes 99.75 / 99.74.
   - Memory (`gm-measure memory`, idle / diff open / scrolling / after, MB): current 140.7 / 208.2 / 880.3 /
     271.4, native 37.1 / 48.6 / 47.0 / 41.9 (idle was 34 to 36 before: the warm-ups keep 1 to 3 MB).
+- GM-75 Find in Files' results drawn in one view (search's first results were the one case still slower):
+  - Built: ResultsCanvas (NSView) draws the visible rows into one see-through bitmap, as the page's scrolled list
+    is a layer of its own: the match boxes stored as the page stores a translucent fill (layerFill), the texts
+    blended by GlyphCompositor at their exact fractional x, the file icon stroked on the whole point. The selected
+    row's background is a Core Animation layer under it (a fill stored in the bitmap came out a step off).
+    TextResultsList wraps it with the list's thumb (PopupScrollThumb, now shared with PopupList); clicks and the
+    wheel go to the same actions. NativeCore ResultRowLayout places a row's pieces and finds the row under a click
+    (tested). ResultText keeps the line's ellipsis and the list's code font; TextResultRow is gone.
+  - Rule found: WebKit centers a text in its row by its ascent and descent rounded to whole points (semibold 13 on
+    18.0 in a 26-point row, the 11.5 and 13-point mono and 12 and 11-point UI fonts on 17.5); the count's half-point
+    offset was SwiftUI's way to land there.
+  - The caret of the popups' query field takes the text color, as the page's caret-color: auto does (it was blue).
+  - Speed (median of 5, light, load average ~3.5; ms): first results after the first key current 86, native 81
+    (was 100); settled after the last key 9 / 10 (noise); echo 26 / 22. Trace before: results ready ~48 ms, rows
+    built ~82, on screen ~103; WebKit draws them in a few ms.
+  - Pixel diff below the title bar (HDR off): search 99.45% light (99.6 with the SwiftUI rows), 99.22% dark
+    (99.17). Left: text over a match box is a level off in one channel (in the bitmap, over the box), and the
+    selected row's boxes a level off (as they were). Quick Open 99.64 / 99.63, palette 99.51 / 99.3 kept.
+  - Memory (`gm-measure memory-search`, MB average): Find in Files results native 49.2 (57 with the SwiftUI rows),
+    current 195.8; idle 35.8 / 139.1.
+  - Not changed yet: the TextKit 2 field editor invalidates its cursor rects on every key and AppKit then sets the
+    cursor again (~4 ms each with the accessibility pointer settings); the empty results list's 2 + 4 points of
+    padding.
 

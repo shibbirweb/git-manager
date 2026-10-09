@@ -50,7 +50,11 @@ struct QueryField: NSViewRepresentable {
         field.placeholderAttributedString = NSAttributedString(string: placeholder, attributes: [
             .font: PageFont.ui(14), .foregroundColor: placeholderColor,
         ])
-        (field.currentEditor() as? NSTextView)?.selectedTextAttributes = [.backgroundColor: selectionColor]
+        if let editor = field.currentEditor() as? NSTextView {
+            editor.selectedTextAttributes = [.backgroundColor: selectionColor]
+            // The page's caret takes the text's color (caret-color: auto), not the system accent.
+            editor.insertionPointColor = textColor
+        }
         if field.stringValue != value {
             field.stringValue = value
         }
@@ -70,6 +74,9 @@ struct QueryField: NSViewRepresentable {
         }
         if let selectionColor {
             (editor as? NSTextView)?.selectedTextAttributes = [.backgroundColor: selectionColor]
+        }
+        if let textColor = field.textColor {
+            (editor as? NSTextView)?.insertionPointColor = textColor
         }
         let length = (field.stringValue as NSString).length
         editor.selectedRange = selectAll ? NSRange(location: 0, length: length) : NSRange(location: length, length: 0)

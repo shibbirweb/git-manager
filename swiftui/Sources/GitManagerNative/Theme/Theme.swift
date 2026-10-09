@@ -114,6 +114,11 @@ struct Theme {
         Color(nsColor: css(tokenName)?.systemSRGB ?? .clear)
     }
 
+    /// The same as an NSColor, for drawing code (the results canvas's selected row).
+    func systemNSColor(_ tokenName: String) -> NSColor {
+        css(tokenName)?.systemSRGB ?? .clear
+    }
+
     /// A literal CSS color (such as WebKit's own #a9a9a9 placeholder) the way the web view paints it.
     static func parse(_ text: String) -> NSColor? {
         CSSColor.parse(text)?.displayP3
