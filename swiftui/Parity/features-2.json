@@ -135,7 +135,11 @@
     {
       "id": "git-dialogs", "name": "Git dialogs", "usage": "Git-Dialogs.md", "scenario": "git-dialogs",
       "check": "Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes and Clone",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "only Clone (from the welcome screen)",
+        "Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes"
+      ]
     }
   ]
 }

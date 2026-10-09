@@ -19,6 +19,7 @@ use crate::paths::RealPath;
 #[path = "../../../../src-tauri/src/commands/commit_options.rs"]
 mod commit_options;
 mod branches;
+mod clone;
 mod editing;
 mod editor;
 mod log;
@@ -53,6 +54,9 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "get_head_message" => to_json(write::get_head_message(parse(command, args)?)?),
         "last_action" => to_json(write::last_action(parse(command, args)?)?),
         "move_head_back" => to_json(write::move_head_back(parse(command, args)?)?),
+        "clone_repository" => to_json(clone::clone_repository(parse(command, args)?)?),
+        "clone_progress" => to_json(clone::clone_progress()?),
+        "cancel_git_command" => to_json(clone::cancel_git_command(parse(command, args)?)?),
         "get_refs" => to_json(branches::get_refs(parse(command, args)?)?),
         "checkout_branch" => to_json(branches::checkout_branch(parse(command, args)?)?),
         "get_log" => to_json(log::get_log(parse(command, args)?)?),

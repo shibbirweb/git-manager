@@ -10,6 +10,11 @@ struct SearchInput: NSViewRepresentable {
     @Binding var text: String
     let textColor: NSColor
     let caretColor: NSColor
+    var font: NSFont = PageFont.ui(13)
+    /// Takes the keyboard when it appears (the dialogs' first field).
+    var autofocus = true
+    /// Called when the field takes the keyboard.
+    var onFocus: () -> Void = {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text)
@@ -20,12 +25,15 @@ struct SearchInput: NSViewRepresentable {
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
-        field.font = PageFont.ui(13)
+        field.font = font
+        field.onFocus = onFocus
         field.delegate = context.coordinator
         field.lineBreakMode = .byClipping
         field.cell?.isScrollable = true
-        DispatchQueue.main.async {
-            field.window?.makeFirstResponder(field)
+        if autofocus {
+            DispatchQueue.main.async {
+                field.window?.makeFirstResponder(field)
+            }
         }
         return field
     }
@@ -54,6 +62,7 @@ struct SearchInput: NSViewRepresentable {
 }
 
 final class CaretField: NSTextField {
+    var onFocus: () -> Void = {}
     var caretColor: NSColor = .textColor {
         didSet {
             (currentEditor() as? NSTextView)?.insertionPointColor = caretColor
@@ -63,6 +72,9 @@ final class CaretField: NSTextField {
     override func becomeFirstResponder() -> Bool {
         let became = super.becomeFirstResponder()
         (currentEditor() as? NSTextView)?.insertionPointColor = caretColor
+        if became {
+            onFocus()
+        }
         return became
     }
 }

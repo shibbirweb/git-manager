@@ -239,3 +239,21 @@ fn workspace_files_round_trip_and_name_missing_folders() {
     assert_eq!(again["folders"].as_array().map(Vec::len), Some(1), "{again}");
     assert_eq!(again["missing"].as_array().map(Vec::len), Some(1), "{again}");
 }
+
+#[test]
+fn clone_repository_clones_and_refuses_a_full_folder() {
+    let origin = repository("clone-origin");
+    git(&origin, &["add", "-A"]);
+    git(&origin, &["commit", "-q", "-m", "second"]);
+    let parent = sandbox().join("clones");
+    std::fs::create_dir_all(&parent).unwrap();
+    let args = json!({ "url": origin, "parentDir": parent, "folderName": "copy", "cancelId": "c1" });
+    let cloned = ok(call("clone_repository", args.clone()));
+    assert!(cloned.as_str().unwrap_or_default().ends_with("/copy"), "{cloned}");
+    assert!(parent.join("copy/b.txt").exists());
+    let again = call("clone_repository", args);
+    assert_eq!(again["ok"], false, "{again}");
+    let bad_url = json!({ "url": "-x", "parentDir": parent, "folderName": "y", "cancelId": "c2" });
+    let bad = call("clone_repository", bad_url);
+    assert_eq!(bad["ok"], false, "{bad}");
+}

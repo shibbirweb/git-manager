@@ -16,6 +16,7 @@ struct ContentView: View {
     @ObservedObject private var log = LogModel.shared
     @ObservedObject private var settings = SettingsStore.shared
     @ObservedObject private var terminal = TerminalStore.shared
+    @ObservedObject private var clone = CloneCenter.shared
     @Environment(\.colorScheme) private var colorScheme
     /// The folders given at start are still opening: the shell shows, not the welcome screen.
     @State private var opening: Bool
@@ -43,6 +44,9 @@ struct ContentView: View {
             }
             SearchOverlay()
             MergeOverlay()
+            if clone.shown {
+                CloneDialog()
+            }
             ContextMenuOverlay()
         }
         .coordinateSpace(name: HeaderMenus.pageSpace)

@@ -22,7 +22,8 @@ enum Measure {
         /// and design-system), "cleanrepos" (folders with two clean repositories), "norepo" (a plain folder),
         /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open), "welcome" (no folder) and
         /// "welcomerecent" (no folder, with recent projects), "welcomecustomize" and "welcomelearn" (its pages),
-        /// "workspacefile" (acme and design-system from a workspace file) and "closefolder" (storefront closed again).
+        /// "welcomeclone" (its Clone dialog), "workspacefile" (acme and design-system from a workspace file) and
+        /// "closefolder" (storefront closed again).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -173,6 +174,8 @@ enum Measure {
             try await closeFolder(app)
         } else if options.screen == "welcomecustomize" || options.screen == "welcomelearn" {
             try await showWelcomePage(app, page: options.screen == "welcomelearn" ? "Learn" : "Customize")
+        } else if options.screen == "welcomeclone" {
+            try await showWelcomePage(app, page: "Clone Repository")
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

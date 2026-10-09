@@ -9,7 +9,7 @@ and the pages after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 28 partial, 32 missing (62 features). 18 of 51 scenarios run in both apps.
+Native: 2 done, 29 partial, 31 missing (62 features). 18 of 51 scenarios run in both apps.
 
 Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -57,7 +57,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Stashes | stashes | missing | branches-sidebar | - | - |
 | Shelf | shelf | missing | shelf | - | - |
 | Git menu | git-menu | missing | menu-bar | - | - |
-| Git dialogs | git-dialogs | missing | git-dialogs | - | - |
+| Git dialogs | git-dialogs | partial | git-dialogs | - | - |
 | Interactive rebase | interactive-rebase | missing | interactive-rebase | - | - |
 | Worktrees | worktrees | missing | branches-sidebar | - | - |
 | Submodules | submodules | missing | submodules | - | - |

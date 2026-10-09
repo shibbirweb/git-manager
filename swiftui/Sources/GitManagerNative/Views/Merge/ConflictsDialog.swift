@@ -187,6 +187,8 @@ struct DialogButton: View {
     let title: String
     var primary = false
     var disabled = false
+    /// As wide as its text with 12 points of padding and the border (the Git dialogs' buttons), not the column.
+    var hug = false
     let action: () -> Void
 
     var body: some View {
@@ -197,7 +199,8 @@ struct DialogButton: View {
                 .foregroundStyle(disabled
                     ? theme.over(primary ? "--accent-text" : "--text", 0.5, on: "--panel")
                     : theme.ink(primary ? "--accent-text" : "--text"))
-                .frame(maxWidth: .infinity)
+                .padding(.horizontal, hug ? 13 : 0)
+                .frame(maxWidth: hug ? nil : .infinity)
                 .frame(height: 28)
                 .background(RoundedRectangle(cornerRadius: 6, style: .circular)
                     .fill(disabled ? theme.over(surface, 0.5, on: "--panel") : theme.color(surface)))
@@ -206,6 +209,8 @@ struct DialogButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        // The title as is (ExactText may lead with a kerned space).
+        .accessibilityLabel(title)
         .allowsHitTesting(!disabled)
     }
 }

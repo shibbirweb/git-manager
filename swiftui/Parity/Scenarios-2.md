@@ -155,7 +155,9 @@ Folder: demo `acme/storefront`
 1. Start the app on demo/acme/storefront.
 2. Choose Git > Push...: the Push dialog with one commit to push.
 
-- Git dialogs (`git-dialogs`, missing): Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes and Clone.
+- Git dialogs (`git-dialogs`, partial): Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes and Clone.
+  Native lacks: only Clone (from the welcome screen); Push, Pull, Update Project, Merge, Rebase, Reset, Rollback,
+  Remotes.
 
 ## interactive-rebase: Interactive rebase (native app cannot show it yet)
 
@@ -269,12 +271,3 @@ Measured: light 99.5% (270 MB / 44 MB, 2026-10-09), dark 99.38% (271 MB / 49 MB,
   one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing; selection,
   find, file links, the scrollbar, dropping files and terminals in editor tabs; Settings, Terminal (font, cursor,
   scrollback) and the Shelf tab's view.
-
-## scripts: Scripts panel (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Click the play button in the left activity bar (View > Scripts): the scripts of package.json.
-
-- Scripts tool window (`scripts`, missing): The scripts of package.json with run buttons and the Node version.

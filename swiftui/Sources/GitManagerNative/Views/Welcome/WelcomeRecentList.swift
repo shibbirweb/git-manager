@@ -52,7 +52,7 @@ struct WelcomeRecentList: View {
                     }
                 }
             }
-            ToolbarButton(title: "Clone") { WelcomeActions.notBuilt("Clone Repository") }
+            ToolbarButton(title: "Clone") { CloneCenter.shared.open() }
             MenuButton(size: 32, iconSize: 15) {
                 [.command("Open Workspace from File...") { AppModel.shared.pickAndOpenWorkspaceFile() },
                  WelcomeActions.notBuiltItem("Open Folder in New Window...")]

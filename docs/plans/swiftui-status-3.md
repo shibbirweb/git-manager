@@ -245,3 +245,17 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
   - Pixel diff below the title bar (HDR off): workspacefile 99.54% light, 99.37% dark.
   - Memory: current 136 MB, native 53 MB (dark).
   - Not checked in the app: saving (the save panel cannot be driven); the bridge test covers the file.
+- GM-73 the Clone dialog (CloneDialog.svelte in GitDialogFrame.svelte):
+  - Built: bridge commands/clone.rs (clone_repository, clone_progress, cancel_git_command): a port of remote.rs's
+    private clone helpers (same target checks) on the shared git::cancel streaming, tested with a local origin.
+    NativeCore CloneRules (folder name from the URL, URL and folder name checks; tested against gitOptions.ts).
+    CloneCenter keeps the dialog's state, polls progress every 200 ms while git runs, cancels, and afterwards
+    offers Open in This Window / Add to Workspace / Not Now (a native alert). CloneDialog: the dimmed window, the
+    dialog 580 wide at 10% from the top with its shadow in the overlay, the three fields (the URL in the code font
+    with the keyboard), the target path, progress and errors, Cancel and Clone. Opened from the welcome tile and
+    the recent list's Clone button. Checked in the app: typed a local URL, the folder name filled in, Clone made
+    the copy, Open in This Window opened it. gm-measure `--screen welcomeclone`.
+  - Rules found: the page's 1-point borders sit outside the padding (dialog content 19 / 21 points in, input text
+    9); ExactText may lead with a kerned space, so buttons give Accessibility their title (DialogButton).
+  - Pixel diff below the title bar (HDR off): welcomeclone 99.6% light, 99.5% dark; conflicts kept 99.2.
+  - Memory: current 212 MB, native 31 MB (dark).

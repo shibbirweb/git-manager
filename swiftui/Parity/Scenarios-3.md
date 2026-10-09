@@ -1,5 +1,14 @@
 # Parity scenarios (continued)
 
+## scripts: Scripts panel (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Click the play button in the left activity bar (View > Scripts): the scripts of package.json.
+
+- Scripts tool window (`scripts`, missing): The scripts of package.json with run buttons and the Node version.
+
 ## update-dialog: Update available (native app cannot show it yet)
 
 Folder: demo `acme/storefront`

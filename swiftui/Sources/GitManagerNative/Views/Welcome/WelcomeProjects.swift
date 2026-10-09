@@ -1,7 +1,7 @@
 // The Projects page with no recent projects (Welcome.svelte .hello), centered in the page with 32 points of padding,
 // 12 apart: the 72-point logo, "Welcome to Git Manager" (22 points, semibold, 14 points further down), the two-line
 // hint in --text-dim at a 1.6 line height (20 points a line on the page), then 30 points further down the Open,
-// Clone Repository and Open Workspace tiles, 112 wide and 32 apart. Clone is not in the native app yet: it says so.
+// Clone Repository and Open Workspace tiles, 112 wide and 32 apart.
 
 import AppKit
 import SwiftUI
@@ -30,7 +30,7 @@ struct WelcomeProjects: View {
                         }
                     }
                 }
-                WelcomeTile(icon: "cloud-download", label: "Clone Repository") { notBuilt("Clone Repository") }
+                WelcomeTile(icon: "cloud-download", label: "Clone Repository") { CloneCenter.shared.open() }
                 WelcomeTile(icon: "folder-git", label: "Open Workspace") {
                     AppModel.shared.pickAndOpenWorkspaceFile()
                 }
@@ -46,10 +46,6 @@ struct WelcomeProjects: View {
         ExactText(text: text, size: 13)
             .foregroundStyle(theme.ink("--text-dim"))
             .frame(height: 20)
-    }
-
-    private func notBuilt(_ action: String) {
-        ToastCenter.shared.show(.info, "\(action) is not in the native app yet")
     }
 }
 
