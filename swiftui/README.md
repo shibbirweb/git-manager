@@ -144,7 +144,7 @@ swift run -c release gm-measure measure --screen cleanrepos  # acme and design-s
 swift run -c release gm-measure measure --screen norepo  # acme/notes, a folder without a repository
 swift run -c release gm-measure measure --screen welcome  # no folder: the welcome screen's Projects page
 swift run -c release gm-measure measure --screen welcomerecent  # the same with recent projects
-swift run -c release gm-measure measure --screen welcomecustomize  # its Customize page
+swift run -c release gm-measure measure --screen welcomecustomize  # its Customize page (welcomelearn: Learn)
 swift run -c release gm-measure measure --screen closefolder  # storefront closed: the welcome list
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff

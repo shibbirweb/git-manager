@@ -230,3 +230,6 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     99.11, welcome 99.87.
   - Memory: current 143 MB, native 34 MB (dark).
   - Not built: dragging the font size ranges (they show the values).
+- GM-71 the welcome screen's Learn page: WelcomeLearn (Documentation opens the wiki; Keyboard Shortcuts and What's
+  New say they are not built); the sidebar's Learn row shows it. gm-measure `--screen welcomelearn`. Pixel diff
+  below the title bar (HDR off): 99.76% light, 99.73% dark. Memory: current 116 MB, native 25 MB (dark).

@@ -77,8 +77,8 @@ Folder: none
 Measured: light 99.87% (116 MB / 25 MB, 2026-10-09), dark 99.85% (117 MB / 25 MB, 2026-10-09).
 
 - Welcome screen (`welcome-screen`, partial): The Projects page with the search field, Open, Clone and the recent
-  projects. Native lacks: the row's right-click menu, Open in New Window, workspace files; the Learn page, the font
-  size sliders' dragging; Clone and Open Workspace (they say so).
+  projects. Native lacks: the row's right-click menu, Open in New Window, workspace files; the font size sliders'
+  dragging; Clone, Open Workspace, Keyboard Shortcuts and What's New (they say so).
 
 ## workspace: Workspace of two folders (runs in both apps)
 

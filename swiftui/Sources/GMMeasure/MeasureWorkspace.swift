@@ -6,8 +6,8 @@
 // stop the current app with its Git LFS dialog.)
 // --screen norepo: acme/notes, a plain folder: Changes offers to initialize a repository.
 // --screen welcome: both apps started without a folder, on the welcome screen's Projects page (no recent projects
-// in the throwaway home); welcomerecent: the same with recent projects (startState); welcomecustomize: its
-// Customize page.
+// in the throwaway home); welcomerecent: the same with recent projects (startState); welcomecustomize and
+// welcomelearn: its Customize and Learn pages.
 // --screen foldermenurecent: foldermenu with a recent folder and a recent workspace under ~ seeded (startState).
 // --screen closefolder: demo/acme/storefront, then the folder menu's Close Folder: the welcome screen lists it.
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
@@ -20,7 +20,7 @@ extension Measure {
     static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo"] + menuScreens
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu", "foldermenurecent"]
     /// Both apps started without a folder.
-    static let welcomeScreens = ["welcome", "welcomerecent", "welcomecustomize"]
+    static let welcomeScreens = ["welcome", "welcomerecent", "welcomecustomize", "welcomelearn"]
     /// demo/acme/storefront closed with the folder menu's Close Folder: the welcome screen lists it.
     static let closeScreens = ["closefolder"]
     /// The title of the pill each menu screen presses.
@@ -53,11 +53,11 @@ extension Measure {
         return workspaceFolder(demoRepo)
     }
 
-    /// The welcome screen's Customize page, its sidebar row pressed through Accessibility.
-    static func showCustomize(_ app: RunningApp) async throws {
+    /// A page of the welcome screen ("Customize", "Learn"), its sidebar row pressed through Accessibility.
+    static func showWelcomePage(_ app: RunningApp, page: String) async throws {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         WindowCapture.bringToFront(pid: app.pid)
-        try AccessibilityPress.press(pid: app.pid, title: "Customize")
+        try AccessibilityPress.press(pid: app.pid, title: page)
         try await Task.sleep(nanoseconds: 1_000_000_000)
     }
 

@@ -1,6 +1,6 @@
 // The window without a folder (src/lib/views/Welcome.svelte), laid out like the JetBrains welcome screen: a 240-point
 // sidebar on --panel-alt (brand, Projects, Customize and Learn, the GitHub links and the gear) and the page on
-// --panel. Projects and Customize are built; Learn says so in a toast.
+// --panel, which shows the Projects, Customize or Learn page.
 
 import AppKit
 import NativeCore
@@ -25,7 +25,7 @@ struct WelcomeWindow: View {
                 case .customize:
                     WelcomeCustomize()
                 case .learn:
-                    ProjectsPage()
+                    WelcomeLearn()
                 }
             }
             .padding(.top, 22)
@@ -64,7 +64,7 @@ private struct WelcomeSidebar: View {
             VStack(spacing: 2) {
                 SidebarRow(label: "Projects", active: section == .projects) { section = .projects }
                 SidebarRow(label: "Customize", active: section == .customize) { section = .customize }
-                SidebarRow(label: "Learn") { notBuilt("Learn") }
+                SidebarRow(label: "Learn", active: section == .learn) { section = .learn }
             }
             Spacer(minLength: 0)
             // .sidebar-links: 30-point rows 2 apart, 10 points above the foot.
