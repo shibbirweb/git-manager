@@ -25,8 +25,15 @@ final class AppModel: ObservableObject {
     /// Where the open diff's row was in the list, so the selection stays at that place when its file goes away.
     private var lastRowIndex = 0
 
+    /// The workspace's name (the header, the window title, the welcome screen): its folder names.
     var folderName: String {
-        repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native"
+        WorkspaceModel.shared.name ?? repoName
+    }
+
+    /// The active repository's name (the status bar).
+    var repoName: String {
+        WorkspaceModel.shared.repo(at: repoPath)?.name
+            ?? repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native"
     }
 
     var changeCount: Int {
@@ -120,6 +127,18 @@ final class AppModel: ObservableObject {
         await showDiff(file, staged: next.staged, reveal: false)
     }
 
+    /// Makes another repository of the workspace the active one (Set as Active Repository): its last status shows
+    /// at once and is read again; file tabs stay open, as in the current app.
+    func setActive(_ repoRoot: String) async {
+        guard repoRoot != repoPath else {
+            return
+        }
+        closeDiff()
+        repoPath = repoRoot
+        snapshot = WorkspaceModel.shared.statuses[repoRoot].map { StatusSnapshot(hash: "", status: $0) }
+        await refreshStatus()
+    }
+
     /// Opens a folder from the UI: reads its status off the main thread.
     func open(repoPath folderPath: String) async {
         begin(folderPath)
@@ -159,14 +178,18 @@ final class AppModel: ObservableObject {
         case .success(let snapshot):
             self.snapshot = snapshot
             errorText = nil
-            // The Files panel shows the open folder, toned by its status.
+            let workspace = WorkspaceModel.shared
+            if let repoPath {
+                workspace.record(repoRoot: repoPath, snapshot: snapshot)
+            }
+            // The Files panel shows the workspace folder, toned by every repository's status.
             let files = FilesModel.shared
-            if let repoPath, files.rootPath != repoPath {
+            if let rootPath = workspace.root ?? repoPath, files.rootPath != rootPath {
                 Task {
-                    await files.open(rootPath: repoPath)
+                    await files.open(rootPath: rootPath)
                 }
             }
-            files.updateTones(snapshot.status?.files ?? [])
+            files.updateTones(workspace.repos.isEmpty ? snapshot.status?.files ?? [] : workspace.toneFiles())
         case .failure(let error):
             snapshot = nil
             errorText = error.message

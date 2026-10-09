@@ -18,6 +18,8 @@ enum Smoke {
         let workDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-smoke-\(processID)")
         let repoPath = (workDir as NSString).appendingPathComponent("repo")
         try makeRepository(at: repoPath)
+        // The app shows real paths (/private/var/...), as the current app does since it opens folders as workspaces.
+        let realRepoPath = realPath(repoPath)
 
         let home = (workDir as NSString).appendingPathComponent("home")
         try MeasureTerminal.writeShellProfile(home: home)
@@ -40,15 +42,22 @@ enum Smoke {
 
             let state = try await app.client.call("app", ["action": "get_state"]).structured ?? [:]
             let changedFiles = state["changedFiles"] as? Int
-            let stateMatches = state["repoPath"] as? String == repoPath && changedFiles == 3
+            let stateMatches = state["repoPath"] as? String == realRepoPath && changedFiles == 3
             check("app get_state", stateMatches, "\(changedFiles.map(String.init) ?? "nil") changed files")
 
             let status = try await app.client.call("git_status").structured ?? [:]
             let files = (status["files"] as? [[String: Any]] ?? []).compactMap { $0["path"] as? String }.sorted()
             check("git_status", files == ["long.txt", "notes.txt", "readme.md"], files.joined(separator: ", "))
 
-            let notRepo = try await app.client.call("app", ["action": "open_folder", "folderPath": workDir])
-            check("open_folder on a plain folder fails", notRepo.isError, notRepo.text)
+            let around = try await app.client.call("app", ["action": "open_folder", "folderPath": workDir])
+            let aroundRepos = workspaceRepos(around)
+            check("open_folder on the folder around the repository finds it", !around.isError
+                  && aroundRepos == [realRepoPath], aroundRepos.joined(separator: ", "))
+            let emptyPath = (workDir as NSString).appendingPathComponent("empty")
+            try FileManager.default.createDirectory(atPath: emptyPath, withIntermediateDirectories: true)
+            let empty = try await app.client.call("app", ["action": "open_folder", "folderPath": emptyPath])
+            check("open_folder on a folder without git has no repository",
+                  workspaceRepos(empty).isEmpty && !(empty.structured?["branch"] is String), empty.text)
             let reopened = try await app.client.call("app", ["action": "open_folder", "folderPath": repoPath])
             let branch = reopened.structured?["branch"] as? String
             check("open_folder on the repository", !reopened.isError && branch == "main")
@@ -68,7 +77,7 @@ enum Smoke {
             let image = try shot.image.map(RGBAImage.decode(pngData:))
             check("take_screenshot", (image?.width ?? 0) > 0, image.map { "\($0.width)x\($0.height)" } ?? shot.text)
 
-            try await checkSearch(app, repoPath: repoPath, check: check)
+            try await checkSearch(app, repoPath: realRepoPath, check: check)
             try await checkWrites(app.client, check: check)
             try await checkLog(app.client, check: check)
             try await checkSettings(app.client, check: check)
@@ -145,6 +154,20 @@ enum Smoke {
 
     /// One commit with readme.md and long.txt, then readme.md and lines 10 and 50 of long.txt changed, and
     /// notes.txt new.
+    static func realPath(_ folderPath: String) -> String {
+        guard let resolved = realpath(folderPath, nil) else {
+            return folderPath
+        }
+        defer { free(resolved) }
+        return String(cString: resolved)
+    }
+
+    /// The repository roots of the workspace a control answer reports.
+    static func workspaceRepos(_ answer: ToolAnswer) -> [String] {
+        let workspace = answer.structured?["workspace"] as? [String: Any]
+        return (workspace?["repos"] as? [[String: Any]] ?? []).compactMap { $0["root"] as? String }
+    }
+
     static func makeRepository(at repoPath: String) throws {
         try FileManager.default.createDirectory(atPath: repoPath, withIntermediateDirectories: true)
         let git = { (arguments: [String]) throws in

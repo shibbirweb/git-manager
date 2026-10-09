@@ -78,6 +78,10 @@ struct SmallButton: View {
 struct ConflictsGroup: View {
     @Environment(\.theme) private var theme
     let files: [FileStatus]
+    /// Inside a repository's section (several repositories): 12 points further in.
+    var nested = false
+    /// Makes the section's repository the active one before its conflicts open.
+    var activate: () async -> Void = {}
 
     var body: some View {
         if !files.isEmpty {
@@ -91,16 +95,22 @@ struct ConflictsGroup: View {
                 }
                 .padding(.leading, 4)
                 SmallButton(title: "Resolve...", height: 20, size: 11.5) {
-                    MergeCenter.shared.openConflicts()
+                    Task {
+                        await activate()
+                        MergeCenter.shared.openConflicts()
+                    }
                 }
             }
-            .padding(.leading, 4)
+            .padding(.leading, nested ? 16 : 4)
             .padding(.trailing, 6)
             .frame(height: 26)
             ForEach(files, id: \.path) { file in
-                FileRow(file: file, kind: nil)
+                FileRow(file: file, kind: nil, nested: nested)
                     .onTapGesture {
-                        Task { await MergeCenter.shared.openMerge(file.path) }
+                        Task {
+                            await activate()
+                            await MergeCenter.shared.openMerge(file.path)
+                        }
                     }
             }
             Color.clear.frame(height: 4)

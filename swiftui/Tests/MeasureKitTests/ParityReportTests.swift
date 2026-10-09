@@ -111,3 +111,18 @@ private func outcome(_ scenario: String, _ mode: String, content: Double?, probl
     #expect(ParityFormat.percent(nil) == "-")
     #expect(ParityFormat.megabytes(32.6) == "33 MB")
 }
+
+@Test func resultsSplitIntoPagesAndMergeBack() throws {
+    var results = ParityResults()
+    results.record((1...5).map { outcome("s\($0)", "light", content: 99) }, date: "2026-10-09")
+    let pages = try results.pages(perPage: 2)
+    #expect(pages.map(\.name) == ["results-1.json", "results-2.json", "results-3.json"])
+    let dir = (NSTemporaryDirectory() as NSString).appendingPathComponent("gm-pages-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(atPath: dir) }
+    for page in pages {
+        let filePath = (dir as NSString).appendingPathComponent(page.name)
+        try page.text.write(toFile: filePath, atomically: true, encoding: .utf8)
+    }
+    #expect(try ParityResults.load(directoryPath: dir) == results)
+}

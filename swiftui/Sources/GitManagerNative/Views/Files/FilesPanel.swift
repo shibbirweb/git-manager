@@ -8,6 +8,7 @@ struct FilesPanel: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var files = FilesModel.shared
     @ObservedObject private var editor = EditorModel.shared
+    @ObservedObject private var workspace = WorkspaceModel.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -56,10 +57,20 @@ struct FilesPanel: View {
         }
     }
 
+    /// The branch shown next to a repository folder (FileExplorer branchOf).
+    private func branch(of dirPath: String) -> String? {
+        guard let rootPath = files.rootPath else {
+            return nil
+        }
+        let head = workspace.statuses[(rootPath as NSString).appendingPathComponent(dirPath)]?.head
+        return head?.branch ?? head?.shortId
+    }
+
     private func rows(in dirPath: String, depth: Int) -> AnyView {
         AnyView(ForEach(files.entries(in: dirPath), id: \.self) { entry in
             let path = dirPath.isEmpty ? entry.name : "\(dirPath)/\(entry.name)"
-            FileTreeRow(entry: entry, depth: depth, expanded: files.expanded.contains(path), tone: files.tones[path])
+            FileTreeRow(entry: entry, depth: depth, expanded: files.expanded.contains(path), tone: files.tones[path],
+                        branch: entry.isRepo ? branch(of: path) : nil)
                 .onTapGesture {
                     Task {
                         if entry.isDir {
@@ -90,6 +101,8 @@ struct FileTreeRow: View {
     let depth: Int
     let expanded: Bool
     let tone: FileTone?
+    /// A repository folder's branch, 11-point --text-dim after its semibold name.
+    var branch: String?
 
     var body: some View {
         HStack(spacing: 4) {
@@ -101,10 +114,11 @@ struct FileTreeRow: View {
             }
             .frame(width: 12, height: 12)
             Icon(name: entry.isDir ? (entry.isRepo ? "folder-git" : "folder") : "file", size: 14)
-                .foregroundStyle(entry.ignored ? theme.ink("--text-faint") : theme.ink("--text-dim"))
+                .foregroundStyle(theme.ink(entry.ignored ? "--text-faint" : entry.isRepo ? "--accent" : "--text-dim"))
             Text(entry.name)
                 .foregroundStyle(nameColor)
-                .font(PageFont.font(13, weight: tone == .conflict ? .medium : .regular))
+                // .row.conflict's 500 comes after .row.repo's 600 in the page's CSS.
+                .font(PageFont.font(13, weight: tone == .conflict ? .medium : entry.isRepo ? .semibold : .regular))
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .overlay(alignment: .topLeading) {
@@ -116,6 +130,13 @@ struct FileTreeRow: View {
                             .offset(y: 8.5)
                     }
                 }
+            if let branch {
+                Text(branch)
+                    .font(PageFont.font(11))
+                    .foregroundStyle(theme.ink("--text-dim"))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
             Spacer(minLength: 0)
             marker
         }

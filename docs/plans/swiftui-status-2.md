@@ -284,3 +284,4 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
   - Memory (parity run, cart.ts with the gutter): current 268 MB, native 42 MB.
   - Not built: clicking a note or a block (the commit in the Log, Option-click copies its hash), tooltips, Blame in
     the diff toolbar.
+- Continued in [swiftui-status-3.md](swiftui-status-3.md) (GM-60 on).

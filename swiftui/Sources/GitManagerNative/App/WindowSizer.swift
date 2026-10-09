@@ -26,6 +26,13 @@ struct WindowSizer: NSViewRepresentable {
                 return
             }
             sized = true
+            // `-windowFrame "{{x, y}, {w, h}}"`: gm-measure puts the window on the screen it measures.
+            if let frame = UserDefaults.standard.string(forKey: "windowFrame") {
+                DispatchQueue.main.async {
+                    window.setFrame(NSRectFromString(frame), display: true)
+                }
+                return
+            }
             // The window is not restorable (WindowChrome), so macOS does not put the saved frame back by itself.
             if let saved = UserDefaults.standard.string(forKey: WindowSizer.savedFrameKey) {
                 DispatchQueue.main.async {

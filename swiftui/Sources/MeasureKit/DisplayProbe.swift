@@ -7,12 +7,12 @@ import IOKit
 import IOKit.graphics
 
 public enum DisplayProbe {
-    /// The main screen (the first one when none is main), or nil without a window server connection.
+    /// The measuring screen (MeasureScreen: the built-in display), or nil without a window server connection.
     ///
     /// NSScreen takes new EDR values from the window server on a run loop, which gm-measure (a command without one)
     /// never runs, so a long run should read this from a new process each time (gm-measure display --json).
     public static func read() -> DisplayState? {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else {
+        guard let screen = MeasureScreen.screen else {
             return nil
         }
         let reference = Double(screen.maximumReferenceExtendedDynamicRangeColorComponentValue)

@@ -3,7 +3,7 @@
 //
 //   swift run gm-measure measure [--mode light|dark] [--theme <id>] [--collapse on|off]
 //                                [--screen changes|diff|staged|file|log|settings|terminal|quickopen|palette|search|
-//                                 merge|conflicts] [--file <path>]
+//                                 merge|conflicts|edit|fold|blame|workspace] [--file <path>]
 //                                [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
 //                                [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark]
@@ -44,7 +44,7 @@ let usage = """
     Usage:
       gm-measure measure [--mode light|dark] [--theme <id>]
                          [--screen changes|diff|staged|file|log|settings|terminal|quickopen|palette|search|
-                          merge|conflicts] [--file <path>]
+                          merge|conflicts|edit|fold|blame|workspace] [--file <path>]
                          [--collapse on|off]
                          [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
                          [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]

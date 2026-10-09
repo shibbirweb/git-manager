@@ -4,24 +4,39 @@
 
 import SwiftUI
 
-/// The Navigation Bar over the empty editor: the repository as one crumb, accent-colored while it has changes.
+/// The Navigation Bar over the empty editor: the repository as one crumb, accent-colored while it has changes. A
+/// repository inside the workspace folder comes after that folder's crumb ("acme > payments-api", crumbsFor).
 struct RepoCrumb: View {
     @Environment(\.theme) private var theme
 
     let name: String
     let hasChanges: Bool
+    var folderName: String?
 
     var body: some View {
-        HStack(spacing: 4) {
-            Icon(name: "folder-git", size: 12)
-            Text(name)
-                .lineLimit(1)
+        // .nav-bar: 1 point between the crumbs and the chevrons.
+        HStack(spacing: 1) {
+            if let folderName {
+                crumb(icon: "folder", name: folderName, color: theme.ink("--text-dim"))
+                Icon(name: "chevron-right", size: 11)
+                    .foregroundStyle(theme.ink("--text-faint"))
+            }
+            crumb(icon: "folder-git", name: name,
+                  color: hasChanges ? theme.ink("--accent") : theme.ink("--text-dim"))
         }
         .font(.system(size: 12))
-        .foregroundStyle(hasChanges ? theme.ink("--accent") : theme.ink("--text-dim"))
+        .padding(.leading, 10)
+    }
+
+    private func crumb(icon: String, name: String, color: Color) -> some View {
+        HStack(spacing: 4) {
+            Icon(name: icon, size: 12)
+            // At its exact width, so the chevron and the next crumb land where WebKit puts them.
+            ExactText(text: name, size: 12)
+        }
+        .foregroundStyle(color)
         .padding(.horizontal, 3)
         .frame(height: 22)
-        .padding(.leading, 10)
     }
 }
 

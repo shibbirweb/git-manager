@@ -237,46 +237,6 @@
         "nativeVersion" : "0.1.0",
         "windowPercent" : 99.48
       }
-    },
-    "settings" : {
-      "dark" : {
-        "contentPercent" : 99.03,
-        "currentMb" : 213.2,
-        "currentVersion" : "0.1.0-beta.7",
-        "date" : "2026-10-09",
-        "nativeMb" : 45.9,
-        "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.05
-      },
-      "light" : {
-        "contentPercent" : 99.42,
-        "currentMb" : 213,
-        "currentVersion" : "0.1.0-beta.7",
-        "date" : "2026-10-09",
-        "nativeMb" : 46,
-        "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.31
-      }
-    },
-    "terminal" : {
-      "dark" : {
-        "contentPercent" : 99.38,
-        "currentMb" : 271.4,
-        "currentVersion" : "0.1.0-beta.7",
-        "date" : "2026-10-09",
-        "nativeMb" : 48.5,
-        "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.38
-      },
-      "light" : {
-        "contentPercent" : 99.5,
-        "currentMb" : 269.5,
-        "currentVersion" : "0.1.0-beta.7",
-        "date" : "2026-10-09",
-        "nativeMb" : 43.6,
-        "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.39
-      }
     }
   }
 }

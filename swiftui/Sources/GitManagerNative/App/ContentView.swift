@@ -10,6 +10,7 @@ struct ContentView: View {
     let initialRepoPath: String?
 
     @ObservedObject private var model = AppModel.shared
+    @ObservedObject private var workspace = WorkspaceModel.shared
     @ObservedObject private var toasts = ToastCenter.shared
     @ObservedObject private var editor = EditorModel.shared
     @ObservedObject private var log = LogModel.shared
@@ -23,6 +24,7 @@ struct ContentView: View {
             HeaderBar(
                 folderName: model.folderName,
                 head: model.snapshot?.status?.head,
+                repoPill: workspace.showsRepoPicker ? (model.repoName, workspace.repos.count) : nil,
                 chooseFolder: chooseFolder,
                 toggleAppearance: settings.toggleLightDark,
                 openSettings: { settings.openDialog() },
@@ -30,7 +32,7 @@ struct ContentView: View {
             )
         } leftBar: {
             LeftActivityBar(
-                changeCount: model.changeCount,
+                changeCount: workspace.multiRepo ? workspace.totalChanges : model.changeCount,
                 conflicts: model.snapshot?.status?.files.contains(where: \.conflicted) ?? false,
                 logShown: log.shown
             ) {
@@ -56,7 +58,7 @@ struct ContentView: View {
             RightActivityBar()
         } status: {
             StatusBarView(
-                folderName: model.folderName,
+                folderName: model.repoName,
                 head: model.snapshot?.status?.head,
                 changeCount: model.changeCount,
                 memoryBytes: model.memoryBytes,
@@ -88,7 +90,7 @@ struct ContentView: View {
         .navigationTitle(model.folderName)
         .task {
             if let initialRepoPath {
-                await model.open(repoPath: initialRepoPath)
+                await model.openFolder(initialRepoPath)
             }
         }
         .task {
@@ -119,7 +121,7 @@ struct ContentView: View {
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let folderPath = panel.url?.path {
             Task {
-                await model.open(repoPath: folderPath)
+                await model.openFolder(folderPath)
             }
         }
     }

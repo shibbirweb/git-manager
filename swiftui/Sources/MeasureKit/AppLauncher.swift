@@ -4,6 +4,7 @@
 // settings.json that turns its MCP server and command line tool on, on a free port (its default,
 // 48731, is usually taken by the real app).
 
+import AppKit
 import Darwin
 import Foundation
 
@@ -80,9 +81,15 @@ public enum AppLauncher {
             settings.merge(extraSettings) { _, extra in extra }
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
+            try writeSession(configDir: configDir, folderPath: folderPath)
         }
-        let nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? []) + nativeArguments
-        let appArgs = kind == .current ? [folderPath] : nativeArgs
+        var nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? []) + nativeArguments
+        if let placed = MeasureScreen.centered(windowSize) {
+            nativeArgs += ["-windowFrame", NSStringFromRect(placed.cocoaFrame)]
+        }
+        // The current app opens the folder from its saved session, which also puts the window on the measuring
+        // screen; a folder on its command line would skip the session and open where macOS likes.
+        let appArgs = kind == .current ? [] : nativeArgs
         let started = Date()
         let opener = try run("/usr/bin/open", ["-n", "-a", appPath, "--env", "HOME=\(home)", "--args"] + appArgs)
         if opener.status != 0 {
@@ -121,6 +128,23 @@ public enum AppLauncher {
         }
         await stop(pid: connected.pid)
         throw ToolError("\(kind.rawValue): \(folderPath) did not finish loading within \(Int(timeout)) s")
+    }
+
+    /// Both apps' default window, in points.
+    public static let windowSize = CGSize(width: 1400, height: 880)
+
+    /// The current app's state.json: one window on `folderPath`, at its default size on the measuring screen
+    /// (src-tauri/src/windows.rs restores it at start: "windows", outer position and inner size in points).
+    static func writeSession(configDir: String, folderPath: String) throws {
+        var window: [String: Any] = ["folders": [folderPath], "workspaceFile": NSNull()]
+        if let placed = MeasureScreen.centered(windowSize) {
+            window["bounds"] = [
+                "x": placed.topLeft.x, "y": placed.topLeft.y,
+                "width": windowSize.width, "height": windowSize.height,
+            ]
+        }
+        let data = try JSONSerialization.data(withJSONObject: ["windows": [window]])
+        try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("state.json")))
     }
 
     /// True once the app shows the folder's status, so both apps are measured in the same state.

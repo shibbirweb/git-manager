@@ -16,7 +16,8 @@ enum Measure {
         /// screen after staging Reference.diffFile), "file" (Measure.shownFile in an editor tab)
         /// "log" (the Log with its newest commit selected), "terminal" (the terminal panel, MeasureTerminal.swift),
         /// "merge" (git mergetool on Measure.mergeFile), "conflicts" (the conflict demo's conflicts list) or
-        /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings).
+        /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings),
+        /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -51,7 +52,7 @@ enum Measure {
         ]
         let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
                              "conflicts"]
-            + searchScreens + editScreens).contains(options.screen)
+            + searchScreens + workspaceScreens + editScreens).contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -70,7 +71,8 @@ enum Measure {
             try await runMerge(options, only: only, appPaths: appPaths, workDir: workDir, outDir: outDir, stamp: stamp)
             return
         }
-        let folderPath = try buildDemo(in: workDir)
+        let demoRepo = try buildDemo(in: workDir)
+        let folderPath = workspaceScreens.contains(options.screen) ? workspaceFolder(demoRepo) : demoRepo
 
         var reports: [MeasureReport.App] = []
         for kind in only.map({ [$0] }) ?? AppKind.allCases {

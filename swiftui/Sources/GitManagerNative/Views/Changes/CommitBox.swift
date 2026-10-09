@@ -19,11 +19,16 @@ struct CommitBox: View {
     let ahead: Int
     /// The branch has no upstream yet: Publish Branch with the cloud icon instead of Sync Changes (sync.ts).
     var publish = false
+    /// Several repositories: the repository the commit goes to, above the message.
+    var target: CommitTarget?
 
     var body: some View {
         VStack(spacing: 0) {
             theme.color("--border-strong").frame(height: 1)
             VStack(spacing: 8) {
+                if let target {
+                    CommitTargetRow(target: target)
+                }
                 messageField
                 footer
                 syncButton
@@ -56,7 +61,7 @@ struct CommitBox: View {
                 .padding(.vertical, 6)
             if draft.message.isEmpty {
                 // WebKit's own placeholder color (CSS darkgray), in light and dark alike.
-                Text("Commit message")
+                Text(target.map { "Message for \($0.name)" } ?? "Commit message")
                     .foregroundStyle(Color(nsColor: Theme.parse(WebKitDefaults.placeholder) ?? .gray))
                     .padding(.leading, 9)
                     .padding(.top, 8)

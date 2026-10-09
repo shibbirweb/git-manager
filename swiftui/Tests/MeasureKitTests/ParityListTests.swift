@@ -52,7 +52,7 @@ let sampleFeatures = """
 
 @Test func theCommittedSummaryIsUpToDate() throws {
     let list = try ParityList.load(directoryPath: parityPath)
-    let results = try ParityResults.load(path: (parityPath as NSString).appendingPathComponent("results.json"))
+    let results = try ParityResults.load(directoryPath: parityPath)
     for page in ParitySummary.pages(list, results: results) {
         let filePath = (parityPath as NSString).appendingPathComponent(page.name)
         let committed = try String(contentsOfFile: filePath, encoding: .utf8)

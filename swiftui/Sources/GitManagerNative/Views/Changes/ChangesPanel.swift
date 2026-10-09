@@ -1,5 +1,6 @@
 // The Changes sidebar (src/lib/views/ChangesView.svelte): the heading row, the grouped file list and the commit box,
-// measured in swiftui/Reference/changes-<mode>/changes-head.json, group-headers.json and file-rows.json.
+// measured in swiftui/Reference/changes-<mode>/changes-head.json, group-headers.json and file-rows.json. With
+// several repositories the list has a section for each (RepoSections) and the commit box names its target.
 
 import NativeCore
 import SwiftUI
@@ -8,19 +9,23 @@ struct ChangesPanel: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var model = AppModel.shared
     @ObservedObject private var draft = AppModel.shared.draft
+    @ObservedObject private var workspace = WorkspaceModel.shared
 
     var body: some View {
         let status = model.snapshot?.status
         let groups = FileGroups(status?.files ?? [])
         let state = model.commitState
+        let multiRepo = workspace.multiRepo
         VStack(spacing: 0) {
             ChangesHead(
-                count: status?.files.count ?? 0, head: status?.head, decorations: groups.decorations,
+                count: multiRepo ? workspace.totalChanges : status?.files.count ?? 0,
+                head: status?.head, decorations: groups.decorations,
                 busy: model.busy != nil, commitBlocked: CommitRules.blocked(state) != nil,
                 publish: status.map(Self.publishes) ?? false,
                 operation: status?.op.map { $0.kind != "none" } ?? false,
                 commit: { Task { await model.commitFromHead() } },
-                refresh: { Task { await model.refreshStatus() } }
+                refresh: { Task { multiRepo ? await model.refreshAll() : await model.refreshStatus() } },
+                repoActions: !multiRepo
             )
             if let errorText = model.errorText {
                 Text(errorText)
@@ -31,17 +36,21 @@ struct ChangesPanel: View {
                 // The page's classic scrollbar takes its 10 points from the rows while they overflow.
                 PageScroll {
                     VStack(spacing: 0) {
-                        if status != nil && groups.isEmpty {
-                            CleanTree()
+                        if multiRepo {
+                            RepoSections()
+                        } else {
+                            if status != nil && groups.isEmpty {
+                                CleanTree()
+                            }
+                            ChangeGroups(repoRoot: model.repoPath ?? "", groups: groups)
                         }
-                        ConflictsGroup(files: groups.conflicts)
-                        group("Staged", groups.staged, kind: \.staged, staged: true)
-                        group("Changes", groups.unstaged, kind: \.unstaged, staged: false)
                     }
-                    .padding(.top, 4)
+                    // .file-list: 4 points above and below the rows.
+                    .padding(.vertical, 4)
                 }
             }
-            CommitBox(state: state, ahead: status?.head.ahead ?? 0, publish: status.map(Self.publishes) ?? false)
+            CommitBox(state: state, ahead: status?.head.ahead ?? 0, publish: status.map(Self.publishes) ?? false,
+                      target: multiRepo ? commitTarget(staged: groups.staged.count, head: status?.head) : nil)
         }
     }
 
@@ -50,64 +59,26 @@ struct ChangesPanel: View {
         !status.head.unborn && status.head.branch != nil && status.head.upstream == nil
     }
 
-    /// A group with its header and rows, then 4 points before the next one; nothing when it is empty.
-    @ViewBuilder
-    private func group(
-        _ title: String, _ files: [FileStatus], kind: KeyPath<FileStatus, String?>, staged: Bool
-    ) -> some View {
-        if !files.isEmpty {
-            GroupHeader(title: title, count: files.count, actions: groupActions(files, staged: staged),
-                        busy: model.busy != nil)
-            ForEach(files, id: \.path) { file in
-                FileRow(file: file, kind: file[keyPath: kind], selected: isSelected(file, staged),
-                        actions: rowActions(file, staged: staged))
-                    .onTapGesture {
-                        Task { await model.showDiff(file, staged: staged) }
-                    }
-                    // A double click stages or unstages, like Enter on the row.
-                    .simultaneousGesture(TapGesture(count: 2).onEnded {
-                        act { _ = staged ? await model.unstage([file]) : await model.stage([file]) }
-                    })
-            }
-            Color.clear.frame(height: 4)
+    /// The active repository (no other target is picked yet), offered with the others that have changes.
+    private func commitTarget(staged: Int, head: HeadInfo?) -> CommitTarget? {
+        let counts = Dictionary(uniqueKeysWithValues: workspace.repos.map { ($0.root, workspace.changeCount($0.root)) })
+        guard let repo = WorkspaceRules.commitTarget(workspace.repos, preferredRoot: nil, activeRoot: model.repoPath)
+        else {
+            return nil
         }
-    }
-
-    private func groupActions(_ files: [FileStatus], staged: Bool) -> [RowAction] {
-        if staged {
-            return [RowAction(icon: "minus", title: "Unstage all") { act { await model.unstage(files) } }]
-        }
-        return [
-            RowAction(icon: "discard", title: "Discard all", danger: true) { model.discard(files) },
-            RowAction(icon: "plus", title: "Stage all") { act { await model.stage(files) } },
-        ]
-    }
-
-    private func rowActions(_ file: FileStatus, staged: Bool) -> [RowAction] {
-        if staged {
-            return [RowAction(icon: "minus", title: "Unstage") { act { await model.unstage([file]) } }]
-        }
-        return [
-            RowAction(icon: "discard", title: "Discard changes", danger: true) { model.discard([file]) },
-            RowAction(icon: "plus", title: "Stage") { act { await model.stage([file]) } },
-        ]
-    }
-
-    private func act(_ work: @escaping @MainActor () async -> Void) {
-        Task {
-            await work()
-        }
-    }
-
-    /// The list never has focus while the diff is shown, so the row takes .row.selected's --selected-inactive.
-    private func isSelected(_ file: FileStatus, _ staged: Bool) -> Bool {
-        model.openDiff?.filePath == file.path && model.openDiff?.staged == staged
+        let choices = WorkspaceRules.commitChoices(workspace.repos, changeCounts: counts, targetRoot: repo.root)
+        let branch = head.map { $0.branch ?? ($0.shortId.map { "detached at \($0)" } ?? "detached") }
+        return CommitTarget(
+            label: WorkspaceRules.choiceLabel(repo, staged: staged), name: repo.name, branch: branch,
+            picker: choices.count > 1
+        )
     }
 }
 
 /// "Working tree clean": a 36-point tinted circle with a check, centered under the list's top padding.
-private struct CleanTree: View {
+struct CleanTree: View {
     @Environment(\.theme) private var theme
+    var text = "Working tree clean"
 
     var body: some View {
         VStack(spacing: 8) {
@@ -115,7 +86,7 @@ private struct CleanTree: View {
                 .foregroundStyle(theme.ink("--success"))
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(theme.over("--success", 0.14, on: "--panel")))
-            Text("Working tree clean")
+            Text(text)
                 .foregroundStyle(theme.ink("--text-dim"))
         }
         .padding(.vertical, 28)

@@ -12,9 +12,9 @@ public enum WindowCapture {
     /// Height of the macOS title bar both apps draw over their content, in points.
     public static let titleBarPoints = 32
 
-    /// Screenshot rows taken by the title bar on the main screen (2 points to the pixel on Retina).
+    /// Screenshot rows taken by the title bar on the measuring screen (2 points to the pixel on Retina).
     public static var titleBarRows: Int {
-        titleBarPoints * Int(NSScreen.main?.backingScaleFactor ?? 2)
+        titleBarPoints * Int(MeasureScreen.scale)
     }
 
     /// Brings the app with `pid` to the front and waits a moment. macOS pauses drawing in a covered web view, so the

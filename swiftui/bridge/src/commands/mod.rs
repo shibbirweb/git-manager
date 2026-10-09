@@ -23,6 +23,7 @@ mod editor;
 mod log;
 mod search;
 mod merge;
+mod workspaces;
 mod write;
 
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
@@ -31,6 +32,8 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
     }
     match command {
         "get_status" => to_json(get_status(parse(command, args)?)?),
+        "open_workspace" => to_json(workspaces::open_workspace(parse(command, args)?)?),
+        "discover_repositories" => to_json(workspaces::discover_repositories(parse(command, args)?)?),
         // The status bar's readout: this app and any helpers, counted like the current app counts itself.
         "memory_usage" => to_json(crate::memory::usage()),
         "list_directories" => to_json(list_directories(parse(command, args)?)?),

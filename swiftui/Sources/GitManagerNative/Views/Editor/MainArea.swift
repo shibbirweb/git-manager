@@ -6,12 +6,13 @@ struct MainArea: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var model = AppModel.shared
     @ObservedObject private var editor = EditorModel.shared
+    @ObservedObject private var workspace = WorkspaceModel.shared
 
     var body: some View {
         if model.openDiff == nil && editor.tabs.tabs.isEmpty {
             EditorArea {
                 if model.repoPath != nil {
-                    RepoCrumb(name: model.folderName, hasChanges: model.changeCount > 0)
+                    RepoCrumb(name: model.repoName, hasChanges: model.changeCount > 0, folderName: crumbFolder)
                 }
             } content: {
                 WelcomeView(title: model.folderName)
@@ -45,5 +46,13 @@ struct MainArea: View {
                 }
             }
         }
+    }
+
+    /// The workspace folder's name when the active repository lies inside it.
+    private var crumbFolder: String? {
+        guard let root = workspace.root, root != model.repoPath else {
+            return nil
+        }
+        return workspace.folders.first?.name
     }
 }

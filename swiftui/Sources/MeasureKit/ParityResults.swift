@@ -67,6 +67,28 @@ public struct ParityResults: Codable, Equatable {
         self.scenarios = scenarios
     }
 
+    /// Every results page in `directoryPath` (results-1.json, results-2.json...), merged.
+    public static func load(directoryPath: String) throws -> ParityResults {
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directoryPath)) ?? []
+        var merged = ParityResults()
+        for name in names.sorted() where name.hasPrefix("results-") && name.hasSuffix(".json") {
+            let page = try load(path: (directoryPath as NSString).appendingPathComponent(name))
+            merged.scenarios.merge(page.scenarios) { _, later in later }
+        }
+        return merged
+    }
+
+    /// The results as pages of `perPage` scenarios in id order, so no file grows past 300 lines.
+    public func pages(perPage: Int = 12) throws -> [(name: String, text: String)] {
+        let ids = scenarios.keys.sorted()
+        return try stride(from: 0, to: ids.count, by: perPage).enumerated().map { index, start in
+            let slice = ids[start..<min(start + perPage, ids.count)]
+            let part = Dictionary(uniqueKeysWithValues: slice.map { ($0, scenarios[$0] ?? [:]) })
+            let page = ParityResults(scenarios: part)
+            return ("results-\(index + 1).json", try page.encoded())
+        }
+    }
+
     public static func load(path filePath: String) throws -> ParityResults {
         guard let data = FileManager.default.contents(atPath: filePath) else {
             return ParityResults()

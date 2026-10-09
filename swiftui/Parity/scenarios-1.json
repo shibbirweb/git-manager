@@ -67,8 +67,9 @@
       "folder": "acme",
       "steps": [
         "Start the app on demo/acme: storefront, payments-api (stopped in a merge) and the plain folder notes.",
-        "Changes lists both repositories; open the folder menu in the header."
-      ]
+        "Changes lists both repositories, payments-api active (the merge banner, the header's repository pill)."
+      ],
+      "run": {}
     },
     {
       "id": "files-menu",

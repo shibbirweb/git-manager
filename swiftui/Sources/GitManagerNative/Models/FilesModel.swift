@@ -125,7 +125,9 @@ final class FilesModel: ObservableObject {
         guard let rootPath else {
             return
         }
-        let args = ListDirectoriesArgs(rootPath: rootPath, dirPaths: dirPaths, repoRoots: [rootPath])
+        // Every repository of the workspace, so their folders show the repository icon.
+        let repoRoots = Array(Set([rootPath] + WorkspaceModel.shared.repos.map(\.root)))
+        let args = ListDirectoriesArgs(rootPath: rootPath, dirPaths: dirPaths, repoRoots: repoRoots)
         let result = await Task.detached { () -> [FolderListing]? in
             try? Backend.call("list_directories", args) as [FolderListing]
         }.value

@@ -22,7 +22,7 @@ enum LiveWindowCapture {
         guard let window = content.windows.first(where: { $0.windowID == windowID }) else {
             throw ToolError("ScreenCaptureKit does not list window \(windowID)")
         }
-        let scale = NSScreen.main?.backingScaleFactor ?? 2
+        let scale = MeasureScreen.scale
         let configuration = SCStreamConfiguration()
         configuration.width = Int((window.frame.width * scale).rounded())
         configuration.height = Int((window.frame.height * scale).rounded())

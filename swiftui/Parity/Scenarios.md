@@ -78,16 +78,19 @@ Folder: none
   projects. Native lacks: the whole screen (the native welcome view is the empty editor area of an open folder);
   Projects, Customize and Learn pages.
 
-## workspace: Workspace with several repositories (native app cannot show it yet)
+## workspace: Workspace with several repositories (runs in both apps)
 
 Folder: demo `acme`
 
 1. Start the app on demo/acme: storefront, payments-api (stopped in a merge) and the plain folder notes.
-2. Changes lists both repositories; open the folder menu in the header.
+2. Changes lists both repositories, payments-api active (the merge banner, the header's repository pill).
+
+Measured: light 99.51% (146 MB / 43 MB, 2026-10-09), dark 99.33% (146 MB / 43 MB, 2026-10-09).
 
 - Workspaces and folders (`workspaces`, partial): Both repositories of demo/acme in Changes, the header's folder menu.
-  Native lacks: only one repository folder opens (the header's folder button); several repositories, Add Folder,
-  workspace files and the repository switcher.
+  Native lacks: the folder menu and the repository switcher (the header pills open nothing yet); Add Folder, Remove
+  Folder, workspace files, Scan for Repositories, Close Folder; the clean repositories' list, Set as Active Repository
+  from a menu, remembering the active repository.
 
 ## files-menu: Files panel right-click menu (native app cannot show it yet)
 

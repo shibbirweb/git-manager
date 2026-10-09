@@ -62,13 +62,13 @@ enum Control {
             guard let folderPath = args["folderPath"] as? String, !folderPath.isEmpty else {
                 return reply(ok: false, text: "folderPath is required")
             }
-            onMain { AppModel.shared.begin(folderPath) }
-            let result = AppModel.readStatus(repoPath: folderPath)
-            onMain { AppModel.shared.finish(result) }
+            let result = AppModel.openFolderNow(folderPath)
             if case .failure(let error) = result {
                 return reply(ok: false, text: error.message, structured: onMain { state() })
             }
             return reply(ok: true, structured: onMain { state() })
+        case "toggle_repo", "set_active_repo":
+            return workspaceAction(action, args)
         case "stage", "unstage", "commit":
             return git(action, args)
         case "show_log":
@@ -139,6 +139,7 @@ enum Control {
         state["editor"] = editorState()
         state.merge(settingsState()) { _, settings in settings }
         state["merge"] = mergeState()
+        state["workspace"] = workspaceState()
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
             state["window"] = [

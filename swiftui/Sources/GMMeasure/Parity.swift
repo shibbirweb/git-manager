@@ -12,7 +12,6 @@ import MeasureKit
 
 enum Parity {
     static let parityDir = (swiftuiDir as NSString).appendingPathComponent("Parity")
-    static let resultsPath = (parityDir as NSString).appendingPathComponent("results.json")
     static let wikiFeaturesPath = (repoRoot as NSString).appendingPathComponent("docs/wiki/features.json")
 
     static func run(_ arguments: [String]) async throws -> Int32 {
@@ -105,16 +104,29 @@ enum Parity {
         }
 
         if record {
-            var results = try ParityResults.load(path: resultsPath)
+            var results = try ParityResults.load(directoryPath: parityDir)
             let day = DateFormatter()
             day.dateFormat = "yyyy-MM-dd"
             day.locale = Locale(identifier: "en_US_POSIX")
             results.record(outcomes, date: day.string(from: Date()))
-            try results.encoded().write(toFile: resultsPath, atomically: true, encoding: .utf8)
+            try writeResults(results)
             try writeSummary(list, results: results)
-            print("Recorded in \(resultsPath) and the summary pages.")
+            print("Recorded in \(parityDir)/results-*.json and the summary pages.")
         }
         return outcomes.allSatisfy { $0.problems.isEmpty } ? 0 : 1
+    }
+
+    /// Replaces the results pages (results-*.json), dropping a page the results no longer fill.
+    private static func writeResults(_ results: ParityResults) throws {
+        let files = FileManager.default
+        for name in (try? files.contentsOfDirectory(atPath: parityDir)) ?? []
+        where name.hasPrefix("results") && name.hasSuffix(".json") {
+            try files.removeItem(atPath: (parityDir as NSString).appendingPathComponent(name))
+        }
+        for page in try results.pages() {
+            let filePath = (parityDir as NSString).appendingPathComponent(page.name)
+            try page.text.write(toFile: filePath, atomically: true, encoding: .utf8)
+        }
     }
 
     private static func printList(_ arguments: [String]) throws -> Int32 {
@@ -137,7 +149,7 @@ enum Parity {
             return 2
         }
         let list = try loadList()
-        let results = try ParityResults.load(path: resultsPath)
+        let results = try ParityResults.load(directoryPath: parityDir)
         if !check {
             try writeSummary(list, results: results)
             print("Wrote the summary pages in \(parityDir)")

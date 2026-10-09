@@ -22,6 +22,8 @@ struct ChangesHead: View {
     var operation = false
     var commit: () -> Void = {}
     var refresh: () -> Void = {}
+    /// One repository: its actions sit in the heading (ChangesView.svelte); several get Refresh All instead.
+    var repoActions = true
 
     private static let titleFont = PageFont.ui(11, weight: .semibold)
     private static let titleWidth = ExactText.width("CHANGES", font: titleFont, tracking: 0.66)
@@ -56,7 +58,17 @@ struct ChangesHead: View {
                 IconButton(width: 24, height: 24, action: toggleCommitLayout) {
                     CommitLayoutIcon(perRepo: settings.preferences.commitBoxLayout == "perRepo")
                 }
-                actions
+                if repoActions {
+                    RepoActions(
+                        head: head, decorations: decorations, busy: busy, commitBlocked: commitBlocked,
+                        publish: publish, operation: operation, commit: commit, refresh: refresh
+                    )
+                } else {
+                    // Several repositories: their actions are on their own headers; this one refreshes them all.
+                    IconButton(width: 24, height: 24, action: refresh) {
+                        Icon(name: "refresh", size: 13)
+                    }
+                }
                 IconButton(width: 24, height: 24, action: {}) {
                     Icon(name: "x", size: 14)
                 }
@@ -69,77 +81,8 @@ struct ChangesHead: View {
         .frame(height: 34)
     }
 
-    /// The repository's row actions in --text-dim: 20 points tall, 4-point corners, 1 apart.
     /// Settings > Git > Commit box, which this button switches (the per-repository boxes are not built yet).
     private func toggleCommitLayout() {
         settings.update { $0.commitBoxLayout = $0.commitBoxLayout == "perRepo" ? "single" : "perRepo" }
-    }
-
-    private var actions: some View {
-        HStack(spacing: 1) {
-            // .branch is a grid (icon, name, markers) with 2-point gaps; a narrow sidebar hides the name, but its
-            // empty column keeps both gaps: 4 points from the icon to the markers.
-            HeadAction(disabled: busy) {
-                HStack(spacing: 4) {
-                    Icon(name: "branch", size: 12)
-                    ExactText(text: decorations, size: 12, weight: .semibold)
-                }
-                .padding(.horizontal, 4)
-                .frame(height: 20)
-            }
-            if let head, publish || head.ahead > 0 || head.behind > 0 {
-                HeadAction(disabled: busy || operation) {
-                    HStack(spacing: 2) {
-                        Icon(name: publish ? "cloud-upload" : "sync", size: 13)
-                        if !publish {
-                            // .sync-badge: tabular digits, wider than the default ones.
-                            let badge = head.ahead > 0 ? "\(head.ahead)↑" : "\(head.behind)↓"
-                            ExactText(text: badge, size: 11, tabular: true)
-                                .offset(y: 0.5)
-                        }
-                    }
-                    .padding(.horizontal, 3)
-                    .frame(height: 20)
-                }
-            }
-            HeadAction(disabled: busy || commitBlocked, action: commit) {
-                Icon(name: "check", size: 14).frame(width: 20, height: 20)
-            }
-            HeadAction(action: refresh) {
-                Icon(name: "refresh", size: 13).frame(width: 20, height: 20)
-            }
-            HeadAction {
-                Icon(name: "more", size: 14).frame(width: 20, height: 20)
-            }
-        }
-    }
-}
-
-/// A .action button of the heading: --text-dim, --border-strong and --text under the mouse, and at 40% opacity
-/// (one solid color, blended as WebKit does) while it is off.
-private struct HeadAction<Label: View>: View {
-    @Environment(\.theme) private var theme
-    @State private var hovered = false
-
-    var disabled = false
-    var action: () -> Void = {}
-    @ViewBuilder let label: () -> Label
-
-    var body: some View {
-        let active = hovered && !disabled
-        Button(action: action) {
-            label()
-                .background(
-                    RoundedRectangle(cornerRadius: 4, style: .circular)
-                        .fill(active ? theme.color("--border-strong") : .clear)
-                )
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .allowsHitTesting(!disabled)
-        .foregroundStyle(disabled
-            ? theme.over("--text-dim", 0.4, on: "--panel")
-            : theme.ink(active ? "--text" : "--text-dim"))
-        .onHover { hovered = $0 }
     }
 }

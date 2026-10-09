@@ -84,6 +84,38 @@ extension Control {
         ]
     }
 
+    /// toggle_repo folds or unfolds a repository's section in Changes; set_active_repo makes it the active one.
+    static func workspaceAction(_ action: String, _ args: [String: Any]) -> String {
+        guard let repoRoot = args["repoRoot"] as? String,
+              onMain({ WorkspaceModel.shared.repo(at: repoRoot) }) != nil else {
+            return reply(ok: false, text: "repoRoot must be a repository of the workspace")
+        }
+        if action == "toggle_repo" {
+            onMain { WorkspaceModel.shared.toggleCollapsed(repoRoot) }
+        } else {
+            waitOnMain { model in
+                await model.setActive(repoRoot)
+            }
+        }
+        return reply(ok: true, structured: onMain { state() })
+    }
+
+    /// The open workspace: its folders, each repository with its change count, and the active one.
+    @MainActor
+    static func workspaceState() -> [String: Any] {
+        let workspace = WorkspaceModel.shared
+        return [
+            "name": orNull(workspace.name),
+            "folders": workspace.folders.map(\.root),
+            "repos": workspace.repos.map { repo -> [String: Any] in
+                ["root": repo.root, "name": repo.name, "relativePath": repo.relativePath,
+                 "changes": workspace.changeCount(repo.root), "collapsed": workspace.collapsed.contains(repo.root)]
+            },
+            "activeRepo": orNull(AppModel.shared.repoPath),
+            "totalChanges": workspace.totalChanges,
+        ]
+    }
+
     /// Runs `work` on the main actor and waits for it here, on the server's thread (never the main one).
     private static func waitOnMain<Value>(_ work: @escaping @MainActor (AppModel) async -> Value) -> Value {
         let semaphore = DispatchSemaphore(value: 0)

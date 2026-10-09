@@ -41,6 +41,18 @@ struct ExactText: View {
         return ((advance + tracking * CGFloat(text.count)) * 64).rounded() / 64
     }
 
+    /// `text` cut as text-overflow: ellipsis cuts it in WebKit: whole characters, spaces kept, then the ellipsis.
+    static func cut(_ text: String, width maxWidth: CGFloat, font: NSFont) -> String {
+        if width(text, font: font) <= maxWidth {
+            return text
+        }
+        var prefix = text
+        while !prefix.isEmpty && width(prefix + "\u{2026}", font: font) > maxWidth {
+            prefix.removeLast()
+        }
+        return prefix + "\u{2026}"
+    }
+
     /// The text after a space kerned to `fraction` (or `fraction` + half a point when it is negative).
     static func shifted(_ text: String, font: NSFont, by fraction: CGFloat) -> AttributedString {
         if fraction == 0 {

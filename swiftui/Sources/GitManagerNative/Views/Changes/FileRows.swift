@@ -37,6 +37,8 @@ struct GroupHeader: View {
     let count: Int
     var actions: [RowAction] = []
     var busy = false
+    /// Inside a repository's section (several repositories): 12 points further in.
+    var nested = false
 
     var body: some View {
         HStack(spacing: 0) {
@@ -54,7 +56,7 @@ struct GroupHeader: View {
                     .padding(.leading, 4)
             }
         }
-        .padding(.leading, 8)
+        .padding(.leading, nested ? 20 : 8)
         .padding(.trailing, 6)
         .frame(height: 26)
         .background(hovered ? theme.color("--hover") : Color.clear)
@@ -134,6 +136,8 @@ struct FileRow: View {
     let kind: String?
     var selected = false
     var actions: [RowAction] = []
+    /// Inside a repository's section (several repositories): 40 points in instead of 28.
+    var nested = false
 
     var body: some View {
         content
@@ -188,7 +192,7 @@ struct FileRow: View {
             }
         }
         .font(.system(size: 13))
-        .padding(.leading, 28)
+        .padding(.leading, nested ? 40 : 28)
         .padding(.trailing, 6)
         .frame(height: 24)
     }

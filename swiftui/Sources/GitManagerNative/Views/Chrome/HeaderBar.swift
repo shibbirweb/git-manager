@@ -10,6 +10,8 @@ struct HeaderBar: View {
 
     let folderName: String
     let head: HeadInfo?
+    /// The active repository and how many the workspace holds, shown when the folder is not simply one repository.
+    var repoPill: (name: String, count: Int)?
     let chooseFolder: () -> Void
     let toggleAppearance: () -> Void
     var openSettings: () -> Void = {}
@@ -24,6 +26,19 @@ struct HeaderBar: View {
                 Icon(name: "folder", size: 14)
                 ExactText(text: folderName, size: 13, weight: .semibold)
                 Icon(name: "chevron-down", size: 12)
+            }
+            if let repoPill {
+                ExactText(text: "/", size: 13)
+                    .foregroundStyle(theme.ink("--text-faint"))
+                PillButton(action: {}) {
+                    Icon(name: "folder-git", size: 14)
+                    ExactText(text: repoPill.name, size: 13)
+                    // .repo-count: 11 points in --text-dim, half a point lower as WebKit sets small text.
+                    ExactText(text: "\(repoPill.count)", size: 11)
+                        .foregroundStyle(theme.ink("--text-dim"))
+                        .offset(y: 0.5)
+                    Icon(name: "chevron-down", size: 12)
+                }
             }
             if let head {
                 PillButton(action: {}) {

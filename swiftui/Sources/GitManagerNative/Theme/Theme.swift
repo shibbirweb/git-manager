@@ -54,6 +54,16 @@ struct Theme {
         return Color(nsColor: top.over(bottom, opacity: opacity))
     }
 
+    /// CSS color-mix(in srgb, token alpha, transparent) as a background over the `background` token: an rgba() fill,
+    /// as one solid color (the op badge's 18% --warning).
+    func fill(_ tokenName: String, _ alpha: Double, on background: String) -> Color {
+        guard let top = css(tokenName), let bottom = css(background) else {
+            return .clear
+        }
+        let translucent = CSSColor(red: top.red, green: top.green, blue: top.blue, alpha: alpha)
+        return Color(nsColor: translucent.filled(over: bottom))
+    }
+
     /// A translucent token (such as --diff-added) over the `background` token, at its own alpha, as one solid color.
     func solid(_ tokenName: String, on background: String) -> Color {
         Color(nsColor: nsSolid(tokenName, on: background))
