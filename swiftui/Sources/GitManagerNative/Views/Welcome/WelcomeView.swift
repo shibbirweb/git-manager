@@ -66,8 +66,8 @@ struct WelcomeView: View {
             }
             .frame(width: 300)
         }
-        // Centered on whole points as WebKit centers the column (220, not 220.5): half a point lower would move
-        // every label a pixel. The page's 24-point padding is on both sides, so it does not move the center.
+        // Centered as WebKit centers the column (WholePointCenter): a half point off would move every label a pixel.
+        // The page's 24-point padding is on both sides, so it does not move the center.
         .modifier(WholePointCenter())
         // The page centers the column a fraction above the whole point used here (SVGBiasKey).
         .svgBias(-0.25)

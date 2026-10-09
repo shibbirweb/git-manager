@@ -108,6 +108,8 @@ public struct ParityRunSpec: Codable, Equatable {
     public var appSettings: [String: ParityValue]?
     /// The Settings section to open in both apps (open_settings) before the capture.
     public var openSettings: String?
+    /// The terminal panel shown in both apps, its shell printing gm-measure's fixed output (MeasureTerminal.swift).
+    public var showTerminal: Bool?
 
     public init() {}
 }

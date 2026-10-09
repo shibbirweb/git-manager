@@ -9,7 +9,7 @@ after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 17 partial, 41 missing (60 features). 8 of 49 scenarios run in both apps.
+Native: 2 done, 18 partial, 40 missing (60 features). 9 of 49 scenarios run in both apps.
 
 Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -63,7 +63,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | GitHub account | github | missing | github | - | - |
 | Git Console | git-console | missing | git-console | - | - |
 | Back and Forward | navigation | missing | back-forward | - | - |
-| Integrated terminal | terminal | missing | terminal | - | - |
+| Integrated terminal | terminal | partial | terminal | 99.5% / 99.38% | 270 MB / 44 MB |
 | Scripts tool window | scripts | missing | scripts | - | - |
 | Menu bar | menus | missing | menu-bar | - | - |
 | Settings | settings | partial | settings | 99.42% / 99.03% | 213 MB / 46 MB |

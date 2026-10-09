@@ -74,7 +74,7 @@ enum Control {
         case "open_settings", "close_dialog":
             return settings(action, args)
         default:
-            return reply(ok: false, text: "Unknown action: \(action)")
+            return ControlTerminal.answer(action, args) ?? reply(ok: false, text: "Unknown action: \(action)")
         }
     }
 

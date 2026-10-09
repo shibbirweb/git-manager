@@ -14,7 +14,8 @@ enum Measure {
         var mode = "light"
         /// "changes" (the folder as it opens), "diff" (the diff of Reference.diffFile), "staged" (the Changes
         /// screen after staging Reference.diffFile), "file" (Measure.shownFile in an editor tab)
-        /// or "log" (the Log with its newest commit selected).
+        /// "log" (the Log with its newest commit selected)
+        /// or "terminal" (the terminal panel, MeasureTerminal.swift).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -44,7 +45,7 @@ enum Measure {
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = ["changes", "diff", "staged", "file", "log", "settings"].contains(options.screen)
+        let validScreen = ["changes", "diff", "staged", "file", "log", "settings", "terminal"].contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -97,6 +98,9 @@ enum Measure {
         if kind == .native {
             try writeNativeSettings(home: home, values: themeSettings)
         }
+        if options.screen == "terminal" {
+            try MeasureTerminal.writeShellProfile(home: home)
+        }
         let app = try await AppLauncher.launch(
             kind: kind, home: home, folderPath: folderPath, appPath: appPath,
             settings: kind == .current ? themeSettings : [:], mode: options.mode
@@ -126,6 +130,8 @@ enum Measure {
             try await showLog(app)
         } else if options.screen == "settings" {
             try await openSettings(app)
+        } else if options.screen == "terminal" {
+            try await MeasureTerminal.show(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

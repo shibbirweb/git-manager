@@ -14,6 +14,7 @@ struct ContentView: View {
     @ObservedObject private var editor = EditorModel.shared
     @ObservedObject private var log = LogModel.shared
     @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var terminal = TerminalStore.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -34,10 +35,16 @@ struct ContentView: View {
         } sidebar: {
             ChangesPanel()
         } main: {
-            if log.shown {
-                LogScreen()
-            } else {
-                MainArea()
+            // The editor area above the bottom panel, which takes the main area's whole width (Workspace.svelte).
+            VStack(spacing: 0) {
+                if log.shown {
+                    LogScreen()
+                } else {
+                    MainArea()
+                }
+                if terminal.panelOpen {
+                    TerminalPanel(store: terminal)
+                }
             }
         } files: {
             FilesPanel()

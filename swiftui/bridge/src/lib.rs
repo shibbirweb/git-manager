@@ -19,8 +19,16 @@ pub mod git_console;
 pub mod merge;
 #[path = "../../../src-tauri/src/paths.rs"]
 pub mod paths;
+#[path = "../../../src-tauri/src/terminal.rs"]
+pub mod terminal;
+#[path = "../../../src-tauri/src/terminal_flow.rs"]
+pub mod terminal_flow;
+#[path = "../../../src-tauri/cli/src/home.rs"]
+pub mod home;
 
 mod commands;
+mod config;
+pub mod terminal_ffi;
 pub mod control;
 pub mod memory;
 
@@ -76,7 +84,7 @@ pub unsafe extern "C" fn gm_free_string(text: *mut c_char) {
     }
 }
 
-unsafe fn text_of(pointer: *const c_char) -> String {
+pub(crate) unsafe fn text_of(pointer: *const c_char) -> String {
     if pointer.is_null() {
         return String::new();
     }

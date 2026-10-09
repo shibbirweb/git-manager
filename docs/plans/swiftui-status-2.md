@@ -120,3 +120,40 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
   - Not built: the Keyboard Shortcuts list, GitHub sign-in, commit identity and templates, font and terminal
     previews, sliders and selects that work, Reset to Defaults' own dialog (a macOS alert asks), dragging the
     dialog, the memory marks' popovers, per-repository commit boxes, search matches on keyboard shortcuts.
+- GM-55 the terminal panel (src/lib/terminal/TerminalPanel.svelte, xterm.js):
+  - Built: the Terminal activity item and Ctrl+` show and hide the bottom panel (260 points, the main area's width,
+    one point of --panel above it where the page's resize handle sits); its header with the TERMINAL and SHELF tabs,
+    the shell's name and folder, New Terminal, the shell menu arrow, Split, Move into Editor Area, Kill, a divider
+    and Hide (sizes from TerminalPanel.svelte and inspect_elements); one shell session. The control server answers
+    `show_panel`, `list_terminals`, `new_terminal`, `send_terminal_text` and `terminal_text`; gm-measure has
+    `measure --screen terminal`, the `terminal` parity scenario (`showTerminal`) and `memory --scenario terminal`.
+  - Why not SwiftTerm, as the plan said: the pixels must be xterm.js's, so its view could not be used, and its engine
+    is 14 MB of object code (Kitty graphics, sixel, bidi, a Metal renderer, a build plugin and three package
+    dependencies, 83 s to build). The shell runs in the current app's own PTY code instead (src-tauri/src/terminal.rs
+    and terminal_flow.rs by path in the bridge: the same shell detection, environment, output merging, flow control
+    and kill rules), its output comes through a C callback, and the emulator is a port of xterm.js's behaviour in
+    NativeCore (parser, buffer with 12-byte cells like xterm.js, CSI, SGR, modes, the alternate screen, scroll
+    regions, replies, keys), so programs behave as in the current app. Missing: reflow on resize, mouse reporting,
+    xterm's own box-drawing glyphs, find, file links, the scrollbar, several terminals and splits.
+  - What the page paints, found by dumping the current app's layers (GM-48's dylib): the terminal is one WebGL canvas
+    layer, 773 x 216 points holding 1545 x 432 sRGB pixels (stretched one pixel wider with linear filtering), over
+    the DOM's --term-background. xterm.js rasterizes each glyph with WebKit's canvas (Core Graphics) over the cell's
+    background, then clears every pixel within (|fg - bg| summed) / 12 of the background, and draws cells with
+    nearest texels at whole pixels. Two findings: the cell size and the ASCII glyphs of the atlas warm-up (33 to 125
+    in the default colors) come from a canvas outside the page, where WebKit finds only system fonts, so they are
+    Menlo with font smoothing on; every other glyph (colors, bold, italic, ~, non-ASCII) is drawn on a canvas inside
+    the terminal element, where the user's JetBrains Mono resolves and the page's -webkit-font-smoothing:
+    antialiased turns smoothing off, with that font's own descent below the ideographic baseline. The minimum
+    contrast ratio 4.5 (xterm's ensureContrastRatio) darkens #00bc00 to #008800 and the like. The native canvas
+    (TerminalGlyphs, TerminalFrame, TerminalFonts) now produces the dumped canvas byte for byte: 0 of 667,440 pixels
+    differ in light (two dumps) and dark.
+  - Centering, found with the panel open: the page centers a flex column on the free space rounded down to whole
+    points, then halved, so the welcome column above the panel sits on a half point (WholePointCenter now does
+    this; it used to round the position down to a whole point, which left the welcome a pixel high: terminal light
+    99.26 to 99.5%, dark 99.15 to 99.38%, Changes unchanged).
+  - Pixel diff below the title bar (HDR off, local reference build): terminal 99.5% light, 99.38% dark (parity
+    99.5 / 99.38). Others unchanged: Changes 99.75 / 99.74, staged 99.75 / 99.73, diff folded 99.66 / 99.67, every
+    line 99.65 / 99.65, file 99.64 / 99.64, Log 99.52 / 99.39, Settings 99.41 / 99.03. Left: colored and styled
+    glyphs in the terminal, the welcome's text edges, the memory readout.
+  - Memory (`gm-measure memory --scenario terminal`, 4000 lines printed), MB average (peak): current 136 idle, 270
+    terminal open, 282 printing, 291 after; native 34, 49, 50 (52), 54.

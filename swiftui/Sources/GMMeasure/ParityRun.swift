@@ -105,6 +105,9 @@ enum ParityRun {
         if kind == .native {
             try Measure.writeNativeSettings(home: home, values: appSettings)
         }
+        if spec.showTerminal == true {
+            try MeasureTerminal.writeShellProfile(home: home)
+        }
         let app = try await AppLauncher.launch(
             kind: kind,
             home: home,
@@ -166,6 +169,9 @@ enum ParityRun {
         }
         if let section = spec.openSettings {
             try await Measure.openSettings(app, section: section)
+        }
+        if spec.showTerminal == true {
+            try await MeasureTerminal.show(app)
         }
         if app.kind == .current {
             for expectation in spec.expectCurrent ?? [] {

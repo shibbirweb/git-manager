@@ -19,4 +19,16 @@ typedef char *(*gm_ui_handler)(const char *request_json);
 /// Returns the port, or -1.
 int gm_control_start(gm_ui_handler ui_handler);
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+/// Gets a terminal's output (exited false), then its exit once (exited true; exit_code INT32_MIN when killed).
+typedef void (*gm_terminal_output)(void *context, uint32_t terminal_id, const uint8_t *bytes, size_t length,
+                                   int32_t exit_code, bool exited);
+
+/// Starts a shell ({"shellId","cwd","cols","rows"}) like the Tauri terminal_spawn; answers like gm_call with its
+/// TerminalInfo. The callback runs on a background thread until the exit message.
+char *gm_terminal_spawn(const char *args_json, gm_terminal_output callback, void *context);
+
 #endif

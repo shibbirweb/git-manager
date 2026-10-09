@@ -25,6 +25,9 @@ enum MemoryBench {
 
     static func run(_ arguments: [String]) async throws -> Int32 {
         var arguments = arguments
+        if option("--scenario", in: &arguments) == "terminal" {
+            return try await MemoryTerminal.run(arguments)
+        }
         let screen = option("--screen", in: &arguments) ?? "diff"
         if screen == "log" {
             return try await runLog(arguments)

@@ -59,8 +59,9 @@ struct HeaderDivider: View {
     }
 }
 
-/// Centers its content in the space offered and rounds the position down to whole points, as WebKit lays out a
-/// centered flex column (220.5 becomes 220); SwiftUI would keep the half point.
+/// Centers its content in the space offered as WebKit lays out a centered flex column: horizontally rounded down to
+/// whole points (220.5 becomes 220), vertically the free space rounded down to whole points, then halved, so a column
+/// can sit on a half point (measured with and without the terminal panel); SwiftUI would keep any fraction.
 struct WholePointCenter: ViewModifier {
     func body(content: Content) -> some View {
         WholePointCenterLayout {
@@ -79,7 +80,7 @@ private struct WholePointCenterLayout: Layout {
             let size = subview.sizeThatFits(.unspecified)
             let origin = CGPoint(
                 x: bounds.minX + ((bounds.width - size.width) / 2).rounded(.down),
-                y: bounds.minY + ((bounds.height - size.height) / 2).rounded(.down)
+                y: bounds.minY + (bounds.height - size.height).rounded(.down) / 2
             )
             subview.place(at: origin, proposal: ProposedViewSize(size))
         }

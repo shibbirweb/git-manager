@@ -62,6 +62,7 @@ struct ActivityItem: View {
 /// Changes (with its count), Branches, a separator and History at the top; Run and Terminal at the bottom.
 struct LeftActivityBar: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var terminal = TerminalStore.shared
 
     let changeCount: Int
     var logShown = false
@@ -79,7 +80,8 @@ struct LeftActivityBar: View {
             // Anchored to the window's bottom: the page lays them out a quarter point higher (SVGBiasKey).
             Group {
                 ActivityItem(icon: "play", iconSize: 18)
-                ActivityItem(icon: "terminal")
+                // The terminal panel's toggle, active while the panel shows (ActivityBar.svelte).
+                ActivityItem(icon: "terminal", active: terminal.panelOpen, action: terminal.toggle)
             }
             .svgBias(-0.25)
         }

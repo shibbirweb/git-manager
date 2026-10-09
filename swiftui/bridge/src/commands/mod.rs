@@ -23,6 +23,9 @@ mod log;
 mod write;
 
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
+    if command.starts_with("terminal_") {
+        return crate::terminal_ffi::dispatch(command, args).unwrap_or_else(|| unknown(command));
+    }
     match command {
         "get_status" => to_json(get_status(parse(command, args)?)?),
         // The status bar's readout: this app and any helpers, counted like the current app counts itself.
@@ -42,8 +45,12 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "get_commit_details" => to_json(log::get_commit_details(parse(command, args)?)?),
         "get_commit_file_diff" => to_json(log::get_commit_file_diff(parse(command, args)?)?),
         "resolve_revision" => to_json(log::resolve_revision(parse(command, args)?)?),
-        _ => Err(AppError::invalid(format!("Unknown command: {command}"))),
+        _ => unknown(command),
     }
+}
+
+fn unknown(command: &str) -> AppResult<Value> {
+    Err(AppError::invalid(format!("Unknown command: {command}")))
 }
 
 fn parse<T: DeserializeOwned>(command: &str, args: Value) -> AppResult<T> {

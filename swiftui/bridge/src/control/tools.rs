@@ -28,7 +28,10 @@ pub(super) const TOOLS: &[Tool] = &[
                       size), open_folder (folderPath), show_diff (filePath, staged), scroll (speed, rounds: \
                       scrolls the largest area down and back, for memory sampling), stage or unstage (filePaths; \
                       without them the whole group) and commit (message, amend). stage, unstage and commit run \
-                      like a click in the window: busy state, toasts and the status refresh included.",
+                      like a click in the window: busy state, toasts and the status refresh included. \
+                      Terminal, like the current app's tools: show_panel (panel terminal, visible), \
+                      list_terminals, new_terminal, send_terminal_text (text, pressEnter, terminalKey) and \
+                      terminal_text (the screen's lines).",
         category: "ui",
         read_only: false,
         schema: app_schema,
@@ -95,7 +98,8 @@ fn app_schema() -> Value {
         json!({
             "action": {
                 "type": "string",
-                "enum": ["get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit"],
+                "enum": ["get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit",
+                         "show_panel", "list_terminals", "new_terminal", "send_terminal_text", "terminal_text"],
                 "description": "What to do."
             },
             "filePaths": {
@@ -109,6 +113,11 @@ fn app_schema() -> Value {
             "staged": { "type": "boolean", "description": "show_diff: the staged change instead of the unstaged one." },
             "speed": { "type": "number", "description": "scroll: points per frame (default 80)." },
             "rounds": { "type": "integer", "description": "scroll: down-and-back passes (default 1)." },
+            "panel": { "type": "string", "description": "show_panel: the panel (only terminal is built)." },
+            "visible": { "type": "boolean", "description": "show_panel: false hides it (default true)." },
+            "text": { "type": "string", "description": "send_terminal_text: the text typed into the shell." },
+            "pressEnter": { "type": "boolean", "description": "send_terminal_text: Enter after it (default true)." },
+            "terminalKey": { "type": "integer", "description": "send_terminal_text: the terminal (default shown)." },
         }),
         &["action"],
     )

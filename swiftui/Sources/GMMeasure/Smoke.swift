@@ -20,6 +20,7 @@ enum Smoke {
         try makeRepository(at: repoPath)
 
         let home = (workDir as NSString).appendingPathComponent("home")
+        try MeasureTerminal.writeShellProfile(home: home)
         let app = try await AppLauncher.launch(kind: .native, home: home, folderPath: repoPath, appPath: appPath)
         var failures = 0
         func check(_ name: String, _ passed: Bool, _ detail: String = "") {
@@ -70,6 +71,7 @@ enum Smoke {
             try await checkWrites(app.client, check: check)
             try await checkLog(app.client, check: check)
             try await checkSettings(app.client, check: check)
+            try await SmokeTerminal.check(app.client, check: check)
         } catch {
             check("tool calls", false, "\(error)")
         }

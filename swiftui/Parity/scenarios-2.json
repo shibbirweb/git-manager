@@ -210,7 +210,12 @@
       "steps": [
         "Start the app on demo/acme/storefront.",
         "Click Terminal at the bottom of the left activity bar."
-      ]
+      ],
+      "note": [
+        "gm-measure writes a .zshrc into each app's throwaway HOME: a \"$ \" prompt, fixed text in the",
+        "theme's colors and styles, and the cursor hidden, as a blinking cursor differs by the moment of capture."
+      ],
+      "run": { "showTerminal": true }
     },
     {
       "id": "scripts",

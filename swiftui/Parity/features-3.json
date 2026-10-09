@@ -40,7 +40,12 @@
     {
       "id": "terminal", "name": "Integrated terminal", "usage": "Terminal.md", "scenario": "terminal",
       "check": "The terminal panel with its header and several terminals",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing",
+        "selection, find, file links, the scrollbar, dropping files and terminals in editor tabs",
+        "Settings, Terminal (font, cursor, scrollback) and the Shelf tab's view"
+      ]
     },
     {
       "id": "scripts", "name": "Scripts tool window", "usage": "Scripts.md", "scenario": "scripts",

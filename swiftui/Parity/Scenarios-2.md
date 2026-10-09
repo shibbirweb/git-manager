@@ -216,14 +216,22 @@ Folder: demo `acme/storefront`
 - Back and Forward (`navigation`, missing): Back and Forward across files, diffs and commits. Native lacks: the
   header's arrows are drawn (disabled) but do nothing.
 
-## terminal: Terminal panel (native app cannot show it yet)
+## terminal: Terminal panel (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront.
 2. Click Terminal at the bottom of the left activity bar.
 
-- Integrated terminal (`terminal`, missing): The terminal panel with its header and several terminals.
+Note: gm-measure writes a .zshrc into each app's throwaway HOME: a "$ " prompt, fixed text in the theme's colors and
+styles, and the cursor hidden, as a blinking cursor differs by the moment of capture.
+
+Measured: light 99.5% (270 MB / 44 MB, 2026-10-09), dark 99.38% (271 MB / 49 MB, 2026-10-09).
+
+- Integrated terminal (`terminal`, partial): The terminal panel with its header and several terminals. Native lacks:
+  one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing; selection,
+  find, file links, the scrollbar, dropping files and terminals in editor tabs; Settings, Terminal (font, cursor,
+  scrollback) and the Shelf tab's view.
 
 ## scripts: Scripts panel (native app cannot show it yet)
 

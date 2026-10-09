@@ -37,6 +37,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Started as a bare binary (swift run), the app is not in the Dock and its window stays behind the terminal.
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        TerminalShortcut.install()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        // Quitting stops every terminal, so no shell is left behind.
+        TerminalStore.shutdown()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

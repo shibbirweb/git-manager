@@ -46,7 +46,8 @@ scripts/                   build-app.sh, test.sh, check-lines.sh, ci-allow-scree
   `write.rs`), named and shaped like the Tauri ones, so `api.ts` and `types.ts` stay the reference for both apps.
   Writes go through the shared git CLI code (`git/cli.rs`), as in the current app.
 - **Shared backend, unchanged.** `bridge/src/lib.rs` includes `src-tauri/src/git`, `merge`, `error`, `paths`,
-  `askpass`, `git_console` and `child_process` by path. They do not use Tauri, so the same git code runs in
+  `askpass`, `git_console`, `child_process`, `terminal` and `terminal_flow` (the integrated terminal's pseudo
+  terminals, output merging and flow control) by path. They do not use Tauri, so the same git code runs in
   both apps and `src-tauri/` does not change. If one of them starts using Tauri, the bridge build fails.
 - **Own Cargo workspace.** `bridge/Cargo.toml` declares `[workspace]`, so `cargo test --workspace` in
   `src-tauri` never builds it.
@@ -78,6 +79,7 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `get_app_info` | native fields (name, version, pid, bundle id) |
 | `app` | native only, with the actions below |
 | `open_settings`, `close_dialog` | yes: names and the `section` argument (Settings only) |
+| `app` (terminal) | `show_panel`, `list_terminals`, `new_terminal`, `send_terminal_text`; `terminal_text` native only |
 
 The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `show_log`, `scroll`, `stage`,
 `unstage` and `commit`. `diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
@@ -117,6 +119,8 @@ swift run -c release gm-measure measure --mode dark --theme monokai-charcoal  # 
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
+swift run -c release gm-measure measure --screen terminal  # the terminal panel, a shell with fixed output
+swift run -c release gm-measure memory --scenario terminal  # terminal: idle, open, printing 4000 lines, after
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)
@@ -248,4 +252,5 @@ src-tauri's test helpers.
 | GM-51 HDR gate in gm-measure (`--hdr`), parity list and run specs for 3c and GM-45 | done |
 | GM-52 File tabs and the read-only file view: open from the Files panel, file bar, editor canvas, status items | done |
 | GM-53 Log and history: graph, refs, commit details and its read-only diff, `show_log`, `--screen log` | done |
-| GM-56 Settings dialog, settings.json, live color themes (`--screen settings`, `--theme`) | built, gate pending |
+| GM-56 Settings dialog, settings.json, live color themes (`--screen settings`, `--theme`) | done |
+| GM-55 Terminal panel: the current app's PTY through the bridge, an xterm.js-like emulator, its WebGL canvas | built |

@@ -119,6 +119,26 @@
         "nativeVersion" : "0.1.0",
         "windowPercent" : 99.31
       }
+    },
+    "terminal" : {
+      "dark" : {
+        "contentPercent" : 99.38,
+        "currentMb" : 271.4,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 48.5,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.38
+      },
+      "light" : {
+        "contentPercent" : 99.5,
+        "currentMb" : 269.5,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 43.6,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.39
+      }
     }
   }
 }
