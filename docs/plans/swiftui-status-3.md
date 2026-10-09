@@ -155,3 +155,23 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     column's width first (NoRepoPlaceholder.centered).
   - Pixel diff below the title bar (HDR off): norepo 99.76% light, 99.76% dark; Changes kept 99.74.
   - Memory: current 130 MB, native 33 MB.
+- GM-66 the welcome screen's Projects page with no recent projects (Welcome.svelte):
+  - Built: WelcomeWindow (the 240-point sidebar: brand with the version, Projects, Customize and Learn, Star on
+    GitHub, Report a Bug, Request a Feature, the gear) and WelcomeProjects (the big logo, "Welcome to Git Manager",
+    the hint, the Open, Clone Repository and Open Workspace tiles); ContentView shows it when nothing is open, not
+    while start-up folders are opening. Open picks a folder; Customize, Learn, Clone and Open Workspace say they are
+    not built. NativeCore GitHubLinks builds the GitHub links as releases.ts does (tested). build-app.sh takes the
+    bundle version from src-tauri/Cargo.toml. gm-measure `--screen welcome` and parity scenarios without a folder
+    start both apps with no folder (AppLauncher waits for "no workspace"); the `welcome` scenario now runs.
+  - Rules found:
+    - The hint's line-height 1.6 (20.8 points) puts its lines 20 points apart on the page.
+    - --selected in the sidebar is an sRGB layer fill (LayerFill), as in the Settings dialog; the pre-blended solid
+      came out one step off.
+    - WebKit shows no hover until the pointer moves over the page; SwiftUI's onHover lit the Open tile under the
+      pointer resting on the built-in screen. Every hover now goes through pageHover (Components/PageHover.swift):
+      nothing hovers until the pointer has left where it rested when the window opened.
+    - The earlier foldermenu dark score (99.34) came from a run where no menu had opened; with the menu open it is
+      99.17 (repomenu dark 99.27 and branchmenu dark 99.24 were checked with their menus open).
+  - Pixel diff below the title bar (HDR off): welcome 99.87% light, 99.85% dark (parity: 99.87 / 99.85).
+    Changes 99.74, Log 99.52, cleanrepos 99.58, workspace dark 99.34 kept their floors.
+  - Memory: current 115 to 120 MB, native 25 to 28 MB.

@@ -8,10 +8,10 @@
     {
       "id": "welcome-screen", "name": "Welcome screen", "usage": "Welcome-Screen.md", "scenario": "welcome",
       "check": "The Projects page with the search field, Open, Clone and the recent projects",
-      "native": "missing",
+      "native": "partial",
       "gaps": [
-        "the whole screen (the native welcome view is the empty editor area of an open folder)",
-        "Projects, Customize and Learn pages"
+        "the recent projects list, its search and menus; Close Folder back to this screen",
+        "the Customize and Learn pages; Clone and Open Workspace (they say so)"
       ]
     },
     {

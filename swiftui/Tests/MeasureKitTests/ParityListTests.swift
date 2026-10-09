@@ -78,9 +78,8 @@ let sampleFeatures = """
     #expect(problems.contains("feature log is listed twice"))
     #expect(problems.contains("feature log uses the unknown scenario nowhere"))
     #expect(problems.contains("scenario lonely has no feature"))
-    #expect(problems.contains("scenario lonely can run but opens no folder (not supported yet)"))
     #expect(problems.contains("feature terminal of docs/wiki/features.json is not in the parity list"))
-    #expect(problems.count == 6)
+    #expect(problems.count == 5)
 }
 
 @Test func selectRunsRunnableScenariosOnly() throws {

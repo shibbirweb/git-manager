@@ -89,7 +89,8 @@ enum ParityRun {
     ) async throws {
         let spec = scenario.run ?? ParityRunSpec()
         let appPath = options.appPaths[kind] ?? AppLauncher.defaultAppPath(kind, swiftuiDir: swiftuiDir)
-        let folderPath = (demoDir as NSString).appendingPathComponent(scenario.folder ?? "")
+        // No folder: both apps start on the welcome screen.
+        let folderPath = scenario.folder.map { (demoDir as NSString).appendingPathComponent($0) } ?? ""
         let home = (workDir as NSString).appendingPathComponent("\(scenario.id)-\(mode)-\(kind.rawValue)")
         print("\(scenario.id) \(mode) \(kind.rawValue): starting \(appPath)")
         if let filePath = spec.mergetool {

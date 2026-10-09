@@ -40,6 +40,26 @@
         "windowPercent" : 99.39
       }
     },
+    "welcome" : {
+      "dark" : {
+        "contentPercent" : 99.85,
+        "currentMb" : 116.7,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 25,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.8
+      },
+      "light" : {
+        "contentPercent" : 99.87,
+        "currentMb" : 116.2,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 25.1,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.71
+      }
+    },
     "workspace" : {
       "dark" : {
         "contentPercent" : 99.31,

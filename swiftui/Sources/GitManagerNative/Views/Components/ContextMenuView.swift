@@ -100,7 +100,7 @@ private struct MenuLevel: View {
                         .padding(.horizontal, 6)
                 } else {
                     MenuRow(item: item, highlighted: center.highlighted(level) == index)
-                        .onHover { inside in
+                        .pageHover { inside in
                             if inside {
                                 center.hover(level: level, index: index)
                             }

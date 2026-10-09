@@ -20,7 +20,7 @@ enum Measure {
         /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings),
         /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
         /// and design-system), "cleanrepos" (folders with two clean repositories), "norepo" (a plain folder),
-        /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open).
+        /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open), "welcome" (no folder).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -57,7 +57,7 @@ enum Measure {
         ]
         let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
                              "conflicts"]
-            + searchScreens + workspaceScreens + editScreens).contains(options.screen)
+            + searchScreens + workspaceScreens + welcomeScreens + editScreens).contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)

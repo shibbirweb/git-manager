@@ -17,9 +17,61 @@ struct ContentView: View {
     @ObservedObject private var settings = SettingsStore.shared
     @ObservedObject private var terminal = TerminalStore.shared
     @Environment(\.colorScheme) private var colorScheme
+    /// The folders given at start are still opening: the shell shows, not the welcome screen.
+    @State private var opening: Bool
+
+    init(initialFolders: [String]) {
+        self.initialFolders = initialFolders
+        _opening = State(initialValue: !initialFolders.isEmpty)
+    }
 
     var body: some View {
         let theme = settings.theme(for: colorScheme)
+        Group {
+            if !opening && workspace.folders.isEmpty && model.repoPath == nil {
+                WelcomeWindow()
+            } else {
+                shell
+            }
+        }
+        .overlay {
+            if settings.dialogOpen {
+                SettingsDialog(settings: settings)
+            }
+            SearchOverlay()
+            MergeOverlay()
+            ContextMenuOverlay()
+        }
+        .coordinateSpace(name: HeaderMenus.pageSpace)
+        .overlay(alignment: .bottomTrailing) {
+            ToastStack(center: toasts)
+        }
+        .background(theme.color("--bg").ignoresSafeArea())
+        // SwiftUI paints its own toolbar background where the title bar is; make it the current app's --bg.
+        .toolbarBackground(theme.systemColor("--bg"), for: .windowToolbar)
+        .toolbarBackground(.visible, for: .windowToolbar)
+        .foregroundStyle(theme.ink("--text"))
+        .font(.system(size: 13))
+        .environment(\.theme, theme)
+        .background(WindowChrome(background: theme.nsColor("--bg")))
+        .navigationTitle(model.folderName)
+        .onAppear(perform: PointerGate.begin)
+        .task {
+            if !initialFolders.isEmpty {
+                await model.openFolders(initialFolders)
+            }
+            opening = false
+        }
+        .task {
+            // The status bar's memory readout, like the current app's (every 2 seconds while the window shows).
+            while !Task.isCancelled {
+                await model.refreshMemory()
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+            }
+        }
+    }
+
+    private var shell: some View {
         Shell {
             HeaderBar(
                 folderName: model.folderName,
@@ -72,39 +124,6 @@ struct ContentView: View {
                 unreadError: toasts.unreadError,
                 openBell: toasts.markRead
             )
-        }
-        .overlay {
-            if settings.dialogOpen {
-                SettingsDialog(settings: settings)
-            }
-            SearchOverlay()
-            MergeOverlay()
-            ContextMenuOverlay()
-        }
-        .coordinateSpace(name: HeaderMenus.pageSpace)
-        .overlay(alignment: .bottomTrailing) {
-            ToastStack(center: toasts)
-        }
-        .background(theme.color("--bg").ignoresSafeArea())
-        // SwiftUI paints its own toolbar background where the title bar is; make it the current app's --bg.
-        .toolbarBackground(theme.systemColor("--bg"), for: .windowToolbar)
-        .toolbarBackground(.visible, for: .windowToolbar)
-        .foregroundStyle(theme.ink("--text"))
-        .font(.system(size: 13))
-        .environment(\.theme, theme)
-        .background(WindowChrome(background: theme.nsColor("--bg")))
-        .navigationTitle(model.folderName)
-        .task {
-            if !initialFolders.isEmpty {
-                await model.openFolders(initialFolders)
-            }
-        }
-        .task {
-            // The status bar's memory readout, like the current app's (every 2 seconds while the window shows).
-            while !Task.isCancelled {
-                await model.refreshMemory()
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
-            }
         }
     }
 

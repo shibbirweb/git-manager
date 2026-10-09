@@ -57,6 +57,7 @@ public enum AppLauncher {
     public static func launch(
         kind: AppKind,
         home: String,
+        /// "" starts both apps without a folder: the welcome screen.
         folderPath: String,
         appPath: String,
         /// Extra settings.json values for the current app, such as ["theme": "dark"].
@@ -83,9 +84,10 @@ public enum AppLauncher {
             settings.merge(extraSettings) { _, extra in extra }
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
-            try writeSession(configDir: configDir, folderPaths: [folderPath] + extraFolders)
+            try writeSession(configDir: configDir, folderPaths: folderPath.isEmpty ? [] : [folderPath] + extraFolders)
         }
-        var nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? []) + nativeArguments
+        var nativeArgs = (folderPath.isEmpty ? [] : ["-folder", folderPath]) + (mode.map { ["-appearance", $0] } ?? [])
+            + nativeArguments
         if let placed = MeasureScreen.centered(windowSize) {
             nativeArgs += ["-windowFrame", NSStringFromRect(placed.cocoaFrame)]
         }
@@ -125,7 +127,7 @@ public enum AppLauncher {
         }
 
         while Date().timeIntervalSince(started) < timeout {
-            if (try? await isReady(kind, connected.client)) == true {
+            if (try? await isReady(kind, connected.client, welcome: folderPath.isEmpty)) == true {
                 return RunningApp(
                     kind: kind,
                     pid: connected.pid,
@@ -158,7 +160,17 @@ public enum AppLauncher {
     }
 
     /// True once the app shows the folder's status, so both apps are measured in the same state.
-    static func isReady(_ kind: AppKind, _ client: McpClient) async throws -> Bool {
+    static func isReady(_ kind: AppKind, _ client: McpClient, welcome: Bool = false) async throws -> Bool {
+        if welcome {
+            // The welcome screen: no workspace open.
+            let state = kind == .current
+                ? try await client.call("get_app_state").structured ?? [:]
+                : try await client.call("app", ["action": "get_state"]).structured ?? [:]
+            if kind == .current {
+                return state["workspace"] == nil || state["workspace"] is NSNull
+            }
+            return ((state["workspace"] as? [String: Any])?["folders"] as? [Any])?.isEmpty ?? true
+        }
         switch kind {
         // Ready once the active repository's branch shows, or once a folder without any repository is open.
         case .native:

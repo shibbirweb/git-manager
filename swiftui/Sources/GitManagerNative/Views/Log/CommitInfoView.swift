@@ -188,7 +188,7 @@ struct CommitFileRow: View {
         .frame(height: 24)
         .background(theme.color(selected ? "--selected-inactive" : hovered ? "--hover" : "--panel"))
         .contentShape(Rectangle())
-        .onHover { hovered = $0 }
+        .pageHover { hovered = $0 }
         .onTapGesture(perform: select)
     }
 

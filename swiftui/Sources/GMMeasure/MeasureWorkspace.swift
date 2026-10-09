@@ -5,6 +5,8 @@
 // so Changes shows storefront, then the clean ones under "No Changes", design-system active. (demo/extras would
 // stop the current app with its Git LFS dialog.)
 // --screen norepo: acme/notes, a plain folder: Changes offers to initialize a repository.
+// --screen welcome: both apps started without a folder, on the welcome screen's Projects page (no recent projects
+// in the throwaway home).
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
 // menu opened by a press (AccessibilityPress), which opens them where WebKit clicks in both apps.
 
@@ -14,12 +16,17 @@ import MeasureKit
 extension Measure {
     static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo"] + menuScreens
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu"]
+    /// Both apps started without a folder.
+    static let welcomeScreens = ["welcome"]
     /// The title of the pill each menu screen presses.
     static let menuPills = ["foldermenu": "acme", "repomenu": "payments-api", "branchmenu": "main"]
 
     /// The folder a screen opens: the demo's storefront repository or the acme folder around it; cleanrepos first
     /// makes payments-api (its merge too) and design-system clean in the throwaway copy.
     static func screenFolder(_ screen: String, demoRepo: String) throws -> String {
+        if welcomeScreens.contains(screen) {
+            return ""
+        }
         guard workspaceScreens.contains(screen) else {
             return demoRepo
         }

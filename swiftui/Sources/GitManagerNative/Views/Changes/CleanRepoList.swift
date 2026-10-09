@@ -40,7 +40,7 @@ struct CleanRepoList: View {
             .padding(.trailing, 6)
             .frame(height: 26)
             .background(headerHovered ? theme.color("--hover") : .clear)
-            .onHover { headerHovered = $0 }
+            .pageHover { headerHovered = $0 }
             if !collapsed {
                 ForEach(repos, id: \.root) { repo in
                     CleanRepoRow(repo: repo, status: workspace.statuses[repo.root],
@@ -111,6 +111,6 @@ private struct CleanRepoRow: View {
             }
         }
         .contentShape(Rectangle())
-        .onHover { hovered = $0 }
+        .pageHover { hovered = $0 }
     }
 }

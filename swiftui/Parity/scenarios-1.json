@@ -59,7 +59,8 @@
       "steps": [
         "Start the app with an empty home folder and no folder: the Projects page with Open and Clone.",
         "Open demo/acme/storefront, then File > Close Folder: the project is in the recent list."
-      ]
+      ],
+      "run": {}
     },
     {
       "id": "workspace",

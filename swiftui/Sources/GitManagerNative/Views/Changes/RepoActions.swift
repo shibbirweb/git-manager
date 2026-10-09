@@ -90,6 +90,6 @@ struct HeadAction<Label: View>: View {
         .foregroundStyle(disabled
             ? theme.over("--text-dim", 0.4, on: "--panel")
             : theme.ink(active ? "--text" : "--text-dim"))
-        .onHover { hovered = $0 }
+        .pageHover { hovered = $0 }
     }
 }

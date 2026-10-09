@@ -61,7 +61,7 @@ struct GroupHeader: View {
         .frame(height: 26)
         .background(hovered ? theme.color("--hover") : Color.clear)
         .contentShape(Rectangle())
-        .onHover { hovered = $0 }
+        .pageHover { hovered = $0 }
     }
 }
 
@@ -111,7 +111,7 @@ private struct RowActionButton: View {
         .allowsHitTesting(!disabled)
         .foregroundStyle(color(active: active))
         .help(action.title)
-        .onHover { hovered = $0 }
+        .pageHover { hovered = $0 }
     }
 
     private func color(active: Bool) -> Color {
@@ -143,7 +143,7 @@ struct FileRow: View {
         content
             .background(background)
             .contentShape(Rectangle())
-            .onHover { hovered = $0 }
+            .pageHover { hovered = $0 }
     }
 
     /// .row.selected comes after .row:hover in the page's CSS, so a selected row keeps its color under the mouse.

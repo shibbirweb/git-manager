@@ -190,8 +190,9 @@ public struct ParityList {
         features.filter { $0.scenario == scenarioID }
     }
 
-    /// Everything that makes the list unusable: duplicate ids, unknown scenarios, scenarios no feature uses,
-    /// runnable scenarios without a folder, and feature ids missing from or unknown to the wiki's feature map.
+    /// Everything that makes the list unusable: duplicate ids, unknown scenarios, scenarios no feature uses, and
+    /// feature ids missing from or unknown to the wiki's feature map. (A runnable scenario without a folder starts
+    /// both apps on the welcome screen.)
     public func problems(wikiFeatureIDs: [String]) -> [String] {
         var found: [String] = []
         for id in duplicates(scenarios.map(\.id)) {
@@ -207,9 +208,6 @@ public struct ParityList {
         for scenario in scenarios {
             if features(in: scenario.id).isEmpty {
                 found.append("scenario \(scenario.id) has no feature")
-            }
-            if scenario.runnable && scenario.folder == nil {
-                found.append("scenario \(scenario.id) can run but opens no folder (not supported yet)")
             }
         }
         let featureIDs = Set(features.map(\.id))

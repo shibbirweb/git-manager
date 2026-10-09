@@ -67,16 +67,18 @@ Folder: demo `acme/storefront`
   a commit, the message history and templates; the Undo of a pushed commit asks with a plain macOS alert; right-click
   menus, arrow keys, the Conflicts group and several repositories.
 
-## welcome: Welcome screen (no folder) (native app cannot show it yet)
+## welcome: Welcome screen (no folder) (runs in both apps)
 
 Folder: none
 
 1. Start the app with an empty home folder and no folder: the Projects page with Open and Clone.
 2. Open demo/acme/storefront, then File > Close Folder: the project is in the recent list.
 
-- Welcome screen (`welcome-screen`, missing): The Projects page with the search field, Open, Clone and the recent
-  projects. Native lacks: the whole screen (the native welcome view is the empty editor area of an open folder);
-  Projects, Customize and Learn pages.
+Measured: light 99.87% (116 MB / 25 MB, 2026-10-09), dark 99.85% (117 MB / 25 MB, 2026-10-09).
+
+- Welcome screen (`welcome-screen`, partial): The Projects page with the search field, Open, Clone and the recent
+  projects. Native lacks: the recent projects list, its search and menus; Close Folder back to this screen; the
+  Customize and Learn pages; Clone and Open Workspace (they say so).
 
 ## workspace: Workspace of two folders (runs in both apps)
 

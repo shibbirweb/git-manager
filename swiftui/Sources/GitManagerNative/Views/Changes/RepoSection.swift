@@ -56,7 +56,7 @@ struct RepoSection<Groups: View>: View {
             }
         }
         .contentShape(Rectangle())
-        .onHover { hovered = $0 }
+        .pageHover { hovered = $0 }
     }
 
     /// .repo-toggle: 28 points tall, 4 points of padding, 6 between the chevron, the name and the badges.
