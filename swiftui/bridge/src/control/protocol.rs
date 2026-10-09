@@ -50,12 +50,13 @@ pub(super) fn handle_message(server: &Server, message: &Value) -> Option<Value> 
 fn initialize(params: &Value) -> Value {
     let asked = params["protocolVersion"].as_str().unwrap_or_default();
     let version = PROTOCOL_VERSIONS.iter().find(|known| **known == asked).copied().unwrap_or(PROTOCOL_VERSIONS[0]);
+    let switches = super::server::switches();
     json!({
         "protocolVersion": version,
         "capabilities": { "tools": { "listChanged": false } },
         "serverInfo": { "name": SERVER_NAME, "title": "Git Manager Native", "version": VERSION },
         "instructions": INSTRUCTIONS,
-        "_meta": { "gitManager/mcpEnabled": true, "gitManager/cliEnabled": true },
+        "_meta": { "gitManager/mcpEnabled": switches.enabled, "gitManager/cliEnabled": switches.cli_enabled },
     })
 }
 

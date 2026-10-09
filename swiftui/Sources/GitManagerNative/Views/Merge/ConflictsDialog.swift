@@ -191,16 +191,17 @@ struct DialogButton: View {
     var hug = false
     /// .btn.small: 24 points tall, 8 points in, 12-point text.
     var small = false
+    /// .btn.danger: the text in --danger (New Token).
+    var danger = false
     let action: () -> Void
 
     var body: some View {
         let surface = primary ? "--accent" : "--panel"
+        let ink = primary ? "--accent-text" : danger ? "--danger" : "--text"
         Button(action: action) {
             ExactText(text: title, size: small ? 12 : 13)
                 // opacity: 0.5 on the whole button: the text at half over the dialog's --panel.
-                .foregroundStyle(disabled
-                    ? theme.over(primary ? "--accent-text" : "--text", 0.5, on: "--panel")
-                    : theme.ink(primary ? "--accent-text" : "--text"))
+                .foregroundStyle(disabled ? theme.over(ink, 0.5, on: "--panel") : theme.ink(ink))
                 .padding(.horizontal, hug ? (small ? 9 : 13) : 0)
                 .frame(maxWidth: hug ? nil : .infinity)
                 .frame(height: small ? 24 : 28)

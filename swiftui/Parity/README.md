@@ -9,9 +9,9 @@ and the pages after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 30 partial, 30 missing (62 features). 19 of 51 scenarios run in both apps.
+Native: 2 done, 30 partial, 30 missing (62 features). 20 of 52 scenarios run in both apps.
 
-Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
+Last measured 2026-10-10 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
 
 | Feature | Id | Native | Scenario | Match light / dark | Memory current / native |
@@ -76,5 +76,5 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Status bar and help links | status-bar | partial | changes | 99.18% / 99.13% | 150 MB / 32 MB |
 | Memory readout and memory log | memory | partial | memory-breakdown | - | - |
 | Clear Cache | clear-cache | missing | memory-breakdown | - | - |
-| MCP server and command line tool | mcp | partial | settings | 99.42% / 99.03% | 213 MB / 46 MB |
+| MCP server and command line tool | mcp | partial | automation | 99.51% / 99.14% | 221 MB / 51 MB |
 | git mergetool mode | mergetool | partial | mergetool-mode | - | - |

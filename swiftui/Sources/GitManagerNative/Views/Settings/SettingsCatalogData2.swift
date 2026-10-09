@@ -1,4 +1,4 @@
-// Settings > Terminal, GitHub, Automation, Updates, Settings Files and About, as SettingsDialog.svelte draws them,
+// Settings > Terminal, GitHub, Updates, Settings Files and About, as SettingsDialog.svelte draws them,
 // with the defaults of src/lib/stores/settingsData.ts. Keep in step with those files.
 
 import SwiftUI
@@ -52,19 +52,6 @@ extension SettingsCatalogData {
     static let github: [CatalogItem] = [
         .githubAccount("GitHub account", "Used by Git > GitHub: Share Project on GitHub, Sync Fork and Create Gist. "
             + "Pushing and pulling keep using git's own credentials."),
-    ]
-
-    static let automation: [CatalogItem] = [
-        .group("MCP server"),
-        .toggle("MCP server", "MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor use Git "
-            + "Manager. The native app's server always runs, on a port macOS picks.", key: "mcpEnabledNative",
-            on: true),
-        .group("Command line tool"),
-        .toggle("Command line tool", "Lets scripts and AI agents in a terminal use the same tools. Git Manager must "
-            + "be running.", key: "cliEnabled", on: false),
-        .group("Memory log"),
-        .toggle("Log memory changes", "For finding what uses memory: writes a line whenever the app's memory "
-            + "changes.", key: "memoryLogEnabled", on: false),
     ]
 
     static let updates: [CatalogItem] = [

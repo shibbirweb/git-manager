@@ -8,10 +8,14 @@ use std::time::Duration;
 
 use serde_json::{json, Value};
 
-use super::{protocol, SERVER};
+use super::{protocol, server, SERVER};
 
 const MAX_HEADER_BYTES: usize = 16 * 1024;
 const MAX_BODY_BYTES: usize = 4 * 1024 * 1024;
+/// Requests from `git-manager cli` carry this header with the value "cli" (src-tauri/cli).
+const CLIENT_HEADER: &str = "x-git-manager-client";
+const CLI_OFF: &str = "The command line tool is turned off in Git Manager settings";
+const MCP_OFF: &str = "The MCP server is turned off in Git Manager settings";
 
 struct Request {
     method: String,
@@ -42,8 +46,17 @@ pub(super) fn serve(stream: TcpStream) -> std::io::Result<()> {
         .get("authorization")
         .and_then(|value| value.strip_prefix("Bearer "))
         .unwrap_or_default();
-    if !tokens_match(&server.token, given) {
+    let token = server::token().unwrap_or_default();
+    if token.is_empty() || !tokens_match(&token, given) {
         return respond(&mut stream, 401, &json!({ "error": "Missing or wrong token" }));
+    }
+    let switches = server::switches();
+    let from_cli = request.headers.get(CLIENT_HEADER).is_some_and(|client| client.eq_ignore_ascii_case("cli"));
+    if from_cli && !switches.cli_enabled {
+        return respond(&mut stream, 403, &json!({ "error": CLI_OFF }));
+    }
+    if !from_cli && !switches.enabled {
+        return respond(&mut stream, 403, &json!({ "error": MCP_OFF }));
     }
     let message: Value = match serde_json::from_slice(&request.body) {
         Ok(message) => message,

@@ -115,12 +115,14 @@
       "gaps": ["the brush is drawn but does nothing (the native app has no WebKit cache to clear)"]
     },
     {
-      "id": "mcp", "name": "MCP server and command line tool", "usage": "MCP-and-CLI.md", "scenario": "settings",
+      "id": "mcp", "name": "MCP server and command line tool", "usage": "MCP-and-CLI.md", "scenario": "automation",
       "check": "Settings > Automation; git-manager cli status and the MCP tools",
       "native": "partial",
       "gaps": [
-        "only get_app_info, app, git_status, get_memory_usage, sample_memory and take_screenshot",
-        "no settings: the native server always runs"
+        "only the tools get_app_info, app, git_status, get_memory_usage, sample_memory, take_screenshot,",
+        "open_settings and close_dialog",
+        "no Available MCP Tools dialog (tool switches) and no activity list",
+        "no command line tool of its own: the current app's reaches it with HOME=~/.gitmanager-native (no Install)"
       ]
     },
     {

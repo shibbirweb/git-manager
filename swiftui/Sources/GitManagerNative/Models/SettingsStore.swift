@@ -149,6 +149,18 @@ final class SettingsStore: ObservableObject {
         save()
     }
 
+    /// A stored value as settings.json holds it, for the caller to validate (the MCP port).
+    func storedValue(_ key: String) -> Any? {
+        extra[key]
+    }
+
+    /// Stores a whole number the native app reads by key (the MCP port).
+    func setStoredInt(_ key: String, _ value: Int) {
+        objectWillChange.send()
+        extra[key] = value
+        save()
+    }
+
     /// A stored choice the native app does not use yet, as the current app would read it.
     func storedChoice(_ key: String, _ allowed: [String], default fallback: String) -> String {
         SettingsData.pickOneOf(extra[key], allowed, fallback: fallback)

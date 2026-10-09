@@ -15,9 +15,9 @@ void gm_free_string(char *text);
 /// {"ok":bool,"text":...,"structured":{...}} in a malloc'd string (strdup); the server frees it.
 typedef char *(*gm_ui_handler)(const char *request_json);
 
-/// Starts the control (MCP) server once and writes ~/.gitmanager-native/.gitmanager/mcp.json.
-/// Returns the port, or -1.
-int gm_control_start(gm_ui_handler ui_handler);
+/// Keeps the handler for the control (MCP) server's UI requests. The server starts when the app applies its
+/// settings (gm_call "mcp_configure"), and writes ~/.gitmanager-native/.gitmanager/mcp.json while it listens.
+void gm_control_install(gm_ui_handler ui_handler);
 
 #include <stdbool.h>
 #include <stddef.h>

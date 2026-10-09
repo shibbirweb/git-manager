@@ -1,8 +1,8 @@
 // Starts the current app or the native app in isolation, the same way for both: launched by macOS
 // (`open -n`), so it counts its own memory exactly, with HOME pointing at a throwaway folder, so its
-// settings, state and server file never touch the real ~/.gitmanager. The current app gets a
-// settings.json that turns its MCP server and command line tool on, on a free port (its default,
-// 48731, is usually taken by the real app).
+// settings, state and server file never touch the real ~/.gitmanager. Both apps get a settings.json
+// that turns their MCP server and command line tool on, on a free port (the default, 48731, is
+// usually taken by the real app); the native app's keeps the values a run wrote there first.
 
 import AppKit
 import Darwin
@@ -92,7 +92,10 @@ public enum AppLauncher {
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
             try writeSession(configDir: configDir, folderPaths: folderPath.isEmpty ? [] : [folderPath] + extraFolders,
                              workspaceFile: workspaceFile, extra: extraState)
-        } else if !extraState.isEmpty {
+        } else {
+            try enableNativeServer(home: home)
+        }
+        if kind == .native && !extraState.isEmpty {
             let nativeDir = (home as NSString).appendingPathComponent(".gitmanager-native")
             try files.createDirectory(atPath: nativeDir, withIntermediateDirectories: true)
             let data = try JSONSerialization.data(withJSONObject: extraState)
@@ -164,6 +167,22 @@ public enum AppLauncher {
         }
         await stop(pid: connected.pid)
         throw ToolError("\(kind.rawValue): \(folderPath) did not finish loading within \(Int(timeout)) s")
+    }
+
+    /// Turns the native app's MCP server and command line tool on, on a free port unless a run chose one, keeping
+    /// the other values in its ~/.gitmanager-native/settings.json.
+    static func enableNativeServer(home: String) throws {
+        let folder = (home as NSString).appendingPathComponent(".gitmanager-native")
+        try FileManager.default.createDirectory(atPath: folder, withIntermediateDirectories: true)
+        let path = (folder as NSString).appendingPathComponent("settings.json")
+        let existing = (try? Data(contentsOf: URL(fileURLWithPath: path)))
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
+        let port = try existing["mcpPort"] ?? freePort()
+        let settings = existing.merging(["mcpEnabled": true, "cliEnabled": true, "mcpPort": port]) { _, on in
+            on
+        }
+        let data = try JSONSerialization.data(withJSONObject: settings, options: [.sortedKeys])
+        try data.write(to: URL(fileURLWithPath: path))
     }
 
     /// Both apps' default window, in points.

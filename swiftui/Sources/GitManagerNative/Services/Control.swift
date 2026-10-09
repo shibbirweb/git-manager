@@ -7,14 +7,14 @@ import Foundation
 import GMBridge
 
 enum Control {
-    /// Starts the server once at launch; returns its port, or nil.
-    @discardableResult
-    static func start() -> Int? {
-        let port = gm_control_start { requestPointer in
+    /// Gives the bridge the UI side once at launch, then starts the server if Settings > Automation has it on.
+    @MainActor
+    static func start() {
+        gm_control_install { requestPointer in
             let requestText = requestPointer.map { String(cString: $0) } ?? "{}"
             return strdup(Control.answer(requestText))
         }
-        return port > 0 ? Int(port) : nil
+        McpServerStore.shared.apply()
     }
 
     /// Runs on the server's thread, never the main one, so waiting for the main thread is safe.

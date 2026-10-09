@@ -6,7 +6,8 @@
 //                                 merge|conflicts|edit|fold|blame|workspace|folders|cleanrepos|norepo|foldermenu|
 //                                 repomenu|branchmenu|foldermenurecent|welcome|welcomerecent|welcomecustomize|
 //                                 welcomelearn|welcomeclone|closefolder|workspacefile|newwindow|
-//                                 settingsgithub|settingsgithubaccount|githubsignin|githubshare|githubgist]
+//                                 settingsgithub|settingsgithubaccount|githubsignin|githubshare|githubgist|
+//                                 settingsautomation]
 //                                [--file <path>]
 //                                [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
 //                                [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
@@ -51,7 +52,8 @@ let usage = """
                           merge|conflicts|edit|fold|blame|workspace|folders|cleanrepos|norepo|foldermenu|
                           repomenu|branchmenu|foldermenurecent|welcome|welcomerecent|welcomecustomize|
                           welcomelearn|welcomeclone|closefolder|workspacefile|newwindow|
-                          settingsgithub|settingsgithubaccount|githubsignin|githubshare|githubgist]
+                          settingsgithub|settingsgithubaccount|githubsignin|githubshare|githubgist|
+                          settingsautomation]
                          [--file <path>]
                          [--collapse on|off]
                          [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]

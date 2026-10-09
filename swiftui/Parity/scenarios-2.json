@@ -194,6 +194,22 @@
       "run": { "openSettings": "github" }
     },
     {
+      "id": "automation",
+      "title": "Settings > Automation",
+      "folder": "acme/storefront",
+      "steps": [
+        "In Settings > Automation, switch the MCP server and the command line tool on: the status, the port, the",
+        "masked token with Show, Copy and New Token, and the ways to connect a client."
+      ],
+      "note": [
+        "The run turns both switches on in both apps' settings.json on one port, so the status lines read the same."
+      ],
+      "run": {
+        "openSettings": "automation",
+        "appSettings": { "mcpEnabled": true, "cliEnabled": true, "mcpPort": 48790 }
+      }
+    },
+    {
       "id": "git-console",
       "title": "Git Console",
       "folder": "acme/storefront",

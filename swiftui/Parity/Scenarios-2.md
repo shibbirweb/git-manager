@@ -202,9 +202,6 @@ Measured: light 99.42% (213 MB / 46 MB, 2026-10-09), dark 99.03% (213 MB / 46 MB
   and Commit box change anything; the other rows show their values read-only; the Keyboard Shortcuts list, the GitHub
   sign-in, the commit identity and templates, the font previews; Reset to Defaults asks with a plain macOS alert; the
   dialog cannot be dragged.
-- MCP server and command line tool (`mcp`, partial): Settings > Automation; git-manager cli status and the MCP tools.
-  Native lacks: only get_app_info, app, git_status, get_memory_usage, sample_memory and take_screenshot; no settings:
-  the native server always runs.
 
 ## settings-search: Search in Settings (native app cannot show it yet)
 
@@ -240,6 +237,22 @@ Measured: light 99.39% (224 MB / 48 MB, 2026-10-09), dark 99.43% (226 MB / 51 MB
   GitHub: Open on GitHub, Copy GitHub Link, Create Pull Request and View Pull Requests; Share Project, Sync Fork and
   Create Gist not tried against GitHub yet (a real token, the network).
 
+## automation: Settings > Automation (runs in both apps)
+
+Folder: demo `acme/storefront`
+
+1. In Settings > Automation, switch the MCP server and the command line tool on: the status, the port, the
+2. masked token with Show, Copy and New Token, and the ways to connect a client.
+
+Note: The run turns both switches on in both apps' settings.json on one port, so the status lines read the same.
+
+Measured: light 99.51% (221 MB / 51 MB, 2026-10-10), dark 99.14% (222 MB / 53 MB, 2026-10-10).
+
+- MCP server and command line tool (`mcp`, partial): Settings > Automation; git-manager cli status and the MCP tools.
+  Native lacks: only the tools get_app_info, app, git_status, get_memory_usage, sample_memory, take_screenshot,;
+  open_settings and close_dialog; no Available MCP Tools dialog (tool switches) and no activity list; no command line
+  tool of its own: the current app's reaches it with HOME=~/.gitmanager-native (no Install).
+
 ## git-console: Git Console (native app cannot show it yet)
 
 Folder: demo `acme/storefront`
@@ -258,20 +271,3 @@ Folder: demo `acme/storefront`
 
 - Back and Forward (`navigation`, missing): Back and Forward across files, diffs and commits. Native lacks: the
   header's arrows are drawn (disabled) but do nothing.
-
-## terminal: Terminal panel (runs in both apps)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Click Terminal at the bottom of the left activity bar.
-
-Note: gm-measure writes a .zshrc into each app's throwaway HOME: a "$ " prompt, fixed text in the theme's colors and
-styles, and the cursor hidden, as a blinking cursor differs by the moment of capture.
-
-Measured: light 99.5% (270 MB / 44 MB, 2026-10-09), dark 99.38% (271 MB / 49 MB, 2026-10-09).
-
-- Integrated terminal (`terminal`, partial): The terminal panel with its header and several terminals. Native lacks:
-  one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing; selection,
-  find, file links, the scrollbar, dropping files and terminals in editor tabs; Settings, Terminal (font, cursor,
-  scrollback) and the Shelf tab's view.

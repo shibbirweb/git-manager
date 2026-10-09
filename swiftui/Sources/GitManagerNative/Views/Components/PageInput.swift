@@ -21,9 +21,12 @@ struct PageInput: View {
     var onFocus: () -> Void = {}
     /// Return in the field.
     var onSubmit: (() -> Void)?
+    /// .number-input's 12 points (the MCP port).
+    var fontSize: CGFloat = 13
 
     var body: some View {
-        let font = mono ? (ligatures ? CodeFont.font(13) : CodeFonts(size: 13).regular) : PageFont.ui(13)
+        let font = mono ? (ligatures ? CodeFont.font(fontSize) : CodeFonts(size: fontSize).regular)
+            : PageFont.ui(fontSize)
         ZStack(alignment: .leading) {
             if text.isEmpty && !placeholder.isEmpty {
                 ExactText(text: placeholder, face: font)

@@ -208,3 +208,35 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     220.7 / 43.0 MB, Create Gist (a file open) 261.1 / 51.2 MB.
   - Not measured: the result dialog and Sync Fork's question (they need GitHub). Not tried with a real token yet.
     Not built: Open on GitHub, Copy GitHub Link, Create Pull Request and View Pull Requests.
+- GM-82 Settings > Automation (SettingsDialog.svelte's automation section, src-tauri/src/mcp configure):
+  - Bridge: the control server follows the settings like the current app's (control/server.rs): nothing listens
+    while the MCP server and the command line tool are both off; on, it listens on 127.0.0.1 at mcpPort (default
+    48731), restarting on a port change; a request from `git-manager cli` (x-git-manager-client: cli) needs the
+    command line switch, any other request the MCP switch (403 otherwise); initialize reports both. The token
+    stays in mcp.json between runs (mode 0600, written atomically), the port and pid only while listening; New
+    Token replaces it. Commands mcp_configure, mcp_status, mcp_regenerate_token; gm_control_start became
+    gm_control_install (the UI handler only). Tests: off means no listener and no file; the CLI header gated; the
+    same port keeps running; stopping keeps the token and drops the port; New Token refuses the old one; port 80
+    refused.
+  - App: McpServerStore applies the switches and port at launch and on change (one after another, off the main
+    thread) and keeps the status. NativeCore McpConnect (tested): parseMcpPort, the Claude Code command, the JSON
+    config as JSON.stringify lays it out, the masked token, the examples. NativeCore TextWrap.preWrapLines
+    (tested): pre-wrap with overflow-wrap anywhere, so a command breaks at a space before "http://".
+  - Settings > Automation now as the current app: the MCP server switch, Status (Running at the URL, the error in
+    --danger, or Off) with Available MCP Tools..., Port (.number-input, Return applies, a bad number shows the
+    page's message), and with a token: Secret token (dots, Show / Hide, Copy, New Token in --danger), Connect
+    Claude Code and Other MCP clients (.command boxes with Copy); the command line switch, Install (the native
+    app has none of its own: the current app's reaches it with HOME=~/.gitmanager-native) and Examples; then the
+    memory log switch as before. RowControl gained `.view` and CatalogItem `.custom`; DialogButton `danger`.
+  - Rules found: a group title's line is 13 points in WebKit (rounded ascent and descent of 11-point SF), a point
+    less than SwiftUI's; a row's label needs a point of slack over its measured width or a hint can wrap its last
+    word (it did in dark, at another port number).
+  - gm-measure: both apps now start with the server and the command line tool on, on a free port (the native
+    app's settings.json keeps the values a run wrote first). `--screen settingsautomation` puts both apps on one
+    port. Parity: the automation scenario (the mcp feature) runs.
+  - Pixel diff below the title bar (HDR off, light / dark): settingsautomation 99.51 / 99.14; settings kept
+    99.51 / 99.11, settingsgithub 99.4 / 99.42, settingsgithubaccount 99.42 / 99.46.
+  - Memory on Settings > Automation (server on): current 221 MB, native 51 MB.
+  - Changed for anyone driving the native app by hand: `HOME=~/.gitmanager-native git-manager cli ...` needs the
+    MCP server or the command line tool switched on in the native app's Settings > Automation first.
+  - Not built: the Available MCP Tools dialog (tool switches), the activity list, more tools in the server.

@@ -49,6 +49,11 @@ extension Measure {
     /// app's ~/.gitmanager, the native app's ~/.gitmanager-native): a token lacking the gist scope.
     static let githubScreens = ["settingsgithub", "settingsgithubaccount"]
 
+    /// Settings > Automation with the server on in both apps, on one port for both runs, so the status line and the
+    /// port field read the same.
+    static let automationScreens = ["settingsautomation"]
+    static let automationPort = (try? AppLauncher.freePort()) ?? 48799
+
     static func writeGitHubAccount(home: String, kind: AppKind) throws {
         let folder = (home as NSString).appendingPathComponent(kind == .current ? ".gitmanager" : ".gitmanager-native")
         try FileManager.default.createDirectory(atPath: folder, withIntermediateDirectories: true)

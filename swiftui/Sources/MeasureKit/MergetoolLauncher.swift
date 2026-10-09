@@ -70,6 +70,8 @@ extension AppLauncher {
             try manager.createDirectory(atPath: configDir, withIntermediateDirectories: true)
             let data = try JSONSerialization.data(withJSONObject: ["theme": mode])
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
+        } else {
+            try enableNativeServer(home: home)
         }
         let args = kind == .current
             ? ["merge", files.base, files.local, files.remote, files.merged]

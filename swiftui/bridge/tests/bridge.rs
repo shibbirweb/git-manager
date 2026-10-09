@@ -151,9 +151,16 @@ fn control_server_answers_like_the_current_app() {
     // Only this test reads HOME and GM_TEST_REPO, and the server starts once per process.
     std::env::set_var("HOME", &home);
     std::env::set_var("GM_TEST_REPO", &repo);
-    let port = gm_bridge::gm_control_start(ui_handler);
+    gm_bridge::gm_control_install(ui_handler);
+    // Both switches off: nothing listens and there is no server file.
+    let off = gm_bridge::control::status();
+    assert!(!off.running);
+    assert!(!home.join(".gitmanager-native/.gitmanager/mcp.json").exists());
+    let switches = |enabled: bool, cli_enabled: bool| gm_bridge::control::Switches { enabled, cli_enabled, port: 0 };
+    let on = gm_bridge::control::configure(switches(true, false));
+    assert!(on.running, "{on:?}");
+    let port = on.port;
     assert!(port > 0);
-    let port = port as u16;
 
     let server_file = std::fs::read_to_string(home.join(".gitmanager-native/.gitmanager/mcp.json")).unwrap();
     let file: Value = serde_json::from_str(&server_file).unwrap();
@@ -169,7 +176,8 @@ fn control_server_answers_like_the_current_app() {
 
     let (_, init) = post(port, Some(token), &rpc("initialize", json!({ "protocolVersion": "2025-06-18" })));
     assert_eq!(init["result"]["serverInfo"]["name"], "git-manager-native");
-    assert_eq!(init["result"]["_meta"]["gitManager/cliEnabled"], true);
+    assert_eq!(init["result"]["_meta"]["gitManager/mcpEnabled"], true);
+    assert_eq!(init["result"]["_meta"]["gitManager/cliEnabled"], false);
 
     let (_, list) = post(port, Some(token), &rpc("tools/list", json!({})));
     let tools = list["result"]["tools"].as_array().unwrap();
@@ -203,4 +211,51 @@ fn control_server_answers_like_the_current_app() {
 
     let (_, method) = post(port, Some(token), &rpc("no/such/method", json!({})));
     assert_eq!(method["error"]["code"], -32601);
+
+    switches_and_token(&home, token, port);
+}
+
+/// The command line tool's requests need its switch; the token stays in mcp.json when the server stops and starts
+/// again, and New Token replaces it.
+fn switches_and_token(home: &std::path::Path, token: &str, port: u16) {
+    use gm_bridge::control::{configure, Switches};
+    let server_file = home.join(".gitmanager-native/.gitmanager/mcp.json");
+    let cli_call = |port: u16, token: &str| {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let body = rpc("tools/list", json!({})).to_string();
+        let head = format!("POST /mcp HTTP/1.1\r\nAuthorization: Bearer {token}\r\nx-git-manager-client: cli");
+        write!(stream, "{head}\r\nContent-Length: {}\r\n\r\n{body}", body.len()).unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        response.split_whitespace().nth(1).unwrap().parse::<u16>().unwrap()
+    };
+    assert_eq!(cli_call(port, token), 403);
+    let both = configure(Switches { enabled: true, cli_enabled: true, port: 0 });
+    assert_eq!(both.port, port, "the same port keeps running");
+    assert_eq!(cli_call(port, token), 200);
+
+    configure(Switches { enabled: false, cli_enabled: true, port: 0 });
+    assert_eq!(post(port, Some(token), &rpc("tools/list", json!({}))).0, 403);
+
+    let stopped = configure(Switches::default());
+    assert!(!stopped.running);
+    let file: Value = serde_json::from_str(&std::fs::read_to_string(&server_file).unwrap()).unwrap();
+    assert_eq!(file["token"], token);
+    assert!(file.get("port").is_none(), "{file}");
+    assert!(TcpStream::connect(("127.0.0.1", port)).is_err());
+
+    let again = configure(Switches { enabled: true, cli_enabled: false, port: 0 });
+    assert_eq!(again.token.as_deref(), Some(token));
+    let renewed = gm_bridge::control::regenerate_token().unwrap();
+    let new_token = renewed.token.unwrap();
+    assert_ne!(new_token, token);
+    let file: Value = serde_json::from_str(&std::fs::read_to_string(&server_file).unwrap()).unwrap();
+    assert_eq!(file["token"], new_token.as_str());
+    assert_eq!(file["port"], again.port);
+    assert_eq!(post(again.port, Some(token), &rpc("tools/list", json!({}))).0, 401);
+
+    let low = configure(Switches { enabled: true, cli_enabled: false, port: 80 });
+    assert!(!low.running);
+    assert_eq!(low.error.as_deref(), Some("Choose a port from 1024 to 65535"));
+    configure(Switches::default());
 }

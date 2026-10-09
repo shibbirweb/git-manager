@@ -12,6 +12,8 @@ enum RowControl {
     case toggle(Bool, toggle: (() -> Void)?)
     case range(fraction: Double, value: String, valueWidth: CGFloat)
     case field(StaticField.Kind, String)
+    /// A control drawn by the row's owner (Settings > Automation's port and buttons), as wide as given.
+    case view(AnyView, width: CGFloat)
     case none
 
     /// The control's width as the page lays it out.
@@ -27,6 +29,8 @@ enum RowControl {
         case .field(let kind, let text):
             let textWidth = ExactText.width(text, font: PageFont.ui(12)) + 16 + (kind == .select ? 18 : 0)
             return kind == .input ? max(120, textWidth) : textWidth
+        case .view(_, let width):
+            return width
         case .none:
             return 0
         }
@@ -85,7 +89,8 @@ struct SettingsRow: View {
         let hintText = hint.map(\.text).joined()
         let natural = max(ExactText.width(title, font: PageFont.ui(13, weight: .medium)),
                           ExactText.width(hintText, font: PageFont.ui(12)))
-        let labelWidth = control.width > 0 ? min(natural, available - 20 - control.width) : available
+        // A point of slack over the natural width, so a hint measured to the exact width never wraps its last word.
+        let labelWidth = control.width > 0 ? min(natural + 1, available - 20 - control.width) : available
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 0) {
                 VStack(alignment: .leading, spacing: 3) {
@@ -133,6 +138,8 @@ struct SettingsRow: View {
             RangeReadout(fraction: fraction, value: value, valueWidth: valueWidth)
         case .field(let kind, let text):
             StaticField(kind: kind, text: text)
+        case .view(let view, _):
+            view
         case .none:
             EmptyView()
         }
@@ -170,7 +177,8 @@ struct SettingsGroupTitle: View {
         ExactText(text: text.uppercased(), size: 11, weight: .semibold, tracking: 11 * 0.06)
             .foregroundStyle(theme.ink("--text-dim"))
             .padding(.top, first ? 6 : 18)
-            .padding(.bottom, 2)
+            // padding-bottom 2, less the point SwiftUI's line is taller than WebKit's 13 (measured on Automation).
+            .padding(.bottom, 1)
             .frame(width: rowsWidth, alignment: .leading)
     }
 }

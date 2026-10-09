@@ -78,18 +78,12 @@ pub unsafe extern "C" fn gm_call(command: *const c_char, args_json: *const c_cha
     CString::new(reply.to_string()).map_or(std::ptr::null_mut(), CString::into_raw)
 }
 
-/// Starts the control (MCP) server once; `ui_handler` answers the requests that need the window.
-/// Returns the port, or -1 when the server could not start (the reason goes to stderr).
+/// Keeps `ui_handler`, which answers the control (MCP) server's requests that need the window. The server itself
+/// starts when the app applies its settings (`mcp_configure`).
 #[no_mangle]
-pub extern "C" fn gm_control_start(ui_handler: control::UiHandler) -> i32 {
+pub extern "C" fn gm_control_install(ui_handler: control::UiHandler) {
     SETUP.call_once(git::repo::configure_libgit2);
-    match control::start(ui_handler) {
-        Ok(port) => i32::from(port),
-        Err(message) => {
-            eprintln!("Git Manager Native: the control server did not start: {message}");
-            -1
-        }
-    }
+    control::install(ui_handler);
 }
 
 /// Frees a string returned by [`gm_call`].

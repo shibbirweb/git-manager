@@ -65,7 +65,7 @@ enum Measure {
         let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
                              "conflicts"]
             + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens + githubScreens
-                + githubDialogScreens)
+                + githubDialogScreens + automationScreens)
             .contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
@@ -128,6 +128,9 @@ enum Measure {
             // The file bar's Blame button is this setting in both apps.
             themeSettings["blameGutter"] = true
         }
+        if automationScreens.contains(options.screen) {
+            themeSettings["mcpPort"] = automationPort
+        }
         if kind == .native {
             try writeNativeSettings(home: home, values: themeSettings)
         }
@@ -169,6 +172,8 @@ enum Measure {
             try await openSettings(app)
         } else if githubScreens.contains(options.screen) {
             try await openSettings(app, section: "github")
+        } else if automationScreens.contains(options.screen) {
+            try await openSettings(app, section: "automation")
         } else if options.screen == "terminal" {
             try await MeasureTerminal.show(app)
         } else if editScreens.contains(options.screen) {
