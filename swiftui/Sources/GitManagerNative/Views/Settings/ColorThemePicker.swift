@@ -44,6 +44,8 @@ struct ColorThemePicker: View {
     @Environment(\.theme) private var theme
     @ObservedObject var settings: SettingsStore
     let mode: ColorMode
+    /// 250 in Settings; the welcome screen's Customize page stretches it across the page.
+    var width: CGFloat = 250
 
     var body: some View {
         let selected = settings.preferences.colorTheme(for: mode)
@@ -68,8 +70,10 @@ struct ColorThemePicker: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(groups, id: \.0) { label, themes in
                         if !themes.isEmpty {
+                            // 11-point text in WebKit's 13-point normal line.
                             ExactText(text: label.uppercased(), size: 11, weight: .semibold, tracking: 11 * 0.04)
                                 .foregroundStyle(theme.ink("--text-dim"))
+                                .frame(height: 13)
                                 .padding(EdgeInsets(top: 6, leading: 6, bottom: 3, trailing: 6))
                             ForEach(themes, id: \.id) { entry in
                                 option(entry, selected: entry.id == selected)
@@ -79,13 +83,13 @@ struct ColorThemePicker: View {
                 }
                 .padding(4)
             }
-            .frame(width: 248, height: 234)
+            .frame(width: width - 2, height: 234)
             .background(theme.color("--panel"))
             .clipShape(RoundedRectangle(cornerRadius: 5, style: .circular))
             .padding(1)
             .borderRing(theme.color("--border-strong"), cornerRadius: 6)
         }
-        .frame(width: 250, alignment: .leading)
+        .frame(width: width, alignment: .leading)
     }
 
     private func option(_ entry: ThemeEntry, selected: Bool) -> some View {
@@ -125,6 +129,8 @@ struct ThemeSwatch: View {
             }
             .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(swatch.ink("--text"))
+            // white-space: nowrap: the sample keeps its width (a wide row once squeezed "Aa" to an ellipsis).
+            .fixedSize()
             Spacer(minLength: 0)
             HStack(spacing: 2) {
                 ForEach(["--tok-keyword", "--tok-string", "--accent"], id: \.self) { token in

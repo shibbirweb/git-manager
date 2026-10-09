@@ -47,6 +47,7 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
 @Test func wrongValuesFallBackToDefaults() throws {
     let file = try load("""
         {"theme": "blue", "darkColorTheme": "github-light", "lightColorTheme": "nope", "uiFontSize": 99,
+         "editorFontSize": 4,
          "fileIcons": 3, "roundedPanels": 1, "fileToolbar": "left", "fileToolbarBadges": "yes",
          "commitBoxLayout": null, "blameGutter": "on"}
         """).get()
@@ -56,6 +57,7 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
     #expect(preferences.darkColorTheme == "gm-dark")
     #expect(preferences.lightColorTheme == "gm-light")
     #expect(preferences.uiFontSize == 16)
+    #expect(preferences.editorFontSize == 10)
     #expect(preferences.fileIcons == "off")
     // 1 is a number, not a boolean.
     #expect(!preferences.roundedPanels)
@@ -73,11 +75,11 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
 }
 
 @Test func otherKeysSurviveASave() throws {
-    var file = try load("{\"editorFontSize\": 15, \"keybindings\": {\"a\": \"b\"}, \"theme\": \"light\"}").get()
+    var file = try load("{\"terminalFontSize\": 15, \"keybindings\": {\"a\": \"b\"}, \"theme\": \"light\"}").get()
     #expect(file.extra["theme"] == nil)
     file.preferences.darkColorTheme = "monokai-charcoal"
     let object = SettingsData.object(file)
-    #expect(object["editorFontSize"] as? Int == 15)
+    #expect(object["terminalFontSize"] as? Int == 15)
     #expect((object["keybindings"] as? [String: String])?["a"] == "b")
     #expect(object["theme"] as? String == "light")
     #expect(object["darkColorTheme"] as? String == "monokai-charcoal")

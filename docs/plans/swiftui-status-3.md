@@ -217,3 +217,16 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
   - Pixel diff below the title bar (HDR off): foldermenurecent 99.27% light, 99.05% dark; with the new shadow
     foldermenu 99.52 / 99.30, repomenu 99.49 / 99.25, branchmenu 99.43 / 99.21; Quick Open kept 99.62 dark.
   - Memory: current 155 MB, native 54 MB.
+- GM-70 the welcome screen's Customize page (Welcome.svelte section "customize"):
+  - Built: WelcomeCustomize (title, Theme as the page's bordered segmented choice, the color theme picker of the
+    mode in use across the page, Interface and Editor font size ranges with their values, Rounded panels, All
+    settings...); the sidebar switches between Projects and Customize. NativeCore NativePreferences gains
+    editorFontSize (10 to 20, default 13, tested). Settings' range track is shared (RangeTrack); ColorThemePicker
+    takes a width. gm-measure `--screen welcomecustomize`; AccessibilityPress also presses AXRadioButton (the
+    page's role="tab" rows).
+  - Rules found: the theme swatch's "fn Aa" must keep its width (white-space: nowrap): in a wide row SwiftUI
+    squeezed "Aa" to an ellipsis; the picker's 11-point group labels sit in WebKit's 13-point line.
+  - Pixel diff below the title bar (HDR off): welcomecustomize 99.26% light, 99.12% dark; Settings kept 99.5 /
+    99.11, welcome 99.87.
+  - Memory: current 143 MB, native 34 MB (dark).
+  - Not built: dragging the font size ranges (they show the values).

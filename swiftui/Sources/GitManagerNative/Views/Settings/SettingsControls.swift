@@ -83,26 +83,39 @@ struct RangeReadout: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ZStack(alignment: .leading) {
-                Capsule(style: .circular)
-                    .fill(theme.color("--border-strong"))
-                    .frame(height: 4)
-                Capsule(style: .circular)
-                    .fill(theme.color("--accent"))
-                    .frame(width: max(4, 160 * fraction), height: 4)
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 16, height: 16)
-                    .boxShadow(radius: 8, offsetY: 1, blur: 2, alpha: 0.25)
-                    .offset(x: (160 - 16) * fraction)
-            }
-            .frame(width: 160, height: 16)
-            .padding(2)
+            RangeTrack(fraction: fraction, width: 160)
             Text(value)
                 .font(.system(size: 12, design: .monospaced))
                 .frame(width: valueWidth, alignment: .trailing)
         }
         .fixedSize()
+    }
+}
+
+/// WebKit's range input as app.css styles it: a 4-point --border-strong track, --accent up to the 16-point white
+/// knob, 16 tall with 2 points of margin.
+struct RangeTrack: View {
+    @Environment(\.theme) private var theme
+
+    let fraction: Double
+    let width: CGFloat
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            Capsule(style: .circular)
+                .fill(theme.color("--border-strong"))
+                .frame(height: 4)
+            Capsule(style: .circular)
+                .fill(theme.color("--accent"))
+                .frame(width: max(4, width * fraction), height: 4)
+            Circle()
+                .fill(Color.white)
+                .frame(width: 16, height: 16)
+                .boxShadow(radius: 8, offsetY: 1, blur: 2, alpha: 0.25)
+                .offset(x: (width - 16) * fraction)
+        }
+        .frame(width: width, height: 16)
+        .padding(2)
     }
 }
 

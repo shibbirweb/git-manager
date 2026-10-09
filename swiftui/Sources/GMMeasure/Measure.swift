@@ -21,7 +21,8 @@ enum Measure {
         /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
         /// and design-system), "cleanrepos" (folders with two clean repositories), "norepo" (a plain folder),
         /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open), "welcome" (no folder) and
-        /// "welcomerecent" (no folder, with recent projects), "closefolder" (storefront closed again).
+        /// "welcomerecent" (no folder, with recent projects), "welcomecustomize" (its Customize page) and
+        /// "closefolder" (storefront closed again).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -167,6 +168,8 @@ enum Measure {
             try await openHeaderMenu(app, screen: options.screen)
         } else if closeScreens.contains(options.screen) {
             try await closeFolder(app)
+        } else if options.screen == "welcomecustomize" {
+            try await showCustomize(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

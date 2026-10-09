@@ -33,6 +33,7 @@ public struct NativePreferences: Equatable, Sendable {
     public var lightColorTheme = SettingsData.defaultLightTheme
     public var darkColorTheme = SettingsData.defaultDarkTheme
     public var uiFontSize = 13.0
+    public var editorFontSize = 13.0
     public var fileIcons = "off"
     public var roundedPanels = false
     public var fileToolbar = "top"
@@ -66,6 +67,7 @@ public enum SettingsData {
     public static let defaultLightTheme = "gm-light"
     public static let defaultDarkTheme = "gm-dark"
     public static let uiFontSizeRange = 11.0...16.0
+    public static let editorFontSizeRange = 10.0...20.0
     public static let fileIconModes = ["off", "minimal", "material"]
     public static let fileToolbarPlacements = ["top", "bottom", "none"]
     public static let commitBoxLayouts = ["single", "perRepo"]
@@ -75,8 +77,8 @@ public enum SettingsData {
     ]
     /// The keys `NativePreferences` owns.
     public static let knownKeys: Set<String> = Set([
-        "theme", "lightColorTheme", "darkColorTheme", "uiFontSize", "fileIcons", "roundedPanels", "fileToolbar",
-        "commitBoxLayout", "blameGutter",
+        "theme", "lightColorTheme", "darkColorTheme", "uiFontSize", "editorFontSize", "fileIcons", "roundedPanels",
+        "fileToolbar", "commitBoxLayout", "blameGutter",
     ] + fileToolbarSwitchKeys)
 
     public enum LoadError: Error, Equatable {
@@ -109,6 +111,9 @@ public enum SettingsData {
         preferences.lightColorTheme = pickThemeID(object["lightColorTheme"], mode: .light, themes: themes)
         preferences.darkColorTheme = pickThemeID(object["darkColorTheme"], mode: .dark, themes: themes)
         preferences.uiFontSize = pickNumber(object["uiFontSize"], fallback: defaults.uiFontSize, in: uiFontSizeRange)
+        preferences.editorFontSize = pickNumber(
+            object["editorFontSize"], fallback: defaults.editorFontSize, in: editorFontSizeRange
+        )
         preferences.fileIcons = pickOneOf(object["fileIcons"], fileIconModes, fallback: defaults.fileIcons)
         preferences.roundedPanels = pickBool(object["roundedPanels"], fallback: defaults.roundedPanels)
         preferences.fileToolbar = pickOneOf(
@@ -133,6 +138,7 @@ public enum SettingsData {
         object["lightColorTheme"] = preferences.lightColorTheme
         object["darkColorTheme"] = preferences.darkColorTheme
         object["uiFontSize"] = preferences.uiFontSize
+        object["editorFontSize"] = preferences.editorFontSize
         object["fileIcons"] = preferences.fileIcons
         object["roundedPanels"] = preferences.roundedPanels
         object["fileToolbar"] = preferences.fileToolbar

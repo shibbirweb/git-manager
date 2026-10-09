@@ -49,8 +49,9 @@ public enum AccessibilityPress {
         let role = attribute(element, kAXRoleAttribute) as? String
         // WebKit names a button by its title, SwiftUI by its description (accessibilityLabel).
         let names = [kAXTitleAttribute, kAXDescriptionAttribute].compactMap { attribute(element, $0) as? String }
-        // The page's menu rows are role="menuitem" (AXMenuItem); SwiftUI's are buttons.
-        let pressable = role == kAXButtonRole as String || role == kAXMenuItemRole as String
+        // The page's menu rows are role="menuitem" (AXMenuItem) and its tabs role="tab" (AXRadioButton); SwiftUI's
+        // are buttons.
+        let pressable = [kAXButtonRole, kAXMenuItemRole, kAXRadioButtonRole].contains { $0 as String == role }
         if pressable, names.contains(where: { $0.hasPrefix(title) }) {
             return element
         }

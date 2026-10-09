@@ -1,22 +1,37 @@
 // The window without a folder (src/lib/views/Welcome.svelte), laid out like the JetBrains welcome screen: a 240-point
 // sidebar on --panel-alt (brand, Projects, Customize and Learn, the GitHub links and the gear) and the page on
-// --panel. Only Projects is built: Customize and Learn say so in a toast.
+// --panel. Projects and Customize are built; Learn says so in a toast.
 
 import AppKit
 import NativeCore
 import SwiftUI
 
+/// The sidebar's pages.
+enum WelcomeSection {
+    case projects, customize, learn
+}
+
 struct WelcomeWindow: View {
     @Environment(\.theme) private var theme
+    @State private var section = WelcomeSection.projects
 
     var body: some View {
         HStack(spacing: 0) {
-            WelcomeSidebar()
-            ProjectsPage()
-                .padding(.top, 22)
-                .padding(.horizontal, 26)
-                .padding(.bottom, 16)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            WelcomeSidebar(section: $section)
+            Group {
+                switch section {
+                case .projects:
+                    ProjectsPage()
+                case .customize:
+                    WelcomeCustomize()
+                case .learn:
+                    ProjectsPage()
+                }
+            }
+            .padding(.top, 22)
+            .padding(.horizontal, 26)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .background(theme.color("--panel"))
     }
@@ -38,6 +53,7 @@ private struct ProjectsPage: View {
 /// .sidebar: 20 points down, 12 in and 14 up from the bottom, a 1-point --border on the right.
 private struct WelcomeSidebar: View {
     @Environment(\.theme) private var theme
+    @Binding var section: WelcomeSection
 
     private static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
 
@@ -46,8 +62,8 @@ private struct WelcomeSidebar: View {
             brand
             // .sections: 36-point rows 2 apart; Projects is the page shown.
             VStack(spacing: 2) {
-                SidebarRow(label: "Projects", active: true) {}
-                SidebarRow(label: "Customize") { notBuilt("Customize") }
+                SidebarRow(label: "Projects", active: section == .projects) { section = .projects }
+                SidebarRow(label: "Customize", active: section == .customize) { section = .customize }
                 SidebarRow(label: "Learn") { notBuilt("Learn") }
             }
             Spacer(minLength: 0)
