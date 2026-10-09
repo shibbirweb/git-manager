@@ -26,6 +26,7 @@ struct FileScreen: View {
 /// 6 between its parts; 12-point --text-dim text.
 struct FileBar: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var settings = SettingsStore.shared
 
     let folderName: String
     let relativePath: String
@@ -92,7 +93,10 @@ struct FileBar: View {
             theme.color("--border-strong")
                 .frame(width: 1, height: 14)
                 .padding(.horizontal, 4)
-            tool("history", size: 13)
+            // Blame: the gutter on or off for every file (settings.blameGutter), shown pressed while on.
+            tool("history", size: 13, on: settings.preferences.blameGutter) {
+                settings.update { $0.blameGutter.toggle() }
+            }
             tool("copy", size: 12) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(relativePath, forType: .string)
@@ -103,11 +107,15 @@ struct FileBar: View {
 
     /// .tool: 24 x 22 with the icon in --text-dim; a disabled one at 40% opacity, blended as WebKit blends it.
     private func tool(
-        _ icon: String, size: CGFloat, disabled: Bool = false, action: @escaping () -> Void = {}
+        _ icon: String, size: CGFloat, disabled: Bool = false, on: Bool = false, action: @escaping () -> Void = {}
     ) -> some View {
         Icon(name: icon, size: size)
-            .foregroundStyle(disabled ? theme.over("--text-dim", 0.4, on: "--panel") : theme.ink("--text-dim"))
+            .foregroundStyle(disabled ? theme.over("--text-dim", 0.4, on: "--panel")
+                : theme.ink(on ? "--text" : "--text-dim"))
             .frame(width: 24, height: 22)
+            // .tool.on: --selected-inactive behind it, 4-point corners.
+            .background(RoundedRectangle(cornerRadius: 4, style: .circular)
+                .fill(on ? theme.color("--selected-inactive") : .clear))
             .contentShape(Rectangle())
             .onTapGesture {
                 if !disabled {

@@ -35,8 +35,11 @@ public struct EditorGeometry: Equatable, Sendable {
         max(40, 22 + Double(String(lineCount).count) * advance)
     }
 
+    /// The blame gutter after the line numbers (BlameGutter.width while it is on, else 0).
+    public var blameWidth = 0.0
+
     public var guttersWidth: Double {
-        numbersWidth + Self.changeGutterWidth + Self.foldGutterWidth
+        numbersWidth + blameWidth + Self.changeGutterWidth + Self.foldGutterWidth
     }
 
     /// The content's width: the widest line and its padding.

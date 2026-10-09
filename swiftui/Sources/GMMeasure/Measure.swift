@@ -16,7 +16,7 @@ enum Measure {
         /// screen after staging Reference.diffFile), "file" (Measure.shownFile in an editor tab)
         /// "log" (the Log with its newest commit selected), "terminal" (the terminal panel, MeasureTerminal.swift),
         /// "merge" (git mergetool on Measure.mergeFile), "conflicts" (the conflict demo's conflicts list) or
-        /// "edit" and "fold" (MeasureEdit.swift).
+        /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -49,7 +49,8 @@ enum Measure {
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = (["changes", "diff", "staged", "file", "log", "settings", "terminal", "merge", "conflicts"]
+        let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
+                             "conflicts"]
             + searchScreens + editScreens).contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
@@ -103,7 +104,11 @@ enum Measure {
         if kind == .native {
             try writeNativeDiffPrefs(home: home, collapse: options.collapse)
         }
-        let themeSettings = colorThemeSettings(mode: options.mode, themeID: options.colorTheme)
+        var themeSettings = colorThemeSettings(mode: options.mode, themeID: options.colorTheme)
+        if options.screen == "blame" {
+            // The file bar's Blame button is this setting in both apps.
+            themeSettings["blameGutter"] = true
+        }
         if kind == .native {
             try writeNativeSettings(home: home, values: themeSettings)
         }
@@ -133,7 +138,7 @@ enum Measure {
             try await showDiff(app, collapse: options.collapse)
         } else if options.screen == "staged" {
             try await stageFiles(app)
-        } else if options.screen == "file" {
+        } else if options.screen == "file" || options.screen == "blame" {
             try await openFile(app)
         } else if options.screen == "log" {
             try await showLog(app)

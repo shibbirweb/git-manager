@@ -76,7 +76,11 @@
     {
       "id": "blame", "name": "Blame", "usage": "Blame.md", "scenario": "blame",
       "check": "The current line note and the blame gutter",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "clicking a note or a gutter block (the commit in the Log, Option-click copies its hash) and their tooltips",
+        "Blame in the diff toolbar"
+      ]
     },
     {
       "id": "log", "name": "History and log", "usage": "History-and-Log.md", "scenario": "log",

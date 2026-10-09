@@ -1,5 +1,25 @@
 {
   "scenarios" : {
+    "blame" : {
+      "dark" : {
+        "contentPercent" : 99.33,
+        "currentMb" : 268.6,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 41,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.34
+      },
+      "light" : {
+        "contentPercent" : 99.43,
+        "currentMb" : 267.5,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 41.8,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.32
+      }
+    },
     "changes" : {
       "dark" : {
         "contentPercent" : 99.13,

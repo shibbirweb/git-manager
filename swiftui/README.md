@@ -134,6 +134,7 @@ swift run -c release gm-measure measure --screen search  # Find in Files for "li
 swift run -c release gm-measure memory-search           # Quick Open, the palette and Find in Files on 4000 files
 swift run -c release gm-measure measure --screen edit    # src/catalog.ts after the same Code menu commands
 swift run -c release gm-measure measure --screen fold    # src/catalog.ts with the products array folded
+swift run -c release gm-measure measure --screen blame   # src/catalog.ts with the blame gutter on
 swift run -c release gm-measure measure --screen merge   # git mergetool on the conflict demo's src/app.ts
 swift run -c release gm-measure measure --screen merge --file src/report.ts --walk 200  # a 2400-line file's memory
 swift run -c release gm-measure measure --screen conflicts  # the conflict demo with its conflicts list open
@@ -280,3 +281,4 @@ src-tauri's test helpers.
 | GM-57 Quick Open, Command Palette and Find in Files (search, quickopen, palette screens) | done |
 | GM-54 Merge tool: three panes, chunk actions, conflicts list, git mergetool mode | done (result typing missing) |
 | GM-58 Code editor: typing, selections, multiple cursors, the Code menu, folding, undo, save | done |
+| GM-59 Blame gutter and the file bar's Blame button (`--screen blame`) | done |

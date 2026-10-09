@@ -169,7 +169,7 @@ extension FileCanvas {
     /// the next line's top edge (its bottom at the document's end).
     func drawChangeBars(_ content: Content, shown: Range<Int>, colors: CanvasColors) {
         let bars = ChangeMarks.gutter(content.marks, lineCount: content.doc.lineCount)
-        let left = CGFloat(content.geometry.numbersWidth)
+        let left = CGFloat(content.geometry.numbersWidth + content.geometry.blameWidth)
         for row in shown {
             guard let bar = bars[content.layout.lines(forRow: row).lowerBound] else {
                 continue
@@ -198,7 +198,8 @@ extension FileCanvas {
     /// A folded row's marker (.cm-gm-fold-closed): the 10-point chevron turned to point right, in --text-faint,
     /// centered in the 14-point fold gutter. Open markers show only while the pointer is over the gutter.
     func drawFoldMarker(_ content: Content, row: Int, colors: CanvasColors) {
-        let left = CGFloat(content.geometry.numbersWidth + EditorGeometry.changeGutterWidth) + 2
+        let left = CGFloat(content.geometry.numbersWidth + content.geometry.blameWidth
+            + EditorGeometry.changeGutterWidth) + 2
         // Centered in the folded row's 17-point block, half a point above the shifted row.
         let top = rowTop(row) - blockExtra(row) / 2 + 3
         let chevron = NSBezierPath()

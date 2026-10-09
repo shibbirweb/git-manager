@@ -10,6 +10,7 @@ import SwiftUI
 
 struct FileEditorView: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var settings = SettingsStore.shared
 
     let session: EditorSession
     /// EditorModel's revision: every change of the session draws again.
@@ -18,7 +19,8 @@ struct FileEditorView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            FileScrollView(session: session, revision: revision, blameLabel: blameLabel, theme: theme)
+            FileScrollView(session: session, revision: revision, blameLabel: blameLabel, theme: theme,
+                           blameGutter: settings.preferences.blameGutter)
             // .cm-scroll-markers: 12 points of --panel-alt with a 1-point --border-strong left border; an unchanged
             // file has no ticks.
             HStack(spacing: 0) {
@@ -36,6 +38,7 @@ struct FileScrollView: NSViewRepresentable {
     let revision: Int
     let blameLabel: String?
     let theme: Theme
+    let blameGutter: Bool
 
     func makeNSView(context: Context) -> Host {
         Host()
@@ -46,6 +49,7 @@ struct FileScrollView: NSViewRepresentable {
         host.session = session
         host.blameLabel = blameLabel
         host.theme = theme
+        host.blameGutter = blameGutter
         host.redraw()
         if opened {
             // A file that opens takes the keyboard, as CodeMirror focuses a new file view.
@@ -63,6 +67,7 @@ struct FileScrollView: NSViewRepresentable {
         var session: EditorSession?
         var blameLabel: String?
         var theme = Theme.standard(for: .light)
+        var blameGutter = false
         /// Where a drag started (the selection's anchor) and how many clicks began it.
         var dragAnchor: (position: Int, clicks: Int)?
 
@@ -120,7 +125,7 @@ struct FileScrollView: NSViewRepresentable {
             }
             // Settings > Editor > Cursor blinking is not in the native settings yet: the current app's default.
             canvas.content = FileCanvas.Content(session: session, blameLabel: blameLabel, theme: theme,
-                                                focused: focused, blinking: "blink")
+                                                focused: focused, blinking: "blink", blameGutter: blameGutter)
         }
 
         override func layout() {

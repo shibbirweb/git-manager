@@ -104,7 +104,7 @@ struct CSSColor: Equatable {
         p3Color(bytes, alpha: 1)
     }
 
-    private static func p3Color(_ bytes: [Double], alpha: Double) -> NSColor {
+    static func p3Color(_ bytes: [Double], alpha: Double) -> NSColor {
         NSColor(
             displayP3Red: CGFloat(bytes[0] / 255), green: CGFloat(bytes[1] / 255), blue: CGFloat(bytes[2] / 255),
             alpha: CGFloat(alpha)

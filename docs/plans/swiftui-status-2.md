@@ -267,3 +267,20 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
     (702 peak), 286 after; native 33, 46, 43 (60 peak), 39.
   - Not built: completion, Go to Line, the find bar, column selection, dragging text, input methods (marked text),
     Settings > Editor (cursor, font, word wrap); the keymap's repaint is the rows on screen, not only the edited ones.
+- GM-59 blame (src/lib/editor/blame.ts, blameModel.ts):
+  - Built: the blame gutter (FileCanvasBlame, NativeCore BlameGutter, tested): 236 points between the line numbers
+    and the change gutter with a 1-point --border on its right; per line a 3-point bar, the accent at 20% to 95% by
+    the commit's age rank (ageRanks) or --warning for uncommitted lines; a block's first line has a 1-point --border
+    line on top and "shortId author age" (the page's two spaces collapse to one) in the UI font at 0.88em, italic
+    when uncommitted, cut with an ellipsis. The file bar's Blame button switches it for every file (blameGutter in
+    ~/.gitmanager-native/settings.json, validated) and shows pressed (.tool.on). The current line's note was GM-52.
+  - Rules found: the bar's color-mix is blended over the cell's own background, the active line's on a cursor's
+    row, with its alpha in 8 bits; the label sits half a point above the CSS line box's center.
+  - gm-measure `--screen blame` (src/catalog.ts with blameGutter in both apps' settings); parity scenario `blame`
+    (src/cart.ts, with uncommitted lines).
+  - Pixel diff below the title bar (HDR off): blame 99.63% light, 99.59% dark; parity on src/cart.ts 99.43 / 99.33
+    (its overview ruler's change ticks are not built). Other screens unchanged (file 99.63, edit 99.5, fold 99.51,
+    Settings 99.51).
+  - Memory (parity run, cart.ts with the gutter): current 268 MB, native 42 MB.
+  - Not built: clicking a note or a block (the commit in the Log, Option-click copies its hash), tooltips, Blame in
+    the diff toolbar.

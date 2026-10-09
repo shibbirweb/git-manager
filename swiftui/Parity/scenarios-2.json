@@ -49,7 +49,8 @@
       "steps": [
         "Start the app on demo/acme/storefront and double-click src/cart.ts.",
         "Click Blame (the clock button) in the path bar: the blame gutter beside the line numbers."
-      ]
+      ],
+      "run": { "openFile": "src/cart.ts", "appSettings": { "blameGutter": true } }
     },
     {
       "id": "log",

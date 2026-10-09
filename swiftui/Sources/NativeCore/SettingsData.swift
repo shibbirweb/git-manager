@@ -41,6 +41,8 @@ public struct NativePreferences: Equatable, Sendable {
         uniqueKeysWithValues: SettingsData.fileToolbarSwitchKeys.map { ($0, true) }
     )
     public var commitBoxLayout = "single"
+    /// The blame gutter beside the code (the file bar's Blame button switches it).
+    public var blameGutter = false
 
     public init() {}
 
@@ -74,7 +76,7 @@ public enum SettingsData {
     /// The keys `NativePreferences` owns.
     public static let knownKeys: Set<String> = Set([
         "theme", "lightColorTheme", "darkColorTheme", "uiFontSize", "fileIcons", "roundedPanels", "fileToolbar",
-        "commitBoxLayout",
+        "commitBoxLayout", "blameGutter",
     ] + fileToolbarSwitchKeys)
 
     public enum LoadError: Error, Equatable {
@@ -118,6 +120,7 @@ public enum SettingsData {
         preferences.commitBoxLayout = pickOneOf(
             object["commitBoxLayout"], commitBoxLayouts, fallback: defaults.commitBoxLayout
         )
+        preferences.blameGutter = pickBool(object["blameGutter"], fallback: defaults.blameGutter)
         let extra = object.filter { !knownKeys.contains($0.key) }
         return SettingsFile(preferences: preferences, extra: extra)
     }
@@ -137,6 +140,7 @@ public enum SettingsData {
             object[key] = preferences.fileToolbarParts[key] ?? true
         }
         object["commitBoxLayout"] = preferences.commitBoxLayout
+        object["blameGutter"] = preferences.blameGutter
         return object
     }
 

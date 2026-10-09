@@ -27,7 +27,7 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
 @Test func validValuesAreKept() throws {
     let file = try load("""
         {"theme": "dark", "darkColorTheme": "monokai-charcoal", "lightColorTheme": "github-light",
-         "uiFontSize": 14.5, "fileIcons": "material", "roundedPanels": true, "fileToolbar": "none",
+         "uiFontSize": 14.5, "fileIcons": "material", "roundedPanels": true, "fileToolbar": "none", "blameGutter": true,
          "fileToolbarBlame": false, "commitBoxLayout": "perRepo"}
         """).get()
     let preferences = file.preferences
@@ -37,6 +37,7 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
     #expect(preferences.uiFontSize == 14.5)
     #expect(preferences.fileIcons == "material")
     #expect(preferences.roundedPanels)
+    #expect(preferences.blameGutter)
     #expect(preferences.fileToolbar == "none")
     #expect(preferences.fileToolbarParts["fileToolbarBlame"] == false)
     #expect(preferences.fileToolbarParts["fileToolbarBadges"] == true)
@@ -47,7 +48,7 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
     let file = try load("""
         {"theme": "blue", "darkColorTheme": "github-light", "lightColorTheme": "nope", "uiFontSize": 99,
          "fileIcons": 3, "roundedPanels": 1, "fileToolbar": "left", "fileToolbarBadges": "yes",
-         "commitBoxLayout": null}
+         "commitBoxLayout": null, "blameGutter": "on"}
         """).get()
     let preferences = file.preferences
     #expect(preferences.theme == .system)
@@ -58,6 +59,7 @@ private func load(_ json: String) -> Result<SettingsFile, SettingsData.LoadError
     #expect(preferences.fileIcons == "off")
     // 1 is a number, not a boolean.
     #expect(!preferences.roundedPanels)
+    #expect(!preferences.blameGutter)
     #expect(preferences.fileToolbar == "top")
     #expect(preferences.fileToolbarParts["fileToolbarBadges"] == true)
     #expect(preferences.commitBoxLayout == "single")

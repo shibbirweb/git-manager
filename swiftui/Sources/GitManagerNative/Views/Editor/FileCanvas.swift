@@ -29,9 +29,12 @@ final class FileCanvas: NSView {
         var blinking: String
         let layout: FoldLayout
         let geometry: EditorGeometry
+        /// The blame by line, for the blame gutter (nil before the blame answers or while the gutter is off).
+        var blame: BlameLines?
 
         @MainActor
-        init(session: EditorSession, blameLabel: String?, theme: Theme, focused: Bool, blinking: String) {
+        init(session: EditorSession, blameLabel: String?, theme: Theme, focused: Bool, blinking: String,
+             blameGutter: Bool = false) {
             path = session.file.path
             revision = session.revision
             docRevision = session.docRevision
@@ -46,8 +49,12 @@ final class FileCanvas: NSView {
             indentSize = session.file.indent?.size ?? 2
             self.blinking = blinking
             layout = FoldLayout(folds: session.state.folds, doc: session.state.doc)
-            geometry = EditorGeometry(lineCount: session.state.doc.lineCount, widestLine: session.state.doc.widestLine,
-                                      advance: CodeLineText.advance, rowCount: layout.rowCount)
+            var geometry = EditorGeometry(lineCount: session.state.doc.lineCount,
+                                          widestLine: session.state.doc.widestLine, advance: CodeLineText.advance,
+                                          rowCount: layout.rowCount)
+            geometry.blameWidth = blameGutter ? BlameGutter.width : 0
+            self.geometry = geometry
+            blame = blameGutter ? session.blame : nil
         }
 
         var doc: TextDocument {
@@ -58,6 +65,7 @@ final class FileCanvas: NSView {
         func drawsLike(_ other: Content) -> Bool {
             path == other.path && revision == other.revision && theme.id == other.theme.id
                 && focused == other.focused && blameLabel == other.blameLabel && blinking == other.blinking
+                && geometry.blameWidth == other.geometry.blameWidth && blame == other.blame
         }
     }
 

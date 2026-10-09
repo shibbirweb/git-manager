@@ -130,6 +130,7 @@ extension FileCanvas {
             let height = CGFloat(EditorGeometry.lineHeight) + extra
             NSRect(x: 0, y: rowTop(row) - extra, width: width, height: height).fill()
         }
+        drawBlameGutter(content, shown: shown, colors: colors, context: context, scale: scale)
         drawChangeBars(content, shown: shown, colors: colors)
         let right = CGFloat(geometry.numbersWidth) - 10
         for row in shown {

@@ -60,14 +60,17 @@ Folder: demo `acme/payments-api`
   native app takes the four files as -mergeBase, -mergeLocal, -mergeRemote and -mergeMerged, not the; current app's
   `merge BASE LOCAL REMOTE MERGED` command line, and installs no mergetool settings.
 
-## blame: Blame (native app cannot show it yet)
+## blame: Blame (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront and double-click src/cart.ts.
 2. Click Blame (the clock button) in the path bar: the blame gutter beside the line numbers.
 
-- Blame (`blame`, missing): The current line note and the blame gutter.
+Measured: light 99.43% (268 MB / 42 MB, 2026-10-09), dark 99.33% (269 MB / 41 MB, 2026-10-09).
+
+- Blame (`blame`, partial): The current line note and the blame gutter. Native lacks: clicking a note or a gutter
+  block (the commit in the Log, Option-click copies its hash) and their tooltips; Blame in the diff toolbar.
 
 ## log: Log (runs in both apps)
 
