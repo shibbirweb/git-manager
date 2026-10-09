@@ -9,14 +9,16 @@ import SwiftUI
 
 struct WindowSizer: NSViewRepresentable {
     static let defaultSize = NSSize(width: 1400, height: 880)
-    /// A new window's top left (points, y down from the top of the main screen); nil for the first window.
+    /// A new or restored window's top left (points, y down from the top of the main screen), and its content size.
     var origin: CGPoint?
+    var size: CGSize?
     /// Where macOS keeps the window frame of the "main" scene.
     private static let savedFrameKey = "NSWindow Frame main"
 
     func makeNSView(context: Context) -> NSView {
         let view = SizingView()
         view.origin = origin
+        view.size = size
         return view
     }
 
@@ -25,6 +27,7 @@ struct WindowSizer: NSViewRepresentable {
     private final class SizingView: NSView {
         private var sized = false
         var origin: CGPoint?
+        var size: CGSize?
 
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
@@ -32,12 +35,18 @@ struct WindowSizer: NSViewRepresentable {
                 return
             }
             sized = true
-            if let origin {
+            if origin != nil || size != nil {
+                let (origin, size) = (origin, size)
                 DispatchQueue.main.async {
-                    // window_open makes it the default size as it is, where the page's window was.
-                    window.setContentSize(WindowSizer.defaultSize)
-                    let top = (NSScreen.screens.first?.frame.maxY ?? window.frame.maxY) - origin.y
-                    window.setFrameTopLeftPoint(NSPoint(x: origin.x, y: top))
+                    // window_open makes it the default size as it is, where the page's window was; a restored window
+                    // takes its saved size, and its place when that is still on a screen.
+                    window.setContentSize(size ?? WindowSizer.defaultSize)
+                    if let origin {
+                        let top = (NSScreen.screens.first?.frame.maxY ?? window.frame.maxY) - origin.y
+                        window.setFrameTopLeftPoint(NSPoint(x: origin.x, y: top))
+                    } else {
+                        window.center()
+                    }
                 }
                 return
             }

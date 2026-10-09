@@ -15,6 +15,9 @@ struct WindowRequest: Codable, Hashable {
     /// The window's top left on screen (points, y down from the top of the main screen).
     var originX: Double?
     var originY: Double?
+    /// Its content size; nil for the default 1400 x 880.
+    var width: Double?
+    var height: Double?
 }
 
 @MainActor

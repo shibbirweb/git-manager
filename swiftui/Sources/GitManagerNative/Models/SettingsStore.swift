@@ -142,6 +142,13 @@ final class SettingsStore: ObservableObject {
         SettingsData.pickBool(extra[key], fallback: fallback)
     }
 
+    /// Stores a boolean the native app reads by key (Reopen windows on start).
+    func setStoredBool(_ key: String, _ value: Bool) {
+        objectWillChange.send()
+        extra[key] = value
+        save()
+    }
+
     /// A stored choice the native app does not use yet, as the current app would read it.
     func storedChoice(_ key: String, _ allowed: [String], default fallback: String) -> String {
         SettingsData.pickOneOf(extra[key], allowed, fallback: fallback)

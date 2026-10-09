@@ -91,6 +91,7 @@ final class WorkspaceModel: ObservableObject {
 
     /// The folders replace the workspace (a folder given twice counts once); statuses fill in afterwards.
     func set(_ infos: [WorkspaceInfo], file: String? = nil) {
+        defer { WindowSessionKeeper.saveSoon() }
         self.file = infos.isEmpty ? nil : file
         var seen = Set<String>()
         folders = infos.filter { seen.insert($0.root).inserted }

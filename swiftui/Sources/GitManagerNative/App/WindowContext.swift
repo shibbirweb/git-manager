@@ -22,8 +22,26 @@ final class WindowContext: ObservableObject {
     let toasts = ToastCenter()
     let clone = CloneCenter()
     let menus = ContextMenuCenter()
-    /// The window showing this context, once it is on screen.
-    weak var window: NSWindow?
+    /// The window showing this context, once it is on screen; its moves and resizes go to the window session.
+    weak var window: NSWindow? {
+        didSet {
+            guard window !== oldValue else {
+                return
+            }
+            for observer in observers {
+                NotificationCenter.default.removeObserver(observer)
+            }
+            observers = [NSWindow.didMoveNotification, NSWindow.didResizeNotification].map { name in
+                NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { _ in
+                    MainActor.assumeIsolated {
+                        WindowSessionKeeper.saveSoon()
+                    }
+                }
+            }
+            WindowSessionKeeper.saveSoon()
+        }
+    }
+    private var observers: [NSObjectProtocol] = []
     /// What a new window was opened for, until its folders are read (WindowOpener).
     var expected: WindowOwnership.Shown?
     /// What the app was started with, in the first window only (WindowRoot).
@@ -72,8 +90,13 @@ final class WindowContext: ObservableObject {
 
     /// The window closed: its context goes, with its terminals.
     func close() {
+        WindowSessionKeeper.closing(self)
         terminal.kill()
         Self.all.removeAll { $0 === self }
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        WindowSessionKeeper.save()
     }
 }
 

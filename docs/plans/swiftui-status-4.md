@@ -125,7 +125,26 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     adds up processes of the same name (two windows of the current app have two web content processes).
   - Pixel diff below the title bar (HDR off): newwindow 99.76% light, 99.41% dark.
   - Memory with two windows (newwindow): current 260.3 MB, native 53.9 MB.
-  - Not built: reopening the windows of the last session at start, Window > Close Window with its unsaved-edits
-    check, events about a path sent only to the windows it concerns. DiffState.shown and MergeScrollSync.shown
+  - Not built: Window > Close Window with its unsaved-edits check, events about a path sent only to the windows it concerns. DiffState.shown and MergeScrollSync.shown
     (read by the control server only) are the last drawn, not per window.
+- GM-79 the window session (windows.rs session_to_json, parse_session, restore_plan, on_screen; commands/window.rs
+  save_session and restore_at_start):
+  - NativeCore WindowSession (tested): the state.json "windows" list of each window's folders or workspace file and
+    its frame (top left, y down, and content size); malformed parts dropped, the same workspace once, at most 20
+    windows, frames that are too small or too far dropped; the start plan (nothing when the app was started on a
+    folder; with "Reopen windows on start" off only the first window's folders); a frame counts as on screen when
+    100 x 15 points of its top edge are on one.
+  - WindowSessionKeeper saves the session to ~/.gitmanager-native/state.json (RecentProjectsStore keeps the other
+    keys) when a window shows another workspace, moves or resizes (half a second later), closes, and at quit, where
+    every window stays; the last window closed is kept. Nothing is saved as git mergetool. At start on nothing, the
+    first window takes the session's first entry and the others open after it, each at its saved size, and at its
+    place when that is still on a screen (else centered). The Settings row "Reopen windows on start" now switches
+    and saves (SettingsCatalog.workingToggles).
+  - Smoke: a session of two windows (the welcome screen, the test repository at 1100 x 700) opens both again, the
+    second at its size, and state.json holds both while the app runs. gm-measure's launcher can wait for the
+    control server only (readyOnAnswer), for a start that shows a restored session.
+  - Pixel diff below the title bar (HDR off, light), unchanged: welcome 99.87%, welcomerecent 99.62%, closefolder
+    99.82%, Changes 99.74%, newwindow 99.76%.
+  - Not checked by a person yet: quitting with Cmd+Q and starting again (gm-measure stops apps with SIGTERM, which
+    skips the quit hook; the session saved while running covers it).
 

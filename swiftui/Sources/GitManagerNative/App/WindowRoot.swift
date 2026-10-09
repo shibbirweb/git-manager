@@ -1,5 +1,6 @@
 // One window: its own state (WindowContext) and what it opens. The first window takes what the app was started
-// with (-folder, -folders, -workspaceFile, or git mergetool's files); the others what WindowOpener asked for.
+// with (-folder, -folders, -workspaceFile, or git mergetool's files), else the last session's first window
+// (WindowSessionKeeper); the others what WindowOpener or the session asked for.
 
 import AppKit
 import SwiftUI
@@ -26,10 +27,14 @@ struct WindowRoot: View {
             }
         }
         .frame(minWidth: 960, minHeight: 600)
-        .background(WindowSizer(origin: request.flatMap(Self.origin)))
+        .background(WindowSizer(origin: (request ?? context.launch).flatMap(Self.origin),
+                                size: (request ?? context.launch).flatMap(Self.size)))
         .windowContext(context)
         .onAppear {
             WindowOpener.action = openWindow
+            if context.launch != nil {
+                WindowSessionKeeper.openRestored()
+            }
         }
         .onDisappear {
             context.close()
@@ -44,8 +49,13 @@ struct WindowRoot: View {
             return nil
         }
         launchTaken = true
-        return WindowRequest(folders: AppDelegate.launchFolders(),
-                             workspaceFile: UserDefaults.standard.string(forKey: "workspaceFile"))
+        let launch = WindowRequest(folders: AppDelegate.launchFolders(),
+                                   workspaceFile: UserDefaults.standard.string(forKey: "workspaceFile"))
+        // Started on nothing: the last session's windows (restore_at_start).
+        if launch.folders.isEmpty && launch.workspaceFile == nil, let restored = WindowSessionKeeper.startPlan() {
+            return restored
+        }
+        return launch
     }
 
     private static func makeContext(_ request: WindowRequest?) -> WindowContext {
@@ -56,6 +66,13 @@ struct WindowRoot: View {
                                      workspaceFile: opens.workspaceFile.map(WindowOpener.canonical))
         }
         return context
+    }
+
+    private static func size(_ request: WindowRequest) -> CGSize? {
+        guard let width = request.width, let height = request.height else {
+            return nil
+        }
+        return CGSize(width: width, height: height)
     }
 
     private static func origin(_ request: WindowRequest) -> CGPoint? {

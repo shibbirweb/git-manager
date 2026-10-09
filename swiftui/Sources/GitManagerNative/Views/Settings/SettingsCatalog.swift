@@ -2,6 +2,7 @@
 // SettingsDialog.svelte has them, with the value from settings.json (validated like the current app) or its default.
 // Hints that the page fills in at run time show their default text. The rows are SettingsCatalogData*.swift.
 
+import NativeCore
 import SwiftUI
 
 enum CatalogItem {
@@ -47,6 +48,9 @@ enum SettingsCatalog {
     }
 
     /// The items as blocks, values read from `settings`.
+    /// Toggles the native app acts on: switching them saves settings.json.
+    static let workingToggles: Set<String> = [WindowSession.reopenSetting]
+
     static func blocks(_ items: [CatalogItem], section: String, settings: SettingsStore) -> [SettingsBlock] {
         var firstGroup = true
         return items.map { item in
@@ -56,8 +60,10 @@ enum SettingsCatalog {
                 defer { firstGroup = false }
                 return .group(title, keywords(title), first: firstGroup && isFirst(item, in: items))
             case .toggle(let title, let hint, let key, let on, let sub):
-                let row = SettingsRow(title, hint: hint,
-                                      control: .toggle(settings.storedBool(key, default: on), toggle: nil), sub: sub)
+                let isOn = settings.storedBool(key, default: on)
+                // The rows the native app acts on can be switched; the others show what settings.json holds.
+                let toggle = workingToggles.contains(key) ? { settings.setStoredBool(key, !isOn) } : nil
+                let row = SettingsRow(title, hint: hint, control: .toggle(isOn, toggle: toggle), sub: sub)
                 return sub ? .subRow(title, keywords(title)) { row } : .row(title, keywords(title)) { row }
             case .choice(let title, let hint, let labels, let values, let key, let value, let sub):
                 let stored = settings.storedChoice(key, values, default: value)

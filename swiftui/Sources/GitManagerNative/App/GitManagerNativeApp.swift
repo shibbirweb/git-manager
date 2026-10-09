@@ -61,6 +61,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        // Every window stays in the session (Cmd+Q closes them all at once).
+        WindowSessionKeeper.quit()
         // Quitting stops every terminal, so no shell is left behind.
         TerminalStore.shutdown()
     }

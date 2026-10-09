@@ -72,6 +72,8 @@ public enum AppLauncher {
         state extraState: [String: Any] = [:],
         /// A workspace file both apps open instead of the folders.
         workspaceFile: String? = nil,
+        /// Ready once the control server answers, whatever the window shows (a restored session).
+        readyOnAnswer: Bool = false,
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -140,7 +142,11 @@ public enum AppLauncher {
         }
 
         while Date().timeIntervalSince(started) < timeout {
-            if (try? await isReady(kind, connected.client, welcome: folderPath.isEmpty)) == true {
+            var ready = readyOnAnswer
+            if !ready {
+                ready = (try? await isReady(kind, connected.client, welcome: folderPath.isEmpty)) == true
+            }
+            if ready {
                 // Only ever on the built-in display (the user works on the other one).
                 if WindowPlacement.ensureOnMeasureScreen(pid: connected.pid, size: windowSize) {
                     print("\(kind.rawValue): the window opened off the measuring screen; moved it there")

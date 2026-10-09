@@ -1,7 +1,7 @@
 // The control server's windows (the current app's list_workspace windows and run_menu_command file.newWindow):
 //   new_window      folderPaths?, workspaceFile?: New Window (none), or those in a new window; a window showing
 //                   them already comes to the front instead
-//   list_windows    every window: its number, folders, workspace file and whether it is the focused one
+//   list_windows    every window: its number, folders, workspace file, content size and whether it is focused
 
 import AppKit
 import Foundation
@@ -32,6 +32,8 @@ extension Control {
                 "folders": context.workspace.folders.map(\.root),
                 "workspaceFile": orNull(context.workspace.file),
                 "focused": context === focused,
+                "contentWidth": context.window.map { $0.contentRect(forFrameRect: $0.frame).width } ?? 0,
+                "contentHeight": context.window.map { $0.contentRect(forFrameRect: $0.frame).height } ?? 0,
             ]
         }
     }

@@ -92,6 +92,11 @@ enum Smoke {
             check("tool calls", false, "\(error)")
         }
         await app.stop()
+        do {
+            try await checkSession(appPath: appPath, workDir: workDir, repoPath: repoPath, check: check)
+        } catch {
+            check("window session", false, "\(error)")
+        }
         print(failures == 0 ? "All checks passed." : "\(failures) checks failed.")
         return failures == 0 ? 0 : 1
     }

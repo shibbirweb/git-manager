@@ -1,6 +1,7 @@
 // The recent projects, kept in ~/.gitmanager-native/state.json under the current app's state.json keys
 // (recentFolders, recentWorkspaces, recentWorkspaceFiles): a folder opened alone or several opened together move
-// to the top. Other keys in the file are kept; a file that could not be read is never written over.
+// to the top. It also keeps the window session ("windows", WindowSessionKeeper). Other keys in the file are kept; a
+// file that could not be read is never written over.
 
 import Foundation
 import NativeCore
@@ -40,6 +41,16 @@ final class RecentProjectsStore: ObservableObject {
         } else {
             lists.addWorkspace(folderPaths)
         }
+        save()
+    }
+
+    /// The window session as state.json had it at start (WindowSessionKeeper).
+    var savedSession: Any? {
+        state[WindowSession.key]
+    }
+
+    func saveSession(_ entries: [WindowSession.Entry]) {
+        state[WindowSession.key] = WindowSession.json(entries)
         save()
     }
 
