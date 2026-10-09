@@ -1,4 +1,5 @@
-//! Opening a folder as a workspace, like src-tauri/src/commands/workspace.rs: its repositories, found the same way.
+//! Opening a folder as a workspace, like src-tauri/src/commands/workspace.rs: its repositories, found the same way,
+//! and a repository started in a folder without one.
 
 use serde::Deserialize;
 
@@ -25,4 +26,9 @@ pub struct DiscoverRepositoriesArgs {
 /// Scan for Repositories: one workspace folder looked through again.
 pub fn discover_repositories(args: DiscoverRepositoriesArgs) -> AppResult<Vec<RepoInfo>> {
     workspace::discover_repositories(&args.workspace_root)
+}
+
+/// Initialize Repository in a folder without one (git init through the CLI, as the Tauri command does).
+pub fn init_repository(args: OpenWorkspaceArgs) -> AppResult<RepoInfo> {
+    workspace::init(&args.folder_path)
 }

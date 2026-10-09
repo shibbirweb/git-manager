@@ -48,6 +48,8 @@ struct WelcomeView: View {
     @Environment(\.theme) private var theme
 
     let title: String
+    /// No active repository: Show the Log is off (half opacity), as in EmptyMain.svelte.
+    var hasRepository = true
 
     /// The actions as the current app lists them, with the shortcuts it shows (macOS keys).
     private static let actions: [(icon: String, label: String, keys: String)] = [
@@ -81,6 +83,7 @@ struct WelcomeView: View {
             VStack(spacing: 4) {
                 ForEach(Self.actions, id: \.label) { action in
                     row(icon: action.icon, label: action.label, keys: action.keys)
+                        .opacity(action.label == "Show the Log" && !hasRepository ? 0.5 : 1)
                 }
             }
             .frame(width: 300)

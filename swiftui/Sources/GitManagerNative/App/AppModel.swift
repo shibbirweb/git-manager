@@ -33,7 +33,7 @@ final class AppModel: ObservableObject {
     /// The active repository's name (the status bar).
     var repoName: String {
         WorkspaceModel.shared.repo(at: repoPath)?.name
-            ?? repoPath.map { ($0 as NSString).lastPathComponent } ?? "Git Manager Native"
+            ?? repoPath.map { ($0 as NSString).lastPathComponent } ?? WorkspaceModel.shared.name ?? "Git Manager Native"
     }
 
     var changeCount: Int {
@@ -161,6 +161,27 @@ final class AppModel: ObservableObject {
         } catch {
             return .failure(BackendError(kind: "bridge", message: error.localizedDescription))
         }
+    }
+
+    /// A workspace without any repository (ChangesView.svelte .no-repo): nothing is active and no status is read;
+    /// the Files panel shows its folders.
+    func showNoRepository() {
+        if repoPath != nil {
+            openDiff = nil
+            EditorModel.shared.reset()
+        }
+        repoPath = nil
+        snapshot = nil
+        errorText = nil
+        loading = false
+        let files = FilesModel.shared
+        let roots = WorkspaceModel.shared.folders.map(\.root)
+        if files.roots != roots {
+            Task {
+                await files.open(roots: roots)
+            }
+        }
+        files.updateTones([])
     }
 
     func begin(_ folderPath: String) {

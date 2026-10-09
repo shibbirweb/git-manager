@@ -13,6 +13,8 @@ struct HeaderBar: View {
     let head: HeadInfo?
     /// The active repository and how many the workspace holds, shown when the folder is not simply one repository.
     var repoPill: (name: String, count: Int)?
+    /// No repository in the workspace: "No git repository" where the branch pill goes (.no-repo).
+    var noRepository = false
     let chooseFolder: () -> Void
     let toggleAppearance: () -> Void
     var openSettings: () -> Void = {}
@@ -51,6 +53,11 @@ struct HeaderBar: View {
                     counts(head)
                     Icon(name: "chevron-down", size: 12)
                 }
+            } else if noRepository {
+                // .dim.no-repo: 12 points in --text-dim with 8 points of padding.
+                ExactText(text: "No git repository", size: 12)
+                    .foregroundStyle(theme.ink("--text-dim"))
+                    .padding(.horizontal, 8)
             }
             Spacer(minLength: 0)
             if let busy {

@@ -142,3 +142,16 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     99.74 kept their floors.
   - Memory: current 128 to 130 MB, native 40 MB.
   - Not built: the rows' right-click menu (the "..." items, Set as Active Repository, Copy Repository Path).
+- GM-65 a folder without any repository (ChangesView.svelte .no-repo, Header.svelte .no-repo, EmptyMain.svelte):
+  - Built: AppModel.showNoRepository (no status read, nothing active, the Files panel lists the folder) instead of
+    the status read's error; Changes shows NoRepoPlaceholder (circle, "No git repository", the hint wrapped at the
+    panel's width, Initialize Repository and Scan Again) with no commit box or layout button and Refresh All; the
+    header says "No git repository" where the branch pill goes; the welcome screen dims Show the Log; the
+    breadcrumb shows the folder. Initialize Repository runs the bridge's new `init_repository` (src-tauri's
+    workspace::init, tested), scans again and makes the new repository active (checked in the app: notes became a
+    repository with its 3 files). gm-measure `--screen norepo` (demo/acme/notes); AppLauncher counts an open
+    workspace with no repository as ready in both apps.
+  - Rules found: WholePointCenter measures its content at unlimited width, so text that should wrap needs the
+    column's width first (NoRepoPlaceholder.centered).
+  - Pixel diff below the title bar (HDR off): norepo 99.76% light, 99.76% dark; Changes kept 99.74.
+  - Memory: current 130 MB, native 33 MB.

@@ -140,6 +140,7 @@ swift run -c release gm-measure measure --screen merge --file src/report.ts --wa
 swift run -c release gm-measure measure --screen conflicts  # the conflict demo with its conflicts list open
 swift run -c release gm-measure measure --screen foldermenu  # demo/acme, the folder menu open (repomenu, branchmenu)
 swift run -c release gm-measure measure --screen cleanrepos  # acme and design-system, two repositories clean
+swift run -c release gm-measure measure --screen norepo  # acme/notes, a folder without a repository
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after

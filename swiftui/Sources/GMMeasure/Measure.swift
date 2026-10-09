@@ -19,8 +19,8 @@ enum Measure {
         /// "merge" (git mergetool on Measure.mergeFile), "conflicts" (the conflict demo's conflicts list) or
         /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings),
         /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
-        /// and design-system), "cleanrepos" (folders with two clean repositories), "foldermenu", "repomenu" and
-        /// "branchmenu" (the workspace with a header menu open).
+        /// and design-system), "cleanrepos" (folders with two clean repositories), "norepo" (a plain folder),
+        /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true

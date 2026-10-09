@@ -25,6 +25,7 @@ struct ContentView: View {
                 folderName: model.folderName,
                 head: model.snapshot?.status?.head,
                 repoPill: workspace.showsRepoPicker ? (model.repoName, workspace.repos.count) : nil,
+                noRepository: !workspace.folders.isEmpty && workspace.repos.isEmpty,
                 chooseFolder: chooseFolder,
                 toggleAppearance: settings.toggleLightDark,
                 openSettings: { settings.openDialog() },

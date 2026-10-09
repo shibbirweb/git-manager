@@ -16,6 +16,7 @@ struct ChangesPanel: View {
         let groups = FileGroups(status?.files ?? [])
         let state = model.commitState
         let multiRepo = workspace.multiRepo
+        let noRepository = !workspace.folders.isEmpty && workspace.repos.isEmpty
         VStack(spacing: 0) {
             ChangesHead(
                 count: multiRepo ? workspace.totalChanges : status?.files.count ?? 0,
@@ -25,9 +26,11 @@ struct ChangesPanel: View {
                 operation: status?.op.map { $0.kind != "none" } ?? false,
                 commit: { Task { await model.commitFromHead() } },
                 refresh: { Task { multiRepo ? await model.refreshAll() : await model.refreshStatus() } },
-                repoActions: !multiRepo
+                repoActions: !multiRepo && !noRepository, layoutButton: !noRepository
             )
-            if let errorText = model.errorText {
+            if noRepository {
+                NoRepoPlaceholder.centered(NoRepoPlaceholder(busy: model.busy != nil))
+            } else if let errorText = model.errorText {
                 Text(errorText)
                     .foregroundStyle(theme.ink("--danger"))
                     .padding(12)
@@ -49,8 +52,10 @@ struct ChangesPanel: View {
                     .padding(.vertical, 4)
                 }
             }
-            CommitBox(state: state, ahead: status?.head.ahead ?? 0, publish: status.map(Self.publishes) ?? false,
-                      target: multiRepo ? commitTarget(staged: groups.staged.count, head: status?.head) : nil)
+            if !noRepository {
+                CommitBox(state: state, ahead: status?.head.ahead ?? 0, publish: status.map(Self.publishes) ?? false,
+                          target: multiRepo ? commitTarget(staged: groups.staged.count, head: status?.head) : nil)
+            }
         }
     }
 

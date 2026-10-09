@@ -24,6 +24,8 @@ struct ChangesHead: View {
     var refresh: () -> Void = {}
     /// One repository: its actions sit in the heading (ChangesView.svelte); several get Refresh All instead.
     var repoActions = true
+    /// The commit box layout button, shown while the workspace holds a repository.
+    var layoutButton = true
 
     private static let titleFont = PageFont.ui(11, weight: .semibold)
     private static let titleWidth = ExactText.width("CHANGES", font: titleFont, tracking: 0.66)
@@ -55,8 +57,10 @@ struct ChangesHead: View {
                 Spacer(minLength: 0)
                     .layoutPriority(-2)
                 // Settings > Git > Commit box: one box under the list (the default) or one per repository.
-                IconButton(width: 24, height: 24, action: toggleCommitLayout) {
-                    CommitLayoutIcon(perRepo: settings.preferences.commitBoxLayout == "perRepo")
+                if layoutButton {
+                    IconButton(width: 24, height: 24, action: toggleCommitLayout) {
+                        CommitLayoutIcon(perRepo: settings.preferences.commitBoxLayout == "perRepo")
+                    }
                 }
                 if repoActions {
                     RepoActions(

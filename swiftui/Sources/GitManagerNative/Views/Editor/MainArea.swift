@@ -11,11 +11,11 @@ struct MainArea: View {
     var body: some View {
         if model.openDiff == nil && editor.tabs.tabs.isEmpty {
             EditorArea {
-                if model.repoPath != nil {
+                if model.repoPath != nil || !workspace.folders.isEmpty {
                     RepoCrumb(crumbs: crumbs)
                 }
             } content: {
-                WelcomeView(title: model.folderName)
+                WelcomeView(title: model.folderName, hasRepository: model.repoPath != nil)
             }
         } else {
             let diffShown = model.openDiff != nil && (editor.diffActive || editor.tabs.tabs.isEmpty)
@@ -51,6 +51,12 @@ struct MainArea: View {
     /// The crumbs to the active repository: the workspace (several folders), its folder, the folders down to it.
     private var crumbs: [NavCrumb] {
         let accent = model.changeCount > 0
+        // No repository in the workspace: the folder itself, dim.
+        if model.repoPath == nil, let folder = workspace.folders.first {
+            let several = workspace.folders.count > 1
+            let workspaceCrumb = several ? workspace.name.map { [NavCrumb(icon: "app-window", name: $0)] } : nil
+            return (workspaceCrumb ?? []) + [NavCrumb(icon: "folder", name: folder.name)]
+        }
         guard let repoPath = model.repoPath,
               let folder = workspace.folders.first(where: { repoPath == $0.root || repoPath.hasPrefix($0.root + "/") })
         else {

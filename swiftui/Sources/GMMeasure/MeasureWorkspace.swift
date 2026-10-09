@@ -4,6 +4,7 @@
 // --screen cleanrepos: the folders screen with payments-api and design-system made clean (in the throwaway copy),
 // so Changes shows storefront, then the clean ones under "No Changes", design-system active. (demo/extras would
 // stop the current app with its Git LFS dialog.)
+// --screen norepo: acme/notes, a plain folder: Changes offers to initialize a repository.
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
 // menu opened by a press (AccessibilityPress), which opens them where WebKit clicks in both apps.
 
@@ -11,7 +12,7 @@ import Foundation
 import MeasureKit
 
 extension Measure {
-    static let workspaceScreens = ["workspace", "folders", "cleanrepos"] + menuScreens
+    static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo"] + menuScreens
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu"]
     /// The title of the pill each menu screen presses.
     static let menuPills = ["foldermenu": "acme", "repomenu": "payments-api", "branchmenu": "main"]
@@ -32,6 +33,9 @@ extension Measure {
                     }
                 }
             }
+        }
+        if screen == "norepo" {
+            return (workspaceFolder(demoRepo) as NSString).appendingPathComponent("notes")
         }
         return workspaceFolder(demoRepo)
     }

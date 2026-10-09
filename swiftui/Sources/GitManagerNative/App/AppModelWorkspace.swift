@@ -1,5 +1,6 @@
 // Opening a folder as a workspace (repo.svelte.ts openFolders): look for its repositories, make one active as the
-// current app picks it, show that one's status, then read the others.
+// current app picks it, show that one's status, then read the others. A workspace without any shows the
+// "No git repository" placeholder; Initialize Repository starts one in its folder.
 
 import Foundation
 import NativeCore
@@ -25,7 +26,7 @@ extension AppModel {
         workspace.set(infos)
         let folderRoots = workspace.folders.map(\.root)
         guard let active = WorkspaceRules.pickActive(workspace.repos, folderRoots: folderRoots) else {
-            await open(repoPath: folderRoots[0])
+            showNoRepository()
             return
         }
         await open(repoPath: active.root)
@@ -36,6 +37,14 @@ extension AppModel {
     nonisolated static func openFoldersNow(_ folderPaths: [String]) -> Result<StatusSnapshot, BackendError> {
         let infos = folderPaths.compactMap { try? WorkspaceModel.find(folderPath: $0).get() }
         let roots = infos.map(\.root)
+        if !infos.isEmpty && WorkspaceRules.unionRepos(infos).isEmpty {
+            Control.onMain {
+                WorkspaceModel.shared.set(infos)
+                AppModel.shared.showNoRepository()
+            }
+            let message = "No git repository in \(roots.joined(separator: ", "))"
+            return .failure(BackendError(kind: "noRepository", message: message))
+        }
         let activeRoot = WorkspaceRules.pickActive(WorkspaceRules.unionRepos(infos), folderRoots: roots)?.root
             ?? roots.first ?? folderPaths.first ?? ""
         Control.onMain {
@@ -59,4 +68,30 @@ extension AppModel {
         await refreshStatus()
         await WorkspaceModel.shared.refresh(skipping: repoPath)
     }
+
+    /// Initialize Repository (repo.svelte.ts initRepository): git init in the folder, then scan again and make the
+    /// new repository active.
+    func initRepository(_ folderPath: String) async {
+        let result = await Task.detached {
+            Result { try Backend.call("init_repository", InitRepositoryArgs(folderPath: folderPath)) as CreatedRepo }
+        }.value
+        switch result {
+        case .success(let created):
+            await openFolders(WorkspaceModel.shared.folders.map(\.root))
+            await setActive(created.root)
+            toasts.show(.success, "Initialized a repository in \(created.name)")
+        case .failure(let error):
+            toasts.show(.error, "Could not initialize repository", detail: Self.describe(error))
+        }
+    }
+}
+
+struct InitRepositoryArgs: Encodable {
+    let folderPath: String
+}
+
+/// The repository init_repository started (src-tauri/src/git/repo.rs RepoInfo).
+struct CreatedRepo: Decodable {
+    let root: String
+    let name: String
 }

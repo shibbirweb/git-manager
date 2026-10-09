@@ -160,13 +160,19 @@ public enum AppLauncher {
     /// True once the app shows the folder's status, so both apps are measured in the same state.
     static func isReady(_ kind: AppKind, _ client: McpClient) async throws -> Bool {
         switch kind {
+        // Ready once the active repository's branch shows, or once a folder without any repository is open.
         case .native:
             let state = try await client.call("app", ["action": "get_state"]).structured ?? [:]
-            return state["loading"] as? Bool == false && state["branch"] is String
+            let workspace = state["workspace"] as? [String: Any]
+            let noRepository = (workspace?["folders"] as? [Any])?.isEmpty == false
+                && (workspace?["repos"] as? [Any])?.isEmpty == true
+            return state["loading"] as? Bool == false && (state["branch"] is String || noRepository)
         case .current:
             let state = try await client.call("get_app_state").structured ?? [:]
             let active = state["activeRepository"] as? [String: Any]
-            return active?["branch"] is String && active?["busy"] as? Bool != true
+            let noRepository = state["workspace"] is [String: Any]
+                && (state["repositories"] as? [Any])?.isEmpty == true
+            return (active?["branch"] is String && active?["busy"] as? Bool != true) || noRepository
         }
     }
 

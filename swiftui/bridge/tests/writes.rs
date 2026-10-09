@@ -209,3 +209,15 @@ fn get_refs_lists_local_branches_and_checkout_branch_switches() {
     let missing = call("checkout_branch", json!({ "repoPath": repo, "branchName": "nope" }));
     assert_eq!(missing["ok"], false, "{missing}");
 }
+
+#[test]
+fn init_repository_starts_one_in_a_plain_folder() {
+    let folder = sandbox().join("plain");
+    std::fs::create_dir_all(&folder).unwrap();
+    std::fs::write(folder.join("notes.md"), "hi\n").unwrap();
+    let created = ok(call("init_repository", json!({ "folderPath": folder })));
+    assert_eq!(created["name"], "plain", "{created}");
+    assert!(folder.join(".git").is_dir());
+    let found = ok(call("discover_repositories", json!({ "workspaceRoot": folder })));
+    assert_eq!(found.as_array().map(Vec::len), Some(1), "{found}");
+}
