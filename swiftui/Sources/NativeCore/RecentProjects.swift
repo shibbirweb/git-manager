@@ -44,6 +44,11 @@ public struct RecentLists: Equatable, Sendable {
         workspaces = Array(([folderPaths] + workspaces.filter { $0 != folderPaths }).prefix(Self.limit))
     }
 
+    /// A workspace file opened or saved moves to the top of the recent workspace files (rememberSession).
+    public mutating func addWorkspaceFile(_ filePath: String) {
+        workspaceFiles = Array(([filePath] + workspaceFiles.filter { $0 != filePath }).prefix(Self.limit))
+    }
+
     public mutating func remove(_ entry: RecentEntry) {
         switch entry.kind {
         case .workspaceFile(let filePath):

@@ -9,6 +9,8 @@
 // in the throwaway home); welcomerecent: the same with recent projects (startState); welcomecustomize and
 // welcomelearn: its Customize and Learn pages.
 // --screen foldermenurecent: foldermenu with a recent folder and a recent workspace under ~ seeded (startState).
+// --screen workspacefile: both apps open demo/team.gitmanager-workspace (acme and design-system): the header says
+// "team".
 // --screen closefolder: demo/acme/storefront, then the folder menu's Close Folder: the welcome screen lists it.
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
 // menu opened by a press (AccessibilityPress), which opens them where WebKit clicks in both apps.
@@ -17,7 +19,7 @@ import Foundation
 import MeasureKit
 
 extension Measure {
-    static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo"] + menuScreens
+    static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo", "workspacefile"] + menuScreens
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu", "foldermenurecent"]
     /// Both apps started without a folder.
     static let welcomeScreens = ["welcome", "welcomerecent", "welcomecustomize", "welcomelearn"]
@@ -68,6 +70,18 @@ extension Measure {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         try AccessibilityPress.press(pid: app.pid, title: "Close Folder")
         try await Task.sleep(nanoseconds: 1_500_000_000)
+    }
+
+    /// For workspacefile: demo/team.gitmanager-workspace listing acme and design-system, written into the demo.
+    static func workspaceFile(_ screen: String, demoRepo: String) throws -> String? {
+        guard screen == "workspacefile" else {
+            return nil
+        }
+        let demoDir = ((demoRepo as NSString).deletingLastPathComponent as NSString).deletingLastPathComponent
+        let filePath = (demoDir as NSString).appendingPathComponent("team.gitmanager-workspace")
+        let text = "{\n  \"folders\": [{ \"path\": \"acme\" }, { \"path\": \"design-system\" }]\n}\n"
+        try text.write(toFile: filePath, atomically: true, encoding: .utf8)
+        return filePath
     }
 
     /// The state.json values a screen starts both apps with: for welcomerecent three recent folders and a recent

@@ -14,6 +14,8 @@ final class WorkspaceModel: ObservableObject {
     static let shared = WorkspaceModel()
 
     @Published private(set) var folders: [WorkspaceInfo] = []
+    /// The workspace file it was opened from or saved to; it names the workspace.
+    @Published private(set) var file: String?
     @Published private(set) var repos: [WorkspaceRepo] = []
     /// Each repository's last status by its root, filled in as the statuses arrive.
     @Published private(set) var statuses: [String: RepoStatus] = [:]
@@ -30,7 +32,7 @@ final class WorkspaceModel: ObservableObject {
     }
 
     var name: String? {
-        folders.isEmpty ? nil : WorkspaceRules.workspaceName(folders.map(\.name))
+        folders.isEmpty ? nil : WorkspaceRules.workspaceName(folders.map(\.name), file: file)
     }
 
     /// Several repositories: Changes shows a section for each.
@@ -52,6 +54,11 @@ final class WorkspaceModel: ObservableObject {
         } else {
             collapsed.insert(repoRoot)
         }
+    }
+
+    /// Save Workspace As linked the open workspace to `filePath`.
+    func linkFile(_ filePath: String) {
+        file = folders.isEmpty ? nil : filePath
     }
 
     func isCleanCollapsed(_ cleanCount: Int) -> Bool {
@@ -82,7 +89,8 @@ final class WorkspaceModel: ObservableObject {
     }
 
     /// The folders replace the workspace (a folder given twice counts once); statuses fill in afterwards.
-    func set(_ infos: [WorkspaceInfo]) {
+    func set(_ infos: [WorkspaceInfo], file: String? = nil) {
+        self.file = infos.isEmpty ? nil : file
         var seen = Set<String>()
         folders = infos.filter { seen.insert($0.root).inserted }
         repos = WorkspaceRules.unionRepos(folders)

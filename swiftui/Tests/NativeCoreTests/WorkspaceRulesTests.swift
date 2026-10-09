@@ -58,3 +58,16 @@ private let single = WorkspaceRepo(root: "/w/storefront", name: "storefront", re
     #expect(!WorkspaceRules.cleanListCollapsed(9, toggled: false))
     #expect(WorkspaceRules.cleanListCollapsed(1, toggled: true))
 }
+
+@Test func workspaceNamesFollowTheFileOrTheFirstTwoFolders() {
+    #expect(WorkspaceRules.workspaceName(["acme", "design-system", "notes", "x"]) == "acme, design-system +2")
+    #expect(WorkspaceRules.workspaceName(["acme"], file: "/w/team.gitmanager-workspace") == "team")
+    #expect(WorkspaceRules.workspaceFileName("/w/old.code-workspace") == "old")
+    #expect(WorkspaceRules.workspaceFileName("/w/plain.json") == "plain.json")
+    #expect(WorkspaceRules.workspaceFilePath("/w/team") == "/w/team.gitmanager-workspace")
+    #expect(WorkspaceRules.workspaceFilePath("/w/a.code-workspace") == "/w/a.code-workspace")
+    var lists = RecentLists(workspaceFiles: ["/w/a.gitmanager-workspace"])
+    lists.addWorkspaceFile("/w/b.gitmanager-workspace")
+    lists.addWorkspaceFile("/w/a.gitmanager-workspace")
+    #expect(lists.workspaceFiles == ["/w/a.gitmanager-workspace", "/w/b.gitmanager-workspace"])
+}

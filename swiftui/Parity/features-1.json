@@ -10,8 +10,8 @@
       "check": "The Projects page with the search field, Open, Clone and the recent projects",
       "native": "partial",
       "gaps": [
-        "the row's right-click menu, Open in New Window, workspace files",
-        "the font size sliders' dragging; Clone, Open Workspace, Keyboard Shortcuts and What's New (they say so)"
+        "the row's right-click menu, Open in New Window",
+        "the font size sliders' dragging; Clone, Keyboard Shortcuts and What's New (they say so)"
       ]
     },
     {
@@ -19,7 +19,7 @@
       "check": "Both repositories of demo/acme in Changes, the header's folder menu",
       "native": "partial",
       "gaps": [
-        "New Window, Open Folder in New Window and Open Recent in New Window, workspace files",
+        "New Window, Open Folder in New Window and Open Recent in New Window",
         "the clean repositories' right-click menu, Set as Active Repository from a menu",
         "remembering the active repository",
         "the Files panel's + button and a folder's right-click menu"

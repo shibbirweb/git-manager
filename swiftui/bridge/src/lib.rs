@@ -27,6 +27,8 @@ pub mod paths;
 pub mod terminal;
 #[path = "../../../src-tauri/src/terminal_flow.rs"]
 pub mod terminal_flow;
+#[path = "../../../src-tauri/src/workspace_file.rs"]
+pub mod workspace_file;
 #[path = "../../../src-tauri/cli/src/home.rs"]
 pub mod home;
 #[path = "../../../src-tauri/src/symbols/mod.rs"]

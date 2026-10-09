@@ -221,3 +221,21 @@ fn init_repository_starts_one_in_a_plain_folder() {
     let found = ok(call("discover_repositories", json!({ "workspaceRoot": folder })));
     assert_eq!(found.as_array().map(Vec::len), Some(1), "{found}");
 }
+
+#[test]
+fn workspace_files_round_trip_and_name_missing_folders() {
+    let base = sandbox().join("ws");
+    let first = base.join("first");
+    let second = base.join("second");
+    std::fs::create_dir_all(&first).unwrap();
+    std::fs::create_dir_all(&second).unwrap();
+    let file = base.join("team.gitmanager-workspace");
+    ok(call("write_workspace_file", json!({ "filePath": file, "folders": [first, second] })));
+    let saved = ok(call("read_workspace_file", json!({ "filePath": file })));
+    assert_eq!(saved["name"], "team", "{saved}");
+    assert_eq!(saved["folders"].as_array().map(Vec::len), Some(2), "{saved}");
+    std::fs::remove_dir_all(&second).unwrap();
+    let again = ok(call("read_workspace_file", json!({ "filePath": file })));
+    assert_eq!(again["folders"].as_array().map(Vec::len), Some(1), "{again}");
+    assert_eq!(again["missing"].as_array().map(Vec::len), Some(1), "{again}");
+}

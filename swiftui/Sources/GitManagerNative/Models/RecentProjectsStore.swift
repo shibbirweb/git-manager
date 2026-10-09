@@ -30,9 +30,12 @@ final class RecentProjectsStore: ObservableObject {
         lists = RecentLists(state: object)
     }
 
-    /// The workspace's folders were opened: one goes to the recent folders, several to the recent workspaces.
-    func opened(_ folderPaths: [String]) {
-        if folderPaths.count == 1 {
+    /// The workspace's folders were opened: from a workspace file, that file goes to the recent workspace files;
+    /// else one folder to the recent folders, several to the recent workspaces.
+    func opened(_ folderPaths: [String], file: String? = nil) {
+        if let file {
+            lists.addWorkspaceFile(file)
+        } else if folderPaths.count == 1 {
             lists.addFolder(folderPaths[0])
         } else {
             lists.addWorkspace(folderPaths)

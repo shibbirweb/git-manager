@@ -12,7 +12,7 @@ extension AppModel {
     }
 
     /// Opens several folders as one workspace (a saved session or -folders): each one's repositories together.
-    func openFolders(_ folderPaths: [String]) async {
+    func openFolders(_ folderPaths: [String], file: String? = nil) async {
         let found = await Task.detached {
             folderPaths.map { WorkspaceModel.find(folderPath: $0) }
         }.value
@@ -23,9 +23,9 @@ extension AppModel {
             return
         }
         let workspace = WorkspaceModel.shared
-        workspace.set(infos)
+        workspace.set(infos, file: file)
         let folderRoots = workspace.folders.map(\.root)
-        RecentProjectsStore.shared.opened(folderRoots)
+        RecentProjectsStore.shared.opened(folderRoots, file: file)
         guard let active = WorkspaceRules.pickActive(workspace.repos, folderRoots: folderRoots) else {
             showNoRepository()
             return

@@ -54,7 +54,7 @@ struct WelcomeRecentList: View {
             }
             ToolbarButton(title: "Clone") { WelcomeActions.notBuilt("Clone Repository") }
             MenuButton(size: 32, iconSize: 15) {
-                [WelcomeActions.notBuiltItem("Open Workspace from File..."),
+                [.command("Open Workspace from File...") { AppModel.shared.pickAndOpenWorkspaceFile() },
                  WelcomeActions.notBuiltItem("Open Folder in New Window...")]
             }
         }

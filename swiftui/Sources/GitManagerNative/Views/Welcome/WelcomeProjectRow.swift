@@ -113,8 +113,10 @@ enum WelcomeActions {
             Task {
                 await model.openFolders(folderPaths)
             }
-        case .workspaceFile:
-            notBuilt("Workspace files")
+        case .workspaceFile(let filePath):
+            Task {
+                await model.openWorkspaceFile(filePath)
+            }
         }
     }
 

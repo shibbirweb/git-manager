@@ -21,7 +21,8 @@ struct GitManagerNativeApp: App {
                 if MergeCenter.shared.mergetool != nil {
                     MergetoolRoot()
                 } else {
-                    ContentView(initialFolders: AppDelegate.launchFolders())
+                    ContentView(initialFolders: AppDelegate.launchFolders(),
+                                initialWorkspaceFile: UserDefaults.standard.string(forKey: "workspaceFile"))
                 }
             }
                 .frame(minWidth: 960, minHeight: 600)
@@ -34,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// `GitManagerNative -folder /path/to/repo` opens that folder at start. A bare path would not do:
     /// AppKit takes it for a document to open and then skips the app's first window.
     /// `-folders '("/a", "/b")'` (a property list array, as macOS parses arguments) opens a workspace of several
-    /// folders.
+    /// folders. `-workspaceFile /path/team.gitmanager-workspace` opens a workspace file instead.
     static func launchFolders() -> [String] {
         if let folders = UserDefaults.standard.stringArray(forKey: "folders"), !folders.isEmpty {
             return folders

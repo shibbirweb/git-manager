@@ -1,5 +1,5 @@
 // The header's menus (Header.svelte workspaceMenu, repoPickerMenu and branchMenu), opened by MenuPill. Rows the native
-// app cannot run yet (New Window and opening in one, workspace files and New Branch) say so in a toast.
+// app cannot run yet (New Window and opening in one, and New Branch) say so in a toast.
 
 import AppKit
 import NativeCore
@@ -31,7 +31,7 @@ enum HeaderMenus {
             notBuilt("New Window"),
             .command("Open Folder...", action: chooseFolder),
             notBuilt("Open Folder in New Window..."),
-            notBuilt("Open Workspace from File..."),
+            .command("Open Workspace from File...") { model.pickAndOpenWorkspaceFile() },
             .command("Add Folder to Workspace...") {
                 if let folderPath = pickFolder() {
                     Task {
@@ -39,7 +39,8 @@ enum HeaderMenus {
                     }
                 }
             },
-            notBuilt("Save Workspace to File..."),
+            .command(workspace.file == nil ? "Save Workspace to File..." : "Save Workspace As...",
+                     hint: workspace.file.map(shortPath)) { model.pickAndSaveWorkspace() },
         ]
         if roots.count > 1 {
             items.append(.separator)

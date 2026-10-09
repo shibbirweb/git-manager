@@ -36,6 +36,8 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "open_workspace" => to_json(workspaces::open_workspace(parse(command, args)?)?),
         "discover_repositories" => to_json(workspaces::discover_repositories(parse(command, args)?)?),
         "init_repository" => to_json(workspaces::init_repository(parse(command, args)?)?),
+        "read_workspace_file" => to_json(workspaces::read_workspace_file(parse(command, args)?)?),
+        "write_workspace_file" => to_json(workspaces::write_workspace_file(parse(command, args)?)?),
         // The status bar's readout: this app and any helpers, counted like the current app counts itself.
         "memory_usage" => to_json(crate::memory::usage()),
         "list_directories" => to_json(list_directories(parse(command, args)?)?),

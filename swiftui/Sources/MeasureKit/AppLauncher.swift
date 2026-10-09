@@ -70,6 +70,8 @@ public enum AppLauncher {
         extraFolders: [String] = [],
         /// state.json values for both apps, such as recentFolders (the native app's ~/.gitmanager-native/state.json).
         state extraState: [String: Any] = [:],
+        /// A workspace file both apps open instead of the folders.
+        workspaceFile: String? = nil,
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -87,7 +89,7 @@ public enum AppLauncher {
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
             try writeSession(configDir: configDir, folderPaths: folderPath.isEmpty ? [] : [folderPath] + extraFolders,
-                             extra: extraState)
+                             workspaceFile: workspaceFile, extra: extraState)
         } else if !extraState.isEmpty {
             let nativeDir = (home as NSString).appendingPathComponent(".gitmanager-native")
             try files.createDirectory(atPath: nativeDir, withIntermediateDirectories: true)
@@ -98,6 +100,9 @@ public enum AppLauncher {
             + nativeArguments
         if let placed = MeasureScreen.centered(windowSize) {
             nativeArgs += ["-windowFrame", NSStringFromRect(placed.cocoaFrame)]
+        }
+        if let workspaceFile {
+            nativeArgs += ["-workspaceFile", workspaceFile]
         }
         if !extraFolders.isEmpty {
             // An old-style property list array, which is what macOS parses a -key value argument as.
@@ -155,8 +160,10 @@ public enum AppLauncher {
 
     /// The current app's state.json: one window on `folderPaths`, at its default size on the measuring screen
     /// (src-tauri/src/windows.rs restores it at start: "windows", outer position and inner size in points).
-    static func writeSession(configDir: String, folderPaths: [String], extra: [String: Any] = [:]) throws {
-        var window: [String: Any] = ["folders": folderPaths, "workspaceFile": NSNull()]
+    static func writeSession(
+        configDir: String, folderPaths: [String], workspaceFile: String? = nil, extra: [String: Any] = [:]
+    ) throws {
+        var window: [String: Any] = ["folders": folderPaths, "workspaceFile": workspaceFile ?? NSNull()]
         if let placed = MeasureScreen.centered(windowSize) {
             window["bounds"] = [
                 "x": placed.topLeft.x, "y": placed.topLeft.y,

@@ -56,8 +56,30 @@ public enum WorkspaceRules {
     }
 
     /// "acme", or the folder names joined ("acme, design-system") when there are several.
-    public static func workspaceName(_ folderNames: [String]) -> String {
-        folderNames.joined(separator: ", ")
+    /// A workspace's name (repo.svelte.ts describeWorkspace): the file's name without its suffix when it has one,
+    /// else the first two folders' names and "+N" for the rest.
+    public static func workspaceName(_ folderNames: [String], file: String? = nil) -> String {
+        if let file {
+            return workspaceFileName(file)
+        }
+        let names = folderNames.prefix(2).joined(separator: ", ")
+        return folderNames.count > 2 ? "\(names) +\(folderNames.count - 2)" : names
+    }
+
+    /// The endings of a workspace file: the app's own, then VS Code's.
+    public static let workspaceFileSuffixes = [".gitmanager-workspace", ".code-workspace"]
+
+    public static func workspaceFileName(_ filePath: String) -> String {
+        let base = filePath.split(separator: "/").last.map(String.init) ?? filePath
+        guard let suffix = workspaceFileSuffixes.first(where: { base.hasSuffix($0) }) else {
+            return base
+        }
+        return String(base.dropLast(suffix.count))
+    }
+
+    /// Save Workspace As: the path with the app's suffix unless it already ends in one.
+    public static func workspaceFilePath(_ filePath: String) -> String {
+        workspaceFileSuffixes.contains { filePath.hasSuffix($0) } ? filePath : filePath + workspaceFileSuffixes[0]
     }
 
     /// The header's repository pill only helps when the folder is not simply one repository.

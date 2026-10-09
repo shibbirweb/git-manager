@@ -233,3 +233,15 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
 - GM-71 the welcome screen's Learn page: WelcomeLearn (Documentation opens the wiki; Keyboard Shortcuts and What's
   New say they are not built); the sidebar's Learn row shows it. gm-measure `--screen welcomelearn`. Pixel diff
   below the title bar (HDR off): 99.76% light, 99.73% dark. Memory: current 116 MB, native 25 MB (dark).
+- GM-72 workspace files (repo.svelte.ts openWorkspaceFile and saveWorkspaceAs, repoPicker.ts, workspace_file.rs):
+  - Built: bridge `read_workspace_file` and `write_workspace_file` reuse src-tauri's workspace_file.rs (tested: a
+    round trip and a missing folder). The workspace keeps its file, which names it ("team"); the name otherwise is
+    the first two folders and "+N", as describeWorkspace (tested). Open Workspace from File... (folder menu, welcome
+    tile and "...") and Save Workspace to File... / Save Workspace As... (the file as hint) use the macOS panels;
+    missing folders and an empty file say so as the page does. An opened or saved file goes to the top of the
+    recent projects; recent workspace files open from the welcome list and the folder menu. `-workspaceFile` opens
+    one at start. gm-measure `--screen workspacefile` writes demo/team.gitmanager-workspace (acme, design-system)
+    and starts both apps on it (the current app through its saved window's workspaceFile).
+  - Pixel diff below the title bar (HDR off): workspacefile 99.54% light, 99.37% dark.
+  - Memory: current 136 MB, native 53 MB (dark).
+  - Not checked in the app: saving (the save panel cannot be driven); the bridge test covers the file.

@@ -20,9 +20,12 @@ struct ContentView: View {
     /// The folders given at start are still opening: the shell shows, not the welcome screen.
     @State private var opening: Bool
 
-    init(initialFolders: [String]) {
+    let initialWorkspaceFile: String?
+
+    init(initialFolders: [String], initialWorkspaceFile: String? = nil) {
         self.initialFolders = initialFolders
-        _opening = State(initialValue: !initialFolders.isEmpty)
+        self.initialWorkspaceFile = initialWorkspaceFile
+        _opening = State(initialValue: !initialFolders.isEmpty || initialWorkspaceFile != nil)
     }
 
     var body: some View {
@@ -57,7 +60,9 @@ struct ContentView: View {
         .navigationTitle(model.folderName)
         .onAppear(perform: PointerGate.begin)
         .task {
-            if !initialFolders.isEmpty {
+            if let initialWorkspaceFile {
+                await model.openWorkspaceFile(initialWorkspaceFile)
+            } else if !initialFolders.isEmpty {
                 await model.openFolders(initialFolders)
             }
             opening = false
