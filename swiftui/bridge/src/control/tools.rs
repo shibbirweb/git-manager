@@ -31,7 +31,9 @@ pub(super) const TOOLS: &[Tool] = &[
                       like a click in the window: busy state, toasts and the status refresh included. \
                       Terminal, like the current app's tools: show_panel (panel terminal, visible), \
                       list_terminals, new_terminal, send_terminal_text (text, pressEnter, terminalKey) and \
-                      terminal_text (the screen's lines).",
+                      terminal_text (the screen's lines). \
+                      quick_open (prefix, recentFiles) and search (query) open Quick Open or Find in Files and \
+                      answer with its rows; close_dialog closes it.",
         category: "ui",
         read_only: false,
         schema: app_schema,
@@ -98,8 +100,11 @@ fn app_schema() -> Value {
         json!({
             "action": {
                 "type": "string",
-                "enum": ["get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit",
-                         "show_panel", "list_terminals", "new_terminal", "send_terminal_text", "terminal_text"],
+                "enum": [
+                    "get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit", "show_panel",
+                    "list_terminals", "new_terminal", "send_terminal_text", "terminal_text", "quick_open", "search",
+                    "close_dialog"
+                ],
                 "description": "What to do."
             },
             "filePaths": {
@@ -118,6 +123,12 @@ fn app_schema() -> Value {
             "text": { "type": "string", "description": "send_terminal_text: the text typed into the shell." },
             "pressEnter": { "type": "boolean", "description": "send_terminal_text: Enter after it (default true)." },
             "terminalKey": { "type": "integer", "description": "send_terminal_text: the terminal (default shown)." },
+            "prefix": { "type": "string", "description": "quick_open: \"\" for Go to File, \">\" for commands." },
+            "recentFiles": {
+                "type": "array", "items": { "type": "string" },
+                "description": "quick_open: files opened before, oldest first, relative to the repository."
+            },
+            "query": { "type": "string", "description": "search: the text to find in files." },
         }),
         &["action"],
     )

@@ -67,6 +67,7 @@ struct ContentView: View {
             if settings.dialogOpen {
                 SettingsDialog(settings: settings)
             }
+            SearchOverlay()
         }
         .overlay(alignment: .bottomTrailing) {
             ToastStack(center: toasts)

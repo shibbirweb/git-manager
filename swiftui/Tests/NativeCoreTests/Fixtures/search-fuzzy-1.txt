@@ -1,0 +1,250 @@
+"gf"	"File: Open Folder in New Window"	null
+"gf"	"File: Compare with"	null
+"gf"	"File: Close Folder"	null
+"gf"	"View: Scripts"	null
+"gf"	"View: Git Console"	null
+"gf"	"View: Right Activity Bar"	null
+"gf"	"View > File Icons: Material Icons"	null
+"gf"	"View: Notifications"	null
+"gf"	"View: Clear Cache"	null
+"gf"	"View: Word Wrap"	null
+"gf"	"View: Minimap"	null
+"gf"	"View > Markdown: Editor Only"	null
+"gf"	"View: Zoom Out"	null
+"gf"	"Code: Move Line Down"	null
+"gf"	"Git: Update Project"	null
+"gf"	"Git: New Branch"	null
+"gf"	"Git > Bisect: Mark Good"	null
+"gf"	"Git > Patch: Create Patch from Commit"	43.25	0,26
+"gf"	"Git > Current File: Commit File"	42.55	0,14
+"gf"	"Git > Current File: Compare with Revision"	42.05	0,14
+"gf"	"Git > Current File: Compare with Branch"	42.15	0,14
+"gf"	"Git: Manage Remotes"	null
+"gf"	"Git: Clone"	null
+"gf"	"Git > GitHub: Share Project on GitHub"	null
+"gf"	"Help: What's New"	null
+"gf"	"Help: Report a Bug"	null
+"gf"	"Help: Star on GitHub"	null
+"gf"	"Terminal: New Terminal"	null
+"gf"	"src/cart.ts"	null
+"gf"	"CartLine"	null
+"gf"	"useDiscount"	null
+"gf"	"README.md"	null
+"gf"	"naïve café"	null
+"gf"	"ΣΑΣ σας"	null
+"gf"	"x_y-z.w"	null
+"git push"	"File: Save"	null
+"git push"	"File: Reopen Closed Tab"	null
+"git push"	"Edit: Go to Symbol"	null
+"git push"	"View > Markdown: Editor Only"	null
+"git push"	"View: Zoom Out"	null
+"git push"	"Code: Comment with Line Comment"	null
+"git push"	"Code: Comment with Block Comment"	null
+"git push"	"Code: Move Line Down"	null
+"git push"	"Code: Unindent Line"	null
+"git push"	"Code > Folding: Expand"	null
+"git push"	"Code > Folding: Collapse"	null
+"git push"	"Code: Select Next Occurrence"	null
+"git push"	"Git: Rebase"	null
+"git push"	"Git: Branches"	null
+"git push"	"Git > Bisect: Mark Good"	null
+"git push"	"Git > Uncommitted Changes: Stash Changes"	null
+"git push"	"Git > Uncommitted Changes: Show Local Changes"	null
+"git push"	"Git > Submodules: Update to Latest Remote"	null
+"git push"	"Git > LFS: Pull LFS Objects"	null
+"git push"	"Git > LFS: Prune LFS Objects"	null
+"git push"	"Git: Open Repository in Browser"	null
+"git push"	"Git > GitHub: Share Project on GitHub"	null
+"git push"	"Help: Git Manager Help"	null
+"git push"	"Help: Keyboard Shortcuts"	null
+"git push"	"src/cart.ts"	null
+"git push"	"CartLine"	null
+"git push"	"useDiscount"	null
+"git push"	"README.md"	null
+"git push"	"naïve café"	null
+"git push"	"ΣΑΣ σας"	null
+"git push"	"x_y-z.w"	null
+"push git"	"App: About Git Manager"	null
+"push git"	"File: Reopen Closed Tab"	null
+"push git"	"Edit: Undo"	null
+"push git"	"Edit: Select All"	null
+"push git"	"Edit: Select All Occurrences"	null
+"push git"	"Edit: Go to Class"	null
+"push git"	"View > Markdown: Editor and Preview"	null
+"push git"	"View > Appearance: System"	null
+"push git"	"Code: Duplicate Line or Selection"	null
+"push git"	"Code: Move Line Down"	null
+"push git"	"Git: Pull"	null
+"push git"	"Git: Show Reflog"	null
+"push git"	"Git > Bisect: Mark Good"	null
+"push git"	"Git > Bisect: Reset"	null
+"push git"	"Git > Uncommitted Changes: Stage Selected Lines"	null
+"push git"	"Git > Uncommitted Changes: Unstage Selected Lines"	null
+"push git"	"Git > Uncommitted Changes: Show Shelf"	null
+"push git"	"Git > Current File: Show History for Selection"	null
+"push git"	"Git > LFS: Untrack Pattern"	null
+"push git"	"Git > LFS: Install Hooks"	null
+"push git"	"src/cart.ts"	null
+"push git"	"CartLine"	null
+"push git"	"useDiscount"	null
+"push git"	"README.md"	null
+"push git"	"naïve café"	null
+"push git"	"ΣΑΣ σας"	null
+"push git"	"x_y-z.w"	null
+"sc"	"File: Show Local History"	27.9	6,13
+"sc"	"Edit: Undo"	null
+"sc"	"Edit: Find Next"	null
+"sc"	"View: Notifications"	null
+"sc"	"View > Markdown: Editor Only"	null
+"sc"	"View > Markdown: Editor and Preview"	null
+"sc"	"Code: Comment with Block Comment"	null
+"sc"	"Code: Join Lines"	null
+"sc"	"Code: Move Line Up"	null
+"sc"	"Git: Fetch All Remotes"	null
+"sc"	"Git: Merge"	null
+"sc"	"Git: Skip Commit"	38.3	5,10
+"sc"	"Git: Show Git Console"	36.05	5,14
+"sc"	"Git > GitHub: View Pull Requests"	null
+"sc"	"Git: Force Push"	null
+"sc"	"Window: Move Tab to Next Group"	null
+"sc"	"Window: Focus First Group"	null
+"sc"	"Help: Keyboard Shortcuts"	27.9	15,20
+"sc"	"src/cart.ts"	48.55	0,4
+"sc"	"CartLine"	null
+"sc"	"useDiscount"	36.55	5,6
+"sc"	"README.md"	null
+"sc"	"naïve café"	null
+"sc"	"ΣΑΣ σας"	null
+"sc"	"x_y-z.w"	null
+"settings"	"File: Compare with"	null
+"settings"	"Edit: Find"	null
+"settings"	"Edit: Jump to Navigation Bar"	null
+"settings"	"View: Sidebar"	null
+"settings"	"View: Git Console"	null
+"settings"	"View: Detect Indentation"	null
+"settings"	"Git: Merge"	null
+"settings"	"Git: Skip Commit"	null
+"settings"	"Git: Show Git Log"	null
+"settings"	"Git: Show Git Console"	null
+"settings"	"Git > Bisect: Start"	null
+"settings"	"Git > Uncommitted Changes: Show Shelf"	null
+"settings"	"Git > Current File: Annotate with Git Blame"	null
+"settings"	"Git > Current File: Show Diff"	null
+"settings"	"Git > Submodules: Init Submodules"	null
+"settings"	"Git: Open Repository in Browser"	null
+"settings"	"Window: Close Group"	null
+"settings"	"Help: Release Notes"	null
+"settings"	"Terminal: New Terminal"	null
+"settings"	"Edit: Search Everywhere: Files"	null
+"settings"	"Preferences: Open Keyboard Shortcuts"	null
+"settings"	"src/cart.ts"	null
+"settings"	"CartLine"	null
+"settings"	"useDiscount"	null
+"settings"	"README.md"	null
+"settings"	"naïve café"	null
+"settings"	"ΣΑΣ σας"	null
+"settings"	"x_y-z.w"	null
+"fil"	"App: About Git Manager"	null
+"fil"	"File: New Window"	81.35	0,1,2
+"fil"	"File: Add Folder to Workspace"	80.7	0,1,2
+"fil"	"File: Revert File"	81.3	0,1,2
+"fil"	"File: Close Tab"	81.4	0,1,2
+"fil"	"Edit: Undo"	null
+"fil"	"Edit: Select All"	null
+"fil"	"View > File Icons: Material Icons"	63.5	7,8,9
+"fil"	"View > Appearance: Light"	null
+"fil"	"Code: Comment with Line Comment"	null
+"fil"	"Code: Indent Line"	null
+"fil"	"Code > Folding: Collapse"	40.95	7,11,18
+"fil"	"Code > Folding: Expand All"	40.85	7,11,24
+"fil"	"Git: Rebase"	null
+"fil"	"Git: Resolve Conflicts"	null
+"fil"	"Git: Show Reflog"	null
+"fil"	"Git > Uncommitted Changes: Shelve Changes"	null
+"fil"	"Git > Current File: Show History"	62.55	14,15,16
+"fil"	"Git > Submodules: Init Submodules"	null
+"fil"	"Git > LFS: Install Hooks"	41.95	7,11,16
+"fil"	"Git > GitHub: Open on GitHub"	null
+"fil"	"Git > GitHub: Create Pull Request"	null
+"fil"	"Help: Available MCP Tools"	null
+"fil"	"Terminal: New Terminal"	null
+"fil"	"src/cart.ts"	null
+"fil"	"CartLine"	null
+"fil"	"useDiscount"	null
+"fil"	"README.md"	null
+"fil"	"naïve café"	null
+"fil"	"ΣΑΣ σας"	null
+"fil"	"x_y-z.w"	null
+"cmt"	"File > Open Recent: Clear Recent"	null
+"cmt"	"File: Save Workspace As"	null
+"cmt"	"File: Compare with Clipboard"	43.75	6,8,16
+"cmt"	"File: Recently Deleted Files"	null
+"cmt"	"Edit: Select All Occurrences"	null
+"cmt"	"Edit: Go to File"	null
+"cmt"	"Edit: Search Everywhere (Double Shift)"	null
+"cmt"	"View: Branches and Stashes"	null
+"cmt"	"View: Clear Cache"	null
+"cmt"	"View > Appearance: System"	null
+"cmt"	"View: Reset Zoom"	null
+"cmt"	"Code: Indent Line"	null
+"cmt"	"Git: Rebase"	null
+"cmt"	"Git: New Branch"	null
+"cmt"	"Git: Undo Last Action"	null
+"cmt"	"Git: Resolve Conflicts"	null
+"cmt"	"Git > Bisect: Skip"	null
+"cmt"	"Git > Uncommitted Changes: Discard Selected Lines"	37.7	8,10,13
+"cmt"	"Git > Current File: Compare with Branch"	41.2	20,22,30
+"cmt"	"Git > Submodules: Remove Submodule"	null
+"cmt"	"Git: Open Repository in Browser"	null
+"cmt"	"Window: Focus First Group"	null
+"cmt"	"Help: Report a Bug"	null
+"cmt"	"src/cart.ts"	null
+"cmt"	"CartLine"	null
+"cmt"	"useDiscount"	null
+"cmt"	"README.md"	null
+"cmt"	"naïve café"	null
+"cmt"	"ΣΑΣ σας"	null
+"cmt"	"x_y-z.w"	null
+"go to"	"File: Compare with Clipboard"	null
+"go to"	"File: Close Window"	null
+"go to"	"Edit: Replace in Files"	null
+"go to"	"Edit: Go to Symbol"	82.3	6,7,9,10
+"go to"	"View: Changes"	null
+"go to"	"View > File Icons: No Icons"	null
+"go to"	"View: Clear Cache"	null
+"go to"	"View: Sticky Scroll"	null
+"go to"	"View: Minimap"	null
+"go to"	"View > Markdown: Editor and Preview"	null
+"go to"	"Code: Indent Line"	null
+"go to"	"Code > Folding: Collapse"	null
+"go to"	"Code > Folding: Collapse All"	null
+"go to"	"Code: Select Next Occurrence"	null
+"go to"	"Git: Fetch All Remotes"	62.05	0,2,18
+"go to"	"Git: Undo Last Action"	63.1	0,2,8
+"go to"	"Git > Bisect: Mark Good"	64	2,19,20
+"go to"	"Git > Bisect: Skip"	null
+"go to"	"Git > Uncommitted Changes: Unstash Changes"	61.05	0,2,9
+"go to"	"Git > LFS: Pull LFS Objects"	75.8	0,2,20
+"go to"	"Git > GitHub: Create Gist"	null
+"go to"	"Git: Cherry-Pick"	null
+"go to"	"Window: Close Group"	null
+"go to"	"Go: Go Back"	null
+"go to"	"Command Palette: Clear Recently Used"	null
+"go to"	"src/cart.ts"	null
+"go to"	"CartLine"	null
+"go to"	"useDiscount"	null
+"go to"	"README.md"	null
+"go to"	"naïve café"	null
+"go to"	"ΣΑΣ σας"	null
+"go to"	"x_y-z.w"	null
+"stash ch"	"File > Open Recent: Clear Recent"	null
+"stash ch"	"File: Revert File"	null
+"stash ch"	"Edit: Delete"	null
+"stash ch"	"Edit: Replace"	null
+"stash ch"	"Edit: Find in Files"	null
+"stash ch"	"Edit: Replace in Files"	null
+"stash ch"	"View > File Icons: No Icons"	null
+"stash ch"	"View: Clear Cache"	null
+"stash ch"	"View: Zoom In"	null
+"stash ch"	"View: Zoom Out"	null
+"stash ch"	"Code: Delete Line"	null

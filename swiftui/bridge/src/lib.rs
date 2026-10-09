@@ -11,6 +11,10 @@ pub mod askpass;
 pub mod child_process;
 #[path = "../../../src-tauri/src/error.rs"]
 pub mod error;
+// Public here (private in src-tauri), so clippy asks for is_empty beside its len methods; the module stays as it is.
+#[allow(clippy::len_without_is_empty)]
+#[path = "../../../src-tauri/src/file_search.rs"]
+pub mod file_search;
 #[path = "../../../src-tauri/src/git/mod.rs"]
 pub mod git;
 #[path = "../../../src-tauri/src/git_console.rs"]
@@ -25,6 +29,16 @@ pub mod terminal;
 pub mod terminal_flow;
 #[path = "../../../src-tauri/cli/src/home.rs"]
 pub mod home;
+#[path = "../../../src-tauri/src/symbols/mod.rs"]
+pub mod symbols;
+pub use shared::text_search;
+
+/// Modules with submodules in a folder of their own name (text_search/replace.rs): loaded without a path attribute
+/// from src-tauri's folder, so their `mod` items resolve as they do in src-tauri.
+#[path = "../../../src-tauri/src"]
+mod shared {
+    pub mod text_search;
+}
 
 mod commands;
 mod config;

@@ -110,6 +110,9 @@ public struct ParityRunSpec: Codable, Equatable {
     public var openSettings: String?
     /// The terminal panel shown in both apps, its shell printing gm-measure's fixed output (MeasureTerminal.swift).
     public var showTerminal: Bool?
+    /// A search popup opened in both apps before the capture, as `measure --screen` opens it: "quickopen",
+    /// "palette" or "search" (Measure.searchScreens).
+    public var searchScreen: String?
 
     public init() {}
 }

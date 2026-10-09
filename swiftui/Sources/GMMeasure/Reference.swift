@@ -40,7 +40,9 @@ enum Reference {
         Part(name: "files panel", selector: ".explorer, .explorer *"),
     ]
 
-    static let screens = [
+    static let screens = slice1Screens + searchScreens
+
+    static let slice1Screens = [
         Screen(name: "changes", parts: chrome + [
             Part(name: "changes head", selector: ".sidebar .head, .sidebar .head *"),
             Part(name: "repository header", selector: ".repo-header, .repo-header *"),
@@ -131,6 +133,8 @@ enum Reference {
                         try await showDiff(app, fallbackRepoPath: folderPath)
                     } else if screen.name == "file" {
                         try await Measure.openFile(app)
+                    } else if Measure.searchScreens.contains(screen.name) {
+                        try await Measure.showSearchScreen(app, screen: screen.name)
                     }
                     if let section = screen.settingsSection {
                         try await Measure.openSettings(app, section: section)
@@ -148,7 +152,7 @@ enum Reference {
                         into: (jsonDir as NSString).appendingPathComponent(name)
                     )
                     print("\(name): \(count) elements")
-                    if screen.settingsSection != nil {
+                    if screen.settingsSection != nil || Measure.searchScreens.contains(screen.name) {
                         _ = try await app.client.call("close_dialog")
                     }
                 }

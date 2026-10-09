@@ -68,6 +68,7 @@ enum Smoke {
             let image = try shot.image.map(RGBAImage.decode(pngData:))
             check("take_screenshot", (image?.width ?? 0) > 0, image.map { "\($0.width)x\($0.height)" } ?? shot.text)
 
+            try await checkSearch(app, repoPath: repoPath, check: check)
             try await checkWrites(app.client, check: check)
             try await checkLog(app.client, check: check)
             try await checkSettings(app.client, check: check)

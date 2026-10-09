@@ -9,7 +9,7 @@ after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 18 partial, 40 missing (60 features). 9 of 49 scenarios run in both apps.
+Native: 2 done, 21 partial, 39 missing (62 features). 12 of 51 scenarios run in both apps.
 
 Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -32,7 +32,9 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Code appearance | code-appearance | partial | diff-every-line | - | - |
 | Markdown editor | markdown | missing | markdown | - | - |
 | Image and PDF preview | media-preview | missing | media-preview | - | - |
-| Search Everywhere | search-everywhere | missing | search-everywhere | - | - |
+| Search Everywhere | search-everywhere | partial | search-everywhere | 99.6% / 99.17% | 155 MB / 48 MB |
+| Quick Open | quick-open | partial | quick-open | 99.64% / 99.63% | 220 MB / 42 MB |
+| Command Palette | command-palette | partial | command-palette | 99.51% / 99.3% | 215 MB / 55 MB |
 | Recent Files | recent-files | missing | recent-files | - | - |
 | Navigation Bar | navigation-bar | partial | navigation-bar | - | - |
 | Find and replace | find-replace | missing | find-replace | - | - |

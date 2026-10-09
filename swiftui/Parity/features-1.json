@@ -115,7 +115,31 @@
       "id": "search-everywhere", "name": "Search Everywhere", "usage": "Search-Everywhere.md",
       "scenario": "search-everywhere",
       "check": "The popup with its All, Classes, Files, Symbols and Text tabs",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "only the Text tab (Find in Files) searches; All, Classes, Files and Symbols need the symbol index",
+        "Replace in Files, the Match Case, Words and Regex toggles, double Shift",
+        "a result opens its diff or says the file view is missing (GM-52)"
+      ]
+    },
+    {
+      "id": "quick-open", "name": "Quick Open", "usage": "Recent-Files.md", "scenario": "quick-open",
+      "check": "Cmd+P with recently opened files, fuzzy file results and the ? help",
+      "native": "partial",
+      "gaps": [
+        "the :line, @symbol and #symbol modes",
+        "recent files come from the control server until the native file view (GM-52) opens files"
+      ]
+    },
+    {
+      "id": "command-palette", "name": "Command Palette", "usage": "Keyboard-Shortcuts.md",
+      "scenario": "command-palette",
+      "check": "Shift+Cmd+P: every command with its keys, check marks, enabled ones first; typing filters",
+      "native": "partial",
+      "gaps": [
+        "most commands only say they are not in the native app yet",
+        "the state is the docs demo's (Generated/PaletteCommands*.swift), not the window's own"
+      ]
     },
     {
       "id": "recent-files", "name": "Recent Files", "usage": "Recent-Files.md", "scenario": "recent-files",

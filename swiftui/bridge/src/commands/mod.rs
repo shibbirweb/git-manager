@@ -20,6 +20,7 @@ use crate::paths::RealPath;
 mod commit_options;
 mod editor;
 mod log;
+mod search;
 mod write;
 
 pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
@@ -45,6 +46,11 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "get_commit_details" => to_json(log::get_commit_details(parse(command, args)?)?),
         "get_commit_file_diff" => to_json(log::get_commit_file_diff(parse(command, args)?)?),
         "resolve_revision" => to_json(log::resolve_revision(parse(command, args)?)?),
+        "file_search_open" => to_json(search::file_search_open(parse(command, args)?)?),
+        "file_search_query" => to_json(search::file_search_query(parse(command, args)?)?),
+        "file_search_close" => to_json(search::file_search_close()?),
+        "text_search" => to_json(search::text_search(parse(command, args)?)?),
+        "text_search_cancel" => to_json(search::text_search_cancel(parse(command, args)?)?),
         _ => unknown(command),
     }
 }

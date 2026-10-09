@@ -17,9 +17,18 @@ on:
       - "src-tauri/src/askpass.rs"
       - "src-tauri/src/git_console.rs"
       - "src-tauri/src/child_process.rs"
-      # The sources of swiftui/Sources/GitManagerNative/Generated (gm-measure tokens and icons).
+      - "src-tauri/src/file_search.rs"
+      - "src-tauri/src/text_search.rs"
+      - "src-tauri/src/text_search/**"
+      - "src-tauri/src/symbols/**"
+      # The sources of swiftui/Sources/GitManagerNative/Generated (gm-measure tokens, icons and commands) and of
+      # the search fixtures (NativeCore's ports of the search models).
       - "src/lib/themes/**"
       - "src/lib/ui/icons.ts"
+      - "src/lib/commands/**"
+      - "src/lib/menu/**"
+      - "src/lib/quickOpen/**"
+      - "src/lib/search/**"
   workflow_dispatch:
 
 permissions:
@@ -75,6 +84,10 @@ jobs:
       - name: Icons are up to date
         working-directory: swiftui
         run: swift run -c release gm-measure icons --check
+
+      - name: Palette commands are up to date
+        working-directory: swiftui
+        run: swift run -c release gm-measure commands --check
 
       # Starts the built app on a test repository and checks every control tool end to end.
       - name: Smoke test

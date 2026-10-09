@@ -178,9 +178,31 @@
       "title": "Search Everywhere",
       "folder": "acme/storefront",
       "steps": [
+        "Start the app on demo/acme/storefront and open src/cart.ts at line 10, column 11.",
+        "Edit > Select Next Occurrence selects lines; Edit > Find in Files opens the Text tab with it.",
+        "Close the src/cart.ts tab (the popup stays): 8 matches in 1 file over the Changes screen."
+      ],
+      "run": { "searchScreen": "search" }
+    },
+    {
+      "id": "quick-open",
+      "title": "Quick Open with recently opened files",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront; open src/pricing.ts, README.md and src/cart.ts, then close them.",
+        "Press Cmd+P (Edit > Go to File...): Recently opened lists cart.ts, README.md and pricing.ts."
+      ],
+      "run": { "searchScreen": "quickopen" }
+    },
+    {
+      "id": "command-palette",
+      "title": "Command Palette",
+      "folder": "acme/storefront",
+      "steps": [
         "Start the app on demo/acme/storefront.",
-        "Press Shift twice and type cart: the All tab with files, symbols and text."
-      ]
+        "Press Shift+Cmd+P (View > Command Palette...): every command, enabled ones first, A to Z."
+      ],
+      "run": { "searchScreen": "palette" }
     },
     {
       "id": "recent-files",

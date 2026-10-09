@@ -1,0 +1,23 @@
+"tg"	"View > File Icons: Material Icons"	null
+"tg"	"View: Do Not Disturb"	null
+"tg"	"View > Appearance: System"	null
+"tg"	"View: Zoom In"	null
+"tg"	"Code: Comment with Line Comment"	null
+"tg"	"Code > Folding: Expand"	null
+"tg"	"Git: Update Project"	null
+"tg"	"Git: Merge"	26.6	2,8
+"tg"	"Git: New Branch"	null
+"tg"	"Git: Reset HEAD"	null
+"tg"	"Git > Patch: Create Patch from Commit"	null
+"tg"	"Git > Uncommitted Changes: Stash Changes"	24.1	2,22
+"tg"	"Git > Submodules: Update Submodules"	null
+"tg"	"Window: Split Right"	22.15	12,16
+"tg"	"Window: Focus Second Group"	null
+"tg"	"Window: Close Group"	null
+"tg"	"src/cart.ts"	null
+"tg"	"CartLine"	null
+"tg"	"useDiscount"	null
+"tg"	"README.md"	null
+"tg"	"naïve café"	null
+"tg"	"ΣΑΣ σας"	null
+"tg"	"x_y-z.w"	null

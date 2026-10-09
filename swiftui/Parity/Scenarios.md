@@ -205,14 +205,46 @@ Folder: demo `acme`
 
 - Image and PDF preview (`media-preview`, missing): The image fitted to the tab with its bar; a PDF; an image diff.
 
-## search-everywhere: Search Everywhere (native app cannot show it yet)
+## search-everywhere: Search Everywhere (runs in both apps)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront and open src/cart.ts at line 10, column 11.
+2. Edit > Select Next Occurrence selects lines; Edit > Find in Files opens the Text tab with it.
+3. Close the src/cart.ts tab (the popup stays): 8 matches in 1 file over the Changes screen.
+
+Measured: light 99.6% (155 MB / 48 MB, 2026-10-09), dark 99.17% (175 MB / 48 MB, 2026-10-09).
+
+- Search Everywhere (`search-everywhere`, partial): The popup with its All, Classes, Files, Symbols and Text tabs.
+  Native lacks: only the Text tab (Find in Files) searches; All, Classes, Files and Symbols need the symbol index;
+  Replace in Files, the Match Case, Words and Regex toggles, double Shift; a result opens its diff or says the file
+  view is missing (GM-52).
+
+## quick-open: Quick Open with recently opened files (runs in both apps)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront; open src/pricing.ts, README.md and src/cart.ts, then close them.
+2. Press Cmd+P (Edit > Go to File...): Recently opened lists cart.ts, README.md and pricing.ts.
+
+Measured: light 99.64% (220 MB / 42 MB, 2026-10-09), dark 99.63% (226 MB / 41 MB, 2026-10-09).
+
+- Quick Open (`quick-open`, partial): Cmd+P with recently opened files, fuzzy file results and the ? help. Native
+  lacks: the :line, @symbol and #symbol modes; recent files come from the control server until the native file view
+  (GM-52) opens files.
+
+## command-palette: Command Palette (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront.
-2. Press Shift twice and type cart: the All tab with files, symbols and text.
+2. Press Shift+Cmd+P (View > Command Palette...): every command, enabled ones first, A to Z.
 
-- Search Everywhere (`search-everywhere`, missing): The popup with its All, Classes, Files, Symbols and Text tabs.
+Measured: light 99.51% (215 MB / 55 MB, 2026-10-09), dark 99.3% (213 MB / 55 MB, 2026-10-09).
+
+- Command Palette (`command-palette`, partial): Shift+Cmd+P: every command with its keys, check marks, enabled ones
+  first; typing filters. Native lacks: most commands only say they are not in the native app yet; the state is the
+  docs demo's (Generated/PaletteCommands*.swift), not the window's own.
 
 ## recent-files: Recent Files (native app cannot show it yet)
 
@@ -241,31 +273,3 @@ Folder: demo `acme/storefront`
 2. Press Cmd+R (Edit > Replace...) and type total.
 
 - Find and replace (`find-replace`, missing): The find bar with Replace, the counter and Replace in Files.
-
-## sign-in: Sign-in prompt (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).
-3. Fetch: the Sign in dialog asks for a username and a password.
-
-- Sign-in prompts (`sign-in-prompts`, missing): The Sign in dialog for a username and password or an SSH passphrase.
-
-## commit-options: Commit options (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Click the gear next to Commit in the commit box, then the arrow next to Commit.
-
-- Commit options (`commit-options`, missing): Commit & Push, Commit & Sync, sign-off, author, GPG signing, skip hooks.
-
-## diff-inline: Inline diff of src/cart.ts (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront and click src/cart.ts under Changes.
-2. Click Inline in the diff toolbar.
-
-- Inline diffs (`inline-diffs`, missing): Removed lines above the new ones in one column.

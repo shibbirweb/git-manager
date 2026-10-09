@@ -173,6 +173,9 @@ enum ParityRun {
         if spec.showTerminal == true {
             try await MeasureTerminal.show(app)
         }
+        if let screen = spec.searchScreen {
+            try await Measure.showSearchScreen(app, screen: screen)
+        }
         if app.kind == .current {
             for expectation in spec.expectCurrent ?? [] {
                 try await expect(expectation, in: app)

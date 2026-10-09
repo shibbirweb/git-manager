@@ -28,12 +28,13 @@ Sources/GitManagerNative/   the SwiftUI app
   Services/                Backend.swift calls the bridge, Control.swift answers the control server, highlighting
   Theme/                   theme tokens as colors, and CSS color math as WebKit does it
   Views/<screen>/          Chrome, Changes, Files, Diff, Welcome; shared pieces in Components
-  Generated/               Themes and Icons, written by gm-measure tokens and icons
-Sources/NativeCore/        pure, tested logic (diff rows, folds, ruler ticks, row index, character diff)
+  Generated/               Themes, Icons and PaletteCommands, written by gm-measure tokens, icons and commands
+Sources/NativeCore/        pure, tested logic (diff rows, folds, ruler, character diff, fuzzy match, search rows)
 Sources/GMBridge/          module map and C header for the bridge
 Sources/GMMeasure/         gm-measure commands; Sources/MeasureKit/ is its library
 Tests/                     NativeCoreTests/ and MeasureKitTests/ (Swift Testing)
 Highlight/entry.ts         the current app's highlighters, bundled into the app's highlight.js
+Palette/export.ts          the current app's command registry, read by gm-measure commands
 Reference/                 layout snapshots of the current app (gm-measure reference)
 Parity/                    the parity list: every feature of the current app, its scenario and native status
 bridge/                    Rust static library: gm_call(command, argsJson) -> JSON, gm_free_string
@@ -81,13 +82,17 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `open_settings`, `close_dialog` | yes: names and the `section` argument (Settings only) |
 | `app` (terminal) | `show_panel`, `list_terminals`, `new_terminal`, `send_terminal_text`; `terminal_text` native only |
 
-The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `show_log`, `scroll`, `stage`,
-`unstage` and `commit`. `diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
-`open_file` opens `filePath` (relative to the folder, or absolute) in a kept tab, like a double click in the Files
-panel (`preview` true: the preview tab), and answers once the text, its colors and its blame note are on screen;
-`get_state` lists the tabs and the shown file under `editor`. `show_log` shows the Log like the History activity
-(`visible` false hides it), selects the commit at `position` in the list or a revision (`commitId`, such as HEAD~5),
-and answers once the history, the commit's details and its first file's diff are shown.
+The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `show_log`, `quick_open`, `search`,
+`close_dialog`, `scroll`, `stage`, `unstage` and `commit`. `diff` moves to the next or previous change, opens fold steps
+and toggles Collapse unchanged. `open_file` opens `filePath` (relative to the folder, or absolute) in a kept tab, like a
+double click in the Files panel (`preview` true: the preview tab), and answers once the text, its colors and its blame
+note are on screen; `get_state` lists the tabs and the shown file under `editor`. `show_log` shows the Log like the
+History activity (`visible` false hides it), selects the commit at `position` in the list or a revision (`commitId`,
+such as HEAD~5), and answers once the history, the commit's details and its first file's diff are shown. `quick_open`
+opens Quick Open (`prefix` "" for files, ">" for the Command Palette; `recentFiles` stand for files opened before),
+`search` opens Find in Files with `query` selected, `close_dialog` closes the popup (and Settings); each answers with
+the popup's rows. The bridge's `file_search_*` and `text_search` are the current app's Go to File index and Find in
+Files (`file_search.rs`, `text_search.rs`, `symbols/`, included by path).
 
 `stage` and `unstage` take `filePaths` (without them, the whole group, like Stage all and Unstage all); `commit`
 takes `message` and `amend`. They run through the window like a click, so the busy state, the toasts and the status
@@ -116,6 +121,8 @@ swift run -c release gm-measure measure --screen file    # src/catalog.ts in a f
 swift run -c release gm-measure measure --screen log     # the Log, the newest commit and its diff selected
 swift run -c release gm-measure measure --screen settings  # Settings open on Appearance (open_settings)
 swift run -c release gm-measure measure --mode dark --theme monokai-charcoal  # a color theme in both apps
+swift run -c release gm-measure measure --screen search  # Find in Files for "lines" (also quickopen, palette)
+swift run -c release gm-measure memory-search           # Quick Open, the palette and Find in Files on 4000 files
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
@@ -125,8 +132,10 @@ swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pi
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)
 swift run -c release gm-measure icons                   # writes Generated/Icons*.swift from src/lib/ui/icons.ts
+swift run -c release gm-measure commands                # writes Generated/PaletteCommands*.swift (the registry)
 swift run -c release gm-measure reference               # what to match: Reference/ and build/reference/
 swift run -c release gm-measure reference --screens log # only some screens (changes, log, diff)
+swift run -c release gm-measure reference --screens quickopen,palette,search   # the search popups
 swift run -c release gm-measure parity                  # UI match per scenario, light and dark (see below)
 swift run -c release gm-measure display                 # HDR headroom, screen and color space; exit 1 with HDR on
 ```
@@ -253,4 +262,5 @@ src-tauri's test helpers.
 | GM-52 File tabs and the read-only file view: open from the Files panel, file bar, editor canvas, status items | done |
 | GM-53 Log and history: graph, refs, commit details and its read-only diff, `show_log`, `--screen log` | done |
 | GM-56 Settings dialog, settings.json, live color themes (`--screen settings`, `--theme`) | done |
-| GM-55 Terminal panel: the current app's PTY through the bridge, an xterm.js-like emulator, its WebGL canvas | built |
+| GM-55 Terminal panel: the current app's PTY through the bridge, an xterm.js-like emulator, its WebGL canvas | done |
+| GM-57 Quick Open, Command Palette and Find in Files (search, quickopen, palette screens) | done |

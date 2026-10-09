@@ -6,6 +6,7 @@ import SwiftUI
 
 struct HeaderBar: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var recent = RecentFiles.shared
 
     let folderName: String
     let head: HeadInfo?
@@ -58,11 +59,11 @@ struct HeaderBar: View {
         .foregroundStyle(theme.ink("--text"))
     }
 
-    /// Back and forward (.history: 27 x 26 buttons, 2 apart); there is no navigation history yet, so both are
-    /// disabled, as in the current app right after opening a folder.
+    /// Back and forward (.history: 27 x 26 buttons, 2 apart); Back is on once files were opened (RecentFiles), as
+    /// in the current app; there is no history to walk yet.
     private var history: some View {
         HStack(spacing: 2) {
-            IconButton(width: 27, height: 26, disabled: true, action: {}) {
+            IconButton(width: 27, height: 26, disabled: !recent.canGoBack, action: {}) {
                 Icon(name: "arrow-left", size: 15)
             }
             IconButton(width: 27, height: 26, disabled: true, action: {}) {

@@ -1,5 +1,33 @@
 # Parity scenarios (continued)
 
+## sign-in: Sign-in prompt (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).
+3. Fetch: the Sign in dialog asks for a username and a password.
+
+- Sign-in prompts (`sign-in-prompts`, missing): The Sign in dialog for a username and password or an SSH passphrase.
+
+## commit-options: Commit options (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Click the gear next to Commit in the commit box, then the arrow next to Commit.
+
+- Commit options (`commit-options`, missing): Commit & Push, Commit & Sync, sign-off, author, GPG signing, skip hooks.
+
+## diff-inline: Inline diff of src/cart.ts (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront and click src/cart.ts under Changes.
+2. Click Inline in the diff toolbar.
+
+- Inline diffs (`inline-diffs`, missing): Removed lines above the new ones in one column.
+
 ## conflicts: Conflicts dialog (native app cannot show it yet)
 
 Folder: demo `acme/payments-api`
@@ -250,15 +278,3 @@ Folder: demo `acme/storefront`
 2. Click Update available in the status bar: the update window.
 
 - Updates and release channels (`updates`, missing): Update available in the status bar and the update window.
-
-## memory-breakdown: Memory breakdown (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Click the memory readout at the right of the status bar.
-
-- Memory readout and memory log (`memory`, partial): The readout in the status bar and its breakdown. Native lacks:
-  the breakdown popup; the memory log and the memory marks in Settings.
-- Clear Cache (`clear-cache`, missing): The brush right of the readout: the window blinks and comes back as it was.
-  Native lacks: the brush is drawn but does nothing (the native app has no WebKit cache to clear).

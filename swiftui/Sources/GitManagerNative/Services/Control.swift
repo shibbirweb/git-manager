@@ -71,8 +71,16 @@ enum Control {
             return git(action, args)
         case "show_log":
             return showLog(args)
-        case "open_settings", "close_dialog":
+        case "open_settings":
             return settings(action, args)
+        case "quick_open", "search":
+            return search(action, args)
+        case "close_dialog":
+            // Settings and the search popups each close their own; whichever is open goes, like Escape. The answer
+            // has both states.
+            _ = search(action, args)
+            _ = settings(action, args)
+            return reply(ok: true, structured: onMain { popupState().merging(settingsState()) { popup, _ in popup } })
         default:
             return ControlTerminal.answer(action, args) ?? reply(ok: false, text: "Unknown action: \(action)")
         }

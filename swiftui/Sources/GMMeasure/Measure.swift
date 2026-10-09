@@ -45,7 +45,8 @@ enum Measure {
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = ["changes", "diff", "staged", "file", "log", "settings", "terminal"].contains(options.screen)
+        let validScreen = (["changes", "diff", "staged", "file", "log", "settings", "terminal"] + searchScreens)
+            .contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -132,6 +133,8 @@ enum Measure {
             try await openSettings(app)
         } else if options.screen == "terminal" {
             try await MeasureTerminal.show(app)
+        } else if searchScreens.contains(options.screen) {
+            try await showSearchScreen(app, screen: options.screen)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

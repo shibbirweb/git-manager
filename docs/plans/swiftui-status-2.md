@@ -157,3 +157,35 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
     glyphs in the terminal, the welcome's text edges, the memory readout.
   - Memory (`gm-measure memory --scenario terminal`, 4000 lines printed), MB average (peak): current 136 idle, 270
     terminal open, 282 printing, 291 after; native 34, 49, 50 (52), 54.
+- GM-57 Quick Open, the Command Palette and Find in Files (search popups), measured against the local reference
+  build:
+  - Logic in NativeCore, checked against the TypeScript with the same inputs: Fuzzy (src/lib/commands/fuzzy.ts,
+    770 query and label pairs run through it by Tests/NativeCoreTests/Fixtures/make-search-fixtures.ts, scores and
+    positions identical), QuickOpenModel, SearchRows (fileSearchModel.ts, countLabel.ts), TextSearchModel and
+    PopupRows (popupRows.ts), Palette (registry.ts paletteList). The palette's commands, titles, keys and state come
+    from the current app's own registry for the docs demo's window (swiftui/Palette/export.ts, `gm-measure
+    commands`, checked in CI).
+  - Bridge: `file_search_open`, `file_search_query`, `file_search_close`, `text_search` (every batch at once) and
+    `text_search_cancel` over src-tauri's file_search, text_search and symbols by path (text_search through a
+    `#[path]` folder module, so its `replace` submodule resolves as in src-tauri), tested in bridge/tests/search.rs.
+  - The window: Cmd+P, Shift+Cmd+P and Shift+Cmd+F; the popups with their rows, keyboard, the palette's scrollbar,
+    and the control actions `quick_open`, `search`, `close_dialog` (which closes Settings too and answers with both
+    states). A file opens in a kept tab of the file view, as Go to File does.
+  - Rules found: the shadow (0 8px 28px) is close to a Gaussian of 27.6 pixels at 2x, not CSS's 28, but not exactly;
+    its edge is a measured table (the 8-bit mask that explains both the light shadow over white and the dark one),
+    stored as black at the color's 8-bit alpha times the mask in a layer macOS composites. --selected inside the
+    popup shows as macOS converts the sRGB color (215, 225, 252, not WebKit's 215, 226, 252). The input's selection
+    is the system color made translucent by WebKit's blendWithWhite, over --panel. Find in Files keeps the code
+    font's ligatures. Search Everywhere's icons sit half a point above SwiftUI's snap (its top is 12vh, 101.75).
+  - gm-measure: `measure --screen quickopen|palette|search` (the current app driven by open_file, close_tab and
+    run_menu_command, as it cannot be typed into from outside), `reference --screens`, `memory-search`, and parity
+    scenarios search-everywhere, quick-open and command-palette (run spec `searchScreen`).
+  - Pixel diff below the title bar (HDR off): search 99.6% light, 99.14% dark; quickopen 99.64% / 99.62%; palette
+    99.51% / 99.29% (parity 99.6 / 99.17, 99.64 / 99.63, 99.51 / 99.3). Others unchanged: Changes 99.74 / 99.73,
+    staged 99.74 / 99.74, diff folded 99.66 / 99.67, every line 99.65 / 99.65, file 99.64 / 99.64, Log 99.52 /
+    99.39, Settings 99.41 / 99.03, terminal 99.5 / 99.38. Left: the shadow's corners (WebKit tiles the blurred
+    corner, not a product of the edges), a match box over the selected row, the input's caret. The quickopen setup
+    passed its recent files to the native app reversed (and as a lazy collection JSON could not write); fixed so
+    both apps list cart.ts, README.md, pricing.ts.
+  - Memory (`gm-measure memory-search`), MB average: current 136 idle, 207 palette open, 188 Go to File with its
+    index, 193 Find in Files results (240 peak); native 32, 53, 44, 57.
