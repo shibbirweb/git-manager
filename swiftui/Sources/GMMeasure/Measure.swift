@@ -64,7 +64,8 @@ enum Measure {
         ]
         let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
                              "conflicts"]
-            + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens).contains(options.screen)
+            + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens + githubScreens)
+            .contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -132,6 +133,9 @@ enum Measure {
         if options.screen == "terminal" {
             try MeasureTerminal.writeShellProfile(home: home)
         }
+        if options.screen == "settingsgithubaccount" {
+            try writeGitHubAccount(home: home, kind: kind)
+        }
         let app = try await AppLauncher.launch(
             kind: kind, home: home, folderPath: folderPath, appPath: appPath,
             settings: kind == .current ? themeSettings : [:], mode: options.mode, extraFolders: options.extraFolders,
@@ -162,6 +166,8 @@ enum Measure {
             try await showLog(app)
         } else if options.screen == "settings" {
             try await openSettings(app)
+        } else if githubScreens.contains(options.screen) {
+            try await openSettings(app, section: "github")
         } else if options.screen == "terminal" {
             try await MeasureTerminal.show(app)
         } else if editScreens.contains(options.screen) {

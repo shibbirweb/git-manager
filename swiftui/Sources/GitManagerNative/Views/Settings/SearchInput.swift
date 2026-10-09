@@ -15,18 +15,23 @@ struct SearchInput: NSViewRepresentable {
     var autofocus = true
     /// Called when the field takes the keyboard.
     var onFocus: () -> Void = {}
+    /// A password field (NSSecureTextField): the characters show as dots.
+    var secure = false
+    /// Return in the field.
+    var onSubmit: (() -> Void)?
 
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text)
     }
 
-    func makeNSView(context: Context) -> CaretField {
-        let field = CaretField()
+    func makeNSView(context: Context) -> NSTextField {
+        let field: NSTextField & CaretShowing = secure ? SecureCaretField() : CaretField()
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
         field.font = font
         field.onFocus = onFocus
+        context.coordinator.onSubmit = onSubmit
         field.delegate = context.coordinator
         field.lineBreakMode = .byClipping
         field.cell?.isScrollable = true
@@ -38,19 +43,29 @@ struct SearchInput: NSViewRepresentable {
         return field
     }
 
-    func updateNSView(_ field: CaretField, context: Context) {
+    func updateNSView(_ field: NSTextField, context: Context) {
         if field.stringValue != text {
             field.stringValue = text
         }
         field.textColor = textColor
-        field.caretColor = text.isEmpty ? .clear : caretColor
+        context.coordinator.onSubmit = onSubmit
+        (field as? CaretShowing)?.caretColor = text.isEmpty ? .clear : caretColor
     }
 
     final class Coordinator: NSObject, NSTextFieldDelegate {
         @Binding var text: String
+        var onSubmit: (() -> Void)?
 
         init(text: Binding<String>) {
             _text = text
+        }
+
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            guard commandSelector == #selector(NSResponder.insertNewline(_:)), let onSubmit else {
+                return false
+            }
+            onSubmit()
+            return true
         }
 
         func controlTextDidChange(_ notification: Notification) {
@@ -61,7 +76,31 @@ struct SearchInput: NSViewRepresentable {
     }
 }
 
-final class CaretField: NSTextField {
+/// A field that shows the caret in its own color and says when it takes the keyboard.
+protocol CaretShowing: AnyObject {
+    var onFocus: () -> Void { get set }
+    var caretColor: NSColor { get set }
+}
+
+final class SecureCaretField: NSSecureTextField, CaretShowing {
+    var onFocus: () -> Void = {}
+    var caretColor: NSColor = .textColor {
+        didSet {
+            (currentEditor() as? NSTextView)?.insertionPointColor = caretColor
+        }
+    }
+
+    override func becomeFirstResponder() -> Bool {
+        let became = super.becomeFirstResponder()
+        (currentEditor() as? NSTextView)?.insertionPointColor = caretColor
+        if became {
+            onFocus()
+        }
+        return became
+    }
+}
+
+final class CaretField: NSTextField, CaretShowing {
     var onFocus: () -> Void = {}
     var caretColor: NSColor = .textColor {
         didSet {

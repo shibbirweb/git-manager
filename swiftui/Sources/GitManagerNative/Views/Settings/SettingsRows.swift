@@ -36,9 +36,23 @@ enum RowControl {
 /// The width of the rows: the content's 568 points less the scrollbar's 10 and 22 points of padding on each side.
 let settingsRowWidth: CGFloat = 514
 
+private struct SettingsRowsWidthKey: EnvironmentKey {
+    static let defaultValue = settingsRowWidth
+}
+
+extension EnvironmentValues {
+    /// The rows' width in the open section: 514, or 524 when the section is short enough not to scroll (the page's
+    /// scrollbar then takes no room).
+    var settingsRowsWidth: CGFloat {
+        get { self[SettingsRowsWidthKey.self] }
+        set { self[SettingsRowsWidthKey.self] = newValue }
+    }
+}
+
 struct SettingsRow: View {
     @Environment(\.theme) private var theme
     @Environment(\.settingsSearchWords) private var searchWords
+    @Environment(\.settingsRowsWidth) private var rowsWidth
 
     let title: String
     var hint: [TextRun] = []
@@ -46,13 +60,17 @@ struct SettingsRow: View {
     var sub = false
     /// A memory mark after the title (MemoryFlag.svelte), such as "up to +25 MB".
     var flag: String?
+    /// What .row.stacked puts under the label, 10 points down (Settings > GitHub's account form).
+    var below: AnyView?
 
-    init(_ title: String, hint: String = "", control: RowControl = .none, sub: Bool = false, flag: String? = nil) {
+    init(_ title: String, hint: String = "", control: RowControl = .none, sub: Bool = false, flag: String? = nil,
+         below: AnyView? = nil) {
         self.title = title
         self.hint = hint.isEmpty ? [] : [TextRun(text: hint)]
         self.control = control
         self.sub = sub
         self.flag = flag
+        self.below = below
     }
 
     init(_ title: String, hintRuns: [TextRun], control: RowControl = .none, sub: Bool = false) {
@@ -63,7 +81,7 @@ struct SettingsRow: View {
     }
 
     var body: some View {
-        let available = settingsRowWidth - (sub ? 18 : 0)
+        let available = rowsWidth - (sub ? 18 : 0)
         let hintText = hint.map(\.text).joined()
         let natural = max(ExactText.width(title, font: PageFont.ui(13, weight: .medium)),
                           ExactText.width(hintText, font: PageFont.ui(12)))
@@ -85,14 +103,23 @@ struct SettingsRow: View {
                     }
                 }
                 .frame(width: labelWidth, alignment: .leading)
-                Spacer(minLength: 20)
-                controlView
+                // A row without a control is all label (.row's gap only parts the label and a control).
+                if control.width > 0 {
+                    Spacer(minLength: 20)
+                    controlView
+                }
             }
             .padding(.leading, sub ? 18 : 0)
-            .padding(.vertical, 12)
+            .padding(.top, 12)
+            .padding(.bottom, below == nil ? 12 : 0)
+            if let below {
+                below
+                    .padding(.top, 10)
+                    .padding(.bottom, 12)
+            }
             theme.color("--border").frame(height: 1)
         }
-        .frame(width: settingsRowWidth)
+        .frame(width: rowsWidth)
     }
 
     @ViewBuilder
@@ -133,6 +160,7 @@ struct MemoryFlag: View {
 
 /// A group title (.group-title): 11 points, weight 600, upper case, 0.06em apart, --text-dim.
 struct SettingsGroupTitle: View {
+    @Environment(\.settingsRowsWidth) private var rowsWidth
     @Environment(\.theme) private var theme
 
     let text: String
@@ -143,7 +171,7 @@ struct SettingsGroupTitle: View {
             .foregroundStyle(theme.ink("--text-dim"))
             .padding(.top, first ? 6 : 18)
             .padding(.bottom, 2)
-            .frame(width: settingsRowWidth, alignment: .leading)
+            .frame(width: rowsWidth, alignment: .leading)
     }
 }
 

@@ -189,19 +189,21 @@ struct DialogButton: View {
     var disabled = false
     /// As wide as its text with 12 points of padding and the border (the Git dialogs' buttons), not the column.
     var hug = false
+    /// .btn.small: 24 points tall, 8 points in, 12-point text.
+    var small = false
     let action: () -> Void
 
     var body: some View {
         let surface = primary ? "--accent" : "--panel"
         Button(action: action) {
-            ExactText(text: title, size: 13)
+            ExactText(text: title, size: small ? 12 : 13)
                 // opacity: 0.5 on the whole button: the text at half over the dialog's --panel.
                 .foregroundStyle(disabled
                     ? theme.over(primary ? "--accent-text" : "--text", 0.5, on: "--panel")
                     : theme.ink(primary ? "--accent-text" : "--text"))
-                .padding(.horizontal, hug ? 13 : 0)
+                .padding(.horizontal, hug ? (small ? 9 : 13) : 0)
                 .frame(maxWidth: hug ? nil : .infinity)
-                .frame(height: 28)
+                .frame(height: small ? 24 : 28)
                 .background(RoundedRectangle(cornerRadius: 6, style: .circular)
                     .fill(disabled ? theme.over(surface, 0.5, on: "--panel") : theme.color(surface)))
                 .borderRing(disabled ? theme.over(primary ? "--accent" : "--border-strong", 0.5, on: "--panel")

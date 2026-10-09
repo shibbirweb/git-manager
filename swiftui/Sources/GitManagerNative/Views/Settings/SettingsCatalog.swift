@@ -16,6 +16,8 @@ enum CatalogItem {
     case field(String, String, StaticField.Kind, String, sub: Bool = false)
     /// A title and hint with a control the native app does not draw yet (a list, an editor, a preview).
     case text(String, String)
+    /// Settings > GitHub's account row: the title and hint, then the sign-in form or the account (.row.stacked).
+    case githubAccount(String, String)
 }
 
 @MainActor
@@ -82,6 +84,10 @@ enum SettingsCatalog {
             case .text(let title, let hint):
                 return .row(title, keywords(title)) {
                     SettingsRow(title, hint: hint)
+                }
+            case .githubAccount(let title, let hint):
+                return .row(title, keywords(title)) {
+                    SettingsRow(title, hint: hint, below: AnyView(GitHubAccountForm()))
                 }
             }
         }

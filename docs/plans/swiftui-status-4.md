@@ -147,4 +147,32 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     99.82%, Changes 99.74%, newwindow 99.76%.
   - Not checked by a person yet: quitting with Cmd+Q and starting again (gm-measure stops apps with SIGTERM, which
     skips the quit hook; the session saved while running covers it).
+- GM-80 Settings > GitHub (src-tauri/src/github, GitHubSignInForm.svelte, githubModel.ts):
+  - Bridge: src-tauri's GitHub account, client, gh, http, secrets and service files (bridge/src/github), with the
+    bridge's own commands (commands/github.rs): github_account, github_cli_status, github_sign_in_with_token,
+    github_sign_in_with_cli, github_sign_out, github_share_project, github_repository, github_sync_fork,
+    github_create_gist. The native app keeps its own account file (~/.gitmanager-native/github.json) and its own
+    keychain item (service shibbirweb.github.io.gitmanager.native.github), so signing in or out never touches the
+    current app's sign-in. New dependencies at src-tauri's versions: ureq (system TLS) and keyring. Tests without
+    the network or the keychain (bridge/tests/github.rs): the account file, a token refused before GitHub is asked,
+    a gist needing a sign-in, a repository name checked first.
+  - NativeCore GitHubModel: githubModel.ts with its tests (repository and remote names, gist file names, the fork's
+    branch and compare link, initials, the missing-scope warning).
+  - Settings > GitHub: the account row is stacked as the page's .row.stacked (SettingsRow `below`), with
+    GitHubAccountForm: signed out, the token field (a PageInput, now shared with the Clone dialog, as a password
+    field with the code font's ligatures), Sign In (Return too), the hint with its code words and the "create one
+    on GitHub" link (RichParagraph: words of several fonts on one baseline, a line with code a point taller below),
+    and Use GitHub CLI when gh is installed; signed in, the 32-point avatar with the initials, the login, the name,
+    host and source, Sign Out (asked first) and the missing-scope warning. DialogButton gained `small` (.btn.small).
+  - Rules found: a row without a control is all label (its 20-point gap overflowed the row); a section that does
+    not scroll has rows 524 points wide (the scrollbar takes no room; settingsRowsWidth) and the dialog's shadow
+    painted with the dim (shadowInOverlay); a plain <code> outside the dialog's styles is Menlo at the hint's 12
+    points; a hint line's box is 17 points, which centers the avatar and the button.
+  - gm-measure `--screen settingsgithub` (signed out) and `settingsgithubaccount` (a github.json seeded in both
+    apps' folders, a token missing the gist scope). Parity: the github scenario runs (openSettings github).
+  - Pixel diff below the title bar (HDR off): settingsgithub 99.39% light, 99.42% dark; settingsgithubaccount
+    99.42% / 99.46%; Settings (Appearance) kept 99.51 / 99.1.
+  - Memory on Settings > GitHub: current 222 MB, native 48 MB. The app binary is 18.4 MB.
+  - Not built yet: Git > GitHub (Share Project on GitHub, Sync Fork, Create Gist) and the sign-in dialog they open.
+    Not tried with a real token (the keychain is the user's own; the bridge tests stay off it).
 

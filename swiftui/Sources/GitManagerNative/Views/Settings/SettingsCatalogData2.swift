@@ -50,8 +50,8 @@ extension SettingsCatalogData {
     ]
 
     static let github: [CatalogItem] = [
-        .text("GitHub account", "Used by Git > GitHub: Share Project on GitHub, Sync Fork and Create Gist. Pushing "
-            + "and pulling keep using git's own credentials."),
+        .githubAccount("GitHub account", "Used by Git > GitHub: Share Project on GitHub, Sync Fork and Create Gist. "
+            + "Pushing and pulling keep using git's own credentials."),
     ]
 
     static let automation: [CatalogItem] = [

@@ -190,7 +190,8 @@
       "folder": "acme/storefront",
       "steps": [
         "Open Settings (Cmd+,) and choose GitHub: the sign-in choices."
-      ]
+      ],
+      "run": { "openSettings": "github" }
     },
     {
       "id": "git-console",

@@ -44,4 +44,17 @@ extension Measure {
         let data = try JSONSerialization.data(withJSONObject: values, options: [.sortedKeys])
         try data.write(to: URL(fileURLWithPath: (folder as NSString).appendingPathComponent("settings.json")))
     }
+
+    /// Settings > GitHub signed out, and signed in from a github.json seeded in both apps' folders (the current
+    /// app's ~/.gitmanager, the native app's ~/.gitmanager-native): a token lacking the gist scope.
+    static let githubScreens = ["settingsgithub", "settingsgithubaccount"]
+
+    static func writeGitHubAccount(home: String, kind: AppKind) throws {
+        let folder = (home as NSString).appendingPathComponent(kind == .current ? ".gitmanager" : ".gitmanager-native")
+        try FileManager.default.createDirectory(atPath: folder, withIntermediateDirectories: true)
+        let account: [String: Any] = ["host": "github.com", "login": "octocat", "name": "The Octocat",
+                                      "source": "token", "missingScopes": ["gist"]]
+        let data = try JSONSerialization.data(withJSONObject: account, options: [.prettyPrinted])
+        try data.write(to: URL(fileURLWithPath: (folder as NSString).appendingPathComponent("github.json")))
+    }
 }

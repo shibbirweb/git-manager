@@ -228,13 +228,16 @@ Measured: light 99.75% (135 MB / 34 MB, 2026-10-09), dark 99.49% (136 MB / 34 MB
 
 - Color themes (`color-themes`, done): Monokai Charcoal in dark mode: panels, code and diffs in its colors.
 
-## github: GitHub settings (native app cannot show it yet)
+## github: GitHub settings (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Open Settings (Cmd+,) and choose GitHub: the sign-in choices.
 
-- GitHub account (`github`, missing): Sign in, Share Project on GitHub, Sync Fork and gists.
+Measured: light 99.39% (224 MB / 48 MB, 2026-10-09), dark 99.43% (226 MB / 51 MB, 2026-10-09).
+
+- GitHub account (`github`, partial): Sign in, Share Project on GitHub, Sync Fork and gists. Native lacks: Git >
+  GitHub: Share Project on GitHub, Sync Fork, Create Gist and the sign-in dialog.
 
 ## git-console: Git Console (native app cannot show it yet)
 

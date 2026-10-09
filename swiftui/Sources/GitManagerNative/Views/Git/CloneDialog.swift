@@ -116,38 +116,10 @@ struct CloneDialog: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// .input: 28 points tall, 8 in, a --border-strong ring on --panel; focused, an --accent ring with 2 points of
-    /// --accent at 25% around it. An empty focused field shows its caret at the start.
     private func input(_ text: Binding<String>, name: String, mono: Bool = false, placeholder: String = "")
         -> some View {
-        let isFocused = focused == name
-        let font = mono ? CodeFonts(size: 13).regular : PageFont.ui(13)
-        return ZStack(alignment: .leading) {
-            if text.wrappedValue.isEmpty && !placeholder.isEmpty {
-                ExactText(text: placeholder, face: font)
-                    .foregroundStyle(Color(nsColor: Theme.parse(WebKitDefaults.placeholder) ?? .gray))
-            }
-            if text.wrappedValue.isEmpty && isFocused {
-                theme.ink("--text").frame(width: 2, height: 15.29)
-            }
-            SearchInput(text: text, textColor: theme.textColor("--text"), caretColor: theme.textColor("--text"),
-                        font: font, autofocus: name == "url", onFocus: { focused = name })
-                .frame(height: 26)
-        }
-        // 8 points of padding inside the 1-point border (padding(1) below).
-        .padding(.horizontal, 8)
-        .frame(maxWidth: .infinity)
-        .frame(height: 26)
-        .background(RoundedRectangle(cornerRadius: 5, style: .circular).fill(theme.color("--panel")))
-        .padding(1)
-        .borderRing(theme.color(isFocused ? "--accent" : "--border-strong"), cornerRadius: 6)
-        .background {
-            if isFocused {
-                RoundedRectangle(cornerRadius: 8, style: .circular)
-                    .fill(theme.over("--accent", 0.25, on: "--panel"))
-                    .padding(-2)
-            }
-        }
-        .disabled(center.cloning)
+        PageInput(text: text, focused: focused == name, mono: mono, placeholder: placeholder,
+                  autofocus: name == "url", onFocus: { focused = name })
+            .disabled(center.cloning)
     }
 }

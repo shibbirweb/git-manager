@@ -14,6 +14,8 @@ struct SettingsDialog: View {
     @ObservedObject var settings: SettingsStore
 
     @State private var query = ""
+    /// Whether the open section is taller than its view: its scrollbar then takes 10 points from the rows.
+    @State private var scrolls = true
     @State private var keyMonitor: Any?
 
     var body: some View {
@@ -21,7 +23,10 @@ struct SettingsDialog: View {
             let frame = Self.dialogFrame(in: proxy.size, scale: displayScale)
             ZStack(alignment: .topLeading) {
                 DialogBackdrop(dialog: frame, cornerRadius: 12, overlayAlpha: theme.alpha("--overlay"),
-                               shadow: DialogBackdrop.parseShadow(theme.raw("--shadow") ?? ""))
+                               shadow: DialogBackdrop.parseShadow(theme.raw("--shadow") ?? ""),
+                               // A section that does not scroll: the page paints the dialog's shadow with the dim
+                               // (measured on Settings > GitHub; Appearance scrolls).
+                               shadowInOverlay: !scrolls)
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture { close() }
@@ -104,10 +109,14 @@ struct SettingsDialog: View {
                 }
                 PageScroll(resetKey: current + "\n" + query, onMetrics: { offset, contentHeight, viewport in
                     SettingsStore.shared.scrollMetrics = [offset, contentHeight, viewport]
+                    if scrolls != (contentHeight > viewport + 0.5) {
+                        scrolls = contentHeight > viewport + 0.5
+                    }
                 }) {
                     SettingsSectionView(settings: settings, section: current,
                                         showSection: { settings.dialogSection = $0 })
                         .environment(\.settingsSearchWords, searchWords)
+                        .environment(\.settingsRowsWidth, scrolls ? settingsRowWidth : settingsRowWidth + 10)
                         .environment(\.settingsSectionLabel, label)
                         .padding(EdgeInsets(top: 4, leading: 22, bottom: 20, trailing: 22))
                         .opacity(sections.isEmpty ? 0 : 1)

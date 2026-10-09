@@ -37,9 +37,15 @@ grep-regex = "0.1.14"
 grep-searcher = "0.1.16"
 # The screenshot tool's PNG, sent as base64 like the current app does.
 base64 = "0.22"
+# GitHub's REST API (src-tauri/src/github/http.rs), at src-tauri's version and features.
+ureq = { version = "3.4.2", default-features = false, features = ["native-tls-no-default"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+
+# The GitHub token's keychain item (src-tauri/src/github/secrets.rs).
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6.3", features = ["apple-native"] }
 
 # Small and fast like the Tauri app, but panics unwind so gm_call can turn one into an error.
 [profile.release]

@@ -22,6 +22,7 @@ mod branches;
 mod clone;
 mod editing;
 mod editor;
+mod github;
 mod log;
 mod search;
 mod merge;
@@ -37,6 +38,15 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "open_workspace" => to_json(workspaces::open_workspace(parse(command, args)?)?),
         "discover_repositories" => to_json(workspaces::discover_repositories(parse(command, args)?)?),
         "init_repository" => to_json(workspaces::init_repository(parse(command, args)?)?),
+        "github_account" => to_json(github::github_account()?),
+        "github_cli_status" => to_json(github::github_cli_status()?),
+        "github_sign_in_with_token" => to_json(github::github_sign_in_with_token(parse(command, args)?)?),
+        "github_sign_in_with_cli" => to_json(github::github_sign_in_with_cli()?),
+        "github_sign_out" => to_json(github::github_sign_out()?),
+        "github_share_project" => to_json(github::github_share_project(parse(command, args)?)?),
+        "github_repository" => to_json(github::github_repository(parse(command, args)?)?),
+        "github_sync_fork" => to_json(github::github_sync_fork(parse(command, args)?)?),
+        "github_create_gist" => to_json(github::github_create_gist(parse(command, args)?)?),
         "read_workspace_file" => to_json(workspaces::read_workspace_file(parse(command, args)?)?),
         "write_workspace_file" => to_json(workspaces::write_workspace_file(parse(command, args)?)?),
         // The status bar's readout: this app and any helpers, counted like the current app counts itself.
@@ -186,4 +196,13 @@ fn get_file_diff(args: GetFileDiffArgs) -> AppResult<Option<FileDiff>> {
         args.area,
         args.known_version.as_deref(),
     )
+}
+
+/// Refuses a user-given name or revision that git would read as an option (src-tauri's commands::reject_option,
+/// which the shared GitHub service calls).
+pub fn reject_option(value: &str, what: &str) -> AppResult<()> {
+    if value.starts_with('-') {
+        return Err(AppError::invalid(format!("{what} cannot start with '-': {value}")));
+    }
+    Ok(())
 }

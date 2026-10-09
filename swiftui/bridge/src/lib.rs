@@ -42,6 +42,10 @@ mod shared {
     pub mod text_search;
 }
 
+/// Git > GitHub and Settings > GitHub (src-tauri/src/github): the same account, REST client, gh and service code;
+/// only the Tauri commands and the keychain item are the bridge's own (commands/github.rs).
+pub mod github;
+
 mod commands;
 mod config;
 pub mod terminal_ffi;

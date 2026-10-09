@@ -24,7 +24,10 @@
     {
       "id": "github", "name": "GitHub account", "usage": "GitHub.md", "scenario": "github",
       "check": "Sign in, Share Project on GitHub, Sync Fork and gists",
-      "native": "missing"
+      "native": "partial",
+      "gaps": [
+        "Git > GitHub: Share Project on GitHub, Sync Fork, Create Gist and the sign-in dialog"
+      ]
     },
     {
       "id": "git-console", "name": "Git Console", "usage": "Git-Console.md", "scenario": "git-console",
