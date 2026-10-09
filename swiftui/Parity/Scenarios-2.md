@@ -249,9 +249,9 @@ Note: The run turns both switches on in both apps' settings.json on one port, so
 Measured: light 99.51% (221 MB / 51 MB, 2026-10-10), dark 99.14% (222 MB / 53 MB, 2026-10-10).
 
 - MCP server and command line tool (`mcp`, partial): Settings > Automation; git-manager cli status and the MCP tools.
-  Native lacks: only the tools get_app_info, app, git_status, get_memory_usage, sample_memory, take_screenshot,;
-  open_settings and close_dialog; no Available MCP Tools dialog (tool switches) and no activity list; no command line
-  tool of its own: the current app's reaches it with HOME=~/.gitmanager-native (no Install).
+  Native lacks: tools: the native ones and the current app's read-only git tools; not yet the git write, files,;
+  search, scripts, performance and UI tools; no Available MCP Tools dialog (tool switches) and no activity list; no
+  command line tool of its own: the current app's reaches it with HOME=~/.gitmanager-native (no Install).
 
 ## git-console: Git Console (native app cannot show it yet)
 

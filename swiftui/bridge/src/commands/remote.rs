@@ -19,7 +19,7 @@ static PROGRESS: Mutex<String> = Mutex::new(String::new());
 /// A configured remote with its URLs.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct RemoteInfo {
+pub struct RemoteInfo {
     name: String,
     fetch_url: Option<String>,
     push_url: Option<String>,
@@ -51,8 +51,13 @@ pub(super) struct PushArgs {
     push_tags: bool,
 }
 
-pub(super) fn list_remotes(args: RepoArgs) -> AppResult<Vec<RemoteInfo>> {
+pub(super) fn list_remotes_command(args: RepoArgs) -> AppResult<Vec<RemoteInfo>> {
     read_remotes(&git_repo::open(&args.repo_path)?)
+}
+
+/// The Tauri command's shape, for src-tauri's MCP tool git_remotes.
+pub async fn list_remotes(repo_path: String) -> AppResult<Vec<RemoteInfo>> {
+    read_remotes(&git_repo::open(&repo_path)?)
 }
 
 /// Pushes the current branch to `remote_name`/`remote_branch`, tracking it on first push (the Push dialog's call).

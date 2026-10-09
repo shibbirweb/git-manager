@@ -12,6 +12,7 @@
 //! Parts: `server` (switches, port, token and the listener), `http` (requests and responses), `protocol`
 //! (JSON-RPC), `tools` and `memory_tools`.
 
+mod backend;
 mod dialog_tools;
 mod http;
 mod memory_tools;

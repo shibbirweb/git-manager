@@ -240,3 +240,16 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
   - Changed for anyone driving the native app by hand: `HOME=~/.gitmanager-native git-manager cli ...` needs the
     MCP server or the command line tool switched on in the native app's Settings > Automation first.
   - Not built: the Available MCP Tools dialog (tool switches), the activity list, more tools in the server.
+- GM-83 the current app's git tools in the native MCP server:
+  - src-tauri/src/mcp/tools/git_read.rs and patch.rs, and src/mcp/paths.rs, included by path in the bridge
+    (control/backend): git_diff, git_log, git_show_commit, git_branches, git_remotes, git_stashes, git_blame,
+    git_file_history, git_line_history, git_conflicts, git_compare_branches, git_worktrees, git_submodules and
+    git_console_entries, with the current app's names, schemas, checks and results. The native git_status stays
+    (repoPath optional, the window's repository). control/backend stands in for src-tauri's tools/mod.rs: the
+    same Args, ToolCtx (the window's workspace folders, from get_state), helpers and a small block_on for the
+    commands' async functions. Two commands the tools call are repeated in the bridge with the Tauri shape:
+    commands::remote::list_remotes and commands::branch_actions::compare_branches.
+  - Tests (bridge/tests/control_tools.rs): git_log, git_branches, git_compare_branches, git_diff of a commit and
+    git_remotes over HTTP inside the workspace; a repository outside the workspace is refused.
+  - Next: the git write tools (they need the bridge's write commands in the Tauri shape), files and search, then
+    the Available MCP Tools dialog with the tool switches.

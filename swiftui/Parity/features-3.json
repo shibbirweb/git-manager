@@ -119,8 +119,8 @@
       "check": "Settings > Automation; git-manager cli status and the MCP tools",
       "native": "partial",
       "gaps": [
-        "only the tools get_app_info, app, git_status, get_memory_usage, sample_memory, take_screenshot,",
-        "open_settings and close_dialog",
+        "tools: the native ones and the current app's read-only git tools; not yet the git write, files,",
+        "search, scripts, performance and UI tools",
         "no Available MCP Tools dialog (tool switches) and no activity list",
         "no command line tool of its own: the current app's reaches it with HOME=~/.gitmanager-native (no Install)"
       ]

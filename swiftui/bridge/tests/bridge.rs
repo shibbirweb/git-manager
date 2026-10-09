@@ -186,7 +186,10 @@ fn control_server_answers_like_the_current_app() {
         "get_app_info", "app", "git_status", "get_memory_usage", "sample_memory", "take_screenshot", "open_settings",
         "close_dialog",
     ];
-    assert_eq!(names, expected);
+    assert_eq!(names[..expected.len()], expected);
+    // Then the current app's git tools (tests/control_tools.rs), its git_status left to the native one.
+    assert!(names.contains(&"git_log"));
+    assert_eq!(names.iter().filter(|name| **name == "git_status").count(), 1);
 
     // git_status without repoPath asks the window which folder is open.
     let (_, status) = post(port, Some(token), &rpc("tools/call", json!({ "name": "git_status", "arguments": {} })));

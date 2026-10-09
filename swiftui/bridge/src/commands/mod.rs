@@ -19,11 +19,12 @@ use crate::paths::RealPath;
 #[path = "../../../../src-tauri/src/commands/commit_options.rs"]
 mod commit_options;
 mod branches;
+pub(crate) mod branch_actions;
 mod clone;
 mod editing;
 mod editor;
 mod github;
-mod remote;
+pub(crate) mod remote;
 mod log;
 mod search;
 mod merge;
@@ -39,7 +40,7 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "open_workspace" => to_json(workspaces::open_workspace(parse(command, args)?)?),
         "discover_repositories" => to_json(workspaces::discover_repositories(parse(command, args)?)?),
         "init_repository" => to_json(workspaces::init_repository(parse(command, args)?)?),
-        "list_remotes" => to_json(remote::list_remotes(parse(command, args)?)?),
+        "list_remotes" => to_json(remote::list_remotes_command(parse(command, args)?)?),
         "push_with_options" => to_json(remote::push_with_options(parse(command, args)?)?),
         "fetch_all" => to_json(remote::fetch_all(parse(command, args)?)?),
         "git_progress" => to_json(remote::git_progress()?),

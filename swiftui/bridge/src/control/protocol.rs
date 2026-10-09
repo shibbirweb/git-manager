@@ -4,7 +4,7 @@
 use serde_json::{json, Map, Value};
 
 use super::tools::TOOLS;
-use super::{Server, VERSION};
+use super::{ask_ui, backend, Server, VERSION};
 
 const PROTOCOL_VERSIONS: [&str; 3] = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_NAME: &str = "git-manager-native";
@@ -37,7 +37,7 @@ pub(super) fn handle_message(server: &Server, message: &Value) -> Option<Value> 
     let result = match method {
         "initialize" => Ok(initialize(params)),
         "ping" => Ok(json!({})),
-        "tools/list" => Ok(json!({ "tools": TOOLS.iter().map(listed).collect::<Vec<_>>() })),
+        "tools/list" => Ok(json!({ "tools": all_listed() })),
         "tools/call" => Ok(call_tool(server, params)),
         _ => Err(json!({ "code": -32601, "message": format!("Unknown method: {method}") })),
     };
@@ -76,14 +76,32 @@ fn listed(tool: &Tool) -> Value {
     })
 }
 
+/// The native tools, then the current app's backend tools the native app does not answer itself.
+fn all_listed() -> Vec<Value> {
+    let own = TOOLS.iter().map(listed);
+    let shared = backend::all().filter(|tool| !TOOLS.iter().any(|own| own.name == tool.name)).map(backend::listed);
+    own.chain(shared).collect()
+}
+
 fn call_tool(server: &Server, params: &Value) -> Value {
     let name = params["name"].as_str().unwrap_or_default();
     let args = params["arguments"].as_object().cloned().unwrap_or_default();
-    let output = match TOOLS.iter().find(|tool| tool.name == name) {
-        Some(tool) => (tool.run)(server, &args),
-        None => Err(format!("Unknown tool: {name}")),
+    if let Some(tool) = TOOLS.iter().find(|tool| tool.name == name) {
+        return tool_result((tool.run)(server, &args));
+    }
+    let Some(tool) = backend::all().find(|tool| tool.name == name) else {
+        return tool_result(Err(format!("Unknown tool: {name}")));
     };
-    tool_result(output)
+    // Paths must be inside the window's workspace folders, as in the current app.
+    let folders = ask_ui(server, json!({ "action": "get_state" })).map(|reply| {
+        reply["structured"]["workspace"]["folders"].as_array().map(|folders| {
+            folders.iter().filter_map(Value::as_str).map(str::to_string).collect::<Vec<_>>()
+        })
+    });
+    match folders {
+        Ok(folders) => backend::call(tool, &folders.unwrap_or_default(), &args),
+        Err(message) => tool_result(Err(message)),
+    }
 }
 
 /// The result shape of the current app's `mcp::protocol::tool_result`.
