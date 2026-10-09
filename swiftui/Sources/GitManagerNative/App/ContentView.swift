@@ -62,7 +62,12 @@ struct ContentView: View {
         .environment(\.theme, theme)
         .background(WindowChrome(background: theme.nsColor("--bg")))
         .navigationTitle(model.folderName)
-        .onAppear(perform: PointerGate.begin)
+        .onAppear {
+            PointerGate.begin()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                ViewWarmUp.diffScreen(theme: settings.theme(for: colorScheme))
+            }
+        }
         .task {
             if let initialWorkspaceFile {
                 await model.openWorkspaceFile(initialWorkspaceFile)

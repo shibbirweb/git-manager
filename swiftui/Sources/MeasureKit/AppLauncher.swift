@@ -141,6 +141,11 @@ public enum AppLauncher {
 
         while Date().timeIntervalSince(started) < timeout {
             if (try? await isReady(kind, connected.client, welcome: folderPath.isEmpty)) == true {
+                // Only ever on the built-in display (the user works on the other one).
+                if WindowPlacement.ensureOnMeasureScreen(pid: connected.pid, size: windowSize) {
+                    print("\(kind.rawValue): the window opened off the measuring screen; moved it there")
+                    try await Task.sleep(nanoseconds: 500_000_000)
+                }
                 return RunningApp(
                     kind: kind,
                     pid: connected.pid,

@@ -51,6 +51,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         TerminalShortcut.install()
+        // What the first diff would otherwise do on the main thread: JavaScriptCore's start and the code fonts
+        // (about 35 ms each the first time).
+        SyntaxHighlighter.shared.warmUp()
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1) {
+            _ = CodeLineText.advance
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

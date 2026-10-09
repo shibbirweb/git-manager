@@ -202,22 +202,71 @@ final class SearchPopups: ObservableObject {
         textRunning = true
         let args = TextSearchArgs(workspaceRoots: roots, searchId: searchId, query: query)
         let folders = folders
-        Task {
-            let batches = await Task.detached { () -> [TextSearchBatch] in
-                (try? Backend.call("text_search", args)) ?? []
-            }.value
-            guard searchId == textSearchId, kind == .search else {
-                return
-            }
-            var results = TextResults()
-            for (index, batch) in batches.enumerated() {
-                results = TextSearchModel.append(results, batch, folders: folders, first: index == 0)
-            }
-            text = results
+        // Streamed as the page streams its result channel: the search runs in the bridge on a thread of its own and
+        // each poll waits there for the next batches. Previous results stay until the new ones fill the list's visible
+        // rows (or the search ends), so the list never shrinks for a moment; an empty list takes the first rows.
+        // Starting only spawns the search's thread, so it runs at once on the keystroke.
+        guard (try? Backend.perform("text_search_start", args)) != nil else {
             textRunning = false
-            selectFirst()
+            return
+        }
+        Task {
+            var results = TextResults()
+            var first = true
+            var selectionSet = false
+            var showing = false
+            var pollArgs = TextPollArgs(searchId: searchId, waitMs: 50, gatherMs: 0)
+            var poll = await Task.detached { () -> TextSearchPoll? in
+                try? Backend.call("text_search_poll", pollArgs) as TextSearchPoll
+            }.value
+            while let current = poll, searchId == textSearchId, kind == .search {
+                for batch in current.batches {
+                    results = TextSearchModel.append(results, batch, folders: folders, first: first)
+                    first = false
+                }
+                if !current.batches.isEmpty || current.done {
+                    if showing || current.done || text.rows.isEmpty || results.rows.count >= Self.visibleRows {
+                        showing = true
+                        text = results
+                    }
+                    // The first rows of a new search take the selection; later batches keep it (FileSearch.svelte).
+                    if showing && !selectionSet && !text.rows.isEmpty {
+                        selectFirst()
+                        selectionSet = true
+                    }
+                }
+                if current.done {
+                    textRunning = false
+                    return
+                }
+                pollArgs = TextPollArgs(searchId: searchId, waitMs: 50, gatherMs: 0)
+                let args = pollArgs
+                poll = await Task.detached { () -> TextSearchPoll? in
+                    try? Backend.call("text_search_poll", args) as TextSearchPoll
+                }.value
+            }
+            if searchId == textSearchId {
+                textRunning = false
+            }
         }
     }
+
+    /// Rows the results list shows at once (at most 468 points of 26-point rows).
+    static let visibleRows = 18
+}
+
+struct TextPollArgs: Encodable {
+    let searchId: UInt64
+    /// The bridge waits up to this long for the next batch.
+    let waitMs: Int
+    /// And this long for more batches once one is there.
+    let gatherMs: Int
+}
+
+/// The batches a streamed search found since the last poll (bridge search.rs Poll).
+struct TextSearchPoll: Decodable {
+    let batches: [TextSearchBatch]
+    let done: Bool
 }
 
 struct FileSearchProgress: Decodable {

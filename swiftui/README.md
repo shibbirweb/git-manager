@@ -153,6 +153,8 @@ swift run -c release gm-measure memory --screen file    # the same file open in 
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
 swift run -c release gm-measure measure --screen terminal  # the terminal panel, a shell with fixed output
 swift run -c release gm-measure memory --scenario terminal  # terminal: idle, open, printing 4000 lines, after
+swift run -c release gm-measure speed --repeat 5        # both apps timed from their frames: search, diff, scroll
+swift run -c release gm-measure speed --case search --frames  # also keeps pictures of one search's changed frames
 swift run -c release gm-measure diff a.png b.png --out diff.png   # identical pixels and a red overlay
 swift run -c release gm-measure smoke                   # checks every control tool of the built native app
 swift run -c release gm-measure tokens                  # writes the app's Generated/ (--check: up to date?)

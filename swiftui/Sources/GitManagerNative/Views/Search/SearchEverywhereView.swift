@@ -27,6 +27,7 @@ struct SearchEverywhereView: View {
         let empty: CGFloat = rows.isEmpty ? 47 : 0
         let frame = CGRect(x: ((size.width - width) / 2).rounded(.down), y: top, width: width,
                            height: 1 + 31 + 40 + listHeight + empty + 1)
+        let fullFrame = CGRect(x: frame.minX, y: top, width: width, height: 1 + 31 + 40 + listMax + 1)
         PopupFrame(frame: frame, cornerRadius: 10) {
             tabStrip
             field
@@ -43,6 +44,13 @@ struct SearchEverywhereView: View {
                         .onTapGesture { popups.activate(index) }
                 }
             }
+        }
+        // Its heights: no results yet, whole rows, and the capped list (a fraction of the window).
+        .onAppear {
+            let emptyFrame = CGRect(x: frame.minX, y: top, width: width, height: 1 + 31 + 40 + 47 + 1)
+            let rowsFrame = CGRect(x: frame.minX, y: top, width: width, height: 400)
+            ShadowTiles.prewarm(boxes: [emptyFrame, fullFrame, rowsFrame], cornerRadius: 10,
+                                dark: colorScheme == .dark)
         }
     }
 

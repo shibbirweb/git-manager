@@ -71,7 +71,24 @@ fn go_to_file_and_find_in_files() {
     let stale = call("text_search", json!({ "workspaceRoots": roots, "searchId": 0, "query": "lines" }));
     assert_eq!(stale[0]["done"], true);
     assert_eq!(stale[0]["matches"], 0);
-    call("text_search_cancel", json!({ "searchId": 2 }));
+
+    // Streamed: started at once, its batches handed over poll by poll until the last.
+    call("text_search_start", json!({ "workspaceRoots": roots, "searchId": 3, "query": "lines" }));
+    let started = Instant::now();
+    let mut streamed: Vec<Value> = Vec::new();
+    loop {
+        let poll = call("text_search_poll", json!({ "searchId": 3 }));
+        streamed.extend(poll["batches"].as_array().cloned().unwrap_or_default());
+        if poll["done"] == true || started.elapsed() > Duration::from_secs(10) {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert_eq!(streamed.last().map(|batch| batch["matches"].clone()), Some(json!(2)), "{streamed:?}");
+    let polled_after = call("text_search_poll", json!({ "searchId": 3 }));
+    assert_eq!(polled_after["done"], true);
+
+    call("text_search_cancel", json!({ "searchId": 4 }));
     call("file_search_close", json!({}));
     let _ = std::fs::remove_dir_all(&dir);
 }

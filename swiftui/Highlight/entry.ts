@@ -4,6 +4,8 @@
 // runs it in JavaScriptCore. gmHighlight answers {"spans": [...], "brackets": [...], "folds": [...]}: flat arrays of
 // from, to, classes (UTF-16 offsets) for the syntax spans and the bracket pair colors of
 // src/lib/editor/bracketColors.ts, then from, to of what each line can fold (foldable, as the fold gutter asks).
+// With `upTo` only the text before that offset is parsed and colored, as CodeMirror parses up to the viewport
+// first; `folds` false skips the folds (a diff has no fold gutter).
 
 import { ensureSyntaxTree, foldable } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
@@ -15,21 +17,34 @@ import { languageFor } from "../../src/lib/editor/languages";
 /** The longest a parse may take, in milliseconds, before the rest stays plain. */
 const PARSE_BUDGET_MS = 5000;
 
-async function gmHighlight(filePath: string, text: string): Promise<string> {
+interface HighlightOptions {
+  upTo?: number;
+  folds?: boolean;
+}
+
+async function gmHighlight(filePath: string, text: string, options: HighlightOptions = {}): Promise<string> {
   const language = await languageFor(filePath);
   const state = EditorState.create({ doc: text, extensions: [language] });
-  const tree = ensureSyntaxTree(state, state.doc.length, PARSE_BUDGET_MS);
+  const end = Math.min(state.doc.length, options.upTo ?? state.doc.length);
+  const tree = ensureSyntaxTree(state, end, PARSE_BUDGET_MS);
   const spans: (number | string)[] = [];
   const brackets: (number | string)[] = [];
   const folds: number[] = [];
   if (tree) {
-    highlightTree(tree, codeHighlighters, (from, to, classes) => {
-      spans.push(from, to, classes);
-    });
-    bracketDecorations(state, [{ from: 0, to: state.doc.length }]).between(0, state.doc.length, (from, to, value) => {
+    highlightTree(
+      tree,
+      codeHighlighters,
+      (from, to, classes) => {
+        spans.push(from, to, classes);
+      },
+      0,
+      end,
+    );
+    bracketDecorations(state, [{ from: 0, to: end }]).between(0, end, (from, to, value) => {
       brackets.push(from, to, String(value.spec.class ?? ""));
     });
-    for (let number = 1; number <= state.doc.lines; number++) {
+    const foldLines = options.folds === false ? 0 : state.doc.lines;
+    for (let number = 1; number <= foldLines; number++) {
       const line = state.doc.line(number);
       const range = foldable(state, line.from, line.to);
       if (range) {

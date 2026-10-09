@@ -259,3 +259,5 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     9); ExactText may lead with a kerned space, so buttons give Accessibility their title (DialogButton).
   - Pixel diff below the title bar (HDR off): welcomeclone 99.6% light, 99.5% dark; conflicts kept 99.2.
   - Memory: current 212 MB, native 31 MB (dark).
+
+Continued in [swiftui-status-4.md](swiftui-status-4.md).

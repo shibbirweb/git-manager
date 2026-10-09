@@ -56,12 +56,16 @@ extension LogModel {
         let note = "\(commit.authorName), \(LogFormat.relativeTime(commit.authorTime)) \u{2022} "
             + (summary.isEmpty ? "(no message)" : summary)
         diff = OpenDiff(filePath: file.path, staged: false, diff: fileDiff, commitLabel: label, commitNote: note)
-        async let original = SyntaxHighlighter.shared.spans(filePath: file.path, text: fileDiff.original)
-        async let modified = SyntaxHighlighter.shared.spans(filePath: file.path, text: fileDiff.modified)
-        let spans = await (original, modified)
-        if diff?.filePath == file.path, diff?.commitLabel == label {
-            diff?.originalSpans = spans.0
-            diff?.modifiedSpans = spans.1
+        await SyntaxHighlighter.shared.diffSpans(
+            filePath: file.path, original: fileDiff.original, modified: fileDiff.modified,
+            hunks: fileDiff.hunks.compactMap(DiffHunk.init)
+        ) { original, modified in
+            guard diff?.filePath == file.path, diff?.commitLabel == label else {
+                return false
+            }
+            diff?.originalSpans = original
+            diff?.modifiedSpans = modified
+            return true
         }
     }
 

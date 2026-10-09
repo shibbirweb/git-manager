@@ -75,13 +75,17 @@ final class AppModel: ObservableObject {
             return
         }
         openDiff = OpenDiff(filePath: file.path, staged: staged, diff: diff)
-        async let original = SyntaxHighlighter.shared.spans(filePath: file.path, text: diff.original)
-        async let modified = SyntaxHighlighter.shared.spans(filePath: file.path, text: diff.modified)
-        let spans = await (original, modified)
-        // Another file may have opened meanwhile.
-        if openDiff?.filePath == file.path, openDiff?.staged == staged {
-            openDiff?.originalSpans = spans.0
-            openDiff?.modifiedSpans = spans.1
+        await SyntaxHighlighter.shared.diffSpans(
+            filePath: file.path, original: diff.original, modified: diff.modified,
+            hunks: diff.hunks.compactMap(DiffHunk.init)
+        ) { original, modified in
+            // Another file may have opened meanwhile.
+            guard openDiff?.filePath == file.path, openDiff?.staged == staged else {
+                return false
+            }
+            openDiff?.originalSpans = original
+            openDiff?.modifiedSpans = modified
+            return true
         }
     }
 

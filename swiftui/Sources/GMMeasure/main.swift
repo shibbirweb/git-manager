@@ -61,6 +61,8 @@ let usage = """
       gm-measure memory --scenario terminal [--lines <n>] [--sample <s>] [--mode light|dark] [--current-app <path>]
       gm-measure memory-search [--files <n>] [--sample <s>] [--mode light|dark] [--only current|native]
                                [--current-app <path>] [--hdr off|any] [--hdr-wait <s>]
+      gm-measure speed [--case search|diff|scroll|all] [--mode light|dark] [--repeat <n>] [--files <n>]
+                       [--lines <n>] [--speed <points>] [--only current|native]
       gm-measure diff <first.png> <second.png> [--out <diff.png>] [--tolerance <n>]
       gm-measure smoke [--app <path>]
       gm-measure tokens [--check]
@@ -96,6 +98,8 @@ do {
         exit(try Commands.run(arguments))
     case "memory-search":
         exit(try await MemorySearch.run(arguments))
+    case "speed":
+        exit(try await Speed.run(arguments))
     case "reference":
         exit(try await Reference.run(arguments))
     case "parity":

@@ -62,7 +62,9 @@ struct DiffPanes: View {
     }
 
     /// .cm-scroll-markers: 12 points of --panel-alt over the right edge with a 1-point --border-strong left border,
-    /// and a tick per change 2 points in from each side of the rest (DiffRuler in NativeCore).
+    /// and a tick per change 2 points in from each side of the rest (DiffRuler in NativeCore). One shape per kind of
+    /// tick: a view per tick cost tens of milliseconds before a long diff first showed. Shapes, not a Canvas, which
+    /// would store the theme's Display P3 colors as 8-bit sRGB.
     private func ruler(_ rows: [DiffRow], hunks: [DiffHunk]) -> some View {
         GeometryReader { proxy in
             let metrics = RowMetrics(line: Self.lineHeight, fold: Self.foldHeight, padding: Self.topPadding)
@@ -70,11 +72,8 @@ struct DiffPanes: View {
             ZStack(alignment: .topLeading) {
                 theme.color("--panel-alt")
                 theme.color("--border-strong").frame(width: 1)
-                ForEach(Array(ticks.enumerated()), id: \.offset) { _, tick in
-                    RoundedRectangle(cornerRadius: 1)
-                        .fill(tickColor(tick.kind))
-                        .frame(width: 7, height: tick.height)
-                        .offset(x: 3, y: tick.top)
+                ForEach([RulerTick.Kind.added, .modified, .deleted], id: \.self) { kind in
+                    RulerTicks(ticks: ticks.filter { $0.kind == kind }).fill(tickColor(kind))
                 }
             }
         }
@@ -154,6 +153,17 @@ struct DiffScrollView: NSViewRepresentable {
 
         override func layout() {
             super.layout()
+            place()
+        }
+
+        /// SwiftUI sizes the host while it updates; placing the canvas then paints it in the same pass instead of
+        /// waiting for AppKit's next layout pass.
+        override func setFrameSize(_ newSize: NSSize) {
+            super.setFrameSize(newSize)
+            place()
+        }
+
+        private func place() {
             canvas.frame = bounds
             scrollView.frame = bounds
             document.frame.size.width = bounds.width
@@ -185,5 +195,19 @@ struct DiffScrollView: NSViewRepresentable {
         override func mouseDown(with event: NSEvent) {
             click?(convert(event.locationInWindow, from: nil))
         }
+    }
+}
+
+/// The ruler's ticks of one kind as one shape: 7 points wide, 3 in from the ruler's left edge, corners of 1 point.
+private struct RulerTicks: Shape {
+    let ticks: [RulerTick]
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        for tick in ticks {
+            path.addRoundedRect(in: CGRect(x: 3, y: tick.top, width: 7, height: tick.height),
+                                cornerSize: CGSize(width: 1, height: 1))
+        }
+        return path
     }
 }

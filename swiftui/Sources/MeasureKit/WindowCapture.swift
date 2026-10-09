@@ -91,7 +91,7 @@ public enum WindowCapture {
     }
 
     /// The image as PNG with its own color profile (the display's), unchanged.
-    static func pngData(_ image: CGImage) throws -> Data {
+    public static func pngData(_ image: CGImage) throws -> Data {
         let output = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(output, "public.png" as CFString, 1, nil) else {
             throw ToolError("Could not write a PNG")

@@ -68,6 +68,8 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "file_search_close" => to_json(search::file_search_close()?),
         "text_search" => to_json(search::text_search(parse(command, args)?)?),
         "text_search_cancel" => to_json(search::text_search_cancel(parse(command, args)?)?),
+        "text_search_start" => to_json(search::text_search_start(parse(command, args)?)?),
+        "text_search_poll" => to_json(search::text_search_poll(parse(command, args)?)?),
         "list_conflicts" | "load_conflict" | "save_resolution" | "accept_side" => merge_command(command, args),
         "load_mergetool" | "save_mergetool" => merge_command(command, args),
         _ => unknown(command),
