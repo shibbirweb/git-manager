@@ -51,3 +51,10 @@ private let single = WorkspaceRepo(root: "/w/storefront", name: "storefront", re
     #expect(WorkspaceRules.opLabel("merge") == "Merging")
     #expect(WorkspaceRules.opLabel("none") == nil)
 }
+
+@Test func cleanListFoldsPastThreeUntilToggled() {
+    #expect(!WorkspaceRules.cleanListCollapsed(3, toggled: nil))
+    #expect(WorkspaceRules.cleanListCollapsed(4, toggled: nil))
+    #expect(!WorkspaceRules.cleanListCollapsed(9, toggled: false))
+    #expect(WorkspaceRules.cleanListCollapsed(1, toggled: true))
+}

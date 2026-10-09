@@ -20,7 +20,8 @@
       "native": "partial",
       "gaps": [
         "the folder menu's recent folders, New Window, Open Folder in New Window, workspace files and Close Folder",
-        "the clean repositories' list, Set as Active Repository from a menu, remembering the active repository",
+        "the clean repositories' right-click menu, Set as Active Repository from a menu",
+        "remembering the active repository",
         "the Files panel's + button and a folder's right-click menu"
       ]
     },

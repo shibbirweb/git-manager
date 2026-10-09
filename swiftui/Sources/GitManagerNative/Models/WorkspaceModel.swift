@@ -19,6 +19,9 @@ final class WorkspaceModel: ObservableObject {
     @Published private(set) var statuses: [String: RepoStatus] = [:]
     /// Repositories whose section in Changes is folded (the header's chevron).
     @Published private(set) var collapsed: Set<String> = []
+    /// "No Changes" folded or open once toggled; until then it folds itself past three repositories
+    /// (layout.svelte.ts cleanCollapsed).
+    @Published private(set) var cleanCollapsed: Bool?
     private var hashes: [String: String] = [:]
 
     /// The first folder, where the Files panel and the breadcrumb start.
@@ -49,6 +52,14 @@ final class WorkspaceModel: ObservableObject {
         } else {
             collapsed.insert(repoRoot)
         }
+    }
+
+    func isCleanCollapsed(_ cleanCount: Int) -> Bool {
+        WorkspaceRules.cleanListCollapsed(cleanCount, toggled: cleanCollapsed)
+    }
+
+    func toggleClean(_ cleanCount: Int) {
+        cleanCollapsed = !isCleanCollapsed(cleanCount)
     }
 
     func repo(at repoRoot: String?) -> WorkspaceRepo? {

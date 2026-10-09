@@ -1,5 +1,5 @@
 // Changes with several repositories (ChangesView.svelte multiRepo): a section for each repository with changes, in
-// workspace order, 2 points apart; a line for the clean ones after them.
+// workspace order, 2 points apart; the clean ones listed after them (CleanRepoList).
 
 import NativeCore
 import SwiftUI
@@ -26,6 +26,11 @@ struct RepoSections: View {
                 }
                 .padding(.top, index > 0 ? 2 : 0)
             }
+        }
+        // Clean, or still reading their status.
+        let clean = workspace.repos.filter { workspace.changeCount($0.root) == 0 }
+        if !clean.isEmpty {
+            CleanRepoList(repos: clean, afterSection: !changed.isEmpty)
         }
     }
 

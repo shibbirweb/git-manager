@@ -1,5 +1,6 @@
 // A repository's row actions (src/lib/views/changes/RepoActions.svelte): the branch with its markers, sync, commit,
-// refresh and more, in the Changes heading for one repository and on each repository header for several.
+// refresh and more, in the Changes heading for one repository, on each repository header for several and on the
+// clean repositories' rows (no Commit there).
 
 import SwiftUI
 
@@ -12,6 +13,8 @@ struct RepoActions: View {
     var commitBlocked = false
     var publish = false
     var operation = false
+    /// The Commit (check) button; clean repositories leave it out.
+    var showCommit = true
     var commit: () -> Void = {}
     var refresh: () -> Void = {}
 
@@ -20,9 +23,14 @@ struct RepoActions: View {
             // .branch is a grid (icon, name, markers) with 2-point gaps; a narrow sidebar hides the name, but its
             // empty column keeps both gaps: 4 points from the icon to the markers.
             HeadAction(disabled: busy) {
-                HStack(spacing: 4) {
+                HStack(spacing: 2) {
                     Icon(name: "branch", size: 12)
-                    ExactText(text: decorations, size: 12, weight: .semibold)
+                    // The hidden name's empty track keeps a gap after the icon; without markers the page's button
+                    // is 23 points wide (measured: the icon 1 point further left than 22 would put it).
+                    Color.clear.frame(width: decorations.isEmpty ? 1 : 0, height: 0)
+                    if !decorations.isEmpty {
+                        ExactText(text: decorations, size: 12, weight: .semibold)
+                    }
                 }
                 .padding(.horizontal, 4)
                 .frame(height: 20)
@@ -42,8 +50,10 @@ struct RepoActions: View {
                     .frame(height: 20)
                 }
             }
-            HeadAction(disabled: busy || commitBlocked, action: commit) {
-                Icon(name: "check", size: 14).frame(width: 20, height: 20)
+            if showCommit {
+                HeadAction(disabled: busy || commitBlocked, action: commit) {
+                    Icon(name: "check", size: 14).frame(width: 20, height: 20)
+                }
             }
             HeadAction(action: refresh) {
                 Icon(name: "refresh", size: 13).frame(width: 20, height: 20)
@@ -57,7 +67,7 @@ struct RepoActions: View {
 
 /// A .action button of the heading: --text-dim, --border-strong and --text under the mouse, and at 40% opacity
 /// (one solid color, blended as WebKit does) while it is off.
-private struct HeadAction<Label: View>: View {
+struct HeadAction<Label: View>: View {
     @Environment(\.theme) private var theme
     @State private var hovered = false
 

@@ -120,4 +120,9 @@ public enum WorkspaceRules {
         let hint = [path, changes > 0 ? "\(changes)" : ""].filter { !$0.isEmpty }.joined(separator: "  ")
         return ((active ? "\u{2713} " : "   ") + repo.name, hint)
     }
+
+    /// "No Changes" folds itself past three clean repositories until it is toggled (layout.svelte.ts).
+    public static func cleanListCollapsed(_ cleanCount: Int, toggled: Bool?) -> Bool {
+        toggled ?? (cleanCount > 3)
+    }
 }

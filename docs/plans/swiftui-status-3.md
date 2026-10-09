@@ -125,3 +125,20 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
   - Pixel diff below the title bar (HDR off): branchmenu 99.39 to 99.42% light, 99.24% dark (shadow banding as
     GM-62); foldermenu 99.47 and repomenu dark 99.34 after the change.
   - Memory with the menu open: current 147 to 157 MB, native 49 MB.
+- GM-64 the clean repositories' list (CleanRepoList.svelte):
+  - Built: after the sections, "No Changes" with its count folds the list (by itself past three, NativeCore
+    WorkspaceRules.cleanListCollapsed, tested); a 24-point row per clean repository with its icon, name, path,
+    operation, the accent bar when active, Set as active repository under the mouse, and the row actions without
+    Commit (RepoActions showCommit). gm-measure `--screen cleanrepos`: acme and design-system with payments-api
+    (its merge too) and design-system made clean in the throwaway copy, design-system active. demo/extras would stop
+    the current app with its Git LFS dialog (media-site), so it is not used.
+  - Rules found:
+    - The list's 6-point top margin collapses with the last group's 4-point bottom margin: 2 more points after a
+      section, not 6.
+    - With no markers the branch button is 23 points wide, not 22 (12 + 8 + the empty name track's 2-point gap):
+      measured from the icon's place; the reason is not known.
+    - gm-measure finds the page's sizes through Accessibility too (AXPosition and AXSize of each button).
+  - Pixel diff below the title bar (HDR off): cleanrepos 99.58% light, 99.57% dark; workspace 99.52 and Changes
+    99.74 kept their floors.
+  - Memory: current 128 to 130 MB, native 40 MB.
+  - Not built: the rows' right-click menu (the "..." items, Set as Active Repository, Copy Repository Path).
