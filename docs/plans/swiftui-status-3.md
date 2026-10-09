@@ -201,3 +201,19 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     and Close Folder, and captures the welcome list in both apps.
   - Pixel diff below the title bar (HDR off): closefolder 99.82% light, 99.48% dark; foldermenu kept 99.47.
   - Memory after closing: current 190 MB (it keeps what the workspace loaded), native 36 MB.
+- GM-69 recent projects in the folder menu (Header.svelte workspaceMenu):
+  - Built: the folder menu starts with the recent entries (RecentProjectsStore through NativeCore RecentProjects,
+    leaving out what is open) and an "Open Recent in New Window" submenu (its rows say not built), then a
+    separator. gm-measure `--screen foldermenurecent` seeds a recent folder and a recent workspace under
+    /Users/me/Projects plus lastSession [acme]; openHeaderMenu waits 1.5 s and presses again when the current app
+    shows no [role=menu].
+  - Rules found:
+    - With recent folders and no recorded session the current app opens the newest one at start (sessionSteps);
+      a seeded recent workspace that held acme opened together with it.
+    - The page paints the context menu's shadow into its own layer, with a slightly steeper profile than the
+      popups' layers: a plain Gaussian, sigma 27.5 at 2x, no edge shift (BoxShadow.pageProfile, fitted on the
+      menu's light and dark columns: 5 misses against 12 with the popups' table; tested). Exact (unrounded)
+      alpha did not help.
+  - Pixel diff below the title bar (HDR off): foldermenurecent 99.27% light, 99.05% dark; with the new shadow
+    foldermenu 99.52 / 99.30, repomenu 99.49 / 99.25, branchmenu 99.43 / 99.21; Quick Open kept 99.62 dark.
+  - Memory: current 155 MB, native 54 MB.

@@ -21,3 +21,23 @@ import Testing
     #expect(shown == observed)
     #expect(shadow.alpha(x: 2020 + Int(shadow.reach), y: 236) == 0)
 }
+
+@Test func pageShadowMatchesTheCurrentAppsMenu() {
+    // The folder menu with recent projects over white (gm-measure --screen foldermenurecent, 2026-10-09), below
+    // the menu at x 700 from y 748 (the shadow box's bottom edge), where each pixel is 255 minus the stored alpha.
+    let observed = [
+        235, 235, 236, 237, 237, 238, 238, 239, 239, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245,
+        246, 246, 246, 247, 247, 248, 248, 248, 249, 249, 250, 250, 250, 250, 251, 251, 251, 251, 252, 252,
+        252, 252, 252, 253, 253, 253, 253, 253, 253, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 255,
+        255, 255,
+    ]
+    var shadow = BoxShadow(
+        box: CGRect(x: 254, y: 120, width: 594, height: 628), radius: 16,
+        sigma: BoxShadow.pageSigma(blur: 28, scale: 2), alpha: 0.16
+    )
+    shadow.pageProfile = true
+    let shown = observed.indices.map { 255 - shadow.alpha(x: 700, y: 748 + $0) }
+    let misses = zip(shown, observed).filter { $0 != $1 }.count
+    // The popups' measured profile misses 6 of these 62 pixels.
+    #expect(misses <= 3, "\(shown)")
+}

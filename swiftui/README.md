@@ -138,7 +138,8 @@ swift run -c release gm-measure measure --screen blame   # src/catalog.ts with t
 swift run -c release gm-measure measure --screen merge   # git mergetool on the conflict demo's src/app.ts
 swift run -c release gm-measure measure --screen merge --file src/report.ts --walk 200  # a 2400-line file's memory
 swift run -c release gm-measure measure --screen conflicts  # the conflict demo with its conflicts list open
-swift run -c release gm-measure measure --screen foldermenu  # demo/acme, the folder menu open (repomenu, branchmenu)
+swift run -c release gm-measure measure --screen foldermenu  # demo/acme, the folder menu open (repomenu,
+                                                           # branchmenu, foldermenurecent)
 swift run -c release gm-measure measure --screen cleanrepos  # acme and design-system, two repositories clean
 swift run -c release gm-measure measure --screen norepo  # acme/notes, a folder without a repository
 swift run -c release gm-measure measure --screen welcome  # no folder: the welcome screen's Projects page

@@ -17,14 +17,27 @@ public struct BoxShadow: Sendable {
     public let sigma: Double
     /// The shadow color's alpha in 8 bits (0.16 is 41).
     public let alpha8: Int
+    /// The profile of a shadow WebKit paints into the page's own layer (the context menu's): a plain Gaussian from
+    /// the box's edge, fitted to the current app's menus (sigma 27.5 at 2x, BoxShadow.pageSigma), not the popups'
+    /// measured table.
+    public var pageProfile = false
 
     /// The blur deviation for a CSS blur radius in points at `scale` (28 points at 2x: 27.6 pixels).
     public static func sigma(blur: Double, scale: Double) -> Double {
         blur * scale * 27.6 / 56
     }
 
-    /// The edge sits this many pixels outside the box (measured).
+    /// The edge sits this many pixels outside the box (measured on the popups; none for the page's own shadows).
     static let edgeShift = 0.2
+
+    /// The blur deviation of a shadow painted into the page's own layer (fitted on the context menu: 27.5 at 2x).
+    public static func pageSigma(blur: Double, scale: Double) -> Double {
+        blur * scale * 27.5 / 56
+    }
+
+    private var shift: Double {
+        pageProfile ? 0 : BoxShadow.edgeShift
+    }
     /// The measured mask of a 28-point blur at 2x, from 16 pixels inside the edge (index 0) to 69 outside. The last
     /// three are 1, not 2: the popups' 8-bit alpha cannot tell them apart, the conflicts dialog's dark shadow (blended
     /// over the dim at the exact alpha) can.
@@ -88,17 +101,17 @@ public struct BoxShadow: Sendable {
         let outside = position >= high ? position - high : (position < low ? low - 1 - position : nil)
         let inside = min(position - low, high - 1 - position)
         let distance = outside ?? -1 - inside
-        let measured = abs(sigma - 27.6) < 0.001
+        let measured = !pageProfile && abs(sigma - 27.6) < 0.001
         let index = distance - BoxShadow.measuredStart
         if measured && index >= 0 && index < BoxShadow.measuredEdge.count {
             return Double(BoxShadow.measuredEdge[index]) / 255
         }
-        return 0.5 * erfc((Double(distance) + 0.5 + BoxShadow.edgeShift) / (sigma * 2.0.squareRoot()))
+        return 0.5 * erfc((Double(distance) + 0.5 + shift) / (sigma * 2.0.squareRoot()))
     }
 
     /// The Gaussian weight of the four corner pieces the rounding cuts off, seen from (x, y).
     func corners(_ x: Double, _ y: Double) -> Double {
-        let grown = box.insetBy(dx: -BoxShadow.edgeShift, dy: -BoxShadow.edgeShift)
+        let grown = box.insetBy(dx: -shift, dy: -shift)
         let corner = min(radius, Double(min(grown.width, grown.height)) / 2)
         guard corner > 0 else {
             return 0

@@ -7,6 +7,7 @@
 // --screen norepo: acme/notes, a plain folder: Changes offers to initialize a repository.
 // --screen welcome: both apps started without a folder, on the welcome screen's Projects page (no recent projects
 // in the throwaway home); welcomerecent: the same with recent projects (startState).
+// --screen foldermenurecent: foldermenu with a recent folder and a recent workspace under ~ seeded (startState).
 // --screen closefolder: demo/acme/storefront, then the folder menu's Close Folder: the welcome screen lists it.
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
 // menu opened by a press (AccessibilityPress), which opens them where WebKit clicks in both apps.
@@ -16,13 +17,14 @@ import MeasureKit
 
 extension Measure {
     static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo"] + menuScreens
-    static let menuScreens = ["foldermenu", "repomenu", "branchmenu"]
+    static let menuScreens = ["foldermenu", "repomenu", "branchmenu", "foldermenurecent"]
     /// Both apps started without a folder.
     static let welcomeScreens = ["welcome", "welcomerecent"]
     /// demo/acme/storefront closed with the folder menu's Close Folder: the welcome screen lists it.
     static let closeScreens = ["closefolder"]
     /// The title of the pill each menu screen presses.
-    static let menuPills = ["foldermenu": "acme", "repomenu": "payments-api", "branchmenu": "main"]
+    static let menuPills = ["foldermenu": "acme", "repomenu": "payments-api", "branchmenu": "main",
+                            "foldermenurecent": "acme"]
 
     /// The folder a screen opens: the demo's storefront repository or the acme folder around it; cleanrepos first
     /// makes payments-api (its merge too) and design-system clean in the throwaway copy.
@@ -62,6 +64,15 @@ extension Measure {
     /// The state.json values a screen starts both apps with: for welcomerecent three recent folders and a recent
     /// workspace of the demo, and no session to reopen (else the current app opens the newest folder).
     static func startState(_ screen: String, demoRepo: String) -> [String: Any] {
+        if screen == "foldermenurecent" {
+            // Paths under a home folder, as real recent projects are, so the hints read "~/..." (a temp folder's
+            // whole path would make the menu as wide as the window); the menu only lists them. lastSession: acme, or
+            // the current app also opens the newest recent folder at start (sessionSteps).
+            let projects = "/Users/me/Projects"
+            return ["recentFolders": ["\(projects)/design-system"],
+                    "recentWorkspaces": [["\(projects)/design-system", "\(projects)/brand-kit"]],
+                    "lastSession": [workspaceFolder(demoRepo)]]
+        }
         guard screen == "welcomerecent" else {
             return [:]
         }
@@ -88,8 +99,21 @@ extension Measure {
     /// Opens the header menu of `screen` by pressing its pill (AccessibilityPress), which both apps answer with the
     /// menu at the pill's center.
     static func openHeaderMenu(_ app: RunningApp, screen: String) async throws {
-        WindowCapture.bringToFront(pid: app.pid)
-        try AccessibilityPress.press(pid: app.pid, title: menuPills[screen] ?? screen)
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        // A press right after start can be lost while the page settles; the current app says whether a menu is open,
+        // so it gets one more press when none is.
+        try await Task.sleep(nanoseconds: 1_500_000_000)
+        for _ in 0..<2 {
+            WindowCapture.bringToFront(pid: app.pid)
+            try AccessibilityPress.press(pid: app.pid, title: menuPills[screen] ?? screen)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            guard app.kind == .current else {
+                return
+            }
+            let found = try await app.client.call("inspect_elements", ["selector": "[role=menu]", "limit": 1])
+            if (found.structured?["count"] as? Int ?? 0) > 0 {
+                return
+            }
+        }
+        print("current: the menu did not open")
     }
 }

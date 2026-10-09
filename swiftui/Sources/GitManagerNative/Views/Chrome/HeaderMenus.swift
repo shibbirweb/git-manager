@@ -1,6 +1,5 @@
 // The header's menus (Header.svelte workspaceMenu, repoPickerMenu and branchMenu), opened by MenuPill. Rows the native
-// app cannot run yet (recent folders are not listed; New Window, Open Folder in New Window, workspace files and New
-// Branch) say so in a toast.
+// app cannot run yet (New Window and opening in one, workspace files and New Branch) say so in a toast.
 
 import AppKit
 import NativeCore
@@ -15,7 +14,20 @@ enum HeaderMenus {
         let workspace = WorkspaceModel.shared
         let model = AppModel.shared
         let roots = workspace.folders.map(\.root)
-        var items: [MenuItem] = [
+        // The recent projects first, and the same in a submenu to open in a new window (not built yet).
+        let recent = RecentProjects.entries(RecentProjectsStore.shared.lists, openRoots: roots)
+        var items: [MenuItem] = recent.map { entry in
+            .command(entry.label, hint: entry.hint) { WelcomeActions.open(entry) }
+        }
+        if !items.isEmpty {
+            let newWindow = recent.map { entry in
+                MenuItem.command(entry.label, hint: entry.hint) {
+                    WelcomeActions.notBuilt("Open Recent in New Window")
+                }
+            }
+            items += [.submenu("Open Recent in New Window", newWindow), .separator]
+        }
+        items += [
             notBuilt("New Window"),
             .command("Open Folder...", action: chooseFolder),
             notBuilt("Open Folder in New Window..."),

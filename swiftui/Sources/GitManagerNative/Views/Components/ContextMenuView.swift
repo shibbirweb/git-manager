@@ -50,7 +50,7 @@ struct ContextMenuOverlay: View {
                 let frames = frames(viewport: proxy.size)
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(frames.enumerated()), id: \.offset) { level, frame in
-                        PopupFrame(frame: frame, cornerRadius: 8) {
+                        PopupFrame(frame: frame, cornerRadius: 8, pageLayer: true) {
                             MenuLevel(level: level, items: center.levels[level])
                         }
                     }

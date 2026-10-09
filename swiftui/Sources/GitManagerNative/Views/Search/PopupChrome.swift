@@ -14,10 +14,13 @@ struct PopupFrame<Content: View>: View {
 
     let frame: CGRect
     let cornerRadius: CGFloat
+    /// A shadow WebKit paints into the page's own layer (the context menu), with its profile (BoxShadow.pageProfile).
+    var pageLayer = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        let shadow = PopupShadow(box: frame, cornerRadius: cornerRadius, alpha: colorScheme == .dark ? 0.5 : 0.16)
+        let shadow = PopupShadow(box: frame, cornerRadius: cornerRadius, alpha: colorScheme == .dark ? 0.5 : 0.16,
+                                 pageLayer: pageLayer)
         ZStack(alignment: .topLeading) {
             PopupShadowView(shadow: shadow)
                 .frame(width: shadow.area.width, height: shadow.area.height)
@@ -41,6 +44,7 @@ struct PopupShadow: Equatable {
     let box: CGRect
     let cornerRadius: CGFloat
     let alpha: Double
+    var pageLayer = false
     static let offsetY: CGFloat = 8
     static let blur: Double = 28
 
@@ -56,12 +60,14 @@ struct PopupShadow: Equatable {
         let pixels = CGRect(x: area.minX * scale, y: area.minY * scale, width: area.width * scale,
                             height: area.height * scale)
         let shadowBox = box.offsetBy(dx: 0, dy: PopupShadow.offsetY)
-        let model = BoxShadow(
+        let sigma = pageLayer ? BoxShadow.pageSigma(blur: PopupShadow.blur, scale: scale)
+            : BoxShadow.sigma(blur: PopupShadow.blur, scale: scale)
+        var model = BoxShadow(
             box: CGRect(x: shadowBox.minX * scale, y: shadowBox.minY * scale, width: shadowBox.width * scale,
                         height: shadowBox.height * scale),
-            radius: Double(cornerRadius * scale), sigma: BoxShadow.sigma(blur: PopupShadow.blur, scale: scale),
-            alpha: alpha
+            radius: Double(cornerRadius * scale), sigma: sigma, alpha: alpha
         )
+        model.pageProfile = pageLayer
         let map = model.alphaMap(pixels)
         let width = Int(pixels.width), height = Int(pixels.height)
         let inside = CGPath(roundedRect: CGRect(x: box.minX * scale, y: box.minY * scale, width: box.width * scale,
