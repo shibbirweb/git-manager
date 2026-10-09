@@ -36,6 +36,21 @@ public enum WindowCapture {
 
     /// The largest normal window of `pid` (menu bar extras and panels are smaller).
     public static func mainWindowID(pid: Int32) -> CGWindowID? {
+        if let pinned = pinned[pid] {
+            return pinned
+        }
+        return windowList(pid: pid).max { $0.area < $1.area }?.id
+    }
+
+    /// A window to capture instead of the largest one, per process (a window a screen opened, such as newwindow's).
+    nonisolated(unsafe) public static var pinned: [Int32: CGWindowID] = [:]
+
+    /// Every window of `pid` taller than 100 points, in the window server's order.
+    public static func windowIDs(pid: Int32) -> [CGWindowID] {
+        windowList(pid: pid).map(\.id)
+    }
+
+    private static func windowList(pid: Int32) -> [(id: CGWindowID, area: CGFloat)] {
         let info = CGWindowListCopyWindowInfo([.optionAll, .excludeDesktopElements], kCGNullWindowID)
         let list = info as? [[String: Any]] ?? []
         let windows = list.compactMap { window -> (id: CGWindowID, area: CGFloat)? in
@@ -49,7 +64,7 @@ public enum WindowCapture {
             }
             return (id, bounds.width * bounds.height)
         }
-        return windows.max { $0.area < $1.area }?.id
+        return windows
     }
 
     /// The PNG of the main window of `pid`.

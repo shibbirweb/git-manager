@@ -8,7 +8,7 @@ import SwiftUI
 struct TerminalPanel: View {
     @Environment(\.theme) private var theme
     @ObservedObject var store: TerminalStore
-    @ObservedObject private var model = AppModel.shared
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
         VStack(spacing: 0) {

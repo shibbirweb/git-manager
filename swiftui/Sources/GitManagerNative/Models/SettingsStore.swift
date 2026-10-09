@@ -15,6 +15,8 @@ final class SettingsStore: ObservableObject {
     /// Why settings.json could not be read; nil when it was (or there is none yet).
     @Published private(set) var loadError: String?
     @Published var dialogOpen = false
+    /// The window showing the dialog: the page opens it in its own window only.
+    weak var dialogWindow: WindowContext?
     @Published var dialogSection = "appearance"
     private var extra: [String: Any]
     /// The open section's scroll offset, content height and visible height (for get_state).
@@ -95,7 +97,13 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// Whether the dialog shows in the window of `context`.
+    func dialogShown(in context: WindowContext?) -> Bool {
+        dialogOpen && dialogWindow === context
+    }
+
     func openDialog(section: String = "appearance") {
+        dialogWindow = WindowContext.focused
         dialogSection = section
         dialogOpen = true
     }
@@ -151,7 +159,7 @@ final class SettingsStore: ObservableObject {
             )
             try data.write(to: url, options: .atomic)
         } catch {
-            ToastCenter.shared.show(.error, "Settings could not be saved", detail: error.localizedDescription)
+            WindowContext.focused.toasts.show(.error, "Settings could not be saved", detail: error.localizedDescription)
         }
     }
 }

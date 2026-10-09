@@ -10,7 +10,7 @@ import SwiftUI
 struct SearchEverywhereView: View {
     @Environment(\.theme) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @ObservedObject private var popups = SearchPopups.shared
+    @EnvironmentObject private var popups: SearchPopups
 
     let size: CGSize
     static let tabs = ["All", "Classes", "Files", "Symbols", "Text"]

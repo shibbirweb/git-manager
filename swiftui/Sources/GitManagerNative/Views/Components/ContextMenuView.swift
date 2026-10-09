@@ -42,7 +42,7 @@ enum MenuMetrics {
 }
 
 struct ContextMenuOverlay: View {
-    @ObservedObject private var center = ContextMenuCenter.shared
+    @EnvironmentObject private var center: ContextMenuCenter
 
     var body: some View {
         if center.visible {
@@ -85,7 +85,7 @@ struct ContextMenuOverlay: View {
 
 private struct MenuLevel: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var center = ContextMenuCenter.shared
+    @EnvironmentObject private var center: ContextMenuCenter
 
     let level: Int
     let items: [MenuItem]

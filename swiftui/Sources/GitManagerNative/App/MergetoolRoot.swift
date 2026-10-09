@@ -5,8 +5,8 @@ import AppKit
 import SwiftUI
 
 struct MergetoolRoot: View {
-    @ObservedObject private var center = MergeCenter.shared
-    @ObservedObject private var toasts = ToastCenter.shared
+    @EnvironmentObject private var center: MergeCenter
+    @EnvironmentObject private var toasts: ToastCenter
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {

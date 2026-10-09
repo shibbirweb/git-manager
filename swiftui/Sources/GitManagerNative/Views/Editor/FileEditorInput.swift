@@ -51,7 +51,7 @@ extension FileScrollView.Host {
             session.dispatch(EditorInput.paste(session.state, text, lastLinewiseCopy: session.lastLinewiseCopy))
         case .save:
             Task {
-                await EditorModel.shared.save()
+                await WindowContext.of(window)?.editor.save()
             }
             return true
         default:

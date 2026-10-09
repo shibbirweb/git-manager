@@ -7,15 +7,16 @@ import NativeCore
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.windowContext) private var windowContext
     let initialFolders: [String]
 
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var workspace = WorkspaceModel.shared
-    @ObservedObject private var toasts = ToastCenter.shared
-    @ObservedObject private var log = LogModel.shared
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var workspace: WorkspaceModel
+    @EnvironmentObject private var toasts: ToastCenter
+    @EnvironmentObject private var log: LogModel
     @ObservedObject private var settings = SettingsStore.shared
-    @ObservedObject private var terminal = TerminalStore.shared
-    @ObservedObject private var clone = CloneCenter.shared
+    @EnvironmentObject private var terminal: TerminalStore
+    @EnvironmentObject private var clone: CloneCenter
     @Environment(\.colorScheme) private var colorScheme
     /// The folders given at start are still opening: the shell shows, not the welcome screen.
     @State private var opening: Bool
@@ -38,7 +39,7 @@ struct ContentView: View {
             }
         }
         .overlay {
-            if settings.dialogOpen {
+            if settings.dialogShown(in: windowContext) {
                 SettingsDialog(settings: settings)
             }
             SearchOverlay()
@@ -64,7 +65,9 @@ struct ContentView: View {
         .onAppear {
             PointerGate.begin()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                ViewWarmUp.diffScreen(theme: settings.theme(for: colorScheme))
+                if let windowContext {
+                    ViewWarmUp.diffScreen(theme: settings.theme(for: colorScheme), context: windowContext)
+                }
             }
         }
         .task {
@@ -76,9 +79,12 @@ struct ContentView: View {
             opening = false
         }
         .task {
-            // The status bar's memory readout, like the current app's (every 2 seconds while the window shows).
+            // The status bar's memory readout, like the current app's (every 2 seconds while the window shows). The
+            // readout is the app's, so only the oldest window reads it.
             while !Task.isCancelled {
-                await model.refreshMemory()
+                if WindowContext.all.first === windowContext {
+                    await model.refreshMemory()
+                }
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
             }
         }

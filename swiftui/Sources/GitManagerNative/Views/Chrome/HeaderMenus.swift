@@ -1,5 +1,5 @@
 // The header's menus (Header.svelte workspaceMenu, repoPickerMenu and branchMenu), opened by MenuPill. Rows the native
-// app cannot run yet (New Window and opening in one, and New Branch) say so in a toast.
+// app cannot run yet (New Branch) say so in a toast.
 
 import AppKit
 import NativeCore
@@ -10,27 +10,31 @@ enum HeaderMenus {
     /// The coordinate space of the page: the window below the title bar, where menus and popups are placed.
     static let pageSpace = "page"
 
-    static func folderMenu(chooseFolder: @escaping () -> Void) -> [MenuItem] {
-        let workspace = WorkspaceModel.shared
-        let model = AppModel.shared
+    static func folderMenu(chooseFolder: @escaping () -> Void, in context: WindowContext) -> [MenuItem] {
+        let workspace = context.workspace
+        let model = context.app
         let roots = workspace.folders.map(\.root)
-        // The recent projects first, and the same in a submenu to open in a new window (not built yet).
+        // The recent projects first, and the same in a submenu to open in a new window.
         let recent = RecentProjects.entries(RecentProjectsStore.shared.lists, openRoots: roots)
         var items: [MenuItem] = recent.map { entry in
-            .command(entry.label, hint: entry.hint) { WelcomeActions.open(entry) }
+            .command(entry.label, hint: entry.hint) { WelcomeActions.open(entry, in: context) }
         }
         if !items.isEmpty {
             let newWindow = recent.map { entry in
                 MenuItem.command(entry.label, hint: entry.hint) {
-                    WelcomeActions.notBuilt("Open Recent in New Window")
+                    WelcomeActions.openInNewWindow(entry, from: context)
                 }
             }
             items += [.submenu("Open Recent in New Window", newWindow), .separator]
         }
         items += [
-            notBuilt("New Window"),
+            .command("New Window") { WindowOpener.openNew(from: context) },
             .command("Open Folder...", action: chooseFolder),
-            notBuilt("Open Folder in New Window..."),
+            .command("Open Folder in New Window...") {
+                if let folderPath = pickFolder() {
+                    WindowOpener.openNew(folders: [folderPath], from: context)
+                }
+            },
             .command("Open Workspace from File...") { model.pickAndOpenWorkspaceFile() },
             .command("Add Folder to Workspace...") {
                 if let folderPath = pickFolder() {
@@ -64,9 +68,9 @@ enum HeaderMenus {
         return items
     }
 
-    static func repoMenu() -> [MenuItem] {
-        let workspace = WorkspaceModel.shared
-        let model = AppModel.shared
+    static func repoMenu(in context: WindowContext) -> [MenuItem] {
+        let workspace = context.workspace
+        let model = context.app
         var items: [MenuItem] = workspace.repos.map { repo in
             let row = WorkspaceRules.repoMenuRow(repo, active: repo.root == model.repoPath,
                                                  changes: workspace.changeCount(repo.root))
@@ -88,8 +92,8 @@ enum HeaderMenus {
     }
 
     /// The branch pill's menu (branchMenu): New Branch..., then the local branches, the current one disabled.
-    static func branchMenu() async -> [MenuItem] {
-        let model = AppModel.shared
+    static func branchMenu(in context: WindowContext) async -> [MenuItem] {
+        let model = context.app
         guard let repoPath = model.repoPath else {
             return []
         }
@@ -106,14 +110,14 @@ enum HeaderMenus {
                 }
             }
         }
-        return [notBuilt("New Branch..."), .separator] + branches
+        return [notBuilt("New Branch...", in: context), .separator] + branches
     }
 
     /// A row the native app cannot run yet: it says so, as the Discard button does.
-    static func notBuilt(_ label: String) -> MenuItem {
+    static func notBuilt(_ label: String, in context: WindowContext) -> MenuItem {
         .command(label) {
             let name = label.replacingOccurrences(of: "...", with: "")
-            ToastCenter.shared.show(.info, "\(name) is not in the native app yet")
+            context.toasts.show(.info, "\(name) is not in the native app yet")
         }
     }
 

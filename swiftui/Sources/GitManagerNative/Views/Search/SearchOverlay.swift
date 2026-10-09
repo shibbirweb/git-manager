@@ -5,7 +5,7 @@ import AppKit
 import SwiftUI
 
 struct SearchOverlay: View {
-    @ObservedObject private var popups = SearchPopups.shared
+    @EnvironmentObject private var popups: SearchPopups
 
     var body: some View {
         Color.clear
@@ -42,7 +42,9 @@ enum SearchKeys {
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             let flags = event.modifierFlags.intersection([.command, .shift, .option, .control])
             let key = event.charactersIgnoringModifiers?.lowercased()
-            let popups = SearchPopups.shared
+            guard let popups = WindowContext.of(event.window)?.search else {
+                return event
+            }
             switch (flags, key) {
             case ([.command], "p"):
                 popups.openQuickOpen("")

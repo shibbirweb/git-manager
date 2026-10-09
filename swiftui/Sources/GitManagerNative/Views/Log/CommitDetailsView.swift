@@ -7,7 +7,7 @@ import SwiftUI
 
 struct CommitDetailsView: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = LogModel.shared
+    @EnvironmentObject private var model: LogModel
 
     static let leftWidth: CGFloat = 360
 

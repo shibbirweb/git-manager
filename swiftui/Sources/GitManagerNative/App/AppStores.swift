@@ -7,7 +7,8 @@ import Foundation
 /// The diff in the main area: MainArea and the Changes rows (their selection) observe it.
 @MainActor
 final class DiffStore: ObservableObject {
-    static let shared = DiffStore()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published var openDiff: OpenDiff?
     /// The first diff's file name while its texts are read: its tab shows at once over an empty editor, as on the

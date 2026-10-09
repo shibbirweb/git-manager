@@ -6,6 +6,7 @@ import NativeCore
 import SwiftUI
 
 struct MergeToolbar: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @ObservedObject var session: MergeSession
 
@@ -106,7 +107,7 @@ struct MergeToolbar: View {
         .borderRing(theme.color(active ? "--accent" : "--border-strong"), cornerRadius: 6)
         .contentShape(Rectangle())
         .onTapGesture {
-            MergeCenter.shared.toggleWhitespace()
+            windowContext?.merge.toggleWhitespace()
         }
     }
 }

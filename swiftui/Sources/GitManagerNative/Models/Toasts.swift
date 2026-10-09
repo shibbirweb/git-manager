@@ -20,7 +20,8 @@ struct ToastAction {
 
 @MainActor
 final class ToastCenter: ObservableObject {
-    static let shared = ToastCenter()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published private(set) var items: [Toast] = []
     /// Unread errors and warnings, on the bell's badge until the bell is clicked.

@@ -8,6 +8,7 @@ import NativeCore
 import SwiftUI
 
 struct SettingsDialog: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @Environment(\.displayScale) private var displayScale
     @ObservedObject var settings: SettingsStore
@@ -34,8 +35,8 @@ struct SettingsDialog: View {
         }
         .onAppear {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                // Escape (53): the search first, then the dialog.
-                guard event.keyCode == 53 else {
+                // Escape (53): the search first, then the dialog (in its own window).
+                guard event.keyCode == 53, event.window === windowContext?.window else {
                     return event
                 }
                 if !query.isEmpty {

@@ -7,8 +7,8 @@ import NativeCore
 import SwiftUI
 
 struct FileScreen: View {
-    @ObservedObject private var editor = EditorModel.shared
-    @ObservedObject private var model = AppModel.shared
+    @EnvironmentObject private var editor: EditorModel
+    @EnvironmentObject private var model: AppModel
 
     let file: OpenFile
 
@@ -25,6 +25,7 @@ struct FileScreen: View {
 /// .file-bar: 29 points on --panel with a --border-strong bottom line, 10 points in on the left and 6 on the right,
 /// 6 between its parts; 12-point --text-dim text.
 struct FileBar: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @ObservedObject private var settings = SettingsStore.shared
 
@@ -100,7 +101,7 @@ struct FileBar: View {
             tool("copy", size: 12) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(relativePath, forType: .string)
-                ToastCenter.shared.show(.success, "Copied relative path")
+                windowContext?.toasts.show(.success, "Copied relative path")
             }
         }
     }

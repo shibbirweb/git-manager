@@ -18,7 +18,8 @@ struct CancelArgs: Encodable {
 
 @MainActor
 final class CloneCenter: ObservableObject {
-    static let shared = CloneCenter()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published var shown = false
     @Published var url = "" {
@@ -61,7 +62,7 @@ final class CloneCenter: ObservableObject {
         cloneError = nil
         cloneNotice = nil
         progressLine = ""
-        let root = WorkspaceModel.shared.root
+        let root = context.workspace.root
         let home = ProcessInfo.processInfo.environment["HOME"].flatMap { $0.isEmpty ? nil : $0 } ?? NSHomeDirectory()
         parentDir = root.map { ($0 as NSString).deletingLastPathComponent } ?? home
         shown = true
@@ -145,7 +146,7 @@ final class CloneCenter: ObservableObject {
     /// Cloned: open it here, add it to the workspace, or leave it.
     private func offerToOpen(_ clonedPath: String) {
         let name = (clonedPath as NSString).lastPathComponent
-        let hasWorkspace = !WorkspaceModel.shared.folders.isEmpty
+        let hasWorkspace = !context.workspace.folders.isEmpty
         let alert = NSAlert()
         alert.messageText = "Cloned \(name)"
         alert.informativeText = clonedPath
@@ -154,15 +155,15 @@ final class CloneCenter: ObservableObject {
             alert.addButton(withTitle: "Add to Workspace")
         }
         alert.addButton(withTitle: "Not Now")
-        let model = AppModel.shared
+        let model = context.app
         switch alert.runModal() {
         case .alertFirstButtonReturn:
             Task { await model.openFolder(clonedPath) }
         case .alertSecondButtonReturn where hasWorkspace:
-            let roots = WorkspaceModel.shared.folders.map(\.root)
+            let roots = context.workspace.folders.map(\.root)
             Task { await model.openFolders(roots + [clonedPath]) }
         default:
-            ToastCenter.shared.show(.success, "Cloned \(name)", detail: clonedPath)
+            context.toasts.show(.success, "Cloned \(name)", detail: clonedPath)
         }
     }
 }

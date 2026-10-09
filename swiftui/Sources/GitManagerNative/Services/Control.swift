@@ -39,13 +39,13 @@ enum Control {
                 return reply(ok: false, text: "filePath is required")
             }
             let staged = args["staged"] as? Bool ?? false
-            let found = onMain { AppModel.shared.snapshot?.status?.files.first { $0.path == filePath } }
+            let found = onMain { WindowContext.focused.app.snapshot?.status?.files.first { $0.path == filePath } }
             guard let file = found else {
                 return reply(ok: false, text: "\(filePath) has no changes")
             }
             let semaphore = DispatchSemaphore(value: 0)
             Task { @MainActor in
-                await AppModel.shared.showDiff(file, staged: staged)
+                await WindowContext.focused.app.showDiff(file, staged: staged)
                 semaphore.signal()
             }
             semaphore.wait()
@@ -64,7 +64,7 @@ enum Control {
             guard !folderPaths.isEmpty, !folderPaths.contains(where: \.isEmpty) else {
                 return reply(ok: false, text: "folderPath is required")
             }
-            let result = AppModel.openFoldersNow(folderPaths)
+            let result = AppModel.openFoldersNow(folderPaths, in: onMain { WindowContext.focused })
             if case .failure(let error) = result {
                 return reply(ok: false, text: error.message, structured: onMain { state() })
             }
@@ -82,7 +82,7 @@ enum Control {
         case "close_dialog":
             // The merge tool or its conflicts list answers for itself (an edited merge refuses, as in the app);
             // otherwise Settings and the search popups each close their own, like Escape, and the answer has both.
-            if onMain({ MergeCenter.shared.mergePath != nil || MergeCenter.shared.conflictsOpen }) {
+            if onMain({ WindowContext.focused.merge.mergePath != nil || WindowContext.focused.merge.conflictsOpen }) {
                 return merge(action, args)
             }
             _ = search(action, args)
@@ -91,7 +91,8 @@ enum Control {
         case "open_conflicts", "open_merge", "merge":
             return merge(action, args)
         default:
-            return ControlTerminal.answer(action, args) ?? reply(ok: false, text: "Unknown action: \(action)")
+            return ControlTerminal.answer(action, args) ?? windowsAnswer(action, args)
+                ?? reply(ok: false, text: "Unknown action: \(action)")
         }
     }
 
@@ -126,7 +127,7 @@ enum Control {
 
     @MainActor
     static func state() -> [String: Any] {
-        let model = AppModel.shared
+        let model = WindowContext.focused.app
         let status = model.snapshot?.status
         var state: [String: Any] = [
             "repoPath": orNull(model.repoPath),
@@ -160,7 +161,9 @@ enum Control {
 
     @MainActor
     private static func mainWindow() -> NSWindow? {
-        NSApp.windows.first { $0.isVisible && !($0 is NSPanel) && $0.contentView != nil && $0.frame.height > 100 }
+        WindowContext.focused.window ?? NSApp.windows.first {
+            $0.isVisible && !($0 is NSPanel) && $0.contentView != nil && $0.frame.height > 100
+        }
     }
 
     /// The window as the window server draws it, without its shadow (like `screencapture -o -l`),

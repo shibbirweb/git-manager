@@ -16,9 +16,9 @@ enum ControlTerminal {
             let visible = args["visible"] as? Bool ?? true
             Control.onMain {
                 if visible {
-                    TerminalStore.shared.show()
+                    WindowContext.focused.terminal.show()
                 } else {
-                    TerminalStore.shared.hide()
+                    WindowContext.focused.terminal.hide()
                 }
             }
             return waitForShell(visible: visible)
@@ -26,8 +26,8 @@ enum ControlTerminal {
             return Control.reply(ok: true, structured: Control.onMain { list() })
         case "new_terminal":
             Control.onMain {
-                TerminalStore.shared.show()
-                TerminalStore.shared.create()
+                WindowContext.focused.terminal.show()
+                WindowContext.focused.terminal.create()
             }
             return waitForShell(visible: true)
         case "send_terminal_text":
@@ -44,7 +44,7 @@ enum ControlTerminal {
         let deadline = Date().addingTimeInterval(5)
         while visible && Date() < deadline {
             let started = Control.onMain { () -> Bool in
-                let session = TerminalStore.shared.session
+                let session = WindowContext.focused.terminal.session
                 return session?.info != nil || session?.failure != nil
             }
             if started {
@@ -61,7 +61,7 @@ enum ControlTerminal {
         }
         let pressEnter = args["pressEnter"] as? Bool ?? true
         let sent = Control.onMain { () -> Bool in
-            guard let session = TerminalStore.shared.session, !session.exited else {
+            guard let session = WindowContext.focused.terminal.session, !session.exited else {
                 return false
             }
             if let key = args["terminalKey"] as? Int, key != session.key {
@@ -78,7 +78,7 @@ enum ControlTerminal {
 
     @MainActor
     static func list() -> [String: Any] {
-        let store = TerminalStore.shared
+        let store = WindowContext.focused.terminal
         var terminals: [[String: Any]] = []
         if let session = store.session {
             terminals.append([
@@ -102,7 +102,7 @@ enum ControlTerminal {
 
     @MainActor
     private static func screen() -> [String: Any] {
-        guard let session = TerminalStore.shared.session else {
+        guard let session = WindowContext.focused.terminal.session else {
             return ["lines": [String](), "receivedBytes": 0]
         }
         let term = session.term
@@ -125,7 +125,10 @@ enum TerminalShortcut {
             let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
             // keyCode 50 is the backquote key.
             if event.keyCode == 50 && flags == .control {
-                TerminalStore.shared.toggle()
+                guard let terminal = WindowContext.of(event.window)?.terminal else {
+                    return event
+                }
+                terminal.toggle()
                 return nil
             }
             return event

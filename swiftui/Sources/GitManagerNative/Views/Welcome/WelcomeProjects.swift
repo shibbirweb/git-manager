@@ -7,6 +7,7 @@ import AppKit
 import SwiftUI
 
 struct WelcomeProjects: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -26,13 +27,13 @@ struct WelcomeProjects: View {
                 WelcomeTile(icon: "folder", label: "Open") {
                     if let folderPath = HeaderMenus.pickFolder() {
                         Task {
-                            await AppModel.shared.openFolder(folderPath)
+                            await windowContext?.app.openFolder(folderPath)
                         }
                     }
                 }
-                WelcomeTile(icon: "cloud-download", label: "Clone Repository") { CloneCenter.shared.open() }
+                WelcomeTile(icon: "cloud-download", label: "Clone Repository") { windowContext?.clone.open() }
                 WelcomeTile(icon: "folder-git", label: "Open Workspace") {
-                    AppModel.shared.pickAndOpenWorkspaceFile()
+                    windowContext?.app.pickAndOpenWorkspaceFile()
                 }
             }
             .padding(.top, 30)

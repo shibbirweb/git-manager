@@ -148,6 +148,7 @@ swift run -c release gm-measure measure --screen welcomecustomize  # its Customi
                                                                  # welcomeclone)
 swift run -c release gm-measure measure --screen closefolder  # storefront closed: the welcome list
 swift run -c release gm-measure measure --screen workspacefile  # both apps on a workspace file
+swift run -c release gm-measure measure --screen newwindow  # acme, then New Window: the new window is captured
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after

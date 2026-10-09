@@ -7,7 +7,7 @@ import SwiftUI
 
 struct LogScreen: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = LogModel.shared
+    @EnvironmentObject private var model: LogModel
     /// The list's share of the panes while a commit is selected (dragging the line moves it).
     @State private var listFraction = 0.55
 
@@ -63,8 +63,9 @@ struct LogScreen: View {
 /// .toolbar: 40 points with a --border-strong line below, 8 points of padding, 6 between the items: the filter, All
 /// branches, Refresh, then the count and Hide Log at the end.
 struct LogToolbar: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = LogModel.shared
+    @EnvironmentObject private var model: LogModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -134,12 +135,12 @@ struct LogToolbar: View {
         .fixedSize()
         .contentShape(Rectangle())
         .onTapGesture {
-            model.toggleAllRefs(repoPath: AppModel.shared.repoPath)
+            model.toggleAllRefs(repoPath: windowContext?.app.repoPath)
         }
     }
 
     private func refresh() {
-        if let repoPath = AppModel.shared.repoPath {
+        if let repoPath = windowContext?.app.repoPath {
             Task {
                 await model.reload(repoPath: repoPath)
             }

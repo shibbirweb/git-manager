@@ -7,7 +7,8 @@ import NativeCore
 
 @MainActor
 final class LogModel: ObservableObject {
-    static let shared = LogModel()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     /// The Log replaces the main area while it shows (the History activity, or `app action=show_log`).
     @Published private(set) var shown = false
@@ -144,7 +145,7 @@ final class LogModel: ObservableObject {
             hasMore = next.count >= LogList.pageSize
         case .failure(let error):
             loadError = error.message
-            ToastCenter.shared.show(.error, "Could not load more history", detail: error.message)
+            context.toasts.show(.error, "Could not load more history", detail: error.message)
         }
     }
 

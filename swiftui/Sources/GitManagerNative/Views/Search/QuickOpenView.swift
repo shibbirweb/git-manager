@@ -9,7 +9,7 @@ import SwiftUI
 struct QuickOpenView: View {
     @Environment(\.theme) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @ObservedObject private var popups = SearchPopups.shared
+    @EnvironmentObject private var popups: SearchPopups
     @ObservedObject private var recent = RecentFiles.shared
 
     let size: CGSize

@@ -11,7 +11,7 @@ import SwiftUI
 struct ConflictsDialog: View {
     @Environment(\.theme) private var theme
     @ObservedObject var center: MergeCenter
-    @ObservedObject private var model = AppModel.shared
+    @EnvironmentObject private var model: AppModel
     @State private var summary: ConflictSummaryDTO?
     @State private var loadError: String?
     @State private var selected: [String] = []
@@ -107,10 +107,10 @@ struct ConflictsDialog: View {
         let canMerge = single.map { !$0.binary } ?? false
         return VStack(spacing: 8) {
             DialogButton(title: "Accept Yours", disabled: selectedFiles.isEmpty) {
-                ConflictActions.accept(selectedFiles.map(\.path), side: .ours)
+                ConflictActions.accept(selectedFiles.map(\.path), side: .ours, center: center)
             }
             DialogButton(title: "Accept Theirs", disabled: selectedFiles.isEmpty) {
-                ConflictActions.accept(selectedFiles.map(\.path), side: .theirs)
+                ConflictActions.accept(selectedFiles.map(\.path), side: .theirs, center: center)
             }
             DialogButton(title: "Merge...", primary: true, disabled: !canMerge) {
                 if let single {

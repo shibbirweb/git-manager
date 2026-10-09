@@ -102,4 +102,30 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     typed key on screen 20 / 17.
   - Pixel diff below the title bar (HDR off): search 99.46 / 99.22, Quick Open 99.64 / 99.63, palette 99.51 /
     99.29 (light / dark), as before.
+- GM-78 several windows (src-tauri/src/windows.rs and commands/window.rs, repoPicker.ts openInNewWindow):
+  - Refactor: WindowContext holds one window's models (app, workspace, editor, Log, Files, terminal, merge tool,
+    search popups, open diff, toasts, Clone dialog, context menu). The per-window models lost their `shared`
+    instances; they reach each other through `context`, views read them from the environment (`windowContext(_:)`
+    puts every model there), and the control server acts on `WindowContext.focused` (the key window, else the one
+    focused last). Settings, recent projects, diff preferences and the memory readout stay the app's; the Settings
+    dialog shows in the window that opened it; the memory readout is read by the oldest window only. Key monitors
+    (search keys, Ctrl+`, Cmd+Return in the commit box, the welcome list, Settings' Escape, the merge tool, the
+    context menu) act on their own window's events only. Every measured screen in light mode kept its score on the
+    refactor alone (30 screens, 99.2 to 99.87%).
+  - Windows: a WindowGroup of WindowRequest values; WindowRoot gives each window its context, the first one taking
+    the start arguments (-folder, -folders, -workspaceFile, git mergetool). WindowOpener opens a window 1400 x 880,
+    28 points down and right of the one it came from, or brings to the front the window that already shows the
+    folders (NativeCore WindowOwnership, tested: a workspace file, the window showing it; one folder, a window with
+    it; several, a window with exactly those). Opening a folder or workspace file in a window does the same. File >
+    New Window (Shift+Cmd+N), the folder menu's New Window, Open Folder in New Window and Open Recent in New Window,
+    the welcome row's Open in New Window and the welcome list's Open Folder in New Window work.
+  - Control and measuring: `app new_window` (folderPaths, workspaceFile) and `list_windows`; smoke checks both
+    windows rules; gm-measure `--screen newwindow` opens acme, then New Window in both apps (the current app's
+    run_menu_command file.newWindow) and captures the new window (WindowCapture.pinned). gm-measure's memory report
+    adds up processes of the same name (two windows of the current app have two web content processes).
+  - Pixel diff below the title bar (HDR off): newwindow 99.76% light, 99.41% dark.
+  - Memory with two windows (newwindow): current 260.3 MB, native 53.9 MB.
+  - Not built: reopening the windows of the last session at start, Window > Close Window with its unsaved-edits
+    check, events about a path sent only to the windows it concerns. DiffState.shown and MergeScrollSync.shown
+    (read by the control server only) are the last drawn, not per window.
 

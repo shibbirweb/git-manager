@@ -9,8 +9,9 @@ import SwiftUI
 /// 12% once resolved) with a --border-strong line below; the icon in the tint's color, the bold description, the
 /// dim count, then small buttons.
 struct OpBanner: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = AppModel.shared
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
         if let op = model.snapshot?.status?.op, op.kind != "none" {
@@ -32,7 +33,7 @@ struct OpBanner: View {
                     HStack(spacing: 6) {
                         if conflicts > 0 {
                             SmallButton(title: "Resolve Conflicts...", primary: true) {
-                                MergeCenter.shared.openConflicts()
+                                windowContext?.merge.openConflicts()
                             }
                         }
                         if op.kind != "other" {
@@ -76,6 +77,7 @@ struct SmallButton: View {
 
 /// The Conflicts group: its header always shows Resolve...; a click on a row opens the merge tool on that file.
 struct ConflictsGroup: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     let files: [FileStatus]
     /// Inside a repository's section (several repositories): 12 points further in.
@@ -97,7 +99,7 @@ struct ConflictsGroup: View {
                 SmallButton(title: "Resolve...", height: 20, size: 11.5) {
                     Task {
                         await activate()
-                        MergeCenter.shared.openConflicts()
+                        windowContext?.merge.openConflicts()
                     }
                 }
             }
@@ -109,7 +111,7 @@ struct ConflictsGroup: View {
                     .onTapGesture {
                         Task {
                             await activate()
-                            await MergeCenter.shared.openMerge(file.path)
+                            await windowContext?.merge.openMerge(file.path)
                         }
                     }
             }
@@ -120,8 +122,9 @@ struct ConflictsGroup: View {
 
 /// The status bar's "<n> conflicts" in --danger with the alert icon, and the operation's description.
 struct StatusBarConflicts: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = AppModel.shared
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
         let conflicts = FileGroups(model.snapshot?.status?.files ?? []).conflicts.count
@@ -143,7 +146,7 @@ struct StatusBarConflicts: View {
                 .padding(.horizontal, 7)
                 .frame(height: 20)
                 .onTapGesture {
-                    MergeCenter.shared.openConflicts()
+                    windowContext?.merge.openConflicts()
                 }
             }
             if let op, op.kind != "none" {

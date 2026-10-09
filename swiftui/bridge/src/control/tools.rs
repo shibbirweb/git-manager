@@ -33,7 +33,9 @@ pub(super) const TOOLS: &[Tool] = &[
                       list_terminals, new_terminal, send_terminal_text (text, pressEnter, terminalKey) and \
                       terminal_text (the screen's lines). \
                       quick_open (prefix, recentFiles) and search (query) open Quick Open or Find in Files and \
-                      answer with its rows; close_dialog closes it.",
+                      answer with its rows; close_dialog closes it. new_window (folderPaths, workspaceFile: \
+                      none for the welcome screen) opens a window or focuses the one showing them; list_windows \
+                      lists every window with its folders.",
         category: "ui",
         read_only: false,
         schema: app_schema,
@@ -103,7 +105,7 @@ fn app_schema() -> Value {
                 "enum": [
                     "get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit", "show_panel",
                     "list_terminals", "new_terminal", "send_terminal_text", "terminal_text", "quick_open", "search",
-                    "close_dialog", "open_file", "editor_command"
+                    "close_dialog", "open_file", "editor_command", "new_window", "list_windows"
                 ],
                 "description": "What to do."
             },

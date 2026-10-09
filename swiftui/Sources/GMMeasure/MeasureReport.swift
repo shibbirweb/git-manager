@@ -86,8 +86,10 @@ enum MeasureReport {
             "minMb": app.minMb,
             "maxMb": app.maxMb,
             "approximate": app.approximate,
+            // Two windows of the current app have two "Web content (UI)" processes: their memory adds up.
             "processes": Dictionary(
-                uniqueKeysWithValues: app.processes.map { ($0.label, ["avgMb": $0.avgMb, "maxMb": $0.maxMb]) }
+                app.processes.map { ($0.label, ["avgMb": $0.avgMb, "maxMb": $0.maxMb]) },
+                uniquingKeysWith: { first, second in first.merging(second, uniquingKeysWith: +) }
             ),
         ]
     }

@@ -15,7 +15,7 @@ extension Control {
             let prefix = args["prefix"] as? String ?? ""
             let recentFiles = args["recentFiles"] as? [String] ?? []
             onMain {
-                let popups = SearchPopups.shared
+                let popups = WindowContext.focused.search
                 for filePath in recentFiles {
                     let root = popups.roots.first ?? ""
                     RecentFiles.shared.opened(filePath.hasPrefix("/") ? filePath : "\(root)/\(filePath)")
@@ -24,16 +24,16 @@ extension Control {
             }
         case "search":
             let query = args["query"] as? String ?? ""
-            onMain { SearchPopups.shared.openSearch(query) }
+            onMain { WindowContext.focused.search.openSearch(query) }
         default:
-            onMain { SearchPopups.shared.close() }
+            onMain { WindowContext.focused.search.close() }
             return reply(ok: true, structured: onMain { popupState() })
         }
         // The file index and the text search answer off the main thread; wait for their rows.
         let deadline = Date().addingTimeInterval(10)
         while Date() < deadline {
             let settled = onMain { () -> Bool in
-                let popups = SearchPopups.shared
+                let popups = WindowContext.focused.search
                 return popups.kind == .search ? !popups.textRunning : !popups.fileIndexing
             }
             if settled {
@@ -47,7 +47,7 @@ extension Control {
 
     @MainActor
     static func popupState() -> [String: Any] {
-        let popups = SearchPopups.shared
+        let popups = WindowContext.focused.search
         let keys: [String]
         let status: String
         switch popups.kind {

@@ -8,6 +8,7 @@ import NativeCore
 import SwiftUI
 
 struct WelcomeLearn: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -25,10 +26,10 @@ struct WelcomeLearn: View {
                 }
                 LearnItem(icon: "keyboard", name: "Keyboard Shortcuts",
                           detail: "Every key, grouped by menu, with a filter.") {
-                    WelcomeActions.notBuilt("Keyboard Shortcuts")
+                    WelcomeActions.notBuilt("Keyboard Shortcuts", in: windowContext)
                 }
                 LearnItem(icon: "bell", name: "What's New", detail: "The changes in this version.") {
-                    WelcomeActions.notBuilt("What's New")
+                    WelcomeActions.notBuilt("What's New", in: windowContext)
                 }
             }
         }

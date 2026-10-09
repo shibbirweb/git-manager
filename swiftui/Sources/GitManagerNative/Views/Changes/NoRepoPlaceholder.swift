@@ -7,11 +7,12 @@ import SwiftUI
 
 struct NoRepoPlaceholder: View {
     @Environment(\.theme) private var theme
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var workspace: WorkspaceModel
 
     let busy: Bool
 
     var body: some View {
-        let model = AppModel.shared
         VStack(spacing: 6) {
             Icon(name: "folder-git", size: 20)
                 .foregroundStyle(theme.ink("--accent"))
@@ -25,7 +26,7 @@ struct NoRepoPlaceholder: View {
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
                 SmallButton(title: "Initialize Repository", primary: true) {
-                    if let folderPath = WorkspaceModel.shared.root {
+                    if let folderPath = workspace.root {
                         Task {
                             await model.initRepository(folderPath)
                         }
@@ -33,7 +34,7 @@ struct NoRepoPlaceholder: View {
                 }
                 SmallButton(title: "Scan Again") {
                     Task {
-                        await model.openFolders(WorkspaceModel.shared.folders.map(\.root))
+                        await model.openFolders(workspace.folders.map(\.root))
                     }
                 }
             }

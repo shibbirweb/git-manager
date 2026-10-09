@@ -8,7 +8,8 @@ import NativeCore
 
 @MainActor
 final class EditorModel: ObservableObject {
-    static let shared = EditorModel()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published private(set) var tabs = EditorTabs()
     /// The active tab's editing session once its file is read; nil while it loads or when no tab is open.
@@ -23,7 +24,7 @@ final class EditorModel: ObservableObject {
     private var parked: [String: EditorSession] = [:]
 
     private var repoPath: String? {
-        AppModel.shared.repoPath
+        context.app.repoPath
     }
 
     var file: OpenFile? {
@@ -140,6 +141,7 @@ final class EditorModel: ObservableObject {
     }
 
     private func show(_ next: EditorSession) {
+        next.windowContext = context
         session?.cancelTasks()
         session = next
         next.changed = { [weak self, weak next] _ in
@@ -190,11 +192,11 @@ final class EditorModel: ObservableObject {
             (try? Backend.call("write_worktree_file", args) as String) != nil
         }.value
         guard written else {
-            ToastCenter.shared.show(.error, "Could not save \(session.file.relativePath)")
+            context.toasts.show(.error, "Could not save \(session.file.relativePath)")
             return false
         }
         session.markSaved(doc)
-        await AppModel.shared.refreshStatus()
+        await context.app.refreshStatus()
         await loadBlame(session)
         await session.refreshMarks()
         return true

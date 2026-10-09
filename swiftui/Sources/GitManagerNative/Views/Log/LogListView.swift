@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LogListView: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = LogModel.shared
+    @EnvironmentObject private var model: LogModel
     @State private var scrollTop: CGFloat = 0
     @State private var viewportHeight: CGFloat = 0
     @State private var hovered: Int?

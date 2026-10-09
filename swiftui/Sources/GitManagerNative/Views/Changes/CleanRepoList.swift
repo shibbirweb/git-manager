@@ -10,8 +10,8 @@ import SwiftUI
 
 struct CleanRepoList: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var workspace = WorkspaceModel.shared
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var workspace: WorkspaceModel
     @State private var headerHovered = false
 
     let repos: [WorkspaceRepo]
@@ -54,6 +54,7 @@ struct CleanRepoList: View {
 
 private struct CleanRepoRow: View {
     @Environment(\.theme) private var theme
+    @EnvironmentObject private var model: AppModel
     @State private var hovered = false
 
     let repo: WorkspaceRepo
@@ -62,7 +63,6 @@ private struct CleanRepoRow: View {
     let busy: Bool
 
     var body: some View {
-        let model = AppModel.shared
         HStack(spacing: 6) {
             Icon(name: "folder-git", size: 13)
                 .foregroundStyle(theme.ink("--text-faint"))

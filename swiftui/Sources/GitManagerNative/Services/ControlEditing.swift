@@ -22,7 +22,7 @@ extension Control {
             return reply(ok: false, text: "command is one of: \(editorCommands.keys.sorted().joined(separator: ", "))")
         }
         let ran = onMain { () -> Bool? in
-            EditorModel.shared.session?.run(action)
+            WindowContext.focused.editor.session?.run(action)
         }
         guard let ran else {
             return reply(ok: false, text: "No file is shown")
@@ -33,7 +33,7 @@ extension Control {
     /// Puts the shown file's cursor at a 1-based line and column, as the current app's open_file does.
     @MainActor
     static func placeCursor(line: Int, column: Int) {
-        guard let session = EditorModel.shared.session else {
+        guard let session = WindowContext.focused.editor.session else {
             return
         }
         let doc = session.state.doc

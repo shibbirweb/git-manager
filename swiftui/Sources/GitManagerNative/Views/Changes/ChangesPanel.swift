@@ -7,9 +7,9 @@ import SwiftUI
 
 struct ChangesPanel: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var draft = AppModel.shared.draft
-    @ObservedObject private var workspace = WorkspaceModel.shared
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var draft: CommitDraft
+    @EnvironmentObject private var workspace: WorkspaceModel
 
     var body: some View {
         let status = model.snapshot?.status

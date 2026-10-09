@@ -52,7 +52,8 @@ enum FileTone: Int, Comparable {
 
 @MainActor
 final class FilesModel: ObservableObject {
-    static let shared = FilesModel()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     /// The workspace folders; with several, each is a top-level row.
     @Published private(set) var roots: [String] = []
@@ -139,7 +140,7 @@ final class FilesModel: ObservableObject {
 
     private func list(_ dirPaths: [String]) async {
         // Every repository of the workspace, so their folders show the repository icon.
-        let repoRoots = Array(Set(roots + WorkspaceModel.shared.repos.map(\.root)))
+        let repoRoots = Array(Set(roots + context.workspace.repos.map(\.root)))
         let byRoot = Dictionary(grouping: dirPaths) { root(of: $0) ?? "" }
         for (rootPath, paths) in byRoot where !rootPath.isEmpty {
             let relative = paths.map { $0 == rootPath ? "" : String($0.dropFirst(rootPath.count + 1)) }

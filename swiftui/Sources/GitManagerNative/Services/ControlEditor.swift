@@ -11,7 +11,7 @@ extension Control {
         }
         let preview = args["preview"] as? Bool ?? false
         let absolute = onMain { () -> String? in
-            guard let repoPath = AppModel.shared.repoPath else {
+            guard let repoPath = WindowContext.focused.app.repoPath else {
                 return nil
             }
             return filePath.hasPrefix("/") ? filePath : (repoPath as NSString).appendingPathComponent(filePath)
@@ -21,11 +21,14 @@ extension Control {
         }
         let semaphore = DispatchSemaphore(value: 0)
         Task { @MainActor in
-            await EditorModel.shared.open(absolute, pin: !preview)
+            await WindowContext.focused.editor.open(absolute, pin: !preview)
             semaphore.signal()
         }
         semaphore.wait()
-        let (shown, message) = onMain { (EditorModel.shared.file?.path == absolute, EditorModel.shared.message) }
+        let (shown, message) = onMain {
+            let editor = WindowContext.focused.editor
+            return (editor.file?.path == absolute, editor.message)
+        }
         guard shown else {
             return reply(ok: false, text: message ?? "Could not open \(filePath)", structured: onMain { state() })
         }
@@ -40,7 +43,7 @@ extension Control {
     /// The tabs, the active one, and the shown file's cursor and line count.
     @MainActor
     static func editorState() -> [String: Any] {
-        let editor = EditorModel.shared
+        let editor = WindowContext.focused.editor
         var result: [String: Any] = [
             "tabs": editor.tabs.tabs.map { ["path": $0.path, "preview": $0.preview] },
             "activeTab": orNull(editor.tabs.active),

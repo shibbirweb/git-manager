@@ -8,7 +8,7 @@ import SwiftUI
 
 /// Over the window's content: the conflicts list, or the merge tool for one file.
 struct MergeOverlay: View {
-    @ObservedObject private var center = MergeCenter.shared
+    @EnvironmentObject private var center: MergeCenter
 
     var body: some View {
         if center.mergePath != nil {
@@ -94,10 +94,10 @@ struct MergeScreen: View {
             if let document = center.session?.document, detail == nil, !mergetool {
                 HStack(spacing: 8) {
                     Button(document.kind == "deletedByUs" ? "Keep Deleted" : "Accept Yours") {
-                        ConflictActions.accept([document.path], side: .ours, closeMerge: true)
+                        ConflictActions.accept([document.path], side: .ours, closeMerge: true, center: center)
                     }
                     Button(document.kind == "deletedByThem" ? "Keep Deleted" : "Accept Theirs") {
-                        ConflictActions.accept([document.path], side: .theirs, closeMerge: true)
+                        ConflictActions.accept([document.path], side: .theirs, closeMerge: true, center: center)
                     }
                     if !document.binary {
                         Button("Merge Text Anyway") {
@@ -116,19 +116,19 @@ struct MergeScreen: View {
 /// Accept Yours or Accept Theirs on whole files, through the bridge's git CLI like the current app.
 @MainActor
 enum ConflictActions {
-    static func accept(_ conflictPaths: [String], side: MergeSide, closeMerge: Bool = false) {
+    static func accept(_ conflictPaths: [String], side: MergeSide, closeMerge: Bool = false, center: MergeCenter) {
         let label = side == .ours ? "Accept yours" : "Accept theirs"
         let success = conflictPaths.count == 1
             ? "Resolved \(conflictPaths[0])" : "Resolved \(conflictPaths.count) files"
         Task {
-            let done = await AppModel.shared.run(label, success: success) { repoPath in
+            let done = await center.context.app.run(label, success: success) { repoPath in
                 try Backend.perform("accept_side", AcceptSideArgs(
                     repoPath: repoPath, conflictPaths: conflictPaths, side: side.rawValue
                 ))
                 return true
             }
             if done == true && closeMerge {
-                MergeCenter.shared.closeMerge()
+                center.closeMerge()
             }
         }
     }
@@ -163,7 +163,10 @@ private struct MergeKeys: NSViewRepresentable {
                 }
                 let keyCode = event.keyCode
                 let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-                let handled = MainActor.assumeIsolated { Self.handle(keyCode, flags: flags, center: center) }
+                let handled = MainActor.assumeIsolated {
+                    // Only the merge tool's own window takes its keys.
+                    event.window === center.context.window && Self.handle(keyCode, flags: flags, center: center)
+                }
                 return handled ? nil : event
             }
         }

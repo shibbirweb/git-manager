@@ -8,7 +8,8 @@ import NativeCore
 
 @MainActor
 final class TerminalStore: ObservableObject {
-    static let shared = TerminalStore()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published private(set) var panelOpen = false
     @Published private(set) var session: TerminalSession?
@@ -64,7 +65,7 @@ final class TerminalStore: ObservableObject {
             }
         }
         session = created
-        created.start(cwd: AppModel.shared.repoPath)
+        created.start(cwd: context.app.repoPath)
         return created
     }
 

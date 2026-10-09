@@ -7,7 +7,8 @@ import NativeCore
 
 @MainActor
 final class AppModel: ObservableObject {
-    static let shared = AppModel()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published private(set) var repoPath: String?
     @Published private(set) var snapshot: StatusSnapshot?
@@ -22,27 +23,29 @@ final class AppModel: ObservableObject {
     /// The file diff open in the main area (a click on a Changes row); nil shows the welcome screen. Kept in
     /// DiffStore so opening one renders only the views that show it.
     private(set) var openDiff: OpenDiff? {
-        get { DiffStore.shared.openDiff }
-        set { DiffStore.shared.openDiff = newValue }
+        get { context.diffs.openDiff }
+        set { context.diffs.openDiff = newValue }
     }
     /// The write running now ("Stage", "Commit"), shown in the header and the status bar; nil when idle.
     @Published var busy: String?
     /// Asks the commit box to put the cursor in its message (the heading's Commit button with no message).
     @Published var messageFocusRequests = 0
-    let toasts = ToastCenter.shared
+    var toasts: ToastCenter {
+        context.toasts
+    }
     let draft = CommitDraft()
     /// Where the open diff's row was in the list, so the selection stays at that place when its file goes away.
     private var lastRowIndex = 0
 
     /// The workspace's name (the header, the window title, the welcome screen): its folder names.
     var folderName: String {
-        WorkspaceModel.shared.name ?? repoName
+        context.workspace.name ?? repoName
     }
 
     /// The active repository's name (the status bar).
     var repoName: String {
-        WorkspaceModel.shared.repo(at: repoPath)?.name
-            ?? repoPath.map { ($0 as NSString).lastPathComponent } ?? WorkspaceModel.shared.name ?? "Git Manager Native"
+        context.workspace.repo(at: repoPath)?.name
+            ?? repoPath.map { ($0 as NSString).lastPathComponent } ?? context.workspace.name ?? "Git Manager Native"
     }
 
     var changeCount: Int {
@@ -68,13 +71,13 @@ final class AppModel: ObservableObject {
             repoPath: repoPath, filePath: file.path, origPath: file.origPath, area: staged ? "staged" : "unstaged"
         )
         if reveal && openDiff == nil {
-            DiffStore.shared.pendingName = FileRow.split(file.path).name
+            context.diffs.pendingName = FileRow.split(file.path).name
             revealDiff(reveal)
         }
         let diff = await Task.detached { () -> FileDiff? in
             try? Backend.call("get_file_diff", args) as FileDiff
         }.value
-        DiffStore.shared.pendingName = nil
+        context.diffs.pendingName = nil
         guard let diff else {
             return
         }
@@ -104,14 +107,14 @@ final class AppModel: ObservableObject {
 
     /// Brings the diff tab to the front (a click on a change), without a render when it already is.
     private func revealDiff(_ reveal: Bool) {
-        if reveal && !EditorModel.shared.diffActive {
-            EditorModel.shared.diffActive = true
+        if reveal && !context.editor.diffActive {
+            context.editor.diffActive = true
         }
     }
 
     func closeDiff() {
         openDiff = nil
-        EditorModel.shared.diffActive = false
+        context.editor.diffActive = false
     }
 
     /// Reads the status again after a write or a click on Refresh; an unchanged status keeps the one on screen.
@@ -160,7 +163,7 @@ final class AppModel: ObservableObject {
         }
         closeDiff()
         repoPath = repoRoot
-        snapshot = WorkspaceModel.shared.statuses[repoRoot].map { StatusSnapshot(hash: "", status: $0) }
+        snapshot = context.workspace.statuses[repoRoot].map { StatusSnapshot(hash: "", status: $0) }
         await refreshStatus()
     }
 
@@ -191,8 +194,8 @@ final class AppModel: ObservableObject {
     /// Close Folder / Close Workspace (repoStore.closeWorkspace): asks first when tabs have unsaved edits, then
     /// forgets the workspace, so the window shows the welcome screen with it at the top of the recent projects.
     func closeWorkspace() {
-        let dirty = EditorModel.shared.dirtyPaths.sorted()
-        let what = WorkspaceModel.shared.folders.count > 1 ? "workspace" : "folder"
+        let dirty = context.editor.dirtyPaths.sorted()
+        let what = context.workspace.folders.count > 1 ? "workspace" : "folder"
         if !dirty.isEmpty {
             let names = dirty.map { ($0 as NSString).lastPathComponent }
             let alert = NSAlert()
@@ -208,15 +211,15 @@ final class AppModel: ObservableObject {
             }
         }
         openDiff = nil
-        EditorModel.shared.reset()
-        LogModel.shared.hide()
-        WorkspaceModel.shared.set([])
+        context.editor.reset()
+        context.log.hide()
+        context.workspace.set([])
         repoPath = nil
         snapshot = nil
         errorText = nil
         loading = false
         Task {
-            await FilesModel.shared.open(roots: [])
+            await context.files.open(roots: [])
         }
     }
 
@@ -225,14 +228,14 @@ final class AppModel: ObservableObject {
     func showNoRepository() {
         if repoPath != nil {
             openDiff = nil
-            EditorModel.shared.reset()
+            context.editor.reset()
         }
         repoPath = nil
         snapshot = nil
         errorText = nil
         loading = false
-        let files = FilesModel.shared
-        let roots = WorkspaceModel.shared.folders.map(\.root)
+        let files = context.files
+        let roots = context.workspace.folders.map(\.root)
         if files.roots != roots {
             Task {
                 await files.open(roots: roots)
@@ -244,7 +247,7 @@ final class AppModel: ObservableObject {
     func begin(_ folderPath: String) {
         if repoPath != folderPath {
             openDiff = nil
-            EditorModel.shared.reset()
+            context.editor.reset()
         }
         repoPath = folderPath
         loading = true
@@ -256,12 +259,12 @@ final class AppModel: ObservableObject {
         case .success(let snapshot):
             self.snapshot = snapshot
             errorText = nil
-            let workspace = WorkspaceModel.shared
+            let workspace = context.workspace
             if let repoPath {
                 workspace.record(repoRoot: repoPath, snapshot: snapshot)
             }
             // The Files panel shows the workspace folders, toned by every repository's status.
-            let files = FilesModel.shared
+            let files = context.files
             let roots = workspace.folders.isEmpty ? [repoPath].compactMap { $0 } : workspace.folders.map(\.root)
             if !roots.isEmpty, files.roots != roots {
                 Task {

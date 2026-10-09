@@ -4,12 +4,12 @@
 // search (bridge: file_search_*, text_search). One popup at a time, like the current app.
 
 import AppKit
-import Foundation
 import NativeCore
 
 @MainActor
 final class SearchPopups: ObservableObject {
-    static let shared = SearchPopups()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     enum Kind: Equatable {
         case quickOpen
@@ -33,7 +33,7 @@ final class SearchPopups: ObservableObject {
     private var retry: Task<Void, Never>?
 
     var roots: [String] {
-        AppModel.shared.repoPath.map { [$0] } ?? []
+        context.app.repoPath.map { [$0] } ?? []
     }
 
     var folders: [FolderRef] {

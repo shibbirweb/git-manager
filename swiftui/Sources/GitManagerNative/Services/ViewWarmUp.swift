@@ -9,8 +9,8 @@ import SwiftUI
 
 @MainActor
 enum ViewWarmUp {
-    static func diffScreen(theme: Theme) {
-        guard AppModel.shared.openDiff == nil else {
+    static func diffScreen(theme: Theme, context: WindowContext) {
+        guard context.app.openDiff == nil else {
             return
         }
         // The control server's `diff` action reads the diff on screen, not this one.
@@ -26,6 +26,7 @@ enum ViewWarmUp {
             DiffScreen(open: open)
         }
         .environment(\.theme, theme)
+        .windowContext(context)
         let host = NSHostingView(rootView: root)
         host.frame = NSRect(x: 0, y: 0, width: 900, height: 600)
         host.layoutSubtreeIfNeeded()

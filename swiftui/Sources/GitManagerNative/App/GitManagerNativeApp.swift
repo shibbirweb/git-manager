@@ -1,5 +1,5 @@
-// Git Manager Native: phase 0 of the SwiftUI experiment. One window, the size of the current
-// app's default window, that opens a folder and shows its git status from the shared Rust backend.
+// Git Manager Native: the SwiftUI experiment's app. Windows the size of the current app's default window, each
+// with its own folders, over the shared Rust backend.
 
 import AppKit
 import SwiftUI
@@ -15,18 +15,18 @@ struct GitManagerNativeApp: App {
     }
 
     var body: some Scene {
-        Window("Git Manager Native", id: "main") {
-            Group {
-                // Started by git mergetool with its four files: the merge tool alone (MergeToolApp.svelte).
-                if MergeCenter.shared.mergetool != nil {
-                    MergetoolRoot()
-                } else {
-                    ContentView(initialFolders: AppDelegate.launchFolders(),
-                                initialWorkspaceFile: UserDefaults.standard.string(forKey: "workspaceFile"))
+        // A window per WindowRequest (WindowOpener); the one macOS opens at start has none (WindowRoot).
+        WindowGroup("Git Manager Native", id: "main", for: WindowRequest.self) { $request in
+            WindowRoot(request: request)
+        }
+        .commands {
+            // File > New Window (menuSpec.ts file.newWindow), in place of SwiftUI's own.
+            CommandGroup(replacing: .newItem) {
+                Button("New Window") {
+                    WindowOpener.openNew(from: WindowContext.focused)
                 }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
             }
-                .frame(minWidth: 960, minHeight: 600)
-                .background(WindowSizer())
         }
     }
 }

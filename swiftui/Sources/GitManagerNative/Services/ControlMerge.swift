@@ -13,20 +13,20 @@ extension Control {
     static func merge(_ action: String, _ args: [String: Any]) -> String {
         switch action {
         case "open_conflicts":
-            onMain { MergeCenter.shared.openConflicts() }
+            onMain { WindowContext.focused.merge.openConflicts() }
         case "open_merge":
             guard let filePath = args["filePath"] as? String else {
                 return reply(ok: false, text: "filePath is required")
             }
             let semaphore = DispatchSemaphore(value: 0)
             Task { @MainActor in
-                await MergeCenter.shared.openMerge(filePath)
+                await WindowContext.focused.merge.openMerge(filePath)
                 semaphore.signal()
             }
             semaphore.wait()
         case "close_dialog":
             let closed = onMain { () -> Bool in
-                let center = MergeCenter.shared
+                let center = WindowContext.focused.merge
                 if center.mergePath != nil {
                     if center.session?.canUndo == true {
                         return false
@@ -52,7 +52,7 @@ extension Control {
 
     @MainActor
     private static func mergeStep(_ args: [String: Any]) -> String? {
-        guard let session = MergeCenter.shared.session else {
+        guard let session = WindowContext.focused.merge.session else {
             return "No merge is open"
         }
         let side: MergeSide = args["side"] as? String == "theirs" ? .theirs : .ours
@@ -76,14 +76,14 @@ extension Control {
         }
         if let accept = args["accept"] as? String {
             session.acceptWhole(accept == "theirs" ? .theirs : .ours)
-            MergeCenter.shared.apply(skipChecks: true)
+            WindowContext.focused.merge.apply(skipChecks: true)
         }
         return nil
     }
 
     @MainActor
     static func mergeState() -> [String: Any] {
-        let center = MergeCenter.shared
+        let center = WindowContext.focused.merge
         var state: [String: Any] = [
             "conflictsOpen": center.conflictsOpen,
             "path": orNull(center.mergePath),

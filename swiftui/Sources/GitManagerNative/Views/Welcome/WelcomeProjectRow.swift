@@ -9,6 +9,7 @@ import SwiftUI
 
 struct WelcomeProjectRow: View {
     @Environment(\.theme) private var theme
+    @Environment(\.windowContext) private var windowContext
     @State private var textWidth: CGFloat = 0
 
     let entry: RecentEntry
@@ -19,7 +20,7 @@ struct WelcomeProjectRow: View {
     var body: some View {
         HStack(spacing: 0) {
             Button {
-                WelcomeActions.open(entry)
+                WelcomeActions.open(entry, in: windowContext)
             } label: {
                 HStack(spacing: 14) {
                     badge
@@ -46,7 +47,7 @@ struct WelcomeProjectRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(entry.label)
-            MenuButton(size: 30, iconSize: 16) { WelcomeActions.items(entry) }
+            MenuButton(size: 30, iconSize: 16) { WelcomeActions.items(entry, in: windowContext) }
                 .opacity(selected ? 1 : 0)
                 .allowsHitTesting(selected)
                 .padding(.trailing, 10)
@@ -75,6 +76,7 @@ struct WelcomeProjectRow: View {
 
 /// An icon button with "..." that opens a context menu where it was pressed (its center without the pointer).
 struct MenuButton: View {
+    @Environment(\.windowContext) private var windowContext
     @State private var pageFrame = CGRect.zero
 
     let size: CGFloat
@@ -95,15 +97,17 @@ struct MenuButton: View {
     }
 
     private func open() {
-        ContextMenuCenter.shared.open(items(), at: MenuNav.simulatedClickPoint(pageFrame))
+        windowContext?.menus.open(items(), at: MenuNav.simulatedClickPoint(pageFrame))
     }
 }
 
 /// What a recent project does when opened, and its menu (Welcome.svelte entryItems).
 @MainActor
 enum WelcomeActions {
-    static func open(_ entry: RecentEntry) {
-        let model = AppModel.shared
+    static func open(_ entry: RecentEntry, in context: WindowContext?) {
+        guard let model = context?.app else {
+            return
+        }
         switch entry.kind {
         case .folder(let folderPath):
             Task {
@@ -120,11 +124,11 @@ enum WelcomeActions {
         }
     }
 
-    static func items(_ entry: RecentEntry) -> [MenuItem] {
+    static func items(_ entry: RecentEntry, in context: WindowContext?) -> [MenuItem] {
         let paths = entry.paths
         var items: [MenuItem] = [
-            .command("Open") { open(entry) },
-            notBuiltItem("Open in New Window"),
+            .command("Open") { open(entry, in: context) },
+            .command("Open in New Window") { openInNewWindow(entry, from: context) },
             .separator,
         ]
         if paths.count == 1 {
@@ -136,7 +140,7 @@ enum WelcomeActions {
             .command(paths.count == 1 ? "Copy Path" : "Copy Paths") {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(paths.joined(separator: "\n"), forType: .string)
-                ToastCenter.shared.show(.success, "Path copied")
+                context?.toasts.show(.success, "Path copied")
             },
             .separator,
             .command("Remove from Recent Projects") { RecentProjectsStore.shared.remove(entry) },
@@ -144,11 +148,19 @@ enum WelcomeActions {
         return items
     }
 
-    static func notBuiltItem(_ label: String) -> MenuItem {
-        .command(label) { notBuilt(label.replacingOccurrences(of: "...", with: "")) }
+    /// A recent project in a new window (repoPicker.ts openRecentInNewWindow), or the window showing it already.
+    static func openInNewWindow(_ entry: RecentEntry, from context: WindowContext?) {
+        switch entry.kind {
+        case .folder(let folderPath):
+            WindowOpener.openNew(folders: [folderPath], from: context)
+        case .workspace(let folderPaths):
+            WindowOpener.openNew(folders: folderPaths, from: context)
+        case .workspaceFile(let filePath):
+            WindowOpener.openNew(workspaceFile: filePath, from: context)
+        }
     }
 
-    static func notBuilt(_ action: String) {
-        ToastCenter.shared.show(.info, "\(action) is not in the native app yet")
+    static func notBuilt(_ action: String, in context: WindowContext?) {
+        context?.toasts.show(.info, "\(action) is not in the native app yet")
     }
 }

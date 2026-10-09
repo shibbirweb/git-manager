@@ -11,7 +11,8 @@ private struct OpenWorkspaceArgs: Encodable {
 
 @MainActor
 final class WorkspaceModel: ObservableObject {
-    static let shared = WorkspaceModel()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published private(set) var folders: [WorkspaceInfo] = []
     /// The workspace file it was opened from or saved to; it names the workspace.
@@ -119,7 +120,7 @@ final class WorkspaceModel: ObservableObject {
             }
             record(repoRoot: repo.root, snapshot: snapshot)
         }
-        FilesModel.shared.updateTones(toneFiles())
+        context.files.updateTones(toneFiles())
     }
 
     /// Every changed file with its repository's root, for the Files panel's tones.

@@ -68,7 +68,7 @@ struct ActivityItem: View {
 /// Changes (with its count), Branches, a separator and History at the top; Run and Terminal at the bottom.
 struct LeftActivityBar: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var terminal = TerminalStore.shared
+    @EnvironmentObject private var terminal: TerminalStore
 
     let changeCount: Int
     var conflicts = false

@@ -172,6 +172,8 @@ enum Measure {
             try await openHeaderMenu(app, screen: options.screen)
         } else if closeScreens.contains(options.screen) {
             try await closeFolder(app)
+        } else if windowScreens.contains(options.screen) {
+            try await openNewWindow(app)
         } else if options.screen == "welcomecustomize" || options.screen == "welcomelearn" {
             try await showWelcomePage(app, page: options.screen == "welcomelearn" ? "Learn" : "Customize")
         } else if options.screen == "welcomeclone" {

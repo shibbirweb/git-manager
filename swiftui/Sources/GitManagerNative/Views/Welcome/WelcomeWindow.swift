@@ -52,6 +52,7 @@ private struct ProjectsPage: View {
 
 /// .sidebar: 20 points down, 12 in and 14 up from the bottom, a 1-point --border on the right.
 private struct WelcomeSidebar: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @Binding var section: WelcomeSection
 
@@ -133,7 +134,7 @@ private struct WelcomeSidebar: View {
     }
 
     private func notBuilt(_ page: String) {
-        ToastCenter.shared.show(.info, "\(page) is not in the native app yet")
+        windowContext?.toasts.show(.info, "\(page) is not in the native app yet")
     }
 }
 

@@ -10,8 +10,8 @@ struct StatusBarView: View {
     @ObservedObject private var readout = MemoryReadout.shared
     // The file items follow the editor and the diff here, not in ContentView, so a cursor move or an opened diff
     // renders the status bar, not the whole window.
-    @ObservedObject private var editor = EditorModel.shared
-    @ObservedObject private var diffs = DiffStore.shared
+    @EnvironmentObject private var editor: EditorModel
+    @EnvironmentObject private var diffs: DiffStore
 
     let folderName: String
     let head: HeadInfo?

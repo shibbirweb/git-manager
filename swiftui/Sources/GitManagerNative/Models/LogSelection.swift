@@ -9,7 +9,7 @@ extension LogModel {
     /// Selects `commitId` (nil clears) and loads its details and first file's diff.
     func select(_ commitId: String?, repoPath: String? = nil) async {
         selectedId = commitId
-        guard let commitId, let repoPath = repoPath ?? AppModel.shared.repoPath else {
+        guard let commitId, let repoPath = repoPath ?? context.app.repoPath else {
             details = nil
             return
         }

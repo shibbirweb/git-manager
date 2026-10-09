@@ -6,10 +6,11 @@ import NativeCore
 import SwiftUI
 
 struct FilesPanel: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
-    @ObservedObject private var files = FilesModel.shared
-    @ObservedObject private var editor = EditorModel.shared
-    @ObservedObject private var workspace = WorkspaceModel.shared
+    @EnvironmentObject private var files: FilesModel
+    @EnvironmentObject private var editor: EditorModel
+    @EnvironmentObject private var workspace: WorkspaceModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -122,13 +123,13 @@ struct FilesPanel: View {
                             await files.toggle(path)
                         } else {
                             // A single click opens the preview tab, as in the current app.
-                            await EditorModel.shared.open(path, pin: false)
+                            await windowContext?.editor.open(path, pin: false)
                         }
                     }
                 }
                 .simultaneousGesture(TapGesture(count: 2).onEnded {
                     if !entry.isDir {
-                        EditorModel.shared.keep(path)
+                        windowContext?.editor.keep(path)
                     }
                 })
             if entry.isDir && files.expanded.contains(path) {

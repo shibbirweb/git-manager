@@ -65,7 +65,7 @@ extension Control {
     /// The Changes list and commit box, for get_state.
     @MainActor
     static func changesState() -> [String: Any] {
-        let model = AppModel.shared
+        let model = WindowContext.focused.app
         let groups = FileGroups(model.snapshot?.status?.files ?? [])
         let toasts = model.toasts.items.map { toast -> [String: Any] in
             ["kind": toast.kind.rawValue, "title": toast.title, "detail": orNull(toast.detail),
@@ -87,11 +87,11 @@ extension Control {
     /// toggle_repo folds or unfolds a repository's section in Changes; set_active_repo makes it the active one.
     static func workspaceAction(_ action: String, _ args: [String: Any]) -> String {
         guard let repoRoot = args["repoRoot"] as? String,
-              onMain({ WorkspaceModel.shared.repo(at: repoRoot) }) != nil else {
+              onMain({ WindowContext.focused.workspace.repo(at: repoRoot) }) != nil else {
             return reply(ok: false, text: "repoRoot must be a repository of the workspace")
         }
         if action == "toggle_repo" {
-            onMain { WorkspaceModel.shared.toggleCollapsed(repoRoot) }
+            onMain { WindowContext.focused.workspace.toggleCollapsed(repoRoot) }
         } else {
             waitOnMain { model in
                 await model.setActive(repoRoot)
@@ -103,7 +103,7 @@ extension Control {
     /// The open workspace: its folders, each repository with its change count, and the active one.
     @MainActor
     static func workspaceState() -> [String: Any] {
-        let workspace = WorkspaceModel.shared
+        let workspace = WindowContext.focused.workspace
         return [
             "name": orNull(workspace.name),
             "folders": workspace.folders.map(\.root),
@@ -111,7 +111,7 @@ extension Control {
                 ["root": repo.root, "name": repo.name, "relativePath": repo.relativePath,
                  "changes": workspace.changeCount(repo.root), "collapsed": workspace.collapsed.contains(repo.root)]
             },
-            "activeRepo": orNull(AppModel.shared.repoPath),
+            "activeRepo": orNull(WindowContext.focused.app.repoPath),
             "totalChanges": workspace.totalChanges,
         ]
     }
@@ -121,7 +121,7 @@ extension Control {
         let semaphore = DispatchSemaphore(value: 0)
         var result: Value?
         Task { @MainActor in
-            result = await work(AppModel.shared)
+            result = await work(WindowContext.focused.app)
             semaphore.signal()
         }
         semaphore.wait()

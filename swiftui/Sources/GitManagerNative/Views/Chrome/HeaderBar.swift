@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct HeaderBar: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @ObservedObject private var recent = RecentFiles.shared
 
@@ -25,7 +26,9 @@ struct HeaderBar: View {
         HStack(spacing: 4) {
             history
             HeaderDivider()
-            MenuPill(title: folderName, items: { HeaderMenus.folderMenu(chooseFolder: chooseFolder) }) {
+            MenuPill(title: folderName, items: {
+                windowContext.map { HeaderMenus.folderMenu(chooseFolder: chooseFolder, in: $0) } ?? []
+            }) {
                 Icon(name: "folder", size: 14)
                 ExactText(text: folderName, size: 13, weight: .semibold)
                     .menuPillTarget()
@@ -34,7 +37,9 @@ struct HeaderBar: View {
             if let repoPill {
                 ExactText(text: "/", size: 13)
                     .foregroundStyle(theme.ink("--text-faint"))
-                MenuPill(title: "\(repoPill.name) \(repoPill.count)", items: HeaderMenus.repoMenu) {
+                MenuPill(title: "\(repoPill.name) \(repoPill.count)", items: {
+                    windowContext.map { HeaderMenus.repoMenu(in: $0) } ?? []
+                }) {
                     Icon(name: "folder-git", size: 14)
                     ExactText(text: repoPill.name, size: 13)
                         .menuPillTarget()
@@ -46,7 +51,12 @@ struct HeaderBar: View {
                 }
             }
             if let head {
-                MenuPill(title: Self.branchLabel(head), items: HeaderMenus.branchMenu) {
+                MenuPill(title: Self.branchLabel(head), items: {
+                    guard let windowContext else {
+                        return []
+                    }
+                    return await HeaderMenus.branchMenu(in: windowContext)
+                }) {
                     Icon(name: "branch", size: 14)
                     ExactText(text: Self.branchLabel(head), size: 13)
                         .menuPillTarget()

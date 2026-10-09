@@ -7,10 +7,11 @@ import NativeCore
 import SwiftUI
 
 struct CommitBox: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var draft = AppModel.shared.draft
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var draft: CommitDraft
     @FocusState private var messageFocused: Bool
     @State private var keys = CommitKeys()
 
@@ -42,7 +43,7 @@ struct CommitBox: View {
             messageFocused = true
         }
         .onChange(of: messageFocused) { focused in
-            keys.watch(focused) {
+            keys.watch(focused, window: windowContext?.window) {
                 Task { await model.commit() }
             }
         }
@@ -174,9 +175,13 @@ struct CommitBox: View {
 final class CommitKeys {
     private var monitor: Any?
 
-    func watch(_ focused: Bool, commit: @escaping () -> Void) {
+    /// Cmd+Return commits while the message is focused, in its own window only.
+    func watch(_ focused: Bool, window: NSWindow?, commit: @escaping () -> Void) {
         if focused, monitor == nil {
-            monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak window] event in
+                guard event.window === window else {
+                    return event
+                }
                 let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
                 // 36 is Return, 76 the keypad's Enter.
                 if modifiers == .command, event.keyCode == 36 || event.keyCode == 76 {

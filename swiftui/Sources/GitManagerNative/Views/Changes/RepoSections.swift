@@ -5,8 +5,8 @@ import NativeCore
 import SwiftUI
 
 struct RepoSections: View {
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var workspace = WorkspaceModel.shared
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var workspace: WorkspaceModel
 
     var body: some View {
         let changed = workspace.repos.filter { workspace.changeCount($0.root) > 0 }

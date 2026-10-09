@@ -24,6 +24,9 @@ struct SavedWorkspace: Decodable {
 
 extension AppModel {
     func openWorkspaceFile(_ filePath: String) async {
+        if WindowOpener.focusOwner(folders: [], workspaceFile: filePath, except: context) {
+            return
+        }
         let result = await Task.detached {
             Result { try Backend.call("read_workspace_file", WorkspaceFileArgs(filePath: filePath)) as SavedWorkspace }
         }.value
@@ -48,7 +51,7 @@ extension AppModel {
 
     /// Saves the open folders to `filePath` (the app's suffix added when it has none) and links the workspace to it.
     func saveWorkspaceAs(_ filePath: String) async {
-        let workspace = WorkspaceModel.shared
+        let workspace = context.workspace
         let folders = workspace.folders.map(\.root)
         guard !folders.isEmpty else {
             return
@@ -86,7 +89,7 @@ extension AppModel {
 
     /// Save Workspace to File... / Save Workspace As...: next to the first folder, named after the workspace.
     func pickAndSaveWorkspace() {
-        let workspace = WorkspaceModel.shared
+        let workspace = context.workspace
         guard let first = workspace.folders.first?.root else {
             return
         }

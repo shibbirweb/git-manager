@@ -9,6 +9,7 @@ import SwiftUI
 
 /// A header pill that opens a context menu.
 struct MenuPill<Label: View>: View {
+    @Environment(\.windowContext) private var windowContext
     /// What Accessibility reads, as the page's button title.
     let title: String
     /// Read when pressed; the branch menu reads the branches first.
@@ -37,7 +38,9 @@ struct MenuPill<Label: View>: View {
     }
 
     private func open() {
-        let center = ContextMenuCenter.shared
+        guard let center = windowContext?.menus else {
+            return
+        }
         center.pageTop = windowFrame.minY - pageFrame.minY
         var point = MenuNav.simulatedClickPoint(targetFrame ?? pageFrame)
         // A click of the pointer opens it there; Accessibility presses come with no event of their own.

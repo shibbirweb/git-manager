@@ -8,6 +8,8 @@ import NativeCore
 
 @MainActor
 final class EditorSession {
+    /// The window whose editor shows this file (EditorModel sets it).
+    weak var windowContext: WindowContext?
     let file: OpenFile
     private(set) var state: EditorState
     /// The text on disk, as last read or saved; the tab shows the unsaved dot while the text differs.
@@ -138,7 +140,7 @@ final class EditorSession {
 
     /// The changes against HEAD for the text on screen (line_change_marks); a result for older text is dropped.
     func refreshMarks() async {
-        guard let repoPath = AppModel.shared.repoPath else {
+        guard let repoPath = windowContext?.app.repoPath else {
             return
         }
         let doc = state.doc

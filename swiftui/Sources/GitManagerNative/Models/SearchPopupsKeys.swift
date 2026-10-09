@@ -109,12 +109,12 @@ extension SearchPopups {
         case "edit.findInFiles", "edit.searchEverywhere":
             openSearch("")
         default:
-            ToastCenter.shared.show(.info, "Not in the native app yet", detail: command.titleParts.map(\.text).joined())
+            context.toasts.show(.info, "Not in the native app yet", detail: command.titleParts.map(\.text).joined())
         }
     }
 
     private func open(filePath: String) {
         recent.opened(filePath)
-        Task { await EditorModel.shared.open(filePath, pin: true) }
+        Task { await context.editor.open(filePath, pin: true) }
     }
 }

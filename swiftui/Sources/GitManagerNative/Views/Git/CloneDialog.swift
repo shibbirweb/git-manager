@@ -10,7 +10,7 @@ import SwiftUI
 
 struct CloneDialog: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var center = CloneCenter.shared
+    @EnvironmentObject private var center: CloneCenter
     @State private var dialogFrame: CGRect = .zero
     @State private var focused = "url"
 

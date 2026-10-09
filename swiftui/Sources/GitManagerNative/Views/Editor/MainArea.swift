@@ -4,10 +4,10 @@ import SwiftUI
 
 struct MainArea: View {
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var diffs = DiffStore.shared
-    @ObservedObject private var editor = EditorModel.shared
-    @ObservedObject private var workspace = WorkspaceModel.shared
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var diffs: DiffStore
+    @EnvironmentObject private var editor: EditorModel
+    @EnvironmentObject private var workspace: WorkspaceModel
 
     var body: some View {
         if model.openDiff == nil && diffs.pendingName == nil && editor.tabs.tabs.isEmpty {

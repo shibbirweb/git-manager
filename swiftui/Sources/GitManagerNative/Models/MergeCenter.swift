@@ -8,7 +8,8 @@ import NativeCore
 
 @MainActor
 final class MergeCenter: ObservableObject {
-    static let shared = MergeCenter()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published var conflictsOpen = false
     /// The repository-relative path in the merge tool, nil when it is closed.
@@ -25,7 +26,7 @@ final class MergeCenter: ObservableObject {
     }
 
     func openMerge(_ conflictPath: String) async {
-        guard let repoPath = AppModel.shared.repoPath else {
+        guard let repoPath = context.app.repoPath else {
             return
         }
         mergePath = conflictPath
@@ -113,14 +114,14 @@ final class MergeCenter: ObservableObject {
                 try Backend.perform("save_mergetool", args)
                 exit(0)
             } catch {
-                ToastCenter.shared.show(.error, "Could not save the merge result", detail: AppModel.describe(error))
+                context.toasts.show(.error, "Could not save the merge result", detail: AppModel.describe(error))
             }
             return
         }
         guard let conflictPath = mergePath else {
             return
         }
-        let saved = await AppModel.shared.run("Save resolution", success: "Resolved \(conflictPath)") { repoPath in
+        let saved = await context.app.run("Save resolution", success: "Resolved \(conflictPath)") { repoPath in
             try Backend.perform("save_resolution", SaveResolutionArgs(
                 repoPath: repoPath, conflictPath: conflictPath, content: content, eol: eol
             ))

@@ -9,6 +9,7 @@ import NativeCore
 import SwiftUI
 
 struct WelcomeRecentList: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
     @ObservedObject private var store = RecentProjectsStore.shared
     @State private var query = ""
@@ -48,14 +49,18 @@ struct WelcomeRecentList: View {
             ToolbarButton(title: "Open") {
                 if let folderPath = HeaderMenus.pickFolder() {
                     Task {
-                        await AppModel.shared.openFolder(folderPath)
+                        await windowContext?.app.openFolder(folderPath)
                     }
                 }
             }
-            ToolbarButton(title: "Clone") { CloneCenter.shared.open() }
+            ToolbarButton(title: "Clone") { windowContext?.clone.open() }
             MenuButton(size: 32, iconSize: 15) {
-                [.command("Open Workspace from File...") { AppModel.shared.pickAndOpenWorkspaceFile() },
-                 WelcomeActions.notBuiltItem("Open Folder in New Window...")]
+                [.command("Open Workspace from File...") { windowContext?.app.pickAndOpenWorkspaceFile() },
+                 .command("Open Folder in New Window...") {
+                     if let folderPath = HeaderMenus.pickFolder() {
+                         WindowOpener.openNew(folders: [folderPath], from: windowContext)
+                     }
+                 }]
             }
         }
     }
@@ -98,7 +103,8 @@ struct WelcomeRecentList: View {
             return
         }
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if SettingsStore.shared.dialogOpen || ContextMenuCenter.shared.visible {
+            if event.window !== windowContext?.window || SettingsStore.shared.dialogShown(in: windowContext)
+                || windowContext?.menus.visible == true {
                 return event
             }
             let shown = WelcomeList.filter(RecentProjects.entries(store.lists), query: query)
@@ -112,7 +118,7 @@ struct WelcomeRecentList: View {
             switch event.keyCode {
             case 36, 76:
                 if let entry {
-                    WelcomeActions.open(entry)
+                    WelcomeActions.open(entry, in: windowContext)
                     return nil
                 }
             case 53 where !query.isEmpty:

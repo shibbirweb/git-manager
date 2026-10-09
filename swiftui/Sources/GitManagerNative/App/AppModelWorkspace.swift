@@ -13,6 +13,10 @@ extension AppModel {
 
     /// Opens several folders as one workspace (a saved session or -folders): each one's repositories together.
     func openFolders(_ folderPaths: [String], file: String? = nil) async {
+        // Another window showing them already comes to the front instead (window_focus_owner).
+        if WindowOpener.focusOwner(folders: folderPaths, workspaceFile: file, except: context) {
+            return
+        }
         let found = await Task.detached {
             folderPaths.map { WorkspaceModel.find(folderPath: $0) }
         }.value
@@ -22,7 +26,7 @@ extension AppModel {
             await open(repoPath: folderPaths.first ?? "")
             return
         }
-        let workspace = WorkspaceModel.shared
+        let workspace = context.workspace
         workspace.set(infos, file: file)
         let folderRoots = workspace.folders.map(\.root)
         RecentProjectsStore.shared.opened(folderRoots, file: file)
@@ -35,13 +39,14 @@ extension AppModel {
     }
 
     /// Opens folders on the control server's thread and answers once the active repository's status is shown.
-    nonisolated static func openFoldersNow(_ folderPaths: [String]) -> Result<StatusSnapshot, BackendError> {
+    nonisolated static func openFoldersNow(_ folderPaths: [String], in context: WindowContext)
+        -> Result<StatusSnapshot, BackendError> {
         let infos = folderPaths.compactMap { try? WorkspaceModel.find(folderPath: $0).get() }
         let roots = infos.map(\.root)
         if !infos.isEmpty && WorkspaceRules.unionRepos(infos).isEmpty {
             Control.onMain {
-                WorkspaceModel.shared.set(infos)
-                AppModel.shared.showNoRepository()
+                context.workspace.set(infos)
+                context.app.showNoRepository()
             }
             let message = "No git repository in \(roots.joined(separator: ", "))"
             return .failure(BackendError(kind: "noRepository", message: message))
@@ -50,16 +55,16 @@ extension AppModel {
             ?? roots.first ?? folderPaths.first ?? ""
         Control.onMain {
             if !infos.isEmpty {
-                WorkspaceModel.shared.set(infos)
-                RecentProjectsStore.shared.opened(WorkspaceModel.shared.folders.map(\.root))
+                context.workspace.set(infos)
+                RecentProjectsStore.shared.opened(context.workspace.folders.map(\.root))
             }
-            AppModel.shared.begin(activeRoot)
+            context.app.begin(activeRoot)
         }
         let result = readStatus(repoPath: activeRoot)
         Control.onMain {
-            AppModel.shared.finish(result)
+            context.app.finish(result)
             Task {
-                await WorkspaceModel.shared.refresh(skipping: activeRoot)
+                await context.workspace.refresh(skipping: activeRoot)
             }
         }
         return result
@@ -68,7 +73,7 @@ extension AppModel {
     /// Changes' Refresh All with several repositories: the active one, then the rest.
     func refreshAll() async {
         await refreshStatus()
-        await WorkspaceModel.shared.refresh(skipping: repoPath)
+        await context.workspace.refresh(skipping: repoPath)
     }
 
     /// Initialize Repository (repo.svelte.ts initRepository): git init in the folder, then scan again and make the
@@ -79,7 +84,7 @@ extension AppModel {
         }.value
         switch result {
         case .success(let created):
-            await openFolders(WorkspaceModel.shared.folders.map(\.root))
+            await openFolders(context.workspace.folders.map(\.root))
             await setActive(created.root)
             toasts.show(.success, "Initialized a repository in \(created.name)")
         case .failure(let error):

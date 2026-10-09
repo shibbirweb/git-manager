@@ -7,15 +7,15 @@ import Foundation
 extension Control {
     static func showLog(_ args: [String: Any]) -> String {
         let visible = args["visible"] as? Bool ?? true
-        let repoPath = onMain { AppModel.shared.repoPath }
+        let repoPath = onMain { WindowContext.focused.app.repoPath }
         guard repoPath != nil else {
             return reply(ok: false, text: "No folder is open")
         }
         if !visible {
-            onMain { LogModel.shared.hide() }
+            onMain { WindowContext.focused.log.hide() }
             return reply(ok: true, structured: onMain { logState() })
         }
-        onMain { LogModel.shared.show(repoPath: repoPath) }
+        onMain { WindowContext.focused.log.show(repoPath: repoPath) }
         guard waitFor({ $0.initialLoaded && !$0.loading }) else {
             return reply(ok: false, text: "The Log did not load within 10 s", structured: onMain { logState() })
         }
@@ -28,12 +28,12 @@ extension Control {
             }
             guard let commitId = try? Backend.call("resolve_revision", RevisionArgs(repoPath: repoPath,
                                                                                    revision: revision)) as String,
-                  onMain({ LogModel.shared.index(of: commitId) }) != nil else {
+                  onMain({ WindowContext.focused.log.index(of: commitId) }) != nil else {
                 return reply(ok: false, text: "\(revision) is not in the loaded history")
             }
             target = commitId
         } else if let position = args["position"] as? Int {
-            target = onMain { LogModel.shared.commit(at: position)?.id }
+            target = onMain { WindowContext.focused.log.commit(at: position)?.id }
             guard target != nil else {
                 return reply(ok: false, text: "No commit at position \(position)")
             }
@@ -41,7 +41,7 @@ extension Control {
         if let commitId = target {
             let semaphore = DispatchSemaphore(value: 0)
             Task { @MainActor in
-                await LogModel.shared.select(commitId)
+                await WindowContext.focused.log.select(commitId)
                 semaphore.signal()
             }
             semaphore.wait()
@@ -61,7 +61,7 @@ extension Control {
     private static func waitFor(_ done: @escaping @MainActor (LogModel) -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(10)
         while Date() < deadline {
-            if onMain({ done(LogModel.shared) }) {
+            if onMain({ done(WindowContext.focused.log) }) {
                 return true
             }
             Thread.sleep(forTimeInterval: 0.05)
@@ -71,7 +71,7 @@ extension Control {
 
     @MainActor
     static func logState() -> [String: Any] {
-        let log = LogModel.shared
+        let log = WindowContext.focused.log
         var state = self.state()
         state["logShown"] = log.shown
         state["logCommits"] = log.commits.count

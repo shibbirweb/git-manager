@@ -8,7 +8,8 @@ import NativeCore
 
 @MainActor
 final class ContextMenuCenter: ObservableObject {
-    static let shared = ContextMenuCenter()
+    /// The window this belongs to (WindowContext).
+    weak var context: WindowContext!
 
     @Published private(set) var items: [MenuItem] = []
     /// Where the menu was opened, in page points (the window below the title bar).
@@ -178,9 +179,9 @@ final class ContextMenuCenter: ObservableObject {
         guard monitor == nil else {
             return
         }
-        monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown]) { event in
-            let center = ContextMenuCenter.shared
-            guard center.visible else {
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown]) {
+            [weak self] event in
+            guard let center = self, center.visible, event.window === center.context.window else {
                 return event
             }
             if event.type == .keyDown {
@@ -194,9 +195,9 @@ final class ContextMenuCenter: ObservableObject {
         // The page closes it when the window loses focus.
         blurObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didResignKeyNotification, object: nil, queue: .main
-        ) { _ in
+        ) { [weak self] _ in
             MainActor.assumeIsolated {
-                ContextMenuCenter.shared.close()
+                self?.close()
             }
         }
     }

@@ -7,8 +7,9 @@ import NativeCore
 import SwiftUI
 
 struct CommitInfoView: View {
+    @Environment(\.windowContext) private var windowContext
     @Environment(\.theme) private var theme
-    @ObservedObject private var model = LogModel.shared
+    @EnvironmentObject private var model: LogModel
 
     let details: CommitDetails
 
@@ -47,7 +48,7 @@ struct CommitInfoView: View {
                 .padding(.bottom, 4)
             ForEach(details.files, id: \.path) { file in
                 CommitFileRow(file: file, selected: file.path == model.selectedPath) {
-                    if let repoPath = AppModel.shared.repoPath {
+                    if let repoPath = windowContext?.app.repoPath {
                         Task {
                             await model.selectFile(file.path, repoPath: repoPath)
                         }

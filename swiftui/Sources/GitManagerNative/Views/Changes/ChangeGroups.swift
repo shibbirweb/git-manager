@@ -5,8 +5,8 @@
 import SwiftUI
 
 struct ChangeGroups: View {
-    @ObservedObject private var model = AppModel.shared
-    @ObservedObject private var diffs = DiffStore.shared
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var diffs: DiffStore
 
     let repoRoot: String
     let groups: FileGroups
