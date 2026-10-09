@@ -9,7 +9,7 @@ after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 24 partial, 36 missing (62 features). 14 of 51 scenarios run in both apps.
+Native: 2 done, 25 partial, 35 missing (62 features). 15 of 51 scenarios run in both apps.
 
 Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
@@ -28,7 +28,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Split editor | split-editor | missing | split-editor | - | - |
 | New File and unsaved changes | new-file-and-unsaved-changes | missing | new-file | - | - |
 | Unload hidden tabs | unload-hidden-tabs | missing | settings | 99.42% / 99.03% | 213 MB / 46 MB |
-| Editing code | code-editing | missing | editor-file | - | - |
+| Editing code | code-editing | partial | edit | 99.5% / 99.48% | 175 MB / 44 MB |
 | Code appearance | code-appearance | partial | diff-every-line | - | - |
 | Markdown editor | markdown | missing | markdown | - | - |
 | Image and PDF preview | media-preview | missing | media-preview | - | - |

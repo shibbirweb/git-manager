@@ -1,6 +1,6 @@
 // The control server's `open_file` action: opens a file of the open folder in a tab, as a double click in the Files
 // panel does (kept open, not the preview tab), and answers once its text is on screen. `filePath` is relative to
-// the folder or absolute; `preview` true opens it in the preview tab instead.
+// the folder or absolute; `preview` true opens it in the preview tab instead; `line` and `column` place the cursor.
 
 import Foundation
 
@@ -29,6 +29,11 @@ extension Control {
         guard shown else {
             return reply(ok: false, text: message ?? "Could not open \(filePath)", structured: onMain { state() })
         }
+        if let line = args["line"] as? Int {
+            onMain {
+                placeCursor(line: line, column: args["column"] as? Int ?? 1)
+            }
+        }
         return reply(ok: true, structured: onMain { state() })
     }
 
@@ -41,15 +46,18 @@ extension Control {
             "activeTab": orNull(editor.tabs.active),
             "diffActive": editor.diffActive,
         ]
-        if let file = editor.file {
+        if let file = editor.file, let session = editor.session {
+            let head = session.state.selection.main.head
+            let line = session.state.doc.lineAt(head)
             result["file"] = [
                 "path": file.path,
                 "relativePath": file.relativePath,
-                "lineCount": file.lines.count,
-                "cursor": ["line": editor.cursor.line + 1, "column": editor.cursor.column + 1],
+                "lineCount": session.state.doc.lineCount,
+                "cursor": ["line": line.index + 1, "column": head - line.from + 1],
                 "language": file.language,
-                "highlighted": file.spans != nil,
+                "highlighted": session.colors != nil,
                 "blame": orNull(editor.blameLabel),
+                "dirty": session.dirty,
             ]
         }
         return result

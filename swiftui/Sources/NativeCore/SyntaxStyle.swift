@@ -61,6 +61,12 @@ public struct SyntaxSpans: Equatable, Sendable {
         public let from: Int
         public let to: Int
         public let style: SyntaxStyle
+
+        public init(from: Int, to: Int, style: SyntaxStyle) {
+            self.from = from
+            self.to = to
+            self.style = style
+        }
     }
 
     public let spans: [Span]

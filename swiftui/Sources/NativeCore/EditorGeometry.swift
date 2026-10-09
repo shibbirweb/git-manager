@@ -17,12 +17,15 @@ public struct EditorGeometry: Equatable, Sendable {
     public static let linePadding = (left: 6.0, right: 2.0)
 
     public let lineCount: Int
+    /// Rows on screen: the lines less those folds hide.
+    public let rowCount: Int
     /// The widest line, in characters of the monospaced code font.
     public let widestLine: Int
     public let advance: Double
 
-    public init(lineCount: Int, widestLine: Int, advance: Double) {
+    public init(lineCount: Int, widestLine: Int, advance: Double, rowCount: Int? = nil) {
         self.lineCount = max(1, lineCount)
+        self.rowCount = max(1, rowCount ?? lineCount)
         self.widestLine = widestLine
         self.advance = advance
     }
@@ -42,7 +45,7 @@ public struct EditorGeometry: Equatable, Sendable {
     }
 
     public var rowsBottom: Double {
-        Self.topPadding + Double(lineCount) * Self.lineHeight
+        Self.topPadding + Double(rowCount) * Self.lineHeight
     }
 
     /// What scrolls: the rows, then room to bring the last line to the top of a `viewport` this tall (CodeMirror's

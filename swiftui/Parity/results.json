@@ -100,6 +100,26 @@
         "windowPercent" : 81.9
       }
     },
+    "edit" : {
+      "dark" : {
+        "contentPercent" : 99.48,
+        "currentMb" : 173.4,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 40.8,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.48
+      },
+      "light" : {
+        "contentPercent" : 99.5,
+        "currentMb" : 174.9,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 44.1,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.39
+      }
+    },
     "file" : {
       "dark" : {
         "contentPercent" : 99.63,

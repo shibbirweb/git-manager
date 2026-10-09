@@ -1,0 +1,290 @@
+C	enter after brace	ts	2
+D	"function f() {"
+S	14,14	0
+>	insertNewlineAndIndent
+=	"function f() {\n  "
+s	17,17	0
+C	enter between braces	ts	2
+D	"function f() {}"
+S	14,14	0
+>	insertNewlineAndIndent
+=	"function f() {\n  \n}"
+s	17,17	0
+C	enter between brackets	ts	2
+D	"const a = [];"
+S	11,11	0
+>	insertNewlineAndIndent
+=	"const a = [\n  \n];"
+s	14,14	0
+C	enter in block	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	28,28	0
+>	insertNewlineAndIndent
+=	"function f() {\n  const a = 1\n    ;\n  return a;\n}\n"
+s	33,33	0
+C	enter after statement top	ts	2
+D	"foo();\n"
+S	6,6	0
+>	insertNewlineAndIndent
+=	"foo();\n\n"
+s	7,7	0
+C	enter continued	ts	2
+D	"  const x ="
+S	11,11	0
+>	insertNewlineAndIndent
+=	"  const x =\n    "
+s	16,16	0
+C	enter aligned args	ts	2
+D	"foo(a,"
+S	6,6	0
+>	insertNewlineAndIndent
+=	"foo(a,\n    "
+s	11,11	0
+C	enter before close	ts	2
+D	"if (x) {\n  y();}"
+S	15,15	0
+>	insertNewlineAndIndent
+=	"if (x) {\n  y();\n}"
+s	16,16	0
+C	enter in object	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	44,44	0
+>	insertNewlineAndIndent
+=	"const products = [\n  { id: \"mug\", price: 12 \n  },\n  { id: \"tee\", price: 24 },\n];\n"
+s	47,47	0
+C	enter after if	ts	2
+D	"if (x)"
+S	6,6	0
+>	insertNewlineAndIndent
+=	"if (x)\n  "
+s	9,9	0
+C	enter whitespace line	ts	2
+D	"{\n    \n}"
+S	6,6	0
+>	insertNewlineAndIndent
+=	"{\n\n  \n}"
+s	5,5	0
+C	enter mid indent	ts	2
+D	"{\n  foo();\n}"
+S	3,3	0
+>	insertNewlineAndIndent
+=	"{\n \n  foo();\n}"
+s	6,6	0
+C	enter trailing spaces	ts	2
+D	"{\n  a;   b\n}"
+S	6,6	0
+>	insertNewlineAndIndent
+=	"{\n  a;\n  b\n}"
+s	9,9	0
+C	blank line	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	20,20	0
+>	insertBlankLine
+=	"function f() {\n  const a = 1;\n  \n  return a;\n}\n"
+s	32,32	0
+C	type brace closes	ts	2
+D	""
+S	0,0	0
+>	type:"{"
+=	"{}"
+s	1,1	0
+C	type paren before word	ts	2
+D	"abc"
+S	0,0	0
+>	type:"("
+=	"(abc"
+s	1,1	0
+C	type paren before close	ts	2
+D	"f()"
+S	2,2	0
+>	type:"["
+=	"f([])"
+s	3,3	0
+C	type close over inserted	ts	2
+D	""
+S	0,0	0
+>	type:"("
+>	type:"x"
+>	type:")"
+=	"(x)"
+s	3,3	0
+C	type close not inserted	ts	2
+D	"()"
+S	1,1	0
+>	type:")"
+=	"())"
+s	2,2	0
+C	type quote	ts	2
+D	"x = "
+S	4,4	0
+>	type:"\""
+>	type:"a"
+>	type:"\""
+=	"x = \"a\""
+s	7,7	0
+C	type quote after word	ts	2
+D	"abc"
+S	3,3	0
+>	type:"'"
+=	"abc'"
+s	4,4	0
+C	wrap selection in brackets	ts	2
+D	"abc"
+S	0,3	0
+>	type:"("
+=	"(abc)"
+s	1,4	0
+C	backspace pair	ts	2
+D	""
+S	0,0	0
+>	type:"["
+>	deleteBracketPair
+=	""
+s	0,0	0
+C	reindent close brace	ts	2
+D	"if (x) {\n  y();\n  "
+S	18,18	0
+>	type:"}"
+=	"if (x) {\n  y();\n}"
+s	17,17	0
+C	enter then close	ts	2
+D	"function f() {"
+S	14,14	0
+>	insertNewlineAndIndent
+>	type:"x"
+>	insertNewlineAndIndent
+>	type:"}"
+=	"function f() {\n  x\n}"
+s	20,20	0
+C	backspace indent unit	ts	2
+D	"{\n    x\n}"
+S	6,6	0
+>	deleteCharBackward
+=	"{\n  x\n}"
+s	4,4	0
+C	backspace odd indent	ts	2
+D	"{\n   x\n}"
+S	5,5	0
+>	deleteCharBackward
+=	"{\n  x\n}"
+s	4,4	0
+C	backspace line start	ts	2
+D	"ab\ncd"
+S	3,3	0
+>	deleteCharBackward
+=	"abcd"
+s	2,2	0
+C	delete forward end	ts	2
+D	"ab\ncd"
+S	2,2	0
+>	deleteCharForward
+=	"abcd"
+s	2,2	0
+C	delete selection	ts	2
+D	"hello world"
+S	2,7	0
+>	deleteCharBackward
+=	"heorld"
+s	2,2	0
+C	delete group back	ts	2
+D	"foo.barBaz  qux"
+S	15,15	0
+>	deleteGroupBackward
+>	deleteGroupBackward
+>	deleteGroupBackward
+=	"foo."
+s	4,4	0
+C	delete group forward	ts	2
+D	"  foo(bar) x"
+S	0,0	0
+>	deleteGroupForward
+>	deleteGroupForward
+=	"(bar) x"
+s	0,0	0
+C	delete group space	ts	2
+D	"a b"
+S	2,2	0
+>	deleteGroupBackward
+=	"b"
+s	0,0	0
+C	indent more	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	17,30	0
+>	indentMore
+=	"function f() {\n    const a = 1;\n  return a;\n}\n"
+s	19,32	0
+C	indent less	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	17,30	0
+>	indentLess
+>	indentLess
+=	"function f() {\nconst a = 1;\n  return a;\n}\n"
+s	15,28	0
+C	indent less tabs	plain	0
+D	"\t\tx\n\ty"
+S	0,6	0
+>	indentLess
+=	"\tx\ny"
+s	0,4	0
+C	indent more tabs	plain	0
+D	"x\ny"
+S	0,3	0
+>	indentMore
+=	"\tx\n\ty"
+s	1,5	0
+C	move line down	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	17,20	0
+>	moveLineDown
+=	"function f() {\n  return a;\n  const a = 1;\n}\n"
+s	29,32	0
+C	move line up	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	30,30	0
+>	moveLineUp
+>	moveLineUp
+=	"  return a;\nfunction f() {\n  const a = 1;\n}\n"
+s	0,0	0
+C	move last line down	ts	2
+D	"a\nb"
+S	2,2	0
+>	moveLineDown
+=	"a\nb"
+s	2,2	0
+C	copy line down	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	copyLineDown
+=	"function f() {\n  const a = 1;\n  const a = 1;\n  return a;\n}\n"
+s	33,33	0
+C	copy line up	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	copyLineUp
+=	"function f() {\n  const a = 1;\n  const a = 1;\n  return a;\n}\n"
+s	18,18	0
+C	line comment	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	toggleComment
+=	"function f() {\n  // const a = 1;\n  return a;\n}\n"
+s	21,21	0
+C	line comment twice	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	toggleComment
+>	toggleComment
+=	"function f() {\n  const a = 1;\n  return a;\n}\n"
+s	18,18	0
+C	line comment block	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	0,40	0
+>	toggleComment
+=	"// function f() {\n//   const a = 1;\n//   return a;\n}\n"
+s	3,49	0
+C	line comment mixed	ts	2
+D	"  a\n  // b\n"
+S	0,9	0
+>	toggleComment
+=	"  // a\n  // // b\n"
+s	0,15	0

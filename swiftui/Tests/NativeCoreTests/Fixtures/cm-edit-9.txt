@@ -1,0 +1,290 @@
+C	writing 23	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	102,102	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n \n    xconst line = this.lines.find((entry) => entry.product.id === product.id);\n    if (lin
+=+	e) {\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantit
+=+	y });\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quanti
+=+	ty, 0);\n  }\n}\n"
+s	108,108	0
+C	writing 24	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	17,17	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  \n  xconst a = 1;\n  return a;\n}\n"
+s	21,21	0
+C	writing 25	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	41,41	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: \n    x12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	47,47	0
+C	writing 26	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	53,53	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n  x\n\n  add(product: Product, quantity = 1
+=+	): void {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (li
+=+	ne) {\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quanti
+=+	ty });\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quant
+=+	ity, 0);\n  }\n}\n"
+s	57,57	0
+C	writing 27	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	27,27	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a = \n    x1;\n  return a;\n}\n"
+s	33,33	0
+C	writing 28	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	74,74	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n  x\n];\n"
+s	78,78	0
+C	writing 29	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	350,350	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+=+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+=+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce(\n      x(sum, line) => sum + line.q
+=+	uantity, 0);\n  }\n}\n"
+s	358,358	0
+C	writing 30	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	32,32	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a = 1;\n  \n  xreturn a;\n}\n"
+s	36,36	0
+C	writing 31	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	61,61	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\",\n    xprice: 24 },\n];\n"
+s	67,67	0
+C	writing 32	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	343,343	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+=+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+=+	;\n  }\n\n  get count(): number {\n    return this.lines.\n      xreduce((sum, line) => sum + line.q
+=+	uantity, 0);\n  }\n}\n"
+s	351,351	0
+C	writing 33	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	31,31	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a = 1;\n \n  xreturn a;\n}\n"
+s	35,35	0
+C	writing 34	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	48,48	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n \n  x{ id: \"tee\", price: 24 },\n];\n"
+s	52,52	0
+C	writing 35	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	396,396	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+=+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+=+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+=+	0);\n  }\n}\n\nx"
+s	398,398	0
+C	writing 36	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	25,25	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a \n    x= 1;\n  return a;\n}\n"
+s	31,31	0
+C	writing 37	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	54,54	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id:\n    x\"tee\", price: 24 },\n];\n"
+s	60,60	0
+C	writing 38	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	351,351	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+=+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+=+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((\n      xsum, line) => sum + line.q
+=+	uantity, 0);\n  }\n}\n"
+s	359,359	0
+C	writing 39	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	27,27	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a = \n    x1;\n  return a;\n}\n"
+s	33,33	0
+C	writing 40	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	22,22	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  {\n    xid: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	28,28	0
+C	writing 41	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	319,319	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+=+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+=+	;\n  }\n\n  get count(): number \n  x{\n    return this.lines.reduce((sum, line) => sum + line.quant
+=+	ity, 0);\n  }\n}\n"
+s	323,323	0
+C	writing 42	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	32,32	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a = 1;\n  \n  xreturn a;\n}\n"
+s	36,36	0
+C	writing 43	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	48,48	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n \n  x{ id: \"tee\", price: 24 },\n];\n"
+s	52,52	0
+C	writing 44	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	102,102	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n \n    xconst line = this.lines.find((entry) => entry.product.id === product.id);\n    if (lin
+=+	e) {\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantit
+=+	y });\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quanti
+=+	ty, 0);\n  }\n}\n"
+s	108,108	0
+C	writing 45	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	25,25	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a \n    x= 1;\n  return a;\n}\n"
+s	31,31	0
+C	writing 46	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	20,20	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n \n  x{ id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	24,24	0
+C	writing 47	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	20,20	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n\n  xprivate lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1):
+=+	 void {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line
+=+	) {\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity
+=+	 });\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantit
+=+	y, 0);\n  }\n}\n"
+s	24,24	0
+C	writing 48	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	11,11	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f(\n  x\n) {\n  const a = 1;\n  return a;\n}\n"
+s	15,15	0
+C	writing 49	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	33,33	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\",\n    xprice: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	39,39	0
+C	writing 50	ts	2
+D	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+D+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+D+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, quantity })
+D+	;\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line) => sum + line.quantity, 
+D+	0);\n  }\n}\n"
+S	279,279	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"export class Cart {\n  private lines: CartLine[] = [];\n\n  add(product: Product, quantity = 1): vo
+=+	id {\n    const line = this.lines.find((entry) => entry.product.id === product.id);\n    if (line) {
+=+	\n      line.quantity += quantity;\n      return;\n    }\n    this.lines.push({ product, \n         
+=+	             xquantity });\n  }\n\n  get count(): number {\n    return this.lines.reduce((sum, line)
+=+	 => sum + line.quantity, 0);\n  }\n}\n"
+s	303,303	0
+C	writing 51	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	27,27	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"function f() {\n  const a = \n    x1;\n  return a;\n}\n"
+s	33,33	0
+C	writing 52	ts	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	78,78	0
+>	insertNewlineAndIndent
+>	type:"x"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n\nx"
+s	80,80	0

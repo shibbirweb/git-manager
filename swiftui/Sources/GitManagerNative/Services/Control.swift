@@ -54,6 +54,8 @@ enum Control {
             return diff(args)
         case "open_file":
             return openFile(args)
+        case "editor_command":
+            return editorCommand(args)
         case "scroll":
             return scroll(speed: args["speed"] as? Double ?? 80, rounds: args["rounds"] as? Int ?? 1)
         case "open_folder":

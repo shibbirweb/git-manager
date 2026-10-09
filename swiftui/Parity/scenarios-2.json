@@ -242,6 +242,17 @@
       ]
     },
     {
+      "id": "edit",
+      "title": "Editing src/catalog.ts with the Code menu",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and open src/catalog.ts at line 2, column 3.",
+        "Code > Move Line Down, Code > Duplicate, Code > Comment with Line Comment.",
+        "Code > Select Next Occurrence twice: \"id\" is selected in two places, with the change markers in the gutter."
+      ],
+      "run": { "editScreen": "edit" }
+    },
+    {
       "id": "memory-breakdown",
       "title": "Memory breakdown",
       "folder": "acme/storefront",

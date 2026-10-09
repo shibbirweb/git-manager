@@ -1,29 +1,63 @@
 // Draws what is on screen of a file, and nothing else, like DiffCanvas: one view the size of the editor's scroller
-// that paints the lines crossing it from the scroll offset, so a long file costs no more memory than a short one.
+// that paints the rows crossing it from the scroll offset, so a long file costs no more memory than a short one.
 // The pixels are layers as the current app's page has them (CanvasSurface.swift): the view's own bitmap holds the
-// editor's background, the scroller's content (the active line, word highlights, code text, indent guides and the
-// blame note) is a see-through layer over it with the opaque gutter drawn over the code, and the cursor and the
-// scrollbar thumbs are layers of their own (FileCanvasLayers.swift). The sizes are EditorGeometry's.
+// editor's background, the scroller's content (selections, the active line, highlights, code text, indent guides
+// and the blame note) is a see-through layer over it with the opaque gutter drawn over the code, and the cursors
+// and the scrollbar thumbs are layers of their own (FileCanvasLayers.swift). Rows are lines, a folded block one row
+// (FoldLayout). An edit repaints the rows it touches; the sizes are EditorGeometry's.
 
 import AppKit
 import NativeCore
 
 final class FileCanvas: NSView {
     struct Content {
-        var file: OpenFile
-        var theme: Theme
-        var cursor: (line: Int, column: Int)
+        var path: String
+        /// The session's revision (any change) and its text-and-folds revision (what the guides follow).
+        var revision: Int
+        var docRevision: Int
+        var state: EditorState
+        var colors: SyntaxColors?
+        var foldRanges: FoldRanges
+        var marks: [LineMark]
         var blameLabel: String?
+        var theme: Theme
+        /// The editor has the keyboard focus: its cursors show.
+        var focused: Bool
+        var language: String
+        var indentSize: Int
+        /// The cursor's blink ("blink" or "solid", Settings > Editor > Cursor blinking).
+        var blinking: String
+        let layout: FoldLayout
+        let geometry: EditorGeometry
 
-        var geometry: EditorGeometry {
-            EditorGeometry(lineCount: file.lines.count, widestLine: file.widestLine, advance: CodeLineText.advance)
+        @MainActor
+        init(session: EditorSession, blameLabel: String?, theme: Theme, focused: Bool, blinking: String) {
+            path = session.file.path
+            revision = session.revision
+            docRevision = session.docRevision
+            state = session.state
+            colors = session.colors
+            foldRanges = session.foldRanges
+            marks = session.marks
+            self.blameLabel = blameLabel
+            self.theme = theme
+            self.focused = focused
+            language = session.file.language
+            indentSize = session.file.indent?.size ?? 2
+            self.blinking = blinking
+            layout = FoldLayout(folds: session.state.folds, doc: session.state.doc)
+            geometry = EditorGeometry(lineCount: session.state.doc.lineCount, widestLine: session.state.doc.widestLine,
+                                      advance: CodeLineText.advance, rowCount: layout.rowCount)
+        }
+
+        var doc: TextDocument {
+            state.doc
         }
 
         /// True when `other` paints the same pixels.
         func drawsLike(_ other: Content) -> Bool {
-            file.path == other.file.path && file.content.version == other.file.content.version
-                && file.spans == other.file.spans && theme.id == other.theme.id && cursor == other.cursor
-                && blameLabel == other.blameLabel
+            path == other.path && revision == other.revision && theme.id == other.theme.id
+                && focused == other.focused && blameLabel == other.blameLabel && blinking == other.blinking
         }
     }
 
@@ -35,9 +69,15 @@ final class FileCanvas: NSView {
             if content?.theme.id != colors?.theme.id {
                 colors = content.map { CanvasColors(theme: $0.theme) }
             }
-            paintedOffset = nil
+            dirtyRows = repaintRows(from: oldValue, to: content)
             needsDisplay = true
         }
+    }
+
+    /// Rows to paint again for a change: every row on screen (nil). Only the rows crossing the canvas are ever
+    /// painted, so a full repaint after an edit stays as cheap as a scroll step.
+    private func repaintRows(from old: Content?, to new: Content?) -> IndexSet? {
+        nil
     }
 
     /// The scroll position: the content's y at the canvas's top edge, and its x at the gutter's right edge.
@@ -61,12 +101,16 @@ final class FileCanvas: NSView {
     let base = CanvasSurface()
     /// The scroller's content layer, see-through where nothing is painted.
     let surface = CanvasSurface()
-    let cursorSurface = CanvasSurface()
+    /// One layer per cursor, made as more cursors show.
+    var cursorSurfaces: [CanvasSurface] = []
     /// The vertical and the horizontal scrollbar thumb.
     let thumbSurfaces = [CanvasSurface(), CanvasSurface()]
     var paintedOffset: CGFloat?
-    /// The file and cursor position the blink last started at: a move restarts it, a scroll does not.
+    /// Rows to paint again at the next paint (nil: all on screen).
+    var dirtyRows: IndexSet?
+    /// The cursors' positions the blink last started at: a move restarts it, a scroll does not.
     var blinkKey = ""
+    var guideCache: (key: String, runs: [IndentGuides.Run])?
     private(set) var colors: CanvasColors?
     var paintBand = CGRect.zero
     let glyphs = GlyphCompositor()
@@ -88,7 +132,7 @@ final class FileCanvas: NSView {
 
     override func makeBackingLayer() -> CALayer {
         let layer = super.makeBackingLayer()
-        for surface in [surface, cursorSurface] + thumbSurfaces {
+        for surface in [surface] + thumbSurfaces {
             layer.addSublayer(surface.layer)
         }
         return layer
@@ -126,18 +170,18 @@ final class FileCanvas: NSView {
         return bounds.height - (wide ? EditorGeometry.scrollbarSize : 0)
     }
 
-    /// Where the cursor line's blame note ends, from the content's left edge (it widens what scrolls sideways).
+    /// Where the main cursor line's blame note ends, from the content's left edge (it widens what scrolls sideways).
     func noteEnd(_ content: Content) -> CGFloat {
-        guard let label = content.blameLabel, content.file.lines.indices.contains(content.cursor.line) else {
+        guard let label = content.blameLabel else {
             return 0
         }
-        let length = content.file.lines[content.cursor.line].utf16.count
-        return noteX(lineLength: length) + ExactText.width(label, font: noteFont)
+        let row = content.layout.row(forLine: content.doc.lineAt(content.state.selection.main.head).index)
+        return noteX(rowWidth: rowWidth(content, row: row)) + ExactText.width(label, font: noteFont)
     }
 
     /// The note's left edge from the content's left edge: 36 points after the line's end (inlineBlameLayout.ts).
-    func noteX(lineLength: Int) -> CGFloat {
-        EditorGeometry.linePadding.left + CGFloat(lineLength) * CodeLineText.advance + 36
+    func noteX(rowWidth: CGFloat) -> CGFloat {
+        EditorGeometry.linePadding.left + rowWidth + 36
     }
 
     /// The text's left edge in canvas points.
@@ -145,29 +189,40 @@ final class FileCanvas: NSView {
         CGFloat(content.geometry.guttersWidth) + EditorGeometry.linePadding.left - offsetX
     }
 
-    /// The top of 0-based `line` in canvas points.
-    func lineTop(_ line: Int) -> CGFloat {
-        CGFloat(EditorGeometry.topPadding) + CGFloat(line) * CGFloat(EditorGeometry.lineHeight) - offset
+    /// The top of row `row` in canvas points: a point lower for each fold row at or above it (FoldLayout).
+    func rowTop(_ row: Int) -> CGFloat {
+        let folds = CGFloat(content?.layout.foldRows(through: row) ?? 0)
+        return CGFloat(EditorGeometry.topPadding) + CGFloat(row) * CGFloat(EditorGeometry.lineHeight) + folds - offset
     }
 
-    /// The lines crossing canvas points `top` to `bottom`, with `spill` points of margin.
-    func lines(_ content: Content, from top: CGFloat, to bottom: CGFloat, spill: CGFloat = 24) -> Range<Int> {
+    /// The extra height of row `row` above its rowTop: 1 for a row with a fold placeholder, whose line block on the
+    /// page is 17 points with its text at the bottom (the gutter's number stays at the block's top), else 0.
+    func blockExtra(_ row: Int) -> CGFloat {
+        guard let layout = content?.layout else {
+            return 0
+        }
+        return layout.foldRows(through: row) > layout.foldRows(through: row - 1) ? 1 : 0
+    }
+
+    /// The rows crossing canvas points `top` to `bottom`, with `spill` points of margin.
+    func rows(_ content: Content, from top: CGFloat, to bottom: CGFloat, spill: CGFloat = 24) -> Range<Int> {
         let height = CGFloat(EditorGeometry.lineHeight), padding = CGFloat(EditorGeometry.topPadding)
-        let first = max(0, Int(((top + offset - padding - spill) / height).rounded(.down)))
-        let last = min(content.file.lines.count, Int(((bottom + offset - padding + spill) / height).rounded(.up)) + 1)
+        // Fold rows push the rows below them down, so the first row on screen can be up to their count earlier.
+        let folds = content.layout.groups.count
+        let first = max(0, Int(((top + offset - padding - spill) / height).rounded(.down)) - folds)
+        let last = min(content.layout.rowCount, Int(((bottom + offset - padding + spill) / height).rounded(.up)) + 1)
         return first < last ? first..<last : 0..<0
     }
 
-    /// The line and column under a click at `point` (canvas points), as CodeMirror's posAtCoords picks them.
-    func position(at point: NSPoint) -> (line: Int, column: Int)? {
-        guard let content, !content.file.lines.isEmpty else {
-            return nil
-        }
+    /// The row at canvas y, clamped to the document.
+    func row(at y: CGFloat, _ content: Content) -> Int {
         let height = CGFloat(EditorGeometry.lineHeight)
-        let row = Int(((point.y + offset - CGFloat(EditorGeometry.topPadding)) / height).rounded(.down))
-        let line = min(max(0, row), content.file.lines.count - 1)
-        let length = content.file.lines[line].utf16.count
-        let column = Int(((point.x - textX(content)) / CodeLineText.advance).rounded())
-        return (line, min(max(0, column), length))
+        var row = min(max(0, Int(((y + offset - CGFloat(EditorGeometry.topPadding)) / height).rounded(.down))),
+                      content.layout.rowCount - 1)
+        // Fold rows push the rows below them down: step back while the row starts below y.
+        while row > 0 && rowTop(row) > y {
+            row -= 1
+        }
+        return row
     }
 }

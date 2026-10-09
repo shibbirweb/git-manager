@@ -1,0 +1,286 @@
+C	random 49	plain	4
+D	"a b c\n  d e\n"
+S	12,0	0
+>	copyLineUp
+>	type:"b"
+>	insertNewlineAndIndent
+>	type:"'"
+>	deleteCharBackward
+>	undo
+>	redo
+>	type:"\""
+=	"b\n'\"\""
+s	4,4	0
+C	random 50	plain	2
+D	"a b c\n  d e\n"
+S	10,10;12,12	0
+>	indentLess
+>	type:"a"
+>	toggleComment
+>	toggleComment
+>	type:"}"
+>	type:"z"
+>	selectNextOccurrence
+>	type:"b"
+=	"a b c\nd a}b\na}b"
+s	11,11;15,15	0
+C	random 51	plain	0
+D	"a b c\n  d e\n"
+S	4,4	0
+>	type:"["
+>	type:" "
+>	type:"a"
+>	redo
+>	type:"a"
+>	type:"\""
+>	type:"{"
+>	type:"{"
+=	"a b [ aa\"{{c\n  d e\n"
+s	11,11	0
+C	random 52	plain	2
+D	"a b c\n  d e\n"
+S	4,4	0
+>	type:"a"
+>	type:"]"
+>	insertNewlineAndIndent
+>	type:"z"
+>	deleteGroupBackward
+>	type:"{"
+>	copyLineUp
+>	undo
+=	"a b a]\n{c\n  d e\n"
+s	8,8	0
+C	random 53	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	7,7	0
+>	duplicate
+>	indentLess
+>	type:"z"
+>	wait:700
+>	selectNextOccurrence
+>	toggleComment
+>	deleteCharForward
+>	type:"a"
+=	"if (x) {\nif (x) a{\n  y(1, 2);\n}\n"
+s	17,17	0
+C	random 54	plain	0
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	37,37	0
+>	indentMore
+>	deleteCharForward
+>	type:"b"
+>	type:"{"
+>	type:"]"
+>	type:"b"
+>	type:"{"
+>	insertNewlineAndIndent
+=	"function f() {\n  const a = 1;\n\t  returb{]b{\n\t  \n\t  }} a;\n}\n"
+s	47,47	0
+C	random 55	plain	4
+D	"x"
+S	1,1	0
+>	type:")"
+>	undo
+>	selectNextOccurrence
+>	type:"("
+>	deleteCharBackward
+>	type:"("
+>	deleteCharBackward
+>	indentLess
+=	"())"
+s	1,1	0
+C	random 56	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	4,4;7,7	0
+>	undo
+>	type:"'"
+>	type:"}"
+>	type:"("
+>	deleteCharBackward
+>	toggleComment
+>	wait:700
+>	copyLineUp
+=	"if ('}x) '}{\nif ('}x) '}{\n  y(1, 2);\n}\n"
+s	6,6;11,11	0
+C	random 57	plain	0
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	15,15;18,18	0
+>	indentMore
+>	undo
+>	selectNextOccurrence
+>	deleteCharBackward
+>	deleteGroupBackward
+>	type:"b"
+>	type:"("
+>	selectNextOccurrence
+=	"if (x) {\n  y(b() b();\n}\n"
+s	15,15;19,19	0
+C	random 58	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	20,20	0
+>	toggleComment
+>	type:"b"
+>	insertNewlineAndIndent
+>	deleteBracketPair
+>	type:"\""
+>	type:" "
+>	type:"b"
+>	undo
+=	"if (x) {\n  y(1, 2);\nb}\n"
+s	21,21	0
+C	random 59	plain	4
+D	"x"
+S	0,1	0
+>	deleteCharBackward
+>	type:"b"
+>	wait:700
+>	type:"b"
+>	moveLineDown
+>	copyLineUp
+>	type:"a"
+>	selectLine
+=	"bba\nbb"
+s	0,4	0
+C	random 60	plain	0
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	15,15	0
+>	undo
+>	type:"]"
+>	type:"z"
+>	type:"("
+>	type:"}"
+>	type:"["
+>	selectLine
+>	type:"z"
+=	"function f() {\nz  return a;\n}\n"
+s	16,16	0
+C	random 61	plain	4
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	66,8	0
+>	type:"["
+>	deleteCharBackward
+>	type:"["
+>	type:"'"
+>	type:"("
+>	undo
+>	type:"("
+>	deleteBracketPair
+=	"const pr(oducts = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", pric)e: 24 },\n];\n"
+s	67,9	0
+C	random 62	plain	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	19,19;22,22	0
+>	type:"["
+>	duplicate
+>	type:"b"
+>	type:" "
+>	selectLine
+>	type:"}"
+>	copyLineUp
+>	moveLineDown
+=	"function f() {\n  co[nst[ a = 1;\n}  return a;\n}  return a;\n}\n"
+s	46,46	0
+C	random 63	plain	0
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	12,12;15,15	0
+>	deleteCharForward
+>	type:"]"
+>	type:"z"
+>	type:"}"
+>	moveLineDown
+>	wait:700
+>	deleteBracketPair
+>	type:"]"
+=	"  return a;\nfunction f()]z}]{\n]z}] const a = 1;\n}\n"
+s	28,28;34,34	0
+C	random 64	plain	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	11,11	0
+>	undo
+>	type:"("
+>	selectLine
+>	type:" "
+>	indentMore
+>	type:"]"
+>	type:"{"
+>	indentLess
+=	" ]{}  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	3,3	0
+C	random 65	plain	4
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	27,27;30,30	0
+>	undo
+>	indentMore
+>	selectNextOccurrence
+>	deleteCharForward
+>	selectLine
+>	wait:700
+>	indentMore
+>	type:"'"
+=	"function f() {\n    '      const a = ;\n         return a;\n'}\n"
+s	20,57	0
+C	random 66	plain	0
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	69,69;72,72	0
+>	indentMore
+>	type:"\""
+>	type:"{"
+>	selectLine
+>	type:"("
+>	duplicate
+>	toggleComment
+>	undo
+=	"const products = [\n  { id: \"mug\", price: 12 },\n(\t  { id: \"tee\", price: \"{24 \"{},\n)];\n"
+s	48,81	0
+C	random 67	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	12,12	0
+>	type:" "
+>	deleteGroupBackward
+>	toggleComment
+>	selectLine
+>	type:")"
+>	duplicate
+>	copyLineUp
+>	type:"}"
+=	"if (x) {\n)}\n)}}\n)}\n"
+s	14,14	0
+C	random 68	plain	2
+D	"x"
+S	1,1	0
+>	type:"}"
+>	toggleComment
+>	undo
+>	type:"["
+>	toggleComment
+>	copyLineUp
+>	deleteCharForward
+>	indentLess
+=	"x[\nx[]"
+s	2,2	0
+C	random 69	plain	0
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	13,13	0
+>	undo
+>	deleteCharBackward
+>	moveLineDown
+>	type:")"
+>	type:")"
+>	indentMore
+>	type:"\""
+>	duplicate
+=	"if (x) {\n}\n\t  y))\"1, 2);\n\t  y))\"1, 2);\n"
+s	32,32	0
+C	random 70	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	2,21	0
+>	type:")"
+>	copyLineUp
+>	type:"a"
+>	indentLess
+>	type:"b"
+>	deleteCharForward
+>	undo
+>	insertNewlineAndIndent
+=	"if)a\n\nif)\n"
+s	5,5	0

@@ -1,15 +1,5 @@
 # Parity scenarios (continued)
 
-## sign-in: Sign-in prompt (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).
-3. Fetch: the Sign in dialog asks for a username and a password.
-
-- Sign-in prompts (`sign-in-prompts`, missing): The Sign in dialog for a username and password or an SSH passphrase.
-
 ## commit-options: Commit options (native app cannot show it yet)
 
 Folder: demo `acme/storefront`
@@ -274,3 +264,12 @@ Measured: light 99.5% (270 MB / 44 MB, 2026-10-09), dark 99.38% (271 MB / 49 MB,
   one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing; selection,
   find, file links, the scrollbar, dropping files and terminals in editor tabs; Settings, Terminal (font, cursor,
   scrollback) and the Shelf tab's view.
+
+## scripts: Scripts panel (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Click the play button in the left activity bar (View > Scripts): the scripts of package.json.
+
+- Scripts tool window (`scripts`, missing): The scripts of package.json with run buttons and the Node version.

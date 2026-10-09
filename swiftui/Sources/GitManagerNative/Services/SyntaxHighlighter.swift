@@ -19,6 +19,11 @@ final class SyntaxHighlighter: @unchecked Sendable {
     /// The syntax spans and bracket colors for `text`, or nil when the file's language has no grammar or the script
     /// is missing.
     func spans(filePath: String, text: String) async -> SyntaxColors? {
+        await syntax(filePath: filePath, text: text).colors
+    }
+
+    /// The colors and, for the file editor, what each line can fold (CodeMirror's foldable).
+    func syntax(filePath: String, text: String) async -> (colors: SyntaxColors?, folds: FoldRanges) {
         await withCheckedContinuation { continuation in
             queue.async {
                 continuation.resume(returning: self.highlight(filePath: filePath, text: text))
@@ -26,7 +31,7 @@ final class SyntaxHighlighter: @unchecked Sendable {
         }
     }
 
-    private func highlight(filePath: String, text: String) -> SyntaxColors? {
+    private func highlight(filePath: String, text: String) -> (colors: SyntaxColors?, folds: FoldRanges) {
         generation += 1
         let current = generation
         defer {
@@ -39,7 +44,7 @@ final class SyntaxHighlighter: @unchecked Sendable {
         guard let context = loadContext(), let function = context.objectForKeyedSubscript("gmHighlight"),
             !function.isUndefined
         else {
-            return nil
+            return (nil, FoldRanges())
         }
         var answer: String?
         let resolved: @convention(block) (JSValue) -> Void = { value in
@@ -48,14 +53,21 @@ final class SyntaxHighlighter: @unchecked Sendable {
         let promise = function.call(withArguments: [filePath, text])
         _ = promise?.invokeMethod("then", withArguments: [JSValue(object: resolved, in: context) as Any])
         guard let answer, let data = answer.data(using: .utf8),
-            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let spans = object["spans"] as? [Any], !spans.isEmpty
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else {
-            return nil
+            return (nil, FoldRanges())
         }
-        return SyntaxColors(
+        let flat = object["folds"] as? [Int] ?? []
+        let folds = FoldRanges(stride(from: 0, to: flat.count - 1, by: 2).map {
+            CodeFold(from: flat[$0], to: flat[$0 + 1])
+        })
+        guard let spans = object["spans"] as? [Any], !spans.isEmpty else {
+            return (nil, folds)
+        }
+        let colors = SyntaxColors(
             spans: SyntaxSpans(flat: spans), brackets: SyntaxSpans(flat: object["brackets"] as? [Any] ?? [])
         )
+        return (colors, folds)
     }
 
     private func loadContext() -> JSContext? {

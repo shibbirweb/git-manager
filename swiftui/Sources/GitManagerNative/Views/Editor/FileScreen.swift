@@ -1,6 +1,6 @@
 // A file in the main area under the tab strip (src/lib/views/files/FileView.svelte), measured in
 // swiftui/Reference/file-<mode>/file-bar.json and file-actions.json: the file bar (the path as crumbs, then the
-// actions), then the editor (FileEditorView). Read only for now: the cursor moves, the text does not change.
+// actions), then the editor (FileEditorView), which edits the session's text.
 
 import AppKit
 import NativeCore
@@ -15,8 +15,8 @@ struct FileScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             FileBar(folderName: model.folderName, relativePath: file.relativePath)
-            FileEditorView(file: file, cursor: editor.cursor, blameLabel: editor.blameLabel) { line, column in
-                editor.cursor = (line, column)
+            if let session = editor.session {
+                FileEditorView(session: session, revision: editor.revision, blameLabel: editor.blameLabel)
             }
         }
     }

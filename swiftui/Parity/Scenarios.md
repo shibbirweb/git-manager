@@ -119,17 +119,6 @@ Folder: demo `acme/storefront`
 
 - Rounded panels (`rounded-panels`, missing): Rounded panels with gaps between them.
 
-## editor-file: A file open in the editor (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Double-click src/cart.ts in the Files panel: a tab with the code and the change markers in the gutter.
-3. Put the cursor on line 10.
-
-- Editing code (`code-editing`, missing): Multiple cursors, the Code menu, Go to Line, folding and completion. Native
-  lacks: an editor (the native diff panes are read-only drawings).
-
 ## file: src/catalog.ts in a file tab (runs in both apps)
 
 Folder: demo `acme/storefront`
@@ -144,8 +133,7 @@ Measured: light 99.63% (233 MB / 43 MB, 2026-10-08), dark 99.63% (234 MB / 43 MB
   close. Native lacks: deleted files in the tree and the exact status letter (U for untracked); the heading buttons,
   resizing and hiding the panel.
 - Editor and tabs (`editor`, partial): A file in a tab with the path bar, the code and the blame note; the empty
-  editor area without one. Native lacks: editing and saving (the file view is read only: the cursor moves, the text
-  does not change); a changed file's gutter markers, badge and previous and next change; Blame in the file bar; binary
+  editor area without one. Native lacks: the tab's badge and previous and next change; Blame in the file bar; binary
   files, images and Markdown previews show only a message; the six actions of the empty editor area do nothing.
 
 ## tabs: Tab strip: pinned and wrapped tabs (native app cannot show it yet)
@@ -273,3 +261,13 @@ Folder: demo `acme/storefront`
 2. Press Cmd+R (Edit > Replace...) and type total.
 
 - Find and replace (`find-replace`, missing): The find bar with Replace, the counter and Replace in Files.
+
+## sign-in: Sign-in prompt (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).
+3. Fetch: the Sign in dialog asks for a username and a password.
+
+- Sign-in prompts (`sign-in-prompts`, missing): The Sign in dialog for a username and password or an SSH passphrase.

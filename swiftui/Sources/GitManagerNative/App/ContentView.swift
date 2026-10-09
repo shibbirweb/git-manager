@@ -105,9 +105,10 @@ struct ContentView: View {
         guard let file = editor.file, !editor.diffActive || model.openDiff == nil else {
             return []
         }
-        let cursor = editor.cursor
-        let column = file.lines.indices.contains(cursor.line) ? cursor.column + 1 : 1
-        let position = "Ln \(cursor.line + 1), Col \(column)"
+        // FileView.svelte: the main selection's head, its line, and its UTF-16 offset in that line.
+        let head = editor.session?.state.selection.main.head ?? 0
+        let line = editor.session?.state.doc.lineAt(head)
+        let position = "Ln \((line?.index ?? 0) + 1), Col \(head - (line?.from ?? 0) + 1)"
         return [position, EditorInfo.indentLabel(file.indent), file.eolLabel, file.language]
     }
 

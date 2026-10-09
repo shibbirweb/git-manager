@@ -239,3 +239,31 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
   - Memory (git mergetool on report.ts, scrolled at 200 points a frame), MB: current 185 open (WebContent 133);
     native 32 open, 51 scrolling (59 peak), 32 after.
   - Not built: typing in the result pane, the find bar, clicking ruler ticks, Abort and Continue doing real work.
+- GM-58 the code editor (FileView.svelte's CodeMirror, src/lib/editor/):
+  - Built: the editing core in NativeCore/Editing, checked against CodeMirror itself (Fixtures/cm-edit-*.txt are
+    cases cm-editing.ts ran through the current app's own CodeMirror setup): a text document in chunks with UTF-16
+    offsets, change sets, selections with several ranges, history (undo, redo, selection undo), the default and
+    the app's keymap, motions, typing with closeBrackets and indentOnInput, copy, cut and paste (linewise too),
+    line commands (move, copy, duplicate, delete, join, sort, toggle case, comments), select next and all
+    occurrences, indentation rules per language, folding (FoldState, FoldLayout). EditorSession holds a file's state,
+    re-runs syntax colors 150 ms and change marks 200 ms after typing; Cmd+S writes through the bridge in the
+    file's own line endings (write_worktree_file) and the tab shows the unsaved dot. The file canvas paints the
+    selections, cursors (one layer each), change bars and the fold placeholder. Keyboard and mouse
+    (FileEditorInput): the keymap, typing, Copy/Cut/Paste/Undo/Redo from the Edit menu, click, Shift-click,
+    Cmd-click for another cursor, double and triple click, drag.
+  - Control: `open_file` takes `line` and `column`; `editor_command` runs a Code or Edit menu id of the current app
+    (code.moveLineDown, code.collapse...); get_state's file adds `dirty`. gm-measure `--screen edit` (src/catalog.ts
+    at line 2, column 3: Move Line Down, Duplicate, Line Comment, Select Next Occurrence twice) and `--screen fold`
+    (line 10, Collapse), the same commands in both apps; parity scenario `edit`.
+  - Rules found: the current app draws CodeMirror's own fold placeholder (#eee in a 1-point #ddd border, #888 dots,
+    1 point of padding and margin, 0.2em corners), not the accent style of features.ts, whose rule does not take
+    effect (a bug in the current app to look at). A row with a placeholder is a 17-point line block with its text,
+    active line and change bar at the bottom 16 points and its line number at the top: as if a 1-point gap stood
+    above it (FoldLayout.foldRows, FileCanvas.blockExtra), so every row below moves a point down; its chevron is
+    centered in the 17 points. WebKit snaps the placeholder's left edge down to a device pixel.
+  - Pixel diff below the title bar (HDR off): edit 99.5% light, 99.49% dark (parity 99.5 / 99.48); fold 99.52% /
+    99.51%; file 99.64 / 99.63. Every other screen unchanged.
+  - Memory (`gm-measure memory --screen file`, 4000-line PHP file), MB: current 138 idle, 236 open, 617 scrolling
+    (702 peak), 286 after; native 33, 46, 43 (60 peak), 39.
+  - Not built: completion, Go to Line, the find bar, column selection, dragging text, input methods (marked text),
+    Settings > Editor (cursor, font, word wrap); the keymap's repaint is the rows on screen, not only the edited ones.

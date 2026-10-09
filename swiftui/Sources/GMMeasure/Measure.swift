@@ -15,7 +15,8 @@ enum Measure {
         /// "changes" (the folder as it opens), "diff" (the diff of Reference.diffFile), "staged" (the Changes
         /// screen after staging Reference.diffFile), "file" (Measure.shownFile in an editor tab)
         /// "log" (the Log with its newest commit selected), "terminal" (the terminal panel, MeasureTerminal.swift),
-        /// "merge" (git mergetool on Measure.mergeFile) or "conflicts" (the conflict demo's conflicts list).
+        /// "merge" (git mergetool on Measure.mergeFile), "conflicts" (the conflict demo's conflicts list) or
+        /// "edit" and "fold" (MeasureEdit.swift).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -49,7 +50,7 @@ enum Measure {
             .native: option("--native-app", in: &arguments),
         ]
         let validScreen = (["changes", "diff", "staged", "file", "log", "settings", "terminal", "merge", "conflicts"]
-            + searchScreens).contains(options.screen)
+            + searchScreens + editScreens).contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -140,6 +141,8 @@ enum Measure {
             try await openSettings(app)
         } else if options.screen == "terminal" {
             try await MeasureTerminal.show(app)
+        } else if editScreens.contains(options.screen) {
+            try await showEditScreen(app, screen: options.screen)
         } else if searchScreens.contains(options.screen) {
             try await showSearchScreen(app, screen: options.screen)
         }

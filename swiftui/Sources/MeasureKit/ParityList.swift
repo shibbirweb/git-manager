@@ -113,6 +113,9 @@ public struct ParityRunSpec: Codable, Equatable {
     /// A search popup opened in both apps before the capture, as `measure --screen` opens it: "quickopen",
     /// "palette" or "search" (Measure.searchScreens).
     public var searchScreen: String?
+    /// An editor screen made in both apps before the capture, as `measure --screen` makes it: "edit" or "fold"
+    /// (Measure.editScreens).
+    public var editScreen: String?
     /// Opens the conflicts list in both apps (the current app's Git > Resolve Conflicts, the native app's
     /// open_conflicts) before the capture.
     public var openConflicts: Bool?

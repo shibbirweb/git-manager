@@ -103,7 +103,7 @@ fn app_schema() -> Value {
                 "enum": [
                     "get_state", "open_folder", "show_diff", "scroll", "stage", "unstage", "commit", "show_panel",
                     "list_terminals", "new_terminal", "send_terminal_text", "terminal_text", "quick_open", "search",
-                    "close_dialog"
+                    "close_dialog", "open_file", "editor_command"
                 ],
                 "description": "What to do."
             },
@@ -115,6 +115,12 @@ fn app_schema() -> Value {
             "amend": { "type": "boolean", "description": "commit: tick Amend first (default: as the box has it)." },
             "folderPath": { "type": "string", "description": "open_folder: absolute path of the folder to open." },
             "filePath": { "type": "string", "description": "show_diff: the changed file, relative to the repository." },
+            "line": { "type": "integer", "description": "open_file: the 1-based line to put the cursor on." },
+            "column": { "type": "integer", "description": "open_file: the 1-based column on that line." },
+            "command": {
+                "type": "string",
+                "description": "editor_command: a Code or Edit menu id of the current app, such as code.moveLineDown."
+            },
             "staged": { "type": "boolean", "description": "show_diff: the staged change instead of the unstaged one." },
             "speed": { "type": "number", "description": "scroll: points per frame (default 80)." },
             "rounds": { "type": "integer", "description": "scroll: down-and-back passes (default 1)." },

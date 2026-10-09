@@ -98,16 +98,6 @@
       ]
     },
     {
-      "id": "editor-file",
-      "title": "A file open in the editor",
-      "folder": "acme/storefront",
-      "steps": [
-        "Start the app on demo/acme/storefront.",
-        "Double-click src/cart.ts in the Files panel: a tab with the code and the change markers in the gutter.",
-        "Put the cursor on line 10."
-      ]
-    },
-    {
       "id": "file",
       "title": "src/catalog.ts in a file tab",
       "folder": "acme/storefront",

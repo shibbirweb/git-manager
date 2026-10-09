@@ -82,17 +82,19 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `open_settings`, `close_dialog` | yes: names and the `section` argument (Settings only) |
 | `app` (terminal) | `show_panel`, `list_terminals`, `new_terminal`, `send_terminal_text`; `terminal_text` native only |
 
-The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `show_log`, `quick_open`, `search`,
-`close_dialog`, `scroll`, `stage`, `unstage` and `commit`. `diff` moves to the next or previous change, opens fold steps
-and toggles Collapse unchanged. `open_file` opens `filePath` (relative to the folder, or absolute) in a kept tab, like a
-double click in the Files panel (`preview` true: the preview tab), and answers once the text, its colors and its blame
-note are on screen; `get_state` lists the tabs and the shown file under `editor`. `show_log` shows the Log like the
-History activity (`visible` false hides it), selects the commit at `position` in the list or a revision (`commitId`,
-such as HEAD~5), and answers once the history, the commit's details and its first file's diff are shown. `quick_open`
-opens Quick Open (`prefix` "" for files, ">" for the Command Palette; `recentFiles` stand for files opened before),
-`search` opens Find in Files with `query` selected, `close_dialog` closes the popup (and Settings); each answers with
-the popup's rows. The bridge's `file_search_*` and `text_search` are the current app's Go to File index and Find in
-Files (`file_search.rs`, `text_search.rs`, `symbols/`, included by path).
+The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `editor_command`, `show_log`,
+`quick_open`, `search`, `close_dialog`, `scroll`, `stage`, `unstage` and `commit`. `diff` moves to the next or previous
+change, opens fold steps and toggles Collapse unchanged. `open_file` opens `filePath` (relative to the folder, or
+absolute) in a kept tab, like a double click in the Files panel (`preview` true: the preview tab), and answers once the
+text, its colors and its blame note are on screen (`line` and `column` put the cursor there); `editor_command` runs a
+Code or Edit menu id of the current app (`command`, such as code.moveLineDown) on the shown file; `get_state` lists the
+tabs and the shown file under `editor`. `show_log` shows the Log like the History activity (`visible` false hides it),
+selects the commit at `position` in the list or a revision (`commitId`, such as HEAD~5), and answers once the history,
+the commit's details and its first file's diff are shown. `quick_open` opens Quick Open (`prefix` "" for files, ">" for
+the Command Palette; `recentFiles` stand for files opened before), `search` opens Find in Files with `query` selected,
+`close_dialog` closes the popup (and Settings); each answers with the popup's rows. The bridge's `file_search_*` and
+`text_search` are the current app's Go to File index and Find in Files (`file_search.rs`, `text_search.rs`, `symbols/`,
+included by path).
 
 The merge tool (GM-54) adds `open_conflicts` (the conflicts list), `open_merge` (`filePath`: the merge tool on one
 conflicted file), `merge` (`step` next or previous, `apply` or `ignore` a chunk id with `side` ours or theirs,
@@ -130,6 +132,8 @@ swift run -c release gm-measure measure --screen settings  # Settings open on Ap
 swift run -c release gm-measure measure --mode dark --theme monokai-charcoal  # a color theme in both apps
 swift run -c release gm-measure measure --screen search  # Find in Files for "lines" (also quickopen, palette)
 swift run -c release gm-measure memory-search           # Quick Open, the palette and Find in Files on 4000 files
+swift run -c release gm-measure measure --screen edit    # src/catalog.ts after the same Code menu commands
+swift run -c release gm-measure measure --screen fold    # src/catalog.ts with the products array folded
 swift run -c release gm-measure measure --screen merge   # git mergetool on the conflict demo's src/app.ts
 swift run -c release gm-measure measure --screen merge --file src/report.ts --walk 200  # a 2400-line file's memory
 swift run -c release gm-measure measure --screen conflicts  # the conflict demo with its conflicts list open
@@ -275,3 +279,4 @@ src-tauri's test helpers.
 | GM-55 Terminal panel: the current app's PTY through the bridge, an xterm.js-like emulator, its WebGL canvas | done |
 | GM-57 Quick Open, Command Palette and Find in Files (search, quickopen, palette screens) | done |
 | GM-54 Merge tool: three panes, chunk actions, conflicts list, git mergetool mode | done (result typing missing) |
+| GM-58 Code editor: typing, selections, multiple cursors, the Code menu, folding, undo, save | done |

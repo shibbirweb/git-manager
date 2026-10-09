@@ -49,8 +49,7 @@
       "check": "A file in a tab with the path bar, the code and the blame note; the empty editor area without one",
       "native": "partial",
       "gaps": [
-        "editing and saving (the file view is read only: the cursor moves, the text does not change)",
-        "a changed file's gutter markers, badge and previous and next change; Blame in the file bar",
+        "the tab's badge and previous and next change; Blame in the file bar",
         "binary files, images and Markdown previews show only a message",
         "the six actions of the empty editor area do nothing"
       ]
@@ -88,10 +87,14 @@
       "native": "missing"
     },
     {
-      "id": "code-editing", "name": "Editing code", "usage": "Editing-Code.md", "scenario": "editor-file",
+      "id": "code-editing", "name": "Editing code", "usage": "Editing-Code.md", "scenario": "edit",
       "check": "Multiple cursors, the Code menu, Go to Line, folding and completion",
-      "native": "missing",
-      "gaps": ["an editor (the native diff panes are read-only drawings)"]
+      "native": "partial",
+      "gaps": [
+        "completion, Go to Line and the find bar",
+        "column selection and dragging text",
+        "Settings > Editor (font, cursor, word wrap) keep their defaults"
+      ]
     },
     {
       "id": "code-appearance", "name": "Code appearance", "usage": "Code-Appearance.md",
