@@ -20,7 +20,8 @@ enum Measure {
         /// "edit" and "fold" (MeasureEdit.swift), "blame" (the file with the blame gutter on in both apps' settings),
         /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
         /// and design-system), "cleanrepos" (folders with two clean repositories), "norepo" (a plain folder),
-        /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open), "welcome" (no folder).
+        /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open), "welcome" (no folder) and
+        /// "welcomerecent" (no folder, with recent projects).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -35,6 +36,8 @@ enum Measure {
         var gate = Display.Gate(requirement: .off, waitS: 30)
         /// More workspace folders opened with the first (--screen folders).
         var extraFolders: [String] = []
+        /// state.json values both apps start with (--screen welcomerecent: recent projects).
+        var startState: [String: Any] = [:]
     }
 
     static func run(_ arguments: [String]) async throws {
@@ -79,6 +82,7 @@ enum Measure {
         let demoRepo = try buildDemo(in: workDir)
         let folderPath = try screenFolder(options.screen, demoRepo: demoRepo)
         options.extraFolders = extraFolders(options.screen, demoRepo: demoRepo)
+        options.startState = startState(options.screen, demoRepo: demoRepo)
 
         var reports: [MeasureReport.App] = []
         for kind in only.map({ [$0] }) ?? AppKind.allCases {
@@ -125,7 +129,8 @@ enum Measure {
         }
         let app = try await AppLauncher.launch(
             kind: kind, home: home, folderPath: folderPath, appPath: appPath,
-            settings: kind == .current ? themeSettings : [:], mode: options.mode, extraFolders: options.extraFolders
+            settings: kind == .current ? themeSettings : [:], mode: options.mode, extraFolders: options.extraFolders,
+            state: options.startState
         )
         do {
             let report = try await steps(app, appPath: appPath, outDir: outDir, options: options)

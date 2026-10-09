@@ -10,7 +10,7 @@
       "check": "The Projects page with the search field, Open, Clone and the recent projects",
       "native": "partial",
       "gaps": [
-        "the recent projects list, its search and menus; Close Folder back to this screen",
+        "the row's right-click menu, Open in New Window, workspace files; Close Folder back to this screen",
         "the Customize and Learn pages; Clone and Open Workspace (they say so)"
       ]
     },

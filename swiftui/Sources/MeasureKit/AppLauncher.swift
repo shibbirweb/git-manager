@@ -68,6 +68,8 @@ public enum AppLauncher {
         nativeArguments: [String] = [],
         /// More workspace folders after `folderPath`, opened together as one workspace.
         extraFolders: [String] = [],
+        /// state.json values for both apps, such as recentFolders (the native app's ~/.gitmanager-native/state.json).
+        state extraState: [String: Any] = [:],
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -84,7 +86,13 @@ public enum AppLauncher {
             settings.merge(extraSettings) { _, extra in extra }
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
-            try writeSession(configDir: configDir, folderPaths: folderPath.isEmpty ? [] : [folderPath] + extraFolders)
+            try writeSession(configDir: configDir, folderPaths: folderPath.isEmpty ? [] : [folderPath] + extraFolders,
+                             extra: extraState)
+        } else if !extraState.isEmpty {
+            let nativeDir = (home as NSString).appendingPathComponent(".gitmanager-native")
+            try files.createDirectory(atPath: nativeDir, withIntermediateDirectories: true)
+            let data = try JSONSerialization.data(withJSONObject: extraState)
+            try data.write(to: URL(fileURLWithPath: (nativeDir as NSString).appendingPathComponent("state.json")))
         }
         var nativeArgs = (folderPath.isEmpty ? [] : ["-folder", folderPath]) + (mode.map { ["-appearance", $0] } ?? [])
             + nativeArguments
@@ -147,7 +155,7 @@ public enum AppLauncher {
 
     /// The current app's state.json: one window on `folderPaths`, at its default size on the measuring screen
     /// (src-tauri/src/windows.rs restores it at start: "windows", outer position and inner size in points).
-    static func writeSession(configDir: String, folderPaths: [String]) throws {
+    static func writeSession(configDir: String, folderPaths: [String], extra: [String: Any] = [:]) throws {
         var window: [String: Any] = ["folders": folderPaths, "workspaceFile": NSNull()]
         if let placed = MeasureScreen.centered(windowSize) {
             window["bounds"] = [
@@ -155,7 +163,8 @@ public enum AppLauncher {
                 "width": windowSize.width, "height": windowSize.height,
             ]
         }
-        let data = try JSONSerialization.data(withJSONObject: ["windows": [window]])
+        let state = extra.merging(["windows": [window]]) { _, session in session }
+        let data = try JSONSerialization.data(withJSONObject: state)
         try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("state.json")))
     }
 

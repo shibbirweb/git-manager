@@ -175,3 +175,20 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
   - Pixel diff below the title bar (HDR off): welcome 99.87% light, 99.85% dark (parity: 99.87 / 99.85).
     Changes 99.74, Log 99.52, cleanrepos 99.58, workspace dark 99.34 kept their floors.
   - Memory: current 115 to 120 MB, native 25 to 28 MB.
+- GM-67 the welcome screen's recent projects (Welcome.svelte .toolbar and .projects, welcomeModel.ts,
+  recentEntries.ts):
+  - Built: NativeCore RecentProjects (state.json's recent lists, the entries in the current app's order) and
+    WelcomeList (initials, badge colors with the same string hash, search, keys), tested against values from the
+    TypeScript run with Bun. RecentProjectsStore keeps them in ~/.gitmanager-native/state.json (other keys kept, an
+    unreadable file never written) and records every opened workspace. The page shows the focused search field,
+    Open, Clone and "...", and a row per project (gradient initials badge, name, paths cut with WebKit's ellipsis,
+    the selected row's "..." menu: Open, Reveal in Finder, Copy Path, Remove from Recent Projects). Arrows, Home,
+    End, Enter, Escape and Delete work as in the page. Opening a row was checked in the app. gm-measure
+    `--screen welcomerecent` seeds both homes' state.json (AppLauncher `state:`), with lastSession: [] so the
+    current app does not reopen the newest folder.
+  - Rules found: a .btn's 1-point border is outside its padding (17 points a side, not 16); the search field's
+    icon is 12 points inside its border.
+  - Pixel diff below the title bar (HDR off): welcomerecent 99.64% light, 99.22% dark (the field's 25% ring and
+    the badge gradients are one level off in dark; the other pre-blend made light worse).
+  - Memory: current 179 MB, native 29 MB (dark run).
+  - Not built: the right-click menu on a row, Open in New Window, workspace files, the state.json error notice.

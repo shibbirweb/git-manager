@@ -12,13 +12,26 @@ struct WelcomeWindow: View {
     var body: some View {
         HStack(spacing: 0) {
             WelcomeSidebar()
-            WelcomeProjects()
+            ProjectsPage()
                 .padding(.top, 22)
                 .padding(.horizontal, 26)
                 .padding(.bottom, 16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(theme.color("--panel"))
+    }
+}
+
+/// Projects: the recent projects, or the hello page while there are none.
+private struct ProjectsPage: View {
+    @ObservedObject private var store = RecentProjectsStore.shared
+
+    var body: some View {
+        if RecentProjects.entries(store.lists).isEmpty {
+            WelcomeProjects()
+        } else {
+            WelcomeRecentList()
+        }
     }
 }
 

@@ -25,6 +25,7 @@ extension AppModel {
         let workspace = WorkspaceModel.shared
         workspace.set(infos)
         let folderRoots = workspace.folders.map(\.root)
+        RecentProjectsStore.shared.opened(folderRoots)
         guard let active = WorkspaceRules.pickActive(workspace.repos, folderRoots: folderRoots) else {
             showNoRepository()
             return
@@ -50,6 +51,7 @@ extension AppModel {
         Control.onMain {
             if !infos.isEmpty {
                 WorkspaceModel.shared.set(infos)
+                RecentProjectsStore.shared.opened(WorkspaceModel.shared.folders.map(\.root))
             }
             AppModel.shared.begin(activeRoot)
         }

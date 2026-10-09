@@ -6,7 +6,7 @@
 // stop the current app with its Git LFS dialog.)
 // --screen norepo: acme/notes, a plain folder: Changes offers to initialize a repository.
 // --screen welcome: both apps started without a folder, on the welcome screen's Projects page (no recent projects
-// in the throwaway home).
+// in the throwaway home); welcomerecent: the same with recent projects (startState).
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
 // menu opened by a press (AccessibilityPress), which opens them where WebKit clicks in both apps.
 
@@ -17,7 +17,7 @@ extension Measure {
     static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo"] + menuScreens
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu"]
     /// Both apps started without a folder.
-    static let welcomeScreens = ["welcome"]
+    static let welcomeScreens = ["welcome", "welcomerecent"]
     /// The title of the pill each menu screen presses.
     static let menuPills = ["foldermenu": "acme", "repomenu": "payments-api", "branchmenu": "main"]
 
@@ -45,6 +45,18 @@ extension Measure {
             return (workspaceFolder(demoRepo) as NSString).appendingPathComponent("notes")
         }
         return workspaceFolder(demoRepo)
+    }
+
+    /// The state.json values a screen starts both apps with: for welcomerecent three recent folders and a recent
+    /// workspace of the demo, and no session to reopen (else the current app opens the newest folder).
+    static func startState(_ screen: String, demoRepo: String) -> [String: Any] {
+        guard screen == "welcomerecent" else {
+            return [:]
+        }
+        let acme = workspaceFolder(demoRepo)
+        let design = ((acme as NSString).deletingLastPathComponent as NSString).appendingPathComponent("design-system")
+        let payments = (acme as NSString).appendingPathComponent("payments-api")
+        return ["recentFolders": [demoRepo, design, payments], "recentWorkspaces": [[acme, design]], "lastSession": []]
     }
 
     /// The acme folder around the demo's storefront repository.
