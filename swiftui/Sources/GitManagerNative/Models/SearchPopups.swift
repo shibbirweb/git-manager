@@ -210,15 +210,18 @@ final class SearchPopups: ObservableObject {
             textRunning = false
             return
         }
+        // The first poll starts here, off the main thread, while the typed key is drawn (on the main actor it began
+        // ~10 ms later). With rows on screen (kept until new ones fill them) it gathers a little, for one update.
+        let firstArgs = TextPollArgs(searchId: searchId, waitMs: 50, gatherMs: text.rows.isEmpty ? 0 : 15)
+        let firstPoll = Task.detached(priority: .userInitiated) { () -> TextSearchPoll? in
+            try? Backend.call("text_search_poll", firstArgs) as TextSearchPoll
+        }
         Task {
             var results = TextResults()
             var first = true
             var selectionSet = false
             var showing = false
-            var pollArgs = TextPollArgs(searchId: searchId, waitMs: 50, gatherMs: 0)
-            var poll = await Task.detached { () -> TextSearchPoll? in
-                try? Backend.call("text_search_poll", pollArgs) as TextSearchPoll
-            }.value
+            var poll = await firstPoll.value
             while let current = poll, searchId == textSearchId, kind == .search {
                 for batch in current.batches {
                     results = TextSearchModel.append(results, batch, folders: folders, first: first)
@@ -239,8 +242,9 @@ final class SearchPopups: ObservableObject {
                     textRunning = false
                     return
                 }
-                pollArgs = TextPollArgs(searchId: searchId, waitMs: 50, gatherMs: 0)
-                let args = pollArgs
+                // Once the visible rows are filled, the rest comes in one go (up to 40 ms, or when the search ends):
+                // each batch below them only moved the scrollbar, a redraw each.
+                let args = TextPollArgs(searchId: searchId, waitMs: 50, gatherMs: showing ? 40 : 0)
                 poll = await Task.detached { () -> TextSearchPoll? in
                     try? Backend.call("text_search_poll", args) as TextSearchPoll
                 }.value

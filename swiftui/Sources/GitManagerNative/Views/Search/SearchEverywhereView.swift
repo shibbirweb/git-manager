@@ -37,11 +37,12 @@ struct SearchEverywhereView: View {
                     .foregroundStyle(theme.ink("--text-faint"))
                     .frame(maxWidth: .infinity)
                     .frame(height: 47)
-            } else {
-                TextResultsList(rows: rows, selected: popups.selected, height: listHeight,
-                                textWidth: textWidth(popup: width, rows: rows.count, list: listHeight),
-                                scrollTop: $popups.scrollTop, activate: popups.activate)
             }
+            // Kept while there are no rows (0 points tall), so the first results only resize it: made new with
+            // them, it was sometimes sized a pass later and the rows showed a frame late.
+            TextResultsList(rows: rows, selected: popups.selected, height: listHeight,
+                            textWidth: textWidth(popup: width, rows: rows.count, list: listHeight),
+                            scrollTop: $popups.scrollTop, activate: popups.activate)
         }
         // Its heights: no results yet, whole rows, and the capped list (a fraction of the window).
         .onAppear {

@@ -84,4 +84,22 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     368 / 243.
   - Pixel diff below the title bar (HDR off), unchanged: Changes 99.74 / 99.74, diff 99.66 / 99.67, staged 99.74 /
     99.73, file 99.64 / 99.63, Log 99.52 / 99.39, search 99.45 / 99.25 (light / dark).
+- GM-77 search's first results, clearly ahead:
+  - Traced: the results' polling Task started ~10 ms after the keystroke (it waited for the main thread to draw
+    the typed key); the results canvas was made with the first rows and was sometimes sized a pass later; and
+    AppKit set the cursor again inside every frame's commit after a key (its tracking areas follow SwiftUI's
+    layout), each set registering the cursor's images with the window server with the accessibility pointer
+    settings: in a sample more time than the layout itself.
+  - Built: the first poll starts off the main thread at the keystroke (with rows on screen it gathers up to 15 ms,
+    so one update lands); once the visible rows are filled, later batches come together (up to 40 ms or the end
+    of the search). The results canvas stays mounted at 0 points while there are no rows. CursorGuard skips a
+    cursor set when the same cursor is set again with the mouse where it was (any mouse move lets the next set
+    through). The popups' query field has a TextKit 1 field editor (QueryFieldCell): the TextKit 2 one
+    invalidated its cursor rects on every key.
+  - gm-measure: KeyPoster.type no longer sleeps after the last key, so "settled after the last key" is timed from
+    that key (it was 30 ms late and hid changes inside those 30 ms).
+  - Speed (median of 5, light, ms): first results current 85, native 70; settled after the last key 37 / 29; a
+    typed key on screen 20 / 17.
+  - Pixel diff below the title bar (HDR off): search 99.46 / 99.22, Quick Open 99.64 / 99.63, palette 99.51 /
+    99.29 (light / dark), as before.
 

@@ -54,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // What the first diff would otherwise do on the main thread: JavaScriptCore's start and the code fonts
         // (about 35 ms each the first time).
         SyntaxHighlighter.shared.warmUp()
+        CursorGuard.install()
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1) {
             _ = CodeLineText.advance
         }

@@ -8,7 +8,8 @@ public enum KeyPoster {
     /// Types `text` one character at a time, `interval` seconds apart.
     public static func type(pid: Int32, _ text: String, interval: TimeInterval = 0.02) {
         let source = CGEventSource(stateID: .privateState)
-        for unit in text.utf16 {
+        let units = Array(text.utf16)
+        for (index, unit) in units.enumerated() {
             var character = unit
             for down in [true, false] {
                 guard let event = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: down) else {
@@ -17,7 +18,10 @@ public enum KeyPoster {
                 event.keyboardSetUnicodeString(stringLength: 1, unicodeString: &character)
                 event.postToPid(pid)
             }
-            Thread.sleep(forTimeInterval: interval)
+            // None after the last key, so the caller's clock right after is that key's time.
+            if index < units.count - 1 {
+                Thread.sleep(forTimeInterval: interval)
+            }
         }
     }
 

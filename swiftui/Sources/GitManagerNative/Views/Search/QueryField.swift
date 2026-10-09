@@ -29,6 +29,10 @@ struct QueryField: NSViewRepresentable {
 
     func makeNSView(context: Context) -> NSTextField {
         let field = NSTextField()
+        let cell = QueryFieldCell(textCell: "")
+        cell.isEditable = true
+        cell.isSelectable = true
+        field.cell = cell
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
@@ -158,3 +162,19 @@ extension QueryField {
         return NSColor(theme.over(literal, Double(alpha) / 255, on: "--panel"))
     }
 }
+
+/// The query field's cell, with a TextKit 1 field editor: the default TextKit 2 one invalidated its cursor rects on
+/// every key, and AppKit then set the cursor again inside the frame's commit (a few ms each with the accessibility
+/// pointer settings, before the results could draw).
+final class QueryFieldCell: NSTextFieldCell {
+    private lazy var editor: NSTextView = {
+        let editor = NSTextView(usingTextLayoutManager: false)
+        editor.isFieldEditor = true
+        return editor
+    }()
+
+    override func fieldEditor(for controlView: NSView) -> NSTextView? {
+        editor
+    }
+}
+
