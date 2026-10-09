@@ -18,7 +18,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 |---|---|---|---|---|---|
 | Window shell | window-shell | done | changes | 99.18% / 99.13% | 150 MB / 32 MB |
 | Welcome screen | welcome-screen | missing | welcome | - | - |
-| Workspaces and folders | workspaces | partial | workspace | 99.51% / 99.33% | 146 MB / 43 MB |
+| Workspaces and folders | workspaces | partial | workspace | 99.54% / 99.31% | 141 MB / 47 MB |
 | Files panel | files-panel | partial | file | 99.63% / 99.63% | 233 MB / 43 MB |
 | File operations | file-operations | missing | files-menu | - | - |
 | File icons | file-icons | missing | file-icons | - | - |

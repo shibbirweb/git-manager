@@ -21,7 +21,8 @@
       "gaps": [
         "the folder menu and the repository switcher (the header pills open nothing yet)",
         "Add Folder, Remove Folder, workspace files, Scan for Repositories, Close Folder",
-        "the clean repositories' list, Set as Active Repository from a menu, remembering the active repository"
+        "the clean repositories' list, Set as Active Repository from a menu, remembering the active repository",
+        "the Files panel's + button and a folder's right-click menu"
       ]
     },
     {

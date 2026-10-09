@@ -70,9 +70,10 @@ final class WorkspaceModel: ObservableObject {
         }
     }
 
-    /// The folder replaces the workspace; statuses fill in afterwards.
-    func set(_ info: WorkspaceInfo) {
-        folders = [info]
+    /// The folders replace the workspace (a folder given twice counts once); statuses fill in afterwards.
+    func set(_ infos: [WorkspaceInfo]) {
+        var seen = Set<String>()
+        folders = infos.filter { seen.insert($0.root).inserted }
         repos = WorkspaceRules.unionRepos(folders)
         statuses = [:]
         hashes = [:]
@@ -102,15 +103,10 @@ final class WorkspaceModel: ObservableObject {
         FilesModel.shared.updateTones(toneFiles())
     }
 
-    /// Every changed path seen from the first folder, for the Files panel's tones.
-    func toneFiles() -> [FileStatus] {
+    /// Every changed file with its repository's root, for the Files panel's tones.
+    func toneFiles() -> [(repoRoot: String, file: FileStatus)] {
         repos.flatMap { repo in
-            (statuses[repo.root]?.files ?? []).map { file in
-                FileStatus(
-                    path: WorkspaceRules.folderPath(repo, filePath: file.path), origPath: file.origPath,
-                    staged: file.staged, unstaged: file.unstaged, conflicted: file.conflicted
-                )
-            }
+            (statuses[repo.root]?.files ?? []).map { (repoRoot: repo.root, file: $0) }
         }
     }
 }

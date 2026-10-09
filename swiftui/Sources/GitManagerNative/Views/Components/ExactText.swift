@@ -42,12 +42,12 @@ struct ExactText: View {
     }
 
     /// `text` cut as text-overflow: ellipsis cuts it in WebKit: whole characters, spaces kept, then the ellipsis.
-    static func cut(_ text: String, width maxWidth: CGFloat, font: NSFont) -> String {
-        if width(text, font: font) <= maxWidth {
+    static func cut(_ text: String, width maxWidth: CGFloat, font: NSFont, tracking: CGFloat = 0) -> String {
+        if width(text, font: font, tracking: tracking) <= maxWidth {
             return text
         }
         var prefix = text
-        while !prefix.isEmpty && width(prefix + "\u{2026}", font: font) > maxWidth {
+        while !prefix.isEmpty && width(prefix + "\u{2026}", font: font, tracking: tracking) > maxWidth {
             prefix.removeLast()
         }
         return prefix + "\u{2026}"

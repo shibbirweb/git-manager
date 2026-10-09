@@ -4,39 +4,43 @@
 
 import SwiftUI
 
-/// The Navigation Bar over the empty editor: the repository as one crumb, accent-colored while it has changes. A
-/// repository inside the workspace folder comes after that folder's crumb ("acme > payments-api", crumbsFor).
+/// One crumb of the Navigation Bar: an icon (none for a plain folder inside a workspace folder) and a name, in
+/// --accent for a repository with changes, else --text-dim.
+struct NavCrumb: Hashable {
+    let icon: String?
+    let name: String
+    var accent = false
+}
+
+/// The Navigation Bar over the empty editor (navBarModel.ts crumbsFor, to the active repository): with several
+/// workspace folders a workspace crumb first, then the folder that holds the repository, then the folders to it.
 struct RepoCrumb: View {
     @Environment(\.theme) private var theme
 
-    let name: String
-    let hasChanges: Bool
-    var folderName: String?
+    let crumbs: [NavCrumb]
 
     var body: some View {
         // .nav-bar: 1 point between the crumbs and the chevrons.
         HStack(spacing: 1) {
-            if let folderName {
-                crumb(icon: "folder", name: folderName, color: theme.ink("--text-dim"))
-                Icon(name: "chevron-right", size: 11)
-                    .foregroundStyle(theme.ink("--text-faint"))
+            ForEach(Array(crumbs.enumerated()), id: \.offset) { index, crumb in
+                if index > 0 {
+                    Icon(name: "chevron-right", size: 11)
+                        .foregroundStyle(theme.ink("--text-faint"))
+                }
+                HStack(spacing: 4) {
+                    if let icon = crumb.icon {
+                        Icon(name: icon, size: 12)
+                    }
+                    // At its exact width, so the chevron and the next crumb land where WebKit puts them.
+                    ExactText(text: crumb.name, size: 12)
+                }
+                .foregroundStyle(theme.ink(crumb.accent ? "--accent" : "--text-dim"))
+                .padding(.horizontal, 3)
+                .frame(height: 22)
             }
-            crumb(icon: "folder-git", name: name,
-                  color: hasChanges ? theme.ink("--accent") : theme.ink("--text-dim"))
         }
         .font(.system(size: 12))
         .padding(.leading, 10)
-    }
-
-    private func crumb(icon: String, name: String, color: Color) -> some View {
-        HStack(spacing: 4) {
-            Icon(name: icon, size: 12)
-            // At its exact width, so the chevron and the next crumb land where WebKit puts them.
-            ExactText(text: name, size: 12)
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 3)
-        .frame(height: 22)
     }
 }
 

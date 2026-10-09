@@ -63,13 +63,13 @@
     },
     {
       "id": "workspace",
-      "title": "Workspace with several repositories",
+      "title": "Workspace of two folders",
       "folder": "acme",
       "steps": [
-        "Start the app on demo/acme: storefront, payments-api (stopped in a merge) and the plain folder notes.",
-        "Changes lists both repositories, payments-api active (the merge banner, the header's repository pill)."
+        "Open demo/acme (storefront, payments-api stopped in a merge, the plain folder notes), then add",
+        "demo/design-system to the workspace: Changes lists the three repositories, design-system active."
       ],
-      "run": {}
+      "run": { "extraFolders": ["design-system"] }
     },
     {
       "id": "files-menu",

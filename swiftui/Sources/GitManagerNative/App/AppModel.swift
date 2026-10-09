@@ -182,14 +182,19 @@ final class AppModel: ObservableObject {
             if let repoPath {
                 workspace.record(repoRoot: repoPath, snapshot: snapshot)
             }
-            // The Files panel shows the workspace folder, toned by every repository's status.
+            // The Files panel shows the workspace folders, toned by every repository's status.
             let files = FilesModel.shared
-            if let rootPath = workspace.root ?? repoPath, files.rootPath != rootPath {
+            let roots = workspace.folders.isEmpty ? [repoPath].compactMap { $0 } : workspace.folders.map(\.root)
+            if !roots.isEmpty, files.roots != roots {
                 Task {
-                    await files.open(rootPath: rootPath)
+                    await files.open(roots: roots)
                 }
             }
-            files.updateTones(workspace.repos.isEmpty ? snapshot.status?.files ?? [] : workspace.toneFiles())
+            if workspace.repos.isEmpty, let repoPath {
+                files.updateTones((snapshot.status?.files ?? []).map { (repoRoot: repoPath, file: $0) })
+            } else {
+                files.updateTones(workspace.toneFiles())
+            }
         case .failure(let error):
             snapshot = nil
             errorText = error.message

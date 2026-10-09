@@ -121,6 +121,8 @@ public struct ParityRunSpec: Codable, Equatable {
     public var openConflicts: Bool?
     /// Starts both apps as git mergetool on this conflicted file of the folder instead of on the folder.
     public var mergetool: String?
+    /// More workspace folders, relative to the docs demo, opened with the scenario's folder as one workspace.
+    public var extraFolders: [String]?
 
     public init() {}
 }

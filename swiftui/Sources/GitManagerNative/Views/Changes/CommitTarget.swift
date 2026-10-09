@@ -11,6 +11,8 @@ struct CommitTarget {
     let branch: String?
     /// More than one repository to pick from: a select, else the name in semibold.
     let picker: Bool
+    /// Every entry of the select: WebKit makes a select as wide as its widest entry.
+    var options: [String] = []
 }
 
 struct CommitTargetRow: View {
@@ -96,7 +98,9 @@ struct CommitTargetRow: View {
         _ target: CommitTarget, rowWidth: CGFloat
     ) -> (label: CGFloat, middle: CGFloat, branch: CGFloat) {
         let label = snap(ExactText.width("Commit to", font: PageFont.ui(12)))
-        let text = ExactText.width(target.picker ? target.label : target.name, font: PageFont.ui(13, weight: .semibold))
+        let font = PageFont.ui(13, weight: .semibold)
+        let entries = target.picker ? [target.label] + target.options : [target.name]
+        let text = entries.map { ExactText.width($0, font: font) }.max() ?? 0
         let middle = target.picker ? textInset + text + naturalRight : text
         let branch = target.branch.map { ExactText.width("on \($0)", font: PageFont.ui(12)) } ?? 0
         let gaps: CGFloat = target.branch == nil ? 6 : 12

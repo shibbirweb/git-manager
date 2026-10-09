@@ -7,7 +7,7 @@ import NativeCore
 import SwiftUI
 
 struct ContentView: View {
-    let initialRepoPath: String?
+    let initialFolders: [String]
 
     @ObservedObject private var model = AppModel.shared
     @ObservedObject private var workspace = WorkspaceModel.shared
@@ -33,7 +33,10 @@ struct ContentView: View {
         } leftBar: {
             LeftActivityBar(
                 changeCount: workspace.multiRepo ? workspace.totalChanges : model.changeCount,
-                conflicts: model.snapshot?.status?.files.contains(where: \.conflicted) ?? false,
+                // Red while any repository of the workspace has a conflict, not only the active one.
+                conflicts: workspace.multiRepo
+                    ? workspace.statuses.values.contains { $0.files.contains(where: \.conflicted) }
+                    : model.snapshot?.status?.files.contains(where: \.conflicted) ?? false,
                 logShown: log.shown
             ) {
                 log.toggle(repoPath: model.repoPath)
@@ -89,8 +92,8 @@ struct ContentView: View {
         .background(WindowChrome(background: theme.nsColor("--bg")))
         .navigationTitle(model.folderName)
         .task {
-            if let initialRepoPath {
-                await model.openFolder(initialRepoPath)
+            if !initialFolders.isEmpty {
+                await model.openFolders(initialFolders)
             }
         }
         .task {

@@ -65,6 +65,8 @@ public enum AppLauncher {
         mode: String? = nil,
         /// Extra launch arguments for the native app.
         nativeArguments: [String] = [],
+        /// More workspace folders after `folderPath`, opened together as one workspace.
+        extraFolders: [String] = [],
         timeout: TimeInterval = 60
     ) async throws -> RunningApp {
         let files = FileManager.default
@@ -81,11 +83,19 @@ public enum AppLauncher {
             settings.merge(extraSettings) { _, extra in extra }
             let data = try JSONSerialization.data(withJSONObject: settings)
             try data.write(to: URL(fileURLWithPath: (configDir as NSString).appendingPathComponent("settings.json")))
-            try writeSession(configDir: configDir, folderPath: folderPath)
+            try writeSession(configDir: configDir, folderPaths: [folderPath] + extraFolders)
         }
         var nativeArgs = ["-folder", folderPath] + (mode.map { ["-appearance", $0] } ?? []) + nativeArguments
         if let placed = MeasureScreen.centered(windowSize) {
             nativeArgs += ["-windowFrame", NSStringFromRect(placed.cocoaFrame)]
+        }
+        if !extraFolders.isEmpty {
+            // An old-style property list array, which is what macOS parses a -key value argument as.
+            let quoted = ([folderPath] + extraFolders).map { folder in
+                "\"" + folder.replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "\"", with: "\\\"") + "\""
+            }
+            nativeArgs += ["-folders", "(" + quoted.joined(separator: ", ") + ")"]
         }
         // The current app opens the folder from its saved session, which also puts the window on the measuring
         // screen; a folder on its command line would skip the session and open where macOS likes.
@@ -133,10 +143,10 @@ public enum AppLauncher {
     /// Both apps' default window, in points.
     public static let windowSize = CGSize(width: 1400, height: 880)
 
-    /// The current app's state.json: one window on `folderPath`, at its default size on the measuring screen
+    /// The current app's state.json: one window on `folderPaths`, at its default size on the measuring screen
     /// (src-tauri/src/windows.rs restores it at start: "windows", outer position and inner size in points).
-    static func writeSession(configDir: String, folderPath: String) throws {
-        var window: [String: Any] = ["folders": [folderPath], "workspaceFile": NSNull()]
+    static func writeSession(configDir: String, folderPaths: [String]) throws {
+        var window: [String: Any] = ["folders": folderPaths, "workspaceFile": NSNull()]
         if let placed = MeasureScreen.centered(windowSize) {
             window["bounds"] = [
                 "x": placed.topLeft.x, "y": placed.topLeft.y,

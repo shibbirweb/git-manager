@@ -12,7 +12,7 @@ struct MainArea: View {
         if model.openDiff == nil && editor.tabs.tabs.isEmpty {
             EditorArea {
                 if model.repoPath != nil {
-                    RepoCrumb(name: model.repoName, hasChanges: model.changeCount > 0, folderName: crumbFolder)
+                    RepoCrumb(crumbs: crumbs)
                 }
             } content: {
                 WelcomeView(title: model.folderName)
@@ -48,11 +48,28 @@ struct MainArea: View {
         }
     }
 
-    /// The workspace folder's name when the active repository lies inside it.
-    private var crumbFolder: String? {
-        guard let root = workspace.root, root != model.repoPath else {
-            return nil
+    /// The crumbs to the active repository: the workspace (several folders), its folder, the folders down to it.
+    private var crumbs: [NavCrumb] {
+        let accent = model.changeCount > 0
+        guard let repoPath = model.repoPath,
+              let folder = workspace.folders.first(where: { repoPath == $0.root || repoPath.hasPrefix($0.root + "/") })
+        else {
+            return [NavCrumb(icon: "folder-git", name: model.repoName, accent: accent)]
         }
-        return workspace.folders.first?.name
+        var crumbs: [NavCrumb] = []
+        if workspace.folders.count > 1, let name = workspace.name {
+            crumbs.append(NavCrumb(icon: "app-window", name: name))
+        }
+        let folderIsRepo = workspace.repo(at: folder.root) != nil
+        crumbs.append(NavCrumb(icon: folderIsRepo ? "folder-git" : "folder", name: folder.name,
+                               accent: folder.root == repoPath && accent))
+        var dirPath = folder.root
+        for part in repoPath.dropFirst(folder.root.count).split(separator: "/") {
+            dirPath += "/\(part)"
+            let isRepo = workspace.repo(at: dirPath) != nil
+            crumbs.append(NavCrumb(icon: isRepo ? "folder-git" : nil, name: String(part),
+                                   accent: dirPath == repoPath && accent))
+        }
+        return crumbs
     }
 }

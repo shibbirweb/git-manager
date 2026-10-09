@@ -17,3 +17,12 @@ import Testing
     #expect(widths == [80, 30])
     #expect(FlexShrink.widths(bases: [50], maxes: [], fixed: 400, available: 300) == [0])
 }
+
+@Test func itemsStopAtTheirMinWidthAndTheRestShrinksMore() {
+    // The Files panel heading: the title (135) and five icon buttons (26, at least 24) in 241 points with 12 of gaps.
+    let widths = FlexShrink.widths(
+        bases: [135, 26, 26, 26, 25, 26], maxes: [], mins: [0, 24, 24, 24, 24, 24], fixed: 12, available: 241
+    )
+    #expect(widths[1...] == [24, 24, 24, 24, 24])
+    #expect(abs(widths[0] - 109) < 0.001)
+}

@@ -58,6 +58,10 @@ enum Smoke {
             let empty = try await app.client.call("app", ["action": "open_folder", "folderPath": emptyPath])
             check("open_folder on a folder without git has no repository",
                   workspaceRepos(empty).isEmpty && !(empty.structured?["branch"] is String), empty.text)
+            let both = try await app.client.call("app", ["action": "open_folder", "folderPaths": [repoPath, emptyPath]])
+            let bothFolders = (both.structured?["workspace"] as? [String: Any])?["folders"] as? [String] ?? []
+            check("open_folder on two folders opens one workspace", !both.isError
+                  && bothFolders == [realRepoPath, realPath(emptyPath)], bothFolders.joined(separator: ", "))
             let reopened = try await app.client.call("app", ["action": "open_folder", "folderPath": repoPath])
             let branch = reopened.structured?["branch"] as? String
             check("open_folder on the repository", !reopened.isError && branch == "main")

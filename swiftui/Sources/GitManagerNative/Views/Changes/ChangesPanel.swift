@@ -68,9 +68,13 @@ struct ChangesPanel: View {
         }
         let choices = WorkspaceRules.commitChoices(workspace.repos, changeCounts: counts, targetRoot: repo.root)
         let branch = head.map { $0.branch ?? ($0.shortId.map { "detached at \($0)" } ?? "detached") }
+        let options = choices.map { choice in
+            let files = workspace.statuses[choice.root]?.files ?? []
+            return WorkspaceRules.choiceLabel(choice, staged: FileGroups(files).staged.count)
+        }
         return CommitTarget(
             label: WorkspaceRules.choiceLabel(repo, staged: staged), name: repo.name, branch: branch,
-            picker: choices.count > 1
+            picker: choices.count > 1, options: options
         )
     }
 }

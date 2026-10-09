@@ -47,3 +47,41 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     workspace files, Scan for Repositories, Close Folder, the clean repositories' list, the kind badges (submodule,
     worktree) and relative paths in section headers, remembering the active repository, several windows, the
     "No git repository" placeholder (a folder without git shows the read error).
+- GM-61 a workspace of several folders (repo.svelte.ts openFolders, FileExplorer.svelte multiRoot, navBarModel.ts):
+  - Built: the native app opens several folders as one workspace (`-folders '("/a", "/b")'`, control `open_folder`
+    with `folderPaths`); their repositories join in one list and a repository that is a workspace folder becomes
+    active (design-system next to acme). The Files panel works on absolute paths: with several folders each is a
+    top-level row in 11-point bold capitals (the repository icon, branch and tone dot as other rows), its contents
+    one level in; the heading shows the workspace name. The breadcrumb starts with the workspace crumb (app-window
+    icon) and goes through the folder to the active repository (NativeCore FolderPaths, tested). The activity bar's
+    badge is red while any repository has a conflict. gm-measure `--screen folders`; the parity scenario
+    `workspace` now opens acme and design-system (run spec `extraFolders`).
+  - Rules found:
+    - The Files heading's buttons are flex items: a long title shrinks with them until they reach their 24-point
+      min-width, then alone (FlexShrink now freezes items at their min-width and shares the rest again); WebKit cuts
+      the title keeping the hyphen ("ACME, DESIGN-...", letter-spacing counted).
+    - A select is as wide as its widest option, not the shown one ("design-system" in a picker sized for
+      "payments-api, 4 staged").
+    - CSS order decides the folder row's weight: .row.repo 600, .row.folder-root 700, .row.conflict 500 last, so a
+      conflicted workspace folder is 500.
+    - 11-point text in the Files rows (branches, folder roots) sits half a point lower than SwiftUI sets it.
+    - A Spacer in an HStack also takes the stack's spacing before it: the file rows lost 8 points and cut
+      "src/components"; the name now takes the free width itself and stays whole when the exact widths fit.
+    - macOS parses a `-key value` launch argument as a property list: JSON arrays are dropped, `("/a", "/b")` works.
+  - Pixel diff below the title bar (HDR off): folders 99.53% light, 99.34% dark; workspace (one folder) 99.52 /
+    99.34; parity scenario `workspace` (two folders) 99.54 / 99.31.
+  - Memory (parity, acme and design-system, light): current 141 MB, native 47 MB.
+  - Every other screen kept its floor (noise 0.01): Changes 99.74 / 99.73, staged 99.74 / 99.73, diff 99.66 /
+    99.67, every line 99.65 / 99.65, file 99.64 / 99.63, edit 99.49 / 99.49, fold 99.52 / 99.51, blame 99.62 / 99.6,
+    Log 99.52 / 99.38, Settings 99.49 / 99.09, Monokai Charcoal (Changes) 99.48, terminal 99.5 / 99.37, quickopen
+    99.63 / 99.63, palette 99.5 / 99.29, search 99.6 / 99.16, merge 99.66 / 99.59, report.ts 99.25, conflicts 99.2 /
+    99.15.
+  - Bug found on the way: the first status's tones were worked out before the Files panel knew its folders, so a
+    single repository's folders had no tone (conflicts list 99.07%); the panel keeps the last changes and works the
+    tones out again when its folders are set.
+  - Not measurable yet: the folder menu and the repository switcher are the page's own menus, opened at the pointer;
+    the current app has no control tool to open them, and clicks posted to its process are dropped without the
+    Accessibility permission for the terminal.
+  - Not built: those menus, Add and Remove Folder, workspace files, Scan for Repositories, Close Folder, the clean
+    repositories' list, the "No git repository" placeholder, several windows. The Changes scrollbar's length was
+    stale once at start (the last section arrived after the list was measured); it did not come back in later runs.

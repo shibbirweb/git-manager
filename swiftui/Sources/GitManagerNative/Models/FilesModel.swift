@@ -1,9 +1,11 @@
-// The Files panel's state: the listed folders of the open folder (bridge `list_directories`, as the current app's
-// FileExplorer lists them), which ones are open, and each path's tone from the git status (src/lib/views/files/
-// tones.ts): a file's own tone, a folder's the strongest tone inside it. Files git knows were deleted are listed in
-// their folder too (FileExplorer's entriesOf), struck through.
+// The Files panel's state: the listed folders of the workspace folders (bridge `list_directories`, as the current
+// app's FileExplorer lists them), which ones are open, and each path's tone from every repository's status
+// (src/lib/views/files/tones.ts): a file's own tone, a folder's the strongest tone inside it. Files git knows were
+// deleted are listed in their folder too (FileExplorer's entriesOf), struck through. Paths are absolute, as on the
+// page, so several workspace folders share one tree.
 
 import Foundation
+import NativeCore
 
 struct DirEntry: Decodable, Hashable {
     let name: String
@@ -52,14 +54,22 @@ enum FileTone: Int, Comparable {
 final class FilesModel: ObservableObject {
     static let shared = FilesModel()
 
-    @Published private(set) var rootPath: String?
-    /// Folder (relative, "" for the root) to its entries, for every folder listed so far.
+    /// The workspace folders; with several, each is a top-level row.
+    @Published private(set) var roots: [String] = []
+    /// Folder to its entries, for every folder listed so far.
     @Published private(set) var listings: [String: [DirEntry]] = [:]
     @Published private(set) var expanded: Set<String> = []
-    /// Relative path to tone, for changed files and the folders that hold them.
+    /// Path to tone, for changed files and the folders that hold them, up to their workspace folder.
     @Published private(set) var tones: [String: FileTone] = [:]
-    /// Folder (relative, "" for the root) to the names of the files deleted from it (tones.ts deletedByFolder).
+    /// Folder to the names of the files deleted from it (tones.ts deletedByFolder).
     @Published private(set) var deleted: [String: [String]] = [:]
+    /// The last changes, so the tones are worked out again once the folders are known (the first status arrives
+    /// before them).
+    private var changes: [(repoRoot: String, file: FileStatus)] = []
+
+    var multiRoot: Bool {
+        roots.count > 1
+    }
 
     /// A folder's entries on disk plus the files deleted from it, folders first, then by name ignoring case.
     func entries(in dirPath: String) -> [DirEntry] {
@@ -81,11 +91,13 @@ final class FilesModel: ObservableObject {
         }
     }
 
-    func open(rootPath folderPath: String) async {
-        rootPath = folderPath
+    /// Shows the workspace folders, each open, as the page starts.
+    func open(roots folderPaths: [String]) async {
+        roots = folderPaths
         listings = [:]
-        expanded = []
-        await list([""])
+        expanded = Set(folderPaths)
+        updateTones(changes)
+        await list(folderPaths)
     }
 
     func toggle(_ dirPath: String) async {
@@ -99,40 +111,46 @@ final class FilesModel: ObservableObject {
         }
     }
 
-    func updateTones(_ files: [FileStatus]) {
+    /// Each changed file by its repository's root; tones reach up through its folders to its workspace folder.
+    func updateTones(_ changes: [(repoRoot: String, file: FileStatus)]) {
+        self.changes = changes
         var next: [String: FileTone] = [:]
         var gone: [String: [String]] = [:]
-        for file in files {
-            if FileTone(file) == .deleted {
-                let slash = file.path.lastIndex(of: "/")
-                let folder = slash.map { String(file.path[..<$0]) } ?? ""
-                let name = slash.map { String(file.path[file.path.index(after: $0)...]) } ?? file.path
-                gone[folder, default: []].append(name)
+        for change in changes {
+            let path = (change.repoRoot as NSString).appendingPathComponent(change.file.path)
+            let tone = FileTone(change.file)
+            let folder = (path as NSString).deletingLastPathComponent
+            if tone == .deleted {
+                gone[folder, default: []].append((path as NSString).lastPathComponent)
             }
-            let tone = FileTone(file)
-            next[file.path] = max(next[file.path] ?? tone, tone)
-            var folder = file.path
-            while let slash = folder.lastIndex(of: "/") {
-                folder = String(folder[..<slash])
-                next[folder] = max(next[folder] ?? tone, tone)
+            next[path] = max(next[path] ?? tone, tone)
+            for dirPath in FolderPaths.folders(of: path, roots: roots) {
+                next[dirPath] = max(next[dirPath] ?? tone, tone)
             }
         }
         tones = next
         deleted = gone
     }
 
+    /// The workspace folder that holds `path` (the deepest, when folders nest).
+    func root(of path: String) -> String? {
+        FolderPaths.root(of: path, roots: roots)
+    }
+
     private func list(_ dirPaths: [String]) async {
-        guard let rootPath else {
-            return
-        }
         // Every repository of the workspace, so their folders show the repository icon.
-        let repoRoots = Array(Set([rootPath] + WorkspaceModel.shared.repos.map(\.root)))
-        let args = ListDirectoriesArgs(rootPath: rootPath, dirPaths: dirPaths, repoRoots: repoRoots)
-        let result = await Task.detached { () -> [FolderListing]? in
-            try? Backend.call("list_directories", args) as [FolderListing]
-        }.value
-        for listing in result ?? [] where listing.error == nil {
-            listings[listing.dirPath] = listing.entries
+        let repoRoots = Array(Set(roots + WorkspaceModel.shared.repos.map(\.root)))
+        let byRoot = Dictionary(grouping: dirPaths) { root(of: $0) ?? "" }
+        for (rootPath, paths) in byRoot where !rootPath.isEmpty {
+            let relative = paths.map { $0 == rootPath ? "" : String($0.dropFirst(rootPath.count + 1)) }
+            let args = ListDirectoriesArgs(rootPath: rootPath, dirPaths: relative, repoRoots: repoRoots)
+            let result = await Task.detached { () -> [FolderListing]? in
+                try? Backend.call("list_directories", args) as [FolderListing]
+            }.value
+            for listing in result ?? [] where listing.error == nil {
+                let dirPath = listing.dirPath.isEmpty ? rootPath : "\(rootPath)/\(listing.dirPath)"
+                listings[dirPath] = listing.entries
+            }
         }
     }
 }

@@ -42,20 +42,20 @@
     },
     "workspace" : {
       "dark" : {
-        "contentPercent" : 99.33,
-        "currentMb" : 146,
+        "contentPercent" : 99.31,
+        "currentMb" : 151,
         "currentVersion" : "0.1.0-beta.7",
         "date" : "2026-10-09",
-        "nativeMb" : 43.3,
+        "nativeMb" : 48.3,
         "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.35
+        "windowPercent" : 99.3
       },
       "light" : {
-        "contentPercent" : 99.51,
-        "currentMb" : 146.1,
+        "contentPercent" : 99.54,
+        "currentMb" : 141.2,
         "currentVersion" : "0.1.0-beta.7",
         "date" : "2026-10-09",
-        "nativeMb" : 43.4,
+        "nativeMb" : 47.1,
         "nativeVersion" : "0.1.0",
         "windowPercent" : 99.41
       }

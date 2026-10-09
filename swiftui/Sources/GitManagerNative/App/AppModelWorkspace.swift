@@ -7,34 +7,40 @@ import NativeCore
 extension AppModel {
     /// Opens a folder from the UI or at start; a folder that cannot be opened shows why.
     func openFolder(_ folderPath: String) async {
+        await openFolders([folderPath])
+    }
+
+    /// Opens several folders as one workspace (a saved session or -folders): each one's repositories together.
+    func openFolders(_ folderPaths: [String]) async {
         let found = await Task.detached {
-            WorkspaceModel.find(folderPath: folderPath)
+            folderPaths.map { WorkspaceModel.find(folderPath: $0) }
         }.value
-        guard case .success(let info) = found else {
+        let infos = found.compactMap { try? $0.get() }
+        guard !infos.isEmpty else {
             // The status read names the problem (no such folder...), as before workspaces.
-            await open(repoPath: folderPath)
+            await open(repoPath: folderPaths.first ?? "")
             return
         }
         let workspace = WorkspaceModel.shared
-        workspace.set(info)
-        guard let active = WorkspaceRules.pickActive(info.repos, folderRoots: [info.root]) else {
-            await open(repoPath: info.root)
+        workspace.set(infos)
+        let folderRoots = workspace.folders.map(\.root)
+        guard let active = WorkspaceRules.pickActive(workspace.repos, folderRoots: folderRoots) else {
+            await open(repoPath: folderRoots[0])
             return
         }
         await open(repoPath: active.root)
         await workspace.refresh(skipping: active.root)
     }
 
-    /// Opens a folder on the control server's thread and answers once the active repository's status is shown.
-    nonisolated static func openFolderNow(_ folderPath: String) -> Result<StatusSnapshot, BackendError> {
-        let found = WorkspaceModel.find(folderPath: folderPath)
-        var activeRoot = folderPath
-        if case .success(let info) = found {
-            activeRoot = WorkspaceRules.pickActive(info.repos, folderRoots: [info.root])?.root ?? info.root
-        }
+    /// Opens folders on the control server's thread and answers once the active repository's status is shown.
+    nonisolated static func openFoldersNow(_ folderPaths: [String]) -> Result<StatusSnapshot, BackendError> {
+        let infos = folderPaths.compactMap { try? WorkspaceModel.find(folderPath: $0).get() }
+        let roots = infos.map(\.root)
+        let activeRoot = WorkspaceRules.pickActive(WorkspaceRules.unionRepos(infos), folderRoots: roots)?.root
+            ?? roots.first ?? folderPaths.first ?? ""
         Control.onMain {
-            if case .success(let info) = found {
-                WorkspaceModel.shared.set(info)
+            if !infos.isEmpty {
+                WorkspaceModel.shared.set(infos)
             }
             AppModel.shared.begin(activeRoot)
         }

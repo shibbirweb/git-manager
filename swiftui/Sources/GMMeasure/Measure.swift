@@ -30,6 +30,8 @@ enum Measure {
         var mergeFile = Measure.mergeFile
         /// --hdr and --hdr-wait: the display state each capture needs.
         var gate = Display.Gate(requirement: .off, waitS: 30)
+        /// More workspace folders opened with the first (--screen folders).
+        var extraFolders: [String] = []
     }
 
     static func run(_ arguments: [String]) async throws {
@@ -73,6 +75,7 @@ enum Measure {
         }
         let demoRepo = try buildDemo(in: workDir)
         let folderPath = workspaceScreens.contains(options.screen) ? workspaceFolder(demoRepo) : demoRepo
+        options.extraFolders = extraFolders(options.screen, demoRepo: demoRepo)
 
         var reports: [MeasureReport.App] = []
         for kind in only.map({ [$0] }) ?? AppKind.allCases {
@@ -119,7 +122,7 @@ enum Measure {
         }
         let app = try await AppLauncher.launch(
             kind: kind, home: home, folderPath: folderPath, appPath: appPath,
-            settings: kind == .current ? themeSettings : [:], mode: options.mode
+            settings: kind == .current ? themeSettings : [:], mode: options.mode, extraFolders: options.extraFolders
         )
         do {
             let report = try await steps(app, appPath: appPath, outDir: outDir, options: options)

@@ -126,7 +126,8 @@ enum ParityRun {
             appPath: appPath,
             settings: (spec.currentSettings ?? [:]).mapValues(\.any).merging(appSettings) { _, both in both },
             mode: mode,
-            nativeArguments: spec.nativeArguments ?? []
+            nativeArguments: spec.nativeArguments ?? [],
+            extraFolders: (spec.extraFolders ?? []).map { (demoDir as NSString).appendingPathComponent($0) }
         )
         do {
             let info = try await app.client.call("get_app_info").structured ?? [:]

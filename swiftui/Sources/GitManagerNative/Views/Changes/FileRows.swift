@@ -163,30 +163,16 @@ struct FileRow: View {
                 .foregroundStyle(letterColor)
                 .frame(width: 12)
             // One text line on the page: the smaller folder name sits on the file name's baseline.
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                // The name, then the space the page puts between the two spans (13-point, not struck through).
-                let name = parts.name + (parts.directory.isEmpty ? "" : " ")
-                // The color as a style on the view: Text's own foregroundColor dithered --text-dim (measured).
-                Text(name)
-                    .foregroundStyle(kind == "deleted" ? theme.ink("--text-dim") : theme.ink("--text"))
-                    .exactWidth(ExactText.width(name, font: .systemFont(ofSize: 13)))
-                    .overlay(alignment: .topLeading) {
-                        // line-through: 1 point thick, 8.5 points down the 16-point line box (measured), across
-                        // the name only; SwiftUI's strikethrough sits half a point lower.
-                        if kind == "deleted" {
-                            theme.color("--text-faint")
-                                .frame(width: ExactText.width(parts.name, font: .systemFont(ofSize: 13)), height: 1)
-                                .offset(y: 8.5)
-                        }
-                    }
-                if !parts.directory.isEmpty {
-                    ExactText(text: parts.directory, size: 12)
-                        .foregroundStyle(theme.ink("--text-dim"))
-                }
+            // Whole when the exact widths fit (SwiftUI would cut a Text given exactly its width); else cut at the end.
+            ViewThatFits(in: .horizontal) {
+                nameAndFolder(parts)
+                    .fixedSize()
+                nameAndFolder(parts)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
-            .lineLimit(1)
-            .truncationMode(.tail)
-            Spacer(minLength: 0)
+            // The rest of the row, without the gap a Spacer would add after it.
+            .frame(maxWidth: .infinity, alignment: .leading)
             if hovered && !actions.isEmpty {
                 RowActions(actions: actions, surface: selected ? "--selected-inactive" : "--hover")
             }
@@ -195,6 +181,31 @@ struct FileRow: View {
         .padding(.leading, nested ? 40 : 28)
         .padding(.trailing, 6)
         .frame(height: 24)
+    }
+
+    /// The name and its folder on one text line: the smaller folder name sits on the file name's baseline.
+    private func nameAndFolder(_ parts: (name: String, directory: String)) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            // The name, then the space the page puts between the two spans (13-point, not struck through).
+            let name = parts.name + (parts.directory.isEmpty ? "" : " ")
+            // The color as a style on the view: Text's own foregroundColor dithered --text-dim (measured).
+            Text(name)
+                .foregroundStyle(kind == "deleted" ? theme.ink("--text-dim") : theme.ink("--text"))
+                .exactWidth(ExactText.width(name, font: .systemFont(ofSize: 13)))
+                .overlay(alignment: .topLeading) {
+                    // line-through: 1 point thick, 8.5 points down the 16-point line box (measured), across
+                    // the name only; SwiftUI's strikethrough sits half a point lower.
+                    if kind == "deleted" {
+                        theme.color("--text-faint")
+                            .frame(width: ExactText.width(parts.name, font: .systemFont(ofSize: 13)), height: 1)
+                            .offset(y: 8.5)
+                    }
+                }
+            if !parts.directory.isEmpty {
+                ExactText(text: parts.directory, size: 12)
+                    .foregroundStyle(theme.ink("--text-dim"))
+            }
+        }
     }
 
     private var letterColor: Color {

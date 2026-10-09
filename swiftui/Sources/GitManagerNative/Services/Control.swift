@@ -59,10 +59,12 @@ enum Control {
         case "scroll":
             return scroll(speed: args["speed"] as? Double ?? 80, rounds: args["rounds"] as? Int ?? 1)
         case "open_folder":
-            guard let folderPath = args["folderPath"] as? String, !folderPath.isEmpty else {
+            // folderPath, or folderPaths for a workspace of several folders.
+            let folderPaths = (args["folderPaths"] as? [String]) ?? [args["folderPath"] as? String].compactMap { $0 }
+            guard !folderPaths.isEmpty, !folderPaths.contains(where: \.isEmpty) else {
                 return reply(ok: false, text: "folderPath is required")
             }
-            let result = AppModel.openFolderNow(folderPath)
+            let result = AppModel.openFoldersNow(folderPaths)
             if case .failure(let error) = result {
                 return reply(ok: false, text: error.message, structured: onMain { state() })
             }
