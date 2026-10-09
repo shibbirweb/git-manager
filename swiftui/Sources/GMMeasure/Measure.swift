@@ -21,7 +21,7 @@ enum Measure {
         /// "workspace" (the whole acme folder: storefront and payments-api, MeasureWorkspace.swift), "folders" (acme
         /// and design-system), "cleanrepos" (folders with two clean repositories), "norepo" (a plain folder),
         /// "foldermenu", "repomenu" and "branchmenu" (the workspace with a header menu open), "welcome" (no folder) and
-        /// "welcomerecent" (no folder, with recent projects).
+        /// "welcomerecent" (no folder, with recent projects), "closefolder" (storefront closed again).
         var screen = "changes"
         /// "Collapse unchanged" in both apps' diffs (--collapse on|off).
         var collapse = true
@@ -60,7 +60,7 @@ enum Measure {
         ]
         let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
                              "conflicts"]
-            + searchScreens + workspaceScreens + welcomeScreens + editScreens).contains(options.screen)
+            + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens).contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -165,6 +165,8 @@ enum Measure {
             try await showSearchScreen(app, screen: options.screen)
         } else if menuScreens.contains(options.screen) {
             try await openHeaderMenu(app, screen: options.screen)
+        } else if closeScreens.contains(options.screen) {
+            try await closeFolder(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

@@ -192,3 +192,12 @@ Continues [swiftui-status-2.md](swiftui-status-2.md). Newest last.
     the badge gradients are one level off in dark; the other pre-blend made light worse).
   - Memory: current 179 MB, native 29 MB (dark run).
   - Not built: the right-click menu on a row, Open in New Window, workspace files, the state.json error notice.
+- GM-68 Close Folder (repoStore.closeWorkspace):
+  - Built: AppModel.closeWorkspace asks first when tabs have unsaved edits (the page's "Unsaved Changes" wording,
+    Discard and Cancel, as a native alert), then forgets the workspace, the active repository, the diff, the tabs,
+    the Log and the Files panel; the window shows the welcome screen, the folder at the top of the recent projects.
+    The folder menu's Close Folder / Close Workspace runs it. AccessibilityPress also presses the page's menu rows
+    (role="menuitem" is AXMenuItem). gm-measure `--screen closefolder` opens storefront, presses the folder pill
+    and Close Folder, and captures the welcome list in both apps.
+  - Pixel diff below the title bar (HDR off): closefolder 99.82% light, 99.48% dark; foldermenu kept 99.47.
+  - Memory after closing: current 190 MB (it keeps what the workspace loaded), native 36 MB.

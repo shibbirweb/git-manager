@@ -7,6 +7,7 @@
 // --screen norepo: acme/notes, a plain folder: Changes offers to initialize a repository.
 // --screen welcome: both apps started without a folder, on the welcome screen's Projects page (no recent projects
 // in the throwaway home); welcomerecent: the same with recent projects (startState).
+// --screen closefolder: demo/acme/storefront, then the folder menu's Close Folder: the welcome screen lists it.
 // --screen foldermenu, repomenu and branchmenu: the workspace screen with the header's folder, repository or branch
 // menu opened by a press (AccessibilityPress), which opens them where WebKit clicks in both apps.
 
@@ -18,6 +19,8 @@ extension Measure {
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu"]
     /// Both apps started without a folder.
     static let welcomeScreens = ["welcome", "welcomerecent"]
+    /// demo/acme/storefront closed with the folder menu's Close Folder: the welcome screen lists it.
+    static let closeScreens = ["closefolder"]
     /// The title of the pill each menu screen presses.
     static let menuPills = ["foldermenu": "acme", "repomenu": "payments-api", "branchmenu": "main"]
 
@@ -45,6 +48,15 @@ extension Measure {
             return (workspaceFolder(demoRepo) as NSString).appendingPathComponent("notes")
         }
         return workspaceFolder(demoRepo)
+    }
+
+    /// Close Folder from the folder menu, both pressed through Accessibility.
+    static func closeFolder(_ app: RunningApp) async throws {
+        WindowCapture.bringToFront(pid: app.pid)
+        try AccessibilityPress.press(pid: app.pid, title: "storefront")
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        try AccessibilityPress.press(pid: app.pid, title: "Close Folder")
+        try await Task.sleep(nanoseconds: 1_500_000_000)
     }
 
     /// The state.json values a screen starts both apps with: for welcomerecent three recent folders and a recent

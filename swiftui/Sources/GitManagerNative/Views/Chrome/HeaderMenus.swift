@@ -1,6 +1,6 @@
 // The header's menus (Header.svelte workspaceMenu, repoPickerMenu and branchMenu), opened by MenuPill. Rows the native
-// app cannot run yet (recent folders are not listed; New Window, Open Folder in New Window, workspace files, Close
-// Folder and New Branch) say so in a toast.
+// app cannot run yet (recent folders are not listed; New Window, Open Folder in New Window, workspace files and New
+// Branch) say so in a toast.
 
 import AppKit
 import NativeCore
@@ -46,7 +46,7 @@ enum HeaderMenus {
                     await model.openFolders(roots)
                 }
             },
-            notBuilt(roots.count > 1 ? "Close Workspace" : "Close Folder"),
+            .command(roots.count > 1 ? "Close Workspace" : "Close Folder") { model.closeWorkspace() },
         ]
         return items
     }

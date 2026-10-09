@@ -1,6 +1,7 @@
 // What the window shows: the open folder and its status. One shared instance, so the window and
 // the control server (Control.swift) always see and change the same state.
 
+import AppKit
 import Foundation
 import NativeCore
 
@@ -160,6 +161,38 @@ final class AppModel: ObservableObject {
             return .failure(error)
         } catch {
             return .failure(BackendError(kind: "bridge", message: error.localizedDescription))
+        }
+    }
+
+    /// Close Folder / Close Workspace (repoStore.closeWorkspace): asks first when tabs have unsaved edits, then
+    /// forgets the workspace, so the window shows the welcome screen with it at the top of the recent projects.
+    func closeWorkspace() {
+        let dirty = EditorModel.shared.dirtyPaths.sorted()
+        let what = WorkspaceModel.shared.folders.count > 1 ? "workspace" : "folder"
+        if !dirty.isEmpty {
+            let names = dirty.map { ($0 as NSString).lastPathComponent }
+            let alert = NSAlert()
+            alert.messageText = "Unsaved Changes"
+            alert.informativeText = dirty.count == 1
+                ? "\(names[0]) has unsaved changes. Close the \(what) and discard them?"
+                : "\(dirty.count) files have unsaved changes (\(names.joined(separator: ", "))). Close the \(what) "
+                    + "and discard the changes?"
+            alert.addButton(withTitle: "Discard").hasDestructiveAction = true
+            alert.addButton(withTitle: "Cancel")
+            guard alert.runModal() == .alertFirstButtonReturn else {
+                return
+            }
+        }
+        openDiff = nil
+        EditorModel.shared.reset()
+        LogModel.shared.hide()
+        WorkspaceModel.shared.set([])
+        repoPath = nil
+        snapshot = nil
+        errorText = nil
+        loading = false
+        Task {
+            await FilesModel.shared.open(roots: [])
         }
     }
 

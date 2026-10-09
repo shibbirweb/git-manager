@@ -12,7 +12,7 @@ public enum AccessibilityPress {
         AXIsProcessTrusted()
     }
 
-    /// Presses the first button of `pid` whose title or description starts with `title`.
+    /// Presses the first button or menu item of `pid` whose title or description starts with `title`.
     public static func press(pid: Int32, title: String) throws {
         guard allowed else {
             throw ToolError(
@@ -49,7 +49,9 @@ public enum AccessibilityPress {
         let role = attribute(element, kAXRoleAttribute) as? String
         // WebKit names a button by its title, SwiftUI by its description (accessibilityLabel).
         let names = [kAXTitleAttribute, kAXDescriptionAttribute].compactMap { attribute(element, $0) as? String }
-        if role == kAXButtonRole as String, names.contains(where: { $0.hasPrefix(title) }) {
+        // The page's menu rows are role="menuitem" (AXMenuItem); SwiftUI's are buttons.
+        let pressable = role == kAXButtonRole as String || role == kAXMenuItemRole as String
+        if pressable, names.contains(where: { $0.hasPrefix(title) }) {
             return element
         }
         for child in attribute(element, kAXChildrenAttribute) as? [AXUIElement] ?? [] {
