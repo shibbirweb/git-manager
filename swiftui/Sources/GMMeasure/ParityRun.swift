@@ -101,12 +101,16 @@ enum ParityRun {
         if kind == .native, let collapse = spec.collapseUnchanged {
             try Measure.writeNativeDiffPrefs(home: home, collapse: collapse)
         }
+        let appSettings = (spec.appSettings ?? [:]).mapValues(\.any)
+        if kind == .native {
+            try Measure.writeNativeSettings(home: home, values: appSettings)
+        }
         let app = try await AppLauncher.launch(
             kind: kind,
             home: home,
             folderPath: folderPath,
             appPath: appPath,
-            settings: (spec.currentSettings ?? [:]).mapValues(\.any),
+            settings: (spec.currentSettings ?? [:]).mapValues(\.any).merging(appSettings) { _, both in both },
             mode: mode,
             nativeArguments: spec.nativeArguments ?? []
         )
@@ -159,6 +163,9 @@ enum ParityRun {
         }
         if let revision = spec.logCommit {
             try await Measure.showLog(app, revision: revision)
+        }
+        if let section = spec.openSettings {
+            try await Measure.openSettings(app, section: section)
         }
         if app.kind == .current {
             for expectation in spec.expectCurrent ?? [] {

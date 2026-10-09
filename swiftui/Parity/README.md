@@ -9,9 +9,9 @@ after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 1 done, 16 partial, 43 missing (60 features). 6 of 49 scenarios run in both apps.
+Native: 2 done, 17 partial, 41 missing (60 features). 8 of 49 scenarios run in both apps.
 
-Last measured 2026-10-08 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
+Last measured 2026-10-09 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
 
 | Feature | Id | Native | Scenario | Match light / dark | Memory current / native |
@@ -27,7 +27,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Single tab title | single-tab-title | missing | single-tab | - | - |
 | Split editor | split-editor | missing | split-editor | - | - |
 | New File and unsaved changes | new-file-and-unsaved-changes | missing | new-file | - | - |
-| Unload hidden tabs | unload-hidden-tabs | missing | settings | - | - |
+| Unload hidden tabs | unload-hidden-tabs | missing | settings | 99.42% / 99.03% | 213 MB / 46 MB |
 | Editing code | code-editing | missing | editor-file | - | - |
 | Code appearance | code-appearance | partial | diff-every-line | - | - |
 | Markdown editor | markdown | missing | markdown | - | - |
@@ -66,13 +66,13 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Integrated terminal | terminal | missing | terminal | - | - |
 | Scripts tool window | scripts | missing | scripts | - | - |
 | Menu bar | menus | missing | menu-bar | - | - |
-| Settings | settings | missing | settings | - | - |
-| Search in Settings | settings-search | missing | settings-search | - | - |
-| Color themes | color-themes | partial | color-themes | - | - |
+| Settings | settings | partial | settings | 99.42% / 99.03% | 213 MB / 46 MB |
+| Search in Settings | settings-search | partial | settings-search | - | - |
+| Color themes | color-themes | done | color-themes | 99.75% / 99.49% | 135 MB / 34 MB |
 | Rounded panels | rounded-panels | missing | rounded-panels | - | - |
 | Updates and release channels | updates | missing | update-dialog | - | - |
 | Status bar and help links | status-bar | partial | changes | 99.18% / 99.13% | 150 MB / 32 MB |
 | Memory readout and memory log | memory | partial | memory-breakdown | - | - |
 | Clear Cache | clear-cache | missing | memory-breakdown | - | - |
-| MCP server and command line tool | mcp | partial | settings | - | - |
+| MCP server and command line tool | mcp | partial | settings | 99.42% / 99.03% | 213 MB / 46 MB |
 | git mergetool mode | mergetool | missing | mergetool-mode | - | - |

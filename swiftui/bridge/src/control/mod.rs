@@ -10,6 +10,7 @@
 //!
 //! Parts: `http` (requests and responses), `protocol` (JSON-RPC), `tools` and `memory_tools`.
 
+mod dialog_tools;
 mod http;
 mod memory_tools;
 mod protocol;

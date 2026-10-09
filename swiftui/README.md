@@ -77,6 +77,7 @@ git-manager cli memory --duration 10               # the same measurement on the
 | `git_status` | yes |
 | `get_app_info` | native fields (name, version, pid, bundle id) |
 | `app` | native only, with the actions below |
+| `open_settings`, `close_dialog` | yes: names and the `section` argument (Settings only) |
 
 The `app` actions: `get_state`, `open_folder`, `show_diff`, `diff`, `open_file`, `show_log`, `scroll`, `stage`,
 `unstage` and `commit`. `diff` moves to the next or previous change, opens fold steps and toggles Collapse unchanged.
@@ -111,6 +112,8 @@ swift run -c release gm-measure measure --screen diff --walk 37        # scroll 
 swift run -c release gm-measure measure --screen staged  # the Changes screen after staging src/cart.ts
 swift run -c release gm-measure measure --screen file    # src/catalog.ts in a file tab
 swift run -c release gm-measure measure --screen log     # the Log, the newest commit and its diff selected
+swift run -c release gm-measure measure --screen settings  # Settings open on Appearance (open_settings)
+swift run -c release gm-measure measure --mode dark --theme monokai-charcoal  # a color theme in both apps
 swift run -c release gm-measure memory                  # a 4000-line PHP diff: idle, open, scrolling, after
 swift run -c release gm-measure memory --screen file    # the same file open in a tab instead of its diff
 swift run -c release gm-measure memory --screen log     # 3000 commits in the Log: idle, open, scrolling, after
@@ -186,10 +189,14 @@ and per scenario and mode both screenshots and `diff.png` (the overlay below the
 scenario, the features missing or partial in native, and the scenarios the native app cannot show yet. A launch,
 step or capture that fails is written next to its scenario, and the exit code is then 1.
 
+The native app keeps its settings in `~/.gitmanager-native/settings.json`, with the current app's keys and
+validation; `measure --theme` writes the color theme there and in the current app's settings.json.
+
 A scenario runs in both apps once it has a `run` spec: files to stage in both apps first (`stageFiles`, unstaged
 again after the capture, since the scenarios share one demo), the file whose diff to open (`showDiff`, `staged`),
 "Collapse unchanged" in both apps (`collapseUnchanged`, set and checked on screen as `measure --collapse` does),
-localStorage values and settings for the current app (`currentStorage`, `currentSettings`), launch arguments for
+localStorage values and settings for the current app (`currentStorage`, `currentSettings`), settings.json values
+for both apps (`appSettings`), the Settings section to open in both (`openSettings`), launch arguments for
 the native app (`nativeArguments`) and elements the current app must show before the capture (`expectCurrent`).
 A new screen of the native app usually needs only a `run` spec in its scenario. `staged` (Changes after staging
 src/cart.ts) and `diff-every-line` (collapse off) are the parity side of `measure --screen staged` and
@@ -241,3 +248,4 @@ src-tauri's test helpers.
 | GM-51 HDR gate in gm-measure (`--hdr`), parity list and run specs for 3c and GM-45 | done |
 | GM-52 File tabs and the read-only file view: open from the Files panel, file bar, editor canvas, status items | done |
 | GM-53 Log and history: graph, refs, commit details and its read-only diff, `show_log`, `--screen log` | done |
+| GM-56 Settings dialog, settings.json, live color themes (`--screen settings`, `--theme`) | built, gate pending |

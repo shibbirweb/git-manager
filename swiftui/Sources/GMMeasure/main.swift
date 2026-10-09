@@ -1,7 +1,8 @@
 // gm-measure: drives and measures Git Manager and Git Manager Native from the outside
 // (docs/plans/swiftui-experiment.md).
 //
-//   swift run gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file|log] [--collapse on|off]
+//   swift run gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file|log|settings]
+//                                [--theme <id>] [--collapse on|off]
 //                                [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
 //                                [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
 //   swift run gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark]
@@ -36,7 +37,8 @@ let repoRoot = (swiftuiDir as NSString).deletingLastPathComponent
 
 let usage = """
     Usage:
-      gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file|log] [--collapse on|off]
+      gm-measure measure [--mode light|dark] [--screen changes|diff|staged|file|log|settings] [--theme <id>]
+                         [--collapse on|off]
                          [--walk <points>] [--duration <s>] [--settle <s>] [--only current|native]
                          [--current-app <path>] [--native-app <path>] [--hdr off|any] [--hdr-wait <s>]
       gm-measure memory [--lines <n>] [--sample <s>] [--speed <points>] [--mode light|dark] [--screen diff|file|log]

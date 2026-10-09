@@ -21,6 +21,8 @@ enum Measure {
         /// Points a frame of a scroll walk down and back before the screenshot (--walk), 0 for none: what the
         /// screen shows after scrolling should not change.
         var walkSpeed = 0
+        /// --theme: the color theme of the run's mode in both apps (a theme id such as monokai-charcoal).
+        var colorTheme: String?
         /// --hdr and --hdr-wait: the display state each capture needs.
         var gate = Display.Gate(requirement: .off, waitS: 30)
     }
@@ -35,13 +37,14 @@ enum Measure {
         let collapse = option("--collapse", in: &arguments) ?? "on"
         options.collapse = collapse == "on"
         options.walkSpeed = max(0, Int(option("--walk", in: &arguments) ?? "0") ?? 0)
+        options.colorTheme = option("--theme", in: &arguments)
         options.gate = try Display.gate(from: &arguments)
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
         let appPaths: [AppKind: String?] = [
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = ["changes", "diff", "staged", "file", "log"].contains(options.screen)
+        let validScreen = ["changes", "diff", "staged", "file", "log", "settings"].contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
             print(usage)
@@ -90,8 +93,13 @@ enum Measure {
         if kind == .native {
             try writeNativeDiffPrefs(home: home, collapse: options.collapse)
         }
+        let themeSettings = colorThemeSettings(mode: options.mode, themeID: options.colorTheme)
+        if kind == .native {
+            try writeNativeSettings(home: home, values: themeSettings)
+        }
         let app = try await AppLauncher.launch(
-            kind: kind, home: home, folderPath: folderPath, appPath: appPath, mode: options.mode
+            kind: kind, home: home, folderPath: folderPath, appPath: appPath,
+            settings: kind == .current ? themeSettings : [:], mode: options.mode
         )
         do {
             let report = try await steps(app, appPath: appPath, outDir: outDir, options: options)
@@ -116,6 +124,8 @@ enum Measure {
             try await openFile(app)
         } else if options.screen == "log" {
             try await showLog(app)
+        } else if options.screen == "settings" {
+            try await openSettings(app)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

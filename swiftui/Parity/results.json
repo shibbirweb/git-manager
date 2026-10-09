@@ -20,6 +20,26 @@
         "windowPercent" : 99.05
       }
     },
+    "color-themes" : {
+      "dark" : {
+        "contentPercent" : 99.49,
+        "currentMb" : 135.5,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 33.6,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.49
+      },
+      "light" : {
+        "contentPercent" : 99.75,
+        "currentMb" : 135.1,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 33.6,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.63
+      }
+    },
     "diff" : {
       "dark" : {
         "contentPercent" : 74.95,
@@ -78,6 +98,26 @@
         "nativeMb" : 51.8,
         "nativeVersion" : "0.1.0",
         "windowPercent" : 99.35
+      }
+    },
+    "settings" : {
+      "dark" : {
+        "contentPercent" : 99.03,
+        "currentMb" : 213.2,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 45.9,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.05
+      },
+      "light" : {
+        "contentPercent" : 99.42,
+        "currentMb" : 213,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-09",
+        "nativeMb" : 46,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.31
       }
     }
   }

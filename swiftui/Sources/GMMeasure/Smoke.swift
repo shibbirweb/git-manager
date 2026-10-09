@@ -69,6 +69,7 @@ enum Smoke {
 
             try await checkWrites(app.client, check: check)
             try await checkLog(app.client, check: check)
+            try await checkSettings(app.client, check: check)
         } catch {
             check("tool calls", false, "\(error)")
         }

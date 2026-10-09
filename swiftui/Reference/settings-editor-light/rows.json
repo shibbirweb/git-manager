@@ -1,0 +1,294 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "rows", "rect": {"height": 468, "width": 568, "x": 511, "y": 119},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "padding-bottom": "20px", "padding-left": "22px",
+        "padding-right": "22px", "padding-top": "4px"
+      },
+      "tag": "div", "text": "Color theme One for light and one for dark mode. Light, Dark or System is set in"
+    },
+    {
+      "classes": "row stacked", "rect": {"height": 331, "width": 514, "x": 533, "y": 123},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "10px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "Color theme One for light and one for dark mode. Light, Dark or System is set in"
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 514, "x": 533, "y": 135},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Color theme One for light and one for dark mode. Light, Dark or System is set in"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 514, "x": 533, "y": 135},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Color theme"
+    },
+    {
+      "classes": "hint", "rect": {"height": 17, "width": 514, "x": 533, "y": 154},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "One for light and one for dark mode. Light, Dark or System is set in Appearance."
+    },
+    {
+      "classes": "inline-link", "rect": {"height": 17, "width": 68, "x": 914, "y": 154},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline-block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px", "text-align": "center"
+      },
+      "tag": "button", "text": "Appearance"
+    },
+    {
+      "classes": "row stacked", "rect": {"height": 281, "width": 514, "x": 533, "y": 454},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "10px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "Editor font family A comma-separated list. The first installed font is used; mon"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 514, "x": 533, "y": 466},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Editor font family A comma-separated list. The first installed font is used; mon"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 514, "x": 533, "y": 466},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Editor font family"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 514, "x": 533, "y": 485},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "A comma-separated list. The first installed font is used; monospace is always ad"
+    },
+    {
+      "classes": "", "rect": {"height": 14, "width": 60, "x": 850, "y": 487},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "11.04px", "font-weight": "400", "line-height": "16.008001px"
+      },
+      "tag": "code", "text": "monospace"
+    },
+    {
+      "classes": "row", "rect": {"height": 61, "width": 514, "x": 533, "y": 735},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "Editor font size Code in the editor, diffs and the merge tool. 13px"
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 246, "x": 533, "y": 747},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Editor font size Code in the editor, diffs and the merge tool."
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 246, "x": 533, "y": 747},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Editor font size"
+    },
+    {
+      "classes": "hint", "rect": {"height": 17, "width": 246, "x": 533, "y": 766},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Code in the editor, diffs and the merge tool."
+    },
+    {
+      "classes": "row", "rect": {"height": 129, "width": 514, "x": 533, "y": 796},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "Editor font weight How thick code is drawn. Light (300) looks calm on dark theme"
+    },
+    {
+      "classes": "label", "rect": {"height": 104, "width": 244, "x": 533, "y": 808},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Editor font weight How thick code is drawn. Light (300) looks calm on dark theme"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 244, "x": 533, "y": 808},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Editor font weight"
+    },
+    {
+      "classes": "hint", "rect": {"height": 85, "width": 244, "x": 533, "y": 827},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "How thick code is drawn. Light (300) looks calm on dark themes. Needs a font wit"
+    },
+    {
+      "classes": "row", "rect": {"height": 78, "width": 514, "x": 533, "y": 925},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "Line spacing Space between lines of code, as a multiple of the font size. The de"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 274, "x": 533, "y": 937},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Line spacing Space between lines of code, as a multiple of the font size. The de"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 274, "x": 533, "y": 937},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Line spacing"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 274, "x": 533, "y": 956},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Space between lines of code, as a multiple of the font size. The default is 1.25"
+    },
+    {
+      "classes": "row toggle-row", "rect": {"height": 78, "width": 514, "x": 533, "y": 1003},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Change font size with Ctrl + mouse wheel Hold Control (or Command) and scroll ov"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 460, "x": 533, "y": 1015},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Change font size with Ctrl + mouse wheel Hold Control (or Command) and scroll ov"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 460, "x": 533, "y": 1015},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Change font size with Ctrl + mouse wheel"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 460, "x": 533, "y": 1034},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Hold Control (or Command) and scroll over an editor, diff or merge pane to make"
+    }
+  ],
+  "limit": 100, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).", "part": "rows",
+  "piece": "1 of 4", "screen": "settings-editor",
+  "selector": [".dialog .rows", ".dialog .rows > *", ".dialog .rows .label", ".dialog .rows .label *"]
+}

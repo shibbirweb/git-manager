@@ -11,6 +11,7 @@ struct HeaderBar: View {
     let head: HeadInfo?
     let chooseFolder: () -> Void
     let toggleAppearance: () -> Void
+    var openSettings: () -> Void = {}
     /// The write running now, shown before the layout buttons (.busy: at most 280 wide, 6 points before them).
     var busy: String?
 
@@ -48,7 +49,7 @@ struct HeaderBar: View {
             IconButton(action: toggleAppearance) {
                 Icon(name: "sun", size: 15)
             }
-            IconButton(action: {}) {
+            IconButton(action: openSettings) {
                 Icon(name: "settings", size: 15)
             }
         }

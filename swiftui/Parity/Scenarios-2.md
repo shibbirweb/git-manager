@@ -148,17 +148,21 @@ Folder: demo `extras/media-site`
 
 - Git LFS (`git-lfs`, missing): The LFS tag in Changes and the sizes in the diff.
 
-## settings: Settings (native app cannot show it yet)
+## settings: Settings (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront.
 2. Press Cmd+, (Git Manager > Settings...) and look at Appearance, then Editor, Git and Automation.
 
+Measured: light 99.42% (213 MB / 46 MB, 2026-10-09), dark 99.03% (213 MB / 46 MB, 2026-10-09).
+
 - Unload hidden tabs (`unload-hidden-tabs`, missing): Settings > Editor > Unload hidden tabs; an unloaded tab opens
   where it was.
-- Settings (`settings`, missing): The Settings dialog with its sections. Native lacks: the header's gear is drawn but
-  does nothing.
+- Settings (`settings`, partial): The Settings dialog with its sections. Native lacks: only Theme, the color themes
+  and Commit box change anything; the other rows show their values read-only; the Keyboard Shortcuts list, the GitHub
+  sign-in, the commit identity and templates, the font previews; Reset to Defaults asks with a plain macOS alert; the
+  dialog cannot be dragged.
 - MCP server and command line tool (`mcp`, partial): Settings > Automation; git-manager cli status and the MCP tools.
   Native lacks: only get_app_info, app, git_status, get_memory_usage, sample_memory and take_screenshot; no settings:
   the native server always runs.
@@ -169,17 +173,21 @@ Folder: demo `acme/storefront`
 
 1. Open Settings (Cmd+,) and type font in the search field.
 
-- Search in Settings (`settings-search`, missing): Matching sections and highlighted matches.
+- Search in Settings (`settings-search`, partial): Matching sections and highlighted matches. Native lacks: keyboard
+  shortcuts are not searched; highlights are a tint, not the Custom Highlight API's.
 
-## color-themes: Color theme Dracula (native app cannot show it yet)
+## color-themes: Color theme Monokai Charcoal (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront.
-2. In Settings > Editor, pick Dracula as the Dark theme; switch to dark mode.
+2. In Settings > Editor, pick Monokai Charcoal as the Dark theme; switch to dark mode.
 
-- Color themes (`color-themes`, partial): Dracula in dark mode: panels, code and diffs in its colors. Native lacks:
-  every theme's tokens are generated, but only Git Manager Light and Dark are used; the pickers.
+Note: The run sets darkColorTheme in both apps' settings.json; in light mode it shows the default light theme.
+
+Measured: light 99.75% (135 MB / 34 MB, 2026-10-09), dark 99.49% (136 MB / 34 MB, 2026-10-09).
+
+- Color themes (`color-themes`, done): Monokai Charcoal in dark mode: panels, code and diffs in its colors.
 
 ## github: GitHub settings (native app cannot show it yet)
 

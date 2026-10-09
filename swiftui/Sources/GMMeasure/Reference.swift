@@ -22,6 +22,8 @@ enum Reference {
     struct Screen {
         let name: String
         let parts: [Part]
+        /// Settings opened on this section for the capture (open_settings), and closed after it.
+        var settingsSection: String?
     }
 
     static let chrome = [
@@ -48,6 +50,8 @@ enum Reference {
             Part(name: "nav strip", selector: ".nav-strip, .nav-strip *"),
             Part(name: "main area", selector: ".empty, .empty *"),
         ]),
+        settingsScreen(name: "settings", section: "appearance"),
+        settingsScreen(name: "settings-editor", section: "editor"),
         Screen(name: "diff", parts: chrome + [
             Part(name: "editor tabs", selector: ".tab-strip, .tab-strip *"),
             Part(name: "diff toolbar", selector: ".diff-view .toolbar, .diff-view .toolbar *"),
@@ -128,6 +132,9 @@ enum Reference {
                     } else if screen.name == "file" {
                         try await Measure.openFile(app)
                     }
+                    if let section = screen.settingsSection {
+                        try await Measure.openSettings(app, section: section)
+                    }
                     try await Task.sleep(nanoseconds: 1_500_000_000)
                     let name = "\(screen.name)-\(mode)"
                     let pngPath = (pngDir as NSString).appendingPathComponent("\(name).png")
@@ -141,6 +148,9 @@ enum Reference {
                         into: (jsonDir as NSString).appendingPathComponent(name)
                     )
                     print("\(name): \(count) elements")
+                    if screen.settingsSection != nil {
+                        _ = try await app.client.call("close_dialog")
+                    }
                 }
             } catch {
                 await app.stop()

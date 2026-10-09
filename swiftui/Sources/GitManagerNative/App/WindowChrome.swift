@@ -52,16 +52,11 @@ struct WindowChrome: NSViewRepresentable {
     }
 }
 
-/// `-appearance light|dark` at launch forces the mode, so gm-measure compares both apps in the same one.
+/// Light, Dark or System from settings.json; `-appearance light|dark` at launch sets it for the run (SettingsStore),
+/// so gm-measure compares both apps in the same mode.
+@MainActor
 enum AppearanceOption {
     static func apply() {
-        switch UserDefaults.standard.string(forKey: "appearance") {
-        case "light":
-            NSApp.appearance = NSAppearance(named: .aqua)
-        case "dark":
-            NSApp.appearance = NSAppearance(named: .darkAqua)
-        default:
-            break
-        }
+        SettingsStore.shared.applyAppearance()
     }
 }

@@ -113,6 +113,16 @@ struct Theme {
         css(tokenOrLiteral) ?? CSSColor.parse(tokenOrLiteral)
     }
 
+    /// The token as an sRGB color for a layer macOS converts when it composites (the Settings dialog's layer).
+    func srgbLayerColor(_ tokenName: String) -> CGColor {
+        css(tokenName)?.systemSRGB.cgColor ?? CGColor(gray: 0, alpha: 0)
+    }
+
+    /// A token's text as the theme has it, such as --shadow's "0 8px 28px rgba(0, 0, 0, 0.16)".
+    func raw(_ tokenName: String) -> String? {
+        tokens[tokenName]
+    }
+
     private func css(_ tokenName: String) -> CSSColor? {
         CSSColor.parse(tokens[tokenName] ?? "")
     }

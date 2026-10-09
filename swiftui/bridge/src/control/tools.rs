@@ -73,6 +73,8 @@ pub(super) const TOOLS: &[Tool] = &[
         schema: no_args,
         run: take_screenshot,
     },
+    super::dialog_tools::OPEN_SETTINGS,
+    super::dialog_tools::CLOSE_DIALOG,
 ];
 
 pub(super) fn object(properties: Value, required: &[&str]) -> Value {

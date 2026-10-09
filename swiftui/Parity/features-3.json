@@ -56,20 +56,24 @@
     {
       "id": "settings", "name": "Settings", "usage": "Settings.md", "scenario": "settings",
       "check": "The Settings dialog with its sections",
-      "native": "missing",
-      "gaps": ["the header's gear is drawn but does nothing"]
+      "native": "partial",
+      "gaps": [
+        "only Theme, the color themes and Commit box change anything; the other rows show their values read-only",
+        "the Keyboard Shortcuts list, the GitHub sign-in, the commit identity and templates, the font previews",
+        "Reset to Defaults asks with a plain macOS alert; the dialog cannot be dragged"
+      ]
     },
     {
       "id": "settings-search", "name": "Search in Settings", "usage": "Settings-Search.md",
       "scenario": "settings-search",
       "check": "Matching sections and highlighted matches",
-      "native": "missing"
+      "native": "partial",
+      "gaps": ["keyboard shortcuts are not searched", "highlights are a tint, not the Custom Highlight API's"]
     },
     {
       "id": "color-themes", "name": "Color themes", "usage": "Color-Themes.md", "scenario": "color-themes",
-      "check": "Dracula in dark mode: panels, code and diffs in its colors",
-      "native": "partial",
-      "gaps": ["every theme's tokens are generated, but only Git Manager Light and Dark are used", "the pickers"]
+      "check": "Monokai Charcoal in dark mode: panels, code and diffs in its colors",
+      "native": "done"
     },
     {
       "id": "rounded-panels", "name": "Rounded panels", "usage": "Rounded-Panels.md", "scenario": "rounded-panels",

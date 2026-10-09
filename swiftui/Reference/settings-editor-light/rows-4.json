@@ -1,0 +1,220 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "group-title", "rect": {"height": 15, "width": 514, "x": 533, "y": 2072},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11px",
+        "font-weight": "600", "letter-spacing": "0.66px", "margin-top": "18px", "padding-bottom": "2px"
+      },
+      "tag": "h4", "text": "Editing features"
+    },
+    {
+      "classes": "group-hint", "rect": {"height": 13, "width": 514, "x": 533, "y": 2089},
+      "styles": {
+        "border-bottom-color": "rgb(168, 173, 189)", "border-left-color": "rgb(168, 173, 189)",
+        "border-right-color": "rgb(168, 173, 189)", "border-top-color": "rgb(168, 173, 189)",
+        "color": "rgb(168, 173, 189)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "margin-top": "2px"
+      },
+      "tag": "p", "text": "Turning a feature off removes it from open editors and frees its memory."
+    },
+    {
+      "classes": "row toggle-row", "rect": {"height": 61, "width": 514, "x": 533, "y": 2102},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Auto-close brackets and quotes Typing ( [ { or a quote adds the closing one."
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 247, "x": 533, "y": 2114},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Auto-close brackets and quotes Typing ( [ { or a quote adds the closing one."
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 247, "x": 533, "y": 2114},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Auto-close brackets and quotes"
+    },
+    {
+      "classes": "hint", "rect": {"height": 17, "width": 247, "x": 533, "y": 2133},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Typing ( [ { or a quote adds the closing one."
+    },
+    {
+      "classes": "row toggle-row", "rect": {"height": 78, "width": 514, "x": 533, "y": 2163},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Code completion Suggest words from the file and the language's keywords. Ctrl+Sp"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 460, "x": 533, "y": 2175},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Code completion Suggest words from the file and the language's keywords. Ctrl+Sp"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 460, "x": 533, "y": 2175},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Code completion"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 460, "x": 533, "y": 2194},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Suggest words from the file and the language's keywords. Ctrl+Space opens the li"
+    },
+    {
+      "classes": "row toggle-row sub-row", "rect": {"height": 78, "width": 514, "x": 533, "y": 2241},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-left": "18px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Show completion while typing Off, only Ctrl+Space opens the list. Markdown and p"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 442, "x": 551, "y": 2253},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Show completion while typing Off, only Ctrl+Space opens the list. Markdown and p"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 442, "x": 551, "y": 2253},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Show completion while typing"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 442, "x": 551, "y": 2272},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Off, only Ctrl+Space opens the list. Markdown and plain text always wait for Ctr"
+    },
+    {
+      "classes": "row toggle-row", "rect": {"height": 61, "width": 514, "x": 533, "y": 2319},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Fold arrows Arrows beside the line numbers fold and unfold blocks in the file ed"
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 401, "x": 533, "y": 2331},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Fold arrows Arrows beside the line numbers fold and unfold blocks in the file ed"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 401, "x": 533, "y": 2331},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "500"
+      },
+      "tag": "span", "text": "Fold arrows"
+    },
+    {
+      "classes": "hint", "rect": {"height": 17, "width": 401, "x": 533, "y": 2350},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Arrows beside the line numbers fold and unfold blocks in the file editor."
+    },
+    {
+      "classes": "row toggle-row", "rect": {"height": 61, "width": 514, "x": 533, "y": 2380},
+      "styles": {
+        "border-bottom-color": "rgb(235, 236, 240)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Indent guides Faint lines at each indent level, also in diffs and the merge tool"
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 356, "x": 533, "y": 2392},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Indent guides Faint lines at each indent level, also in diffs and the merge tool"
+    }
+  ],
+  "limit": 100, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).", "part": "rows",
+  "piece": "4 of 4", "screen": "settings-editor",
+  "selector": [".dialog .rows", ".dialog .rows > *", ".dialog .rows .label", ".dialog .rows .label *"]
+}

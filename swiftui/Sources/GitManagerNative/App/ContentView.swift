@@ -13,16 +13,18 @@ struct ContentView: View {
     @ObservedObject private var toasts = ToastCenter.shared
     @ObservedObject private var editor = EditorModel.shared
     @ObservedObject private var log = LogModel.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let theme = Theme.standard(for: colorScheme)
+        let theme = settings.theme(for: colorScheme)
         Shell {
             HeaderBar(
                 folderName: model.folderName,
                 head: model.snapshot?.status?.head,
                 chooseFolder: chooseFolder,
-                toggleAppearance: toggleAppearance,
+                toggleAppearance: settings.toggleLightDark,
+                openSettings: { settings.openDialog() },
                 busy: model.busy
             )
         } leftBar: {
@@ -53,6 +55,11 @@ struct ContentView: View {
                 unreadError: toasts.unreadError,
                 openBell: toasts.markRead
             )
+        }
+        .overlay {
+            if settings.dialogOpen {
+                SettingsDialog(settings: settings)
+            }
         }
         .overlay(alignment: .bottomTrailing) {
             ToastStack(center: toasts)
@@ -89,11 +96,6 @@ struct ContentView: View {
         let column = file.lines.indices.contains(cursor.line) ? cursor.column + 1 : 1
         let position = "Ln \(cursor.line + 1), Col \(column)"
         return [position, EditorInfo.indentLabel(file.indent), file.eolLabel, file.language]
-    }
-
-    /// The header's theme button: switches between light and dark for this app.
-    private func toggleAppearance() {
-        NSApp.appearance = NSAppearance(named: colorScheme == .dark ? .aqua : .darkAqua)
     }
 
     private func chooseFolder() {

@@ -1,0 +1,296 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "rows", "rect": {"height": 468, "width": 568, "x": 511, "y": 119},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "20px", "padding-left": "22px", "padding-right": "22px",
+        "padding-top": "4px"
+      },
+      "tag": "div", "text": "Theme System follows the macOS appearance. Color themes are in Editor. SystemLig"
+    },
+    {
+      "classes": "row", "rect": {"height": 78, "width": 514, "x": 533, "y": 123},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "Theme System follows the macOS appearance. Color themes are in Editor. SystemLig"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 312, "x": 533, "y": 135},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Theme System follows the macOS appearance. Color themes are in Editor."
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 312, "x": 533, "y": 135},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "500"
+      },
+      "tag": "span", "text": "Theme"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 312, "x": 533, "y": 154},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "System follows the macOS appearance. Color themes are in Editor."
+    },
+    {
+      "classes": "inline-link", "rect": {"height": 17, "width": 33, "x": 568, "y": 171},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline-block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px", "text-align": "center"
+      },
+      "tag": "button", "text": "Editor"
+    },
+    {
+      "classes": "row toggle-row", "rect": {"height": 78, "width": 514, "x": 533, "y": 201},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Rounded panels Show the sidebars, editors and the bottom panel as rounded panels"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 460, "x": 533, "y": 213},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Rounded panels Show the sidebars, editors and the bottom panel as rounded panels"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 460, "x": 533, "y": 213},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "500"
+      },
+      "tag": "span", "text": "Rounded panels"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 460, "x": 533, "y": 232},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Show the sidebars, editors and the bottom panel as rounded panels with space bet"
+    },
+    {
+      "classes": "row", "rect": {"height": 112, "width": 514, "x": 533, "y": 279},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-top": "12px"
+      },
+      "tag": "div", "text": "File toolbar The bar with a file's path, badges and buttons: above the code, und"
+    },
+    {
+      "classes": "label", "rect": {"height": 87, "width": 306, "x": 533, "y": 291},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "File toolbar The bar with a file's path, badges and buttons: above the code, und"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 306, "x": 533, "y": 291},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "500"
+      },
+      "tag": "span", "text": "File toolbar"
+    },
+    {
+      "classes": "hint", "rect": {"height": 68, "width": 306, "x": 533, "y": 310},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "The bar with a file's path, badges and buttons: above the code, under it, or hid"
+    },
+    {
+      "classes": "row toggle-row sub-row", "rect": {"height": 78, "width": 514, "x": 533, "y": 391},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-left": "18px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Breadcrumbs The folders and file as a Navigation Bar. Off, Jump to Navigation Ba"
+    },
+    {
+      "classes": "label", "rect": {"height": 53, "width": 442, "x": 551, "y": 403},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Breadcrumbs The folders and file as a Navigation Bar. Off, Jump to Navigation Ba"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 442, "x": 551, "y": 403},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "500"
+      },
+      "tag": "span", "text": "Breadcrumbs"
+    },
+    {
+      "classes": "hint", "rect": {"height": 34, "width": 442, "x": 551, "y": 422},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "The folders and file as a Navigation Bar. Off, Jump to Navigation Bar shows it o"
+    },
+    {
+      "classes": "row toggle-row sub-row", "rect": {"height": 61, "width": 514, "x": 533, "y": 469},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-left": "18px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Badges Unsaved, Modified, New file and the number of conflicts."
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 321, "x": 551, "y": 481},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Badges Unsaved, Modified, New file and the number of conflicts."
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 321, "x": 551, "y": 481},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "500"
+      },
+      "tag": "span", "text": "Badges"
+    },
+    {
+      "classes": "hint", "rect": {"height": 17, "width": 321, "x": 551, "y": 500},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Unsaved, Modified, New file and the number of conflicts."
+    },
+    {
+      "classes": "row toggle-row sub-row", "rect": {"height": 61, "width": 514, "x": 533, "y": 530},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "20px", "padding-bottom": "12px", "padding-left": "18px", "padding-top": "12px"
+      },
+      "tag": "label", "text": "Change arrows Previous and next change with the counter. F7 and Shift+F7 work ei"
+    },
+    {
+      "classes": "label", "rect": {"height": 36, "width": 431, "x": 551, "y": 542},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "3px"
+      },
+      "tag": "div", "text": "Change arrows Previous and next change with the counter. F7 and Shift+F7 work ei"
+    },
+    {
+      "classes": "", "rect": {"height": 16, "width": 431, "x": 551, "y": 542},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "500"
+      },
+      "tag": "span", "text": "Change arrows"
+    },
+    {
+      "classes": "hint", "rect": {"height": 17, "width": 431, "x": 551, "y": 561},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "12px",
+        "font-weight": "400", "line-height": "17.4px"
+      },
+      "tag": "span", "text": "Previous and next change with the counter. F7 and Shift+F7 work either way."
+    }
+  ],
+  "limit": 100, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).", "part": "rows",
+  "piece": "1 of 2", "screen": "settings",
+  "selector": [".dialog .rows", ".dialog .rows > *", ".dialog .rows .label", ".dialog .rows .label *"]
+}

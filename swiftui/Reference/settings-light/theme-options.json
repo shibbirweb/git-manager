@@ -1,0 +1,6 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront", "elements": [], "limit": 100,
+  "mode": "light", "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "theme options", "piece": "1 of 1", "screen": "settings",
+  "selector": [".dialog .rows .group-label", ".dialog .rows .option", ".dialog .rows .option *"]
+}

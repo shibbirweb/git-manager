@@ -89,3 +89,34 @@ Continues [swiftui-status.md](swiftui-status.md). Newest last.
     beyond typing (Esc, Down into the list), Load more, keyboard in the file list, resizing the details split,
     blame in the commit diff, the inline layout, binary and LFS previews, refreshing after commits and fetches, the
     toolbar's path when the pane is wide enough to show it, and the empty and error states' icons.
+- GM-56 Settings and theme switching (src/lib/views/SettingsDialog.svelte, stores/settings.svelte.ts):
+  - Built: settings in `~/.gitmanager-native/settings.json` (never the real `~/.gitmanager`) with the current app's
+    keys and rules (NativeCore SettingsData, tested): values validated, unknown keys kept on every save, a file that
+    is not a JSON object reported in the dialog's banner and never overwritten; `-appearance` sets Theme for a run.
+    Theme switching: the window takes `SettingsStore.theme(for:)` on every render, so Light, Dark or System and the
+    light and dark color themes (all 42) restyle every screen at once; the header's sun and gear work; the Changes
+    header's commit box button follows Settings > Git > Commit box. The dialog (Views/Settings): overlay, frame,
+    section list, search (NativeCore SettingsSearch, a port of settingsSearch.ts, tested), every section's rows.
+    Working: Theme, the color theme pickers with swatches, Commit box; every other row read-only with its stored
+    value. Control: `open_settings`, `close_dialog`; `get_state` adds dialog, theme, colorMode, colorTheme,
+    settingsError, settingsScroll. gm-measure: `--screen settings`, `--theme <id>`, reference `settings-*`,
+    parity specs `openSettings` and `appSettings` (scenarios `settings`, `color-themes` on Monokai Charcoal), smoke.
+  - Rules found: the overlay is its own 8-bit black layer (71 light, 115 dark) composited in half precision (0
+    misses). The shadow (0 8px 28px) is a Gaussian of the box times the alpha, rounded to a byte, cut out under the
+    box, in a see-through layer above the overlay (ShadowMask). Its width follows the alpha: 0.4964 times the blur
+    at the light 0.16, 0.5063 at the dark 0.5, measured on screen (one width for both left dark at 98.71%: the
+    reference's stronger shadow shows a heavier tail, each step boundary a pixel further out; 2% wider fixed it,
+    while 4% wider or any alpha change made it worse). The dialog paints in an sRGB layer macOS converts (LayerFill:
+    --selected 225 green in light, where CSSColor gives 226); in dark the selected row stays one step bluer (90 for
+    89) with either conversion, cause not found. The dialog sits at 67.84 points: boxes snap to 68, icons snap from
+    67.84 (svgBias). A hint's inline link is laid out on its own. A preference set inside a ScrollView's content
+    never reached the views around it, so the scroll offset is read in place.
+  - Pixel diff below the title bar (HDR off, local reference build): Settings 99.41% light, 99.03% dark (parity
+    99.42 / 99.03); Monokai Charcoal on the Changes screen 99.49% dark, 99.75% light. Other screens unchanged:
+    Changes 99.75 / 99.74, staged 99.74 / 99.73, diff folded 99.66 / 99.67, every line 99.65 / 99.65, file
+    99.63 / 99.64, Log 99.52 / 99.39. Left in dark Settings: text edges in the dialog (half-precision glyph blending,
+    about 28k pixels), the selected row, shadow corners.
+  - Memory (parity run, Settings open): current 213 MB, native 46 MB (about 12 MB above the native idle).
+  - Not built: the Keyboard Shortcuts list, GitHub sign-in, commit identity and templates, font and terminal
+    previews, sliders and selects that work, Reset to Defaults' own dialog (a macOS alert asks), dragging the
+    dialog, the memory marks' popovers, per-repository commit boxes, search matches on keyboard shortcuts.

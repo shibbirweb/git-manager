@@ -7,6 +7,7 @@ import SwiftUI
 /// refresh, more) and close; 34 points tall with a bottom line.
 struct ChangesHead: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var settings = SettingsStore.shared
 
     let count: Int
     let head: HeadInfo?
@@ -48,8 +49,8 @@ struct ChangesHead: View {
                 Spacer(minLength: 0)
                     .layoutPriority(-2)
                 // Settings > Git > Commit box: one box under the list (the default) or one per repository.
-                IconButton(width: 24, height: 24, action: {}) {
-                    CommitLayoutIcon(perRepo: false)
+                IconButton(width: 24, height: 24, action: toggleCommitLayout) {
+                    CommitLayoutIcon(perRepo: settings.preferences.commitBoxLayout == "perRepo")
                 }
                 actions
                 IconButton(width: 24, height: 24, action: {}) {
@@ -65,6 +66,11 @@ struct ChangesHead: View {
     }
 
     /// The repository's row actions in --text-dim: 20 points tall, 4-point corners, 1 apart.
+    /// Settings > Git > Commit box, which this button switches (the per-repository boxes are not built yet).
+    private func toggleCommitLayout() {
+        settings.update { $0.commitBoxLayout = $0.commitBoxLayout == "perRepo" ? "single" : "perRepo" }
+    }
+
     private var actions: some View {
         HStack(spacing: 1) {
             // .branch is a grid (icon, name, markers) with 2-point gaps; a narrow sidebar hides the name, but its

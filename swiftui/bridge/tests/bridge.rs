@@ -119,6 +119,7 @@ extern "C" fn ui_handler(request: *const c_char) -> *mut c_char {
             "ok": true,
             "structured": { "repoPath": std::env::var("GM_TEST_REPO").unwrap(), "changedFiles": 2 },
         }),
+        Some("open_settings") => json!({ "ok": true, "structured": { "section": request["args"]["section"] } }),
         _ => json!({ "ok": false, "text": "not in this test" }),
     };
     let text = CString::new(reply.to_string()).unwrap();
@@ -173,7 +174,11 @@ fn control_server_answers_like_the_current_app() {
     let (_, list) = post(port, Some(token), &rpc("tools/list", json!({})));
     let tools = list["result"]["tools"].as_array().unwrap();
     let names: Vec<&str> = tools.iter().map(|tool| tool["name"].as_str().unwrap()).collect();
-    assert_eq!(names, ["get_app_info", "app", "git_status", "get_memory_usage", "sample_memory", "take_screenshot"]);
+    let expected = [
+        "get_app_info", "app", "git_status", "get_memory_usage", "sample_memory", "take_screenshot", "open_settings",
+        "close_dialog",
+    ];
+    assert_eq!(names, expected);
 
     // git_status without repoPath asks the window which folder is open.
     let (_, status) = post(port, Some(token), &rpc("tools/call", json!({ "name": "git_status", "arguments": {} })));
@@ -187,6 +192,11 @@ fn control_server_answers_like_the_current_app() {
 
     let (_, unknown) = post(port, Some(token), &rpc("tools/call", json!({ "name": "nope", "arguments": {} })));
     assert_eq!(unknown["result"]["isError"], true);
+
+    let (_, settings) = post(port, Some(token), &call("open_settings", json!({ "section": "editor" })));
+    assert_eq!(settings["result"]["structuredContent"]["section"], "editor", "{settings}");
+    let (_, wrong) = post(port, Some(token), &call("open_settings", json!({ "section": "colors" })));
+    assert_eq!(wrong["result"]["isError"], true);
 
     let (_, refused) = post(port, Some(token), &call("app", json!({ "action": "open_folder" })));
     assert_eq!(refused["result"]["isError"], true);

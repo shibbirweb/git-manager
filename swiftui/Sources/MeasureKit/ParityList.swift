@@ -103,6 +103,11 @@ public struct ParityRunSpec: Codable, Equatable {
     /// Opens the Log in both apps on this revision (such as "HEAD~5"): the current app's show_commit, the native
     /// app's `app action=show_log commitId=...`.
     public var logCommit: String?
+    /// settings.json values for both apps (the current app's ~/.gitmanager, the native app's ~/.gitmanager-native),
+    /// such as {"darkColorTheme": "monokai-charcoal"}.
+    public var appSettings: [String: ParityValue]?
+    /// The Settings section to open in both apps (open_settings) before the capture.
+    public var openSettings: String?
 
     public init() {}
 }

@@ -153,7 +153,8 @@
       "steps": [
         "Start the app on demo/acme/storefront.",
         "Press Cmd+, (Git Manager > Settings...) and look at Appearance, then Editor, Git and Automation."
-      ]
+      ],
+      "run": { "openSettings": "appearance" }
     },
     {
       "id": "settings-search",
@@ -165,12 +166,16 @@
     },
     {
       "id": "color-themes",
-      "title": "Color theme Dracula",
+      "title": "Color theme Monokai Charcoal",
       "folder": "acme/storefront",
       "steps": [
         "Start the app on demo/acme/storefront.",
-        "In Settings > Editor, pick Dracula as the Dark theme; switch to dark mode."
-      ]
+        "In Settings > Editor, pick Monokai Charcoal as the Dark theme; switch to dark mode."
+      ],
+      "note": [
+        "The run sets darkColorTheme in both apps' settings.json; in light mode it shows the default light theme."
+      ],
+      "run": { "appSettings": { "darkColorTheme": "monokai-charcoal" } }
     },
     {
       "id": "github",

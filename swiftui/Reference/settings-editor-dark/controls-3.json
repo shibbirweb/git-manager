@@ -1,0 +1,295 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 2583},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 2652},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 2722},
+      "styles": {
+        "background-color": "rgb(57, 59, 64)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 2783},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 2844},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 2905},
+      "styles": {
+        "background-color": "rgb(57, 59, 64)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 3007},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 3095},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 3182},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 3252},
+      "styles": {
+        "background-color": "rgb(57, 59, 64)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "segmented", "rect": {"height": 30, "width": 214, "x": 833, "y": 3326},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(57, 59, 64)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(57, 59, 64)", "border-left-width": "1px", "border-radius": "7px",
+        "border-right-color": "rgb(57, 59, 64)", "border-right-width": "1px", "border-top-color": "rgb(57, 59, 64)",
+        "border-top-width": "1px", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "2px", "padding-left": "2px", "padding-right": "2px",
+        "padding-top": "2px"
+      },
+      "tag": "div", "text": "No limitSingle tabLimit"
+    },
+    {
+      "classes": "on", "rect": {"height": 24, "width": 70, "x": 836, "y": 3329},
+      "styles": {
+        "background-color": "rgb(43, 45, 48)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-radius": "5px", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "box-shadow": "rgba(0, 0, 0, 0.14) 0px 1px 2px 0px",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "No limit"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 85, "x": 906, "y": 3329},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "Single tab"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 53, "x": 991, "y": 3329},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "Limit"
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 3427},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    },
+    {
+      "classes": "segmented", "rect": {"height": 30, "width": 258, "x": 789, "y": 3508},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(57, 59, 64)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(57, 59, 64)", "border-left-width": "1px", "border-radius": "7px",
+        "border-right-color": "rgb(57, 59, 64)", "border-right-width": "1px", "border-top-color": "rgb(57, 59, 64)",
+        "border-top-width": "1px", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "2px", "padding-left": "2px", "padding-right": "2px",
+        "padding-top": "2px"
+      },
+      "tag": "div", "text": "5 min15 min30 min60 min"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 57, "x": 792, "y": 3511},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "5 min"
+    },
+    {
+      "classes": "on", "rect": {"height": 24, "width": 63, "x": 849, "y": 3511},
+      "styles": {
+        "background-color": "rgb(43, 45, 48)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-radius": "5px", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "box-shadow": "rgba(0, 0, 0, 0.14) 0px 1px 2px 0px",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "15 min"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 66, "x": 913, "y": 3511},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "30 min"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 66, "x": 978, "y": 3511},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "60 min"
+    },
+    {
+      "classes": "segmented", "rect": {"height": 30, "width": 276, "x": 771, "y": 3619},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(57, 59, 64)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(57, 59, 64)", "border-left-width": "1px", "border-radius": "7px",
+        "border-right-color": "rgb(57, 59, 64)", "border-right-width": "1px", "border-top-color": "rgb(57, 59, 64)",
+        "border-top-width": "1px", "color": "rgb(223, 225, 229)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "2px", "padding-left": "2px", "padding-right": "2px",
+        "padding-top": "2px"
+      },
+      "tag": "div", "text": "OffAfter a delayOn focus change"
+    },
+    {
+      "classes": "on", "rect": {"height": 24, "width": 43, "x": 774, "y": 3622},
+      "styles": {
+        "background-color": "rgb(43, 45, 48)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-radius": "5px", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "box-shadow": "rgba(0, 0, 0, 0.14) 0px 1px 2px 0px",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "Off"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 100, "x": 817, "y": 3622},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "After a delay"
+    },
+    {
+      "classes": "", "rect": {"height": 24, "width": 127, "x": 917, "y": 3622},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)", "border-radius": "5px",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "4px", "padding-left": "12px", "padding-right": "12px",
+        "padding-top": "4px", "text-align": "center"
+      },
+      "tag": "button", "text": "On focus change"
+    },
+    {
+      "classes": "switch", "rect": {"height": 20, "width": 34, "x": 1013, "y": 3711},
+      "styles": {
+        "background-color": "rgb(53, 116, 240)", "border-bottom-color": "rgb(255, 255, 255)",
+        "border-left-color": "rgb(255, 255, 255)", "border-radius": "10px", "border-right-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(255, 255, 255)", "color": "rgb(255, 255, 255)", "display": "block",
+        "font-family": "system-ui", "font-size": "11px", "font-weight": "400"
+      },
+      "tag": "input", "text": ""
+    }
+  ],
+  "limit": 100, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "controls", "piece": "3 of 4", "screen": "settings-editor",
+  "selector": [
+    ".dialog .rows .segmented", ".dialog .rows .segmented *", ".dialog .rows input", ".dialog .rows .range",
+    ".dialog .rows .range *", ".dialog .rows .picker", ".dialog .rows .picker .head", ".dialog .rows .picker .head *",
+    ".dialog .rows .list"
+  ]
+}

@@ -71,6 +71,8 @@ enum Control {
             return git(action, args)
         case "show_log":
             return showLog(args)
+        case "open_settings", "close_dialog":
+            return settings(action, args)
         default:
             return reply(ok: false, text: "Unknown action: \(action)")
         }
@@ -120,6 +122,7 @@ enum Control {
         ]
         state.merge(changesState()) { _, changes in changes }
         state["editor"] = editorState()
+        state.merge(settingsState()) { _, settings in settings }
         if let window = mainWindow() {
             let content = window.contentLayoutRect.size
             state["window"] = [
