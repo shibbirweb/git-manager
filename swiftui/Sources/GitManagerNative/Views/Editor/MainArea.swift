@@ -5,11 +5,12 @@ import SwiftUI
 struct MainArea: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var model = AppModel.shared
+    @ObservedObject private var diffs = DiffStore.shared
     @ObservedObject private var editor = EditorModel.shared
     @ObservedObject private var workspace = WorkspaceModel.shared
 
     var body: some View {
-        if model.openDiff == nil && editor.tabs.tabs.isEmpty {
+        if model.openDiff == nil && diffs.pendingName == nil && editor.tabs.tabs.isEmpty {
             EditorArea {
                 if model.repoPath != nil || !workspace.folders.isEmpty {
                     RepoCrumb(crumbs: crumbs)
@@ -19,10 +20,11 @@ struct MainArea: View {
             }
         } else {
             let diffShown = model.openDiff != nil && (editor.diffActive || editor.tabs.tabs.isEmpty)
+            let pending = model.openDiff == nil && diffs.pendingName != nil && editor.diffActive
             VStack(spacing: 0) {
                 EditorTabStrip(
-                    diffName: model.openDiff.map { FileRow.split($0.filePath).name },
-                    diffActive: diffShown,
+                    diffName: model.openDiff.map { FileRow.split($0.filePath).name } ?? diffs.pendingName,
+                    diffActive: diffShown || pending,
                     tabs: editor.tabs,
                     selectDiff: { editor.diffActive = true },
                     closeDiff: model.closeDiff,
@@ -35,7 +37,7 @@ struct MainArea: View {
                         // Each file and area keeps its own folds, change and scroll, as the current app rebuilds per
                         // file.
                         .id("\(open.staged ? "staged" : "unstaged"):\(open.filePath)")
-                } else if let file = editor.file {
+                } else if let file = editor.file, !pending {
                     FileScreen(file: file)
                         .id(file.path)
                 } else {

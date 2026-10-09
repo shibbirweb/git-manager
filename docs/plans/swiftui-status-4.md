@@ -69,4 +69,19 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
   - Not changed yet: the TextKit 2 field editor invalidates its cursor rects on every key and AppKit then sets the
     cursor again (~4 ms each with the accessibility pointer settings); the empty results list's 2 + 4 points of
     padding.
+- GM-76 a diff on screen sooner, and fewer window renders:
+  - Found: the current app's "first paint" was its tab over an empty editor (frames at 107 ms); its code showed at
+    ~370 ms. gm-measure speed now also reports "diff: code on screen" (the first frame whose region has ink on at
+    least 5% of its sampled pixels, FrameRecorder's per-frame ink) and calls the other "first change".
+  - Built: opening the first diff shows its tab over an empty editor at once while the texts are read (DiffStore
+    pendingName), as the page does; with a diff open, that diff stays until the new one is ready. openDiff and the
+    memory readout moved out of AppModel into DiffStore and MemoryReadout (AppStores.swift; AppModel forwards
+    them), and the status bar's file items moved from ContentView into StatusBarView: opening a diff rendered every
+    view observing AppModel, ContentView included (which observed the editor only for those items), and the
+    readout did the same every 2 seconds. The diff tab is revealed in the same pass as the new diff. Traced: a diff
+    open now renders MainArea, the diff screen, the status bar and the Changes rows only.
+  - Speed (median of 5, light, ms): first change current 108, native 50; code on screen 327 / 151; colors in
+    368 / 243.
+  - Pixel diff below the title bar (HDR off), unchanged: Changes 99.74 / 99.74, diff 99.66 / 99.67, staged 99.74 /
+    99.73, file 99.64 / 99.63, Log 99.52 / 99.39, search 99.45 / 99.25 (light / dark).
 

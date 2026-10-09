@@ -12,7 +12,6 @@ struct ContentView: View {
     @ObservedObject private var model = AppModel.shared
     @ObservedObject private var workspace = WorkspaceModel.shared
     @ObservedObject private var toasts = ToastCenter.shared
-    @ObservedObject private var editor = EditorModel.shared
     @ObservedObject private var log = LogModel.shared
     @ObservedObject private var settings = SettingsStore.shared
     @ObservedObject private var terminal = TerminalStore.shared
@@ -131,26 +130,12 @@ struct ContentView: View {
                 folderName: model.repoName,
                 head: model.snapshot?.status?.head,
                 changeCount: model.changeCount,
-                memoryBytes: model.memoryBytes,
-                fileItems: fileItems,
                 busy: model.busy,
                 unread: toasts.unread,
                 unreadError: toasts.unreadError,
                 openBell: toasts.markRead
             )
         }
-    }
-
-    /// The shown file's cursor, indentation, line ends and language, as the status bar lists them.
-    private var fileItems: [String] {
-        guard let file = editor.file, !editor.diffActive || model.openDiff == nil else {
-            return []
-        }
-        // FileView.svelte: the main selection's head, its line, and its UTF-16 offset in that line.
-        let head = editor.session?.state.selection.main.head ?? 0
-        let line = editor.session?.state.doc.lineAt(head)
-        let position = "Ln \((line?.index ?? 0) + 1), Col \(head - (line?.from ?? 0) + 1)"
-        return [position, EditorInfo.indentLabel(file.indent), file.eolLabel, file.language]
     }
 
     private func chooseFolder() {

@@ -7,19 +7,34 @@ import SwiftUI
 
 struct StatusBarView: View {
     @Environment(\.theme) private var theme
+    @ObservedObject private var readout = MemoryReadout.shared
+    // The file items follow the editor and the diff here, not in ContentView, so a cursor move or an opened diff
+    // renders the status bar, not the whole window.
+    @ObservedObject private var editor = EditorModel.shared
+    @ObservedObject private var diffs = DiffStore.shared
 
     let folderName: String
     let head: HeadInfo?
     let changeCount: Int
-    let memoryBytes: UInt64?
-    /// The shown file's items ("Ln 1, Col 1", "Spaces: 2", "LF", "TypeScript"), before the bell.
-    var fileItems: [String] = []
     /// The write running now ("Stage"), shown before the bell.
     var busy: String?
     /// Unread errors and warnings on the bell's badge, red when one is an error.
     var unread = 0
     var unreadError = false
     var openBell: () -> Void = {}
+
+    /// The shown file's cursor, indentation, line ends and language ("Ln 1, Col 1", "Spaces: 2", "LF",
+    /// "TypeScript"), before the bell.
+    private var fileItems: [String] {
+        guard let file = editor.file, !editor.diffActive || diffs.openDiff == nil else {
+            return []
+        }
+        // FileView.svelte: the main selection's head, its line, and its UTF-16 offset in that line.
+        let head = editor.session?.state.selection.main.head ?? 0
+        let line = editor.session?.state.doc.lineAt(head)
+        let position = "Ln \((line?.index ?? 0) + 1), Col \(head - (line?.from ?? 0) + 1)"
+        return [position, EditorInfo.indentLabel(file.indent), file.eolLabel, file.language]
+    }
 
     var body: some View {
         HStack(spacing: 2) {
@@ -57,7 +72,7 @@ struct StatusBarView: View {
             bell
             iconOnly("star")
             iconOnly("bug")
-            if let memoryBytes, memoryBytes > 0 {
+            if let memoryBytes = readout.bytes, memoryBytes > 0 {
                 memory(memoryBytes)
             }
             iconOnly("brush")

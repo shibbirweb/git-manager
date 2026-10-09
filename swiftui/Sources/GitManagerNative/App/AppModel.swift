@@ -13,10 +13,18 @@ final class AppModel: ObservableObject {
     @Published private(set) var snapshot: StatusSnapshot?
     @Published private(set) var errorText: String?
     @Published private(set) var loading = false
-    /// The status bar's memory readout, read every 2 seconds while the window shows (refreshMemory).
-    @Published private(set) var memoryBytes: UInt64?
-    /// The file diff open in the main area (a click on a Changes row); nil shows the welcome screen.
-    @Published private(set) var openDiff: OpenDiff?
+    /// The status bar's memory readout, read every 2 seconds while the window shows (refreshMemory); kept in
+    /// MemoryReadout so only the status bar renders again.
+    private(set) var memoryBytes: UInt64? {
+        get { MemoryReadout.shared.bytes }
+        set { MemoryReadout.shared.bytes = newValue }
+    }
+    /// The file diff open in the main area (a click on a Changes row); nil shows the welcome screen. Kept in
+    /// DiffStore so opening one renders only the views that show it.
+    private(set) var openDiff: OpenDiff? {
+        get { DiffStore.shared.openDiff }
+        set { DiffStore.shared.openDiff = newValue }
+    }
     /// The write running now ("Stage", "Commit"), shown in the header and the status bar; nil when idle.
     @Published var busy: String?
     /// Asks the commit box to put the cursor in its message (the heading's Commit button with no message).
@@ -56,15 +64,17 @@ final class AppModel: ObservableObject {
         guard let repoPath else {
             return
         }
-        if reveal {
-            EditorModel.shared.diffActive = true
-        }
         let args = GetFileDiffArgs(
             repoPath: repoPath, filePath: file.path, origPath: file.origPath, area: staged ? "staged" : "unstaged"
         )
+        if reveal && openDiff == nil {
+            DiffStore.shared.pendingName = FileRow.split(file.path).name
+            revealDiff(reveal)
+        }
         let diff = await Task.detached { () -> FileDiff? in
             try? Backend.call("get_file_diff", args) as FileDiff
         }.value
+        DiffStore.shared.pendingName = nil
         guard let diff else {
             return
         }
@@ -72,9 +82,12 @@ final class AppModel: ObservableObject {
         // A refresh that leaves the texts as they were keeps the diff and its colors.
         if let open = openDiff, open.filePath == file.path, open.staged == staged,
            open.diff.original == diff.original, open.diff.modified == diff.modified {
+            revealDiff(reveal)
             return
         }
         openDiff = OpenDiff(filePath: file.path, staged: staged, diff: diff)
+        // In the same pass as the new diff, so the window renders once, with it.
+        revealDiff(reveal)
         await SyntaxHighlighter.shared.diffSpans(
             filePath: file.path, original: diff.original, modified: diff.modified,
             hunks: diff.hunks.compactMap(DiffHunk.init)
@@ -86,6 +99,13 @@ final class AppModel: ObservableObject {
             openDiff?.originalSpans = original
             openDiff?.modifiedSpans = modified
             return true
+        }
+    }
+
+    /// Brings the diff tab to the front (a click on a change), without a render when it already is.
+    private func revealDiff(_ reveal: Bool) {
+        if reveal && !EditorModel.shared.diffActive {
+            EditorModel.shared.diffActive = true
         }
     }
 

@@ -17,6 +17,9 @@ public final class FrameRecorder: NSObject, SCStreamOutput, @unchecked Sendable 
     public struct Frame: Sendable {
         public let time: Double
         public let digest: UInt64
+        /// The share of the region's sampled pixels that stand out from its most common color (text, boxes): an
+        /// editor with code in it is well above an empty one.
+        public let ink: Double
     }
 
     /// The largest channel difference that is not a change (a level or two from redrawn antialiased text).
@@ -85,7 +88,7 @@ public final class FrameRecorder: NSObject, SCStreamOutput, @unchecked Sendable 
                 version += 1
                 sampled = sample
             }
-            frames.append(Frame(time: time, digest: version))
+            frames.append(Frame(time: time, digest: version, ink: Self.ink(sample)))
             return changed
         }
         if keepImages && changed, let image = Self.image(pixels) {
@@ -151,6 +154,29 @@ public final class FrameRecorder: NSObject, SCStreamOutput, @unchecked Sendable 
         return pixels
     }
 
+    /// The share of `pixels` more than 48 levels away from the most common color (found on every 16th pixel).
+    static func ink(_ pixels: [UInt32]) -> Double {
+        guard !pixels.isEmpty else {
+            return 0
+        }
+        var counts: [UInt32: Int] = [:]
+        for index in stride(from: 0, to: pixels.count, by: 16) {
+            counts[pixels[index] & 0xFF_FFFF, default: 0] += 1
+        }
+        let background = counts.max { $0.value < $1.value }?.key ?? 0
+        var standing = 0
+        for pixel in pixels {
+            for shift: UInt32 in [0, 8, 16] {
+                let delta = Int32((pixel >> shift) & 0xFF) - Int32((background >> shift) & 0xFF)
+                if abs(delta) > 48 {
+                    standing += 1
+                    break
+                }
+            }
+        }
+        return Double(standing) / Double(pixels.count)
+    }
+
     /// Whether any pixel's channel moved by more than `tolerance` (a first frame always differs).
     static func differs(_ new: [UInt32], _ old: [UInt32]) -> Bool {
         guard new.count == old.count else {
@@ -180,6 +206,10 @@ public struct ResponseTiming: Sendable {
     public let changes: Int
     /// When each changed frame came, in seconds after the input.
     public let changeTimes: [Double]
+    /// Seconds from the input to the first frame whose region holds content (ink at least `inkThreshold`): code in
+    /// an editor, not the empty frame some apps show first.
+    public let inked: Double?
+    public static let inkThreshold = 0.05
 
     public init(frames: [FrameRecorder.Frame], inputAt: Double) {
         let before = frames.last { $0.time <= inputAt }?.digest
@@ -193,6 +223,7 @@ public struct ResponseTiming: Sendable {
         }
         first = changedTimes.first
         settled = changedTimes.last
+        inked = frames.first { $0.time > inputAt && $0.ink >= Self.inkThreshold }.map { $0.time - inputAt }
         changes = changedTimes.count
         changeTimes = changedTimes
     }

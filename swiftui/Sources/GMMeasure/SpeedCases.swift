@@ -158,8 +158,11 @@ enum SpeedCases {
         let timing = ResponseTiming(frames: frames.filter { $0.time < asked + 4 }, inputAt: asked)
         var samples: [Speed.Sample] = []
         if options.cases.contains("diff") {
-            samples.append(.init(kind: app.kind, metric: "diff: first paint after asking",
+            samples.append(.init(kind: app.kind, metric: "diff: first change after asking",
                                  value: timing.first.map { $0 * 1000 }))
+            // The code itself: the current app first shows its tab over an empty editor.
+            samples.append(.init(kind: app.kind, metric: "diff: code on screen",
+                                 value: timing.inked.map { $0 * 1000 }))
             samples.append(.init(kind: app.kind, metric: "diff: settled (colors in)",
                                  value: timing.settled.map { $0 * 1000 }))
         }
