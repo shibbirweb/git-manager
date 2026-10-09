@@ -27,6 +27,20 @@ struct GitManagerNativeApp: App {
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             }
+            // Git > GitHub (menuSpec.ts): the items that need an account so far.
+            CommandMenu("Git") {
+                Menu("GitHub") {
+                    Button("Share Project on GitHub...") {
+                        Task { await WindowContext.focused.github.shareProject() }
+                    }
+                    Button("Sync Fork") {
+                        Task { await WindowContext.focused.github.syncFork() }
+                    }
+                    Button("Create Gist...") {
+                        Task { await WindowContext.focused.github.createGist() }
+                    }
+                }
+            }
         }
     }
 }

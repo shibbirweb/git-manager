@@ -64,7 +64,8 @@ enum Measure {
         ]
         let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
                              "conflicts"]
-            + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens + githubScreens)
+            + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens + githubScreens
+                + githubDialogScreens)
             .contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
@@ -133,7 +134,7 @@ enum Measure {
         if options.screen == "terminal" {
             try MeasureTerminal.writeShellProfile(home: home)
         }
-        if options.screen == "settingsgithubaccount" {
+        if options.screen == "settingsgithubaccount" || signedInDialogScreens.contains(options.screen) {
             try writeGitHubAccount(home: home, kind: kind)
         }
         let app = try await AppLauncher.launch(
@@ -184,6 +185,8 @@ enum Measure {
             try await showWelcomePage(app, page: options.screen == "welcomelearn" ? "Learn" : "Customize")
         } else if options.screen == "welcomeclone" {
             try await showWelcomePage(app, page: "Clone Repository")
+        } else if githubDialogScreens.contains(options.screen) {
+            try await openGitHubDialog(app, screen: options.screen)
         }
         if options.walkSpeed > 0 {
             try await Task.sleep(nanoseconds: 2_000_000_000)

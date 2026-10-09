@@ -38,6 +38,9 @@ struct SearchInput: NSViewRepresentable {
         if autofocus {
             DispatchQueue.main.async {
                 field.window?.makeFirstResponder(field)
+                // AppKit selects all of the text on focus; WebKit's focus() leaves the caret after it.
+                let length = (field.stringValue as NSString).length
+                field.currentEditor()?.selectedRange = NSRange(location: length, length: 0)
             }
         }
         return field

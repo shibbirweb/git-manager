@@ -47,6 +47,7 @@ struct ContentView: View {
             if clone.shown {
                 CloneDialog()
             }
+            GitHubDialogHost()
             ContextMenuOverlay()
         }
         .coordinateSpace(name: HeaderMenus.pageSpace)

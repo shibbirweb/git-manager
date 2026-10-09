@@ -237,7 +237,8 @@ Folder: demo `acme/storefront`
 Measured: light 99.39% (224 MB / 48 MB, 2026-10-09), dark 99.43% (226 MB / 51 MB, 2026-10-09).
 
 - GitHub account (`github`, partial): Sign in, Share Project on GitHub, Sync Fork and gists. Native lacks: Git >
-  GitHub: Share Project on GitHub, Sync Fork, Create Gist and the sign-in dialog.
+  GitHub: Open on GitHub, Copy GitHub Link, Create Pull Request and View Pull Requests; Share Project, Sync Fork and
+  Create Gist not tried against GitHub yet (a real token, the network).
 
 ## git-console: Git Console (native app cannot show it yet)
 

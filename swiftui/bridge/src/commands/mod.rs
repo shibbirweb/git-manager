@@ -23,6 +23,7 @@ mod clone;
 mod editing;
 mod editor;
 mod github;
+mod remote;
 mod log;
 mod search;
 mod merge;
@@ -38,6 +39,10 @@ pub fn dispatch(command: &str, args: Value) -> AppResult<Value> {
         "open_workspace" => to_json(workspaces::open_workspace(parse(command, args)?)?),
         "discover_repositories" => to_json(workspaces::discover_repositories(parse(command, args)?)?),
         "init_repository" => to_json(workspaces::init_repository(parse(command, args)?)?),
+        "list_remotes" => to_json(remote::list_remotes(parse(command, args)?)?),
+        "push_with_options" => to_json(remote::push_with_options(parse(command, args)?)?),
+        "fetch_all" => to_json(remote::fetch_all(parse(command, args)?)?),
+        "git_progress" => to_json(remote::git_progress()?),
         "github_account" => to_json(github::github_account()?),
         "github_cli_status" => to_json(github::github_cli_status()?),
         "github_sign_in_with_token" => to_json(github::github_sign_in_with_token(parse(command, args)?)?),

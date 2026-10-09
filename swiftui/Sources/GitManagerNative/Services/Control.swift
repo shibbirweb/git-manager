@@ -91,7 +91,7 @@ enum Control {
         case "open_conflicts", "open_merge", "merge":
             return merge(action, args)
         default:
-            return ControlTerminal.answer(action, args) ?? windowsAnswer(action, args)
+            return ControlTerminal.answer(action, args) ?? windowsAnswer(action, args) ?? githubAnswer(action, args)
                 ?? reply(ok: false, text: "Unknown action: \(action)")
         }
     }

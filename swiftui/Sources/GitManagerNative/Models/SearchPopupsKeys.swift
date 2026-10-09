@@ -108,6 +108,12 @@ extension SearchPopups {
         switch command.commandId {
         case "edit.findInFiles", "edit.searchEverywhere":
             openSearch("")
+        case "git.github.share":
+            Task { await context.github.shareProject() }
+        case "git.github.syncFork":
+            Task { await context.github.syncFork() }
+        case "git.github.createGist":
+            Task { await context.github.createGist() }
         default:
             context.toasts.show(.info, "Not in the native app yet", detail: command.titleParts.map(\.text).joined())
         }

@@ -9,8 +9,17 @@ import SwiftUI
 struct GitHubAccountForm: View {
     @Environment(\.theme) private var theme
     @Environment(\.windowContext) private var windowContext
-    @Environment(\.settingsRowsWidth) private var width
+    @Environment(\.settingsRowsWidth) private var rowsWidth
     @ObservedObject private var store = GitHubAccountStore.shared
+
+    /// The form's width in a dialog; nil in Settings (the rows' width).
+    var dialogWidth: CGFloat?
+    /// Signed in from the sign-in dialog: the GitHub item it was asked for continues.
+    var onSignedIn: (() -> Void)?
+
+    private var width: CGFloat {
+        dialogWidth ?? rowsWidth
+    }
 
     /// Held only while typed: cleared as soon as it is sent.
     @State private var token = ""
@@ -31,6 +40,10 @@ struct GitHubAccountForm: View {
         }
         .frame(width: width, alignment: .leading)
         .task {
+            // In a dialog the token field takes the keyboard (data-autofocus), so it shows the focus ring.
+            if dialogWidth != nil {
+                focused = true
+            }
             await store.load()
             await store.loadCli()
         }
@@ -71,7 +84,8 @@ struct GitHubAccountForm: View {
                     .foregroundStyle(theme.ink("--text-dim"))
                 HStack(spacing: 8) {
                     PageInput(text: $token, focused: focused, mono: true, ligatures: true,
-                              placeholder: "ghp_... or github_pat_...", secure: true, onFocus: { focused = true },
+                              placeholder: "ghp_... or github_pat_...", autofocus: dialogWidth != nil, secure: true,
+                              onFocus: { focused = true },
                               onSubmit: signInWithToken)
                         .disabled(working != nil)
                     DialogButton(title: working == "token" ? "Signing In..." : "Sign In", primary: true,
@@ -125,6 +139,7 @@ struct GitHubAccountForm: View {
         run("token") {
             let account = try await store.signIn(token: typed)
             windowContext?.toasts.show(.success, "Signed in to GitHub as \(account.login)")
+            onSignedIn?()
         }
     }
 
@@ -133,6 +148,7 @@ struct GitHubAccountForm: View {
             let account = try await store.signInWithCli()
             windowContext?.toasts.show(.success, "Signed in to GitHub as \(account.login)",
                                        detail: "Using the GitHub CLI's login.")
+            onSignedIn?()
         }
     }
 

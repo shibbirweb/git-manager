@@ -176,3 +176,35 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
   - Not built yet: Git > GitHub (Share Project on GitHub, Sync Fork, Create Gist) and the sign-in dialog they open.
     Not tried with a real token (the keychain is the user's own; the bridge tests stay off it).
 
+- GM-81 Git > GitHub (githubActions.ts, GitHubDialogHost.svelte and its dialogs):
+  - Bridge: list_remotes, push_with_options, fetch_all and git_progress (commands/remote.rs), the same git calls as
+    src-tauri's remote commands, with the push's progress lines in a slot as Clone's are. Tests (bridge/tests/
+    remote.rs): the remotes listed, a push that sets the upstream and a fetch, a remote name like an option refused.
+  - NativeCore GitHubRemotes (tested): owner and repository from a github.com URL (HTTPS, SSH, ssh://), and the
+    remote to use: the branch's upstream remote, else origin, else the first one on GitHub.
+  - GitHubCenter (one per window, in WindowContext): Share Project on GitHub, Sync Fork and Create Gist, each asking
+    to sign in first when there is no account and running again once signed in; the one GitHub dialog open.
+    Sync Fork asks first (NSAlert), syncs on GitHub, then fetches; a conflict ends in a result dialog with the
+    compare link. Create Gist takes the editor's selection, else the whole file.
+  - Dialogs on GitDialogFrame (the Git dialogs' frame, now shared with Clone) and GitDialogParts (.field, .hint and
+    .error lines, .check, the visibility switch, the progress line): Sign In to GitHub (the Settings account form at
+    the dialog's width, its token field taking the keyboard), Share Project on GitHub (name, Private, Remote and
+    Description at 1 : 2, the initial commit for a repository without commits, progress, errors kept in the
+    dialog, then the push and a result dialog), Create Gist (file name, Secret / Public, description, the preview)
+    and the result dialog (message, the link in the code box, Copy Link, Close, Open). Public asks first.
+  - Entry points: the command palette's git.github.share, syncFork and createGist, and a Git menu with a GitHub
+    submenu in the menu bar. Control: `app run_menu_command` (command git.github.*) and `app github_dialog`.
+  - Rules found: WebKit's focus() leaves the caret after the text, AppKit selects it all (SearchInput now puts the
+    caret at the end); the checkbox row is 2 points taller than the checkbox and sits 2 points in; a <pre> lays
+    out no line after a final newline; TextKit 2 drops a fixed line height once the text has a baseline offset
+    (the preview uses TextKit 1); NSScrollView adds a 15-point corner view even with 10-point scrollers; the
+    segmented fill needs the unrounded color (one unit off otherwise). The preview's line height is 16 points
+    (11.5 x 1.45 as WebKit lays it out) and its thumb follows WebKit's length (track x visible / content).
+  - gm-measure `--screen githubsignin` (signed out, Share Project), `githubshare` and `githubgist` (a seeded
+    github.json; githubgist opens src/catalog.ts first).
+  - Pixel diff below the title bar (HDR off, light / dark): githubsignin 99.48 / 99.44, githubshare 99.48 / 99.43,
+    githubgist 99.32 / 99.14; welcomeclone kept 99.59 / 99.5 on the shared frame.
+  - Memory with the dialog open (light, average, current / native): Sign In 222.7 / 43.7 MB, Share Project
+    220.7 / 43.0 MB, Create Gist (a file open) 261.1 / 51.2 MB.
+  - Not measured: the result dialog and Sync Fork's question (they need GitHub). Not tried with a real token yet.
+    Not built: Open on GitHub, Copy GitHub Link, Create Pull Request and View Pull Requests.

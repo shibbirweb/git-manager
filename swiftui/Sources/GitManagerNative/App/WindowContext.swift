@@ -22,6 +22,7 @@ final class WindowContext: ObservableObject {
     let toasts = ToastCenter()
     let clone = CloneCenter()
     let menus = ContextMenuCenter()
+    let github = GitHubCenter()
     /// The window showing this context, once it is on screen; its moves and resizes go to the window session.
     weak var window: NSWindow? {
         didSet {
@@ -65,6 +66,7 @@ final class WindowContext: ObservableObject {
         toasts.context = self
         clone.context = self
         menus.context = self
+        github.context = self
         Self.all.append(self)
     }
 
@@ -129,6 +131,7 @@ extension View {
             .environmentObject(context.toasts)
             .environmentObject(context.clone)
             .environmentObject(context.menus)
+            .environmentObject(context.github)
             .environmentObject(context.app.draft)
     }
 }

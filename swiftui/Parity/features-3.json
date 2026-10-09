@@ -26,7 +26,8 @@
       "check": "Sign in, Share Project on GitHub, Sync Fork and gists",
       "native": "partial",
       "gaps": [
-        "Git > GitHub: Share Project on GitHub, Sync Fork, Create Gist and the sign-in dialog"
+        "Git > GitHub: Open on GitHub, Copy GitHub Link, Create Pull Request and View Pull Requests",
+        "Share Project, Sync Fork and Create Gist not tried against GitHub yet (a real token, the network)"
       ]
     },
     {
