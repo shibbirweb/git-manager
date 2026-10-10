@@ -7,15 +7,22 @@ import Foundation
 /// One commit of a blame, as the bridge sends it (src-tauri/src/git/blame.rs BlameCommit).
 public struct BlameCommit: Decodable, Equatable, Sendable {
     public let id: String
+    public let shortId: String?
     public let authorName: String
+    public let authorEmail: String?
     /// Seconds since the epoch.
     public let authorTime: Int64
     public let summary: String
     public let uncommitted: Bool
 
-    public init(id: String, authorName: String, authorTime: Int64, summary: String, uncommitted: Bool) {
+    public init(
+        id: String, shortId: String? = nil, authorName: String, authorEmail: String? = nil, authorTime: Int64,
+        summary: String, uncommitted: Bool
+    ) {
         self.id = id
+        self.shortId = shortId
         self.authorName = authorName
+        self.authorEmail = authorEmail
         self.authorTime = authorTime
         self.summary = summary
         self.uncommitted = uncommitted
@@ -64,6 +71,18 @@ public enum BlameNote {
         }
         let summary = commit.summary.isEmpty ? "(no message)" : commit.summary
         return "\(commit.authorName), \(relativeTime(commit.authorTime, now: now)) • \(summary)"
+    }
+
+    /// describe's title: the block's tooltip in the gutter.
+    public static func tooltip(_ commit: BlameCommit?, timeZone: TimeZone = .current) -> String {
+        guard let commit, !commit.uncommitted else {
+            return "Not committed yet. Click to show your changes."
+        }
+        let summary = commit.summary.isEmpty ? "(no message)" : commit.summary
+        let email = commit.authorEmail ?? ""
+        let date = LogFormat.fullDate(Int(commit.authorTime), timeZone: timeZone)
+        return "\(summary)\n\n\(commit.authorName) <\(email)>\n\(date)\ncommit \(commit.id)\n\n"
+            + "Click to show this commit in the Log, Option-click to copy its hash"
     }
 
     /// "just now", "5 min ago", "3 h ago", "yesterday", "4 d ago", else "Aug 31, 2026" in the local time zone.

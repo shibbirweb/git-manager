@@ -8,6 +8,8 @@ import SwiftUI
 struct DiffScreen: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var prefs = DiffPrefs.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @Environment(\.windowContext) private var windowContext
     /// One per open file: ContentView gives each file and area its own identity.
     @StateObject private var state = DiffState()
 
@@ -15,15 +17,20 @@ struct DiffScreen: View {
 
     var body: some View {
         let parts = FileRow.split(open.filePath)
-        let content = state.content(open: open, collapse: prefs.collapseUnchanged, theme: theme)
+        let blameOn = settings.preferences.blameGutter
+        let content = state.content(open: open, collapse: prefs.collapseUnchanged, theme: theme, blameOn: blameOn)
         VStack(spacing: 0) {
             DiffToolbar(
                 name: parts.name, directory: parts.directory, changeCount: state.changeCount, current: state.current,
                 staged: open.staged, collapse: prefs.collapseUnchanged, go: state.go,
-                toggleCollapse: prefs.toggleCollapse
+                toggleCollapse: prefs.toggleCollapse, blame: blameOn,
+                toggleBlame: { settings.update { $0.blameGutter.toggle() } }
             )
             DiffLabels(left: open.staged ? "HEAD" : "Index", right: open.staged ? "Index" : "Working Tree")
             DiffPanes(content: content, scroll: state.scroll, onFold: state.stepFold)
+        }
+        .task(id: "\(blameOn) \(open.filePath) \(open.diff.modified.count)") {
+            await state.loadBlame(open: open, repoPath: windowContext?.app.repoPath, on: blameOn)
         }
     }
 }
@@ -83,6 +90,9 @@ struct DiffToolbar: View {
     /// The previous (-1) or next (1) change.
     let go: (Int) -> Void
     let toggleCollapse: () -> Void
+    /// The Blame toggle: pressed while the blame gutter shows (settings.blameGutter, shared with files).
+    var blame = false
+    var toggleBlame: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 2) {
@@ -104,7 +114,9 @@ struct DiffToolbar: View {
             toggle(icon: "list-tree", title: "Collapse unchanged", active: collapse)
                 .contentShape(Rectangle())
                 .onTapGesture(perform: toggleCollapse)
-            toggle(icon: "history", title: "Blame")
+            toggle(icon: "history", title: "Blame", active: blame)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: toggleBlame)
             toggle(icon: "external-link", title: "Open File")
             if !readonly {
                 divider

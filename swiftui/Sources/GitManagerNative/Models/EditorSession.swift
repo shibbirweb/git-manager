@@ -20,6 +20,8 @@ final class EditorSession {
     var foldRanges = FoldRanges()
     var blame: BlameLines?
     var marks: [LineMark] = []
+    /// Asks the editor view to center the main cursor (a change reached from the file bar); a new count asks again.
+    var centerRequests = 0
     /// The text of this editor's last linewise copy, so pasting it goes above the line.
     var lastLinewiseCopy: String?
     /// Bumps on every change of what the editor draws.

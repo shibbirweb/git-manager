@@ -16,18 +16,16 @@ struct FileEditorView: View {
     /// EditorModel's revision: every change of the session draws again.
     let revision: Int
     let blameLabel: String?
+    /// A click on the blame gutter's 0-based line, with Option held or not.
+    var blameClick: (Int, Bool) -> Void = { _, _ in }
+    var blameTooltip: (Int) -> String? = { _ in nil }
 
     var body: some View {
         HStack(spacing: 0) {
             FileScrollView(session: session, revision: revision, blameLabel: blameLabel, theme: theme,
-                           blameGutter: settings.preferences.blameGutter)
-            // .cm-scroll-markers: 12 points of --panel-alt with a 1-point --border-strong left border; an unchanged
-            // file has no ticks.
-            HStack(spacing: 0) {
-                theme.color("--border-strong").frame(width: 1)
-                theme.color("--panel-alt")
-            }
-            .frame(width: EditorGeometry.rulerWidth)
+                           blameGutter: settings.preferences.blameGutter, blameClick: blameClick,
+                           blameTooltip: blameTooltip)
+            FileRuler(session: session, revision: revision)
         }
         .background(theme.color("--editor-bg"))
     }
@@ -39,6 +37,8 @@ struct FileScrollView: NSViewRepresentable {
     let blameLabel: String?
     let theme: Theme
     let blameGutter: Bool
+    let blameClick: (Int, Bool) -> Void
+    let blameTooltip: (Int) -> String?
 
     func makeNSView(context: Context) -> Host {
         Host()
@@ -47,9 +47,14 @@ struct FileScrollView: NSViewRepresentable {
     func updateNSView(_ host: Host, context: Context) {
         let opened = host.session !== session
         host.session = session
+        if opened {
+            host.centered = session.centerRequests
+        }
         host.blameLabel = blameLabel
         host.theme = theme
         host.blameGutter = blameGutter
+        host.blameClick = blameClick
+        host.blameTooltip = blameTooltip
         host.redraw()
         if opened {
             // A file that opens takes the keyboard, as CodeMirror focuses a new file view.
@@ -68,6 +73,10 @@ struct FileScrollView: NSViewRepresentable {
         var blameLabel: String?
         var theme = Theme.standard(for: .light)
         var blameGutter = false
+        var blameClick: (Int, Bool) -> Void = { _, _ in }
+        var blameTooltip: (Int) -> String? = { _ in nil }
+        /// The session's center request already done.
+        var centered = 0
         /// Where a drag started (the selection's anchor) and how many clicks began it.
         var dragAnchor: (position: Int, clicks: Int)?
 
@@ -126,6 +135,14 @@ struct FileScrollView: NSViewRepresentable {
             // Settings > Editor > Cursor blinking is not in the native settings yet: the current app's default.
             canvas.content = FileCanvas.Content(session: session, blameLabel: blameLabel, theme: theme,
                                                 focused: focused, blinking: "blink", blameGutter: blameGutter)
+            updateBlameTips()
+            if session.centerRequests != centered {
+                centered = session.centerRequests
+                window?.makeFirstResponder(self)
+                DispatchQueue.main.async { [weak self] in
+                    self?.centerCursor()
+                }
+            }
         }
 
         override func layout() {
@@ -156,6 +173,7 @@ struct FileScrollView: NSViewRepresentable {
             let origin = scrollView.contentView.bounds.origin
             canvas.offset = origin.y
             canvas.offsetX = origin.x
+            updateBlameTips()
         }
 
         /// Scrolls the main cursor into view (scrollIntoView), keeping a line of margin above and below.

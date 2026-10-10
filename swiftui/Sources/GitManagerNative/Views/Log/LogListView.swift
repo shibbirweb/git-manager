@@ -51,6 +51,9 @@ struct LogListView: View {
                 }
                 .onAppear { viewportHeight = proxy.size.height }
                 .onChange(of: proxy.size.height) { viewportHeight = $0 }
+                .onChange(of: model.centerRequests) { _ in
+                    centerSelected()
+                }
                 .onChange(of: range.upperBound) { _ in
                     if LogList.nearEnd(range, count: count), model.hasMore, !model.loading, !nodeOnly {
                         Task {
@@ -117,6 +120,16 @@ struct LogListView: View {
         Task {
             await model.select(commit.id)
         }
+    }
+
+    /// focusCommit: the selected commit in the middle of the list.
+    private func centerSelected() {
+        let position = model.selectedPosition
+        guard position >= 0 else {
+            return
+        }
+        let offset = max(0, CGFloat(position) * LogList.rowHeight - viewportHeight / 2)
+        scrollRequest = LogScrollHost.Request(token: scrollRequest.token + 1, offset: offset)
     }
 
     private func key(_ key: LogList.Key) {

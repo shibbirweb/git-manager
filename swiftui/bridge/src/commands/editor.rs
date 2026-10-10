@@ -50,3 +50,16 @@ pub fn blame_contents(args: BlameContentsArgs) -> AppResult<BlameRuns> {
     };
     Ok(info.into_runs())
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BlameFileArgs {
+    repo_path: String,
+    file_path: String,
+    revision: Option<String>,
+}
+
+/// Same as the Tauri command (history.rs blame_file): blames the file at `revision`, or the file on disk when none.
+pub fn blame_file(args: BlameFileArgs) -> AppResult<BlameRuns> {
+    Ok(blame::blame(Path::new(&args.repo_path), &args.file_path, args.revision.as_deref(), None)?.into_runs())
+}

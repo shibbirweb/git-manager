@@ -58,6 +58,8 @@ struct FileDiff: Decodable {
     let tooLarge: Bool
     /// `[oldStart, oldEnd, newStart, newEnd]`, 0-based and half-open.
     let hunks: [[Int]]
+    /// The modified text's line endings ("lf" or "crlf"), for blaming it.
+    var modifiedEol: String?
 }
 
 /// The diff shown in the main area: which file, staged or not, and its texts.
@@ -70,8 +72,17 @@ struct OpenDiff {
     var modifiedSpans: SyntaxColors?
     /// A commit's diff in the Log: read-only, "Parent" against the commit's first 8 hash characters.
     var commitLabel: String?
+    /// The commit's full id, to blame its version of the file.
+    var commitId: String?
     /// The cursor line's blame note (blame.ts noteFor): the commit's "Author, 2 d ago • summary" in the Log.
     var commitNote: String?
+    /// A line of the right side to center once (a blame click's line in the Log), with a token to ask again.
+    var reveal: Reveal?
+
+    struct Reveal: Equatable {
+        let line: Int
+        let token: Int
+    }
 
     var blameNote: String {
         commitNote ?? "You, Uncommitted changes"

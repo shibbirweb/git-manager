@@ -26,6 +26,8 @@ final class DiffCanvas: NSView {
         var rightWidth: CGFloat = 0
         /// Where the right pane's blame note ends, from the content's left edge (DiffState.noteEnd); 0 for none.
         var rightNoteEnd: CGFloat = 0
+        /// The right side's blame while Blame is on: the pane gets the 236-point blame gutter after its numbers.
+        var rightBlame: BlameLines?
 
         /// True when `other` paints the same pixels: the same rows, colors and widths. Arrays compare by their
         /// storage first, so a content SwiftUI hands over again unchanged costs next to nothing.
@@ -34,6 +36,7 @@ final class DiffCanvas: NSView {
                 && theme.id == other.theme.id
                 && leftSpans == other.leftSpans && rightSpans == other.rightSpans && leftWidth == other.leftWidth
                 && rightWidth == other.rightWidth && rightNoteEnd == other.rightNoteEnd
+                && rightBlame == other.rightBlame
         }
     }
 
@@ -50,6 +53,17 @@ final class DiffCanvas: NSView {
         var noteEnd: CGFloat = 0
         /// Where the pane's content layer starts, in canvas points: glyphs are written into that layer's pixels.
         var surfaceX: CGFloat = 0
+        var blame: BlameLines?
+
+        /// The blame gutter's width: 0 without blame.
+        var blameWidth: CGFloat {
+            blame == nil ? 0 : CGFloat(BlameGutter.width)
+        }
+
+        /// The gutters before the code: the numbers, the blame gutter, the change marker.
+        var gutters: CGFloat {
+            DiffPanes.gutterWidth + blameWidth + DiffPanes.markerWidth
+        }
     }
 
     var content: Content? {
@@ -180,7 +194,7 @@ final class DiffCanvas: NSView {
             Pane(rows: layout.right, index: content.right, x: rightX, spans: content.rightSpans,
                  marks: layout.rightMarks, lineStarts: layout.rightLineStarts, guides: content.rightGuides,
                  contentWidth: content.rightWidth, noteEnd: content.rightNoteEnd,
-                 surfaceX: (rightX * scale).rounded(.down) / scale),
+                 surfaceX: (rightX * scale).rounded(.down) / scale, blame: content.rightBlame),
         ]
     }
 

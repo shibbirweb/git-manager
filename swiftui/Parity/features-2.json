@@ -78,8 +78,7 @@
       "check": "The current line note and the blame gutter",
       "native": "partial",
       "gaps": [
-        "clicking a note or a gutter block (the commit in the Log, Option-click copies its hash) and their tooltips",
-        "Blame in the diff toolbar"
+        "Back after a blame click (the native app keeps no navigation history yet)"
       ]
     },
     {

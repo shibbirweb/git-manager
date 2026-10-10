@@ -275,3 +275,5 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     monokai-charcoal 99.75 / 99.5.
   - Memory on committarget: current 147 / 159 MB, native 48 / 48 MB (light / dark). workspace kept 99.52 (with
     the default 5-second settle: at 2 seconds the native list's scrollbar has not settled yet).
+
+Continues in [swiftui-status-5.md](swiftui-status-5.md).

@@ -1,4 +1,5 @@
-//! The file editor's reads through gm_call over real temporary repositories: read_worktree_file and blame_contents.
+//! The file editor's reads through gm_call over real temporary repositories: read_worktree_file, blame_contents
+//! and blame_file.
 //! Its own test binary (own process), so git can point at an empty global config before any test runs it.
 
 use std::ffi::{CStr, CString};
@@ -133,4 +134,18 @@ fn blame_contents_of_an_untracked_file_is_an_error() {
     std::fs::write(repo.join("new.ts"), "x\n").unwrap();
     let reply = call("blame_contents", json!({ "repoPath": repo, "filePath": "new.ts", "eol": "lf", "text": "x\n" }));
     assert_eq!(reply["ok"], false, "{reply}");
+}
+
+#[test]
+fn blame_file_blames_the_file_at_a_revision() {
+    let repo = repository("blame-file");
+    let reply = call("blame_file", json!({ "repoPath": repo, "filePath": "src/app.ts", "revision": "HEAD" }));
+    assert_eq!(reply["ok"], true, "{reply}");
+    let commits = reply["value"]["commits"].as_array().unwrap();
+    assert_eq!(commits.len(), 1);
+    assert_eq!(commits[0]["summary"], "Add the app");
+    assert_eq!(commits[0]["uncommitted"], false);
+    // Both lines come from the one commit: one run.
+    let runs: Vec<u64> = reply["value"]["runs"].as_array().unwrap().iter().map(|n| n.as_u64().unwrap()).collect();
+    assert_eq!(runs, vec![2, 0, 0]);
 }

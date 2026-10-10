@@ -11,7 +11,7 @@ extension DiffCanvas {
     func drawFoldBar(
         _ range: FoldRange, pane: Pane, y: CGFloat, width: CGFloat, colors: CanvasColors, context: CGContext
     ) {
-        let textX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth
+        let textX = pane.x + pane.gutters
         let shown = width - (textX - pane.x)
         let barRect = NSRect(x: textX, y: y, width: shown, height: DiffPanes.foldHeight)
         colors.nsColor("--panel-alt").setFill()
@@ -76,7 +76,8 @@ extension DiffCanvas {
             return nil
         }
         let x = point.x - (right ? paneWidth + gap : 0)
-        let textX = DiffPanes.gutterWidth + DiffPanes.markerWidth
+        let textX = DiffPanes.gutterWidth + (right && content.rightBlame != nil ? CGFloat(BlameGutter.width) : 0)
+            + DiffPanes.markerWidth
         let lineCount = (right ? layout.rightLineStarts : layout.leftLineStarts).count
         let edges = DiffFold.edges(range, lineCount: lineCount)
         let stepWidth = foldStepWidth()
@@ -103,7 +104,7 @@ extension DiffCanvas {
         guard !runs.isEmpty else {
             return
         }
-        let originX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth + 6
+        let originX = pane.x + pane.gutters + 6
         let step = CodeLineText.advance * 2
         let scale = window?.backingScaleFactor ?? 2
         for run in runs {

@@ -124,6 +124,7 @@ final class AppModel: ObservableObject {
             return
         }
         let knownHash = snapshot?.hash
+        let headBefore = snapshot?.status.map { [$0.head.branch, $0.head.shortId] }
         let result = await Task.detached {
             Self.readStatus(repoPath: repoPath, knownHash: knownHash)
         }.value
@@ -134,6 +135,9 @@ final class AppModel: ObservableObject {
             return
         }
         finish(result)
+        if let head = snapshot?.status?.head, headBefore != nil, headBefore != [head.branch, head.shortId] {
+            context.log.headMoved(repoPath: repoPath)
+        }
         await followSelection()
     }
 

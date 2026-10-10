@@ -46,17 +46,21 @@ struct CommitDetailsView: View {
 struct CommitDiffView: View {
     @Environment(\.theme) private var theme
     @ObservedObject private var prefs = DiffPrefs.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @Environment(\.windowContext) private var windowContext
     @StateObject private var state = DiffState()
 
     let open: OpenDiff
 
     var body: some View {
-        let content = state.content(open: open, collapse: prefs.collapseUnchanged, theme: theme)
+        let blameOn = settings.preferences.blameGutter
+        let content = state.content(open: open, collapse: prefs.collapseUnchanged, theme: theme, blameOn: blameOn)
         VStack(spacing: 0) {
             DiffToolbar(
                 name: LogFormat.fileName(open.filePath), directory: LogFormat.fileDir(open.filePath),
                 changeCount: state.changeCount, current: state.current, staged: false,
-                collapse: prefs.collapseUnchanged, readonly: true, go: state.go, toggleCollapse: prefs.toggleCollapse
+                collapse: prefs.collapseUnchanged, readonly: true, go: state.go, toggleCollapse: prefs.toggleCollapse,
+                blame: blameOn, toggleBlame: { settings.update { $0.blameGutter.toggle() } }
             )
             .fixedSize(horizontal: true, vertical: false)
             // minWidth 0: the frame takes the pane's width, not the toolbar's. The page paints the toolbar's box
@@ -71,6 +75,9 @@ struct CommitDiffView: View {
             DiffLabels(left: "Parent", right: open.commitLabel ?? "", readonly: true)
             DiffPanes(content: content, scroll: state.scroll, onFold: state.stepFold)
                 .background(theme.color("--editor-bg"))
+        }
+        .task(id: "\(blameOn) \(open.commitId ?? "") \(open.filePath)") {
+            await state.loadBlame(open: open, repoPath: windowContext?.app.repoPath, on: blameOn)
         }
     }
 }

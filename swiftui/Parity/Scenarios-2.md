@@ -69,8 +69,8 @@ Folder: demo `acme/storefront`
 
 Measured: light 99.43% (268 MB / 42 MB, 2026-10-09), dark 99.33% (269 MB / 41 MB, 2026-10-09).
 
-- Blame (`blame`, partial): The current line note and the blame gutter. Native lacks: clicking a note or a gutter
-  block (the commit in the Log, Option-click copies its hash) and their tooltips; Blame in the diff toolbar.
+- Blame (`blame`, partial): The current line note and the blame gutter. Native lacks: Back after a blame click (the
+  native app keeps no navigation history yet).
 
 ## log: Log (runs in both apps)
 

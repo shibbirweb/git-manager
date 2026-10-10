@@ -24,6 +24,10 @@ final class LogModel: ObservableObject {
     @Published var details: CommitDetails?
     @Published var selectedPath: String?
     @Published var diff: OpenDiff?
+    /// Asks the list to center the selected commit (a focus from elsewhere).
+    @Published var centerRequests = 0
+    /// Counts the diff reveals asked for, so each one is new to DiffState.
+    var revealTokens = 0
     /// The selected file's diff is on screen with its colors (or failed): what `app action=show_log` waits for.
     var diffSettled = false
 
@@ -67,8 +71,18 @@ final class LogModel: ObservableObject {
     }
 
     func show(repoPath: String?) {
+        // The page's Log view starts afresh each time it mounts: no filter, the newest commit selected.
+        if !shown {
+            filterText = ""
+            selectedId = nil
+            selectedPath = nil
+        }
         shown = true
-        if let repoPath, repoPath != loadedRepoPath || !initialLoaded {
+        // The history is read again each time, as the page does when the Log view mounts (the selection stays when
+        // it is still there).
+        if let repoPath {
+            // Loading from now on, so a caller waiting for the history never takes the one already loaded.
+            loading = true
             Task {
                 await reload(repoPath: repoPath)
             }

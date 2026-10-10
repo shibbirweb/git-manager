@@ -31,6 +31,11 @@ final class DiffState: ObservableObject {
     /// The change the counter shows and the cursor sits on; -1 before one is picked.
     private(set) var current = -1
     private(set) var scroll: ScrollRequest?
+    /// The right side's blame while Blame is on, and what it was read for (DiffBlame.swift).
+    @Published var blame: BlameLines?
+    var blameKey: String?
+    /// The last reveal applied (OpenDiff.reveal).
+    private var revealedToken = 0
     /// The original text's folds once a step opened some; nil while they are the defaults.
     private var folds: [FoldRange]?
     private var built: Built?
@@ -48,7 +53,7 @@ final class DiffState: ObservableObject {
 
     /// The canvas content for `open`, rebuilt only when what shapes the rows changed. Called from the view's body,
     /// so it changes no published state: the body that asked reads the new values in the same pass.
-    func content(open: OpenDiff, collapse: Bool, theme: Theme) -> DiffCanvas.Content {
+    func content(open: OpenDiff, collapse: Bool, theme: Theme, blameOn: Bool = false) -> DiffCanvas.Content {
         Self.shown = self
         let hunks = open.diff.hunks.compactMap(DiffHunk.init)
         if let built, built.key.collapse != collapse {
@@ -69,11 +74,18 @@ final class DiffState: ObservableObject {
             current = changeCount > 0 ? 0 : -1
             requestScroll(to: current, in: content)
         }
+        if let asked = open.reveal, asked.token != revealedToken {
+            revealedToken = asked.token
+            if let row = DiffNavigation.row(ofLine: asked.line + 1, in: content.layout.right) {
+                scroll = ScrollRequest(token: (scroll?.token ?? 0) + 1, rowTop: content.right.tops[row])
+            }
+        }
         content.theme = theme
         content.readonly = open.readonly
         content.leftSpans = open.originalSpans
         content.rightSpans = open.modifiedSpans
         content.rightNoteEnd = Self.noteEnd(content, change: current, note: open.blameNote)
+        content.rightBlame = blameOn ? blame : nil
         return content
     }
 

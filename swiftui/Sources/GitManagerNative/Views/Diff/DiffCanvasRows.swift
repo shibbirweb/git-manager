@@ -18,7 +18,7 @@ extension DiffCanvas {
             let y = CGFloat(pane.index.tops[row]) - offset
             switch pane.rows[row] {
             case .line(_, _, let kind) where kind != .unchanged:
-                let textX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth
+                let textX = pane.x + pane.gutters
                 store(colors.layerFill(Self.tintToken(kind)), in: NSRect(
                     x: textX, y: y, width: width - textX + pane.x, height: DiffPanes.lineHeight
                 ), pane: pane, scale: scale)
@@ -36,13 +36,14 @@ extension DiffCanvas {
         }
         drawGuides(pane, top: top, bottom: bottom, colors: colors)
         // The gutter, opaque over the content: WebKit composites it as a layer of its own above the code.
-        let gutterWidth = DiffPanes.gutterWidth + DiffPanes.markerWidth
+        let gutterWidth = pane.gutters
         colors.nsColor("--editor-bg").setFill()
         NSRect(x: pane.x, y: paintBand.minY, width: gutterWidth, height: paintBand.height).fill()
         for row in rows {
             drawGutter(pane.rows[row], pane: pane, y: CGFloat(pane.index.tops[row]) - offset, colors: colors,
                        context: context, scale: scale)
         }
+        drawBlameCells(pane, rows: rows, colors: colors, context: context, scale: scale)
     }
 
     /// Writes a fill's stored bytes over `rect` (canvas points) of the pane's content layer.
@@ -63,7 +64,7 @@ extension DiffCanvas {
         number: Int, text: String, kind: DiffRow.Kind, pane: Pane, y: CGFloat, colors: CanvasColors,
         context: CGContext, scale: CGFloat
     ) {
-        let textX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth
+        let textX = pane.x + pane.gutters
         let start = number - 1 < pane.lineStarts.count ? pane.lineStarts[number - 1] : 0
         let spans = pane.spans?.line(start: start, length: (text as NSString).length) ?? []
         let line = CodeLineText.line(text, spans: spans, colors: colors)
@@ -104,7 +105,7 @@ extension DiffCanvas {
         guard case .line(let number, _, let kind) = row else {
             return
         }
-        let textX = pane.x + DiffPanes.gutterWidth + DiffPanes.markerWidth
+        let textX = pane.x + pane.gutters
         if kind != .unchanged {
             colors.nsColor("--diff-modified-edge").setFill()
             NSRect(x: textX - 2, y: y, width: 2, height: DiffPanes.lineHeight).fill()

@@ -199,7 +199,7 @@ struct DiffScrollView: NSViewRepresentable {
 }
 
 /// The ruler's ticks of one kind as one shape: 7 points wide, 3 in from the ruler's left edge, corners of 1 point.
-private struct RulerTicks: Shape {
+struct RulerTicks: Shape {
     let ticks: [RulerTick]
 
     func path(in rect: CGRect) -> Path {

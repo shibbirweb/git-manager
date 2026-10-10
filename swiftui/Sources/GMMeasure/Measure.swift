@@ -32,8 +32,9 @@ enum Measure {
         var walkSpeed = 0
         /// --theme: the color theme of the run's mode in both apps (a theme id such as monokai-charcoal).
         var colorTheme: String?
-        /// --file: the conflicted file of --screen merge (src/app.ts by default).
+        /// --file: the conflicted file of --screen merge (src/app.ts by default), the file of --screen file.
         var mergeFile = Measure.mergeFile
+        var shownFile = Measure.shownFile
         /// --hdr and --hdr-wait: the display state each capture needs.
         var gate = Display.Gate(requirement: .off, waitS: 30)
         /// More workspace folders opened with the first (--screen folders).
@@ -55,15 +56,17 @@ enum Measure {
         options.collapse = collapse == "on"
         options.walkSpeed = max(0, Int(option("--walk", in: &arguments) ?? "0") ?? 0)
         options.colorTheme = option("--theme", in: &arguments)
-        options.mergeFile = option("--file", in: &arguments) ?? Measure.mergeFile
+        let fileOption = option("--file", in: &arguments)
+        options.mergeFile = fileOption ?? Measure.mergeFile
+        options.shownFile = fileOption ?? Measure.shownFile
         options.gate = try Display.gate(from: &arguments)
         let only = option("--only", in: &arguments).flatMap(AppKind.init(rawValue:))
         let appPaths: [AppKind: String?] = [
             .current: option("--current-app", in: &arguments),
             .native: option("--native-app", in: &arguments),
         ]
-        let validScreen = (["changes", "diff", "staged", "file", "blame", "log", "settings", "terminal", "merge",
-                             "conflicts"]
+        let validScreen = (["changes", "diff", "diffblame", "staged", "file", "blame", "log", "logblame", "settings",
+                            "terminal", "merge", "conflicts"]
             + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens + githubScreens
                 + githubDialogScreens + automationScreens)
             .contains(options.screen)
@@ -127,7 +130,7 @@ enum Measure {
             try writeNativeDiffPrefs(home: home, collapse: options.collapse)
         }
         var themeSettings = colorThemeSettings(mode: options.mode, themeID: options.colorTheme)
-        if options.screen == "blame" {
+        if ["blame", "diffblame", "logblame"].contains(options.screen) {
             // The file bar's Blame button is this setting in both apps.
             themeSettings["blameGutter"] = true
         }
@@ -163,13 +166,13 @@ enum Measure {
     ) async throws -> MeasureReport.App {
         let kind = app.kind
         let info = try await app.client.call("get_app_info").structured ?? [:]
-        if options.screen == "diff" {
+        if options.screen == "diff" || options.screen == "diffblame" {
             try await showDiff(app, collapse: options.collapse)
         } else if options.screen == "staged" {
             try await stageFiles(app)
         } else if options.screen == "file" || options.screen == "blame" {
-            try await openFile(app)
-        } else if options.screen == "log" {
+            try await openFile(app, filePath: options.shownFile)
+        } else if options.screen == "log" || options.screen == "logblame" {
             try await showLog(app)
         } else if options.screen == "settings" {
             try await openSettings(app)

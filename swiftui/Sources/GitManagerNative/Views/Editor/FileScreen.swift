@@ -9,14 +9,25 @@ import SwiftUI
 struct FileScreen: View {
     @EnvironmentObject private var editor: EditorModel
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var files: FilesModel
 
     let file: OpenFile
 
     var body: some View {
         VStack(spacing: 0) {
-            FileBar(folderName: model.folderName, relativePath: file.relativePath)
+            FileBar(folderName: model.folderName, relativePath: file.relativePath, tone: files.tones[file.path],
+                    dirty: editor.session?.dirty ?? false, changeLabel: editor.changeLabel,
+                    hasChanges: !(editor.session?.marks.isEmpty ?? true), go: { editor.goToChange(forward: $0) })
             if let session = editor.session {
-                FileEditorView(session: session, revision: editor.revision, blameLabel: editor.blameLabel)
+                FileEditorView(
+                    session: session, revision: editor.revision, blameLabel: editor.blameLabel,
+                    blameClick: { line, copyHash in
+                        Task {
+                            await editor.blameClicked(line: line, copyHash: copyHash)
+                        }
+                    },
+                    blameTooltip: { editor.blameTooltip(line: $0) }
+                )
             }
         }
     }
@@ -31,11 +42,18 @@ struct FileBar: View {
 
     let folderName: String
     let relativePath: String
+    var tone: FileTone?
+    var dirty = false
+    var changeLabel = "No changes"
+    var hasChanges = false
+    /// Previous (false) or next (true) change.
+    var go: (Bool) -> Void = { _ in }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 6) {
                 crumbs
+                FileBadges(tone: tone, dirty: dirty)
                 Spacer(minLength: 0)
                 actions
             }
@@ -83,10 +101,14 @@ struct FileBar: View {
     /// and Copy relative path.
     private var actions: some View {
         HStack(spacing: 2) {
-            tool("arrow-up", size: 13, disabled: true)
-            tool("arrow-down", size: 13, disabled: true)
+            tool("arrow-up", size: 13, disabled: !hasChanges) {
+                go(false)
+            }
+            tool("arrow-down", size: 13, disabled: !hasChanges) {
+                go(true)
+            }
             // .nav-label: 11.5-point text, 4 points of padding, at least 58 wide; set half a point lower (measured).
-            ExactText(text: "No changes", size: 11.5)
+            ExactText(text: changeLabel, size: 11.5)
                 .foregroundStyle(theme.ink("--text-dim"))
                 .offset(y: 0.5)
                 .padding(.horizontal, 4)

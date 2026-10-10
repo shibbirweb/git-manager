@@ -119,6 +119,14 @@ extension FileScrollView.Host {
 
     func pressed(_ event: NSEvent, at point: NSPoint) {
         window?.makeFirstResponder(self)
+        if let line = blameLine(at: canvasPoint(point)) {
+            blameClick(line, event.modifierFlags.contains(.option))
+            return
+        }
+        if event.modifierFlags.contains(.command), let line = noteLine(at: canvasPoint(point)) {
+            blameClick(line, event.modifierFlags.contains(.option))
+            return
+        }
         guard let session, let hit = canvas.position(at: canvasPoint(point)) else {
             return
         }

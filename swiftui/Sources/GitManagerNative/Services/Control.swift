@@ -54,6 +54,8 @@ enum Control {
             return diff(args)
         case "open_file":
             return openFile(args)
+        case "blame_click":
+            return blameClick(args)
         case "editor_command":
             return editorCommand(args)
         case "scroll":

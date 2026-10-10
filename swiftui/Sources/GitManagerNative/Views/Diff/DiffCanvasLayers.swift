@@ -76,7 +76,7 @@ extension DiffCanvas {
     /// so macOS composites it over the gutter and the code.
     private func placeThumb(_ pane: Pane, width: CGFloat, surface: CanvasSurface, space: CGColorSpace,
                             scale: CGFloat) {
-        let scrollWidth = DiffPanes.gutterWidth + DiffPanes.markerWidth + max(pane.contentWidth, pane.noteEnd)
+        let scrollWidth = pane.gutters + max(pane.contentWidth, pane.noteEnd)
         guard scrollWidth > width + 0.5, let colors else {
             surface.layer.isHidden = true
             return

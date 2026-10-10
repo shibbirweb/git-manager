@@ -55,7 +55,8 @@ extension LogModel {
         let summary = LogFormat.splitMessage(commit.message).subject
         let note = "\(commit.authorName), \(LogFormat.relativeTime(commit.authorTime)) \u{2022} "
             + (summary.isEmpty ? "(no message)" : summary)
-        diff = OpenDiff(filePath: file.path, staged: false, diff: fileDiff, commitLabel: label, commitNote: note)
+        diff = OpenDiff(filePath: file.path, staged: false, diff: fileDiff, commitLabel: label, commitId: commit.id,
+                        commitNote: note)
         await SyntaxHighlighter.shared.diffSpans(
             filePath: file.path, original: fileDiff.original, modified: fileDiff.modified,
             hunks: fileDiff.hunks.compactMap(DiffHunk.init)
