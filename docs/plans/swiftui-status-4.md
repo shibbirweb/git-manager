@@ -253,3 +253,25 @@ Continues [swiftui-status-3.md](swiftui-status-3.md). Newest last.
     git_remotes over HTTP inside the workspace; a repository outside the workspace is refused.
   - Next: the git write tools (they need the bridge's write commands in the Tauri shape), files and search, then
     the Available MCP Tools dialog with the tool switches.
+- GM-84 open gaps, stage 1 (workspace):
+  - Commit to: the select opens its list (SelectMenu, an AppKit menu as WebKit's WebPopupMenuProxyMac opens it);
+    picking a repository makes it active (the native app commits to the active repository; the current app keeps
+    the active one and only moves the commit target, noted in the parity gaps).
+  - Rules found: WebKit's list takes the system's appearance (the current app never sets one), not the page's
+    theme; its text is drawn with font smoothing, 26% more ink than AppKit's menu text (smoothing on against off
+    measures 1.27x). SmoothText draws each entry with smoothing into an image in the title (a text attachment: an
+    item image adds a 4-point gap), once in the label color and once white, swapped as the highlight moves. The
+    chosen item's corner goes 12 points left and 1 point up of the select's. Glyphs after the comma still sit up to
+    a quarter point apart (neither pixel snapping nor rounded advances explain it).
+  - The Commit button, its chevron and the activity bar badge use --accent-text (dark on Monokai Charcoal).
+  - The active repository per workspace is remembered in state.json activeRepos (ActiveRepos, keyed like
+    describeWorkspace), used when a workspace opens, moved by Save Workspace As.
+  - gm-measure: `--screen committarget` (workspace, the select pressed through Accessibility, which now presses
+    pop-up buttons); the open menu is captured too (MenuCapture: a display area with only the menu window, since a
+    window filter on a menu returns the main window) and compared, with its frame. Smoke: a two-repository folder
+    reopens on the repository it had last.
+  - Pixel diff below the title bar (HDR off, light / dark): committarget 99.4 / 99.22 (the menu included; the
+    menu alone 85.4 / 86.7, about 1,800 of its pixels are blur noise of 1 or 2); changes --theme
+    monokai-charcoal 99.75 / 99.5.
+  - Memory on committarget: current 147 / 159 MB, native 48 / 48 MB (light / dark). workspace kept 99.52 (with
+    the default 5-second settle: at 2 seconds the native list's scrollbar has not settled yet).

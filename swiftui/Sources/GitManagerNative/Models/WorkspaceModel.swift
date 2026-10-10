@@ -32,6 +32,11 @@ final class WorkspaceModel: ObservableObject {
         folders.first?.root
     }
 
+    /// describeWorkspace's id, the key of its remembered active repository.
+    var id: String? {
+        folders.isEmpty ? nil : ActiveRepos.workspaceId(folderRoots: folders.map(\.root), file: file)
+    }
+
     var name: String? {
         folders.isEmpty ? nil : WorkspaceRules.workspaceName(folders.map(\.name), file: file)
     }

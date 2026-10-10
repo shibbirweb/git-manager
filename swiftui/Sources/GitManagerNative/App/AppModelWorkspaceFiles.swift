@@ -66,7 +66,11 @@ extension AppModel {
             toasts.show(.error, "Could not save workspace", detail: Self.describe(error))
             return
         }
+        let previousId = workspace.id
         workspace.linkFile(target)
+        if let previousId, let workspaceId = workspace.id {
+            RecentProjectsStore.shared.moveActiveRepo(from: previousId, to: workspaceId, activeRoot: repoPath)
+        }
         RecentProjectsStore.shared.opened(folders, file: target)
     }
 

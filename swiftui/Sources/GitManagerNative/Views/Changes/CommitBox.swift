@@ -22,13 +22,15 @@ struct CommitBox: View {
     var publish = false
     /// Several repositories: the repository the commit goes to, above the message.
     var target: CommitTarget?
+    /// A repository was picked in the target's select.
+    var pickTarget: (String) -> Void = { _ in }
 
     var body: some View {
         VStack(spacing: 0) {
             theme.color("--border-strong").frame(height: 1)
             VStack(spacing: 8) {
                 if let target {
-                    CommitTargetRow(target: target)
+                    CommitTargetRow(target: target, pick: pickTarget)
                 }
                 messageField
                 footer
@@ -127,7 +129,7 @@ struct CommitBox: View {
                 Task { await model.commit() }
             } label: {
                 ExactText(text: title, size: 13)
-                    .foregroundStyle(enabled ? Color.white : theme.over("#ffffff", 0.5, on: "--panel"))
+                    .foregroundStyle(label(enabled))
                     // 12 points of padding inside a 1-point border, around the label's exact width.
                     .padding(.horizontal, 13)
                     // .split never shrinks: the summary gives way.
@@ -140,10 +142,15 @@ struct CommitBox: View {
             .allowsHitTesting(enabled)
             .help(CommitRules.buttonHelp(state, keys: "⌘↩"))
             Icon(name: "chevron-down", size: 13)
-                .foregroundStyle(state.busy ? theme.over("#ffffff", 0.5, on: "--panel") : Color.white)
+                .foregroundStyle(label(!state.busy))
                 .frame(width: 25, height: 28)
                 .background(HalfRoundedRectangle(roundedSide: .trailing).fill(fill(!state.busy)))
         }
+    }
+
+    /// --accent-text (dark on some themes), at half opacity while the button is off.
+    private func label(_ enabled: Bool) -> Color {
+        enabled ? theme.ink("--accent-text") : theme.over("--accent-text", 0.5, on: "--panel")
     }
 
     private func fill(_ enabled: Bool) -> Color {

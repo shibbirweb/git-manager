@@ -27,11 +27,11 @@ struct ActivityItem: View {
                     .padding(.top, 2)
                     .padding(.bottom, 3)
                 if let badge, badge > 0 {
-                    // .badge: 16 points tall, 10-point semibold white text on the accent color, anchored 1 point from
-                    // the item's right and 3 from its bottom, so a wider count grows to the left.
+                    // .badge: 16 points tall, 10-point semibold --accent-text on the accent color, anchored 1 point
+                    // from the item's right and 3 from its bottom, so a wider count grows to the left.
                     Text(badge > 99 ? "99+" : "\(badge)")
                         .font(PageFont.font(10, weight: .semibold))
-                        .foregroundStyle(Color.white)
+                        .foregroundStyle(theme.ink("--accent-text"))
                         .padding(.horizontal, 4)
                         .frame(minWidth: 16, minHeight: 16)
                         .background(

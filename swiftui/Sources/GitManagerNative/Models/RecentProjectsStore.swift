@@ -1,7 +1,7 @@
 // The recent projects, kept in ~/.gitmanager-native/state.json under the current app's state.json keys
 // (recentFolders, recentWorkspaces, recentWorkspaceFiles): a folder opened alone or several opened together move
-// to the top. It also keeps the window session ("windows", WindowSessionKeeper). Other keys in the file are kept; a
-// file that could not be read is never written over.
+// to the top. It also keeps the window session ("windows", WindowSessionKeeper) and each workspace's active
+// repository (activeRepos). Other keys in the file are kept; a file that could not be read is never written over.
 
 import Foundation
 import NativeCore
@@ -11,6 +11,8 @@ final class RecentProjectsStore: ObservableObject {
     static let shared = RecentProjectsStore()
 
     @Published private(set) var lists = RecentLists()
+    /// The active repository each workspace had last, by workspace id (ActiveRepos).
+    private(set) var activeRepos: [String: String] = [:]
     /// Why state.json could not be read; nil when it was (or there is none yet).
     @Published private(set) var loadError: String?
     private var state: [String: Any] = [:]
@@ -29,6 +31,7 @@ final class RecentProjectsStore: ObservableObject {
         }
         state = object
         lists = RecentLists(state: object)
+        activeRepos = ActiveRepos.parse(object[ActiveRepos.key])
     }
 
     /// The workspace's folders were opened: from a workspace file, that file goes to the recent workspace files;
@@ -54,6 +57,21 @@ final class RecentProjectsStore: ObservableObject {
         save()
     }
 
+    /// setActiveRepo: the workspace opens on this repository next time.
+    func rememberActiveRepo(_ repoRoot: String, workspaceId: String) {
+        guard activeRepos[workspaceId] != repoRoot else {
+            return
+        }
+        activeRepos[workspaceId] = repoRoot
+        save()
+    }
+
+    /// Save Workspace As: the remembered repository (else the active one) follows the workspace to its new id.
+    func moveActiveRepo(from previousId: String, to workspaceId: String, activeRoot: String?) {
+        activeRepos = ActiveRepos.moved(activeRepos, from: previousId, to: workspaceId, activeRoot: activeRoot)
+        save()
+    }
+
     func remove(_ entry: RecentEntry) {
         lists.remove(entry)
         save()
@@ -64,6 +82,7 @@ final class RecentProjectsStore: ObservableObject {
             return
         }
         state.merge(lists.stateValues) { _, new in new }
+        state[ActiveRepos.key] = activeRepos
         guard let data = try? JSONSerialization.data(withJSONObject: state, options: [.prettyPrinted, .sortedKeys])
         else {
             return

@@ -1,6 +1,8 @@
 // The commit box's target row with several repositories (CommitBox.svelte .target): "Commit to", the repository
-// picker (a select with each repository that has changes) or the name alone, and "on <branch>".
+// picker (a select with each repository that has changes) or the name alone, and "on <branch>". Picking a
+// repository makes it the active one: the native app commits to the active repository.
 
+import AppKit
 import NativeCore
 import SwiftUI
 
@@ -13,11 +15,16 @@ struct CommitTarget {
     let picker: Bool
     /// Every entry of the select: WebKit makes a select as wide as its widest entry.
     var options: [String] = []
+    /// The repository root of each entry, in the same order.
+    var optionRoots: [String] = []
 }
 
 struct CommitTargetRow: View {
     @Environment(\.theme) private var theme
+    @State private var anchor: NSView?
     let target: CommitTarget
+    /// A repository was picked from the select.
+    var pick: (String) -> Void = { _ in }
 
     /// WebKit's select (measured): the text 9 points in, half a point higher than SwiftUI sets it, and clipped
     /// 21 points before the right edge, where the arrows sit 10.75 points in.
@@ -38,7 +45,17 @@ struct CommitTargetRow: View {
                     .fixedSize()
                 Group {
                     if target.picker {
-                        picker(width: widths.middle)
+                        Button {
+                            // After the click (or an Accessibility press) returns: the menu runs its own loop.
+                            DispatchQueue.main.async {
+                                openMenu(width: widths.middle)
+                            }
+                        } label: {
+                            picker(width: widths.middle)
+                        }
+                        .buttonStyle(.plain)
+                        .background(MenuAnchor { anchor = $0 })
+                        .accessibilityLabel("Repository to commit to")
                     } else {
                         ExactText(
                             text: ExactText.cut(target.name, width: widths.middle,
@@ -60,6 +77,20 @@ struct CommitTargetRow: View {
             .frame(width: proxy.size.width, height: proxy.size.height, alignment: .leading)
         }
         .frame(height: 24)
+    }
+
+    /// The select's list (an AppKit menu, as WebKit opens it): picking an entry targets that repository.
+    private func openMenu(width: CGFloat) {
+        guard let anchor, let selected = target.options.firstIndex(of: target.label) else {
+            return
+        }
+        let roots = target.optionRoots
+        SelectMenu.show(entries: target.options, selected: selected, font: .systemFont(ofSize: 13, weight: .semibold),
+                        width: width, in: anchor) { index in
+            if roots.indices.contains(index) {
+                pick(roots[index])
+            }
+        }
     }
 
     /// The select on --panel with a --border-strong line and 6-point corners; the entry is clipped, not ellipsized.

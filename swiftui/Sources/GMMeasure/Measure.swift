@@ -99,6 +99,9 @@ enum Measure {
             ))
         }
         try MeasureReport.write(reports, stamp: stamp, options: options, outDir: outDir)
+        if selectScreens.contains(options.screen) {
+            try compareMenus(outDir: outDir)
+        }
     }
 
     /// Builds the docs demo in `workDir`/demo and returns its acme/storefront repository.
@@ -182,6 +185,8 @@ enum Measure {
             try await showSearchScreen(app, screen: options.screen)
         } else if menuScreens.contains(options.screen) {
             try await openHeaderMenu(app, screen: options.screen)
+        } else if selectScreens.contains(options.screen) {
+            try await openSelect(app, screen: options.screen)
         } else if closeScreens.contains(options.screen) {
             try await closeFolder(app)
         } else if windowScreens.contains(options.screen) {
@@ -210,6 +215,9 @@ enum Measure {
             // Typing or clicking on another screen moves the focus and closes open menus: such a run is spoiled.
             if let front = NSWorkspace.shared.frontmostApplication?.processIdentifier, front != app.pid {
                 print("\(kind.rawValue): another app was in front at the screenshot; rerun if a menu or focus matters")
+            }
+            if selectScreens.contains(options.screen) {
+                saveMenu(app, outDir: outDir)
             }
             let path = (outDir as NSString).appendingPathComponent("\(kind.rawValue).png")
             try png.write(to: URL(fileURLWithPath: path))

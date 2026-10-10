@@ -54,7 +54,8 @@ struct ChangesPanel: View {
             }
             if !noRepository {
                 CommitBox(state: state, ahead: status?.head.ahead ?? 0, publish: status.map(Self.publishes) ?? false,
-                          target: multiRepo ? commitTarget(staged: groups.staged.count, head: status?.head) : nil)
+                          target: multiRepo ? commitTarget(staged: groups.staged.count, head: status?.head) : nil,
+                          pickTarget: { repoRoot in Task { await model.setActive(repoRoot) } })
             }
         }
     }
@@ -79,7 +80,7 @@ struct ChangesPanel: View {
         }
         return CommitTarget(
             label: WorkspaceRules.choiceLabel(repo, staged: staged), name: repo.name, branch: branch,
-            picker: choices.count > 1, options: options
+            picker: choices.count > 1, options: options, optionRoots: choices.map(\.root)
         )
     }
 }

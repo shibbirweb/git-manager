@@ -30,7 +30,9 @@ extension AppModel {
         workspace.set(infos, file: file)
         let folderRoots = workspace.folders.map(\.root)
         RecentProjectsStore.shared.opened(folderRoots, file: file)
-        guard let active = WorkspaceRules.pickActive(workspace.repos, folderRoots: folderRoots) else {
+        let remembered = workspace.id.flatMap { RecentProjectsStore.shared.activeRepos[$0] }
+        guard let active = WorkspaceRules.pickActive(workspace.repos, folderRoots: folderRoots, remembered: remembered)
+        else {
             showNoRepository()
             return
         }
@@ -51,7 +53,10 @@ extension AppModel {
             let message = "No git repository in \(roots.joined(separator: ", "))"
             return .failure(BackendError(kind: "noRepository", message: message))
         }
-        let activeRoot = WorkspaceRules.pickActive(WorkspaceRules.unionRepos(infos), folderRoots: roots)?.root
+        let workspaceId = ActiveRepos.workspaceId(folderRoots: roots, file: nil)
+        let remembered = Control.onMain { RecentProjectsStore.shared.activeRepos[workspaceId] }
+        let activeRoot = WorkspaceRules.pickActive(WorkspaceRules.unionRepos(infos), folderRoots: roots,
+                                                   remembered: remembered)?.root
             ?? roots.first ?? folderPaths.first ?? ""
         Control.onMain {
             if !infos.isEmpty {

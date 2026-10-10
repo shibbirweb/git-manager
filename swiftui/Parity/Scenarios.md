@@ -90,8 +90,9 @@ Folder: demo `acme`
 Measured: light 99.54% (141 MB / 47 MB, 2026-10-09), dark 99.31% (151 MB / 48 MB, 2026-10-09).
 
 - Workspaces and folders (`workspaces`, partial): Both repositories of demo/acme in Changes, the header's folder menu.
-  Native lacks: the clean repositories' right-click menu, Set as Active Repository from a menu; remembering the active
-  repository; the Files panel's + button and a folder's right-click menu.
+  Native lacks: the clean repositories' right-click menu, Set as Active Repository from a menu; picking a Commit to
+  repository also makes it active (the current app keeps the active one); the Files panel's + button and a folder's
+  right-click menu.
 
 ## files-menu: Files panel right-click menu (native app cannot show it yet)
 

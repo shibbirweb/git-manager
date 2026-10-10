@@ -36,6 +36,32 @@ enum LiveWindowCapture {
         }
     }
 
+    /// A menu window: captured as its area of the display with only that window in the filter, since a
+    /// desktop-independent filter on a pop-up menu window returns the app's main window instead.
+    static func menuImage(windowID: CGWindowID, timeout: TimeInterval = 10) throws -> CGImage {
+        let content = try wait(timeout) { done in
+            SCShareableContent.getExcludingDesktopWindows(false, onScreenWindowsOnly: true) { content, error in
+                done(content, error)
+            }
+        }
+        guard let window = content.windows.first(where: { $0.windowID == windowID }),
+              let display = content.displays.first(where: { $0.frame.contains(window.frame.origin) }) else {
+            throw ToolError("ScreenCaptureKit does not list menu window \(windowID)")
+        }
+        let scale = MeasureScreen.scale
+        let configuration = SCStreamConfiguration()
+        configuration.sourceRect = window.frame.offsetBy(dx: -display.frame.minX, dy: -display.frame.minY)
+        configuration.width = Int((window.frame.width * scale).rounded())
+        configuration.height = Int((window.frame.height * scale).rounded())
+        configuration.showsCursor = false
+        let filter = SCContentFilter(display: display, including: [window])
+        return try wait(timeout) { done in
+            SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration) { image, error in
+                done(image, error)
+            }
+        }
+    }
+
     /// Runs a completion-handler call and waits for its value; the handlers run on ScreenCaptureKit's own queue.
     private static func wait<Value>(
         _ timeout: TimeInterval, _ start: (@escaping (Value?, Error?) -> Void) -> Void

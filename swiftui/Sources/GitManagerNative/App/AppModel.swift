@@ -163,6 +163,9 @@ final class AppModel: ObservableObject {
         }
         closeDiff()
         repoPath = repoRoot
+        if let workspaceId = context.workspace.id {
+            RecentProjectsStore.shared.rememberActiveRepo(repoRoot, workspaceId: workspaceId)
+        }
         snapshot = context.workspace.statuses[repoRoot].map { StatusSnapshot(hash: "", status: $0) }
         await refreshStatus()
     }

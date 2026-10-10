@@ -20,7 +20,7 @@ import MeasureKit
 
 extension Measure {
     static let workspaceScreens = ["workspace", "folders", "cleanrepos", "norepo", "workspacefile"] + menuScreens
-        + windowScreens
+        + windowScreens + selectScreens
     static let menuScreens = ["foldermenu", "repomenu", "branchmenu", "foldermenurecent"]
     /// Both apps started without a folder.
     static let welcomeScreens = ["welcome", "welcomerecent", "welcomecustomize", "welcomelearn", "welcomeclone"]

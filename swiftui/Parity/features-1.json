@@ -20,7 +20,7 @@
       "native": "partial",
       "gaps": [
         "the clean repositories' right-click menu, Set as Active Repository from a menu",
-        "remembering the active repository",
+        "picking a Commit to repository also makes it active (the current app keeps the active one)",
         "the Files panel's + button and a folder's right-click menu"
       ]
     },
