@@ -1,0 +1,104 @@
+# Git Manager Native, the SwiftUI experiment (swiftui/, docs/plans/swiftui-experiment.md): builds the app
+# and runs its tests on pull requests that touch it or the backend files its bridge shares with the
+# current app. Separate from ci.yml, so the current app's checks and releases never depend on it.
+
+name: Native app (SwiftUI)
+
+on:
+  pull_request:
+    paths:
+      - "swiftui/**"
+      - ".github/workflows/native.yml"
+      # Included by path in swiftui/bridge/src/lib.rs: a change there can break the bridge.
+      - "src-tauri/src/git/**"
+      - "src-tauri/src/merge/**"
+      - "src-tauri/src/error.rs"
+      - "src-tauri/src/paths.rs"
+      - "src-tauri/src/askpass.rs"
+      - "src-tauri/src/git_console.rs"
+      - "src-tauri/src/child_process.rs"
+      - "src-tauri/src/file_search.rs"
+      - "src-tauri/src/text_search.rs"
+      - "src-tauri/src/text_search/**"
+      - "src-tauri/src/symbols/**"
+      # The sources of swiftui/Sources/GitManagerNative/Generated (gm-measure tokens, icons and commands) and of
+      # the search fixtures (NativeCore's ports of the search models).
+      - "src/lib/themes/**"
+      - "src/lib/ui/icons.ts"
+      - "src/lib/commands/**"
+      - "src/lib/menu/**"
+      - "src/lib/quickOpen/**"
+      - "src/lib/search/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Native app (build + tests)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: swiftui/bridge
+
+      # gm-measure tokens runs the theme catalog (TypeScript) with Bun; build-app.sh bundles the current app's
+      # grammars into highlight.js with Bun, which needs the packages.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install packages
+        run: bun install --frozen-lockfile
+
+      # Every file at most 120 columns and 300 lines, generated data included.
+      - name: Line standard
+        run: swiftui/scripts/check-lines.sh
+
+      - name: Bridge clippy
+        working-directory: swiftui/bridge
+        run: cargo clippy --locked --lib --examples --tests -- -D warnings
+
+      - name: Bridge tests
+        working-directory: swiftui/bridge
+        run: cargo test --locked
+
+      # The Rust bridge, the Swift app and the .app bundle (also needed by the Swift tests' build).
+      - name: Build the app
+        run: swiftui/scripts/build-app.sh
+
+      - name: Swift tests (gm-measure)
+        run: swiftui/scripts/test.sh
+
+      - name: Theme tokens are up to date
+        working-directory: swiftui
+        run: swift run -c release gm-measure tokens --check
+
+      - name: Icons are up to date
+        working-directory: swiftui
+        run: swift run -c release gm-measure icons --check
+
+      - name: Palette commands are up to date
+        working-directory: swiftui
+        run: swift run -c release gm-measure commands --check
+
+      # Starts the built app on a test repository and checks every control tool end to end.
+      - name: Smoke test
+        working-directory: swiftui
+        run: swift run -c release gm-measure smoke
+
+      - name: Package the app
+        run: ditto -c -k --keepParent "swiftui/build/Git Manager Native.app" swiftui/build/GitManagerNative.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: git-manager-native
+          path: swiftui/build/GitManagerNative.zip
+          retention-days: 14

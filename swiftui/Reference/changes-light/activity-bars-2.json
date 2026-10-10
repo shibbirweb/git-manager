@@ -1,0 +1,64 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "activity", "rect": {"height": 782, "width": 44, "x": 1356, "y": 42},
+      "styles": {
+        "background-color": "rgb(242, 243, 245)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(223, 225, 229)", "border-left-width": "1px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "gap": "2px", "padding-top": "6px"
+      },
+      "tag": "nav", "text": ""
+    },
+    {
+      "classes": "item active", "rect": {"height": 36, "width": 36, "x": 1361, "y": 48},
+      "styles": {
+        "background-color": "color(srgb 0.207843 0.454902 0.941176 / 0.12)", "border-bottom-color": "rgb(53, 116, 240)",
+        "border-left-color": "rgb(53, 116, 240)", "border-radius": "8px", "border-right-color": "rgb(53, 116, 240)",
+        "border-top-color": "rgb(53, 116, 240)", "color": "rgb(53, 116, 240)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-bottom": "3px", "padding-left": "6px", "padding-right": "6px",
+        "padding-top": "2px", "text-align": "center"
+      },
+      "tag": "button", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 19, "width": 19, "x": 1369, "y": 56},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "text-align": "center"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 5, "width": 4, "x": 1371, "y": 61},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "text-align": "center"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 6, "width": 4, "x": 1371, "y": 64},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "text-align": "center"
+      },
+      "tag": "path", "text": ""
+    }
+  ],
+  "limit": 100, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "activity bars", "piece": "2 of 2", "screen": "changes", "selector": [".activity", ".activity *"]
+}

@@ -1,0 +1,246 @@
+{
+  "scenarios": [
+    {
+      "id": "changes",
+      "title": "Changes screen",
+      "folder": "acme/storefront",
+      "steps": [
+        "Build the demo with scripts/make-docs-demo.sh and start the app on demo/acme/storefront.",
+        "Wait until its status is on screen and leave the window as it opens.",
+        "On screen: Changes on the left, the empty editor area, the Files panel on the right, the status bar."
+      ],
+      "run": {}
+    },
+    {
+      "id": "diff",
+      "title": "Side-by-side diff of src/cart.ts",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Click src/cart.ts under Changes: its diff opens in the Diff tab, Collapse unchanged on (the default)."
+      ],
+      "note": [
+        "0.1.0-beta.7 never folds side-by-side diffs (fixed as GM-40, not released yet),",
+        "so against it this scenario scores about 81% (light) and 75% (dark).",
+        "Against a build with the fix it scored 99.04% (light) and 98.28% (dark) on 2026-10-08.",
+        "In dark mode beta.7 paints some fills and text one step differently while the display has HDR headroom",
+        "(any HDR content on screen), so gm-measure captures with HDR off (--hdr off, the default)."
+      ],
+      "run": { "showDiff": "src/cart.ts", "collapseUnchanged": true }
+    },
+    {
+      "id": "diff-every-line",
+      "title": "Side-by-side diff of src/cart.ts, every line",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and click src/cart.ts under Changes.",
+        "Turn off Collapse unchanged in the diff toolbar: every line shows, the first change centered."
+      ],
+      "note": [
+        "With HDR off, beta.7 in dark mode puts the right pane in its own layer once the merge view scrolls",
+        "and paints its #1e1f22 as 30, 31, 33 (followed in GM-50)."
+      ],
+      "run": { "showDiff": "src/cart.ts", "collapseUnchanged": false }
+    },
+    {
+      "id": "staged",
+      "title": "Changes after staging src/cart.ts",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Point at src/cart.ts under Changes and click its Stage button (+): it moves to the Staged group."
+      ],
+      "run": { "stageFiles": ["src/cart.ts"] }
+    },
+    {
+      "id": "welcome",
+      "title": "Welcome screen (no folder)",
+      "folder": null,
+      "steps": [
+        "Start the app with an empty home folder and no folder: the Projects page with Open and Clone.",
+        "Open demo/acme/storefront, then File > Close Folder: the project is in the recent list."
+      ],
+      "run": {}
+    },
+    {
+      "id": "workspace",
+      "title": "Workspace of two folders",
+      "folder": "acme",
+      "steps": [
+        "Open demo/acme (storefront, payments-api stopped in a merge, the plain folder notes), then add",
+        "demo/design-system to the workspace: Changes lists the three repositories, design-system active."
+      ],
+      "run": { "extraFolders": ["design-system"] }
+    },
+    {
+      "id": "files-menu",
+      "title": "Files panel right-click menu",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Right-click src/cart.ts in the Files panel and point at Add to .gitignore."
+      ]
+    },
+    {
+      "id": "file-icons",
+      "title": "File icons: Material Icons",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Choose View > File Icons > Material Icons and open the src folder in the Files panel."
+      ]
+    },
+    {
+      "id": "rounded-panels",
+      "title": "Rounded panels",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Open Settings (Cmd+,), Appearance, turn on Rounded panels and close Settings."
+      ]
+    },
+    {
+      "id": "file",
+      "title": "src/catalog.ts in a file tab",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Double-click src/catalog.ts in the Files panel: it opens in a kept tab.",
+        "The tab shows the path bar, the code and the cursor line's blame note (the file has no changes)."
+      ],
+      "run": { "openFile": "src/catalog.ts" }
+    },
+    {
+      "id": "tabs",
+      "title": "Tab strip: pinned and wrapped tabs",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Double-click src/cart.ts, src/checkout.ts, README.md, package.json and docs/checkout.md.",
+        "Right-click the README.md tab, choose Pin Tab, and turn on Settings > Editor > Wrap tabs."
+      ]
+    },
+    {
+      "id": "single-tab",
+      "title": "Single tab mode",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and set Settings > Editor > Tab limit to Single tab.",
+        "Double-click src/cart.ts: its name shows centered in the strip."
+      ]
+    },
+    {
+      "id": "split-editor",
+      "title": "Split editor",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and double-click src/cart.ts.",
+        "Choose Window > Split Right, open README.md there, then choose Window > Split Down."
+      ]
+    },
+    {
+      "id": "new-file",
+      "title": "New File",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Press Cmd+N (File > New File) and type a line: the Untitled tab takes its name and shows a dot."
+      ]
+    },
+    {
+      "id": "markdown",
+      "title": "Markdown editor with preview",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Double-click docs/checkout.md: the text, the toolbar and the live preview side by side."
+      ]
+    },
+    {
+      "id": "media-preview",
+      "title": "Image preview",
+      "folder": "acme",
+      "steps": [
+        "Start the app on demo/acme.",
+        "Click notes/logo.png in the Files panel: the image opens in a preview tab."
+      ]
+    },
+    {
+      "id": "search-everywhere",
+      "title": "Search Everywhere",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and open src/cart.ts at line 10, column 11.",
+        "Edit > Select Next Occurrence selects lines; Edit > Find in Files opens the Text tab with it.",
+        "Close the src/cart.ts tab (the popup stays): 8 matches in 1 file over the Changes screen."
+      ],
+      "run": { "searchScreen": "search" }
+    },
+    {
+      "id": "quick-open",
+      "title": "Quick Open with recently opened files",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront; open src/pricing.ts, README.md and src/cart.ts, then close them.",
+        "Press Cmd+P (Edit > Go to File...): Recently opened lists cart.ts, README.md and pricing.ts."
+      ],
+      "run": { "searchScreen": "quickopen" }
+    },
+    {
+      "id": "command-palette",
+      "title": "Command Palette",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Press Shift+Cmd+P (View > Command Palette...): every command, enabled ones first, A to Z."
+      ],
+      "run": { "searchScreen": "palette" }
+    },
+    {
+      "id": "recent-files",
+      "title": "Recent Files",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront, open src/cart.ts, then docs/checkout.md.",
+        "Press Cmd+E (Edit > Recent Files...)."
+      ]
+    },
+    {
+      "id": "navigation-bar",
+      "title": "Navigation Bar",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and double-click src/cart.ts.",
+        "Press Cmd+Up (Edit > Jump to Navigation Bar): the list of src opens with cart.ts selected."
+      ]
+    },
+    {
+      "id": "find-replace",
+      "title": "Find and replace bar",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront and double-click src/cart.ts.",
+        "Press Cmd+R (Edit > Replace...) and type total."
+      ]
+    },
+    {
+      "id": "sign-in",
+      "title": "Sign-in prompt",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).",
+        "Fetch: the Sign in dialog asks for a username and a password."
+      ]
+    },
+    {
+      "id": "commit-options",
+      "title": "Commit options",
+      "folder": "acme/storefront",
+      "steps": [
+        "Start the app on demo/acme/storefront.",
+        "Click the gear next to Commit in the commit box, then the arrow next to Commit."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "features": [
+    {
+      "id": "window-shell", "name": "Window shell", "usage": "Getting-Started.md", "scenario": "changes",
+      "check": "Title bar, header, activity bars, sidebars, gaps and status bar at the same sizes and colors",
+      "native": "done"
+    },
+    {
+      "id": "welcome-screen", "name": "Welcome screen", "usage": "Welcome-Screen.md", "scenario": "welcome",
+      "check": "The Projects page with the search field, Open, Clone and the recent projects",
+      "native": "partial",
+      "gaps": [
+        "the row's right-click menu",
+        "the font size sliders' dragging; Keyboard Shortcuts and What's New (they say so)"
+      ]
+    },
+    {
+      "id": "workspaces", "name": "Workspaces and folders", "usage": "Workspaces.md", "scenario": "workspace",
+      "check": "Both repositories of demo/acme in Changes, the header's folder menu",
+      "native": "partial",
+      "gaps": [
+        "the clean repositories' right-click menu, Set as Active Repository from a menu",
+        "remembering the active repository",
+        "the Files panel's + button and a folder's right-click menu"
+      ]
+    },
+    {
+      "id": "files-panel", "name": "Files panel", "usage": "Files-Panel.md", "scenario": "file",
+      "check": "The tree with chevrons, icons, names and status colors; folders open and close",
+      "native": "partial",
+      "gaps": [
+        "deleted files in the tree and the exact status letter (U for untracked)",
+        "the heading buttons, resizing and hiding the panel"
+      ]
+    },
+    {
+      "id": "file-operations", "name": "File operations", "usage": "File-Operations.md", "scenario": "files-menu",
+      "check": "Selection, the right-click menu and New File, Rename, Copy, Move and Trash",
+      "native": "missing",
+      "gaps": ["selection and every file operation"]
+    },
+    {
+      "id": "file-icons", "name": "File icons", "usage": "File-Icons.md", "scenario": "file-icons",
+      "check": "Minimal and Material Icons in the Files panel and the tabs",
+      "native": "missing",
+      "gaps": ["the Minimal and Material Icons levels (the default, no icons, matches)"]
+    },
+    {
+      "id": "editor", "name": "Editor and tabs", "usage": "Editor-and-Tabs.md", "scenario": "file",
+      "check": "A file in a tab with the path bar, the code and the blame note; the empty editor area without one",
+      "native": "partial",
+      "gaps": [
+        "the tab's badge and previous and next change; Blame in the file bar",
+        "binary files, images and Markdown previews show only a message",
+        "the six actions of the empty editor area do nothing"
+      ]
+    },
+    {
+      "id": "tab-strip", "name": "Pin, reorder and wrap tabs", "usage": "Pin-Reorder-and-Wrap-Tabs.md",
+      "scenario": "tabs",
+      "check": "A pinned tab first, dragging tabs, wrapped rows",
+      "native": "partial",
+      "gaps": [
+        "file tabs open (preview and kept), switch and close; pinning, dragging, wrapping and the tab menu are missing"
+      ]
+    },
+    {
+      "id": "single-tab-title", "name": "Single tab title", "usage": "Single-Tab-Title.md",
+      "scenario": "single-tab",
+      "check": "The file name centered in the strip in Single tab mode",
+      "native": "missing"
+    },
+    {
+      "id": "split-editor", "name": "Split editor", "usage": "Split-Editor.md", "scenario": "split-editor",
+      "check": "Three editor groups, each with its tabs",
+      "native": "missing"
+    },
+    {
+      "id": "new-file-and-unsaved-changes", "name": "New File and unsaved changes",
+      "usage": "New-File-and-Unsaved-Changes.md", "scenario": "new-file",
+      "check": "The Untitled tab named after its first line; unsaved text back after a restart",
+      "native": "missing"
+    },
+    {
+      "id": "unload-hidden-tabs", "name": "Unload hidden tabs", "usage": "Unload-Hidden-Tabs.md",
+      "scenario": "settings",
+      "check": "Settings > Editor > Unload hidden tabs; an unloaded tab opens where it was",
+      "native": "missing"
+    },
+    {
+      "id": "code-editing", "name": "Editing code", "usage": "Editing-Code.md", "scenario": "edit",
+      "check": "Multiple cursors, the Code menu, Go to Line, folding and completion",
+      "native": "partial",
+      "gaps": [
+        "completion, Go to Line and the find bar",
+        "column selection and dragging text",
+        "Settings > Editor (font, cursor, word wrap) keep their defaults"
+      ]
+    },
+    {
+      "id": "code-appearance", "name": "Code appearance", "usage": "Code-Appearance.md",
+      "scenario": "diff-every-line",
+      "check": "Code font, syntax colors, bracket colors and indent guides in the diff panes",
+      "native": "partial",
+      "gaps": ["the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom"]
+    },
+    {
+      "id": "markdown", "name": "Markdown editor", "usage": "Markdown-Editor.md", "scenario": "markdown",
+      "check": "The toolbar, the live preview, mermaid diagrams and the rich editor",
+      "native": "missing"
+    },
+    {
+      "id": "media-preview", "name": "Image and PDF preview", "usage": "Image-and-PDF-Preview.md",
+      "scenario": "media-preview",
+      "check": "The image fitted to the tab with its bar; a PDF; an image diff",
+      "native": "missing"
+    },
+    {
+      "id": "search-everywhere", "name": "Search Everywhere", "usage": "Search-Everywhere.md",
+      "scenario": "search-everywhere",
+      "check": "The popup with its All, Classes, Files, Symbols and Text tabs",
+      "native": "partial",
+      "gaps": [
+        "only the Text tab (Find in Files) searches; All, Classes, Files and Symbols need the symbol index",
+        "Replace in Files, the Match Case, Words and Regex toggles, double Shift",
+        "a result opens its diff or says the file view is missing (GM-52)"
+      ]
+    },
+    {
+      "id": "quick-open", "name": "Quick Open", "usage": "Recent-Files.md", "scenario": "quick-open",
+      "check": "Cmd+P with recently opened files, fuzzy file results and the ? help",
+      "native": "partial",
+      "gaps": [
+        "the :line, @symbol and #symbol modes",
+        "recent files come from the control server until the native file view (GM-52) opens files"
+      ]
+    },
+    {
+      "id": "command-palette", "name": "Command Palette", "usage": "Keyboard-Shortcuts.md",
+      "scenario": "command-palette",
+      "check": "Shift+Cmd+P: every command with its keys, check marks, enabled ones first; typing filters",
+      "native": "partial",
+      "gaps": [
+        "most commands only say they are not in the native app yet",
+        "the state is the docs demo's (Generated/PaletteCommands*.swift), not the window's own"
+      ]
+    },
+    {
+      "id": "recent-files", "name": "Recent Files", "usage": "Recent-Files.md", "scenario": "recent-files",
+      "check": "The popup with the files worked on last, newest first",
+      "native": "missing"
+    },
+    {
+      "id": "navigation-bar", "name": "Navigation Bar", "usage": "Navigation-Bar.md", "scenario": "navigation-bar",
+      "check": "The path of the open file; Cmd+Up opens the folder's list with search",
+      "native": "partial",
+      "gaps": ["the crumbs of an open file show, but do nothing when clicked", "folder lists, search and keys"]
+    },
+    {
+      "id": "find-replace", "name": "Find and replace", "usage": "Find-and-Replace.md", "scenario": "find-replace",
+      "check": "The find bar with Replace, the counter and Replace in Files",
+      "native": "missing"
+    }
+  ]
+}

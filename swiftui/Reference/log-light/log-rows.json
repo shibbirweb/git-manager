@@ -1,0 +1,293 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "row selected head", "rect": {"height": 26, "width": 790, "x": 305, "y": 106},
+      "styles": {
+        "background-color": "rgb(228, 230, 235)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-right": "10px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "main Catalog: lazy load product images Priya Nair 2 d ago a7d619c3"
+    },
+    {
+      "classes": "col-graph", "rect": {"height": 26, "width": 32, "x": 305, "y": 106},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "col-subject", "rect": {"height": 17, "width": 406, "x": 337, "y": 111},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "4px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "main Catalog: lazy load product images"
+    },
+    {
+      "classes": "col-author truncate", "rect": {"height": 16, "width": 150, "x": 743, "y": 111},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Priya Nair"
+    },
+    {
+      "classes": "col-date truncate", "rect": {"height": 16, "width": 110, "x": 893, "y": 111},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "2 d ago"
+    },
+    {
+      "classes": "col-hash mono", "rect": {"height": 15, "width": 82, "x": 1003, "y": 112},
+      "styles": {
+        "border-bottom-color": "rgb(168, 173, 189)", "border-left-color": "rgb(168, 173, 189)",
+        "border-right-color": "rgb(168, 173, 189)", "border-top-color": "rgb(168, 173, 189)",
+        "color": "rgb(168, 173, 189)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "11.5px", "font-weight": "400", "padding-left": "12px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "a7d619c3"
+    },
+    {
+      "classes": "row", "rect": {"height": 26, "width": 790, "x": 305, "y": 132},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-right": "10px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "origin/main Docs: explain the cart API Maya Chen 6 d ago bf3c5e06"
+    },
+    {
+      "classes": "col-graph", "rect": {"height": 26, "width": 32, "x": 305, "y": 132},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "col-subject", "rect": {"height": 17, "width": 406, "x": 337, "y": 137},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "4px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "origin/main Docs: explain the cart API"
+    },
+    {
+      "classes": "col-author truncate", "rect": {"height": 16, "width": 150, "x": 743, "y": 137},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Maya Chen"
+    },
+    {
+      "classes": "col-date truncate", "rect": {"height": 16, "width": 110, "x": 893, "y": 137},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "6 d ago"
+    },
+    {
+      "classes": "col-hash mono", "rect": {"height": 15, "width": 82, "x": 1003, "y": 138},
+      "styles": {
+        "border-bottom-color": "rgb(168, 173, 189)", "border-left-color": "rgb(168, 173, 189)",
+        "border-right-color": "rgb(168, 173, 189)", "border-top-color": "rgb(168, 173, 189)",
+        "color": "rgb(168, 173, 189)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "11.5px", "font-weight": "400", "padding-left": "12px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "bf3c5e06"
+    },
+    {
+      "classes": "row", "rect": {"height": 26, "width": 790, "x": 305, "y": 158},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-right": "10px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "fix/tax-rates origin/fix/tax-rates Tax: EU VAT rates Sam Rivera Sep 29, 2026 73"
+    },
+    {
+      "classes": "col-graph", "rect": {"height": 26, "width": 32, "x": 305, "y": 158},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "col-subject", "rect": {"height": 17, "width": 406, "x": 337, "y": 163},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "4px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "fix/tax-rates origin/fix/tax-rates Tax: EU VAT rates"
+    },
+    {
+      "classes": "col-author truncate", "rect": {"height": 16, "width": 150, "x": 743, "y": 163},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Sam Rivera"
+    },
+    {
+      "classes": "col-date truncate", "rect": {"height": 16, "width": 110, "x": 893, "y": 163},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Sep 29, 2026"
+    },
+    {
+      "classes": "col-hash mono", "rect": {"height": 15, "width": 82, "x": 1003, "y": 164},
+      "styles": {
+        "border-bottom-color": "rgb(168, 173, 189)", "border-left-color": "rgb(168, 173, 189)",
+        "border-right-color": "rgb(168, 173, 189)", "border-top-color": "rgb(168, 173, 189)",
+        "color": "rgb(168, 173, 189)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "11.5px", "font-weight": "400", "padding-left": "12px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "732b9d78"
+    },
+    {
+      "classes": "row", "rect": {"height": 26, "width": 790, "x": 305, "y": 184},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-right": "10px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Cart: discount codes and totals rounded to cents Leo Park Sep 26, 2026 a16030fe"
+    },
+    {
+      "classes": "col-graph", "rect": {"height": 26, "width": 32, "x": 305, "y": 184},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "col-subject", "rect": {"height": 16, "width": 406, "x": 337, "y": 189},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "4px", "padding-left": "4px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Cart: discount codes and totals rounded to cents"
+    },
+    {
+      "classes": "col-author truncate", "rect": {"height": 16, "width": 150, "x": 743, "y": 189},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Leo Park"
+    },
+    {
+      "classes": "col-date truncate", "rect": {"height": 16, "width": 110, "x": 893, "y": 189},
+      "styles": {
+        "border-bottom-color": "rgb(108, 112, 126)", "border-left-color": "rgb(108, 112, 126)",
+        "border-right-color": "rgb(108, 112, 126)", "border-top-color": "rgb(108, 112, 126)",
+        "color": "rgb(108, 112, 126)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "overflow": "hidden", "padding-left": "12px", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "div", "text": "Sep 26, 2026"
+    },
+    {
+      "classes": "col-hash mono", "rect": {"height": 15, "width": 82, "x": 1003, "y": 190},
+      "styles": {
+        "border-bottom-color": "rgb(168, 173, 189)", "border-left-color": "rgb(168, 173, 189)",
+        "border-right-color": "rgb(168, 173, 189)", "border-top-color": "rgb(168, 173, 189)",
+        "color": "rgb(168, 173, 189)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "11.5px", "font-weight": "400", "padding-left": "12px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "a16030fe"
+    },
+    {
+      "classes": "row", "rect": {"height": 26, "width": 790, "x": 305, "y": 210},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400", "padding-right": "10px", "white-space": "nowrap"
+      },
+      "tag": "div", "text": "v1.1.0 Release 1.1.0 Sam Rivera Sep 20, 2026 67472743"
+    },
+    {
+      "classes": "col-graph", "rect": {"height": 26, "width": 32, "x": 305, "y": 210},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "white-space": "nowrap"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 100, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "log rows", "piece": "1 of 3", "screen": "log", "selector": [".log-view .row", ".log-view .row > div"]
+}

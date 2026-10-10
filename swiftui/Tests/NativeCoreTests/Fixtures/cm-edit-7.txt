@@ -1,0 +1,289 @@
+C	random 93	plain	0
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	12,12;15,15	0
+>	indentLess
+>	deleteCharBackward
+>	duplicate
+>	insertNewlineAndIndent
+>	type:"\""
+>	deleteBracketPair
+>	deleteCharBackward
+>	undo
+=	"if (x) {\n(1 2);\n(1 2);\n(1 2);\n}\n"
+s	16,16;25,25	0
+C	random 94	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	2,2	0
+>	wait:700
+>	moveLineDown
+>	type:"("
+>	duplicate
+>	redo
+>	duplicate
+>	moveLineDown
+>	undo
+=	"  y(1, 2);\nif() (x) {\nif() (x) {\nif() (x) {\n}\n"
+s	36,36	0
+C	random 95	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	15,22	0
+>	moveLineDown
+>	indentLess
+>	type:"\""
+>	type:"\""
+>	type:"]"
+>	type:"]"
+>	deleteCharBackward
+>	type:"\""
+=	"if (x) {\n\ny(1,\"\"]\"\""
+s	18,18	0
+C	random 96	plain	0
+D	"a b c\n  d e\n"
+S	9,9	0
+>	type:"["
+>	deleteGroupBackward
+>	insertNewlineAndIndent
+>	selectLine
+>	deleteBracketPair
+>	undo
+>	type:" "
+>	undo
+=	"a b c\n  d] e\n"
+s	9,9	0
+C	random 97	plain	4
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	16,16	0
+>	deleteGroupBackward
+>	redo
+>	type:" "
+>	type:"}"
+>	moveLineDown
+>	duplicate
+>	deleteCharForward
+>	type:"'"
+=	"  { id: \"mug\", price: 12 },\nconst products  } [\nconst products  }''[\n  { id: \"tee\", price: 2
+=+	4 },\n];\n"
+s	66,66	0
+C	random 98	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	13,13	0
+>	undo
+>	toggleComment
+>	type:"a"
+>	wait:700
+>	selectLine
+>	type:"a"
+>	duplicate
+>	duplicate
+=	"if (x) {\na}\na}\na}\n"
+s	16,16	0
+C	random 99	plain	0
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	3,3;6,6	0
+>	redo
+>	type:"\""
+>	type:"]"
+>	type:")"
+>	type:"a"
+>	type:")"
+>	type:")"
+>	type:"z"
+=	"fun\"])a))zcti\"])a))zon f() {\n  const a = 1;\n  return a;\n}\n"
+s	10,10;20,20	0
+C	random 100	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	1,1;4,4	0
+>	undo
+>	deleteCharForward
+>	duplicate
+>	type:"'"
+>	deleteBracketPair
+>	type:"["
+>	type:"("
+>	type:"["
+=	"i () {\ni'[([])] () {\ni ('[([])]) {\n  y(1, 2);\n}\n"
+s	12,12;28,28	0
+C	random 101	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	3,3	0
+>	type:"\""
+>	deleteCharForward
+>	type:"{"
+>	indentLess
+>	type:"]"
+>	type:"["
+>	deleteGroupBackward
+>	toggleComment
+=	"if (x) {\n  y(1, 2);\n}\n"
+s	3,3	0
+C	random 102	plain	0
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	3,3;6,6	0
+>	deleteBracketPair
+>	undo
+>	type:")"
+>	type:"'"
+>	type:"]"
+>	indentMore
+>	type:"b"
+>	insertNewlineAndIndent
+=	"\tif )']b\n\t'(x))']b\n\t' {\n  y(1, 2);\n}\n"
+s	10,10;20,20	0
+C	random 103	plain	4
+D	"a b c\n  d e\n"
+S	0,0;3,3	0
+>	type:"'"
+>	selectLine
+>	type:"\""
+>	type:"{"
+>	type:"z"
+>	type:"("
+>	insertNewlineAndIndent
+>	type:"["
+=	"\"{z(\n[]\n)}\"  d e\n"
+s	6,6	0
+C	random 104	plain	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	27,27;30,30	0
+>	duplicate
+>	type:"'"
+>	deleteCharBackward
+>	deleteBracketPair
+>	type:" "
+>	type:"'"
+>	type:"'"
+>	type:"z"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id:  ''z\"mug\", price: 12 },\n  { id: \"mu 
+=+	''zg\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	59,59;94,94	0
+C	random 105	plain	0
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	6,6	0
+>	deleteCharBackward
+>	indentMore
+>	toggleComment
+>	type:"'"
+>	selectLine
+>	indentLess
+>	type:"("
+>	type:"["
+=	"([const'products = [\n])  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	2,21	0
+C	random 106	plain	2
+D	"a b c\n  d e\n"
+S	11,11;12,12	0
+>	type:"]"
+>	moveLineDown
+>	indentMore
+>	deleteBracketPair
+>	type:"{"
+>	indentMore
+>	type:"\""
+>	moveLineDown
+=	"a b c\n      d e]{\"\"}\n    ]{\"\"}"
+s	18,18;28,28	0
+C	random 107	plain	4
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	77,77	0
+>	insertNewlineAndIndent
+>	type:"["
+>	type:"["
+>	type:"{"
+>	toggleComment
+>	indentMore
+>	type:"z"
+>	type:"["
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n    [[{z[]}]]
+=+	\n"
+s	87,87	0
+C	random 108	plain	0
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	1,48	0
+>	type:"a"
+>	moveLineDown
+>	type:"'"
+>	indentMore
+>	type:"\""
+>	selectLine
+>	deleteGroupBackward
+>	type:"]"
+=	"];\n]"
+s	4,4	0
+C	random 109	plain	4
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	11,11	0
+>	type:"z"
+>	insertNewlineAndIndent
+>	type:"["
+>	toggleComment
+>	type:" "
+>	type:" "
+>	deleteCharBackward
+>	type:"]"
+=	"const produz\n[ ]cts = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	16,16	0
+C	random 110	plain	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	13,13	0
+>	copyLineUp
+>	selectNextOccurrence
+>	selectNextOccurrence
+>	indentLess
+>	type:"]"
+>	type:"]"
+>	indentLess
+>	type:"\""
+=	"function f() ]]\"\"{\nfunction f() {\n  const a = 1;\n  return a;\n}\n"
+s	16,16	0
+C	random 111	plain	0
+D	"a b c\n  d e\n"
+S	3,3	0
+>	redo
+>	moveLineDown
+>	deleteBracketPair
+>	toggleComment
+>	deleteBracketPair
+>	type:"]"
+>	type:"z"
+>	wait:700
+=	"  d e\na b]z c\n"
+s	11,11	0
+C	random 112	plain	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	36,35	0
+>	type:"("
+>	redo
+>	type:"\""
+>	type:"["
+>	indentMore
+>	redo
+>	type:"["
+>	type:"]"
+=	"const products = [\n    { id: \"mug\", p(\"[[]]]\")ice: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+s	42,42	0
+C	random 113	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	3,3	0
+>	type:"["
+>	type:"}"
+>	type:" "
+>	deleteCharBackward
+>	moveLineDown
+>	type:"'"
+>	type:"b"
+>	type:" "
+=	"  y(1, 2);\nif [}'b '(x) {\n}\n"
+s	19,19	0
+C	random 114	plain	0
+D	"a b c\n  d e\n"
+S	9,5	0
+>	insertNewlineAndIndent
+>	type:" "
+>	type:"{"
+>	undo
+>	type:"\""
+>	type:"["
+>	type:"}"
+>	wait:700
+=	"a b c\"[}]\" e\n"
+s	8,8	0

@@ -1,0 +1,138 @@
+{
+  "features": [
+    {
+      "id": "interactive-rebase", "name": "Interactive rebase", "usage": "Interactive-Rebase.md",
+      "scenario": "interactive-rebase",
+      "check": "The list of commits to reorder, reword, squash, edit and drop",
+      "native": "missing"
+    },
+    {
+      "id": "worktrees", "name": "Worktrees", "usage": "Worktrees.md", "scenario": "branches-sidebar",
+      "check": "The Worktrees section and the New Worktree dialog",
+      "native": "missing"
+    },
+    {
+      "id": "submodules", "name": "Submodules", "usage": "Submodules.md", "scenario": "submodules",
+      "check": "The submodule row with new commits and modified content; init, update, add, remove",
+      "native": "missing"
+    },
+    {
+      "id": "git-lfs", "name": "Git LFS", "usage": "Git-LFS.md", "scenario": "git-lfs",
+      "check": "The LFS tag in Changes and the sizes in the diff",
+      "native": "missing"
+    },
+    {
+      "id": "github", "name": "GitHub account", "usage": "GitHub.md", "scenario": "github",
+      "check": "Sign in, Share Project on GitHub, Sync Fork and gists",
+      "native": "partial",
+      "gaps": [
+        "Git > GitHub: Open on GitHub, Copy GitHub Link, Create Pull Request and View Pull Requests",
+        "Share Project, Sync Fork and Create Gist not tried against GitHub yet (a real token, the network)"
+      ]
+    },
+    {
+      "id": "git-console", "name": "Git Console", "usage": "Git-Console.md", "scenario": "git-console",
+      "check": "Every git command the app ran, with its output",
+      "native": "missing"
+    },
+    {
+      "id": "navigation", "name": "Back and Forward", "usage": "Navigation.md", "scenario": "back-forward",
+      "check": "Back and Forward across files, diffs and commits",
+      "native": "missing",
+      "gaps": ["the header's arrows are drawn (disabled) but do nothing"]
+    },
+    {
+      "id": "terminal", "name": "Integrated terminal", "usage": "Terminal.md", "scenario": "terminal",
+      "check": "The terminal panel with its header and several terminals",
+      "native": "partial",
+      "gaps": [
+        "one terminal: the shell menu, Split, Move into Editor Area, the terminal list and renaming do nothing",
+        "selection, find, file links, the scrollbar, dropping files and terminals in editor tabs",
+        "Settings, Terminal (font, cursor, scrollback) and the Shelf tab's view"
+      ]
+    },
+    {
+      "id": "scripts", "name": "Scripts tool window", "usage": "Scripts.md", "scenario": "scripts",
+      "check": "The scripts of package.json with run buttons and the Node version",
+      "native": "missing"
+    },
+    {
+      "id": "menus", "name": "Menu bar", "usage": "Menus.md", "scenario": "menu-bar",
+      "check": "File, Edit, View, Code, Git, Window and Help with their keys",
+      "native": "missing",
+      "gaps": ["the native app has SwiftUI's default menus only"]
+    },
+    {
+      "id": "settings", "name": "Settings", "usage": "Settings.md", "scenario": "settings",
+      "check": "The Settings dialog with its sections",
+      "native": "partial",
+      "gaps": [
+        "only Theme, the color themes and Commit box change anything; the other rows show their values read-only",
+        "the Keyboard Shortcuts list, the GitHub sign-in, the commit identity and templates, the font previews",
+        "Reset to Defaults asks with a plain macOS alert; the dialog cannot be dragged"
+      ]
+    },
+    {
+      "id": "settings-search", "name": "Search in Settings", "usage": "Settings-Search.md",
+      "scenario": "settings-search",
+      "check": "Matching sections and highlighted matches",
+      "native": "partial",
+      "gaps": ["keyboard shortcuts are not searched", "highlights are a tint, not the Custom Highlight API's"]
+    },
+    {
+      "id": "color-themes", "name": "Color themes", "usage": "Color-Themes.md", "scenario": "color-themes",
+      "check": "Monokai Charcoal in dark mode: panels, code and diffs in its colors",
+      "native": "done"
+    },
+    {
+      "id": "rounded-panels", "name": "Rounded panels", "usage": "Rounded-Panels.md", "scenario": "rounded-panels",
+      "check": "Rounded panels with gaps between them",
+      "native": "missing"
+    },
+    {
+      "id": "updates", "name": "Updates and release channels", "usage": "Updates.md", "scenario": "update-dialog",
+      "check": "Update available in the status bar and the update window",
+      "native": "missing"
+    },
+    {
+      "id": "status-bar", "name": "Status bar and help links", "usage": "Status-Bar-and-Help.md",
+      "scenario": "changes",
+      "check": "Repository, branch, sync and changes on the left; bell, star, bug, memory and brush on the right",
+      "native": "partial",
+      "gaps": ["the items do nothing when clicked", "the selection count next to the cursor position"]
+    },
+    {
+      "id": "memory", "name": "Memory readout and memory log", "usage": "Memory-Use.md",
+      "scenario": "memory-breakdown",
+      "check": "The readout in the status bar and its breakdown",
+      "native": "partial",
+      "gaps": ["the breakdown popup", "the memory log and the memory marks in Settings"]
+    },
+    {
+      "id": "clear-cache", "name": "Clear Cache", "usage": "Clear-Cache.md", "scenario": "memory-breakdown",
+      "check": "The brush right of the readout: the window blinks and comes back as it was",
+      "native": "missing",
+      "gaps": ["the brush is drawn but does nothing (the native app has no WebKit cache to clear)"]
+    },
+    {
+      "id": "mcp", "name": "MCP server and command line tool", "usage": "MCP-and-CLI.md", "scenario": "automation",
+      "check": "Settings > Automation; git-manager cli status and the MCP tools",
+      "native": "partial",
+      "gaps": [
+        "tools: the native ones and the current app's read-only git tools; not yet the git write, files,",
+        "search, scripts, performance and UI tools",
+        "no Available MCP Tools dialog (tool switches) and no activity list",
+        "no command line tool of its own: the current app's reaches it with HOME=~/.gitmanager-native (no Install)"
+      ]
+    },
+    {
+      "id": "mergetool", "name": "git mergetool mode", "usage": "Git-Mergetool.md", "scenario": "mergetool-mode",
+      "check": "git mergetool opens a merge window per conflicted file",
+      "native": "partial",
+      "gaps": [
+        "the native app takes the four files as -mergeBase, -mergeLocal, -mergeRemote and -mergeMerged, not the",
+        "current app's `merge BASE LOCAL REMOTE MERGED` command line, and installs no mergetool settings"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "cm-diffFold", "rect": {"height": 22, "width": 234, "x": 709, "y": 713},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(140, 144, 153)", "border-right-color": "rgb(140, 144, 153)",
+        "border-top-color": "rgb(30, 31, 34)", "border-top-width": "1px", "color": "rgb(140, 144, 153)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11.5px", "font-weight": "400", "gap": "8px", "line-height": "14.375px", "padding-bottom": "2px",
+        "padding-left": "8px", "padding-right": "8px", "padding-top": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "10 lines14 unchanged lines"
+    },
+    {
+      "classes": "cm-diffFoldStep", "rect": {"height": 16, "width": 68, "x": 717, "y": 716},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)", "border-radius": "4px",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "gap": "3px", "line-height": "14.375px", "padding-bottom": "1px", "padding-left": "6px",
+        "padding-right": "6px", "padding-top": "1px", "text-align": "center", "white-space": "pre"
+      },
+      "tag": "button", "text": "10 lines"
+    },
+    {
+      "classes": "", "rect": {"height": 12, "width": 12, "x": 723, "y": 718},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "overflow": "hidden", "text-align": "center",
+        "white-space": "pre"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 3, "width": 6, "x": 726, "y": 723},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "text-align": "center", "white-space": "pre"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "cm-diffFoldLabel", "rect": {"height": 16, "width": 142, "x": 793, "y": 716},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "padding-bottom": "1px", "padding-left": "4px",
+        "padding-right": "4px", "padding-top": "1px", "white-space": "pre"
+      },
+      "tag": "span", "text": "14 unchanged lines"
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 64, "width": 1, "x": 715, "y": 569},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 22, "width": 1, "x": 715, "y": 713},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 406, "x": 924, "y": 633},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "/** Loaded when the product scrolls into view. */"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 398, "x": 930, "y": 632},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "/** Loaded when the product scrolls into view. */"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 406, "x": 924, "y": 649},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "lazy?: boolean;"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 133, "x": 930, "y": 648},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "lazy?: boolean;"
+    },
+    {
+      "classes": "cm-diffFold", "rect": {"height": 22, "width": 406, "x": 924, "y": 713},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(30, 31, 34)", "border-bottom-width": "1px",
+        "border-left-color": "rgb(140, 144, 153)", "border-right-color": "rgb(140, 144, 153)",
+        "border-top-color": "rgb(30, 31, 34)", "border-top-width": "1px", "color": "rgb(140, 144, 153)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "11.5px", "font-weight": "400", "gap": "8px", "line-height": "14.375px", "padding-bottom": "2px",
+        "padding-left": "8px", "padding-right": "8px", "padding-top": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "10 lines14 unchanged lines"
+    },
+    {
+      "classes": "cm-diffFoldStep", "rect": {"height": 16, "width": 68, "x": 932, "y": 716},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)", "border-radius": "4px",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "gap": "3px", "line-height": "14.375px", "padding-bottom": "1px", "padding-left": "6px",
+        "padding-right": "6px", "padding-top": "1px", "text-align": "center", "white-space": "pre"
+      },
+      "tag": "button", "text": "10 lines"
+    },
+    {
+      "classes": "", "rect": {"height": 12, "width": 12, "x": 938, "y": 718},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "overflow": "hidden", "text-align": "center",
+        "white-space": "pre"
+      },
+      "tag": "svg", "text": ""
+    },
+    {
+      "classes": "", "rect": {"height": 3, "width": 6, "x": 941, "y": 723},
+      "styles": {
+        "border-bottom-color": "rgb(53, 116, 240)", "border-left-color": "rgb(53, 116, 240)",
+        "border-right-color": "rgb(53, 116, 240)", "border-top-color": "rgb(53, 116, 240)",
+        "color": "rgb(53, 116, 240)", "display": "inline",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "text-align": "center", "white-space": "pre"
+      },
+      "tag": "path", "text": ""
+    },
+    {
+      "classes": "cm-diffFoldLabel", "rect": {"height": 16, "width": 314, "x": 1008, "y": 716},
+      "styles": {
+        "border-bottom-color": "rgb(140, 144, 153)", "border-left-color": "rgb(140, 144, 153)",
+        "border-right-color": "rgb(140, 144, 153)", "border-top-color": "rgb(140, 144, 153)",
+        "color": "rgb(140, 144, 153)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "11.5px",
+        "font-weight": "400", "line-height": "14.375px", "padding-bottom": "1px", "padding-left": "4px",
+        "padding-right": "4px", "padding-top": "1px", "white-space": "pre"
+      },
+      "tag": "span", "text": "14 unchanged lines"
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 96, "width": 1, "x": 930, "y": 569},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-gm-indentGuide", "rect": {"height": 22, "width": 1, "x": 930, "y": 713},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "color(srgb 0.372549 0.388235 0.419608 / 0.38)", "border-left-width": "1px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 80, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "commit diff widgets", "piece": "1 of 1", "screen": "log",
+  "selector": [
+    ".details .cm-diffFold", ".details .cm-diffFold *", ".details .cm-changedLine", ".details .cm-changedText",
+    ".details .cm-gm-indentGuide"
+  ]
+}

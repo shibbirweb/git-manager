@@ -1,0 +1,39 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "split", "rect": {"height": 5, "width": 790, "x": 305, "y": 488},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "margin-top": "-2px"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "details-pane", "rect": {"height": 333, "width": 790, "x": 305, "y": 491},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400"
+      },
+      "tag": "div", "text": "Catalog: lazy load product images Open in Tab Author Priya Nair <priya.nair@ac"
+    },
+    {
+      "classes": "details", "rect": {"height": 333, "width": 790, "x": 305, "y": 491},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400"
+      },
+      "tag": "div", "text": "Catalog: lazy load product images Open in Tab Author Priya Nair <priya.nair@ac"
+    }
+  ],
+  "limit": 10, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "log split", "piece": "1 of 1", "screen": "log",
+  "selector": [".log-view .split", ".log-view .details-pane", ".log-view .details"]
+}

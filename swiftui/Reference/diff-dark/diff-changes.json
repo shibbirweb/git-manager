@@ -1,0 +1,300 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront, diff of src/cart.ts",
+  "elements": [
+    {
+      "classes": "cm-line cm-changedLine", "rect": {"height": 16, "width": 601, "x": 348, "y": 518},
+      "styles": {
+        "background-color": "rgba(53, 116, 240, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "return Math.round(discounted * 100) / 100;"
+    },
+    {
+      "classes": "cm-merge-revert", "rect": {"height": 462, "width": 24, "x": 688, "y": 134},
+      "styles": {
+        "background-color": "rgb(37, 39, 42)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(57, 59, 64)", "border-left-width": "1px", "border-right-color": "rgb(57, 59, 64)",
+        "border-right-width": "1px", "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 208},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "/** Sets the quantity of a line; zero removes it. */"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 421, "x": 761, "y": 207},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "/** Sets the quantity of a line; zero removes it. */"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 224},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "setQuantity(productId: string, quantity: number): void {"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 452, "x": 761, "y": 223},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "setQuantity(productId: string, quantity: number): void {"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 240},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "if (quantity <= 0) {"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 187, "x": 761, "y": 239},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "if (quantity <= 0) {"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 256},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "this.remove(productId);"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 226, "x": 761, "y": 255},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "this.remove(productId);"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 272},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "return;"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 101, "x": 761, "y": 271},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "return;"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 288},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "}"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 39, "x": 761, "y": 287},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "}"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 304},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "const line = this.lines.find((entry) => entry.product.id === productId);"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 593, "x": 761, "y": 303},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "const line = this.lines.find((entry) => entry.product.id === productId);"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 320},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "if (line) {"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 117, "x": 761, "y": 319},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "if (line) {"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 336},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "line.quantity = quantity;"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 242, "x": 761, "y": 335},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "line.quantity = quantity;"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 352},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "}"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 39, "x": 761, "y": 351},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "}"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 368},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": "}"
+    },
+    {
+      "classes": "cm-changedText", "rect": {"height": 17, "width": 23, "x": 761, "y": 367},
+      "styles": {
+        "border-bottom-color": "rgb(223, 225, 229)", "border-left-color": "rgb(223, 225, 229)", "border-radius": "2px",
+        "border-right-color": "rgb(223, 225, 229)", "border-top-color": "rgb(223, 225, 229)",
+        "color": "rgb(223, 225, 229)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "white-space": "pre"
+      },
+      "tag": "span", "text": "}"
+    },
+    {
+      "classes": "cm-line cm-diffAdded cm-changedLine", "rect": {"height": 16, "width": 601, "x": 755, "y": 384},
+      "styles": {
+        "background-color": "rgba(84, 170, 84, 0.2)", "border-bottom-color": "rgb(223, 225, 229)",
+        "border-left-color": "rgb(223, 225, 229)", "border-right-color": "rgb(223, 225, 229)",
+        "border-top-color": "rgb(223, 225, 229)", "color": "rgb(223, 225, 229)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px", "padding-left": "6px",
+        "padding-right": "2px", "white-space": "pre"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 60, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "diff changes", "piece": "1 of 2", "screen": "diff",
+  "selector": [
+    ".diff-view .cm-changedLine", ".diff-view .cm-changedText", ".diff-view .cm-deletedChunk",
+    ".diff-view .cm-collapsedLines", ".diff-view .cm-merge-revert"
+  ]
+}

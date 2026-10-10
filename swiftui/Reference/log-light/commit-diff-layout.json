@@ -1,0 +1,110 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "cm-mergeView", "rect": {"height": 275, "width": 429, "x": 666, "y": 549},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400"
+      },
+      "tag": "div", "text": "9912345678export interface Product { id: string; name: string; price: number;"
+    },
+    {
+      "classes": "cm-editor cm-merge-a", "rect": {"height": 200, "width": 214, "x": 666, "y": 549},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400"
+      },
+      "tag": "div", "text": "9912345678export interface Product { id: string; name: string; price: number;"
+    },
+    {
+      "classes": "cm-scroller", "rect": {"height": 200, "width": 214, "x": 666, "y": 549},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": "9912345678export interface Product { id: string; name: string; price: number;"
+    },
+    {
+      "classes": "cm-gutters cm-gutters-before", "rect": {"height": 190, "width": 43, "x": 666, "y": 549},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(174, 179, 194)",
+        "border-left-color": "rgb(174, 179, 194)", "border-right-color": "rgb(174, 179, 194)",
+        "border-top-color": "rgb(174, 179, 194)", "color": "rgb(174, 179, 194)", "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": "9912345678"
+    },
+    {
+      "classes": "cm-editor cm-merge-b", "rect": {"height": 200, "width": 214, "x": 881, "y": 549},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "flex",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400"
+      },
+      "tag": "div", "text": "9912345678910export interface Product { id: string; name: string; price: numb"
+    },
+    {
+      "classes": "cm-scroller", "rect": {"height": 200, "width": 214, "x": 881, "y": 549},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": "9912345678910export interface Product { id: string; name: string; price: numb"
+    },
+    {
+      "classes": "cm-gutters cm-gutters-before", "rect": {"height": 190, "width": 43, "x": 881, "y": 549},
+      "styles": {
+        "background-color": "rgb(255, 255, 255)", "border-bottom-color": "rgb(174, 179, 194)",
+        "border-left-color": "rgb(174, 179, 194)", "border-right-color": "rgb(174, 179, 194)",
+        "border-top-color": "rgb(174, 179, 194)", "color": "rgb(174, 179, 194)", "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "13px", "font-weight": "400", "line-height": "16.25px"
+      },
+      "tag": "div", "text": "9912345678910"
+    },
+    {
+      "classes": "cm-scroll-markers", "rect": {"height": 275, "width": 12, "x": 1083, "y": 549},
+      "styles": {
+        "background-color": "rgb(242, 243, 245)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(223, 225, 229)", "border-left-width": "1px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400"
+      },
+      "tag": "div", "text": ""
+    },
+    {
+      "classes": "cm-scroll-mark cm-scroll-mark-added", "rect": {"height": 46, "width": 7, "x": 1086, "y": 665},
+      "styles": {
+        "background-color": "rgb(108, 191, 112)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "1px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif", "font-size": "13px",
+        "font-weight": "400"
+      },
+      "tag": "div", "text": ""
+    }
+  ],
+  "limit": 30, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "commit diff layout", "piece": "1 of 1", "screen": "log",
+  "selector": [
+    ".details .cm-mergeView", ".details .cm-editor", ".details .cm-gutters", ".details .cm-scroller",
+    ".details .cm-scroll-markers", ".details .cm-scroll-markers *"
+  ]
+}

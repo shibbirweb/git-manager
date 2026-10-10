@@ -1,0 +1,295 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 67, "x": 616, "y": 350},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Quiet Light"
+    },
+    {
+      "classes": "option", "rect": {"height": 28, "width": 230, "x": 538, "y": 372},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)", "border-radius": "5px",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "8px", "padding-bottom": "3px", "padding-left": "6px",
+        "padding-right": "6px", "padding-top": "3px"
+      },
+      "tag": "div", "text": "fn Aa Ayu Light"
+    },
+    {
+      "classes": "swatch", "rect": {"height": 22, "width": 64, "x": 544, "y": 375},
+      "styles": {
+        "background-color": "rgb(252, 252, 252)", "border-bottom-color": "rgb(231, 232, 233)",
+        "border-bottom-width": "1px", "border-left-color": "rgb(231, 232, 233)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "rgb(231, 232, 233)", "border-right-width": "1px",
+        "border-top-color": "rgb(231, 232, 233)", "border-top-width": "1px", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "gap": "4px", "line-height": "10px", "padding-left": "4px",
+        "padding-right": "4px"
+      },
+      "tag": "span", "text": "fn Aa"
+    },
+    {
+      "classes": "sample", "rect": {"height": 10, "width": 32, "x": 549, "y": 381},
+      "styles": {
+        "border-bottom-color": "rgb(92, 97, 102)", "border-left-color": "rgb(92, 97, 102)",
+        "border-right-color": "rgb(92, 97, 102)", "border-top-color": "rgb(92, 97, 102)", "color": "rgb(92, 97, 102)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fn Aa"
+    },
+    {
+      "classes": "kw", "rect": {"height": 13, "width": 12, "x": 549, "y": 379},
+      "styles": {
+        "border-bottom-color": "rgb(250, 141, 62)", "border-left-color": "rgb(250, 141, 62)",
+        "border-right-color": "rgb(250, 141, 62)", "border-top-color": "rgb(250, 141, 62)",
+        "color": "rgb(250, 141, 62)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fn"
+    },
+    {
+      "classes": "sel", "rect": {"height": 13, "width": 14, "x": 567, "y": 379},
+      "styles": {
+        "background-color": "rgb(207, 223, 245)", "border-bottom-color": "rgb(92, 97, 102)",
+        "border-left-color": "rgb(92, 97, 102)", "border-right-color": "rgb(92, 97, 102)",
+        "border-top-color": "rgb(92, 97, 102)", "color": "rgb(92, 97, 102)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "padding-left": "1px", "padding-right": "1px",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Aa"
+    },
+    {
+      "classes": "bars", "rect": {"height": 12, "width": 16, "x": 587, "y": 380},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "gap": "2px", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "bar keyword", "rect": {"height": 12, "width": 4, "x": 587, "y": 380},
+      "styles": {
+        "background-color": "rgb(250, 141, 62)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "2px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "bar string", "rect": {"height": 12, "width": 4, "x": 593, "y": 380},
+      "styles": {
+        "background-color": "rgb(134, 179, 0)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "2px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "bar accent", "rect": {"height": 12, "width": 4, "x": 599, "y": 380},
+      "styles": {
+        "background-color": "rgb(189, 113, 47)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "2px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 56, "x": 616, "y": 378},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Ayu Light"
+    },
+    {
+      "classes": "option", "rect": {"height": 28, "width": 230, "x": 538, "y": 400},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)", "border-radius": "5px",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "8px", "padding-bottom": "3px", "padding-left": "6px",
+        "padding-right": "6px", "padding-top": "3px"
+      },
+      "tag": "div", "text": "fn Aa Catppuccin Latte"
+    },
+    {
+      "classes": "swatch", "rect": {"height": 22, "width": 64, "x": 544, "y": 403},
+      "styles": {
+        "background-color": "rgb(239, 241, 245)", "border-bottom-color": "rgb(204, 208, 218)",
+        "border-bottom-width": "1px", "border-left-color": "rgb(204, 208, 218)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "rgb(204, 208, 218)", "border-right-width": "1px",
+        "border-top-color": "rgb(204, 208, 218)", "border-top-width": "1px", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "gap": "4px", "line-height": "10px", "padding-left": "4px",
+        "padding-right": "4px"
+      },
+      "tag": "span", "text": "fn Aa"
+    },
+    {
+      "classes": "sample", "rect": {"height": 10, "width": 32, "x": 549, "y": 409},
+      "styles": {
+        "border-bottom-color": "rgb(76, 79, 105)", "border-left-color": "rgb(76, 79, 105)",
+        "border-right-color": "rgb(76, 79, 105)", "border-top-color": "rgb(76, 79, 105)", "color": "rgb(76, 79, 105)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fn Aa"
+    },
+    {
+      "classes": "kw", "rect": {"height": 13, "width": 12, "x": 549, "y": 407},
+      "styles": {
+        "border-bottom-color": "rgb(136, 57, 239)", "border-left-color": "rgb(136, 57, 239)",
+        "border-right-color": "rgb(136, 57, 239)", "border-top-color": "rgb(136, 57, 239)",
+        "color": "rgb(136, 57, 239)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fn"
+    },
+    {
+      "classes": "sel", "rect": {"height": 13, "width": 14, "x": 567, "y": 407},
+      "styles": {
+        "background-color": "rgb(205, 207, 216)", "border-bottom-color": "rgb(76, 79, 105)",
+        "border-left-color": "rgb(76, 79, 105)", "border-right-color": "rgb(76, 79, 105)",
+        "border-top-color": "rgb(76, 79, 105)", "color": "rgb(76, 79, 105)", "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "padding-left": "1px", "padding-right": "1px",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Aa"
+    },
+    {
+      "classes": "bars", "rect": {"height": 12, "width": 16, "x": 587, "y": 408},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "gap": "2px", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "bar keyword", "rect": {"height": 12, "width": 4, "x": 587, "y": 408},
+      "styles": {
+        "background-color": "rgb(136, 57, 239)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "2px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "bar string", "rect": {"height": 12, "width": 4, "x": 593, "y": 408},
+      "styles": {
+        "background-color": "rgb(64, 160, 43)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "2px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "bar accent", "rect": {"height": 12, "width": 4, "x": 599, "y": 408},
+      "styles": {
+        "background-color": "rgb(136, 57, 239)", "border-bottom-color": "rgb(30, 31, 34)",
+        "border-left-color": "rgb(30, 31, 34)", "border-radius": "2px", "border-right-color": "rgb(30, 31, 34)",
+        "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)", "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px"
+      },
+      "tag": "span", "text": ""
+    },
+    {
+      "classes": "name truncate", "rect": {"height": 16, "width": 104, "x": 616, "y": 406},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "overflow": "hidden", "text-overflow": "ellipsis",
+        "white-space": "nowrap"
+      },
+      "tag": "span", "text": "Catppuccin Latte"
+    },
+    {
+      "classes": "option", "rect": {"height": 28, "width": 230, "x": 538, "y": 428},
+      "styles": {
+        "border-bottom-color": "rgb(30, 31, 34)", "border-left-color": "rgb(30, 31, 34)", "border-radius": "5px",
+        "border-right-color": "rgb(30, 31, 34)", "border-top-color": "rgb(30, 31, 34)", "color": "rgb(30, 31, 34)",
+        "display": "flex", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "13px", "font-weight": "400", "gap": "8px", "padding-bottom": "3px", "padding-left": "6px",
+        "padding-right": "6px", "padding-top": "3px"
+      },
+      "tag": "div", "text": "fn Aa Gruvbox Light"
+    },
+    {
+      "classes": "swatch", "rect": {"height": 22, "width": 64, "x": 544, "y": 431},
+      "styles": {
+        "background-color": "rgb(251, 241, 199)", "border-bottom-color": "rgb(213, 196, 161)",
+        "border-bottom-width": "1px", "border-left-color": "rgb(213, 196, 161)", "border-left-width": "1px",
+        "border-radius": "4px", "border-right-color": "rgb(213, 196, 161)", "border-right-width": "1px",
+        "border-top-color": "rgb(213, 196, 161)", "border-top-width": "1px", "color": "rgb(30, 31, 34)",
+        "display": "flex",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "gap": "4px", "line-height": "10px", "padding-left": "4px",
+        "padding-right": "4px"
+      },
+      "tag": "span", "text": "fn Aa"
+    },
+    {
+      "classes": "sample", "rect": {"height": 10, "width": 32, "x": 549, "y": 437},
+      "styles": {
+        "border-bottom-color": "rgb(60, 56, 54)", "border-left-color": "rgb(60, 56, 54)",
+        "border-right-color": "rgb(60, 56, 54)", "border-top-color": "rgb(60, 56, 54)", "color": "rgb(60, 56, 54)",
+        "display": "block",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fn Aa"
+    },
+    {
+      "classes": "kw", "rect": {"height": 13, "width": 12, "x": 549, "y": 435},
+      "styles": {
+        "border-bottom-color": "rgb(157, 0, 6)", "border-left-color": "rgb(157, 0, 6)",
+        "border-right-color": "rgb(157, 0, 6)", "border-top-color": "rgb(157, 0, 6)", "color": "rgb(157, 0, 6)",
+        "display": "inline",
+        "font-family": "\"JetBrains Mono\", Menlo, Monaco, \"Cascadia Mono\", Consolas, \"Courier New\", monospace",
+        "font-size": "10px", "font-weight": "400", "line-height": "10px", "white-space": "nowrap"
+      },
+      "tag": "span", "text": "fn"
+    }
+  ],
+  "limit": 100, "mode": "light",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).",
+  "part": "theme options", "piece": "3 of 4", "screen": "settings-editor",
+  "selector": [".dialog .rows .group-label", ".dialog .rows .option", ".dialog .rows .option *"]
+}

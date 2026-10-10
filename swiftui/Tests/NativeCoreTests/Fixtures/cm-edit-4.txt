@@ -1,0 +1,287 @@
+C	random 27	plain	0
+D	"x"
+S	1,1	0
+>	type:"a"
+>	type:" "
+>	type:"{"
+>	type:"("
+>	insertNewlineAndIndent
+>	deleteBracketPair
+>	type:"b"
+>	type:"\""
+=	"xa {(\nb\"\n)}"
+s	8,8	0
+C	random 28	plain	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	34,34;37,37	0
+>	moveLineDown
+>	type:"["
+>	deleteBracketPair
+>	indentLess
+>	type:"\""
+>	undo
+>	indentMore
+>	deleteGroupBackward
+=	"function f() {\n  const a = 1;\n}\n  return a;\n"
+s	36,36;39,39	0
+C	random 29	plain	4
+D	"x"
+S	0,0	0
+>	toggleComment
+>	type:"z"
+>	type:")"
+>	type:"'"
+>	type:"("
+>	type:"]"
+>	redo
+>	selectNextOccurrence
+=	"z)'(]x"
+s	5,6	0
+C	random 30	plain	0
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	2,2	0
+>	type:"z"
+>	type:"("
+>	type:"z"
+>	indentLess
+>	copyLineUp
+>	deleteGroupBackward
+>	insertNewlineAndIndent
+>	type:" "
+=	"ifz(\n \n) (x) {\nifz(z) (x) {\n  y(1, 2);\n}\n"
+s	6,6	0
+C	random 31	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	0,4	0
+>	copyLineUp
+>	duplicate
+>	deleteBracketPair
+>	moveLineDown
+>	type:"{"
+>	selectNextOccurrence
+>	toggleComment
+>	copyLineUp
+=	"if (x) {\nif ({if (}x) {\nif (x) {\nif ({if (}x) {\n  y(1, 2);\n}\n"
+s	0,4;14,18	1
+C	random 32	plain	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	14,54	0
+>	type:"'"
+>	deleteBracketPair
+>	type:"]"
+>	deleteCharForward
+>	type:"["
+>	duplicate
+>	type:"b"
+>	type:"'"
+=	"const products'][] \"tee\", price: 24 },\nconst products'][b'] \"tee\", price: 24 },\n];\n"
+s	58,58	0
+C	random 33	plain	0
+D	"x"
+S	0,0	0
+>	duplicate
+>	duplicate
+>	type:"}"
+>	type:"["
+>	type:"["
+>	selectNextOccurrence
+>	deleteGroupBackward
+>	undo
+=	"x\nx\n}[[x"
+s	7,8	0
+C	random 34	plain	2
+D	"a b c\n  d e\n"
+S	9,9;12,12	0
+>	type:"a"
+>	type:"\""
+>	type:"\""
+>	type:"z"
+>	indentLess
+>	deleteCharForward
+>	type:"{"
+>	type:"]"
+=	"a b c\nda\"\"z{]} e\na\"\"z{]}"
+s	13,13;23,23	0
+C	random 35	plain	4
+D	"x"
+S	0,0	0
+>	toggleComment
+>	moveLineDown
+>	type:"("
+>	selectLine
+>	type:"z"
+>	deleteCharBackward
+>	type:")"
+>	selectLine
+=	")"
+s	0,1	0
+C	random 36	plain	0
+D	"a b c\n  d e\n"
+S	4,7	0
+>	type:"]"
+>	type:"["
+>	indentLess
+>	deleteBracketPair
+>	type:"{"
+>	type:"}"
+>	type:"\""
+>	type:" "
+=	"a b ]{}\" \" d e\n"
+s	9,9	0
+C	random 37	plain	4
+D	"a b c\n  d e\n"
+S	3,3;6,6	0
+>	type:"\""
+>	type:"}"
+>	selectLine
+>	type:"'"
+>	type:"\""
+>	deleteBracketPair
+>	type:" "
+>	deleteCharForward
+=	"'\" '"
+s	3,3	0
+C	random 38	plain	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	65,65;68,68	0
+>	type:"'"
+>	type:"'"
+>	undo
+>	type:"{"
+>	duplicate
+>	insertNewlineAndIndent
+>	duplicate
+>	type:"{"
+=	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", pri{ce:{ 24 },\n  { id: \"tee\"
+=+	, pri{\n  ce:{ 24 },\n  {ce:{ 24 },\n  { id: \"tee\", pri{ce:{\n  24 },\n  {24 },\n];\n"
+s	113,113;159,159	0
+C	random 39	plain	0
+D	"x"
+S	0,0	0
+>	deleteCharForward
+>	type:"a"
+>	type:")"
+>	type:"{"
+>	deleteCharForward
+>	insertNewlineAndIndent
+>	toggleComment
+>	type:"\""
+=	"a){\n\"\""
+s	5,5	0
+C	random 40	plain	2
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	17,17;20,20	0
+>	insertNewlineAndIndent
+>	undo
+>	type:")"
+>	indentLess
+>	selectNextOccurrence
+>	type:"]"
+>	type:"\""
+>	type:"'"
+=	"if (x) {\ny(1, 2)]\"''\");\n)]\"''\"}\n"
+s	19,19;28,28	0
+C	random 41	plain	4
+D	"x"
+S	1,1	0
+>	type:"}"
+>	type:"["
+>	type:"b"
+>	toggleComment
+>	type:"a"
+>	type:"'"
+>	type:"("
+>	type:"b"
+=	"x}[ba'(b)]"
+s	8,8	0
+C	random 42	plain	0
+D	"a b c\n  d e\n"
+S	8,8	0
+>	type:"'"
+>	type:"["
+>	type:")"
+>	wait:700
+>	type:"'"
+>	type:"}"
+>	deleteCharBackward
+>	type:"["
+=	"a b c\n  '[)'[d e\n"
+s	13,13	0
+C	random 43	plain	4
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	4,4;7,7	0
+>	indentLess
+>	type:"a"
+>	type:"a"
+>	selectNextOccurrence
+>	type:"'"
+>	type:"\""
+>	type:"a"
+>	type:"'"
+=	"if ('\"a'\"') '\"a'\"'{\n  y(1, 2);\n}\n"
+s	8,8;16,16	0
+C	random 44	plain	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	10,10	0
+>	type:"}"
+>	type:"{"
+>	deleteBracketPair
+>	type:"a"
+>	type:"\""
+>	deleteCharForward
+>	deleteCharForward
+>	undo
+=	"function f() {\n  const a = 1;\n  return a;\n}\n"
+s	10,10	0
+C	random 45	plain	0
+D	"a b c\n  d e\n"
+S	3,3;6,6	0
+>	selectNextOccurrence
+>	selectNextOccurrence
+>	type:"{"
+>	type:")"
+>	type:"("
+>	deleteCharForward
+>	type:"z"
+>	type:"("
+=	"a {)(z()} c\n{)(z()}  d e\n"
+s	7,7;17,17	0
+C	random 46	plain	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	17,17	0
+>	type:"\""
+>	undo
+>	type:")"
+>	type:" "
+>	selectLine
+>	type:"\""
+>	moveLineDown
+>	undo
+=	"function f() {\n\"  ) const a = 1;\n\"  return a;\n}\n"
+s	16,33	0
+C	random 47	plain	4
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	36,36;39,39	0
+>	type:"]"
+>	deleteBracketPair
+>	type:"a"
+>	type:"\""
+>	deleteCharForward
+>	type:" "
+>	type:"'"
+>	deleteCharForward
+=	"function f() {\n  const a = 1;\n  retu]a\" ' ]a\" '\n}\n"
+s	41,41;47,47	0
+C	random 48	plain	0
+D	"a b c\n  d e\n"
+S	8,8	0
+>	selectLine
+>	type:"'"
+>	redo
+>	deleteCharBackward
+>	type:"["
+>	type:")"
+>	type:"z"
+>	redo
+=	"a b c\n'[)z'"
+s	10,10	0

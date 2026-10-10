@@ -1,0 +1,19 @@
+{
+  "app": "Git Manager 0.1.0-beta.7", "demo": "scripts/make-docs-demo.sh, acme/storefront",
+  "elements": [
+    {
+      "classes": "folder", "rect": {"height": 15, "width": 508, "x": 489, "y": 135},
+      "styles": {
+        "border-bottom-color": "rgb(95, 99, 107)", "border-left-color": "rgb(95, 99, 107)",
+        "border-right-color": "rgb(95, 99, 107)", "border-top-color": "rgb(95, 99, 107)", "color": "rgb(95, 99, 107)",
+        "display": "block", "font-family": "-apple-system, BlinkMacSystemFont, Inter, \"Segoe UI\", sans-serif",
+        "font-size": "12px", "font-weight": "400", "overflow": "hidden", "text-align": "right",
+        "text-overflow": "ellipsis", "white-space": "pre"
+      },
+      "tag": "span", "text": "src"
+    }
+  ],
+  "limit": 100, "mode": "dark",
+  "note": "Visible elements only; styles with a default value are left out (ReferenceSnapshot.swift).", "part": "popup",
+  "piece": "2 of 2", "screen": "quickopen", "selector": [".popup", ".popup *"]
+}

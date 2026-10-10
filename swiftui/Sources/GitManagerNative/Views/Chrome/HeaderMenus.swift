@@ -1,0 +1,136 @@
+// The header's menus (Header.svelte workspaceMenu, repoPickerMenu and branchMenu), opened by MenuPill. Rows the native
+// app cannot run yet (New Branch) say so in a toast.
+
+import AppKit
+import NativeCore
+import SwiftUI
+
+@MainActor
+enum HeaderMenus {
+    /// The coordinate space of the page: the window below the title bar, where menus and popups are placed.
+    static let pageSpace = "page"
+
+    static func folderMenu(chooseFolder: @escaping () -> Void, in context: WindowContext) -> [MenuItem] {
+        let workspace = context.workspace
+        let model = context.app
+        let roots = workspace.folders.map(\.root)
+        // The recent projects first, and the same in a submenu to open in a new window.
+        let recent = RecentProjects.entries(RecentProjectsStore.shared.lists, openRoots: roots)
+        var items: [MenuItem] = recent.map { entry in
+            .command(entry.label, hint: entry.hint) { WelcomeActions.open(entry, in: context) }
+        }
+        if !items.isEmpty {
+            let newWindow = recent.map { entry in
+                MenuItem.command(entry.label, hint: entry.hint) {
+                    WelcomeActions.openInNewWindow(entry, from: context)
+                }
+            }
+            items += [.submenu("Open Recent in New Window", newWindow), .separator]
+        }
+        items += [
+            .command("New Window") { WindowOpener.openNew(from: context) },
+            .command("Open Folder...", action: chooseFolder),
+            .command("Open Folder in New Window...") {
+                if let folderPath = pickFolder() {
+                    WindowOpener.openNew(folders: [folderPath], from: context)
+                }
+            },
+            .command("Open Workspace from File...") { model.pickAndOpenWorkspaceFile() },
+            .command("Add Folder to Workspace...") {
+                if let folderPath = pickFolder() {
+                    Task {
+                        await model.openFolders(roots + [folderPath])
+                    }
+                }
+            },
+            .command(workspace.file == nil ? "Save Workspace to File..." : "Save Workspace As...",
+                     hint: workspace.file.map(shortPath)) { model.pickAndSaveWorkspace() },
+        ]
+        if roots.count > 1 {
+            items.append(.separator)
+            for folder in workspace.folders {
+                items.append(.command("Remove \"\(folder.name)\" from Workspace", hint: shortPath(folder.root)) {
+                    Task {
+                        await model.openFolders(roots.filter { $0 != folder.root })
+                    }
+                })
+            }
+        }
+        items += [
+            .separator,
+            .command("Scan for Repositories") {
+                Task {
+                    await model.openFolders(roots)
+                }
+            },
+            .command(roots.count > 1 ? "Close Workspace" : "Close Folder") { model.closeWorkspace() },
+        ]
+        return items
+    }
+
+    static func repoMenu(in context: WindowContext) -> [MenuItem] {
+        let workspace = context.workspace
+        let model = context.app
+        var items: [MenuItem] = workspace.repos.map { repo in
+            let row = WorkspaceRules.repoMenuRow(repo, active: repo.root == model.repoPath,
+                                                 changes: workspace.changeCount(repo.root))
+            return .command(row.label, hint: row.hint) {
+                Task {
+                    await model.setActive(repo.root)
+                }
+            }
+        }
+        items += [
+            .separator,
+            .command("Scan for Repositories") {
+                Task {
+                    await model.openFolders(workspace.folders.map(\.root))
+                }
+            },
+        ]
+        return items
+    }
+
+    /// The branch pill's menu (branchMenu): New Branch..., then the local branches, the current one disabled.
+    static func branchMenu(in context: WindowContext) async -> [MenuItem] {
+        let model = context.app
+        guard let repoPath = model.repoPath else {
+            return []
+        }
+        let refs = await Task.detached {
+            try? Backend.call("get_refs", RepoArgs(repoPath: repoPath)) as BranchRefs
+        }.value
+        let branches: [MenuItem] = (refs?.local ?? []).map { branch in
+            .command(branch.isHead ? "\(branch.name)  (current)" : branch.name, disabled: branch.isHead) {
+                Task {
+                    await model.run("Checkout", success: "Switched to \(branch.name)") { repoPath in
+                        let args = CheckoutArgs(repoPath: repoPath, branchName: branch.name)
+                        try Backend.perform("checkout_branch", args)
+                    }
+                }
+            }
+        }
+        return [notBuilt("New Branch...", in: context), .separator] + branches
+    }
+
+    /// A row the native app cannot run yet: it says so, as the Discard button does.
+    static func notBuilt(_ label: String, in context: WindowContext) -> MenuItem {
+        .command(label) {
+            let name = label.replacingOccurrences(of: "...", with: "")
+            context.toasts.show(.info, "\(name) is not in the native app yet")
+        }
+    }
+
+    /// A path with /Users/<name> as "~" (recentEntries.ts shortPath).
+    static func shortPath(_ path: String) -> String {
+        path.replacingOccurrences(of: #"^/Users/[^/]+"#, with: "~", options: .regularExpression)
+    }
+
+    static func pickFolder() -> String? {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        return panel.runModal() == .OK ? panel.url?.path : nil
+    }
+}

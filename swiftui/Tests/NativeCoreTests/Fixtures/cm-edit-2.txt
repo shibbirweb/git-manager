@@ -1,0 +1,289 @@
+C	uncomment all	ts	2
+D	"// a\n  // b\n"
+S	0,11	0
+>	toggleComment
+=	"a\n  b\n"
+s	0,5	0
+C	block comment	ts	2
+D	"let a = b + c;"
+S	8,13	0
+>	toggleBlockComment
+=	"let a = /* b + c */;"
+s	11,16	0
+C	block uncomment	ts	2
+D	"let a = /* b + c */;"
+S	11,16	0
+>	toggleBlockComment
+=	"let a = b + c;"
+s	8,13	0
+C	select line	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	selectLine
+=	"function f() {\n  const a = 1;\n  return a;\n}\n"
+s	15,30	0
+C	select all	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	3,3	0
+>	selectAll
+=	"function f() {\n  const a = 1;\n  return a;\n}\n"
+s	0,44	0
+C	simplify	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	3,5;18,20	1
+>	simplifySelection
+>	simplifySelection
+=	"function f() {\n  const a = 1;\n  return a;\n}\n"
+s	20,20	0
+C	split line	ts	2
+D	"abcd"
+S	2,2	0
+>	splitLine
+=	"ab\ncd"
+s	2,2	0
+C	next occurrence	ts	2
+D	"a foo b foo c foo"
+S	3,3	0
+>	selectNextOccurrence
+>	selectNextOccurrence
+>	selectNextOccurrence
+>	selectNextOccurrence
+=	"a foo b foo c foo"
+s	2,5;8,11;14,17	0
+C	next occurrence partial	ts	2
+D	"food foo xfoo"
+S	0,3	0
+>	selectNextOccurrence
+>	selectNextOccurrence
+=	"food foo xfoo"
+s	0,3;5,8;10,13	0
+C	next occurrence word only	ts	2
+D	"foo food foo"
+S	1,1	0
+>	selectNextOccurrence
+>	selectNextOccurrence
+=	"foo food foo"
+s	0,3;9,12	0
+C	next occurrence wraps	ts	2
+D	"x foo y foo"
+S	8,11	0
+>	selectNextOccurrence
+=	"x foo y foo"
+s	2,5;8,11	1
+C	select all occurrences	ts	2
+D	"a foo foo2 foo"
+S	3,3	0
+>	selectAllOccurrences
+=	"a foo foo2 foo"
+s	2,5;11,14	0
+C	multi cursor type	ts	2
+D	"ab\ncd\nef"
+S	1,1;4,4;7,7	0
+>	type:"X"
+>	type:"Y"
+>	deleteCharBackward
+=	"aXb\ncXd\neXf"
+s	2,2;6,6;10,10	0
+C	multi cursor enter	ts	2
+D	"{a}\n{b}"
+S	2,2;6,6	0
+>	insertNewlineAndIndent
+=	"{a\n}\n{b\n}"
+s	3,3;8,8	0
+C	multi cursor brackets	ts	2
+D	"a\nb"
+S	1,1;3,3	0
+>	type:"("
+=	"a()\nb()"
+s	2,2;6,6	0
+C	duplicate line	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	duplicate
+=	"function f() {\n  const a = 1;\n  const a = 1;\n  return a;\n}\n"
+s	33,33	0
+C	duplicate selection	ts	2
+D	"abc def"
+S	0,3	0
+>	duplicate
+=	"abcabc def"
+s	3,6	0
+C	join lines	ts	2
+D	"a  \n   b\nc"
+S	1,1	0
+>	joinLines
+=	"a b\nc"
+s	1,1	0
+C	join selection	ts	2
+D	"a\nb\n\nc"
+S	0,6	0
+>	joinLines
+=	"a bc"
+s	0,4	0
+C	toggle case	ts	2
+D	"fooBar baz"
+S	2,2	0
+>	toggleCase
+>	toggleCase
+=	"foobar baz"
+s	2,2	0
+C	sort lines	ts	2
+D	"c\na\nb"
+S	0,5	0
+>	sortLines
+=	"a\nb\nc"
+s	0,5	0
+C	undo typing group	ts	2
+D	""
+S	0,0	0
+>	type:"a"
+>	type:"b"
+>	type:"c"
+>	undo
+=	""
+s	0,0	0
+C	undo after pause	ts	2
+D	""
+S	0,0	0
+>	type:"a"
+>	wait:600
+>	type:"b"
+>	undo
+=	"a"
+s	1,1	0
+C	undo after move	ts	2
+D	"xy"
+S	0,0	0
+>	type:"a"
+>	sel:2,2
+>	type:"b"
+>	undo
+>	undo
+=	"xy"
+s	0,0	0
+C	redo	ts	2
+D	"xy"
+S	1,1	0
+>	type:"a"
+>	undo
+>	redo
+=	"xay"
+s	2,2	0
+C	undo selection	ts	2
+D	"abc"
+S	0,0	0
+>	sel:1,1
+>	sel:2,2
+>	undoSelection
+>	undoSelection
+>	redoSelection
+=	"abc"
+s	2,2	0
+C	undo enter	ts	2
+D	"f() {"
+S	5,5	0
+>	insertNewlineAndIndent
+>	type:"x"
+>	undo
+>	undo
+=	"f() {"
+s	5,5	0
+C	undo delete group	ts	2
+D	"abc def"
+S	7,7	0
+>	deleteCharBackward
+>	deleteCharBackward
+>	undo
+=	"abc def"
+s	7,7	0
+C	redo cleared	ts	2
+D	""
+S	0,0	0
+>	type:"a"
+>	undo
+>	type:"b"
+>	redo
+=	"b"
+s	1,1	0
+C	paste	ts	2
+D	"ab"
+S	1,1	0
+>	paste:"x\ny"
+>	undo
+=	"ab"
+s	1,1	0
+C	undo comment	ts	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	18,18	0
+>	toggleComment
+>	duplicate
+>	undo
+>	undo
+>	redo
+=	"function f() {\n  // const a = 1;\n  return a;\n}\n"
+s	21,21	0
+C	random 0	plain	0
+D	"a b c\n  d e\n"
+S	4,4;7,7	0
+>	type:"a"
+>	type:"b"
+>	type:"]"
+>	copyLineUp
+>	indentMore
+>	type:"]"
+>	type:"]"
+>	deleteGroupBackward
+=	"\ta b abc\n\t ab d e\na b ab]c\n ab] d e\n"
+s	7,7;13,13	0
+C	random 1	plain	4
+D	"a b c\n  d e\n"
+S	7,7	0
+>	type:"\""
+>	moveLineDown
+>	deleteCharBackward
+>	insertNewlineAndIndent
+>	type:"a"
+>	type:"("
+>	deleteGroupBackward
+>	type:"["
+=	"a b c\n\n \n a[\" d e"
+s	12,12	0
+C	random 2	plain	2
+D	"const products = [\n  { id: \"mug\", price: 12 },\n  { id: \"tee\", price: 24 },\n];\n"
+S	66,31	0
+>	deleteBracketPair
+>	selectLine
+>	copyLineUp
+>	deleteBracketPair
+>	type:"z"
+>	copyLineUp
+>	insertNewlineAndIndent
+>	toggleComment
+=	"const products = [\nz\n];\nz];\n"
+s	21,21	0
+C	random 3	plain	0
+D	"if (x) {\n  y(1, 2);\n}\n"
+S	9,10	0
+>	wait:700
+>	type:" "
+>	type:"\""
+>	redo
+>	indentLess
+>	type:"b"
+>	indentLess
+>	wait:700
+=	"if (x) {\n\"b\" y(1, 2);\n}\n"
+s	11,11	0
+C	random 4	plain	2
+D	"function f() {\n  const a = 1;\n  return a;\n}\n"
+S	33,33;36,36	0
+>	insertNewlineAndIndent
+>	toggleComment
+>	type:"a"
+>	type:"}"
+>	selectLine
+>	selectLine
+>	type:" "
+>	type:"{"
+=	"function f() {\n  const a = 1;\n  r\n {}}\n"
+s	36,36	0
