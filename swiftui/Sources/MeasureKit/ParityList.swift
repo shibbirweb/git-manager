@@ -116,6 +116,10 @@ public struct ParityRunSpec: Codable, Equatable {
     /// An editor screen made in both apps before the capture, as `measure --screen` makes it: "edit" or "fold"
     /// (Measure.editScreens).
     public var editScreen: String?
+    /// The find bar opened in both apps on the open file before the capture, as `measure --screen` opens it:
+    /// "findbar" (Cmd+F) or "replacebar" (Cmd+R), then `findQuery` typed (default "product").
+    public var findScreen: String?
+    public var findQuery: String?
     /// Opens the conflicts list in both apps (the current app's Git > Resolve Conflicts, the native app's
     /// open_conflicts) before the capture.
     public var openConflicts: Bool?

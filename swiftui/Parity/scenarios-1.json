@@ -221,7 +221,9 @@
       "steps": [
         "Start the app on demo/acme/storefront and double-click src/cart.ts.",
         "Press Cmd+R (Edit > Replace...) and type total."
-      ]
+      ],
+      "note": ["The jump scrolls the file: the current app pins line 9 at the top (sticky scroll, not native yet)."],
+      "run": { "openFile": "src/cart.ts", "findScreen": "replacebar", "findQuery": "total" }
     },
     {
       "id": "sign-in",

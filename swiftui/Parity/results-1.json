@@ -180,6 +180,26 @@
         "windowPercent" : 99.52
       }
     },
+    "find-replace" : {
+      "dark" : {
+        "contentPercent" : 99.3,
+        "currentMb" : 234.1,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-11",
+        "nativeMb" : 43.4,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.3
+      },
+      "light" : {
+        "contentPercent" : 99.3,
+        "currentMb" : 233.2,
+        "currentVersion" : "0.1.0-beta.7",
+        "date" : "2026-10-11",
+        "nativeMb" : 47.5,
+        "nativeVersion" : "0.1.0",
+        "windowPercent" : 99.2
+      }
+    },
     "github" : {
       "dark" : {
         "contentPercent" : 99.43,
@@ -218,24 +238,6 @@
         "nativeMb" : 51.8,
         "nativeVersion" : "0.1.0",
         "windowPercent" : 99.35
-      }
-    },
-    "merge-tool" : {
-      "dark" : {
-        "contentPercent" : 99.59,
-        "currentMb" : 156.7,
-        "date" : "2026-10-09",
-        "nativeMb" : 35.1,
-        "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.59
-      },
-      "light" : {
-        "contentPercent" : 99.66,
-        "currentMb" : 157.1,
-        "date" : "2026-10-09",
-        "nativeMb" : 35.4,
-        "nativeVersion" : "0.1.0",
-        "windowPercent" : 99.53
       }
     }
   }

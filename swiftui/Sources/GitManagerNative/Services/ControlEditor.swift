@@ -61,6 +61,11 @@ extension Control {
                 "highlighted": session.colors != nil,
                 "blame": orNull(editor.blameLabel),
                 "dirty": session.dirty,
+                "selection": session.state.sliceDoc(session.state.selection.main.from, session.state.selection.main.to),
+                "find": [
+                    "open": session.find.open, "search": session.find.search, "counter": session.find.counter.text,
+                    "notice": orNull(session.find.notice),
+                ],
             ]
         }
         return result

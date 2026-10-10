@@ -113,4 +113,21 @@ private struct ExactWidthLayout: Layout {
         let size = fits ? text.sizeThatFits(.unspecified) : CGSize(width: bounds.width, height: bounds.height)
         text.place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading, proposal: ProposedViewSize(size))
     }
+
+    // Stacks ask each child for its alignment guides at every layout; Layout's default answer measures and places
+    // the text again for each question (most of a keystroke's layout time with a few labels on screen). Only the
+    // text's baselines come from the text; its edges and center are the frame's own.
+    func explicitAlignment(of guide: HorizontalAlignment, in bounds: CGRect, proposal: ProposedViewSize,
+                           subviews: Subviews, cache: inout ()) -> CGFloat? {
+        nil
+    }
+
+    func explicitAlignment(of guide: VerticalAlignment, in bounds: CGRect, proposal: ProposedViewSize,
+                           subviews: Subviews, cache: inout ()) -> CGFloat? {
+        guard guide == .firstTextBaseline || guide == .lastTextBaseline, let text = subviews.first else {
+            return nil
+        }
+        let dimensions = text.dimensions(in: .unspecified)
+        return bounds.midY - dimensions.height / 2 + dimensions[guide]
+    }
 }

@@ -163,15 +163,10 @@ extension QueryField {
     }
 }
 
-/// The query field's cell, with a TextKit 1 field editor: the default TextKit 2 one invalidated its cursor rects on
-/// every key, and AppKit then set the cursor again inside the frame's commit (a few ms each with the accessibility
-/// pointer settings, before the results could draw).
+/// The query field's cell, with the app's field editor (FastFieldEditor): the default TextKit 2 one invalidated its
+/// cursor rects on every key (a few ms each with the accessibility pointer settings, before the results could draw).
 final class QueryFieldCell: NSTextFieldCell {
-    private lazy var editor: NSTextView = {
-        let editor = NSTextView(usingTextLayoutManager: false)
-        editor.isFieldEditor = true
-        return editor
-    }()
+    private lazy var editor = FastFieldEditor.make()
 
     override func fieldEditor(for controlView: NSView) -> NSTextView? {
         editor

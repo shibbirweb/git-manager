@@ -7,20 +7,21 @@ import NativeCore
 import SwiftUI
 
 struct FileScreen: View {
+    // Not every change of the text or the cursor: the canvas follows those itself (EditorSession.canvasHook), the
+    // file bar, the ruler and the find bar in views of their own (FileScreenParts.swift), so a keystroke does not
+    // lay out the whole screen again.
     @EnvironmentObject private var editor: EditorModel
-    @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var files: FilesModel
 
     let file: OpenFile
 
     var body: some View {
         VStack(spacing: 0) {
-            FileBar(folderName: model.folderName, relativePath: file.relativePath, tone: files.tones[file.path],
-                    dirty: editor.session?.dirty ?? false, changeLabel: editor.changeLabel,
-                    hasChanges: !(editor.session?.marks.isEmpty ?? true), go: { editor.goToChange(forward: $0) })
+            FileBarFollower(file: file)
             if let session = editor.session {
+                // The find bar above the code (a CodeMirror top panel).
+                FindBarSlot(find: session.find, editor: editor)
                 FileEditorView(
-                    session: session, revision: editor.revision, blameLabel: editor.blameLabel,
+                    session: session, blameLabel: { editor.blameLabel },
                     blameClick: { line, copyHash in
                         Task {
                             await editor.blameClicked(line: line, copyHash: copyHash)

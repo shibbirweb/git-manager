@@ -92,7 +92,7 @@
       "check": "Multiple cursors, the Code menu, Go to Line, folding and completion",
       "native": "partial",
       "gaps": [
-        "completion and the find bar",
+        "completion",
         "column selection and dragging text",
         "Settings > Editor (font, cursor, word wrap) keep their defaults"
       ]
@@ -102,7 +102,10 @@
       "scenario": "diff-every-line",
       "check": "Code font, syntax colors, bracket colors and indent guides in the diff panes",
       "native": "partial",
-      "gaps": ["the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom"]
+      "gaps": [
+        "the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom",
+        "sticky scroll (the enclosing lines pinned at the top of a scrolled file)"
+      ]
     },
     {
       "id": "markdown", "name": "Markdown editor", "usage": "Markdown-Editor.md", "scenario": "markdown",
@@ -159,7 +162,8 @@
     {
       "id": "find-replace", "name": "Find and replace", "usage": "Find-and-Replace.md", "scenario": "find-replace",
       "check": "The find bar with Replace, the counter and Replace in Files",
-      "native": "missing"
+      "native": "partial",
+      "gaps": ["Replace in Files"]
     }
   ]
 }

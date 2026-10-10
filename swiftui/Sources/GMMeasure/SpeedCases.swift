@@ -178,7 +178,7 @@ enum SpeedCases {
     }
 
     /// Starts `kind` isolated on `folderPath` in the run's mode, as `measure` does.
-    private static func launch(_ kind: AppKind, folderPath: String, workDir: String, tag: String,
+    static func launch(_ kind: AppKind, folderPath: String, workDir: String, tag: String,
                                options: Speed.Options) async throws -> RunningApp {
         let appPath = AppLauncher.defaultAppPath(kind, swiftuiDir: swiftuiDir)
         let home = (workDir as NSString).appendingPathComponent("\(tag)-\(kind.rawValue)-home")
@@ -192,7 +192,7 @@ enum SpeedCases {
                                             settings: kind == .current ? settings : [:], mode: options.mode)
     }
 
-    private static func windowID(_ app: RunningApp) throws -> CGWindowID {
+    static func windowID(_ app: RunningApp) throws -> CGWindowID {
         guard let windowID = WindowCapture.mainWindowID(pid: app.pid) else {
             throw ToolError("\(app.kind.rawValue): no window")
         }
@@ -200,7 +200,7 @@ enum SpeedCases {
     }
 
     /// A part of the window given as fractions of its size, in window points.
-    private static func region(_ app: RunningApp, _ left: CGFloat, _ top: CGFloat, _ right: CGFloat,
+    static func region(_ app: RunningApp, _ left: CGFloat, _ top: CGFloat, _ right: CGFloat,
                                _ bottom: CGFloat) -> CGRect {
         let size = AppLauncher.windowSize
         return CGRect(x: size.width * left, y: size.height * top, width: size.width * (right - left),

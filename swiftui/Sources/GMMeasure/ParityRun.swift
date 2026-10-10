@@ -195,6 +195,9 @@ enum ParityRun {
         if let screen = spec.editScreen {
             try await Measure.showEditScreen(app, screen: screen)
         }
+        if let screen = spec.findScreen {
+            try await Measure.showFindBar(app, screen: screen, query: spec.findQuery ?? "product", opens: false)
+        }
         if app.kind == .current {
             for expectation in spec.expectCurrent ?? [] {
                 try await expect(expectation, in: app)

@@ -21,6 +21,12 @@ struct SearchInput: NSViewRepresentable {
     var onSubmit: (() -> Void)?
     /// Keeps the text selected on focus, as a prompt's select() does.
     var selectsAll = false
+    /// A new value takes the keyboard again (the find bar's fields), selecting the text when `selectsAll`.
+    var focusToken = 0
+    /// Names the field, so key handlers can tell which one has the keyboard.
+    var identifier: String?
+    /// Called when the field gives up the keyboard.
+    var onBlur: () -> Void = {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text)
@@ -37,7 +43,12 @@ struct SearchInput: NSViewRepresentable {
         field.delegate = context.coordinator
         field.lineBreakMode = .byClipping
         field.cell?.isScrollable = true
-        if autofocus {
+        if let identifier {
+            field.identifier = NSUserInterfaceItemIdentifier(identifier)
+        }
+        context.coordinator.onBlur = onBlur
+        context.coordinator.focusToken = focusToken
+        if autofocus || focusToken != 0 {
             Self.focus(field, selectsAll: selectsAll, attempts: 10)
         }
         return field
@@ -65,14 +76,25 @@ struct SearchInput: NSViewRepresentable {
         if field.stringValue != text {
             field.stringValue = text
         }
-        field.textColor = textColor
+        if field.textColor != textColor {
+            field.textColor = textColor
+        }
+        if focusToken != context.coordinator.focusToken {
+            context.coordinator.focusToken = focusToken
+            Self.focus(field, selectsAll: selectsAll, attempts: 10)
+        }
         context.coordinator.onSubmit = onSubmit
-        (field as? CaretShowing)?.caretColor = text.isEmpty ? .clear : caretColor
+        let caret = text.isEmpty ? NSColor.clear : caretColor
+        if let field = field as? CaretShowing, field.caretColor != caret {
+            field.caretColor = caret
+        }
     }
 
     final class Coordinator: NSObject, NSTextFieldDelegate {
         @Binding var text: String
         var onSubmit: (() -> Void)?
+        var focusToken = 0
+        var onBlur: () -> Void = {}
 
         init(text: Binding<String>) {
             _text = text
@@ -84,6 +106,10 @@ struct SearchInput: NSViewRepresentable {
             }
             onSubmit()
             return true
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            onBlur()
         }
 
         func controlTextDidChange(_ notification: Notification) {
@@ -119,6 +145,14 @@ final class SecureCaretField: NSSecureTextField, CaretShowing {
 }
 
 final class CaretField: NSTextField, CaretShowing {
+    // The app's field editor (FastFieldEditor.swift).
+    override class var cellClass: AnyClass? {
+        get {
+            FastFieldCell.self
+        }
+        set {}
+    }
+
     var onFocus: () -> Void = {}
     var caretColor: NSColor = .textColor {
         didSet {

@@ -9,9 +9,9 @@ and the pages after it.
 Native status: done looks and works like the current app; partial has some of it (most often the look, not every
 action); missing is not in the native app yet.
 
-Native: 2 done, 30 partial, 30 missing (62 features). 20 of 52 scenarios run in both apps.
+Native: 2 done, 31 partial, 29 missing (62 features). 21 of 52 scenarios run in both apps.
 
-Last measured 2026-10-10 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
+Last measured 2026-10-11 against the current app 0.1.0-beta.7. Match is the share of identical pixels below the title
 bar, light / dark; memory is the average while the scenario is on screen in light mode, current app / native app.
 
 | Feature | Id | Native | Scenario | Match light / dark | Memory current / native |
@@ -37,7 +37,7 @@ bar, light / dark; memory is the average while the scenario is on screen in ligh
 | Command Palette | command-palette | partial | command-palette | 99.51% / 99.3% | 215 MB / 55 MB |
 | Recent Files | recent-files | missing | recent-files | - | - |
 | Navigation Bar | navigation-bar | partial | navigation-bar | - | - |
-| Find and replace | find-replace | missing | find-replace | - | - |
+| Find and replace | find-replace | partial | find-replace | 99.3% / 99.3% | 233 MB / 48 MB |
 | Changes and commits | changes | partial | staged | - | - |
 | Sign-in prompts | sign-in-prompts | missing | sign-in | - | - |
 | Commit box layout | commit-box-layout | partial | changes | 99.18% / 99.13% | 150 MB / 32 MB |

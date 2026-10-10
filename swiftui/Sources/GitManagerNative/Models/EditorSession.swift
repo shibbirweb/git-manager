@@ -22,6 +22,18 @@ final class EditorSession {
     var marks: [LineMark] = []
     /// Asks the editor view to center the main cursor (a change reached from the file bar); a new count asks again.
     var centerRequests = 0
+    /// The find bar of this file (FindState).
+    let find = FindState()
+    /// The editor view's hook, called after every change (EditorModel.revision): it paints the canvas straight away.
+    var canvasHook: () -> Void = {}
+    /// For the control server's check: whether the canvas as painted equals a whole repaint of the same state.
+    var canvasCheck: () -> Bool = { true }
+    /// Asks the editor view to take the keyboard, or to scroll the main cursor into view (a match found).
+    var keyboardRequests = 0
+    var scrollRequests = 0
+    /// The next scroll request's margin above and below the cursor's line, when not the default line: the find
+    /// bar's typing jump keeps 48 points (findPanel.svelte.ts yMargin 48).
+    var scrollMargin: CGFloat?
     /// The text of this editor's last linewise copy, so pasting it goes above the line.
     var lastLinewiseCopy: String?
     /// Bumps on every change of what the editor draws.
@@ -92,6 +104,7 @@ final class EditorSession {
             scheduleSyntax()
             scheduleMarks()
         }
+        find.follow(transaction, state: state)
         revision += 1
         changed(transaction)
     }

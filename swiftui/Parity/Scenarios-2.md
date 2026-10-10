@@ -1,5 +1,15 @@
 # Parity scenarios (continued)
 
+## sign-in: Sign-in prompt (native app cannot show it yet)
+
+Folder: demo `acme/storefront`
+
+1. Start the app on demo/acme/storefront.
+2. Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).
+3. Fetch: the Sign in dialog asks for a username and a password.
+
+- Sign-in prompts (`sign-in-prompts`, missing): The Sign in dialog for a username and password or an SSH passphrase.
+
 ## commit-options: Commit options (native app cannot show it yet)
 
 Folder: demo `acme/storefront`
@@ -261,13 +271,3 @@ Folder: demo `acme/storefront`
 2. Choose View > Git Console: the commands the app ran, with their output.
 
 - Git Console (`git-console`, missing): Every git command the app ran, with its output.
-
-## back-forward: Back and Forward (native app cannot show it yet)
-
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront; open src/cart.ts at line 30, then docs/checkout.md.
-2. Click Go Back in the header: cart.ts at line 30 again.
-
-- Back and Forward (`navigation`, missing): Back and Forward across files, diffs and commits. Native lacks: the
-  header's arrows are drawn (disabled) but do nothing.

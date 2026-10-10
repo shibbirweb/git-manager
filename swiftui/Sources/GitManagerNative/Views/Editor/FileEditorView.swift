@@ -13,19 +13,18 @@ struct FileEditorView: View {
     @ObservedObject private var settings = SettingsStore.shared
 
     let session: EditorSession
-    /// EditorModel's revision: every change of the session draws again.
-    let revision: Int
-    let blameLabel: String?
+    /// The main cursor line's blame note, read at each paint (EditorModel.blameLabel).
+    let blameLabel: () -> String?
     /// A click on the blame gutter's 0-based line, with Option held or not.
     var blameClick: (Int, Bool) -> Void = { _, _ in }
     var blameTooltip: (Int) -> String? = { _ in nil }
 
     var body: some View {
         HStack(spacing: 0) {
-            FileScrollView(session: session, revision: revision, blameLabel: blameLabel, theme: theme,
+            FileScrollView(session: session, blameLabel: blameLabel, theme: theme,
                            blameGutter: settings.preferences.blameGutter, blameClick: blameClick,
                            blameTooltip: blameTooltip)
-            FileRuler(session: session, revision: revision)
+            FileRulerFollower(session: session)
         }
         .background(theme.color("--editor-bg"))
     }
@@ -33,8 +32,7 @@ struct FileEditorView: View {
 
 struct FileScrollView: NSViewRepresentable {
     let session: EditorSession
-    let revision: Int
-    let blameLabel: String?
+    let blameLabel: () -> String?
     let theme: Theme
     let blameGutter: Bool
     let blameClick: (Int, Bool) -> Void
@@ -49,6 +47,8 @@ struct FileScrollView: NSViewRepresentable {
         host.session = session
         if opened {
             host.centered = session.centerRequests
+            host.keyboardDone = session.keyboardRequests
+            host.scrollDone = session.scrollRequests
         }
         host.blameLabel = blameLabel
         host.theme = theme
@@ -69,14 +69,32 @@ struct FileScrollView: NSViewRepresentable {
         let canvas = FileCanvas()
         let scrollView = NSScrollView()
         let document = EditorDocumentView()
-        var session: EditorSession?
-        var blameLabel: String?
+        /// The session shown, which calls back after each change so the canvas paints without waiting for SwiftUI.
+        var session: EditorSession? {
+            didSet {
+                if oldValue !== session {
+                    oldValue?.canvasHook = {}
+                    oldValue?.canvasCheck = { true }
+                    session?.canvasHook = { [weak self] in
+                        self?.redraw()
+                        self?.needsLayout = true
+                    }
+                    session?.canvasCheck = { [weak self] in
+                        self?.canvas.paintsLikeWhole() ?? true
+                    }
+                }
+            }
+        }
+        var blameLabel: () -> String? = { nil }
         var theme = Theme.standard(for: .light)
         var blameGutter = false
         var blameClick: (Int, Bool) -> Void = { _, _ in }
         var blameTooltip: (Int) -> String? = { _ in nil }
         /// The session's center request already done.
         var centered = 0
+        /// The session's keyboard and scroll requests already done.
+        var keyboardDone = 0
+        var scrollDone = 0
         /// Where a drag started (the selection's anchor) and how many clicks began it.
         var dragAnchor: (position: Int, clicks: Int)?
 
@@ -133,9 +151,21 @@ struct FileScrollView: NSViewRepresentable {
                 return
             }
             // Settings > Editor > Cursor blinking is not in the native settings yet: the current app's default.
-            canvas.content = FileCanvas.Content(session: session, blameLabel: blameLabel, theme: theme,
+            canvas.content = FileCanvas.Content(session: session, blameLabel: blameLabel(), theme: theme,
                                                 focused: focused, blinking: "blink", blameGutter: blameGutter)
             updateBlameTips()
+            if session.keyboardRequests != keyboardDone {
+                keyboardDone = session.keyboardRequests
+                takeKeyboard()
+            }
+            if session.scrollRequests != scrollDone {
+                scrollDone = session.scrollRequests
+                let margin = session.scrollMargin
+                session.scrollMargin = nil
+                DispatchQueue.main.async { [weak self] in
+                    self?.scrollToCursor(margin: margin)
+                }
+            }
             if session.centerRequests != centered {
                 centered = session.centerRequests
                 takeKeyboard()
@@ -176,8 +206,9 @@ struct FileScrollView: NSViewRepresentable {
             updateBlameTips()
         }
 
-        /// Scrolls the main cursor into view (scrollIntoView), keeping a line of margin above and below.
-        func scrollToCursor() {
+        /// Scrolls the main cursor into view (scrollIntoView), keeping a line of margin above and below, or `margin`
+        /// points from its line's edges.
+        func scrollToCursor(margin: CGFloat? = nil) {
             guard let session, let content = canvas.content else {
                 return
             }
@@ -189,10 +220,11 @@ struct FileScrollView: NSViewRepresentable {
             var origin = scrollView.contentView.bounds.origin
             let top = canvas.rowTop(row) + canvas.offset
             let height = bounds.height
-            if top - lineHeight < origin.y {
-                origin.y = max(0, top - lineHeight)
-            } else if top + 2 * lineHeight > origin.y + height {
-                origin.y = top + 2 * lineHeight - height
+            let above = margin ?? lineHeight, below = margin.map { $0 + lineHeight } ?? 2 * lineHeight
+            if top - above < origin.y {
+                origin.y = max(0, top - above)
+            } else if top + below > origin.y + height {
+                origin.y = top + below - height
             }
             // x in the document: the gutters, the line's left padding, then the text.
             let textLeft = CGFloat(content.geometry.guttersWidth) + EditorGeometry.linePadding.left

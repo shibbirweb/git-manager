@@ -1,5 +1,5 @@
-// The file canvas's layers (FileCanvas.swift says which): a scroll moves the pixels of the view's bitmap and the
-// content layer and paints only the band that came into view; an edit or a selection change paints only the rows
+// The file canvas's layers (FileCanvas.swift says which): a scroll moves the pixels of the content layer and paints
+// only the band that came into view; an edit or a selection change paints only the rows
 // it touches (`dirtyRows`); the cursors and the thumbs are placed each time.
 
 import AppKit
@@ -17,11 +17,10 @@ extension FileCanvas {
             return
         }
         var whole = paintedOffset == nil || dirtyRows == nil
-        if base.prepare(width: width, height: height, space: space) {
-            whole = true
-        }
         let surfaceWidth = Int((visibleWidth * scale).rounded())
-        if surface.prepare(width: surfaceWidth, height: height, space: space) {
+        // A shorter view keeps its rows (the find bar opening); a taller one paints the rows it now shows.
+        let shownBefore = surface.shownHeight
+        if surface.prepare(width: surfaceWidth, height: height, space: space, keepTaller: true) {
             whole = true
         }
         var bands: [CGRect] = []
@@ -34,7 +33,6 @@ extension FileCanvas {
             } else {
                 if moved != 0 {
                     let rows = Int(moved)
-                    base.shift(rows: rows)
                     surface.shift(rows: rows)
                     let exposed = CGFloat(abs(rows)) / scale
                     bands.append(rows > 0
@@ -42,33 +40,57 @@ extension FileCanvas {
                         : CGRect(x: 0, y: 0, width: bounds.width, height: exposed))
                 }
                 bands += rowBands(content)
+                if height > shownBefore {
+                    let top = CGFloat(shownBefore) / scale
+                    bands.append(CGRect(x: 0, y: top, width: bounds.width, height: bounds.height - top))
+                }
             }
         }
         for band in bands {
             paint(band.intersection(bounds), content: content, scale: scale)
         }
         dirtyRows = IndexSet()
+        dirtyBoxes = []
         paintedOffset = offset
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         layer?.contentsScale = scale
-        layer?.contents = base.context?.makeImage()
+        // The editor's background is one color: the layer's own, not a bitmap to fill, shift and publish.
+        let background = colors?.nsColor("--editor-bg").cgColor
+        if layer?.backgroundColor != background {
+            layer?.backgroundColor = background
+        }
         surface.publish(frame: CGRect(x: 0, y: 0, width: visibleWidth, height: bounds.height), scale: scale)
         placeCursors(content, space: space, scale: scale, repaint: whole)
         placeThumbs(content, space: space, scale: scale, repaint: whole)
         CATransaction.commit()
     }
 
-    /// The dirty rows as bands of canvas points, a point of margin above and below for the 17-point text boxes.
+    /// The dirty rows as bands of canvas points, and the dirty boxes as rectangles.
     private func rowBands(_ content: Content) -> [CGRect] {
         guard let dirtyRows else {
             return [bounds]
         }
         let height = CGFloat(EditorGeometry.lineHeight)
-        return dirtyRows.rangeView.map { rows in
-            let top = rowTop(rows.lowerBound) - 1
-            return CGRect(x: 0, y: top, width: bounds.width, height: CGFloat(rows.count) * height + 2)
-        }.filter { $0.maxY > 0 && $0.minY < bounds.height }
+        // Rows at most two apart share a band: each band draws a row and a half of text around it anyway.
+        var merged: [Range<Int>] = []
+        for rows in dirtyRows.rangeView {
+            if let last = merged.last, rows.lowerBound - last.upperBound <= 2 {
+                merged[merged.count - 1] = last.lowerBound..<rows.upperBound
+            } else {
+                merged.append(rows)
+            }
+        }
+        // Two points above and below: a selected find match's outline sits a point outside its 17-point box, which
+        // starts a point above its row.
+        let full = merged.map { rows in
+            CGRect(x: 0, y: rowTop(rows.lowerBound) - 2, width: bounds.width, height: CGFloat(rows.count) * height + 4)
+        }
+        let textLeft = textX(content)
+        let boxes = dirtyBoxes.filter { !dirtyRows.contains($0.row) }.map { box in
+            CGRect(x: textLeft + box.from, y: rowTop(box.row) - 2, width: box.to - box.from, height: height + 4)
+        }
+        return (full + boxes).filter { $0.maxY > 0 && $0.minY < bounds.height }
     }
 
     /// Runs `draw` with `context` as the current graphics context, in canvas points (y down), clipped to the band.
@@ -80,28 +102,27 @@ extension FileCanvas {
         context.setShouldSmoothFonts(false)
         let previous = NSGraphicsContext.current
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: true)
-        NSRect(x: 0, y: paintBand.minY, width: CGFloat(context.width) / scale, height: paintBand.height).clip()
+        localClip(context, scale: scale).clip()
         draw()
         NSGraphicsContext.current = previous
         context.restoreGState()
     }
 
     private func paint(_ band: CGRect, content: Content, scale: CGFloat) {
-        guard let colors, let baseContext = base.context, let context = surface.context, !band.isEmpty else {
+        guard let colors, let context = surface.context, !band.isEmpty else {
             return
         }
         // Whole device pixels, so a band and its neighbour never paint the same pixel twice.
         let top = (band.minY * scale).rounded(.down) / scale, bottom = (band.maxY * scale).rounded(.up) / scale
-        paintBand = CGRect(x: 0, y: top, width: bounds.width, height: bottom - top)
-        withContext(baseContext, scale: scale) {
-            colors.nsColor("--editor-bg").setFill()
-            paintBand.fill()
-        }
+        let left = (band.minX * scale).rounded(.down) / scale, right = (band.maxX * scale).rounded(.up) / scale
+        paintBand = CGRect(x: left, y: top, width: right - left, height: bottom - top)
         withContext(context, scale: scale) {
-            context.clear(CGRect(x: 0, y: paintBand.minY, width: CGFloat(context.width) / scale,
-                                 height: paintBand.height))
+            context.clear(localClip(context, scale: scale))
             drawContent(content, colors: colors, context: context, scale: scale)
-            drawGutter(content, colors: colors, context: context, scale: scale)
+            // A box inside the code (a find match) leaves the gutter as it is.
+            if paintBand.minX < CGFloat(content.geometry.guttersWidth) {
+                drawGutter(content, colors: colors, context: context, scale: scale)
+            }
         }
     }
 

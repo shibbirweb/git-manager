@@ -26,7 +26,9 @@ struct WindowRoot: View {
                 ContentView(initialFolders: opens?.folders ?? [], initialWorkspaceFile: opens?.workspaceFile)
             }
         }
-        .frame(minWidth: 960, minHeight: 600)
+        // With a maximum too, SwiftUI answers the window's minimum size from the frame alone; with only a minimum
+        // it lays the whole window out again at 960 x 600 after every change to find it (about 3 ms a keystroke).
+        .frame(minWidth: 960, maxWidth: .infinity, minHeight: 600, maxHeight: .infinity)
         .background(WindowSizer(origin: (request ?? context.launch).flatMap(Self.origin),
                                 size: (request ?? context.launch).flatMap(Self.size)))
         .windowContext(context)

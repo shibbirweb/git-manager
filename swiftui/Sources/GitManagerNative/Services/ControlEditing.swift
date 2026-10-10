@@ -26,8 +26,15 @@ extension Control {
             }
             return reply(ok: true, structured: onMain { ["dialog": dialogState()] })
         }
+        if let name = args["command"] as? String, findCommands.contains(name) {
+            onMain {
+                runFind(name, WindowContext.focused.editor)
+            }
+            return reply(ok: true, structured: onMain { ["editor": editorState()] })
+        }
         guard let name = args["command"] as? String, let action = editorCommands[name] else {
-            return reply(ok: false, text: "command is one of: \(editorCommands.keys.sorted().joined(separator: ", "))")
+            let names = (Array(editorCommands.keys) + Array(findCommands)).sorted()
+            return reply(ok: false, text: "command is one of: \(names.joined(separator: ", "))")
         }
         let ran = onMain { () -> Bool? in
             WindowContext.focused.editor.session?.run(action)
@@ -48,5 +55,56 @@ extension Control {
         let target = doc.line(max(0, line - 1))
         let position = min(target.from + max(0, column - 1), target.to)
         session.dispatch(TransactionSpec(selection: .single(position), userEvent: "select", scrollIntoView: true))
+    }
+}
+
+// The find bar's commands and fields (the page's Find, Replace, Find Next and Find Previous, and Escape).
+extension Control {
+    static let findCommands: Set<String> = [
+        "edit.find", "edit.replace", "edit.findNext", "edit.findPrevious", "edit.closeFind",
+    ]
+
+    @MainActor
+    static func runFind(_ name: String, _ editor: EditorModel) {
+        switch name {
+        case "edit.find":
+            editor.openFind(replace: false)
+        case "edit.replace":
+            editor.openFind(replace: true)
+        case "edit.findNext":
+            editor.findNext()
+        case "edit.findPrevious":
+            editor.findNext(forward: false)
+        default:
+            editor.closeFind()
+        }
+    }
+
+    /// `app action=find`: types `search` and `replace` into the open find bar, then runs Replace (`replaceNext`) or
+    /// Replace All (`replaceAll`) when asked.
+    static func find(_ args: [String: Any]) -> String {
+        let shown = onMain { () -> Bool in
+            let editor = WindowContext.focused.editor
+            guard editor.session?.find.open == true else {
+                return false
+            }
+            if let search = args["search"] as? String {
+                editor.setFindSearch(search)
+            }
+            if let replace = args["replace"] as? String {
+                editor.setFindReplace(replace)
+            }
+            if args["replaceNext"] as? Bool == true {
+                editor.replaceOne()
+            }
+            if args["replaceAll"] as? Bool == true {
+                editor.replaceAll()
+            }
+            return true
+        }
+        guard shown else {
+            return reply(ok: false, text: "The find bar is not open (editor_command edit.find)")
+        }
+        return reply(ok: true, structured: onMain { ["editor": editorState()] })
     }
 }

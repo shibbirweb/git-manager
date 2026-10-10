@@ -7,6 +7,7 @@
 //   tool) until the editor area settles, colors included. One cold diff per launch, --repeat launches.
 // - scroll: in that diff, each app's own scroll walk (down and back at --speed points a frame); the frames that
 //   reached the screen and the gaps between them.
+// - find: the editor's find bar on that file (SpeedFind.swift).
 // Writes swiftui/build/speed/<time>/report.md.
 
 import AppKit
@@ -15,7 +16,7 @@ import MeasureKit
 
 enum Speed {
     struct Options {
-        var cases: [String] = ["search", "diff", "scroll"]
+        var cases: [String] = ["search", "diff", "scroll", "find"]
         var mode = "light"
         var repeats = 3
         var files = 2000
@@ -51,9 +52,9 @@ enum Speed {
             options.frames = true
             arguments.remove(at: index)
         }
-        let known = ["search", "diff", "scroll"]
+        let known = ["search", "diff", "scroll", "find"]
         guard arguments.isEmpty, options.cases.allSatisfy(known.contains) else {
-            print("Usage: gm-measure speed [--case search|diff|scroll|all] [--mode light|dark] [--repeat <n>]")
+            print("Usage: gm-measure speed [--case search|diff|scroll|find|all] [--mode light|dark] [--repeat <n>]")
             print("                        [--files <n>] [--lines <n>] [--speed <points>] [--only current|native]")
             return 2
         }
@@ -83,10 +84,15 @@ enum Speed {
                 samples += try await SpeedCases.search(kind, repoPath: repoPath, workDir: workDir, options: options)
             }
         }
-        if options.cases.contains("diff") || options.cases.contains("scroll") {
+        if ["diff", "scroll", "find"].contains(where: options.cases.contains) {
             let repoPath = try MemoryBench.makeRepo(in: workDir, lines: options.lines)
-            for kind in kinds {
+            for kind in kinds where options.cases.contains("diff") || options.cases.contains("scroll") {
                 samples += try await SpeedCases.diff(kind, repoPath: repoPath, workDir: workDir, options: options)
+            }
+            if options.cases.contains("find") {
+                for kind in kinds {
+                    samples += try await SpeedCases.find(kind, repoPath: repoPath, workDir: workDir, options: options)
+                }
             }
         }
         let report = SpeedReport.markdown(samples, options: options, stamp: stamp)

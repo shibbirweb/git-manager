@@ -9,8 +9,9 @@ struct FileRuler: View {
     @Environment(\.theme) private var theme
 
     let session: EditorSession
-    /// EditorModel's revision: new marks or folds draw again.
-    let revision: Int
+    /// The session's text-and-folds and marks revisions: new marks, edits or folds draw again, a cursor move does not.
+    let docRevision: Int
+    let paintRevision: Int
 
     var body: some View {
         GeometryReader { proxy in

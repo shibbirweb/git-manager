@@ -49,9 +49,15 @@ extension FileCanvas {
     }
 
     /// The match tints (--accent at 18%), the matching brackets and the dots of selected spaces, on rows `shown`.
-    func drawHighlights(_ content: Content, shown: Range<Int>, colors: CanvasColors, scale: CGFloat) {
+    /// A selection match inside a find match keeps only the find tint (@codemirror/search base theme:
+    /// `.cm-searchMatch .cm-selectionMatch` is transparent).
+    func drawHighlights(_ content: Content, shown: Range<Int>, colors: CanvasColors, scale: CGFloat,
+                        findMatches: [Range<Int>] = []) {
         let alpha = (0.18 * 255).rounded() / 255
         for (row, range) in matchRanges(content) where shown.contains(row) {
+            if findMatches.contains(where: { $0.lowerBound <= range.lowerBound && range.upperBound <= $0.upperBound }) {
+                continue
+            }
             blendBox(colors.exact("--accent"), alpha: alpha, row: row, range: range, content, scale: scale)
         }
         for match in BracketMatch.matches(content.state) {
@@ -102,8 +108,7 @@ extension FileCanvas {
         let start = ((textX + x(of: range.lowerBound, row: row, content)) * scale).rounded()
         let end = ((textX + x(of: range.upperBound, row: row, content)) * scale).rounded()
         let rect = CGRect(x: start, y: (rowTop(row) - 1) * scale, width: end - start, height: 17 * scale)
-        let clip = CGRect(x: 0, y: paintBand.minY * scale, width: bounds.width * scale,
-                          height: paintBand.height * scale)
+        let clip = pixelBand(scale)
         let area = rect.intersection(clip)
         if !area.isNull {
             surface.blend(color, alpha: alpha, in: area)
@@ -132,8 +137,7 @@ extension FileCanvas {
                                                            height: 1.5), transform: nil)
                         var transform = CGAffineTransform(scaleX: scale, y: scale)
                         if let scaled = dot.copy(using: &transform) {
-                            let clip = CGRect(x: 0, y: paintBand.minY * scale, width: bounds.width * scale,
-                                              height: paintBand.height * scale)
+                            let clip = pixelBand(scale)
                             surface.blend(colors.exact("--text-faint"), alpha: 1, path: scaled, clip: clip)
                         }
                     }
@@ -148,8 +152,7 @@ extension FileCanvas {
         // WebKit snaps the border box's left edge down to a device pixel; the right edge stays.
         let right = x + Self.placeholderWidth - 1, left = ((x + 1) * scale).rounded(.down) / scale
         let box = CGRect(x: left, y: rowTop(row) - 1 - 1, width: right - left, height: 17 + 2)
-        let clip = CGRect(x: 0, y: paintBand.minY * scale, width: bounds.width * scale,
-                          height: paintBand.height * scale)
+        let clip = pixelBand(scale)
         var transform = CGAffineTransform(scaleX: scale, y: scale)
         let radius = 0.2 * CodeFonts.shared.regular.pointSize
         let outer = CGPath(roundedRect: box, cornerWidth: radius, cornerHeight: radius, transform: &transform)

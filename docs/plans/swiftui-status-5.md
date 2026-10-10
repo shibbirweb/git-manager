@@ -47,3 +47,56 @@ Continues [swiftui-status-4.md](swiftui-status-4.md). Newest last.
   - Pixel diff below the title bar (light / dark): gotoline 99.41 / 99.31, gotolineerror 99.44 / 99.37; kept:
     settings 99.5, welcomeclone 99.59, githubgist 99.32.
   - Memory with the prompt open: current 199 MB, native 45 MB (light).
+- GM-87 open gaps, stage 3 part 2 (the find bar), and the new speed gate (the user, 2026-10-10: a feature is done
+  only when it is 99%+ identical AND faster than the current app; else find the bottleneck and fix it):
+  - Edit > Find (Cmd+F), Replace (Cmd+R), Find Next / Previous (Cmd+G / Shift+Cmd+G), Select All Occurrences: the
+    page's find bar (findPanel.svelte.ts) above the code: seeded from a short one-line selection, typing jumps to
+    the first match from the cursor, Cc / W / .* toggles (Option+C/W/X), the counter ("3/12", "0 results",
+    "Invalid regex"), Replace, Replace All ("2 replaced"), Exclude, Escape. NativeCore FindQuery / FindModel
+    (tested against findModel.test.ts and @codemirror/search).
+  - Pixel rules found: the 30% match tint is premultiplied with the exact share and only the stored alpha is
+    rounded (55, 38, 13 over 77); a selection match inside a find match keeps only the find tint (the base
+    theme's `.cm-searchMatch .cm-selectionMatch` is transparent); the toggles use the UI font. The status bar
+    gained "(7 selected, 2 lines)" for any selection (StatusFileItems).
+  - Speed: `gm-measure speed --case find` (SpeedFind.swift): the 4000-line PHP file, Cmd+F, "stock" typed key by
+    key, Cmd+G three times. Native was slower on all four at first (bar 75 vs 71 ms, first key 74 vs 60, settled
+    102 vs 32, Cmd+G 63 vs 45). Bottlenecks found with run-loop trace marks and `sample`, and fixed:
+    - Every change repainted the whole editor (about 14 ms): a selection change now repaints only the rows it
+      touches, a new search only the rows whose matches change (FileCanvasRepaint.swift), nearby rows share a
+      band, the text spill is 4 points, the editor background is the layer's color (no bitmap to fill), and the
+      rows' Core Text lines are cached for the text and colors they were made for (FileCanvasLineCache.swift).
+    - Every change re-rendered the tab strip, the Files panel and the whole file screen (EditorModel published
+      it): EditorChanges now carries it to the file bar, the ruler and the status items only, published after
+      the frame (AfterFrame: a timer, so the canvas commits first); the canvas paints from the session's hook.
+    - The window root's min-only frame made SwiftUI lay the whole window out again at 960 x 600 after each change;
+      the Shell slots asked their content for sizes; ExactWidthLayout measured its text for every alignment
+      question. All three now answer from the room alone.
+    - NSTextView's keyDown hid the pointer with a synchronous WindowServer call (SLSObscureCursor, 4+ ms a key):
+      FastFieldEditor sends keys to the input system directly and hides the pointer only after it moved.
+    - The search joined the whole text for each band and counted with Foundation: ranged searches use their
+      lines only, and literal ASCII searches run on bytes (FindQueryASCII.swift, tested against Foundation's).
+    - The find counter and the typed text re-rendered the whole bar: FindLabel follows the count alone, and the
+      typed text is published only when it turns empty or back.
+    - A typed key still repainted the whole rows of every changed match (about 6 ms): a changed find or selection
+      match now repaints only its box (DirtyBox), raw pixel work stays inside the band (pixelBand) and Core Text
+      renders only the glyphs inside the clip (GlyphCompositor). Opening the bar kept repainting the shorter
+      canvas: a surface now keeps its taller bitmap (keepTaller) and paints only rows a taller view shows.
+    - The field editor shows the typed text at once (displayIfNeeded and a flush, as NSTextView's keyDown does).
+  - Found on the way: row bands reached a point above a row, but a selected match's outline sits two above, so Find
+    Next could leave a stale line; bands now reach two. Smoke checks this kind of slip directly: `app
+    action=canvas_check` compares the canvas after partial repaints with a whole repaint (it failed with the old
+    margin).
+  - Result (median of 10, ms, current / native), two batches: bar on screen 78 / 40 and 69 / 41, matches after the
+    first key 59 / 45 and 68 / 43, code settled after the last key 35 / 26 and 37 / 30, next match after Cmd+G
+    55 / 34 and 47 / 34. Kept: search (10 runs) echo 27 / 18, first results 95 / 79, settled 43 / 38; diff code
+    on screen 234 / 96, colors in 234 / 196; scroll 28 / 58 fps, p95 gap 66 / 19.
+  - The typing jump keeps 48 points around the match (findPanel.svelte.ts yMargin 48); Find Next the default.
+    Parity find-replace (cart.ts, "total"): 99.3 / 99.3; the rest is the page's sticky scroll line (a new gap of
+    Code appearance).
+  - Smoke: Find, typing jumps (1/2), Find Next (2/2), Replace All ("2 replaced"), Undo and Escape, canvas checks
+    (control: `editor_command edit.find|edit.replace|edit.findNext|edit.findPrevious|edit.closeFind`,
+    `app action=find`, `app action=canvas_check`).
+  - Pixel diff below the title bar (light / dark): findbar 99.58 / 99.57, replacebar 99.59 / 99.56; kept (sweep of
+    18 screens): all at their floors within the 0.01 noise. The floor table's search 99.6 predates GM-75 (99.46 /
+    99.22 since then, as on 2026-10-09).
+  - Memory with the replace bar open: current 215 MB, native 44 MB (light).

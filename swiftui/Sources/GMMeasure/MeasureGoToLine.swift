@@ -26,3 +26,24 @@ extension Measure {
         }
     }
 }
+
+// gm-measure --screen findbar: Measure.shownFile open, Cmd+F, "product" typed: the find bar with its counter and
+// the matches tinted. replacebar: the same with Cmd+R, so the Replace row shows too. Parity runs (findScreen) type
+// their own query on the file they opened.
+extension Measure {
+    static let findScreens = ["findbar", "replacebar"]
+
+    static func showFindBar(_ app: RunningApp, screen: String, query: String = "product", opens: Bool = true)
+        async throws {
+        if opens {
+            try await openFile(app)
+        }
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        WindowCapture.bringToFront(pid: app.pid)
+        // F (find) or R (replace) with Cmd.
+        KeyPoster.press(pid: app.pid, keyCode: screen == "replacebar" ? 15 : 3, flags: .maskCommand)
+        try await Task.sleep(nanoseconds: 800_000_000)
+        KeyPoster.type(pid: app.pid, query)
+        try await Task.sleep(nanoseconds: 800_000_000)
+    }
+}

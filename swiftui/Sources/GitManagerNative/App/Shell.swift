@@ -33,12 +33,12 @@ struct EditorArea<Breadcrumb: View, Content: View>: View {
     var body: some View {
         VStack(spacing: 0) {
             breadcrumb
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: ShellMetrics.breadcrumbHeight - ShellMetrics.border)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: ShellMetrics.breadcrumbHeight - ShellMetrics.border,
+                       maxHeight: ShellMetrics.breadcrumbHeight - ShellMetrics.border, alignment: .leading)
                 .background(theme.color("--panel"))
             theme.color("--border-strong").frame(height: ShellMetrics.border)
             content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 .background(theme.color("--editor-bg"))
         }
     }
@@ -76,8 +76,8 @@ struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View
     var body: some View {
         VStack(spacing: 0) {
             header
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: ShellMetrics.headerHeight - ShellMetrics.border)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: ShellMetrics.headerHeight - ShellMetrics.border,
+                       maxHeight: ShellMetrics.headerHeight - ShellMetrics.border, alignment: .leading)
                 .background(theme.color("--panel"))
             horizontalLine
             OpBanner()
@@ -86,12 +86,12 @@ struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View
                 verticalLine
                 sidebar
                     .frame(width: ShellMetrics.sidebarWidth - ShellMetrics.border)
-                    .frame(maxHeight: .infinity, alignment: .top)
+                    .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
                     .background(theme.color("--panel"))
                 verticalLine
                 Color.clear.frame(width: ShellMetrics.gap)
                 main
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .background(theme.color("--panel"))
                     // What spills out of the main area (the Log's commit toolbar) paints over the Files panel, as
                     // on the page.
@@ -100,15 +100,17 @@ struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View
                 verticalLine
                 files
                     .frame(width: ShellMetrics.filesWidth - ShellMetrics.border)
-                    .frame(maxHeight: .infinity, alignment: .top)
+                    .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
                     .background(theme.color("--panel"))
                 verticalLine
                 activityBar(rightBar)
             }
             horizontalLine
+            // Sized by the room alone (a minimum and a maximum each way), so a new cursor position in the status bar
+            // lays out the bar, not the whole window measuring it again.
             status
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: ShellMetrics.statusHeight - ShellMetrics.border)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: ShellMetrics.statusHeight - ShellMetrics.border,
+                       maxHeight: ShellMetrics.statusHeight - ShellMetrics.border, alignment: .leading)
                 .background(theme.color("--panel-alt"))
         }
         .background(theme.color("--bg"))
@@ -125,7 +127,7 @@ struct Shell<Header: View, LeftBar: View, Sidebar: View, Main: View, Files: View
     private func activityBar(_ content: some View) -> some View {
         content
             .frame(width: ShellMetrics.activityWidth - ShellMetrics.border)
-            .frame(maxHeight: .infinity, alignment: .top)
+            .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
             .background(theme.color("--panel-alt"))
     }
 }

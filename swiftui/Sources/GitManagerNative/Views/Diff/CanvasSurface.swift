@@ -24,14 +24,20 @@ final class CanvasSurface {
         "backgroundColor": NSNull(), "contentsScale": NSNull(),
     ]
 
+    /// The bitmap's rows the layer shows (fewer than it has when a shorter view kept it).
+    private(set) var shownHeight = 0
+
     /// Makes the bitmap `width` x `height` pixels in `space` unless it already is; true when it was made, so it must
-    /// be painted whole.
-    func prepare(width: Int, height: Int, space: CGColorSpace) -> Bool {
+    /// be painted whole. With `keepTaller`, a bitmap taller than asked is kept and its top shown: the rows stay where
+    /// they were when the view only got shorter (the find bar opening above the code), so nothing needs painting again.
+    func prepare(width: Int, height: Int, space: CGColorSpace, keepTaller: Bool = false) -> Bool {
         guard width > 0, height > 0 else {
             context = nil
             return true
         }
-        if let context, context.width == width, context.height == height, context.colorSpace == space {
+        shownHeight = height
+        if let context, context.width == width, context.colorSpace == space,
+           context.height == height || (keepTaller && context.height > height) {
             return false
         }
         context = CGContext(
@@ -142,10 +148,23 @@ final class CanvasSurface {
         }
     }
 
+    /// The rows the layer shows, as bytes (for checks).
+    func pixels() -> Data? {
+        guard let context, let data = context.data else {
+            return nil
+        }
+        return Data(bytes: data, count: context.bytesPerRow * min(shownHeight, context.height))
+    }
+
     /// Hands the layer the bitmap at `frame` (layer points).
     func publish(frame: CGRect, scale: CGFloat) {
         layer.frame = frame
         layer.contentsScale = scale
-        layer.contents = context?.makeImage()
+        let image = context?.makeImage()
+        if let image, image.height > shownHeight {
+            layer.contents = image.cropping(to: CGRect(x: 0, y: 0, width: image.width, height: shownHeight))
+        } else {
+            layer.contents = image
+        }
     }
 }

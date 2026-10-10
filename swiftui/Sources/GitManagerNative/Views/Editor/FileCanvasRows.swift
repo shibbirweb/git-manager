@@ -10,7 +10,9 @@ import NativeCore
 
 extension FileCanvas {
     func drawContent(_ content: Content, colors: CanvasColors, context: CGContext, scale: CGFloat) {
-        let shown = rows(content, from: paintBand.minY, to: paintBand.maxY)
+        // The rows crossing the band and those a few points around it: the text and the 17-point tint boxes reach at
+        // most a point or two past a row, and a wider margin drew every row of a one-row band three or four times.
+        let shown = rows(content, from: paintBand.minY, to: paintBand.maxY, spill: 4)
         let left = CGFloat(content.geometry.guttersWidth)
         drawSelections(content, colors: colors, scale: scale)
         let selection = content.state.selection
@@ -27,7 +29,8 @@ extension FileCanvas {
                 }
             }
         }
-        drawHighlights(content, shown: shown, colors: colors, scale: scale)
+        let findMatches = drawFindMatches(content, shown: shown, colors: colors, scale: scale)
+        drawHighlights(content, shown: shown, colors: colors, scale: scale, findMatches: findMatches)
         let textX = self.textX(content)
         for row in shown {
             drawRow(content, row: row, x: textX, colors: colors, context: context, scale: scale)
@@ -46,14 +49,15 @@ extension FileCanvas {
         for segment in segments(content, row: row) {
             switch segment {
             case .text(let from, let to):
-                let raw = content.doc.slice(from, to)
-                let spans = content.colors?.line(start: from, length: to - from) ?? []
-                let (text, mapped) = Self.expandTabs(raw, spans: spans, startColumn: column, tabSize: tabSize)
-                if !text.isEmpty {
-                    glyphs.draw(CodeLineText.line(text, spans: mapped, colors: colors), x: left, rowTop: rowTop(row),
-                                clip: clip, into: context, scale: scale, layer: true)
+                let (line, width) = cachedLine(content, from: from, to: to, column: column, colors: colors) {
+                    let raw = content.doc.slice(from, to)
+                    let spans = content.colors?.line(start: from, length: to - from) ?? []
+                    return Self.expandTabs(raw, spans: spans, startColumn: column, tabSize: tabSize)
                 }
-                let width = text.utf16.count
+                if let line {
+                    glyphs.draw(line, x: left, rowTop: rowTop(row), clip: clip, into: context, scale: scale,
+                                layer: true)
+                }
                 column += width
                 left += CGFloat(width) * CodeLineText.advance
             case .placeholder:
@@ -122,7 +126,7 @@ extension FileCanvas {
         let width = CGFloat(geometry.guttersWidth)
         colors.nsColor("--editor-gutter").setFill()
         NSRect(x: 0, y: paintBand.minY, width: width, height: paintBand.height).fill()
-        let shown = rows(content, from: paintBand.minY, to: paintBand.maxY)
+        let shown = rows(content, from: paintBand.minY, to: paintBand.maxY, spill: 4)
         let active = Set(content.state.selection.ranges.map { row(of: $0.head, content) })
         for row in shown where active.contains(row) {
             colors.nsColor("--editor-active-line").setFill()
@@ -162,9 +166,11 @@ extension FileCanvas {
             var column = left.rounded(.down)
             while column < right, segment.height > 0 {
                 let coverage = Double(min(right, column + 1) - max(left, column))
-                surface.blend(colors.exact("--text-faint"), alpha: 0.38 * coverage, in: CGRect(
-                    x: column, y: segment.minY * scale, width: 1, height: segment.height * scale
-                ))
+                let area = CGRect(x: column, y: segment.minY * scale, width: 1, height: segment.height * scale)
+                    .intersection(pixelBand(scale))
+                if !area.isNull {
+                    surface.blend(colors.exact("--text-faint"), alpha: 0.38 * coverage, in: area)
+                }
                 column += 1
             }
         }
@@ -201,6 +207,14 @@ extension FileCanvas {
     }
 
     func localClip(_ context: CGContext, scale: CGFloat) -> CGRect {
-        CGRect(x: 0, y: paintBand.minY, width: CGFloat(context.width) / scale, height: paintBand.height)
+        let surfaceWidth = CGFloat(context.width) / scale
+        return paintBand.intersection(CGRect(x: 0, y: 0, width: surfaceWidth, height: .greatestFiniteMagnitude))
+    }
+
+    /// The band being painted in bitmap pixels: every raw pixel operation stays inside it, as Core Graphics drawing
+    /// does inside the band's clip.
+    func pixelBand(_ scale: CGFloat) -> CGRect {
+        CGRect(x: paintBand.minX * scale, y: paintBand.minY * scale, width: paintBand.width * scale,
+               height: paintBand.height * scale)
     }
 }

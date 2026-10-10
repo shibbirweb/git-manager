@@ -14,8 +14,18 @@ final class EditorModel: ObservableObject {
     @Published private(set) var tabs = EditorTabs()
     /// The active tab's editing session once its file is read; nil while it loads or when no tab is open.
     @Published private(set) var session: EditorSession?
-    /// Bumps whenever the session's text, selection or marks change, so the views around the editor follow.
-    @Published private(set) var revision = 0
+    /// Bumps whenever the session's text, selection or marks change, so the views around the editor follow. Kept in
+    /// its own object (EditorChanges): only the views that show the text or the cursor follow every change, not the
+    /// tab strip or the Files panel, which cost about 10 ms a keystroke when they did.
+    /// The canvas paints at once (EditorSession.canvasHook); the views follow on the next turn of the run loop, so
+    /// the code reaches the screen in its own frame instead of waiting for SwiftUI to lay them out.
+    let changes = EditorChanges()
+    var revision = 0 {
+        didSet {
+            session?.canvasHook()
+            changes.publish(revision)
+        }
+    }
     /// The diff tab is on screen (a click on a changed file), not a file tab.
     @Published var diffActive = false
     /// Why the active file shows no text ("Binary file"), or nil.
@@ -200,5 +210,40 @@ final class EditorModel: ObservableObject {
         await loadBlame(session)
         await session.refreshMarks()
         return true
+    }
+}
+
+/// EditorModel's change counter, observed by the file bar, the ruler and the status bar's file items: published on
+/// the run loop's next turn, once for any number of changes in this one.
+@MainActor
+final class EditorChanges: ObservableObject {
+    @Published private(set) var revision = 0
+    private var pending: Int?
+
+    func publish(_ value: Int) {
+        let scheduled = pending != nil
+        pending = value
+        if scheduled {
+            return
+        }
+        AfterFrame.run { [weak self] in
+            guard let self, let value = self.pending else {
+                return
+            }
+            self.pending = nil
+            self.revision = value
+        }
+    }
+}
+
+/// Work for after this turn's frame: a timer, which the run loop fires only after it committed the frame (a block on
+/// the main queue would run before), so what the canvas painted reaches the screen without waiting for it.
+enum AfterFrame {
+    static func run(_ work: @escaping @MainActor () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1)) {
+            MainActor.assumeIsolated {
+                work()
+            }
+        }
     }
 }

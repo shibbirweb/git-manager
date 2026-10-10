@@ -27,6 +27,19 @@ struct GitManagerNativeApp: App {
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             }
+            // Edit > Find... (menuSpec.ts, editorShortcuts.ts): menu items, so the keys work wherever the keyboard is.
+            CommandGroup(replacing: .textEditing) {
+                Button("Find...") { WindowContext.focused.editor.openFind(replace: false) }
+                    .keyboardShortcut("f", modifiers: .command)
+                Button("Replace...") { WindowContext.focused.editor.openFind(replace: true) }
+                    .keyboardShortcut("r", modifiers: .command)
+                Button("Find Next") { WindowContext.focused.editor.findNext() }
+                    .keyboardShortcut("g", modifiers: .command)
+                Button("Find Previous") { WindowContext.focused.editor.findNext(forward: false) }
+                    .keyboardShortcut("g", modifiers: [.command, .shift])
+                Button("Select All Occurrences") { WindowContext.focused.editor.selectAllMatches() }
+                    .keyboardShortcut("g", modifiers: [.command, .control])
+            }
             // Code (menuSpec.ts): Go to Line, a menu item so its key works wherever the keyboard is, as on the page.
             CommandMenu("Code") {
                 Button("Go to Line...") {

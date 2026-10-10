@@ -1,10 +1,11 @@
 // Draws what is on screen of a file, and nothing else, like DiffCanvas: one view the size of the editor's scroller
 // that paints the rows crossing it from the scroll offset, so a long file costs no more memory than a short one.
-// The pixels are layers as the current app's page has them (CanvasSurface.swift): the view's own bitmap holds the
-// editor's background, the scroller's content (selections, the active line, highlights, code text, indent guides
-// and the blame note) is a see-through layer over it with the opaque gutter drawn over the code, and the cursors
-// and the scrollbar thumbs are layers of their own (FileCanvasLayers.swift). Rows are lines, a folded block one row
-// (FoldLayout). An edit repaints the rows it touches; the sizes are EditorGeometry's.
+// The pixels are layers as the current app's page has them (CanvasSurface.swift): the view's layer has the editor's
+// background as its color, the scroller's content (selections, the active line, highlights, code text, indent
+// guides and the blame note) is a see-through layer over it with the opaque gutter drawn over the code, and the
+// cursors and the scrollbar thumbs are layers of their own (FileCanvasLayers.swift). Rows are lines, a folded block
+// one row (FoldLayout). A selection change repaints only the rows it touches (FileCanvasRepaint.swift); the sizes
+// are EditorGeometry's.
 
 import AppKit
 import NativeCore
@@ -15,6 +16,8 @@ final class FileCanvas: NSView {
         /// The session's revision (any change) and its text-and-folds revision (what the guides follow).
         var revision: Int
         var docRevision: Int
+        /// Bumps when the colors, fold ranges, marks or blame are replaced.
+        var paintRevision: Int
         var state: EditorState
         var colors: SyntaxColors?
         var foldRanges: FoldRanges
@@ -31,6 +34,8 @@ final class FileCanvas: NSView {
         let geometry: EditorGeometry
         /// The blame by line, for the blame gutter (nil before the blame answers or while the gutter is off).
         var blame: BlameLines?
+        /// The find bar's search while the bar is open and the search usable: its matches are tinted.
+        var findQuery: FindQuery?
 
         @MainActor
         init(session: EditorSession, blameLabel: String?, theme: Theme, focused: Bool, blinking: String,
@@ -38,6 +43,7 @@ final class FileCanvas: NSView {
             path = session.file.path
             revision = session.revision
             docRevision = session.docRevision
+            paintRevision = session.paintRevision
             state = session.state
             colors = session.colors
             foldRanges = session.foldRanges
@@ -55,6 +61,7 @@ final class FileCanvas: NSView {
             geometry.blameWidth = blameGutter ? BlameGutter.width : 0
             self.geometry = geometry
             blame = blameGutter ? session.blame : nil
+            findQuery = session.find.open && session.find.query.valid ? session.find.query : nil
         }
 
         var doc: TextDocument {
@@ -66,6 +73,7 @@ final class FileCanvas: NSView {
             path == other.path && revision == other.revision && theme.id == other.theme.id
                 && focused == other.focused && blameLabel == other.blameLabel && blinking == other.blinking
                 && geometry.blameWidth == other.geometry.blameWidth && blame == other.blame
+                && findQuery == other.findQuery
         }
     }
 
@@ -77,15 +85,16 @@ final class FileCanvas: NSView {
             if content?.theme.id != colors?.theme.id {
                 colors = content.map { CanvasColors(theme: $0.theme) }
             }
-            dirtyRows = repaintRows(from: oldValue, to: content)
+            // Rows still waiting for a paint stay dirty.
+            if let change = repaintRows(from: oldValue, to: content), let pending = dirtyRows {
+                dirtyRows = pending.union(change.rows)
+                dirtyBoxes += change.boxes
+            } else {
+                dirtyRows = nil
+                dirtyBoxes = []
+            }
             needsDisplay = true
         }
-    }
-
-    /// Rows to paint again for a change: every row on screen (nil). Only the rows crossing the canvas are ever
-    /// painted, so a full repaint after an edit stays as cheap as a scroll step.
-    private func repaintRows(from old: Content?, to new: Content?) -> IndexSet? {
-        nil
     }
 
     /// The scroll position: the content's y at the canvas's top edge, and its x at the gutter's right edge.
@@ -106,7 +115,6 @@ final class FileCanvas: NSView {
         }
     }
 
-    let base = CanvasSurface()
     /// The scroller's content layer, see-through where nothing is painted.
     let surface = CanvasSurface()
     /// One layer per cursor, made as more cursors show.
@@ -116,9 +124,12 @@ final class FileCanvas: NSView {
     var paintedOffset: CGFloat?
     /// Rows to paint again at the next paint (nil: all on screen).
     var dirtyRows: IndexSet?
+    /// Parts of rows to paint again at the next paint (find matches that changed).
+    var dirtyBoxes: [DirtyBox] = []
     /// The cursors' positions the blink last started at: a move restarts it, a scroll does not.
     var blinkKey = ""
     var guideCache: (key: String, runs: [IndentGuides.Run])?
+    var lineCache = LineCache()
     private(set) var colors: CanvasColors?
     var paintBand = CGRect.zero
     let glyphs = GlyphCompositor()
@@ -152,6 +163,14 @@ final class FileCanvas: NSView {
 
     override var wantsUpdateLayer: Bool {
         true
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        let changed = newSize != frame.size
+        super.setFrameSize(newSize)
+        if changed {
+            needsDisplay = true
+        }
     }
 
     override func updateLayer() {

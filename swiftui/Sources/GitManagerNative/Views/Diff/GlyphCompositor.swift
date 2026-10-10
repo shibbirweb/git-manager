@@ -34,11 +34,17 @@ final class GlyphCompositor {
         let advance = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
         let inkFirst = max(0, Int(((x - Self.overhang) * scale).rounded(.down)))
         let inkLast = min(buffer.width, Int(((x + advance + Self.overhang) * scale).rounded(.up)))
-        guard inkFirst < inkLast else {
+        // Only the columns inside the clip are drawn at all: a find match's box renders the glyphs around it, not
+        // the whole line (clipping to whole pixels leaves each pixel's coverage as it is).
+        let drawFirst = max(inkFirst, Int((clip.minX * scale).rounded(.down)))
+        let drawLast = min(inkLast, Int((clip.maxX * scale).rounded(.up)))
+        guard drawFirst < drawLast else {
             return
         }
-        buffer.clear(CGRect(x: inkFirst, y: 0, width: inkLast - inkFirst, height: buffer.height))
+        let drawn = CGRect(x: drawFirst, y: 0, width: drawLast - drawFirst, height: buffer.height)
+        buffer.clear(drawn)
         buffer.saveGState()
+        buffer.clip(to: drawn)
         // Buffer pixel (column, row) is canvas pixel (column, bandTop + row), y down.
         buffer.translateBy(x: 0, y: CGFloat(buffer.height))
         buffer.scaleBy(x: scale, y: -scale)

@@ -123,6 +123,7 @@ extension View {
             .environmentObject(context.app)
             .environmentObject(context.workspace)
             .environmentObject(context.editor)
+            .environmentObject(context.editor.changes)
             .environmentObject(context.log)
             .environmentObject(context.files)
             .environmentObject(context.terminal)

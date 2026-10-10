@@ -53,7 +53,8 @@ Note: With HDR off, beta.7 in dark mode puts the right pane in its own layer onc
 its #1e1f22 as 30, 31, 33 (followed in GM-50).
 
 - Code appearance (`code-appearance`, partial): Code font, syntax colors, bracket colors and indent guides in the diff
-  panes. Native lacks: the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom.
+  panes. Native lacks: the settings: font, weight, line spacing, whitespace, cursor, word wrap, indentation and zoom;
+  sticky scroll (the enclosing lines pinned at the top of a scrolled file).
 
 ## staged: Changes after staging src/cart.ts (runs in both apps)
 
@@ -258,21 +259,16 @@ Folder: demo `acme/storefront`
 - Navigation Bar (`navigation-bar`, partial): The path of the open file; Cmd+Up opens the folder's list with search.
   Native lacks: the crumbs of an open file show, but do nothing when clicked; folder lists, search and keys.
 
-## find-replace: Find and replace bar (native app cannot show it yet)
+## find-replace: Find and replace bar (runs in both apps)
 
 Folder: demo `acme/storefront`
 
 1. Start the app on demo/acme/storefront and double-click src/cart.ts.
 2. Press Cmd+R (Edit > Replace...) and type total.
 
-- Find and replace (`find-replace`, missing): The find bar with Replace, the counter and Replace in Files.
+Note: The jump scrolls the file: the current app pins line 9 at the top (sticky scroll, not native yet).
 
-## sign-in: Sign-in prompt (native app cannot show it yet)
+Measured: light 99.3% (233 MB / 48 MB, 2026-10-11), dark 99.3% (234 MB / 43 MB, 2026-10-11).
 
-Folder: demo `acme/storefront`
-
-1. Start the app on demo/acme/storefront.
-2. Add a remote whose HTTP server answers 401 (as the askpass-sign-in shot of scripts/screenshots.ts does).
-3. Fetch: the Sign in dialog asks for a username and a password.
-
-- Sign-in prompts (`sign-in-prompts`, missing): The Sign in dialog for a username and password or an SSH passphrase.
+- Find and replace (`find-replace`, partial): The find bar with Replace, the counter and Replace in Files. Native
+  lacks: Replace in Files.

@@ -60,6 +60,11 @@ enum Control {
             return dialog(args)
         case "editor_command":
             return editorCommand(args)
+        case "find":
+            return find(args)
+        case "canvas_check":
+            let same = onMain { WindowContext.focused.editor.session?.canvasCheck() }
+            return reply(ok: same != nil, structured: ["paintsLikeWhole": orNull(same)])
         case "scroll":
             return scroll(speed: args["speed"] as? Double ?? 80, rounds: args["rounds"] as? Int ?? 1)
         case "open_folder":
