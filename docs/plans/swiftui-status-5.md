@@ -30,3 +30,20 @@ Continues [swiftui-status-4.md](swiftui-status-4.md). Newest last.
   - Memory: diffblame current 160 / 160 MB, native 42 / 42 MB; logblame 150 / 151 against 48 / 46; file with
     src/cart.ts 250 against 44 (dark).
   - Not built: Back after a blame click (no navigation history in the native app yet).
+- GM-86 open gaps, stage 3 part 1 (Go to Line):
+  - Code > Go to Line... (Cmd+L, a menu item as on the page, so the key works wherever the keyboard is): the
+    page's prompt (DialogHost.svelte) asks "Line[:column] (1-N)" from the cursor's "12:5" (selected), keeps an
+    invalid answer with "Enter a line number, optionally with :column" and Go off, and puts the cursor there,
+    centered (EditorCommands.parseLineTarget / lineTargetPosition, textCommands.ts). The editor takes the keyboard
+    back after.
+  - DialogCenter (per window) and PromptDialog: the page's dialog host for prompts, on GitDialogFrame (now with
+    DialogHost's 14% top and 18-point actions gap); `app action=dialog` answers or cancels it for the control
+    server, and `editor_command code.goToLine` opens it.
+  - Found on the way: an autofocused field (SearchInput) could miss the keyboard when it appeared over the editor
+    (the editor kept it, typing went into the file); it now retries until it is in its window, and the editor no
+    longer takes the keyboard while a dialog is open. The control state names the window's first responder.
+  - gm-measure: `--screen gotoline` (Cmd+L posted) and `gotolineerror` ("12:" typed). Smoke: the prompt, an
+    invalid answer and the cursor after "3:2".
+  - Pixel diff below the title bar (light / dark): gotoline 99.41 / 99.31, gotolineerror 99.44 / 99.37; kept:
+    settings 99.5, welcomeclone 99.59, githubgist 99.32.
+  - Memory with the prompt open: current 199 MB, native 45 MB (light).

@@ -20,6 +20,10 @@ struct GitDialogFrame<Content: View, Footer: View>: View {
     var onSubmit: (() -> Void)?
     /// The footer sets its own spaces (a button at the left, as the result dialogs' Copy Link).
     var footerSpaced = false
+    /// Where the dialog starts, as a share of the window's height (DialogHost's 14vh for prompts and confirms).
+    var topShare: CGFloat = 0.1
+    /// The space above the buttons (DialogHost's .actions: 18).
+    var actionsGap: CGFloat = 16
     @ViewBuilder let content: () -> Content
     @ViewBuilder let footer: () -> Footer
 
@@ -46,7 +50,7 @@ struct GitDialogFrame<Content: View, Footer: View>: View {
                             .onAppear { dialogFrame = frame }
                             .onChange(of: frame) { dialogFrame = $0 }
                     })
-                    .padding(.top, proxy.size.height * 0.1)
+                    .padding(.top, proxy.size.height * topShare)
             }
             .coordinateSpace(name: "gitDialog")
         }
@@ -79,7 +83,7 @@ struct GitDialogFrame<Content: View, Footer: View>: View {
                 }
                 footer()
             }
-            .padding(.top, 16)
+            .padding(.top, actionsGap)
         }
         // The 1-point border is outside the 18 / 20 / 16 points of padding.
         .padding(.top, 19)

@@ -19,6 +19,8 @@ struct SearchInput: NSViewRepresentable {
     var secure = false
     /// Return in the field.
     var onSubmit: (() -> Void)?
+    /// Keeps the text selected on focus, as a prompt's select() does.
+    var selectsAll = false
 
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text)
@@ -36,14 +38,27 @@ struct SearchInput: NSViewRepresentable {
         field.lineBreakMode = .byClipping
         field.cell?.isScrollable = true
         if autofocus {
-            DispatchQueue.main.async {
-                field.window?.makeFirstResponder(field)
-                // AppKit selects all of the text on focus; WebKit's focus() leaves the caret after it.
+            Self.focus(field, selectsAll: selectsAll, attempts: 10)
+        }
+        return field
+    }
+
+    /// Gives `field` the keyboard once it is in a window: a field that appears over a view holding the keyboard
+    /// (the editor, for Go to Line) is often not in its window yet on the first try.
+    private static func focus(_ field: NSTextField, selectsAll: Bool, attempts: Int) {
+        DispatchQueue.main.async {
+            guard let window = field.window, window.makeFirstResponder(field), field.currentEditor() != nil else {
+                if attempts > 0 {
+                    focus(field, selectsAll: selectsAll, attempts: attempts - 1)
+                }
+                return
+            }
+            // AppKit selects all of the text on focus; WebKit's focus() leaves the caret after it.
+            if !selectsAll {
                 let length = (field.stringValue as NSString).length
                 field.currentEditor()?.selectedRange = NSRange(location: length, length: 0)
             }
         }
-        return field
     }
 
     func updateNSView(_ field: NSTextField, context: Context) {

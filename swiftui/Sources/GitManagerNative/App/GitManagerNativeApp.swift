@@ -27,6 +27,16 @@ struct GitManagerNativeApp: App {
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             }
+            // Code (menuSpec.ts): Go to Line, a menu item so its key works wherever the keyboard is, as on the page.
+            CommandMenu("Code") {
+                Button("Go to Line...") {
+                    let editor = WindowContext.focused.editor
+                    if !editor.diffActive {
+                        Task { await editor.goToLine() }
+                    }
+                }
+                .keyboardShortcut("l", modifiers: .command)
+            }
             // Git > GitHub (menuSpec.ts): the items that need an account so far.
             CommandMenu("Git") {
                 Menu("GitHub") {

@@ -23,6 +23,7 @@ final class WindowContext: ObservableObject {
     let clone = CloneCenter()
     let menus = ContextMenuCenter()
     let github = GitHubCenter()
+    let dialogs = DialogCenter()
     /// The window showing this context, once it is on screen; its moves and resizes go to the window session.
     weak var window: NSWindow? {
         didSet {

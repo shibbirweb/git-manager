@@ -77,6 +77,7 @@ enum Smoke {
             try await checkDiff(app, check: check)
             try await checkFiles(app.client, check: check)
             try await checkBlameClick(app.client, repoPath: repoPath, check: check)
+            try await checkGoToLine(app.client, check: check)
 
             let shot = try await app.client.call("take_screenshot")
             let image = try shot.image.map(RGBAImage.decode(pngData:))

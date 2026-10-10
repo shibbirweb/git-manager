@@ -91,3 +91,12 @@ extension FileScrollView.Host {
         scrollView.reflectScrolledClipView(scrollView.contentView)
     }
 }
+
+extension FileScrollView.Host {
+    /// Takes the keyboard unless one of the window's dialogs is open (it keeps it, as the page's dialog does).
+    func takeKeyboard() {
+        if WindowContext.of(window)?.dialogs.prompt == nil {
+            window?.makeFirstResponder(self)
+        }
+    }
+}

@@ -56,6 +56,8 @@ enum Control {
             return openFile(args)
         case "blame_click":
             return blameClick(args)
+        case "dialog":
+            return dialog(args)
         case "editor_command":
             return editorCommand(args)
         case "scroll":
@@ -153,6 +155,7 @@ enum Control {
                 "width": window.frame.width,
                 "height": window.frame.height,
                 "colorSpace": orNull(window.colorSpace?.localizedName),
+                "firstResponder": orNull(window.firstResponder.map { String(describing: type(of: $0)) }),
                 "contentWidth": content.width,
                 "contentHeight": content.height,
                 "scale": window.backingScaleFactor,

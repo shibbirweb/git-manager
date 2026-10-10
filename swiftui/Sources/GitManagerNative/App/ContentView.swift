@@ -48,6 +48,9 @@ struct ContentView: View {
                 CloneDialog()
             }
             GitHubDialogHost()
+            if let windowContext {
+                PromptDialogHost(center: windowContext.dialogs)
+            }
             ContextMenuOverlay()
         }
         .coordinateSpace(name: HeaderMenus.pageSpace)

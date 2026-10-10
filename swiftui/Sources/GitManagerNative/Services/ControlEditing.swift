@@ -18,6 +18,14 @@ extension Control {
     ]
 
     static func editorCommand(_ args: [String: Any]) -> String {
+        // Go to Line opens its prompt (answered with `app action=dialog`).
+        if args["command"] as? String == "code.goToLine" {
+            onMain {
+                let editor = WindowContext.focused.editor
+                Task { await editor.goToLine() }
+            }
+            return reply(ok: true, structured: onMain { ["dialog": dialogState()] })
+        }
         guard let name = args["command"] as? String, let action = editorCommands[name] else {
             return reply(ok: false, text: "command is one of: \(editorCommands.keys.sorted().joined(separator: ", "))")
         }

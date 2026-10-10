@@ -57,9 +57,9 @@ struct FileScrollView: NSViewRepresentable {
         host.blameTooltip = blameTooltip
         host.redraw()
         if opened {
-            // A file that opens takes the keyboard, as CodeMirror focuses a new file view.
+            // A file that opens takes the keyboard, as CodeMirror focuses a new file view (not from an open dialog).
             DispatchQueue.main.async {
-                host.window?.makeFirstResponder(host)
+                host.takeKeyboard()
             }
         }
         host.needsLayout = true
@@ -138,7 +138,7 @@ struct FileScrollView: NSViewRepresentable {
             updateBlameTips()
             if session.centerRequests != centered {
                 centered = session.centerRequests
-                window?.makeFirstResponder(self)
+                takeKeyboard()
                 DispatchQueue.main.async { [weak self] in
                     self?.centerCursor()
                 }

@@ -23,6 +23,8 @@ struct PageInput: View {
     var onSubmit: (() -> Void)?
     /// .number-input's 12 points (the MCP port).
     var fontSize: CGFloat = 13
+    /// Starts with its text selected (a prompt).
+    var selectsAll = false
 
     var body: some View {
         let font = mono ? (ligatures ? CodeFont.font(fontSize) : CodeFonts(size: fontSize).regular)
@@ -36,7 +38,8 @@ struct PageInput: View {
                 theme.ink("--text").frame(width: 2, height: 15.29)
             }
             SearchInput(text: $text, textColor: theme.textColor("--text"), caretColor: theme.textColor("--text"),
-                        font: font, autofocus: autofocus, onFocus: onFocus, secure: secure, onSubmit: onSubmit)
+                        font: font, autofocus: autofocus, onFocus: onFocus, secure: secure, onSubmit: onSubmit,
+                        selectsAll: selectsAll)
                 .frame(height: 26)
         }
         // 8 points of padding inside the 1-point border (padding(1) below).

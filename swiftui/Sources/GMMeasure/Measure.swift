@@ -68,7 +68,7 @@ enum Measure {
         let validScreen = (["changes", "diff", "diffblame", "staged", "file", "blame", "log", "logblame", "settings",
                             "terminal", "merge", "conflicts"]
             + searchScreens + workspaceScreens + welcomeScreens + closeScreens + editScreens + githubScreens
-                + githubDialogScreens + automationScreens)
+                + githubDialogScreens + automationScreens + promptScreens)
             .contains(options.screen)
         let validCollapse = collapse == "on" || collapse == "off"
         guard arguments.isEmpty, options.mode == "light" || options.mode == "dark", validScreen, validCollapse else {
@@ -190,6 +190,8 @@ enum Measure {
             try await openHeaderMenu(app, screen: options.screen)
         } else if selectScreens.contains(options.screen) {
             try await openSelect(app, screen: options.screen)
+        } else if promptScreens.contains(options.screen) {
+            try await showGoToLine(app, screen: options.screen)
         } else if closeScreens.contains(options.screen) {
             try await closeFolder(app)
         } else if windowScreens.contains(options.screen) {
