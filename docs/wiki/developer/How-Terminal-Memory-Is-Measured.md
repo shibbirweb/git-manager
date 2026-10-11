@@ -1,6 +1,6 @@
 # How Terminal Memory Is Measured
 
-The memory details in the status bar have a **Terminals** section, like Orca's resource manager: the sum, then one row per terminal, AI agent or run of the window. The user side is in [Memory Use](../usage/Memory-Use.md#terminals); the app's own readout is in [How Memory Is Measured](How-Memory-Is-Measured.md).
+The memory details in the status bar have a **Terminals** section: the sum, then one row per terminal, AI agent or run of the window. The user side is in [Memory Use](../usage/Memory-Use.md#terminals); the app's own readout is in [How Memory Is Measured](How-Memory-Is-Measured.md).
 
 ## Why we need it
 

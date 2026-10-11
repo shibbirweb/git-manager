@@ -1,6 +1,6 @@
 # AI Agents
 
-The AI panel runs AI coding agents, such as Claude Code or Codex, next to your code, like [Orca](https://github.com/stablyai/orca). Each project of your workspace is listed with its worktrees, and each worktree with the agents working in it. An agent runs in its own editor tab, and the panel shows what it is doing.
+The AI panel runs AI coding agents, such as Claude Code or Codex, next to your code. Each project of your workspace is listed with its worktrees, and each worktree with the agents working in it. An agent runs in its own editor tab, and the panel shows what it is doing.
 
 ![The AI panel with an agent at work](../images/ai-panel.png)
 
@@ -12,7 +12,7 @@ Click the **robot** button in the right activity bar, under the Files button, or
 
 ## Projects and worktrees
 
-Like in Orca, every folder of your workspace is a **project**, marked **folder**, and so is every repository found in it. Start an agent in a folder project to work in that folder, git or not; agents in its subfolders are listed under it too. A workspace folder that is a repository itself is listed once, as the repository.
+Every folder of your workspace is a **project**, marked **folder**, and so is every repository found in it. Start an agent in a folder project to work in that folder, git or not; agents in its subfolders are listed under it too. A workspace folder that is a repository itself is listed once, as the repository.
 
 Under each repository the panel shows a **card** for each of its **worktrees**. A worktree is an extra checkout of the same repository in its own folder, with its own branch (see [Worktrees](Worktrees.md)). Agents in different worktrees never touch each other's files, so you can let several agents work at once, each on its own task.
 
@@ -36,7 +36,7 @@ The agent opens in a new editor tab, like a terminal tab. Above its output, a di
 
 *The + after an agent's tab starts another agent or a terminal in the same worktree.*
 
-While an agent's tab is shown, a **+** follows the tabs, like in Orca. Click it to start another agent, or a **Blank Terminal**, in the same worktree; the new tab opens in the same editor group.
+While an agent's tab is shown, a **+** follows the tabs. Click it to start another agent, or a **Blank Terminal**, in the same worktree; the new tab opens in the same editor group.
 
 ### A new task on its own branch
 

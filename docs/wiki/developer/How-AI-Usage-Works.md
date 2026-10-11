@@ -1,10 +1,10 @@
 # How AI Usage Works
 
-The status bar shows Claude Code's and Codex's rate-limit usage, like Orca. The user side is [AI Usage](../usage/AI-Usage.md); the agents themselves are in [How the AI Panel Works](How-the-AI-Panel-Works.md).
+The status bar shows Claude Code's and Codex's rate-limit usage. The user side is [AI Usage](../usage/AI-Usage.md); the agents themselves are in [How the AI Panel Works](How-the-AI-Panel-Works.md).
 
 ## Why we need it
 
-Agents stop when a plan's 5-hour or weekly limit runs out, often in the middle of a task. Orca shows the usage in its status bar; people who run several agents at once watch it closely.
+Agents stop when a plan's 5-hour or weekly limit runs out, often in the middle of a task. People who run several agents at once watch it closely, so it belongs in the status bar.
 
 ## How it works
 
@@ -20,7 +20,7 @@ flowchart LR
 
 ### Claude Code
 
-`claude.rs` reads Claude Code's credentials JSON from the Keychain item `Claude Code-credentials` (account: the login user) through the `keyring` crate, or from `.credentials.json` on other systems. It sends `GET https://api.anthropic.com/api/oauth/usage` with the access token and `anthropic-beta: oauth-2025-04-20`, as Orca does, and reads `five_hour` and `seven_day` (`utilization`, `resets_at`), plus single models' weekly limits such as Fable (`model_weekly`): the `limits` list's `weekly_scoped` entries (`percent`, `scope.model.display_name`), else the older `fable_weekly`, `fable_seven_day` or `seven_day_fable`, as Orca reads them. An expired token is not sent; 401 or 403 reads as signed out; 429 as "asked to wait". The token is read for each request and never kept. When the Keychain refuses, a flag stops further questions until the user's Refresh (`fresh`).
+`claude.rs` reads Claude Code's credentials JSON from the Keychain item `Claude Code-credentials` (account: the login user) through the `keyring` crate, or from `.credentials.json` on other systems. It sends `GET https://api.anthropic.com/api/oauth/usage` with the access token and `anthropic-beta: oauth-2025-04-20`, as Claude Code does, and reads `five_hour` and `seven_day` (`utilization`, `resets_at`), plus single models' weekly limits such as Fable (`model_weekly`): the `limits` list's `weekly_scoped` entries (`percent`, `scope.model.display_name`), else the older `fable_weekly`, `fable_seven_day` or `seven_day_fable`. An expired token is not sent; 401 or 403 reads as signed out; 429 as "asked to wait". The token is read for each request and never kept. When the Keychain refuses, a flag stops further questions until the user's Refresh (`fresh`).
 
 ### Codex
 

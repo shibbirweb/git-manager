@@ -1,6 +1,6 @@
 # Keep Computer Awake
 
-Stop your computer from sleeping, turning off its screen or locking while AI agents work, like in [Orca](https://github.com/stablyai/orca). A long agent run then finishes even when you walk away.
+Stop your computer from sleeping, turning off its screen or locking while AI agents work. A long agent run then finishes even when you walk away.
 
 ![Keep computer awake](../images/keep-awake.png)
 

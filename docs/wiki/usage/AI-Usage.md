@@ -1,6 +1,6 @@
 # AI Usage in the Status Bar
 
-See how much of your AI plan's limits you have used, like in [Orca](https://github.com/stablyai/orca): Claude Code's and Codex's 5-hour and weekly limits, right in the status bar. You know before an agent stops halfway through a task.
+See how much of your AI plan's limits you have used: Claude Code's and Codex's 5-hour and weekly limits, right in the status bar. You know before an agent stops halfway through a task.
 
 ![AI usage in the status bar](../images/ai-usage.png)
 
@@ -20,7 +20,7 @@ If an agent shows **signed out**, start it once in a terminal so it signs in aga
 
 ## Where it shows
 
-**Settings > AI > Usage in status bar**: **Right** (the default, next to the notifications), **Left** (after the repository and branch, like Orca) or **Hidden**. Hidden reads nothing at all.
+**Settings > AI > Usage in status bar**: **Right** (the default, next to the notifications), **Left** (after the repository and branch) or **Hidden**. Hidden reads nothing at all.
 
 **Settings > AI > Show usage of** has a box per agent, **Claude Code** and **Codex**, both on by default. Turn one off to leave it out of the status bar; its usage is then not read at all (for Claude Code: no Keychain and no request to Anthropic).
 

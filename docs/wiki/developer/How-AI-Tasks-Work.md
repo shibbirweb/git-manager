@@ -4,7 +4,7 @@ New Task makes one worktree per agent from the repository's default branch, gets
 
 ## Why we need it
 
-Orca's main idea is parallel work: every task in its own git worktree, often several agents racing on the same task. Our New Worktree dialog could already make a worktree, but a task needed four fields, a fresh checkout lacked `.env` and `node_modules`, and cleaning up took two steps.
+Agents work best in parallel: every task in its own git worktree, often several agents racing on the same task. Our New Worktree dialog could already make a worktree, but a task needed four fields, a fresh checkout lacked `.env` and `node_modules`, and cleaning up took two steps.
 
 ## How it works
 
@@ -45,7 +45,7 @@ It returns copied, linked and skipped paths with reasons; `prepareSummary` turns
 
 ### First prompt
 
-`promptArguments` (`agents.ts`) follows Orca's prompt modes: Claude Code, Codex and Cursor take it as their last argument, OpenCode after `--prompt`, Gemini after `--prompt-interactive`, Copilot after `-i`. Aider, Amp and Qwen Code get it typed: the agent tab stores it as `pendingPrompt`, and `TerminalView.typeWhenQuiet` types it once the agent's start-up output has been quiet for 0.9 s (at most 20 s), then Enter.
+`promptArguments` (`agents.ts`) knows how each agent takes a prompt: Claude Code, Codex and Cursor take it as their last argument, OpenCode after `--prompt`, Gemini after `--prompt-interactive`, Copilot after `-i`. Aider, Amp and Qwen Code get it typed: the agent tab stores it as `pendingPrompt`, and `TerminalView.typeWhenQuiet` types it once the agent's start-up output has been quiet for 0.9 s (at most 20 s), then Enter.
 
 ### Finish Task
 

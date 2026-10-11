@@ -1,6 +1,6 @@
 # AI Tasks: Several Branches at Once
 
-Work on the same project on several branches at the same time, like in [Orca](https://github.com/stablyai/orca). Each **task** gets its own branch in its own folder (a git **worktree**, see [Worktrees](Worktrees.md)), with an AI agent working in it. Agents in different worktrees never touch each other's files, so one can fix a bug while another builds a feature, and you can let several agents race on the same task and keep the best result.
+Work on the same project on several branches at the same time. Each **task** gets its own branch in its own folder (a git **worktree**, see [Worktrees](Worktrees.md)), with an AI agent working in it. Agents in different worktrees never touch each other's files, so one can fix a bug while another builds a feature, and you can let several agents race on the same task and keep the best result.
 
 ![New Task](../images/ai-new-task.png)
 

@@ -12,7 +12,7 @@ The number updates every few seconds while the window is visible, and stops whil
 
 ## Terminals
 
-Below the app's rows, **Terminals** lists what runs in this window's terminals, like in [Orca](https://github.com/stablyai/orca): the sum at the top, then one row per terminal, [AI agent](AI-Agents.md) or script in the Run tab, biggest first. Each row counts the shell and everything it started, such as Claude Code, a dev server or a test run. An agent row shows the agent's title and its folder.
+Below the app's rows, **Terminals** lists what runs in this window's terminals: the sum at the top, then one row per terminal, [AI agent](AI-Agents.md) or script in the Run tab, biggest first. Each row counts the shell and everything it started, such as Claude Code, a dev server or a test run. An agent row shows the agent's title and its folder.
 
 ![Terminals in the memory details](../images/memory-terminals.png)
 

@@ -4,7 +4,7 @@ The AI panel lists the workspace's projects, their worktrees and the AI agents r
 
 ## Why we need it
 
-People run coding agents (Claude Code, Codex...) beside their editor, often several at once, each in its own git worktree so they never edit the same files. [Orca](https://github.com/stablyai/orca) showed the shape: projects, worktrees under them, agent tabs under those, and a status for each agent. Git Manager already had worktrees and terminals in editor tabs, so the panel ties them together.
+People run coding agents (Claude Code, Codex...) beside their editor, often several at once, each in its own git worktree so they never edit the same files. The panel follows that shape: projects, worktrees under them, agent tabs under those, and a status for each agent. Git Manager already had worktrees and terminals in editor tabs, so the panel ties them together.
 
 ## How it works
 
@@ -27,7 +27,7 @@ flowchart LR
 
 ### Projects, worktrees and rows
 
-`workspaceProjects(folders, repos)` turns the workspace into projects, like Orca: every workspace folder (a plain folder project, unless the folder is a repository itself), then the repositories found in it, without submodules. `aiStore.loadWorktrees(roots)` reads `list_worktrees` for each repository when the panel opens, on Refresh, after the panel's own changes and when the active repository's refs change (their fingerprint covers worktrees). Nothing polls.
+`workspaceProjects(folders, repos)` turns the workspace into projects: every workspace folder (a plain folder project, unless the folder is a repository itself), then the repositories found in it, without submodules. `aiStore.loadWorktrees(roots)` reads `list_worktrees` for each repository when the panel opens, on Refresh, after the panel's own changes and when the active repository's refs change (their fingerprint covers worktrees). Nothing polls.
 
 `panelRows(projects, worktrees, sessions, collapsed)` builds the flat row list:
 
@@ -37,11 +37,11 @@ flowchart LR
 
 ### Cards
 
-`panelView.ts` draws the rows like Orca's sidebar: `groupRows` makes a section per project with a card per worktree and its agents inside; `filterRows` keeps what matches every word of the filter, with the worktree and project around a matching agent; `mostUrgent` gives a card its mark; `attentionCounts` fills the "needs you" and "working" pills; `formatAge` writes "4m" from the agent's `changedAt`, refreshed every 30 s while the panel is open. `AgentStateIcon.svelte` draws the marks (the spinner only while an agent works). Menus and worktree actions live in `panelActions.ts`.
+`panelView.ts` draws the rows: `groupRows` makes a section per project with a card per worktree and its agents inside; `filterRows` keeps what matches every word of the filter, with the worktree and project around a matching agent; `mostUrgent` gives a card its mark; `attentionCounts` fills the "needs you" and "working" pills; `formatAge` writes "4m" from the agent's `changedAt`, refreshed every 30 s while the panel is open. `AgentStateIcon.svelte` draws the marks (the spinner only while an agent works). Menus and worktree actions live in `panelActions.ts`.
 
 ### Starting an agent
 
-`agents.ts` is the catalog: id, label, program and the full-autonomy flags, taken from Orca's `tui-agent-permissions.ts`. These are defaults: `agentConfig.ts` applies the user's Settings > AI changes (`aiAgentCommands`). The Rust command `find_agent_programs` (`commands/ai.rs`, `run_process::find_programs`) resolves each program on the login shell's environment, the same one the Run tab uses, with Windows' PATHEXT. Only bare names are looked up.
+`agents.ts` is the catalog: id, label, program and the full-autonomy flags, taken from each agent's own documentation. These are defaults: `agentConfig.ts` applies the user's Settings > AI changes (`aiAgentCommands`). The Rust command `find_agent_programs` (`commands/ai.rs`, `run_process::find_programs`) resolves each program on the login shell's environment, the same one the Run tab uses, with Windows' PATHEXT. Only bare names are looked up.
 
 `startAgent(agentId, folderPath)` (`sessions.svelte.ts`) asks the permission mode on the first start (`dialogs.choose`, saved as `aiPermissionMode`), adds the flags in full mode and the user's extra arguments (`splitArguments`, shell-like quoting, nothing expanded), and calls `terminalStore.startAgent`. That is a terminal entry with `location: "editor"`, a `run` spec (so `run_script` starts the exact file that was found, in the worktree) and an `agent` record (`agentId`, `folderPath`, `title`, `state`).
 
@@ -51,7 +51,7 @@ flowchart LR
 
 ### Status
 
-`TerminalView` passes each title change to `terminalStore.setAgentTitle`. `agentStatus.ts` reads it like Orca: braille or quarter-circle spinners and Gemini's ✦ mean working; Claude's ✳ and Gemini's ◇ mean idle; ✋ or "action required" mean the agent waits for the user. `nextState` turns that into Starting, Ready, Working, Needs you, Done or Exited. The stored title is cleaned of spinner frames, so the store only changes when the state or the words change, not on every frame; a title that only states the status ("claude - action required") keeps the last task title (`isStatusOnlyTitle`). A change from Working to Done or Needs you while the tab is hidden rings the tab's bell, and the robot button shows a dot.
+`TerminalView` passes each title change to `terminalStore.setAgentTitle`. `agentStatus.ts` reads it: braille or quarter-circle spinners and Gemini's ✦ mean working; Claude's ✳ and Gemini's ◇ mean idle; ✋ or "action required" mean the agent waits for the user. `nextState` turns that into Starting, Ready, Working, Needs you, Done or Exited. The stored title is cleaned of spinner frames, so the store only changes when the state or the words change, not on every frame; a title that only states the status ("claude - action required") keeps the last task title (`isStatusOnlyTitle`). A change from Working to Done or Needs you while the tab is hidden rings the tab's bell, and the robot button shows a dot.
 
 An agent tab survives a clean exit (shells close), shows "Agent exited" with Restart, and keeps its `agent` and `run` across [Clear Cache](How-Clear-Cache-Works.md) (`terminalStash.ts`). Restart is a `restartRequest` the tab's `TerminalView` answers with its Retry path.
 
@@ -79,13 +79,13 @@ An agent tab survives a clean exit (shells close), shows "Agent exited" with Res
 
 **Ask once, then a setting.** Full autonomy is useful in a worktree but risky in a main checkout, so the user chooses it knowingly on the first start.
 
-**Titles, not hooks.** Orca also installs agent hooks; titles need no setup and cover the agents we list.
+**Titles, not hooks.** Agent hooks would need installing in each agent; titles need no setup and cover the agents we list.
 
 ## Tests
 
 - `projects.test.ts`: projects from folders and repositories, rows, the deepest place, collapsed rows, linked and moved worktrees, unique keys.
 - `panelView.test.ts`: sections and cards, the filter, urgency, counts, ages.
-- `agents.test.ts`, `agentStatus.test.ts` (Orca's title cases), `sessions.test.ts`.
+- `agents.test.ts`, `agentStatus.test.ts` (real agents' title cases), `sessions.test.ts`.
 - `terminalStash.test.ts`: agent tabs across Clear Cache.
 - Rust: `run_process` tests find only bare executable names, and `.cmd` files with Windows extensions.
 - Screenshots `ai-panel`, `ai-new-tab`, `ai-permission` and `ai-settings` run a stand-in agent from the demo folder (`writeDemoAgent` in `scripts/screenshots.ts`); the page answers `find_agent_programs`, so a real agent never runs.
