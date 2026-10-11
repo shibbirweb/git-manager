@@ -40,6 +40,16 @@ public struct SelectionRange: Equatable, Sendable {
         anchor == head
     }
 
+    /// SelectionRange.extend: the range taken to `from`..`to` from its anchor, or that range when it covers the anchor.
+    public func extend(_ from: Int, _ to: Int? = nil) -> SelectionRange {
+        let to = to ?? from
+        if from <= anchor && to >= anchor {
+            return .range(from, to)
+        }
+        let head = abs(from - anchor) > abs(to - anchor) ? from : to
+        return .range(anchor, head)
+    }
+
     /// The range after `changes`, keeping its direction; a cursor follows `assoc`.
     public func map(_ changes: ChangeSet, assoc mapAssoc: Int = -1) -> SelectionRange {
         if isEmpty {

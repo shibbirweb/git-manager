@@ -7,6 +7,16 @@ import AppKit
 final class EditorDocumentView: NSView {
     weak var host: FileScrollView.Host?
 
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        // Text dropped on the editor (FileEditorDrag.swift).
+        registerForDraggedTypes([.string])
+    }
+
+    required init?(coder: NSCoder) {
+        nil
+    }
+
     override var isFlipped: Bool {
         true
     }
@@ -16,12 +26,11 @@ final class EditorDocumentView: NSView {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        host?.dragged(to: convert(event.locationInWindow, from: nil), flags: event.modifierFlags)
+        host?.dragged(to: convert(event.locationInWindow, from: nil), event: event)
     }
 
     override func mouseUp(with event: NSEvent) {
-        host?.dragAnchor = nil
-        host?.columnDrag = nil
+        host?.released()
     }
 
     // The pointer's shape follows it and the Option key (FileEditorColumns.swift).

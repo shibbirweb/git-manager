@@ -79,9 +79,13 @@ struct FileScrollView: NSViewRepresentable {
                     oldValue?.canvasHook = {}
                     oldValue?.canvasCheck = { true }
                     oldValue?.completion.changed = {}
-                    oldValue?.columnDragHook = { _, _, _ in false }
-                    session?.columnDragHook = { [weak self] start, end, adding in
-                        self?.columnDrag(from: start, to: end, adding: adding) ?? false
+                    oldValue?.columnDragHook = { _, _ in false }
+                    oldValue?.textDragHook = { _, _ in false }
+                    session?.columnDragHook = { [weak self] start, end in
+                        self?.columnDrag(from: start, to: end) ?? false
+                    }
+                    session?.textDragHook = { [weak self] target, copies in
+                        self?.textDrag(to: target, copies: copies) ?? false
                     }
                     session?.completion.changed = { [weak self] in
                         self?.updatePopup()
@@ -110,6 +114,10 @@ struct FileScrollView: NSViewRepresentable {
         var dragAnchor: (position: Int, clicks: Int)?
         /// An Option+drag selecting a rectangle (FileEditorColumns.swift).
         var columnDrag: ColumnDrag?
+        /// A press on the main selection, waiting to become a drag of its text or a click (FileEditorDrag.swift).
+        var pendingTextDrag: NSEvent?
+        /// The text this editor is dragging, which a drop here moves (the page's draggedContent).
+        var draggedContent: Range<Int>?
 
         override init(frame: NSRect) {
             super.init(frame: frame)

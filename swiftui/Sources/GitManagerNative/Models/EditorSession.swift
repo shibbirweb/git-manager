@@ -30,8 +30,10 @@ final class EditorSession {
     var canvasHook: () -> Void = {}
     /// For the control server's check: whether the canvas as painted equals a whole repaint of the same state.
     var canvasCheck: () -> Bool = { true }
-    /// For the control server: an Option+drag from one (line, column) to another, Cmd held when `adding`.
-    var columnDragHook: ((line: Int, column: Int), (line: Int, column: Int), Bool) -> Bool = { _, _, _ in false }
+    /// For the control server: an Option+drag from one (line, column) to another.
+    var columnDragHook: ((line: Int, column: Int), (line: Int, column: Int)) -> Bool = { _, _ in false }
+    /// For the control server: a drag of the main selection's text to a (line, column), Option held to copy.
+    var textDragHook: ((line: Int, column: Int), Bool) -> Bool = { _, _ in false }
     /// Asks the editor view to take the keyboard, or to scroll the main cursor into view (a match found).
     var keyboardRequests = 0
     var scrollRequests = 0

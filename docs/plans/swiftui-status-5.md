@@ -159,8 +159,8 @@ Continues [swiftui-status-4.md](swiftui-status-4.md). Newest last.
     sit higher until it lets go; the page's sticky scroll line (a listed gap of Code appearance).
 - GM-89 open gaps, stage 3 part 4 (column selection):
   - Option+drag in the file editor selects a rectangle (features.ts columnSelection: rectangularSelection with
-    Option and without Shift), Cmd during the drag keeps the selection it started from; Settings
-    editorColumnSelection (on by default) switches it. NativeCore ColumnSelection ports getPos and rectangleFor:
+    Option and without Shift); Settings editorColumnSelection (on by default) switches it. (GM-89 first let Cmd
+    keep the starting selection; GM-90 found the page never adds there, see below.) NativeCore ColumnSelection ports getPos and rectangleFor:
     tabs expanded, a column past a line's end taken from the pointer's x, short lines given a cursor at their
     end, offsets for columns past 2000 characters (and the page's own line.to + endOff sum there); tested on
     Fixtures/cm-rectangle.txt from the package's function run under Bun (20 cases, tab sizes 4 and 2).
@@ -175,3 +175,19 @@ Continues [swiftui-status-4.md](swiftui-status-4.md). Newest last.
     the main thread (the control answer's ms), the paint being the partial repaint of GM-87.
   - Smoke: a block (lines 2 to 5, columns 2 to 4), a ragged one past short lines' ends, Cmd adding, and partial
     repaints equal a whole one. Not checked by a person yet: a real Option+drag and the crosshair.
+- GM-90 open gaps, stage 3 part 5 (dragging text):
+  - A press on the main selection waits (MouseSelection's dragging == null): 3 points of movement (WebKit's text
+    drag threshold) start a system drag of the selected text (NSDraggingSession, so it also drops into other apps
+    as WebKit's drag does), a release without it selects as a click there. A drop of text into the editor goes in
+    at the drop position, selected (dropText, NativeCore TextDrop, tested on its CodeMirror results): this
+    editor's own text moves ("move.drop"), with Option held it is copied, text from elsewhere is inserted
+    ("input.drop"). The drag image is the text in the code font at 75% (WebKit's drag image alpha). The page shows
+    no drop cursor (its .cm-content caret color is transparent and it has no dropCursor), so neither does this.
+    Files dropped on the editor are left alone (the page reads their text; not done).
+  - Found on the way: the page's clickAddsSelectionRange is Option+Shift, and Shift extends before it adds, so
+    no click adds a cursor there: Cmd+click is a plain click, Option+Shift+click extends like Shift+click. The
+    native editor added a cursor on Cmd+click (since GM-58) and GM-89's column drag kept the selection with Cmd;
+    both now do what the page does. Shift+double and triple click extend by the word or line (SelectionRange.extend).
+  - Not measurable against the page (no drag can be posted to it, the pointer is never moved): smoke drops
+    through the host's own drop code (`app action=text_drag`): a move and an Option copy. Not checked by a person
+    yet: a real drag, the drag image, drops from and to other apps.

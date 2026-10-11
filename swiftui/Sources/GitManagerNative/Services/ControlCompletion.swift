@@ -1,7 +1,8 @@
 // The control server's code completion and column drag: `app action=complete` types `type` into the shown file
 // as keys do (so completion follows), then presses `key` (Ctrl-Space, Escape, ArrowDown, ArrowUp, PageDown, PageUp,
 // Enter, Tab or Shift-Tab) as the editor's keyboard does, waits `waitMs` for the sources, and answers the editor's
-// state with the popup's (completionState). `app action=column_drag` runs an Option+drag between two places.
+// state with the popup's (completionState). `app action=column_drag` runs an Option+drag between two places,
+// `app action=text_drag` drops the selection's text somewhere else.
 
 import Foundation
 import NativeCore
@@ -46,14 +47,13 @@ extension Control {
     }
 
     /// `app action=column_drag`: an Option+drag in the shown file from `fromLine`:`fromColumn` to
-    /// `toLine`:`toColumn` (1-based lines, 0-based visual columns), with Cmd when `adding`.
+    /// `toLine`:`toColumn` (1-based lines, 0-based visual columns).
     static func columnDrag(_ args: [String: Any]) -> String {
         let number = { (key: String) in args[key] as? Int ?? 0 }
         let (done, ms) = onMain { () -> (Bool, Double) in
             let started = Date()
             let done = WindowContext.focused.editor.session?.columnDragHook(
-                (number("fromLine"), number("fromColumn")), (number("toLine"), number("toColumn")),
-                args["adding"] as? Bool ?? false
+                (number("fromLine"), number("fromColumn")), (number("toLine"), number("toColumn"))
             ) ?? false
             return (done, Date().timeIntervalSince(started) * 1000)
         }
@@ -65,6 +65,20 @@ extension Control {
         }
         // The press and the drag's step, the selection made and painted: how long the main thread took.
         return reply(ok: true, structured: ["ranges": ranges, "ms": ms, "editor": onMain { editorState() }])
+    }
+
+    /// `app action=text_drag`: the shown file's main selection dragged to `toLine`:`toColumn` and dropped there,
+    /// copied with `copy` (Option).
+    static func textDrag(_ args: [String: Any]) -> String {
+        let done = onMain { () -> Bool in
+            WindowContext.focused.editor.session?.textDragHook(
+                (args["toLine"] as? Int ?? 1, args["toColumn"] as? Int ?? 0), args["copy"] as? Bool ?? false
+            ) ?? false
+        }
+        guard done else {
+            return reply(ok: false, text: "No file is shown, or nothing is selected")
+        }
+        return reply(ok: true, structured: onMain { ["editor": editorState()] })
     }
 
     /// The popup's options (the first 30 labels and types), the selected one, and the snippet's fields.

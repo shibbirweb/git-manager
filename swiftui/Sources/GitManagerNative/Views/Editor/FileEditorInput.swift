@@ -1,8 +1,10 @@
 // The editor's keyboard and mouse, as CodeMirror's view takes them: a key press runs the keymap's commands in order
 // (EditorKeymap, the next when one does nothing), else printable text is typed (EditorInput); Copy, Cut, Paste,
-// Undo and Redo also come from the Edit menu through the responder chain. A click puts the cursor, Shift extends
-// the main range, Cmd adds a cursor, a double click selects the word and a triple click the line; a drag extends
-// from where it started.
+// Undo and Redo also come from the Edit menu through the responder chain. A click puts the cursor, a double click
+// selects the word and a triple click the line, Shift (with or without Option) extends the main range to them; a
+// drag extends from where it started. No click adds a cursor (the page's clickAddsSelectionRange needs
+// Option+Shift, which extends first), so Cmd+click is a plain click. A press on the main selection waits: a drag
+// moves its text (FileEditorDrag.swift), a release selects as a click.
 
 import AppKit
 import NativeCore
@@ -140,34 +142,46 @@ extension FileScrollView.Host {
             redraw()
             return
         }
+        if event.clickCount == 1, inMainSelection(canvasPoint(point)) {
+            pendingTextDrag = event
+            return
+        }
         if startColumnDrag(flags: event.modifierFlags, at: canvasPoint(point)) {
             return
         }
+        clickSelect(event, hit: hit)
+    }
+
+    /// The selection a press makes (the page's basicMouseSelection at the press): the cursor, the word or the line,
+    /// or the main range extended to it with Shift.
+    func clickSelect(_ event: NSEvent, hit: (position: Int, inside: Int)) {
+        guard let session else {
+            return
+        }
         let state = session.state
-        let flags = event.modifierFlags
-        let selection: EditorSelection
+        let range: SelectionRange
         switch event.clickCount {
         case 2:
-            selection = wordSelection(at: hit.inside, state)
+            range = wordSelection(at: hit.inside, state).main
         case 3...:
             let line = state.doc.lineAt(hit.position)
-            selection = .single(line.from, min(line.to + 1, state.doc.length))
+            range = .range(line.from, min(line.to + 1, state.doc.length))
         default:
-            if flags.contains(.shift) {
-                selection = state.selection.replacing(.range(state.selection.main.anchor, hit.position))
-            } else if flags.contains(.command) {
-                selection = state.selection.adding(.cursor(hit.position))
-            } else {
-                selection = .single(hit.position)
-            }
+            range = .cursor(hit.position)
         }
+        let selection = event.modifierFlags.contains(.shift)
+            ? state.selection.replacing(state.selection.main.extend(range.from, range.to))
+            : EditorSelection.single(range.anchor, range.head)
         dragAnchor = (selection.main.anchor, event.clickCount)
         session.dispatch(TransactionSpec(selection: selection, userEvent: "select.pointer"))
         redraw()
     }
 
-    func dragged(to point: NSPoint, flags: NSEvent.ModifierFlags = []) {
-        if dragColumns(to: canvasPoint(point), adding: flags.contains(.command)) {
+    func dragged(to point: NSPoint, event: NSEvent? = nil) {
+        if let event, dragText(event) {
+            return
+        }
+        if dragColumns(to: canvasPoint(point)) {
             return
         }
         guard let session, let anchor = dragAnchor, let hit = canvas.position(at: canvasPoint(point)) else {
