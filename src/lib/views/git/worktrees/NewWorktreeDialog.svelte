@@ -1,6 +1,6 @@
 <!-- New Worktree: an existing branch, or a new branch from a base; the folder (next to the
-     repository by default, following the branch until edited); then open it here or add
-     it to the workspace. -->
+     repository by default, following the branch until edited); then open it here, add it to the
+     workspace, or (from the AI panel) start an agent in it. -->
 <script lang="ts">
   import { open } from "@tauri-apps/plugin-dialog";
   import { onMount, untrack } from "svelte";
@@ -14,12 +14,18 @@
   import { gitDialogs } from "../gitDialogs.svelte";
   import { availableBranches, defaultWorktreePath, mainWorktreeRoot, validateWorktreePath } from "./worktreeModel";
   import { worktreeStore } from "./worktreeStore.svelte";
+  import { aiStore } from "$lib/ai/aiStore.svelte";
+  import { agentPrograms, startAgent as startAgentIn } from "$lib/ai/sessions.svelte";
 
   interface Props {
     repoRoot: string;
+    /** Opened from the AI panel: offers to start an agent in the new worktree. */
+    startAgent?: boolean;
   }
 
-  let { repoRoot }: Props = $props();
+  let { repoRoot, startAgent = false }: Props = $props();
+  /** The agent to start in the new worktree, or "" for none. */
+  let agentChoice = $state(untrack(() => (startAgent ? (agentPrograms.installed()[0]?.id ?? "") : "")));
 
   let refs = $state.raw<Refs | null>(untrack(() => (repoRoot === repoStore.repo?.root ? repoStore.refs : null)));
   let worktrees = $state.raw<WorktreeInfo[]>([]);
@@ -119,12 +125,18 @@
     gitDialogs.close();
     await repoStore.refreshRepo(repoRoot, true);
     await worktreeStore.load(repoStore.repo?.root ?? null);
+    if (startAgent) {
+      await aiStore.reload();
+    }
     if (afterCreate === "open") {
       await repoStore.open(created);
     } else if (afterCreate === "add") {
       await repoStore.addFolder(created);
-    } else {
+    } else if (agentChoice === "") {
       toast.success(`Created worktree ${baseName(created)}`, created);
+    }
+    if (agentChoice !== "") {
+      await startAgentIn(agentChoice, created);
     }
   }
 </script>
@@ -216,6 +228,18 @@
     />
     Add to workspace
   </label>
+
+  {#if startAgent}
+    <label class="field">
+      <span>Then start</span>
+      <select class="input" bind:value={agentChoice} disabled={creating}>
+        <option value="">No agent</option>
+        {#each agentPrograms.installed() as agent (agent.id)}
+          <option value={agent.id}>{agent.label}</option>
+        {/each}
+      </select>
+    </label>
+  {/if}
 
   {#if creating}
     <div class="row hint" role="status"><span class="spinner" aria-hidden="true"></span>Creating the worktree...</div>

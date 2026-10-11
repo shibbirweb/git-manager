@@ -31,6 +31,7 @@
   import { dropGap, edgeScrollStep, type TabBox } from "./tabDrag";
   import { type GroupDirection, groupDirection, type SplitDirection } from "$lib/stores/groupLayout";
   import { moveEditorTab, splitEditor } from "./workspaceActions";
+  import { startMenu } from "$lib/ai/sessions.svelte";
 
   let { groupId }: { groupId: number } = $props();
 
@@ -46,6 +47,11 @@
   const diffShown = $derived(primary && changesSelection.primaryView === "diff");
   const labels = $derived(tabLabels(tabs));
   const wrap = $derived(settings.wrapTabs);
+  /** The worktree of the agent this group shows, for the + after the tabs (a new agent or terminal there, like Orca). */
+  const agentFolder = $derived.by(() => {
+    const terminalKey = group?.active ? parseTerminalTabPath(group.active) : null;
+    return terminalKey !== null ? (terminalStore.find(terminalKey)?.agent?.folderPath ?? null) : null;
+  });
   const single = $derived(showsTabAsTitle(settings.singleTabTitle, settings.tabLimit, tabs.length, primary && changesSelection.selected !== null));
 
   /** A press on a tab that may become a drag once the pointer moves a few pixels. */
@@ -505,9 +511,45 @@
       {/if}
     </div>
   {/each}
+  {#if agentFolder}
+    {@const folderName = agentFolder.slice(agentFolder.lastIndexOf("/") + 1)}
+    <button
+      class="new-tab"
+      title="New agent or terminal in {folderName}"
+      aria-label="New agent or terminal in {folderName}"
+      onclick={(event) => {
+        repoStore.focusGroup(groupId);
+        contextMenu.openBelow(event.currentTarget, startMenu(agentFolder));
+      }}
+    >
+      <Icon name="plus" size={14} />
+    </button>
+  {/if}
 </div>
 
 <style>
+  .new-tab {
+    flex: none;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin: 0 4px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .new-tab:hover {
+    color: var(--text);
+    background: var(--hover);
+  }
+
   .tab-strip {
     flex: none;
     position: relative;

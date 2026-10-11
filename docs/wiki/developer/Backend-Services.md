@@ -71,6 +71,7 @@ See [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
 - **`images.rs`**: local images for the Markdown preview as data URLs, only from the document's workspace folder. See [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md).
 - **`preview_scheme.rs`** and **`media.rs`**: the `gmpreview` URL scheme that streams images and PDFs to the previews, only from the open workspace folders, idle until a preview asks. See [How the Preview Scheme Works](How-the-Preview-Scheme-Works.md).
 - **`memory.rs`**: the memory readout of the status bar, also used by the memory log and the MCP performance tools.
+- **`terminal_memory.rs`**: each terminal's memory for the details popup, its shell's whole process tree ([how](How-Terminal-Memory-Is-Measured.md)).
 
 ## Adding a service
 

@@ -3,6 +3,7 @@
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
 
+import type { AgentOverride } from "$lib/ai/agentConfig";
 import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
 import { AUTO_FETCH_INTERVAL_RANGE, DEFAULT_AUTO_FETCH_MINUTES } from "./autoFetchPlan";
@@ -20,6 +21,9 @@ export type ThemeSetting = "system" | "light" | "dark";
 
 /** Which panel the left sidebar shows; null hides it. */
 export type LeftPanel = "changes" | "branches" | "scripts" | null;
+
+/** What the right sidebar shows while it is open: the file tree or the AI agents. */
+export type RightPanel = "files" | "ai";
 
 /** How a diff shows its two versions: in two columns, or in one with removed lines above added ones. */
 export type DiffLayout = "sideBySide" | "inline";
@@ -162,6 +166,7 @@ export const SETTINGS_SECTIONS = [
   "merge",
   "layout",
   "terminal",
+  "ai",
   "keyboard",
   "github",
   "automation",
@@ -444,7 +449,38 @@ export interface Preferences {
   localHistorySizeMb: number;
   /** Only errors pop up; every message is still kept in the status bar's notification list. */
   notificationsDoNotDisturb: boolean;
+  /** AI agents: ask before acting (normal), or full autonomy; "ask" asks on the first start. */
+  aiPermissionMode: AiPermissionMode;
+  /** Extra command line arguments of each AI agent, by agent id (see ai/agents.ts). */
+  aiAgentArgs: Record<string, string>;
+  /** The agent New Task picks first: the last one started; "" before any. */
+  aiDefaultAgent: string;
+  /** Folders of the main checkout linked into each new worktree, such as node_modules. */
+  aiWorktreeLinks: string[];
+  /** Where the status bar shows the AI agents' usage limits. */
+  aiUsagePosition: AiUsagePosition;
+  /** Keep computer awake (like Orca): Off, Agent (while an agent works) or On. */
+  computerAwakeMode: ComputerAwakeMode;
+  /** Usage providers the status bar leaves out (and never reads), such as "codex"; all are shown by default. */
+  aiUsageHidden: AiUsageProvider[];
+  /** Each agent's command, flags and prompt style as changed in Settings > AI (ai/agentConfig.ts), by agent id. */
+  aiAgentCommands: Record<string, AgentOverride>;
 }
+
+export const AI_PERMISSION_MODES = ["ask", "normal", "full"] as const;
+export const AI_USAGE_POSITIONS = ["left", "right", "hidden"] as const;
+export const COMPUTER_AWAKE_MODES = ["on", "agent", "off"] as const;
+export type ComputerAwakeMode = (typeof COMPUTER_AWAKE_MODES)[number];
+/** The agents whose usage the status bar can show (ai_usage in Rust), in its order. */
+export const AI_USAGE_PROVIDERS = [
+  { id: "claude", label: "Claude Code" },
+  { id: "codex", label: "Codex" },
+] as const;
+export type AiUsageProvider = (typeof AI_USAGE_PROVIDERS)[number]["id"];
+export type AiUsagePosition = (typeof AI_USAGE_POSITIONS)[number];
+export type AiPermissionMode = (typeof AI_PERMISSION_MODES)[number];
+const AI_AGENT_ID = /^[a-z][a-z0-9-]{0,39}$/;
+const MAX_AI_AGENT_ARGS = 1000;
 
 /** The memory log reads every 100 ms to 10 s, and logs changes of 0 MB (every reading) to 500 MB. */
 export const MEMORY_LOG_INTERVAL_RANGE = [100, 10_000] as const;
@@ -571,6 +607,14 @@ export const defaultPreferences: Preferences = {
   notificationsDoNotDisturb: false,
   mcpTools: {},
   keybindings: {},
+  aiPermissionMode: "ask",
+  aiAgentArgs: {},
+  aiDefaultAgent: "",
+  aiWorktreeLinks: ["node_modules"],
+  aiUsagePosition: "right",
+  aiUsageHidden: [],
+  computerAwakeMode: "off",
+  aiAgentCommands: {},
 };
 
 export const FONT_SIZE_RANGE = { ui: [11, 16], editor: [10, 20], terminal: [9, 24] } as const;
@@ -624,7 +668,9 @@ export interface UiState {
   activeRepoAuto: boolean;
   /** Scripts panel: the Node version each package.json runs with, by file path: a bin folder, or "default" for the shell's. */
   scriptNodeVersions: Record<string, string>;
+  /** The right sidebar is open; `rightPanel` says what it shows. */
   explorerOpen: boolean;
+  rightPanel: RightPanel;
   /** The icon strips at the left and right edges of the window (the activity bars). */
   leftBarVisible: boolean;
   rightBarVisible: boolean;
@@ -735,6 +781,57 @@ export function parseMcpPort(value: unknown): number | null {
 const TOOL_NAME = /^[a-z][a-z0-9_]{0,63}$/;
 
 /** Only tool names with a true or false are kept, at most MAX_MCP_TOOL_STATES of them. */
+const PROMPT_STYLES = ["argument", "flag", "typed", "none"] as const;
+
+function shortText(value: unknown, max: number): string | undefined {
+  return typeof value === "string" && value.length <= max ? value : undefined;
+}
+
+/** Each agent's changed command, flags and prompt style; anything malformed is left out. */
+export function pickAgentCommands(value: unknown): Record<string, AgentOverride> {
+  const commands: Record<string, AgentOverride> = {};
+  for (const [agentId, raw] of Object.entries(asObject(value))) {
+    if (!AI_AGENT_ID.test(agentId)) {
+      continue;
+    }
+    const data = asObject(raw);
+    const entry: AgentOverride = {};
+    const command = shortText(data.command, 500);
+    if (command !== undefined && command.trim() !== "") {
+      entry.command = command;
+    }
+    const autonomy = shortText(data.fullAutonomyArgs, 500);
+    if (autonomy !== undefined) {
+      entry.fullAutonomyArgs = autonomy;
+    }
+    const style = PROMPT_STYLES.find((candidate) => candidate === data.promptStyle);
+    if (style) {
+      entry.promptStyle = style;
+    }
+    const flag = shortText(data.promptFlag, 100);
+    if (flag !== undefined && flag.trim() !== "") {
+      entry.promptFlag = flag;
+    }
+    if (Object.keys(entry).length > 0) {
+      commands[agentId] = entry;
+    }
+  }
+  return commands;
+}
+
+/** Extra arguments by agent id; blank ones are dropped. */
+export function pickAgentArgs(value: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(asObject(value)).filter(
+      (entry): entry is [string, string] =>
+        AI_AGENT_ID.test(entry[0]) &&
+        typeof entry[1] === "string" &&
+        entry[1].trim() !== "" &&
+        entry[1].length <= MAX_AI_AGENT_ARGS,
+    ),
+  );
+}
+
 export function pickToolStates(value: unknown): Record<string, boolean> {
   return Object.fromEntries(
     Object.entries(asObject(value))
@@ -760,6 +857,7 @@ const STATE_KEYS = [
   "activeRepoAuto",
   "scriptNodeVersions",
   "explorerOpen",
+  "rightPanel",
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
@@ -904,6 +1002,19 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     mcpPort: parseMcpPort(data.mcpPort) ?? defaultPreferences.mcpPort,
     mcpTools: pickToolStates(data.mcpTools),
     keybindings: pickKeybindings(data.keybindings),
+    aiPermissionMode: pickOneOf(data.aiPermissionMode, AI_PERMISSION_MODES, defaultPreferences.aiPermissionMode),
+    aiAgentArgs: pickAgentArgs(data.aiAgentArgs),
+    aiUsagePosition: pickOneOf(data.aiUsagePosition, AI_USAGE_POSITIONS, defaultPreferences.aiUsagePosition),
+    computerAwakeMode: pickOneOf(data.computerAwakeMode, COMPUTER_AWAKE_MODES, defaultPreferences.computerAwakeMode),
+    aiUsageHidden: AI_USAGE_PROVIDERS.map((provider) => provider.id).filter((id) => pickStrings(data.aiUsageHidden).includes(id)),
+    aiAgentCommands: pickAgentCommands(data.aiAgentCommands),
+    aiDefaultAgent: typeof data.aiDefaultAgent === "string" && AI_AGENT_ID.test(data.aiDefaultAgent) ? data.aiDefaultAgent : "",
+    aiWorktreeLinks: Array.isArray(data.aiWorktreeLinks)
+      ? pickStrings(data.aiWorktreeLinks)
+          .map((name) => name.trim())
+          .filter((name) => name !== "" && !name.includes("..") && name.length <= 200)
+          .slice(0, 20)
+      : defaultPreferences.aiWorktreeLinks,
     memoryLogEnabled: pickBoolean(data.memoryLogEnabled, defaultPreferences.memoryLogEnabled),
     memoryLogIntervalMs: pickInteger(data.memoryLogIntervalMs, defaultPreferences.memoryLogIntervalMs, ...MEMORY_LOG_INTERVAL_RANGE),
     memoryLogThresholdMb: pickNumber(data.memoryLogThresholdMb, defaultPreferences.memoryLogThresholdMb, ...MEMORY_LOG_THRESHOLD_RANGE),
@@ -958,6 +1069,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
         .slice(-MAX_SCRIPT_NODE_VERSIONS),
     ),
     explorerOpen: pickBoolean(data.explorerOpen, true),
+    rightPanel: data.rightPanel === "ai" ? "ai" : "files",
     leftBarVisible: pickBoolean(data.leftBarVisible, true),
     rightBarVisible: pickBoolean(data.rightBarVisible, true),
     diffSplitRatio: pickNumber(data.diffSplitRatio, 0.5, 0.15, 0.85),
@@ -989,6 +1101,7 @@ export const WINDOW_STATE_KEYS = [
   "lastSession",
   "lastSessionFile",
   "explorerOpen",
+  "rightPanel",
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
@@ -1014,6 +1127,7 @@ export function stateToJson(state: UiState, extra: Json): Json {
     activeRepos: state.activeRepos,
     scriptNodeVersions: state.scriptNodeVersions,
     explorerOpen: state.explorerOpen,
+    rightPanel: state.rightPanel,
     leftBarVisible: state.leftBarVisible,
     rightBarVisible: state.rightBarVisible,
     diffSplitRatio: state.diffSplitRatio,

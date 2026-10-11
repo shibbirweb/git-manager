@@ -128,6 +128,17 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   ],
   keyboard: [],
   github: [["GitHub account", "sign in login token gist fork share"]],
+  ai: [
+    ["Agent permissions", "ai autonomy yolo skip permissions dangerously approval ask"],
+    ["Keep computer awake", "awake sleep power agent running working lid display screen lock caffeinate"],
+    ["Usage in status bar", "limits rate limit quota claude codex plan left right hidden 5 hour weekly"],
+    ["Show usage of", "claude code codex provider status bar hide show limits", "Usage in status bar"],
+    ["Link into new worktrees", "node_modules worktreeinclude env shared folders task"],
+    [
+      "Agents",
+      "ai claude code codex gemini opencode cursor copilot aider amp qwen installed path command arguments flags model prompt yolo",
+    ],
+  ],
   automation: [
     ["MCP server", "model context protocol ai agent claude cursor"],
     ["Status", "mcp server running"],

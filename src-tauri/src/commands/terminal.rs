@@ -9,6 +9,7 @@ use crate::error::AppResult;
 use crate::state::AppState;
 use crate::terminal::{self, ShellProfile, TerminalInfo, TerminalRegistry};
 use crate::terminal_link::{Delivery, Sink, TerminalLinks, TerminalStash, DETACHED_TIMEOUT};
+use crate::terminal_memory::TerminalMemory;
 
 /// The last message on a terminal's output channel; None when the shell was killed or its code is unknown.
 #[derive(Debug, Serialize)]
@@ -87,6 +88,13 @@ pub async fn terminal_close(state: State<'_, AppState>, terminal_id: u32) -> App
         Ok(())
     })
     .await
+}
+
+/// Memory of the asking window's terminals and runs, each with what its shell started, for the memory details.
+#[tauri::command]
+pub async fn terminal_memory(window: Window, state: State<'_, AppState>) -> AppResult<Vec<TerminalMemory>> {
+    let shells = state.terminals.window_shells(window.label());
+    blocking(move || Ok(crate::terminal_memory::usage(&shells))).await
 }
 
 /// Closes the asking window's terminals and runs (it reloaded); other windows keep theirs, and

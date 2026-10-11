@@ -190,8 +190,13 @@ async function showPanel(args: ToolArgs): Promise<Structured> {
       }
       break;
     case "files":
-      if (visible !== settings.explorerOpen) {
+      if (visible !== settings.filesPanelShown) {
         settings.toggleExplorer();
+      }
+      break;
+    case "ai":
+      if (visible !== settings.aiPanelShown) {
+        settings.toggleRightPanel("ai");
       }
       break;
     default: {

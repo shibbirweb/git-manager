@@ -33,6 +33,24 @@ import {
 const noErrors = { settings: null, state: null };
 
 describe("parsePreferences", () => {
+  it("reads the AI settings and drops what it does not know", () => {
+    const defaults = parsePreferences({}).preferences;
+    expect([defaults.aiUsagePosition, defaults.aiUsageHidden, defaults.aiAgentCommands]).toEqual(["right", [], {}]);
+    const parsed = parsePreferences({
+      aiUsagePosition: "left",
+      aiUsageHidden: ["codex", "gemini", 3, "codex"],
+      aiAgentCommands: {
+        claude: { command: "claude-beta", fullAutonomyArgs: "", promptStyle: "typed", promptFlag: " " },
+        "Bad Id": { command: "x" },
+        codex: { promptStyle: "shout" },
+      },
+    }).preferences;
+    expect(parsed.aiUsagePosition).toBe("left");
+    expect(parsed.aiUsageHidden).toEqual(["codex"]);
+    expect(parsed.aiAgentCommands).toEqual({ claude: { command: "claude-beta", fullAutonomyArgs: "", promptStyle: "typed" } });
+    expect(parsePreferences({ aiUsagePosition: "top" }).preferences.aiUsagePosition).toBe("right");
+  });
+
   it("renders whitespace in selections unless another VS Code mode was picked", () => {
     expect(parsePreferences({}).preferences.renderWhitespace).toBe("selection");
     expect(parsePreferences({ renderWhitespace: "trailing" }).preferences.renderWhitespace).toBe("trailing");

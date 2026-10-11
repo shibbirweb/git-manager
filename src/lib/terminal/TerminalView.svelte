@@ -37,6 +37,7 @@
   import { isExitMessage, OutputAcks } from "./outputFlow";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { runFinishedMessage, runHeader } from "./runs";
+  import { usageStore } from "$lib/ai/usageStore.svelte";
   import { exitMessage, QUIET_SHELL_MS, shellNameFor, startupFailureTitle, startupLabel, type StartupPhase } from "./terminals";
   import type { TerminalPlacement } from "./terminalTabs";
   import { currentTerminalTheme, watchTheme } from "./theme";
@@ -228,6 +229,16 @@
     );
     instance.attachCustomKeyEventHandler((event) => handleKey(instance, event));
     instance.onBell(() => ringBell());
+    // An agent shows what it does in the title; a hidden one that finishes or asks marks its tab.
+    instance.onTitleChange((title) => {
+      if (terminal.agent && terminalStore.setAgentTitle(terminal.key, title)) {
+        // Finished or asking: its usage moved, and a hidden one marks its tab.
+        usageStore.refreshSoon();
+        if (!visible) {
+          terminalStore.ring(terminal.key);
+        }
+      }
+    });
     // Shells with integration report their folder after each cd (OSC 7); file links resolve against it.
     instance.parser.registerOscHandler(7, (data) => {
       reportedFolder = parseOsc7(data) ?? reportedFolder;
@@ -289,6 +300,7 @@
       if (phase === "starting") {
         markReady();
       }
+      lastOutputAt = Date.now();
       const bytes = new Uint8Array(message);
       shellAcks.received(bytes.byteLength);
       instance.write(bytes, () => shellAcks.written(bytes.byteLength));
@@ -330,6 +342,10 @@
     if (pendingInput) {
       sendInput(pendingInput);
       pendingInput = "";
+    }
+    const typedPrompt = terminal.agent?.pendingPrompt ?? null;
+    if (typedPrompt) {
+      typeWhenQuiet(info.terminalId, typedPrompt);
     }
     if (phase === "starting") {
       // A shell that prints no prompt must not leave the status up.
@@ -391,6 +407,29 @@
     failure = errorMessage(error);
     phase = "failed";
     terminalStore.spawnFailed(terminal.key);
+  }
+
+  let lastOutputAt = 0;
+
+  /**
+   * An agent that takes its first prompt as typed text (Aider, Amp, Qwen Code): typed once its start-up output has
+   * been quiet for a moment, or after 20 s, then Enter.
+   */
+  function typeWhenQuiet(typedTerminalId: number, prompt: string): void {
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const quiet = lastOutputAt > 0 && now - lastOutputAt > 900 && now - startedAt > 1500;
+      if (disposed || terminalId !== typedTerminalId || terminal.exited) {
+        clearInterval(timer);
+        return;
+      }
+      if (quiet || now - startedAt > 20_000) {
+        clearInterval(timer);
+        terminalStore.clearPendingPrompt(terminal.key);
+        void api.terminalWrite(typedTerminalId, `${prompt}\r`).catch(() => undefined);
+      }
+    }, 300);
   }
 
   /** Retry: loads xterm again if that failed, otherwise starts a new shell in the same view. */
@@ -828,6 +867,17 @@
     return () => cancelAnimationFrame(frame);
   });
 
+  // An agent's Restart (its tab menu, the AI panel, the strip below): the same view starts it again.
+  let restartToken = 0;
+  $effect(() => {
+    const request = terminalStore.restartRequest;
+    if (!request || request.terminalKey !== terminal.key || request.token === restartToken) {
+      return;
+    }
+    restartToken = request.token;
+    untrack(() => void retry());
+  });
+
   // Focus on request (panel open, switching to it, opening its tab, a move),
   // as soon as it is on screen.
   $effect(() => {
@@ -858,7 +908,7 @@
       return;
     }
     const exitCode = terminal.exitCode;
-    const isRun = terminal.location === "run";
+    const isRun = terminal.location === "run" || Boolean(terminal.agent);
     untrack(() => {
       instance.options.disableStdin = true;
       if (exitShown || (exitCode === 0 && !isRun)) {
@@ -944,6 +994,11 @@
       <span class="spinner" aria-hidden="true"></span>
       {statusLabel}
     </div>
+  {:else if terminal.agent && terminal.exited}
+    <div class="agent-ended" role="status">
+      <span>Agent exited</span>
+      <button class="btn small" onclick={() => terminalStore.restartAgent(terminal.key)}>Restart</button>
+    </div>
   {/if}
 </div>
 
@@ -994,6 +1049,22 @@
     max-width: 520px;
     color: var(--text-dim);
     overflow-wrap: anywhere;
+  }
+
+  .agent-ended {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text-dim);
+    font-size: 12px;
+    box-shadow: var(--shadow);
   }
 
   .status.failed .btn {

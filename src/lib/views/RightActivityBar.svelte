@@ -1,20 +1,37 @@
-<!-- Activity bar on the right edge, mirroring the left one: toggles the Files panel. -->
+<!-- Activity bar on the right edge, mirroring the left one: shows the Files or the AI panel in the right sidebar. -->
 <script lang="ts">
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { settings } from "$lib/stores/settings.svelte";
+  import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import Icon from "$lib/ui/Icon.svelte";
+
+  // A hidden agent that finished or needs the user marks the AI icon too, while the panel is not shown.
+  const agentBell = $derived(!settings.aiPanelShown && terminalStore.terminals.some((terminal) => terminal.agent && terminal.bell));
 </script>
 
 <nav class="activity" aria-label="Right sidebar">
   <button
     class="item"
-    class:active={settings.explorerOpen}
+    class:active={settings.filesPanelShown}
     onclick={() => settings.toggleExplorer()}
-    title="{withCommandKeys('Files', 'view.filesPanel')}{settings.explorerOpen ? ', click to hide' : ''}"
+    title="{withCommandKeys('Files', 'view.filesPanel')}{settings.filesPanelShown ? ', click to hide' : ''}"
     aria-label="Files"
-    aria-pressed={settings.explorerOpen}
+    aria-pressed={settings.filesPanelShown}
   >
     <Icon name="list-tree" size={19} strokeWidth={1.8} />
+  </button>
+  <button
+    class="item"
+    class:active={settings.aiPanelShown}
+    onclick={() => settings.toggleRightPanel("ai")}
+    title="{withCommandKeys('AI Agents', 'view.aiPanel')}{settings.aiPanelShown ? ', click to hide' : ''}"
+    aria-label="AI Agents"
+    aria-pressed={settings.aiPanelShown}
+  >
+    <Icon name="bot" size={19} strokeWidth={1.8} />
+    {#if agentBell}
+      <span class="badge" aria-hidden="true"></span>
+    {/if}
   </button>
 </nav>
 
@@ -60,6 +77,17 @@
   .item.active {
     color: var(--accent);
     background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .badge {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--panel-alt);
   }
 
   .item.active::after {

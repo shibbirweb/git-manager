@@ -72,6 +72,7 @@ Output arrives as raw bytes on `output`, the end as a `terminal-exited` event. S
 | `terminal_resize` | `terminalResize(terminalId, cols, rows)` | `void` | app | resizes the PTY |
 | `terminal_close` | `terminalClose(terminalId)` | `void` | app | hangs up the shell and its jobs, and kills them after a grace period |
 | `terminal_close_all` | `terminalCloseAll()` | `void` | app | closes the window's terminals after a reload, except those waiting after Clear Cache |
+| `terminal_memory` | `terminalMemory()` | `TerminalMemory[]` | app | each terminal's memory ([how](How-Terminal-Memory-Is-Measured.md)) |
 | `terminal_unstash` | `terminalUnstash()` | `TerminalStashData \| null` | app | what Clear Cache left for this page: layout, descriptors, screens; once |
 | `terminal_reattach` | `terminalReattach(terminalId, output)` | `boolean` | app | connects a terminal left running by Clear Cache to the new page, held output first |
 

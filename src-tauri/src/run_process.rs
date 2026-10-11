@@ -37,6 +37,23 @@ pub fn reload_login_env() {
     });
 }
 
+/// The login shell's environment read now, kept for the next runs.
+fn fresh_login_env() -> Vec<(String, String)> {
+    let mut cached = LOGIN_ENV.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let env = capture_login_env().unwrap_or_else(fallback_env);
+    *cached = Some(env.clone());
+    env
+}
+
+/// One variable of the login shell's environment (what agents and runs see), such as HOME or CODEX_HOME.
+pub fn login_var(name: &str) -> Option<String> {
+    login_env()
+        .into_iter()
+        .find(|(key, _)| if cfg!(windows) { key.eq_ignore_ascii_case(name) } else { key == name })
+        .map(|(_, value)| value)
+        .filter(|value| !value.is_empty())
+}
+
 /// The login shell's environment, read on first use; the app's own when it cannot be read.
 /// The lock is held while reading, so two runs never read it twice.
 fn login_env() -> Vec<(String, String)> {
@@ -166,6 +183,35 @@ pub fn resolve_program(name: &str, path: &str, extensions: &[String]) -> Option<
         }
     }
     None
+}
+
+/// A program found on the login shell's PATH (the AI panel's agents).
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FoundProgram {
+    pub program: String,
+    pub path: String,
+}
+
+/// Which of `programs` the login shell's PATH has. `fresh` reads the environment again first, so a tool installed
+/// since the app started is found.
+pub fn find_programs(programs: &[String], fresh: bool) -> Vec<FoundProgram> {
+    let env = if fresh { fresh_login_env() } else { login_env() };
+    programs_in(programs, &path_value(&env), &program_extensions(&env))
+}
+
+fn programs_in(programs: &[String], path: &str, extensions: &[String]) -> Vec<FoundProgram> {
+    programs
+        .iter()
+        // Bare names, looked up on PATH, or an absolute path set in Settings; never a relative path.
+        .filter(|program| !program.is_empty() && (Path::new(program.as_str()).is_absolute() || !program.contains(['/', '\\'])))
+        .filter_map(|program| {
+            resolve_program(program, path, extensions).map(|file| FoundProgram {
+                program: program.clone(),
+                path: crate::paths::to_ui(file),
+            })
+        })
+        .collect()
 }
 
 #[cfg(unix)]
@@ -298,6 +344,60 @@ mod tests {
     fn puts_the_node_folder_first_once() {
         assert_eq!(path_with(Path::new("/n/v20/bin"), "/usr/bin:/n/v20/bin:/bin"), "/n/v20/bin:/usr/bin:/bin");
         assert_eq!(path_with(Path::new("/n/v18/bin"), ""), "/n/v18/bin");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn finds_only_bare_executable_names_on_path() {
+        use std::os::unix::fs::PermissionsExt;
+        let temp = tempfile::tempdir().unwrap();
+        let first = temp.path().join("first");
+        let second = temp.path().join("second");
+        std::fs::create_dir_all(&first).unwrap();
+        std::fs::create_dir_all(&second).unwrap();
+        for file in [first.join("claude"), second.join("claude"), second.join("codex")] {
+            std::fs::write(&file, "#!/bin/sh\n").unwrap();
+            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        // Not executable: not an agent we can start.
+        std::fs::write(first.join("gemini"), "").unwrap();
+        let path = std::env::join_paths([&first, &second]).unwrap().to_string_lossy().into_owned();
+        let names: Vec<String> = ["claude", "gemini", "codex", "aider", "", "../second/codex", "/no/such/agent"]
+            .iter()
+            .map(|name| name.to_string())
+            .collect();
+        let found = programs_in(&names, &path, &[]);
+        assert_eq!(
+            found,
+            vec![
+                FoundProgram {
+                    program: "claude".to_string(),
+                    path: crate::paths::to_ui(first.join("claude")),
+                },
+                FoundProgram {
+                    program: "codex".to_string(),
+                    path: crate::paths::to_ui(second.join("codex")),
+                },
+            ],
+        );
+        assert!(programs_in(&names, "", &[]).is_empty());
+        // An absolute path from Settings is taken as it is, PATH or not.
+        let absolute = first.join("claude").to_string_lossy().into_owned();
+        let found = programs_in(std::slice::from_ref(&absolute), "", &[]);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].program, absolute);
+    }
+
+    #[test]
+    fn finds_windows_programs_by_their_extensions() {
+        let temp = tempfile::tempdir().unwrap();
+        std::fs::write(temp.path().join("codex.cmd"), "@echo off\r\n").unwrap();
+        let path = temp.path().to_string_lossy().into_owned();
+        let names = vec!["codex".to_string(), "claude".to_string()];
+        let found = programs_in(&names, &path, &[".exe".to_string(), ".cmd".to_string()]);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].program, "codex");
+        assert!(found[0].path.ends_with("codex.cmd"));
     }
 
     #[cfg(unix)]

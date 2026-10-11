@@ -19,7 +19,7 @@ export const MCP_CATEGORIES = [
 ] as const satisfies readonly McpToolCategory[];
 
 /** What show_panel can show: the left sidebar panels, the Log, the Files panel and the bottom panel tabs. */
-export const PANELS = ["changes", "branches", "scripts", "log", "files", "terminal", "run", "gitConsole", "shelf"] as const;
+export const PANELS = ["changes", "branches", "scripts", "log", "files", "ai", "terminal", "run", "gitConsole", "shelf"] as const;
 export type PanelName = (typeof PANELS)[number];
 
 /** Areas scroll_view can scroll; "auto" is the largest visible scrollable area. */
@@ -103,7 +103,7 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Show Panel",
     "App",
     { readOnly: true },
-    "Shows or hides a part of the window: the Changes, Branches or Scripts sidebar, the Log, the Files panel, or a bottom panel tab (Terminal, Run, Git Console, Shelf).",
+    "Shows or hides a part of the window: the Changes, Branches or Scripts sidebar, the Log, the Files or AI panel on the right, or a bottom panel tab (Terminal, Run, Git Console, Shelf).",
     objectSchema(
       {
         panel: { type: "string", enum: [...PANELS], description: "The panel to show or hide." },

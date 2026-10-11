@@ -43,8 +43,8 @@
       <button
         class="action"
         onclick={() => {
-          if (!settings.explorerOpen) {
-            settings.toggleExplorer();
+          if (!settings.filesPanelShown) {
+            settings.showRightPanel("files");
           }
         }}
       >

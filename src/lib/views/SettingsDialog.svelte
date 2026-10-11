@@ -41,6 +41,12 @@
     type ThemeSetting,
   } from "$lib/stores/settings.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
+  import {
+    AI_USAGE_PROVIDERS,
+    type AiPermissionMode,
+    type AiUsagePosition,
+    type ComputerAwakeMode,
+  } from "$lib/stores/settingsData";
   import { buildTerminalFontFamily, TERMINAL_FONT_PICKS, xtermFontWeight } from "$lib/terminal/fonts";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
@@ -58,6 +64,7 @@
   import GitHubSignInForm from "./github/GitHubSignInForm.svelte";
   import ColorThemePicker from "./settings/ColorThemePicker.svelte";
   import CommitTemplateSettings from "./settings/CommitTemplateSettings.svelte";
+  import AiAgentSettings from "$lib/ai/AiAgentSettings.svelte";
   import GitIdentitySettings from "./settings/GitIdentitySettings.svelte";
   import KeyboardShortcuts from "./settings/KeyboardShortcuts.svelte";
   import MemoryFlag from "./settings/MemoryFlag.svelte";
@@ -107,12 +114,23 @@
     { id: "merge", label: "Git" },
     { id: "layout", label: "Layout" },
     { id: "terminal", label: "Terminal" },
+    { id: "ai", label: "AI" },
     { id: "keyboard", label: "Keyboard Shortcuts" },
     { id: "github", label: "GitHub" },
     { id: "automation", label: "Automation" },
     { id: "updates", label: "Updates" },
     { id: "files", label: "Settings Files" },
     { id: "about", label: "About" },
+  ];
+
+  const AI_PERMISSION_CHOICES: { value: AiPermissionMode; label: string; hint: string }[] = [
+    { value: "ask", label: "Ask on first start", hint: "The first agent you start asks which you prefer." },
+    { value: "normal", label: "Ask before acting", hint: "Agents ask you before they edit files or run commands." },
+    {
+      value: "full",
+      label: "Full autonomy",
+      hint: "Agents act without asking (Claude Code --dangerously-skip-permissions and the like). Best in a worktree of its own.",
+    },
   ];
 
   const themes: { value: ThemeSetting; label: string }[] = [
@@ -1767,7 +1785,7 @@
                   Also toggled with {commandKeys("view.filesPanel")}.{/if}
               </span>
             </div>
-            <input type="checkbox" class="switch" checked={settings.explorerOpen} onchange={() => settings.toggleExplorer()} />
+            <input type="checkbox" class="switch" checked={settings.filesPanelShown} onchange={() => settings.toggleExplorer()} />
           </label>
           <label class="row toggle-row">
             <div class="label">
@@ -2213,6 +2231,126 @@
           </label>
         {:else if section === "keyboard"}
           <KeyboardShortcuts filter={foundShortcuts > 0 ? searchQuery : ""} />
+        {:else if section === "ai"}
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Agent permissions</span>
+              <span class="hint">
+                {AI_PERMISSION_CHOICES.find((choice) => choice.value === settings.aiPermissionMode)?.hint ?? ""}
+                Agents start from the AI panel (the robot icon on the right).
+              </span>
+            </div>
+            <select
+              class="input select"
+              value={settings.aiPermissionMode}
+              onchange={(event) => set("aiPermissionMode", event.currentTarget.value as AiPermissionMode)}
+              aria-label="Agent permissions"
+            >
+              {#each AI_PERMISSION_CHOICES as choice (choice.value)}
+                <option value={choice.value}>{choice.label}</option>
+              {/each}
+            </select>
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Keep computer awake</span>
+              <span class="hint">
+                Choose On, Agent, or Off. Agent mode keeps the screen on and stops idle sleep and the screen lock while
+                agents work, so long runs finish. Closing the lid still puts a Mac to sleep. Also in the status bar
+                (the coffee cup).
+              </span>
+            </div>
+            <select
+              class="input select"
+              value={settings.computerAwakeMode}
+              onchange={(event) => set("computerAwakeMode", event.currentTarget.value as ComputerAwakeMode)}
+              aria-label="Keep computer awake"
+            >
+              <option value="on">On</option>
+              <option value="agent">Agent</option>
+              <option value="off">Off</option>
+            </select>
+          </label>
+          <label class="row toggle-row">
+            <div class="label">
+              <span>Usage in status bar</span>
+              <span class="hint">
+                How much of Claude Code's and Codex's limits you used, like Orca. Claude Code's comes from Anthropic
+                with Claude Code's own sign-in (macOS asks once to let Git Manager read it from the Keychain), Codex's
+                from its session files.
+              </span>
+            </div>
+            <select
+              class="input select"
+              value={settings.aiUsagePosition}
+              onchange={(event) => set("aiUsagePosition", event.currentTarget.value as AiUsagePosition)}
+              aria-label="Usage in status bar"
+            >
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </label>
+          <div class="row">
+            <div class="label">
+              <span>Show usage of</span>
+              <span class="hint">Which agents the status bar shows. A hidden one is not read at all.</span>
+            </div>
+            <div class="usage-providers">
+              {#each AI_USAGE_PROVIDERS as provider (provider.id)}
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    checked={!settings.aiUsageHidden.includes(provider.id)}
+                    disabled={settings.aiUsagePosition === "hidden"}
+                    onchange={(event) =>
+                      set(
+                        "aiUsageHidden",
+                        event.currentTarget.checked
+                          ? settings.aiUsageHidden.filter((id) => id !== provider.id)
+                          : [...settings.aiUsageHidden, provider.id],
+                      )}
+                  />
+                  {provider.label}
+                </label>
+              {/each}
+            </div>
+          </div>
+          <label class="row">
+            <div class="label">
+              <span>Link into new worktrees</span>
+              <span class="hint">
+                Folders of the main checkout that New Task links into each new worktree, so it runs at once, such as
+                node_modules. Only folders git ignores are linked. Separate them with commas.
+              </span>
+            </div>
+            <input
+              class="input"
+              type="text"
+              spellcheck="false"
+              value={settings.aiWorktreeLinks.join(", ")}
+              onchange={(event) =>
+                set(
+                  "aiWorktreeLinks",
+                  event.currentTarget.value
+                    .split(",")
+                    .map((name) => name.trim())
+                    .filter((name) => name !== ""),
+                )}
+              aria-label="Link into new worktrees"
+            />
+          </label>
+          <div class="row stacked">
+            <div class="label">
+              <span>Agents</span>
+              <span class="hint">
+                Found on your login shell's PATH. Open an agent to change the command that starts it, its
+                full-autonomy flags, how it takes a first prompt and extra arguments, so a provider's renamed command
+                or flag needs no app update.
+              </span>
+            </div>
+            <AiAgentSettings />
+          </div>
         {:else if section === "github"}
           <div class="row stacked">
             <div class="label">
@@ -2796,6 +2934,19 @@
     font-size: 12px;
     color: var(--text-dim);
     line-height: 1.45;
+  }
+
+  .usage-providers {
+    flex: none;
+    display: flex;
+    gap: 14px;
+  }
+
+  .usage-providers .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
   }
 
   .segmented {

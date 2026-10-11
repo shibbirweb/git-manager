@@ -55,6 +55,24 @@ describe("terminal descriptors", () => {
     });
   });
 
+  it("keep an agent tab with its run, and drop the agent part when its run is broken", () => {
+    const agent: TerminalDescriptor = {
+      ...shell,
+      key: 7,
+      name: "Claude Code",
+      renamed: true,
+      location: "editor",
+      run: { runId: "agent:7", program: "claude", args: [], cwd: "/work/app-fix", nodeBinDir: null, description: "claude" },
+      agent: { agentId: "claude", folderPath: "/work/app-fix", title: "Fixing login", state: "working", changedAt: 1_700_000_000_000 },
+    };
+    expect(parseDescriptor(describeTerminal(agent))).toEqual(agent);
+    const broken = parseDescriptor(JSON.stringify({ ...agent, run: { program: "claude" } }));
+    expect(broken?.agent).toBeUndefined();
+    expect(broken?.run).toBeNull();
+    // A plain editor terminal never keeps a run.
+    expect(parseDescriptor(JSON.stringify({ ...agent, agent: null }))?.run).toBeNull();
+  });
+
   it("refuse what cannot be rebuilt", () => {
     expect(parseDescriptor("not json")).toBeNull();
     expect(parseDescriptor(JSON.stringify({ ...shell, key: 0 }))).toBeNull();

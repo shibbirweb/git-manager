@@ -1,3 +1,5 @@
+mod ai_usage;
+mod keep_awake;
 mod askpass;
 mod child_process;
 mod commands;
@@ -28,6 +30,7 @@ mod symbols;
 mod terminal;
 mod terminal_flow;
 mod terminal_link;
+mod terminal_memory;
 #[cfg(test)]
 mod test_support;
 mod text_search;
@@ -241,6 +244,11 @@ pub fn run() {
             commands::scripts::list_project_scripts,
             commands::scripts::list_node_versions,
             commands::scripts::run_script,
+            commands::ai::find_agent_programs,
+            commands::ai::ai_usage,
+            commands::ai::set_keep_awake,
+            commands::worktree::worktree_default_base,
+            commands::worktree::prepare_worktree,
             commands::terminal::terminal_shells,
             commands::terminal::terminal_spawn,
             commands::terminal::terminal_write,
@@ -248,6 +256,7 @@ pub fn run() {
             commands::terminal::terminal_resize,
             commands::terminal::terminal_close,
             commands::terminal::terminal_close_all,
+            commands::terminal::terminal_memory,
             commands::terminal::terminal_unstash,
             commands::terminal::terminal_reattach,
             commands::console::git_console_entries,

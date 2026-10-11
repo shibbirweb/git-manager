@@ -208,6 +208,25 @@ mod platform {
         }
     }
 
+    pub fn process_parents() -> Vec<(u32, u32)> {
+        let size = std::mem::size_of::<libc::proc_bsdinfo>() as c_int;
+        all_pids()
+            .into_iter()
+            .filter(|pid| *pid > 0)
+            .filter_map(|pid| {
+                // SAFETY: an all-zero proc_bsdinfo is valid; the call writes at most `size` bytes into it.
+                let mut info: libc::proc_bsdinfo = unsafe { std::mem::zeroed() };
+                let written =
+                    unsafe { libc::proc_pidinfo(pid, libc::PROC_PIDTBSDINFO, 0, &mut info as *mut _ as *mut c_void, size) };
+                (written == size).then_some((pid as u32, info.pbi_ppid))
+            })
+            .collect()
+    }
+
+    pub fn process_bytes(pid: u32) -> Option<u64> {
+        rusage(pid as c_int).map(|info| info.phys_footprint)
+    }
+
     /// A WebKit web content process of this app, the only kind Clear Cache may end.
     pub fn is_own_web_content(pid: c_int) -> bool {
         pid > 0
@@ -315,6 +334,23 @@ mod platform {
         }
     }
 
+    pub fn process_parents() -> Vec<(u32, u32)> {
+        snapshot().into_iter().map(|(pid, parent_pid, _)| (pid, parent_pid)).collect()
+    }
+
+    pub fn process_bytes(pid: u32) -> Option<u64> {
+        // SAFETY: a process handle this function opens and closes.
+        unsafe {
+            let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+            if process.is_null() {
+                return None;
+            }
+            let bytes = private_bytes(process);
+            CloseHandle(process);
+            Some(bytes)
+        }
+    }
+
     pub fn usage() -> MemoryUsage {
         let own = std::process::id();
         let all = snapshot();
@@ -358,10 +394,28 @@ mod platform {
             approximate: true,
         }
     }
+
+    pub fn process_parents() -> Vec<(u32, u32)> {
+        Vec::new()
+    }
+
+    pub fn process_bytes(_pid: u32) -> Option<u64> {
+        None
+    }
 }
 
 pub fn usage() -> MemoryUsage {
     platform::usage()
+}
+
+/// Every process as (pid, parent pid), for the terminals' process trees (`terminal_memory.rs`).
+pub fn process_parents() -> Vec<(u32, u32)> {
+    platform::process_parents()
+}
+
+/// One process's memory, counted like the readout; None when it is gone or not ours to read.
+pub fn process_bytes(pid: u32) -> Option<u64> {
+    platform::process_bytes(pid)
 }
 
 /// Clear Cache: the pid of this window's web content process, checked to be ours. Ending it

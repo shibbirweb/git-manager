@@ -25,7 +25,8 @@ export type GitDialog =
   | { kind: "branches"; repoRoot: string }
   /** Git > GitHub: sign in, Share Project, Create Gist and their results (GitHubDialogHost.svelte). */
   | { kind: "github"; dialog: GitHubDialog }
-  | { kind: "newWorktree"; repoRoot: string }
+  | { kind: "newWorktree"; repoRoot: string; startAgent?: boolean }
+  | { kind: "newTask"; repoRoot: string }
   | { kind: "addSubmodule"; repoRoot: string }
   /** Before a commit in a repository without a name and email; `resolve(true)` once one is saved. */
   | { kind: "identity"; repoRoot: string; identity: Identity; resolve: (saved: boolean) => void };

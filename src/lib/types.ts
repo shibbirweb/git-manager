@@ -435,6 +435,13 @@ export interface MemoryUsage {
   approximate: boolean;
 }
 
+/** One terminal's memory: its shell and everything the shell started (terminal_memory.rs). */
+export interface TerminalMemory {
+  terminalId: number;
+  bytes: number;
+  processes: number;
+}
+
 /** The real OS for bug reports; the web view's user agent freezes the macOS version. */
 export interface OsInfo {
   /** "macOS", "Windows", or the Linux distribution name. */
@@ -504,6 +511,40 @@ export interface ShellProfile {
   args: string[];
   /** The user's login shell ($SHELL), used when no default is set. */
   isDefault: boolean;
+}
+
+/** One rate-limit window of an AI agent (ai_usage). */
+export interface UsageWindow {
+  /** 0 to 100. */
+  usedPercent: number;
+  windowMinutes: number;
+  /** ms since the epoch. */
+  resetsAt: number | null;
+}
+
+/** An AI agent's usage of its plan's limits, for the status bar. */
+export interface ProviderUsage {
+  provider: string;
+  status: "ok" | "signedOut" | "noData" | "error";
+  session: UsageWindow | null;
+  weekly: UsageWindow | null;
+  /** Weekly limits of single models, such as Claude Code's Fable weekly limit. */
+  modelWeekly: { model: string; window: UsageWindow }[];
+  plan: string | null;
+  message: string | null;
+}
+
+/** What prepare_worktree did in a new worktree (git/worktree_prepare.rs). */
+export interface PrepareReport {
+  copied: string[];
+  linked: string[];
+  skipped: { path: string; reason: string }[];
+}
+
+/** A program found on the login shell's PATH (find_agent_programs). */
+export interface FoundProgram {
+  program: string;
+  path: string;
 }
 
 export interface TerminalInfo {
