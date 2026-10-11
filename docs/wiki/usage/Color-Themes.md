@@ -74,7 +74,7 @@ The themes are new, and a few things do not follow them yet:
 
 - **The commit graph** in the Log keeps its own lane colors.
 - **Switches** in Settings keep a white knob.
-- **Diagrams in Preview Only** (the rich Markdown editor) keep their old colors until they are drawn again, for example after you scroll away and back.
+- **Diagrams in the Rich Editor** (the Markdown view you can type in) keep their old colors until they are drawn again, for example after you scroll away and back.
 - **At startup** you may see the default colors for a moment before your theme is applied.
 
 ## Saved where

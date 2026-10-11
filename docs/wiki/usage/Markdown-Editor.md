@@ -16,9 +16,9 @@ The three buttons at the right end of the path bar (the slim bar under the tabs,
 | --- | --- |
 | **Editor Only** | Just the text, like any other file. |
 | **Editor and Preview** | The text and a live preview side by side. This is the default. |
-| **Preview Only** | The finished page, which you can edit in place (see below). |
+| **Rich Editor** (the eye with a pencil) | The finished page, which you can edit in place (see below). |
 
-The same choices are in the menu bar under **View > Markdown** (**Editor Only**, **Editor and Preview**, **Preview Only**). They are enabled only while a Markdown file is the active tab.
+The same choices are in the menu bar under **View > Markdown** (**Editor Only**, **Editor and Preview**, **Rich Editor**). They are enabled only while a Markdown file is the active tab.
 
 Each file remembers its own view until you quit the app. New files open in the view picked in **Settings > Editor > Markdown preview**; see [Settings](Settings.md).
 
@@ -50,15 +50,15 @@ The preview follows your typing after a short pause, and only the changed parts 
 - **Code blocks are colored** with the same colors as the editor.
 - Cmd+S saves, also while the preview has focus.
 
-## Preview Only: edit the page itself
+## Rich Editor: edit the page itself
 
-![Preview Only, editing the page in place](../images/markdown-rich-editor.png)
+![The Rich Editor, editing the page in place](../images/markdown-rich-editor.png)
 
-*Preview Only is a rich text editor: headings, lists, task boxes and tables are edited as they look.*
+*The Rich Editor: headings, lists, task boxes and tables are edited as they look.*
 
-Preview Only shows the finished page and lets you type in it, like Typora or a word processor. Behind the scenes the text is still the real file:
+The Rich Editor shows the finished page and lets you type in it, like Typora or a word processor. Behind the scenes the text is still the real file:
 
-- **Only what you edit changes.** Each paragraph, list or table you did not touch keeps its exact text, spaces and markers. A paragraph you edit is written back in the common GitHub style (`-` for bullets, `*` for emphasis).
+- **Only what you edit changes.** Text you did not touch keeps its exact spelling: list markers, emphasis style, table padding, blank lines and line endings stay as they were. Only the words you type or format are new.
 - **Undo, save and diff work as usual.** The tab shows the unsaved dot, Cmd+S saves and the [diff](Diffs.md) shows the change.
 - **The toolbar works here too.** The same buttons format the selected text. **Link** (or Cmd+K) asks for an **Address**. When the cursor is already on a link, it removes that link.
 - Cmd+B and Cmd+I make text bold and italic.
@@ -66,9 +66,16 @@ Preview Only shows the finished page and lets you type in it, like Typora or a w
 - **Links**: a click puts the cursor in the link text, so you can edit it. Cmd+click follows the link.
 - **Front matter** (the `---` block of settings at the top of some files) is kept as written and hidden from the page.
 
-Some Markdown cannot be kept exactly by the rich editor, for example unusual raw HTML. Then the page stays read-only and a note says: **This file uses Markdown the rich editor cannot keep exactly. Edit it in the text editor.** Switch to Editor and Preview to change that file.
+Raw HTML such as a `<table>` or `<details>` block shows as it is and is kept as written; you edit the text around it. Some files cannot be kept exactly, and then the page stays read-only with a note that says why:
 
-Leaving Preview Only opens the text at the top of the file.
+- **This file has HTML, JSX or MDX the rich editor cannot keep exactly. Edit it in the text editor.**
+- **This file has reference-style links, which the rich editor cannot keep exactly. Edit it in the text editor.** (links like `[text][name]` with `[name]: url` below)
+- **This file has footnotes, which the rich editor cannot keep exactly. Edit it in the text editor.**
+- **This file is too large for the rich editor. Edit it in the text editor.** (over 600 KB)
+
+Switch to Editor and Preview to change such a file.
+
+Leaving the Rich Editor opens the text at the top of the file.
 
 ## Diagrams
 
@@ -83,7 +90,7 @@ flowchart LR
 
 ![A mermaid diagram in the preview](../images/markdown-mermaid.png)
 
-*The preview draws mermaid diagrams. In Preview Only the diagram shows under its code, and changes as you type.*
+*The preview draws mermaid diagrams. In the Rich Editor the diagram shows under its code, and changes as you type.*
 
 Diagrams follow the light or dark look and your [color theme](Color-Themes.md). A diagram with a mistake shows **Mermaid:** and the error instead.
 
@@ -101,7 +108,7 @@ A Markdown file can contain raw HTML, and a file from a cloned repository is not
 
 - Long files with many diagrams stay light: diagrams and images are drawn only when they are near the screen, and a tab you are not looking at frees its preview until you come back.
 - A link like `other.md#section` opens the file but does not scroll to the section yet.
-- In Preview Only, diagrams keep their old colors after you change the theme until they are drawn again: scroll far away and back, or reopen the file.
+- In the Rich Editor, diagrams keep their old colors after you change the theme until they are drawn again: scroll far away and back, or reopen the file.
 
 ## Related
 

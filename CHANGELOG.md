@@ -133,6 +133,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Markdown Preview Only is now called Rich Editor, with an eye-and-pencil icon, in the path bar, View > Markdown and Settings > Editor > Markdown preview, since you can type in it.
 - The memory readout in the status bar shows a memory icon and the size (such as 597 MB) instead of the word Memory, so it takes less room. The tooltip still says what it is.
 - The welcome screen looks like the JetBrains one: a sidebar with Projects, Customize and Learn, and the app version. Projects is one searchable list of recent workspaces and folders with a colored badge each; the arrow keys and Enter open one, and its ... menu can open it in a new window, reveal it in Finder, copy its path or remove it. Open, Clone and Open Workspace from File sit next to the search. Customize sets the theme, color theme, font sizes and rounded panels, Learn links to the docs, the shortcuts and What's New, and Star on GitHub, Report a Bug and Request a Feature stay at the bottom of the sidebar.
 - Collapse unchanged in diffs opens a folded run 10 lines at a time: the up and down buttons on its bar show 10 more lines at the top or the bottom of the run, and a click on the rest of the bar still shows all of it.
@@ -166,6 +167,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The Markdown Rich Editor (until now Preview Only) edits existing files safely: untouched text keeps its exact spelling (list markers, emphasis, table padding, blank lines, line endings), and a file the editor cannot keep exactly (some HTML, reference-style links, footnotes, over 600 KB) stays read-only with a note saying why. README-style HTML tables are kept as they are. The rich editor is now built on TipTap, with the safety of Orca's editor.
 - HTML, XML, Vue and JSX tag and attribute names now use the color theme's own tag and attribute colors. Before, every theme showed tags in its type color and attributes in its property color, so Monokai tags were cyan instead of pink.
 - A file open in a tab (a preview tab too) now updates when another app changes it, also when git ignores it, like a log file. Only the new text is added, so the view stays where it is, and when it is scrolled to the end it follows the new lines.
 - Diffs in the Changes tab, Show Diff with Working Tree and Compare with Revision now update while the file keeps changing; before, a file that was already modified showed its first diff until something else changed.

@@ -19,7 +19,7 @@ What you lose is small, and only for unloaded tabs:
 - **Undo history**: Cmd+Z cannot go back past the moment the tab was unloaded. Your saved file is not touched.
 - Folded blocks, extra cursors and an open find bar start fresh.
 
-A Markdown file keeps its view (Editor, Editor and preview, or Preview only).
+A Markdown file keeps its view (Editor, Editor and preview, or Rich editor).
 
 ## How much it saves
 

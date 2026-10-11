@@ -30,7 +30,7 @@ Under it, a switch for each part, all on at first:
 | Change arrows | Previous and next change with the counter. F7 and Shift+F7 still work. |
 | Blame | The Blame button. Git > Current File > Annotate with Git Blame still works. |
 | Copy relative path | The copy button |
-| Markdown view switch | Editor, Editor and Preview, Preview. View > Markdown still works. |
+| Markdown view switch | Editor, Editor and Preview, Rich Editor. View > Markdown still works. |
 | Markdown formatting row | The row of formatting buttons above a Markdown file. It has its own row, so this switch works even with the toolbar hidden. |
 
 With every part off, the toolbar goes away. The conflict buttons are not part of it: they show whenever a file has conflicts.

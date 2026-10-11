@@ -1,57 +1,25 @@
-// The Markdown rich text editor (Milkdown, on ProseMirror and remark), shown in Preview mode so
-// the rendered document can be edited in place. The source text stays the truth: every edit is
-// written back block by block (richSync.ts), and source changes made elsewhere load again here.
-// Loaded the first time a Markdown file shows its preview.
+// The Markdown rich text editor (TipTap, on ProseMirror), the Rich Editor view: the rendered document is edited
+// in place. The source text stays the truth, as in Orca's editor (rich/, MIT): a file is editable only
+// when its Markdown survives the editor's round trip, and saving patches the edit onto the file's own text, so
+// untouched text keeps its exact spelling (rich/rich-markdown-serialization-commit.ts). Source changes made
+// elsewhere load again here. Loaded the first time a Markdown file shows its preview.
 
-import {
-  Editor,
-  editorViewCtx,
-  editorViewOptionsCtx,
-  parserCtx,
-  remarkCtx,
-  remarkStringifyOptionsCtx,
-  rootCtx,
-  schemaCtx,
-  serializerCtx,
-} from "@milkdown/kit/core";
-import type { Ctx } from "@milkdown/kit/ctx";
-import { clipboard } from "@milkdown/kit/plugin/clipboard";
-import { history } from "@milkdown/kit/plugin/history";
-import {
-  codeBlockSchema,
-  commonmark,
-  createCodeBlockCommand,
-  imageSchema,
-  toggleEmphasisCommand,
-  toggleInlineCodeCommand,
-  toggleLinkCommand,
-  toggleStrongCommand,
-  turnIntoTextCommand,
-  wrapInBlockquoteCommand,
-  wrapInBulletListCommand,
-  wrapInHeadingCommand,
-  wrapInOrderedListCommand,
-} from "@milkdown/kit/preset/commonmark";
-import { gfm, insertTableCommand, toggleStrikethroughCommand } from "@milkdown/kit/preset/gfm";
-import type { Node as ProseNode } from "@milkdown/kit/prose/model";
-import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
-import type { NodeView } from "@milkdown/kit/prose/view";
-import { $prose, $remark, $view, callCommand } from "@milkdown/kit/utils";
+import { Editor } from "@tiptap/core";
+import type { Node as ProseNode } from "@tiptap/pm/model";
+import { Selection, TextSelection } from "@tiptap/pm/state";
+import type { NodeView } from "@tiptap/pm/view";
 import { classifyImage, type LinkContext } from "./links";
 import { releaseMermaid, renderMermaid } from "./mermaid";
 import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
-import {
-  applyEdit,
-  blockEdit,
-  dropNullImageFields,
-  type MarkdownTreeNode,
-  type PositionedTree,
-  rangesAfterEdit,
-  type SourceBlock,
-  type SourceEdit,
-  splitFrontMatter,
-  topLevelRangesOf,
-} from "./richSync";
+import { getMarkdownRichModeUnsupportedMessage } from "./rich/markdown-rich-mode";
+import { exceedsMarkdownRichModeSizeLimit } from "./rich/markdown-rich-size-limit";
+import { encodeRawMarkdownHtmlForRichEditor } from "./rich/raw-markdown-html";
+import { createRichMarkdownExtensions } from "./rich/rich-markdown-extensions";
+import { normalizeEmptyListItems } from "./rich/rich-markdown-normalize";
+import { serializeRichMarkdownForReconcile } from "./rich/rich-markdown-reconcile-serializer";
+import { commitRichMarkdownSerialization } from "./rich/rich-markdown-serialization-commit";
+import { createRichMarkdownEditorCodec, type RichMarkdownEditorCodec } from "./rich/rich-markdown-source-transport";
+import { type SourceEdit, sourceEdit, splitFrontMatter } from "./richSync";
 import { sanitizeSvg } from "./sanitize";
 
 /** What the toolbar asks the rich editor to do. */
@@ -82,92 +50,59 @@ export interface RichEditorOptions {
   isDark: () => boolean;
 }
 
-const SYNC_DELAY_MS = 120;
+/** The pause after typing before an edit is saved into the text (Orca's 300 ms: a save re-parses once). */
+const SYNC_DELAY_MS = 300;
 const MERMAID_DELAY_MS = 400;
-
-/** How written blocks are spelled; the common GitHub style. Untouched blocks keep their own. */
-const STRINGIFY_OPTIONS = {
-  bullet: "-",
-  bulletOther: "*",
-  emphasis: "*",
-  strong: "*",
-  fence: "`",
-  rule: "-",
-  listItemIndent: "one",
-} as const;
+const TOO_LARGE = "This file is too large for the rich editor. Edit it in the text editor.";
 
 export class RichMarkdownEditor {
   private editor: Editor | null = null;
+  private readonly codec: RichMarkdownEditorCodec = createRichMarkdownEditorCodec();
+  /** The whole text as the text editor has it, front matter included. */
   private source = "";
   private frontMatter = "";
-  /** Block ranges in the body (the source after the front matter). */
-  private ranges: SourceBlock[] = [];
-  /** Each top-level node of the editor's document as the serializer writes it. */
-  private blocks: string[] = [];
-  /**
-   * Each top-level node as written, by node: ProseMirror keeps the nodes an edit did not touch,
-   * so a sync writes only the edited blocks again (all of them took 30 ms or more in a big file).
-   */
-  private readonly written = new WeakMap<ProseNode, string>();
-  /** The block ranges of the latest text the editor's parser read (loading or pasting). */
-  private parsed: { text: string; ranges: SourceBlock[] } | null = null;
-  private loadingSource = false;
+  /** The save's state (Orca's refs): the body's own text, its round trip, and the text last written. */
+  private readonly saved = {
+    originalSourceRef: { current: "" },
+    baseCanonicalRef: { current: "" },
+    lastCommittedMarkdownRef: { current: "" },
+  };
+  private loading = false;
+  /** A file was loaded once (later loads keep the caret). */
+  private loaded = false;
   private syncTimer: ReturnType<typeof setTimeout> | undefined;
   private editable = true;
-  /** Diagrams draw only near the visible part of the editor's scroller. */
+  /** Diagrams and images draw only near the visible part of the editor's scroller. */
   private nearScreen: NearScreen | null = null;
 
   private constructor(private readonly options: RichEditorOptions) {}
 
   static async create(root: HTMLElement, options: RichEditorOptions): Promise<RichMarkdownEditor> {
     const instance = new RichMarkdownEditor(options);
-    await instance.start(root);
+    instance.start(root);
     return instance;
   }
 
-  private async start(root: HTMLElement): Promise<void> {
+  private start(root: HTMLElement): void {
     // The scroller is the editor root's parent (RichMarkdownView).
     this.nearScreen = new NearScreen(root.parentElement);
-    const watcher = $prose(
-      () =>
-        new Plugin({
-          key: new PluginKey("gm-source-sync"),
-          view: () => ({
-            update: (view, previous) => {
-              if (!this.loadingSource && !view.state.doc.eq(previous.doc)) {
-                this.scheduleSync();
-              }
-            },
-          }),
-        }),
-    );
-    // Runs first on every parse (loading, pasting), before other plugins change the tree, so
-    // loading needs no second parse for the block ranges.
-    const blockRanges = $remark("gmBlockRanges", () => () => (tree, file) => {
-      this.parsed = { text: String(file.value), ranges: topLevelRangesOf(tree as PositionedTree) };
+    this.editor = new Editor({
+      element: root,
+      extensions: createRichMarkdownExtensions({
+        codec: this.codec,
+        nodeViews: {
+          image: ({ node }) => this.imageView(node),
+          codeBlock: ({ node }) => this.codeView(node),
+        },
+      }),
+      editable: false,
+      onUpdate: ({ transaction }) => {
+        if (!this.loading && transaction.docChanged) {
+          this.scheduleSync();
+        }
+      },
+      onBlur: () => this.flush(),
     });
-    // Runs on every parse before the tree becomes editor nodes.
-    const imageDefaults = $remark("gmImageDefaults", () => () => (tree) => {
-      dropNullImageFields(tree as unknown as MarkdownTreeNode);
-    });
-    const imageView = $view(imageSchema.node, () => (node) => this.imageView(node));
-    const codeView = $view(codeBlockSchema.node, () => (node) => this.codeView(node));
-    this.editor = await Editor.make()
-      .config((ctx) => {
-        ctx.set(rootCtx, root);
-        ctx.update(remarkStringifyOptionsCtx, (previous) => ({ ...previous, ...STRINGIFY_OPTIONS }));
-        ctx.update(editorViewOptionsCtx, (previous) => ({ ...previous, editable: () => this.editable }));
-      })
-      .use(blockRanges)
-      .use(commonmark)
-      .use(gfm)
-      .use(history)
-      .use(clipboard)
-      .use(imageDefaults)
-      .use(watcher)
-      .use(imageView)
-      .use(codeView)
-      .create();
     this.load(this.options.source);
   }
 
@@ -177,6 +112,7 @@ export class RichMarkdownEditor {
       return;
     }
     clearTimeout(this.syncTimer);
+    this.syncTimer = undefined;
     this.load(source);
   }
 
@@ -189,8 +125,9 @@ export class RichMarkdownEditor {
     }
   }
 
+  /** Takes the keyboard where the caret is, without scrolling to it (the view keeps its place). */
   focus(): void {
-    this.withCtx((ctx) => ctx.get(editorViewCtx).focus());
+    this.editor?.commands.focus(null, { scrollIntoView: false });
   }
 
   destroy(): void {
@@ -198,7 +135,7 @@ export class RichMarkdownEditor {
     this.nearScreen?.disconnect();
     this.nearScreen = null;
     releaseMermaid(this);
-    void this.editor?.destroy();
+    this.editor?.destroy();
     this.editor = null;
   }
 
@@ -207,112 +144,124 @@ export class RichMarkdownEditor {
     if (!editor || !this.editable) {
       return;
     }
-    const commands: Record<RichAction, () => (ctx: Ctx) => boolean> = {
-      bold: () => callCommand(toggleStrongCommand.key),
-      italic: () => callCommand(toggleEmphasisCommand.key),
-      strikethrough: () => callCommand(toggleStrikethroughCommand.key),
-      code: () => callCommand(toggleInlineCodeCommand.key),
-      bullet: () => callCommand(wrapInBulletListCommand.key),
-      ordered: () => callCommand(wrapInOrderedListCommand.key),
-      task: () => (ctx) => callCommand(wrapInBulletListCommand.key)(ctx) && this.markTask(ctx),
-      quote: () => callCommand(wrapInBlockquoteCommand.key),
-      codeBlock: () => callCommand(createCodeBlockCommand.key),
-      table: () => callCommand(insertTableCommand.key, { row: 3, col: 3 }),
-      heading1: () => callCommand(wrapInHeadingCommand.key, 1),
-      heading2: () => callCommand(wrapInHeadingCommand.key, 2),
-      heading3: () => callCommand(wrapInHeadingCommand.key, 3),
-      paragraph: () => callCommand(turnIntoTextCommand.key),
+    const chain = editor.chain().focus();
+    const commands: Record<RichAction, () => boolean> = {
+      bold: () => chain.toggleBold().run(),
+      italic: () => chain.toggleItalic().run(),
+      strikethrough: () => chain.toggleStrike().run(),
+      code: () => chain.toggleCode().run(),
+      bullet: () => chain.toggleBulletList().run(),
+      ordered: () => chain.toggleOrderedList().run(),
+      task: () => chain.toggleTaskList().run(),
+      quote: () => chain.toggleBlockquote().run(),
+      codeBlock: () => chain.toggleCodeBlock().run(),
+      table: () => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+      heading1: () => chain.toggleHeading({ level: 1 }).run(),
+      heading2: () => chain.toggleHeading({ level: 2 }).run(),
+      heading3: () => chain.toggleHeading({ level: 3 }).run(),
+      paragraph: () => chain.setParagraph().run(),
     };
-    editor.action(commands[action]());
-    this.focus();
+    commands[action]();
   }
 
   /** Adds a link to the selected text, or removes the link it is in. */
   toggleLink(href: string): void {
-    this.editor?.action(callCommand(toggleLinkCommand.key, { href }));
-    this.focus();
+    const editor = this.editor;
+    if (!editor || !this.editable) {
+      return;
+    }
+    if (editor.isActive("link")) {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    } else {
+      editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+    }
   }
 
-  /** Ticks or clears a task item; `element` is its list item. */
+  /** Ticks or clears a task item; `element` is inside its list item. */
   toggleTask(element: Element): void {
-    this.withCtx((ctx) => {
-      const view = ctx.get(editorViewCtx);
-      let position: number;
-      try {
-        position = view.posAtDOM(element, 0);
-      } catch {
-        return;
-      }
-      const resolved = view.state.doc.resolve(position);
-      for (let depth = resolved.depth; depth > 0; depth--) {
-        const node = resolved.node(depth);
-        if (node.type.name === "list_item" && node.attrs.checked !== null && node.attrs.checked !== undefined) {
-          const at = resolved.before(depth);
-          view.dispatch(view.state.tr.setNodeMarkup(at, undefined, { ...node.attrs, checked: !node.attrs.checked }));
-          return;
-        }
-      }
-    });
-  }
-
-  private markTask(ctx: Ctx): boolean {
-    const view = ctx.get(editorViewCtx);
-    const resolved = view.state.selection.$from;
+    const editor = this.editor;
+    if (!editor || !this.editable) {
+      return;
+    }
+    const view = editor.view;
+    let position: number;
+    try {
+      position = view.posAtDOM(element, 0);
+    } catch {
+      return;
+    }
+    const resolved = view.state.doc.resolve(Math.min(position, view.state.doc.content.size));
     for (let depth = resolved.depth; depth > 0; depth--) {
       const node = resolved.node(depth);
-      if (node.type.name === "list_item") {
-        view.dispatch(view.state.tr.setNodeMarkup(resolved.before(depth), undefined, { ...node.attrs, checked: false }));
-        return true;
+      if (node.type.name === "taskItem") {
+        const at = resolved.before(depth);
+        view.dispatch(view.state.tr.setNodeMarkup(at, undefined, { ...node.attrs, checked: !node.attrs.checked }));
+        return;
       }
     }
-    return false;
-  }
-
-  private withCtx(work: (ctx: Ctx) => void): void {
-    this.editor?.action(work);
   }
 
   private load(source: string): void {
+    const editor = this.editor;
+    if (!editor) {
+      return;
+    }
     this.source = source;
     const { frontMatter, body } = splitFrontMatter(source);
     this.frontMatter = frontMatter;
-    this.withCtx((ctx) => {
-      const view = ctx.get(editorViewCtx);
-      let doc: ProseNode;
-      try {
-        doc = ctx.get(parserCtx)(body);
-      } catch (error) {
-        this.setReadOnly(`This Markdown could not be read for rich editing: ${error instanceof Error ? error.message : String(error)}`);
-        return;
-      }
-      this.loadingSource = true;
-      try {
-        // Not undoable here: the change came from the text, which has its own history.
-        view.dispatch(view.state.tr.replaceWith(0, view.state.doc.content.size, doc.content).setMeta("addToHistory", false));
-      } finally {
-        this.loadingSource = false;
-      }
-      this.realign(ctx, body);
-    });
-  }
-
-  /** Block ranges of the body and the editor's own blocks; they must line up to write back. */
-  private realign(ctx: Ctx, body: string): void {
-    const parsed = this.parsed;
-    this.parsed = null;
-    this.ranges = parsed && parsed.text === body ? parsed.ranges : topLevelRanges(ctx, body);
-    this.blocks = serializeBlocks(ctx, ctx.get(editorViewCtx).state.doc, this.written);
-    if (this.ranges.length !== this.blocks.length) {
-      this.setReadOnly("This file uses Markdown the rich editor cannot keep exactly. Edit it in the text editor.");
-    } else if (!this.editable) {
+    const reason = exceedsMarkdownRichModeSizeLimit(body) ? TOO_LARGE : getMarkdownRichModeUnsupportedMessage(body);
+    const first = !this.loaded;
+    const { from, to } = editor.state.selection;
+    this.loading = true;
+    try {
+      // Not undoable here: the change came from the text, which has its own history.
+      editor
+        .chain()
+        .command(({ tr }) => {
+          tr.setMeta("addToHistory", false);
+          return true;
+        })
+        .setContent(reason === TOO_LARGE ? "" : encodeRawMarkdownHtmlForRichEditor(body, this.codec), {
+          contentType: "markdown",
+          emitUpdate: false,
+        })
+        .run();
+      // Hard-wrapped paragraphs stay one paragraph; an empty list item is not split on load (Orca's onCreate).
+      normalizeEmptyListItems(editor);
+      // A file opens with the caret at the top (TipTap leaves it at the end, and focusing scrolled there); text
+      // reloaded from elsewhere keeps the caret where it was, as in Orca.
+      const doc = editor.state.doc;
+      const selection = first
+        ? Selection.atStart(doc)
+        : TextSelection.between(
+            doc.resolve(Math.min(from, doc.content.size)),
+            doc.resolve(Math.min(to, doc.content.size)),
+          );
+      editor.view.dispatch(editor.state.tr.setSelection(selection).setMeta("addToHistory", false));
+      this.loaded = true;
+      this.saved.originalSourceRef.current = body;
+      this.saved.baseCanonicalRef.current = editor.getMarkdown();
+      this.saved.lastCommittedMarkdownRef.current = body;
+    } catch (error) {
+      this.loading = false;
+      this.setReadOnly(
+        `This Markdown could not be read for rich editing: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return;
+    } finally {
+      this.loading = false;
+    }
+    if (reason) {
+      this.setReadOnly(reason);
+    } else {
       this.editable = true;
-      ctx.get(editorViewCtx).setProps({});
+      editor.setEditable(true, false);
     }
   }
 
   private setReadOnly(reason: string): void {
     this.editable = false;
-    this.withCtx((ctx) => ctx.get(editorViewCtx).setProps({}));
+    this.editor?.setEditable(false, false);
     this.options.onReadOnly(reason);
   }
 
@@ -324,27 +273,23 @@ export class RichMarkdownEditor {
     }, SYNC_DELAY_MS);
   }
 
+  /** Saves the edit into the text: patched onto the file's own spelling where that is proven safe. */
   private sync(): void {
-    this.withCtx((ctx) => {
-      if (!this.editable) {
-        return;
-      }
-      const next = serializeBlocks(ctx, ctx.get(editorViewCtx).state.doc, this.written);
-      const body = this.source.slice(this.frontMatter.length);
-      const edit = blockEdit(body, this.ranges, this.blocks, next);
-      if (!edit) {
-        return;
-      }
-      const newBody = applyEdit(body, edit);
-      this.source = this.frontMatter + newBody;
-      this.options.onEdit({ from: edit.from + this.frontMatter.length, to: edit.to + this.frontMatter.length, insert: edit.insert });
-      this.ranges = rangesAfterEdit(newBody, this.ranges, edit, (text) => topLevelRanges(ctx, text)) ?? topLevelRanges(ctx, newBody);
-      this.blocks = next;
-      if (this.ranges.length !== this.blocks.length) {
-        // A written block reads back as more (or fewer) blocks: start again from the text.
-        this.load(this.source);
-      }
-    });
+    if (!this.editor || !this.editable) {
+      return;
+    }
+    const commit = commitRichMarkdownSerialization(this.editor, this.saved, (markdown) =>
+      serializeRichMarkdownForReconcile(markdown),
+    );
+    if (!commit.didSerialize) {
+      return;
+    }
+    const next = this.frontMatter + commit.markdown;
+    const edit = sourceEdit(this.source, next);
+    this.source = next;
+    if (edit) {
+      this.options.onEdit(edit);
+    }
   }
 
   private imageView(node: ProseNode): NodeView {
@@ -508,31 +453,4 @@ export class RichMarkdownEditor {
       },
     };
   }
-}
-
-/** Where each top-level block of `body` is, from the same remark parser the editor uses. */
-function topLevelRanges(ctx: Ctx, body: string): SourceBlock[] {
-  return topLevelRangesOf(ctx.get(remarkCtx).parse(body) as PositionedTree);
-}
-
-/**
- * Each top-level node written on its own, as it would appear in the file. Empty paragraphs
- * write nothing and are not blocks of the text either (an empty file still has one). `written`
- * keeps what each node gave, as a node never changes.
- */
-function serializeBlocks(ctx: Ctx, doc: ProseNode, written: WeakMap<ProseNode, string>): string[] {
-  const serializer = ctx.get(serializerCtx);
-  const schema = ctx.get(schemaCtx);
-  const blocks: string[] = [];
-  doc.forEach((node) => {
-    let text = written.get(node);
-    if (text === undefined) {
-      text = serializer(schema.topNodeType.create(null, node)).replace(/\n+$/, "");
-      written.set(node, text);
-    }
-    if (text !== "") {
-      blocks.push(text);
-    }
-  });
-  return blocks;
 }

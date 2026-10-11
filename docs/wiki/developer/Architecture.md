@@ -116,7 +116,7 @@ Low memory use is a goal, not an accident. The rules:
 - No bundled browser engine: the app uses the system web view.
 - Rust opens a repository per command and keeps no file contents or caches between calls.
 - The Files panel loads one folder level at a time; diffs load only for the selected file; CodeMirror renders only visible lines and views are destroyed on unmount.
-- Grammars and big libraries load on first use with dynamic `import()`: xterm.js with the first terminal, markdown-it, DOMPurify, mermaid and Milkdown with the first Markdown preview, the theme catalog only for a non-default theme.
+- Grammars and big libraries load on first use with dynamic `import()`: xterm.js with the first terminal, markdown-it, DOMPurify, mermaid and TipTap with the first Markdown preview, the theme catalog only for a non-default theme.
 - Features that are off cost nothing: the Git Console records nothing and its view never loads, the MCP server and the memory log start no thread, and the search indexes are dropped after 2 minutes without use.
 - The log is paged (300 commits at a time) and virtualized. The merge tool is an overlay, not a second web view. Hidden Markdown tabs unmount their preview.
 - Polling happens only while the window is visible.

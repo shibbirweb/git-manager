@@ -26,7 +26,7 @@ flowchart TD
   RV -->|"edits as source changes"| CM
 ```
 
-The text editor always exists, hidden in Preview Only, so save, undo, dirty state and diffs keep one source of truth.
+The text editor always exists, hidden in the Rich Editor, so save, undo, dirty state and diffs keep one source of truth.
 
 ### The toolbar and keys
 
@@ -95,11 +95,11 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 
 ## Design decisions
 
-**Lazy chunks.** markdown-it and DOMPurify load on the first preview, mermaid on the first diagram, Milkdown on the first Preview Only. `vite.config.js` lists them in `optimizeDeps` so the dev server does not reload on first use.
+**Lazy chunks.** markdown-it and DOMPurify load on the first preview, mermaid on the first diagram, TipTap on the first Rich Editor. `vite.config.js` lists them in `optimizeDeps` so the dev server does not reload on first use.
 
 **Remote images are never loaded.** Opening a file must not contact a server or reveal that you read it.
 
-**What stays after first use.** markdown-it (about 2 MB) and Milkdown (about 8 MB) keep their heap until the app quits. Mermaid lives in a disposable frame ([How Markdown diagrams work](How-Markdown-Diagrams-Work.md)).
+**What stays after first use.** markdown-it (about 2 MB) and TipTap keep their heap until the app quits. Mermaid lives in a disposable frame ([How Markdown diagrams work](How-Markdown-Diagrams-Work.md)).
 
 **Fast scrolling in WebKit.** WebKit's WebContent process peaks at 400 to 650 MB while a 35 KB README is scrolled fast, and settles at 60 to 200 MB after. Plain HTML without our code does the same (runs are noisy: 98 MB and 444 MB for one setup), so it looks like WebKit's own. `content-visibility: auto` is a candidate fix still under test; re-measure in the real app with the MCP tools `scroll_view` and `sample_memory` or the memory log ([Debugging](Debugging.md)).
 

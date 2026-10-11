@@ -27,7 +27,7 @@ flowchart TD
 
 - **The crumbs** (`NavigationBar.svelte`): the workspace folder, then each folder down to the file, built by `crumbsFor`. Repository roots get the `folder-git` icon and the file its type icon. The full absolute path is the tooltip. Each crumb is a button that opens the folder's popup; see [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
 - **Badges**: Unsaved, the git state (Modified, New file, Conflicted) and the number of conflict blocks. Each badge has a `title` with its text.
-- **The `File actions` toolbar** (`role="toolbar"`): previous and next section (Shift+F7 and F7) with the counter, a divider, **Blame** (an icon button with `aria-label="Blame"` and `aria-pressed`), **Copy relative path**, and for Markdown files the view switch, a `radiogroup` named **Markdown view** with Editor Only, Editor and Preview, and Preview Only.
+- **The `File actions` toolbar** (`role="toolbar"`): previous and next section (Shift+F7 and F7) with the counter, a divider, **Blame** (an icon button with `aria-label="Blame"` and `aria-pressed`), **Copy relative path**, and for Markdown files the view switch, a `radiogroup` named **Markdown view** with Editor Only, Editor and Preview, and Rich Editor.
 
 All buttons are 24 by 22 px, with a tooltip and an accessible name. The keyboard shortcuts did not change: F7 and Shift+F7 live in the editor keymap, and the view modes are also in **View > Markdown**.
 

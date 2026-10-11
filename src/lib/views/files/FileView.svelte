@@ -168,6 +168,11 @@
     }
     const line = fromPreview ? 0 : view ? editorTopLine(view) : 0;
     initialLine = line;
+    if (next === "preview") {
+      // The text editor is hidden in the Rich Editor, but WebKit keeps the keyboard in it: typing on a read-only page
+      // went into the file unseen.
+      view?.contentDOM.blur();
+    }
     viewMode = next;
     rememberViewMode(filePath, next);
     if (fromPreview && view) {
@@ -946,7 +951,7 @@
   const MARKDOWN_MODES: { value: MarkdownViewMode; icon: IconName; label: string }[] = [
     { value: "editor", icon: "editor-only", label: "Editor Only" },
     { value: "split", icon: "split-view", label: "Editor and Preview" },
-    { value: "preview", icon: "eye", label: "Preview Only" },
+    { value: "preview", icon: "rich-editor", label: "Rich Editor" },
   ];
 
   async function copyPath(): Promise<void> {

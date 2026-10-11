@@ -130,7 +130,7 @@
   const markdownModes: { value: MarkdownViewMode; label: string }[] = [
     { value: "editor", label: "Editor only" },
     { value: "split", label: "Editor and preview" },
-    { value: "preview", label: "Preview only" },
+    { value: "preview", label: "Rich editor" },
   ];
 
   const cursorStyles: { value: TerminalCursorStyle; label: string }[] = [

@@ -23,7 +23,7 @@ Most settings cost almost nothing. The few that use clearly more memory when the
 | GPU acceleration (Terminal) | 70 MB | For the first terminal, then about 10 MB for each other one |
 | Scrollback (Terminal) | 90 MB at 50,000 lines, 175 MB at 100,000 | Per terminal, once that many lines were printed; 5,000 is the default |
 | Blame gutter (Editor) | 35 MB | While a file is open with the column showing |
-| Markdown preview (Editor) | 35 MB, up to 140 MB with diagrams | **Editor and preview** and **Preview only**, compared with **Editor only** |
+| Markdown preview (Editor) | 35 MB, up to 140 MB with diagrams | **Editor and preview** and **Rich editor**, compared with **Editor only** |
 | File icons (Appearance) | Up to 25 MB | Material Icons with thousands of files listed; Minimal costs less |
 | Syntax highlighting (Editor) | 35 MB | With code open; about the same for one file or ten |
 | Render whitespace (Editor) | 9 MB | With **All** |
