@@ -38,6 +38,7 @@ impl Requests {
 
 /// Holds the computer awake until dropped.
 pub enum Guard {
+    #[cfg(not(windows))]
     Process(std::process::Child),
     #[cfg(windows)]
     Thread(std::sync::mpsc::Sender<()>),
@@ -47,6 +48,7 @@ impl Guard {
     /// The guard still holds (a killed caffeinate does not).
     fn holds(&mut self) -> bool {
         match self {
+            #[cfg(not(windows))]
             Guard::Process(child) => matches!(child.try_wait(), Ok(None)),
             #[cfg(windows)]
             Guard::Thread(_) => true,
@@ -57,6 +59,7 @@ impl Guard {
 impl Drop for Guard {
     fn drop(&mut self) {
         match self {
+            #[cfg(not(windows))]
             Guard::Process(child) => {
                 let _ = child.kill();
                 let _ = child.wait();

@@ -51,6 +51,10 @@ flowchart LR
 
 **Waiting does not count.** An agent waiting for an answer is not working; holding the computer awake for it would keep it awake all night.
 
+## Bugs we fixed
+
+**It did not build on Windows.** The `Guard::Process` variant is only made on macOS and Linux, so the Windows build saw dead code and failed. It is now built only off Windows; see [Windows Bugs We Fixed](Windows-Bugs-We-Fixed.md).
+
 ## Tests
 
 - Rust: requests start and stop the guard at the first and last window; on macOS, caffeinate runs while asked and is gone after.
