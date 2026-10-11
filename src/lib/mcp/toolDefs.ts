@@ -193,10 +193,10 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Set Markdown View",
     "Files",
     { readOnly: true },
-    "Shows a Markdown file as source only, source beside its preview, or the preview only.",
+    "Shows a Markdown file as source only, source beside its preview, or the rich editor (the page itself, editable).",
     objectSchema(
       {
-        mode: { type: "string", enum: [...MARKDOWN_VIEW_MODES], description: "editor, split or preview." },
+        mode: { type: "string", enum: [...MARKDOWN_VIEW_MODES], description: "editor, split or preview (the rich editor)." },
         filePath: absolutePath("Absolute path of an open Markdown tab. Leave out for the file tab on screen."),
       },
       ["mode"],

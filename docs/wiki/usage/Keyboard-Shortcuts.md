@@ -121,7 +121,7 @@ Click in the Files panel first. See [File Operations](File-Operations.md).
 | Option-drag in an editor | Select a rectangle of text (column selection) |
 | Click a blame note or gutter block | Open that commit in the Log |
 | Option-click a blame note or gutter block | Copy the commit hash |
-| Cmd-click a link in Markdown Preview Only | Open it |
+| Cmd-click a link in the Markdown Rich Editor | Open it |
 | Double-click a file in Changes | Stage or unstage it (a conflicted file opens in the merge tool) |
 | Double-click a commit in the Log | Open it in a tab |
 | Double-click a changed file of a commit | Open the commit in a tab on that file |

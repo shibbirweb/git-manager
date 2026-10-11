@@ -79,6 +79,9 @@
           onEdit: (edit) => onEdit(edit),
           onReadOnly: (reason) => {
             readOnlyReason = reason;
+            // A read-only page cannot take the keyboard; the page itself takes it, so keys never reach the hidden
+            // text editor (and Cmd+S still works here).
+            queueMicrotask(() => scroller?.focus());
           },
           linkContext,
           loadImage,
@@ -93,7 +96,11 @@
         if (scroller && initialScroll > 0) {
           scroller.scrollTop = initialScroll;
         }
-        editor.focus();
+        if (readOnlyReason) {
+          scroller?.focus();
+        } else {
+          editor.focus();
+        }
       })
       .catch((error: unknown) => {
         loadError = errorMessage(error);
@@ -145,13 +152,6 @@
     if (!target) {
       return;
     }
-    // The task box is drawn before the item's text; a click there ticks it.
-    const task = target.closest("li[data-item-type='task']");
-    if (task && event.target === task && event.clientX < task.getBoundingClientRect().left + 22) {
-      event.preventDefault();
-      editor?.toggleTask(task);
-      return;
-    }
     const anchor = target.closest("a");
     if (!anchor) {
       return;
@@ -185,7 +185,7 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="rich-markdown" bind:this={scroller} onclick={onClick} onkeydown={onKeydown}>
+<div class="rich-markdown" tabindex="-1" bind:this={scroller} onclick={onClick} onkeydown={onKeydown}>
   {#if loadError}
     <p class="status">The editor failed to load: {loadError}</p>
   {:else if !ready}
@@ -204,6 +204,7 @@
     overflow: auto;
     background: var(--editor-bg);
     color: var(--text);
+    outline: none;
   }
 
   .status {
@@ -242,42 +243,40 @@
   }
 
   /* ProseMirror wraps list items and table cells in paragraphs; space them like the preview. */
-  .md-rich :global(li:not([data-spread="true"]) > p),
+  .md-rich :global(li > p),
+  .md-rich :global(ul[data-type="taskList"] > li > div > p),
   .md-rich :global(:is(th, td) > p) {
     margin: 0;
   }
 
-  .md-rich :global(li[data-item-type="task"]) {
-    position: relative;
+  /* Task items: the box before the text is its own checkbox, which ticks the item. TipTap's node view leaves
+     data-type off the li, so items are found through their taskList. */
+  .md-rich :global(ul[data-type="taskList"]) {
+    padding-left: 1.4em;
     list-style: none;
   }
 
-  .md-rich :global(ul:has(> li[data-item-type="task"])) {
-    padding-left: 1.4em;
+  .md-rich :global(ul[data-type="taskList"] > li) {
+    position: relative;
   }
 
-  /* The task box, drawn in front of the item; a click on it ticks the item. */
-  .md-rich :global(li[data-item-type="task"]::before) {
-    content: "";
+  /* The same native box as the preview's, centered on the item's first line. */
+  .md-rich :global(ul[data-type="taskList"] > li > label) {
     position: absolute;
-    left: -1.35em;
-    top: 0.35em;
-    width: 0.9em;
-    height: 0.9em;
-    border: 1px solid var(--border-strong);
-    border-radius: 3px;
-    background: var(--editor-bg);
+    left: -1.4em;
+    display: flex;
+    align-items: center;
+    height: 1.6em;
+    user-select: none;
+  }
+
+  .md-rich :global(ul[data-type="taskList"] > li > label > input) {
+    margin: 0;
+    accent-color: var(--accent);
     cursor: pointer;
   }
 
-  .md-rich :global(li[data-item-type="task"][data-checked="true"]::before) {
-    border-color: var(--accent);
-    background: var(--accent)
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E")
-      center / 100% no-repeat;
-  }
-
-  .md-rich :global(li[data-item-type="task"][data-checked="true"] > p) {
+  .md-rich :global(ul[data-type="taskList"] > li[data-checked="true"] > div) {
     color: var(--text-dim);
     text-decoration: line-through;
   }

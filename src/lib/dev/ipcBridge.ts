@@ -73,7 +73,8 @@ declare global {
 
 export function startIpcBridge(): void {
   const hot = import.meta.hot;
-  if (!hot) {
+  // Only the window's own page: the hidden mermaid frame runs this hook too, and must neither relay nor serve.
+  if (!hot || window.top !== window) {
     return;
   }
   if (new URLSearchParams(location.search).has("ipc-bridge")) {

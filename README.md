@@ -41,7 +41,7 @@ Every feature has its own page with screenshots in the [wiki](https://github.com
 - **GitHub**: sign in with a token kept in the system keychain or with the GitHub CLI, then Share Project on GitHub, Sync Fork, Create Gist, and open its pull request pages on GitHub.
 - **Editor and tabs**: preview tabs (italic, like VS Code), breadcrumbs, change markers in the gutter and on the scrollbar, a find and replace bar, Code menu commands, Render whitespace, line spacing, syntax highlighting, font ligatures and zoom with Ctrl or Cmd + mouse wheel.
 - **Search Everywhere**: double Shift for files, classes, symbols and text in every folder, plus Replace in Files.
-- **Markdown editor** with a live preview, mermaid diagrams, a formatting toolbar and a Preview Only mode you can type in.
+- **Markdown editor** with a live preview, mermaid diagrams, a formatting toolbar and a Rich Editor view you can type in.
 - **Integrated terminal** with several shells, terminals in editor tabs, and a **Scripts** tool window that runs npm, Composer, Make, Deno and just scripts with the right Node version, in a Run tab.
 - **Blame**: GitLens-style blame for the current line and a blame gutter; click it to open that commit in the Log on the same line.
 - **Log**: paged history with a branch graph, commit details and per-file diffs. Double-click a commit (or use *Open in Tab*) to read it full size in its own tab. Cherry-pick, revert, reset and checkout from the right-click menu.

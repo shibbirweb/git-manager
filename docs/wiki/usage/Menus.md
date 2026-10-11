@@ -36,7 +36,7 @@ A tick shows what is on screen now.
 - **Left Activity Bar** and **Right Activity Bar** show or hide the icon strips at the window edges.
 - **File Icons** picks **No Icons**, **Minimal** or **Material Icons** for the file lists. See [File Icons](File-Icons.md).
 - **Word Wrap** (Option+Z) wraps long lines in the file editor. See [Editing Code](Code-Appearance.md#word-wrap).
-- **Markdown** picks **Editor Only**, **Editor and Preview** or **Preview Only** for a Markdown file. See [Markdown Editor](Markdown-Editor.md).
+- **Markdown** picks **Editor Only**, **Editor and Preview** or **Rich Editor** for a Markdown file. See [Markdown Editor](Markdown-Editor.md).
 - **Appearance** picks **Light**, **Dark** or **System**.
 - **Zoom In** (Cmd+=), **Zoom Out** (Cmd+-) and **Reset Zoom** (Cmd+0) change the size of the code text.
 - **Enter Full Screen** (macOS only).

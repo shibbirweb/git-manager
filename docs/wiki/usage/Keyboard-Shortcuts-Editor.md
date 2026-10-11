@@ -84,11 +84,11 @@ See [Find and Replace](Find-and-Replace.md).
 
 | Keys | Action |
 | --- | --- |
-| Cmd+I | Italic, in the source editor and in Preview Only |
-| Cmd+K | Link, in the source editor and in Preview Only |
-| Cmd+B | Bold, in the source editor and in Preview Only |
+| Cmd+I | Italic, in the source editor and in the Rich Editor |
+| Cmd+K | Link, in the source editor and in the Rich Editor |
+| Cmd+B | Bold, in the source editor and in the Rich Editor |
 | Cmd+S | Save, also from either preview |
-| Cmd-click a link | Open it, in Preview Only (in the split preview a plain click opens it) |
+| Cmd-click a link | Open it, in the Rich Editor (in the split preview a plain click opens it) |
 
 While you type in a Markdown file, Cmd+B makes text bold instead of hiding the sidebar. Click outside the text, for example on the file tree, and Cmd+B hides the sidebar again. See [Markdown Editor](Markdown-Editor.md).
 

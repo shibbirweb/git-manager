@@ -38,7 +38,7 @@ export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
   markdownViewMode: {
     amount: "+35 to 140 MB",
     detail:
-      "Editor and preview draws the page beside the code: about 35 MB more than Editor only for a plain file, and up to 140 MB with mermaid diagrams. Preview only costs a little less.",
+      "Editor and preview draws the page beside the code: about 35 MB more than Editor only for a plain file, and up to 140 MB with mermaid diagrams. Rich editor costs a little less.",
   },
   blameGutter: {
     amount: "+35 MB",

@@ -87,7 +87,7 @@ export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; 
   { key: "fileToolbarChanges", label: "Change arrows", hint: "Previous and next change with the counter. F7 and Shift+F7 work either way." },
   { key: "fileToolbarBlame", label: "Blame", hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame." },
   { key: "fileToolbarCopyPath", label: "Copy relative path", hint: "Copies the file's path inside the workspace folder." },
-  { key: "fileToolbarMarkdownView", label: "Markdown view switch", hint: "Editor, Editor and Preview, Preview. Also in View > Markdown." },
+  { key: "fileToolbarMarkdownView", label: "Markdown view switch", hint: "Editor, Editor and Preview, Rich Editor. Also in View > Markdown." },
   {
     key: "fileToolbarMarkdownFormat",
     label: "Markdown formatting row",
@@ -147,7 +147,7 @@ export type TerminalFontWeight = "normal" | "medium" | "bold";
 
 export type TerminalCursorStyle = "block" | "bar" | "underline";
 
-/** How a Markdown file opens: source only, source beside its preview, or the preview only. */
+/** How a Markdown file opens: source only, source beside its preview, or the rich editor (the page, editable). */
 export type MarkdownViewMode = "editor" | "split" | "preview";
 
 export const MARKDOWN_VIEW_MODES = ["editor", "split", "preview"] as const;

@@ -19,7 +19,7 @@ flowchart LR
   Xterm -->|"setting on, first use"| Addons["@xterm/addon-search, -webgl, -unicode11<br/>(terminal/addons.ts)"]
   App -->|"first Markdown preview"| Md["markdown/engine.ts<br/>markdown-it, DOMPurify"]
   Md -->|"a mermaid block"| Mermaid["hidden frame: mermaid-frame page<br/>removed after the last diagram document closes"]
-  App -->|"Preview only mode"| Rich["markdown/richEditor.ts<br/>Milkdown"]
+  App -->|"Rich Editor view"| Rich["markdown/richEditor.ts<br/>TipTap"]
   App -->|"non-default theme"| Catalog["themes/catalog.ts"]
   App -->|"Scripts panel opens"| Scripts["scripts/ScriptsPanel.svelte"]
   App -->|"Git Console tab, setting on"| Console["console/GitConsoleView.svelte"]

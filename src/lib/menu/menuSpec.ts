@@ -196,7 +196,7 @@ function viewMenu(platform: MenuPlatform): TopMenu {
       items: [
         check("view.markdownEditor", "Editor Only"),
         check("view.markdownSplit", "Editor and Preview"),
-        check("view.markdownPreview", "Preview Only"),
+        check("view.markdownPreview", "Rich Editor"),
       ],
     },
     separator,

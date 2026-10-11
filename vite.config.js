@@ -1,7 +1,6 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
-// @ts-expect-error type error without @types/node package
 import process from "node:process";
 const host = process.env.TAURI_DEV_HOST;
 
@@ -49,16 +48,25 @@ export default defineConfig(() => ({
       "markdown-it",
       "dompurify",
       "mermaid",
-      "@milkdown/kit/core",
-      "@milkdown/kit/ctx",
-      "@milkdown/kit/plugin/clipboard",
-      "@milkdown/kit/plugin/history",
-      "@milkdown/kit/preset/commonmark",
-      "@milkdown/kit/preset/gfm",
-      "@milkdown/kit/prose/model",
-      "@milkdown/kit/prose/state",
-      "@milkdown/kit/prose/view",
-      "@milkdown/kit/utils",
+      "@tiptap/core",
+      "@tiptap/pm/model",
+      "@tiptap/pm/state",
+      "@tiptap/pm/view",
+      "@tiptap/starter-kit",
+      "@tiptap/markdown",
+      "@tiptap/extension-code",
+      "@tiptap/extension-code-block",
+      "@tiptap/extension-image",
+      "@tiptap/extension-link",
+      "@tiptap/extension-list",
+      "@tiptap/extension-paragraph",
+      "@tiptap/extension-table",
+      "@tiptap/extension-task-item",
+      "@tiptap/extension-task-list",
+      "@tiptap/extensions",
+      "@sanity/diff-match-patch",
+      "marked",
+      "diff",
     ],
   },
 
