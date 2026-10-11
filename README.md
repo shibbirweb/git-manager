@@ -1,6 +1,6 @@
 # Git Manager
 
-A native desktop Git client with a JetBrains-style 3-way merge tool, VS Code-style workspaces, tabs, blame and history. Built with Rust (Tauri 2) and a small Svelte 5 UI running in the system web view, so it starts fast and stays light on memory.
+A native desktop Git client with a 3-way merge tool, multi-folder workspaces, tabs, blame and history, and a place to run and watch AI coding agents side by side. Built with Rust (Tauri 2) and a small Svelte 5 UI running in the system web view, so it starts fast and stays light on memory.
 
 ![Git Manager: Changes, the editor with blame, and the Files panel](docs/wiki/images/window-overview.png)
 
@@ -25,30 +25,37 @@ A native desktop Git client with a JetBrains-style 3-way merge tool, VS Code-sty
     <td><img src="docs/wiki/images/workspace-folders.png" alt="Workspace with two folders"><br><b>Workspaces</b>: many folders and repositories in one window</td>
     <td><img src="docs/wiki/images/dark-theme.png" alt="Dark theme"><br><b>Light and dark themes</b>, following the system by default</td>
   </tr>
+  <tr>
+    <td><img src="docs/wiki/images/ai-panel.png" alt="AI panel with an agent working"><br><b>AI agents</b>: run agents per worktree and see who is working or needs you</td>
+    <td><img src="docs/wiki/images/ai-usage.png" alt="AI usage in the status bar"><br><b>AI usage</b>: each agent's limits and the time left until they reset</td>
+  </tr>
 </table>
 
 Every feature has its own page with screenshots in the [wiki](https://github.com/shibbirweb/git-manager/wiki).
 
 ## Features
 
-- **Workspaces like VS Code**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.gitmanager-workspace` file, or open a VS Code `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own, and a progress card shows while a big folder opens.
+- **Workspaces**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.gitmanager-workspace` file, or open a `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own, and a progress card shows while a big folder opens.
 - **3-way merge tool**: Yours | Result | Theirs panes with connectors, per-change apply and ignore buttons, "apply both" for conflicts, one-click *Apply non-conflicting*, word-level highlights, synchronized scrolling, F7 navigation, full undo and an ignore-whitespace mode.
 - **Conflicts made easy**: a Conflicts dialog to take Yours or Theirs for whole files (binary and deleted files too), inline *Accept Current / Incoming / Both* actions in the editor, and Continue, Abort or Skip for merge, rebase, cherry-pick and revert.
 - **Native menu bar** with the Git Manager app menu (macOS), File, Edit, View, Code, Git, Window and Help menus, and **Help > Keyboard Shortcuts**, an in-app list of every shortcut.
-- **JetBrains-style Git menu**: Commit, Push and Pull dialogs, Update Project, Merge and Rebase dialogs with their options, **Interactive Rebase**, Reset HEAD, Branches, tags, patches, Manage Remotes, Clone, and Current File history, blame and compare views.
-- **Changes like VS Code**: staged and unstaged files grouped by repository, each with a branch picker, **Sync Changes** (or **Publish Branch** for a new branch) and a **...** menu of its own actions. Side-by-side diffs (resizable), stage or unstage whole files or single hunks, discard, commit, amend, Commit & Push, Commit & Sync and Commit (Amend), commit options (sign off, author, GPG, skip hooks) and Add to .gitignore.
+- **Git menu**: Commit, Push and Pull dialogs, Update Project, Merge and Rebase dialogs with their options, **Interactive Rebase**, Reset HEAD, Branches, tags, patches, Manage Remotes, Clone, and Current File history, blame and compare views.
+- **Changes**: staged and unstaged files grouped by repository, each with a branch picker, **Sync Changes** (or **Publish Branch** for a new branch) and a **...** menu of its own actions. Side-by-side diffs (resizable), stage or unstage whole files or single hunks, discard, commit, amend, Commit & Push, Commit & Sync and Commit (Amend), commit options (sign off, author, GPG, skip hooks) and Add to .gitignore.
 - **Shelf, worktrees, submodules and Git LFS** from the Git menu, plus a **Git Console** that shows every git command the app runs (off by default).
 - **GitHub**: sign in with a token kept in the system keychain or with the GitHub CLI, then Share Project on GitHub, Sync Fork, Create Gist, and open its pull request pages on GitHub.
-- **Editor and tabs**: preview tabs (italic, like VS Code), breadcrumbs, change markers in the gutter and on the scrollbar, a find and replace bar, Code menu commands, Render whitespace, line spacing, syntax highlighting, font ligatures and zoom with Ctrl or Cmd + mouse wheel.
+- **Editor and tabs**: preview tabs (shown in italics until you edit or pin them), breadcrumbs, change markers in the gutter and on the scrollbar, a find and replace bar, Code menu commands, Render whitespace, line spacing, syntax highlighting, font ligatures and zoom with Ctrl or Cmd + mouse wheel.
 - **Search Everywhere**: double Shift for files, classes, symbols and text in every folder, plus Replace in Files.
 - **Markdown editor** with a live preview, mermaid diagrams, a formatting toolbar and a Rich Editor view you can type in.
+- **Run AI agents**: the AI panel (the robot button in the right activity bar) lists every workspace folder and repository with its worktrees. Start Claude Code, Codex, Gemini CLI, OpenCode, Cursor CLI, GitHub Copilot CLI, Aider, Amp or Qwen Code (whichever are installed) in its own tab, with an optional first prompt. You choose once whether agents ask before acting or work on their own, and each agent's command, flags and arguments can be changed in Settings, so a renamed command needs no app update.
+- **Monitor agents**: each agent shows whether it is working, needs you or is done, what it is working on and since when; a count shows how many need you, and an agent that finishes out of sight marks its tab. The status bar shows each agent's usage limits with the time left until they reset, the memory details list what every agent and terminal uses, and **Keep computer awake** can stop the screen from sleeping or locking while agents work.
+- **Parallel tasks**: New Task turns a task name into its own branch and worktree, ready to run (`.env` files copied, `node_modules` linked), and can race up to five agents on the same task in separate worktrees. Finish Task closes the agents and removes the worktree and its branch, asking before any work is lost.
 - **Integrated terminal** with several shells, terminals in editor tabs, and a **Scripts** tool window that runs npm, Composer, Make, Deno and just scripts with the right Node version, in a Run tab.
-- **Blame**: GitLens-style blame for the current line and a blame gutter; click it to open that commit in the Log on the same line.
+- **Blame**: inline blame for the current line and a blame gutter; click it to open that commit in the Log on the same line.
 - **Log**: paged history with a branch graph, commit details and per-file diffs. Double-click a commit (or use *Open in Tab*) to read it full size in its own tab. Cherry-pick, revert, reset and checkout from the right-click menu.
 - **Branches, tags, remotes and stashes**: checkout, create, rename, delete, merge and rebase from the sidebar or the Branches popup; fetch, pull and push with live progress; stash, apply, pop, drop and clear.
 - **Back and Forward** across files, diffs and commits, like a browser.
 - **37 color themes**, one for light and one for dark mode, following the system by default.
-- **Settings** saved in `~/.gitmanager` like VS Code's folder, header buttons that show or hide the left and right activity bars, a status bar with the app's memory use (plus an optional memory log for debugging), and update checks with a stable and a beta channel.
+- **Settings** saved in `~/.gitmanager`, header buttons that show or hide the left and right activity bars, a status bar with the app's memory use (plus an optional memory log for debugging), and update checks with a stable and a beta channel.
 - **MCP server and command line tool** (off by default, local only) so AI tools such as Claude Code can use the app.
 - **Works as `git mergetool`** (see below).
 
@@ -88,7 +95,7 @@ Svelte UI (system WKWebView)  --invoke/events/channels-->  Rust (Tauri commands)
                                                     git CLI: every write, so hooks, credentials, signing and config behave as in the terminal
                                                     merge engine: 3-way chunking with imara-diff (histogram)
                                                     watcher: debounced file events -> "repo-changed"
-                                                    services: terminals (PTY), search indexes, scripts, GitHub, MCP server
+                                                    services: terminals (PTY), AI agents, search indexes, scripts, GitHub, MCP server
 ```
 
 Memory is kept low by design:
@@ -158,11 +165,11 @@ Then `git mergetool` opens each conflicted file. **Apply** (or Cmd+Enter) writes
 
 ## Settings
 
-Open **Settings** with the gear button in the header, **Git Manager > Settings...** or **Cmd+,**. Its sections are Appearance, Editor, Git, Layout, Terminal, GitHub, Automation, Updates, Settings Files and About. Changes apply immediately and are saved, like VS Code's `~/.vscode`, in a folder in your home directory:
+Open **Settings** with the gear button in the header, **Git Manager > Settings...** or **Cmd+,**. Its sections are Appearance, Editor, Git, Layout, Terminal, AI, Keyboard Shortcuts, GitHub, Automation, Updates, Settings Files and About. Changes apply immediately and are saved in a folder in your home directory:
 
 ```
 ~/.gitmanager/
-  settings.json   preferences (theme and color themes, fonts, editor, Git, terminal, automation); safe to edit by hand
+  settings.json   preferences (theme and color themes, fonts, editor, Git, terminal, AI, automation); safe to edit by hand
   state.json      recent folders, active repository per folder, panel layout and sizes
   github.json     the signed-in GitHub login (the token itself stays in the system keychain)
   mcp.json        the MCP server's secret token, plus its port while it runs
@@ -209,6 +216,7 @@ src/                     Svelte UI
   lib/editor/            CodeMirror setup, blame, conflict and change markers, find bar, editor commands
   lib/menu/, lib/help/   native menu bar and the Keyboard Shortcuts window
   lib/terminal/          integrated terminal and the Run tab
+  lib/ai/                AI panel, agents, tasks, usage and keep awake
   lib/scripts/           Scripts tool window
   lib/search/            Search Everywhere and Replace in Files
   lib/markdown/          Markdown preview and rich editor
@@ -223,6 +231,7 @@ src-tauri/src/
   git/                   git2 readers and the git CLI runner
   commands/              Tauri commands
   terminal.rs, run_process.rs   terminals and script runs in pseudo terminals
+  ai_usage/, keep_awake.rs      AI agents' usage limits and keeping the computer awake
   file_search.rs, symbols/, text_search/   Search Everywhere and Replace in Files
   scripts/, node_versions.rs    project scripts and installed Node versions
   github/, mcp/          GitHub account and the MCP server with its command line tool
