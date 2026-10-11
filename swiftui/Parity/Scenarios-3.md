@@ -56,7 +56,7 @@ Folder: demo `acme/storefront`
 Measured: light 99.5% (175 MB / 44 MB, 2026-10-09), dark 99.48% (173 MB / 41 MB, 2026-10-09).
 
 - Editing code (`code-editing`, partial): Multiple cursors, the Code menu, Go to Line, folding and completion. Native
-  lacks: column selection and dragging text; Settings > Editor (font, cursor, word wrap) keep their defaults.
+  lacks: dragging text; Settings > Editor (font, cursor, word wrap) keep their defaults.
 
 ## memory-breakdown: Memory breakdown (native app cannot show it yet)
 

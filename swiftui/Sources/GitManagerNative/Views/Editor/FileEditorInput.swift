@@ -140,6 +140,9 @@ extension FileScrollView.Host {
             redraw()
             return
         }
+        if startColumnDrag(flags: event.modifierFlags, at: canvasPoint(point)) {
+            return
+        }
         let state = session.state
         let flags = event.modifierFlags
         let selection: EditorSelection
@@ -163,7 +166,10 @@ extension FileScrollView.Host {
         redraw()
     }
 
-    func dragged(to point: NSPoint) {
+    func dragged(to point: NSPoint, flags: NSEvent.ModifierFlags = []) {
+        if dragColumns(to: canvasPoint(point), adding: flags.contains(.command)) {
+            return
+        }
         guard let session, let anchor = dragAnchor, let hit = canvas.position(at: canvasPoint(point)) else {
             return
         }

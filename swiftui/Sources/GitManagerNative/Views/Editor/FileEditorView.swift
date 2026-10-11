@@ -79,6 +79,10 @@ struct FileScrollView: NSViewRepresentable {
                     oldValue?.canvasHook = {}
                     oldValue?.canvasCheck = { true }
                     oldValue?.completion.changed = {}
+                    oldValue?.columnDragHook = { _, _, _ in false }
+                    session?.columnDragHook = { [weak self] start, end, adding in
+                        self?.columnDrag(from: start, to: end, adding: adding) ?? false
+                    }
                     session?.completion.changed = { [weak self] in
                         self?.updatePopup()
                     }
@@ -104,6 +108,8 @@ struct FileScrollView: NSViewRepresentable {
         var scrollDone = 0
         /// Where a drag started (the selection's anchor) and how many clicks began it.
         var dragAnchor: (position: Int, clicks: Int)?
+        /// An Option+drag selecting a rectangle (FileEditorColumns.swift).
+        var columnDrag: ColumnDrag?
 
         override init(frame: NSRect) {
             super.init(frame: frame)
@@ -251,26 +257,5 @@ struct FileScrollView: NSViewRepresentable {
             scrollView.contentView.scroll(to: origin)
             scrollView.reflectScrolledClipView(scrollView.contentView)
         }
-    }
-}
-
-/// The scrolled document: as tall and wide as the editor's content, flipped, passing clicks and drags to its host.
-final class EditorDocumentView: NSView {
-    weak var host: FileScrollView.Host?
-
-    override var isFlipped: Bool {
-        true
-    }
-
-    override func mouseDown(with event: NSEvent) {
-        host?.pressed(event, at: convert(event.locationInWindow, from: nil))
-    }
-
-    override func mouseDragged(with event: NSEvent) {
-        host?.dragged(to: convert(event.locationInWindow, from: nil))
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        host?.dragAnchor = nil
     }
 }

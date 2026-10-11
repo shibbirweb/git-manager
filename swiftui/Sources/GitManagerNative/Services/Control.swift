@@ -64,6 +64,8 @@ enum Control {
             return find(args)
         case "complete":
             return complete(args)
+        case "column_drag":
+            return columnDrag(args)
         case "canvas_check":
             let same = onMain { WindowContext.focused.editor.session?.canvasCheck() }
             return reply(ok: same != nil, structured: ["paintsLikeWhole": orNull(same)])

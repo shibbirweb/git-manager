@@ -4,16 +4,22 @@
 // - edit: the cursor on "id" (line 2), the line moved down, duplicated and commented, then the next two
 //   occurrences of the word selected (three cursors).
 // - fold: the products array (line 10) folded.
+// - columnselect: "Acme" on lines 11 to 13 (the same columns on each) selected as a rectangle: the native app by an
+//   Option+drag (`app action=column_drag`), the current app by Select All Occurrences from inside the word, which
+//   gives the same ranges (a drag cannot be posted to it).
 
 import Foundation
 import MeasureKit
 
 extension Measure {
-    static let editScreens = ["edit", "fold"]
+    static let editScreens = ["edit", "fold", "columnselect"]
 
     static func editSteps(_ screen: String) -> (line: Int, column: Int, commands: [String]) {
         if screen == "fold" {
             return (10, 1, ["code.collapse"])
+        }
+        if screen == "columnselect" {
+            return (11, 25, ["edit.selectAllOccurrences"])
         }
         return (2, 3, [
             "code.moveLineDown", "code.duplicate", "code.lineComment", "code.selectNextOccurrence",
@@ -29,6 +35,13 @@ extension Measure {
             )
             if opened.isError {
                 throw ToolError("native: could not open \(shownFile): \(opened.text)")
+            }
+            if screen == "columnselect" {
+                let dragged = try await app.client.call("app", [
+                    "action": "column_drag", "fromLine": 11, "fromColumn": 22, "toLine": 13, "toColumn": 26,
+                ])
+                print("native: column selection \(dragged.structured?["ranges"] ?? dragged.text)")
+                return
             }
             for command in steps.commands {
                 let ran = try await app.client.call("app", ["action": "editor_command", "command": command])

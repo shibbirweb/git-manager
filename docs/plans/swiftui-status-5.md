@@ -157,3 +157,21 @@ Continues [swiftui-status-4.md](swiftui-status-4.md). Newest last.
   - Known differences: a line holding an empty snippet field's dotted marker is 1 to 2 points taller on the page
     (WebKit grows its line box around the marker), native rows stay 16 points, so lines below an active snippet
     sit higher until it lets go; the page's sticky scroll line (a listed gap of Code appearance).
+- GM-89 open gaps, stage 3 part 4 (column selection):
+  - Option+drag in the file editor selects a rectangle (features.ts columnSelection: rectangularSelection with
+    Option and without Shift), Cmd during the drag keeps the selection it started from; Settings
+    editorColumnSelection (on by default) switches it. NativeCore ColumnSelection ports getPos and rectangleFor:
+    tabs expanded, a column past a line's end taken from the pointer's x, short lines given a cursor at their
+    end, offsets for columns past 2000 characters (and the page's own line.to + endOff sum there); tested on
+    Fixtures/cm-rectangle.txt from the package's function run under Bun (20 cases, tab sizes 4 and 2).
+  - The pointer: WebKit's I-beam over the editable text (the native editor showed an arrow everywhere), an arrow
+    over the gutters, a crosshair while Option is held (crosshairCursor), switched as Option goes down or up.
+    EditorDocumentView moved to its own file for it.
+  - A drag cannot be posted to either app (and the user's pointer is never moved), so gm-measure `--screen
+    columnselect` makes the same selection in both: the native app by `app action=column_drag` (the host's own
+    press and drag code), the current app by Select All Occurrences inside "Acme" on lines 11 to 13 of
+    catalog.ts, the same three ranges. Pixel diff below the title bar: 99.6 / 99.59 (light / dark).
+  - Speed: the page cannot be timed (no drag reaches it); the native press and drag step take 0.4 to 0.5 ms on
+    the main thread (the control answer's ms), the paint being the partial repaint of GM-87.
+  - Smoke: a block (lines 2 to 5, columns 2 to 4), a ragged one past short lines' ends, Cmd adding, and partial
+    repaints equal a whole one. Not checked by a person yet: a real Option+drag and the crosshair.

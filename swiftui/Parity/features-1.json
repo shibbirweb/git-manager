@@ -92,7 +92,7 @@
       "check": "Multiple cursors, the Code menu, Go to Line, folding and completion",
       "native": "partial",
       "gaps": [
-        "column selection and dragging text",
+        "dragging text",
         "Settings > Editor (font, cursor, word wrap) keep their defaults"
       ]
     },

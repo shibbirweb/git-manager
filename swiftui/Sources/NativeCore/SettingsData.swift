@@ -47,6 +47,8 @@ public struct NativePreferences: Equatable, Sendable {
     /// Code completion in the file editor, and whether it opens while typing (else Ctrl+Space only).
     public var editorCompletion = true
     public var editorCompletionOnTyping = true
+    /// Option+drag selects a rectangle of text.
+    public var editorColumnSelection = true
 
     public init() {}
 
@@ -82,6 +84,7 @@ public enum SettingsData {
     public static let knownKeys: Set<String> = Set([
         "theme", "lightColorTheme", "darkColorTheme", "uiFontSize", "editorFontSize", "fileIcons", "roundedPanels",
         "fileToolbar", "commitBoxLayout", "blameGutter", "editorCompletion", "editorCompletionOnTyping",
+        "editorColumnSelection",
     ] + fileToolbarSwitchKeys)
 
     public enum LoadError: Error, Equatable {
@@ -133,6 +136,9 @@ public enum SettingsData {
         preferences.editorCompletionOnTyping = pickBool(
             object["editorCompletionOnTyping"], fallback: defaults.editorCompletionOnTyping
         )
+        preferences.editorColumnSelection = pickBool(
+            object["editorColumnSelection"], fallback: defaults.editorColumnSelection
+        )
         let extra = object.filter { !knownKeys.contains($0.key) }
         return SettingsFile(preferences: preferences, extra: extra)
     }
@@ -156,6 +162,7 @@ public enum SettingsData {
         object["blameGutter"] = preferences.blameGutter
         object["editorCompletion"] = preferences.editorCompletion
         object["editorCompletionOnTyping"] = preferences.editorCompletionOnTyping
+        object["editorColumnSelection"] = preferences.editorColumnSelection
         return object
     }
 
