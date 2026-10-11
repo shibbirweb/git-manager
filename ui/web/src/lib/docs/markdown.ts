@@ -1,0 +1,88 @@
+// The Markdown form of the docs, for AI agents and for reading on GitHub: one page per component and an index.
+// The showcase shows the same text in its Markdown tab, and scripts/docs.ts writes it to ui/web/. Lines wrap at
+// 120 columns (the repository's line standard), so props are a list rather than a wide table.
+import type { ComponentDoc, PropDoc } from "./types";
+
+const WIDTH = 120;
+
+/** Wraps words to WIDTH: the first line starts with `first`, the rest with `next`. Long words stay whole. */
+export function wrap(text: string, first = "", next = first): string[] {
+  const lines: string[] = [];
+  let line = first;
+  let empty = true;
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    if (!empty && line.length + 1 + word.length > WIDTH) {
+      lines.push(line);
+      line = next + word;
+    } else {
+      line += (empty ? "" : " ") + word;
+    }
+    empty = false;
+  }
+  lines.push(line);
+  return lines;
+}
+
+function propItem(prop: PropDoc): string[] {
+  const notes = [prop.required ? "required" : "", prop.bindable ? "bindable" : ""].filter(Boolean);
+  const fallback = prop.default === undefined ? [] : [`default \`${prop.default}\``];
+  const facts = [`\`${prop.type}\``, ...fallback, ...notes].join(", ");
+  return wrap(`\`${prop.name}\` (${facts}): ${prop.description}`, "- ", "  ");
+}
+
+export function componentMarkdown(doc: ComponentDoc): string {
+  const lines = [
+    `# ${doc.name}`,
+    "",
+    ...wrap(doc.summary),
+    "",
+    "```ts",
+    `import ${doc.name} from "$ui/components/${doc.name}.svelte";`,
+    "```",
+    "",
+    ...wrap(`Group: ${doc.group}.${doc.aliases?.length ? ` Also known as: ${doc.aliases.join(", ")}.` : ""}`),
+    "",
+    "## When to use",
+    "",
+    ...wrap(doc.usage),
+    "",
+    "## Props",
+    "",
+    ...doc.props.flatMap(propItem),
+  ];
+  if (doc.rules?.length) {
+    lines.push("", "## Rules", "", ...doc.rules.flatMap((rule) => wrap(rule, "- ", "  ")));
+  }
+  for (const example of doc.examples) {
+    lines.push("", `## Example: ${example.title}`, "", "```svelte", example.code.trim(), "```");
+  }
+  if (doc.replaces.length) {
+    const replaced = doc.replaces.flatMap((markup) => wrap(`\`${markup}\``, "- ", "  "));
+    lines.push("", "## Replaces in the app", "", ...replaced);
+  }
+  if (doc.logic?.length) {
+    lines.push("", "## Logic", "", ...doc.logic.map((file) => `- \`logic/${file}\``));
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function indexMarkdown(docs: ComponentDoc[]): string {
+  const groups = [...new Set(docs.map((doc) => doc.group))];
+  const lines = [
+    "# Git Manager UI components",
+    "",
+    ...wrap(
+      "Generated from `ui/web/src/lib/docs/` by `bun run ui:docs`; do not edit by hand. Every component takes its " +
+        "colors from the theme tokens and its sizes from `ui/design-tokens/`, and none takes a class or style: " +
+        "everything is a prop. Lay out screens with Stack and write words with Text. Import a component from " +
+        "`$ui/components/<Name>.svelte`; each one has its own page in `docs/components/`.",
+    ),
+  ];
+  for (const group of groups) {
+    lines.push("", `## ${group}`, "");
+    for (const doc of docs.filter((entry) => entry.group === group)) {
+      lines.push(...wrap(`[${doc.name}](docs/components/${doc.name}.md): ${doc.summary}`, "- ", "  "));
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}

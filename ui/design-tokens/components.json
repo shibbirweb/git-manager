@@ -1,0 +1,87 @@
+{
+  "$comment": [
+    "Each component's measurements. A string like \"{size.control}\" refers to a token in tokens.json;",
+    "numbers are points. Every platform's component reads these, so a change here changes the component",
+    "everywhere."
+  ],
+  "button": {
+    "height": "{size.control}",
+    "heightSmall": "{size.controlSmall}",
+    "paddingX": 12,
+    "paddingXSmall": 8,
+    "gap": 6,
+    "radius": "{radius.control}",
+    "fontSizeSmall": "{fontSize.small}"
+  },
+  "iconButton": {
+    "size": "{size.control}",
+    "sizeSmall": "{size.iconButtonSmall}",
+    "paddingX": 6,
+    "paddingXSmall": 6,
+    "gap": 4,
+    "radius": "{radius.control}"
+  },
+  "input": {
+    "height": "{size.control}",
+    "paddingX": 8,
+    "paddingY": 6,
+    "radius": "{radius.control}",
+    "focusRing": 2
+  },
+  "switch": {"width": 34, "height": 20, "knob": 16, "inset": 2, "radius": 10},
+  "segmented": {
+    "padding": 2,
+    "radius": "{radius.segmented}",
+    "segmentRadius": "{radius.segment}",
+    "segmentPaddingX": 12,
+    "segmentPaddingY": 4
+  },
+  "slider": {"width": 160, "valueWidth": 46, "gap": 10},
+  "field": {"gap": 6, "errorGap": 6},
+  "settingRow": {"paddingY": 12, "gap": 20, "labelGap": 3, "stackedGap": 10},
+  "searchField": {
+    "height": "{size.control}", "gap": 6, "paddingLeft": 8, "paddingRight": 6, "radius": "{radius.control}"
+  },
+  "spinner": {"size": "{size.spinner}", "border": 2},
+  "badge": {"size": "{size.badge}", "paddingX": 4, "radius": 8},
+  "tag": {"height": "{size.tag}", "paddingX": 5, "radius": "{radius.small}"},
+  "kbd": {"minWidth": 24, "paddingX": 7, "paddingY": 2, "radius": 5},
+  "progress": {"height": "{size.progress}", "radius": 2},
+  "notice": {"gap": 8, "paddingX": 12, "paddingY": 10, "radius": "{radius.menu}"},
+  "emptyState": {"gap": 8, "padding": 24},
+  "card": {"radius": "{radius.menu}", "paddingY": 4},
+  "dialog": {
+    "width": 460, "wideWidth": 640, "radius": "{radius.dialog}", "paddingTop": 18, "paddingX": 20,
+    "paddingBottom": 16, "titleGap": 12, "actionsGap": 8, "actionsTop": 18, "messageGap": 16
+  },
+  "menu": {
+    "minWidth": 200, "padding": 4, "radius": "{radius.menu}", "itemPaddingX": 10, "itemPaddingY": 5,
+    "itemRadius": "{radius.small}", "itemGap": 24, "separatorInset": 6
+  },
+  "popover": {"offset": 2, "padding": 4, "panelPaddingY": 12, "panelPaddingX": 14, "radius": "{radius.menu}"},
+  "toast": {
+    "maxWidth": 420, "gap": 8, "radius": "{radius.menu}", "edge": 4, "paddingY": 10, "paddingLeft": 12,
+    "paddingRight": 8, "offset": 16
+  },
+  "tabStrip": {
+    "height": "{size.tabStrip}", "tabMaxWidth": 240, "tabPaddingLeft": 12, "tabPaddingRight": 6, "gap": 6,
+    "closeSize": 20, "indicator": 2
+  },
+  "panelTabs": {"height": 29, "gap": 14, "indicator": 2},
+  "tree": {"rowHeight": "{size.treeRow}", "indent": 8, "indentStep": 14, "chevron": 12, "gap": 4, "paddingRight": 8},
+  "collapsible": {"height": 26, "gap": 5, "paddingLeft": 4, "paddingRight": 6, "nestedIndent": 16},
+  "listRow": {"paddingX": 8, "paddingY": 5, "radius": "{radius.small}", "gap": 8},
+  "breadcrumbs": {"height": 22, "paddingX": 3, "gap": 4, "radius": "{radius.small}"},
+  "resizeHandle": {"hitArea": 5, "line": 1, "activeLine": 3},
+  "activityBar": {"width": 44, "item": 36, "radius": "{radius.menu}", "gap": 2, "padding": 6, "indicator": 2},
+  "statusBar": {
+    "height": "{size.statusBar}", "itemHeight": "{size.rowItem}", "itemPaddingX": 7, "gap": 12, "itemGap": 5
+  },
+  "searchToggles": {
+    "width": 26, "height": 24, "paddingX": 5, "compactWidth": 20, "compactHeight": 18, "compactPaddingX": 3,
+    "radius": "{radius.small}"
+  },
+  "findBar": {
+    "fieldHeight": 24, "fieldMinWidth": 90, "fieldMaxWidth": 360, "buttonSize": 24, "radius": "{radius.small}"
+  }
+}

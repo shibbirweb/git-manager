@@ -20,10 +20,15 @@
     "build": "bun --bun vite build",
     "preview": "bun --bun vite preview",
     "prepare": "bun --bun svelte-kit sync || echo ''",
-    "check": "bun --bun svelte-kit sync && bun --bun svelte-check --tsconfig ./tsconfig.json",
+    "check": "bun --bun svelte-kit sync && bun --bun svelte-check --tsconfig ./tsconfig.json && bun --bun svelte-check --tsconfig ./ui/web/tsconfig.json",
     "test": "bun --bun vitest run",
     "test:watch": "bun --bun vitest",
-    "tauri": "bunx --bun tauri"
+    "tauri": "bunx --bun tauri",
+    "ui": "bun --bun vite --config ui/web/vite.config.ts",
+    "ui:docs": "bun ui/web/scripts/docs.ts",
+    "ui:tokens": "bun ui/design-tokens/scripts/tokens.ts",
+    "ui:parity": "bun --bun ui/web/scripts/parity.ts",
+    "ui:mcp": "bun ui/mcp/server.ts"
   },
   "license": "MIT",
   "dependencies": {

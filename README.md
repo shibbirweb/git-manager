@@ -117,7 +117,11 @@ bun run check        # svelte-check / TypeScript
 bun run test         # frontend unit tests (Vitest)
 cd src-tauri && cargo test --workspace   # Rust unit and git integration tests
 bun tauri build      # release .app and .dmg in src-tauri/target/release/bundle
+bun run ui           # the UI library showcase at http://localhost:1430
 ```
+
+New UI is built in the component library first (`ui/web`), with the design tokens in `ui/design-tokens` that every
+platform shares; see `ui/web/COMPONENTS.md`.
 
 Open a repository from the welcome screen, or pass it on the command line:
 

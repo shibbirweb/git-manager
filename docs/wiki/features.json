@@ -119,6 +119,7 @@
     { "page": "developer/Windows-Bugs-We-Fixed.md", "summary": "Bugs the Windows CI job found, why they happened and the fixes." },
     { "page": "developer/Windows-MCP-and-CLI.md", "summary": "The command line tool as a console program, the screenshot and quoting on Windows." },
     { "page": "developer/Docs-and-Screenshots.md", "summary": "How this wiki is built, how screenshots are taken, and keeping docs in sync." },
+    { "page": "developer/UI-Library.md", "summary": "The Svelte component library, its showcase and the design tokens shared by every platform." },
     { "page": "developer/Contributing.md", "summary": "Code style, commits, pull requests and the docs checklist." }
   ],
   "features": [

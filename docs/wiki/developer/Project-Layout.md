@@ -9,6 +9,7 @@ This is a map of the repository. It lists the folders and files you will touch m
 ├── src/                    Svelte 5 + TypeScript UI
 ├── src-tauri/              Rust backend (Tauri 2)
 ├── scripts/                demo repositories, version and wiki tools
+├── ui/                     the UI library (ui/web) and the design tokens for every platform (ui/design-tokens)
 ├── docs/wiki/              source of the GitHub wiki (this page lives here)
 ├── static/                 files served as they are (favicon.png, file-icons/ sets)
 ├── .github/                workflows, issue forms, pull request template
@@ -158,6 +159,22 @@ scripts/
 ```
 
 The shell scripts refuse a folder that is not empty. `version.ts` is explained in [Versioning and Changelog](Versioning-and-Changelog.md), the wiki and screenshot scripts in [Docs and Screenshots](Docs-and-Screenshots.md).
+
+## UI library: `ui/`
+
+```text
+ui/
+├── web/                    the Svelte component library: `bun run ui` shows it at http://localhost:1430
+│   ├── src/lib/components/ one component per file; no class or style props
+│   ├── src/lib/logic/      pure, tested logic (keys, trees, virtual rows, menus, resizing)
+│   ├── src/lib/docs/       one doc per component: the showcase and the AI pages come from it
+│   ├── src/showcase/       the local site: stories, props, code tabs, colors and sizes
+│   └── COMPONENTS.md       the generated index for AI agents (docs/components/<Name>.md per component)
+└── design-tokens/          colors.json, tokens.json, components.json and the generators
+    └── generated/          Swift (macos), XAML (windows), GTK CSS (linux) and web colors
+```
+
+See [UI Library](UI-Library.md).
 
 ## Docs: `docs/wiki/`
 

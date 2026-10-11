@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "paths": {
+      "$ui": ["./src/lib"],
+      "$ui/*": ["./src/lib/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "scripts/**/*.ts",
+    "../design-tokens/**/*.ts",
+    "../mcp/**/*.ts",
+    "vite.config.ts"
+  ]
+}

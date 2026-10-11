@@ -71,7 +71,7 @@ export default defineConfig(() => ({
   },
 
   test: {
-    include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "scripts/**/*.test.ts", "ui/**/*.test.ts"],
     // Vitest blanks CSS by default; the theme tests read app.css's tokens (?raw) and the file
     // icon tests compare the committed minimal.css.
     css: { include: [/src\/app\.css/, /static\/file-icons\/minimal\/minimal\.css/] },
