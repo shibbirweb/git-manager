@@ -167,6 +167,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- GitHub requests with a saved token (Sign In, Share Project, Sync Fork, Create Gist) no longer close the app: the web client was built without the TLS feature its own check asks for.
 - The Markdown Rich Editor (until now Preview Only) edits existing files safely: untouched text keeps its exact spelling (list markers, emphasis, table padding, blank lines, line endings), and a file the editor cannot keep exactly (some HTML, reference-style links, footnotes, over 600 KB) stays read-only with a note saying why. README-style HTML tables are kept as they are. The rich editor is now built on TipTap, with the safety of Orca's editor.
 - HTML, XML, Vue and JSX tag and attribute names now use the color theme's own tag and attribute colors. Before, every theme showed tags in its type color and attributes in its property color, so Monokai tags were cyan instead of pink.
 - A file open in a tab (a preview tab too) now updates when another app changes it, also when git ignores it, like a log file. Only the new text is added, so the view stays where it is, and when it is scrolled to the end it follows the new lines.
