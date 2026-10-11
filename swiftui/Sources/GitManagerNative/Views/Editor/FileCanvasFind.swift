@@ -58,3 +58,41 @@ extension FileCanvas {
         }
     }
 }
+
+// An inserted snippet's fields (@codemirror/autocomplete's base theme, which the page leaves as it is): a field with
+// text is tinted black at 0x22, in dark themes too (the page's editor theme is not marked dark, so the base theme's
+// light rule applies), an empty one is marked by a 1.4-point dotted #888 line 1.15em tall from the text's top.
+extension FileCanvas {
+    func drawSnippetFields(_ content: Content, shown: Range<Int>, colors: CanvasColors, scale: CGFloat) {
+        guard let fields = content.snippetFields, !shown.isEmpty else {
+            return
+        }
+        let tint: [Double] = [0, 0, 0]
+        let marker: [Double] = [136, 136, 136]
+        let clip = pixelBand(scale)
+        for field in fields {
+            let row = row(of: field.from, content)
+            guard shown.contains(row), row == self.row(of: field.to, content) else {
+                continue
+            }
+            if field.from < field.to {
+                blendBox(tint, alpha: Double(0x22) / 255, row: row, range: field.from..<field.to, content,
+                         scale: scale)
+                continue
+            }
+            // Dots of 1.4 points with gaps as long, from the text's top (half a point above the row).
+            let x = ((textX(content) + x(of: field.from, row: row, content) - 0.7) * scale).rounded()
+            var y = (rowTop(row) - 0.5) * scale
+            let bottom = y + 14.95 * scale
+            while y < bottom {
+                let dot = CGRect(x: x, y: y.rounded(), width: (1.4 * scale).rounded(),
+                                 height: (min(1.4 * scale, bottom - y)).rounded())
+                let area = dot.intersection(clip)
+                if !area.isNull {
+                    surface.blend(marker, alpha: 1, in: area)
+                }
+                y += 2.8 * scale
+            }
+        }
+    }
+}

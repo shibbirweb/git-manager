@@ -69,12 +69,19 @@ struct FileScrollView: NSViewRepresentable {
         let canvas = FileCanvas()
         let scrollView = NSScrollView()
         let document = EditorDocumentView()
+        /// The completion popup and its shadow, over the code (FileEditorCompletion.swift).
+        let popup = CompletionPopupView()
+        let popupShadow = ShadowLayerView()
         /// The session shown, which calls back after each change so the canvas paints without waiting for SwiftUI.
         var session: EditorSession? {
             didSet {
                 if oldValue !== session {
                     oldValue?.canvasHook = {}
                     oldValue?.canvasCheck = { true }
+                    oldValue?.completion.changed = {}
+                    session?.completion.changed = { [weak self] in
+                        self?.updatePopup()
+                    }
                     session?.canvasHook = { [weak self] in
                         self?.redraw()
                         self?.needsLayout = true
@@ -109,6 +116,10 @@ struct FileScrollView: NSViewRepresentable {
             document.host = self
             addSubview(canvas)
             addSubview(scrollView)
+            popup.isHidden = true
+            popupShadow.isHidden = true
+            addSubview(popupShadow)
+            addSubview(popup)
             NotificationCenter.default.addObserver(
                 self, selector: #selector(scrolled), name: NSView.boundsDidChangeNotification,
                 object: scrollView.contentView
@@ -138,6 +149,7 @@ struct FileScrollView: NSViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 self?.redraw()
             }
+            session?.completion.blurred()
             return true
         }
 
@@ -154,6 +166,7 @@ struct FileScrollView: NSViewRepresentable {
             canvas.content = FileCanvas.Content(session: session, blameLabel: blameLabel(), theme: theme,
                                                 focused: focused, blinking: "blink", blameGutter: blameGutter)
             updateBlameTips()
+            updatePopup()
             if session.keyboardRequests != keyboardDone {
                 keyboardDone = session.keyboardRequests
                 takeKeyboard()
@@ -204,6 +217,7 @@ struct FileScrollView: NSViewRepresentable {
             canvas.offset = origin.y
             canvas.offsetX = origin.x
             updateBlameTips()
+            updatePopup()
         }
 
         /// Scrolls the main cursor into view (scrollIntoView), keeping a line of margin above and below, or `margin`

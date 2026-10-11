@@ -66,6 +66,8 @@ extension Control {
                     "open": session.find.open, "search": session.find.search, "counter": session.find.counter.text,
                     "notice": orNull(session.find.notice),
                 ],
+                "completion": completionState(session.completion),
+                "text": session.state.doc.lineCount <= 200 ? session.state.doc.string : NSNull(),
             ]
         }
         return result

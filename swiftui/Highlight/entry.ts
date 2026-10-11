@@ -5,7 +5,8 @@
 // from, to, classes (UTF-16 offsets) for the syntax spans and the bracket pair colors of
 // src/lib/editor/bracketColors.ts, then from, to of what each line can fold (foldable, as the fold gutter asks).
 // With `upTo` only the text before that offset is parsed and colored, as CodeMirror parses up to the viewport
-// first; `folds` false skips the folds (a diff has no fold gutter).
+// first; `folds` false skips the folds (a diff has no fold gutter). The same bundle answers code completion's
+// language sources (complete.ts).
 
 import { ensureSyntaxTree, foldable } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
@@ -13,6 +14,7 @@ import { highlightTree } from "@lezer/highlight";
 import { bracketDecorations } from "../../src/lib/editor/bracketColors";
 import { codeHighlighters } from "../../src/lib/editor/highlighter";
 import { languageFor } from "../../src/lib/editor/languages";
+import "./complete";
 
 /** The longest a parse may take, in milliseconds, before the rest stays plain. */
 const PARSE_BUDGET_MS = 5000;

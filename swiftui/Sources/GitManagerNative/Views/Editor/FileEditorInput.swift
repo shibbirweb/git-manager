@@ -16,6 +16,12 @@ extension FileScrollView.Host {
         let flags = event.modifierFlags
         let command = flags.contains(.command), control = flags.contains(.control)
         let key = Self.keyName(event)
+        // Completion's and snippets' keys come first, as their keymaps are the page's highest.
+        if session.completion.handleKey(key, command: command, option: flags.contains(.option), control: control,
+                                        shift: flags.contains(.shift)) {
+            redraw()
+            return
+        }
         let actions = EditorKeymap.actions(key: key, command: command, option: flags.contains(.option),
                                            control: control, shift: flags.contains(.shift))
         for action in actions where perform(action, session) {
@@ -128,6 +134,10 @@ extension FileScrollView.Host {
             return
         }
         guard let session, let hit = canvas.position(at: canvasPoint(point)) else {
+            return
+        }
+        if session.completion.click(at: hit.position) {
+            redraw()
             return
         }
         let state = session.state

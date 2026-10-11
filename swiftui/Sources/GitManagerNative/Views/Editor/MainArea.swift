@@ -26,6 +26,7 @@ struct MainArea: View {
                     diffName: model.openDiff.map { FileRow.split($0.filePath).name } ?? diffs.pendingName,
                     diffActive: diffShown || pending,
                     tabs: editor.tabs,
+                    dirty: editor.dirtyPaths,
                     selectDiff: { editor.diffActive = true },
                     closeDiff: model.closeDiff,
                     select: { path in Task { await editor.activate(path) } },

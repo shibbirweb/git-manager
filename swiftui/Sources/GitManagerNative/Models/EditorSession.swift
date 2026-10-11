@@ -24,6 +24,8 @@ final class EditorSession {
     var centerRequests = 0
     /// The find bar of this file (FindState).
     let find = FindState()
+    /// Code completion and snippet fields in this file (EditorCompletion).
+    let completion: EditorCompletion
     /// The editor view's hook, called after every change (EditorModel.revision): it paints the canvas straight away.
     var canvasHook: () -> Void = {}
     /// For the control server's check: whether the canvas as painted equals a whole repaint of the same state.
@@ -62,6 +64,18 @@ final class EditorSession {
                                   indentUnit: indent?.useTabs == true ? "\t" : String(repeating: " ", count: size),
                                   language: LanguageData.forLanguage(language))
         state = EditorState(doc: doc, config: config)
+        let preferences = SettingsStore.shared.preferences
+        completion = EditorCompletion(hasGrammar: config.language.syntax,
+                                      onTyping: preferences.editorCompletionOnTyping)
+        completion.enabled = preferences.editorCompletion
+        completion.session = self
+    }
+
+    /// Paints the editor again without a transaction (a snippet's fields let go).
+    func repaint() {
+        paintRevision += 1
+        revision += 1
+        changed(nil)
     }
 
     var context: EditorContext {
@@ -105,6 +119,7 @@ final class EditorSession {
             scheduleMarks()
         }
         find.follow(transaction, state: state)
+        completion.follow(transaction, editorState: state)
         revision += 1
         changed(transaction)
     }

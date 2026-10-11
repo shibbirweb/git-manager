@@ -49,15 +49,17 @@ struct SearchInput: NSViewRepresentable {
         context.coordinator.onBlur = onBlur
         context.coordinator.focusToken = focusToken
         if autofocus || focusToken != 0 {
-            Self.focus(field, selectsAll: selectsAll, attempts: 10)
+            Self.focus(field, selectsAll: selectsAll, attempts: 100)
         }
         return field
     }
 
     /// Gives `field` the keyboard once it is in a window: a field that appears over a view holding the keyboard
-    /// (the editor, for Go to Line) is often not in its window yet on the first try.
+    /// (the editor, for Go to Line) is often not in its window yet on the first try. The tries are 10 ms apart: quick
+    /// turns of the main queue could all run before SwiftUI put the field in its window, and it then never got
+    /// the keyboard (Go to Line's typed line went into the file).
     private static func focus(_ field: NSTextField, selectsAll: Bool, attempts: Int) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.asyncAfter(deadline: .now() + (attempts >= 100 ? 0 : 0.01)) {
             guard let window = field.window, window.makeFirstResponder(field), field.currentEditor() != nil else {
                 if attempts > 0 {
                     focus(field, selectsAll: selectsAll, attempts: attempts - 1)
@@ -81,7 +83,7 @@ struct SearchInput: NSViewRepresentable {
         }
         if focusToken != context.coordinator.focusToken {
             context.coordinator.focusToken = focusToken
-            Self.focus(field, selectsAll: selectsAll, attempts: 10)
+            Self.focus(field, selectsAll: selectsAll, attempts: 100)
         }
         context.coordinator.onSubmit = onSubmit
         let caret = text.isEmpty ? NSColor.clear : caretColor

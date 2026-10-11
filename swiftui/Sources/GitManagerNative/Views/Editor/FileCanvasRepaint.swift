@@ -27,6 +27,12 @@ extension FileCanvas {
         }
         var rows = IndexSet()
         for content in [old, new] {
+            // A snippet's fields: their rows (tinted or marked) come and go with the snippet.
+            if old.snippetFields != new.snippetFields {
+                for field in content.snippetFields ?? [] {
+                    rows.insert(integersIn: row(of: field.from, content)...row(of: field.to, content))
+                }
+            }
             for range in content.state.selection.ranges {
                 rows.insert(integersIn: row(of: range.from, content)...row(of: range.to, content))
             }

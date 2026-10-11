@@ -38,6 +38,10 @@ public struct BoxShadow: Sendable {
     private var shift: Double {
         pageProfile ? 0 : BoxShadow.edgeShift
     }
+
+    var edgeShiftUsed: Double {
+        shift
+    }
     /// The measured mask of a 28-point blur at 2x, from 16 pixels inside the edge (index 0) to 69 outside. The last
     /// three are 1, not 2: the popups' 8-bit alpha cannot tell them apart, the conflicts dialog's dark shadow (blended
     /// over the dim at the exact alpha) can.
@@ -75,14 +79,15 @@ public struct BoxShadow: Sendable {
         let rows = (0..<height).map { axis(top + $0, Int(box.minY), Int(box.maxY)) }
         let near = radius + reach
         var map = [UInt8](repeating: 0, count: max(0, width * height))
+        let table = radius > 0 ? CornerTable(self, left: left, top: top, width: width, height: height) : nil
         for row in 0..<height {
             let y = Double(top + row) + 0.5
             let nearRow = abs(y - box.minY) < near || abs(y - box.maxY) < near
             for column in 0..<width {
                 let x = Double(left + column) + 0.5
                 var value = columns[column] * rows[row]
-                if nearRow && radius > 0 && (abs(x - box.minX) < near || abs(x - box.maxX) < near) {
-                    value -= corners(x, y)
+                if nearRow, let table, abs(x - box.minX) < near || abs(x - box.maxX) < near {
+                    value -= table.corners(column: column, row: row)
                 }
                 map[row * width + column] = UInt8(stored(value))
             }

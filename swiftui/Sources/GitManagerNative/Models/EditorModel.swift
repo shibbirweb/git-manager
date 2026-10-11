@@ -26,6 +26,9 @@ final class EditorModel: ObservableObject {
             changes.publish(revision)
         }
     }
+    /// Whether the active file has unsaved edits: published only when it flips, so the tab strip's dot follows
+    /// without the strip following every change.
+    @Published private(set) var activeDirty = false
     /// The diff tab is on screen (a click on a changed file), not a file tab.
     @Published var diffActive = false
     /// Why the active file shows no text ("Binary file"), or nil.
@@ -159,7 +162,11 @@ final class EditorModel: ObservableObject {
                 return
             }
             self.revision += 1
+            if self.activeDirty != next.dirty {
+                self.activeDirty = next.dirty
+            }
         }
+        activeDirty = next.dirty
         revision += 1
     }
 

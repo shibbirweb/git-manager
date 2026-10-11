@@ -41,3 +41,24 @@ import Testing
     // The popups' measured profile misses 6 of these 62 pixels.
     #expect(misses <= 3, "\(shown)")
 }
+
+@Test func cornerTableGivesTheSameValuesAsCorners() {
+    // A dialog-sized box with rounded corners, both profiles: the table's sums equal corners(x, y) bit for bit.
+    for page in [false, true] {
+        var shadow = BoxShadow(box: CGRect(x: 120, y: 96, width: 300, height: 180), radius: 24,
+                               sigma: BoxShadow.sigma(blur: 28, scale: 2), alpha: 0.16)
+        shadow.pageProfile = page
+        let left = 20, top = 10, width = 140, height = 120
+        let table = BoxShadow.CornerTable(shadow, left: left, top: top, width: width, height: height)
+        var differ = 0
+        for row in stride(from: 0, to: height, by: 3) {
+            for column in stride(from: 0, to: width, by: 3) {
+                let direct = shadow.corners(Double(left + column) + 0.5, Double(top + row) + 0.5)
+                if table.corners(column: column, row: row) != direct {
+                    differ += 1
+                }
+            }
+        }
+        #expect(differ == 0)
+    }
+}

@@ -69,28 +69,9 @@ final class SyntaxHighlighter: @unchecked Sendable {
 
     private func highlight(filePath: String, text: String, options: [String: Any])
         -> (colors: SyntaxColors?, folds: FoldRanges) {
-        generation += 1
-        let current = generation
-        defer {
-            queue.asyncAfter(deadline: .now() + Self.idleSeconds) {
-                if self.generation == current {
-                    self.context = nil
-                }
-            }
-        }
-        guard let context = loadContext(), let function = context.objectForKeyedSubscript("gmHighlight"),
-            !function.isUndefined
-        else {
-            return (nil, FoldRanges())
-        }
-        var answer: String?
-        let resolved: @convention(block) (JSValue) -> Void = { value in
-            answer = value.toString()
-        }
-        let promise = function.call(withArguments: [filePath, text, options])
-        _ = promise?.invokeMethod("then", withArguments: [JSValue(object: resolved, in: context) as Any])
-        guard let answer, let data = answer.data(using: .utf8),
-            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        guard let answer = inContext({ Self.callAsync($0, "gmHighlight", [filePath, text, options]) }),
+              let data = answer.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else {
             return (nil, FoldRanges())
         }
@@ -105,6 +86,47 @@ final class SyntaxHighlighter: @unchecked Sendable {
             spans: SyntaxSpans(flat: spans), brackets: SyntaxSpans(flat: object["brackets"] as? [Any] ?? [])
         )
         return (colors, folds)
+    }
+
+    /// Runs `body` with the context on the highlighter's queue (completion shares it).
+    func run<T>(_ body: @escaping (JSContext) -> T?) async -> T? {
+        await withCheckedContinuation { continuation in
+            queue.async {
+                continuation.resume(returning: self.inContext(body))
+            }
+        }
+    }
+
+    /// `body` with the context, made on first use; the context goes after `idleSeconds` without a call.
+    private func inContext<T>(_ body: (JSContext) -> T?) -> T? {
+        generation += 1
+        let current = generation
+        defer {
+            queue.asyncAfter(deadline: .now() + Self.idleSeconds) {
+                if self.generation == current {
+                    self.context = nil
+                }
+            }
+        }
+        guard let context = loadContext() else {
+            return nil
+        }
+        return body(context)
+    }
+
+    /// Calls a global async function of the script and answers the string its promise resolves to (the promise
+    /// settles before the call returns, as JavaScriptCore runs its jobs then).
+    static func callAsync(_ context: JSContext, _ name: String, _ arguments: [Any]) -> String? {
+        guard let function = context.objectForKeyedSubscript(name), !function.isUndefined else {
+            return nil
+        }
+        var answer: String?
+        let resolved: @convention(block) (JSValue) -> Void = { value in
+            answer = value.toString()
+        }
+        let promise = function.call(withArguments: arguments)
+        _ = promise?.invokeMethod("then", withArguments: [JSValue(object: resolved, in: context) as Any])
+        return answer
     }
 
     private func loadContext() -> JSContext? {

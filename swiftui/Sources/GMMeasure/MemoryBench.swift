@@ -2,7 +2,7 @@
 // lines (4000 by default) with every eighth line changed, so the diff folds nothing. Each app, isolated, opens the
 // repository and is sampled four times: idle, with the file's diff open (or, with --screen file, the file itself in a
 // tab), while scrolling it down and back (the current app's scroll_view tool, the native app's scroll action), and
-// after scrolling. Writes
+// after scrolling; with --screen file, a fifth time with the code completion popup open on it. Writes
 // swiftui/build/measure/<time>-memory/report.md and report.json.
 
 import Foundation
@@ -103,7 +103,29 @@ enum MemoryBench {
         try await Task.sleep(nanoseconds: 3_000_000_000)
         try await gate.require("before \(name) after scrolling")
         phases.append(try await sample(app, "after scrolling", seconds: sampleS))
+        if screen == "file" {
+            try await openCompletion(app)
+            try await gate.require("before \(name) completion open")
+            phases.append(try await sample(app, "completion open", seconds: sampleS))
+        }
         return AppRun(kind: app.kind, phases: phases, scroll: scroll)
+    }
+
+    /// The code completion popup on the big file: a new line after line 20, "re" typed (the file's reserveN
+    /// methods and the keyword return).
+    private static func openCompletion(_ app: RunningApp) async throws {
+        WindowCapture.bringToFront(pid: app.pid)
+        // L with Cmd: Go to Line; then the line's end (Cmd+Right) and Return.
+        KeyPoster.press(pid: app.pid, keyCode: 37, flags: .maskCommand)
+        try await Measure.waitForPrompt(app)
+        KeyPoster.type(pid: app.pid, "20")
+        KeyPoster.press(pid: app.pid, keyCode: 36)
+        try await Task.sleep(nanoseconds: 600_000_000)
+        KeyPoster.press(pid: app.pid, keyCode: 124, flags: .maskCommand)
+        KeyPoster.press(pid: app.pid, keyCode: 36)
+        try await Task.sleep(nanoseconds: 500_000_000)
+        KeyPoster.type(pid: app.pid, "re")
+        try await Task.sleep(nanoseconds: 2_000_000_000)
     }
 
     static func sample(_ app: RunningApp, _ name: String, seconds: Int) async throws -> Phase {

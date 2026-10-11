@@ -1,0 +1,60 @@
+import type { Product } from "./catalog";
+import { applyDiscount } from "./pricing";
+
+export interface CartLine {
+  product: Product;
+  quantity: number;
+}
+
+export class Cart {
+  private lines: CartLine[] = [];
+  private discountCode: string | null = null;
+
+  /** Adds one more of a product, or a new line for it. */
+  add(product: Product, quantity = 1): void {
+    const line = this.lines.find((entry) => entry.product.id === product.id);
+    if (line) {
+      line.quantity += quantity;
+      return;
+    }
+    this.lines.push({ product, quantity });
+  }
+
+  remove(productId: string): void {
+    this.lines = this.lines.filter((line) => line.product.id !== productId);
+  }
+
+  /** Sets the quantity of a line; zero removes it. */
+  setQuantity(productId: string, quantity: number): void {
+    if (quantity <= 0) {
+      this.remove(productId);
+      return;
+    }
+    const line = this.lines.find((entry) => entry.product.id === productId);
+    if (line) {
+      line.quantity = quantity;
+    }
+  }
+
+  useDiscount(code: string): void {
+    this.discountCode = code;
+  }
+
+  get items(): readonly CartLine[] {
+    return this.lines;
+  }
+
+  get count(): number {
+    return this.lines.reduce((sum, line) => sum + line.quantity, 0);
+  }
+
+  subtotal(): number {
+    return this.lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+  }
+
+  /** What the customer pays, rounded to whole cents. */
+  total(): number {
+    const discounted = applyDiscount(this.subtotal(), this.discountCode);
+    return Math.max(0, Math.round(discounted * 100) / 100);
+  }
+}

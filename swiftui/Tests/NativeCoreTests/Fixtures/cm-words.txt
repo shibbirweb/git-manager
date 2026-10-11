@@ -1,0 +1,42 @@
+# windowWords (src/lib/editor/wordCompletion.ts) on cm-words-doc.txt: C case (position, extra word characters),
+# W the words in order, split over lines.
+C {"pos": 1435, "chars": ""}
+W ["discounted", "applyDiscount", "this", "subtotal", "discountCode", "return", "Math", "max", "0"]
+W ["round", "100", "total", "number", "What", "the", "customer", "pays", "rounded", "to", "whole"]
+W ["cents", "lines", "reduce", "sum", "line", "product", "price", "quantity", "get", "count", "items"]
+W ["readonly", "CartLine", "code", "useDiscount", "string", "void", "if", "const", "find", "entry"]
+W ["id", "productId", "remove", "setQuantity", "Sets", "of", "a", "zero", "removes", "it", "filter"]
+W ["push", "add", "Product", "1", "Adds", "one", "more", "or", "new", "for", "private", "null"]
+W ["export", "class", "Cart", "interface", "import", "from", "pricing", "type", "catalog"]
+C {"pos": 0, "chars": ""}
+W ["type", "Product", "from", "catalog", "import", "applyDiscount", "pricing", "export", "interface"]
+W ["CartLine", "product", "quantity", "number", "class", "Cart", "private", "lines", "discountCode"]
+W ["string", "null", "Adds", "one", "more", "of", "a", "or", "new", "line", "for", "it", "add", "1"]
+W ["void", "const", "this", "find", "entry", "id", "if", "return", "push", "remove", "productId"]
+W ["filter", "Sets", "the", "zero", "removes", "setQuantity", "0", "useDiscount", "code", "get"]
+W ["items", "readonly", "count", "reduce", "sum", "subtotal", "price", "What", "customer", "pays"]
+W ["rounded", "to", "whole", "cents", "total", "discounted", "Math", "max", "round", "100"]
+C {"pos": 520, "chars": "$"}
+W ["this", "lines", "push", "product", "quantity", "return", "remove", "productId", "string", "void"]
+W ["line", "filter", "id", "if", "const", "find", "entry", "add", "Product", "1", "Sets", "the", "of"]
+W ["a", "zero", "removes", "it", "Adds", "one", "more", "or", "new", "for", "setQuantity", "number"]
+W ["0", "private", "discountCode", "null", "CartLine", "export", "class", "Cart", "interface"]
+W ["import", "applyDiscount", "from", "pricing", "useDiscount", "code", "type", "catalog", "get"]
+W ["items", "readonly", "count", "reduce", "sum", "subtotal", "price", "What", "customer", "pays"]
+W ["rounded", "to", "whole", "cents", "total", "discounted", "Math", "max", "round", "100"]
+C {"pos": 1571, "chars": ""}
+W ["return", "Math", "max", "0", "round", "discounted", "100", "const", "applyDiscount", "this"]
+W ["subtotal", "discountCode", "total", "number", "What", "the", "customer", "pays", "rounded", "to"]
+W ["whole", "cents", "lines", "reduce", "sum", "line", "product", "price", "quantity", "get", "count"]
+W ["items", "readonly", "CartLine", "code", "useDiscount", "string", "void", "if", "find", "entry"]
+W ["id", "productId", "remove", "setQuantity", "Sets", "of", "a", "zero", "removes", "it", "filter"]
+W ["push", "add", "Product", "1", "Adds", "one", "more", "or", "new", "for", "private", "null"]
+W ["export", "class", "Cart", "interface", "import", "from", "pricing", "type", "catalog"]
+C {"pos": 996, "chars": "-"}
+W ["line", "quantity", "if", "useDiscount", "code", "string", "void", "const", "this", "lines"]
+W ["find", "entry", "product", "id", "productId", "discountCode", "return", "remove", "get", "items"]
+W ["readonly", "CartLine", "0", "setQuantity", "number", "Sets", "the", "of", "a", "zero", "removes"]
+W ["it", "count", "reduce", "sum", "filter", "subtotal", "price", "push", "What", "customer", "pays"]
+W ["rounded", "to", "whole", "cents", "total", "discounted", "applyDiscount", "Math", "max", "round"]
+W ["100", "add", "Product", "1", "Adds", "one", "more", "or", "new", "for", "private", "null"]
+W ["export", "class", "Cart", "interface", "import", "from", "pricing", "type", "catalog"]

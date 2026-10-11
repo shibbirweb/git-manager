@@ -86,7 +86,9 @@ extension FileScrollView.Host {
         let lineHeight = CGFloat(EditorGeometry.lineHeight)
         let most = max(0, document.frame.height - bounds.height)
         var origin = scrollView.contentView.bounds.origin
-        origin.y = min(most, max(0, top + lineHeight / 2 - bounds.height / 2))
+        // Centered in the scroller's client height, which a horizontal scrollbar shortens (scrollRectIntoView);
+        // WebKit keeps scroll offsets in whole points, cut down.
+        origin.y = min(most, max(0, (top + lineHeight / 2 - canvas.visibleHeight / 2).rounded(.down)))
         scrollView.contentView.scroll(to: origin)
         scrollView.reflectScrolledClipView(scrollView.contentView)
     }

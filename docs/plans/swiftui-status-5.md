@@ -100,3 +100,60 @@ Continues [swiftui-status-4.md](swiftui-status-4.md). Newest last.
     18 screens): all at their floors within the 0.01 noise. The floor table's search 99.6 predates GM-75 (99.46 /
     99.22 since then, as on 2026-10-09).
   - Memory with the replace bar open: current 215 MB, native 44 MB (light).
+- GM-88 open gaps, stage 3 part 3 (code completion), the 99% and speed gates:
+  - Typing a word in the file editor opens the page's completion popup (features.ts completionExtension):
+    the document's words (wordCompletion.ts: 1500 lines around the cursor, 400 words, nearest first) and the
+    language's own sources, the keywords, snippets and scope names of each @codemirror/lang-* package. Keys:
+    Ctrl+Space asks, Escape closes, Up/Down (wrapping), Page Up/Down, Enter and Tab pick; a key in the first
+    75 ms after the popup opened goes to the editor (interactionDelay). A click on an option picks it. Snippets
+    ("for", "function", "if" ...) insert their text with the first field selected; Tab and Shift+Tab move between
+    fields, Escape or moving out lets go. Settings editorCompletion and editorCompletionOnTyping are read.
+  - NativeCore/Completion ports the package: FuzzyMatcher (scores and matched ranges, tested on
+    Fixtures/cm-fuzzy.txt from the package's own class run under Bun; its byWord buffer keeps its length between
+    matches, as the page's does), sortOptions (score, then the "en" locale compare, which orders as
+    localeCompare; the same label twice is listed once, a typed one wins), the state machine (ActiveSource,
+    ActiveResult, CompletionDialog, validFor with JavaScript's ASCII \w and \d spelled out for ICU),
+    insertCompletionText for every cursor, rangeAroundSelected (100 options rendered), snippet fields, and the
+    popup's geometry. WordCompletion is tested on Fixtures/cm-words.txt from wordCompletion.ts.
+  - The language's sources run in JavaScriptCore in the highlighter's context (Highlight/complete.ts,
+    SyntaxCompletion.swift): the last file's EditorState is kept and updated by the changed span only, so the
+    parse is incremental (2 ms a key on cart.ts, 23 ms cold). A snippet's apply function runs there too against a
+    stand-in view and answers its changes, selection and fields. Sources are in the page's order: the words first
+    (its global language data comes before the language's), so the word "for" of a comment ties ahead of the
+    "for" loop snippets, as on the page.
+  - Native asks at once after a typed key (after the key's own paint); the page waits 100 ms
+    (activateOnTypingDelay). Ctrl+Space waits 50 ms as there.
+  - Popup pixel rules: placed at the completed text's left below the cursor box (lineTop - 1 to + 16), on whole
+    device pixels (WebKit snaps the layer); rows 22 points (a 20-point line box), label baseline 15, badge circle
+    12.625 at 6 + 5.1, its letter (UI font 9.36 semibold) a point above its centered line box; the selected
+    row's --selected is a Core Animation layer under a see-through row (a fill in the bitmap came out a step off
+    in green), its text blended see-through; the shadow is PopupShadow in its own layer (the page-layer profile
+    scored lower). Dark --shadow alpha comes from the theme.
+  - Found and fixed on the way:
+    - Go to Line and change navigation lost their centering and the keyboard since GM-87 (the center request
+      came after the dispatch, and nothing repainted the editor view later): asked before the dispatch now.
+      Centering also uses the client height less the horizontal scrollbar and whole points, cut down, as
+      scrollRectIntoView and WebKit do (the cursor line was 4.5 points off).
+    - The Go to Line prompt took 0.9 s to take the keyboard (the page 0.1 s): the dialog backdrop's shadow
+      evaluated 96 exp and 192 erf calls per pixel near its corners on the main thread. BoxShadowCorners.swift
+      works the corner weights out per column and row (the same sums, bit for bit; tested): 876 ms to 29 ms. The
+      field's focus tries are 10 ms apart now (quick main-queue turns could all run before SwiftUI put the field
+      in its window, and the typed line went into the file).
+    - The tab strip had no unsaved dot: TabCloseButton shows the 8-point --text-dim dot, the close sign under
+      the pointer; EditorModel.activeDirty is published only when the active file's state flips.
+  - Speed (gm-measure speed --case completion, cart.ts, median of 5, current / native): popup after the first key
+    139 / 38 ms, list after the next key 32 / 21 ms. The first popup of each height shows its shadow about 90 ms
+    after the popup (ShadowTiles builds that tile in the background; 0.5 s before the corner fix).
+  - Smoke: "dis" lists the scope's variable first, Enter picks it; "fo" lists the snippets, Enter inserts the loop
+    with "index" selected, Tab to "bound", Tab lets go; partial repaints equal a whole one with fields and after;
+    Down/Up, Escape; the popup closes when the editor loses the keyboard (control `app action=complete`).
+  - Snippet fields are tinted black at 0x22 in dark themes too: the page's editor theme is not marked dark, so
+    the base theme's light rule applies (white scored 99.0 in dark, black 99.2).
+  - Pixel diff below the title bar (light / dark): completion 99.37 / 99.3, completionvars 99.36 / 99.28,
+    completionsnippet 99.27 / 99.2; the sweep of 20 floor screens in both modes kept every floor (edit light
+    rose to 99.6 with the tab's unsaved dot).
+  - Memory (gm-measure memory --screen file, the 4000-line PHP file, a new "completion open" phase): current
+    307 MB, native 66 MB; with the popup on cart.ts: current 263 MB, native 49 MB (light).
+  - Known differences: a line holding an empty snippet field's dotted marker is 1 to 2 points taller on the page
+    (WebKit grows its line box around the marker), native rows stay 16 points, so lines below an active snippet
+    sit higher until it lets go; the page's sticky scroll line (a listed gap of Code appearance).

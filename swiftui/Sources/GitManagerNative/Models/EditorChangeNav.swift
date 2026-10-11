@@ -15,8 +15,9 @@ extension EditorModel {
             return
         }
         let position = doc.line(min(target.from, doc.lineCount - 1)).from
-        session.dispatch(TransactionSpec(selection: .single(position), userEvent: "select", scrollIntoView: true))
+        // Asked before the change, whose paint carries it to the editor view.
         session.centerRequests += 1
+        session.dispatch(TransactionSpec(selection: .single(position), userEvent: "select", scrollIntoView: true))
     }
 
     /// The file bar's change label: "No changes", "2 changes", "1 of 2" with the cursor in one.

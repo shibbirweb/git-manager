@@ -21,11 +21,14 @@ extension EditorModel {
         guard session === self.session else {
             return
         }
+        // Asked before the change, whose paint carries it to the editor view (nothing else repaints it after).
+        session.centerRequests += 1
         if let answer, let target = EditorCommands.parseLineTarget(answer, lineCount: session.state.doc.lineCount) {
             let position = EditorCommands.lineTargetPosition(session.state.doc, line: target.line,
                                                              column: target.column)
             session.dispatch(TransactionSpec(selection: .single(position), userEvent: "select", scrollIntoView: true))
+        } else {
+            session.canvasHook()
         }
-        session.centerRequests += 1
     }
 }

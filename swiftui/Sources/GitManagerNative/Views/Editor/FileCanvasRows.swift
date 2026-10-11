@@ -31,6 +31,7 @@ extension FileCanvas {
         }
         let findMatches = drawFindMatches(content, shown: shown, colors: colors, scale: scale)
         drawHighlights(content, shown: shown, colors: colors, scale: scale, findMatches: findMatches)
+        drawSnippetFields(content, shown: shown, colors: colors, scale: scale)
         let textX = self.textX(content)
         for row in shown {
             drawRow(content, row: row, x: textX, colors: colors, context: context, scale: scale)

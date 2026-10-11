@@ -8,6 +8,7 @@
 // - scroll: in that diff, each app's own scroll walk (down and back at --speed points a frame); the frames that
 //   reached the screen and the gaps between them.
 // - find: the editor's find bar on that file (SpeedFind.swift).
+// - completion: code completion on the docs demo's src/cart.ts (SpeedCompletion.swift).
 // Writes swiftui/build/speed/<time>/report.md.
 
 import AppKit
@@ -16,7 +17,7 @@ import MeasureKit
 
 enum Speed {
     struct Options {
-        var cases: [String] = ["search", "diff", "scroll", "find"]
+        var cases: [String] = ["search", "diff", "scroll", "find", "completion"]
         var mode = "light"
         var repeats = 3
         var files = 2000
@@ -52,9 +53,10 @@ enum Speed {
             options.frames = true
             arguments.remove(at: index)
         }
-        let known = ["search", "diff", "scroll", "find"]
+        let known = ["search", "diff", "scroll", "find", "completion"]
         guard arguments.isEmpty, options.cases.allSatisfy(known.contains) else {
-            print("Usage: gm-measure speed [--case search|diff|scroll|find|all] [--mode light|dark] [--repeat <n>]")
+            print("Usage: gm-measure speed [--case search|diff|scroll|find|completion|all] [--mode light|dark] "
+                + "[--repeat <n>]")
             print("                        [--files <n>] [--lines <n>] [--speed <points>] [--only current|native]")
             return 2
         }
@@ -93,6 +95,11 @@ enum Speed {
                 for kind in kinds {
                     samples += try await SpeedCases.find(kind, repoPath: repoPath, workDir: workDir, options: options)
                 }
+            }
+        }
+        if options.cases.contains("completion") {
+            for kind in kinds {
+                samples += try await SpeedCases.completion(kind, workDir: workDir, options: options)
             }
         }
         let report = SpeedReport.markdown(samples, options: options, stamp: stamp)

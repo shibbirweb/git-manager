@@ -36,6 +36,8 @@ final class FileCanvas: NSView {
         var blame: BlameLines?
         /// The find bar's search while the bar is open and the search usable: its matches are tinted.
         var findQuery: FindQuery?
+        /// An inserted snippet's fields while Tab moves through them.
+        var snippetFields: [SnippetField]?
 
         @MainActor
         init(session: EditorSession, blameLabel: String?, theme: Theme, focused: Bool, blinking: String,
@@ -62,6 +64,7 @@ final class FileCanvas: NSView {
             self.geometry = geometry
             blame = blameGutter ? session.blame : nil
             findQuery = session.find.open && session.find.query.valid ? session.find.query : nil
+            snippetFields = session.completion.snippet?.ranges
         }
 
         var doc: TextDocument {
@@ -73,7 +76,7 @@ final class FileCanvas: NSView {
             path == other.path && revision == other.revision && theme.id == other.theme.id
                 && focused == other.focused && blameLabel == other.blameLabel && blinking == other.blinking
                 && geometry.blameWidth == other.geometry.blameWidth && blame == other.blame
-                && findQuery == other.findQuery
+                && findQuery == other.findQuery && snippetFields == other.snippetFields
         }
     }
 

@@ -44,6 +44,9 @@ public struct NativePreferences: Equatable, Sendable {
     public var commitBoxLayout = "single"
     /// The blame gutter beside the code (the file bar's Blame button switches it).
     public var blameGutter = false
+    /// Code completion in the file editor, and whether it opens while typing (else Ctrl+Space only).
+    public var editorCompletion = true
+    public var editorCompletionOnTyping = true
 
     public init() {}
 
@@ -78,7 +81,7 @@ public enum SettingsData {
     /// The keys `NativePreferences` owns.
     public static let knownKeys: Set<String> = Set([
         "theme", "lightColorTheme", "darkColorTheme", "uiFontSize", "editorFontSize", "fileIcons", "roundedPanels",
-        "fileToolbar", "commitBoxLayout", "blameGutter",
+        "fileToolbar", "commitBoxLayout", "blameGutter", "editorCompletion", "editorCompletionOnTyping",
     ] + fileToolbarSwitchKeys)
 
     public enum LoadError: Error, Equatable {
@@ -126,6 +129,10 @@ public enum SettingsData {
             object["commitBoxLayout"], commitBoxLayouts, fallback: defaults.commitBoxLayout
         )
         preferences.blameGutter = pickBool(object["blameGutter"], fallback: defaults.blameGutter)
+        preferences.editorCompletion = pickBool(object["editorCompletion"], fallback: defaults.editorCompletion)
+        preferences.editorCompletionOnTyping = pickBool(
+            object["editorCompletionOnTyping"], fallback: defaults.editorCompletionOnTyping
+        )
         let extra = object.filter { !knownKeys.contains($0.key) }
         return SettingsFile(preferences: preferences, extra: extra)
     }
@@ -147,6 +154,8 @@ public enum SettingsData {
         }
         object["commitBoxLayout"] = preferences.commitBoxLayout
         object["blameGutter"] = preferences.blameGutter
+        object["editorCompletion"] = preferences.editorCompletion
+        object["editorCompletionOnTyping"] = preferences.editorCompletionOnTyping
         return object
     }
 
