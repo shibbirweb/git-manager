@@ -9,7 +9,10 @@ import type {
   AskpassQuestion,
   DeletedLocalFile,
   FileLocalHistory,
+  FoundProgram,
   LocalHistoryRecord,
+  PrepareReport,
+  ProviderUsage,
   LocalHistoryUsage,
   AutoFetchResult,
   BisectMark,
@@ -76,6 +79,7 @@ import type {
   SymbolSearchProgress,
   SymbolSearchResults,
   TerminalInfo,
+  TerminalMemory,
   TerminalOutputMessage,
   TextSearchBatch,
   TextSearchOptions,
@@ -511,6 +515,8 @@ export const api = {
   terminalClose: (terminalId: number) => invoke<void>("terminal_close", { terminalId }),
   /** Closes every terminal, e.g. left over after a reload of the window. */
   terminalCloseAll: () => invoke<void>("terminal_close_all"),
+  /** This window's terminals and runs, each with what its shell started. */
+  terminalMemory: () => invoke<TerminalMemory[]>("terminal_memory"),
   /** What Clear Cache left for this page, once; null after a normal start. */
   terminalUnstash: () => invoke<TerminalStashData | null>("terminal_unstash"),
   /** Connects a terminal left running by Clear Cache to this page; false when it is gone. */
@@ -551,6 +557,18 @@ export const api = {
   unsavedRead: (tabPath: string) => invoke<UnsavedText | null>("unsaved_read", { tabPath }),
   unsavedRemove: (tabPaths: string[]) => invoke<void>("unsaved_remove", { tabPaths }),
   unsavedList: () => invoke<UnsavedMeta[]>("unsaved_list"),
+  /** What a new task branches from: origin/HEAD's branch, else the current branch, else HEAD. */
+  worktreeDefaultBase: (repoPath: string) => invoke<string>("worktree_default_base", { repoPath }),
+  /** Copies the .worktreeinclude paths and links `linkDirs` from the main checkout into a new worktree. */
+  prepareWorktree: (mainRoot: string, worktreePath: string, linkDirs: string[]) =>
+    invoke<PrepareReport>("prepare_worktree", { mainRoot, worktreePath, linkDirs }),
+  /** Keep computer awake: this window wants the display and system awake or not; true while it is held awake. */
+  setKeepAwake: (active: boolean) => invoke<boolean>("set_keep_awake", { active }),
+  /** Claude Code's and Codex's rate-limit usage; `fresh` (Refresh) may ask the Keychain again. */
+  aiUsage: (fresh: boolean, hidden: string[]) => invoke<ProviderUsage[]>("ai_usage", { fresh, hidden }),
+  /** Which agent programs the login shell's PATH has; `fresh` reads the shell's environment again. */
+  findAgentPrograms: (programs: string[], fresh: boolean) =>
+    invoke<FoundProgram[]>("find_agent_programs", { programs, fresh }),
   /** A script as its own process (the Run tab); output and exit arrive like a terminal's. */
   runScript: (
     options: { program: string; args: string[]; cwd: string; nodeBinDir: string | null; cols: number; rows: number },

@@ -2,7 +2,9 @@
 // screen are written down and handed to the backend (terminal_link.rs), and the new page
 // rebuilds the same terminals from them. Pure, so what survives and what is checked is tested.
 
+import type { AgentState } from "$lib/ai/projects";
 import type { RunSpec } from "./runs";
+import type { AgentInfo } from "./terminalStore.svelte";
 import type { TerminalLocation } from "./terminalTabs";
 
 /** One terminal's place and state, as kept across the restart. */
@@ -18,6 +20,8 @@ export interface TerminalDescriptor {
   run: RunSpec | null;
   group: number;
   bell: boolean;
+  /** An AI agent tab: kept with its run, so it can restart after the page did. */
+  agent?: AgentInfo | null;
 }
 
 /** The panel around the terminals. */
@@ -44,6 +48,7 @@ export interface RestoredTerminal {
 }
 
 const LOCATIONS: readonly TerminalLocation[] = ["panel", "editor", "run"];
+const AGENT_STATES: readonly AgentState[] = ["starting", "working", "waiting", "ready", "done", "exited"];
 const PANEL_TABS: readonly TerminalLayout["panelTab"][] = ["terminal", "run", "gitConsole", "shelf"];
 
 function record(value: unknown): Record<string, unknown> | null {
@@ -81,6 +86,18 @@ function runSpec(value: unknown): RunSpec | null {
   return { runId, program, args, cwd, nodeBinDir: text(data.nodeBinDir), description: text(data.description) ?? "" };
 }
 
+function agentInfo(value: unknown): AgentInfo | null {
+  const data = record(value);
+  const agentId = text(data?.agentId);
+  const folderPath = text(data?.folderPath);
+  if (agentId === null || folderPath === null) {
+    return null;
+  }
+  const state = AGENT_STATES.find((candidate) => candidate === data?.state) ?? "ready";
+  const changedAt = typeof data?.changedAt === "number" && Number.isFinite(data.changedAt) ? data.changedAt : Date.now();
+  return { agentId, folderPath, title: text(data?.title) ?? "", state, changedAt };
+}
+
 export function describeTerminal(descriptor: TerminalDescriptor): string {
   return JSON.stringify(descriptor);
 }
@@ -98,10 +115,13 @@ export function parseDescriptor(source: string): TerminalDescriptor | null {
   if (key === null || key === 0 || group === null || name === null || location === null) {
     return null;
   }
-  const run = location === "run" ? runSpec(data.run) : null;
+  // An agent tab is an editor tab that runs its agent, so it keeps its run too.
+  const storedAgent = location === "editor" ? agentInfo(data.agent) : null;
+  const run = location === "run" || storedAgent ? runSpec(data.run) : null;
   if (location === "run" && run === null) {
     return null;
   }
+  const agent = storedAgent && run ? storedAgent : null;
   return {
     key,
     name,
@@ -114,6 +134,7 @@ export function parseDescriptor(source: string): TerminalDescriptor | null {
     run,
     group,
     bell: data.bell === true,
+    ...(agent ? { agent } : {}),
   };
 }
 

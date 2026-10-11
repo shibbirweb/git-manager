@@ -41,9 +41,11 @@ grep-matcher = "0.1.8"
 grep-regex = "0.1.14"
 grep-searcher = "0.1.16"
 memchr = "2.7.4"
-# GitHub API: a small blocking client on the system TLS stack (Security.framework on macOS),
-# so no async runtime, rustls, ring or bundled root certificates end up in the binary.
-ureq = { version = "3.4.2", default-features = false, features = ["native-tls-no-default"] }
+# GitHub API and the AI usage readers: a small blocking client on the system TLS stack (Security.framework on macOS),
+# so no async runtime, rustls or ring end up in the binary. It must be "native-tls", not "native-tls-no-default":
+# ureq checks for that exact feature before every HTTPS request and panics without it (which aborts the app).
+# Certificates are still checked against the system's roots (RootCerts::PlatformVerifier in github/http.rs).
+ureq = { version = "3.4.2", default-features = false, features = ["native-tls"] }
 # MCP server: the HTTP/1.1 request parser ureq already uses. The server loop is ours, so it can cap
 # connections and stop every thread when switched off (tiny_http keeps idle keep-alive threads).
 httparse = "1"
@@ -87,6 +89,8 @@ windows-sys = { version = "0.61", features = [
     "Win32_System_ProcessStatus",
     "Win32_System_Threading",
     "Wdk_System_Threading",
+    # Keep computer awake (keep_awake.rs): SetThreadExecutionState.
+    "Win32_System_Power",
 ] }
 
 [dev-dependencies]

@@ -6,6 +6,8 @@
 // the panel keeps every shell running. Run sessions (runs.ts) are
 // entries too, shown in the panel's Run tab instead of the Terminal tab.
 
+import { cleanTitle, isStatusOnlyTitle, needsAttention, nextState, statusFromTitle } from "$lib/ai/agentStatus";
+import type { AgentState } from "$lib/ai/projects";
 import { api } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
@@ -66,6 +68,41 @@ export interface TerminalEntry {
   group: number;
   /** The shell rang the bell while the terminal was out of sight. */
   bell: boolean;
+  /** An AI agent started from the AI panel: it runs `run` in an editor tab and stays when it exits. */
+  agent?: AgentInfo | null;
+}
+
+/** What the AI panel knows of an agent tab. */
+export interface AgentInfo {
+  agentId: string;
+  /** The worktree or folder it runs in. */
+  folderPath: string;
+  /** What the agent says it does, from its terminal title without the spinner (see ai/agentStatus.ts). */
+  title: string;
+  state: AgentState;
+  /** When `state` last changed (ms since the epoch), for the panel's "4m ago". */
+  changedAt: number;
+  /** A first prompt to type once the agent has started (agents that take no prompt argument). */
+  pendingPrompt?: string | null;
+}
+
+/** Starts an AI agent (see ai/sessions.svelte.ts). */
+export interface AgentStart {
+  agentId: string;
+  label: string;
+  program: string;
+  args: string[];
+  folderPath: string;
+  /** The command line shown above its output. */
+  description: string;
+  /** A first prompt to type once it has started, for agents that take no prompt argument. */
+  typedPrompt?: string | null;
+}
+
+/** Asks one terminal's view to start its process again (an agent's Restart). */
+export interface RestartRequest {
+  terminalKey: number;
+  token: number;
 }
 
 /** Asks one terminal to take keyboard focus as soon as it is on screen. */
@@ -114,6 +151,8 @@ class TerminalStore {
   started = $state(false);
   /** Shells found on this machine, loaded on first use. */
   shells = $state.raw<ShellProfile[]>([]);
+  /** The terminal whose view should start its process again. */
+  restartRequest = $state.raw<RestartRequest | null>(null);
   /** The terminal that should take keyboard focus next. */
   focusRequest = $state.raw<FocusRequest | null>(null);
   /** Where the panel shows its terminals (registered by TerminalPanel). */
@@ -283,6 +322,7 @@ class TerminalStore {
           run: entry.run ?? null,
           group: entry.group,
           bell: entry.bell,
+          agent: entry.agent ?? null,
         }),
         snapshot: await (this.snapshotters.get(entry.key)?.() ?? Promise.resolve("")).catch(() => ""),
       })),
@@ -462,6 +502,103 @@ class TerminalStore {
       repoStore.openPseudoTab(terminalTabPath(entry.key));
     }
     this.requestFocus(entry.key);
+  }
+
+  /** Starts an AI agent in a new editor tab, in its folder, like a run that stays after it exits. */
+  startAgent(start: AgentStart): number {
+    const key = this.nextKey++;
+    const entry: TerminalEntry = {
+      key,
+      terminalId: null,
+      name: uniqueTerminalName(
+        start.label,
+        this.terminals.map((terminal) => terminal.name),
+      ),
+      renamed: true,
+      shellId: null,
+      cwd: start.folderPath,
+      exited: false,
+      exitCode: null,
+      location: "editor",
+      run: {
+        runId: `agent:${key}`,
+        program: start.program,
+        args: start.args,
+        cwd: start.folderPath,
+        nodeBinDir: null,
+        description: start.description,
+      },
+      group: this.nextGroup++,
+      bell: false,
+      agent: {
+        agentId: start.agentId,
+        folderPath: start.folderPath,
+        title: "",
+        state: "starting",
+        changedAt: Date.now(),
+        pendingPrompt: start.typedPrompt ?? null,
+      },
+    };
+    this.terminals = [...this.terminals, entry];
+    repoStore.openPseudoTab(terminalTabPath(key));
+    this.requestFocus(key);
+    return key;
+  }
+
+  /** Restart: an exited agent starts again in the same tab, with a clear screen. */
+  restartAgent(terminalKey: number): void {
+    const entry = this.find(terminalKey);
+    if (!entry?.agent || (entry.terminalId !== null && !entry.exited)) {
+      return;
+    }
+    this.update(terminalKey, { agent: { ...entry.agent, state: "starting", changedAt: Date.now() } });
+    this.restartRequest = { terminalKey, token: (this.restartRequest?.token ?? 0) + 1 };
+    this.showTerminal(terminalKey);
+  }
+
+  /** The first prompt was typed (or given up on): a Restart does not type it again. */
+  clearPendingPrompt(terminalKey: number): void {
+    const entry = this.find(terminalKey);
+    if (entry?.agent?.pendingPrompt) {
+      this.update(terminalKey, { agent: { ...entry.agent, pendingPrompt: null } });
+    }
+  }
+
+  /**
+   * The agent's terminal changed its title. Spinner frames change nothing here, so the panel does not redraw
+   * on every frame. True when the agent just finished or started waiting for the user.
+   */
+  setAgentTitle(terminalKey: number, rawTitle: string): boolean {
+    const entry = this.find(terminalKey);
+    if (!entry?.agent || entry.exited) {
+      return false;
+    }
+    // "claude - action required" says the state, not the task: the last task title stays.
+    const title = isStatusOnlyTitle(rawTitle) ? entry.agent.title : cleanTitle(rawTitle);
+    const state = nextState(entry.agent.state, statusFromTitle(rawTitle));
+    if (title === entry.agent.title && state === entry.agent.state) {
+      return false;
+    }
+    const changedAt = state === entry.agent.state ? entry.agent.changedAt : Date.now();
+    this.update(terminalKey, { agent: { ...entry.agent, title, state, changedAt } });
+    return needsAttention(entry.agent.state, state);
+  }
+
+  /** Brings a terminal's editor tab or panel place to the front and focuses it. */
+  showTerminal(terminalKey: number): void {
+    const entry = this.find(terminalKey);
+    if (!entry) {
+      return;
+    }
+    if (entry.location === "editor") {
+      repoStore.openPseudoTab(terminalTabPath(terminalKey));
+      this.requestFocus(terminalKey);
+    } else if (entry.location === "panel") {
+      this.show();
+      this.select(terminalKey);
+    } else {
+      this.selectRun(terminalKey);
+    }
   }
 
   /**
@@ -646,8 +783,12 @@ class TerminalStore {
     if (!entry || entry.exited) {
       return;
     }
-    this.update(terminalKey, { exited: true, exitCode });
-    if (exitCode === 0 && entry.location !== "run") {
+    this.update(terminalKey, {
+      exited: true,
+      exitCode,
+      ...(entry.agent ? { agent: { ...entry.agent, state: "exited" as const, changedAt: Date.now() } } : {}),
+    });
+    if (exitCode === 0 && entry.location !== "run" && !entry.agent) {
       this.remove(terminalKey);
     }
   }
@@ -664,7 +805,9 @@ class TerminalStore {
     const others = this.terminals.filter((terminal) => terminal.key !== terminalKey).map((terminal) => terminal.name);
     const shellName = info.shell?.name ?? "";
     const name = entry.renamed || !shellName ? entry.name : uniqueTerminalName(shellName, others);
-    this.update(terminalKey, { terminalId: info.terminalId, name, cwd: info.cwd ?? entry.cwd });
+    const agent =
+      entry.agent?.state === "starting" ? { ...entry.agent, state: "ready" as const, changedAt: Date.now() } : entry.agent;
+    this.update(terminalKey, { terminalId: info.terminalId, name, cwd: info.cwd ?? entry.cwd, agent });
     return true;
   }
 
@@ -673,7 +816,9 @@ class TerminalStore {
    * the error and Retry, until the user retries or closes it.
    */
   spawnFailed(terminalKey: number): void {
-    this.update(terminalKey, { exited: true, exitCode: null });
+    const entry = this.find(terminalKey);
+    const agent = entry?.agent ? { ...entry.agent, state: "exited" as const, changedAt: Date.now() } : entry?.agent;
+    this.update(terminalKey, { exited: true, exitCode: null, agent });
   }
 
   /** Retry after a failed start: the terminal is live again while its shell starts. */
@@ -717,6 +862,9 @@ class TerminalStore {
     if (entry.location === "run") {
       return this.runMenuItems(terminalKey);
     }
+    if (entry.agent) {
+      return this.agentMenuItems(terminalKey);
+    }
     const location = entry.location;
     return [
       {
@@ -735,11 +883,34 @@ class TerminalStore {
     ];
   }
 
+  /** An agent tab's menu: Restart once it exited, Rename, and Stop while it runs. */
+  agentMenuItems(terminalKey: number): MenuItem[] {
+    const entry = this.find(terminalKey);
+    if (!entry?.agent) {
+      return [];
+    }
+    const running = entry.terminalId !== null && !entry.exited;
+    return [
+      { label: "Restart Agent", disabled: running, action: () => this.restartAgent(terminalKey) },
+      { label: "Stop Agent", disabled: !running, action: () => this.stopRun(terminalKey) },
+      { label: "Rename...", action: () => void this.promptRename(terminalKey) },
+      { separator: true },
+      { label: "Close Agent Tab", danger: running, action: () => this.close(terminalKey) },
+    ];
+  }
+
   /** Terminal items of a terminal's editor tab menu, after the Close items (which kill it). */
   tabMenuItems(terminalKey: number): MenuItem[] {
     const entry = this.find(terminalKey);
     if (!entry) {
       return [];
+    }
+    if (entry.agent) {
+      const running = entry.terminalId !== null && !entry.exited;
+      return [
+        { label: "Restart Agent", disabled: running, action: () => this.restartAgent(terminalKey) },
+        { label: "Rename...", action: () => void this.promptRename(terminalKey) },
+      ];
     }
     return [this.moveItem(entry), { label: "Rename...", action: () => void this.promptRename(terminalKey) }];
   }

@@ -21,6 +21,7 @@
   import { appMenu } from "$lib/menu/appMenu.svelte";
   import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
   import { startMcpBridge } from "$lib/mcp/bridge";
+  import { keepAwake } from "$lib/ai/keepAwakeStore.svelte";
   import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import { localHistory } from "$lib/localHistory/localHistory.svelte";
   import { notifications } from "$lib/notifications/notifications.svelte";
@@ -90,6 +91,14 @@
       return;
     }
     return untrack(() => startMcpBridge());
+  });
+
+  // Keep computer awake follows the mode and this window's agents.
+  $effect(() => {
+    if (!mainWindow) {
+      return;
+    }
+    return untrack(() => keepAwake.start());
   });
 
   // Tools and the image and PDF previews only reach the folders open now; the backend also

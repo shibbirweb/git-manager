@@ -1,6 +1,7 @@
 use super::blocking;
 use crate::error::AppResult;
 use crate::git::worktree::{self, WorktreeBranch, WorktreeInfo};
+use crate::git::worktree_prepare::{self, PrepareReport};
 
 #[tauri::command]
 pub async fn list_worktrees(repo_path: String) -> AppResult<Vec<WorktreeInfo>> {
@@ -37,4 +38,16 @@ pub async fn prune_worktrees(repo_path: String) -> AppResult<String> {
 #[tauri::command]
 pub async fn worktree_has_changes(worktree_path: String) -> AppResult<bool> {
     blocking(move || worktree::has_changes(&worktree_path)).await
+}
+
+/// What a new task branches from: `origin/HEAD`'s branch, else the current branch (see worktree_prepare.rs).
+#[tauri::command]
+pub async fn worktree_default_base(repo_path: String) -> AppResult<String> {
+    blocking(move || worktree_prepare::default_base(&repo_path)).await
+}
+
+/// Copies the `.worktreeinclude` paths and links `link_dirs` from the main checkout into a new worktree.
+#[tauri::command]
+pub async fn prepare_worktree(main_root: String, worktree_path: String, link_dirs: Vec<String>) -> AppResult<PrepareReport> {
+    blocking(move || worktree_prepare::prepare(&main_root, &worktree_path, &link_dirs)).await
 }

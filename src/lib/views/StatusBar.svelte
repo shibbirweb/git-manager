@@ -15,12 +15,16 @@
   import { clearCache } from "$lib/debug/clearCache";
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
+  import { formatBytes } from "$lib/ui/formatBytes";
   import Icon from "$lib/ui/Icon.svelte";
   import NotificationBell from "$lib/notifications/NotificationBell.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { changesSelection } from "./changes/selection.svelte";
   import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
   import { updates } from "$lib/update/updates.svelte";
+  import AiUsage from "$lib/ai/AiUsage.svelte";
+  import KeepAwake from "$lib/ai/KeepAwake.svelte";
+  import TerminalMemory from "$lib/terminal/TerminalMemory.svelte";
   import { platformName } from "$lib/update/releases";
 
   const POLL_MS = 5000;
@@ -71,16 +75,6 @@
 
   async function showConflicts(): Promise<void> {
     await repoStore.openConflicts(contextRepo?.root);
-  }
-
-  function formatBytes(bytes: number): string {
-    if (bytes >= 1024 * 1024 * 1024) {
-      return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
-    }
-    if (bytes >= 1024 * 1024) {
-      return `${(bytes / 1024 / 1024).toFixed(bytes >= 100 * 1024 * 1024 ? 0 : 1)} MB`;
-    }
-    return `${Math.round(bytes / 1024)} KB`;
   }
 
   async function poll(): Promise<void> {
@@ -222,6 +216,9 @@
     {:else if repoStore.workspace}
       <span class="item static"><Icon name="folder" size={12} /> {repoStore.workspace.name}</span>
     {/if}
+    {#if settings.aiUsagePosition === "left"}
+      <AiUsage side="left" />
+    {/if}
   </div>
 
   <div class="right">
@@ -262,6 +259,10 @@
         <span class="spinner"></span>{loadingChangesText(repoStore.loadingChanges.done, repoStore.loadingChanges.total)}
       </span>
     {/if}
+    {#if settings.aiUsagePosition === "right"}
+      <AiUsage side="right" />
+    {/if}
+    <KeepAwake />
     <NotificationBell />
     <button class="item icon-only" onclick={() => void updates.openRepository()} title="Star Git Manager on GitHub" aria-label="Star on GitHub">
       <Icon name="star" size={12} />
@@ -308,6 +309,7 @@
                 </div>
               </div>
             {/each}
+            <TerminalMemory onShow={() => (detailsOpen = false)} />
             <div class="gpu" aria-label="GPU acceleration">
               <div class="gpu-title">GPU acceleration</div>
               <div class="process-row">

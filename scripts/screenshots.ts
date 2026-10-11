@@ -24,7 +24,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, realpathSync, rmSync, statSync } from "node:fs";
+import { mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type Browser, type BrowserContext, type Locator, type Page, webkit } from "playwright";
@@ -89,6 +89,12 @@ interface Scenario {
   localStorage?: Record<string, string>;
   /** Start the shot without waiting for the workspace, to catch what shows while it opens. */
   noWait?: boolean;
+  /** Report the demo's stand-in Claude Code as the one installed agent (see writeDemoAgent). */
+  agents?: boolean;
+  /** Sample AI usage for the status bar (your own sign-ins are never used). */
+  aiUsage?: boolean;
+  /** Demo sizes for the running terminals, oldest first: the stand-ins themselves use almost nothing. */
+  terminalMemory?: number[];
 }
 
 interface PageConfig {
@@ -107,6 +113,9 @@ interface PageConfig {
   localStorage: Record<string, string>;
   nodeVersions: unknown[];
   shells: unknown[];
+  agentPrograms: unknown[];
+  aiUsage: unknown[];
+  terminalMemory: number[];
 }
 
 /** A made-up token: the real one lives in ~/.gitmanager/mcp.json. */
@@ -140,6 +149,55 @@ function cannedNodeVersions(): unknown[] {
 function cannedShells(): unknown[] {
   const shell = (name: string, args: string[], isDefault: boolean) => ({ id: `/bin/${name}`, name, path: `/bin/${name}`, args, isDefault });
   return [shell("zsh", ["-l"], true), shell("bash", ["-l"], false), shell("sh", [], false), shell("dash", [], false)];
+}
+
+/**
+ * A stand-in for Claude Code inside the demo folder, so shots of the AI panel never start a real agent. It sets
+ * the terminal title like the real one: a rest mark, then a spinner while it works on what was typed.
+ */
+function writeDemoAgent(): string {
+  const file = join(demo, ".agents", "claude");
+  mkdirSync(dirname(file), { recursive: true });
+  const script = [
+    "#!/bin/bash",
+    "printf '\\033]0;\u2733 Claude Code\\007'",
+    "echo 'Claude Code (a stand-in for the screenshots)'",
+    "echo",
+    "printf '> '",
+    "while IFS= read -r line; do",
+    "  printf '\\033]0;\u280b %s\\007' \"$line\"",
+    "  echo \"Reading the code for: $line\"",
+    "  sleep 600",
+    "done",
+    "",
+  ].join("\n");
+  writeFileSync(file, script, { mode: 0o755 });
+  return file;
+}
+
+/** Plausible usage for the status bar shots: Claude Code getting close to its weekly limit, Codex fresh. */
+function cannedAiUsage(): unknown[] {
+  const now = Date.now();
+  return [
+    {
+      provider: "claude",
+      status: "ok",
+      session: { usedPercent: 42, windowMinutes: 300, resetsAt: now + 135 * 60_000 },
+      weekly: { usedPercent: 83, windowMinutes: 10_080, resetsAt: now + 52 * 3_600_000 },
+      modelWeekly: [{ model: "Fable", window: { usedPercent: 57, windowMinutes: 10_080, resetsAt: now + 52 * 3_600_000 } }],
+      plan: "max",
+      message: null,
+    },
+    {
+      provider: "codex",
+      status: "ok",
+      session: { usedPercent: 12, windowMinutes: 300, resetsAt: now + 4 * 3_600_000 },
+      weekly: { usedPercent: 31, windowMinutes: 10_080, resetsAt: now + 5 * 24 * 3_600_000 },
+      modelWeekly: [],
+      plan: "plus",
+      message: null,
+    },
+  ];
 }
 
 function workspaceLaunch(): Record<string, unknown> {
@@ -182,6 +240,9 @@ function pageConfig(scenario: Scenario): PageConfig {
     localStorage: scenario.localStorage ?? {},
     nodeVersions: cannedNodeVersions(),
     shells: cannedShells(),
+    agentPrograms: scenario.agents ? [{ program: "claude", path: writeDemoAgent() }] : [],
+    aiUsage: scenario.aiUsage ? cannedAiUsage() : [],
+    terminalMemory: scenario.terminalMemory ?? [],
   };
 }
 
@@ -267,6 +328,18 @@ function installOverrides(config: PageConfig): void {
     // Your own Node installs and shells stay out of the pictures.
     list_node_versions: () => structuredClone(config.nodeVersions),
     terminal_shells: () => structuredClone(config.shells),
+    // Your own AI agents never run in a shot: only the demo's stand-in, when the scenario asks for it.
+    find_agent_programs: () => structuredClone(config.agentPrograms),
+    // Your own Claude Code sign-in and Codex logs stay out of the pictures.
+    ai_usage: () => structuredClone(config.aiUsage),
+    // The demo's real terminals, with demo sizes when the scenario gives them.
+    terminal_memory: async () => {
+      type Measured = { terminalId: number; bytes: number; processes: number };
+      const measured = ((await internals.invoke("terminal_memory__real")) as Measured[]).sort(
+        (left, right) => left.terminalId - right.terminalId,
+      );
+      return measured.map((row, index) => ({ ...row, bytes: config.terminalMemory[index] ?? row.bytes }));
+    },
     // GitHub: never the real keychain, gh or ~/.gitmanager/github.json.
     github_account: () => structuredClone(config.github.account),
     github_cli_status: () => structuredClone(config.github.cli),
@@ -2801,6 +2874,160 @@ define("worktrees-new-dialog", async (shot) => {
   await shot.settle(300);
   await saveDialog(shot, dialog);
 });
+
+
+// AI panel: the demo's projects with storefront's worktrees; agents are the demo's stand-in only.
+function aiScenario(extra: Scenario = {}): Scenario {
+  return {
+    agents: true,
+    ...extra,
+    state: { explorerOpen: true, rightPanel: "ai", explorerWidth: 300, ...(extra.state ?? {}) },
+  };
+}
+
+function aiPanel(shot: Shot): Locator {
+  return shot.page.locator("aside.explorer");
+}
+
+/** Starts the stand-in agent in a worktree row of the AI panel, through the row's + menu. */
+async function startDemoAgent(shot: Shot, worktreeLabel: string): Promise<void> {
+  const row = aiPanel(shot).locator(".card-head", { hasText: worktreeLabel }).first();
+  await row.waitFor();
+  await row.hover();
+  await row.locator('button[aria-label^="Start an agent"]').click();
+  await shot.menu().getByText("Claude Code", { exact: true }).click();
+}
+
+define("ai-panel", async (shot) => {
+  addDemoWorktrees();
+  try {
+    // The panel read the worktrees when it opened, before this shot added them.
+    await aiPanel(shot).getByRole("button", { name: "Refresh", exact: true }).click();
+    await aiPanel(shot).locator(".card-head", { hasText: "fix/tax-rates" }).waitFor();
+    await startDemoAgent(shot, "fix/tax-rates");
+    // The terminal may draw with the GPU, so its text is not in the page: the panel says when the agent runs.
+    await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+    // Ready comes as the process starts; give it a moment to print before typing.
+    await shot.page.waitForTimeout(800);
+    await shot.page.keyboard.type("Update the tax rates for 2026");
+    await shot.page.keyboard.press("Enter");
+    await aiPanel(shot).locator('.agent [aria-label="Working"]').waitFor();
+    await shot.page.mouse.move(640, 790);
+    await shot.settle(500);
+    await shot.save(await shot.clipAround([shot.page.locator("main.main"), aiPanel(shot)]));
+  } finally {
+    removeDemoWorktrees();
+  }
+}, () => aiScenario({ settings: { aiPermissionMode: "normal" }, viewport: { width: 1280, height: 560 } }));
+
+define("ai-new-tab", async (shot) => {
+  await startDemoAgent(shot, "main");
+  await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+  const plus = shot.page.locator(".tab-strip .new-tab").first();
+  await plus.click();
+  await shot.menu().waitFor();
+  await shot.settle();
+  const tab = shot.page.locator(".tab-strip .tab").first();
+  await shot.save(await shot.clipAround([tab, plus, shot.menu()], { top: 0, left: 0, right: 120, bottom: 16 }));
+}, () => aiScenario({ settings: { aiPermissionMode: "normal" } }));
+
+/** Opens New Task from storefront's + in the AI panel and fills it in: a race of two agents with a prompt. */
+async function fillNewTask(shot: Shot): Promise<Locator> {
+  const project = aiPanel(shot).locator(".project", { hasText: "storefront" }).first();
+  await project.hover();
+  await project.locator('button[aria-label^="New task"]').click();
+  const dialog = shot.page.getByRole("dialog");
+  await dialog.getByText("New Task", { exact: true }).waitFor();
+  await dialog.getByPlaceholder("Fix the login race").fill("Round tax to cents");
+  await dialog.locator(".agent-select").first().waitFor();
+  await dialog.getByRole("button", { name: "Add Agent to Race" }).click();
+  await dialog.getByPlaceholder("What should the agents do?").fill("Round every tax amount to whole cents and add tests.");
+  return dialog;
+}
+
+define("ai-new-task", async (shot) => {
+  const dialog = await fillNewTask(shot);
+  await shot.page.mouse.move(5, 790);
+  await shot.settle();
+  await shot.save(dialog);
+}, () => aiScenario({ settings: { aiPermissionMode: "normal" } }));
+
+define("ai-usage", async (shot) => {
+  const usage = shot.page.locator('.status-bar [aria-label="AI usage"]');
+  await usage.locator("button").first().waitFor();
+  await usage.locator("button").first().click();
+  const details = shot.page.locator('[role="dialog"][aria-label="AI usage details"]');
+  await details.waitFor();
+  await shot.page.mouse.move(5, 300);
+  await shot.settle();
+  await shot.save(await shot.clipAround([usage, details], { top: 12, left: 24, right: 12, bottom: 0 }));
+}, () => ({ aiUsage: true }));
+
+define("ai-agent-command", async (shot) => {
+  const dialog = await openSettings(shot, "AI");
+  await dialog.getByText("1 of 9 found on your PATH.").waitFor();
+  const head = dialog.locator(".agent-head", { hasText: "Claude Code" });
+  await head.click();
+  await dialog.getByLabel("Claude Code extra arguments").fill("--model opus");
+  await dialog.getByLabel("Claude Code extra arguments").press("Tab");
+  // The Settings list scrolls: bring the opened agent to the top of it.
+  await head.evaluate((element) => element.scrollIntoView({ block: "start" }));
+  await shot.settle();
+  await shot.page.mouse.move(5, 790);
+  await shot.save(await shot.clipAround([head, dialog.locator(".agent.expanded .actions")], { top: 8, left: 12, right: 12, bottom: 12 }));
+}, () => aiScenario({ state: { explorerOpen: false } }));
+
+define("memory-terminals", async (shot) => {
+  await startDemoAgent(shot, "main");
+  await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+  await startDemoAgent(shot, "main");
+  await aiPanel(shot).locator('.agent [aria-label="Ready"]').nth(1).waitFor();
+  await newTerminal(shot);
+  const memory = shot.page.locator("footer.status-bar .memory");
+  await memory.getByRole("button", { name: /^Memory / }).click();
+  const terminals = shot.page.locator('[aria-label="Terminal memory"]');
+  await terminals.locator(".row").nth(2).waitFor();
+  await shot.page.mouse.move(5, 300);
+  await shot.settle();
+  await shot.save(await shot.clipAround([memory, shot.page.locator('[role="dialog"][aria-label="Memory usage"]')], {
+    top: 12,
+    left: 24,
+    right: 12,
+    bottom: 0,
+  }));
+}, () =>
+  aiScenario({
+    ...terminalScenario({ settings: { aiPermissionMode: "normal" } }),
+    terminalMemory: [412 * 1024 * 1024, 268 * 1024 * 1024, 6 * 1024 * 1024],
+  }),
+);
+
+define("keep-awake", async (shot) => {
+  const button = shot.page.locator('.status-bar button[aria-label^="Keep computer awake"]');
+  await button.click();
+  const menu = shot.page.locator('[role="menu"][aria-label="Keep computer awake"]');
+  await menu.waitFor();
+  await shot.page.mouse.move(5, 300);
+  await shot.settle();
+  await shot.save(await shot.clipAround([button, menu], { top: 12, left: 40, right: 12, bottom: 0 }));
+}, () => ({ settings: { computerAwakeMode: "agent" } }));
+
+define("ai-permission", async (shot) => {
+  await startDemoAgent(shot, "main");
+  const dialog = shot.page.getByRole("dialog");
+  await dialog.getByText("How Should AI Agents Work?").waitFor();
+  await shot.page.mouse.move(5, 790);
+  await shot.settle();
+  await shot.save(dialog);
+}, () => aiScenario());
+
+define("ai-settings", async (shot) => {
+  const dialog = await openSettings(shot, "AI");
+  await dialog.getByText("1 of 9 found on your PATH.").waitFor();
+  await shot.page.mouse.move(5, 790);
+  await shot.settle();
+  await shot.save(dialog);
+}, () => aiScenario({ state: { explorerOpen: false } }));
 
 define("submodules-changes", async (shot) => {
   const changes = shot.page.getByRole("group", { name: "shop-app", exact: true }).getByRole("group", { name: "Changes" });

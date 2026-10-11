@@ -662,6 +662,28 @@ impl TerminalRegistry {
         drop(processes);
     }
 
+    /// The running shells of one window as (terminal id, shell pid), for the memory details.
+    pub fn window_shells(&self, window_label: &str) -> Vec<(u32, u32)> {
+        let owned: Vec<u32> = self
+            .inner
+            .owners()
+            .iter()
+            .filter(|(_, owner)| owner.as_str() == window_label)
+            .map(|(terminal_id, _)| *terminal_id)
+            .collect();
+        let terminals = self.inner.terminals();
+        let mut shells: Vec<(u32, u32)> = owned
+            .iter()
+            .filter_map(|terminal_id| {
+                let process = terminals.get(terminal_id)?;
+                let pid = process.pid().filter(|_| !process.has_exited())?;
+                Some((*terminal_id, pid))
+            })
+            .collect();
+        shells.sort_unstable();
+        shells
+    }
+
     /// For app exit: hangs up every shell, waits briefly, then kills what is left.
     pub fn shutdown(&self) {
         let mut processes: Vec<PtyProcess> = self.inner.terminals().drain().map(|(_, process)| process).collect();
@@ -1023,6 +1045,10 @@ mod tests {
             let second = spawn("window-2");
             let third = spawn("window-2");
             assert_eq!(registry.owner_count(), 3);
+            let shells: Vec<u32> = registry.window_shells("window-2").into_iter().map(|(terminal_id, _)| terminal_id).collect();
+            assert_eq!(shells, vec![second, third]);
+            assert_eq!(registry.window_shells("main").len(), 1);
+            assert!(registry.window_shells("window-9").is_empty());
 
             registry.close_window("window-2");
             let mut exited = vec![exit_receiver.recv_timeout(WAIT).unwrap().0, exit_receiver.recv_timeout(WAIT).unwrap().0];

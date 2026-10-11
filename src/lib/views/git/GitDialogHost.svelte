@@ -16,6 +16,7 @@
   import ShelveDialog from "$lib/shelf/ShelveDialog.svelte";
   import UpdateProjectDialog from "./UpdateProjectDialog.svelte";
   import AddSubmoduleDialog from "./submodules/AddSubmoduleDialog.svelte";
+  import NewTaskDialog from "$lib/ai/NewTaskDialog.svelte";
   import NewWorktreeDialog from "./worktrees/NewWorktreeDialog.svelte";
   import IdentityDialog from "../changes/IdentityDialog.svelte";
 
@@ -50,8 +51,10 @@
       <BranchesPopup repoRoot={active.repoRoot} />
     {:else if active.kind === "github"}
       <GitHubDialogHost dialog={active.dialog} />
+    {:else if active.kind === "newTask"}
+      <NewTaskDialog repoRoot={active.repoRoot} />
     {:else if active.kind === "newWorktree"}
-      <NewWorktreeDialog repoRoot={active.repoRoot} />
+      <NewWorktreeDialog repoRoot={active.repoRoot} startAgent={active.startAgent ?? false} />
     {:else if active.kind === "addSubmodule"}
       <AddSubmoduleDialog repoRoot={active.repoRoot} />
     {:else if active.kind === "identity"}

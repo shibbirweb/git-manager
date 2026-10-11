@@ -28,6 +28,7 @@
   import { changesSelection } from "./changes/selection.svelte";
   import { gitDialogs } from "./git/gitDialogs.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
+  import AiPanel from "$lib/ai/AiPanel.svelte";
   import FileExplorer from "./files/FileExplorer.svelte";
   import CommitTab from "$lib/log/CommitTab.svelte";
   import { isCommitTab } from "$lib/stores/commitTabs";
@@ -383,7 +384,7 @@
     </main>
     {#if settings.explorerOpen}
       <ResizeHandle
-        label="Resize files sidebar"
+        label={settings.rightPanel === "ai" ? "Resize AI sidebar" : "Resize files sidebar"}
         panel="right"
         size={explorerWidth}
         min={MIN_PANEL}
@@ -393,7 +394,11 @@
         onCommit={() => settings.save()}
       />
       <aside class="explorer" style="width: {explorerWidth}px">
-        <FileExplorer />
+        {#if settings.rightPanel === "ai"}
+          <AiPanel />
+        {:else}
+          <FileExplorer />
+        {/if}
       </aside>
     {/if}
     {#if settings.rightBarVisible}

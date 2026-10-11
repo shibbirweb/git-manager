@@ -110,9 +110,10 @@ The two header buttons left of the sun and the gear show or hide the **activity 
 
 *Automation: the MCP server, the command line tool and the memory log, all off by default.*
 
-- **Terminal**: the default shell, the terminal font, cursor, scrollback and copy on selection.
+- **Terminal**: the shell, font, cursor, scrollback and copy on selection.
+- **AI**: agent permissions and arguments ([AI Agents](AI-Agents.md#settings)).
 - **GitHub**: sign in to GitHub for Share Project, Sync Fork and Create Gist.
-- **Automation**: the MCP server for AI tools, the `git-manager cli` command line tool and the debug memory log.
+- **Automation**: the MCP server, the `git-manager cli` tool and the memory log.
 
 Every option is described in [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md).
 

@@ -34,6 +34,10 @@ When the app is started from a terminal (as `bun tauri dev` does), macOS makes t
 
 There is no "responsible process" on Windows. `memory.rs` takes a process snapshot (`CreateToolhelp32Snapshot`) and walks down from our pid: the `msedgewebview2.exe` browser the app started, then that browser's helpers (`webview_processes`, tested on every platform). Terminal shells and git are left out, as on macOS. Each process counts its private working set (`PROCESS_MEMORY_COUNTERS_EX2`), Task Manager's "Memory" column. The role comes from `--type=` on the helper's command line (`webview_label`): renderer is Web content (UI), gpu-process is Graphics, the network utility is Networking. Clear Cache stays macOS only, so the status bar hides its button elsewhere.
 
+### Terminals in the popup
+
+The popup also lists the memory of each terminal of the window, with what its shell started, and their sum. See [How Terminal Memory Is Measured](How-Terminal-Memory-Is-Measured.md).
+
 ### GPU acceleration in the popup
 
 The popup also shows whether the GPU is used. `probeWebgl` (`src/lib/ui/webglProbe.ts`) asks the web view for a WebGL 2 context each time the popup opens, reads the renderer name, and releases the context with `WEBGL_lose_context` at once, so the check holds no GPU memory. Each terminal reports how it draws to `gpuRenderers` (`src/lib/terminal/gpuRenderers.svelte.ts`): `TerminalAddons` calls back with `gpu` when the WebGL addon loads, `fallback` when it fails or loses its context, and `normal` when GPU drawing is off; a closed terminal is forgotten. `terminalDrawingSummary` in `gpuStatus.ts` turns that and the two settings (GPU acceleration, font ligatures) into one line. GPU drawing costs about 70 MB for the first terminal ([Measuring Setting Memory](Measuring-Setting-Memory.md)). The Graphics row above is the memory of WebKit's GPU process.

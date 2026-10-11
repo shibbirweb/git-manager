@@ -10,6 +10,7 @@ const LABELS: Record<SettingsSection, string> = {
   merge: "Git",
   layout: "Layout",
   terminal: "Terminal",
+  ai: "AI",
   keyboard: "Keyboard Shortcuts",
   github: "GitHub",
   automation: "Automation",

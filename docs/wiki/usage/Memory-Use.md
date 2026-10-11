@@ -10,6 +10,16 @@ Click it for a breakdown: **Git Manager (app)**, **Web content (UI)**, **Graphic
 
 The number updates every few seconds while the window is visible, and stops while it is hidden. The brush button right of it is [Clear Cache](Clear-Cache.md): it gives back the memory WebKit keeps after you close files. It is not on Windows. When the app was started from a Terminal, the helpers are matched by their start time, and the breakdown says so.
 
+## Terminals
+
+Below the app's rows, **Terminals** lists what runs in this window's terminals: the sum at the top, then one row per terminal, [AI agent](AI-Agents.md) or script in the Run tab, biggest first. Each row counts the shell and everything it started, such as Claude Code, a dev server or a test run. An agent row shows the agent's title and its folder.
+
+![Terminals in the memory details](../images/memory-terminals.png)
+
+*The memory details with two agents and a terminal.*
+
+Click a row to bring that terminal to the front. Point at a row to see how many processes it counts. These programs are not part of the app's own number in the status bar, because they are separate programs you started. The section shows only while the details are open and hides when no terminal runs.
+
 ## Settings that use more memory
 
 Most settings cost almost nothing. The few that use clearly more memory when they are on have a small orange mark beside their name in Settings, such as **+70 MB**. Point at the mark to see when the memory is used and what it grows with.

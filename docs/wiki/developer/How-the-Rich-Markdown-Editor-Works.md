@@ -8,14 +8,14 @@ Many people like to edit the page as it looks. But a Markdown file is shared, an
 
 ## How it works
 
-The editor is [TipTap](https://tiptap.dev) 3 (on ProseMirror) with `@tiptap/markdown`, which reads Markdown with marked. The safety around it comes from [Orca](https://github.com/stablyai/orca)'s rich Markdown editor (MIT), whose core is ported into `src/lib/markdown/rich/` with its tests. `RichMarkdownView.svelte` imports `richEditor.ts` on first use. The CodeMirror text editor stays the real file: it is hidden but alive, so save, undo, the unsaved dot and diffs keep working.
+The editor is [TipTap](https://tiptap.dev) 3 (on ProseMirror) with `@tiptap/markdown`, which reads Markdown with marked. Its safety comes from an MIT-licensed core ported into `src/lib/markdown/rich/` with its tests. `RichMarkdownView.svelte` imports `richEditor.ts` on first use. The CodeMirror text editor stays the real file: it is hidden but alive, so save, undo, the unsaved dot and diffs keep working.
 
 ```mermaid
 sequenceDiagram
   participant U as User
   participant TT as TipTap (ProseMirror)
   participant RE as RichMarkdownEditor
-  participant RC as rich/ (Orca's core)
+  participant RC as rich/ (ported core)
   participant CM as Text editor (CodeMirror)
   U->>TT: types in the page
   TT->>RE: document changed
@@ -70,7 +70,7 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 | File | What it does |
 | --- | --- |
 | `src/lib/markdown/richEditor.ts` | TipTap setup, load, save, actions, node views |
-| `src/lib/markdown/rich/` | Orca's core (MIT, `LICENSE-ORCA`): schema, round trip, eligibility, reconcile, HTML placeholders |
+| `src/lib/markdown/rich/` | The ported core (MIT, `LICENSE-ORCA`): schema, round trip, eligibility, reconcile, HTML placeholders |
 | `src/lib/markdown/richSync.ts` | Front matter split, `sourceEdit` |
 | `src/lib/views/files/RichMarkdownView.svelte` | Mounting, link prompt, clicks, keys, notices, task box styles |
 | `src/lib/views/files/FileView.svelte` | `applyRichEdit`, `richScroll`, mode switches |
@@ -82,15 +82,15 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 
 **Refuse over a wrong rewrite.** A file whose round trip loses anything is shown, not edited.
 
-**Orca's core, not our own.** Its round trip and reconcile code comes with hundreds of tests from a product that edits real files every day. Left out: math, editable `<details>` blocks (kept as raw HTML here), wiki links, superscript links, review notes and code colors.
+**A ported core, not our own.** Its round trip and reconcile code comes with hundreds of tests from a product that edits real files every day. Left out: math, editable `<details>` blocks (kept as raw HTML here), wiki links, superscript links, review notes and code colors.
 
-**HTML blocks whole.** A CommonMark HTML block that starts with a block tag (`<table>`, `<div>`...) runs to the next blank line; it is kept as one raw block, as marked reads it (an addition to Orca's code).
+**HTML blocks whole.** A CommonMark HTML block that starts with a block tag (`<table>`, `<div>`...) runs to the next blank line; it is kept as one raw block, as marked reads it (our addition to the ported code).
 
 **Only the Rich Editor view is editable**, so the two sides of the split never fight over the cursor.
 
 ## Tests
 
-- `src/lib/markdown/rich/*.test.ts`: Orca's tests for the round trip, eligibility, reconcile, HTML placeholders, tables, lists and paragraphs.
+- `src/lib/markdown/rich/*.test.ts`: the ported tests for the round trip, eligibility, reconcile, HTML placeholders, tables, lists and paragraphs.
 - `src/lib/markdown/richEditor.test.ts` (happy-dom): every page of `docs/wiki`, `README.md`, `CHANGELOG.md` and messy samples (mixed markers, `__bold__`, setext headings, padded tables, `~~~` fences, CRLF, front matter, HTML, emoji). Each loads and saves with no change, and one typed character changes only that character; reference links and footnotes are refused; a ticked task box changes only `[ ]`.
 - `src/lib/markdown/richSync.test.ts`: `sourceEdit` and `splitFrontMatter`.
 
@@ -104,7 +104,7 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 **Editing an existing file did not work well.**
 - **The issue:** typing in Preview Only (now Rich Editor) on a file could reformat other text, turn the page read-only, or reload it after an edit.
 - **Why it happened:** the old editor (Milkdown) wrote back block by block, which needed remark's block ranges and Milkdown's blocks to line up one to one; often they did not (raw HTML, lists, nested blocks).
-- **The fix and why we chose it:** TipTap with Orca's core. It decides per file whether editing is safe, patches each edit onto the file's own text and proves the result by a re-parse. Tested on every Markdown file here.
+- **The fix and why we chose it:** TipTap with the ported core. It decides per file whether editing is safe, patches each edit onto the file's own text and proves the result by a re-parse. Tested on every Markdown file here.
 
 **A README with an HTML table could not be edited.**
 - **The issue:** our README (a screenshot table in HTML) opened read-only.

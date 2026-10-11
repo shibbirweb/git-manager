@@ -520,6 +520,30 @@ fn malformed_success_bodies_are_errors_not_panics() {
 
 // The real transport, against a local listener
 
+/// Found while adding the AI usage readers: with only ureq's "native-tls-no-default" feature, every HTTPS request
+/// panicked in ureq's TLS check, and the release build's `panic = "abort"` quit the app. An HTTPS request to a
+/// listener that is not TLS must come back as an error instead.
+#[test]
+fn ureq_transport_reaches_https_without_panicking() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let server = std::thread::spawn(move || {
+        if let Ok((mut stream, _)) = listener.accept() {
+            // Not TLS: the handshake fails on the client's side.
+            let _ = stream.write_all(b"HTTP/1.1 400 Bad Request\r\n\r\n");
+        }
+    });
+    let transport = UreqTransport::new("git-manager-test");
+    let request = HttpRequest {
+        method: Method::Get,
+        url: format!("https://127.0.0.1:{port}/"),
+        headers: Vec::new(),
+        body: None,
+    };
+    assert!(transport.send(&request).is_err());
+    server.join().unwrap();
+}
+
 #[test]
 fn ureq_transport_sends_headers_and_body_and_returns_error_statuses() {
     let listener = TcpListener::bind("127.0.0.1:0").expect("bind");

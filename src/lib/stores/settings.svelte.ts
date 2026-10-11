@@ -12,6 +12,7 @@
 // window reaches all of them and no window writes back another's older values. A window's
 // own layout (WINDOW_STATE_KEYS) is not taken from the others.
 
+import type { AgentOverride } from "$lib/ai/agentConfig";
 import { api, errorMessage, onConfigChanged } from "$lib/api";
 import { pushRecentCommand } from "$lib/commands/recentCommands";
 import type { ShortcutOverrides } from "$lib/commands/registry";
@@ -35,11 +36,16 @@ import {
   type AutoSaveMode,
   changedPreferenceKeys,
   type CommitBoxLayout,
+  type AiPermissionMode,
+  type AiUsagePosition,
+  type AiUsageProvider,
+  type ComputerAwakeMode,
   type ConfigName,
   type DiffLayout,
   type Json,
   type LeftPanel,
   type LoadErrors,
+  type RightPanel,
   MARKDOWN_PREVIEW_RATIO_RANGE,
   type MarkdownViewMode,
   MAX_RECENT,
@@ -124,6 +130,7 @@ export type {
   LeftPanel,
   MarkdownViewMode,
   Preferences,
+  RightPanel,
   RenderWhitespace,
   SettingsSection,
   TerminalCursorStyle,
@@ -254,6 +261,14 @@ class SettingsStore {
   mcpTools = $state.raw<Record<string, boolean>>(initialPreferences.mcpTools);
   /** Custom keyboard shortcuts by command id; replaced as a whole on every change. */
   keybindings = $state.raw<ShortcutOverrides>(initialPreferences.keybindings);
+  aiPermissionMode = $state<AiPermissionMode>(initialPreferences.aiPermissionMode);
+  aiAgentArgs = $state.raw<Record<string, string>>(initialPreferences.aiAgentArgs);
+  aiDefaultAgent = $state(initialPreferences.aiDefaultAgent);
+  aiWorktreeLinks = $state.raw<string[]>(initialPreferences.aiWorktreeLinks);
+  aiUsagePosition = $state<AiUsagePosition>(initialPreferences.aiUsagePosition);
+  aiUsageHidden = $state.raw<AiUsageProvider[]>(initialPreferences.aiUsageHidden);
+  computerAwakeMode = $state<ComputerAwakeMode>(initialPreferences.computerAwakeMode);
+  aiAgentCommands = $state.raw<Record<string, AgentOverride>>(initialPreferences.aiAgentCommands);
 
   // UI state (state.json)
   recentRepos = $state<string[]>(initialState.recentRepos);
@@ -275,6 +290,7 @@ class SettingsStore {
   activeRepoAuto = $state(initialState.activeRepoAuto);
   scriptNodeVersions = $state<Record<string, string>>(initialState.scriptNodeVersions);
   explorerOpen = $state(initialState.explorerOpen);
+  rightPanel = $state<RightPanel>(initialState.rightPanel);
   leftBarVisible = $state(initialState.leftBarVisible);
   rightBarVisible = $state(initialState.rightBarVisible);
   diffSplitRatio = $state(initialState.diffSplitRatio);
@@ -498,6 +514,14 @@ class SettingsStore {
       mcpPort: this.mcpPort,
       mcpTools: this.mcpTools,
       keybindings: this.keybindings,
+      aiPermissionMode: this.aiPermissionMode,
+      aiAgentArgs: this.aiAgentArgs,
+      aiDefaultAgent: this.aiDefaultAgent,
+      aiWorktreeLinks: this.aiWorktreeLinks,
+      aiUsagePosition: this.aiUsagePosition,
+      aiUsageHidden: this.aiUsageHidden,
+      computerAwakeMode: this.computerAwakeMode,
+      aiAgentCommands: this.aiAgentCommands,
     };
   }
 
@@ -520,6 +544,7 @@ class SettingsStore {
       activeRepoAuto: this.activeRepoAuto,
       scriptNodeVersions: this.scriptNodeVersions,
       explorerOpen: this.explorerOpen,
+      rightPanel: this.rightPanel,
       leftBarVisible: this.leftBarVisible,
       rightBarVisible: this.rightBarVisible,
       diffSplitRatio: this.diffSplitRatio,
@@ -764,7 +789,34 @@ class SettingsStore {
   }
 
   toggleExplorer(): void {
-    this.explorerOpen = !this.explorerOpen;
+    this.toggleRightPanel("files");
+  }
+
+  /** The right sidebar shows one panel: its icon hides the sidebar when that panel is shown, else shows it. */
+  toggleRightPanel(panel: RightPanel): void {
+    if (this.explorerOpen && this.rightPanel === panel) {
+      this.explorerOpen = false;
+    } else {
+      this.rightPanel = panel;
+      this.explorerOpen = true;
+    }
+    this.save();
+  }
+
+  /** The right sidebar is open on the Files panel. */
+  get filesPanelShown(): boolean {
+    return this.explorerOpen && this.rightPanel === "files";
+  }
+
+  /** The right sidebar is open on the AI panel. */
+  get aiPanelShown(): boolean {
+    return this.explorerOpen && this.rightPanel === "ai";
+  }
+
+  /** Shows `panel` in the right sidebar, opening it. */
+  showRightPanel(panel: RightPanel): void {
+    this.rightPanel = panel;
+    this.explorerOpen = true;
     this.save();
   }
 

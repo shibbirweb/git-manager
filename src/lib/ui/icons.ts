@@ -179,6 +179,22 @@ export const icons = {
   ],
   table: ["M12 3v18", "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z", "M3 9h18", "M3 15h18"],
   "editor-only": ["M17 6.1H3", "M21 12.1H3", "M15.1 18H3"],
+  // A coffee cup: Keep computer awake.
+  coffee: [
+    "M10 2v2",
+    "M14 2v2",
+    "M6 2v2",
+    "M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1",
+  ],
+  // A robot head: the AI agents panel.
+  bot: [
+    "M12 8V4H8",
+    "M6 8h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z",
+    "M2 14h2",
+    "M20 14h2",
+    "M15 13v2",
+    "M9 13v2",
+  ],
   // An eye with a pencil: the page as it looks, editable (the Markdown Rich Editor view).
   "rich-editor": [
     "M1 9c1.3-2.6 3.9-4.8 7-4.8s5.7 2.2 7 4.8c-1.3 2.6-3.9 4.8-7 4.8S2.3 11.6 1 9z",

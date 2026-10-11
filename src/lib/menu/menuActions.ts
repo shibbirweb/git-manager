@@ -1,6 +1,8 @@
 // Runs a menu item: one function per action, reusing what the buttons and window shortcuts
 // already do, with the same guards (no workspace action behind a dialog or the merge tool).
 
+import { pickAndStartAgent } from "$lib/ai/sessions.svelte";
+import { newTask } from "$lib/ai/panelActions";
 import { clearCache } from "$lib/debug/clearCache";
 import { tick } from "svelte";
 import { errorMessage } from "$lib/api";
@@ -257,6 +259,19 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.scripts": workspace(() => settings.toggleLeftPanel("scripts")),
   "view.log": shortcut("toggleLog"),
   "view.filesPanel": shortcut("toggleExplorer"),
+  "view.aiPanel": workspace(() => settings.toggleRightPanel("ai")),
+  "view.aiNewTask": workspace(() => {
+    const repoRoot = repoStore.repo?.root ?? null;
+    if (repoRoot) {
+      newTask(repoRoot);
+    }
+  }),
+  "view.aiNewAgent": workspace(() => {
+    const folderPath = repoStore.repo?.root ?? repoStore.workspace?.root ?? null;
+    if (folderPath) {
+      void pickAndStartAgent(folderPath);
+    }
+  }),
   "view.sidebar": shortcut("toggleSidebar"),
   "view.leftActivityBar": workspace(() => settings.toggleActivityBar("left")),
   "view.rightActivityBar": workspace(() => settings.toggleActivityBar("right")),

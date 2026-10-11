@@ -43,6 +43,10 @@
     { "page": "usage/Git-Dialogs.md", "summary": "Push, Pull, Update Project, Merge, Rebase, Reset, Rollback, Remotes and Clone, with their options." },
     { "page": "usage/Interactive-Rebase.md", "summary": "Reorder, reword, squash, edit and drop commits before you share them." },
     { "page": "usage/Worktrees.md", "summary": "Check out several branches of one repository in separate folders." },
+    { "page": "usage/AI-Agents.md", "summary": "Run AI coding agents in your worktrees from the AI panel and see what each one is doing." },
+    { "page": "usage/AI-Tasks.md", "summary": "Work on several branches of one project at once: a task per worktree, agents racing, ready to run." },
+    { "page": "usage/AI-Usage.md", "summary": "See how much of Claude Code's and Codex's 5-hour and weekly limits you used, in the status bar." },
+    { "page": "usage/Keep-Computer-Awake.md", "summary": "Keep the screen on and the computer from sleeping while AI agents work: On, Agent or Off." },
     { "page": "usage/Submodules.md", "summary": "Repositories inside a repository: see their changes and init, update, add or remove them." },
     { "page": "usage/Git-LFS.md", "summary": "Large files stored with Git LFS: badges, sizes in diffs, track patterns, pull and prune." },
     { "page": "usage/GitHub.md", "summary": "Sign in to GitHub to share a project, sync a fork and create gists." },
@@ -106,6 +110,7 @@
     { "page": "developer/Debugging.md", "summary": "Web view devtools, Rust logs, reading IPC errors and common dead ends." },
     { "page": "developer/Debugging-with-MCP.md", "summary": "Inspect, measure and drive the running app with the MCP tools and git-manager cli." },
     { "page": "developer/Measuring-Setting-Memory.md", "summary": "How the memory cost of each setting was measured, the results, and the marks in Settings." },
+    { "page": "developer/How-Terminal-Memory-Is-Measured.md", "summary": "The Terminals rows in the memory details: each shell's process tree, summed per terminal." },
     { "page": "developer/How-Markdown-Diagrams-Work.md", "summary": "Mermaid diagrams in a hidden frame that leaves memory with the last document." },
     { "page": "developer/Releases-and-CI.md", "summary": "CI, the beta and stable release workflows, and the wiki deploy." },
     { "page": "developer/Versioning-and-Changelog.md", "summary": "Where the version lives, the changelog rules and scripts/version.ts." },
@@ -405,6 +410,34 @@
       "screenshots": ["worktrees-section.png", "worktrees-new-dialog.png"]
     },
     {
+      "id": "ai-agents",
+      "title": "AI agents",
+      "usage": "usage/AI-Agents.md",
+      "developer": "developer/How-the-AI-Panel-Works.md",
+      "screenshots": ["ai-panel.png", "ai-new-tab.png", "ai-permission.png", "ai-settings.png", "ai-agent-command.png"]
+    },
+    {
+      "id": "ai-usage",
+      "title": "AI usage",
+      "usage": "usage/AI-Usage.md",
+      "developer": "developer/How-AI-Usage-Works.md",
+      "screenshots": ["ai-usage.png"]
+    },
+    {
+      "id": "keep-awake",
+      "title": "Keep computer awake",
+      "usage": "usage/Keep-Computer-Awake.md",
+      "developer": "developer/How-Keep-Awake-Works.md",
+      "screenshots": ["keep-awake.png"]
+    },
+    {
+      "id": "ai-tasks",
+      "title": "AI tasks",
+      "usage": "usage/AI-Tasks.md",
+      "developer": "developer/How-AI-Tasks-Work.md",
+      "screenshots": ["ai-new-task.png"]
+    },
+    {
       "id": "submodules",
       "title": "Submodules",
       "usage": "usage/Submodules.md",
@@ -507,7 +540,7 @@
       "title": "Memory readout and memory log",
       "usage": "usage/Memory-Use.md",
       "developer": "developer/How-Memory-Is-Measured.md",
-      "screenshots": ["memory-log-settings.png", "settings-memory-flags.png"]
+      "screenshots": ["memory-log-settings.png", "settings-memory-flags.png", "memory-terminals.png"]
     },
     {
       "id": "clear-cache",

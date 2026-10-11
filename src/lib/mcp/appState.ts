@@ -1,5 +1,6 @@
 // get_app_state and list_terminals: what the window shows now, read from the stores.
 
+import { usageStore } from "$lib/ai/usageStore.svelte";
 import { isBranchTab } from "$lib/stores/branchTabs";
 import { isCompareTab } from "$lib/compare/compareTabs";
 import { isCommitTab } from "$lib/stores/commitTabs";
@@ -174,7 +175,10 @@ export function appState(): Record<string, unknown> {
     shownView,
     diffSelection: shownView === "diff" ? changesSelection.selected : null,
     leftPanel: settings.leftPanel,
-    filesPanelOpen: settings.explorerOpen,
+    filesPanelOpen: settings.filesPanelShown,
+    aiPanelOpen: settings.aiPanelShown,
+    /** The AI agents' rate-limit usage as the status bar has it (empty when it is hidden). */
+    aiUsage: usageStore.usages,
     bottomPanel: { open: terminalStore.panelOpen, tab: terminalStore.panelTab },
     terminals: terminalStore.terminals.map(terminalInfo),
     theme: settings.theme,

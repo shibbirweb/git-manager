@@ -131,4 +131,7 @@ Create Gist reads the active editor's selection, or the whole document, from Cod
 
 ## Bugs we fixed
 
-None yet.
+**The app quit on any GitHub request with a token.**
+- **The issue:** signing in with a token, Share Project, Sync Fork or Create Gist closed the whole app.
+- **Why it happened:** `Cargo.toml` turned on ureq's `native-tls-no-default` feature, but ureq checks for the exact name `native-tls` before every HTTPS request and panics without it; the release build's `panic = "abort"` turned that into a quit. The tests used plain HTTP, so they never reached the check.
+- **The fix and why we chose it:** the `native-tls` feature, which passes the check (it also brings a set of root certificates; the transport still verifies against the system's roots). `ureq_transport_reaches_https_without_panicking` sends HTTPS to a local non-TLS listener and expects an error; it fails with the old feature.

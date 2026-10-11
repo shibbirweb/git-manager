@@ -36,6 +36,7 @@ src/
     ├── App.svelte          the shell: Welcome, Workspace or the mergetool window
     ├── api.ts              one typed wrapper per Tauri command, plus event listeners
     ├── types.ts            TypeScript mirrors of the Rust DTOs (camelCase)
+    ├── ai/                 the AI panel: projects, worktrees, agent tabs and their status
     ├── stores/             app state: repo, settings, tabs, navigation, paths
     │   ├── pseudoTabs.ts   tabs that are not files: commits, Git views, branches, terminals
     │   ├── commitTabs.ts, gitTabs.ts, branchTabs.ts   pseudo tab paths for each kind
@@ -97,7 +98,7 @@ src-tauri/
     ├── commands/           Tauri commands by area: workspace, repo, status, merge, branch,
     │                       branch_actions, integrate, rebase, remote, patch, tag, history, stash,
     │                       shelf, ignore, worktree, submodule, lfs, files, search, scripts,
-    │                       terminal, console, mcp, config
+    │                       terminal, console, mcp, config, ai
     │   ├── mod.rs          blocking(), OpOutcome, safe_join(), with_paths(), reject_option()
     │   ├── commit_options.rs   sign-off, author, GPG and skip hooks as git commit arguments
     │   ├── rebase_merges.rs    interactive rebase todo that keeps merge commits
@@ -135,6 +136,7 @@ src-tauri/
     ├── config.rs           ~/.gitmanager/settings.json and state.json, atomic writes
     ├── workspace_file.rs   .gitmanager-workspace and .code-workspace files
     ├── memory.rs           memory readout for the status bar (macOS)
+    ├── terminal_memory.rs  each terminal's memory: its shell and what it started
     └── test_support.rs     temporary repositories with an isolated git config
 ```
 

@@ -30,6 +30,8 @@ export interface MenuInputs {
   editorGroups?: EditorGroupInputs;
   leftPanel: LeftPanel;
   explorerOpen: boolean;
+  /** The right sidebar shows the AI panel. */
+  aiPanelOpen?: boolean;
   leftBarVisible: boolean;
   rightBarVisible: boolean;
   terminalOpen: boolean;
@@ -216,6 +218,9 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["view.scripts"] = { enabled: workspace, checked: workspace && inputs.leftPanel === "scripts" };
   state["view.log"] = { enabled: workspace, checked: workspace && (inputs.logShown ?? inputs.shownView === "log") };
   state["view.filesPanel"] = { enabled: workspace, checked: workspace && inputs.explorerOpen };
+  state["view.aiPanel"] = { enabled: workspace, checked: workspace && (inputs.aiPanelOpen ?? false) };
+  state["view.aiNewAgent"] = { enabled: workspace };
+  state["view.aiNewTask"] = { enabled: workspace && inputs.repo !== null };
   state["view.sidebar"] = { enabled: workspace, checked: workspace && inputs.leftPanel !== null };
   state["view.leftActivityBar"] = { enabled: workspace, checked: workspace && inputs.leftBarVisible };
   state["view.rightActivityBar"] = { enabled: workspace, checked: workspace && inputs.rightBarVisible };
