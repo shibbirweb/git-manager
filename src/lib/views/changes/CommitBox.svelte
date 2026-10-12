@@ -449,7 +449,8 @@
     min-width: 0;
     max-width: 70%;
     height: 24px;
-    padding: 0 4px;
+    padding: 0 22px 0 4px;
+    --select-arrow-inset: 6px;
     font-weight: 600;
   }
 

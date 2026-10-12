@@ -362,6 +362,35 @@ textarea.input:focus {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
+/* WebKit draws a native select's arrow on the right border and ignores the padding, so selects draw a chevron
+   inside the padding instead, like the library's Select: two diagonal strokes in the dim text color. */
+select.input {
+  --select-arrow-inset: 8px;
+  padding-right: 28px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 0.6px),
+      var(--text-dim) calc(50% - 0.6px),
+      var(--text-dim) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    ),
+    linear-gradient(
+      -45deg,
+      transparent calc(50% - 0.6px),
+      var(--text-dim) calc(50% - 0.6px),
+      var(--text-dim) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    );
+  background-position:
+    right calc(var(--select-arrow-inset) + 6px) center,
+    right calc(var(--select-arrow-inset) + 3px) center;
+  background-size: 3px 3px;
+  background-repeat: no-repeat;
+}
+
 textarea.input {
   height: auto;
   padding: 6px 8px;

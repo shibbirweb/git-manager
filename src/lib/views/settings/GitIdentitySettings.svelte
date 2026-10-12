@@ -274,7 +274,8 @@
   .repo-select {
     height: 24px;
     max-width: 240px;
-    padding: 0 4px;
+    padding: 0 22px 0 4px;
+    --select-arrow-inset: 6px;
   }
 
   .fields {

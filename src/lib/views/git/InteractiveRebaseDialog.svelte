@@ -376,7 +376,8 @@
 
   .action {
     height: 24px;
-    padding: 0 4px;
+    padding: 0 22px 0 4px;
+    --select-arrow-inset: 6px;
     font-size: 12px;
   }
 
