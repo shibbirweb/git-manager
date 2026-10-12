@@ -1,10 +1,12 @@
 <!-- A multi-line text field, like the commit message box. -->
 <script lang="ts">
   import type { HTMLTextareaAttributes } from "svelte/elements";
+  import { type TextRows } from "../logic/presets";
+  import { scales } from "../styles/tokens";
 
-  interface Props extends Omit<HTMLTextareaAttributes, "class" | "style"> {
+  interface Props extends Omit<HTMLTextareaAttributes, "class" | "style" | "rows"> {
     value?: string;
-    rows?: number;
+    rows?: TextRows;
     resize?: "none" | "vertical";
     invalid?: boolean;
     mono?: boolean;
@@ -13,7 +15,7 @@
 
   let {
     value = $bindable(""),
-    rows = 3,
+    rows = "normal",
     resize = "none",
     invalid = false,
     mono = false,
@@ -25,7 +27,7 @@
 <textarea
   bind:this={element}
   bind:value
-  {rows}
+  rows={scales.textRows[rows]}
   class="input"
   class:invalid
   class:mono
@@ -57,7 +59,10 @@
     border-color: var(--danger);
   }
 
+  /* Code-like text, such as a commit message template: 12px mono. */
   .mono {
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-normal);
     font-family: var(--font-mono);
   }
 </style>

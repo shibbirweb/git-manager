@@ -61,7 +61,7 @@
   }
 
   .switch:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    outline-offset: 2px;
+    outline: var(--border-width-focus) solid color-mix(in srgb, var(--accent) 45%, transparent);
+    outline-offset: var(--space-1);
   }
 </style>

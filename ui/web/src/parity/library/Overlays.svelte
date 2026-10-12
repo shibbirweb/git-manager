@@ -2,7 +2,8 @@
 <script lang="ts">
   import Breadcrumbs from "$ui/components/Breadcrumbs.svelte";
   import Collapsible from "$ui/components/Collapsible.svelte";
-  import ConfirmDialog from "$ui/components/ConfirmDialog.svelte";
+  import Dialog from "$ui/components/Dialog.svelte";
+  import Button from "$ui/components/Button.svelte";
   import ListRow from "$ui/components/ListRow.svelte";
   import Menu from "$ui/components/Menu.svelte";
   import Popover from "$ui/components/Popover.svelte";
@@ -17,7 +18,13 @@
 </script>
 
 {#if id === "dialog"}
-  <ConfirmDialog open title="Discard all changes?" message="This cannot be undone." onconfirm={run} />
+  <Dialog open title="Discard all changes?" onclose={run}>
+    <Text tone="dim">This cannot be undone.</Text>
+    {#snippet actions()}
+      <Button onclick={run}>Cancel</Button>
+      <Button variant="primary" onclick={run}>OK</Button>
+    {/snippet}
+  </Dialog>
 {:else if id === "menu"}
   <Menu
     x={760}
@@ -34,7 +41,7 @@
   />
 {:else if id === "popover"}
   <Stack direction="row">
-    <Popover open label="Keep computer awake" width={256} textSize="small">
+    <Popover open label="Keep computer awake" width="small" textSize="small">
       {#snippet trigger()}<span></span>{/snippet}
       Keep computer awake
     </Popover>
@@ -63,7 +70,7 @@
 {:else if id === "tree-row"}
   <Tree
     label="Files"
-    height={48}
+    height="small"
     expanded={["src"]}
     selected="src"
     focused={false}

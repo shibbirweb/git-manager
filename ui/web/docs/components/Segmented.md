@@ -20,6 +20,9 @@ a description.
 - `value` (`T extends string`, required, bindable): The chosen value.
 - `label` (`string`, required): Accessible name of the group.
 - `disabled` (`boolean`, default `false`): Disables every choice.
+- `variant` (`"pill" | "joined" | "split"`, default `"pill"`): A tray with a raised choice; buttons joined in a box; or
+  equal parts filling the width.
+- `size` (`"normal" | "small"`, default `"normal"`): Small: narrow icon segments, like a file bar's view modes.
 - `onchange` (`(value: T) => void`): Called when the user picks another choice.
 
 ## Example: A setting

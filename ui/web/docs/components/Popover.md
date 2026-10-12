@@ -18,8 +18,9 @@ Use for details or a few choices next to a control. Use Menu for a list of comma
 - `label` (`string`, required): Accessible name of the panel.
 - `placement` (`"above" | "below"`, default `"below"`): Which side of the trigger; above in the status bar.
 - `align` (`"start" | "end"`, default `"start"`): Which edge of the trigger it lines up with.
-- `width` (`number | null`, default `null`): Width in px; null fits the content.
-- `padding` (`"menu" | "panel"`, default `"menu"`): 4px for menu-like lists, 12 by 14px for detail panels.
+- `width` (`"auto" | "small" | "medium" | "large"`, default `"auto"`): Fits the content, or 256, 300 or 360 px.
+- `padding` (`"menu" | "panel" | "form"`, default `"menu"`): 4px for menu-like lists, 12 by 14px for detail panels, 12px
+  and a column of fields for a small form (Commit Options).
 - `textSize` (`"normal" | "small"`, default `"normal"`): Small (12px) for the status bar's popovers.
 - `trigger` (`Snippet<[{ toggle: () => void; open: boolean }]>`, required): The button that opens it.
 - `children` (`Snippet`, required): The panel's content.

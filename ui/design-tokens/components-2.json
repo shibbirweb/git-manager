@@ -1,0 +1,24 @@
+{
+  "$comment": [
+    "More component measurements, read together with components.json (one file would pass 300 lines).",
+    "The same rules apply: \"{group.name}\" refers to a token, numbers are points."
+  ],
+  "bulletList": {"indent": 18},
+  "fontSample": {"paddingY": 10, "paddingX": 12},
+  "table": {"rowHeight": 28, "paddingX": 10, "gap": 8},
+  "popupRow": {"paddingY": 4, "paddingX": 8, "gap": 8, "iconColumn": 16, "chevronColumn": 14, "hintMaxWidth": 200},
+  "optionList": {
+    "height": 236, "padding": 4, "optionPaddingY": 3, "optionPaddingX": 6, "optionGap": 8, "groupPaddingTop": 6,
+    "groupPaddingX": 6, "groupPaddingBottom": 3
+  },
+  "dragGhost": {"maxWidth": 260, "paddingY": 3, "paddingX": 8, "offsetX": 14, "offsetY": 10},
+  "renameField": {"height": 20, "paddingX": 4, "radius": 3},
+  "cornerCard": {"inset": 12, "paddingY": 6, "paddingRight": 6, "paddingLeft": 12, "gap": 8},
+  "splitGrid": {"splitterLayer": 20},
+  "paneRow": {"focusLine": 1},
+  "crumbPopup": {
+    "fieldHeight": 28, "fieldPaddingX": 8, "gap": 6, "listPadding": 3, "rowHeight": 24, "rowPaddingX": 6,
+    "iconWidth": 16
+  },
+  "splitHandle": {"width": 7, "line": 3, "layer": 5}
+}

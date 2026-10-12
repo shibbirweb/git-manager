@@ -161,7 +161,25 @@ public enum GMColor {
 }
 
 public enum GMShadows {
-    public static let popup = GMShadow(x: 0, y: 8, blur: 28, light: GMRGBA(0, 0, 0, 0.16), dark: GMRGBA(0, 0, 0, 0.5))
-    public static let segment = GMShadow(x: 0, y: 1, blur: 2, light: GMRGBA(0, 0, 0, 0.14), dark: GMRGBA(0, 0, 0, 0.14))
-    public static let knob = GMShadow(x: 0, y: 1, blur: 2, light: GMRGBA(0, 0, 0, 0.25), dark: GMRGBA(0, 0, 0, 0.25))
+    public static let popup = GMShadow(
+        x: 0, y: 8, blur: 28, light: GMRGBA(0, 0, 0, 0.16), dark: GMRGBA(0, 0, 0, 0.5))
+    public static let segment = GMShadow(
+        x: 0, y: 1, blur: 2, light: GMRGBA(0, 0, 0, 0.14), dark: GMRGBA(0, 0, 0, 0.14))
+    public static let knob = GMShadow(
+        x: 0, y: 1, blur: 2, light: GMRGBA(0, 0, 0, 0.25), dark: GMRGBA(0, 0, 0, 0.25))
+    public static let lifted = GMShadow(
+        x: 0, y: 16, blur: 48, light: GMRGBA(0, 0, 0, 0.32), dark: GMRGBA(0, 0, 0, 0.32))
+}
+
+public enum GMPalette {
+    public static let graphLane: [GMRGBA] = [
+        GMRGBA(74, 138, 244, 1),
+        GMRGBA(224, 96, 79, 1),
+        GMRGBA(58, 165, 93, 1),
+        GMRGBA(217, 162, 27, 1),
+        GMRGBA(164, 110, 232, 1),
+        GMRGBA(31, 177, 181, 1),
+        GMRGBA(226, 99, 159, 1),
+        GMRGBA(232, 136, 58, 1),
+    ]
 }

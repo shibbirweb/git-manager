@@ -15,7 +15,7 @@ Use beside a label while something loads or runs. Use ProgressBar when the share
 ## Props
 
 - `label` (`string`, default `"Loading"`): What is loading, read by screen readers.
-- `size` (`"normal" | "large"`, default `"normal"`): Normal is 12px; large is twice that, for empty panels.
+- `size` (`"small" | "normal" | "large"`, default `"normal"`): 10, 12 or 18 px; large for loading cards.
 
 ## Example: Loading
 

@@ -10,6 +10,10 @@
     icon: IconName;
     label: string;
     badge?: number;
+    /** Something new in the panel: a small accent dot, for panels without a count. */
+    dot?: boolean;
+    /** A glyph that looks big at the bar's size (play) is drawn a step smaller. */
+    smallIcon?: boolean;
   }
 
   interface Props {
@@ -40,7 +44,10 @@
           onselect?.(item.id);
         }}
       >
-        <Icon name={item.icon} size={20} />
+        <Icon name={item.icon} size={item.smallIcon ? "xlarge" : "activity"} stroke="light" />
+        {#if item.dot}
+          <span class="dot" aria-hidden="true"></span>
+        {/if}
         {#if item.badge}
           <span class="badge"><Badge count={item.badge} /></span>
         {/if}
@@ -94,17 +101,17 @@
   .item.active::before {
     content: "";
     position: absolute;
-    top: 8px;
-    bottom: 8px;
-    left: -4px;
+    top: var(--space-4);
+    bottom: var(--space-4);
+    left: calc(var(--space-2) * -1);
     width: var(--activity-bar-indicator);
-    border-radius: 2px;
+    border-radius: var(--radius-tiny);
     background: var(--accent);
   }
 
   .right .item.active::before {
     left: auto;
-    right: -4px;
+    right: calc(var(--space-2) * -1);
   }
 
   .spacer {
@@ -114,7 +121,18 @@
   .badge {
     position: absolute;
     right: 1px;
-    bottom: 3px;
+    bottom: var(--activity-bar-badge-bottom);
     display: flex;
+  }
+
+  .dot {
+    position: absolute;
+    top: var(--activity-bar-dot-inset);
+    right: var(--activity-bar-dot-inset);
+    width: var(--activity-bar-dot);
+    height: var(--activity-bar-dot);
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 var(--activity-bar-dot-ring) var(--panel-alt);
   }
 </style>

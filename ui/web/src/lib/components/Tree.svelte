@@ -1,11 +1,13 @@
 <!-- A file-tree style list: folders open and close, rows indent by depth, and only rows in view are drawn. Click
-     selects, double-click or Enter opens a file, arrow keys move like the Files panel. -->
+     selects (Cmd and Shift add with `multiple`), double-click or Enter opens a file, arrow keys move like the Files
+     panel. Rows can carry a decoration, be renamed in place, and be dragged onto folders. -->
 <script lang="ts" generics="N extends TreeNode">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
-  import { treeKey, treeRows, type TreeNode } from "../logic/treeModel";
-  import { componentTokens } from "../styles/tokens";
-  import Icon from "./Icon.svelte";
+  import type { ViewHeight } from "../logic/presets";
+  import { treeKey, treeRows, type TreeDecoration, type TreeNode } from "../logic/treeModel";
+  import { modifiersOf, selectRow } from "../logic/treeSelect";
+  import TreeRow from "./TreeRow.svelte";
   import VirtualList from "./VirtualList.svelte";
 
   interface Props {
@@ -13,11 +15,20 @@
     label: string;
     expanded?: string[];
     selected?: string | null;
+    multiple?: boolean;
+    selection?: string[];
     focused?: boolean;
-    height?: "fill" | number;
+    height?: ViewHeight;
+    renaming?: string | null;
+    draggable?: boolean;
+    /** A drop into the tree's top folder: the whole list is outlined. */
+    dropRoot?: boolean;
     iconFor?: (node: N, open: boolean) => IconName | null;
+    decorate?: (node: N) => TreeDecoration | null;
     detail?: Snippet<[N]>;
     onopen?: (node: N) => void;
+    onrename?: (node: N, name: string) => void;
+    ondrop?: (ids: string[], target: N) => void;
     oncontextmenu?: (node: N, event: MouseEvent) => void;
   }
 
@@ -26,34 +37,56 @@
     label,
     expanded = $bindable([]),
     selected = $bindable(null),
+    multiple = false,
+    selection = $bindable([]),
     focused = true,
     height = "fill",
+    renaming = $bindable(null),
+    draggable = false,
+    dropRoot = false,
     iconFor = (node: N) => (node.children ? "folder" : "file"),
+    decorate = () => null,
     detail,
     onopen,
+    onrename,
+    ondrop,
     oncontextmenu,
   }: Props = $props();
 
   const rows = $derived(treeRows(nodes, new Set(expanded)));
+  const order = $derived(rows.map((row) => row.node.id));
   const selectedIndex = $derived(rows.findIndex((row) => row.node.id === selected));
+  let anchor: string | null = null;
+  let dropOn = $state<string | null>(null);
+
+  const isSelected = (id: string) => (multiple ? selection.includes(id) : id === selected);
 
   function setOpen(id: string, open: boolean): void {
     expanded = open ? [...expanded.filter((entry) => entry !== id), id] : expanded.filter((entry) => entry !== id);
   }
 
+  function click(id: string, event: MouseEvent): void {
+    selected = id;
+    if (multiple) {
+      const next = selectRow(order, { ids: selection, anchor }, id, modifiersOf(event));
+      selection = next.ids;
+      anchor = next.anchor;
+    }
+  }
+
   function activate(index: number): void {
     const row = rows[index];
-    if (!row) {
-      return;
-    }
-    if (row.isFolder) {
+    if (row?.isFolder) {
       setOpen(row.node.id, !row.expanded);
-    } else {
+    } else if (row) {
       onopen?.(row.node);
     }
   }
 
   function onkeydown(event: KeyboardEvent): void {
+    if (renaming !== null) {
+      return;
+    }
     const action = treeKey(rows, selectedIndex, event.key);
     if (!action) {
       return;
@@ -61,6 +94,7 @@
     event.preventDefault();
     if (action.kind === "select") {
       selected = rows[action.index]?.node.id ?? selected;
+      selection = multiple && selected ? [selected] : selection;
     } else if (action.kind === "expand" || action.kind === "collapse") {
       setOpen(action.id, action.kind === "expand");
     } else {
@@ -70,55 +104,78 @@
       }
     }
   }
+
+  function dragged(event: DragEvent, id: string): void {
+    const ids = multiple && selection.includes(id) ? selection : [id];
+    event.dataTransfer?.setData("application/x-gm-tree", JSON.stringify(ids));
+  }
+
+  function dropped(event: DragEvent, node: N): void {
+    dropOn = null;
+    const raw = event.dataTransfer?.getData("application/x-gm-tree");
+    if (raw && node.children) {
+      event.preventDefault();
+      ondrop?.(JSON.parse(raw) as string[], node);
+    }
+  }
 </script>
 
-<div class="tree" role="tree" aria-label={label} tabindex="0" {onkeydown}>
-  <VirtualList
-    items={rows}
-    rowHeight={componentTokens.tree.rowHeight}
-    {label}
-    keepInView={selectedIndex >= 0 ? selectedIndex : null}
-    {height}
-  >
+<div
+  class="tree"
+  class:drop-root={dropRoot}
+  role="tree"
+  aria-label={label}
+  aria-multiselectable={multiple}
+  tabindex="0"
+  {onkeydown}
+>
+  <VirtualList items={rows} {label} keepInView={selectedIndex >= 0 ? selectedIndex : null} {height}>
     {#snippet row(entry, index)}
-      {@const icon = iconFor(entry.node, entry.expanded)}
-      <div
-        class="row"
-        class:selected={entry.node.id === selected}
-        class:focused
-        role="treeitem"
-        aria-level={entry.depth + 1}
-        aria-expanded={entry.isFolder ? entry.expanded : undefined}
-        aria-selected={entry.node.id === selected}
-        tabindex="-1"
-        style:padding-left="calc(var(--tree-indent) + {entry.depth} * var(--tree-indent-step))"
-        onclick={() => (selected = entry.node.id)}
+      <TreeRow
+        row={entry}
+        icon={iconFor(entry.node, entry.expanded)}
+        selected={isSelected(entry.node.id)}
+        focused={focused && entry.node.id === selected}
+        decoration={decorate(entry.node)}
+        renaming={renaming === entry.node.id}
+        {draggable}
+        dropTarget={dropOn === entry.node.id}
+        {detail}
+        onclick={(event) => click(entry.node.id, event)}
         ondblclick={() => activate(index)}
         oncontextmenu={(event) => {
-          selected = entry.node.id;
+          if (!isSelected(entry.node.id)) {
+            click(entry.node.id, new MouseEvent("click"));
+          }
           oncontextmenu?.(entry.node, event);
         }}
-        onkeydown={() => undefined}
-      >
-        <span class="chevron">
-          {#if entry.isFolder}
-            <Icon name={entry.expanded ? "chevron-down" : "chevron-right"} size={12} />
-          {/if}
-        </span>
-        {#if icon}
-          <Icon name={icon} size={14} />
-        {/if}
-        <span class="name">{entry.node.label}</span>
-        {#if detail}
-          <span class="detail">{@render detail(entry.node)}</span>
-        {/if}
-      </div>
+        onrename={(name) => {
+          renaming = null;
+          if (name && name !== entry.node.label) {
+            onrename?.(entry.node, name);
+          }
+        }}
+        ondragstart={(event) => dragged(event, entry.node.id)}
+        ondragover={(event) => {
+          if (draggable && entry.isFolder) {
+            event.preventDefault();
+            dropOn = entry.node.id;
+          }
+        }}
+        ondrop={(event) => dropped(event, entry.node)}
+      />
     {/snippet}
   </VirtualList>
 </div>
 
 <style>
+  .tree.drop-root {
+    box-shadow: inset 0 0 0 1px var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
   .tree {
+    padding: var(--tree-padding-y) 0;
     flex: 1;
     width: 100%;
     display: flex;
@@ -126,48 +183,5 @@
     min-width: 0;
     min-height: 0;
     outline: none;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    gap: var(--tree-gap);
-    height: var(--tree-row-height);
-    padding-right: var(--tree-padding-right);
-    cursor: default;
-    white-space: nowrap;
-    outline: none;
-  }
-
-  .row:hover {
-    background: var(--hover);
-  }
-
-  .row.selected {
-    background: var(--selected-inactive);
-  }
-
-  .tree:focus-within .row.selected.focused {
-    background: var(--selected);
-  }
-
-  .chevron {
-    flex: none;
-    display: flex;
-    width: var(--tree-chevron);
-    color: var(--text-dim);
-  }
-
-  .name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .detail {
-    flex: none;
-    margin-left: auto;
-    color: var(--text-faint);
-    font-size: var(--font-size-small);
   }
 </style>

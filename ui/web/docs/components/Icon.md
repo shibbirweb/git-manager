@@ -15,8 +15,10 @@ Use inside buttons, rows and labels. Color it with `tone`; never hard-code a col
 ## Props
 
 - `name` (`IconName`, required): Which icon; the preview lists them all.
-- `size` (`number`, default `16`): Width and height in px.
-- `strokeWidth` (`number`, default `2`): Line width on the 24px grid.
+- `size` (`IconSize`, default `"large"`): A named size: xxsmall 9, xsmall 10, small 11, compact 12, medium 13, normal
+  14, regular 15, large 16, xlarge 18, activity 19, xxlarge 20, emphasis 22, huge 24, logo 26, giant 28, display 34 px.
+- `stroke` (`"thin" | "light" | "normal" | "bold"`, default `"normal"`): Line weight 1.5, 1.8, 2 or 2.6: light for
+  activity bars, thin for big empty-state art, bold for small marks such as a check.
 - `tone` (`"inherit" | "default" | "dim" | "faint" | "accent" | "danger" | "success" | "warning"`, default `"inherit"`):
   Color from the theme; inherit takes the parent's text color.
 

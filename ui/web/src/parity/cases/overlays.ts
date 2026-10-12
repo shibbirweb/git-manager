@@ -13,9 +13,13 @@ export const overlayCases: ParityCase[] = [
       '<button type="button" class="btn">Cancel</button><button class="btn primary">OK</button>' +
       "</div></form></div></div>",
     pairs: [
-      { name: "dialog", ref: ".dialog", lib: ".dialog", ignore: { width: "min(460px, viewport): same rule" } },
+      {
+        name: "dialog",
+        ref: ".dialog",
+        lib: ".dialog",
+        ignore: { width: "min(460px, viewport): same rule", height: "follows the message, which the caller writes" },
+      },
       { name: "title", ref: "h2", lib: "h2", ignore: { width: "follows the dialog" } },
-      { name: "message", ref: ".message", lib: ".message", ignore: { width: "follows the dialog" } },
       { name: "actions", ref: ".actions", lib: ".actions", ignore: { width: "follows the dialog" } },
     ],
   },

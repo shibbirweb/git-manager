@@ -39,7 +39,7 @@
   onmousemove={() => onhover?.()}
 >
   {#if icon}
-    <Icon name={icon} size={14} />
+    <Icon name={icon} size="normal" />
   {/if}
   <span class="label">{label}</span>
   {#if description}

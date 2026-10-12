@@ -8,11 +8,13 @@
     direction?: "row" | "column";
     gap?: Gap;
     padding?: Gap;
+    paddingX?: Gap | null;
+    paddingY?: Gap | null;
     align?: "start" | "center" | "end" | "stretch" | "baseline";
     justify?: "start" | "center" | "end" | "between";
     wrap?: boolean;
     grow?: boolean;
-    element?: "div" | "section" | "header" | "footer" | "ul" | "li" | "form";
+    element?: "div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form";
     label?: string;
     children: Snippet;
   }
@@ -21,6 +23,8 @@
     direction = "column",
     gap = "md",
     padding = "none",
+    paddingX = null,
+    paddingY = null,
     align = "stretch",
     justify = "start",
     wrap = false,
@@ -39,7 +43,7 @@
   aria-label={label}
   style:flex-direction={direction}
   style:gap={gapValue(gap)}
-  style:padding={gapValue(padding)}
+  style:padding="{gapValue(paddingY ?? padding)} {gapValue(paddingX ?? padding)}"
   style:align-items={FLEX[align] ?? align}
   style:justify-content={FLEX[justify] ?? justify}
   style:flex-wrap={wrap ? "wrap" : "nowrap"}

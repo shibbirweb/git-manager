@@ -12,6 +12,11 @@ export interface PropDoc {
   required?: boolean;
   /** `bind:value` works. */
   bindable?: boolean;
+  /**
+   * The prop carries data (a count, a value, a position, a size the user dragged), not design. Only data props may
+   * be numbers; every design choice (size, width, height, color, style) is a named preset.
+   */
+  data?: boolean;
   description: string;
 }
 

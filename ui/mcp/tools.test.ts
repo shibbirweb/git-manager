@@ -9,7 +9,7 @@ describe("the design-system tools", () => {
   });
 
   it("find components by words, aliases first", () => {
-    expect(searchComponents("confirm")[0]?.name).toBe("ConfirmDialog");
+    expect(searchComponents("modal")[0]?.name).toBe("Dialog");
     expect(searchComponents("toggle group").map((entry) => entry.name)).toContain("Segmented");
     expect(searchComponents("nothing like this")).toEqual([]);
   });

@@ -28,7 +28,7 @@
           <Button size="small" onclick={() => onaction?.(item.id)}>{item.action.label}</Button>
         </span>
       {/if}
-      <IconButton icon="x" label="Dismiss" size="small" iconSize={14} onclick={() => ondismiss(item.id)} />
+      <IconButton icon="x" label="Dismiss" size="small" iconSize="normal" onclick={() => ondismiss(item.id)} />
     </div>
   {/each}
 </div>
@@ -78,11 +78,11 @@
   }
 
   .detail {
-    margin: 4px 0 0;
-    max-height: 160px;
+    margin: var(--space-2) 0 0;
+    max-height: var(--toast-detail-max-height);
     overflow: auto;
     font-family: var(--font-mono);
-    font-size: 11.5px;
+    font-size: var(--font-size-compact);
     white-space: pre-wrap;
     word-break: break-word;
     color: var(--text-dim);

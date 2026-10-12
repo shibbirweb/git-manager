@@ -6,14 +6,17 @@
     title: string;
     hint?: string;
     stacked?: boolean;
+    nested?: boolean;
+    /** Plain: no line between rows and a regular label, like the welcome screen's Customize page. */
+    plain?: boolean;
     hintContent?: Snippet;
     children: Snippet;
   }
 
-  let { title, hint = "", stacked = false, hintContent, children }: Props = $props();
+  let { title, hint = "", stacked = false, nested = false, plain = false, hintContent, children }: Props = $props();
 </script>
 
-<div class="row" class:stacked>
+<div class="row" class:stacked class:nested class:plain>
   <div class="label">
     <span class="title">{title}</span>
     {#if hintContent}
@@ -26,6 +29,11 @@
 </div>
 
 <style>
+  /* A setting that belongs to the one above it. */
+  .nested {
+    padding-left: var(--setting-row-nested-indent);
+  }
+
   .row {
     display: flex;
     align-items: center;
@@ -39,6 +47,16 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--setting-row-stacked-gap);
+  }
+
+  .plain {
+    min-height: var(--setting-row-plain-min-height);
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .plain .title {
+    font-weight: var(--font-weight-regular);
   }
 
   .label {

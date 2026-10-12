@@ -1,11 +1,14 @@
 <!-- A single-line text field. Invalid draws a red border; pair it with Field to show the message. -->
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
+  import { controlWidth, type ControlWidth } from "../logic/presets";
 
   interface Props extends Omit<HTMLInputAttributes, "class" | "style"> {
     value?: string;
     invalid?: boolean;
     mono?: boolean;
+    width?: ControlWidth;
+    suggestions?: string[];
     element?: HTMLInputElement | null;
   }
 
@@ -13,10 +16,14 @@
     value = $bindable(""),
     invalid = false,
     mono = false,
+    width = "auto",
+    suggestions = [],
     type = "text",
     element = $bindable(null),
     ...rest
   }: Props = $props();
+
+  const listId = $props.id();
 </script>
 
 <input
@@ -27,8 +34,17 @@
   class:invalid
   class:mono
   aria-invalid={invalid || undefined}
+  style:width={controlWidth(width)}
+  list={suggestions.length ? listId : undefined}
   {...rest}
 />
+{#if suggestions.length}
+  <datalist id={listId}>
+    {#each suggestions as suggestion (suggestion)}
+      <option value={suggestion}></option>
+    {/each}
+  </datalist>
+{/if}
 
 <style>
   .input {
@@ -57,10 +73,11 @@
   }
 
   .invalid:focus {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 25%, transparent);
+    box-shadow: 0 0 0 var(--input-focus-ring) color-mix(in srgb, var(--danger) 25%, transparent);
   }
 
   .mono {
     font-family: var(--font-mono);
+    font-size: var(--font-size-small);
   }
 </style>

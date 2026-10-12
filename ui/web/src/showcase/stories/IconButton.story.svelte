@@ -10,6 +10,7 @@
   <IconButton icon="pin" label="Pin" active={pinned} onclick={() => (pinned = !pinned)} />
   <IconButton icon="more" label="More actions" />
   <IconButton icon="plus" label="New terminal">New</IconButton>
-  <IconButton icon="x" label="Close" size="small" iconSize={12} />
+  <IconButton icon="x" label="Close" size="small" iconSize="compact" />
   <IconButton icon="trash" label="Delete" disabled />
+  <IconButton icon="copy" label="Copy path" size="tool" iconSize="compact" />
 </Stack>

@@ -9,7 +9,7 @@ export const feedbackDocs: ComponentDoc[] = [
     aliases: ["Spinner", "Loader"],
     props: [
       prop("label", "string", "What is loading, read by screen readers.", { default: '"Loading"' }),
-      prop("size", '"normal" | "large"', "Normal is 12px; large is twice that, for empty panels.", {
+      prop("size", '"small" | "normal" | "large"', "10, 12 or 18 px; large for loading cards.", {
         default: '"normal"',
       }),
     ],
@@ -23,9 +23,14 @@ export const feedbackDocs: ComponentDoc[] = [
     usage: "Use for counts on buttons and tabs. Use Tag for words.",
     aliases: ["Badge", "Counter"],
     props: [
-      prop("count", "number", "The number.", { required: true }),
-      prop("max", "number", "Above it, shows `max+`.", { default: "99" }),
-      prop("tone", '"accent" | "danger" | "neutral"', "Color: accent for counts, danger for conflicts.", {
+      prop("count", "number", "The number.", { required: true, data: true }),
+      prop("max", "number", "Above it, shows `max+`.", { default: "99", data: true }),
+      prop("size", '"small" | "normal" | "large" | "corner"', "14px (status bar), 16px, 17px with 11px text " +
+        "(group counts), or pinned to a button's corner.", {
+        default: '"normal"',
+      }),
+      prop("tone", '"accent" | "danger" | "warning" | "neutral" | "quiet"', "Color: accent for counts, danger " +
+        "for conflicts, warning for unread notices, quiet for a group's count.", {
         default: '"accent"',
       }),
       prop("label", "string", "What the count means, e.g. `3 changes`; defaults to the number."),
@@ -40,9 +45,13 @@ export const feedbackDocs: ComponentDoc[] = [
     usage: "Use for a word of status next to a name. Use Badge for numbers.",
     aliases: ["Tag", "Chip", "Label"],
     props: [
+      prop("variant", '"fill" | "outline"', "Outline: a bordered kind label, such as submodule.", {
+        default: '"fill"',
+      }),
       prop("tone", '"neutral" | "accent" | "danger" | "success" | "warning"', "Color of the label.", {
         default: '"neutral"',
       }),
+      prop("size", '"normal" | "small"', "Small for tight rows, such as a file's LFS mark.", { default: '"normal"' }),
       prop("title", "string", "Tooltip."),
       prop("children", "Snippet", "The word.", { required: true }),
     ],
@@ -67,10 +76,12 @@ export const feedbackDocs: ComponentDoc[] = [
     usage: "Use when the share is known (0 to 1). Use Spinner while the amount is unknown.",
     aliases: ["Progress"],
     props: [
-      prop("value", "number", "The share, 0 to 1; out-of-range and NaN values are clamped.", { required: true }),
+      prop("value", "number", "The share, 0 to 1; out-of-range and NaN values are clamped.", {
+        required: true,
+        data: true,
+      }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("tone", '"accent" | "danger" | "warning" | "success"', "Fill color.", { default: '"accent"' }),
-      prop("minimum", "number", "Smallest drawn share, so tiny values stay visible.", { default: "0.02" }),
     ],
     examples: [{ title: "Memory share", code: '<ProgressBar value={bytes / total} label="Web content memory" />' }],
     replaces: ['<div class="bar"><div class="fill" style="width: ..."></div></div>'],
@@ -84,6 +95,9 @@ export const feedbackDocs: ComponentDoc[] = [
     aliases: ["Alert", "Banner", "Callout"],
     props: [
       prop("tone", '"danger" | "warning" | "info" | "success"', "Color and default icon.", { default: '"info"' }),
+      prop("variant", '"card" | "banner"', "A rounded card in a view, or a full-width bar at its top.", {
+        default: '"card"',
+      }),
       prop("icon", "IconName | null", "Another icon than the tone's.", { default: "null" }),
       prop("action", "Snippet", "A button on the right."),
       prop("children", "Snippet", "The message.", { required: true }),
@@ -108,6 +122,21 @@ export const feedbackDocs: ComponentDoc[] = [
       prop("title", "string", "What is empty.", { required: true }),
       prop("hint", "string", "What to do next.", { default: '""' }),
       prop("icon", "IconName | null", "An icon above the title.", { default: "null" }),
+      prop("iconStyle", '"plain" | "circle" | "large-circle"', "The icon alone, or on a round tinted badge.", {
+        default: '"plain"',
+      }),
+      prop("titleSize", '"normal" | "large"', "A larger title, as on a failed view.", { default: '"normal"' }),
+      prop("titleTone", '"default" | "danger"', "A red title for errors.", { default: '"default"' }),
+      prop("overlay", "boolean", "Covers its positioned parent, over the content.", { default: "false" }),
+      prop("iconTone", '"inherit" | "faint" | "accent" | "success"', "The icon's color; inherit takes the text's.", {
+        default: '"inherit"',
+      }),
+      prop("strong", "boolean", "A bold title.", { default: "false" }),
+      prop("variant", '"area" | "panel" | "notice" | "pane"',
+        "Area: centered in an editor or list. Panel: small text at a side panel's top, a big thin icon. Notice: " +
+        "panel in a dashed box, for something to set up. Pane: centered in a whole side panel (No git repository).", {
+        default: '"area"',
+      }),
       prop("action", "Snippet", "A button under the text."),
     ],
     examples: [
@@ -116,6 +145,10 @@ export const feedbackDocs: ComponentDoc[] = [
         code: '<EmptyState icon="stash" title="No stashes" hint="Stash changes to set them aside." />',
       },
     ],
-    replaces: ['<div class="placeholder">...</div>', '<div class="empty">...</div>'],
+    replaces: [
+      '<div class="placeholder">...</div>',
+      '<div class="empty">...</div>',
+      'the .empty and .notice blocks of src/lib/ai/AiPanel.svelte',
+    ],
   },
 ];

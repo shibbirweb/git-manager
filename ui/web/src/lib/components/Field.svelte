@@ -6,13 +6,14 @@
     label?: string;
     hint?: string;
     error?: string | null;
+    look?: "normal" | "compact";
     children: Snippet;
   }
 
-  let { label = "", hint = "", error = null, children }: Props = $props();
+  let { label = "", hint = "", error = null, look = "normal", children }: Props = $props();
 </script>
 
-<label class="field">
+<label class="field" class:compact={look === "compact"}>
   {#if label}
     <span>{label}</span>
   {/if}
@@ -29,6 +30,20 @@
     display: flex;
     flex-direction: column;
     gap: var(--field-gap);
+  }
+
+  /* The Git dialogs' fields: a smaller, dim label and a faint hint. */
+  .compact {
+    gap: var(--compact-field-gap);
+  }
+
+  .compact > span:first-child {
+    color: var(--text-dim);
+    font-size: var(--font-size-small);
+  }
+
+  .compact .hint {
+    color: var(--text-faint);
   }
 
   .error {

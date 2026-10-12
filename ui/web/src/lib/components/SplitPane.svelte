@@ -2,14 +2,14 @@
      width or height in px; the second pane takes the rest. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { PanelPreset } from "../logic/presets";
   import ResizeHandle from "./ResizeHandle.svelte";
 
   interface Props {
     direction?: "row" | "column";
     size: number;
-    min?: number;
+    preset?: PanelPreset;
     max?: number;
-    defaultSize?: number;
     label: string;
     oncommit?: (size: number) => void;
     first: Snippet;
@@ -19,9 +19,8 @@
   let {
     direction = "row",
     size = $bindable(),
-    min = 120,
+    preset = "pane",
     max = 800,
-    defaultSize = 260,
     label,
     oncommit,
     first,
@@ -34,9 +33,8 @@
   <ResizeHandle
     {size}
     side={direction === "row" ? "left" : "bottom"}
-    {min}
+    {preset}
     {max}
-    {defaultSize}
     {label}
     onresize={(next) => (size = next)}
     {oncommit}

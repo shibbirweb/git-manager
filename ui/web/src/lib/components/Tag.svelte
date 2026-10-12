@@ -4,14 +4,16 @@
 
   interface Props {
     tone?: "neutral" | "accent" | "danger" | "success" | "warning";
+    variant?: "fill" | "outline";
+    size?: "normal" | "small";
     title?: string;
     children: Snippet;
   }
 
-  let { tone = "neutral", title, children }: Props = $props();
+  let { tone = "neutral", variant = "fill", size = "normal", title, children }: Props = $props();
 </script>
 
-<span class="tag {tone}" {title}>{@render children()}</span>
+<span class="tag {tone} {variant} {size}" {title}>{@render children()}</span>
 
 <style>
   .tag {
@@ -44,5 +46,22 @@
   .warning {
     color: var(--warning);
     background: color-mix(in srgb, var(--warning) 14%, transparent);
+  }
+
+  /* A kind label such as "submodule" next to a repository: a thin border, no fill. */
+  .outline {
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    font-weight: var(--font-weight-semibold);
+    line-height: calc(var(--tag-height) - 2 * 1px);
+  }
+
+  /* A tiny mark inside a file row, such as LFS. */
+  .small {
+    height: auto;
+    padding: 0 var(--tag-small-padding-x);
+    font-size: var(--font-size-micro);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--tag-small-line-height);
   }
 </style>

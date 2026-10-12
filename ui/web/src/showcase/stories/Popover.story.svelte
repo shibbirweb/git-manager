@@ -6,7 +6,7 @@
   import Text from "$ui/components/Text.svelte";
 </script>
 
-<Popover label="AI usage details" width={260}>
+<Popover label="AI usage details" width="small">
   {#snippet trigger({ toggle, open })}
     <IconButton icon="bot" label="AI usage" active={open} onclick={toggle}>42%</IconButton>
   {/snippet}

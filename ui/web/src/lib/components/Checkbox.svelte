@@ -7,15 +7,23 @@
     indeterminate?: boolean;
     label?: string;
     disabled?: boolean;
+    size?: "normal" | "small";
     onchange?: (checked: boolean) => void;
     children?: Snippet;
   }
 
-  let { checked = $bindable(false), indeterminate = false, label = "", disabled = false, onchange, children }: Props =
-    $props();
+  let {
+    checked = $bindable(false),
+    indeterminate = false,
+    label = "",
+    disabled = false,
+    size = "normal",
+    onchange,
+    children,
+  }: Props = $props();
 </script>
 
-<label class="check" class:disabled>
+<label class="check {size}" class:disabled>
   <input type="checkbox" bind:checked {indeterminate} {disabled} onchange={() => onchange?.(checked)} />
   {#if children}
     {@render children()}
@@ -28,12 +36,18 @@
   .check {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-3);
     cursor: pointer;
   }
 
   .check input {
     margin: 0;
+  }
+
+  /* A small dim option in a bar, like the notifications' Do Not Disturb. */
+  .small {
+    color: var(--text-dim);
+    font-size: var(--font-size-small);
   }
 
   .disabled {

@@ -2,13 +2,13 @@
 <script lang="ts">
   interface Props {
     label?: string;
-    size?: "normal" | "large";
+    size?: "small" | "normal" | "large";
   }
 
   let { label = "Loading", size = "normal" }: Props = $props();
 </script>
 
-<span class="spinner" class:large={size === "large"} role="status" aria-label={label}></span>
+<span class="spinner {size}" role="status" aria-label={label}></span>
 
 <style>
   .spinner {
@@ -22,9 +22,14 @@
     animation: spin 0.8s linear infinite;
   }
 
+  .small {
+    width: var(--spinner-size-small);
+    height: var(--spinner-size-small);
+  }
+
   .large {
-    width: calc(var(--spinner-size) * 2);
-    height: calc(var(--spinner-size) * 2);
+    width: var(--spinner-size-large);
+    height: var(--spinner-size-large);
   }
 
   @keyframes spin {

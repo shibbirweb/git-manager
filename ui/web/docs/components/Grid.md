@@ -14,9 +14,10 @@ Use for cards, swatches and settings tiles. Use Stack for one row or one column.
 
 ## Props
 
-- `columns` (`number | "auto"`, default `"auto"`): A column count, or auto to fit as many as `minColumn` allows.
-- `minColumn` (`number`, default `grid.minColumn (180)`): Smallest column width in px for auto.
-- `gap` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl"`, default `"lg"`): Space between cells.
+- `columns` (`"auto" | "two" | "three" | "four" | "six"`, default `"auto"`): A named column count, or auto to fit as
+  many as `minColumn` allows.
+- `minColumn` (`"small" | "medium" | "large"`, default `"medium"`): Smallest column width for auto: 140, 180 or 240 px.
+- `gap` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl"`, default `"lg"`): Space between cells.
 - `label` (`string`): Accessible name of the group.
 - `children` (`Snippet`, required): The cells.
 

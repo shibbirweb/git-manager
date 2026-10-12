@@ -86,14 +86,14 @@
   }
 
   .list {
-    max-height: min(340px, 50vh);
+    max-height: min(var(--pick-list-max-height), 50vh);
     overflow-y: auto;
     margin-top: var(--space-4);
     padding: var(--space-1) 0;
   }
 
   .group {
-    padding: var(--space-4) var(--space-4) 3px;
+    padding: var(--space-4) var(--space-4) var(--pick-list-group-padding-bottom);
     color: var(--text-faint);
     font-size: var(--font-size-xsmall);
     font-weight: var(--font-weight-semibold);

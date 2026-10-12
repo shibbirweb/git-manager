@@ -11,9 +11,8 @@
   <ResizeHandle
     {size}
     side="left"
-    min={100}
+    preset="list"
     max={400}
-    defaultSize={200}
     label="Resize"
     onresize={(next) => (size = next)}
   />

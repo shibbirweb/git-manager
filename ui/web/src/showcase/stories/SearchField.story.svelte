@@ -6,4 +6,5 @@
 </script>
 
 <SearchField label="Search settings" placeholder="Search settings" bind:value={query} />
+<SearchField label="Search projects" placeholder="Search projects" size="large" bind:value={query} />
 <Text tone="dim">Query: "{query}". Esc clears it.</Text>

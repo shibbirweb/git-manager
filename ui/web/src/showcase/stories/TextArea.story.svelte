@@ -4,5 +4,5 @@
   let message = $state("");
 </script>
 
-<TextArea bind:value={message} rows={4} placeholder="Commit message" aria-label="Commit message" />
+<TextArea bind:value={message} rows="large" placeholder="Commit message" aria-label="Commit message" />
 <TextArea value={"fix: a typo\n\nLonger body text."} resize="vertical" mono aria-label="Mono" />

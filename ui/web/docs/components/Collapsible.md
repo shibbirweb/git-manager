@@ -18,6 +18,7 @@ Use for groups in a list, like Staged Changes. Actions show while the header is 
 - `open` (`boolean`, default `true`, bindable): Open or closed.
 - `count` (`number | null`, default `null`): A dim number after the title.
 - `nested` (`boolean`, default `false`): Indent the header, for a group inside a repository.
+- `dim` (`boolean`, default `false`): A quieter section, like the repositories with No Changes.
 - `actions` (`Snippet`): Small buttons on the right of the header.
 - `ontoggle` (`(open: boolean) => void`): Called when the user opens or closes it.
 - `children` (`Snippet`, required): The rows, shown while open.

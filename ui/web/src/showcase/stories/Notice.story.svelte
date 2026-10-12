@@ -10,3 +10,7 @@
 <Notice tone="warning">The branch is 3 commits behind its upstream.</Notice>
 <Notice>Your folder and tabs come back after Clear Cache.</Notice>
 <Notice tone="success">Pushed to origin/main.</Notice>
+<Notice tone="info" variant="banner">
+  Merging feature/login into main.
+  {#snippet action()}<Button size="small">Abort</Button>{/snippet}
+</Notice>

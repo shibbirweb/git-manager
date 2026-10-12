@@ -1,7 +1,7 @@
 // The named steps that props use instead of classes and colors: spacing, text tones and sizes. Each maps to a
 // design token variable, so changing a token changes every component that uses the step.
 
-export type Gap = "none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl";
+export type Gap = "none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl";
 export type Tone = "default" | "dim" | "faint" | "accent" | "danger" | "success" | "warning";
 export type TextSize =
   | "micro"
@@ -26,6 +26,7 @@ const GAP_TOKENS: Record<Gap, string> = {
   lg: "var(--space-6)",
   xl: "var(--space-8)",
   xxl: "var(--space-11)",
+  xxxl: "var(--space-12)",
 };
 
 const TONE_COLORS: Record<Tone, string> = {

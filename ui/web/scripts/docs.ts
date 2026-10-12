@@ -1,5 +1,6 @@
-// Writes ui/web/COMPONENTS.md and docs/components/<Name>.md from src/lib/docs (`bun run ui:docs`), or with --check
-// fails when one is out of date. These are the pages AI agents read to use each component and its props.
+// Writes ui/web/COMPONENTS.md, docs/groups/<Group>.md and docs/components/<Name>.md from src/lib/docs
+// (`bun run ui:docs`), or with --check fails when one is out of date. These are the pages AI agents read to use
+// each component and its props.
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,11 +26,12 @@ for (const output of outputs) {
 }
 
 // A page whose component was removed is reported, never deleted: the user removes files.
-const pagesDir = join(webRoot, "docs/components");
 const expected = new Set(outputs.map((output) => output.path));
-const extra = existsSync(pagesDir)
-  ? readdirSync(pagesDir).map((file) => `docs/components/${file}`).filter((path) => !expected.has(path))
-  : [];
+const extra = ["docs/components", "docs/groups"].flatMap((folder) =>
+  existsSync(join(webRoot, folder))
+    ? readdirSync(join(webRoot, folder)).map((file) => `${folder}/${file}`).filter((path) => !expected.has(path))
+    : [],
+);
 if (extra.length) {
   console.error(`No component for:\n${extra.join("\n")}`);
 }

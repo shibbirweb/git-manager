@@ -5,13 +5,13 @@
   import Stack from "$ui/components/Stack.svelte";
   import Text from "$ui/components/Text.svelte";
 
-  let size = $state(220);
+  let size = $state(260);
 </script>
 
 <Text tone="dim">Drag the line, use the arrow keys on it, or double-click to reset. Width: {size}px</Text>
 <Card label="Split example">
   <Stack direction="row" align="stretch">
-    <SplitPane label="Resize the sidebar" bind:size min={140} max={420} defaultSize={220}>
+    <SplitPane label="Resize the sidebar" bind:size preset="sidebar" max={420}>
       {#snippet first()}<EmptyState title="Sidebar" />{/snippet}
       {#snippet second()}<EmptyState title="Editor" hint="Takes the rest" />{/snippet}
     </SplitPane>

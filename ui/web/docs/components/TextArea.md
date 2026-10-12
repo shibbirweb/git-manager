@@ -15,7 +15,7 @@ Use for commit messages, tag messages and notes.
 ## Props
 
 - `value` (`string`, default `""`, bindable): The text.
-- `rows` (`number`, default `3`): Visible lines.
+- `rows` (`"small" | "normal" | "large" | "xlarge"`, default `"normal"`): Visible lines: 2, 3, 5 or 8.
 - `resize` (`"none" | "vertical"`, default `"none"`): Whether the user can drag its height.
 - `invalid` (`boolean`, default `false`): Red border and aria-invalid.
 - `mono` (`boolean`, default `false`): Monospace text.

@@ -15,7 +15,8 @@ export function cssUnit(scale: string, name: string, value: number): string {
   if (scale === "letterSpacing") {
     return `${value}em`;
   }
-  const unitless = scale === "fontWeight" || scale === "lineHeight" || (scale === "grid" && name === "columns");
+  const counts = scale === "textRows" || (scale === "grid" && name === "columns");
+  const unitless = scale === "fontWeight" || scale === "lineHeight" || scale === "iconStroke" || counts;
   return unitless ? String(value) : `${value}px`;
 }
 
@@ -41,9 +42,9 @@ export function componentValue(value: number | Reference): string {
   return typeof value === "number" ? `${value}px` : `var(--${kebabName(value.group)}-${kebabName(value.name)})`;
 }
 
-/** tokens.css: the entry point the library and the app import; it pulls in the three generated sheets. */
-export function tokensCss(): string {
-  const sheets = ["scales", "typography", "components"].map((sheet) => `@import "./${sheet}.css";`);
+/** tokens.css: the entry point the library and the app import; it pulls in every generated sheet. */
+export function tokensCss(componentSheets: string[]): string {
+  const sheets = ["scales.css", "typography.css", ...componentSheets].map((sheet) => `@import "./${sheet}";`);
   return [HEADER, ...sheets, ""].join("\n");
 }
 
@@ -60,6 +61,9 @@ export function scalesCss(tokens: Tokens): string {
   }
   for (const [name, shadow] of Object.entries(tokens.shadows)) {
     lines.push(`  --shadow-${kebabName(name)}: ${shadow.light};`);
+  }
+  for (const [name, colors] of Object.entries(tokens.palettes)) {
+    colors.forEach((color, index) => lines.push(`  --palette-${kebabName(name)}-${index + 1}: ${color};`));
   }
   lines.push("}");
   const darkShadows = Object.entries(tokens.shadows).filter(([, shadow]) => shadow.dark !== shadow.light);
@@ -89,16 +93,23 @@ export function typographyCss(tokens: Tokens): string {
   return `${lines.join("\n")}\n`;
 }
 
-/** components.css: each component's measurements. */
+/** One block of variables per component (components*.css). */
+export function componentBlocksCss(tokens: Tokens): string[][] {
+  return Object.entries(tokens.components).map(([component, parts]) =>
+    Object.entries(parts).map(
+      ([part, value]) => `  --${kebabName(component)}-${kebabName(part)}: ${componentValue(value)};`,
+    ),
+  );
+}
+
+/** A components sheet from some blocks. */
+export function componentsSheet(blocks: string[][]): string {
+  return `${[HEADER, ":root {", ...blocks.flat(), "}"].join("\n")}\n`;
+}
+
+/** Every component's variables in one string, for tests. */
 export function componentsCss(tokens: Tokens): string {
-  const lines = [HEADER, ":root {"];
-  for (const [component, parts] of Object.entries(tokens.components)) {
-    for (const [part, value] of Object.entries(parts)) {
-      lines.push(`  --${kebabName(component)}-${kebabName(part)}: ${componentValue(value)};`);
-    }
-  }
-  lines.push("}");
-  return `${lines.join("\n")}\n`;
+  return componentsSheet(componentBlocksCss(tokens));
 }
 
 function colorBlock(tokens: Tokens, mode: Mode, indent: string): string[] {

@@ -63,6 +63,21 @@ export const feedbackCases: ParityCase[] = [
     ],
   },
   {
+    id: "empty-panel",
+    sources: ["src/lib/ai/AiPanel.svelte"],
+    html:
+      `<div class="empty">${iconSvg("bot", 28, 1.5)}<strong>No folder open</strong>` +
+      "<span>Open a folder to start AI agents in it.</span></div>" +
+      '<div class="notice" style="margin: 0"><strong>No AI agents found</strong><span>Press Refresh.</span></div>',
+    pairs: [
+      { name: "panel", ref: ".empty", lib: ".empty.panel", ignore: { width: "fills the panel" } },
+      { name: "icon", ref: ".empty svg", lib: ".empty.panel svg" },
+      { name: "title", ref: ".empty strong", lib: ".empty.panel .title", ignore: { width: "a block in the library" } },
+      { name: "text", ref: ".empty span", lib: ".empty.panel .hint", ignore: { width: "a block in the library" } },
+      { name: "notice", ref: ".notice", lib: ".empty.notice", ignore: { width: "fills the panel" } },
+    ],
+  },
+  {
     id: "card",
     sources: ["src/lib/ai/AiPanel.svelte"],
     html: '<div class="card" style="margin: 0"><div style="height: 40px"></div></div>',

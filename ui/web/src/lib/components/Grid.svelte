@@ -1,22 +1,24 @@
 <!-- A grid of equal columns with a gap from the spacing steps: a fixed count, or as many as fit at `minColumn` px
-     (the design tokens' grid.minColumn by default). Use it for cards and swatches; use Stack for rows and columns. -->
+     (a named column width). Use it for cards and swatches; use Stack for rows and columns. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { GRID_COLUMNS, presetVar, type ColumnWidth, type GridColumns } from "../logic/presets";
   import { gapValue, type Gap } from "../logic/scale";
-  import { grid } from "../styles/tokens";
 
   interface Props {
-    columns?: number | "auto";
-    minColumn?: number;
+    columns?: GridColumns;
+    minColumn?: ColumnWidth;
     gap?: Gap;
     label?: string;
     children: Snippet;
   }
 
-  let { columns = "auto", minColumn = grid.minColumn, gap = "lg", label, children }: Props = $props();
+  let { columns = "auto", minColumn = "medium", gap = "lg", label, children }: Props = $props();
 
   const template = $derived(
-    columns === "auto" ? `repeat(auto-fill, minmax(${minColumn}px, 1fr))` : `repeat(${columns}, minmax(0, 1fr))`,
+    columns === "auto"
+      ? `repeat(auto-fill, minmax(${presetVar("columnWidth", minColumn)}, 1fr))`
+      : `repeat(${GRID_COLUMNS[columns]}, minmax(0, 1fr))`,
   );
 </script>
 

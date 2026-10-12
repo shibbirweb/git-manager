@@ -2,14 +2,15 @@
      aligned to the trigger's start or end edge, and closes on Esc or a click outside. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { presetVar, type PopoverWidth } from "../logic/presets";
 
   interface Props {
     open?: boolean;
     label: string;
     placement?: "above" | "below";
     align?: "start" | "end";
-    width?: number | null;
-    padding?: "menu" | "panel";
+    width?: PopoverWidth;
+    padding?: "menu" | "panel" | "form";
     textSize?: "normal" | "small";
     trigger: Snippet<[{ toggle: () => void; open: boolean }]>;
     children: Snippet;
@@ -20,7 +21,7 @@
     label,
     placement = "below",
     align = "start",
-    width = null,
+    width = "auto",
     padding = "menu",
     textSize = "normal",
     trigger,
@@ -54,10 +55,11 @@
     <div
       class="popover {placement} {align}"
       class:panel={padding === "panel"}
+      class:form={padding === "form"}
       class:small={textSize === "small"}
       role="dialog"
       aria-label={label}
-      style:width={width === null ? null : `${width}px`}
+      style:width={width === "auto" ? null : presetVar("popoverWidth", width)}
     >
       {@render children()}
     </div>
@@ -83,6 +85,14 @@
 
   .panel {
     padding: var(--popover-panel-padding-y) var(--popover-panel-padding-x);
+  }
+
+  /* A small form, like Commit Options: its fields in a column. */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--popover-form-gap);
+    padding: var(--popover-form-padding);
   }
 
   .small {

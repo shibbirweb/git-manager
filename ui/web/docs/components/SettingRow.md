@@ -17,6 +17,8 @@ Use for every setting in Settings and in settings-like panels. Put one control i
 - `title` (`string`, required): The setting's name.
 - `hint` (`string`, default `""`): One sentence on what it does.
 - `stacked` (`boolean`, default `false`): Control under the text, for wide controls.
+- `nested` (`boolean`, default `false`): Indented under the setting it belongs to.
+- `plain` (`boolean`, default `false`): No line between rows and a regular label (welcome screen).
 - `hintContent` (`Snippet`): A rich hint (with a link) instead of `hint`.
 - `children` (`Snippet`, required): The control.
 

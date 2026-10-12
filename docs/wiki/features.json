@@ -120,6 +120,7 @@
     { "page": "developer/Windows-MCP-and-CLI.md", "summary": "The command line tool as a console program, the screenshot and quoting on Windows." },
     { "page": "developer/Docs-and-Screenshots.md", "summary": "How this wiki is built, how screenshots are taken, and keeping docs in sync." },
     { "page": "developer/UI-Library.md", "summary": "The Svelte component library, its showcase and the design tokens shared by every platform." },
+    { "page": "developer/UI-Library-MCP.md", "summary": "The MCP server that answers AI agents' questions about components, tokens, icons and rules." },
     { "page": "developer/Contributing.md", "summary": "Code style, commits, pull requests and the docs checklist." }
   ],
   "features": [

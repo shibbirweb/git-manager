@@ -117,7 +117,7 @@
       >
         <span class="label">{item.label}</span>
         {#if isSubmenu(item)}
-          <span class="chevron"><Icon name="chevron-right" size={14} /></span>
+          <span class="chevron"><Icon name="chevron-right" size="normal" /></span>
         {:else if item.hint}
           <span class="hint">{item.hint}</span>
         {/if}
@@ -150,7 +150,7 @@
     position: fixed;
     z-index: 950;
     min-width: var(--menu-min-width);
-    max-height: calc(100vh - 8px);
+    max-height: calc(100vh - var(--space-4));
     overflow-y: auto;
     padding: var(--menu-padding);
     background: var(--panel);
@@ -210,13 +210,13 @@
 
   .chevron {
     display: inline-flex;
-    margin-right: -4px;
+    margin-right: calc(var(--space-2) * -1);
     opacity: 0.8;
   }
 
   .separator {
     height: 1px;
-    margin: 4px var(--menu-separator-inset);
+    margin: var(--space-2) var(--menu-separator-inset);
     background: var(--border-strong);
   }
 </style>

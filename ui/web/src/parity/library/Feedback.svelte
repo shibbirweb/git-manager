@@ -32,6 +32,9 @@
   <Stack direction="row">
     <EmptyState icon="alert" title="Could not compare the files" hint="The file is missing." />
   </Stack>
+{:else if id === "empty-panel"}
+  <EmptyState variant="panel" icon="bot" title="No folder open" hint="Open a folder to start AI agents in it." />
+  <EmptyState variant="notice" title="No AI agents found" hint="Press Refresh." />
 {:else if id === "card"}
   <Card><Stack padding="none"><span></span></Stack></Card>
 {:else if id === "field"}

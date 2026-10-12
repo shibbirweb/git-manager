@@ -9,17 +9,23 @@
   import { EditorView, lineNumbers } from "@codemirror/view";
   import { classHighlighter } from "@lezer/highlight";
   import { onDestroy } from "svelte";
+  import { presetVar, type CodeHeight } from "../logic/presets";
 
   interface Props {
     source: string;
     language?: "svelte" | "html" | "ts" | "js" | "md" | "plain";
     lineNumbers?: boolean;
     copy?: boolean;
-    maxHeight?: number | null;
+    maxHeight?: CodeHeight;
   }
 
-  let { source, language = "plain", lineNumbers: numbered = true, copy: canCopy = true, maxHeight = 520 }: Props =
-    $props();
+  let {
+    source,
+    language = "plain",
+    lineNumbers: numbered = true,
+    copy: canCopy = true,
+    maxHeight = "large",
+  }: Props = $props();
   let host = $state<HTMLDivElement | null>(null);
   let copied = $state(false);
   let view: EditorView | null = null;
@@ -63,7 +69,7 @@
   }
 </script>
 
-<div class="code" style:--code-view-max-height={maxHeight === null ? "none" : `${maxHeight}px`}>
+<div class="code" style:--code-view-max-height={maxHeight === "none" ? "none" : presetVar("codeHeight", maxHeight)}>
   {#if canCopy}
     <button class="copy" type="button" onclick={() => void copy()}>{copied ? "Copied" : "Copy"}</button>
   {/if}
@@ -99,11 +105,11 @@
 
   .copy {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: var(--space-3);
+    right: var(--space-3);
     z-index: 2;
-    height: 22px;
-    padding: 0 8px;
+    height: var(--code-view-copy-height);
+    padding: 0 var(--space-4);
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-small);
     background: var(--panel);

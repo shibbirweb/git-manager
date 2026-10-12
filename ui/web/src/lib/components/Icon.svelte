@@ -1,25 +1,29 @@
 <!-- A stroke icon on a 24px grid, drawn in the current text color. -->
 <script lang="ts">
   import { icons, type IconName } from "../icons";
+  import { iconPx, type IconSize, type IconStroke } from "../logic/presets";
   import { toneColor, type Tone } from "../logic/scale";
+  import { scales } from "../styles/tokens";
 
   interface Props {
     name: IconName;
-    size?: number;
-    strokeWidth?: number;
+    size?: IconSize;
+    stroke?: IconStroke;
     tone?: Tone | "inherit";
   }
 
-  let { name, size = 16, strokeWidth = 2, tone = "inherit" }: Props = $props();
+  let { name, size = "large", stroke = "normal", tone = "inherit" }: Props = $props();
+
+  const px = $derived(iconPx(size));
 </script>
 
 <svg
-  width={size}
-  height={size}
+  width={px}
+  height={px}
   viewBox="0 0 24 24"
   fill="none"
   stroke="currentColor"
-  stroke-width={name === "more" ? 3 : strokeWidth}
+  stroke-width={name === "more" ? scales.iconStroke.heavy : scales.iconStroke[stroke]}
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-hidden="true"

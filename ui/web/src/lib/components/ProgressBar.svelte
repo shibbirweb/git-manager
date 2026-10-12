@@ -4,12 +4,13 @@
     value: number;
     label: string;
     tone?: "accent" | "danger" | "warning" | "success";
-    minimum?: number;
   }
 
-  let { value, label, tone = "accent", minimum = 0.02 }: Props = $props();
+  let { value, label, tone = "accent" }: Props = $props();
 
-  const shown = $derived(Math.min(1, Math.max(minimum, Number.isFinite(value) ? value : 0)));
+  // Tiny shares still show a sliver, like the memory details.
+  const MINIMUM_SHARE = 0.02;
+  const shown = $derived(Math.min(1, Math.max(MINIMUM_SHARE, Number.isFinite(value) ? value : 0)));
 </script>
 
 <div

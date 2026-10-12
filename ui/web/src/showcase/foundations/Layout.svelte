@@ -46,7 +46,7 @@
           <Card padded label="Cell {item}"><Text>Cell {item}</Text></Card>
         {/each}
       </Grid>
-      <Grid columns={3} gap="md" label="Three columns">
+      <Grid columns="three" gap="md" label="Three columns">
         {#each ["One", "Two", "Three"] as item (item)}
           <Card padded label={item}><Text>{item} of 3</Text></Card>
         {/each}

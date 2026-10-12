@@ -9,15 +9,19 @@ export const shellDocs: ComponentDoc[] = [
     aliases: ["Resizable", "Splitter"],
     props: [
       prop("direction", '"row" | "column"', "Side by side or one above the other.", { default: '"row"' }),
-      prop("size", "number", "The first pane's width (row) or height (column) in px.", {
+      prop("size", "number", "The first pane's width (row) or height (column) in px, as the user dragged it.", {
         required: true,
         bindable: true,
+        data: true,
       }),
-      prop("min", "number", "Smallest size.", { default: "120" }),
-      prop("max", "number", "Largest size.", { default: "800" }),
-      prop("defaultSize", "number", "Size after a double-click on the handle.", { default: "260" }),
+      prop("preset", '"sidebar" | "bottom" | "list" | "pane"', "The smallest and default size, from the tokens.", {
+        default: '"pane"',
+      }),
+      prop("max", "number", "Largest size, from the window's room.", { default: "800", data: true }),
       prop("label", "string", "Accessible name of the handle, e.g. `Resize the sidebar`.", { required: true }),
-      prop("oncommit", "(size: number) => void", "Called once when a drag or key press ends, to save the size."),
+      prop("oncommit", "(size: number) => void", "Called once when a drag or key press ends, to save the size.", {
+        data: true,
+      }),
       prop("first", "Snippet", "The first pane.", { required: true }),
       prop("second", "Snippet", "The second pane; it takes the rest.", { required: true }),
     ],
@@ -39,19 +43,29 @@ export const shellDocs: ComponentDoc[] = [
     usage: "Use beside a panel whose size the parent keeps. SplitPane wraps it for the common two-pane case.",
     aliases: ["Resizable handle"],
     props: [
-      prop("size", "number", "The panel's current width, or height for the bottom side.", { required: true }),
+      prop("size", "number", "The panel's current width, or height for the bottom side.", {
+        required: true,
+        data: true,
+      }),
       prop("side", '"left" | "right" | "bottom"', "Where the panel is, relative to the handle.", { required: true }),
-      prop("min", "number", "Smallest size.", { required: true }),
-      prop("max", "number", "Largest size.", { required: true }),
-      prop("defaultSize", "number", "Size after a double-click.", { required: true }),
+      prop("preset", '"sidebar" | "bottom" | "list" | "pane"', "The smallest and default size, from the tokens.", {
+        required: true,
+      }),
+      prop("max", "number", "Largest size, from the window's room.", { required: true, data: true }),
       prop("label", "string", "Accessible name.", { required: true }),
-      prop("onresize", "(size: number) => void", "The new size while dragging or on a key.", { required: true }),
-      prop("oncommit", "(size: number) => void", "Called once when it ends, to save the size."),
+      prop("inPanel", "boolean", "Between views inside one panel (editor groups): keeps its size in rounded looks.", {
+        default: "false",
+      }),
+      prop("onresize", "(size: number) => void", "The new size while dragging or on a key.", {
+        required: true,
+        data: true,
+      }),
+      prop("oncommit", "(size: number) => void", "Called once when it ends, to save the size.", { data: true }),
     ],
     examples: [
       {
         title: "Left panel",
-        code: '<ResizeHandle {size} side="left" min={160} max={600} defaultSize={260} label="Resize Files"\n' +
+        code: '<ResizeHandle {size} side="left" preset="sidebar" max={600} label="Resize Files"\n' +
           "  onresize={(next) => (size = next)} oncommit={save} />",
       },
     ],
@@ -85,12 +99,19 @@ export const shellDocs: ComponentDoc[] = [
     usage: "Use inside StatusBar. Keep the text to a word or two; put details in a Popover.",
     props: [
       prop("text", "string", "Short text after the icon.", { default: '""' }),
+      prop("leading", "Snippet", "Before the icon, such as a Mark and a mini Meter (AI usage)."),
+      prop("trailing", "Snippet", "After the text, such as a small Badge (notifications) or a StatusDot."),
       prop("icon", "IconName | null", "The icon.", { default: "null" }),
       prop("label", "string", "Accessible name when the text alone is not enough."),
       prop("title", "string", "Tooltip."),
       prop("tone", '"default" | "accent" | "warning" | "danger"', "Color, e.g. danger for conflicts.", {
         default: '"default"',
       }),
+      prop("spin", "boolean", "The icon turns, while work runs.", { default: "false" }),
+      prop("variant", '"default" | "quiet"', "Quiet: 11px dim words, like Keep Awake.", { default: '"default"' }),
+      prop("active", "boolean", "A quiet item that is on: its words brighten.", { default: "false" }),
+      prop("disabled", "boolean", "Cannot be pressed now, such as Sync while another job runs.", { default: "false" }),
+      prop("limit", '"none" | "branch" | "operation"', "Truncate the text at 200 or 320 px.", { default: '"none"' }),
       prop("open", "boolean", "Highlighted while its popover shows.", { default: "false" }),
       prop("onclick", "(event: MouseEvent) => void", "Makes it a button."),
     ],
@@ -104,8 +125,10 @@ export const shellDocs: ComponentDoc[] = [
     usage: "Use at the window's left or right edge. A `null` item pushes the rest to the bottom.",
     aliases: ["Sidebar"],
     props: [
-      prop("items", "({ id: string; icon: IconName; label: string; badge?: number } | null)[]", "The panels.", {
+      prop("items", "({ id; icon; label; badge?: number; dot?: boolean; smallIcon?: boolean } | null)[]",
+        "The panels.", {
         required: true,
+        data: true,
       }),
       prop("active", "string | null", "The open panel's id.", { default: "null", bindable: true }),
       prop("label", "string", "Accessible name.", { required: true }),

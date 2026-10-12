@@ -1,4 +1,5 @@
-<!-- A 1px line between groups: horizontal by default, vertical in toolbars. -->
+<!-- A 1px line between groups: horizontal by default, vertical in toolbars, where it takes the toolbar's length
+     and spacing. -->
 <script lang="ts">
   interface Props {
     direction?: "horizontal" | "vertical";
@@ -27,7 +28,8 @@
 
   .vertical {
     width: 1px;
-    height: 16px;
+    height: var(--divider-length, var(--toolbar-divider-length));
+    margin: 0 var(--divider-space, 0);
     align-self: center;
   }
 </style>

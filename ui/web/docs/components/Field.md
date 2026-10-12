@@ -17,6 +17,7 @@ Wrap Input, TextArea or Select in dialogs. Show `error` only after the user type
 - `label` (`string`, default `""`): The label above the control.
 - `hint` (`string`, default `""`): Help under the control, hidden while there is an error.
 - `error` (`string | null`, default `null`): Validation message in red, announced to screen readers.
+- `look` (`"normal" | "compact"`, default `"normal"`): Compact: the Git dialogs' smaller dim label and faint hint.
 - `children` (`Snippet`, required): The control.
 
 ## Example: Branch name

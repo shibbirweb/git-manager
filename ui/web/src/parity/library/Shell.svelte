@@ -32,7 +32,7 @@
 {:else if id === "resize-handle"}
   <!-- The harness gives the handle a panel's height, like the reference. -->
   <div style="display: flex; height: 120px">
-    <ResizeHandle size={200} side="left" min={100} max={400} defaultSize={200} label="Resize" onresize={run} />
+    <ResizeHandle size={200} side="left" preset="list" max={400} label="Resize" onresize={run} />
   </div>
 {:else if id === "search-toggles"}
   <SearchToggles {options} />

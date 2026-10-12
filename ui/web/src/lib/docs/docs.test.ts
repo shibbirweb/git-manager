@@ -23,6 +23,8 @@ function source(name: string): string {
 const ALLOWED_COLORS: Record<string, string[]> = {
   // The switch knob is white in every theme, like Settings' switch.
   Switch: ["#fff"],
+  // The app's violet for remote branches in the log (LogView), mixed with the accent.
+  RefLabel: ["#b04ad8"],
 };
 
 describe("the docs", () => {
@@ -70,6 +72,38 @@ describe("the docs", () => {
       const lines = output.content.split("\n");
       const wide = lines.filter((line) => line.length > 120 && !line.startsWith("<"));
       expect([output.path, lines.length <= 301, wide]).toEqual([output.path, true, []]);
+    }
+  });
+
+  it("take no free numbers or free text for design: numbers are data, sizes and widths are named presets", () => {
+    const DESIGN_NAMES =
+      /^(size|width|height|minWidth|maxWidth|color|style|font|fontSize|class|gap|padding|paddingX|paddingY|margin)$/i;
+    for (const doc of componentDocs) {
+      for (const entry of doc.props) {
+        // Spacing is never data: a gap, padding or margin must be a named step, even when marked as data.
+        const spacing = /^(gap|padding|paddingX|paddingY|margin)$/i.test(entry.name);
+        expect([doc.name, entry.name, "spacing number", spacing && /\bnumber\b/.test(entry.type)]).toEqual([
+          doc.name,
+          entry.name,
+          "spacing number",
+          false,
+        ]);
+        // A callback reporting a number (an index, a size) is not a design input.
+        const numeric = !entry.type.includes("=>") && /\bnumber\b/.test(entry.type);
+        expect([doc.name, entry.name, "number without data", numeric && !entry.data]).toEqual([
+          doc.name,
+          entry.name,
+          "number without data",
+          false,
+        ]);
+        const freeText = DESIGN_NAMES.test(entry.name) && /^string\b/.test(entry.type);
+        expect([doc.name, entry.name, "free text design", freeText]).toEqual([
+          doc.name,
+          entry.name,
+          "free text design",
+          false,
+        ]);
+      }
     }
   });
 

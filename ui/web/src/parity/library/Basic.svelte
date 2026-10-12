@@ -29,7 +29,7 @@
 {:else if id === "input"}
   <Stack gap="md" align="start">
     <Input value="feature/login" aria-label="Branch" />
-    <TextArea value="fix: a typo" rows={3} aria-label="Message" />
+    <TextArea value="fix: a typo" rows="normal" aria-label="Message" />
   </Stack>
 {:else if id === "select"}
   <Select label="Cursor" value="bar" options={[{ value: "bar", label: "Bar" }, { value: "block", label: "Block" }]} />

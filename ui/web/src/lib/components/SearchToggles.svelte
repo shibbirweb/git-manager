@@ -47,7 +47,7 @@
   .toggles {
     flex: none;
     display: flex;
-    gap: 2px;
+    gap: var(--space-1);
   }
 
   .toggle {
@@ -59,7 +59,7 @@
     background: transparent;
     color: var(--text-dim);
     font-family: var(--font-mono);
-    font-size: 11.5px;
+    font-size: var(--font-size-compact);
     cursor: pointer;
   }
 
@@ -67,9 +67,9 @@
     min-width: var(--search-toggles-compact-width);
     height: var(--search-toggles-compact-height);
     padding: 0 var(--search-toggles-compact-padding-x);
-    border-radius: 3px;
-    font-size: 10.5px;
-    line-height: 16px;
+    border-radius: var(--search-toggles-compact-radius);
+    font-size: var(--font-size-mini);
+    line-height: var(--search-toggles-line-height);
   }
 
   .toggle:hover {

@@ -16,8 +16,13 @@ Use for every layout instead of writing CSS: rows of buttons, label and value pa
 ## Props
 
 - `direction` (`"row" | "column"`, default `"column"`): Main axis.
-- `gap` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl"`, default `"md"`): Space between children.
-- `padding` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl"`, default `"none"`): Space inside the edges.
+- `gap` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl"`, default `"md"`): Space between children.
+- `padding` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl"`, default `"none"`): Space inside the
+  edges.
+- `paddingX` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl" | null`, default `null`): Space at the
+  left and right, overriding `padding`.
+- `paddingY` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl" | null`, default `null`): Space at the
+  top and bottom, overriding `padding`.
 - `align` (`"start" | "center" | "end" | "stretch" | "baseline"`, default `"stretch"`): Cross-axis alignment.
 - `justify` (`"start" | "center" | "end" | "between"`, default `"start"`): Main-axis distribution.
 - `wrap` (`boolean`, default `false`): Wrap onto more lines.
@@ -28,7 +33,8 @@ Use for every layout instead of writing CSS: rows of buttons, label and value pa
 
 ## Rules
 
-- Do not add CSS for layout; combine Stacks. Gaps come only from the named steps.
+- Do not add CSS for layout; combine Stacks. Gaps and padding come only from the named steps.
+- There is no margin: space between items is the parent's gap, space inside is padding.
 
 ## Example: Dialog actions
 

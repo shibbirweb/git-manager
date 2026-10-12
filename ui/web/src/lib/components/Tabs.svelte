@@ -12,10 +12,11 @@
     tabs: PanelTab<T>[];
     value: T;
     label: string;
+    variant?: "panel" | "underline";
     onchange?: (value: T) => void;
   }
 
-  let { tabs, value = $bindable(), label, onchange }: Props = $props();
+  let { tabs, value = $bindable(), label, variant = "panel", onchange }: Props = $props();
   let buttons: HTMLButtonElement[] = $state([]);
 
   function choose(next: T): void {
@@ -38,7 +39,7 @@
   }
 </script>
 
-<div class="tabs" role="tablist" aria-label={label} tabindex="-1" {onkeydown}>
+<div class="tabs {variant}" role="tablist" aria-label={label} tabindex="-1" {onkeydown}>
   {#each tabs as tab, index (tab.value)}
     <button
       bind:this={buttons[index]}
@@ -90,12 +91,37 @@
     right: 0;
     bottom: 0;
     height: var(--panel-tabs-indicator);
-    border-radius: 2px;
+    border-radius: var(--radius-tiny);
     background: var(--accent);
+  }
+
+  /* Search Everywhere's scopes: normal case, a thick accent line under the chosen one. */
+  .underline {
+    gap: var(--tabs-underline-gap);
+    height: auto;
+  }
+
+  .underline .tab {
+    padding: var(--tabs-underline-padding-top) var(--tabs-underline-padding-x) var(--tabs-underline-padding-bottom);
+    border-bottom: var(--tabs-underline-indicator) solid transparent;
+    font-size: var(--font-size-code-small);
+    font-weight: var(--font-weight-regular);
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: nowrap;
+  }
+
+  .underline .selected {
+    font-weight: var(--font-weight-semibold);
+    border-bottom-color: var(--accent);
+  }
+
+  .underline .selected::after {
+    display: none;
   }
 
   .tab:focus-visible {
     outline: 1px solid var(--accent);
-    outline-offset: 2px;
+    outline-offset: var(--space-1);
   }
 </style>

@@ -17,6 +17,8 @@ Use in a panel header to switch its views. Use Segmented for a setting with a fe
 - `tabs` (`{ value: T; label: string }[]`, required): The tabs in order.
 - `value` (`T extends string`, required, bindable): The shown tab.
 - `label` (`string`, required): Accessible name of the tab list.
+- `variant` (`"panel" | "underline"`, default `"panel"`): Panel tabs in small capitals, or normal words with a thick
+  line under the chosen one (Search Everywhere's scopes).
 - `onchange` (`(value: T) => void`): Called when the user picks another tab.
 
 ## Example: Bottom panel

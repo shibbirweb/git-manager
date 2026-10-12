@@ -16,7 +16,10 @@ Use for counts on buttons and tabs. Use Tag for words.
 
 - `count` (`number`, required): The number.
 - `max` (`number`, default `99`): Above it, shows `max+`.
-- `tone` (`"accent" | "danger" | "neutral"`, default `"accent"`): Color: accent for counts, danger for conflicts.
+- `size` (`"small" | "normal" | "large" | "corner"`, default `"normal"`): 14px (status bar), 16px, 17px with 11px text
+  (group counts), or pinned to a button's corner.
+- `tone` (`"accent" | "danger" | "warning" | "neutral" | "quiet"`, default `"accent"`): Color: accent for counts, danger
+  for conflicts, warning for unread notices, quiet for a group's count.
 - `label` (`string`): What the count means, e.g. `3 changes`; defaults to the number.
 
 ## Example: Changes

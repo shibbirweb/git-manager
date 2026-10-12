@@ -1,0 +1,7 @@
+{
+  "$comment": [
+    "Fixed color sets that are the same in light and dark: the log graph's lane colors are mid-tone hues that",
+    "keep contrast on both. Generated as --palette-<name>-<n> (web, GTK), GMPalette (Swift) and GmPalette* (XAML)."
+  ],
+  "graphLane": ["#4a8af4", "#e0604f", "#3aa55d", "#d9a21b", "#a46ee8", "#1fb1b5", "#e2639f", "#e8883a"]
+}

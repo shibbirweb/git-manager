@@ -29,6 +29,8 @@ Use above an editor. Enter goes to the next match, Shift+Enter the previous, Esc
 - `onprevious` (`() => void`): Previous match (Shift+Enter or the up arrow).
 - `onreplace` (`() => void`): Replace the current match.
 - `onreplaceall` (`() => void`): Replace every match.
+- `onselectall` (`() => void`): Select every match; shows the button (hidden when the bar is narrow).
+- `onexclude` (`() => void`): Skip this match; shows Exclude in the Replace row (hidden when narrow).
 - `onclose` (`() => void`): Esc or the close button.
 
 ## Example: Editor find

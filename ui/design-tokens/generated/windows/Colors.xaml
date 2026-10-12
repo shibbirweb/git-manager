@@ -74,6 +74,7 @@
             <Color x:Key="GmShadowPopupColor">#29000000</Color>
             <Color x:Key="GmShadowSegmentColor">#24000000</Color>
             <Color x:Key="GmShadowKnobColor">#40000000</Color>
+            <Color x:Key="GmShadowLiftedColor">#52000000</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="GmBg">#FF1E1F22</Color>
@@ -146,6 +147,7 @@
             <Color x:Key="GmShadowPopupColor">#80000000</Color>
             <Color x:Key="GmShadowSegmentColor">#24000000</Color>
             <Color x:Key="GmShadowKnobColor">#40000000</Color>
+            <Color x:Key="GmShadowLiftedColor">#52000000</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

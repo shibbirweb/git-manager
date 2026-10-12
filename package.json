@@ -28,7 +28,8 @@
     "ui:docs": "bun ui/web/scripts/docs.ts",
     "ui:tokens": "bun ui/design-tokens/scripts/tokens.ts",
     "ui:parity": "bun --bun ui/web/scripts/parity.ts",
-    "ui:mcp": "bun ui/mcp/server.ts"
+    "ui:mcp": "bun ui/mcp/server.ts",
+    "ui:themes": "bun --bun ui/web/scripts/themes.ts"
   },
   "license": "MIT",
   "dependencies": {

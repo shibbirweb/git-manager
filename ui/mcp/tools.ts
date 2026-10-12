@@ -16,7 +16,8 @@ export const RULES = [
     "sm, md, lg, xl, xxl) and write words with Text (variant: body, label, hint, caption, sectionLabel, title...).",
   "Colors come from the theme tokens (tone props); sizes come from the design tokens; never hard-code either.",
   "Import a component from $ui/components/<Name>.svelte; read its doc first (get_component).",
-  "Destructive actions confirm first with ConfirmDialog danger. Never type a shortcut into UI text.",
+  "Destructive actions confirm first in a message Dialog with a Danger primary button. " +
+    "Never type a shortcut into UI text.",
   "Every file stays within 120 columns and 300 lines.",
 ];
 

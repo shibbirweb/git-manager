@@ -17,6 +17,8 @@ Use above an editor for the file's path. Open a list of a folder's files from `o
 - `crumbs` (`{ label: string; icon?: IconName; kind?: "repo" | "folder" | "file" }[]`, required): The parts.
 - `label` (`string`, default `"Path"`): Accessible name.
 - `open` (`number | null`, default `null`): Index of the crumb whose list shows.
+- `variant` (`"inline" | "floating" | "anchored"`, default `"inline"`): In a bar; floating over the editor; or under the
+  tabs, anchored to the editor's top.
 - `onselect` (`(index: number, element: HTMLElement) => void`): A crumb was clicked.
 
 ## Example: File path

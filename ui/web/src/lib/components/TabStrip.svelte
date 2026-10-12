@@ -1,30 +1,24 @@
-<!-- The editor's tab strip: tabs with an icon, name, optional hint and a close button that shows on hover (a dot
-     while there are unsaved changes). The active tab has the editor color and an accent line, gray when the
-     group does not have the focus. Preview tabs are italic until edited or pinned. -->
+<!-- The editor's tab strip. `scroll` keeps one row that scrolls sideways, `wrap` adds rows, `single` shows a lone
+     tab as a centered name. The active tab has the editor color and an accent line, gray when the group does not
+     have the focus. A + button (onnew) follows the tabs; with onreorder, tabs can be dragged into a new order. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import type { IconName } from "../icons";
+  import { DRAG_THRESHOLD, dropIndex } from "../logic/reorder";
+  import EditorTab, { type EditorTabData } from "./EditorTab.svelte";
   import Icon from "./Icon.svelte";
 
-  interface EditorTab {
-    id: string;
-    label: string;
-    icon?: IconName;
-    hint?: string;
-    title?: string;
-    preview?: boolean;
-    dirty?: boolean;
-    pinned?: boolean;
-  }
-
   interface Props {
-    tabs: EditorTab[];
+    tabs: EditorTabData[];
     active?: string | null;
     label: string;
     focused?: boolean;
+    layout?: "scroll" | "wrap" | "single";
+    newLabel?: string;
     onselect?: (id: string) => void;
     onclose?: (id: string) => void;
     oncontextmenu?: (id: string, event: MouseEvent) => void;
+    onnew?: (event: MouseEvent) => void;
+    onreorder?: (from: number, to: number) => void;
     trailing?: Snippet;
   }
 
@@ -33,54 +27,82 @@
     active = $bindable(null),
     label,
     focused = true,
+    layout = "scroll",
+    newLabel = "New tab",
     onselect,
     onclose,
     oncontextmenu,
+    onnew,
+    onreorder,
     trailing,
   }: Props = $props();
+
+  let stripEl = $state<HTMLDivElement | null>(null);
+  let drag = $state<{ id: string; from: number; startX: number; moving: boolean } | null>(null);
 
   function select(id: string): void {
     active = id;
     onselect?.(id);
   }
+
+  function centers(): number[] {
+    return [...(stripEl?.querySelectorAll<HTMLElement>("[data-tab-id]") ?? [])].map((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.left + rect.width / 2;
+    });
+  }
+
+  function down(event: PointerEvent, index: number, id: string): void {
+    if (onreorder && event.button === 0 && layout !== "single") {
+      drag = { id, from: index, startX: event.clientX, moving: false };
+    }
+  }
+
+  function move(event: PointerEvent): void {
+    if (drag && !drag.moving && Math.abs(event.clientX - drag.startX) > DRAG_THRESHOLD) {
+      drag.moving = true;
+    }
+  }
+
+  function up(event: PointerEvent): void {
+    if (drag?.moving) {
+      const to = dropIndex(centers(), event.clientX, drag.from);
+      if (to !== drag.from) {
+        onreorder?.(drag.from, to);
+      }
+    }
+    drag = null;
+  }
 </script>
 
-<div class="tab-strip" class:unfocused={!focused} role="tablist" aria-label={label}>
-  {#each tabs as tab (tab.id)}
-    <div
-      class="tab"
-      class:active={tab.id === active}
-      class:preview={tab.preview}
-      class:pinned={tab.pinned}
-      class:dirty={tab.dirty}
-      role="presentation"
+<svelte:window onpointermove={move} onpointerup={up} />
+
+<div
+  bind:this={stripEl}
+  class="tab-strip {layout}"
+  class:dragging={drag?.moving}
+  role="tablist"
+  aria-label={label}
+>
+  {#each tabs as tab, index (tab.id)}
+    <EditorTab
+      {tab}
+      {focused}
+      {layout}
+      active={tab.id === active}
+      lifted={drag?.moving === true && drag.id === tab.id}
+      closable={onclose !== undefined}
+      onselect={() => select(tab.id)}
+      onclose={() => onclose?.(tab.id)}
       oncontextmenu={(event) => oncontextmenu?.(tab.id, event)}
-      onauxclick={(event) => event.button === 1 && onclose?.(tab.id)}
-    >
-      <button
-        class="tab-main"
-        type="button"
-        role="tab"
-        aria-selected={tab.id === active}
-        title={tab.title ?? tab.label}
-        onclick={() => select(tab.id)}
-      >
-        {#if tab.icon}
-          <Icon name={tab.icon} size={13} />
-        {/if}
-        <span class="name">{tab.label}</span>
-        {#if tab.hint}
-          <span class="hint">{tab.hint}</span>
-        {/if}
-      </button>
-      {#if onclose}
-        <button class="tab-close" type="button" aria-label="Close {tab.label}" onclick={() => onclose?.(tab.id)}>
-          <span class="dot" aria-hidden="true"></span>
-          <span class="x"><Icon name={tab.pinned ? "pin" : "x"} size={12} /></span>
-        </button>
-      {/if}
-    </div>
+      onpointerdown={(event) => down(event, index, tab.id)}
+    />
   {/each}
+  {#if onnew}
+    <button class="new-tab" type="button" title={newLabel} aria-label={newLabel} onclick={(event) => onnew?.(event)}>
+      <Icon name="plus" size="normal" />
+    </button>
+  {/if}
   {@render trailing?.()}
 </div>
 
@@ -103,133 +125,40 @@
     display: none;
   }
 
-  .tab {
-    flex: none;
-    position: relative;
-    display: flex;
-    align-items: center;
-    max-width: var(--tab-strip-tab-max-width);
-    padding-right: 4px;
-    border-right: 1px solid var(--border-strong);
-    color: var(--text-dim);
-  }
-
-  .tab:hover {
-    background: var(--hover);
-  }
-
-  .tab.active {
-    background: var(--editor-bg);
-    color: var(--text);
-  }
-
-  .tab.active::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: var(--tab-strip-indicator);
-    background: var(--accent);
-  }
-
-  .unfocused .tab.active::before {
-    background: var(--border-strong);
-  }
-
-  .unfocused .tab.active {
-    color: var(--text-dim);
-  }
-
-  .tab-main {
-    display: flex;
-    align-items: center;
-    gap: var(--tab-strip-gap);
-    min-width: 0;
-    height: 100%;
-    padding: 0 var(--tab-strip-tab-padding-right) 0 var(--tab-strip-tab-padding-left);
-    border: none;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .tab-main > :global(svg) {
-    flex: none;
-    opacity: 0.8;
-  }
-
-  .name {
+  .wrap {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--tab-strip-height);
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
-  .preview .name {
-    font-style: italic;
+  .single {
+    justify-content: center;
   }
 
-  .hint {
+  .dragging {
+    cursor: grabbing;
+  }
+
+  .new-tab {
     flex: none;
-    font-size: 11.5px;
-    color: var(--text-faint);
-  }
-
-  .tab-close {
-    flex: none;
-    display: flex;
+    align-self: center;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--tab-strip-close-size);
-    height: var(--tab-strip-close-size);
+    width: var(--new-tab-size);
+    height: var(--new-tab-size);
+    margin: 0 var(--new-tab-margin);
     padding: 0;
     border: none;
-    border-radius: var(--radius-small);
+    border-radius: var(--new-tab-radius);
     background: transparent;
     color: var(--text-dim);
     cursor: pointer;
   }
 
-  .tab-close:hover {
-    background: var(--border-strong);
+  .new-tab:hover {
     color: var(--text);
-  }
-
-  .x {
-    display: flex;
-    opacity: 0;
-  }
-
-  .tab:hover .x,
-  .tab.active .x,
-  .tab.pinned .x {
-    opacity: 1;
-  }
-
-  /* Unsaved changes: a dot in place of the x until the close button itself is hovered. */
-  .dot {
-    display: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-dim);
-  }
-
-  .tab.dirty .dot {
-    display: block;
-  }
-
-  .tab.dirty .x {
-    display: none;
-  }
-
-  .tab.dirty .tab-close:hover .dot {
-    display: none;
-  }
-
-  .tab.dirty .tab-close:hover .x {
-    display: flex;
-    opacity: 1;
+    background: var(--hover);
   }
 </style>

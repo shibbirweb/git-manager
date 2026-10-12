@@ -14,4 +14,14 @@
     { value: "underline", label: "Underline" },
   ]}
 />
+<Select
+  label="Repository"
+  size="small"
+  width="medium"
+  bind:value={cursor}
+  options={[
+    { value: "bar", label: "storefront" },
+    { value: "block", label: "api-gateway" },
+  ]}
+/>
 <Text tone="dim">Cursor: {cursor}</Text>

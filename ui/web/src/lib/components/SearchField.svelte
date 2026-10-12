@@ -1,5 +1,6 @@
 <!-- A filter box with a magnifier and a clear button, like Settings' search. Esc clears it, then blurs. -->
 <script lang="ts">
+  import { controlWidth, type ControlWidth } from "../logic/presets";
   import Icon from "./Icon.svelte";
 
   interface Props {
@@ -7,6 +8,8 @@
     placeholder?: string;
     label: string;
     autofocus?: boolean;
+    size?: "normal" | "large" | "compact" | "small";
+    width?: ControlWidth;
     element?: HTMLInputElement | null;
     oninput?: (value: string) => void;
     onkeydown?: (event: KeyboardEvent) => void;
@@ -17,6 +20,8 @@
     placeholder = "Search",
     label,
     autofocus = false,
+    size = "normal",
+    width = "auto",
     element = $bindable(null),
     oninput,
     onkeydown,
@@ -42,8 +47,8 @@
   }
 </script>
 
-<div class="search">
-  <span class="magnifier"><Icon name="search" size={13} /></span>
+<div class="search {size}" style:width={width === "auto" ? null : controlWidth(width)}>
+  <span class="magnifier"><Icon name="search" size="medium" /></span>
   <!-- svelte-ignore a11y_autofocus -->
   <input
     bind:this={element}
@@ -56,7 +61,7 @@
   />
   {#if value}
     <button class="clear" type="button" aria-label="Clear" title="Clear" onclick={clear}>
-      <Icon name="x" size={12} />
+      <Icon name="x" size="compact" />
     </button>
   {/if}
 </div>
@@ -76,6 +81,53 @@
   .search:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 0 var(--input-focus-ring) color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+
+  /* A panel's filter (Branches, AI, Scripts): 26 px with a 20 px clear button at the end. */
+  .compact {
+    gap: var(--search-field-compact-gap);
+    height: var(--search-field-compact-height);
+    padding-right: var(--search-field-compact-padding-right);
+  }
+
+  .compact .magnifier,
+  .small .magnifier {
+    color: var(--text-dim);
+  }
+
+  .compact .clear,
+  .small .clear {
+    align-items: center;
+    justify-content: center;
+    width: var(--search-field-clear-size);
+    height: var(--search-field-clear-size);
+    padding: 0;
+  }
+
+  /* The Git Console's filter: a 24 px field of a set width, smaller text. */
+  .small {
+    width: var(--search-field-small-width);
+    max-width: 50%;
+    height: var(--search-field-small-height);
+    padding-right: var(--search-field-small-padding-right);
+    color: var(--text-dim);
+  }
+
+  .small input {
+    font-size: var(--font-size-small);
+  }
+
+  /* The Welcome page's search: taller, on the editor background. */
+  .large {
+    gap: var(--search-field-large-gap);
+    height: var(--search-field-large-height);
+    padding: 0 var(--search-field-large-padding-x);
+    background: var(--editor-bg);
+    color: var(--text-dim);
+  }
+
+  .large .magnifier {
+    color: var(--text-dim);
   }
 
   .magnifier {
@@ -99,7 +151,7 @@
   .clear {
     flex: none;
     display: flex;
-    padding: 2px;
+    padding: var(--space-1);
     border: none;
     border-radius: var(--radius-small);
     background: transparent;

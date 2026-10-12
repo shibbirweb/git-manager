@@ -65,4 +65,5 @@ export const PROPERTIES = [
   "cursor",
   "white-space",
   "content",
+  "stroke-width",
 ] as const;

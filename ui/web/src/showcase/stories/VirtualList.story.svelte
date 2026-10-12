@@ -11,7 +11,7 @@
 
 <Text tone="dim">100,000 rows; only the ones in view are drawn.</Text>
 <Stack>
-  <VirtualList items={commits} rowHeight={24} height={240} label="Commits">
+  <VirtualList items={commits} height="medium" label="Commits">
     {#snippet row(commit)}
       <Stack direction="row" align="center" gap="md" padding="xs">
         <Text mono tone="dim" size="small">{commit.hash}</Text>

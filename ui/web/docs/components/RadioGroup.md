@@ -14,12 +14,16 @@ Use when each choice needs a sentence. Use Segmented for short labels without de
 
 ## Props
 
-- `options` (`{ value: T extends string; label: string; description?: string; disabled?: boolean }[]`, required): The
-  choices.
+- `options` (`{ value: T extends string; label: string; description?: string; disabled?: boolean; danger?: boolean }[]`,
+  required): The choices.
 - `value` (`T extends string`, required, bindable): The chosen value.
 - `name` (`string`, required): The radio group's form name; unique on the page.
 - `label` (`string`, required): Accessible name of the group.
+- `labelWidth` (`"small" | "medium" | "large"`, default `"large"`): The label column in columns layout: 100, 120 or 130
+  px.
 - `direction` (`"column" | "row"`, default `"column"`): Stack or line up the choices.
+- `layout` (`"stacked" | "columns"`, default `"stacked"`): Description under the label, or label and description in
+  columns (Pull's modes).
 - `onchange` (`(value: T) => void`): Called with the new value.
 
 ## Example: Identity scope

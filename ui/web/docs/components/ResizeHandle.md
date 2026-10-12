@@ -16,17 +16,18 @@ Use beside a panel whose size the parent keeps. SplitPane wraps it for the commo
 
 - `size` (`number`, required): The panel's current width, or height for the bottom side.
 - `side` (`"left" | "right" | "bottom"`, required): Where the panel is, relative to the handle.
-- `min` (`number`, required): Smallest size.
-- `max` (`number`, required): Largest size.
-- `defaultSize` (`number`, required): Size after a double-click.
+- `preset` (`"sidebar" | "bottom" | "list" | "pane"`, required): The smallest and default size, from the tokens.
+- `max` (`number`, required): Largest size, from the window's room.
 - `label` (`string`, required): Accessible name.
+- `inPanel` (`boolean`, default `false`): Between views inside one panel (editor groups): keeps its size in rounded
+  looks.
 - `onresize` (`(size: number) => void`, required): The new size while dragging or on a key.
 - `oncommit` (`(size: number) => void`): Called once when it ends, to save the size.
 
 ## Example: Left panel
 
 ```svelte
-<ResizeHandle {size} side="left" min={160} max={600} defaultSize={260} label="Resize Files"
+<ResizeHandle {size} side="left" preset="sidebar" max={600} label="Resize Files"
   onresize={(next) => (size = next)} oncommit={save} />
 ```
 

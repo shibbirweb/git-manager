@@ -1,6 +1,6 @@
 import { prop, type ComponentDoc } from "./types";
 
-const GAP = '"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl"';
+const GAP = '"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl"';
 const TONE = '"default" | "dim" | "faint" | "accent" | "danger" | "success" | "warning"';
 const TEXT_SIZE =
   '"micro" | "tiny" | "xsmall" | "compact" | "small" | "codeSmall" | "ui" | "code" | "title" | "heading" | "display"';
@@ -18,6 +18,8 @@ export const layoutDocs: ComponentDoc[] = [
       prop("direction", '"row" | "column"', "Main axis.", { default: '"column"' }),
       prop("gap", GAP, "Space between children.", { default: '"md"' }),
       prop("padding", GAP, "Space inside the edges.", { default: '"none"' }),
+      prop("paddingX", `${GAP} | null`, "Space at the left and right, overriding `padding`.", { default: "null" }),
+      prop("paddingY", `${GAP} | null`, "Space at the top and bottom, overriding `padding`.", { default: "null" }),
       prop("align", '"start" | "center" | "end" | "stretch" | "baseline"', "Cross-axis alignment.", {
         default: '"stretch"',
       }),
@@ -38,7 +40,10 @@ export const layoutDocs: ComponentDoc[] = [
       },
     ],
     replaces: ['<div class="row">', '<div class="actions">', '<div class="toolbar">', "any flex container CSS"],
-    rules: ["Do not add CSS for layout; combine Stacks. Gaps come only from the named steps."],
+    rules: [
+      "Do not add CSS for layout; combine Stacks. Gaps and padding come only from the named steps.",
+      "There is no margin: space between items is the parent's gap, space inside is padding.",
+    ],
   },
   {
     name: "Text",
@@ -80,10 +85,11 @@ export const layoutDocs: ComponentDoc[] = [
     usage: "Use for cards, swatches and settings tiles. Use Stack for one row or one column.",
     aliases: ["Grid"],
     props: [
-      prop("columns", 'number | "auto"', "A column count, or auto to fit as many as `minColumn` allows.", {
-        default: '"auto"',
+      prop("columns", '"auto" | "two" | "three" | "four" | "six"', "A named column count, or auto to fit as many " +
+        "as `minColumn` allows.", { default: '"auto"' }),
+      prop("minColumn", '"small" | "medium" | "large"', "Smallest column width for auto: 140, 180 or 240 px.", {
+        default: '"medium"',
       }),
-      prop("minColumn", "number", "Smallest column width in px for auto.", { default: "grid.minColumn (180)" }),
       prop("gap", GAP, "Space between cells.", { default: '"lg"' }),
       prop("label", "string", "Accessible name of the group."),
       prop("children", "Snippet", "The cells.", { required: true }),

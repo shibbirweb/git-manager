@@ -43,7 +43,7 @@ export function metricsXaml(tokens: Tokens): string {
       const key = `Gm${pascalName(scale)}${pascalName(name)}`;
       if (scale === "radius") {
         lines.push(`    <CornerRadius x:Key="${key}">${value}</CornerRadius>`);
-      } else if (scale === "fontWeight" || (scale === "grid" && name === "columns")) {
+      } else if (scale === "fontWeight" || scale === "textRows" || (scale === "grid" && name === "columns")) {
         lines.push(`    <x:Int32 x:Key="${key}">${value}</x:Int32>`);
       } else {
         lines.push(`    <x:Double x:Key="${key}">${value}</x:Double>`);
@@ -56,19 +56,31 @@ export function metricsXaml(tokens: Tokens): string {
     const list = fonts.filter((font) => !webOnly.includes(font));
     lines.push(`    <FontFamily x:Key="GmFont${pascalName(name)}">${list.join(", ")}</FontFamily>`);
   }
+  for (const [name, colors] of Object.entries(tokens.palettes)) {
+    colors.forEach((color, index) => {
+      const key = `GmPalette${pascalName(name)}${index + 1}`;
+      lines.push(`    <Color x:Key="${key}">${argbHex(parseTokenColor(color))}</Color>`);
+    });
+  }
   for (const [name, shadow] of Object.entries(tokens.shadows)) {
     const parsed = parseShadow(shadow.light);
     lines.push(`    <x:Double x:Key="GmShadow${pascalName(name)}OffsetY">${parsed.y}</x:Double>`);
     lines.push(`    <x:Double x:Key="GmShadow${pascalName(name)}Blur">${parsed.blur}</x:Double>`);
   }
-  for (const [component, parts] of Object.entries(tokens.components)) {
-    for (const [part, value] of Object.entries(parts)) {
-      const key = `Gm${pascalName(component)}${pascalName(part)}`;
-      lines.push(`    <x:Double x:Key="${key}">${resolved(tokens, value)}</x:Double>`);
-    }
-  }
   lines.push("</ResourceDictionary>", "");
   return lines.join("\n");
+}
+
+export const XAML_OPEN = OPEN;
+
+/** One block of doubles per component (Components*.xaml). */
+export function componentBlocksXaml(tokens: Tokens): string[][] {
+  return Object.entries(tokens.components).map(([component, parts]) =>
+    Object.entries(parts).map(([part, value]) => {
+      const key = `Gm${pascalName(component)}${pascalName(part)}`;
+      return `    <x:Double x:Key="${key}">${resolved(tokens, value)}</x:Double>`;
+    }),
+  );
 }
 
 /** Typography.xaml: each text style as size, weight, line height, character spacing and case. */

@@ -5,83 +5,238 @@
     "everywhere."
   ],
   "button": {
-    "height": "{size.control}",
-    "heightSmall": "{size.controlSmall}",
-    "paddingX": 12,
-    "paddingXSmall": 8,
-    "gap": 6,
-    "radius": "{radius.control}",
-    "fontSizeSmall": "{fontSize.small}"
+    "height": "{size.control}", "heightSmall": "{size.controlSmall}", "heightTiny": 22, "iconOnlyTinyWidth": 24,
+    "paddingX": 12, "paddingXSmall": 8, "gap": 6, "radius": "{radius.control}", "fontSizeSmall": "{fontSize.small}",
+    "ghostPaddingX": 8, "ghostMaxWidth": 280, "heightMini": 20, "paddingXMini": 8
   },
   "iconButton": {
-    "size": "{size.control}",
-    "sizeSmall": "{size.iconButtonSmall}",
-    "paddingX": 6,
-    "paddingXSmall": 6,
-    "gap": 4,
-    "radius": "{radius.control}"
+    "size": "{size.control}", "sizeSmall": "{size.iconButtonSmall}", "sizeCompact": 24, "toolWidth": 24,
+    "toolHeight": 22, "paddingX": 6, "paddingXSmall": 6, "gap": 4, "radius": "{radius.control}", "rowSize": 20,
+    "rowPaddingX": 3, "sizeHeader": 26, "countFontSize": "{fontSize.xsmall}", "rowGap": 2, "chevronWidth": 16,
+    "chevronPaddingX": 2, "miniSize": 20, "miniPaddingX": 3, "microSize": 18, "microRadius": 3, "sizeLarge": 30
   },
-  "input": {
-    "height": "{size.control}",
-    "paddingX": 8,
-    "paddingY": 6,
-    "radius": "{radius.control}",
-    "focusRing": 2
-  },
+  "input": {"height": "{size.control}", "paddingX": 8, "paddingY": 6, "radius": "{radius.control}", "focusRing": 2},
+  "select": {"arrowInset": 8, "arrowSpace": 28, "smallArrowInset": 6, "smallArrowSpace": 22},
   "switch": {"width": 34, "height": 20, "knob": 16, "inset": 2, "radius": 10},
   "segmented": {
-    "padding": 2,
-    "radius": "{radius.segmented}",
-    "segmentRadius": "{radius.segment}",
-    "segmentPaddingX": 12,
-    "segmentPaddingY": 4
+    "padding": 2, "radius": "{radius.segmented}", "segmentRadius": "{radius.segment}", "segmentPaddingX": 12,
+    "segmentPaddingY": 4, "smallPadding": 1, "smallRadius": "{radius.segment}", "smallSegmentWidth": 24,
+    "smallSegmentHeight": 18, "smallSegmentRadius": 3, "iconGap": 5, "joinedHeight": 28, "joinedPaddingX": 12,
+    "splitPaddingY": 3, "splitPaddingX": 4
   },
-  "slider": {"width": 160, "valueWidth": 46, "gap": 10},
+  "slider": {"width": 160, "valueWidth": 46, "gap": 10, "wideValueWidth": 76},
   "field": {"gap": 6, "errorGap": 6},
-  "settingRow": {"paddingY": 12, "gap": 20, "labelGap": 3, "stackedGap": 10},
+  "settingRow": {"paddingY": 12, "gap": 20, "labelGap": 3, "stackedGap": 10, "nestedIndent": 18, "plainMinHeight": 32},
   "searchField": {
-    "height": "{size.control}", "gap": 6, "paddingLeft": 8, "paddingRight": 6, "radius": "{radius.control}"
+    "height": "{size.control}", "gap": 6, "paddingLeft": 8, "paddingRight": 6, "radius": "{radius.control}",
+    "largeHeight": 32, "largeGap": 8, "largePaddingX": 12, "compactHeight": 26, "compactGap": 5,
+    "compactPaddingRight": 3, "clearSize": 20, "smallHeight": 24, "smallPaddingRight": 4, "smallWidth": 260
   },
-  "spinner": {"size": "{size.spinner}", "border": 2},
-  "badge": {"size": "{size.badge}", "paddingX": 4, "radius": 8},
-  "tag": {"height": "{size.tag}", "paddingX": 5, "radius": "{radius.small}"},
+  "spinner": {"size": "{size.spinner}", "sizeSmall": 10, "sizeLarge": 18, "border": 2},
+  "badge": {
+    "size": "{size.badge}", "paddingX": 4, "radius": 8, "smallSize": 14, "smallRadius": 7, "largeMinWidth": 18,
+    "largeHeight": 17, "largePaddingX": 5, "largeRadius": 9, "cornerPaddingX": 3, "cornerOffset": 5
+  },
+  "tag": {"height": "{size.tag}", "paddingX": 5, "radius": "{radius.small}", "smallPaddingX": 4, "smallLineHeight": 13},
   "kbd": {"minWidth": 24, "paddingX": 7, "paddingY": 2, "radius": 5},
   "progress": {"height": "{size.progress}", "radius": 2},
   "notice": {"gap": 8, "paddingX": 12, "paddingY": 10, "radius": "{radius.menu}"},
-  "emptyState": {"gap": 8, "padding": 24},
+  "emptyState": {
+    "gap": 8, "padding": 24, "panelGap": 6, "panelPaddingY": 24, "panelPaddingX": 16, "noticeRadius": 8,
+    "circleSize": 36, "largeCircleSize": 44, "paneGap": 6, "panePaddingY": 20, "panePaddingX": 14
+  },
   "card": {"radius": "{radius.menu}", "paddingY": 4},
   "dialog": {
-    "width": 460, "wideWidth": 640, "radius": "{radius.dialog}", "paddingTop": 18, "paddingX": 20,
-    "paddingBottom": 16, "titleGap": 12, "actionsGap": 8, "actionsTop": 18, "messageGap": 16
+    "width": 460, "wideWidth": 640, "radius": "{radius.dialog}", "paddingTop": 18, "paddingX": 20, "paddingBottom": 16,
+    "titleGap": 12, "actionsGap": 8, "actionsTop": 18, "messageGap": 16, "keepVisible": 60
   },
   "menu": {
     "minWidth": 200, "padding": 4, "radius": "{radius.menu}", "itemPaddingX": 10, "itemPaddingY": 5,
     "itemRadius": "{radius.small}", "itemGap": 24, "separatorInset": 6
   },
-  "popover": {"offset": 2, "padding": 4, "panelPaddingY": 12, "panelPaddingX": 14, "radius": "{radius.menu}"},
+  "popover": {
+    "offset": 2, "padding": 4, "panelPaddingY": 12, "panelPaddingX": 14, "radius": "{radius.menu}", "formPadding": 12,
+    "formGap": 8
+  },
   "toast": {
     "maxWidth": 420, "gap": 8, "radius": "{radius.menu}", "edge": 4, "paddingY": 10, "paddingLeft": 12,
-    "paddingRight": 8, "offset": 16
+    "paddingRight": 8, "offset": 16, "detailMaxHeight": 160
   },
   "tabStrip": {
     "height": "{size.tabStrip}", "tabMaxWidth": 240, "tabPaddingLeft": 12, "tabPaddingRight": 6, "gap": 6,
-    "closeSize": 20, "indicator": 2
+    "closeSize": 20, "indicator": 2, "singlePaddingLeft": 24
   },
   "panelTabs": {"height": 29, "gap": 14, "indicator": 2},
-  "tree": {"rowHeight": "{size.treeRow}", "indent": 8, "indentStep": 14, "chevron": 12, "gap": 4, "paddingRight": 8},
+  "tree": {
+    "rowHeight": "{size.treeRow}", "indent": 8, "indentStep": 14, "chevron": 12, "gap": 4, "paddingRight": 8,
+    "paddingY": 4
+  },
   "collapsible": {"height": 26, "gap": 5, "paddingLeft": 4, "paddingRight": 6, "nestedIndent": 16},
   "listRow": {"paddingX": 8, "paddingY": 5, "radius": "{radius.small}", "gap": 8},
-  "breadcrumbs": {"height": 22, "paddingX": 3, "gap": 4, "radius": "{radius.small}"},
+  "breadcrumbs": {
+    "height": 22, "paddingX": 3, "gap": 4, "radius": "{radius.small}", "floatingTop": 8, "floatingHeight": 30,
+    "floatingPaddingX": 6
+  },
   "resizeHandle": {"hitArea": 5, "line": 1, "activeLine": 3},
-  "activityBar": {"width": 44, "item": 36, "radius": "{radius.menu}", "gap": 2, "padding": 6, "indicator": 2},
+  "activityBar": {
+    "width": 44, "item": 36, "radius": "{radius.menu}", "gap": 2, "padding": 6, "indicator": 2, "dot": 7, "dotInset": 7,
+    "dotRing": 2, "badgeBottom": 3
+  },
   "statusBar": {
-    "height": "{size.statusBar}", "itemHeight": "{size.rowItem}", "itemPaddingX": 7, "gap": 12, "itemGap": 5
+    "height": "{size.statusBar}", "itemHeight": "{size.rowItem}", "itemPaddingX": 7, "gap": 12, "itemGap": 5,
+    "iconOnlyPaddingX": 5, "branchMaxWidth": 200, "operationMaxWidth": 320, "quietGap": 4, "quietPaddingX": 6
   },
   "searchToggles": {
     "width": 26, "height": 24, "paddingX": 5, "compactWidth": 20, "compactHeight": 18, "compactPaddingX": 3,
-    "radius": "{radius.small}"
+    "radius": "{radius.small}", "lineHeight": 16, "compactRadius": 3
   },
   "findBar": {
-    "fieldHeight": 24, "fieldMinWidth": 90, "fieldMaxWidth": 360, "buttonSize": 24, "radius": "{radius.small}"
-  }
+    "fieldHeight": 24, "fieldMinWidth": 90, "fieldMaxWidth": 360, "buttonSize": 24, "radius": "{radius.small}",
+    "paddingY": 3, "rowGap": 3, "counterMinWidth": 56, "compactBelow": 480
+  },
+  "panelHeader": {"height": 34, "paddingLeft": 12, "paddingRight": 6, "gap": 6, "buttonSize": 24},
+  "fileRow": {
+    "height": "{size.treeRow}", "paddingLeft": 28, "nestedPaddingLeft": 40, "paddingRight": 6, "gap": 8,
+    "letterWidth": 12, "actionSize": 20, "tagPaddingX": 5, "tagLineHeight": 14, "listPaddingX": 10
+  },
+  "sidebarRow": {
+    "height": "{size.treeRow}", "gap": 5, "paddingLeft": 6, "paddingRight": 6, "indent": 12, "chevron": 14,
+    "buttonSize": 20
+  },
+  "descriptionList": {"rowGap": 3, "columnGap": 10},
+  "codeBlock": {
+    "paddingX": 8, "paddingY": 5, "radius": "{radius.control}", "lineHeight": 17, "previewPaddingY": 6,
+    "previewPaddingX": 8, "promptPadding": 10, "promptMaxHeight": 220
+  },
+  "fieldset": {"gap": 6, "legendGap": 4, "labelColumn": 130},
+  "sideNav": {
+    "gap": 2, "itemPaddingX": 10, "itemPaddingY": 6, "radius": "{radius.control}", "largeHeight": 36,
+    "largePaddingX": 12, "linkHeight": 30, "linkGap": 10
+  },
+  "statusIcon": {"size": 14, "spinner": 10, "question": 13, "ring": 8},
+  "refLabel": {"height": 17, "paddingX": 6, "gap": 3, "radius": "{radius.small}", "maxWidth": 180, "lineHeight": 15},
+  "loadingOverlay": {
+    "width": 380, "paddingX": 18, "paddingY": 16, "gap": 12, "spinner": 18, "radius": "{radius.dialog}", "textGap": 3
+  },
+  "themeSwatch": {
+    "width": 64, "height": 22, "paddingX": 4, "gap": 4, "bar": 4, "barHeight": 12, "radius": "{radius.small}"
+  },
+  "banner": {"paddingX": 12, "paddingY": 6, "gap": 10},
+  "formDialog": {"paddingTop": 18, "paddingX": 20, "paddingBottom": 16, "bodyGap": 10, "actionsTop": 16},
+  "splitDialog": {
+    "width": 760, "height": 520, "radius": "{radius.window}", "navWidth": 190, "navPaddingTop": 16, "navPaddingX": 10,
+    "navPaddingBottom": 12
+  },
+  "compactField": {"gap": 5},
+  "newTab": {"size": 26, "margin": 4, "radius": "{radius.control}"},
+  "dataTable": {"headerHeight": 24, "headerPaddingRight": 20, "cellPaddingLeft": 12, "rowPaddingRight": 10},
+  "commitGraph": {"laneGap": 14, "pad": 9, "node": 4, "nodeHead": 4.5, "halo": 7.5, "ring": 4, "line": 2},
+  "commandPalette": {
+    "width": 620, "top": 8, "fieldHeight": 38, "fieldPaddingX": 12, "rowHeight": 26, "rowPaddingX": 8, "listPadding": 4,
+    "maxHeight": 468, "radius": "{radius.menu}", "indent": 14, "kbdLineHeight": 18, "compactFieldHeight": 34,
+    "headPaddingY": 6, "headPaddingLeft": 12, "headPaddingRight": 8, "headGap": 8, "hintsPaddingY": 5,
+    "hintsPaddingX": 12, "hintsGapY": 4, "hintsGapX": 14, "wideWidth": 720, "wideFieldHeight": 40,
+    "replaceFieldHeight": 36, "replaceIndent": 24, "replaceIndentWidth": 15, "scopesPaddingTop": 2,
+    "scopesPaddingRight": 12, "scopesPaddingLeft": 6, "scopesGap": 10, "wideFieldPaddingRight": 8, "prefixMinWidth": 26
+  },
+  "reorderList": {"rowPaddingY": 4, "rowPaddingLeft": 6, "rowPaddingRight": 10, "gap": 8, "dropLine": 2},
+  "shortcutRecorder": {"width": 150, "minHeight": 26, "paddingX": 6},
+  "codeEditor": {"gutterPaddingLeft": 12, "gutterPaddingRight": 10, "gutterMinWidth": 40},
+  "mergeView": {"gap": 52, "labelPaddingX": 12, "labelPaddingY": 5, "buttonWidth": 18, "buttonHeight": 17},
+  "formatToolbar": {
+    "minHeight": 28, "paddingY": 2, "paddingLeft": 6, "paddingRight": 10, "groupGap": 12, "toolHeight": 22,
+    "toolMinWidth": 24, "toolPaddingX": 5, "dividerHeight": 14
+  },
+  "mediaView": {
+    "padding": 16, "checker": 16, "infoGap": 6, "zoomWidth": 44, "barMinHeight": 28, "barPaddingY": 2, "barPaddingX": 8,
+    "barGapY": 2, "barGapX": 4, "compareBarPaddingY": 4, "compareBarPaddingX": 10, "headHeight": 24, "headPaddingX": 12,
+    "headGap": 8
+  },
+  "terminalView": {"paddingTop": 4, "paddingBottom": 2, "paddingLeft": 12, "messageMaxWidth": 520, "dropBorder": 2},
+  "appShell": {"minMain": 360, "minEditorHeight": 120, "panelGap": 6, "panelRadius": 10},
+  "toolbar": {
+    "tabHeight": 34, "tabPaddingX": 10, "tabGap": 8, "panelHeight": 32, "panelPaddingLeft": 10, "panelPaddingRight": 8,
+    "panelGap": 8, "editorHeight": 34, "editorPaddingX": 8, "editorGap": 2, "logHeight": 40, "logPaddingX": 8,
+    "logGap": 6, "filterPadding": 8, "filterGap": 6, "mergePaddingY": 6, "mergePaddingX": 10, "mergeGap": 4,
+    "footerGap": 8, "dialogPaddingTop": 8, "dialogPaddingX": 20, "dialogPaddingBottom": 10, "dialogGap": 8,
+    "panePaddingY": 8, "panePaddingX": 12, "paneGap": 8, "dividerLength": 16, "dividerSpace": 4,
+    "editorDividerSpace": 8, "mergeDividerLength": 18, "mergeDividerSpace": 6, "fileHeight": 29, "filePaddingLeft": 10,
+    "filePaddingRight": 6, "fileGap": 6, "compactGap": 1, "fileDividerLength": 14, "headPaddingY": 6,
+    "headPaddingX": 10, "headGap": 8, "popupPadding": 10, "popupPaddingX": 12, "popupGap": 10, "railWidth": 30,
+    "railPaddingTop": 4, "railGap": 2, "conflictMinHeight": 30, "conflictPaddingY": 3, "conflictPaddingLeft": 10,
+    "conflictPaddingRight": 8, "conflictGapY": 4, "conflictGapX": 6, "searchPadding": 8, "dialogFooterPaddingY": 10,
+    "dialogFooterPaddingX": 20, "dialogFooterGap": 12
+  },
+  "sectionTitle": {
+    "barHeight": 34, "barPaddingLeft": 10, "barPaddingRight": 6, "gap": 6, "listPaddingTop": 6, "listPaddingX": 10,
+    "listPaddingBottom": 3, "captionPaddingTop": 6, "captionPaddingX": 12, "captionPaddingBottom": 4,
+    "capsPaddingTop": 12, "capsPaddingX": 4, "capsPaddingBottom": 2, "dayPaddingTop": 8, "dayPaddingX": 12,
+    "dayPaddingBottom": 4, "dividedPaddingY": 4, "dividedGap": 8, "groupTop": 18, "groupFirstTop": 6, "groupBottom": 2,
+    "bandPaddingTop": 5, "bandPaddingX": 10, "bandPaddingBottom": 3, "pickerPaddingTop": 6, "pickerPaddingX": 8,
+    "pickerPaddingBottom": 2
+  },
+  "toggleButton": {
+    "toolWidth": 24, "toolHeight": 22, "chipPaddingY": 2, "chipPaddingX": 6, "chipGap": 5, "plainHeight": 24,
+    "plainPaddingX": 8, "plainGap": 5, "iconPaddingX": 6, "outlineHeight": 26, "outlinePaddingX": 10, "outlineGap": 6,
+    "filterHeight": 26, "filterPaddingX": 9
+  },
+  "choiceList": {"gap": 6, "paddingY": 8, "paddingX": 12, "lineGap": 2},
+  "statusDot": {"size": 8, "smallSize": 6, "markSize": 7, "markInset": 7, "markRing": 2},
+  "avatar": {"size": 32, "tileSize": 36, "tileRadius": 8},
+  "chip": {
+    "height": 22, "paddingLeft": 5, "paddingRight": 8, "gap": 4, "radius": 11, "pickPaddingY": 2, "pickPaddingX": 8,
+    "pickRadius": 12, "badgeHeight": 18, "badgePaddingX": 5
+  },
+  "pill": {"paddingX": 6, "radius": 8, "lineHeight": 16, "outlineRadius": 9, "tallLineHeight": 18},
+  "mark": {"width": 20, "height": 16, "smallPaddingX": 3, "smallLineHeight": 13, "smallRadius": 3},
+  "meter": {"gap": 4, "usageHeight": 6, "usageRadius": 3, "miniWidth": 32},
+  "zoomBadge": {"top": 56, "paddingY": 6, "paddingX": 14, "radius": 16},
+  "patchView": {"paddingY": 6, "linePaddingX": 12, "lineHeight": "{lineHeight.relaxed}"},
+  "appHeader": {"height": 42, "paddingX": 8, "gap": 12, "sideGap": 4, "dividerLength": 18, "busyMaxWidth": 280},
+  "logo": {
+    "size": 40, "radius": 10, "largeSize": 72, "largeRadius": 18, "softSize": 56, "softRadius": 14, "mediumSize": 48,
+    "mediumRadius": 12
+  },
+  "tile": {"width": 112, "gap": 10, "iconSize": 64, "iconRadius": 16},
+  "resourceLink": {
+    "minHeight": 56, "paddingY": 10, "paddingX": 12, "gap": 14, "radius": 8, "linesGap": 3, "cardPaddingY": 10,
+    "cardPaddingX": 12, "cardGap": 12, "cardLinesGap": 2
+  },
+  "symbolBadge": {"size": 15, "radius": 3},
+  "treeLine": {"width": 6, "overlap": 2},
+  "choiceMenu": {
+    "headGap": 12, "itemPaddingY": 6, "itemPaddingX": 8, "itemGap": 8, "radioWidth": 14, "radioDot": 6, "linesGap": 1,
+    "separatorSpace": 4
+  },
+  "panelDialog": {
+    "radius": "{radius.window}", "headPaddingTop": 14, "headPaddingRight": 16, "headPaddingBottom": 6,
+    "headPaddingLeft": 20, "iconHeadPaddingTop": 18, "iconHeadPaddingBottom": 12, "headGap": 14, "iconSize": 38,
+    "iconRadius": 10, "bodyPaddingTop": 4, "bodyPaddingX": 20, "bodyPaddingBottom": 12, "footPaddingTop": 12,
+    "footPaddingBottom": 16, "footGap": 8
+  },
+  "dialogHead": {
+    "gap": 12, "bottom": 14, "iconSize": 32, "iconRadius": 8, "contentPaddingTop": 14, "contentPaddingRight": 12,
+    "contentPaddingBottom": 8, "contentPaddingLeft": 22
+  },
+  "sessionTabs": {
+    "height": 28, "paddingX": 6, "gap": 1, "tabGap": 6, "tabMaxWidth": 220, "tabPaddingLeft": 10, "tabPaddingRight": 6,
+    "indicator": 2, "closeSize": 16, "closeRadius": 3
+  },
+  "diffLabels": {"height": 24, "paddingX": 12, "gap": 6},
+  "codeView": {"copyHeight": 22},
+  "editorTab": {"dirtyDot": 8},
+  "pickList": {"maxHeight": 340, "groupPaddingBottom": 3},
+  "splitButton": {"arrowPaddingX": 5},
+  "richEditor": {"statusMarginY": 16, "statusMarginX": 24, "noticeMaxWidth": 920, "noticeTop": 12},
+  "floatingFindBar": {
+    "top": 4, "right": 14, "paddingY": 3, "paddingX": 4, "gap": 2, "radius": "{radius.control}", "fieldWidth": 280,
+    "fieldHeight": 24, "fieldPaddingLeft": 6, "fieldPaddingRight": 2, "fieldGap": 4, "counterMinWidth": 64,
+    "buttonSize": 24
+  },
+  "tabs": {
+    "underlinePaddingTop": 6, "underlinePaddingX": 9, "underlinePaddingBottom": 5, "underlineGap": 2,
+    "underlineIndicator": 2
+  },
+  "listBox": {"minHeight": 120},
+  "pane": {"paddingTop": 4, "paddingBottom": 8}
 }

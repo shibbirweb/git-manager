@@ -8,6 +8,23 @@ export interface TreeNode {
   children?: TreeNode[];
 }
 
+/** How a row looks beyond its name: a tone (git status colors), struck through (deleted), a badge letter. */
+export interface TreeDecoration {
+  tone?: "default" | "dim" | "faint" | "accent" | "danger" | "success" | "warning";
+  strike?: boolean;
+  badge?: string;
+  /** A pending cut: the name and icon half faded. */
+  cut?: boolean;
+  /** Ignored by git: the name and icon faint. */
+  ignored?: boolean;
+  /** A workspace folder in a multi-folder workspace: its name as a section header. */
+  root?: boolean;
+  /** A repository folder: its icon in the accent color. */
+  repo?: boolean;
+  /** A small outlined mark after the name, such as LFS. */
+  tag?: string;
+}
+
 export interface TreeRow<N extends TreeNode = TreeNode> {
   node: N;
   depth: number;

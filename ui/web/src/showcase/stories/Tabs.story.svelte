@@ -14,4 +14,14 @@
     { value: "console", label: "Git Console" },
   ]}
 />
+<Tabs
+  label="Search scope"
+  variant="underline"
+  bind:value={tab}
+  tabs={[
+    { value: "terminal", label: "All" },
+    { value: "run", label: "Files" },
+    { value: "console", label: "Symbols" },
+  ]}
+/>
 <Text tone="dim">Showing: {tab}</Text>

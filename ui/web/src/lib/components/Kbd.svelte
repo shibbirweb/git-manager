@@ -16,7 +16,7 @@
     min-width: var(--kbd-min-width);
     padding: var(--kbd-padding-y) var(--kbd-padding-x);
     border: 1px solid var(--border-strong);
-    border-bottom-width: 2px;
+    border-bottom-width: var(--border-width-thick);
     border-radius: var(--kbd-radius);
     background: var(--panel-alt);
     color: var(--text);

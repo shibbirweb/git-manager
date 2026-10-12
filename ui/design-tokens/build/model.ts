@@ -2,6 +2,8 @@
 // references resolved. Every platform writer (css.ts, swift.ts, xaml.ts, gtk.ts) reads this model only.
 import colorsJson from "../colors.json";
 import componentsJson from "../components.json";
+import moreComponentsJson from "../components-2.json";
+import paletteJson from "../palette.json";
 import tokensJson from "../tokens.json";
 import typographyJson from "../typography.json";
 
@@ -35,6 +37,8 @@ export interface Tokens {
   /** Number groups: fontSize, fontWeight, lineHeight, letterSpacing, size, radius, space, motion, breakpoint, grid. */
   scales: Record<string, Record<string, number>>;
   textStyles: Record<string, TextStyle>;
+  /** Fixed color sets, the same in light and dark (palette.json). */
+  palettes: Record<string, string[]>;
   /** component -> part -> a number, or a reference to a scale token. */
   components: Record<string, Record<string, number | Reference>>;
 }
@@ -47,9 +51,24 @@ export const SCALES = [
   "size",
   "radius",
   "space",
+  "borderWidth",
   "motion",
   "breakpoint",
   "grid",
+  "iconSize",
+  "iconStroke",
+  "controlWidth",
+  "popoverWidth",
+  "dialogWidth",
+  "viewHeight",
+  "columnWidth",
+  "rowHeight",
+  "textRows",
+  "panelMin",
+  "panelDefault",
+  "codeHeight",
+  "tableColumn",
+  "labelColumn",
 ];
 
 function withoutComment<T extends object>(json: T): Omit<T, "$comment"> {
@@ -92,7 +111,13 @@ function textStyles(
   return result;
 }
 
-export function buildTokens(colors: object, tokens: object, components: object, typography: object = {}): Tokens {
+export function buildTokens(
+  colors: object,
+  tokens: object,
+  components: object,
+  typography: object = {},
+  palette: object = {},
+): Tokens {
   const base = {
     ...(withoutComment(tokens) as Record<string, Record<string, unknown>>),
     ...(withoutComment(typography) as Record<string, Record<string, unknown>>),
@@ -122,11 +147,21 @@ export function buildTokens(colors: object, tokens: object, components: object, 
     fonts: (base.font ?? {}) as Record<string, string[]>,
     scales,
     textStyles: textStyles((base.textStyle ?? {}) as Record<string, Record<string, unknown>>, scales),
+    palettes: withoutComment(palette) as Record<string, string[]>,
     components: parts,
   };
 }
 
-export const designTokens: Tokens = buildTokens(colorsJson, tokensJson, componentsJson, typographyJson);
+/** components.json and components-2.json together (one file would pass 300 lines). */
+export const componentsSource = { ...componentsJson, ...moreComponentsJson, $comment: componentsJson.$comment };
+
+export const designTokens: Tokens = buildTokens(
+  colorsJson,
+  tokensJson,
+  componentsSource,
+  typographyJson,
+  paletteJson,
+);
 
 /** A component part's number, following its reference. */
 export function resolved(tokens: Tokens, value: number | Reference): number {

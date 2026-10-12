@@ -56,6 +56,10 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - **New UI is a library component first.** Build it in `ui/web/` (component, doc, story, tokens in
   `ui/design-tokens/`), then use it in the app, so every platform matches. Library components take no `class` or
   `style`: everything is a prop; lay out with `Stack`, write words with `Text`; sizes come from token variables.
+  No prop takes a free number or free text for design (size, width, height, gap, padding, color): each is a named
+  preset from `ui/design-tokens`; numbers are only data (counts, values, positions). There is no margin prop.
+  Only reusable building blocks go in the library (primitives, and variants or props on them); compose
+  screen-specific pieces from them instead of adding compound components.
 - Keep UI text short and plain; confirm destructive actions (`dialogs.confirm({ danger: true })`).
 - Never type a shortcut into UI text (no "Cmd+P" in a label or tooltip): use `commandKeys(id)`, `withCommandKeys(title, id)` or `localKeys("CmdOrCtrl+...")` from `commands/commandRuntime.ts`, so Windows shows Ctrl and custom keys show up.
 

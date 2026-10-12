@@ -18,7 +18,7 @@ Use to show code, output or a file's text without editing. Use the app's editor 
 - `language` (`"svelte" | "html" | "ts" | "js" | "md" | "plain"`, default `"plain"`): Highlighting.
 - `lineNumbers` (`boolean`, default `true`): Show line numbers.
 - `copy` (`boolean`, default `true`): Show the Copy button.
-- `maxHeight` (`number | null`, default `520`): Scroll beyond this height in px; null grows to fit.
+- `maxHeight` (`"none" | "small" | "medium" | "large"`, default `"large"`): Scroll beyond 200, 360 or 520 px; none fits.
 
 ## Example: A snippet
 

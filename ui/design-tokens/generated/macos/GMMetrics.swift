@@ -24,16 +24,20 @@ public enum GMFontFamilyMono {
 }
 
 public enum GMFontSize {
+    public static let nano: CGFloat = 9
     public static let micro: CGFloat = 9.5
     public static let tiny: CGFloat = 10
+    public static let mini: CGFloat = 10.5
     public static let xsmall: CGFloat = 11
     public static let compact: CGFloat = 11.5
     public static let small: CGFloat = 12
     public static let codeSmall: CGFloat = 12.5
     public static let ui: CGFloat = 13
+    public static let medium: CGFloat = 13.5
     public static let code: CGFloat = 13
     public static let title: CGFloat = 14
     public static let heading: CGFloat = 15
+    public static let lead: CGFloat = 16
     public static let display: CGFloat = 22
 }
 
@@ -46,9 +50,12 @@ public enum GMFontWeight {
 
 public enum GMLineHeight {
     public static let dense: Double = 1.25
+    public static let snug: Double = 1.4
     public static let normal: Double = 1.45
     public static let relaxed: Double = 1.5
+    public static let sample: Double = 1.55
     public static let loose: Double = 1.6
+    public static let airy: Double = 1.7
 }
 
 public enum GMLetterSpacing {
@@ -75,6 +82,7 @@ public enum GMSize {
 }
 
 public enum GMRadius {
+    public static let tiny: CGFloat = 2
     public static let small: CGFloat = 4
     public static let segment: CGFloat = 5
     public static let control: CGFloat = 6
@@ -97,11 +105,19 @@ public enum GMSpace {
     public static let s9: CGFloat = 18
     public static let s10: CGFloat = 20
     public static let s11: CGFloat = 24
+    public static let s12: CGFloat = 32
+}
+
+public enum GMBorderWidth {
+    public static let mid: CGFloat = 1.5
+    public static let thick: CGFloat = 2
+    public static let focus: CGFloat = 2
 }
 
 public enum GMMotion {
     public static let fast: Double = 0.12
     public static let normal: Double = 0.15
+    public static let flash: Double = 0.18
 }
 
 public enum GMBreakpoint {
@@ -120,4 +136,114 @@ public enum GMGrid {
     public static let margin: CGFloat = 24
     public static let maxWidth: CGFloat = 1200
     public static let minColumn: CGFloat = 180
+}
+
+public enum GMIconSize {
+    public static let xxsmall: CGFloat = 9
+    public static let xsmall: CGFloat = 10
+    public static let small: CGFloat = 11
+    public static let compact: CGFloat = 12
+    public static let medium: CGFloat = 13
+    public static let normal: CGFloat = 14
+    public static let regular: CGFloat = 15
+    public static let large: CGFloat = 16
+    public static let xlarge: CGFloat = 18
+    public static let activity: CGFloat = 19
+    public static let xxlarge: CGFloat = 20
+    public static let emphasis: CGFloat = 22
+    public static let huge: CGFloat = 24
+    public static let logo: CGFloat = 26
+    public static let giant: CGFloat = 28
+    public static let display: CGFloat = 34
+}
+
+public enum GMIconStroke {
+    public static let thin: CGFloat = 1.5
+    public static let light: CGFloat = 1.8
+    public static let normal: CGFloat = 2
+    public static let bold: CGFloat = 2.6
+    public static let heavy: CGFloat = 3
+}
+
+public enum GMControlWidth {
+    public static let xsmall: CGFloat = 80
+    public static let number: CGFloat = 110
+    public static let small: CGFloat = 120
+    public static let medium: CGFloat = 180
+    public static let large: CGFloat = 280
+}
+
+public enum GMPopoverWidth {
+    public static let small: CGFloat = 256
+    public static let medium: CGFloat = 300
+    public static let large: CGFloat = 360
+}
+
+public enum GMDialogWidth {
+    public static let small: CGFloat = 460
+    public static let normal: CGFloat = 520
+    public static let medium: CGFloat = 560
+    public static let large: CGFloat = 620
+    public static let xlarge: CGFloat = 760
+    public static let full: CGFloat = 1200
+}
+
+public enum GMViewHeight {
+    public static let small: CGFloat = 160
+    public static let medium: CGFloat = 240
+    public static let large: CGFloat = 360
+}
+
+public enum GMColumnWidth {
+    public static let small: CGFloat = 140
+    public static let medium: CGFloat = 180
+    public static let large: CGFloat = 240
+}
+
+public enum GMRowHeight {
+    public static let compact: CGFloat = 22
+    public static let normal: CGFloat = 24
+    public static let relaxed: CGFloat = 26
+    public static let comfortable: CGFloat = 28
+}
+
+public enum GMTextRows {
+    public static let small: Int = 2
+    public static let normal: Int = 3
+    public static let large: Int = 5
+    public static let xlarge: Int = 8
+}
+
+public enum GMPanelMin {
+    public static let sidebar: CGFloat = 200
+    public static let bottom: CGFloat = 80
+    public static let list: CGFloat = 120
+    public static let pane: CGFloat = 120
+}
+
+public enum GMPanelDefault {
+    public static let sidebar: CGFloat = 260
+    public static let bottom: CGFloat = 260
+    public static let list: CGFloat = 180
+    public static let pane: CGFloat = 260
+}
+
+public enum GMCodeHeight {
+    public static let small: CGFloat = 200
+    public static let medium: CGFloat = 360
+    public static let large: CGFloat = 520
+}
+
+public enum GMTableColumn {
+    public static let xsmall: CGFloat = 82
+    public static let small: CGFloat = 110
+    public static let side: CGFloat = 130
+    public static let medium: CGFloat = 150
+    public static let large: CGFloat = 220
+}
+
+public enum GMLabelColumn {
+    public static let small: CGFloat = 100
+    public static let medium: CGFloat = 120
+    public static let large: CGFloat = 130
 }

@@ -15,6 +15,7 @@
       { id: "changes", icon: "git-compare", label: "Changes", badge: 4 },
       { id: "log", icon: "history", label: "Log" },
       null,
+      { id: "ai", icon: "bot", label: "AI", dot: true },
       { id: "settings", icon: "settings", label: "Settings" },
     ]}
   />

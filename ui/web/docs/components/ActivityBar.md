@@ -14,7 +14,7 @@ Use at the window's left or right edge. A `null` item pushes the rest to the bot
 
 ## Props
 
-- `items` (`({ id: string; icon: IconName; label: string; badge?: number } | null)[]`, required): The panels.
+- `items` (`({ id; icon; label; badge?: number; dot?: boolean; smallIcon?: boolean } | null)[]`, required): The panels.
 - `active` (`string | null`, default `null`, bindable): The open panel's id.
 - `label` (`string`, required): Accessible name.
 - `side` (`"left" | "right"`, default `"left"`): Which window edge; moves the border and accent line.

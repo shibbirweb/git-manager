@@ -18,7 +18,9 @@ Use for five or more choices, or long labels. Use Segmented for two to four shor
 - `value` (`T extends string`, required, bindable): The chosen value.
 - `label` (`string`, required): Accessible name.
 - `disabled` (`boolean`, default `false`): Disables it.
-- `width` (`string`, default `"auto"`): CSS width, such as `180px`.
+- `size` (`"normal" | "small"`, default `"normal"`): Small: 24px, inside a settings line.
+- `width` (`"auto" | "fill" | "xsmall" | "small" | "medium" | "large"`, default `"auto"`): auto, the parent's width, or
+  80, 120, 180 or 280 px.
 - `onchange` (`(value: T) => void`): Called with the new value.
 
 ## Example: Cursor style

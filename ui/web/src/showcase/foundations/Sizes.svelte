@@ -1,7 +1,7 @@
-<!-- The size, radius, spacing and motion scales and each component's measurements, from tokens.json and
-     components.json. Type is on the Typography page, grid and breakpoints on the Layout page. -->
+<!-- The size, radius, spacing and motion scales and each component's measurements, from tokens.json,
+     components.json and components-2.json. Type is on the Typography page, grid and breakpoints on the Layout page. -->
 <script lang="ts">
-  import components from "../../../../design-tokens/components.json";
+  import { componentsSource as components } from "../../../../design-tokens/build/model";
   import tokens from "../../../../design-tokens/tokens.json";
 
   const SCALES = ["size", "radius", "space", "motion"] as const;
@@ -20,8 +20,8 @@
   <h1>Sizes</h1>
   <p class="intro">
     Scales from <code>ui/design-tokens/tokens.json</code> and component measurements from
-    <code>components.json</code>. Change a value there and run <code>bun run ui:tokens</code>: every platform's
-    files follow.
+    <code>components.json</code> and <code>components-2.json</code>. Change a value there and run
+    <code>bun run ui:tokens</code>: every platform's files follow.
   </p>
   {#each scales as { scale, values } (scale)}
     <h2>{scale}</h2>

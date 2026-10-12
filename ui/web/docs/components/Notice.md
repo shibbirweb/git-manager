@@ -15,6 +15,7 @@ Use inside a view for a state the user should know, such as a file changed on di
 ## Props
 
 - `tone` (`"danger" | "warning" | "info" | "success"`, default `"info"`): Color and default icon.
+- `variant` (`"card" | "banner"`, default `"card"`): A rounded card in a view, or a full-width bar at its top.
 - `icon` (`IconName | null`, default `null`): Another icon than the tone's.
 - `action` (`Snippet`): A button on the right.
 - `children` (`Snippet`, required): The message.

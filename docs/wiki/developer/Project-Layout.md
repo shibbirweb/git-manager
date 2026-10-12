@@ -170,7 +170,7 @@ ui/
 │   ├── src/lib/docs/       one doc per component: the showcase and the AI pages come from it
 │   ├── src/showcase/       the local site: stories, props, code tabs, colors and sizes
 │   └── COMPONENTS.md       the generated index for AI agents (docs/components/<Name>.md per component)
-└── design-tokens/          colors.json, tokens.json, components.json and the generators
+└── design-tokens/          colors.json, tokens.json, components*.json and the generators
     └── generated/          Swift (macos), XAML (windows), GTK CSS (linux) and web colors
 ```
 

@@ -104,7 +104,7 @@ export const navigationCases: ParityCase[] = [
     id: "breadcrumbs",
     sources: ["src/lib/navBar/NavigationBar.svelte"],
     html:
-      `<nav class="crumbs"><button class="crumb folder repo has-icon">${iconSvg("folder-git", 14)}` +
+      `<nav class="nav-bar"><button class="crumb folder repo has-icon">${iconSvg("folder-git", 14)}` +
       `<span class="crumb-name">storefront</span></button><span class="sep">${iconSvg("chevron-right", 12)}</span>` +
       '<button class="crumb folder"><span class="crumb-name">src</span></button>' +
       `<span class="sep">${iconSvg("chevron-right", 12)}</span>` +

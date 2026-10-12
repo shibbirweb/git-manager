@@ -28,13 +28,14 @@ export const shellCases: ParityCase[] = [
     id: "activity-bar",
     sources: ["src/lib/views/ActivityBar.svelte"],
     html:
-      `<nav class="activity"><button class="item">${iconSvg("file", 20)}</button>` +
-      `<button class="item active">${iconSvg("git-compare", 20)}</button></nav>`,
+      `<nav class="activity"><button class="item">${iconSvg("file", 19, 1.8)}</button>` +
+      `<button class="item active">${iconSvg("git-compare", 19, 1.8)}</button></nav>`,
     pairs: [
       { name: "bar", ref: ".activity", lib: ".activity", ignore: { height: "the window's height" } },
       { name: "item", ref: ".item:not(.active)", lib: ".item:not(.active)", states: ["hover"] },
       { name: "active", ref: ".item.active", lib: ".item.active" },
       { name: "indicator", ref: ".item.active", lib: ".item.active", pseudo: "::before" },
+      { name: "icon", ref: ".item:not(.active) svg", lib: ".item:not(.active) svg" },
     ],
   },
   {

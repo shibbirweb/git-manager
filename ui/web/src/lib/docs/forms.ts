@@ -1,6 +1,7 @@
 import { prop, restProp, type ComponentDoc } from "./types";
 
 const OPTION_VALUE = "T extends string";
+const LABEL_COLUMN = '"small" | "medium" | "large"';
 
 export const formDocs: ComponentDoc[] = [
   {
@@ -14,6 +15,9 @@ export const formDocs: ComponentDoc[] = [
       prop("invalid", "boolean", "Red border and aria-invalid.", { default: "false" }),
       prop("mono", "boolean", "Monospace text, for hashes and paths.", { default: "false" }),
       prop("type", "string", "The input type.", { default: '"text"' }),
+      prop("width", '"auto" | "fill" | "xsmall" | "small" | "medium" | "large"', "auto, the parent's width, or " +
+        "80, 120, 180 or 280 px.", { default: '"auto"' }),
+      prop("suggestions", "string[]", "Values offered while typing, such as installed font names.", { default: "[]" }),
       prop("element", "HTMLInputElement | null", "The input element, to focus or select it.", {
         default: "null",
         bindable: true,
@@ -34,7 +38,7 @@ export const formDocs: ComponentDoc[] = [
     aliases: ["Textarea"],
     props: [
       prop("value", "string", "The text.", { default: '""', bindable: true }),
-      prop("rows", "number", "Visible lines.", { default: "3" }),
+      prop("rows", '"small" | "normal" | "large" | "xlarge"', "Visible lines: 2, 3, 5 or 8.", { default: '"normal"' }),
       prop("resize", '"none" | "vertical"', "Whether the user can drag its height.", { default: '"none"' }),
       prop("invalid", "boolean", "Red border and aria-invalid.", { default: "false" }),
       prop("mono", "boolean", "Monospace text.", { default: "false" }),
@@ -59,7 +63,9 @@ export const formDocs: ComponentDoc[] = [
       prop("value", OPTION_VALUE, "The chosen value.", { required: true, bindable: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("disabled", "boolean", "Disables it.", { default: "false" }),
-      prop("width", "string", "CSS width, such as `180px`.", { default: '"auto"' }),
+      prop("size", '"normal" | "small"', "Small: 24px, inside a settings line.", { default: '"normal"' }),
+      prop("width", '"auto" | "fill" | "xsmall" | "small" | "medium" | "large"', "auto, the parent's width, or " +
+        "80, 120, 180 or 280 px.", { default: '"auto"' }),
       prop("onchange", "(value: T) => void", "Called with the new value."),
     ],
     examples: [
@@ -81,6 +87,7 @@ export const formDocs: ComponentDoc[] = [
       prop("indeterminate", "boolean", "The mixed state, for a select-all box.", { default: "false" }),
       prop("label", "string", "The text, when `children` is not given.", { default: '""' }),
       prop("disabled", "boolean", "Disables it.", { default: "false" }),
+      prop("size", '"normal" | "small"', "Small: 12px dim words, for an option in a bar.", { default: '"normal"' }),
       prop("onchange", "(checked: boolean) => void", "Called with the new state."),
       prop("children", "Snippet", "Rich label content instead of `label`."),
     ],
@@ -96,14 +103,19 @@ export const formDocs: ComponentDoc[] = [
     props: [
       prop(
         "options",
-        `{ value: ${OPTION_VALUE}; label: string; description?: string; disabled?: boolean }[]`,
+        `{ value: ${OPTION_VALUE}; label: string; description?: string; disabled?: boolean; danger?: boolean }[]`,
         "The choices.",
         { required: true },
       ),
       prop("value", OPTION_VALUE, "The chosen value.", { required: true, bindable: true }),
       prop("name", "string", "The radio group's form name; unique on the page.", { required: true }),
       prop("label", "string", "Accessible name of the group.", { required: true }),
+      prop("labelWidth", LABEL_COLUMN, "The label column in columns layout: 100, 120 or 130 px.", {
+        default: '"large"',
+      }),
       prop("direction", '"column" | "row"', "Stack or line up the choices.", { default: '"column"' }),
+      prop("layout", '"stacked" | "columns"', "Description under the label, or label and description in columns " +
+        "(Pull's modes).", { default: '"stacked"' }),
       prop("onchange", "(value: T) => void", "Called with the new value."),
     ],
     examples: [
@@ -136,16 +148,20 @@ export const formDocs: ComponentDoc[] = [
     usage: "Use for a number in a known range where the exact value matters less than the feel.",
     aliases: ["Slider", "Range"],
     props: [
-      prop("value", "number", "The value.", { required: true, bindable: true }),
-      prop("min", "number", "Lowest value.", { required: true }),
-      prop("max", "number", "Highest value.", { required: true }),
-      prop("step", "number", "Step between values.", { default: "1" }),
+      prop("value", "number", "The value.", { required: true, bindable: true, data: true }),
+      prop("min", "number", "Lowest value.", { required: true, data: true }),
+      prop("max", "number", "Highest value.", { required: true, data: true }),
+      prop("step", "number", "Step between values.", { default: "1", data: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("disabled", "boolean", "Disables it.", { default: "false" }),
+      prop("valueWidth", '"normal" | "wide"', "Room for the value: wide for words such as a font weight.", {
+        default: '"normal"',
+      }),
       prop("format", "(value: number) => string", "How the value is shown, e.g. `13 px`.", {
         default: "(shown) => String(shown)",
+        data: true,
       }),
-      prop("onchange", "(value: number) => void", "Called while it moves."),
+      prop("onchange", "(value: number) => void", "Called while it moves.", { data: true }),
     ],
     examples: [
       {
@@ -165,6 +181,9 @@ export const formDocs: ComponentDoc[] = [
       prop("label", "string", "The label above the control.", { default: '""' }),
       prop("hint", "string", "Help under the control, hidden while there is an error.", { default: '""' }),
       prop("error", "string | null", "Validation message in red, announced to screen readers.", { default: "null" }),
+      prop("look", '"normal" | "compact"', "Compact: the Git dialogs' smaller dim label and faint hint.", {
+        default: '"normal"',
+      }),
       prop("children", "Snippet", "The control.", { required: true }),
     ],
     examples: [
@@ -186,6 +205,8 @@ export const formDocs: ComponentDoc[] = [
       prop("title", "string", "The setting's name.", { required: true }),
       prop("hint", "string", "One sentence on what it does.", { default: '""' }),
       prop("stacked", "boolean", "Control under the text, for wide controls.", { default: "false" }),
+      prop("nested", "boolean", "Indented under the setting it belongs to.", { default: "false" }),
+      prop("plain", "boolean", "No line between rows and a regular label (welcome screen).", { default: "false" }),
       prop("hintContent", "Snippet", "A rich hint (with a link) instead of `hint`."),
       prop("children", "Snippet", "The control.", { required: true }),
     ],
@@ -210,6 +231,11 @@ export const formDocs: ComponentDoc[] = [
       prop("placeholder", "string", "Shown while empty.", { default: '"Search"' }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("autofocus", "boolean", "Focus it when it appears.", { default: "false" }),
+      prop("size", '"normal" | "large" | "compact" | "small"', "Large: 32px (Welcome); compact: 26px (panel " +
+        "filters); small: 24px, a set width (Git Console).", {
+        default: '"normal"',
+      }),
+      prop("width", "ControlWidth", "A preset width; auto fits the row.", { default: '"auto"' }),
       prop("element", "HTMLInputElement | null", "The input element.", { default: "null", bindable: true }),
       prop("oninput", "(value: string) => void", "Called on every change, also when cleared."),
       prop("onkeydown", "(event: KeyboardEvent) => void", "Runs first; call preventDefault to keep Esc."),

@@ -10,4 +10,6 @@
   <Tag tone="danger">conflict</Tag>
   <Tag tone="success">merged</Tag>
   <Tag tone="warning">behind</Tag>
+  <Tag variant="outline">submodule</Tag>
+  <Tag variant="outline">nested</Tag>
 </Stack>

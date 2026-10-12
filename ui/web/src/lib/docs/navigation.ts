@@ -20,10 +20,18 @@ export const navigationDocs: ComponentDoc[] = [
       prop("active", "string | null", "The active tab's id.", { default: "null", bindable: true }),
       prop("label", "string", "Accessible name of the strip.", { required: true }),
       prop("focused", "boolean", "The group has the focus: accent line instead of gray.", { default: "true" }),
+      prop("layout", '"scroll" | "wrap" | "single"', "One scrolling row, wrapped rows, or a lone centered name.", {
+        default: '"scroll"',
+      }),
+      prop("newLabel", "string", "The + button's name and tooltip.", { default: '"New tab"' }),
       prop("onselect", "(id: string) => void", "A tab was clicked."),
       prop("onclose", "(id: string) => void", "Close button or middle click; without it there is no close button."),
       prop("oncontextmenu", "(id: string, event: MouseEvent) => void", "Right-click on a tab, for its Menu."),
-      prop("trailing", "Snippet", "Content after the last tab, such as a + IconButton."),
+      prop("onnew", "(event: MouseEvent) => void", "Shows a + after the tabs; open a Menu from it."),
+      prop("onreorder", "(from: number, to: number) => void", "Tabs can be dragged; called with the move.", {
+        data: true,
+      }),
+      prop("trailing", "Snippet", "More content after the tabs."),
     ],
     examples: [
       { title: "Editor tabs", code: '<TabStrip label="Editor tabs" {tabs} bind:active onclose={closeTab} />' },
@@ -40,6 +48,8 @@ export const navigationDocs: ComponentDoc[] = [
       prop("tabs", "{ value: T; label: string }[]", "The tabs in order.", { required: true }),
       prop("value", "T extends string", "The shown tab.", { required: true, bindable: true }),
       prop("label", "string", "Accessible name of the tab list.", { required: true }),
+      prop("variant", '"panel" | "underline"', "Panel tabs in small capitals, or normal words with a thick " +
+        "line under the chosen one (Search Everywhere's scopes).", { default: '"panel"' }),
       prop("onchange", "(value: T) => void", "Called when the user picks another tab."),
     ],
     examples: [{ title: "Bottom panel", code: '<Tabs label="Panel views" bind:value={tab} {tabs} />' }],
@@ -60,18 +70,29 @@ export const navigationDocs: ComponentDoc[] = [
       }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("expanded", "string[]", "Ids of open folders.", { default: "[]", bindable: true }),
-      prop("selected", "string | null", "The selected row's id.", { default: "null", bindable: true }),
+      prop("selected", "string | null", "The selected (focused) row's id.", { default: "null", bindable: true }),
+      prop("multiple", "boolean", "Cmd/Ctrl-click adds, Shift-click selects a range.", { default: "false" }),
+      prop("selection", "string[]", "Selected ids when `multiple`.", { default: "[]", bindable: true }),
       prop("focused", "boolean", "Show the selection in the focus color while the tree has the focus.", {
         default: "true",
       }),
-      prop("height", '"fill" | number', "Fill the parent (which needs a height) or a height in px.", {
+      prop("height", '"fill" | "small" | "medium" | "large"', "Fill the parent, or 160, 240 or 360 px.", {
         default: '"fill"',
       }),
+      prop("renaming", "string | null", "The row being renamed in place.", { default: "null", bindable: true }),
+      prop("draggable", "boolean", "Rows can be dragged onto folders.", { default: "false" }),
+      prop("dropRoot", "boolean", "A drop into the top folder: the whole list is outlined.", { default: "false" }),
       prop("iconFor", "(node: N, open: boolean) => IconName | null", "Icon per row.", {
         default: '(node) => (node.children ? "folder" : "file")',
       }),
-      prop("detail", "Snippet<[N]>", "Dim content at the end of a row, such as a status letter."),
+      prop("decorate", "(node: N) => TreeDecoration | null", "A row's tone, strike, badge, cut, ignored, root " +
+        "(a workspace folder's header), repo (accent icon) and tag (LFS).", {
+        default: "() => null",
+      }),
+      prop("detail", "Snippet<[N]>", "Dim content at the end of a row."),
       prop("onopen", "(node: N) => void", "A file was opened (double-click or Enter)."),
+      prop("onrename", "(node: N, name: string) => void", "A rename was confirmed with Enter."),
+      prop("ondrop", "(ids: string[], target: N) => void", "Rows were dropped onto a folder."),
       prop("oncontextmenu", "(node: N, event: MouseEvent) => void", "Right-click on a row, for its Menu."),
     ],
     examples: [
@@ -88,20 +109,24 @@ export const navigationDocs: ComponentDoc[] = [
     aliases: ["Virtual list", "Scroll area"],
     props: [
       prop("items", "T[]", "All rows.", { required: true }),
-      prop("rowHeight", "number", "Height of every row in px.", { required: true }),
+      prop("rowHeight", '"compact" | "normal" | "comfortable"', "Every row's height: 22, 24 or 28 px.", {
+        default: '"normal"',
+      }),
       prop("label", "string", "Accessible name.", { required: true }),
-      prop("overscan", "number", "Rows drawn beyond the view on each side.", { default: "8" }),
-      prop("keepInView", "number | null", "Index to scroll into view when it changes.", { default: "null" }),
-      prop("height", '"fill" | number', "Fill the parent (which needs a height) or a height in px.", {
+      prop("keepInView", "number | null", "Index to scroll into view when it changes.", {
+        default: "null",
+        data: true,
+      }),
+      prop("height", '"fill" | "small" | "medium" | "large"', "Fill the parent, or 160, 240 or 360 px.", {
         default: '"fill"',
       }),
-      prop("row", "Snippet<[T, number]>", "Draws one row from its item and index.", { required: true }),
+      prop("row", "Snippet<[T, number]>", "Draws one row from its item and index.", { required: true, data: true }),
     ],
     examples: [
       {
         title: "Commits",
         code:
-          '<VirtualList items={commits} rowHeight={24} label="Commits">\n' +
+          '<VirtualList items={commits} label="Commits">\n' +
           "  {#snippet row(commit)}<Text truncate>{commit.subject}</Text>{/snippet}\n</VirtualList>",
       },
     ],
@@ -117,8 +142,9 @@ export const navigationDocs: ComponentDoc[] = [
     props: [
       prop("title", "string", "The group's name.", { required: true }),
       prop("open", "boolean", "Open or closed.", { default: "true", bindable: true }),
-      prop("count", "number | null", "A dim number after the title.", { default: "null" }),
+      prop("count", "number | null", "A dim number after the title.", { default: "null", data: true }),
       prop("nested", "boolean", "Indent the header, for a group inside a repository.", { default: "false" }),
+      prop("dim", "boolean", "A quieter section, like the repositories with No Changes.", { default: "false" }),
       prop("actions", "Snippet", "Small buttons on the right of the header."),
       prop("ontoggle", "(open: boolean) => void", "Called when the user opens or closes it."),
       prop("children", "Snippet", "The rows, shown while open.", { required: true }),
@@ -175,8 +201,10 @@ export const navigationDocs: ComponentDoc[] = [
         required: true,
       }),
       prop("label", "string", "Accessible name.", { default: '"Path"' }),
-      prop("open", "number | null", "Index of the crumb whose list shows.", { default: "null" }),
-      prop("onselect", "(index: number, element: HTMLElement) => void", "A crumb was clicked."),
+      prop("open", "number | null", "Index of the crumb whose list shows.", { default: "null", data: true }),
+      prop("variant", '"inline" | "floating" | "anchored"', "In a bar; floating over the editor; or under the " +
+        "tabs, anchored to the editor's top.", { default: '"inline"' }),
+      prop("onselect", "(index: number, element: HTMLElement) => void", "A crumb was clicked.", { data: true }),
     ],
     examples: [
       { title: "File path", code: '<Breadcrumbs crumbs={parts} onselect={(index, element) => list(index)} />' },

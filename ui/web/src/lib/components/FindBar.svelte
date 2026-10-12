@@ -1,6 +1,7 @@
 <!-- The editor's find and replace bar: a chevron that shows Replace, the find field with its toggles, the match
      counter with previous and next, and close. `problem` (such as a bad regex) tints the field red. -->
 <script lang="ts">
+  import { componentTokens } from "../styles/tokens";
   import Icon from "./Icon.svelte";
   import SearchToggles, { type SearchOptions } from "./SearchToggles.svelte";
 
@@ -18,6 +19,8 @@
     onprevious?: () => void;
     onreplace?: () => void;
     onreplaceall?: () => void;
+    onselectall?: () => void;
+    onexclude?: () => void;
     onclose?: () => void;
   }
 
@@ -35,8 +38,14 @@
     onprevious,
     onreplace,
     onreplaceall,
+    onselectall,
+    onexclude,
     onclose,
   }: Props = $props();
+
+  // Narrow editors (merge panes, split diffs) drop the least used buttons instead of wrapping.
+  let barWidth = $state(0);
+  const narrow = $derived(barWidth > 0 && barWidth <= componentTokens.findBar.compactBelow);
 
   const counter = $derived(problem ?? (query ? (total ? `${current} of ${total}` : "No results") : ""));
 
@@ -51,7 +60,7 @@
   }
 </script>
 
-<div class="find-bar" role="search">
+<div class="find-bar" class:narrow role="search" bind:clientWidth={barWidth}>
   <div class="grid" class:with-chevron={editable}>
     {#if editable}
       <button
@@ -61,11 +70,11 @@
         aria-expanded={showReplace}
         onclick={() => (showReplace = !showReplace)}
       >
-        <Icon name={showReplace ? "chevron-down" : "chevron-right"} size={14} />
+        <Icon name={showReplace ? "chevron-down" : "chevron-right"} size="normal" />
       </button>
     {/if}
     <div class="field find" class:problem={problem !== null}>
-      <span class="magnifier"><Icon name="search" size={13} /></span>
+      <span class="magnifier"><Icon name="search" size="medium" /></span>
       <input
         bind:value={query}
         placeholder="Find"
@@ -79,14 +88,26 @@
     <div class="tools">
       <span class="counter" class:problem={problem !== null}>{counter}</span>
       <button class="icon" type="button" aria-label="Previous match" disabled={!total} onclick={() => onprevious?.()}>
-        <Icon name="arrow-up" size={14} />
+        <Icon name="arrow-up" size="normal" />
       </button>
       <button class="icon" type="button" aria-label="Next match" disabled={!total} onclick={() => onnext?.()}>
-        <Icon name="arrow-down" size={14} />
+        <Icon name="arrow-down" size="normal" />
       </button>
+      {#if onselectall}
+        <button
+          class="icon select-all"
+          type="button"
+          aria-label="Select All Occurrences"
+          title="Select All Occurrences"
+          disabled={!total}
+          onclick={() => onselectall()}
+        >
+          <Icon name="carets" size="normal" />
+        </button>
+      {/if}
     </div>
     <button class="icon close" type="button" aria-label="Close" onclick={() => onclose?.()}>
-      <Icon name="x" size={14} />
+      <Icon name="x" size="normal" />
     </button>
     {#if editable && showReplace}
       <div class="field replace">
@@ -95,6 +116,15 @@
       <div class="tools replace-tools">
         <button class="text" type="button" disabled={!total} onclick={() => onreplace?.()}>Replace</button>
         <button class="text" type="button" disabled={!total} onclick={() => onreplaceall?.()}>Replace All</button>
+        {#if onexclude}
+          <button
+            class="text exclude"
+            type="button"
+            title="Exclude: skip this match and go to the next"
+            disabled={!total}
+            onclick={() => onexclude()}>Exclude</button
+          >
+        {/if}
       </div>
     {/if}
   </div>
@@ -103,7 +133,7 @@
 <style>
   .find-bar {
     align-self: stretch;
-    padding: 3px 6px 3px 4px;
+    padding: var(--find-bar-padding-y) var(--space-3) var(--find-bar-padding-y) var(--space-2);
     background: var(--panel);
     border-bottom: 1px solid var(--border-strong);
     color: var(--text);
@@ -115,7 +145,7 @@
     display: grid;
     grid-template-columns: 0 minmax(var(--find-bar-field-min-width), var(--find-bar-field-max-width)) 1fr auto;
     align-items: center;
-    gap: 3px 6px;
+    gap: var(--find-bar-row-gap) var(--space-3);
   }
 
   .with-chevron {
@@ -128,10 +158,10 @@
     grid-column: 2;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-2);
     min-width: 0;
     height: var(--find-bar-field-height);
-    padding: 0 2px 0 6px;
+    padding: 0 var(--space-1) 0 var(--space-3);
     border: 1px solid var(--border-strong);
     border-radius: var(--find-bar-radius);
     background: var(--editor-bg);
@@ -175,9 +205,15 @@
     gap: 1px;
   }
 
+  .replace-tools {
+    grid-column: 3 / span 2;
+    grid-row: 2;
+    gap: var(--space-1);
+  }
+
   .counter {
-    min-width: 56px;
-    padding: 0 6px 0 2px;
+    min-width: var(--find-bar-counter-min-width);
+    padding: 0 var(--space-3) 0 var(--space-1);
     color: var(--text-dim);
     white-space: nowrap;
   }
@@ -207,7 +243,7 @@
   }
 
   .text {
-    padding: 0 6px;
+    padding: 0 var(--space-3);
   }
 
   .icon:hover:not(:disabled),
@@ -229,5 +265,10 @@
   .close {
     grid-column: 4;
     grid-row: 1;
+  }
+
+  .narrow .select-all,
+  .narrow .exclude {
+    display: none;
   }
 </style>

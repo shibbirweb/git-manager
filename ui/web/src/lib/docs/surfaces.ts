@@ -1,0 +1,108 @@
+import { prop, type ComponentDoc } from "./types";
+
+const LANGUAGE = '"plain" | "ts" | "js" | "svelte" | "html" | "css" | "json" | "md" | "python" | "rust"';
+const VIEW_HEIGHT = '"fill" | "small" | "medium" | "large"';
+const EXTENSIONS = "Extension[]";
+
+export const surfaceDocs: ComponentDoc[] = [
+  {
+    name: "CodeEditor",
+    group: "Editor",
+    summary: "An editable code view in the app's editor look: line numbers, active line, selection, syntax colors.",
+    usage:
+      "Use for any editable text: files, Untitled tabs, commit messages with code. The app adds blame, find, " +
+      "folding and change markers through `extensions`; read-only code to show only is CodeView.",
+    aliases: ["Editor", "Code editor", "CodeMirror"],
+    props: [
+      prop("value", "string", "The text.", { default: '""', bindable: true }),
+      prop("language", LANGUAGE, "Syntax colors; each language loads on first use.", { default: '"plain"' }),
+      prop("readOnly", "boolean", "No typing, still selectable.", { default: "false" }),
+      prop("lineNumbers", "boolean", "The line number gutter.", { default: "true" }),
+      prop("wrap", "boolean", "Wrap long lines.", { default: "false" }),
+      prop("height", VIEW_HEIGHT, "Fill the parent, or 160, 240 or 360 px.", { default: '"fill"' }),
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("extensions", EXTENSIONS, "More CodeMirror extensions from the app.", { default: "[]" }),
+      prop("onchange", "(value: string) => void", "Called after each edit."),
+    ],
+    examples: [{ title: "A file", code: '<CodeEditor label="main.ts" language="ts" bind:value={text} />' }],
+    replaces: ["the CodeMirror setup in src/lib/views/files/FileView.svelte", "UntitledView.svelte"],
+    rules: ["Never style .cm-* classes in a screen: colors come from the editor theme."],
+  },
+  {
+    name: "DiffView",
+    group: "Editor",
+    summary: "Two versions of a text compared, side by side or inline, in the app's diff colors.",
+    usage:
+      "Use for file diffs, the Changes diff and compare tabs. The app adds staging buttons and its other diff " +
+      "features through `extensions`.",
+    aliases: ["Diff", "Compare"],
+    props: [
+      prop("original", "string", "The old text (left, or the removed lines).", { required: true, data: true }),
+      prop("modified", "string", "The new text.", { required: true, data: true }),
+      prop("layout", '"split" | "inline"', "Side by side, or one column.", { default: '"split"' }),
+      prop("language", LANGUAGE, "Syntax colors.", { default: '"plain"' }),
+      prop("height", VIEW_HEIGHT, "Fill the parent, or 160, 240 or 360 px.", { default: '"fill"' }),
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("sideLabels", "{ original: string; modified: string } | null", "Names over the two sides.", {
+        default: "null",
+      }),
+      prop("ratio", "number", "The split between the sides; drag the handle to change it.", {
+        default: "0.5",
+        bindable: true,
+        data: true,
+      }),
+      prop("oncommitratio", "(ratio: number) => void", "A drag or a key ended: save the ratio."),
+      prop("extensions", EXTENSIONS, "More CodeMirror extensions, on both sides.", { default: "[]" }),
+    ],
+    examples: [{ title: "A file's change", code: '<DiffView label="app.ts" {original} {modified} language="ts" />' }],
+    replaces: ["src/lib/diff/DiffView.svelte", "src/lib/views/changes/ChangesDiff.svelte panes"],
+  },
+  {
+    name: "MergeView",
+    group: "Editor",
+    summary: "The 3-way merge: yours, the editable result and theirs, chunks tinted and joined by ribbons.",
+    usage:
+      "Use for resolving a conflicted file. The app computes the chunks (line ranges in each pane) and applies " +
+      "a chunk when `onapply` is called; scrolling one pane scrolls the others.",
+    aliases: ["Merge", "3-way merge", "Conflict"],
+    props: [
+      prop("left", "string", "Your version.", { required: true, data: true }),
+      prop("result", "string", "The merged text being edited.", { default: '""', bindable: true }),
+      prop("right", "string", "Their version.", { required: true, data: true }),
+      prop("chunks", "MergeChunk[] ({ kind; left; result; right: [start, end) })",
+        "Each change, with its line ranges.", { required: true, data: true }),
+      prop("labels", "{ left; result; right }", "Pane titles.", {
+        default: '{ left: "Yours", result: "Result", right: "Theirs" }',
+      }),
+      prop("fileName", "string", "Shown dim after the result's title.", { default: '""' }),
+      prop("language", LANGUAGE, "Syntax colors.", { default: '"plain"' }),
+      prop("height", VIEW_HEIGHT, "Fill the parent, or 160, 240 or 360 px.", { default: '"fill"' }),
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("extensions", EXTENSIONS, "More extensions for the result pane.", { default: "[]" }),
+      prop("onapply", '(index: number, side: "left" | "right") => void', "Take a chunk's change from a side."),
+      prop("onignore", '(index: number, side: "left" | "right") => void', "Drop a side's change."),
+    ],
+    examples: [
+      { title: "A conflict", code: '<MergeView label="Merge" {left} {right} {chunks} bind:result onapply={apply} />' },
+    ],
+    logic: ["mergeGeometry.ts"],
+    replaces: ["src/lib/merge/MergeEditor.svelte panes and connectors"],
+  },
+  {
+    name: "MergeConnector",
+    group: "Editor",
+    summary: "The column between two merge panes: a ribbon per chunk and its apply and ignore buttons.",
+    usage: "MergeView measures the panes and draws this between them; use it alone only for a custom merge layout.",
+    aliases: ["Ribbon", "Connector"],
+    props: [
+      prop("ribbons", "ConnectorRibbon[] ({ index; kind; aTop; aBottom; bTop; bBottom })",
+        "Each chunk's lines on both sides, in pixels from the column's top.", { required: true, data: true }),
+      prop("side", '"left" | "right"', "Which pane the buttons apply from.", { required: true }),
+      prop("onapply", "(index: number) => void", "Apply a chunk."),
+      prop("onignore", "(index: number) => void", "Ignore a chunk."),
+    ],
+    examples: [{ title: "Between panes", code: '<MergeConnector side="left" {ribbons} onapply={apply} />' }],
+    logic: ["mergeGeometry.ts"],
+    replaces: ["the .connector SVG of src/lib/merge/MergeEditor.svelte"],
+  },
+];

@@ -17,7 +17,6 @@ Use when the share is known (0 to 1). Use Spinner while the amount is unknown.
 - `value` (`number`, required): The share, 0 to 1; out-of-range and NaN values are clamped.
 - `label` (`string`, required): Accessible name.
 - `tone` (`"accent" | "danger" | "warning" | "success"`, default `"accent"`): Fill color.
-- `minimum` (`number`, default `0.02`): Smallest drawn share, so tiny values stay visible.
 
 ## Example: Memory share
 

@@ -14,7 +14,9 @@ Use for a word of status next to a name. Use Badge for numbers.
 
 ## Props
 
+- `variant` (`"fill" | "outline"`, default `"fill"`): Outline: a bordered kind label, such as submodule.
 - `tone` (`"neutral" | "accent" | "danger" | "success" | "warning"`, default `"neutral"`): Color of the label.
+- `size` (`"normal" | "small"`, default `"normal"`): Small for tight rows, such as a file's LFS mark.
 - `title` (`string`): Tooltip.
 - `children` (`Snippet`, required): The word.
 

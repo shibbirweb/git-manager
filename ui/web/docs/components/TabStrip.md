@@ -20,10 +20,15 @@ Put a + button in `trailing`.
 - `active` (`string | null`, default `null`, bindable): The active tab's id.
 - `label` (`string`, required): Accessible name of the strip.
 - `focused` (`boolean`, default `true`): The group has the focus: accent line instead of gray.
+- `layout` (`"scroll" | "wrap" | "single"`, default `"scroll"`): One scrolling row, wrapped rows, or a lone centered
+  name.
+- `newLabel` (`string`, default `"New tab"`): The + button's name and tooltip.
 - `onselect` (`(id: string) => void`): A tab was clicked.
 - `onclose` (`(id: string) => void`): Close button or middle click; without it there is no close button.
 - `oncontextmenu` (`(id: string, event: MouseEvent) => void`): Right-click on a tab, for its Menu.
-- `trailing` (`Snippet`): Content after the last tab, such as a + IconButton.
+- `onnew` (`(event: MouseEvent) => void`): Shows a + after the tabs; open a Menu from it.
+- `onreorder` (`(from: number, to: number) => void`): Tabs can be dragged; called with the move.
+- `trailing` (`Snippet`): More content after the tabs.
 
 ## Example: Editor tabs
 

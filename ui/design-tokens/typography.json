@@ -9,11 +9,11 @@
     "mono": ["JetBrains Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas", "Courier New", "monospace"]
   },
   "fontSize": {
-    "micro": 9.5, "tiny": 10, "xsmall": 11, "compact": 11.5, "small": 12, "codeSmall": 12.5, "ui": 13, "code": 13,
-    "title": 14, "heading": 15, "display": 22
+    "nano": 9, "micro": 9.5, "tiny": 10, "mini": 10.5, "xsmall": 11, "compact": 11.5, "small": 12, "codeSmall": 12.5,
+    "ui": 13, "medium": 13.5, "code": 13, "title": 14, "heading": 15, "lead": 16, "display": 22
   },
   "fontWeight": {"regular": 400, "medium": 500, "semibold": 600, "bold": 700},
-  "lineHeight": {"dense": 1.25, "normal": 1.45, "relaxed": 1.5, "loose": 1.6},
+  "lineHeight": {"dense": 1.25, "snug": 1.4, "normal": 1.45, "relaxed": 1.5, "sample": 1.55, "loose": 1.6, "airy": 1.7},
   "letterSpacing": {"none": 0, "slight": 0.03, "label": 0.04, "caps": 0.06},
   "textStyle": {
     "body": {"font": "ui", "size": "{fontSize.ui}", "weight": "{fontWeight.regular}"},

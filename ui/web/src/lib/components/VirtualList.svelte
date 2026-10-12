@@ -2,30 +2,35 @@
      height. `keepInView` scrolls a row into view when it changes, like a keyboard selection. -->
 <script lang="ts" generics="T">
   import type { Snippet } from "svelte";
+  import type { RowHeight, ViewHeight } from "../logic/presets";
   import { scrollToShow, visibleRows } from "../logic/virtualWindow";
+  import { scales } from "../styles/tokens";
 
   interface Props {
     items: T[];
-    rowHeight: number;
+    rowHeight?: RowHeight;
     label: string;
-    overscan?: number;
     keepInView?: number | null;
-    height?: "fill" | number;
+    height?: ViewHeight;
     row: Snippet<[T, number]>;
   }
 
-  let { items, rowHeight, label, overscan = 8, keepInView = null, height = "fill", row }: Props = $props();
+  let { items, rowHeight = "normal", label, keepInView = null, height = "fill", row }: Props = $props();
+
+  // Rows drawn beyond the view on each side, so fast scrolling does not show gaps.
+  const OVERSCAN = 8;
+  const rowPx = $derived(scales.rowHeight[rowHeight]);
 
   let viewport = $state<HTMLDivElement | null>(null);
   let scrollTop = $state(0);
   let viewportHeight = $state(0);
-  const range = $derived(visibleRows(scrollTop, viewportHeight, rowHeight, items.length, overscan));
+  const range = $derived(visibleRows(scrollTop, viewportHeight, rowPx, items.length, OVERSCAN));
 
   $effect(() => {
     if (keepInView === null || !viewport) {
       return;
     }
-    const target = scrollToShow(keepInView, rowHeight, viewport.scrollTop, viewport.clientHeight);
+    const target = scrollToShow(keepInView, rowPx, viewport.scrollTop, viewport.clientHeight);
     if (target !== null) {
       viewport.scrollTop = target;
     }
@@ -37,14 +42,15 @@
   bind:clientHeight={viewportHeight}
   class="viewport"
   class:fixed={height !== "fill"}
-  style:height={height === "fill" ? null : `${height}px`}
+  style:height={height === "fill" ? null : `${scales.viewHeight[height]}px`}
   role="list"
   aria-label={label}
   onscroll={() => (scrollTop = viewport?.scrollTop ?? 0)}
 >
-  <div class="spacer" style:height="{items.length * rowHeight}px">
+  <div class="spacer" style:height="{items.length * rowPx}px">
     {#each items.slice(range.first, range.last) as item, offset (range.first + offset)}
-      <div class="slot" role="listitem" style:top="{(range.first + offset) * rowHeight}px" style:height="{rowHeight}px">
+      <div class="slot" role="listitem" style:top="{(range.first + offset) * rowPx}px"
+        style:height="{rowPx}px">
         {@render row(item, range.first + offset)}
       </div>
     {/each}

@@ -8,16 +8,30 @@ export const overlayDocs: ComponentDoc[] = [
     group: "Overlays",
     summary: "A modal dialog over a dimmed window: a title, the content and the actions on the right.",
     usage:
-      "Use for tasks that need a few inputs, such as New Branch. Use ConfirmDialog for a yes or no question. " +
+      "Use for tasks that need a few inputs, such as New Branch. " +
+      "Use the `message` variant for a yes or no question. " +
       "Keep one Primary button in `actions`, last.",
     aliases: ["Dialog", "Modal"],
     props: [
       prop("open", "boolean", "Shown or hidden.", { default: "false", bindable: true }),
       prop("title", "string", "The heading; also the dialog's accessible name.", { required: true }),
-      prop("width", '"normal" | "wide"', "460 or 640 px.", { default: '"normal"' }),
+      prop("variant", '"message" | "form" | "split" | "panel"', "A question and buttons, the Git dialogs' form, " +
+        "Settings' side column and content, or a large panel with a scrolling body (Shortcuts, What's New).", {
+        default: '"message"',
+      }),
+      prop("width", '"small" | "normal" | "medium" | "large" | "xlarge" | "full"', "460, 520, 560, 620, 760 or " +
+        "1200 px; split dialogs have their own size.", { default: "small (message), normal (form), large (panel)" }),
       prop("dismissible", "boolean", "Esc and a click on the dim area close it.", { default: "true" }),
+      prop("movable", "boolean", "Drag the title to move it; double-click the title centers it.", { default: "false" }),
+      prop("subtitle", "string", "A dim line under the title.", { default: '""' }),
+      prop("icon", "IconName | null", "An icon on a tinted tile before the title.", { default: "null" }),
+      prop("iconTone", '"accent" | "success" | "warning" | "danger"', "The tile's color.", { default: '"accent"' }),
+      prop("toolbar", "Snippet", "A bar under the head, such as a Toolbar with a filter (panel dialogs)."),
+      prop("footnote", "Snippet", "Content at the footer's start, such as a Link or a hint."),
       prop("onclose", "() => void", "Called when the user dismisses it (Esc or outside click)."),
+      prop("onsubmit", "() => void", "Cmd+Enter (Ctrl+Enter): the main action of a form."),
       prop("actions", "Snippet", "Buttons on the right under the content."),
+      prop("sidebar", "Snippet", "The side column of a split dialog, such as a SideNav."),
       prop("children", "Snippet", "The content.", { required: true }),
     ],
     examples: [
@@ -33,33 +47,6 @@ export const overlayDocs: ComponentDoc[] = [
     rules: ["Focus goes into the dialog when it opens and back when it closes; do not move it by hand."],
   },
   {
-    name: "ConfirmDialog",
-    group: "Overlays",
-    summary: "Asks before an action: a title, a message and Cancel / OK; `danger` makes the confirm button red.",
-    usage: "Use before anything that loses work or cannot be undone. The confirm label names the action.",
-    aliases: ["Alert dialog", "Confirm"],
-    props: [
-      prop("open", "boolean", "Shown or hidden.", { default: "false", bindable: true }),
-      prop("title", "string", "The question, e.g. `Discard all changes?`.", { required: true }),
-      prop("message", "string", "What happens, in a sentence or two.", { default: '""' }),
-      prop("confirmLabel", "string", "The confirm button, e.g. `Discard`.", { default: '"OK"' }),
-      prop("cancelLabel", "string", "The cancel button.", { default: '"Cancel"' }),
-      prop("danger", "boolean", "A red confirm button for destructive actions.", { default: "false" }),
-      prop("onconfirm", "() => void", "Called on confirm.", { required: true }),
-      prop("oncancel", "() => void", "Called on Cancel, Esc or an outside click."),
-    ],
-    examples: [
-      {
-        title: "Destructive",
-        code:
-          '<ConfirmDialog bind:open danger title="Discard all changes?" confirmLabel="Discard"\n' +
-          "  onconfirm={discardAll} />",
-      },
-    ],
-    replaces: ["dialogs.confirm({ title, message, danger }) from src/lib/ui/dialog.svelte.ts"],
-    rules: ["Destructive actions always confirm first, with `danger`."],
-  },
-  {
     name: "Popover",
     group: "Overlays",
     summary: "A panel anchored to its trigger, like the AI usage panel; Esc or an outside click closes it.",
@@ -72,8 +59,11 @@ export const overlayDocs: ComponentDoc[] = [
         default: '"below"',
       }),
       prop("align", '"start" | "end"', "Which edge of the trigger it lines up with.", { default: '"start"' }),
-      prop("width", "number | null", "Width in px; null fits the content.", { default: "null" }),
-      prop("padding", '"menu" | "panel"', "4px for menu-like lists, 12 by 14px for detail panels.", {
+      prop("width", '"auto" | "small" | "medium" | "large"', "Fits the content, or 256, 300 or 360 px.", {
+        default: '"auto"',
+      }),
+      prop("padding", '"menu" | "panel" | "form"', "4px for menu-like lists, 12 by 14px for detail panels, 12px " +
+        "and a column of fields for a small form (Commit Options).", {
         default: '"menu"',
       }),
       prop("textSize", '"normal" | "small"', "Small (12px) for the status bar's popovers.", { default: '"normal"' }),
@@ -104,8 +94,8 @@ export const overlayDocs: ComponentDoc[] = [
     aliases: ["Context menu", "Dropdown menu"],
     props: [
       prop("items", `${MENU_ITEM}[]`, "The entries.", { required: true }),
-      prop("x", "number", "Left edge (or right edge with alignEnd), viewport px.", { required: true }),
-      prop("y", "number", "Top edge, viewport px; it moves up when it would not fit.", { required: true }),
+      prop("x", "number", "Left edge (or right edge with alignEnd), viewport px.", { required: true, data: true }),
+      prop("y", "number", "Top edge, viewport px; it moves up when it would not fit.", { required: true, data: true }),
       prop("alignEnd", "boolean", "Line up the menu's right edge with x.", { default: "false" }),
       prop("keyboard", "boolean", "Highlight the first item at once (opened with the keyboard).", { default: "false" }),
       prop("label", "string", "Accessible name.", { default: '"Menu"' }),
@@ -154,8 +144,8 @@ export const overlayDocs: ComponentDoc[] = [
     aliases: ["Toast", "Sonner", "Snackbar"],
     props: [
       prop("items", "ToastItem[] (logic/toastModel.ts)", "The toasts to show, oldest first.", { required: true }),
-      prop("ondismiss", "(id: number) => void", "Close one (the x button).", { required: true }),
-      prop("onaction", "(id: number) => void", "Run a toast's button, then close it."),
+      prop("ondismiss", "(id: number) => void", "Close one (the x button).", { required: true, data: true }),
+      prop("onaction", "(id: number) => void", "Run a toast's button, then close it.", { data: true }),
     ],
     examples: [
       {

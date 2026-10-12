@@ -1,20 +1,25 @@
 <!-- A drag handle on a panel's edge: a thin line that turns into an accent bar on hover. Drag or use the arrow keys
      (Shift for bigger steps) to resize; double-click resets. `side` says where the panel is. -->
 <script lang="ts">
+  import type { PanelPreset } from "../logic/presets";
   import { draggedSize, keyedSize, type PanelSide } from "../logic/resize";
+  import { scales } from "../styles/tokens";
 
   interface Props {
     size: number;
     side: PanelSide;
-    min: number;
+    preset: PanelPreset;
     max: number;
-    defaultSize: number;
     label: string;
+    inPanel?: boolean;
     onresize: (size: number) => void;
     oncommit?: (size: number) => void;
   }
 
-  let { size, side, min, max, defaultSize, label, onresize, oncommit }: Props = $props();
+  let { size, side, preset, max, label, inPanel = false, onresize, oncommit }: Props = $props();
+
+  const min = $derived(scales.panelMin[preset]);
+  const defaultSize = $derived(scales.panelDefault[preset]);
 
   const horizontal = $derived(side === "bottom");
   let dragging = $state(false);
@@ -66,6 +71,7 @@
   class="handle"
   class:horizontal
   class:dragging
+  class:in-panel={inPanel}
   role="separator"
   aria-orientation={horizontal ? "horizontal" : "vertical"}
   aria-label={label}

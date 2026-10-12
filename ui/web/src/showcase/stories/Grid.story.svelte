@@ -9,7 +9,7 @@
     <Card padded label={repo}><Text variant="label">{repo}</Text></Card>
   {/each}
 </Grid>
-<Grid columns={2} gap="md" label="Two columns">
+<Grid columns="two" gap="md" label="Two columns">
   <Card padded label="Left"><Text>Left</Text></Card>
   <Card padded label="Right"><Text>Right</Text></Card>
 </Grid>

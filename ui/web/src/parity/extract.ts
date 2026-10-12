@@ -39,9 +39,10 @@ function compounds(selector: string): string[] {
   return parts;
 }
 
-// Svelte adds its scoping class to every compound it owns, which weighs one class each; `:is(*, .s)` adds exactly
-// that weight and always matches, so rules compete with the app's global CSS as they do in the app.
-const SCOPE_WEIGHT = ":is(*, .gm-svelte-scope)";
+// Svelte adds its scoping class to every compound it owns, which weighs one class each; `:not(.gm-child)` adds
+// exactly that weight, so rules compete with the app's global CSS as they do in the app. Like the scoping class, it
+// skips elements that a child component draws (marked gm-child, such as Icon's svg), which scoped rules never reach.
+const SCOPE_WEIGHT = ":not(.gm-child)";
 
 function weighted(compound: string): string {
   if (compound.startsWith(":global(") || /^[>+~]$/.test(compound)) {
