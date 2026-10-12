@@ -1,5 +1,6 @@
 <!-- A button that looks like a link, for a small action inside text or under a list, such as "Open settings" or
-     "Show older releases". `dim` is a quiet disclosure, with an optional icon before the words. -->
+     "Show older releases". `dim` is a quiet disclosure, with an optional icon before the words; `expanded` shows
+     a fold chevron for a toggle such as Earlier versions. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
@@ -11,6 +12,7 @@
     /** Code-like words, such as a parent commit's hash. */
     mono?: boolean;
     icon?: IconName | null;
+    expanded?: boolean | null;
     disabled?: boolean;
     title?: string;
     onclick?: (event: MouseEvent) => void;
@@ -22,6 +24,7 @@
     size = "inherit",
     mono = false,
     icon = null,
+    expanded = null,
     disabled = false,
     title,
     onclick,
@@ -29,8 +32,21 @@
   }: Props = $props();
 </script>
 
-<button class="link {tone} {size}" class:mono class:has-icon={!!icon} type="button" {disabled} {title} {onclick}>
-  {#if icon}<Icon name={icon} size="compact" />{/if}
+<button
+  class="link {tone} {size}"
+  class:mono
+  class:has-icon={!!icon || expanded !== null}
+  type="button"
+  aria-expanded={expanded ?? undefined}
+  {disabled}
+  {title}
+  {onclick}
+>
+  {#if expanded !== null}
+    <Icon name={expanded ? "chevron-down" : "chevron-right"} size="compact" />
+  {:else if icon}
+    <Icon name={icon} size="compact" />
+  {/if}
   {@render children()}
 </button>
 

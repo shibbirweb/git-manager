@@ -26,6 +26,9 @@ export const layoutDocs: ComponentDoc[] = [
       prop("justify", '"start" | "center" | "end" | "between"', "Main-axis distribution.", { default: '"start"' }),
       prop("wrap", "boolean", "Wrap onto more lines.", { default: "false" }),
       prop("grow", "boolean", "Take the free space of its own parent stack.", { default: "false" }),
+      prop("scroll", '"none" | "y" | "x" | "both"', "Scrolls its content in its own box; pair with `grow`.", {
+        default: '"none"',
+      }),
       prop("element", '"div" | "section" | "header" | "footer" | "ul" | "li" | "form"', "The HTML element.", {
         default: '"div"',
       }),
@@ -64,6 +67,11 @@ export const layoutDocs: ComponentDoc[] = [
       prop("selectable", "boolean", "Lets the user select the text (the app turns selection off by default).", {
         default: "false",
       }),
+      prop("tabular", "boolean", "Digits of one width, for times, durations, sizes and counts.", { default: "false" }),
+      prop("wrap", '"normal" | "anywhere" | "pre"', "Anywhere breaks long paths; pre keeps line breaks (output).", {
+        default: '"normal"',
+      }),
+      prop("strike", "boolean", "Struck through, like a deleted file's name.", { default: "false" }),
       prop("element", '"span" | "p" | "div" | "h1" | "h2" | "h3" | "label" | "code"', "The HTML element.", {
         default: '"span"',
       }),
@@ -106,6 +114,8 @@ export const layoutDocs: ComponentDoc[] = [
     props: [
       prop("label", "string", "Accessible name of the group."),
       prop("padded", "boolean", "Adds 12px padding for free content.", { default: "false" }),
+      prop("selected", "boolean", "The chosen card: an accent border.", { default: "false" }),
+      prop("dim", "boolean", "Faded, for something gone or paused, like a missing worktree.", { default: "false" }),
       prop("children", "Snippet", "The rows.", { required: true }),
     ],
     examples: [{ title: "Worktree", code: '<Card label="main worktree" padded>...</Card>' }],

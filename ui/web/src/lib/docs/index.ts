@@ -3,6 +3,7 @@ import type { ComponentDoc } from "./types";
 import { actionDocs } from "./actions";
 import { agentDocs } from "./agents";
 import { barDocs } from "./bars";
+import { builderDocs } from "./builders";
 import { changesDocs } from "./changes";
 import { contentDocs } from "./content";
 import { controlDocs } from "./controls";
@@ -35,6 +36,7 @@ export const componentDocs: ComponentDoc[] = [
   ...overlayDocs,
   ...navigationDocs,
   ...layoutDocs,
+  ...builderDocs,
   ...shellDocs,
   ...editorDocs,
   ...rowDocs,

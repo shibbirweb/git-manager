@@ -28,12 +28,25 @@ export const entryDocs: ComponentDoc[] = [
       prop("size", '"inherit" | "small"', "The surrounding text's size, or 12 px.", { default: '"inherit"' }),
       prop("mono", "boolean", "Code-like words, such as a parent commit's hash.", { default: "false" }),
       prop("icon", "IconName | null", "An icon before the words.", { default: "null" }),
+      prop("expanded", "boolean | null", "A fold chevron instead of the icon, for a toggle like Earlier versions.", {
+        default: "null",
+      }),
       prop("disabled", "boolean", "Cannot be pressed.", { default: "false" }),
       prop("title", "string", "A tooltip."),
       prop("onclick", "(event: MouseEvent) => void", "Pressed."),
       prop("children", "Snippet", "The words.", { required: true }),
     ],
-    examples: [{ title: "Settings", code: "<Link onclick={openSettings}>All settings</Link>" }],
-    replaces: [".link in McpToolsDialog, GitHubSignInForm, Welcome, AiUsage", ".inline-link in SettingsDialog"],
+    examples: [
+      { title: "Settings", code: "<Link onclick={openSettings}>All settings</Link>" },
+      {
+        title: "Disclosure",
+        code: '<Link tone="dim" expanded={showOlder} onclick={() => (showOlder = !showOlder)}>Earlier versions</Link>',
+      },
+    ],
+    replaces: [
+      ".link in McpToolsDialog, GitHubSignInForm, Welcome, AiUsage",
+      ".inline-link in SettingsDialog",
+      ".older-toggle in WhatsNewDialog",
+    ],
   },
 ];

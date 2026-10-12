@@ -20,3 +20,9 @@
     <Button size="small" icon="branch">{branch}</Button>
   {/each}
 </Stack>
+<Text tone="dim" size="small">scroll="x": the row scrolls in its own box instead of widening the page.</Text>
+<Stack direction="row" gap="xs" scroll="x" paddingY="xs">
+  {#each Array.from({ length: 14 }, (_, index) => `feature/branch-${index + 1}`) as branch (branch)}
+    <Button size="small" icon="branch">{branch}</Button>
+  {/each}
+</Stack>

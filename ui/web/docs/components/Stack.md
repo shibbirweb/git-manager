@@ -27,6 +27,7 @@ Use for every layout instead of writing CSS: rows of buttons, label and value pa
 - `justify` (`"start" | "center" | "end" | "between"`, default `"start"`): Main-axis distribution.
 - `wrap` (`boolean`, default `false`): Wrap onto more lines.
 - `grow` (`boolean`, default `false`): Take the free space of its own parent stack.
+- `scroll` (`"none" | "y" | "x" | "both"`, default `"none"`): Scrolls its content in its own box; pair with `grow`.
 - `element` (`"div" | "section" | "header" | "footer" | "ul" | "li" | "form"`, default `"div"`): The HTML element.
 - `label` (`string`): Accessible name, for sections and lists.
 - `children` (`Snippet`, required): The content.

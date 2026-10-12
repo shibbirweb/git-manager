@@ -4,6 +4,7 @@ import { atomCases } from "./cases/atoms";
 import { barCases } from "./cases/bars";
 import { basicCases } from "./cases/basic";
 import { blockCases } from "./cases/blocks";
+import { builderCases } from "./cases/builders";
 import { chromeCases } from "./cases/chrome";
 import { controlCases } from "./cases/controls";
 import { dialogCases } from "./cases/dialogs";
@@ -44,6 +45,7 @@ export const parityCases: ParityCase[] = [
   ...largerCases,
   ...surfaceCases,
   ...rowCases,
+  ...builderCases,
   ...barCases,
   ...markCases,
   ...pieceCases,

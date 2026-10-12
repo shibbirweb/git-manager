@@ -25,6 +25,10 @@ Use `truncate` for paths and names that may not fit.
 - `mono` (`boolean`, default `false`): Monospace, for hashes, paths and code.
 - `truncate` (`boolean`, default `false`): One line with an ellipsis; give `title` the full text.
 - `selectable` (`boolean`, default `false`): Lets the user select the text (the app turns selection off by default).
+- `tabular` (`boolean`, default `false`): Digits of one width, for times, durations, sizes and counts.
+- `wrap` (`"normal" | "anywhere" | "pre"`, default `"normal"`): Anywhere breaks long paths; pre keeps line breaks
+  (output).
+- `strike` (`boolean`, default `false`): Struck through, like a deleted file's name.
 - `element` (`"span" | "p" | "div" | "h1" | "h2" | "h3" | "label" | "code"`, default `"span"`): The HTML element.
 - `title` (`string`): Tooltip, e.g. the full text of a truncated path.
 - `children` (`Snippet`, required): The text.

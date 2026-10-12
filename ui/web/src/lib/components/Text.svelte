@@ -14,6 +14,9 @@
     mono?: boolean;
     truncate?: boolean;
     selectable?: boolean;
+    tabular?: boolean;
+    wrap?: "normal" | "anywhere" | "pre";
+    strike?: boolean;
     element?: "span" | "p" | "div" | "h1" | "h2" | "h3" | "label" | "code";
     title?: string;
     children: Snippet;
@@ -27,6 +30,9 @@
     mono = false,
     truncate = false,
     selectable = false,
+    tabular = false,
+    wrap = "normal",
+    strike = false,
     element = "span",
     title,
     children,
@@ -41,6 +47,10 @@
   class="text"
   class:truncate
   class:selectable
+  class:tabular
+  class:anywhere={wrap === "anywhere"}
+  class:pre={wrap === "pre"}
+  class:strike
   {title}
   style:color={toneColor(shownTone)}
   style:font-family={mono ? "var(--font-family-mono)" : textStyleVar(variant, "family")}
@@ -63,6 +73,28 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Digits of one width, so times, sizes and counts line up and do not jump while they change. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Long paths and hashes break anywhere instead of pushing the layout wider. */
+  .anywhere {
+    overflow-wrap: anywhere;
+  }
+
+  /* Output and messages keep their own line breaks and spaces, and still wrap. */
+  .pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* A deleted file's name. */
+  .strike {
+    text-decoration: line-through;
+    text-decoration-color: var(--text-faint);
   }
 
   .selectable {

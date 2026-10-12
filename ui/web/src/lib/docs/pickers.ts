@@ -14,7 +14,12 @@ export const pickerDocs: ComponentDoc[] = [
       prop("rows", "T[]", "The rows.", { required: true, data: true }),
       prop("rowKey", "(row: T) => string", "A row's id.", { required: true }),
       prop("label", "string", "Accessible name.", { required: true }),
-      prop("selected", "string | null", "The selected row's id.", { default: "null", bindable: true }),
+      prop("selected", "string | null", "The selected row's id (the last one picked).", {
+        default: "null",
+        bindable: true,
+      }),
+      prop("multiple", "boolean", "Cmd or Ctrl click adds a row, Shift click a range.", { default: "false" }),
+      prop("selection", "string[]", "The selected rows' ids, with `multiple`.", { default: "[]", bindable: true }),
       prop("cell", "Snippet<[T, DataColumn]>", "Draws a cell.", { required: true }),
       prop("onselect", "(row: T) => void", "A row was pressed."),
       prop("onopen", "(row: T) => void", "A row was double-clicked."),
@@ -25,7 +30,7 @@ export const pickerDocs: ComponentDoc[] = [
         code: '<Table label="Conflicts" {columns} rows={files} rowKey={(f) => f.path} {cell} />',
       },
     ],
-    logic: ["table.ts"],
+    logic: ["table.ts", "treeSelect.ts"],
     replaces: [".table in src/lib/merge/ConflictsDialog.svelte"],
   },
   {

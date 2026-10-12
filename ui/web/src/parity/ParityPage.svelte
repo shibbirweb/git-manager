@@ -9,6 +9,7 @@
   import Atoms from "./library/Atoms.svelte";
   import Basic from "./library/Basic.svelte";
   import Blocks from "./library/Blocks.svelte";
+  import Builders from "./library/Builders.svelte";
   import Chrome from "./library/Chrome.svelte";
   import Controls from "./library/Controls.svelte";
   import Dialogs from "./library/Dialogs.svelte";
@@ -73,6 +74,7 @@
       <Larger id={parityCase.id} />
       <Surfaces id={parityCase.id} />
       <Rows id={parityCase.id} />
+      <Builders id={parityCase.id} />
       <Bars id={parityCase.id} />
       <Marks id={parityCase.id} />
       <Pieces id={parityCase.id} />

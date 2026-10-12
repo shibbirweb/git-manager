@@ -24,3 +24,11 @@
     /Users/you/projects/a-very-long-folder-name/with/many/levels/that/does/not/fit/in/one/line/at/all.ts
   </Text>
 </Stack>
+<Stack direction="row" gap="lg">
+  <Text tabular>12:04:59 · 1,280 ms</Text>
+  <Text strike tone="dim">removed-file.ts</Text>
+</Stack>
+<Text wrap="anywhere" tone="danger">
+  Could not open /Users/you/projects/a-very-long-folder-name/that/never/has/a/space/in/it.ts
+</Text>
+<Text wrap="pre" mono size="small">{"error: failed to push some refs\nhint: Updates were rejected"}</Text>

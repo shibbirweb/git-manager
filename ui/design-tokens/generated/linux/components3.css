@@ -163,4 +163,24 @@
   --split-handle-width: 7px;
   --split-handle-line: 3px;
   --split-handle-layer: 5px;
+  --row-indent: 14px;
+  --row-chevron: 14px;
+  --row-actions-gap: 2px;
+  --row-tree-height: var(--size-tree-row);
+  --row-tree-padding-x: 6px;
+  --row-tree-gap: 5px;
+  --row-list-height: var(--size-tree-row);
+  --row-list-padding-x: 10px;
+  --row-list-gap: 8px;
+  --row-history-height: 26px;
+  --row-history-padding-x: 10px;
+  --row-history-gap: 10px;
+  --row-entry-padding-y: 4px;
+  --row-entry-padding-x: 10px;
+  --row-entry-gap: 10px;
+  --row-large-min-height: 56px;
+  --row-large-padding-y: 10px;
+  --row-large-padding-x: 12px;
+  --row-large-gap: 14px;
+  --row-large-radius: 8px;
 }
