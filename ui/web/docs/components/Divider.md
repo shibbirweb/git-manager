@@ -16,6 +16,8 @@ Use between groups of buttons or sections. Strong is the menu separator color; s
 
 - `direction` (`"horizontal" | "vertical"`, default `"horizontal"`): Line direction.
 - `strong` (`boolean`, default `true`): The stronger border color.
+- `hideAt` (`"tiny" | "narrow" | "compact" | "medium" | null`, default `null`): In a responsive Toolbar or Stack under
+  220, 320, 480 or 600 px, the line goes.
 
 ## Example: In a toolbar
 

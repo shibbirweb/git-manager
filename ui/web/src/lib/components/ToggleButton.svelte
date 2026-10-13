@@ -14,6 +14,8 @@
     variant?: "plain" | "outline" | "tool" | "chip" | "filter";
     disabled?: boolean;
     title?: string;
+    /** Pressing it leaves the focus where it was, such as in a search field next to it. */
+    keepFocus?: boolean;
     onchange?: (pressed: boolean) => void;
   }
 
@@ -25,6 +27,7 @@
     variant = "plain",
     disabled = false,
     title,
+    keepFocus = false,
     onchange,
   }: Props = $props();
 
@@ -43,6 +46,7 @@
   aria-label={text ? undefined : label}
   title={title ?? label}
   {disabled}
+  onmousedown={(event) => keepFocus && event.preventDefault()}
   onclick={toggle}
 >
   {#if variant === "chip" && pressed}<Icon name="check" size="compact" />{/if}

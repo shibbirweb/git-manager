@@ -72,6 +72,8 @@
     <x:Double x:Key="GmMotionFast">120</x:Double>
     <x:Double x:Key="GmMotionNormal">150</x:Double>
     <x:Double x:Key="GmMotionFlash">180</x:Double>
+    <x:Double x:Key="GmMotionAppear">200</x:Double>
+    <x:Double x:Key="GmMotionAppearDelay">250</x:Double>
     <x:Double x:Key="GmBreakpointPanelTiny">220</x:Double>
     <x:Double x:Key="GmBreakpointPanelNarrow">320</x:Double>
     <x:Double x:Key="GmBreakpointPanelCompact">480</x:Double>
@@ -152,6 +154,12 @@
     <x:Double x:Key="GmLabelColumnSmall">100</x:Double>
     <x:Double x:Key="GmLabelColumnMedium">120</x:Double>
     <x:Double x:Key="GmLabelColumnLarge">130</x:Double>
+    <x:Double x:Key="GmCellWidthIcon">16</x:Double>
+    <x:Double x:Key="GmCellWidthXsmall">70</x:Double>
+    <x:Double x:Key="GmCellWidthSmall">80</x:Double>
+    <x:Double x:Key="GmCellWidthMedium">90</x:Double>
+    <x:Double x:Key="GmCellWidthLarge">120</x:Double>
+    <x:Double x:Key="GmCellWidthXlarge">140</x:Double>
     <FontFamily x:Key="GmFontUi">Inter, Segoe UI</FontFamily>
     <FontFamily x:Key="GmFontMono">JetBrains Mono, Menlo, Monaco, Cascadia Mono, Consolas, Courier New</FontFamily>
     <Color x:Key="GmPaletteGraphLane1">#FF4A8AF4</Color>

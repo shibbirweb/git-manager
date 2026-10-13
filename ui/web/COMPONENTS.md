@@ -43,8 +43,9 @@ EditorTab, TreeRow, DataTable, ReorderList, ResourceLink, SessionTabs, Table, Po
 
 [What each one is for](docs/groups/Layout.md)
 
-Stack, Text, Grid, Card, Divider, Row, Spacer, SplitPane, ResizeHandle, StatusBar, StatusItem, ActivityBar, PanelHeader,
-DescriptionList, AppShell, Toolbar, SectionTitle, AppHeader, TreeLine, ListBox, Pane, SplitGrid, PaneRow, SplitHandle
+Stack, Text, Grid, Card, Divider, Row, Spacer, Time, SplitPane, ResizeHandle, StatusBar, StatusItem, ActivityBar,
+PanelHeader, DescriptionList, AppShell, Toolbar, SectionTitle, AppHeader, TreeLine, ListBox, Pane, SplitGrid, PaneRow,
+SplitHandle
 
 ## Editor
 

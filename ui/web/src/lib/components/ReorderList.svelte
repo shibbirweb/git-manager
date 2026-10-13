@@ -1,7 +1,8 @@
 <!-- Rows the user puts in order by dragging their grip, like Interactive Rebase's commits. A line shows where the
-     row will land. Alt+Up and Alt+Down move the focused row with the keyboard. -->
+     row will land. Up and Down move the focus between rows; Alt+Up and Alt+Down move the focused row, and the focus
+     goes with it. Keys typed in a control inside a row (an action menu) stay there. -->
 <script lang="ts" generics="T">
-  import type { Snippet } from "svelte";
+  import { tick, type Snippet } from "svelte";
   import { DRAG_THRESHOLD, dropIndex } from "../logic/reorder";
 
   interface Props {
@@ -15,6 +16,7 @@
   let { items, itemKey, label, onreorder, row }: Props = $props();
 
   let listEl = $state<HTMLDivElement | null>(null);
+  const rowEls: HTMLDivElement[] = $state([]);
   let drag = $state<{ from: number; startY: number; moving: boolean; to: number } | null>(null);
 
   function centers(): number[] {
@@ -50,15 +52,21 @@
     drag = null;
   }
 
-  function keydown(event: KeyboardEvent, index: number): void {
-    if (!event.altKey || (event.key !== "ArrowUp" && event.key !== "ArrowDown")) {
+  async function keydown(event: KeyboardEvent, index: number): Promise<void> {
+    const arrow = event.key === "ArrowUp" || event.key === "ArrowDown";
+    if (!arrow || event.target !== event.currentTarget || event.metaKey || event.ctrlKey) {
       return;
     }
     event.preventDefault();
     const to = index + (event.key === "ArrowUp" ? -1 : 1);
-    if (to >= 0 && to < items.length) {
-      onreorder(index, to);
+    if (to < 0 || to >= items.length) {
+      return;
     }
+    if (event.altKey) {
+      onreorder(index, to);
+      await tick();
+    }
+    rowEls[to]?.focus();
   }
 
   /** The row whose top edge shows the drop line: the target, or after the last row. */
@@ -71,12 +79,13 @@
   {#each items as item, index (itemKey(item))}
     <div class="row-wrap" class:drop-target={index === lineAt} data-reorder-row role="listitem">
       <div
+        bind:this={rowEls[index]}
         class="row"
         class:lifted={drag?.moving && drag.from === index}
         tabindex="0"
         role="button"
         aria-label="Move with Alt+Up or Alt+Down"
-        onkeydown={(event) => keydown(event, index)}
+        onkeydown={(event) => void keydown(event, index)}
       >
         <span class="grip" aria-hidden="true" onpointerdown={(event) => down(event, index)}>&#8942;&#8942;</span>
         {@render row(item, index)}

@@ -30,6 +30,8 @@
     spinning?: boolean;
     /** Short text after the icon, such as a row's sync counts (2↓ 1↑). */
     count?: string;
+    /** Pressing it leaves the focus where it was, such as in a search field next to it. */
+    keepFocus?: boolean;
     element?: HTMLButtonElement | null;
     children?: Snippet;
   }
@@ -45,6 +47,7 @@
     count = "",
     type = "button",
     title,
+    keepFocus = false,
     element = $bindable(null),
     children,
     ...rest
@@ -75,6 +78,12 @@
   aria-pressed={active ? true : undefined}
   title={title ?? label}
   {...rest}
+  onmousedown={(event) => {
+    if (keepFocus) {
+      event.preventDefault();
+    }
+    rest.onmousedown?.(event);
+  }}
 >
   {#if spinning}
     <span class="spin"><Icon name={icon} size={iconSize} /></span>

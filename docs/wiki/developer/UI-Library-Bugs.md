@@ -1,0 +1,12 @@
+# UI Library Bugs
+
+The bugs we fixed in the UI library (`ui/`): what you saw, why it happened, and the fix and why we chose it. The
+library itself is described in [UI-Library.md](UI-Library.md).
+
+## Bugs we fixed
+
+- **Select's arrow touched the right border.** WebKit draws a native select's arrow against the border and ignores the padding. Select now hides the native arrow (`appearance: none`) and draws a chevron inside the padding, using the `select` tokens for its inset and room, so every platform gets the same numbers. The app's selects do the same in `src/app.css` (`select.input`, a chevron of two gradient strokes in `--text-dim`, so it follows every theme); the 24 px ones set `--select-arrow-inset: 6px`.
+
+- **Dragging rows in a Tree did nothing in the app.** Tree and TreeRow used HTML5 drag and drop (`draggable`, `dragover`, `drop`). In the browser showcase this worked, but Tauri's window answers every native drag itself, so it can report files dragged in from Finder, and HTML5 drop events never reach the page. The app's Files panel, editor tabs and Interactive Rebase all drag with pointer events for this reason. Tree now does too: a press past 4 px starts a drag, a ghost follows the pointer ("Move cart.ts", "Copy 3 items"), Option copies, a closed folder under the pointer opens after 600 ms, the list scrolls near its edges and Escape cancels. Where a drop may land is pure logic in `ui/web/src/lib/logic/treeDrag.ts` with tests; the gesture is `treeDragger.svelte.ts`, whose window listeners live only while a press or a drag does. We chose pointer events over asking Tauri to stop reporting native drags because Finder drops into the Files panel and the terminal need them.
+
+- **A responsive bar could throw "ResizeObserver loop completed with undelivered notifications".** A responsive Toolbar or Stack measures its width with a `ResizeObserver` and hides parts when it gets narrow. Hiding a Badge or a group can change the bar's height, and the change landed while the browser was still delivering the same resize, so it could not deliver the new one in that frame and reported the error (the theme check caught it on the Stack story's repository rows). `BarSize` in `ui/web/src/lib/logic/barSize.svelte.ts` now applies the measured width on the next animation frame. We chose one frame of delay over watching only the width, because the browser reports the loop for any skipped size change, whatever the callback does with it.

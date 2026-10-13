@@ -69,6 +69,7 @@ export const SCALES = [
   "codeHeight",
   "tableColumn",
   "labelColumn",
+  "cellWidth",
 ];
 
 function withoutComment<T extends object>(json: T): Omit<T, "$comment"> {

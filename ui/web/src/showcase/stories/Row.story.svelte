@@ -26,11 +26,10 @@
   <Text variant="sectionLabel">history</Text>
   {#each commits as commit (commit.hash)}
     <Row size="history" selected={commit.hash === selectedHash} onclick={() => (selectedHash = commit.hash)}>
-      <Text mono tone="dim" size="compact">{commit.hash}</Text>
-      <Text truncate title={commit.subject}>{commit.subject}</Text>
-      <Spacer />
-      <Text tone="dim">{commit.author}</Text>
-      <Text tone="dim" tabular>{commit.when}</Text>
+      <Stack width="xsmall"><Text mono tone="dim" size="compact">{commit.hash}</Text></Stack>
+      <Stack grow><Text truncate title={commit.subject}>{commit.subject}</Text></Stack>
+      <Stack width="xlarge"><Text tone="dim" truncate>{commit.author}</Text></Stack>
+      <Stack width="medium"><Text tone="dim" tabular truncate>{commit.when}</Text></Stack>
     </Row>
   {/each}
   <Text variant="sectionLabel">tree, folding, with hover actions</Text>

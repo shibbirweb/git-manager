@@ -91,6 +91,7 @@ export const componentTokens1 = {
     largeRadius: 9,
     cornerPaddingX: 3,
     cornerOffset: 5,
+    dotSize: 8,
   },
   tag: { height: 16, paddingX: 5, radius: 4, smallPaddingX: 4, smallLineHeight: 13 },
   kbd: { minWidth: 24, paddingX: 7, paddingY: 2, radius: 5 },
@@ -206,6 +207,10 @@ export const componentTokens1 = {
     rowGap: 3,
     counterMinWidth: 56,
     compactBelow: 480,
+    shrinkBelow: 380,
+    tinyBelow: 300,
+    tinyFieldMinWidth: 60,
+    tinyTextPaddingX: 5,
   },
   panelHeader: { height: 34, paddingLeft: 12, paddingRight: 6, gap: 6, buttonSize: 24 },
   fileRow: {

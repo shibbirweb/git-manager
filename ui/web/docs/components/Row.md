@@ -44,7 +44,7 @@ selection; alone, a Row with `onclick` is a button.
 
 ```svelte
 <Row size="history" selected={id === selectedId}>
-  <Text mono tone="dim" size="compact">{hash}</Text>
+  <Stack width="xsmall"><Text mono tone="dim" size="compact">{hash}</Text></Stack>
   <Text truncate>{subject}</Text>
   <Spacer />
   <Text tone="dim" tabular>{when}</Text>

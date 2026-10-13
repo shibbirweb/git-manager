@@ -13,10 +13,12 @@
     value: T;
     label: string;
     variant?: "panel" | "underline";
+    /** Pressing a tab leaves the focus where it was (tabs over a search field); the tabs take no focus. */
+    keepFocus?: boolean;
     onchange?: (value: T) => void;
   }
 
-  let { tabs, value = $bindable(), label, variant = "panel", onchange }: Props = $props();
+  let { tabs, value = $bindable(), label, variant = "panel", keepFocus = false, onchange }: Props = $props();
   let buttons: HTMLButtonElement[] = $state([]);
 
   function choose(next: T): void {
@@ -34,7 +36,9 @@
     const index = nextIndex(Math.max(0, tabs.findIndex((tab) => tab.value === value)), tabs.length, event.key);
     if (index >= 0) {
       choose(tabs[index].value);
-      buttons[index]?.focus();
+      if (!keepFocus) {
+        buttons[index]?.focus();
+      }
     }
   }
 </script>
@@ -48,7 +52,8 @@
       type="button"
       role="tab"
       aria-selected={tab.value === value}
-      tabindex={tab.value === value ? 0 : -1}
+      tabindex={tab.value === value && !keepFocus ? 0 : -1}
+      onmousedown={(event) => keepFocus && event.preventDefault()}
       onclick={() => choose(tab.value)}
     >
       {tab.label}

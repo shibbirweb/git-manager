@@ -23,6 +23,7 @@ Use plain in editor toolbars (borderless, tinted when on) and outline for option
   icon, a chip, or a filter that turns accent when on.
 - `disabled` (`boolean`, default `false`): Cannot be pressed.
 - `title` (`string`): A longer tooltip.
+- `keepFocus` (`boolean`, default `false`): Pressing it leaves the focus where it was, such as in a search field.
 - `onchange` (`(pressed: boolean) => void`): Called after each press.
 
 ## Example: Diff

@@ -29,7 +29,9 @@ Use `truncate` for paths and names that may not fit.
 - `wrap` (`"normal" | "anywhere" | "pre"`, default `"normal"`): Anywhere breaks long paths; pre keeps line breaks
   (output).
 - `strike` (`boolean`, default `false`): Struck through, like a deleted file's name.
-- `element` (`"span" | "p" | "div" | "h1" | "h2" | "h3" | "label" | "code"`, default `"span"`): The HTML element.
+- `element` (`"span" | "p" | "div" | "h1" | "h2" | "h3" | "h4" | "label" | "code"`, default `"span"`): The HTML element.
+- `hideAt` (`"tiny" | "narrow" | "compact" | "medium" | null`, default `null`): In a responsive Toolbar or Stack under
+  220, 320, 480 or 600 px, the words hide but screen readers still read them.
 - `title` (`string`): Tooltip, e.g. the full text of a truncated path.
 - `children` (`Snippet`, required): The text.
 

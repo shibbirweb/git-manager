@@ -1,5 +1,8 @@
 <script lang="ts">
+  import Button from "$ui/components/Button.svelte";
+  import CodeBlock from "$ui/components/CodeBlock.svelte";
   import Icon from "$ui/components/Icon.svelte";
+  import Input from "$ui/components/Input.svelte";
   import List from "$ui/components/List.svelte";
   import Row from "$ui/components/Row.svelte";
   import Spacer from "$ui/components/Spacer.svelte";
@@ -50,6 +53,35 @@
     subject: `Commit number ${2000 - index}`,
   }));
   let selectedCommit = $state<string | null>("c0");
+
+  const commands = Array.from({ length: 300 }, (_, index) => ({
+    id: `g${index}`,
+    command: `git ${["fetch --prune origin", "status --porcelain=v2", "log -n 50"][index % 3]}`,
+    output: Array.from({ length: (index % 4) + 2 }, (_, line) => `line ${line + 1} of command ${index + 1}`).join("\n"),
+  }));
+  let openCommands = $state<string[]>(["g1"]);
+  let selectedCommand = $state<string | null>("g1");
+
+  function toggleCommand(id: string) {
+    openCommands = openCommands.includes(id) ? openCommands.filter((other) => other !== id) : [...openCommands, id];
+  }
+
+  let query = $state("");
+  let filterField = $state<HTMLInputElement | null>(null);
+  let picked = $state<string | null>(null);
+  let pickedOpen = $state("");
+  const found = $derived(files.filter((file) => file.path.toLowerCase().includes(query.toLowerCase())));
+
+  let loaded = $state(100);
+  const paged = $derived(commits.slice(0, loaded));
+  let pagedSelected = $state<string | null>(null);
+
+  let consoleLines = $state(Array.from({ length: 12 }, (_, index) => ({ id: index, text: `git fetch #${index + 1}` })));
+
+  function runCommand() {
+    const id = consoleLines.length;
+    consoleLines = [...consoleLines, { id, text: `git status #${id + 1}` }];
+  }
 
   function toggle(item: TreeItem, open: boolean) {
     openIds = open ? [...openIds, item.id] : openIds.filter((id) => id !== item.id);
@@ -118,6 +150,80 @@
         <Spacer />
         <Text tone="dim" tabular>#{state.index + 1}</Text>
       </Row>
+    {/snippet}
+  </List>
+
+  <Text variant="sectionLabel">virtual and measured: entries open to different heights (Enter opens)</Text>
+  <List
+    label="Git commands"
+    items={commands}
+    itemKey={(entry) => entry.id}
+    virtual="normal"
+    measure
+    height="medium"
+    bind:selected={selectedCommand}
+    onactivate={(entry) => toggleCommand(entry.id)}
+  >
+    {#snippet row(entry, state)}
+      <Stack gap="none">
+        <Row
+          selected={state.selected}
+          expanded={openCommands.includes(entry.id)}
+          onclick={() => toggleCommand(entry.id)}
+        >
+          <Text mono size="small" truncate>{entry.command}</Text>
+        </Row>
+        {#if openCommands.includes(entry.id)}
+          <CodeBlock label="Output of {entry.command}" text={entry.output} />
+        {/if}
+      </Stack>
+    {/snippet}
+  </List>
+
+  <Text variant="sectionLabel">field drive: the field keeps the focus; Up, Down and Enter work the list</Text>
+  <Input bind:element={filterField} bind:value={query} placeholder="Type to filter" aria-label="Filter files" />
+  <List
+    label="Matching files"
+    items={found}
+    itemKey={(file) => file.path}
+    field={filterField}
+    fieldKeys="drive"
+    bind:selected={picked}
+    onactivate={(file) => (pickedOpen = file.path)}
+  >
+    {#snippet row(file, state)}
+      <Row selected={state.selected}><Text truncate>{file.path}</Text></Row>
+    {/snippet}
+  </List>
+  <Text tone="dim" size="small">{pickedOpen ? `Opened ${pickedOpen}` : "Enter opens the highlighted file"}</Text>
+
+  <Text variant="sectionLabel">onnearend: loads 100 more near the end ({loaded} of {commits.length})</Text>
+  <List
+    label="Paged commits"
+    items={paged}
+    itemKey={(commit) => commit.id}
+    virtual="relaxed"
+    height="small"
+    bind:selected={pagedSelected}
+    onnearend={() => (loaded = Math.min(commits.length, loaded + 100))}
+  >
+    {#snippet row(commit, state)}
+      <Row size="history" selected={state.selected}><Text truncate>{commit.subject}</Text></Row>
+    {/snippet}
+  </List>
+
+  <Text variant="sectionLabel">follow: stays at the bottom while entries arrive, until you scroll up</Text>
+  <Stack direction="row"><Button onclick={runCommand}>Run a command</Button></Stack>
+  <List
+    label="Console"
+    role="list"
+    items={consoleLines}
+    itemKey={(line) => String(line.id)}
+    height="small"
+    follow
+  >
+    {#snippet row(line)}
+      <Row><Text mono size="small">{line.text}</Text></Row>
     {/snippet}
   </List>
 </Stack>

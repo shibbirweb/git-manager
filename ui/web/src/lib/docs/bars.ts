@@ -22,6 +22,8 @@ export const barDocs: ComponentDoc[] = [
         default: '"top"',
       }),
       prop("end", "Snippet", "Controls pushed to the far end."),
+      prop("responsive", "boolean", "Measures its width, so Text, Badge and Divider inside can step aside with " +
+        "`hideAt` or `dotAt` when it is narrow (the file bar).", { default: "false" }),
     ],
     examples: [
       {
@@ -37,7 +39,11 @@ export const barDocs: ComponentDoc[] = [
       ".toolbar in GitConsoleView, ShelfPanel, DiffView, LogView, AiPanel, ScriptsPanel",
       ".toolbar and .footer in MergeEditor; .toolbar in McpToolsDialog, ShortcutsDialog, LocalHistoryDialog",
     ],
-    rules: ["Separate groups with a vertical Divider; it takes the toolbar's length and spacing."],
+    logic: ["barSize.svelte.ts", "breakpoints.ts"],
+    rules: [
+      "Separate groups with a vertical Divider; it takes the toolbar's length and spacing.",
+      "For narrow bars, set `responsive` and give the least needed words `hideAt`, never a width of your own.",
+    ],
   },
   {
     name: "SectionTitle",
@@ -50,11 +56,16 @@ export const barDocs: ComponentDoc[] = [
     aliases: ["Heading", "List header", "Group header"],
     props: [
       prop("title", "string", "The heading.", { required: true }),
+      prop("titleMatches", "[number, number][]", "Ranges [start, end) of the title a search found, in the " +
+        "warning tint (Settings search).", { default: "[]", data: true }),
       prop("variant", '"bar" | "list" | "caption" | "caps" | "day" | "divided" | "group" | "band" | "picker"',
         "The place it heads; band is a tinted strip.", {
         default: '"list"',
       }),
       prop("count", "number | null", "A count after the title.", { default: "null", data: true }),
+      prop("heading", "2 | 3 | 4 | null", "Makes the title a heading of this level for screen readers.", {
+        default: "null",
+      }),
       prop("actions", "Snippet", "Buttons at the end."),
     ],
     examples: [{ title: "Changes", code: '<SectionTitle variant="bar" title="Staged" count={3} />' }],
@@ -81,6 +92,9 @@ export const barDocs: ComponentDoc[] = [
         "a chip, or a filter that turns accent when on.", { default: '"plain"' }),
       prop("disabled", "boolean", "Cannot be pressed.", { default: "false" }),
       prop("title", "string", "A longer tooltip."),
+      prop("keepFocus", "boolean", "Pressing it leaves the focus where it was, such as in a search field.", {
+        default: "false",
+      }),
       prop("onchange", "(pressed: boolean) => void", "Called after each press."),
     ],
     examples: [{ title: "Diff", code: '<ToggleButton icon="list-tree" label="Collapse unchanged" bind:pressed />' }],

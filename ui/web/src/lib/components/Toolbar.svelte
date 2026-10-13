@@ -4,9 +4,11 @@
      popup's head (popup), a vertical column of tools (rail), the tinted bar of a file with conflicts (conflict), a
      file bar along the bottom (strip) or a dialog's footer (dialog-footer); `placement` bottom puts the line on
      top. `children` sit at the start, `end` at the far end. Vertical Dividers inside take the toolbar's length and
-     spacing. -->
+     spacing. With `responsive` it measures its width, so a Text, Badge or Divider inside can step aside with
+     `hideAt` or `dotAt` when the bar gets narrow. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { BarSize, provideBarSize } from "../logic/barSize.svelte";
 
   type ToolbarVariant =
     | "tab"
@@ -34,9 +36,12 @@
     children: Snippet;
     placement?: "top" | "bottom";
     end?: Snippet;
+    responsive?: boolean;
   }
 
-  let { variant = "tab", label, placement = "top", children, end }: Props = $props();
+  let { variant = "tab", label, placement = "top", responsive = false, children, end }: Props = $props();
+  const bar = new BarSize();
+  provideBarSize(bar);
 </script>
 
 <div
@@ -45,6 +50,7 @@
   role="toolbar"
   aria-label={label}
   aria-orientation={variant === "rail" ? "vertical" : undefined}
+  use:bar.observe={responsive}
 >
   {@render children()}
   {#if end}

@@ -14,7 +14,8 @@ Use for five or more choices, or long labels. Use Segmented for two to four shor
 
 ## Props
 
-- `options` (`{ value: T extends string; label: string; disabled?: boolean }[]`, required): The choices.
+- `options` (`{ value: T extends string; label: string; disabled?: boolean; title?: string }[]`, required): The choices;
+  `title` is a tooltip for one, such as what a rebase action does.
 - `value` (`T extends string`, required, bindable): The chosen value.
 - `label` (`string`, required): Accessible name.
 - `disabled` (`boolean`, default `false`): Disables it.

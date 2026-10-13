@@ -9,3 +9,7 @@
   <Text tone="dim">Loading the log</Text>
   <Spinner size="large" />
 </Stack>
+<Stack direction="row" align="center" gap="lg">
+  <Spinner delayed label="Loading the diff" />
+  <Text tone="dim">delayed: shows after 250 ms (reload the page to see it fade in)</Text>
+</Stack>

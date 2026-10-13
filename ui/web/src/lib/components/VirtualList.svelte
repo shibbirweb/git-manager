@@ -1,9 +1,10 @@
 <!-- A long list that draws only the rows in view, for thousands of rows (files, commits). Rows have one fixed
-     height. `keepInView` scrolls a row into view when it changes, like a keyboard selection. -->
+     height. `keepInView` scrolls a row into view when it changes, like a keyboard selection; with `reveal="center"`
+     a row far off lands in the middle, like a file located in the Files panel. -->
 <script lang="ts" generics="T">
   import type { Snippet } from "svelte";
   import type { RowHeight, ViewHeight } from "../logic/presets";
-  import { scrollToShow, visibleRows } from "../logic/virtualWindow";
+  import { scrollToCenter, scrollToShow, visibleRows } from "../logic/virtualWindow";
   import { scales } from "../styles/tokens";
 
   interface Props {
@@ -11,41 +12,52 @@
     rowHeight?: RowHeight;
     label: string;
     keepInView?: number | null;
+    reveal?: "nearest" | "center";
+    element?: HTMLDivElement | null;
     height?: ViewHeight;
     row: Snippet<[T, number]>;
   }
 
-  let { items, rowHeight = "normal", label, keepInView = null, height = "fill", row }: Props = $props();
+  let {
+    items,
+    rowHeight = "normal",
+    label,
+    keepInView = null,
+    reveal = "nearest",
+    element = $bindable(null),
+    height = "fill",
+    row,
+  }: Props = $props();
 
   // Rows drawn beyond the view on each side, so fast scrolling does not show gaps.
   const OVERSCAN = 8;
   const rowPx = $derived(scales.rowHeight[rowHeight]);
 
-  let viewport = $state<HTMLDivElement | null>(null);
   let scrollTop = $state(0);
   let viewportHeight = $state(0);
   const range = $derived(visibleRows(scrollTop, viewportHeight, rowPx, items.length, OVERSCAN));
 
   $effect(() => {
-    if (keepInView === null || !viewport) {
+    if (keepInView === null || !element) {
       return;
     }
-    const target = scrollToShow(keepInView, rowPx, viewport.scrollTop, viewport.clientHeight);
+    const show = reveal === "center" ? scrollToCenter : scrollToShow;
+    const target = show(keepInView, rowPx, element.scrollTop, element.clientHeight);
     if (target !== null) {
-      viewport.scrollTop = target;
+      element.scrollTop = target;
     }
   });
 </script>
 
 <div
-  bind:this={viewport}
+  bind:this={element}
   bind:clientHeight={viewportHeight}
   class="viewport"
   class:fixed={height !== "fill"}
   style:height={height === "fill" ? null : `${scales.viewHeight[height]}px`}
   role="list"
   aria-label={label}
-  onscroll={() => (scrollTop = viewport?.scrollTop ?? 0)}
+  onscroll={() => (scrollTop = element?.scrollTop ?? 0)}
 >
   <div class="spacer" style:height="{items.length * rowPx}px">
     {#each items.slice(range.first, range.last) as item, offset (range.first + offset)}

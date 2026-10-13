@@ -25,6 +25,7 @@ icon-only commands in toolbars and rows.
 - `count` (`number | null`, default `null`): A dim count after the words, like the repository picker's.
 - `trailingIcon` (`IconName | null`, default `null`): An icon after the text, such as a picker's chevron.
 - `type` (`"button" | "submit" | "reset"`, default `"button"`): The button's form type.
+- `keepFocus` (`boolean`, default `false`): Pressing it leaves the focus where it was, such as in a search field.
 - `element` (`HTMLButtonElement | null`, default `null`, bindable): The button element, to focus it.
 - `children` (`Snippet`): The text.
 - `...rest` (`HTMLButtonAttributes`): Any other button attribute: onclick, disabled, title, aria-*.

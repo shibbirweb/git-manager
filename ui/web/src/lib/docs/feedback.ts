@@ -1,5 +1,7 @@
 import { prop, type ComponentDoc } from "./types";
 
+const NARROW_STEP = '"tiny" | "narrow" | "compact" | "medium" | null';
+
 export const feedbackDocs: ComponentDoc[] = [
   {
     name: "Spinner",
@@ -12,6 +14,7 @@ export const feedbackDocs: ComponentDoc[] = [
       prop("size", '"small" | "normal" | "large"', "10, 12 or 18 px; large for loading cards.", {
         default: '"normal"',
       }),
+      prop("delayed", "boolean", "Fades in after 250 ms, so quick work does not flash it.", { default: "false" }),
     ],
     examples: [{ title: "Loading", code: '<Spinner label="Loading the log" />' }],
     replaces: ['<span class="spinner"></span>'],
@@ -34,6 +37,11 @@ export const feedbackDocs: ComponentDoc[] = [
         default: '"accent"',
       }),
       prop("label", "string", "What the count means, e.g. `3 changes`; defaults to the number."),
+      prop("dotAt", NARROW_STEP, "In a responsive Toolbar or Stack under 220, 320, 480 or 600 px, only a dot " +
+        "shows; the count stays in its name.", { default: "null" }),
+      prop("hideAt", NARROW_STEP, "In a responsive Toolbar or Stack under 220, 320, 480 or 600 px, it goes.", {
+        default: "null",
+      }),
     ],
     examples: [{ title: "Changes", code: '<Badge count={changes} label="{changes} changes" />' }],
     replaces: ['<span class="badge">3</span>'],
@@ -128,6 +136,8 @@ export const feedbackDocs: ComponentDoc[] = [
       prop("titleSize", '"normal" | "large"', "A larger title, as on a failed view.", { default: '"normal"' }),
       prop("titleTone", '"default" | "danger"', "A red title for errors.", { default: '"default"' }),
       prop("overlay", "boolean", "Covers its positioned parent, over the content.", { default: "false" }),
+      prop("delayed", "boolean", "Fades in after 250 ms, so a loading message does not flash when the work is " +
+        "quick.", { default: "false" }),
       prop("iconTone", '"inherit" | "faint" | "accent" | "success"', "The icon's color; inherit takes the text's.", {
         default: '"inherit"',
       }),
@@ -144,11 +154,13 @@ export const feedbackDocs: ComponentDoc[] = [
         title: "No stashes",
         code: '<EmptyState icon="stash" title="No stashes" hint="Stash changes to set them aside." />',
       },
+      { title: "Loading", code: '<EmptyState title="Loading diff..." delayed />' },
     ],
     replaces: [
       '<div class="placeholder">...</div>',
       '<div class="empty">...</div>',
       'the .empty and .notice blocks of src/lib/ai/AiPanel.svelte',
+      '<div class="placeholder loading"> with its `appear` animation (ChangesDiff)',
     ],
   },
 ];

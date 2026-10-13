@@ -46,7 +46,7 @@ export const scales = {
   radius: { tiny: 2, small: 4, segment: 5, control: 6, segmented: 7, menu: 8, dialog: 10, window: 12, round: 999 },
   space: { s1: 2, s2: 4, s3: 6, s4: 8, s5: 10, s6: 12, s7: 14, s8: 16, s9: 18, s10: 20, s11: 24, s12: 32 },
   borderWidth: { mid: 1.5, thick: 2, focus: 2 },
-  motion: { fast: 120, normal: 150, flash: 180 },
+  motion: { fast: 120, normal: 150, flash: 180, appear: 200, appearDelay: 250 },
   breakpoint: {
     panelTiny: 220,
     panelNarrow: 320,
@@ -88,6 +88,7 @@ export const scales = {
   codeHeight: { small: 200, medium: 360, large: 520 },
   tableColumn: { xsmall: 82, small: 110, side: 130, medium: 150, large: 220 },
   labelColumn: { small: 100, medium: 120, large: 130 },
+  cellWidth: { icon: 16, xsmall: 70, small: 80, medium: 90, large: 120, xlarge: 140 },
 } as const;
 
 /** Window and panel widths in px where layouts change. */

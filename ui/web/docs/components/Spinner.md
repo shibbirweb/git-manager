@@ -16,6 +16,7 @@ Use beside a label while something loads or runs. Use ProgressBar when the share
 
 - `label` (`string`, default `"Loading"`): What is loading, read by screen readers.
 - `size` (`"small" | "normal" | "large"`, default `"normal"`): 10, 12 or 18 px; large for loading cards.
+- `delayed` (`boolean`, default `false`): Fades in after 250 ms, so quick work does not flash it.
 
 ## Example: Loading
 

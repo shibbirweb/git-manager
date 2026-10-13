@@ -8,6 +8,8 @@
     value: V;
     label: string;
     disabled?: boolean;
+    /** A tooltip for this choice, such as what a rebase action does. */
+    title?: string;
   }
 
   interface Props {
@@ -43,7 +45,7 @@
     }}
   >
     {#each options as option (option.value)}
-      <option value={option.value} disabled={option.disabled}>{option.label}</option>
+      <option value={option.value} disabled={option.disabled} title={option.title}>{option.label}</option>
     {/each}
   </select>
   <span class="arrow"><Icon name="chevron-down" size="compact" tone="dim" /></span>

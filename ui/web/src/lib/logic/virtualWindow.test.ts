@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scrollToShow, visibleRows } from "./virtualWindow";
+import { scrollToCenter, scrollToShow, visibleRows } from "./virtualWindow";
 
 describe("visibleRows", () => {
   it("draws the rows in view plus the overscan, within the list", () => {
@@ -19,5 +19,13 @@ describe("scrollToShow", () => {
     expect(scrollToShow(2, 24, 100, 240)).toBe(48);
     expect(scrollToShow(20, 24, 100, 240)).toBe(264);
     expect(scrollToShow(6, 24, 100, 240)).toBeNull();
+  });
+});
+
+describe("scrollToCenter", () => {
+  it("centers a row out of view and leaves one in view alone", () => {
+    expect(scrollToCenter(50, 24, 0, 240)).toBe(50 * 24 - (240 - 24) / 2);
+    expect(scrollToCenter(2, 24, 0, 240)).toBeNull();
+    expect(scrollToCenter(1, 24, 200, 240)).toBe(0);
   });
 });

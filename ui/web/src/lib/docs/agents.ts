@@ -8,7 +8,8 @@ export const agentDocs: ComponentDoc[] = [
     usage: "Font, size, weight and spacing come from the user's settings, so they are data numbers here.",
     aliases: ["Font preview"],
     props: [
-      prop("lines", "{ text; dim? }[]", "The sample's lines.", { required: true, data: true }),
+      prop("lines", "{ text?; dim?; parts?: { text; dim?; bold? }[] }[]", "The sample's lines; a line of `parts` " +
+        "mixes dim and bold words.", { required: true, data: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("variant", '"editor" | "terminal"', "Editor spacing, or the terminal's line height.", {
         default: '"editor"',
@@ -16,6 +17,10 @@ export const agentDocs: ComponentDoc[] = [
       prop("fontFamily", "string", "The font, from settings.", { data: true }),
       prop("fontSize", "number | null", "Its size in px, from settings.", { default: "null", data: true }),
       prop("fontWeight", "number | null", "Its weight, from settings.", { default: "null", data: true }),
+      prop("boldWeight", "number | null", "The weight of bold parts, from settings; else the bold token.", {
+        default: "null",
+        data: true,
+      }),
       prop("letterSpacing", "number | null", "Extra spacing in px, from settings.", { default: "null", data: true }),
       prop("lineHeight", "number | null", "The terminal's line height, from settings.", {
         default: "null",

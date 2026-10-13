@@ -1,12 +1,16 @@
 <!-- A file-tree style list: folders open and close, rows indent by depth, and only rows in view are drawn. Click
      selects (Cmd and Shift add with `multiple`), double-click or Enter opens a file, arrow keys move like the Files
-     panel. Rows can carry a decoration, be renamed in place, and be dragged onto folders. -->
+     panel. Rows can carry a decoration, be renamed in place, and be dragged onto folders with the pointer (HTML5
+     drag never reaches a Tauri page): Option copies, a hovered folder opens, the list scrolls near its edges. -->
 <script lang="ts" generics="N extends TreeNode">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
   import type { ViewHeight } from "../logic/presets";
+  import { dragText, treeDropTarget, treeParents, type DropMode } from "../logic/treeDrag";
+  import { TreeDragger } from "../logic/treeDragger.svelte";
   import { treeKey, treeRows, type TreeDecoration, type TreeNode } from "../logic/treeModel";
   import { modifiersOf, selectRow } from "../logic/treeSelect";
+  import DragGhost from "./DragGhost.svelte";
   import TreeRow from "./TreeRow.svelte";
   import VirtualList from "./VirtualList.svelte";
 
@@ -20,6 +24,7 @@
     focused?: boolean;
     height?: ViewHeight;
     renaming?: string | null;
+    reveal?: "nearest" | "center";
     draggable?: boolean;
     /** A drop into the tree's top folder: the whole list is outlined. */
     dropRoot?: boolean;
@@ -28,7 +33,7 @@
     detail?: Snippet<[N]>;
     onopen?: (node: N) => void;
     onrename?: (node: N, name: string) => void;
-    ondrop?: (ids: string[], target: N) => void;
+    ondrop?: (ids: string[], target: N | null, mode: DropMode) => void;
     oncontextmenu?: (node: N, event: MouseEvent) => void;
   }
 
@@ -42,6 +47,7 @@
     focused = true,
     height = "fill",
     renaming = $bindable(null),
+    reveal = "nearest",
     draggable = false,
     dropRoot = false,
     iconFor = (node: N) => (node.children ? "folder" : "file"),
@@ -57,7 +63,36 @@
   const order = $derived(rows.map((row) => row.node.id));
   const selectedIndex = $derived(rows.findIndex((row) => row.node.id === selected));
   let anchor: string | null = null;
-  let dropOn = $state<string | null>(null);
+  let treeEl = $state<HTMLDivElement | null>(null);
+  let scroller = $state<HTMLDivElement | null>(null);
+  const parents = $derived(treeParents(nodes));
+  const byId = $derived(new Map(rows.map((row) => [row.node.id, row])));
+
+  const dragger = new TreeDragger({
+    root: () => treeEl,
+    scroller: () => scroller,
+    idsFor: (id) => (multiple && selection.includes(id) ? selection : [id]),
+    target: (hit, ids, mode) => treeDropTarget(hit, ids, mode, parents, (id) => byId.get(id)?.isFolder ?? false),
+    isClosedFolder: (id) => byId.get(id)?.isFolder === true && !expanded.includes(id),
+    open: (id) => setOpen(id, true),
+    drop: (ids, target, mode) => ondrop?.(ids, target === null ? null : (findNode(target) ?? null), mode),
+  });
+  const drag = $derived(dragger.drag);
+  $effect(() => dragger.cancel);
+
+  function findNode(id: string, list: readonly N[] = nodes): N | undefined {
+    for (const node of list) {
+      const found = node.id === id ? node : node.children ? findNode(id, node.children as N[]) : undefined;
+      if (found) {
+        return found;
+      }
+    }
+    return undefined;
+  }
+
+  function labelOf(id: string): string {
+    return byId.get(id)?.node.label ?? findNode(id)?.label ?? id;
+  }
 
   const isSelected = (id: string) => (multiple ? selection.includes(id) : id === selected);
 
@@ -105,31 +140,26 @@
     }
   }
 
-  function dragged(event: DragEvent, id: string): void {
-    const ids = multiple && selection.includes(id) ? selection : [id];
-    event.dataTransfer?.setData("application/x-gm-tree", JSON.stringify(ids));
-  }
-
-  function dropped(event: DragEvent, node: N): void {
-    dropOn = null;
-    const raw = event.dataTransfer?.getData("application/x-gm-tree");
-    if (raw && node.children) {
-      event.preventDefault();
-      ondrop?.(JSON.parse(raw) as string[], node);
-    }
-  }
 </script>
 
 <div
+  bind:this={treeEl}
   class="tree"
-  class:drop-root={dropRoot}
+  class:drop-root={dropRoot || drag?.target === null}
   role="tree"
   aria-label={label}
   aria-multiselectable={multiple}
   tabindex="0"
   {onkeydown}
 >
-  <VirtualList items={rows} {label} keepInView={selectedIndex >= 0 ? selectedIndex : null} {height}>
+  <VirtualList
+    bind:element={scroller}
+    items={rows}
+    {label}
+    keepInView={selectedIndex >= 0 ? selectedIndex : null}
+    {reveal}
+    {height}
+  >
     {#snippet row(entry, index)}
       <TreeRow
         row={entry}
@@ -138,8 +168,7 @@
         focused={focused && entry.node.id === selected}
         decoration={decorate(entry.node)}
         renaming={renaming === entry.node.id}
-        {draggable}
-        dropTarget={dropOn === entry.node.id}
+        dropTarget={drag !== null && drag.target === entry.node.id}
         {detail}
         onclick={(event) => click(entry.node.id, event)}
         ondblclick={() => activate(index)}
@@ -155,18 +184,18 @@
             onrename?.(entry.node, name);
           }
         }}
-        ondragstart={(event) => dragged(event, entry.node.id)}
-        ondragover={(event) => {
-          if (draggable && entry.isFolder) {
-            event.preventDefault();
-            dropOn = entry.node.id;
+        onpointerdown={(event) => {
+          if (draggable && renaming === null) {
+            dragger.press(event, entry.node.id);
           }
         }}
-        ondrop={(event) => dropped(event, entry.node)}
       />
     {/snippet}
   </VirtualList>
 </div>
+{#if drag}
+  <DragGhost text={dragText(drag.ids.map(labelOf), drag.mode)} x={drag.x} y={drag.y} />
+{/if}
 
 <style>
   .tree.drop-root {

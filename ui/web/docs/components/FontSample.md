@@ -14,12 +14,14 @@ Font, size, weight and spacing come from the user's settings, so they are data n
 
 ## Props
 
-- `lines` (`{ text; dim? }[]`, required): The sample's lines.
+- `lines` (`{ text?; dim?; parts?: { text; dim?; bold? }[] }[]`, required): The sample's lines; a line of `parts` mixes
+  dim and bold words.
 - `label` (`string`, required): Accessible name.
 - `variant` (`"editor" | "terminal"`, default `"editor"`): Editor spacing, or the terminal's line height.
 - `fontFamily` (`string`): The font, from settings.
 - `fontSize` (`number | null`, default `null`): Its size in px, from settings.
 - `fontWeight` (`number | null`, default `null`): Its weight, from settings.
+- `boldWeight` (`number | null`, default `null`): The weight of bold parts, from settings; else the bold token.
 - `letterSpacing` (`number | null`, default `null`): Extra spacing in px, from settings.
 - `lineHeight` (`number | null`, default `null`): The terminal's line height, from settings.
 - `ligatures` (`boolean`, default `true`): Join ligatures.

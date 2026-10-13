@@ -1,17 +1,30 @@
-<!-- A count in a small pill, like the changes count on the activity bar. Shows "99+" above `max`. -->
+<!-- A count in a small pill, like the changes count on the activity bar. Shows "99+" above `max`. With `dotAt`, a
+     responsive Toolbar or Stack that narrow shows it as a dot (the count stays in its accessible name); with
+     `hideAt`, it goes (a repository row drops its change count in a very narrow sidebar). -->
 <script lang="ts">
+  import { useNarrow } from "../logic/barSize.svelte";
+  import type { NarrowStep } from "../logic/breakpoints";
+
   interface Props {
     count: number;
     max?: number;
     tone?: "accent" | "danger" | "warning" | "neutral" | "quiet";
     size?: "small" | "normal" | "large" | "corner";
     label?: string;
+    dotAt?: NarrowStep | null;
+    hideAt?: NarrowStep | null;
   }
 
-  let { count, max = 99, tone = "accent", size = "normal", label }: Props = $props();
+  let { count, max = 99, tone = "accent", size = "normal", label, dotAt = null, hideAt = null }: Props = $props();
+  const dot = useNarrow(() => dotAt);
+  const hidden = useNarrow(() => hideAt);
 </script>
 
-<span class="badge {tone} {size}" aria-label={label ?? String(count)}>{count > max ? `${max}+` : count}</span>
+{#if !hidden()}
+  <span class="badge {tone} {size}" class:dot={dot()} aria-label={label ?? String(count)}
+    >{#if !dot()}{count > max ? `${max}+` : count}{/if}</span
+  >
+{/if}
 
 <style>
   .badge {
@@ -67,6 +80,15 @@
     font-size: var(--font-size-micro);
     font-weight: var(--font-weight-regular);
     line-height: var(--badge-small-size);
+  }
+
+  /* A narrow bar's badge: only its color tells that something is there. */
+  .badge.dot {
+    min-width: 0;
+    width: var(--badge-dot-size);
+    height: var(--badge-dot-size);
+    padding: 0;
+    border-radius: 50%;
   }
 
   .large {

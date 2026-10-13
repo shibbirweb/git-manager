@@ -39,3 +39,16 @@ export function scrollToShow(
   }
   return null;
 }
+
+/** The scrollTop that puts row `index` in the middle of the view when it is not fully in view, or null. */
+export function scrollToCenter(
+  index: number,
+  rowHeight: number,
+  scrollTop: number,
+  viewportHeight: number,
+): number | null {
+  if (scrollToShow(index, rowHeight, scrollTop, viewportHeight) === null) {
+    return null;
+  }
+  return Math.max(0, index * rowHeight - (viewportHeight - rowHeight) / 2);
+}

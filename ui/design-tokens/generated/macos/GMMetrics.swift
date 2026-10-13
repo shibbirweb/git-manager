@@ -118,6 +118,8 @@ public enum GMMotion {
     public static let fast: Double = 0.12
     public static let normal: Double = 0.15
     public static let flash: Double = 0.18
+    public static let appear: Double = 0.2
+    public static let appearDelay: Double = 0.25
 }
 
 public enum GMBreakpoint {
@@ -246,4 +248,13 @@ public enum GMLabelColumn {
     public static let small: CGFloat = 100
     public static let medium: CGFloat = 120
     public static let large: CGFloat = 130
+}
+
+public enum GMCellWidth {
+    public static let icon: CGFloat = 16
+    public static let xsmall: CGFloat = 70
+    public static let small: CGFloat = 80
+    public static let medium: CGFloat = 90
+    public static let large: CGFloat = 120
+    public static let xlarge: CGFloat = 140
 }

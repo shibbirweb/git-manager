@@ -17,9 +17,12 @@ a line (MCP groups).
 ## Props
 
 - `title` (`string`, required): The heading.
+- `titleMatches` (`[number, number][]`, default `[]`): Ranges [start, end) of the title a search found, in the warning
+  tint (Settings search).
 - `variant` (`"bar" | "list" | "caption" | "caps" | "day" | "divided" | "group" | "band" | "picker"`, default `"list"`):
   The place it heads; band is a tinted strip.
 - `count` (`number | null`, default `null`): A count after the title.
+- `heading` (`2 | 3 | 4 | null`, default `null`): Makes the title a heading of this level for screen readers.
 - `actions` (`Snippet`): Buttons at the end.
 
 ## Example: Changes

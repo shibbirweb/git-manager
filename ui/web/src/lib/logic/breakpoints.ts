@@ -32,3 +32,13 @@ export function columnsFor(width: number, minColumn: number, gap: number, maxCol
   }
   return Math.max(1, Math.min(maxColumns, Math.floor((width + gap) / (minColumn + gap))));
 }
+
+/** A width step a bar's contents can step aside at: under 220 px (tiny), 320 (narrow), 480 (compact), 600 (medium). */
+export type NarrowStep = "tiny" | "narrow" | "compact" | "medium";
+
+const PANEL_ORDER: PanelSize[] = ["tiny", "narrow", "compact", "medium", "wide"];
+
+/** Whether a bar measured as `size` is at `step` or narrower; an unmeasured bar (null) never is. */
+export function isAtOrBelow(size: PanelSize | null, step: NarrowStep | null): boolean {
+  return size !== null && step !== null && PANEL_ORDER.indexOf(size) <= PANEL_ORDER.indexOf(step);
+}

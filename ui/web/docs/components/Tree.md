@@ -24,7 +24,10 @@ like the Files panel; double-click or Enter opens a file.
 - `focused` (`boolean`, default `true`): Show the selection in the focus color while the tree has the focus.
 - `height` (`"fill" | "small" | "medium" | "large"`, default `"fill"`): Fill the parent, or 160, 240 or 360 px.
 - `renaming` (`string | null`, default `null`, bindable): The row being renamed in place.
-- `draggable` (`boolean`, default `false`): Rows can be dragged onto folders.
+- `reveal` (`"nearest" | "center"`, default `"nearest"`): How the selected row comes into view: at the nearest edge, or
+  in the middle when it was out of view (a located file).
+- `draggable` (`boolean`, default `false`): Rows can be dragged onto folders with the pointer: a ghost follows, Option
+  copies, a hovered closed folder opens, the list scrolls near its edges, Escape cancels.
 - `dropRoot` (`boolean`, default `false`): A drop into the top folder: the whole list is outlined.
 - `iconFor` (`(node: N, open: boolean) => IconName | null`, default `(node) => (node.children ? "folder" : "file")`):
   Icon per row.
@@ -33,7 +36,8 @@ like the Files panel; double-click or Enter opens a file.
 - `detail` (`Snippet<[N]>`): Dim content at the end of a row.
 - `onopen` (`(node: N) => void`): A file was opened (double-click or Enter).
 - `onrename` (`(node: N, name: string) => void`): A rename was confirmed with Enter.
-- `ondrop` (`(ids: string[], target: N) => void`): Rows were dropped onto a folder.
+- `ondrop` (`(ids: string[], target: N | null, mode: "move" | "copy") => void`): Rows were dropped onto a folder, or
+  onto the top level (null); never into themselves or where they already are.
 - `oncontextmenu` (`(node: N, event: MouseEvent) => void`): Right-click on a row, for its Menu.
 
 ## Example: Files
@@ -49,4 +53,6 @@ like the Files panel; double-click or Enter opens a file.
 ## Logic
 
 - `logic/treeModel.ts`
+- `logic/treeDrag.ts`
+- `logic/treeDragger.svelte.ts`
 - `logic/virtualWindow.ts`

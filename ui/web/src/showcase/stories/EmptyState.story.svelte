@@ -7,6 +7,7 @@
 <EmptyState icon="stash" title="No stashes" hint="Stash changes to set them aside for later.">
   {#snippet action()}<Button size="small">Stash Changes</Button>{/snippet}
 </EmptyState>
+<EmptyState title="Loading diff..." delayed />
 <Card label="Panel">
   <EmptyState variant="panel" icon="bot" title="No folder open" hint="Open a folder to start AI agents in it.">
     {#snippet action()}<Button size="small">Open Folder...</Button>{/snippet}

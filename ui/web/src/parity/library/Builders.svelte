@@ -21,13 +21,21 @@
   <List label="Rows" {items} itemKey={(item) => item.key} selected="b">
     {#snippet row(item, state)}
       <Row size={id === "row-history" ? "history" : "list"} selected={state.selected}>
+        {#if id === "row-history"}
+          <Stack width="xsmall"><Text mono tone="dim" size="compact">a1b2c3d</Text></Stack>
+        {/if}
         <Text truncate>{item.text}</Text>
       </Row>
     {/snippet}
   </List>
 {:else if id === "row-entry"}
   <ListBox label="Commits">
-    <Row size="entry" line><Text truncate>Round tax</Text><Text tone="dim">Ada</Text></Row>
+    <Row size="entry" line>
+      <Stack grow><Text truncate>Round tax</Text></Stack>
+      <Stack width="large"><Text tone="dim" truncate>Ada</Text></Stack>
+      <Stack width="small"><Text tone="dim" size="small">2 hours ago</Text></Stack>
+      <Stack width="xsmall"><Text mono tone="faint" size="compact">a1b2c3d</Text></Stack>
+    </Row>
     <Row size="entry" line><Text>Add</Text></Row>
   </ListBox>
 {:else if id === "row-large"}

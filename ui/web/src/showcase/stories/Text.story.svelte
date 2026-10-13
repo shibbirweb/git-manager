@@ -5,6 +5,7 @@
 
 <Text variant="heading" element="h2">Heading</Text>
 <Text variant="title">Title</Text>
+<Text variant="sectionLabel" element="h4">Section label as a level 4 heading</Text>
 <Text variant="sectionLabel">Section label</Text>
 <Text>Body text in the UI size.</Text>
 <Text variant="label">A setting's label</Text>

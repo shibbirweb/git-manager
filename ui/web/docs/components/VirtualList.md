@@ -18,6 +18,9 @@ Use for long lists such as commits or search results. `keepInView` scrolls a sel
 - `rowHeight` (`"compact" | "normal" | "comfortable"`, default `"normal"`): Every row's height: 22, 24 or 28 px.
 - `label` (`string`, required): Accessible name.
 - `keepInView` (`number | null`, default `null`): Index to scroll into view when it changes.
+- `reveal` (`"nearest" | "center"`, default `"nearest"`): Bring that row to the nearest edge, or to the middle when it
+  is out of view.
+- `element` (`HTMLDivElement | null`, default `null`, bindable): The scrolling element, to scroll it from outside.
 - `height` (`"fill" | "small" | "medium" | "large"`, default `"fill"`): Fill the parent, or 160, 240 or 360 px.
 - `row` (`Snippet<[T, number]>`, required): Draws one row from its item and index.
 

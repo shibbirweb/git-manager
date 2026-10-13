@@ -1,7 +1,6 @@
-<!-- The keyboard and selection around Rows: a listbox, a tree or a plain list. Up and Down move (over headings that
-     `skip` names), Home, End and Page keys jump, Enter or a double-click activates, Left and Right fold tree rows,
-     and with `multiple` a Cmd or Shift click (or Shift and an arrow) selects several. The list keeps the focus, so
-     its selected row shows the strong color. `virtual` draws only the rows in view, for long lists. -->
+<!-- The keyboard and selection around Rows: a listbox, a tree or a plain list (keys in logic/listKeys.ts). The list
+     keeps the focus, so its selected row shows the strong color; a `field` above it can drive it instead. `virtual`
+     draws only the rows in view; with `measure` rows may differ in height and each drawn row is measured. -->
 <script module lang="ts">
   export interface ListRowState {
     index: number;
@@ -11,12 +10,16 @@
 </script>
 
 <script lang="ts" generics="T">
-  import { tick, type Snippet } from "svelte";
-  import { markInsideList } from "../logic/listContext";
-  import { isListKey, moveIndex, treeMove } from "../logic/listNav";
+  import { onDestroy, tick, type Snippet } from "svelte";
+  import { markInsideList, onRowControl } from "../logic/listContext";
+  import { drivenSelection, type FieldKeys } from "../logic/listField";
+  import { handleListKey, type ListHost } from "../logic/listKeys";
+  import { ListScroll, wireField } from "../logic/listWiring.svelte";
   import { presetVar, type RowHeight, type ViewHeight } from "../logic/presets";
+  import { RowHeights } from "../logic/rowHeights.svelte";
+  import { visibleByOffsets } from "../logic/rowOffsets";
   import { modifiersOf, selectRow, type Modifiers } from "../logic/treeSelect";
-  import { scrollToShow, visibleRows } from "../logic/virtualWindow";
+  import { visibleRows } from "../logic/virtualWindow";
   import { scales } from "../styles/tokens";
 
   interface Props {
@@ -32,12 +35,17 @@
     expanded?: (item: T) => boolean | null;
     height?: ViewHeight | "auto";
     virtual?: RowHeight | null;
+    measure?: boolean;
+    field?: HTMLInputElement | null;
+    fieldKeys?: FieldKeys;
+    follow?: boolean;
     row: Snippet<[T, ListRowState]>;
     empty?: Snippet;
     onselect?: (item: T) => void;
     onactivate?: (item: T) => void;
     ontoggle?: (item: T, open: boolean) => void;
     oncontextmenu?: (event: MouseEvent, item: T) => void;
+    onnearend?: () => void;
   }
 
   let {
@@ -53,18 +61,21 @@
     expanded = () => null,
     height = "auto",
     virtual = null,
+    measure = false,
+    field = null,
+    fieldKeys = "enter",
+    follow = false,
     row,
     empty,
     onselect,
     onactivate,
     ontoggle,
     oncontextmenu,
+    onnearend,
   }: Props = $props();
 
   markInsideList();
 
-  // Rows drawn beyond the view on each side, so fast scrolling does not show gaps.
-  const OVERSCAN = 8;
   const uid = $props.id();
   const interactive = $derived(role !== "list");
   const keys = $derived(items.map((item) => itemKey(item)));
@@ -73,19 +84,35 @@
   const rowPx = $derived(virtual === null ? 0 : scales.rowHeight[virtual]);
   // A virtual list scrolls itself, so it never takes its content's height.
   const shownHeight = $derived(virtual !== null && height === "auto" ? "fill" : height);
-  const itemRole = $derived(role === "tree" ? "treeitem" : "option");
+  // A driving field keeps the focus: the list is not tabbable and its rows do not take the focus when clicked.
+  const drives = $derived(interactive && field !== null && fieldKeys === "drive");
+  const skipAt = (index: number) => skip(items[index]);
 
   let viewport = $state<HTMLDivElement | null>(null);
-  let scrollTop = $state(0);
+  const scroll = new ListScroll();
   let viewportHeight = $state(0);
   let anchor = $state<string | null>(null);
 
+  // Measured heights by item key; rows not drawn yet count as the `virtual` estimate.
+  const rowHeights = new RowHeights();
+  const measuring = $derived(virtual !== null && measure);
+  const offsets = $derived(measuring ? rowHeights.offsets(keys, rowPx) : null);
   const range = $derived(
     virtual === null
       ? { first: 0, last: items.length }
-      : visibleRows(scrollTop, viewportHeight, rowPx, items.length, OVERSCAN),
+      : offsets
+        ? visibleByOffsets(offsets, scroll.top, viewportHeight)
+        : visibleRows(scroll.top, viewportHeight, rowPx, items.length),
+  );
+  const totalHeight = $derived(virtual === null ? null : `${offsets ? offsets[items.length] : items.length * rowPx}px`);
+  const activeId = $derived(
+    interactive && currentIndex >= range.first && currentIndex < range.last ? `${uid}-${currentIndex}` : undefined,
   );
 
+  // Measures a drawn row whenever its height changes; only lists with `measure` do.
+  const measureRow = (node: HTMLElement, key: string) => (measuring ? rowHeights.observe(node, key) : {});
+
+  onDestroy(() => rowHeights.dispose());
   function isSelected(key: string): boolean {
     return multiple ? selection.includes(key) : selected === key;
   }
@@ -109,75 +136,82 @@
     if (!viewport || index < 0) {
       return;
     }
-    if (virtual !== null) {
-      const target = scrollToShow(index, rowPx, viewport.scrollTop, viewport.clientHeight);
-      if (target !== null) {
-        viewport.scrollTop = target;
-      }
+    if (virtual === null) {
+      await tick();
+      document.getElementById(`${uid}-${index}`)?.scrollIntoView({ block: "nearest" });
       return;
     }
-    await tick();
-    document.getElementById(`${uid}-${index}`)?.scrollIntoView({ block: "nearest" });
+    const top = offsets ? offsets[index] : index * rowPx;
+    scroll.show(viewport, top, offsets ? offsets[index + 1] : top + rowPx);
   }
 
-  function onkeydown(event: KeyboardEvent) {
-    if (!interactive || event.defaultPrevented) {
-      return;
-    }
-    const levels = items.map((item) => level(item));
-    if (isListKey(event.key)) {
-      event.preventDefault();
-      const index = moveIndex(currentIndex, items.length, event.key, (other) => skip(items[other]));
-      select(index, { toggle: false, range: multiple && event.shiftKey });
-      void reveal(index);
-    } else if (role === "tree" && (event.key === "ArrowLeft" || event.key === "ArrowRight") && currentIndex >= 0) {
-      event.preventDefault();
-      const item = items[currentIndex];
-      const move = treeMove(event.key, currentIndex, expanded(item), levels);
-      if (move?.kind === "toggle") {
-        ontoggle?.(item, move.open);
-      } else if (move?.kind === "move") {
-        select(move.index, { toggle: false, range: false });
-        void reveal(move.index);
-      }
-    } else if (event.key === "Enter" && currentIndex >= 0) {
-      event.preventDefault();
-      onactivate?.(items[currentIndex]);
-    } else if (multiple && event.key === "a" && (event.metaKey || event.ctrlKey)) {
-      event.preventDefault();
-      selection = [...order];
-    }
+  function moveTo(index: number, range: boolean) {
+    select(index, { toggle: false, range });
+    void reveal(index);
   }
 
-  /** Clicks on a control inside a row (an action button, a rename field) belong to that control. */
-  function onControl(event: MouseEvent): boolean {
-    const target = event.target as Element | null;
-    const control = target?.closest("button, a, input, select, textarea, [role='button']");
-    return control !== null && control !== undefined && control !== event.currentTarget;
+  scroll.follow(() => viewport, () => follow, () => [items.length, totalHeight]);
+  wireField(() => field, () => (drives ? { listId: uid, activeId } : null), (event) => onKey(event, true));
+
+  // measure: an entry that opens keeps its new height in view while it is the current row.
+  scroll.keep(
+    () => (measuring && selected !== null ? (rowHeights.heights[selected] ?? 0) : 0),
+    () => void reveal(currentIndex),
+  );
+
+  // A driving field always has a row highlighted, like a combobox.
+  $effect(() => {
+    if (drives) {
+      selected = drivenSelection(selected, order);
+    }
+  });
+
+  const host: ListHost = {
+    state: () => ({
+      current: currentIndex,
+      count: items.length,
+      skip: skipAt,
+      tree: role === "tree",
+      multiple,
+      levels: () => items.map((item) => level(item)),
+      expanded: (index: number) => expanded(items[index]),
+    }),
+    move: moveTo,
+    toggle: (index, open) => ontoggle?.(items[index], open),
+    activate: (index) => onactivate?.(items[index]),
+    selectAll: () => (selection = [...order]),
+    focus: () => viewport?.focus(),
+  };
+
+  /** A key in the list itself, or in its `field`. */
+  function onKey(event: KeyboardEvent, fromField: boolean) {
+    if (interactive && !event.defaultPrevented && handleListKey(event, fromField ? fieldKeys : null, host)) {
+      event.preventDefault();
+    }
   }
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
+  id={uid}
   bind:this={viewport}
   bind:clientHeight={viewportHeight}
   class="list {shownHeight}"
   class:virtual={virtual !== null}
+  class:measured={measuring}
   {role}
-  tabindex={interactive ? 0 : undefined}
+  tabindex={interactive && !drives ? 0 : undefined}
   aria-label={label}
   aria-multiselectable={role === "listbox" && multiple ? true : undefined}
-  aria-activedescendant={interactive && currentIndex >= range.first && currentIndex < range.last
-    ? `${uid}-${currentIndex}`
-    : undefined}
+  aria-activedescendant={drives ? undefined : activeId}
   style:max-height={shownHeight === "fill" || shownHeight === "auto" ? null : presetVar("viewHeight", shownHeight)}
-  onscroll={() => (scrollTop = viewport?.scrollTop ?? 0)}
-  {onkeydown}
+  onscroll={() => viewport && scroll.update(viewport, items.length, onnearend)}
+  onkeydown={(event) => onKey(event, false)}
 >
   {#if items.length === 0}
     {@render empty?.()}
   {:else}
-    <div class="rows" style:height={virtual === null ? null : `${items.length * rowPx}px`}>
+    <div class="rows" style:height={totalHeight}>
       {#each items.slice(range.first, range.last) as item, offset (keys[range.first + offset])}
         {@const index = range.first + offset}
         {@const key = keys[index]}
@@ -187,24 +221,27 @@
         <div
           id="{uid}-{index}"
           class="item"
-          role={pickable ? itemRole : role === "list" ? "listitem" : "presentation"}
+          role={pickable ? (role === "tree" ? "treeitem" : "option") : role === "list" ? "listitem" : "presentation"}
           aria-selected={pickable ? isSelected(key) : undefined}
           aria-level={pickable && role === "tree" ? level(item) + 1 : undefined}
           aria-expanded={pickable && open !== null ? open : undefined}
-          style:top={virtual === null ? null : `${index * rowPx}px`}
-          style:height={virtual === null ? null : `${rowPx}px`}
+          style:top={virtual === null ? null : `${offsets ? offsets[index] : index * rowPx}px`}
+          style:height={virtual === null || measuring ? null : `${rowPx}px`}
+          use:measureRow={key}
           onmousedown={(event) => {
-            if (pickable && !onControl(event)) {
+            if (drives) {
+              event.preventDefault();
+            } else if (pickable && !onRowControl(event)) {
               viewport?.focus({ preventScroll: true });
             }
           }}
           onclick={(event) => {
-            if (pickable && !onControl(event)) {
+            if (pickable && !onRowControl(event)) {
               select(index, multiple ? modifiersOf(event) : { toggle: false, range: false });
             }
           }}
           ondblclick={(event) => {
-            if (pickable && !onControl(event)) {
+            if (pickable && !onRowControl(event)) {
               onactivate?.(item);
             }
           }}
@@ -236,15 +273,12 @@
   .fill {
     flex: 1 1 0;
     min-height: 0;
-    overflow-y: auto;
   }
 
+  .fill,
   .small,
   .medium,
-  .large {
-    overflow-y: auto;
-  }
-
+  .large,
   .virtual {
     overflow-y: auto;
   }
@@ -260,7 +294,7 @@
     right: 0;
   }
 
-  .virtual .item > :global(*) {
+  .virtual:not(.measured) .item > :global(*) {
     height: 100%;
   }
 </style>

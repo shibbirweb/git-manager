@@ -4,13 +4,19 @@
   import Stack from "$ui/components/Stack.svelte";
   import TabStrip from "$ui/components/TabStrip.svelte";
   import Text from "$ui/components/Text.svelte";
+  import type { EditorTabData } from "$ui/components/EditorTab.svelte";
   import { movedItems } from "$ui/logic/reorder";
 
-  let tabs = $state([
+  let tabs = $state<EditorTabData[]>([
     { id: "cart", label: "cart.ts", icon: "file" as const, dirty: true },
     { id: "readme", label: "README.md", icon: "file" as const, preview: true },
     { id: "diff", label: "app.css", icon: "git-compare" as const, hint: "Working Tree" },
     { id: "log", label: "Log", icon: "history" as const, pinned: true },
+    ...["api.ts", "tax.ts", "orders.ts", "styles.css", "index.html", "package.json"].map((name) => ({
+      id: name,
+      label: name,
+      icon: "file" as const,
+    })),
   ]);
   let active = $state<string | null>("cart");
   let focused = $state(true);
@@ -34,11 +40,13 @@
     {focused}
     {layout}
     onclose={(id) => (tabs = tabs.filter((tab) => tab.id !== id))}
+    ondblclick={(id) => (tabs = tabs.map((tab) => (tab.id === id ? { ...tab, preview: false } : tab)))}
     onnew={() => undefined}
     onreorder={(from, to) => (tabs = movedItems(tabs, from, to))}
   />
   <Stack direction="row" align="center" gap="sm">
     <IconButton icon="eye" label="Toggle focus" active={!focused} onclick={() => (focused = !focused)} />
-    <Text tone="dim">Active: {active}. Drag a tab to move it; toggle focus to see an unfocused group.</Text>
+    <Text tone="dim">Active: {active}. Drag a tab: the others slide aside (Escape cancels). Double-click
+      keeps a preview tab; the wheel scrolls the row.</Text>
   </Stack>
 </Stack>

@@ -22,14 +22,14 @@ flowchart LR
   C --> S
 ```
 
-- **Tokens.** `colors.json` holds the built-in Light and Dark colors (equal to `src/app.css` for now). `typography.json` holds the font families, sizes, weights, line heights, letter spacing and named text styles (body, label, hint, caption, sectionLabel, title, heading, code...). `tokens.json` holds size, radius, space, motion, the breakpoints (panel and window widths) and the grid. `components.json` and `components-2.json` (one file would pass 300 lines) hold each component's measurements, such as `"button": {"height": "{size.control}"}`. A string in braces refers to another token.
+- **Tokens.** `colors.json` holds the built-in Light and Dark colors (equal to `src/app.css` for now). `typography.json` holds the font families, sizes, weights, line heights, letter spacing and named text styles (body, label, hint, caption, sectionLabel, title, heading, code...). `tokens.json` holds size, radius, space, motion, the breakpoints (panel and window widths) and the grid. `components.json` and `components-2.json` hold each component's measurements, such as `"button": {"height": "{size.control}"}`. A string in braces refers to another token.
 - **Generators.** `design-tokens/build/` turns the files into CSS variables (`--button-height`), a TypeScript object for code that measures in script, Swift (`GMColor.bg`, `GMButtonTokens.height`), XAML resource dictionaries and GTK 4 CSS. Swift output type-checks with `swiftc`.
-- **Components.** `ui/web/src/lib/components/` has one component per file. Each takes sizes from tokens and colors from the theme, and no `class` or `style`: tone, size and layout are props. `Stack` lays things out with spacing steps and `Text` writes words in a tone and size, so screens need no CSS of their own. A list is a `List` (keys, selection) of `Row`s; `Spacer` pushes the rest of a row to its end.
+- **Components.** `ui/web/src/lib/components/` has one component per file. Each takes sizes from tokens and colors from the theme, and no `class` or `style`: tone, size and layout are props. `Stack` lays things out with spacing steps and `Text` writes words in a tone and size, so screens need no CSS of their own. A list is a `List` (keys, selection, a filter field that drives it) of `Row`s; `Spacer` pushes the rest of a row to its end. A `responsive` Toolbar hides less needed words when narrow.
 - **Named sizes.** Design props are never free numbers or text. Sizes, widths, heights and spacing are named presets from `tokens.json` (`logic/presets.ts`), so every platform has the same few choices. Numbers are only for data, such as a count or a size the user dragged.
 - **Editor surfaces.** `CodeEditor`, `DiffView`, `MergeView`, `MarkdownView`, `FormatToolbar`, `MediaView` and `TerminalView` wrap CodeMirror, markdown-it and xterm.js in the app's look, with colors from the theme tokens. The app adds its own features (blame, staging, a shell) through props such as `extensions` and `onready`. `AppShell` is the window layout: activity bars, resizable side and bottom panels, and the status bar.
-- **Logic.** Keyboard movement, tree rows, virtual windows, menu placement, pick filtering and resizing live in `ui/web/src/lib/logic/` as pure TypeScript with tests.
+- **Logic.** Keyboard movement, tree rows, virtual windows, tab dragging, menu placement, pick filtering and resizing live in `ui/web/src/lib/logic/` as pure TypeScript with tests.
 - **Docs.** `ui/web/src/lib/docs/` has one doc per component: summary, when to use it, every prop, rules, examples and the app markup it replaces. `bun run ui:docs` writes `ui/web/COMPONENTS.md` (an index), `ui/web/docs/groups/<Group>.md` (a line per component) and `ui/web/docs/components/<Name>.md`.
-- **Showcase.** `bun run ui` serves http://localhost:1430: a sidebar of components by group, a live preview, the props table, the rules, and code tabs for the example, the component, its logic and the Markdown doc. Foundations shows every color, text style, size, the grid and the breakpoints. A switch tries Light and Dark. `bun run ui:themes` opens every story in light and dark and fails on a page error or on text that does not stand out from what is behind it, which catches a color that does not follow the theme.
+- **Showcase.** `bun run ui` serves http://localhost:1430: a sidebar of components by group, a live preview, the props table, the rules, and code tabs for the example, the component, its logic and the Markdown doc. Foundations shows every color, text style, size, the grid and the breakpoints. A switch tries Light and Dark. `bun run ui:themes` opens every story in light and dark and fails on a page error or on text that does not stand out from its background.
 
 ## The MCP server for AI agents
 
@@ -72,7 +72,7 @@ flowchart LR
 
 ## Bugs we fixed
 
-- **Select's arrow touched the right border.** WebKit draws a native select's arrow against the border and ignores the padding. Select now hides the native arrow (`appearance: none`) and draws a chevron inside the padding, using the `select` tokens for its inset and room, so every platform gets the same numbers. The app's selects do the same in `src/app.css` (`select.input`, a chevron of two gradient strokes in `--text-dim`, so it follows every theme); the 24 px ones set `--select-arrow-inset: 6px`.
+The library's fixed bugs, each with what you saw, why and the fix, are in [UI-Library-Bugs.md](UI-Library-Bugs.md).
 
 ## Keeping this page in sync
 

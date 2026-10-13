@@ -57,9 +57,8 @@ export const formDocs: ComponentDoc[] = [
     usage: "Use for five or more choices, or long labels. Use Segmented for two to four short choices.",
     aliases: ["Select", "Native select"],
     props: [
-      prop("options", `{ value: ${OPTION_VALUE}; label: string; disabled?: boolean }[]`, "The choices.", {
-        required: true,
-      }),
+      prop("options", `{ value: ${OPTION_VALUE}; label: string; disabled?: boolean; title?: string }[]`, "The " +
+        "choices; `title` is a tooltip for one, such as what a rebase action does.", { required: true }),
       prop("value", OPTION_VALUE, "The chosen value.", { required: true, bindable: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("disabled", "boolean", "Disables it.", { default: "false" }),
@@ -161,6 +160,10 @@ export const formDocs: ComponentDoc[] = [
         default: "(shown) => String(shown)",
         data: true,
       }),
+      prop("resetValue", "number | null", "Double-click puts this value back (Settings' font weight).", {
+        default: "null",
+        data: true,
+      }),
       prop("onchange", "(value: number) => void", "Called while it moves.", { data: true }),
     ],
     examples: [
@@ -203,6 +206,8 @@ export const formDocs: ComponentDoc[] = [
     usage: "Use for every setting in Settings and in settings-like panels. Put one control in it.",
     props: [
       prop("title", "string", "The setting's name.", { required: true }),
+      prop("titleMatches", "[number, number][]", "Ranges [start, end) of the title a search found, in the " +
+        "warning tint (Settings search).", { default: "[]", data: true }),
       prop("hint", "string", "One sentence on what it does.", { default: '""' }),
       prop("stacked", "boolean", "Control under the text, for wide controls.", { default: "false" }),
       prop("nested", "boolean", "Indented under the setting it belongs to.", { default: "false" }),
@@ -217,8 +222,17 @@ export const formDocs: ComponentDoc[] = [
           '<SettingRow title="Word wrap" hint="Wrap long lines.">\n' +
           '  <Switch label="Word wrap" bind:checked={wrap} />\n</SettingRow>',
       },
+      {
+        title: "Search matches",
+        code:
+          '<SettingRow title="Word wrap" titleMatches={[[0, 4]]}>\n' +
+          '  <Switch label="Word wrap" bind:checked={wrap} />\n</SettingRow>',
+      },
     ],
-    replaces: ['<div class="row"><div class="label"><span>Title</span><span class="hint">...</span></div>...</div>'],
+    replaces: [
+      '<div class="row"><div class="label"><span>Title</span><span class="hint">...</span></div>...</div>',
+      "Settings search's CSS Custom Highlight (`::highlight(settings-search)`): pass the ranges instead",
+    ],
   },
   {
     name: "SearchField",

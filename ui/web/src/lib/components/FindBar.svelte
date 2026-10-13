@@ -43,9 +43,13 @@
     onclose,
   }: Props = $props();
 
-  // Narrow editors (merge panes, split diffs) drop the least used buttons instead of wrapping.
+  // Narrow editors (merge panes, split diffs) drop the least used buttons instead of wrapping, then let the counter
+  // shrink, then hide it, like the app's find bar.
   let barWidth = $state(0);
-  const narrow = $derived(barWidth > 0 && barWidth <= componentTokens.findBar.compactBelow);
+  const within = (limit: number) => barWidth > 0 && barWidth <= limit;
+  const narrow = $derived(within(componentTokens.findBar.compactBelow));
+  const shrink = $derived(within(componentTokens.findBar.shrinkBelow));
+  const tiny = $derived(within(componentTokens.findBar.tinyBelow));
 
   const counter = $derived(problem ?? (query ? (total ? `${current} of ${total}` : "No results") : ""));
 
@@ -60,7 +64,7 @@
   }
 </script>
 
-<div class="find-bar" class:narrow role="search" bind:clientWidth={barWidth}>
+<div class="find-bar" class:narrow class:shrink class:tiny role="search" bind:clientWidth={barWidth}>
   <div class="grid" class:with-chevron={editable}>
     {#if editable}
       <button
@@ -270,5 +274,23 @@
   .narrow .select-all,
   .narrow .exclude {
     display: none;
+  }
+
+  .shrink .counter {
+    min-width: 0;
+  }
+
+  .tiny .counter {
+    display: none;
+  }
+
+  .tiny .with-chevron {
+    grid-template-columns:
+      var(--find-bar-button-size) minmax(var(--find-bar-tiny-field-min-width), var(--find-bar-field-max-width))
+      1fr auto;
+  }
+
+  .tiny .text {
+    padding: 0 var(--find-bar-tiny-text-padding-x);
   }
 </style>

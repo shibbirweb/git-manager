@@ -1,9 +1,20 @@
-<!-- The editor's tab strip. `scroll` keeps one row that scrolls sideways, `wrap` adds rows, `single` shows a lone
-     tab as a centered name. The active tab has the editor color and an accent line, gray when the group does not
-     have the focus. A + button (onnew) follows the tabs; with onreorder, tabs can be dragged into a new order. -->
+<!-- The editor's tab strip. `scroll` keeps one row that scrolls sideways (the wheel scrolls it too), `wrap` adds
+     rows, `single` shows a lone tab as a centered name. The active tab has the editor color and an accent line,
+     gray when the group does not have the focus, and is kept in view. A + button (onnew) follows the tabs; with
+     onreorder, a dragged tab follows the pointer while the others slide aside (logic/tabDrag.ts). -->
 <script lang="ts">
-  import type { Snippet } from "svelte";
-  import { DRAG_THRESHOLD, dropIndex } from "../logic/reorder";
+  import { tick, type Snippet } from "svelte";
+  import { DRAG_THRESHOLD, movedItems } from "../logic/reorder";
+  import { positions, slideFrom } from "../logic/slide";
+  import {
+    beginDrag,
+    dropGap,
+    edgeScrollStep,
+    gapIndex,
+    wheelScroll,
+    type TabDrag,
+    type TabPress,
+  } from "../logic/tabDrag";
   import EditorTab, { type EditorTabData } from "./EditorTab.svelte";
   import Icon from "./Icon.svelte";
 
@@ -15,6 +26,7 @@
     layout?: "scroll" | "wrap" | "single";
     newLabel?: string;
     onselect?: (id: string) => void;
+    ondblclick?: (id: string) => void;
     onclose?: (id: string) => void;
     oncontextmenu?: (id: string, event: MouseEvent) => void;
     onnew?: (event: MouseEvent) => void;
@@ -30,6 +42,7 @@
     layout = "scroll",
     newLabel = "New tab",
     onselect,
+    ondblclick,
     onclose,
     oncontextmenu,
     onnew,
@@ -38,64 +51,179 @@
   }: Props = $props();
 
   let stripEl = $state<HTMLDivElement | null>(null);
-  let drag = $state<{ id: string; from: number; startX: number; moving: boolean } | null>(null);
+  let press: TabPress | null = null;
+  let drag = $state<TabDrag | null>(null);
+  let scrollFrame = 0;
+  const wrapped = $derived(layout === "wrap");
+  // While dragging, the tabs show in the order a drop would give; the dragged one follows the pointer.
+  const shown = $derived(drag ? movedItems(tabs, drag.from, gapIndex(drag.gap, drag.from)) : tabs);
 
   function select(id: string): void {
     active = id;
     onselect?.(id);
   }
 
-  function centers(): number[] {
-    return [...(stripEl?.querySelectorAll<HTMLElement>("[data-tab-id]") ?? [])].map((element) => {
-      const rect = element.getBoundingClientRect();
-      return rect.left + rect.width / 2;
-    });
+  function tabElements(): HTMLElement[] {
+    return [...(stripEl?.querySelectorAll<HTMLElement>("[data-tab-id]") ?? [])];
+  }
+
+  /** A viewport point in the strip's scrolled content coordinates. */
+  function contentPoint(clientX: number, clientY: number): { x: number; y: number } {
+    const rect = stripEl?.getBoundingClientRect();
+    return {
+      x: clientX - (rect?.left ?? 0) + (stripEl?.scrollLeft ?? 0),
+      y: clientY - (rect?.top ?? 0) + (stripEl?.scrollTop ?? 0),
+    };
   }
 
   function down(event: PointerEvent, index: number, id: string): void {
-    if (onreorder && event.button === 0 && layout !== "single") {
-      drag = { id, from: index, startX: event.clientX, moving: false };
+    const onClose = (event.target as Element | null)?.closest(".tab-close");
+    if (onreorder && event.button === 0 && layout !== "single" && !onClose && tabs.length > 1) {
+      press = { id, from: index, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
     }
+  }
+
+  function startDrag(current: TabPress): TabDrag {
+    const boxes = tabElements().map((element) => {
+      const rect = element.getBoundingClientRect();
+      const corner = contentPoint(rect.left, rect.top);
+      return { left: corner.x, right: corner.x + rect.width, top: corner.y, bottom: corner.y + rect.height };
+    });
+    return beginDrag(current, boxes, contentPoint(current.startX, current.startY));
+  }
+
+  function follow(clientX: number, clientY: number): void {
+    if (!drag) {
+      return;
+    }
+    const point = contentPoint(clientX, clientY);
+    const gap = dropGap(drag.boxes, point.x, point.y, wrapped);
+    if (gap === drag.gap) {
+      drag = { ...drag, clientX, clientY };
+      return;
+    }
+    const before = positions(tabElements(), (element) => element.dataset.tabId ?? "");
+    drag = { ...drag, clientX, clientY, gap };
+    const lifted = drag.id;
+    void tick().then(() => slideFrom(tabElements(), (element) => element.dataset.tabId ?? "", before, lifted));
   }
 
   function move(event: PointerEvent): void {
-    if (drag && !drag.moving && Math.abs(event.clientX - drag.startX) > DRAG_THRESHOLD) {
-      drag.moving = true;
+    if (!press || event.pointerId !== press.pointerId) {
+      return;
     }
+    if (!drag) {
+      if (Math.hypot(event.clientX - press.startX, event.clientY - press.startY) <= DRAG_THRESHOLD) {
+        return;
+      }
+      drag = startDrag(press);
+      scrollFrame = requestAnimationFrame(edgeScroll);
+    }
+    follow(event.clientX, event.clientY);
+  }
+
+  /** Near a single row's ends, the strip scrolls while a tab is dragged. */
+  function edgeScroll(): void {
+    if (!drag || !stripEl) {
+      return;
+    }
+    const rect = stripEl.getBoundingClientRect();
+    const step = wrapped ? 0 : edgeScrollStep(drag.clientX, rect.left, rect.right);
+    if (step !== 0) {
+      stripEl.scrollLeft += step;
+      follow(drag.clientX, drag.clientY);
+    }
+    scrollFrame = requestAnimationFrame(edgeScroll);
   }
 
   function up(event: PointerEvent): void {
-    if (drag?.moving) {
-      const to = dropIndex(centers(), event.clientX, drag.from);
-      if (to !== drag.from) {
-        onreorder?.(drag.from, to);
+    if (!press || event.pointerId !== press.pointerId) {
+      return;
+    }
+    const finished = drag;
+    end();
+    if (finished) {
+      const to = gapIndex(finished.gap, finished.from);
+      if (to !== finished.from) {
+        onreorder?.(finished.from, to);
       }
     }
-    drag = null;
   }
+
+  function end(): void {
+    press = null;
+    drag = null;
+    cancelAnimationFrame(scrollFrame);
+  }
+
+  // The dragged tab follows the pointer from wherever the new order put it; in one row only sideways.
+  $effect(() => {
+    const current = drag;
+    const element = tabElements().find((candidate) => candidate.dataset.tabId === current?.id);
+    if (!current || !element || !stripEl) {
+      return;
+    }
+    const point = contentPoint(current.clientX, current.clientY);
+    let left = point.x - current.grabX;
+    if (!wrapped) {
+      left = Math.max(0, Math.min(left, stripEl.scrollWidth - element.offsetWidth));
+    }
+    const top = wrapped ? point.y - current.grabY - element.offsetTop : 0;
+    element.style.translate = `${left - element.offsetLeft}px ${top}px`;
+    return () => {
+      element.style.translate = "";
+    };
+  });
+
+  // Keep the active tab in view.
+  $effect(() => {
+    const id = active;
+    tabElements()
+      .find((element) => element.dataset.tabId === id)
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+
+  $effect(() => end);
 </script>
 
-<svelte:window onpointermove={move} onpointerup={up} />
+<svelte:window
+  onpointermove={move}
+  onpointerup={up}
+  onpointercancel={end}
+  onkeydowncapture={(event) => {
+    if (event.key === "Escape" && drag) {
+      event.preventDefault();
+      event.stopPropagation();
+      end();
+    }
+  }}
+/>
 
 <div
   bind:this={stripEl}
   class="tab-strip {layout}"
-  class:dragging={drag?.moving}
+  class:dragging={drag !== null}
   role="tablist"
   aria-label={label}
+  onwheel={(event) => {
+    if (stripEl && layout === "scroll") {
+      stripEl.scrollLeft += wheelScroll(event);
+    }
+  }}
 >
-  {#each tabs as tab, index (tab.id)}
+  {#each shown as tab (tab.id)}
     <EditorTab
       {tab}
       {focused}
       {layout}
       active={tab.id === active}
-      lifted={drag?.moving === true && drag.id === tab.id}
+      lifted={drag?.id === tab.id}
       closable={onclose !== undefined}
       onselect={() => select(tab.id)}
+      ondblclick={ondblclick && (() => ondblclick(tab.id))}
       onclose={() => onclose?.(tab.id)}
       oncontextmenu={(event) => oncontextmenu?.(tab.id, event)}
-      onpointerdown={(event) => down(event, index, tab.id)}
+      onpointerdown={(event) => down(event, tabs.indexOf(tab), tab.id)}
     />
   {/each}
   {#if onnew}

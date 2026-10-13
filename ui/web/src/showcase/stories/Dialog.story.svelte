@@ -56,8 +56,10 @@
   subtitle="git asks for this to continue in storefront."
   icon="lock"
   onclose={() => (open = null)}
+  onsubmit={() => (open = null)}
+  enterSubmits
 >
-  <Input type="password" aria-label="Password" />
+  <Input type="password" aria-label="Password" placeholder="Enter submits" />
   {#snippet actions()}
     <Button onclick={() => (open = null)}>Cancel</Button>
     <Button variant="primary" onclick={() => (open = null)}>Continue</Button>

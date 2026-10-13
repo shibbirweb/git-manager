@@ -1,6 +1,10 @@
 import { prop, type ComponentDoc } from "./types";
 
-const GAP = '"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl"';
+const NARROW_STEP = '"tiny" | "narrow" | "compact" | "medium" | null';
+
+const CELL_WIDTH = "A set width so rows line up: icon 16, xsmall 70 (a hash), small 80, medium 90, large 120, " +
+  "xlarge 140.";
+const GAP = '"none" | "xxs" | "xs" | "sm" | "md" | "mdPlus" | "lg" | "lgPlus" | "xl" | "xxl" | "xxxl"';
 const TONE = '"default" | "dim" | "faint" | "accent" | "danger" | "success" | "warning"';
 const TEXT_SIZE =
   '"micro" | "tiny" | "xsmall" | "compact" | "small" | "codeSmall" | "ui" | "code" | "title" | "heading" | "display"';
@@ -12,7 +16,8 @@ export const layoutDocs: ComponentDoc[] = [
     summary: "Lays out children in a row or a column with a gap from the spacing tokens.",
     usage:
       "Use for every layout instead of writing CSS: rows of buttons, label and value pairs, sections. " +
-      "Gaps are steps (xxs 2, xs 4, sm 6, md 8, lg 12, xl 16, xxl 24 px), so a token change moves them all.",
+      "Gaps are steps (xxs 2, xs 4, sm 6, md 8, mdPlus 10, lg 12, lgPlus 14, xl 16, xxl 24, xxxl 32 px), so a " +
+      "token change moves them all.",
     aliases: ["Flex", "HStack", "VStack", "Box"],
     props: [
       prop("direction", '"row" | "column"', "Main axis.", { default: '"column"' }),
@@ -26,13 +31,26 @@ export const layoutDocs: ComponentDoc[] = [
       prop("justify", '"start" | "center" | "end" | "between"', "Main-axis distribution.", { default: '"start"' }),
       prop("wrap", "boolean", "Wrap onto more lines.", { default: "false" }),
       prop("grow", "boolean", "Take the free space of its own parent stack.", { default: "false" }),
+      prop("width", '"auto" | "icon" | "xsmall" | "small" | "medium" | "large" | "xlarge"', CELL_WIDTH, {
+        default: '"auto"',
+      }),
       prop("scroll", '"none" | "y" | "x" | "both"', "Scrolls its content in its own box; pair with `grow`.", {
         default: '"none"',
       }),
-      prop("element", '"div" | "section" | "header" | "footer" | "ul" | "li" | "form"', "The HTML element.", {
-        default: '"div"',
-      }),
+      prop("sticky", "boolean", "Stays at the top of the region scrolling under it, on the panel color with a " +
+        "line under it.", { default: "false" }),
+      prop("element", '"div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form"',
+        "The HTML element; main, aside and nav mark a page's regions for screen readers.", { default: '"div"' }),
+      prop("role", '"group" | "region" | "tabpanel" | "presentation" | null', "Its role for screen readers, " +
+        "like tabpanel for the content under Tabs.", { default: "null" }),
       prop("label", "string", "Accessible name, for sections and lists."),
+      prop("busy", "boolean", "Tells screen readers it is loading (aria-busy), like a panel refreshing its list.", {
+        default: "false",
+      }),
+      prop("responsive", "boolean", "Measures its width so what is inside can step aside with `hideAt` or " +
+        "`dotAt`; read once.", { default: "false" }),
+      prop("hideAt", NARROW_STEP, "In a responsive Toolbar or Stack under 220, 320, 480 or 600 px, it goes " +
+        "with what it holds.", { default: "null" }),
       prop("children", "Snippet", "The content.", { required: true }),
     ],
     examples: [
@@ -41,8 +59,20 @@ export const layoutDocs: ComponentDoc[] = [
         code: '<Stack direction="row" justify="end" gap="md">\n  <Button>Cancel</Button>\n' +
           '  <Button variant="primary">Save</Button>\n</Stack>',
       },
+      {
+        title: "A row that drops parts when narrow",
+        code: '<Stack direction="row" gap="xs" responsive>\n  <Text truncate>{repoName}</Text>\n' +
+          '  <Text hideAt="narrow">{branchName}</Text>\n  <Stack direction="row" hideAt="tiny">{syncCounts}</Stack>\n' +
+          '  <Badge count={changes} hideAt="tiny" />\n</Stack>',
+      },
     ],
-    replaces: ['<div class="row">', '<div class="actions">', '<div class="toolbar">', "any flex container CSS"],
+    replaces: [
+      '<div class="row">',
+      '<div class="actions">',
+      '<div class="toolbar">',
+      "any flex container CSS",
+      "`container: name / inline-size` with `@container` rules that hide parts",
+    ],
     rules: [
       "Do not add CSS for layout; combine Stacks. Gaps and padding come only from the named steps.",
       "There is no margin: space between items is the parent's gap, space inside is padding.",
@@ -72,9 +102,11 @@ export const layoutDocs: ComponentDoc[] = [
         default: '"normal"',
       }),
       prop("strike", "boolean", "Struck through, like a deleted file's name.", { default: "false" }),
-      prop("element", '"span" | "p" | "div" | "h1" | "h2" | "h3" | "label" | "code"', "The HTML element.", {
+      prop("element", '"span" | "p" | "div" | "h1" | "h2" | "h3" | "h4" | "label" | "code"', "The HTML element.", {
         default: '"span"',
       }),
+      prop("hideAt", NARROW_STEP, "In a responsive Toolbar or Stack under 220, 320, 480 or 600 px, the " +
+        "words hide but screen readers still read them.", { default: "null" }),
       prop("title", "string", "Tooltip, e.g. the full text of a truncated path."),
       prop("children", "Snippet", "The text.", { required: true }),
     ],
@@ -130,6 +162,8 @@ export const layoutDocs: ComponentDoc[] = [
     props: [
       prop("direction", '"horizontal" | "vertical"', "Line direction.", { default: '"horizontal"' }),
       prop("strong", "boolean", "The stronger border color.", { default: "true" }),
+      prop("hideAt", NARROW_STEP, "In a responsive Toolbar or Stack under 220, 320, 480 or 600 px, the " +
+        "line goes.", { default: "null" }),
     ],
     examples: [{ title: "In a toolbar", code: '<Divider direction="vertical" />' }],
     replaces: ['<div class="separator">', '<div class="divider">'],

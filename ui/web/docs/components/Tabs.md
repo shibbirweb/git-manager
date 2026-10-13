@@ -19,6 +19,8 @@ Use in a panel header to switch its views. Use Segmented for a setting with a fe
 - `label` (`string`, required): Accessible name of the tab list.
 - `variant` (`"panel" | "underline"`, default `"panel"`): Panel tabs in small capitals, or normal words with a thick
   line under the chosen one (Search Everywhere's scopes).
+- `keepFocus` (`boolean`, default `false`): Tabs over a search field: pressing one leaves the focus in the field, and
+  the tabs take no focus.
 - `onchange` (`(value: T) => void`): Called when the user picks another tab.
 
 ## Example: Bottom panel

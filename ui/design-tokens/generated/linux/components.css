@@ -105,6 +105,7 @@
   --badge-large-radius: 9px;
   --badge-corner-padding-x: 3px;
   --badge-corner-offset: 5px;
+  --badge-dot-size: 8px;
   --tag-height: var(--size-tag);
   --tag-padding-x: 5px;
   --tag-radius: var(--radius-small);
@@ -243,6 +244,10 @@
   --find-bar-row-gap: 3px;
   --find-bar-counter-min-width: 56px;
   --find-bar-compact-below: 480px;
+  --find-bar-shrink-below: 380px;
+  --find-bar-tiny-below: 300px;
+  --find-bar-tiny-field-min-width: 60px;
+  --find-bar-tiny-text-padding-x: 5px;
   --panel-header-height: 34px;
   --panel-header-padding-left: 12px;
   --panel-header-padding-right: 6px;
@@ -267,12 +272,4 @@
   --sidebar-row-button-size: 20px;
   --description-list-row-gap: 3px;
   --description-list-column-gap: 10px;
-  --code-block-padding-x: 8px;
-  --code-block-padding-y: 5px;
-  --code-block-radius: var(--radius-control);
-  --code-block-line-height: 17px;
-  --code-block-preview-padding-y: 6px;
-  --code-block-preview-padding-x: 8px;
-  --code-block-prompt-padding: 10px;
-  --code-block-prompt-max-height: 220px;
 }

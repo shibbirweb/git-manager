@@ -39,6 +39,9 @@ export const actionDocs: ComponentDoc[] = [
         default: "null",
       }),
       prop("type", '"button" | "submit" | "reset"', "The button's form type.", { default: '"button"' }),
+      prop("keepFocus", "boolean", "Pressing it leaves the focus where it was, such as in a search field.", {
+        default: "false",
+      }),
       prop("element", "HTMLButtonElement | null", "The button element, to focus it.", {
         default: "null",
         bindable: true,
@@ -98,6 +101,9 @@ export const actionDocs: ComponentDoc[] = [
       }),
       prop("type", '"button" | "submit" | "reset"', "The button's form type.", { default: '"button"' }),
       prop("title", "string", "Tooltip when it should differ from `label`."),
+      prop("keepFocus", "boolean", "Pressing it leaves the focus where it was, such as in a search field.", {
+        default: "false",
+      }),
       prop("element", "HTMLButtonElement | null", "The button element.", { default: "null", bindable: true }),
       prop("children", "Snippet", "Optional text after the icon."),
       restProp("HTMLButton", "onclick, disabled, aria-*"),

@@ -23,6 +23,7 @@
     lifted?: boolean;
     closable?: boolean;
     onselect?: () => void;
+    ondblclick?: () => void;
     onclose?: () => void;
     oncontextmenu?: (event: MouseEvent) => void;
     onpointerdown?: (event: PointerEvent) => void;
@@ -36,6 +37,7 @@
     lifted = false,
     closable = true,
     onselect,
+    ondblclick,
     onclose,
     oncontextmenu,
     onpointerdown,
@@ -63,6 +65,7 @@
     aria-selected={active}
     title={tab.title ?? tab.label}
     onclick={() => onselect?.()}
+    ondblclick={() => ondblclick?.()}
   >
     {#if tab.icon}
       <Icon name={tab.icon} size="medium" />

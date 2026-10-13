@@ -1,4 +1,5 @@
-<!-- The centered message of an empty panel or tab, with an optional icon, hint and action. -->
+<!-- The centered message of an empty panel or tab, with an optional icon, hint and action. `delayed` fades it in
+     after a moment, so a loading message does not flash when the work is quick ("Loading diff..."). -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
@@ -15,6 +16,7 @@
     titleSize?: "normal" | "large";
     titleTone?: "default" | "danger";
     overlay?: boolean;
+    delayed?: boolean;
     action?: Snippet;
   }
 
@@ -29,11 +31,12 @@
     titleSize = "normal",
     titleTone = "default",
     overlay = false,
+    delayed = false,
     action,
   }: Props = $props();
 </script>
 
-<div class="empty {variant}" class:overlay>
+<div class="empty {variant}" class:overlay class:delayed>
   {#if icon && iconStyle !== "plain"}
     <span class="circle {iconTone}" class:large={iconStyle === "large-circle"}>
       <Icon name={icon} size={iconStyle === "large-circle" ? "emphasis" : variant === "pane" ? "xxlarge" : "xlarge"} />
@@ -68,6 +71,16 @@
 
   .hint {
     color: var(--text-dim);
+  }
+
+  .delayed {
+    animation: appear var(--motion-appear) ease var(--motion-appear-delay) both;
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
   }
 
   .plain {

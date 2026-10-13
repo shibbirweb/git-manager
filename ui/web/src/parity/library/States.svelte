@@ -40,15 +40,12 @@
       focused={false}
       decoration={null}
       renaming={false}
-      draggable={false}
       dropTarget
       onclick={none}
       ondblclick={none}
       oncontextmenu={none}
       onrename={none}
-      ondragstart={none}
-      ondragover={none}
-      ondrop={none}
+      onpointerdown={none}
     />
   </div>
 {:else if id === "tree-drop-root"}

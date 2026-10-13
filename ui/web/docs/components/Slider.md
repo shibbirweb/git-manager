@@ -22,6 +22,7 @@ Use for a number in a known range where the exact value matters less than the fe
 - `disabled` (`boolean`, default `false`): Disables it.
 - `valueWidth` (`"normal" | "wide"`, default `"normal"`): Room for the value: wide for words such as a font weight.
 - `format` (`(value: number) => string`, default `(shown) => String(shown)`): How the value is shown, e.g. `13 px`.
+- `resetValue` (`number | null`, default `null`): Double-click puts this value back (Settings' font weight).
 - `onchange` (`(value: number) => void`): Called while it moves.
 
 ## Example: Font size

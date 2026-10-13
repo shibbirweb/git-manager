@@ -107,6 +107,7 @@
     <x:Double x:Key="GmBadgeLargeRadius">9</x:Double>
     <x:Double x:Key="GmBadgeCornerPaddingX">3</x:Double>
     <x:Double x:Key="GmBadgeCornerOffset">5</x:Double>
+    <x:Double x:Key="GmBadgeDotSize">8</x:Double>
     <x:Double x:Key="GmTagHeight">16</x:Double>
     <x:Double x:Key="GmTagPaddingX">5</x:Double>
     <x:Double x:Key="GmTagRadius">4</x:Double>
@@ -245,6 +246,10 @@
     <x:Double x:Key="GmFindBarRowGap">3</x:Double>
     <x:Double x:Key="GmFindBarCounterMinWidth">56</x:Double>
     <x:Double x:Key="GmFindBarCompactBelow">480</x:Double>
+    <x:Double x:Key="GmFindBarShrinkBelow">380</x:Double>
+    <x:Double x:Key="GmFindBarTinyBelow">300</x:Double>
+    <x:Double x:Key="GmFindBarTinyFieldMinWidth">60</x:Double>
+    <x:Double x:Key="GmFindBarTinyTextPaddingX">5</x:Double>
     <x:Double x:Key="GmPanelHeaderHeight">34</x:Double>
     <x:Double x:Key="GmPanelHeaderPaddingLeft">12</x:Double>
     <x:Double x:Key="GmPanelHeaderPaddingRight">6</x:Double>

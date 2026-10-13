@@ -13,7 +13,8 @@ const webRoot = fileURLToPath(new URL("../web/", import.meta.url));
 export const RULES = [
   "New UI is a library component first: add the component, its doc, its story and its tokens, then use it.",
   "Components take no class or style; everything is a prop. Lay out with Stack (gaps are steps: none, xxs, xs, " +
-    "sm, md, lg, xl, xxl) and write words with Text (variant: body, label, hint, caption, sectionLabel, title...).",
+    "sm, md, mdPlus, lg, lgPlus, xl, xxl, xxxl) and write words with Text " +
+    "(variant: body, label, hint, caption, sectionLabel, title...).",
   "Colors come from the theme tokens (tone props); sizes come from the design tokens; never hard-code either.",
   "Import a component from $ui/components/<Name>.svelte; read its doc first (get_component).",
   "Destructive actions confirm first in a message Dialog with a Danger primary button. " +

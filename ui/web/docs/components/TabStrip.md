@@ -11,7 +11,8 @@ Group: Navigation. Also known as: Tabs, Editor tabs.
 ## When to use
 
 Use above an editor group. Gray the active tab's accent line with `focused={false}` when another group has the focus.
-Put a + button in `trailing`.
+Put a + button in `trailing`. The active tab is kept in view and the wheel scrolls one row sideways. With `onreorder`, a
+dragged tab follows the pointer while the others slide aside; Escape cancels.
 
 ## Props
 
@@ -24,6 +25,7 @@ Put a + button in `trailing`.
   name.
 - `newLabel` (`string`, default `"New tab"`): The + button's name and tooltip.
 - `onselect` (`(id: string) => void`): A tab was clicked.
+- `ondblclick` (`(id: string) => void`): A tab was double-clicked, such as to keep a preview tab open.
 - `onclose` (`(id: string) => void`): Close button or middle click; without it there is no close button.
 - `oncontextmenu` (`(id: string, event: MouseEvent) => void`): Right-click on a tab, for its Menu.
 - `onnew` (`(event: MouseEvent) => void`): Shows a + after the tabs; open a Menu from it.
@@ -39,3 +41,9 @@ Put a + button in `trailing`.
 ## Replaces in the app
 
 - `<div class="tab-strip"> in EditorTabs.svelte`
+
+## Logic
+
+- `logic/tabDrag.ts`
+- `logic/slide.ts`
+- `logic/reorder.ts`

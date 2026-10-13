@@ -1,9 +1,12 @@
-<!-- A Settings row: the title and hint on the left, the control on the right (or under them when stacked). -->
+<!-- A Settings row: the title and hint on the left, the control on the right (or under them when stacked).
+     `titleMatches` marks the words a search found in the title. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import HighlightText from "./HighlightText.svelte";
 
   interface Props {
     title: string;
+    titleMatches?: [number, number][];
     hint?: string;
     stacked?: boolean;
     nested?: boolean;
@@ -13,12 +16,24 @@
     children: Snippet;
   }
 
-  let { title, hint = "", stacked = false, nested = false, plain = false, hintContent, children }: Props = $props();
+  let {
+    title,
+    titleMatches = [],
+    hint = "",
+    stacked = false,
+    nested = false,
+    plain = false,
+    hintContent,
+    children,
+  }: Props = $props();
 </script>
 
 <div class="row" class:stacked class:nested class:plain>
   <div class="label">
-    <span class="title">{title}</span>
+    <span class="title"
+      >{#if titleMatches.length > 0}<HighlightText text={title} ranges={titleMatches} variant="search"
+        />{:else}{title}{/if}</span
+    >
     {#if hintContent}
       <span class="hint">{@render hintContent()}</span>
     {:else if hint}

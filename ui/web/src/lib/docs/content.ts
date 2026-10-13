@@ -44,7 +44,8 @@ export const contentDocs: ComponentDoc[] = [
     props: [
       prop("text", "string", "The text.", { required: true }),
       prop("ranges", "[number, number][]", "Matched ranges.", { required: true, data: true }),
-      prop("variant", '"strong" | "mark"', "Bold accent (quick open) or a tinted background (search).", {
+      prop("variant", '"strong" | "mark" | "search"', "Bold accent (quick open), a tinted background (search " +
+        "results) or a warning tint (Settings search, a filter over labels).", {
         default: '"strong"',
       }),
     ],

@@ -30,6 +30,8 @@ export const overlayDocs: ComponentDoc[] = [
       prop("footnote", "Snippet", "Content at the footer's start, such as a Link or a hint."),
       prop("onclose", "() => void", "Called when the user dismisses it (Esc or outside click)."),
       prop("onsubmit", "() => void", "Cmd+Enter (Ctrl+Enter): the main action of a form."),
+      prop("enterSubmits", "boolean", "A plain Enter in a one-line field submits too, like a one-field prompt or " +
+        "a password; Enter in a text area or on a button does not.", { default: "false" }),
       prop("actions", "Snippet", "Buttons on the right under the content."),
       prop("sidebar", "Snippet", "The side column of a split dialog, such as a SideNav."),
       prop("children", "Snippet", "The content.", { required: true }),
@@ -42,8 +44,20 @@ export const overlayDocs: ComponentDoc[] = [
           '  {#snippet actions()}\n    <Button onclick={() => (open = false)}>Cancel</Button>\n' +
           '    <Button variant="primary" onclick={create}>Create</Button>\n  {/snippet}\n</Dialog>',
       },
+      {
+        title: "A prompt that Enter submits",
+        code:
+          '<Dialog bind:open title="Password" onsubmit={send} enterSubmits>\n' +
+          '  <Input type="password" bind:value={password} />\n' +
+          '  {#snippet actions()}<Button variant="primary" onclick={send}>OK</Button>{/snippet}\n</Dialog>',
+      },
     ],
-    replaces: ['<div class="overlay"><div class="dialog" role="dialog">...</div></div>', "Git menu dialogs"],
+    logic: ["dialogKeys.ts"],
+    replaces: [
+      '<div class="overlay"><div class="dialog" role="dialog">...</div></div>',
+      "Git menu dialogs",
+      '<form onsubmit> around a prompt\'s field (Enter submits)',
+    ],
     rules: ["Focus goes into the dialog when it opens and back when it closes; do not move it by hand."],
   },
   {

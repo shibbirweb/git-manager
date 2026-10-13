@@ -44,7 +44,7 @@ export const builderDocs: ComponentDoc[] = [
         title: "A commit in a history list",
         code:
           '<Row size="history" selected={id === selectedId}>\n' +
-          '  <Text mono tone="dim" size="compact">{hash}</Text>\n' +
+          '  <Stack width="xsmall"><Text mono tone="dim" size="compact">{hash}</Text></Stack>\n' +
           "  <Text truncate>{subject}</Text>\n" +
           "  <Spacer />\n" +
           '  <Text tone="dim" tabular>{when}</Text>\n' +
@@ -83,7 +83,9 @@ export const builderDocs: ComponentDoc[] = [
       "Give it the items and a `row` snippet that draws a Row with the state it gets. Arrows, Home, End and " +
       "Page keys move, Enter or a double-click activates, Left and Right fold tree rows, `multiple` selects " +
       "several. `skip` names headings the keys pass over. `virtual` draws only the rows in view: give it the " +
-      "Row's height (normal for tree and list rows, relaxed for history rows).",
+      "Row's height (normal for tree and list rows, relaxed for history rows). A filter field drives it with " +
+      "`field`: Down or Enter moves the focus in, or with `fieldKeys=\"drive\"` the field keeps the focus while " +
+      "Up, Down and Enter work the list (Quick Open, Recent Files, the Branches popup).",
     aliases: ["Listbox", "Tree view", "Selectable list", "Virtual list"],
     props: [
       prop("items", "T[]", "Every row's item, headings included.", { required: true, data: true }),
@@ -105,7 +107,22 @@ export const builderDocs: ComponentDoc[] = [
       prop("height", VIEW_HEIGHT, "Its content's height, its parent's, or scroll past 160, 240 or 360 px.", {
         default: '"auto"',
       }),
-      prop("virtual", ROW_HEIGHT, "Draw only the rows in view, each this tall.", { default: "null" }),
+      prop("virtual", ROW_HEIGHT, "Draw only the rows in view, each this tall (the estimate with `measure`).", {
+        default: "null",
+      }),
+      prop("measure", "boolean", "Rows differ in height, like console entries that open: each drawn row is measured.", {
+        default: "false",
+      }),
+      prop("field", "HTMLInputElement | null", "A filter field above it whose keys work the list.", {
+        default: "null",
+      }),
+      prop("fieldKeys", '"enter" | "drive"', "Down or Enter in the field moves the focus in, or the field keeps " +
+        "the focus while Up, Down, Page keys and Enter work the list; clicks keep the focus in the field.", {
+        default: '"enter"',
+      }),
+      prop("follow", "boolean", "Stay at the bottom while entries arrive, until the user scrolls up (a console).", {
+        default: "false",
+      }),
       prop("row", "Snippet<[T, ListRowState]>", "Draws a row from its item and { index, selected, current }.", {
         required: true,
       }),
@@ -114,8 +131,19 @@ export const builderDocs: ComponentDoc[] = [
       prop("onactivate", "(item: T) => void", "Enter or a double-click on a row."),
       prop("ontoggle", "(item: T, open: boolean) => void", "Left or Right asks to fold or unfold a tree row."),
       prop("oncontextmenu", "(event: MouseEvent, item: T) => void", "Right-clicked; the row is selected first."),
+      prop("onnearend", "() => void", "Scrolled near the end: load the next page (once per item count)."),
     ],
-    logic: ["listNav.ts", "treeSelect.ts", "virtualWindow.ts"],
+    logic: [
+      "listKeys.ts",
+      "listNav.ts",
+      "listField.ts",
+      "listScroll.ts",
+      "listWiring.svelte.ts",
+      "treeSelect.ts",
+      "virtualWindow.ts",
+      "rowOffsets.ts",
+      "rowHeights.svelte.ts",
+    ],
     examples: [
       {
         title: "Changed files",
@@ -128,13 +156,25 @@ export const builderDocs: ComponentDoc[] = [
           "  {/snippet}\n" +
           "</List>",
       },
+      {
+        title: "Driven from a filter field (Quick Open)",
+        code:
+          '<Input bind:element={filter} bind:value={query} aria-label="Search" />\n' +
+          '<List label="Results" items={found} itemKey={(f) => f.path} field={filter} fieldKeys="drive"\n' +
+          '  height="fill" virtual="normal" onactivate={open}>\n' +
+          "  {#snippet row(file, state)}<Row selected={state.selected}><Text>{file.name}</Text></Row>{/snippet}\n" +
+          "</List>",
+      },
     ],
     replaces: [
       ".files in ChangesTab and BranchFileList, .list in FileHistoryTab, LineHistoryTab and ReflogTab",
       ".versions in LocalHistoryDialog, .tree in ScriptsPanel and Sidebar, .list in AiPanel and ShelfPanel",
-      ".table in ConflictsDialog, .list in TerminalPanel",
+      ".table in ConflictsDialog, .list in TerminalPanel, .list in GitConsoleView",
     ],
-    rules: ["The List holds the focus; Rows inside take none and draw only their look."],
+    rules: [
+      "The List holds the focus; Rows inside take none and draw only their look.",
+      "onnearend and follow need a list that scrolls itself: height fill, small, medium or large, or virtual.",
+    ],
   },
   {
     name: "Spacer",
@@ -152,5 +192,38 @@ export const builderDocs: ComponentDoc[] = [
       },
     ],
     replaces: [".spacer in about 35 app files"],
+  },
+  {
+    name: "Time",
+    group: "Layout",
+    summary: "A moment relative to now, kept current: 5 min ago, 5m, or in 3h 20m, with the full date as tooltip.",
+    usage:
+      "Use for commit dates, notification times, how long an agent has waited, and when usage resets. Put it in " +
+      "a Text for tone and size. Live Times share one clock that ticks every 30 seconds only while one is shown; " +
+      "turn `live` off in long static lists that never stay open for minutes.",
+    aliases: ["Relative time", "Timestamp", "Time ago", "Countdown"],
+    props: [
+      prop("time", "number", "The moment, in milliseconds since 1970 (multiply git's seconds by 1000).", {
+        required: true,
+        data: true,
+      }),
+      prop("format", '"ago" | "age" | "until"', "5 min ago and yesterday (a date after a week), a short age " +
+        "(5m, 2h), or a countdown (in 3h 20m, now when due).", { default: '"ago"' }),
+      prop("live", "boolean", "Stays current from the shared clock.", { default: "true" }),
+    ],
+    logic: ["timeText.ts", "clock.svelte.ts"],
+    examples: [
+      {
+        title: "A commit's date",
+        code: '<Text tone="dim" size="small"><Time time={commit.time * 1000} /></Text>',
+      },
+      { title: "Usage resets", code: '<Text tone="dim">Resets <Time time={window.resetsAt} format="until" /></Text>' },
+    ],
+    replaces: [
+      "relativeTime() with a now timer in LogView and NotificationBell; formatAge() in AiPanel",
+      "resetIn() and updatedText() in AiUsage; relativeTime() in FileHistoryTab, LineHistoryTab, ReflogTab",
+      "relativeTime() in BranchCompareTab, InteractiveRebaseDialog, LocalHistoryDialog and PushDialog",
+    ],
+    rules: ["Never write a relative time by hand or run a timer for one; use Time."],
   },
 ];

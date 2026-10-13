@@ -15,4 +15,5 @@
   <SectionTitle variant="caps" title="storefront" />
   <SectionTitle variant="day" title="Today" />
   <SectionTitle variant="divided" title="Repository tools" />
+  <SectionTitle variant="group" title="Editing features (a level 4 heading)" heading={4} />
 </Card>

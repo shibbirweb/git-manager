@@ -21,6 +21,8 @@ Use when a list or view has nothing to show. Say what the user can do next in `h
 - `titleSize` (`"normal" | "large"`, default `"normal"`): A larger title, as on a failed view.
 - `titleTone` (`"default" | "danger"`, default `"default"`): A red title for errors.
 - `overlay` (`boolean`, default `false`): Covers its positioned parent, over the content.
+- `delayed` (`boolean`, default `false`): Fades in after 250 ms, so a loading message does not flash when the work is
+  quick.
 - `iconTone` (`"inherit" | "faint" | "accent" | "success"`, default `"inherit"`): The icon's color; inherit takes the
   text's.
 - `strong` (`boolean`, default `false`): A bold title.
@@ -35,8 +37,15 @@ Use when a list or view has nothing to show. Say what the user can do next in `h
 <EmptyState icon="stash" title="No stashes" hint="Stash changes to set them aside." />
 ```
 
+## Example: Loading
+
+```svelte
+<EmptyState title="Loading diff..." delayed />
+```
+
 ## Replaces in the app
 
 - `<div class="placeholder">...</div>`
 - `<div class="empty">...</div>`
 - `the .empty and .notice blocks of src/lib/ai/AiPanel.svelte`
+- `<div class="placeholder loading"> with its `appear` animation (ChangesDiff)`

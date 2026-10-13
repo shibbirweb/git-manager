@@ -16,7 +16,8 @@ Use for search and quick open results. Ranges are [start, end) character offsets
 
 - `text` (`string`, required): The text.
 - `ranges` (`[number, number][]`, required): Matched ranges.
-- `variant` (`"strong" | "mark"`, default `"strong"`): Bold accent (quick open) or a tinted background (search).
+- `variant` (`"strong" | "mark" | "search"`, default `"strong"`): Bold accent (quick open), a tinted background (search
+  results) or a warning tint (Settings search, a filter over labels).
 
 ## Example: Quick open
 

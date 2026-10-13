@@ -10,7 +10,8 @@ Group: Navigation. Also known as: Sortable, Drag list.
 
 ## When to use
 
-Use for short lists whose order matters. Alt+Up and Alt+Down move the focused row.
+Use for short lists whose order matters. Up and Down move between rows; Alt+Up and Alt+Down move the focused row and the
+focus follows it. Keys typed in a control inside a row stay with that control.
 
 ## Props
 

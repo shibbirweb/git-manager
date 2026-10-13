@@ -29,6 +29,7 @@ Use in toolbars, panel headers, rows and tab strips. Use Button when the command
 - `count` (`string`, default `""`): Short text after the icon, such as a repository row's sync counts.
 - `type` (`"button" | "submit" | "reset"`, default `"button"`): The button's form type.
 - `title` (`string`): Tooltip when it should differ from `label`.
+- `keepFocus` (`boolean`, default `false`): Pressing it leaves the focus where it was, such as in a search field.
 - `element` (`HTMLButtonElement | null`, default `null`, bindable): The button element.
 - `children` (`Snippet`): Optional text after the icon.
 - `...rest` (`HTMLButtonAttributes`): Any other button attribute: onclick, disabled, aria-*.

@@ -11,3 +11,10 @@ export function markInsideList(): void {
 export function isInsideList(): boolean {
   return getContext<boolean | undefined>(LIST_KEY) ?? false;
 }
+
+/** Clicks on a control inside a row (an action button, a rename field) belong to that control, not the row. */
+export function onRowControl(event: MouseEvent): boolean {
+  const target = event.target as Element | null;
+  const control = target?.closest("button, a, input, select, textarea, [role='button']");
+  return control !== null && control !== undefined && control !== event.currentTarget;
+}

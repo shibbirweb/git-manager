@@ -31,7 +31,9 @@
   let selected = $state<string | null>("src/lib/cart.ts");
   let selection = $state<string[]>(["src/lib/cart.ts"]);
   let renaming = $state<string | null>(null);
-  let note = $state("Cmd-click and Shift-click select more. F2 renames. Drag files onto a folder.");
+  let note = $state(
+    "Cmd-click and Shift-click select more. F2 renames. Drag rows onto a folder (Option copies, Escape cancels).",
+  );
 </script>
 
 <Stack gap="sm">
@@ -52,7 +54,8 @@
       decorate={(node) => STATUS[node.id] ?? null}
       onopen={(node) => (note = `Opened ${node.label}`)}
       onrename={(node, name) => (note = `Renamed ${node.label} to ${name}`)}
-      ondrop={(ids, target) => (note = `Moved ${ids.length} into ${target.label}`)}
+      ondrop={(ids, target, mode) =>
+        (note = `${mode === "copy" ? "Copied" : "Moved"} ${ids.length} into ${target?.label ?? "the top"}`)}
     />
   </div>
   <Text tone="dim">{note} Selected: {selection.length}</Text>

@@ -20,16 +20,13 @@ Tree draws these from its nodes; use TreeRow alone only for a custom tree.
 - `focused` (`boolean`, required): The focused row while the tree has the focus.
 - `decoration` (`TreeDecoration | null`, required): Tone, strike and badge.
 - `renaming` (`boolean`, required): Shows the rename field.
-- `draggable` (`boolean`, required): Can be dragged.
 - `dropTarget` (`boolean`, required): Marked as the drop target.
 - `detail` (`Snippet<[N]>`): Dim content at the end.
 - `onclick` (`(event: MouseEvent) => void`, required): Clicked.
 - `ondblclick` (`() => void`, required): Double-clicked.
 - `oncontextmenu` (`(event: MouseEvent) => void`, required): Right-clicked.
 - `onrename` (`(name: string | null) => void`, required): Rename ended; null when cancelled.
-- `ondragstart` (`(event: DragEvent) => void`, required): Drag started.
-- `ondragover` (`(event: DragEvent) => void`, required): Something is dragged over it.
-- `ondrop` (`(event: DragEvent) => void`, required): Something was dropped on it.
+- `onpointerdown` (`(event: PointerEvent) => void`, required): Pressed: the Tree may start a drag from it.
 
 ## Example: Inside Tree
 

@@ -65,6 +65,10 @@ public enum GMFindBarTokens {
     public static let rowGap: CGFloat = 3
     public static let counterMinWidth: CGFloat = 56
     public static let compactBelow: CGFloat = 480
+    public static let shrinkBelow: CGFloat = 380
+    public static let tinyBelow: CGFloat = 300
+    public static let tinyFieldMinWidth: CGFloat = 60
+    public static let tinyTextPaddingX: CGFloat = 5
 }
 
 public enum GMPanelHeaderTokens {

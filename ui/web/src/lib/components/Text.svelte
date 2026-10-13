@@ -3,6 +3,8 @@
      words. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { useNarrow } from "../logic/barSize.svelte";
+  import type { NarrowStep } from "../logic/breakpoints";
   import { fontSize, fontWeight, textStyleVar, toneColor, type TextSize, type Tone, type Weight } from "../logic/scale";
   import { textStyles, type TextStyleName } from "../styles/tokens";
 
@@ -17,7 +19,9 @@
     tabular?: boolean;
     wrap?: "normal" | "anywhere" | "pre";
     strike?: boolean;
-    element?: "span" | "p" | "div" | "h1" | "h2" | "h3" | "label" | "code";
+    element?: "span" | "p" | "div" | "h1" | "h2" | "h3" | "h4" | "label" | "code";
+    /** In a responsive Toolbar or Stack this narrow or narrower, the words hide; screen readers still read them. */
+    hideAt?: NarrowStep | null;
     title?: string;
     children: Snippet;
   }
@@ -34,12 +38,14 @@
     wrap = "normal",
     strike = false,
     element = "span",
+    hideAt = null,
     title,
     children,
   }: Props = $props();
 
   const style = $derived(textStyles[variant]);
   const shownTone = $derived<Tone>(tone ?? (style.tone as Tone | null) ?? "default");
+  const narrow = useNarrow(() => hideAt);
 </script>
 
 <svelte:element
@@ -51,6 +57,7 @@
   class:anywhere={wrap === "anywhere"}
   class:pre={wrap === "pre"}
   class:strike
+  class:hidden={narrow()}
   {title}
   style:color={toneColor(shownTone)}
   style:font-family={mono ? "var(--font-family-mono)" : textStyleVar(variant, "family")}
@@ -100,5 +107,15 @@
   .selectable {
     user-select: text;
     -webkit-user-select: text;
+  }
+
+  /* Out of sight in a narrow bar, still read by screen readers. */
+  .hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 </style>

@@ -17,6 +17,8 @@
     count?: number | null;
     icon?: IconName | null;
     trailingIcon?: IconName | null;
+    /** Pressing it leaves the focus where it was, such as in a search field next to it. */
+    keepFocus?: boolean;
     element?: HTMLButtonElement | null;
     children?: Snippet;
   }
@@ -30,6 +32,7 @@
     badge = null,
     count = null,
     type = "button",
+    keepFocus = false,
     element = $bindable(null),
     children,
     ...rest
@@ -47,6 +50,12 @@
   class:on={pressed === true}
   aria-pressed={pressed ?? undefined}
   {...rest}
+  onmousedown={(event) => {
+    if (keepFocus) {
+      event.preventDefault();
+    }
+    rest.onmousedown?.(event);
+  }}
 >
   {#if icon}
     <Icon name={icon} size={size === "normal" ? "normal" : size === "tiny" ? "medium" : "compact"} />

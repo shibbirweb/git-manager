@@ -30,6 +30,8 @@ Primary button in `actions`, last.
 - `footnote` (`Snippet`): Content at the footer's start, such as a Link or a hint.
 - `onclose` (`() => void`): Called when the user dismisses it (Esc or outside click).
 - `onsubmit` (`() => void`): Cmd+Enter (Ctrl+Enter): the main action of a form.
+- `enterSubmits` (`boolean`, default `false`): A plain Enter in a one-line field submits too, like a one-field prompt or
+  a password; Enter in a text area or on a button does not.
 - `actions` (`Snippet`): Buttons on the right under the content.
 - `sidebar` (`Snippet`): The side column of a split dialog, such as a SideNav.
 - `children` (`Snippet`, required): The content.
@@ -50,7 +52,21 @@ Primary button in `actions`, last.
 </Dialog>
 ```
 
+## Example: A prompt that Enter submits
+
+```svelte
+<Dialog bind:open title="Password" onsubmit={send} enterSubmits>
+  <Input type="password" bind:value={password} />
+  {#snippet actions()}<Button variant="primary" onclick={send}>OK</Button>{/snippet}
+</Dialog>
+```
+
 ## Replaces in the app
 
 - `<div class="overlay"><div class="dialog" role="dialog">...</div></div>`
 - `Git menu dialogs`
+- `<form onsubmit> around a prompt's field (Enter submits)`
+
+## Logic
+
+- `logic/dialogKeys.ts`

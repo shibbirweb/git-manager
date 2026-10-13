@@ -21,6 +21,7 @@ TabStrip draws these; use EditorTab alone only to build another strip with the s
 - `lifted` (`boolean`, default `false`): Being dragged: floats above the others.
 - `closable` (`boolean`, default `true`): Shows the close button.
 - `onselect` (`() => void`): Clicked.
+- `ondblclick` (`() => void`): Double-clicked.
 - `onclose` (`() => void`): Close button or middle click.
 - `oncontextmenu` (`(event: MouseEvent) => void`): Right-clicked.
 - `onpointerdown` (`(event: PointerEvent) => void`): Pressed, to start a drag.

@@ -35,7 +35,8 @@
   "spinner": {"size": "{size.spinner}", "sizeSmall": 10, "sizeLarge": 18, "border": 2},
   "badge": {
     "size": "{size.badge}", "paddingX": 4, "radius": 8, "smallSize": 14, "smallRadius": 7, "largeMinWidth": 18,
-    "largeHeight": 17, "largePaddingX": 5, "largeRadius": 9, "cornerPaddingX": 3, "cornerOffset": 5
+    "largeHeight": 17, "largePaddingX": 5, "largeRadius": 9, "cornerPaddingX": 3, "cornerOffset": 5,
+    "dotSize": 8
   },
   "tag": {"height": "{size.tag}", "paddingX": 5, "radius": "{radius.small}", "smallPaddingX": 4, "smallLineHeight": 13},
   "kbd": {"minWidth": 24, "paddingX": 7, "paddingY": 2, "radius": 5},
@@ -92,7 +93,8 @@
   },
   "findBar": {
     "fieldHeight": 24, "fieldMinWidth": 90, "fieldMaxWidth": 360, "buttonSize": 24, "radius": "{radius.small}",
-    "paddingY": 3, "rowGap": 3, "counterMinWidth": 56, "compactBelow": 480
+    "paddingY": 3, "rowGap": 3, "counterMinWidth": 56, "compactBelow": 480, "shrinkBelow": 380, "tinyBelow": 300,
+    "tinyFieldMinWidth": 60, "tinyTextPaddingX": 5
   },
   "panelHeader": {"height": 34, "paddingLeft": 12, "paddingRight": 6, "gap": 6, "buttonSize": 24},
   "fileRow": {

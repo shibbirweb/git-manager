@@ -7,7 +7,8 @@ export const navigationDocs: ComponentDoc[] = [
     summary: "The editor's tab strip: icon, name, hint and a close button; a dot for unsaved edits, italic previews.",
     usage:
       "Use above an editor group. Gray the active tab's accent line with `focused={false}` when another group " +
-      "has the focus. Put a + button in `trailing`.",
+      "has the focus. Put a + button in `trailing`. The active tab is kept in view and the wheel scrolls one row " +
+      "sideways. With `onreorder`, a dragged tab follows the pointer while the others slide aside; Escape cancels.",
     aliases: ["Tabs", "Editor tabs"],
     props: [
       prop(
@@ -25,6 +26,7 @@ export const navigationDocs: ComponentDoc[] = [
       }),
       prop("newLabel", "string", "The + button's name and tooltip.", { default: '"New tab"' }),
       prop("onselect", "(id: string) => void", "A tab was clicked."),
+      prop("ondblclick", "(id: string) => void", "A tab was double-clicked, such as to keep a preview tab open."),
       prop("onclose", "(id: string) => void", "Close button or middle click; without it there is no close button."),
       prop("oncontextmenu", "(id: string, event: MouseEvent) => void", "Right-click on a tab, for its Menu."),
       prop("onnew", "(event: MouseEvent) => void", "Shows a + after the tabs; open a Menu from it."),
@@ -36,6 +38,7 @@ export const navigationDocs: ComponentDoc[] = [
     examples: [
       { title: "Editor tabs", code: '<TabStrip label="Editor tabs" {tabs} bind:active onclose={closeTab} />' },
     ],
+    logic: ["tabDrag.ts", "slide.ts", "reorder.ts"],
     replaces: ['<div class="tab-strip"> in EditorTabs.svelte'],
   },
   {
@@ -50,6 +53,8 @@ export const navigationDocs: ComponentDoc[] = [
       prop("label", "string", "Accessible name of the tab list.", { required: true }),
       prop("variant", '"panel" | "underline"', "Panel tabs in small capitals, or normal words with a thick " +
         "line under the chosen one (Search Everywhere's scopes).", { default: '"panel"' }),
+      prop("keepFocus", "boolean", "Tabs over a search field: pressing one leaves the focus in the field, and " +
+        "the tabs take no focus.", { default: "false" }),
       prop("onchange", "(value: T) => void", "Called when the user picks another tab."),
     ],
     examples: [{ title: "Bottom panel", code: '<Tabs label="Panel views" bind:value={tab} {tabs} />' }],
@@ -80,7 +85,12 @@ export const navigationDocs: ComponentDoc[] = [
         default: '"fill"',
       }),
       prop("renaming", "string | null", "The row being renamed in place.", { default: "null", bindable: true }),
-      prop("draggable", "boolean", "Rows can be dragged onto folders.", { default: "false" }),
+      prop("reveal", '"nearest" | "center"', "How the selected row comes into view: at the nearest edge, or " +
+        "in the middle when it was out of view (a located file).", { default: '"nearest"' }),
+      prop("draggable", "boolean", "Rows can be dragged onto folders with the pointer: a ghost follows, Option " +
+        "copies, a hovered closed folder opens, the list scrolls near its edges, Escape cancels.", {
+        default: "false",
+      }),
       prop("dropRoot", "boolean", "A drop into the top folder: the whole list is outlined.", { default: "false" }),
       prop("iconFor", "(node: N, open: boolean) => IconName | null", "Icon per row.", {
         default: '(node) => (node.children ? "folder" : "file")',
@@ -92,13 +102,14 @@ export const navigationDocs: ComponentDoc[] = [
       prop("detail", "Snippet<[N]>", "Dim content at the end of a row."),
       prop("onopen", "(node: N) => void", "A file was opened (double-click or Enter)."),
       prop("onrename", "(node: N, name: string) => void", "A rename was confirmed with Enter."),
-      prop("ondrop", "(ids: string[], target: N) => void", "Rows were dropped onto a folder."),
+      prop("ondrop", '(ids: string[], target: N | null, mode: "move" | "copy") => void', "Rows were dropped " +
+        "onto a folder, or onto the top level (null); never into themselves or where they already are."),
       prop("oncontextmenu", "(node: N, event: MouseEvent) => void", "Right-click on a row, for its Menu."),
     ],
     examples: [
       { title: "Files", code: '<Tree label="Files" {nodes} bind:expanded bind:selected onopen={openFile} />' },
     ],
-    logic: ["treeModel.ts", "virtualWindow.ts"],
+    logic: ["treeModel.ts", "treeDrag.ts", "treeDragger.svelte.ts", "virtualWindow.ts"],
     replaces: ["the rows of FileExplorer.svelte"],
   },
   {
@@ -116,6 +127,12 @@ export const navigationDocs: ComponentDoc[] = [
       prop("keepInView", "number | null", "Index to scroll into view when it changes.", {
         default: "null",
         data: true,
+      }),
+      prop("reveal", '"nearest" | "center"', "Bring that row to the nearest edge, or to the middle when it is " +
+        "out of view.", { default: '"nearest"' }),
+      prop("element", "HTMLDivElement | null", "The scrolling element, to scroll it from outside.", {
+        default: "null",
+        bindable: true,
       }),
       prop("height", '"fill" | "small" | "medium" | "large"', "Fill the parent, or 160, 240 or 360 px.", {
         default: '"fill"',

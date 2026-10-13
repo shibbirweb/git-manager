@@ -15,16 +15,13 @@
     focused: boolean;
     decoration: TreeDecoration | null;
     renaming: boolean;
-    draggable: boolean;
     dropTarget: boolean;
     detail?: Snippet<[N]>;
     onclick: (event: MouseEvent) => void;
     ondblclick: () => void;
     oncontextmenu: (event: MouseEvent) => void;
     onrename: (name: string | null) => void;
-    ondragstart: (event: DragEvent) => void;
-    ondragover: (event: DragEvent) => void;
-    ondrop: (event: DragEvent) => void;
+    onpointerdown: (event: PointerEvent) => void;
   }
 
   let {
@@ -34,16 +31,13 @@
     focused,
     decoration,
     renaming,
-    draggable,
     dropTarget,
     detail,
     onclick,
     ondblclick,
     oncontextmenu,
     onrename,
-    ondragstart,
-    ondragover,
-    ondrop,
+    onpointerdown,
   }: Props = $props();
 
   function focusAndSelect(input: HTMLInputElement): void {
@@ -67,14 +61,12 @@
   aria-expanded={row.isFolder ? row.expanded : undefined}
   aria-selected={selected}
   tabindex="-1"
-  {draggable}
+  data-tree-id={row.node.id}
   style:padding-left="calc(var(--tree-indent) + {row.depth} * var(--tree-indent-step))"
   {onclick}
   {ondblclick}
   {oncontextmenu}
-  {ondragstart}
-  {ondragover}
-  {ondrop}
+  {onpointerdown}
   onkeydown={() => undefined}
 >
   <span class="chevron">

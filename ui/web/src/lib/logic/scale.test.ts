@@ -11,7 +11,7 @@ function defined(variable: string): boolean {
 
 describe("the prop steps", () => {
   it("map every gap to a spacing token that exists", () => {
-    for (const gap of ["xxs", "xs", "sm", "md", "lg", "xl", "xxl"] as const) {
+    for (const gap of ["xxs", "xs", "sm", "md", "mdPlus", "lg", "lgPlus", "xl", "xxl", "xxxl"] as const) {
       const variable = /var\((--[a-z0-9-]+)\)/.exec(gapValue(gap))?.[1] ?? "";
       expect([gap, defined(variable)]).toEqual([gap, true]);
     }

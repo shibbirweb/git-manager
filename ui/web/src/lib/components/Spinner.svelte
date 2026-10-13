@@ -1,14 +1,16 @@
-<!-- A small spinning ring for work in progress. `label` is read by screen readers. -->
+<!-- A small spinning ring for work in progress. `label` is read by screen readers. `delayed` shows it only after a
+     moment, so quick work does not flash a spinner. -->
 <script lang="ts">
   interface Props {
     label?: string;
     size?: "small" | "normal" | "large";
+    delayed?: boolean;
   }
 
-  let { label = "Loading", size = "normal" }: Props = $props();
+  let { label = "Loading", size = "normal", delayed = false }: Props = $props();
 </script>
 
-<span class="spinner {size}" role="status" aria-label={label}></span>
+<span class="spinner {size}" class:delayed role="status" aria-label={label}></span>
 
 <style>
   .spinner {
@@ -22,6 +24,12 @@
     animation: spin 0.8s linear infinite;
   }
 
+  .delayed {
+    animation:
+      appear var(--motion-appear) ease var(--motion-appear-delay) both,
+      spin 0.8s linear infinite;
+  }
+
   .small {
     width: var(--spinner-size-small);
     height: var(--spinner-size-small);
@@ -30,6 +38,12 @@
   .large {
     width: var(--spinner-size-large);
     height: var(--spinner-size-large);
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
   }
 
   @keyframes spin {

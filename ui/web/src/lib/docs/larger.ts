@@ -98,7 +98,9 @@ export const largerDocs: ComponentDoc[] = [
     name: "ReorderList",
     group: "Navigation",
     summary: "Rows the user orders by dragging their grip, like Interactive Rebase's commits.",
-    usage: "Use for short lists whose order matters. Alt+Up and Alt+Down move the focused row.",
+    usage:
+      "Use for short lists whose order matters. Up and Down move between rows; Alt+Up and Alt+Down move the " +
+      "focused row and the focus follows it. Keys typed in a control inside a row stay with that control.",
     aliases: ["Sortable", "Drag list"],
     props: [
       prop("items", "T[]", "The rows in order.", { required: true, data: true }),

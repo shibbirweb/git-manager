@@ -28,6 +28,11 @@
   fontFamily="Menlo, monospace"
   fontSize={12}
   lineHeight={1.2}
+  boldWeight={700}
   {ligatures}
-  lines={[{ text: "~/storefront main", dim: true }, { text: "$ git status" }, { text: "On branch main" }]}
+  lines={[
+    { parts: [{ text: "~/storefront main", dim: true }, { text: " ❯ git log --oneline" }] },
+    { parts: [{ text: "a1b2c3d", bold: true }, { text: " fix: a => b != c === d -> e" }] },
+    { text: "0O 1lI { } [ ] | && ||" },
+  ]}
 />

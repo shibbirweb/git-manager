@@ -17,7 +17,8 @@ Use for cards, swatches and settings tiles. Use Stack for one row or one column.
 - `columns` (`"auto" | "two" | "three" | "four" | "six"`, default `"auto"`): A named column count, or auto to fit as
   many as `minColumn` allows.
 - `minColumn` (`"small" | "medium" | "large"`, default `"medium"`): Smallest column width for auto: 140, 180 or 240 px.
-- `gap` (`"none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl"`, default `"lg"`): Space between cells.
+- `gap` (`"none" | "xxs" | "xs" | "sm" | "md" | "mdPlus" | "lg" | "lgPlus" | "xl" | "xxl" | "xxxl"`, default `"lg"`):
+  Space between cells.
 - `label` (`string`): Accessible name of the group.
 - `children` (`Snippet`, required): The cells.
 

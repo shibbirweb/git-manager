@@ -140,6 +140,7 @@ public enum GMBadgeTokens {
     public static let largeRadius: CGFloat = 9
     public static let cornerPaddingX: CGFloat = 3
     public static let cornerOffset: CGFloat = 5
+    public static let dotSize: CGFloat = 8
 }
 
 public enum GMTagTokens {

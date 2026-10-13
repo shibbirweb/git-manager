@@ -13,7 +13,8 @@ Group: Navigation. Also known as: Listbox, Tree view, Selectable list, Virtual l
 Give it the items and a `row` snippet that draws a Row with the state it gets. Arrows, Home, End and Page keys move,
 Enter or a double-click activates, Left and Right fold tree rows, `multiple` selects several. `skip` names headings the
 keys pass over. `virtual` draws only the rows in view: give it the Row's height (normal for tree and list rows, relaxed
-for history rows).
+for history rows). A filter field drives it with `field`: Down or Enter moves the focus in, or with `fieldKeys="drive"`
+the field keeps the focus while Up, Down and Enter work the list (Quick Open, Recent Files, the Branches popup).
 
 ## Props
 
@@ -30,17 +31,25 @@ for history rows).
 - `height` (`"auto" | "fill" | "small" | "medium" | "large"`, default `"auto"`): Its content's height, its parent's, or
   scroll past 160, 240 or 360 px.
 - `virtual` (`"compact" | "normal" | "relaxed" | "comfortable" | null`, default `null`): Draw only the rows in view,
-  each this tall.
+  each this tall (the estimate with `measure`).
+- `measure` (`boolean`, default `false`): Rows differ in height, like console entries that open: each drawn row is
+  measured.
+- `field` (`HTMLInputElement | null`, default `null`): A filter field above it whose keys work the list.
+- `fieldKeys` (`"enter" | "drive"`, default `"enter"`): Down or Enter in the field moves the focus in, or the field
+  keeps the focus while Up, Down, Page keys and Enter work the list; clicks keep the focus in the field.
+- `follow` (`boolean`, default `false`): Stay at the bottom while entries arrive, until the user scrolls up (a console).
 - `row` (`Snippet<[T, ListRowState]>`, required): Draws a row from its item and { index, selected, current }.
 - `empty` (`Snippet`): Shown when there are no items, such as an EmptyState.
 - `onselect` (`(item: T) => void`): A row was selected by click or key.
 - `onactivate` (`(item: T) => void`): Enter or a double-click on a row.
 - `ontoggle` (`(item: T, open: boolean) => void`): Left or Right asks to fold or unfold a tree row.
 - `oncontextmenu` (`(event: MouseEvent, item: T) => void`): Right-clicked; the row is selected first.
+- `onnearend` (`() => void`): Scrolled near the end: load the next page (once per item count).
 
 ## Rules
 
 - The List holds the focus; Rows inside take none and draw only their look.
+- onnearend and follow need a list that scrolls itself: height fill, small, medium or large, or virtual.
 
 ## Example: Changed files
 
@@ -54,14 +63,30 @@ for history rows).
 </List>
 ```
 
+## Example: Driven from a filter field (Quick Open)
+
+```svelte
+<Input bind:element={filter} bind:value={query} aria-label="Search" />
+<List label="Results" items={found} itemKey={(f) => f.path} field={filter} fieldKeys="drive"
+  height="fill" virtual="normal" onactivate={open}>
+  {#snippet row(file, state)}<Row selected={state.selected}><Text>{file.name}</Text></Row>{/snippet}
+</List>
+```
+
 ## Replaces in the app
 
 - `.files in ChangesTab and BranchFileList, .list in FileHistoryTab, LineHistoryTab and ReflogTab`
 - `.versions in LocalHistoryDialog, .tree in ScriptsPanel and Sidebar, .list in AiPanel and ShelfPanel`
-- `.table in ConflictsDialog, .list in TerminalPanel`
+- `.table in ConflictsDialog, .list in TerminalPanel, .list in GitConsoleView`
 
 ## Logic
 
+- `logic/listKeys.ts`
 - `logic/listNav.ts`
+- `logic/listField.ts`
+- `logic/listScroll.ts`
+- `logic/listWiring.svelte.ts`
 - `logic/treeSelect.ts`
 - `logic/virtualWindow.ts`
+- `logic/rowOffsets.ts`
+- `logic/rowHeights.svelte.ts`

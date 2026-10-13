@@ -1,28 +1,39 @@
 <!-- A small heading over a group of rows, with an optional count and buttons at its end. `bar` is a full-height
      bar with a line under it (the Changes tab's lists), `list` heads a list inside a tab (compare tabs), `caption`
      is a quiet line over files (commit details), `caps` is small capitals (AI panel folders), `day` groups by date
-     (Local History) and `divided` is a normal-weight title with a line under it (MCP tool groups). -->
+     (Local History) and `divided` is a normal-weight title with a line under it (MCP tool groups). `heading` makes
+     the title a heading of that level for screen readers, like Settings' group titles. `titleMatches` marks the
+     words a search found in the title. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import HighlightText from "./HighlightText.svelte";
 
   interface Props {
     title: string;
+    titleMatches?: [number, number][];
     variant?: "bar" | "list" | "caption" | "caps" | "day" | "divided" | "group" | "band" | "picker";
     count?: number | null;
+    heading?: 2 | 3 | 4 | null;
     actions?: Snippet;
   }
 
-  let { title, variant = "list", count = null, actions }: Props = $props();
+  let { title, titleMatches = [], variant = "list", count = null, heading = null, actions }: Props = $props();
 
   const inlineCount = $derived(variant !== "bar" && variant !== "divided");
+  const headingRole = $derived(heading === null ? undefined : "heading");
 </script>
+
+{#snippet titleText()}{#if titleMatches.length > 0}<HighlightText text={title} ranges={titleMatches} variant="search"
+  />{:else}{title}{/if}{/snippet}
 
 <div class="section-title {variant}">
   <!-- A bar spaces its count like its buttons; the others follow the title after a space, as in running text. -->
   {#if inlineCount}
-    <span class="title">{title}{#if count !== null}{" "}<span class="count">{count}</span>{/if}</span>
+    <span class="title" role={headingRole} aria-level={heading ?? undefined}
+      >{@render titleText()}{#if count !== null}{" "}<span class="count">{count}</span>{/if}</span
+    >
   {:else}
-    <span class="title">{title}</span>
+    <span class="title" role={headingRole} aria-level={heading ?? undefined}>{@render titleText()}</span>
     {#if count !== null}<span class="count">{count}</span>{/if}
   {/if}
   {#if actions}<span class="actions">{@render actions()}</span>{/if}

@@ -21,6 +21,10 @@ Use for counts on buttons and tabs. Use Tag for words.
 - `tone` (`"accent" | "danger" | "warning" | "neutral" | "quiet"`, default `"accent"`): Color: accent for counts, danger
   for conflicts, warning for unread notices, quiet for a group's count.
 - `label` (`string`): What the count means, e.g. `3 changes`; defaults to the number.
+- `dotAt` (`"tiny" | "narrow" | "compact" | "medium" | null`, default `null`): In a responsive Toolbar or Stack under
+  220, 320, 480 or 600 px, only a dot shows; the count stays in its name.
+- `hideAt` (`"tiny" | "narrow" | "compact" | "medium" | null`, default `null`): In a responsive Toolbar or Stack under
+  220, 320, 480 or 600 px, it goes.
 
 ## Example: Changes
 

@@ -15,6 +15,8 @@ Use for every setting in Settings and in settings-like panels. Put one control i
 ## Props
 
 - `title` (`string`, required): The setting's name.
+- `titleMatches` (`[number, number][]`, default `[]`): Ranges [start, end) of the title a search found, in the warning
+  tint (Settings search).
 - `hint` (`string`, default `""`): One sentence on what it does.
 - `stacked` (`boolean`, default `false`): Control under the text, for wide controls.
 - `nested` (`boolean`, default `false`): Indented under the setting it belongs to.
@@ -30,6 +32,15 @@ Use for every setting in Settings and in settings-like panels. Put one control i
 </SettingRow>
 ```
 
+## Example: Search matches
+
+```svelte
+<SettingRow title="Word wrap" titleMatches={[[0, 4]]}>
+  <Switch label="Word wrap" bind:checked={wrap} />
+</SettingRow>
+```
+
 ## Replaces in the app
 
 - `<div class="row"><div class="label"><span>Title</span><span class="hint">...</span></div>...</div>`
+- `Settings search's CSS Custom Highlight (`::highlight(settings-search)`): pass the ranges instead`

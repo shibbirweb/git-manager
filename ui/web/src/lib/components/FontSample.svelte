@@ -1,10 +1,18 @@
 <!-- A few lines of sample text drawn in a chosen font, like Settings' editor and terminal previews. The font,
      size, weight and spacing are data from the user's settings, so they stay numbers here; `dim` lines are
-     drawn dim (a prompt's path). -->
+     drawn dim (a prompt's path). A line made of `parts` can mix dim and bold words, bold in `boldWeight` (the
+     terminal's bold weight setting, on a commit hash). -->
 <script lang="ts">
-  interface SampleLine {
+  interface SamplePart {
     text: string;
     dim?: boolean;
+    bold?: boolean;
+  }
+
+  interface SampleLine {
+    text?: string;
+    dim?: boolean;
+    parts?: SamplePart[];
   }
 
   interface Props {
@@ -14,6 +22,7 @@
     fontFamily?: string;
     fontSize?: number | null;
     fontWeight?: number | null;
+    boldWeight?: number | null;
     letterSpacing?: number | null;
     lineHeight?: number | null;
     ligatures?: boolean;
@@ -26,6 +35,7 @@
     fontFamily,
     fontSize = null,
     fontWeight = null,
+    boldWeight = null,
     letterSpacing = null,
     lineHeight = null,
     ligatures = true,
@@ -40,8 +50,13 @@
   style:font-size={fontSize === null ? null : `${fontSize}px`}
   style:font-weight={fontWeight}
   style:letter-spacing={letterSpacing === null ? null : `${letterSpacing}px`}
-  style:--sample-line-height={lineHeight}>{#each lines as line, index (index)}<div class:dim={line.dim}>{line.text ||
-        " "}</div>{/each}</pre>
+  style:--sample-line-height={lineHeight}
+  style:--sample-bold-weight={boldWeight}
+  >{#each lines as line, index (index)}<div class:dim={line.dim}
+      >{#each line.parts ?? [] as part, partIndex (partIndex)}<span class:dim={part.dim} class:bold={part.bold}
+          >{part.text}</span
+        >{/each}{line.text || (line.parts?.length ? "" : " ")}</div
+    >{/each}</pre>
 
 <style>
   .sample {
@@ -71,5 +86,9 @@
 
   .dim {
     color: var(--text-dim);
+  }
+
+  .bold {
+    font-weight: var(--sample-bold-weight, var(--font-weight-bold));
   }
 </style>

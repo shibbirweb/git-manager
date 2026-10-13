@@ -1,4 +1,5 @@
-<!-- A range slider with its value shown on the right, like Settings' font size and line height. -->
+<!-- A range slider with its value shown on the right, like Settings' font size and line height. With
+     `resetValue`, a double-click puts that value back. -->
 <script lang="ts">
   interface Props {
     value: number;
@@ -9,6 +10,7 @@
     disabled?: boolean;
     valueWidth?: "normal" | "wide";
     format?: (value: number) => string;
+    resetValue?: number | null;
     onchange?: (value: number) => void;
   }
 
@@ -21,6 +23,7 @@
     disabled = false,
     valueWidth = "normal",
     format = (shown: number) => String(shown),
+    resetValue = null,
     onchange,
   }: Props = $props();
 </script>
@@ -33,8 +36,15 @@
     {step}
     {disabled}
     aria-label={label}
+    title={resetValue === null ? undefined : "Double-click to reset"}
     bind:value
     oninput={() => onchange?.(value)}
+    ondblclick={() => {
+      if (resetValue !== null && !disabled) {
+        value = resetValue;
+        onchange?.(value);
+      }
+    }}
   />
   <span class="value" class:wide={valueWidth === "wide"}>{format(value)}</span>
 </div>

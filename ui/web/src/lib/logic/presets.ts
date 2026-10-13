@@ -16,6 +16,7 @@ export type PanelPreset = keyof typeof scales.panelMin;
 export type CodeHeight = keyof typeof scales.codeHeight | "none";
 export type GridColumns = "auto" | "two" | "three" | "four" | "six";
 export type LabelColumn = keyof typeof scales.labelColumn;
+export type CellWidth = keyof typeof scales.cellWidth;
 
 function kebab(name: string): string {
   return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);

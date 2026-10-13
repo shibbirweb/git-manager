@@ -3,6 +3,21 @@ import type { ParityCase } from "../types";
 
 const HEIGHT = { height: "follows its rows" };
 const TEXT = { width: "follows its text" };
+// A column Stack against the app's cell: the width must match; the words inside are compared on their own.
+const COLUMN = {
+  height: "a line of text",
+  color: "the words inside carry the tone",
+  "font-family": "the words inside carry the font",
+  "font-size": "the words inside carry the size",
+  "line-height": "the words inside carry the size",
+  cursor: "the row's",
+  "white-space": "the words inside truncate",
+  "column-gap": "a column of one item",
+  "border-top-color": "follows the words' color",
+  "border-right-color": "follows the words' color",
+  "border-bottom-color": "follows the words' color",
+  "border-left-color": "follows the words' color",
+};
 
 // The builder pieces (Row, List, Link's disclosure, Card's states) composed like the app's own rows.
 export const builderCases: ParityCase[] = [
@@ -16,6 +31,8 @@ export const builderCases: ParityCase[] = [
     pairs: [
       { name: "row", ref: ".entry:not(.selected)", lib: ".row:not(.selected)", states: ["hover"] },
       { name: "selected", ref: ".entry.selected", lib: ".row.selected" },
+      { name: "hash column", ref: ".entry .hash", lib: ".row .stack", ignore: COLUMN },
+      { name: "hash", ref: ".entry .hash", lib: ".row .stack .text", ignore: { width: "the column holds the width" } },
     ],
   },
   {
@@ -34,9 +51,15 @@ export const builderCases: ParityCase[] = [
     sources: ["src/lib/views/git/PushDialog.svelte"],
     html:
       '<div class="commits"><div class="commit"><span class="subject truncate">Round tax</span>' +
-      '<span class="author truncate dim">Ada</span></div><div class="commit"><span class="subject">Add</span>' +
+      '<span class="author truncate dim">Ada</span><span class="when dim">2 hours ago</span>' +
+      '<span class="hash mono dim">a1b2c3d</span></div><div class="commit"><span class="subject">Add</span>' +
       "</div></div>",
-    pairs: [{ name: "entry", ref: ".commit", lib: ".row" }],
+    pairs: [
+      { name: "entry", ref: ".commit", lib: ".row" },
+      { name: "author", ref: ".commit .author", lib: ".row > .stack:nth-child(2)", ignore: COLUMN },
+      { name: "when", ref: ".commit .when", lib: ".row > .stack:nth-child(3)", ignore: COLUMN },
+      { name: "hash", ref: ".commit .hash", lib: ".row > .stack:nth-child(4)", ignore: COLUMN },
+    ],
   },
   {
     id: "row-large",

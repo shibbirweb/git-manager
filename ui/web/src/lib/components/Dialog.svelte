@@ -1,10 +1,11 @@
 <!-- A modal dialog over a dimmed window. `message` (a question and buttons, like confirms), `form` (the Git
      dialogs: a scrolling body of fields and a footer; Cmd+Enter submits) or `split` (Settings: a side column and
-     a content area). Esc and a click on the dim area close it unless `dismissible` is false. Focus moves in and
-     back when it closes. -->
+     a content area). `enterSubmits` lets a plain Enter in a one-line field submit too (a prompt). Esc and a click
+     on the dim area close it unless `dismissible` is false. Focus moves in and back when it closes. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
+  import { runDialogKey } from "../logic/dialogKeys";
   import { DialogMover } from "../logic/dialogMover.svelte";
   import { presetVar, type DialogWidth } from "../logic/presets";
   import DialogHead from "./DialogHead.svelte";
@@ -22,6 +23,7 @@
     movable?: boolean;
     onclose?: () => void;
     onsubmit?: () => void;
+    enterSubmits?: boolean;
     actions?: Snippet;
     footnote?: Snippet;
     toolbar?: Snippet;
@@ -41,6 +43,7 @@
     movable = false,
     onclose,
     onsubmit,
+    enterSubmits = false,
     actions,
     footnote,
     toolbar,
@@ -75,13 +78,7 @@
   });
 
   function onkeydown(event: KeyboardEvent): void {
-    if (event.key === "Escape" && dismissible && !event.defaultPrevented) {
-      event.preventDefault();
-      close();
-    } else if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && onsubmit) {
-      event.preventDefault();
-      onsubmit();
-    }
+    runDialogKey(event, { dismissible, enterSubmits }, { close, submit: onsubmit });
   }
 </script>
 
@@ -218,10 +215,14 @@
     font-weight: var(--text-title-weight);
   }
 
-  .is-form .body {
+  .is-form .body,
+  .is-panel .body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+  }
+
+  .is-form .body {
     display: flex;
     flex-direction: column;
     gap: var(--form-dialog-body-gap);
@@ -283,9 +284,6 @@
   }
 
   .is-panel .body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
     padding: var(--panel-dialog-body-padding-top) var(--panel-dialog-body-padding-x)
       var(--panel-dialog-body-padding-bottom);
   }

@@ -23,10 +23,13 @@ row), merge and footer (merge editor), dialog (a dialog's filter bar) or pane (a
 - `children` (`Snippet`, required): Controls at the start.
 - `placement` (`"top" | "bottom"`, default `"top"`): Bottom: under its view, its line on top (File toolbar: Bottom).
 - `end` (`Snippet`): Controls pushed to the far end.
+- `responsive` (`boolean`, default `false`): Measures its width, so Text, Badge and Divider inside can step aside with
+  `hideAt` or `dotAt` when it is narrow (the file bar).
 
 ## Rules
 
 - Separate groups with a vertical Divider; it takes the toolbar's length and spacing.
+- For narrow bars, set `responsive` and give the least needed words `hideAt`, never a width of your own.
 
 ## Example: A history tab
 
@@ -43,3 +46,8 @@ row), merge and footer (merge editor), dialog (a dialog's filter bar) or pane (a
 - `.toolbar in FileHistoryTab, LineHistoryTab, ReflogTab, BranchCompareTab, ChangesTab, WorktreeDiffTab`
 - `.toolbar in GitConsoleView, ShelfPanel, DiffView, LogView, AiPanel, ScriptsPanel`
 - `.toolbar and .footer in MergeEditor; .toolbar in McpToolsDialog, ShortcutsDialog, LocalHistoryDialog`
+
+## Logic
+
+- `logic/barSize.svelte.ts`
+- `logic/breakpoints.ts`

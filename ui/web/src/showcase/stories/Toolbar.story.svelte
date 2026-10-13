@@ -1,7 +1,9 @@
 <script lang="ts">
+  import Badge from "$ui/components/Badge.svelte";
   import Button from "$ui/components/Button.svelte";
   import Card from "$ui/components/Card.svelte";
   import Divider from "$ui/components/Divider.svelte";
+  import Grid from "$ui/components/Grid.svelte";
   import Icon from "$ui/components/Icon.svelte";
   import IconButton from "$ui/components/IconButton.svelte";
   import SearchField from "$ui/components/SearchField.svelte";
@@ -84,4 +86,19 @@
   <Toolbar variant="strip" label="Status strip">
     <Text size="small" tone="dim">No file open</Text>
   </Toolbar>
+</Card>
+{#snippet fileBar()}
+  <Toolbar variant="file" label="File" responsive>
+    <IconButton icon="arrow-up" label="Previous conflict" size="tool" iconSize="normal" />
+    <Text size="small" tone="dim" hideAt="medium">Conflict 1 of 3</Text>
+    <IconButton icon="arrow-down" label="Next conflict" size="tool" iconSize="normal" />
+    <Divider direction="vertical" hideAt="narrow" />
+    <Badge count={3} tone="danger" label="3 conflicts" dotAt="compact" />
+    {#snippet end()}<IconButton icon="refresh" label="Reload" size="tool" iconSize="normal" />{/snippet}
+  </Toolbar>
+{/snippet}
+<Card label="Responsive: under 600 px the counter hides, under 480 the badge is a dot, under 320 the divider goes">
+  {@render fileBar()}
+  <Grid columns="two">{@render fileBar()}</Grid>
+  <Grid columns="four">{@render fileBar()}</Grid>
 </Card>
