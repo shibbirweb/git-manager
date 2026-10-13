@@ -57,7 +57,8 @@ export function tabsToEvict(
     .filter((tab) => !tab.dirty && !tab.pinned && tab.path !== keepPath)
     .sort(
       (a, b) =>
-        (lastUsed.get(a.path) ?? -1) - (lastUsed.get(b.path) ?? -1) || (order.get(a.path) ?? 0) - (order.get(b.path) ?? 0),
+        (lastUsed.get(a.path) ?? -1) - (lastUsed.get(b.path) ?? -1) ||
+        (order.get(a.path) ?? 0) - (order.get(b.path) ?? 0),
     )
     .slice(0, excess)
     .map((tab) => tab.path);

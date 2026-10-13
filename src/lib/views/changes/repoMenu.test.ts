@@ -84,7 +84,9 @@ describe("branch decorations", () => {
     expect(branchDecorations(groups())).toBe("");
     expect(branchDecorations(groups({ unstaged: [file("a")] }))).toBe("*");
     expect(branchDecorations(groups({ staged: [file("a")] }))).toBe("+");
-    expect(branchDecorations(groups({ unstaged: [file("a")], staged: [file("b")], conflicts: [file("c")] }))).toBe("*+!");
+    expect(branchDecorations(groups({ unstaged: [file("a")], staged: [file("b")], conflicts: [file("c")] }))).toBe(
+      "*+!",
+    );
   });
 
   it("explains them in the tooltip", () => {
@@ -115,7 +117,11 @@ describe("repository state", () => {
   });
 
   it("defaults a missing head", () => {
-    expect(repoActionState(null, groups(), false, false)).toMatchObject({ branch: null, unborn: false, upstream: null });
+    expect(repoActionState(null, groups(), false, false)).toMatchObject({
+      branch: null,
+      unborn: false,
+      upstream: null,
+    });
   });
 });
 
@@ -146,7 +152,11 @@ describe("commit plan", () => {
   });
 
   it("amends even with nothing staged", () => {
-    expect(commitPlan(state(), { message: "Reword", amend: true })).toEqual({ kind: "commit", mode: "staged", amend: true });
+    expect(commitPlan(state(), { message: "Reword", amend: true })).toEqual({
+      kind: "commit",
+      mode: "staged",
+      amend: true,
+    });
   });
 
   it("says what the button does", () => {
@@ -187,7 +197,13 @@ describe("commit dropdown", () => {
 
   it("disables what cannot run", () => {
     const blocked = commitDropdownItems({ ...ready, canCommit: false }, vi.fn());
-    expect(blocked.map((item) => ("separator" in item ? null : !item.disabled))).toEqual([false, false, false, null, true]);
+    expect(blocked.map((item) => ("separator" in item ? null : !item.disabled))).toEqual([
+      false,
+      false,
+      false,
+      null,
+      true,
+    ]);
     const detached = commitDropdownItems({ ...ready, canPush: false }, vi.fn());
     expect(enabled(detached, "Commit")).toBe(true);
     expect(enabled(detached, "Commit & Push")).toBe(false);
@@ -208,7 +224,14 @@ describe("repository menu", () => {
       const item = find(items, label);
       return item && "submenu" in item ? labels(item.submenu) : [];
     };
-    expect(submenu("Commit")).toEqual(["Commit", "Commit Staged", "Commit All", "---", "Undo Last Commit", "Commit (Amend)"]);
+    expect(submenu("Commit")).toEqual([
+      "Commit",
+      "Commit Staged",
+      "Commit All",
+      "---",
+      "Undo Last Commit",
+      "Commit (Amend)",
+    ]);
     expect(submenu("Changes")).toEqual(["Stage All Changes", "Unstage All Changes", "Discard All Changes"]);
     expect(submenu("Pull, Push")).toEqual([
       "Pull",
@@ -318,7 +341,12 @@ describe("repository menu", () => {
     const push = find(items, "Pull, Push/Push");
     expect(pull && "action" in pull ? pull.hint : null).toBe("3 behind");
     expect(push && "action" in push ? push.hint : null).toBe("1 ahead");
-    for (const path of ["Changes/Discard All Changes", "Pull, Push/Force Push", "Stash/Drop All Stashes", "Tags/Delete Tag..."]) {
+    for (const path of [
+      "Changes/Discard All Changes",
+      "Pull, Push/Force Push",
+      "Stash/Drop All Stashes",
+      "Tags/Delete Tag...",
+    ]) {
       const item = find(items, path);
       expect(item && "action" in item ? item.danger : false, path).toBe(true);
     }

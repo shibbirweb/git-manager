@@ -9,7 +9,9 @@ describe("parseWindowStart", () => {
   });
 
   it("drops malformed parts", () => {
-    expect(parseWindowStart({ kind: "open", label: 3, open: { folderPaths: ["/a", 4, "", null], workspaceFile: "  " } })).toEqual({
+    expect(
+      parseWindowStart({ kind: "open", label: 3, open: { folderPaths: ["/a", 4, "", null], workspaceFile: "  " } }),
+    ).toEqual({
       kind: "open",
       label: "main",
       open: { folderPaths: ["/a"], workspaceFile: null },
@@ -33,7 +35,10 @@ describe("startStep", () => {
 
   it("opens the window's own folders or workspace file", () => {
     expect(startStep(open(["/a"]), "/launch")).toEqual({ kind: "folders", folderPaths: ["/a"] });
-    expect(startStep(open(["/a"], "/w.code-workspace"), null)).toEqual({ kind: "workspaceFile", filePath: "/w.code-workspace" });
+    expect(startStep(open(["/a"], "/w.code-workspace"), null)).toEqual({
+      kind: "workspaceFile",
+      filePath: "/w.code-workspace",
+    });
   });
 
   it("shows the welcome screen for a new empty window", () => {

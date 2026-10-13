@@ -26,7 +26,15 @@
     { id: "theirs", label: "Theirs", width: "side" },
   ];
   const conflicts = [{ name: "cart.ts", ours: "Modified", theirs: "Deleted" }];
-  const themes = [{ label: "Dark", options: [{ id: "monokai", name: "Monokai" }, { id: "dark", name: "Dark" }] }];
+  const themes = [
+    {
+      label: "Dark",
+      options: [
+        { id: "monokai", name: "Monokai" },
+        { id: "dark", name: "Dark" },
+      ],
+    },
+  ];
   const halves = [
     { id: "a", rect: { x: 0, y: 0, width: 0.5, height: 1 } },
     { id: "b", rect: { x: 0.5, y: 0, width: 0.5, height: 1 } },
@@ -38,20 +46,6 @@
   <Table label="Conflicts" {columns} rows={conflicts} rowKey={(row) => row.name} selected="cart.ts">
     {#snippet cell(row, column)}{row[column.id as keyof typeof row]}{/snippet}
   </Table>
-{:else if id === "popup-rows"}
-  <div role="listbox" aria-label="Branches">
-    <PopupRow variant="action" icon="plus" label="New Branch..." />
-    <PopupRow icon="check" label="main" hint="origin/main" current chevron highlighted />
-  </div>
-{:else if id === "rebase-row"}
-  <ReorderList label="Commits" items={["a1b2c3d"]} itemKey={(hash) => hash} onreorder={none}>
-    {#snippet row(hash)}
-      <Stack direction="row" align="center" gap="sm">
-        <Select size="small" label="Action" options={actions} value="squash" />
-        <Text mono>{hash}</Text>
-      </Stack>
-    {/snippet}
-  </ReorderList>
 {:else if id === "option-list"}
   <OptionList label="Theme" groups={themes} optionKey={(theme) => theme.id} value="monokai">
     {#snippet option(theme)}{theme.name}{/snippet}

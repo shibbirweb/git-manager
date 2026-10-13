@@ -433,13 +433,17 @@ textarea.input {
 .cm-content,
 .code-ligatures {
   font-variant-ligatures: none;
-  font-feature-settings: "liga" 0, "calt" 0;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
 }
 
 :root[data-ligatures="on"] .cm-content,
 :root[data-ligatures="on"] .code-ligatures {
   font-variant-ligatures: contextual;
-  font-feature-settings: "liga" 1, "calt" 1;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
 }
 
 /* Change overview ruler beside editor scrollbars (see editor/scrollMarkers.ts). */

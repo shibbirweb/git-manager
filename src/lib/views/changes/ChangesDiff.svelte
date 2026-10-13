@@ -50,10 +50,20 @@
     if (!selected) {
       return null;
     }
-    const index = { kind: "revision", repoRoot: selected.repoRoot, revision: INDEX_REVISION, filePath: selected.path } as const;
+    const index = {
+      kind: "revision",
+      repoRoot: selected.repoRoot,
+      revision: INDEX_REVISION,
+      filePath: selected.path,
+    } as const;
     if (selected.area === "staged") {
       const oldPath = findFile(sections, selected)?.origPath ?? selected.path;
-      const head = { kind: "revision", repoRoot: selected.repoRoot, revision: HEAD_REVISION, filePath: oldPath } as const;
+      const head = {
+        kind: "revision",
+        repoRoot: selected.repoRoot,
+        revision: HEAD_REVISION,
+        filePath: oldPath,
+      } as const;
       return { original: head, modified: index, version: previewVersion };
     }
     const worktree = { kind: "worktree", filePath: joinPath(selected.repoRoot, selected.path) } as const;
@@ -79,7 +89,13 @@
         repoRoot: selected.repoRoot,
         filePath: selected.path,
         revision: null,
-        origin: (line) => ({ kind: "diff", repoRoot: selected.repoRoot, path: selected.path, area: selected.area, line }),
+        origin: (line) => ({
+          kind: "diff",
+          repoRoot: selected.repoRoot,
+          path: selected.path,
+          area: selected.area,
+          line,
+        }),
       }}
       revealLine={reveal}
       workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
@@ -95,7 +111,9 @@
   {:else if changed.length === 0}
     <div class="placeholder">
       <div class="clean-icon"><Icon name="check" size={22} /></div>
-      <div class="empty-title">{multiRepo ? `No changes in ${repoStore.repos.length} repositories` : "Working tree clean"}</div>
+      <div class="empty-title">
+        {multiRepo ? `No changes in ${repoStore.repos.length} repositories` : "Working tree clean"}
+      </div>
       <div class="dim">There are no changes to commit.</div>
     </div>
   {:else}

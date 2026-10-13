@@ -61,7 +61,9 @@
   /** A file tab is on screen and outside every repository. */
   const fileWithoutRepo = $derived(settings.activeRepoAuto && screen.kind === "outside");
   const fileInfo = $derived(
-    shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
+    shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath
+      ? editorStatus.info
+      : null,
   );
 
   async function runSync(repoRoot: string): Promise<void> {
@@ -197,7 +199,11 @@
         </button>
       {/if}
       {#if conflicts > 0}
-        <button class="item conflict" onclick={() => void showConflicts()} title="Resolve conflicts in {contextRepo.name}">
+        <button
+          class="item conflict"
+          onclick={() => void showConflicts()}
+          title="Resolve conflicts in {contextRepo.name}"
+        >
           <Icon name="alert" size={12} />
           <span>{conflicts} {conflicts === 1 ? "conflict" : "conflicts"}</span>
         </button>
@@ -207,11 +213,17 @@
       {/if}
     {:else if fileWithoutRepo}
       {#if repoStore.repos.length > 0}
-        <button class="item" onclick={() => void openRepoPicker()} title="This file is not inside a git repository. Click to select a repository.">
+        <button
+          class="item"
+          onclick={() => void openRepoPicker()}
+          title="This file is not inside a git repository. Click to select a repository."
+        >
           <Icon name="folder" size={12} /> No repository
         </button>
       {:else}
-        <span class="item static" title="This file is not inside a git repository"><Icon name="folder" size={12} /> No repository</span>
+        <span class="item static" title="This file is not inside a git repository"
+          ><Icon name="folder" size={12} /> No repository</span
+        >
       {/if}
     {:else if repoStore.workspace}
       <span class="item static"><Icon name="folder" size={12} /> {repoStore.workspace.name}</span>
@@ -232,7 +244,9 @@
       <button
         class="item"
         onclick={() => settings.openDialog("editor")}
-        title={fileInfo.indentDetected ? "Indentation detected from the file (Settings > Editor)" : "Indentation (change in Settings > Editor)"}
+        title={fileInfo.indentDetected
+          ? "Indentation detected from the file (Settings > Editor)"
+          : "Indentation (change in Settings > Editor)"}
       >
         {fileInfo.indentTabs ? "Tab Size" : "Spaces"}: {fileInfo.tabSize}
       </button>
@@ -264,10 +278,20 @@
     {/if}
     <KeepAwake />
     <NotificationBell />
-    <button class="item icon-only" onclick={() => void updates.openRepository()} title="Star Git Manager on GitHub" aria-label="Star on GitHub">
+    <button
+      class="item icon-only"
+      onclick={() => void updates.openRepository()}
+      title="Star Git Manager on GitHub"
+      aria-label="Star on GitHub"
+    >
       <Icon name="star" size={12} />
     </button>
-    <button class="item icon-only" onclick={openFeedbackMenu} title="Report a bug or request a feature" aria-label="Report an issue">
+    <button
+      class="item icon-only"
+      onclick={openFeedbackMenu}
+      title="Report a bug or request a feature"
+      aria-label="Report an issue"
+    >
       <Icon name="bug" size={12} />
     </button>
     {#if memory && memory.totalBytes > 0}
@@ -327,11 +351,11 @@
             </div>
             <p class="note">
               {#if onMac}
-                Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in macOS
-                WebKit helper processes, one web content process per window, which are counted too.
+                Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in
+                macOS WebKit helper processes, one web content process per window, which are counted too.
               {:else}
-                Memory of the whole app, all windows together, as Task Manager shows it (private working set). The UI runs
-                in Microsoft Edge WebView2 processes, which are counted too.
+                Memory of the whole app, all windows together, as Task Manager shows it (private working set). The UI
+                runs in Microsoft Edge WebView2 processes, which are counted too.
               {/if}
               {#if memory.approximate}
                 Started from a terminal, so helpers are matched by start time.

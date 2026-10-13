@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { icons, type IconName } from "./icons";
+  import { icons, type IconName } from "@git-manager/ui/icons";
 
   let { name, size = 16, strokeWidth = 2 }: { name: IconName; size?: number; strokeWidth?: number } = $props();
 </script>

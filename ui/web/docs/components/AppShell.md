@@ -3,7 +3,7 @@
 The window layout: header, activity bars, resizable side panels, editor area, bottom panel, status bar.
 
 ```ts
-import AppShell from "$ui/components/AppShell.svelte";
+import AppShell from "@git-manager/ui/components/AppShell.svelte";
 ```
 
 Group: Layout. Also known as: Layout, Workspace, Window.

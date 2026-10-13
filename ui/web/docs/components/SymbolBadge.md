@@ -3,7 +3,7 @@
 A one-letter badge for a code symbol's kind, in the syntax color of its group.
 
 ```ts
-import SymbolBadge from "$ui/components/SymbolBadge.svelte";
+import SymbolBadge from "@git-manager/ui/components/SymbolBadge.svelte";
 ```
 
 Group: Feedback. Also known as: Symbol kind.

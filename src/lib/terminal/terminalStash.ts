@@ -52,7 +52,9 @@ const AGENT_STATES: readonly AgentState[] = ["starting", "working", "waiting", "
 const PANEL_TABS: readonly TerminalLayout["panelTab"][] = ["terminal", "run", "gitConsole", "shelf"];
 
 function record(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 function parseJson(text: string): unknown {
@@ -76,7 +78,8 @@ function runSpec(value: unknown): RunSpec | null {
   if (!data) {
     return null;
   }
-  const args = Array.isArray(data.args) && data.args.every((arg) => typeof arg === "string") ? (data.args as string[]) : null;
+  const args =
+    Array.isArray(data.args) && data.args.every((arg) => typeof arg === "string") ? (data.args as string[]) : null;
   const runId = text(data.runId);
   const program = text(data.program);
   const cwd = text(data.cwd);
@@ -94,7 +97,8 @@ function agentInfo(value: unknown): AgentInfo | null {
     return null;
   }
   const state = AGENT_STATES.find((candidate) => candidate === data?.state) ?? "ready";
-  const changedAt = typeof data?.changedAt === "number" && Number.isFinite(data.changedAt) ? data.changedAt : Date.now();
+  const changedAt =
+    typeof data?.changedAt === "number" && Number.isFinite(data.changedAt) ? data.changedAt : Date.now();
   return { agentId, folderPath, title: text(data?.title) ?? "", state, changedAt };
 }
 
@@ -149,7 +153,11 @@ export function parseLayout(source: string): TerminalLayout {
   const groupSizes: Record<number, number[]> = {};
   for (const [group, value] of Object.entries(sizes)) {
     const groupNumber = Number(group);
-    if (Number.isInteger(groupNumber) && Array.isArray(value) && value.every((size) => typeof size === "number" && size > 0 && size <= 1)) {
+    if (
+      Number.isInteger(groupNumber) &&
+      Array.isArray(value) &&
+      value.every((size) => typeof size === "number" && size > 0 && size <= 1)
+    ) {
       groupSizes[groupNumber] = value as number[];
     }
   }
@@ -181,19 +189,31 @@ export function restoredTerminals(stash: TerminalStashData): { terminals: Restor
       continue;
     }
     keys.add(descriptor.key);
-    terminals.push({ descriptor, snapshot: stashed.snapshot, terminalId: descriptor.exited ? null : stashed.terminalId });
+    terminals.push({
+      descriptor,
+      snapshot: stashed.snapshot,
+      terminalId: descriptor.exited ? null : stashed.terminalId,
+    });
   }
   return { terminals, dropped };
 }
 
 /** The layout made to fit the terminals that came back: the shown ones must exist. */
 export function fittedLayout(layout: TerminalLayout, terminals: readonly RestoredTerminal[]): TerminalLayout {
-  const panelKeys = terminals.filter((terminal) => terminal.descriptor.location === "panel").map((terminal) => terminal.descriptor.key);
-  const runKeys = terminals.filter((terminal) => terminal.descriptor.location === "run").map((terminal) => terminal.descriptor.key);
+  const panelKeys = terminals
+    .filter((terminal) => terminal.descriptor.location === "panel")
+    .map((terminal) => terminal.descriptor.key);
+  const runKeys = terminals
+    .filter((terminal) => terminal.descriptor.location === "run")
+    .map((terminal) => terminal.descriptor.key);
   return {
     ...layout,
-    activeKey: layout.activeKey !== null && panelKeys.includes(layout.activeKey) ? layout.activeKey : (panelKeys[0] ?? null),
-    runActiveKey: layout.runActiveKey !== null && runKeys.includes(layout.runActiveKey) ? layout.runActiveKey : (runKeys[0] ?? null),
+    activeKey:
+      layout.activeKey !== null && panelKeys.includes(layout.activeKey) ? layout.activeKey : (panelKeys[0] ?? null),
+    runActiveKey:
+      layout.runActiveKey !== null && runKeys.includes(layout.runActiveKey)
+        ? layout.runActiveKey
+        : (runKeys[0] ?? null),
     started: layout.started || terminals.length > 0,
   };
 }

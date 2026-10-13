@@ -32,7 +32,9 @@ describe("indent guides", () => {
   });
 
   it("computes the levels of a block", () => {
-    const code = ["function a() {", "    if (x) {", "        b();", "", "        c();", "    }", "", "}", ""].join("\n");
+    const code = ["function a() {", "    if (x) {", "        b();", "", "        c();", "    }", "", "}", ""].join(
+      "\n",
+    );
     expect(levels(code)).toEqual([0, 1, 2, 2, 2, 1, 1, 0, 0]);
   });
 

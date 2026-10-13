@@ -19,7 +19,18 @@ export const MCP_CATEGORIES = [
 ] as const satisfies readonly McpToolCategory[];
 
 /** What show_panel can show: the left sidebar panels, the Log, the Files panel and the bottom panel tabs. */
-export const PANELS = ["changes", "branches", "scripts", "log", "files", "ai", "terminal", "run", "gitConsole", "shelf"] as const;
+export const PANELS = [
+  "changes",
+  "branches",
+  "scripts",
+  "log",
+  "files",
+  "ai",
+  "terminal",
+  "run",
+  "gitConsole",
+  "shelf",
+] as const;
 export type PanelName = (typeof PANELS)[number];
 
 /** Areas scroll_view can scroll; "auto" is the largest visible scrollable area. */
@@ -62,7 +73,15 @@ function tool(
   description: string,
   inputSchema: Schema = objectSchema({}),
 ): McpUiToolDef {
-  return { name, title, description, category, readOnly: flags.readOnly, destructive: flags.destructive ?? false, inputSchema };
+  return {
+    name,
+    title,
+    description,
+    category,
+    readOnly: flags.readOnly,
+    destructive: flags.destructive ?? false,
+    inputSchema,
+  };
 }
 
 export const UI_TOOLS: McpUiToolDef[] = [
@@ -92,7 +111,7 @@ export const UI_TOOLS: McpUiToolDef[] = [
         action: {
           type: "string",
           enum: [...MENU_ACTIONS],
-          description: "The menu action, as list_menu_commands names it, for example \"git.fetch\" or \"view.terminal\".",
+          description: 'The menu action, as list_menu_commands names it, for example "git.fetch" or "view.terminal".',
         },
       },
       ["action"],
@@ -119,7 +138,11 @@ export const UI_TOOLS: McpUiToolDef[] = [
     { readOnly: true },
     "Opens the Settings dialog, optionally on one section.",
     objectSchema({
-      section: { type: "string", enum: [...SETTINGS_SECTIONS], description: "The section to show. Defaults to Appearance." },
+      section: {
+        type: "string",
+        enum: [...SETTINGS_SECTIONS],
+        description: "The section to show. Defaults to Appearance.",
+      },
     }),
   ),
   tool(
@@ -137,7 +160,9 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Workspace",
     { readOnly: true },
     "Makes one of the open repositories the active one, which the Git menu, the Log and the Branches panel act on.",
-    objectSchema({ repoPath: absolutePath("Absolute path of the repository root, as get_app_state lists it.") }, ["repoPath"]),
+    objectSchema({ repoPath: absolutePath("Absolute path of the repository root, as get_app_state lists it.") }, [
+      "repoPath",
+    ]),
   ),
 
   // Files
@@ -196,7 +221,11 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Shows a Markdown file as source only, source beside its preview, or the rich editor (the page itself, editable).",
     objectSchema(
       {
-        mode: { type: "string", enum: [...MARKDOWN_VIEW_MODES], description: "editor, split or preview (the rich editor)." },
+        mode: {
+          type: "string",
+          enum: [...MARKDOWN_VIEW_MODES],
+          description: "editor, split or preview (the rich editor).",
+        },
         filePath: absolutePath("Absolute path of an open Markdown tab. Leave out for the file tab on screen."),
       },
       ["mode"],
@@ -230,7 +259,9 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Files",
     { readOnly: false },
     "Creates a folder like New Folder in the Files panel, with any missing folders on the way.",
-    objectSchema({ folderPath: absolutePath("Absolute path of the new folder, inside an open workspace folder.") }, ["folderPath"]),
+    objectSchema({ folderPath: absolutePath("Absolute path of the new folder, inside an open workspace folder.") }, [
+      "folderPath",
+    ]),
   ),
   tool(
     "rename_path",
@@ -241,7 +272,12 @@ export const UI_TOOLS: McpUiToolDef[] = [
     objectSchema(
       {
         entryPath: absolutePath("Absolute path of the file or folder, inside an open workspace folder."),
-        newName: { type: "string", minLength: 1, maxLength: 255, description: "The new name only, without a folder, for example \"basket.ts\"." },
+        newName: {
+          type: "string",
+          minLength: 1,
+          maxLength: 255,
+          description: 'The new name only, without a folder, for example "basket.ts".',
+        },
       },
       ["entryPath", "newName"],
     ),
@@ -251,7 +287,7 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Copy Files",
     "Files",
     { readOnly: false },
-    "Copies files and folders into a folder like Copy and Paste in the Files panel. A taken name gets a copy name such as \"cart copy.ts\", so nothing is replaced.",
+    'Copies files and folders into a folder like Copy and Paste in the Files panel. A taken name gets a copy name such as "cart copy.ts", so nothing is replaced.',
     objectSchema(
       {
         paths: filePathList("Absolute paths of the files and folders to copy, inside open workspace folders."),
@@ -281,7 +317,11 @@ export const UI_TOOLS: McpUiToolDef[] = [
     { readOnly: false, destructive: true },
     "Moves files and folders to the system Trash like Move to Trash in the Files panel (never deletes them) and closes their tabs; unsaved edits are refused. Off until the user turns it on.",
     objectSchema(
-      { paths: filePathList("Absolute paths of the files and folders to move to the Trash, inside open workspace folders.") },
+      {
+        paths: filePathList(
+          "Absolute paths of the files and folders to move to the Trash, inside open workspace folders.",
+        ),
+      },
       ["paths"],
     ),
   ),
@@ -296,7 +336,12 @@ export const UI_TOOLS: McpUiToolDef[] = [
     objectSchema(
       {
         repoPath: absolutePath("Absolute path of the repository root."),
-        commitId: { type: "string", minLength: 1, maxLength: 256, description: "A commit hash (full or short), branch or tag." },
+        commitId: {
+          type: "string",
+          minLength: 1,
+          maxLength: 256,
+          description: "A commit hash (full or short), branch or tag.",
+        },
         filePath: { type: "string", description: "Repository-relative path of a file changed in the commit." },
       },
       ["repoPath", "commitId"],
@@ -312,7 +357,11 @@ export const UI_TOOLS: McpUiToolDef[] = [
       {
         repoPath: absolutePath("Absolute path of the repository root."),
         filePath: { type: "string", minLength: 1, description: "Repository-relative path of the changed file." },
-        staged: { type: "boolean", description: "True for the staged change, false for the unstaged one. Defaults to false.", default: false },
+        staged: {
+          type: "boolean",
+          description: "True for the staged change, false for the unstaged one. Defaults to false.",
+          default: false,
+        },
       },
       ["repoPath", "filePath"],
     ),
@@ -334,7 +383,9 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Runs a project script in the Run tab exactly like the Scripts panel, with the Node version picked there. Scripts can run any command, so it is off until the user turns it on.",
     objectSchema(
       {
-        manifestPath: absolutePath("Absolute path of the package.json, composer.json, Makefile, deno.json or justfile, as list_scripts gives it."),
+        manifestPath: absolutePath(
+          "Absolute path of the package.json, composer.json, Makefile, deno.json or justfile, as list_scripts gives it.",
+        ),
         scriptName: { type: "string", minLength: 1, description: "The script's name in that file." },
       },
       ["manifestPath", "scriptName"],
@@ -347,7 +398,11 @@ export const UI_TOOLS: McpUiToolDef[] = [
     { readOnly: false },
     "Stops a script running in the Run tab; its output stays.",
     objectSchema({
-      runKey: { type: "integer", minimum: 1, description: "The run session's key from list_terminals. Defaults to the session the Run tab shows." },
+      runKey: {
+        type: "integer",
+        minimum: 1,
+        description: "The run session's key from list_terminals. Defaults to the session the Run tab shows.",
+      },
     }),
   ),
 
@@ -366,8 +421,14 @@ export const UI_TOOLS: McpUiToolDef[] = [
     { readOnly: false },
     "Opens a new integrated terminal with the default shell and returns its key.",
     objectSchema({
-      folderPath: absolutePath("Folder to start in, inside an open workspace folder. Defaults to the active repository."),
-      location: { type: "string", enum: ["panel", "editor"], description: "The bottom panel (default) or an editor tab." },
+      folderPath: absolutePath(
+        "Folder to start in, inside an open workspace folder. Defaults to the active repository.",
+      ),
+      location: {
+        type: "string",
+        enum: ["panel", "editor"],
+        description: "The bottom panel (default) or an editor tab.",
+      },
     }),
   ),
   tool(
@@ -378,7 +439,11 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Types text into an integrated terminal, pressing Enter after it by default, so it runs commands in that shell. Off until the user turns it on.",
     objectSchema(
       {
-        terminalKey: { type: "integer", minimum: 1, description: "The terminal's key from list_terminals or new_terminal." },
+        terminalKey: {
+          type: "integer",
+          minimum: 1,
+          description: "The terminal's key from list_terminals or new_terminal.",
+        },
         text: { type: "string", maxLength: TERMINAL_TEXT_MAX_CHARS, description: "The text to type." },
         pressEnter: { type: "boolean", description: "Press Enter after the text. Defaults to true.", default: true },
       },
@@ -410,12 +475,17 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Finds elements in the app window by CSS selector and returns, for each (up to limit), its tag, classes, text start, position and size on screen, whether it is visible, and the computed styles asked for. For debugging what the user sees (colors, layout, what is drawn).",
     objectSchema(
       {
-        selector: { type: "string", minLength: 1, maxLength: 500, description: "A CSS selector, e.g. .cm-selectionBackground or .cm-editor .cm-activeLine." },
+        selector: {
+          type: "string",
+          minLength: 1,
+          maxLength: 500,
+          description: "A CSS selector, e.g. .cm-selectionBackground or .cm-editor .cm-activeLine.",
+        },
         styles: {
           type: "array",
           items: { type: "string", maxLength: 60 },
           maxItems: 30,
-          description: "Computed style properties to read, e.g. [\"background-color\", \"z-index\", \"opacity\"].",
+          description: 'Computed style properties to read, e.g. ["background-color", "z-index", "opacity"].',
         },
         limit: { type: "integer", minimum: 1, maximum: 100, description: "At most this many elements (default 20)." },
       },
@@ -430,14 +500,23 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Scrolls a visible area from top to bottom and back like a fast user, then reports the duration and dropped frames. Sample memory meanwhile to measure scrolling cost.",
     objectSchema(
       {
-        target: { type: "string", enum: [...SCROLL_TARGETS], description: "The area to scroll; auto picks the largest visible scrollable area." },
+        target: {
+          type: "string",
+          enum: [...SCROLL_TARGETS],
+          description: "The area to scroll; auto picks the largest visible scrollable area.",
+        },
         speed: {
           type: "integer",
           minimum: 5,
           maximum: 2000,
           description: "Pixels per frame. Defaults to 80.",
         },
-        rounds: { type: "integer", minimum: 1, maximum: 10, description: "Top-to-bottom-and-back passes. Defaults to 1." },
+        rounds: {
+          type: "integer",
+          minimum: 1,
+          maximum: 10,
+          description: "Top-to-bottom-and-back passes. Defaults to 1.",
+        },
       },
       ["target"],
     ),

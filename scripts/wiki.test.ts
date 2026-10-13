@@ -84,7 +84,15 @@ describe("manifest", () => {
   const manifest: Manifest = {
     usage: [{ page: "usage/Blame.md", summary: "" }],
     developer: [{ page: "developer/Architecture.md", summary: "" }],
-    features: [{ id: "blame", title: "Blame", usage: "usage/Blame.md", developer: "developer/How-Blame-Works.md", screenshots: ["blame.png"] }],
+    features: [
+      {
+        id: "blame",
+        title: "Blame",
+        usage: "usage/Blame.md",
+        developer: "developer/How-Blame-Works.md",
+        screenshots: ["blame.png"],
+      },
+    ],
   };
 
   it("accepts a consistent manifest", () => {

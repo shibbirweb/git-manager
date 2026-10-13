@@ -140,7 +140,9 @@
         />
         Skip hooks (--no-verify)
       </label>
-      <div class="hint">Sign-off and GPG apply to every commit. Author and Skip hooks apply to this repository until you quit.</div>
+      <div class="hint">
+        Sign-off and GPG apply to every commit. Author and Skip hooks apply to this repository until you quit.
+      </div>
     </div>
   {/if}
 </div>

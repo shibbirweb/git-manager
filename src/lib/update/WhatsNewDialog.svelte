@@ -9,9 +9,17 @@
   const isBetaBuild = $derived((updates.current ?? "").includes("-"));
   // A beta ships the Unreleased notes; a stable build has its own dated section.
   const current = $derived(
-    updates.current ? (isBetaBuild ? entryFor(changelogText, "Unreleased") : entryFor(changelogText, updates.current)) : null,
+    updates.current
+      ? isBetaBuild
+        ? entryFor(changelogText, "Unreleased")
+        : entryFor(changelogText, updates.current)
+      : null,
   );
-  const older = $derived(releasedEntries(changelogText).filter((entry) => entry.version !== updates.current).slice(0, 10));
+  const older = $derived(
+    releasedEntries(changelogText)
+      .filter((entry) => entry.version !== updates.current)
+      .slice(0, 10),
+  );
   let showOlder = $state(false);
 
   function close(): void {
@@ -34,7 +42,11 @@
       <div class="badge"><Icon name="wand" size={18} /></div>
       <div>
         <h2 id="whats-new-title">What's New in Git Manager {updates.current ?? ""}</h2>
-        <p class="dim">{isBetaBuild ? "A beta build: these changes are still being tested." : "Here is what changed in this version."}</p>
+        <p class="dim">
+          {isBetaBuild
+            ? "A beta build: these changes are still being tested."
+            : "Here is what changed in this version."}
+        </p>
       </div>
     </div>
 

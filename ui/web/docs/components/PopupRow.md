@@ -3,7 +3,7 @@
 A row of a picker popup: an action, or an item with an icon, a name, a hint and a chevron.
 
 ```ts
-import PopupRow from "$ui/components/PopupRow.svelte";
+import PopupRow from "@git-manager/ui/components/PopupRow.svelte";
 ```
 
 Group: Navigation. Also known as: Branch row, Picker row.

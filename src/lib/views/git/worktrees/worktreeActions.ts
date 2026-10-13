@@ -63,9 +63,13 @@ export async function lockWorktree(worktree: WorktreeInfo): Promise<void> {
   if (!result) {
     return;
   }
-  await repoStore.run("Lock worktree", (repoPath) => api.lockWorktree(repoPath, worktree.path, result.value.trim() || null), {
-    success: "Worktree locked",
-  });
+  await repoStore.run(
+    "Lock worktree",
+    (repoPath) => api.lockWorktree(repoPath, worktree.path, result.value.trim() || null),
+    {
+      success: "Worktree locked",
+    },
+  );
   await reload();
 }
 
@@ -135,8 +139,16 @@ export function worktreeMenu(worktree: WorktreeInfo): MenuItem[] {
       disabled: missing || (worktree.isCurrent && repoStore.workspace?.folders.length === 1),
       action: () => void openWorktreeInWindow(worktree),
     },
-    { label: "Add to Workspace", disabled: missing || inWorkspace, action: () => void addWorktreeToWorkspace(worktree) },
-    { label: revealLabel(platformName(navigator.userAgent)), disabled: missing, action: () => void revealWorktree(worktree) },
+    {
+      label: "Add to Workspace",
+      disabled: missing || inWorkspace,
+      action: () => void addWorktreeToWorkspace(worktree),
+    },
+    {
+      label: revealLabel(platformName(navigator.userAgent)),
+      disabled: missing,
+      action: () => void revealWorktree(worktree),
+    },
     { separator: true },
   ];
   if (worktree.locked) {
@@ -152,7 +164,11 @@ export function worktreeMenu(worktree: WorktreeInfo): MenuItem[] {
       action: () => void removeWorktree(worktree),
     },
     { separator: true },
-    { label: "Prune Stale Worktrees", disabled: busy || !worktreeStore.list.some((entry) => entry.prunable), action: () => void pruneWorktrees() },
+    {
+      label: "Prune Stale Worktrees",
+      disabled: busy || !worktreeStore.list.some((entry) => entry.prunable),
+      action: () => void pruneWorktrees(),
+    },
   );
   return items;
 }

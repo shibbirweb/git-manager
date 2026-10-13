@@ -33,7 +33,14 @@
       return;
     }
     event.preventDefault();
-    const index = nextIndex(Math.max(0, tabs.findIndex((tab) => tab.value === value)), tabs.length, event.key);
+    const index = nextIndex(
+      Math.max(
+        0,
+        tabs.findIndex((tab) => tab.value === value),
+      ),
+      tabs.length,
+      event.key,
+    );
     if (index >= 0) {
       choose(tabs[index].value);
       if (!keepFocus) {

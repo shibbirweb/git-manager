@@ -3,7 +3,7 @@
 Initials in a round accent circle (an account) or a rounded tile in a palette color (a project).
 
 ```ts
-import Avatar from "$ui/components/Avatar.svelte";
+import Avatar from "@git-manager/ui/components/Avatar.svelte";
 ```
 
 Group: Feedback. Also known as: Avatar, Initials.

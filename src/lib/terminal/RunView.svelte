@@ -5,14 +5,16 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import type { IconName } from "@git-manager/ui/icons";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { type TerminalEntry, terminalStore } from "./terminalStore.svelte";
 
   let slotEl = $state<HTMLDivElement | null>(null);
 
   const sessions = $derived(terminalStore.runSessions);
-  const active = $derived(sessions.find((session) => session.key === terminalStore.runActiveKey) ?? sessions[0] ?? null);
+  const active = $derived(
+    sessions.find((session) => session.key === terminalStore.runActiveKey) ?? sessions[0] ?? null,
+  );
   const running = $derived(active !== null && active.terminalId !== null && !active.exited);
 
   $effect(() => {
@@ -87,7 +89,13 @@
       >
         <Icon name="refresh" size={14} />
       </button>
-      <button class="icon-btn small stop" onclick={() => active && terminalStore.stopRun(active.key)} disabled={!running} title="Stop" aria-label="Stop">
+      <button
+        class="icon-btn small stop"
+        onclick={() => active && terminalStore.stopRun(active.key)}
+        disabled={!running}
+        title="Stop"
+        aria-label="Stop"
+      >
         <Icon name="stop" size={13} />
       </button>
     </div>

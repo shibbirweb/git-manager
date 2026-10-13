@@ -3,7 +3,12 @@ import { EditorSelection, EditorState, Text } from "@codemirror/state";
 import { describe, expect, it } from "vitest";
 import { caretLines, type SaveCleanupOptions, saveCleanupChanges, saveCleanupTransaction } from "./saveCleanup";
 
-const off: SaveCleanupOptions = { trimTrailingWhitespace: false, insertFinalNewline: false, trimFinalNewlines: false, markdown: false };
+const off: SaveCleanupOptions = {
+  trimTrailingWhitespace: false,
+  insertFinalNewline: false,
+  trimFinalNewlines: false,
+  markdown: false,
+};
 
 /** The text after the clean-up. */
 function clean(text: string, options: Partial<SaveCleanupOptions>): string {
@@ -25,7 +30,9 @@ describe("saveCleanupChanges", () => {
 
   it("keeps Markdown hard line breaks", () => {
     const text = "line one  \nline two   \ntabbed \t\nsingle \n   \nend";
-    expect(clean(text, { trimTrailingWhitespace: true, markdown: true })).toBe("line one  \nline two   \ntabbed\nsingle\n\nend");
+    expect(clean(text, { trimTrailingWhitespace: true, markdown: true })).toBe(
+      "line one  \nline two   \ntabbed\nsingle\n\nend",
+    );
     expect(clean(text, { trimTrailingWhitespace: true })).toBe("line one\nline two\ntabbed\nsingle\n\nend");
   });
 
@@ -71,7 +78,9 @@ describe("saveCleanupTransaction", () => {
   }
 
   it("is null when the text is already clean", () => {
-    expect(saveCleanupTransaction(stateWith("a\n", 0), { ...off, trimTrailingWhitespace: true, insertFinalNewline: true })).toBeNull();
+    expect(
+      saveCleanupTransaction(stateWith("a\n", 0), { ...off, trimTrailingWhitespace: true, insertFinalNewline: true }),
+    ).toBeNull();
   });
 
   it("keeps the caret on its text and undoes in one step", () => {

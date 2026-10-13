@@ -5,7 +5,16 @@ import { appendBatch, EMPTY_TEXT, nextSearchId, rangeParts, searchable, textStat
 const one = [{ root: "/w", name: "w" }];
 
 function batch(overrides: Partial<TextSearchBatch> = {}): TextSearchBatch {
-  return { files: [], done: false, matches: 0, filesMatched: 0, filesSearched: 0, more: false, error: null, ...overrides };
+  return {
+    files: [],
+    done: false,
+    matches: 0,
+    filesMatched: 0,
+    filesSearched: 0,
+    more: false,
+    error: null,
+    ...overrides,
+  };
 }
 
 const cartFile = {
@@ -14,13 +23,26 @@ const cartFile = {
   relativePath: "src/cart.ts",
   lines: [
     { line: 1, column: 14, text: "export class Cart {", ranges: [[13, 17]] as [number, number][] },
-    { line: 4, column: 1, text: "cart = cart", ranges: [[0, 4], [7, 11]] as [number, number][] },
+    {
+      line: 4,
+      column: 1,
+      text: "cart = cart",
+      ranges: [
+        [0, 4],
+        [7, 11],
+      ] as [number, number][],
+    },
   ],
 };
 
 describe("rangeParts", () => {
   it("splits at UTF-16 ranges", () => {
-    expect(rangeParts("cart = cart", [[0, 4], [7, 11]])).toEqual([
+    expect(
+      rangeParts("cart = cart", [
+        [0, 4],
+        [7, 11],
+      ]),
+    ).toEqual([
       { text: "cart", match: true },
       { text: " = ", match: false },
       { text: "cart", match: true },
@@ -31,7 +53,13 @@ describe("rangeParts", () => {
     ]);
     expect(rangeParts("abc", [])).toEqual([{ text: "abc", match: false }]);
     // Overlapping or out-of-range ranges never repeat or overflow text.
-    expect(rangeParts("abc", [[0, 2], [1, 3], [5, 9]])).toEqual([
+    expect(
+      rangeParts("abc", [
+        [0, 2],
+        [1, 3],
+        [5, 9],
+      ]),
+    ).toEqual([
       { text: "ab", match: true },
       { text: "c", match: true },
     ]);
@@ -41,7 +69,11 @@ describe("rangeParts", () => {
 describe("appendBatch", () => {
   it("adds a heading per file and a row per line", () => {
     const results = appendBatch(EMPTY_TEXT, batch({ files: [cartFile], matches: 2, filesMatched: 1 }), one, true);
-    expect(results.rows.map((row) => row.key)).toEqual(["tf:/w/src/cart.ts", "tl:/w/src/cart.ts:1", "tl:/w/src/cart.ts:4"]);
+    expect(results.rows.map((row) => row.key)).toEqual([
+      "tf:/w/src/cart.ts",
+      "tl:/w/src/cart.ts:1",
+      "tl:/w/src/cart.ts:4",
+    ]);
     expect(results.rows[0]).toMatchObject({ kind: "textFile", name: "cart.ts", folder: "src", count: 2 });
     expect(results.rows[1]).toMatchObject({ kind: "textLine", line: 1, column: 14 });
     expect(results.matches).toBe(2);
@@ -65,11 +97,15 @@ describe("text status", () => {
     const results = { ...EMPTY_TEXT, matches: 12, filesMatched: 3 };
     expect(textStatus(results, false)).toBe("12 matches in 3 files");
     expect(textStatus({ ...results, matches: 1, filesMatched: 1 }, false)).toBe("1 match in 1 file");
-    expect(textStatus({ ...results, more: true, matches: 2000 }, false)).toBe("Showing the first 2,000 matches in 3 files");
+    expect(textStatus({ ...results, more: true, matches: 2000 }, false)).toBe(
+      "Showing the first 2,000 matches in 3 files",
+    );
     expect(textStatus(results, true)).toBe("Searching... 12 matches in 3 files");
     expect(textStatus(EMPTY_TEXT, true)).toBe("Searching...");
     expect(textStatus(EMPTY_TEXT, false)).toBe("");
-    expect(textStatus({ ...EMPTY_TEXT, error: "Invalid regular expression: x" }, false)).toBe("Invalid regular expression: x");
+    expect(textStatus({ ...EMPTY_TEXT, error: "Invalid regular expression: x" }, false)).toBe(
+      "Invalid regular expression: x",
+    );
   });
 
   it("needs two characters", () => {

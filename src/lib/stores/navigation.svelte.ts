@@ -61,7 +61,13 @@ class NavigationStore {
     }
     this.history.record({ kind: "log", ...target });
     this.sync();
-    await repoStore.showCommit(target.repoRoot, target.commitId, target.filePath, target.line ?? null, target.lineText ?? null);
+    await repoStore.showCommit(
+      target.repoRoot,
+      target.commitId,
+      target.filePath,
+      target.line ?? null,
+      target.lineText ?? null,
+    );
   }
 
   async goBack(): Promise<void> {
@@ -92,7 +98,10 @@ class NavigationStore {
     }
     this.sync();
     if (!shown && skipped) {
-      toast.info(direction === "back" ? "Nothing left to go back to" : "Nothing left to go forward to", "Those places no longer exist.");
+      toast.info(
+        direction === "back" ? "Nothing left to go back to" : "Nothing left to go forward to",
+        "Those places no longer exist.",
+      );
     }
   }
 
@@ -101,7 +110,13 @@ class NavigationStore {
       if (!repoStore.repos.some((repo) => repo.root === target.repoRoot)) {
         return "gone";
       }
-      await repoStore.showCommit(target.repoRoot, target.commitId, target.filePath, target.line ?? null, target.lineText ?? null);
+      await repoStore.showCommit(
+        target.repoRoot,
+        target.commitId,
+        target.filePath,
+        target.line ?? null,
+        target.lineText ?? null,
+      );
       // Not on the Log: the switch was cancelled (e.g. unsaved changes kept).
       return repoStore.view === "log" && repoStore.repo?.root === target.repoRoot ? "shown" : "cancelled";
     }

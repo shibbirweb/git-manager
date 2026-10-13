@@ -101,7 +101,11 @@ export function commitLineAt(state: BlameState, line: number): number | null {
  * Where the commit's diff should scroll for a clicked line: its line in that
  * commit when known, else the same line number plus its text to search for.
  */
-export function commitLineTarget(state: BlameState, line: number, lineText: string): { line: number; lineText?: string } {
+export function commitLineTarget(
+  state: BlameState,
+  line: number,
+  lineText: string,
+): { line: number; lineText?: string } {
   const exact = commitLineAt(state, line);
   return exact !== null ? { line: exact } : { line, lineText };
 }

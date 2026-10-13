@@ -3,7 +3,7 @@
 A small rounded button with a word or two: a filter summary or a value to pick.
 
 ```ts
-import Chip from "$ui/components/Chip.svelte";
+import Chip from "@git-manager/ui/components/Chip.svelte";
 ```
 
 Group: Actions. Also known as: Chip, Filter pill.

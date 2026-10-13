@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rowOffsets, scrollToShowBox, visibleByOffsets } from "./rowOffsets";
+import { listWindow, rowOffsets, scrollToShowBox, visibleByOffsets } from "./rowOffsets";
 
 describe("rowOffsets", () => {
   it("adds the heights up, ending with the total", () => {
@@ -21,7 +21,13 @@ describe("visibleByOffsets", () => {
 
   it("adds the overscan and stays inside the list", () => {
     expect(visibleByOffsets(offsets, 0, 60, 8)).toEqual({ first: 0, last: 10 });
-    expect(visibleByOffsets(rowOffsets(0, () => 24), 0, 60)).toEqual({ first: 0, last: 0 });
+    expect(
+      visibleByOffsets(
+        rowOffsets(0, () => 24),
+        0,
+        60,
+      ),
+    ).toEqual({ first: 0, last: 0 });
   });
 });
 
@@ -34,5 +40,17 @@ describe("scrollToShowBox", () => {
 
   it("shows the top of a row taller than the view", () => {
     expect(scrollToShowBox(300, 700, 0, 100)).toBe(300);
+  });
+});
+
+describe("listWindow", () => {
+  it("draws every row of a plain list and sizes a virtual one", () => {
+    expect(listWindow(50, null, null, 0, 100)).toEqual({ first: 0, last: 50, total: null });
+    const fixed = listWindow(1000, 20, null, 2000, 100);
+    expect(fixed.total).toBe("20000px");
+    expect(fixed.first).toBeLessThanOrEqual(100);
+    expect(fixed.last).toBeGreaterThanOrEqual(105);
+    const measured = listWindow(3, 20, [0, 10, 40, 70], 0, 100);
+    expect(measured).toEqual({ first: 0, last: 3, total: "70px" });
   });
 });

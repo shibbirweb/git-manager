@@ -30,5 +30,7 @@ export function scrollEditorToLine(view: EditorView, line: number): void {
 
 /** The editor is scrolled to its end, where line mapping should give way to "end matches end". */
 export function isScrolledToEnd(element: HTMLElement): boolean {
-  return element.scrollHeight > element.clientHeight && element.scrollTop >= element.scrollHeight - element.clientHeight - 1;
+  return (
+    element.scrollHeight > element.clientHeight && element.scrollTop >= element.scrollHeight - element.clientHeight - 1
+  );
 }

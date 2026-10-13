@@ -19,7 +19,16 @@ describe("zoom", () => {
   });
 
   it("fits both compared images with one zoom", () => {
-    expect(sharedFit([{ width: 1000, height: 100 }, { width: 400, height: 400 }], 200, 200)).toBe(0.2);
+    expect(
+      sharedFit(
+        [
+          { width: 1000, height: 100 },
+          { width: 400, height: 400 },
+        ],
+        200,
+        200,
+      ),
+    ).toBe(0.2);
     expect(sharedFit([null, { width: 400, height: 400 }], 200, 200)).toBe(0.5);
     expect(sharedFit([null, null], 200, 200)).toBe(1);
   });

@@ -363,7 +363,12 @@ class SettingsStore {
     this.listenToOtherWindows();
     this.applyAppearance();
     if (this.loadError || this.stateLoadError) {
-      const file = this.loadError && this.stateLoadError ? "settings.json and state.json" : this.loadError ? "settings.json" : "state.json";
+      const file =
+        this.loadError && this.stateLoadError
+          ? "settings.json and state.json"
+          : this.loadError
+            ? "settings.json"
+            : "state.json";
       toast.error(`${file} could not be read`, "It is left as it is. Open Settings to try again or reset it.");
     }
   }
@@ -571,7 +576,10 @@ class SettingsStore {
 
   /** A file's whole content as this window holds it now. */
   private fileJson(configName: ConfigName): JsonObject {
-    const value = configName === "state" ? stateToJson(this.uiState(), this.extraState) : { ...this.extraPreferences, ...this.preferences() };
+    const value =
+      configName === "state"
+        ? stateToJson(this.uiState(), this.extraState)
+        : { ...this.extraPreferences, ...this.preferences() };
     return cloneJson(value) as JsonObject;
   }
 
@@ -775,12 +783,13 @@ class SettingsStore {
   /** Share of the editor area the Markdown preview takes, clamped; saved with state.json. */
   setMarkdownPreviewRatio(ratio: number, persist: boolean): void {
     const [min, max] = MARKDOWN_PREVIEW_RATIO_RANGE;
-    this.markdownPreviewRatio = Number.isFinite(ratio) ? Math.min(max, Math.max(min, ratio)) : this.markdownPreviewRatio;
+    this.markdownPreviewRatio = Number.isFinite(ratio)
+      ? Math.min(max, Math.max(min, ratio))
+      : this.markdownPreviewRatio;
     if (persist) {
       this.save();
     }
   }
-
 
   /** Shows or hides the Changes tab's file list. */
   toggleChangesList(): void {
@@ -845,16 +854,16 @@ class SettingsStore {
     this.lastSessionFile = workspaceFile;
     this.sessionRecorded = true;
     if (workspaceFile) {
-      this.recentWorkspaceFiles = [workspaceFile, ...this.recentWorkspaceFiles.filter((file) => file !== workspaceFile)].slice(
-        0,
-        MAX_RECENT,
-      );
+      this.recentWorkspaceFiles = [
+        workspaceFile,
+        ...this.recentWorkspaceFiles.filter((file) => file !== workspaceFile),
+      ].slice(0, MAX_RECENT);
     } else if (folderRoots.length > 1) {
       const key = folderRoots.join("\n");
-      this.recentWorkspaces = [folderRoots, ...this.recentWorkspaces.filter((folders) => folders.join("\n") !== key)].slice(
-        0,
-        MAX_RECENT,
-      );
+      this.recentWorkspaces = [
+        folderRoots,
+        ...this.recentWorkspaces.filter((folders) => folders.join("\n") !== key),
+      ].slice(0, MAX_RECENT);
     }
     this.save();
   }

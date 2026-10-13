@@ -378,7 +378,12 @@
     // Cmd+, opens Settings, as in every macOS app. The page sees the key before the menu's
     // Settings item, and preventing it here keeps that item from opening it again. A custom
     // key for Settings goes through the window shortcuts and the menu instead.
-    if ((event.metaKey || event.ctrlKey) && event.key === "," && !event.defaultPrevented && usesDefaultKeys("app.settings")) {
+    if (
+      (event.metaKey || event.ctrlKey) &&
+      event.key === "," &&
+      !event.defaultPrevented &&
+      usesDefaultKeys("app.settings")
+    ) {
       event.preventDefault();
       settings.openDialog();
     }

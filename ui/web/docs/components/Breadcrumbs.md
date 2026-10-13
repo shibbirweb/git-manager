@@ -3,7 +3,7 @@
 A path as crumbs separated by chevrons, like the Navigation Bar; the file is bold.
 
 ```ts
-import Breadcrumbs from "$ui/components/Breadcrumbs.svelte";
+import Breadcrumbs from "@git-manager/ui/components/Breadcrumbs.svelte";
 ```
 
 Group: Navigation. Also known as: Breadcrumb, Path bar.

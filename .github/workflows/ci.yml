@@ -37,6 +37,9 @@ jobs:
       - name: File icon sets are up to date
         run: bun scripts/file-icons.ts --check
 
+      - name: Formatted with Prettier
+        run: bun run format:check
+
       - name: Type-check (svelte-check)
         run: bun run check
 

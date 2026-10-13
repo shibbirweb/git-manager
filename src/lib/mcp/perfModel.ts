@@ -58,7 +58,9 @@ export function nextScroll(walk: ScrollWalk, speed: number, maxScroll: number): 
     return { position, direction: position >= maxScroll ? -1 : 1, rounds: walk.rounds };
   }
   const position = Math.max(0, walk.position - speed);
-  return position <= 0 ? { position: 0, direction: 1, rounds: walk.rounds + 1 } : { position, direction: -1, rounds: walk.rounds };
+  return position <= 0
+    ? { position: 0, direction: 1, rounds: walk.rounds + 1 }
+    : { position, direction: -1, rounds: walk.rounds };
 }
 
 /** Frames a walk of `rounds` passes takes at `speed` pixels per frame. */

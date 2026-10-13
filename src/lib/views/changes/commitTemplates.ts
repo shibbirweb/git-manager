@@ -56,7 +56,9 @@ export function validateTemplateName(name: string, templates: CommitTemplate[], 
   if (clean.length > MAX_TEMPLATE_NAME_LENGTH) {
     return `Keep the name under ${MAX_TEMPLATE_NAME_LENGTH} characters`;
   }
-  const taken = templates.some((template, other) => other !== index && template.name.toLowerCase() === clean.toLowerCase());
+  const taken = templates.some(
+    (template, other) => other !== index && template.name.toLowerCase() === clean.toLowerCase(),
+  );
   return taken ? "Another template has this name" : null;
 }
 
@@ -158,7 +160,10 @@ export function splitGitTemplate(raw: string, commentChar = "#"): { text: string
     }
   }
   return {
-    text: text.join("\n").replace(/^(?:[ \t]*\n)+/, "").trimEnd(),
+    text: text
+      .join("\n")
+      .replace(/^(?:[ \t]*\n)+/, "")
+      .trimEnd(),
     comments: comments.filter((comment) => comment !== "").join("\n"),
   };
 }

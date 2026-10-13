@@ -3,7 +3,7 @@
 The centered message of an empty panel or tab, with an optional icon, hint and action.
 
 ```ts
-import EmptyState from "$ui/components/EmptyState.svelte";
+import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
 ```
 
 Group: Feedback. Also known as: Empty.

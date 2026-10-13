@@ -12,5 +12,12 @@ import { isGitTab } from "./gitTabs";
 import { isUntitledTab } from "./untitledTabs";
 
 export function isPseudoTab(tabPath: string): boolean {
-  return isCommitTab(tabPath) || isGitTab(tabPath) || isBranchTab(tabPath) || isTerminalTab(tabPath) || isCompareTab(tabPath) || isUntitledTab(tabPath);
+  return (
+    isCommitTab(tabPath) ||
+    isGitTab(tabPath) ||
+    isBranchTab(tabPath) ||
+    isTerminalTab(tabPath) ||
+    isCompareTab(tabPath) ||
+    isUntitledTab(tabPath)
+  );
 }

@@ -74,7 +74,13 @@ export function submenuPosition(row: Rect, menu: Size, viewport: Size): { left: 
 }
 
 /** Where the root menu goes, kept inside the window; `alignEnd` puts its right edge at `x`. */
-export function rootPosition(x: number, y: number, menu: Size, viewport: Size, alignEnd: boolean): { left: number; top: number } {
+export function rootPosition(
+  x: number,
+  y: number,
+  menu: Size,
+  viewport: Size,
+  alignEnd: boolean,
+): { left: number; top: number } {
   const wantedLeft = alignEnd ? x - menu.width : x;
   const left = Math.max(MARGIN, Math.min(wantedLeft, viewport.width - menu.width - MARGIN));
   const top = Math.max(MARGIN, Math.min(y, viewport.height - menu.height - MARGIN));

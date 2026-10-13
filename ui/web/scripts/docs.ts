@@ -29,7 +29,9 @@ for (const output of outputs) {
 const expected = new Set(outputs.map((output) => output.path));
 const extra = ["docs/components", "docs/groups"].flatMap((folder) =>
   existsSync(join(webRoot, folder))
-    ? readdirSync(join(webRoot, folder)).map((file) => `${folder}/${file}`).filter((path) => !expected.has(path))
+    ? readdirSync(join(webRoot, folder))
+        .map((file) => `${folder}/${file}`)
+        .filter((path) => !expected.has(path))
     : [],
 );
 if (extra.length) {

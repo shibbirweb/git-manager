@@ -3,7 +3,7 @@
 Two versions of an image or PDF side by side, with one shared zoom and synced scrolling.
 
 ```ts
-import MediaCompare from "$ui/components/MediaCompare.svelte";
+import MediaCompare from "@git-manager/ui/components/MediaCompare.svelte";
 ```
 
 Group: Editor. Also known as: Image diff, Binary diff.

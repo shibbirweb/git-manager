@@ -117,7 +117,11 @@ function check(manifest: Manifest): CheckResult {
       }
       if (resolved.startsWith(`${WIKI_DIR}/images/`)) {
         imagesUsed.add(resolved.slice(`${WIKI_DIR}/images/`.length));
-      } else if (resolved.startsWith(`${WIKI_DIR}/`) && resolved.endsWith(".md") && !listed.has(resolved.slice(WIKI_DIR.length + 1))) {
+      } else if (
+        resolved.startsWith(`${WIKI_DIR}/`) &&
+        resolved.endsWith(".md") &&
+        !listed.has(resolved.slice(WIKI_DIR.length + 1))
+      ) {
         problems.push(`${source} links to ${link.target}, which is not a page in features.json`);
       }
     }
@@ -129,7 +133,9 @@ function check(manifest: Manifest): CheckResult {
       if (existsSync(join(WIKI, "images", screenshot))) {
         problems.push(`${WIKI_DIR}/${page} still has [TODO:${screenshot}]; show the image instead`);
       } else if (!screenshots.has(screenshot)) {
-        problems.push(`${WIKI_DIR}/${page} has [TODO:${screenshot}], which is not a screenshot of any feature in features.json`);
+        problems.push(
+          `${WIKI_DIR}/${page} has [TODO:${screenshot}], which is not a screenshot of any feature in features.json`,
+        );
       }
     }
   }
@@ -140,7 +146,9 @@ function check(manifest: Manifest): CheckResult {
     for (const screenshot of feature.screenshots) {
       if (!existsSync(join(WIKI, "images", screenshot))) {
         if (todos.includes(screenshot)) {
-          pending.push(`${feature.id}: images/${screenshot} (bun scripts/screenshots.ts ${screenshot.replace(/\.png$/, "")})`);
+          pending.push(
+            `${feature.id}: images/${screenshot} (bun scripts/screenshots.ts ${screenshot.replace(/\.png$/, "")})`,
+          );
         } else {
           problems.push(
             `feature ${feature.id}: screenshot images/${screenshot} does not exist (bun scripts/screenshots.ts ${screenshot.replace(/\.png$/, "")}, or write [TODO:${screenshot}] in ${feature.usage} for now)`,
@@ -254,14 +262,21 @@ if (problems.length > 0) {
   process.exit(1);
 }
 const pages = allPages(manifest).length;
-const imageBytes = listFiles(join(WIKI, "images"), ".png").reduce((sum, image) => sum + statSync(join(WIKI, "images", image)).size, 0);
+const imageBytes = listFiles(join(WIKI, "images"), ".png").reduce(
+  (sum, image) => sum + statSync(join(WIKI, "images", image)).size,
+  0,
+);
 if (argument !== "--check") {
   build(manifest, argument);
   console.log(`wrote ${pages} pages, Home, _Sidebar and _Footer to ${argument}`);
 }
-console.log(`docs/wiki is fine: ${pages} pages, ${manifest.features.length} features, ${(imageBytes / 1024 / 1024).toFixed(1)} MB of screenshots`);
+console.log(
+  `docs/wiki is fine: ${pages} pages, ${manifest.features.length} features, ${(imageBytes / 1024 / 1024).toFixed(1)} MB of screenshots`,
+);
 if (pending.length > 0) {
-  console.log(`\n${pending.length} screenshot${pending.length === 1 ? "" : "s"} still to take ([TODO:...] in the pages):\n`);
+  console.log(
+    `\n${pending.length} screenshot${pending.length === 1 ? "" : "s"} still to take ([TODO:...] in the pages):\n`,
+  );
   for (const screenshot of pending) {
     console.log(`  ${screenshot}`);
   }

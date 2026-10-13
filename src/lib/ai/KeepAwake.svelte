@@ -14,7 +14,9 @@
   const mode = $derived(settings.computerAwakeMode);
   const status = $derived(statusText(mode, keepAwake.active));
   const note = lidNote(platformName(navigator.userAgent));
-  const tooltip = $derived(keepAwake.error ? `${AWAKE_TITLE}: ${keepAwake.error}` : `${AWAKE_TITLE}, ${status}. ${note}`);
+  const tooltip = $derived(
+    keepAwake.error ? `${AWAKE_TITLE}: ${keepAwake.error}` : `${AWAKE_TITLE}, ${status}. ${note}`,
+  );
 
   function choose(value: ComputerAwakeMode): void {
     settings.setPreference("computerAwakeMode", value);

@@ -3,7 +3,7 @@
 A bordered, scrolling box on the editor background holding a list inside a dialog.
 
 ```ts
-import ListBox from "$ui/components/ListBox.svelte";
+import ListBox from "@git-manager/ui/components/ListBox.svelte";
 ```
 
 Group: Layout. Also known as: List container, Box.

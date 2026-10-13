@@ -6,14 +6,22 @@
   import Icon from "$lib/ui/Icon.svelte";
   import CleanRepoList from "./changes/CleanRepoList.svelte";
   import CommitBox from "./changes/CommitBox.svelte";
-  import CommitLayoutIcon from "./changes/CommitLayoutIcon.svelte";
+  import LayoutIcon from "@git-manager/ui/components/LayoutIcon.svelte";
   import { commitDraft } from "./changes/commitDraft.svelte";
   import { rowElementId, sameSelection, type FileSelection, type GroupId } from "./changes/fileStatus";
   import { changesLayout } from "./changes/layout.svelte";
   import { activate, discard } from "./changes/mutations";
   import RepoActions from "./changes/RepoActions.svelte";
   import RepoSection from "./changes/RepoSection.svelte";
-  import { buildSections, commitChoices, findFile, findSection, resolveCommitTarget, selectableRows, splitSections } from "./changes/sections";
+  import {
+    buildSections,
+    commitChoices,
+    findFile,
+    findSection,
+    resolveCommitTarget,
+    selectableRows,
+    splitSections,
+  } from "./changes/sections";
   import { changesSelection } from "./changes/selection.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
 
@@ -66,7 +74,13 @@
   });
 
   function clickRow(selection: FileSelection): void {
-    navigation.record({ kind: "diff", repoRoot: selection.repoRoot, path: selection.path, area: selection.area, line: 0 });
+    navigation.record({
+      kind: "diff",
+      repoRoot: selection.repoRoot,
+      path: selection.path,
+      area: selection.area,
+      line: 0,
+    });
     changesSelection.pick(selection);
     listEl?.focus();
   }
@@ -135,18 +149,28 @@
         aria-label="Commit box per repository"
         aria-pressed={perRepo}
       >
-        <CommitLayoutIcon {perRepo} />
+        <LayoutIcon kind={perRepo ? "commit-per-repo" : "commit-single"} size="regular" />
       </button>
     {/if}
     {#if !multiRepo && sections[0]?.status}
       <!-- One repository: its actions sit in the title bar. -->
       <RepoActions section={sections[0]} />
     {:else}
-      <button class="icon-btn small" onclick={() => void repoStore.refreshAll()} title="Refresh All" aria-label="Refresh all">
+      <button
+        class="icon-btn small"
+        onclick={() => void repoStore.refreshAll()}
+        title="Refresh All"
+        aria-label="Refresh all"
+      >
         <Icon name="refresh" size={13} />
       </button>
     {/if}
-    <button class="icon-btn small" onclick={() => settings.setLeftPanel(null)} title={withCommandKeys("Hide", "view.sidebar")} aria-label="Hide changes">
+    <button
+      class="icon-btn small"
+      onclick={() => settings.setLeftPanel(null)}
+      title={withCommandKeys("Hide", "view.sidebar")}
+      aria-label="Hide changes"
+    >
       <Icon name="x" size={14} />
     </button>
   </div>
@@ -174,7 +198,15 @@
       {#if !multiRepo}
         {#if perRepo && commitTarget && sections[0]?.status && sections[0].changeCount === 0}
           <!-- A clean repository keeps its box, for Amend. -->
-          <CommitBox repo={commitTarget} stagedCount={0} conflictCount={0} multiRepo={false} choices={[]} onpick={() => {}} placement="section" />
+          <CommitBox
+            repo={commitTarget}
+            stagedCount={0}
+            conflictCount={0}
+            multiRepo={false}
+            choices={[]}
+            onpick={() => {}}
+            placement="section"
+          />
         {/if}
         {#if sections[0]?.status && sections[0].changeCount === 0}
           <div class="list-empty">

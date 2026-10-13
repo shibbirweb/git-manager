@@ -77,7 +77,9 @@ describe("helpers", () => {
   });
 
   it("ranks commits by age", () => {
-    expect(ageRanks([commit("old", 1), commit("mid", 5), commit("new", 9), commit("x", 0, true)])).toEqual([0, 0.5, 1, 1]);
+    expect(ageRanks([commit("old", 1), commit("mid", 5), commit("new", 9), commit("x", 0, true)])).toEqual([
+      0, 0.5, 1, 1,
+    ]);
   });
 });
 
@@ -112,10 +114,13 @@ describe("commit-side lines", () => {
 describe("expandBlame", () => {
   it("spreads the new text's blame over an inline diff and leaves removed lines blank", () => {
     const visited: number[] = [];
-    const state = { ...fromInfo({ commits, runs: [1, 0, 5, 1, 1, 0] }, 2), origin: (line: number) => {
-      visited.push(line);
-      return { kind: "file" as const, filePath: "/a", line: 0 };
-    } };
+    const state = {
+      ...fromInfo({ commits, runs: [1, 0, 5, 1, 1, 0] }, 2),
+      origin: (line: number) => {
+        visited.push(line);
+        return { kind: "file" as const, filePath: "/a", line: 0 };
+      },
+    };
     // Document: new line 0, a removed line, new line 1.
     const inline = expandBlame(state, [0, null, 1]);
     expect(inline.lines).toEqual([0, REMOVED_LINE, 1]);

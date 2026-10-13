@@ -12,6 +12,8 @@ Thank you for helping! This page lists the rules for code, commits and pull requ
 
 These are organization rules and apply to TypeScript, Svelte, JavaScript and Rust alike.
 
+Layout is not a matter of taste: Prettier (`.prettierrc.json`, with the Svelte plugin) formats `src/`, `ui/` and `scripts/` at 120 columns with semicolons, trailing commas and double quotes. Run `bun run format` before you commit; CI runs `bun run format:check` and fails on any file it would change. Generated files and the hand-compacted design token JSON are listed in `.prettierignore`.
+
 - **Every `if` has braces.** No single-line `if` without a block. When someone later adds a second line, it can never fall outside the condition by accident.
 - **End statements with semicolons** in TS and JS. Relying on automatic semicolon insertion causes rare but confusing bugs.
 - **Put a trailing comma after the last item** of multi-line objects, arrays and argument lists. Adding an item then changes one line in the diff, not two.
@@ -103,7 +105,7 @@ A good test plan looks like this:
 ```text
 ## Test plan
 
-- bun run check, bun run test, cargo test and cargo clippy are clean
+- bun run format:check, bun run check, bun run test, cargo test and cargo clippy are clean
 - Opened scripts/make-conflict-repo.sh output and resolved both.txt in the merge tool
 - Not checked: the dark theme colors of the new button
 ```

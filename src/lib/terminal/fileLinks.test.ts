@@ -17,7 +17,14 @@ function texts(lineText: string): string[] {
 describe("findPathCandidates", () => {
   it("finds paths with a line and a column in the usual forms", () => {
     const [colon] = findPathCandidates("src/cart.ts:12:5 - error TS2322");
-    expect(colon).toMatchObject({ start: 0, end: 16, text: "src/cart.ts:12:5", paths: ["src/cart.ts"], line: 12, column: 5 });
+    expect(colon).toMatchObject({
+      start: 0,
+      end: 16,
+      text: "src/cart.ts:12:5",
+      paths: ["src/cart.ts"],
+      line: 12,
+      column: 5,
+    });
     const [line] = findPathCandidates("  at ./lib/a.js:7");
     expect(line).toMatchObject({ start: 5, text: "./lib/a.js:7", paths: ["./lib/a.js"], line: 7, column: null });
     const [paren] = findPathCandidates("src/cart.ts(12,5): error");
@@ -106,7 +113,9 @@ describe("lineCells", () => {
 
 describe("FileExistenceCache", () => {
   it("asks once per path and remembers until cleared", async () => {
-    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => (filePath.endsWith(".ts") ? filePath : null)));
+    const check = vi.fn(async (filePaths: string[]) =>
+      filePaths.map((filePath) => (filePath.endsWith(".ts") ? filePath : null)),
+    );
     const cache = new FileExistenceCache(check);
     const first = await cache.realPaths(["/w/a.ts", "/w/b.md", "/w/a.ts"]);
     expect([...first]).toEqual([
@@ -148,7 +157,9 @@ describe("fileLinksForLine", () => {
 
   it("links existing workspace files only", async () => {
     const existing = new Set(["/work/shop/src/cart.ts", "/work/shop/README.md"]);
-    const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => (existing.has(filePath) ? filePath : null)));
+    const check = vi.fn(async (filePaths: string[]) =>
+      filePaths.map((filePath) => (existing.has(filePath) ? filePath : null)),
+    );
     const cache = new FileExistenceCache(check);
     const links = await fileLinksForLine("src/cart.ts:3:9 missing.ts /etc/hosts README.md", {
       folderPath: "/work/shop",
@@ -165,21 +176,29 @@ describe("fileLinksForLine", () => {
 
   it("opens a file under its real name, whatever case the tool printed", async () => {
     const cache = new FileExistenceCache(async (filePaths) =>
-      filePaths.map((filePath) => (filePath.toLowerCase() === "/work/shop/src/cart.ts" ? "/work/shop/src/Cart.ts" : null)),
+      filePaths.map((filePath) =>
+        filePath.toLowerCase() === "/work/shop/src/cart.ts" ? "/work/shop/src/Cart.ts" : null,
+      ),
     );
     const links = await fileLinksForLine("src/CART.ts:4", { folderPath: "/work/shop", workspaceFolders, cache });
     expect(links.map((link) => link.filePath)).toEqual(["/work/shop/src/Cart.ts"]);
   });
 
   it("falls back to the path without git's prefix", async () => {
-    const cache = new FileExistenceCache(async (filePaths) => filePaths.map((filePath) => (filePath === "/work/shop/src/cart.ts" ? filePath : null)));
+    const cache = new FileExistenceCache(async (filePaths) =>
+      filePaths.map((filePath) => (filePath === "/work/shop/src/cart.ts" ? filePath : null)),
+    );
     const links = await fileLinksForLine("+++ b/src/cart.ts", { folderPath: "/work/shop", workspaceFolders, cache });
     expect(links.map((link) => link.filePath)).toEqual(["/work/shop/src/cart.ts"]);
   });
 
   it("asks nothing without a workspace", async () => {
     const check = vi.fn(async (filePaths: string[]) => filePaths.map((filePath) => filePath));
-    const links = await fileLinksForLine("src/a.ts", { folderPath: "/work/shop", workspaceFolders: [], cache: new FileExistenceCache(check) });
+    const links = await fileLinksForLine("src/a.ts", {
+      folderPath: "/work/shop",
+      workspaceFolders: [],
+      cache: new FileExistenceCache(check),
+    });
     expect(links).toEqual([]);
     expect(check).not.toHaveBeenCalled();
   });
@@ -188,7 +207,12 @@ describe("fileLinksForLine", () => {
 describe("Windows paths in the terminal", () => {
   it("reads printed backslash paths as / paths", () => {
     const [absolute] = findPathCandidates("error in C:\\work\\shop\\src\\cart.ts:12:5", true);
-    expect(absolute).toMatchObject({ text: "C:\\work\\shop\\src\\cart.ts:12:5", paths: ["C:/work/shop/src/cart.ts"], line: 12, column: 5 });
+    expect(absolute).toMatchObject({
+      text: "C:\\work\\shop\\src\\cart.ts:12:5",
+      paths: ["C:/work/shop/src/cart.ts"],
+      line: 12,
+      column: 5,
+    });
     const [relative] = findPathCandidates("src\\cart.ts(3,9)", true);
     expect(relative).toMatchObject({ paths: ["src/cart.ts"], line: 3, column: 9 });
     const [noExtension] = findPathCandidates("c:\\work\\shop\\Makefile", true);
@@ -202,9 +226,15 @@ describe("Windows paths in the terminal", () => {
   it("links a Windows path printed in other case to the workspace file", async () => {
     const windowsFolders = [{ root: "C:/Work/Shop", name: "shop" }];
     const cache = new FileExistenceCache(async (filePaths) =>
-      filePaths.map((filePath) => (filePath.toLowerCase() === "c:/work/shop/src/cart.ts" ? "C:/Work/Shop/src/cart.ts" : null)),
+      filePaths.map((filePath) =>
+        filePath.toLowerCase() === "c:/work/shop/src/cart.ts" ? "C:/Work/Shop/src/cart.ts" : null,
+      ),
     );
-    const links = await fileLinksForLine("c:\\work\\shop\\src\\cart.ts:2", { folderPath: "C:/Work/Shop", workspaceFolders: windowsFolders, cache }, true);
+    const links = await fileLinksForLine(
+      "c:\\work\\shop\\src\\cart.ts:2",
+      { folderPath: "C:/Work/Shop", workspaceFolders: windowsFolders, cache },
+      true,
+    );
     expect(links.map((link) => link.filePath)).toEqual(["C:/Work/Shop/src/cart.ts"]);
   });
 });

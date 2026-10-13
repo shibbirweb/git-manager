@@ -3,7 +3,7 @@
 A context or drop-down menu at a point, with hints, separators and submenus; keyboard friendly.
 
 ```ts
-import Menu from "$ui/components/Menu.svelte";
+import Menu from "@git-manager/ui/components/Menu.svelte";
 ```
 
 Group: Overlays. Also known as: Context menu, Dropdown menu.

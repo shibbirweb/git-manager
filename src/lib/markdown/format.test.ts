@@ -39,7 +39,9 @@ function show(state: EditorState): string {
   let text = state.doc.toString();
   const ranges = [...state.selection.ranges].sort((a, b) => b.from - a.from);
   for (const range of ranges) {
-    text = range.empty ? `${text.slice(0, range.from)}‸${text.slice(range.from)}` : `${text.slice(0, range.from)}⟨${text.slice(range.from, range.to)}⟩${text.slice(range.to)}`;
+    text = range.empty
+      ? `${text.slice(0, range.from)}‸${text.slice(range.from)}`
+      : `${text.slice(0, range.from)}⟨${text.slice(range.from, range.to)}⟩${text.slice(range.to)}`;
   }
   return text;
 }

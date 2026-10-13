@@ -18,7 +18,7 @@ describe("normalizeFontFamily", () => {
 
   it("drops a family named twice, ignoring quotes and case", () => {
     expect(normalizeFontFamily(`'JetBrains Mono', ${DEFAULT_EDITOR_FONT}`)).toBe(DEFAULT_EDITOR_FONT);
-    expect(normalizeFontFamily("Menlo, menlo, \"Menlo\", Hack")).toBe("Menlo, Hack, monospace");
+    expect(normalizeFontFamily('Menlo, menlo, "Menlo", Hack')).toBe("Menlo, Hack, monospace");
   });
 
   it("strips characters that could break out of the CSS value", () => {
@@ -34,6 +34,8 @@ describe("the saved editor font", () => {
   });
 
   it("keeps a font the user chose", () => {
-    expect(parsePreferences({ editorFontFamily: "Menlo, monospace" }).preferences.editorFontFamily).toBe("Menlo, monospace");
+    expect(parsePreferences({ editorFontFamily: "Menlo, monospace" }).preferences.editorFontFamily).toBe(
+      "Menlo, monospace",
+    );
   });
 });

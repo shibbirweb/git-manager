@@ -3,7 +3,7 @@
 A changed file in a list: status letter, type icon, name, dim folder, tag and hover actions.
 
 ```ts
-import FileRow from "$ui/components/FileRow.svelte";
+import FileRow from "@git-manager/ui/components/FileRow.svelte";
 ```
 
 Group: Navigation.
@@ -21,7 +21,7 @@ actions to two or three icons.
 - `directory` (`string`, default `""`): The folder, dim after the name.
 - `note` (`string`, default `""`): Dim text in brackets, such as the old name.
 - `badge` (`string`, default `""`): A small outlined tag, such as LFS.
-- `icon` (`{ kind: "image"; src: string } | { kind: "class"; className: string } | null`, default `null`): The file's
+- `icon` (`{ kind: "image"; src: string } | { kind: "mask"; className: string } | null`, default `null`): The file's
   type icon.
 - `selected` (`boolean`, default `false`): The selected row.
 - `nested` (`boolean`, default `false`): Indent under a repository heading.

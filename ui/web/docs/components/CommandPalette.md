@@ -3,7 +3,7 @@
 A floating list at the top of the window to find and run something, like Go to File.
 
 ```ts
-import CommandPalette from "$ui/components/CommandPalette.svelte";
+import CommandPalette from "@git-manager/ui/components/CommandPalette.svelte";
 ```
 
 Group: Overlays. Also known as: Command, Quick open, Combobox.

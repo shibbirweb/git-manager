@@ -54,7 +54,9 @@
   const loadKey = $derived(JSON.stringify([sides.original, sides.modified, sides.version ?? 0]));
   const states = $derived(ROLES.map((role, index) => sideState(role, labels[index], sources[index], loaded[index])));
   const kinds = $derived(
-    sources.map((source): PreviewKind | null => previewOf(source?.filePath ?? path)?.kind ?? previewOf(path)?.kind ?? null),
+    sources.map(
+      (source): PreviewKind | null => previewOf(source?.filePath ?? path)?.kind ?? previewOf(path)?.kind ?? null,
+    ),
   );
   const imageShown = $derived(states.some((state, index) => state.status === "ready" && kinds[index] === "image"));
   const measured = $derived(naturals.some((natural) => natural !== null));
@@ -109,7 +111,9 @@
 
   function onImageError(index: number): void {
     const next = [...loaded];
-    next[index] = { error: "This image could not be shown. The file may be damaged or in a format WebKit does not support." };
+    next[index] = {
+      error: "This image could not be shown. The file may be damaged or in a format WebKit does not support.",
+    };
     loaded = next;
   }
 
@@ -158,17 +162,41 @@
 <div class="binary-preview">
   {#if imageShown}
     <div class="bar" role="toolbar" aria-label="Preview">
-      <button class="btn small icon-only" onclick={() => zoomBy(-1)} disabled={!measured} title="Zoom out" aria-label="Zoom out">
+      <button
+        class="btn small icon-only"
+        onclick={() => zoomBy(-1)}
+        disabled={!measured}
+        title="Zoom out"
+        aria-label="Zoom out"
+      >
         <Icon name="minus" size={13} />
       </button>
       <span class="zoom" aria-live="polite">{measured ? zoomLabel(shownZoom) : ""}</span>
-      <button class="btn small icon-only" onclick={() => zoomBy(1)} disabled={!measured} title="Zoom in" aria-label="Zoom in">
+      <button
+        class="btn small icon-only"
+        onclick={() => zoomBy(1)}
+        disabled={!measured}
+        title="Zoom in"
+        aria-label="Zoom in"
+      >
         <Icon name="plus" size={13} />
       </button>
-      <button class="btn small" class:on={zoom === null} onclick={() => (zoom = null)} disabled={!measured} title="Fit both images in the view">
+      <button
+        class="btn small"
+        class:on={zoom === null}
+        onclick={() => (zoom = null)}
+        disabled={!measured}
+        title="Fit both images in the view"
+      >
         Fit
       </button>
-      <button class="btn small" class:on={zoom === 1} onclick={() => (zoom = 1)} disabled={!measured} title="Show both images at their real size">
+      <button
+        class="btn small"
+        class:on={zoom === 1}
+        onclick={() => (zoom = 1)}
+        disabled={!measured}
+        title="Show both images at their real size"
+      >
         100%
       </button>
     </div>
@@ -198,7 +226,12 @@
               />
             </div>
           {:else if shown.status === "ready" && source}
-            <iframe bind:this={frames[index]} class="pdf" src={shown.url} title={`${sourceName(source)} (${labels[index]})`}></iframe>
+            <iframe
+              bind:this={frames[index]}
+              class="pdf"
+              src={shown.url}
+              title={`${sourceName(source)} (${labels[index]})`}
+            ></iframe>
           {:else if shown.status === "loading"}
             <div class="message dim">Loading...</div>
           {:else if shown.status === "absent"}

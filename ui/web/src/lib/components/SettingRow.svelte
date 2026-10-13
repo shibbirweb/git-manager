@@ -31,7 +31,10 @@
 <div class="row" class:stacked class:nested class:plain>
   <div class="label">
     <span class="title"
-      >{#if titleMatches.length > 0}<HighlightText text={title} ranges={titleMatches} variant="search"
+      >{#if titleMatches.length > 0}<HighlightText
+          text={title}
+          ranges={titleMatches}
+          variant="search"
         />{:else}{title}{/if}</span
     >
     {#if hintContent}

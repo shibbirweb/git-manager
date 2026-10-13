@@ -28,7 +28,12 @@ export function onlyOpensBlock(text: string): boolean {
  * scope that started above it and is still open there, outermost first. A lone opening
  * bracket is replaced by the line before it, the one that names the block.
  */
-export function headerLines(scopes: readonly Scope[], topLine: number, lineText: LineText, maxLines = MAX_STICKY_LINES): number[] {
+export function headerLines(
+  scopes: readonly Scope[],
+  topLine: number,
+  lineText: LineText,
+  maxLines = MAX_STICKY_LINES,
+): number[] {
   const starts = scopes
     .filter((scope) => scope.startLine < topLine && scope.endLine >= topLine)
     .map((scope) => scope.startLine)
@@ -81,7 +86,13 @@ export function stickyLinesFor(
  * Scopes by indentation, for files without a grammar: each line above with less indent than
  * the one before opens a scope. A blank top line takes the indent of the next code line.
  */
-export function indentScopes(lineText: LineText, lineCount: number, lineNumber: number, tabSize: number, maxScan = MAX_SCOPE_SCAN): Scope[] {
+export function indentScopes(
+  lineText: LineText,
+  lineCount: number,
+  lineNumber: number,
+  tabSize: number,
+  maxScan = MAX_SCOPE_SCAN,
+): Scope[] {
   let indent: number | null = null;
   for (let line = lineNumber; line <= lineCount && line < lineNumber + maxScan && indent === null; line++) {
     indent = indentColumns(lineText(line), tabSize);

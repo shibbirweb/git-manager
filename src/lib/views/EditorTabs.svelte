@@ -52,7 +52,14 @@
     const terminalKey = group?.active ? parseTerminalTabPath(group.active) : null;
     return terminalKey !== null ? (terminalStore.find(terminalKey)?.agent?.folderPath ?? null) : null;
   });
-  const single = $derived(showsTabAsTitle(settings.singleTabTitle, settings.tabLimit, tabs.length, primary && changesSelection.selected !== null));
+  const single = $derived(
+    showsTabAsTitle(
+      settings.singleTabTitle,
+      settings.tabLimit,
+      tabs.length,
+      primary && changesSelection.selected !== null,
+    ),
+  );
 
   /** A press on a tab that may become a drag once the pointer moves a few pixels. */
   interface TabPress {
@@ -79,7 +86,9 @@
   /** Set when a drag ends, so the click the browser sends after the pointerup is ignored. */
   let swallowClick = false;
   /** While dragging, the strip shows the order the drop would make. */
-  const shownTabs = $derived(drag ? moveTab({ tabs, active: group?.active ?? null }, drag.tabPath, drag.gap).tabs : tabs);
+  const shownTabs = $derived(
+    drag ? moveTab({ tabs, active: group?.active ?? null }, drag.tabPath, drag.gap).tabs : tabs,
+  );
   const diffName = $derived(changesSelection.selected?.path.split("/").pop() ?? "Diff");
   const diffTitle = $derived(
     changesSelection.selected
@@ -136,7 +145,11 @@
     if (!entry) {
       return "Terminal";
     }
-    return [entry.name, `Shell: ${shellNameFor(entry.shellId, terminalStore.shells)}`, `Folder: ${entry.cwd ?? "~"}`].join("\n");
+    return [
+      entry.name,
+      `Shell: ${shellNameFor(entry.shellId, terminalStore.shells)}`,
+      `Folder: ${entry.cwd ?? "~"}`,
+    ].join("\n");
   }
 
   /** The items after the Close ones: what to copy, or what to do with a terminal. */
@@ -154,7 +167,9 @@
     }
     const gitTab = parseGitTabPath(filePath);
     if (gitTab) {
-      return gitTab.kind === "reflog" ? [] : [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
+      return gitTab.kind === "reflog"
+        ? []
+        : [{ label: "Copy Relative Path", action: () => void copy(gitTab.filePath) }];
     }
     return [
       { label: "Show Local History", action: () => localHistory.openFile(filePath) },
@@ -224,7 +239,11 @@
         disabled: pathsToRight(state, filePath).length === 0,
         action: () => void repoStore.closeTabsToRight(filePath, groupId),
       },
-      { label: "Close All", disabled: unpinnedPaths(tabs).length === 0, action: () => void repoStore.closeAllTabs(groupId) },
+      {
+        label: "Close All",
+        disabled: unpinnedPaths(tabs).length === 0,
+        action: () => void repoStore.closeAllTabs(groupId),
+      },
       { separator: true },
       ...groupItems(filePath),
       ...tabItems(filePath),
@@ -411,7 +430,9 @@
   onwheel={onWheel}
   onclickcapture={onClickCapture}
   role="tablist"
-  aria-label={split ? `Open editors, group ${repoStore.groups.findIndex((candidate) => candidate.id === groupId) + 1}` : "Open editors"}
+  aria-label={split
+    ? `Open editors, group ${repoStore.groups.findIndex((candidate) => candidate.id === groupId) + 1}`
+    : "Open editors"}
 >
   {#if primary && changesSelection.selected}
     <div class="tab diff" class:active={diffShown} title={diffTitle} role="presentation">
@@ -453,7 +474,8 @@
               ? branchTabTitle(branchTab).title
               : untitled
                 ? `${unsavedText.title(tab.path) ?? label?.name ?? ""} (not saved to a file yet)`
-                : (compareTabTooltip(tab.path) ?? `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`)}
+                : (compareTabTooltip(tab.path) ??
+                  `${tab.path}${tab.preview ? " (preview: double-click to keep open)" : ""}`)}
       role="presentation"
       onpointerdown={(event) => onTabPointerDown(event, tab.path)}
       onauxclick={(event) => onAuxClick(event, tab.path)}
@@ -482,7 +504,9 @@
                   : "file"}
           size={13}
         />
-        <span class="name" class:mono={commit}>{terminal?.name ?? (untitled ? unsavedText.title(tab.path) : null) ?? label?.name ?? tab.path}</span>
+        <span class="name" class:mono={commit}
+          >{terminal?.name ?? (untitled ? unsavedText.title(tab.path) : null) ?? label?.name ?? tab.path}</span
+        >
         {#if label?.hint}
           <span class="hint">{label.hint}</span>
         {/if}

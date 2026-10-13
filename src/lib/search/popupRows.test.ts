@@ -51,7 +51,10 @@ const many = Array.from({ length: 10 }, (_, index) => symbol(`Cart${index}`));
 
 describe("tabRows", () => {
   it("lists sections in the All tab with a few rows each and a more row", () => {
-    const rows = tabRows("all", results({ classes: { rows: many, matched: 40 }, files: { rows: [file("/w/cart.ts")], matched: 1 } }));
+    const rows = tabRows(
+      "all",
+      results({ classes: { rows: many, matched: 40 }, files: { rows: [file("/w/cart.ts")], matched: 1 } }),
+    );
     // Files come first, then classes.
     expect(rows.slice(0, 2).map((row) => row.kind)).toEqual(["header", "file"]);
     expect(rows[0]).toMatchObject({ label: "Files" });
@@ -71,13 +74,19 @@ describe("tabRows", () => {
   });
 
   it("gives every row a unique key", () => {
-    const rows = tabRows("all", results({ classes: { rows: many, matched: 10 }, members: { rows: many, matched: 10 } }));
+    const rows = tabRows(
+      "all",
+      results({ classes: { rows: many, matched: 10 }, members: { rows: many, matched: 10 } }),
+    );
     expect(new Set(rows.map((row) => row.key)).size).toBe(rows.length);
   });
 });
 
 describe("selection", () => {
-  const rows = tabRows("all", results({ classes: { rows: many.slice(0, 2), matched: 2 }, files: { rows: [file("/w/x.ts")], matched: 1 } }));
+  const rows = tabRows(
+    "all",
+    results({ classes: { rows: many.slice(0, 2), matched: 2 }, files: { rows: [file("/w/x.ts")], matched: 1 } }),
+  );
   // [header, file, header, c0, c1]
 
   it("skips headings and wraps single steps", () => {
@@ -91,7 +100,10 @@ describe("selection", () => {
   });
 
   it("keeps the selected row by key when rows refresh", () => {
-    const next = tabRows("all", results({ classes: { rows: many.slice(1, 3), matched: 2 }, files: { rows: [file("/w/y.ts")], matched: 1 } }));
+    const next = tabRows(
+      "all",
+      results({ classes: { rows: many.slice(1, 3), matched: 2 }, files: { rows: [file("/w/y.ts")], matched: 1 } }),
+    );
     // [header, y, header, c1, c2]: c1 moves from 4 to 3, the gone file falls back to the first row.
     expect(keepSelectedKey(rows, 4, next)).toBe(3);
     expect(keepSelectedKey(rows, 1, next)).toBe(1);

@@ -201,7 +201,11 @@ class AppMenu {
       await this.createStatefulItems(spec, initial);
       const menus = await Promise.all(spec.map((top) => this.createTopMenu(top, initial)));
       const menu = await Menu.new({ items: menus });
-      this.menuBar = { menu, windowMenu: this.forRole(spec, menus, "window"), helpMenu: this.forRole(spec, menus, "help") };
+      this.menuBar = {
+        menu,
+        windowMenu: this.forRole(spec, menus, "window"),
+        helpMenu: this.forRole(spec, menus, "help"),
+      };
       if (this.platform === "macos") {
         const current = getCurrentWindow();
         void current

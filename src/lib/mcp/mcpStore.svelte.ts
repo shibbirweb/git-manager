@@ -23,7 +23,12 @@ class McpStore {
   working = $state(false);
 
   /** Pushes the switches, port and tool choices; the server starts, restarts or stops to match. */
-  async configure(enabled: boolean, cliEnabled: boolean, port: number, toolStates: Record<string, boolean>): Promise<void> {
+  async configure(
+    enabled: boolean,
+    cliEnabled: boolean,
+    port: number,
+    toolStates: Record<string, boolean>,
+  ): Promise<void> {
     try {
       this.status = await api.mcpConfigure(enabled, cliEnabled, port, toolStates);
       this.statusError = null;
@@ -89,7 +94,8 @@ class McpStore {
   async regenerateToken(): Promise<void> {
     const ok = await dialogs.confirm({
       title: "New Token",
-      message: "Make a new secret token? Tools connected with the current one stop working until you give them the new one.",
+      message:
+        "Make a new secret token? Tools connected with the current one stop working until you give them the new one.",
       confirmLabel: "New Token",
       danger: true,
     });

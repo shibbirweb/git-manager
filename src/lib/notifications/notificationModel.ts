@@ -49,7 +49,8 @@ export function addNotification(list: readonly NotificationEntry[], entry: Notif
 
 /** Lets go of buttons past their lifetime, so the list does not hold what they captured (an Undo's patch). */
 export function dropStaleActions(list: readonly NotificationEntry[], nowMs: number): NotificationEntry[] {
-  const stale = (entry: NotificationEntry) => entry.action !== null && nowMs - entry.time > actionLifetime(entry.action);
+  const stale = (entry: NotificationEntry) =>
+    entry.action !== null && nowMs - entry.time > actionLifetime(entry.action);
   if (!list.some(stale)) {
     return list as NotificationEntry[];
   }
@@ -65,7 +66,9 @@ export function markAllRead(list: readonly NotificationEntry[]): NotificationEnt
 
 /** A used button is never offered again, so its closure is let go too. */
 export function markActionUsed(list: readonly NotificationEntry[], notificationId: number): NotificationEntry[] {
-  return list.map((entry) => (entry.id === notificationId && !entry.actionUsed ? { ...entry, actionUsed: true, action: null } : entry));
+  return list.map((entry) =>
+    entry.id === notificationId && !entry.actionUsed ? { ...entry, actionUsed: true, action: null } : entry,
+  );
 }
 
 /** Unread errors and warnings: the bell's count. */

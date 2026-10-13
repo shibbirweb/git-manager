@@ -6,7 +6,7 @@ import { designTokens } from "../design-tokens/build/model";
 import { componentDocs } from "../web/src/lib/docs";
 import { componentMarkdown, indexMarkdown } from "../web/src/lib/docs/markdown";
 import type { ComponentDoc } from "../web/src/lib/docs/types";
-import { icons } from "../../src/lib/ui/icons";
+import { icons } from "../web/src/lib/icons";
 
 const webRoot = fileURLToPath(new URL("../web/", import.meta.url));
 
@@ -16,7 +16,7 @@ export const RULES = [
     "sm, md, mdPlus, lg, lgPlus, xl, xxl, xxxl) and write words with Text " +
     "(variant: body, label, hint, caption, sectionLabel, title...).",
   "Colors come from the theme tokens (tone props); sizes come from the design tokens; never hard-code either.",
-  "Import a component from $ui/components/<Name>.svelte; read its doc first (get_component).",
+  "Import a component from @git-manager/ui/components/<Name>.svelte; read its doc first (get_component).",
   "Destructive actions confirm first in a message Dialog with a Danger primary button. " +
     "Never type a shortcut into UI text.",
   "Every file stays within 120 columns and 300 lines.",

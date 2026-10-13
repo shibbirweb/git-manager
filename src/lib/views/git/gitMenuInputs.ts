@@ -35,7 +35,9 @@ export function gitRepoInputs(): GitRepoInputs | null {
 }
 
 /** The current file: the file tab on screen, with its repository and repo-relative path. */
-export function currentGitFile(activePath: string | null): { repoRoot: string; filePath: string; absolutePath: string } | null {
+export function currentGitFile(
+  activePath: string | null,
+): { repoRoot: string; filePath: string; absolutePath: string } | null {
   if (!activePath || isPseudoTab(activePath)) {
     return null;
   }

@@ -3,7 +3,7 @@
 One row of a list: hover, selected color, fold chevron, indent and hover actions around your content.
 
 ```ts
-import Row from "$ui/components/Row.svelte";
+import Row from "@git-manager/ui/components/Row.svelte";
 ```
 
 Group: Layout. Also known as: List item, Item, Row, Cell.

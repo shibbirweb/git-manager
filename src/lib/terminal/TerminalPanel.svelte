@@ -36,7 +36,9 @@
   // Run shows once a script ran.
   const tabs = $derived(
     ALL_TABS.filter(
-      (item) => (item.tab !== "gitConsole" || settings.gitConsole) && (item.tab !== "run" || terminalStore.runSessions.length > 0),
+      (item) =>
+        (item.tab !== "gitConsole" || settings.gitConsole) &&
+        (item.tab !== "run" || terminalStore.runSessions.length > 0),
     ),
   );
   // Loaded on first use, so with the setting off none of its code is in memory.
@@ -254,12 +256,23 @@
       >
         <Icon name="app-window" size={14} />
       </button>
-      <button class="icon-btn small" onclick={killActive} disabled={!active} title="Kill Terminal" aria-label="Kill Terminal">
+      <button
+        class="icon-btn small"
+        onclick={killActive}
+        disabled={!active}
+        title="Kill Terminal"
+        aria-label="Kill Terminal"
+      >
         <Icon name="trash" size={14} />
       </button>
       <span class="divider" aria-hidden="true"></span>
     {/if}
-    <button class="icon-btn small" onclick={() => terminalStore.hide()} title="Hide Panel (Ctrl+`)" aria-label="Hide panel">
+    <button
+      class="icon-btn small"
+      onclick={() => terminalStore.hide()}
+      title="Hide Panel (Ctrl+`)"
+      aria-label="Hide panel"
+    >
       <Icon name="x" size={15} />
     </button>
   </header>

@@ -36,7 +36,17 @@ const FORBID_TAGS = [
   "dialog",
 ];
 
-const FORBID_ATTR = ["style", "srcset", "target", "action", "formaction", "ping", "autofocus", "popover", "contenteditable"];
+const FORBID_ATTR = [
+  "style",
+  "srcset",
+  "target",
+  "action",
+  "formaction",
+  "ping",
+  "autofocus",
+  "popover",
+  "contenteditable",
+];
 
 purify.addHook("uponSanitizeAttribute", (_node, data) => {
   if ((data.attrName === "id" || data.attrName === "name") && data.attrValue && !data.attrValue.startsWith(ID_PREFIX)) {

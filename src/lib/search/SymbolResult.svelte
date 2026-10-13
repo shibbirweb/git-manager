@@ -6,9 +6,15 @@
 </script>
 
 <span class="badge {symbol.kind.tone}" title={symbol.kind.label}>{symbol.kind.letter}</span>
-<span class="name">{#each symbol.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
+<span class="name"
+  >{#each symbol.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+      >{:else}{part.text}{/if}{/each}</span
+>
 {#if symbol.containerParts.length > 0}
-  <span class="container">in {#each symbol.containerParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
+  <span class="container"
+    >in {#each symbol.containerParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+        >{:else}{part.text}{/if}{/each}</span
+  >
 {/if}
 <span class="location">{symbol.location}</span>
 

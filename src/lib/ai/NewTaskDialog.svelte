@@ -2,13 +2,23 @@
      branch, with an agent in it. More agents race on the same task, each in its own worktree. The worktree logic is in
      taskModel.ts and aiTasks.ts. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import TextArea from "@git-manager/ui/components/TextArea.svelte";
   import { onMount, untrack } from "svelte";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { Refs, WorktreeInfo } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
-  import GitDialogFrame from "$lib/views/git/GitDialogFrame.svelte";
   import { gitDialogs } from "$lib/views/git/gitDialogs.svelte";
   import { mainWorktreeRoot } from "$lib/views/git/worktrees/worktreeModel";
   import { repoTarget, validateBranchName } from "$lib/views/sidebar/actions";
@@ -33,9 +43,17 @@
   let createError = $state<string | null>(null);
 
   const installed = $derived(agentPrograms.installed());
+  const agentChoices = $derived([
+    ...installed.map((agent) => ({ value: agent.id, label: agent.label })),
+    { value: "", label: "No agent (worktree only)" },
+  ]);
+  const agentsLabel = $derived(
+    agents.length > 1 ? `Agents (${agents.length} race on this task, each in its own worktree)` : "Agent",
+  );
   const mainRoot = $derived(mainWorktreeRoot(worktrees, repoRoot));
   const localNames = $derived((refs?.local ?? []).map((local) => local.name));
-  const baseChoices = $derived([...new Set([baseRef, "HEAD", ...localNames, ...(refs?.remote ?? []).map((remote) => remote.name)])]);
+  const remoteNames = $derived((refs?.remote ?? []).map((remote) => remote.name));
+  const baseChoices = $derived([...new Set([baseRef, "HEAD", ...localNames, ...remoteNames])]);
   const branchName = $derived(branch.trim());
   const planned = $derived(
     taskWorktrees(
@@ -54,7 +72,9 @@
         : // A taken name is fine: the worktrees get the next free one (shown beside each agent).
           validateBranchName(branchName, branchName, repoTarget(repoRoot, refs)),
   );
-  const canCreate = $derived(!creating && branchError === null && planned.length === agents.length && repoStore.busy === null);
+  const canCreate = $derived(
+    !creating && branchError === null && planned.length === agents.length && repoStore.busy === null,
+  );
   const links = $derived(settings.aiWorktreeLinks.join(", "));
 
   // The branch follows the task name until edited.
@@ -123,172 +143,132 @@
   }
 </script>
 
-<GitDialogFrame title="New Task" width={580} closable={!creating} onCancel={close} onSubmit={() => void submit()}>
-  <label class="field">
-    <span>Task</span>
-    <input
-      class="input"
+<Dialog
+  open
+  variant="form"
+  title="New Task"
+  width="medium"
+  dismissible={!creating}
+  onclose={close}
+  onsubmit={() => void submit()}
+>
+  <Field label="Task" look="compact">
+    <Input
+      width="fill"
       bind:value={taskName}
       disabled={creating}
       placeholder="Fix the login race"
       spellcheck="false"
       autocomplete="off"
-      data-autofocus
+      autofocus
     />
-  </label>
+  </Field>
 
-  <div class="row">
-    <label class="field grow">
-      <span>Branch</span>
-      <input
-        class="input mono"
-        bind:value={branch}
-        oninput={() => (branchEdited = true)}
+  <Stack direction="row" align="end" gap="md">
+    <Stack grow>
+      <Field label="Branch" look="compact">
+        <Input
+          mono
+          width="fill"
+          bind:value={branch}
+          oninput={() => (branchEdited = true)}
+          disabled={creating}
+          spellcheck="false"
+          autocomplete="off"
+          placeholder="fix-the-login-race"
+        />
+      </Field>
+    </Stack>
+    <Field label="From" look="compact">
+      <Select
+        label="From"
+        width="medium"
+        bind:value={baseRef}
         disabled={creating}
-        spellcheck="false"
-        autocomplete="off"
-        placeholder="fix-the-login-race"
+        options={baseChoices.map((choice) => ({ value: choice, label: choice }))}
       />
-    </label>
-    <label class="field base">
-      <span>From</span>
-      <select class="input" bind:value={baseRef} disabled={creating}>
-        {#each baseChoices as choice (choice)}
-          <option value={choice}>{choice}</option>
-        {/each}
-      </select>
-    </label>
-  </div>
+    </Field>
+  </Stack>
   {#if branchError && (taskName !== "" || branch !== "")}
-    <div class="error">{branchError}</div>
+    <Text size="small" tone="danger">{branchError}</Text>
   {:else if planned[0] && planned[0].branchName !== branchName}
-    <div class="hint">{branchName} is taken, so the next free name is used.</div>
+    <Text variant="hint" tone="faint">{branchName} is taken, so the next free name is used.</Text>
   {/if}
 
-  <div class="field">
-    <span>{agents.length > 1 ? `Agents (${agents.length} race on this task, each in its own worktree)` : "Agent"}</span>
-    {#each agents as agentId, index (index)}
-      {@const worktree = planned[index]}
-      <div class="agent-row">
-        <select class="input agent-select" bind:value={agents[index]} disabled={creating} aria-label="Agent {index + 1}">
-          {#each installed as agent (agent.id)}
-            <option value={agent.id}>{agent.label}</option>
-          {/each}
-          <option value="">No agent (worktree only)</option>
-        </select>
-        <span class="target dim truncate" title={worktree?.folderPath ?? ""}>
-          {#if worktree}
-            <Icon name="branch" size={11} />{worktree.branchName}
-          {/if}
-        </span>
-        {#if agents.length > 1}
-          <button
-            type="button"
-            class="icon-btn"
-            title="Remove this agent"
-            aria-label="Remove agent {index + 1}"
+  <Field label={agentsLabel} look="compact">
+    <Stack gap="xs">
+      {#each agents as agentId, index (index)}
+        {@const worktree = planned[index]}
+        <Stack direction="row" align="center" gap="md">
+          <Select
+            label="Agent {index + 1}"
+            width="medium"
+            bind:value={agents[index]}
             disabled={creating}
-            onclick={() => (agents = agents.filter((_, other) => other !== index))}
-          >
-            <Icon name="x" size={12} />
-          </button>
+            options={agentChoices}
+          />
+          <Stack direction="row" align="center" gap="xs" grow>
+            {#if worktree}
+              <Icon name="branch" size="small" tone="dim" />
+              <Text mono size="small" tone="dim" truncate title={worktree.folderPath}>{worktree.branchName}</Text>
+            {/if}
+          </Stack>
+          {#if agents.length > 1}
+            <IconButton
+              icon="x"
+              iconSize="compact"
+              size="small"
+              label="Remove agent {index + 1}"
+              title="Remove this agent"
+              disabled={creating}
+              onclick={() => (agents = agents.filter((_, other) => other !== index))}
+            />
+          {/if}
+        </Stack>
+        {#if agentId === "" && installed.length === 0 && index === 0}
+          <Text variant="hint" tone="faint">No AI agents found on your PATH: the worktree is made without one.</Text>
         {/if}
-      </div>
-      {#if agentId === "" && installed.length === 0 && index === 0}
-        <div class="hint">No AI agents found on your PATH: the worktree is made without one.</div>
+      {/each}
+      {#if agents.length < MAX_RACE}
+        <Stack direction="row">
+          <Button size="small" icon="plus" onclick={addAgent} disabled={creating}>Add Agent to Race</Button>
+        </Stack>
       {/if}
-    {/each}
-    {#if agents.length < MAX_RACE}
-      <button type="button" class="btn small add-agent" onclick={addAgent} disabled={creating}>
-        <Icon name="plus" size={12} />
-        Add Agent to Race
-      </button>
-    {/if}
-  </div>
+    </Stack>
+  </Field>
 
-  <label class="field">
-    <span>First prompt (optional)</span>
-    <textarea
-      class="input prompt"
-      rows="3"
+  <Field label="First prompt (optional)" look="compact">
+    <TextArea
+      rows="normal"
+      resize="vertical"
       bind:value={prompt}
       disabled={creating}
       placeholder="What should the agents do? Each one gets the same prompt."
-    ></textarea>
-  </label>
+    />
+  </Field>
 
-  <label class="check">
-    <input type="checkbox" bind:checked={prepare} disabled={creating} />
-    Get it ready to run: copy the files listed in .worktreeinclude{links ? ` and link ${links}` : ""}
-  </label>
+  <Checkbox
+    bind:checked={prepare}
+    disabled={creating}
+    label="Get it ready to run: copy the files listed in .worktreeinclude{links ? ` and link ${links}` : ''}"
+  />
 
   {#if creating}
-    <div class="row hint" role="status">
-      <span class="spinner" aria-hidden="true"></span>
-      Creating {agents.length === 1 ? "the worktree" : `${agents.length} worktrees`}...
-    </div>
+    <Stack direction="row" align="center" gap="md" role="status">
+      <Spinner size="small" label="Creating" />
+      <Text variant="hint" tone="faint">
+        Creating {agents.length === 1 ? "the worktree" : `${agents.length} worktrees`}...
+      </Text>
+    </Stack>
   {/if}
   {#if createError}
-    <div class="error selectable">{createError}</div>
+    <Text size="small" tone="danger" selectable>{createError}</Text>
   {/if}
 
-  {#snippet footer()}
-    <button type="button" class="btn" onclick={close} disabled={creating}>Cancel</button>
-    <button type="button" class="btn primary" disabled={!canCreate} onclick={() => void submit()}>
+  {#snippet actions()}
+    <Button onclick={close} disabled={creating}>Cancel</Button>
+    <Button variant="primary" disabled={!canCreate} onclick={() => void submit()}>
       {creating ? "Creating..." : agents.length > 1 ? `Create ${agents.length} Worktrees` : "Create Task"}
-    </button>
+    </Button>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .row {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-  }
-
-  .grow {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .base {
-    width: 190px;
-  }
-
-  .agent-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-  }
-
-  .agent-select {
-    flex: none;
-    width: 220px;
-  }
-
-  .target {
-    flex: 1;
-    min-width: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    font-family: var(--font-mono);
-  }
-
-  .add-agent {
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 6px;
-  }
-
-  .prompt {
-    width: 100%;
-    resize: vertical;
-    font-family: inherit;
-  }
-</style>
+</Dialog>

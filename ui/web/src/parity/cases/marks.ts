@@ -23,15 +23,6 @@ export const markCases: ParityCase[] = [
     pairs: [{ name: "dot", ref: ".status", lib: ".dot" }],
   },
   {
-    id: "link-avatar",
-    sources: ["src/lib/views/github/GitHubSignInForm.svelte"],
-    html: '<span class="avatar">AL</span><button class="link">Create a token</button>',
-    pairs: [
-      { name: "avatar", ref: ".avatar", lib: ".avatar" },
-      { name: "link", ref: ".link", lib: ".link", states: ["hover"] },
-    ],
-  },
-  {
     id: "chip-pill-mark",
     sources: ["src/lib/ai/AiPanel.svelte"],
     html: '<button class="pill waiting">2 waiting</button><span class="badge">CC</span>',

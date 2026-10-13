@@ -12,7 +12,13 @@ const entries = [
     name: "Claude",
     cwd: null,
     location: "editor" as const,
-    agent: { agentId: "claude", folderPath: "/work/app-fix", title: "Fix login", state: "working" as const, changedAt: 0 },
+    agent: {
+      agentId: "claude",
+      folderPath: "/work/app-fix",
+      title: "Fix login",
+      state: "working" as const,
+      changedAt: 0,
+    },
   },
   { key: 3, terminalId: 13, name: "test", cwd: "/work/app", location: "run" as const },
   { key: 4, terminalId: null, name: "not started", cwd: null, location: "panel" as const },
@@ -39,7 +45,15 @@ describe("terminalMemoryRows", () => {
   it("keeps a terminal this window no longer lists, without a target", () => {
     const rows = terminalMemoryRows([{ terminalId: 99, bytes: MB, processes: 1 }], entries);
     expect(rows).toEqual([
-      { terminalId: 99, terminalKey: null, kind: "terminal", label: "Terminal", folderName: "", bytes: MB, processes: 1 },
+      {
+        terminalId: 99,
+        terminalKey: null,
+        kind: "terminal",
+        label: "Terminal",
+        folderName: "",
+        bytes: MB,
+        processes: 1,
+      },
     ]);
   });
 

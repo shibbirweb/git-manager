@@ -12,8 +12,10 @@ describe("task lists", () => {
   it("turns task items into checkboxes with their source line", () => {
     const html = render("Intro\n\n- [x] Cart\n- [ ] Checkout\n");
     expect(html).toContain('<ul class="contains-task-list">');
-    expect(html).toContain('<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" ' +
-      'data-task-line="2" checked> Cart</li>');
+    expect(html).toContain(
+      '<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" ' +
+        'data-task-line="2" checked> Cart</li>',
+    );
     expect(html).toContain('data-task-line="3"> Checkout');
   });
 

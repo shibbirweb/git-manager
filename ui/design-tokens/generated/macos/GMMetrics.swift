@@ -191,6 +191,7 @@ public enum GMDialogWidth {
 }
 
 public enum GMViewHeight {
+    public static let xsmall: CGFloat = 120
     public static let small: CGFloat = 160
     public static let medium: CGFloat = 240
     public static let large: CGFloat = 360

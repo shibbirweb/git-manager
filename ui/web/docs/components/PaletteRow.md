@@ -3,7 +3,7 @@
 One row of a CommandPalette: icon or badge, title with matches, then check, reason, folder and keys.
 
 ```ts
-import PaletteRow from "$ui/components/PaletteRow.svelte";
+import PaletteRow from "@git-manager/ui/components/PaletteRow.svelte";
 ```
 
 Group: Overlays. Also known as: Palette item.

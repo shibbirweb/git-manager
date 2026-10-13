@@ -7,7 +7,11 @@ import { type HistoryEntry, historyLabel } from "./commitMessages";
 import type { CommitTemplate } from "./commitTemplates";
 
 /** Recent messages, newest first; picking one puts it into the box. */
-export function historyMenuItems(entries: HistoryEntry[], nowMs: number, onPick: (message: string) => void): MenuItem[] {
+export function historyMenuItems(
+  entries: HistoryEntry[],
+  nowMs: number,
+  onPick: (message: string) => void,
+): MenuItem[] {
   if (entries.length === 0) {
     return [{ label: "No recent messages", action: () => {}, disabled: true }];
   }
@@ -39,7 +43,11 @@ export function templateMenuItems(
     if (items.length > 0) {
       items.push({ separator: true });
     }
-    items.push({ label: "Git Commit Template", hint: "commit.template", action: () => handlers.onGitTemplate(gitTemplate) });
+    items.push({
+      label: "Git Commit Template",
+      hint: "commit.template",
+      action: () => handlers.onGitTemplate(gitTemplate),
+    });
   }
   if (items.length === 0) {
     items.push({ label: "No templates yet", action: () => {}, disabled: true });

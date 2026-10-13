@@ -4,16 +4,7 @@
   export const MAX_GRAPH_LANES = 24;
 
   // Mid-tone hues that keep contrast on both light and dark panels.
-  export const LANE_COLORS = [
-    "#4a8af4",
-    "#e0604f",
-    "#3aa55d",
-    "#d9a21b",
-    "#a46ee8",
-    "#1fb1b5",
-    "#e2639f",
-    "#e8883a",
-  ];
+  export const LANE_COLORS = ["#4a8af4", "#e0604f", "#3aa55d", "#d9a21b", "#a46ee8", "#1fb1b5", "#e2639f", "#e8883a"];
 
   export function graphColumnWidth(laneCount: number): number {
     const lanes = Math.min(Math.max(1, laneCount), MAX_GRAPH_LANES);

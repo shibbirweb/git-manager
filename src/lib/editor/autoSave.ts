@@ -27,7 +27,8 @@ export interface AutoSaveCheck {
 
 export function shouldAutoSave(check: AutoSaveCheck): boolean {
   const wanted =
-    (check.mode === "afterDelay" && check.trigger === "delay") || (check.mode === "onFocusChange" && check.trigger === "focus");
+    (check.mode === "afterDelay" && check.trigger === "delay") ||
+    (check.mode === "onFocusChange" && check.trigger === "focus");
   return wanted && check.dirty && check.editable && !check.saving && !check.conflicted && !check.inMergeTool;
 }
 

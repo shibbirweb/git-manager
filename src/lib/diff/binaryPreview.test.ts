@@ -47,7 +47,9 @@ describe("sideState", () => {
       status: "absent",
       text: "Not in Index",
     });
-    expect(sideState("modified", "Working Tree", worktree, { stat: { exists: false, size: 0, limit: null }, url: null })).toEqual({
+    expect(
+      sideState("modified", "Working Tree", worktree, { stat: { exists: false, size: 0, limit: null }, url: null }),
+    ).toEqual({
       status: "absent",
       text: "Deleted",
     });
@@ -60,8 +62,14 @@ describe("sideState", () => {
       url: "gmpreview://localhost/x",
       size: 2048,
     });
-    expect(sideState("original", "HEAD", head, { error: "Not allowed" })).toEqual({ status: "error", text: "Not allowed" });
-    const tooBig = sideState("original", "HEAD", head, { stat: { exists: true, size: 0, limit: 50 * 1024 * 1024 }, url: null });
+    expect(sideState("original", "HEAD", head, { error: "Not allowed" })).toEqual({
+      status: "error",
+      text: "Not allowed",
+    });
+    const tooBig = sideState("original", "HEAD", head, {
+      stat: { exists: true, size: 0, limit: 50 * 1024 * 1024 },
+      url: null,
+    });
     expect(tooBig).toEqual({ status: "error", text: "The file is larger than 50 MB, too big to preview." });
   });
 });
@@ -77,7 +85,16 @@ describe("sideInfo", () => {
 
 describe("sharedFit", () => {
   it("fits both images at one scale", () => {
-    expect(sharedFit([{ width: 200, height: 100 }, { width: 400, height: 100 }], 200, 200)).toBe(0.5);
+    expect(
+      sharedFit(
+        [
+          { width: 200, height: 100 },
+          { width: 400, height: 100 },
+        ],
+        200,
+        200,
+      ),
+    ).toBe(0.5);
     expect(sharedFit([{ width: 50, height: 50 }, null], 200, 200)).toBe(1);
     expect(sharedFit([null, null], 200, 200)).toBe(1);
   });

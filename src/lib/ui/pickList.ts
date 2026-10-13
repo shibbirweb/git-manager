@@ -12,9 +12,7 @@ export interface PickItem<T extends string = string> {
   disabled?: boolean;
 }
 
-export type PickRow<T extends string = string> =
-  | { kind: "group"; label: string }
-  | { kind: "item"; item: PickItem<T> };
+export type PickRow<T extends string = string> = { kind: "group"; label: string } | { kind: "item"; item: PickItem<T> };
 
 function matches(item: PickItem, words: string[]): boolean {
   const text = `${item.label} ${item.description ?? ""}`.toLowerCase();
@@ -23,7 +21,10 @@ function matches(item: PickItem, words: string[]): boolean {
 
 /** Items matching every word of `query` (case-insensitive), with group headings. */
 export function pickRows<T extends string>(items: PickItem<T>[], query: string): PickRow<T>[] {
-  const words = query.toLowerCase().split(/\s+/).filter((word) => word !== "");
+  const words = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word !== "");
   const rows: PickRow<T>[] = [];
   let group: string | undefined;
   for (const item of items) {

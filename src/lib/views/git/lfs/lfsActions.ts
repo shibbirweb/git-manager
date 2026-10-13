@@ -134,9 +134,22 @@ export function lfsMenuItems(repoRoot: string, status: LfsStatus | null): MenuIt
       action: () => void untrackPattern(repoRoot),
     },
     { separator: true },
-    { label: "Pull LFS Objects", disabled: busy || (status !== null && !used), action: () => void transferObjects(repoRoot, true) },
-    { label: "Fetch LFS Objects", disabled: busy || (status !== null && !used), action: () => void transferObjects(repoRoot, false) },
-    { label: "Prune LFS Objects...", danger: true, disabled: busy || (status !== null && !used), action: () => void pruneObjects(repoRoot) },
+    {
+      label: "Pull LFS Objects",
+      disabled: busy || (status !== null && !used),
+      action: () => void transferObjects(repoRoot, true),
+    },
+    {
+      label: "Fetch LFS Objects",
+      disabled: busy || (status !== null && !used),
+      action: () => void transferObjects(repoRoot, false),
+    },
+    {
+      label: "Prune LFS Objects...",
+      danger: true,
+      disabled: busy || (status !== null && !used),
+      action: () => void pruneObjects(repoRoot),
+    },
     { separator: true },
     { label: "Install Hooks", disabled: busy, action: () => void installHooks(repoRoot) },
   ];

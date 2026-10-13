@@ -31,7 +31,14 @@ const SECRET_WORDS = /password|passphrase|passcode|token|\bpin\b|secret/i;
 
 export function parsePrompt(prompt: string): ParsedPrompt {
   const text = prompt.trim();
-  const base: ParsedPrompt = { kind: "other", host: null, user: null, keyPath: null, secret: SECRET_WORDS.test(text), text };
+  const base: ParsedPrompt = {
+    kind: "other",
+    host: null,
+    user: null,
+    keyPath: null,
+    secret: SECRET_WORDS.test(text),
+    text,
+  };
 
   // Git: "Username for 'https://github.com': " and "Password for 'https://octocat@github.com': ".
   const gitAsk = /^(Username|Password) for '([^']*)'/i.exec(text);
@@ -79,7 +86,11 @@ export const REMEMBER_MS = 60_000;
  * Git asks for the username and the password in two steps; the sign-in dialog asks both at
  * once. The password answers git's second question when it is for the same server and user.
  */
-export function rememberedPassword(remembered: RememberedPassword | null, prompt: ParsedPrompt, now: number): string | null {
+export function rememberedPassword(
+  remembered: RememberedPassword | null,
+  prompt: ParsedPrompt,
+  now: number,
+): string | null {
   if (!remembered || prompt.kind !== "password" || now > remembered.until) {
     return null;
   }

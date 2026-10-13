@@ -3,7 +3,7 @@
 The list under a breadcrumb: a filter field, then the folder's entries in their git colors.
 
 ```ts
-import CrumbPopup from "$ui/components/CrumbPopup.svelte";
+import CrumbPopup from "@git-manager/ui/components/CrumbPopup.svelte";
 ```
 
 Group: Overlays. Also known as: Folder popup, Nav popup.

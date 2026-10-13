@@ -18,8 +18,21 @@
   import type { TerminalOutputMessage } from "$lib/types";
   import { platformName } from "$lib/update/releases";
   import type { TerminalAddons } from "./addons";
-  import { dropText, TERMINAL_DRAG_EVENT, TERMINAL_DROP_EVENT, type TerminalDragDetail, type TerminalDropDetail } from "./dropPaths";
-  import { type CellText, FileExistenceCache, type FileLink, fileLinksForLine, lineCells, parseOsc7 } from "./fileLinks";
+  import {
+    dropText,
+    TERMINAL_DRAG_EVENT,
+    TERMINAL_DROP_EVENT,
+    type TerminalDragDetail,
+    type TerminalDropDetail,
+  } from "./dropPaths";
+  import {
+    type CellText,
+    FileExistenceCache,
+    type FileLink,
+    fileLinksForLine,
+    lineCells,
+    parseOsc7,
+  } from "./fileLinks";
   import {
     DEFAULT_FIND_OPTIONS,
     findCounterText,
@@ -38,7 +51,14 @@
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
   import { runFinishedMessage, runHeader } from "./runs";
   import { usageStore } from "$lib/ai/usageStore.svelte";
-  import { exitMessage, QUIET_SHELL_MS, shellNameFor, startupFailureTitle, startupLabel, type StartupPhase } from "./terminals";
+  import {
+    exitMessage,
+    QUIET_SHELL_MS,
+    shellNameFor,
+    startupFailureTitle,
+    startupLabel,
+    type StartupPhase,
+  } from "./terminals";
   import type { TerminalPlacement } from "./terminalTabs";
   import { currentTerminalTheme, watchTheme } from "./theme";
 
@@ -108,7 +128,9 @@
   let dropOver = $state(false);
 
   const displayOptions = $derived(terminalDisplayOptions(settings, terminal.exited));
-  const shellName = $derived(terminal.run ? terminal.run.program : shellNameFor(terminal.shellId, terminalStore.shells));
+  const shellName = $derived(
+    terminal.run ? terminal.run.program : shellNameFor(terminal.shellId, terminalStore.shells),
+  );
   const statusLabel = $derived(startupLabel(phase, shellName));
   const addonPlan = $derived(terminalAddonPlan(settings));
   const findError = $derived(findQueryError(findQuery, findOptions));
@@ -313,7 +335,14 @@
       if (run) {
         instance.write(runHeader(run));
         info = await api.runScript(
-          { program: run.program, args: run.args, cwd: run.cwd, nodeBinDir: run.nodeBinDir, cols: instance.cols, rows: instance.rows },
+          {
+            program: run.program,
+            args: run.args,
+            cwd: run.cwd,
+            nodeBinDir: run.nodeBinDir,
+            cols: instance.cols,
+            rows: instance.rows,
+          },
           shellChannel,
         );
       } else {
@@ -595,7 +624,10 @@
     if (!instance || terminal.exited || !detail) {
       return;
     }
-    const text = dropText(detail.filePaths ?? [], platformName(navigator.userAgent) === "Windows" ? "windows" : "posix");
+    const text = dropText(
+      detail.filePaths ?? [],
+      platformName(navigator.userAgent) === "Windows" ? "windows" : "posix",
+    );
     if (text) {
       instance.paste(text);
       instance.focus();
@@ -654,7 +686,11 @@
     });
   }
 
-  async function provideFileLinks(instance: Terminal, cache: FileExistenceCache, bufferLine: number): Promise<ILink[] | undefined> {
+  async function provideFileLinks(
+    instance: Terminal,
+    cache: FileExistenceCache,
+    bufferLine: number,
+  ): Promise<ILink[] | undefined> {
     const line = instance.buffer.active.getLine(bufferLine - 1);
     if (!line) {
       return undefined;
@@ -1138,11 +1174,15 @@
    */
   .terminal-view :global(.xterm-rows) {
     font-variant-ligatures: none;
-    font-feature-settings: "liga" 0, "calt" 0;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
   }
 
   .terminal-view.ligatures :global(.xterm-rows) {
     font-variant-ligatures: common-ligatures contextual;
-    font-feature-settings: "liga" 1, "calt" 1;
+    font-feature-settings:
+      "liga" 1,
+      "calt" 1;
   }
 </style>

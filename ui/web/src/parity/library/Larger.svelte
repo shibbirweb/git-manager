@@ -36,10 +36,6 @@
       { id: "tax", title: "tax.ts" },
     ]}
   />
-{:else if id === "reorder-list"}
-  <ReorderList label="Commits" items={[commit]} itemKey={(row) => row.id} onreorder={run}>
-    {#snippet row(item)}<Text>{item.id}</Text>{/snippet}
-  </ReorderList>
 {:else if id === "shortcut-recorder"}
   <ShortcutRecorder label="Commit" keys="⌘K" onrecord={run} />
 {/if}

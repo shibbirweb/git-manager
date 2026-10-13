@@ -324,12 +324,18 @@ const languageCompartment = new Compartment();
 const languageViews = new Set<EditorView>();
 
 /** The file an editor shows and whether its compartment holds the grammar. */
-const languageInfo = Facet.define<{ filePath: string; highlighted: boolean }, { filePath: string; highlighted: boolean } | null>({
+const languageInfo = Facet.define<
+  { filePath: string; highlighted: boolean },
+  { filePath: string; highlighted: boolean } | null
+>({
   combine: (values) => values[0] ?? null,
 });
 
 async function languageContent(filePath: string, highlighted: boolean): Promise<Extension> {
-  return [languageInfo.of({ filePath, highlighted }), highlighted ? await languageFor(filePath) : plainLanguage(filePath)];
+  return [
+    languageInfo.of({ filePath, highlighted }),
+    highlighted ? await languageFor(filePath) : plainLanguage(filePath),
+  ];
 }
 
 /** Gives one editor the language the setting asks for, unless it already has it. */

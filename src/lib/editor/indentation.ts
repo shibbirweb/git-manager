@@ -25,7 +25,9 @@ const views = new Set<EditorView>();
 const redetect = StateEffect.define<IndentOptions>();
 
 function indentFor(state: EditorState, next: IndentOptions): EditorIndent {
-  const found = next.detect ? detectIndentation(state.doc.iterLines(1, Math.min(state.doc.lines, MAX_DETECT_LINES) + 1)) : null;
+  const found = next.detect
+    ? detectIndentation(state.doc.iterLines(1, Math.min(state.doc.lines, MAX_DETECT_LINES) + 1))
+    : null;
   if (!found) {
     return { useTabs: false, size: next.tabSize, detected: false };
   }

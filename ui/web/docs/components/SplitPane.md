@@ -3,7 +3,7 @@
 Two panes side by side or stacked, with a ResizeHandle between; `size` is the first pane's px.
 
 ```ts
-import SplitPane from "$ui/components/SplitPane.svelte";
+import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
 ```
 
 Group: Layout. Also known as: Resizable, Splitter.

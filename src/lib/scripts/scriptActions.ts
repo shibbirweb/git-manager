@@ -19,7 +19,10 @@ export function runProjectScript(
 ): Promise<void> {
   const pick = nodePickFor(source, nodeInstalls, settings.scriptNodeVersions);
   if (pick?.missing && pick.wanted) {
-    toast.info(`Node ${pick.wanted.spec} is not installed`, `${pick.wanted.source} asks for it; running with the shell's default node.`);
+    toast.info(
+      `Node ${pick.wanted.spec} is not installed`,
+      `${pick.wanted.source} asks for it; running with the shell's default node.`,
+    );
   }
   return terminalStore.startRun(scriptRunSpec(source, script, pick), terminalName(source, script.name), askToStop);
 }

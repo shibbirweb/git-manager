@@ -283,7 +283,8 @@
 
   /** The top left of the focused editor group (else the editor area), where the bar floats when hidden. */
   function floatingAnchor(): { top: number; left: number; maxWidth: number } | null {
-    const area = document.querySelector<HTMLElement>(".editor-group.focused") ?? document.querySelector<HTMLElement>("main.main");
+    const area =
+      document.querySelector<HTMLElement>(".editor-group.focused") ?? document.querySelector<HTMLElement>("main.main");
     const rect = area?.getBoundingClientRect();
     if (!rect || rect.width === 0) {
       return null;
@@ -448,7 +449,7 @@
       onclick={() => onCrumbClick(index)}
     >
       {#if crumb.kind === "file"}
-        <FileTypeIcon fileName={crumb.name} size={12} />
+        <FileTypeIcon fileName={crumb.name} size="compact" />
       {:else if icon}
         <Icon name={icon} size={12} />
       {/if}
@@ -486,7 +487,14 @@
         onkeydown={onKeydown}
       />
     </div>
-    <div class="list" role="listbox" id={listId} aria-label="Contents" bind:this={list} style:max-height="{position.maxHeight - 34}px">
+    <div
+      class="list"
+      role="listbox"
+      id={listId}
+      aria-label="Contents"
+      bind:this={list}
+      style:max-height="{position.maxHeight - 34}px"
+    >
       {#each rows as row, index (row.item.path)}
         {@const tone = row.item.isDir ? "" : (tones?.tone(row.item.path) ?? "")}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -512,7 +520,8 @@
             {/if}
           </span>
           <span class="name"
-            >{#each row.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span
+            >{#each row.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                >{:else}{part.text}{/if}{/each}</span
           >
           {#if row.item.isDir}
             <span class="more" aria-hidden="true"><Icon name="chevron-right" size={11} /></span>

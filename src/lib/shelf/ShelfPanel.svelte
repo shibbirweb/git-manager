@@ -160,7 +160,13 @@
     >
       Shelve Changes...
     </button>
-    <button class="icon-btn small" onclick={() => void load(repoRoot)} disabled={!repoRoot} title="Refresh" aria-label="Refresh">
+    <button
+      class="icon-btn small"
+      onclick={() => void load(repoRoot)}
+      disabled={!repoRoot}
+      title="Refresh"
+      aria-label="Refresh"
+    >
       <Icon name="refresh" size={14} />
     </button>
   </div>
@@ -170,9 +176,7 @@
   {:else if loadError}
     <div class="placeholder dim">Could not read the shelf: {loadError}</div>
   {:else if loaded && entries.length === 0}
-    <div class="placeholder dim">
-      No shelved changes. Shelve Changes puts changes aside without committing them.
-    </div>
+    <div class="placeholder dim">No shelved changes. Shelve Changes puts changes aside without committing them.</div>
   {:else}
     <ul class="list" role="tree" aria-label="Shelved changes">
       {#each entries as entry (entry.id)}

@@ -2,6 +2,16 @@
      repository by default, following the branch until edited); then open it here, add it to the
      workspace, or (from the AI panel) start an agent in it. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { open } from "@tauri-apps/plugin-dialog";
   import { onMount, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
@@ -10,7 +20,6 @@
   import type { Refs, WorktreeBranch, WorktreeInfo } from "$lib/types";
   import { toast } from "$lib/ui/toast.svelte";
   import { repoTarget, validateBranchName } from "../../sidebar/actions";
-  import GitDialogFrame from "../GitDialogFrame.svelte";
   import { gitDialogs } from "../gitDialogs.svelte";
   import { availableBranches, defaultWorktreePath, mainWorktreeRoot, validateWorktreePath } from "./worktreeModel";
   import { worktreeStore } from "./worktreeStore.svelte";
@@ -65,10 +74,11 @@
       refs = loadedRefs;
       worktrees = loadedWorktrees;
       if (existingBranch === "") {
-        existingBranch = availableBranches(
-          (loadedRefs?.local ?? []).map((branch) => branch.name),
-          loadedWorktrees,
-        )[0] ?? "";
+        existingBranch =
+          availableBranches(
+            (loadedRefs?.local ?? []).map((branch) => branch.name),
+            loadedWorktrees,
+          )[0] ?? "";
       }
       if (!folderEdited) {
         folder = defaultWorktreePath(mainWorktreeRoot(loadedWorktrees, repoRoot), branchName);
@@ -90,7 +100,8 @@
     const chosen = await open({ directory: true, multiple: false, title: "Worktree Location", defaultPath: mainRoot });
     if (typeof chosen === "string" && chosen) {
       // The picked folder holds the new worktree folder.
-      folder = joinPath(fromNativePath(chosen).replace(/\/+$/, ""), baseName(defaultWorktreePath(mainRoot, branchName)));
+      const folderName = baseName(defaultWorktreePath(mainRoot, branchName));
+      folder = joinPath(fromNativePath(chosen).replace(/\/+$/, ""), folderName);
       folderEdited = true;
     }
   }
@@ -141,61 +152,72 @@
   }
 </script>
 
-<GitDialogFrame title="New Worktree" width={560} closable={!creating} onCancel={close} onSubmit={() => void submit()}>
-  <fieldset class="modes">
-    <label class="check">
-      <input type="radio" name="worktree-branch" value="new" bind:group={mode} disabled={creating} />
-      New branch
-    </label>
-    <label class="check">
-      <input type="radio" name="worktree-branch" value="existing" bind:group={mode} disabled={creating || checkoutable.length === 0} />
-      Existing branch
-    </label>
-  </fieldset>
+<Dialog
+  open
+  variant="form"
+  title="New Worktree"
+  width="medium"
+  dismissible={!creating}
+  onclose={close}
+  onsubmit={() => void submit()}
+>
+  <RadioGroup
+    name="worktree-branch"
+    label="Branch"
+    direction="row"
+    bind:value={mode}
+    options={[
+      { value: "new", label: "New branch", disabled: creating },
+      { value: "existing", label: "Existing branch", disabled: creating || checkoutable.length === 0 },
+    ]}
+  />
 
   {#if mode === "new"}
-    <div class="row">
-      <label class="field grow">
-        <span>Branch name</span>
-        <input
-          class="input mono"
-          bind:value={newBranch}
+    <Stack direction="row" gap="md">
+      <Stack grow>
+        <Field label="Branch name" look="compact">
+          <Input
+            mono
+            width="fill"
+            bind:value={newBranch}
+            disabled={creating}
+            spellcheck="false"
+            autocomplete="off"
+            placeholder="feature/my-change"
+            autofocus
+          />
+        </Field>
+      </Stack>
+      <Field label="From" look="compact">
+        <Select
+          label="From"
+          width="medium"
+          bind:value={baseRef}
           disabled={creating}
-          spellcheck="false"
-          autocomplete="off"
-          placeholder="feature/my-change"
-          data-autofocus
+          options={baseChoices.map((choice) => ({ value: choice, label: choice }))}
         />
-      </label>
-      <label class="field base">
-        <span>From</span>
-        <select class="input" bind:value={baseRef} disabled={creating}>
-          {#each baseChoices as choice (choice)}
-            <option value={choice}>{choice}</option>
-          {/each}
-        </select>
-      </label>
-    </div>
+      </Field>
+    </Stack>
   {:else}
-    <label class="field">
-      <span>Branch</span>
-      <select class="input" bind:value={existingBranch} disabled={creating}>
-        {#each checkoutable as choice (choice)}
-          <option value={choice}>{choice}</option>
-        {/each}
-      </select>
-    </label>
-    <div class="hint">Branches checked out in another worktree are not listed.</div>
+    <Field label="Branch" look="compact" hint="Branches checked out in another worktree are not listed.">
+      <Select
+        label="Branch"
+        width="fill"
+        bind:value={existingBranch}
+        disabled={creating}
+        options={checkoutable.map((choice) => ({ value: choice, label: choice }))}
+      />
+    </Field>
   {/if}
   {#if branchError && (mode === "existing" || newBranch !== "")}
-    <div class="error">{branchError}</div>
+    <Text size="small" tone="danger">{branchError}</Text>
   {/if}
 
-  <label class="field">
-    <span>Folder</span>
-    <div class="row">
-      <input
-        class="input grow mono"
+  <Field label="Folder" look="compact" error={folderError && folder !== "" ? folderError : null}>
+    <Stack direction="row" align="center" gap="md">
+      <Input
+        mono
+        width="fill"
         bind:value={folder}
         oninput={() => (folderEdited = true)}
         disabled={creating}
@@ -203,74 +225,52 @@
         autocomplete="off"
         aria-label="Folder"
       />
-      <button type="button" class="btn" onclick={() => void browse()} disabled={creating}>Browse...</button>
-    </div>
-  </label>
-  {#if folderError && folder !== ""}
-    <div class="error">{folderError}</div>
-  {/if}
+      <Button onclick={() => void browse()} disabled={creating}>Browse...</Button>
+    </Stack>
+  </Field>
 
-  <label class="check">
-    <input
-      type="checkbox"
-      checked={afterCreate === "open"}
-      onchange={(event) => (afterCreate = event.currentTarget.checked ? "open" : "none")}
-      disabled={creating}
-    />
-    Open in this window
-  </label>
-  <label class="check">
-    <input
-      type="checkbox"
-      checked={afterCreate === "add"}
-      onchange={(event) => (afterCreate = event.currentTarget.checked ? "add" : "none")}
-      disabled={creating || repoStore.workspace === null}
-    />
-    Add to workspace
-  </label>
+  <Checkbox
+    checked={afterCreate === "open"}
+    onchange={(checked) => (afterCreate = checked ? "open" : "none")}
+    disabled={creating}
+    label="Open in this window"
+  />
+  <Checkbox
+    checked={afterCreate === "add"}
+    onchange={(checked) => (afterCreate = checked ? "add" : "none")}
+    disabled={creating || repoStore.workspace === null}
+    label="Add to workspace"
+  />
 
   {#if startAgent}
-    <label class="field">
-      <span>Then start</span>
-      <select class="input" bind:value={agentChoice} disabled={creating}>
-        <option value="">No agent</option>
-        {#each agentPrograms.installed() as agent (agent.id)}
-          <option value={agent.id}>{agent.label}</option>
-        {/each}
-      </select>
-    </label>
+    <Field label="Then start" look="compact">
+      <Select
+        label="Then start"
+        width="fill"
+        bind:value={agentChoice}
+        disabled={creating}
+        options={[
+          { value: "", label: "No agent" },
+          ...agentPrograms.installed().map((agent) => ({ value: agent.id, label: agent.label })),
+        ]}
+      />
+    </Field>
   {/if}
 
   {#if creating}
-    <div class="row hint" role="status"><span class="spinner" aria-hidden="true"></span>Creating the worktree...</div>
+    <Stack direction="row" align="center" gap="md" role="status">
+      <Spinner size="small" label="Creating" />
+      <Text variant="hint" tone="faint">Creating the worktree...</Text>
+    </Stack>
   {/if}
   {#if createError}
-    <div class="error selectable">{createError}</div>
+    <Text size="small" tone="danger" selectable>{createError}</Text>
   {/if}
 
-  {#snippet footer()}
-    <button type="button" class="btn" onclick={close} disabled={creating}>Cancel</button>
-    <button type="button" class="btn primary" disabled={!canCreate} onclick={() => void submit()}>
+  {#snippet actions()}
+    <Button onclick={close} disabled={creating}>Cancel</Button>
+    <Button variant="primary" disabled={!canCreate} onclick={() => void submit()}>
       {creating ? "Creating..." : "Create"}
-    </button>
+    </Button>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .modes {
-    display: flex;
-    gap: 16px;
-    margin: 0;
-    padding: 0;
-    border: none;
-  }
-
-  .grow {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .base {
-    width: 190px;
-  }
-</style>
+</Dialog>

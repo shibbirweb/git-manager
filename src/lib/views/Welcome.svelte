@@ -16,9 +16,23 @@
   import { openCloneDialog } from "./git/gitMenuActions";
   import { revealLabel } from "./files/reveal";
   import { type RecentEntry, recentEntries } from "./recentEntries";
-  import { openRecent, openRecentInNewWindow, pickAndOpenInNewWindow, pickAndOpenRepo, pickAndOpenWorkspaceFile } from "./repoPicker";
+  import {
+    openRecent,
+    openRecentInNewWindow,
+    pickAndOpenInNewWindow,
+    pickAndOpenRepo,
+    pickAndOpenWorkspaceFile,
+  } from "./repoPicker";
   import ColorThemePicker from "./settings/ColorThemePicker.svelte";
-  import { badgeColor, entryKey, entryPaths, entrySubtitle, filterEntries, moveSelection, projectInitials } from "./welcomeModel";
+  import {
+    badgeColor,
+    entryKey,
+    entryPaths,
+    entrySubtitle,
+    filterEntries,
+    moveSelection,
+    projectInitials,
+  } from "./welcomeModel";
 
   type Section = "projects" | "customize" | "learn";
 
@@ -95,7 +109,12 @@
       { label: "Open in New Window", action: () => open(entry, true) },
       { separator: true },
       ...(paths.length === 1
-        ? [{ label: REVEAL_LABEL, action: () => void revealItemInDir(paths[0]).catch(() => toast.error("Could not show it")) }]
+        ? [
+            {
+              label: REVEAL_LABEL,
+              action: () => void revealItemInDir(paths[0]).catch(() => toast.error("Could not show it")),
+            },
+          ]
         : []),
       { label: paths.length === 1 ? "Copy Path" : "Copy Paths", action: () => copyPaths(entry) },
       { separator: true },
@@ -196,7 +215,9 @@
         <div class="hello">
           <div class="logo big"><Icon name="merge" size={34} /></div>
           <h1>Welcome to Git Manager</h1>
-          <p class="dim">Open a folder with one repository, many repositories, or none yet.<br />Or clone one from a server.</p>
+          <p class="dim">
+            Open a folder with one repository, many repositories, or none yet.<br />Or clone one from a server.
+          </p>
           <div class="tiles">
             <button class="tile" onclick={pickAndOpenRepo}>
               <span class="tile-icon"><Icon name="folder" size={24} /></span>
@@ -230,7 +251,12 @@
           </label>
           <button class="btn" title="Open Folder..." onclick={pickAndOpenRepo}>Open</button>
           <button class="btn" title="Clone Repository..." onclick={openCloneDialog}>Clone</button>
-          <button class="icon-btn more" title="More actions" aria-label="More actions" onclick={(event) => contextMenu.open(event, moreItems())}>
+          <button
+            class="icon-btn more"
+            title="More actions"
+            aria-label="More actions"
+            onclick={(event) => contextMenu.open(event, moreItems())}
+          >
             <Icon name="more" size={15} />
           </button>
         </div>
@@ -253,7 +279,9 @@
                 onmouseenter={() => (selected = index)}
                 oncontextmenu={(event) => contextMenu.open(event, entryItems(entry))}
               >
-                <span class="badge badge-{badgeColor(entryKey(entry))}" aria-hidden="true">{projectInitials(entry.label)}</span>
+                <span class="badge badge-{badgeColor(entryKey(entry))}" aria-hidden="true"
+                  >{projectInitials(entry.label)}</span
+                >
                 <span class="text">
                   <span class="name truncate">{entry.label}</span>
                   <span class="path dim truncate">{entrySubtitle(entry)}</span>

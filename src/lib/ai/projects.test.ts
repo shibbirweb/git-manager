@@ -24,7 +24,15 @@ function worktree(path: string, branch: string | null, extra: Partial<WorktreeIn
 }
 
 function session(terminalKey: number, folderPath: string): AgentSession {
-  return { terminalKey, name: `Agent ${terminalKey}`, folderPath, state: "working", title: "", agentId: "claude", changedAt: 0 };
+  return {
+    terminalKey,
+    name: `Agent ${terminalKey}`,
+    folderPath,
+    state: "working",
+    title: "",
+    agentId: "claude",
+    changedAt: 0,
+  };
 }
 
 /** The rows as short strings, so a whole tree reads at a glance. */
@@ -156,10 +164,7 @@ describe("panelRows", () => {
   });
 
   it("lists agents of a folder without a repository right under it", () => {
-    const mixed = workspaceProjects(
-      [app, { root: "/work/notes", name: "notes", repoRoots: [] }],
-      [repo("/work/app")],
-    );
+    const mixed = workspaceProjects([app, { root: "/work/notes", name: "notes", repoRoots: [] }], [repo("/work/app")]);
     expect(outline(panelRows(mixed, {}, [session(4, "/work/notes/drafts")], new Set()))).toEqual([
       "v app",
       "  v main",
@@ -193,7 +198,12 @@ describe("panelRows", () => {
       [repo("/work/app"), repo("/work/app-moved", { worktree: true }), repo("/work/app-login", { worktree: true })],
     );
     const list = [worktree("/work/app", "main", { isMain: true }), worktree("/work/app-login", "fix/login")];
-    const rows = panelRows(opened, { "/work/app": list, "/work/app-moved": list, "/work/app-login": list }, [], new Set());
+    const rows = panelRows(
+      opened,
+      { "/work/app": list, "/work/app-moved": list, "/work/app-login": list },
+      [],
+      new Set(),
+    );
     expect(outline(rows)).toEqual(["v work", "v app", "  v main", "  v fix/login [app-login]"]);
     expect(new Set(rows.map((row) => row.key)).size).toBe(rows.length);
   });
@@ -222,7 +232,10 @@ describe("panelRows", () => {
       [{ root: "/work/app-moved", name: "app-moved", repoRoots: ["/work/app-moved"] }],
       [repo("/work/app-moved", { worktree: true })],
     );
-    expect(outline(panelRows(broken, { "/work/app-moved": [] }, [], new Set()))).toEqual(["v app-moved", "  v app-moved"]);
+    expect(outline(panelRows(broken, { "/work/app-moved": [] }, [], new Set()))).toEqual([
+      "v app-moved",
+      "  v app-moved",
+    ]);
   });
 
   it("lists a worktree once even when two repositories name it", () => {

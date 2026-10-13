@@ -4,7 +4,14 @@
 // workspace folder. Kept free of Svelte, Tauri and xterm so it can be tested
 // directly; TerminalView turns the results into xterm links.
 
-import { folderFor, fromNativePath, isAbsolutePath, joinPath, normalizePath, type FolderRef } from "$lib/stores/workspacePaths";
+import {
+  folderFor,
+  fromNativePath,
+  isAbsolutePath,
+  joinPath,
+  normalizePath,
+  type FolderRef,
+} from "$lib/stores/workspacePaths";
 
 /** A path-like piece of one terminal line. */
 export interface PathCandidate {
@@ -238,7 +245,11 @@ export interface LinkContext {
 }
 
 /** The file links of one line: candidates resolved, kept inside the workspace and checked for existence. */
-export async function fileLinksForLine(lineText: string, context: LinkContext, windows = onWindows()): Promise<FileLink[]> {
+export async function fileLinksForLine(
+  lineText: string,
+  context: LinkContext,
+  windows = onWindows(),
+): Promise<FileLink[]> {
   const candidates = findPathCandidates(lineText, windows);
   if (candidates.length === 0 || context.workspaceFolders.length === 0) {
     return [];
@@ -246,7 +257,10 @@ export async function fileLinksForLine(lineText: string, context: LinkContext, w
   const resolved = candidates.map((candidate) =>
     candidate.paths
       .map((pathText) => resolveTerminalPath(pathText, context.folderPath))
-      .filter((filePath): filePath is string => filePath !== null && folderFor(context.workspaceFolders, filePath, windows) !== null),
+      .filter(
+        (filePath): filePath is string =>
+          filePath !== null && folderFor(context.workspaceFolders, filePath, windows) !== null,
+      ),
   );
   const toCheck = resolved.flat();
   if (toCheck.length === 0) {
@@ -255,7 +269,9 @@ export async function fileLinksForLine(lineText: string, context: LinkContext, w
   const realPaths = await context.cache.realPaths(toCheck);
   const links: FileLink[] = [];
   candidates.forEach((candidate, index) => {
-    const filePath = resolved[index].map((candidatePath) => realPaths.get(candidatePath) ?? null).find((realPath) => realPath !== null);
+    const filePath = resolved[index]
+      .map((candidatePath) => realPaths.get(candidatePath) ?? null)
+      .find((realPath) => realPath !== null);
     if (filePath) {
       links.push({
         start: candidate.start,

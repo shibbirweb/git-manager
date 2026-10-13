@@ -163,7 +163,9 @@
     }
     const destination = classifyLink(anchor.getAttribute("href") ?? "", linkContext());
     if (destination.kind === "external") {
-      void openUrl(destination.url).catch((error: unknown) => toast.error("Could not open the link", errorMessage(error)));
+      void openUrl(destination.url).catch((error: unknown) =>
+        toast.error("Could not open the link", errorMessage(error)),
+      );
     } else if (destination.kind === "file") {
       void repoStore.openFile(destination.filePath, { pin: true });
     } else if (destination.kind === "blocked") {

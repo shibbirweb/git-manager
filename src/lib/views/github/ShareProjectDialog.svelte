@@ -2,15 +2,27 @@
      default), adds it as a remote and pushes the current branch with upstream. A repository
      without commits gets an initial commit of every file first. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { GitHubSharedRepository } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import GitDialogFrame from "../git/GitDialogFrame.svelte";
   import { githubAccount } from "./githubAccount.svelte";
   import { closeGitHubDialog, openGitHubDialog } from "./githubDialogs";
-  import { defaultShareRemoteName, suggestRepositoryName, validateRepositoryName, validateShareRemoteName } from "./githubModel";
+  import {
+    defaultShareRemoteName,
+    suggestRepositoryName,
+    validateRepositoryName,
+    validateShareRemoteName,
+  } from "./githubModel";
 
   interface Props {
     repoRoot: string;
@@ -52,7 +64,9 @@
     return null;
   });
   const commitError = $derived(unborn && commitMessage.trim() === "" ? "Enter a commit message" : null);
-  const canShare = $derived(!working && nameError === null && remoteError === null && blocker === null && commitError === null);
+  const canShare = $derived(
+    !working && nameError === null && remoteError === null && blocker === null && commitError === null,
+  );
 
   onMount(() => {
     void api
@@ -137,7 +151,9 @@
       kind: "result",
       title: pushProblem ? "Created on GitHub, Not Pushed" : "Shared on GitHub",
       message: pushProblem
-        ? `${shared.fullName} was created and added as ${shared.remoteName}, but pushing ${shared.branchName} failed. Make sure git can sign in to github.com over HTTPS (for example run gh auth setup-git), then push again.`
+        ? `${shared.fullName} was created and added as ${shared.remoteName}, but pushing ${shared.branchName} ` +
+          "failed. Make sure git can sign in to github.com over HTTPS (for example run gh auth setup-git), then " +
+          "push again."
         : `${shared.fullName} was created and ${shared.branchName} was pushed to ${shared.remoteName}, tracking it.`,
       url: shared.htmlUrl,
       openLabel: "Open on GitHub",
@@ -146,96 +162,82 @@
   }
 </script>
 
-<GitDialogFrame title="Share Project on GitHub" width={540} closable={!working} onCancel={close} onSubmit={() => void submit()}>
+<Dialog
+  open
+  variant="form"
+  title="Share Project on GitHub"
+  width="medium"
+  dismissible={!working}
+  onclose={close}
+  onsubmit={() => void submit()}
+>
   {#if login}
-    <div class="hint">Creates the repository under <strong>{login}</strong> on github.com.</div>
+    <Text variant="hint" tone="faint">
+      Creates the repository under <Text weight="semibold">{login}</Text> on github.com.
+    </Text>
   {/if}
-  <label class="field">
-    <span>Repository name</span>
-    <input class="input" bind:value={repositoryName} disabled={working} spellcheck="false" autocomplete="off" data-autofocus />
-  </label>
-  {#if nameError}
-    <div class="error">{nameError}</div>
-  {/if}
-  <label class="check">
-    <input type="checkbox" bind:checked={isPrivate} disabled={working} />
-    Private
-  </label>
-  <div class="row two">
-    <label class="field grow">
-      <span>Remote</span>
-      <input
-        class="input"
-        bind:value={remoteName}
-        oninput={() => (remoteEdited = true)}
-        disabled={working}
-        spellcheck="false"
-        autocomplete="off"
-      />
-    </label>
-    <label class="field wide">
-      <span>Description</span>
-      <input class="input" bind:value={description} disabled={working} placeholder="Optional" autocomplete="off" />
-    </label>
-  </div>
+  <Field label="Repository name" look="compact" error={nameError || null}>
+    <Input
+      width="fill"
+      bind:value={repositoryName}
+      disabled={working}
+      spellcheck="false"
+      autocomplete="off"
+      autofocus
+    />
+  </Field>
+  <Checkbox bind:checked={isPrivate} disabled={working} label="Private" />
+  <Stack direction="row" align="start" gap="md">
+    <Stack width="xlarge">
+      <Field label="Remote" look="compact">
+        <Input
+          width="fill"
+          bind:value={remoteName}
+          oninput={() => (remoteEdited = true)}
+          disabled={working}
+          spellcheck="false"
+          autocomplete="off"
+        />
+      </Field>
+    </Stack>
+    <Stack grow>
+      <Field label="Description" look="compact">
+        <Input width="fill" bind:value={description} disabled={working} placeholder="Optional" autocomplete="off" />
+      </Field>
+    </Stack>
+  </Stack>
   {#if remoteError}
-    <div class="error">{remoteError}</div>
+    <Text size="small" tone="danger">{remoteError}</Text>
   {/if}
   {#if unborn && fileCount > 0}
-    <div class="hint">
+    <Text variant="hint" tone="faint">
       This repository has no commits yet. Every file that is not ignored is committed first, then pushed.
-    </div>
-    <label class="field">
-      <span>Initial commit message</span>
-      <input class="input" bind:value={commitMessage} disabled={working} autocomplete="off" />
-    </label>
-    {#if commitError}
-      <div class="error">{commitError}</div>
-    {/if}
+    </Text>
+    <Field label="Initial commit message" look="compact" error={commitError || null}>
+      <Input width="fill" bind:value={commitMessage} disabled={working} autocomplete="off" />
+    </Field>
   {:else if branchName && !blocker}
-    <div class="hint">
+    <Text variant="hint" tone="faint">
       Pushes {branchName} with upstream.{fileCount > 0 ? " Uncommitted changes stay local." : ""}
-    </div>
+    </Text>
   {/if}
   {#if blocker}
-    <div class="error">{blocker}</div>
+    <Text size="small" tone="danger">{blocker}</Text>
   {/if}
   {#if working}
-    <div class="progress row" role="status">
-      <span class="spinner" aria-hidden="true"></span>
-      <span class="truncate">{repoStore.progress || step}</span>
-    </div>
+    <Stack direction="row" align="center" gap="md" role="status">
+      <Spinner size="small" label="Sharing" />
+      <Text size="small" tone="dim" truncate>{repoStore.progress || step}</Text>
+    </Stack>
   {/if}
   {#if problem}
-    <div class="error selectable">{problem}</div>
+    <Text size="small" tone="danger" selectable>{problem}</Text>
   {/if}
 
-  {#snippet footer()}
-    <button type="button" class="btn" onclick={close} disabled={working}>Cancel</button>
-    <button type="button" class="btn primary" disabled={!canShare} onclick={() => void submit()}>
+  {#snippet actions()}
+    <Button onclick={close} disabled={working}>Cancel</Button>
+    <Button variant="primary" disabled={!canShare} onclick={() => void submit()}>
       {working ? "Sharing..." : "Share"}
-    </button>
+    </Button>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .two {
-    align-items: flex-start;
-  }
-
-  .grow {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .wide {
-    flex: 2;
-    min-width: 0;
-  }
-
-  .progress {
-    font-size: 12px;
-    color: var(--text-dim);
-    min-width: 0;
-  }
-</style>
+</Dialog>

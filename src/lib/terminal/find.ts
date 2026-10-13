@@ -34,7 +34,11 @@ export interface XtermSearchOptions {
   decorations: FindDecorations;
 }
 
-export function searchOptions(options: TerminalFindOptions, decorations: FindDecorations, incremental = false): XtermSearchOptions {
+export function searchOptions(
+  options: TerminalFindOptions,
+  decorations: FindDecorations,
+  incremental = false,
+): XtermSearchOptions {
   const result: XtermSearchOptions = {
     caseSensitive: options.matchCase,
     wholeWord: options.wholeWords,
@@ -52,7 +56,8 @@ export function searchOptions(options: TerminalFindOptions, decorations: FindDec
  * background), made opaque because the addon draws them as solid boxes.
  */
 export function findDecorations(readToken: (token: string) => string): FindDecorations {
-  const background = (readToken("--term-background") ?? "").trim() || (readToken("--editor-bg") ?? "").trim() || "#ffffff";
+  const background =
+    (readToken("--term-background") ?? "").trim() || (readToken("--editor-bg") ?? "").trim() || "#ffffff";
   const warning = (readToken("--warning") ?? "").trim() || "#e5a50a";
   const match = toHex(composite(withAlpha(warning, 0.3), toHex(background)));
   const active = toHex(composite(withAlpha(warning, 0.62), toHex(background)));

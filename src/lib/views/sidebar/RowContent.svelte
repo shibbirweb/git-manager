@@ -138,7 +138,12 @@
   <span class="icon" class:current={row.worktree.isCurrent} class:dim={!row.worktree.isCurrent}>
     <Icon name={row.worktree.isCurrent ? "check" : "folder-git"} size={14} />
   </span>
-  <span class="label truncate" class:strong={row.worktree.isCurrent} class:gone={row.worktree.prunable} title={worktreeTooltip(row.worktree)}>
+  <span
+    class="label truncate"
+    class:strong={row.worktree.isCurrent}
+    class:gone={row.worktree.prunable}
+    title={worktreeTooltip(row.worktree)}
+  >
     {worktreeLabel(row.worktree)}
     <span class="worktree-path dim">{row.worktree.path}</span>
   </span>

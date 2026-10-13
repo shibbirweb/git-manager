@@ -46,7 +46,9 @@
       line: line.number,
       column: selection.head - line.from + 1,
       selected: selection.to - selection.from,
-      selectedLines: selection.empty ? 0 : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
+      selectedLines: selection.empty
+        ? 0
+        : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
       eol: "lf",
       tabSize: state.tabSize,
       indentTabs: editorIndent(state).useTabs,

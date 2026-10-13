@@ -69,7 +69,12 @@
           autocomplete="off"
           spellcheck="false"
         />
-        <button class="icon-btn" onclick={() => void remove(index)} title="Delete template" aria-label="Delete template">
+        <button
+          class="icon-btn"
+          onclick={() => void remove(index)}
+          title="Delete template"
+          aria-label="Delete template"
+        >
           <Icon name="trash" size={13} />
         </button>
       </div>
@@ -86,8 +91,7 @@
         maxlength={MAX_TEMPLATE_TEXT_LENGTH}
         rows="3"
         aria-label="Template text"
-        spellcheck="false"
-      ></textarea>
+        spellcheck="false"></textarea>
     </div>
   {:else}
     <div class="hint">No templates yet.</div>

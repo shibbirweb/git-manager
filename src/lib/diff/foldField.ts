@@ -40,7 +40,8 @@ function stepFold(view: EditorView, pos: number, edge: FoldEdge): void {
 
 function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "bottom"): HTMLElement {
   const button = document.createElement("button");
-  const title = edge === "top" ? `Show ${FOLD_STEP} more lines at the top` : `Show ${FOLD_STEP} more lines at the bottom`;
+  const title =
+    edge === "top" ? `Show ${FOLD_STEP} more lines at the top` : `Show ${FOLD_STEP} more lines at the bottom`;
   button.className = "cm-diffFoldStep";
   button.title = title;
   button.setAttribute("aria-label", title);
@@ -124,7 +125,11 @@ function applyStep(folds: DecorationSet, state: EditorState, pos: number, edge: 
 function foldField(initial: (state: EditorState) => readonly FoldRange[]): StateField<DecorationSet> {
   return StateField.define<DecorationSet>({
     create: (state) =>
-      Decoration.set(initial(state).filter((range) => range.last <= state.doc.lines).map((range) => foldDecoration(state, range))),
+      Decoration.set(
+        initial(state)
+          .filter((range) => range.last <= state.doc.lines)
+          .map((range) => foldDecoration(state, range)),
+      ),
     update(value, tr) {
       let next = value.map(tr.changes);
       for (const effect of tr.effects) {

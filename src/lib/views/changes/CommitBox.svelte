@@ -270,7 +270,8 @@
     }
     // Cmd+E, or Up in an empty box like a shell: the message history.
     const historyModifier = onMac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
-    const historyKey = (historyModifier && event.code === "KeyE") || (!command && event.key === "ArrowUp" && draft.message === "");
+    const historyKey =
+      (historyModifier && event.code === "KeyE") || (!command && event.key === "ArrowUp" && draft.message === "");
     if (historyKey) {
       event.preventDefault();
       const anchor = historyButton ?? messageEl;
@@ -315,8 +316,7 @@
       oninput={onInput}
       onkeydown={onKeydown}
       spellcheck="true"
-      aria-label="Commit message"
-    ></textarea>
+      aria-label="Commit message"></textarea>
     <div class="message-tools">
       {#if settings.commitMessageHistory}
         <button
@@ -376,8 +376,12 @@
       {:else}
         Sync Changes
         <span class="counts">
-          {#if sync.pull > 0}<span class="count" aria-label="{sync.pull} to pull">{sync.pull}<Icon name="arrow-down" size={11} /></span>{/if}
-          {#if sync.push > 0}<span class="count" aria-label="{sync.push} to push">{sync.push}<Icon name="arrow-up" size={11} /></span>{/if}
+          {#if sync.pull > 0}<span class="count" aria-label="{sync.pull} to pull"
+              >{sync.pull}<Icon name="arrow-down" size={11} /></span
+            >{/if}
+          {#if sync.push > 0}<span class="count" aria-label="{sync.push} to push"
+              >{sync.push}<Icon name="arrow-up" size={11} /></span
+            >{/if}
         </span>
       {/if}
     </button>

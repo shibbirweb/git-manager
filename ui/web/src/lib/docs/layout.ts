@@ -37,12 +37,15 @@ export const layoutDocs: ComponentDoc[] = [
       prop("scroll", '"none" | "y" | "x" | "both"', "Scrolls its content in its own box; pair with `grow`.", {
         default: '"none"',
       }),
+      prop("maxHeight", '"none" | "xsmall" | "small" | "medium" | "large"', "Grows up to 120, 160, 240 or 360 " +
+        'px, then scrolls with `scroll="y"` (a short list in a dialog).', { default: '"none"' }),
       prop("sticky", "boolean", "Stays at the top of the region scrolling under it, on the panel color with a " +
         "line under it.", { default: "false" }),
-      prop("element", '"div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form"',
-        "The HTML element; main, aside and nav mark a page's regions for screen readers.", { default: '"div"' }),
-      prop("role", '"group" | "region" | "tabpanel" | "presentation" | null', "Its role for screen readers, " +
-        "like tabpanel for the content under Tabs.", { default: "null" }),
+      prop("element", '"div" | "span" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | ' +
+        '"form"', "The HTML element; main, aside and nav mark a page's regions for screen readers; span fits inside " +
+        "a label, like a Checkbox's rich label.", { default: '"div"' }),
+      prop("role", '"group" | "region" | "tabpanel" | "alert" | "status" | "presentation" | null', "Its role for " +
+        "screen readers: tabpanel for the content under Tabs, alert for an error that appears.", { default: "null" }),
       prop("label", "string", "Accessible name, for sections and lists."),
       prop("busy", "boolean", "Tells screen readers it is loading (aria-busy), like a panel refreshing its list.", {
         default: "false",

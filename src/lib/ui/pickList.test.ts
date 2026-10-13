@@ -14,7 +14,14 @@ function shown(query: string): string[] {
 
 describe("pick rows", () => {
   it("lists everything under group headings", () => {
-    expect(shown("")).toEqual(["create", "# Branches", "local:main", "local:feature/login", "# Remote Branches", "remote:origin/main"]);
+    expect(shown("")).toEqual([
+      "create",
+      "# Branches",
+      "local:main",
+      "local:feature/login",
+      "# Remote Branches",
+      "remote:origin/main",
+    ]);
   });
 
   it("filters by every word, case-insensitively, keeping pinned items", () => {

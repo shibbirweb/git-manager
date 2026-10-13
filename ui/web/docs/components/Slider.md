@@ -3,7 +3,7 @@
 A range slider with its value on the right, like Settings' font size.
 
 ```ts
-import Slider from "$ui/components/Slider.svelte";
+import Slider from "@git-manager/ui/components/Slider.svelte";
 ```
 
 Group: Forms. Also known as: Slider, Range.

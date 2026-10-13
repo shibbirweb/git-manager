@@ -14,7 +14,16 @@ describe("patchLines", () => {
       "--- not a header inside a hunk",
       "",
     ].join("\n");
-    expect(patchLines(patch).map((line) => line.kind)).toEqual(["file", "file", "file", "hunk", "context", "deleted", "added", "deleted"]);
+    expect(patchLines(patch).map((line) => line.kind)).toEqual([
+      "file",
+      "file",
+      "file",
+      "hunk",
+      "context",
+      "deleted",
+      "added",
+      "deleted",
+    ]);
   });
 
   it("is empty for an empty patch", () => {

@@ -1,9 +1,12 @@
 <!-- The end of a GitHub action: what happened, and the page it made with Copy and Open. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { errorMessage } from "$lib/api";
   import { toast } from "$lib/ui/toast.svelte";
   import { updates } from "$lib/update/updates.svelte";
-  import GitDialogFrame from "../git/GitDialogFrame.svelte";
   import { closeGitHubDialog } from "./githubDialogs";
 
   interface Props {
@@ -36,29 +39,31 @@
   }
 </script>
 
-<GitDialogFrame {title} width={520} onCancel={closeGitHubDialog} onSubmit={url ? () => void open() : undefined}>
-  <div class="message">{message}</div>
+<Dialog
+  open
+  variant="form"
+  {title}
+  width="normal"
+  onclose={closeGitHubDialog}
+  onsubmit={url ? () => void open() : undefined}
+>
+  <Text variant="paragraph">{message}</Text>
   {#if problem}
-    <div class="error selectable">{problem}</div>
+    <Text size="small" tone="danger" selectable>{problem}</Text>
   {/if}
   {#if url}
-    <div class="command selectable">{url}</div>
+    <CodeBlock variant="command" text={url} label="Link" />
   {/if}
 
-  {#snippet footer()}
+  {#snippet footnote()}
     {#if url}
-      <button type="button" class="btn" onclick={() => void copy()}>Copy Link</button>
-    {/if}
-    <span class="spacer"></span>
-    <button type="button" class={url ? "btn" : "btn primary"} onclick={closeGitHubDialog}>Close</button>
-    {#if url}
-      <button type="button" class="btn primary" onclick={() => void open()}>{openLabel}</button>
+      <Button onclick={() => void copy()}>Copy Link</Button>
     {/if}
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .message {
-    line-height: 1.5;
-  }
-</style>
+  {#snippet actions()}
+    <Button variant={url ? "default" : "primary"} onclick={closeGitHubDialog}>Close</Button>
+    {#if url}
+      <Button variant="primary" onclick={() => void open()}>{openLabel}</Button>
+    {/if}
+  {/snippet}
+</Dialog>

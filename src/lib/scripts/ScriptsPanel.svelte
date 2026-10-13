@@ -58,7 +58,10 @@
     loading = true;
     try {
       // Installed versions are read with the scripts, so Refresh also finds a newly installed one.
-      const [found, installs] = await Promise.all([api.listProjectScripts(paths), api.listNodeVersions().catch(() => [])]);
+      const [found, installs] = await Promise.all([
+        api.listProjectScripts(paths),
+        api.listNodeVersions().catch(() => []),
+      ]);
       if (token === loadToken) {
         sources = found ?? [];
         nodeInstalls = installs ?? [];
@@ -91,11 +94,24 @@
     const pick = nodePick(source);
     const choice = settings.scriptNodeVersions[source.filePath] ?? null;
     const auto = pickNode(source.nodeVersion ?? null, nodeInstalls, null);
-    const autoHint = auto.install ? `${auto.install.version}, ${auto.wanted?.source ?? ""}` : auto.missing ? `${auto.wanted?.spec} missing` : "shell default";
-    const current = (value: string | null) => (value === choice || (value === null && pick?.mode === "auto") ? "in use" : undefined);
+    const autoHint = auto.install
+      ? `${auto.install.version}, ${auto.wanted?.source ?? ""}`
+      : auto.missing
+        ? `${auto.wanted?.spec} missing`
+        : "shell default";
+    const current = (value: string | null) =>
+      value === choice || (value === null && pick?.mode === "auto") ? "in use" : undefined;
     const items: MenuItem[] = [
-      { label: "Auto (Follow Project)", hint: current(null) ?? autoHint, action: () => settings.setScriptNodeVersion(source.filePath, null) },
-      { label: "Shell Default", hint: current(SHELL_DEFAULT), action: () => settings.setScriptNodeVersion(source.filePath, SHELL_DEFAULT) },
+      {
+        label: "Auto (Follow Project)",
+        hint: current(null) ?? autoHint,
+        action: () => settings.setScriptNodeVersion(source.filePath, null),
+      },
+      {
+        label: "Shell Default",
+        hint: current(SHELL_DEFAULT),
+        action: () => settings.setScriptNodeVersion(source.filePath, SHELL_DEFAULT),
+      },
     ];
     if (nodeInstalls.length > 0) {
       items.push({ separator: true });
@@ -163,7 +179,10 @@
       items.push(nodeMenu(row.source));
       if (row.source.nodeVersion) {
         const wantedFile = row.source.nodeVersion.filePath;
-        items.push({ label: `Open ${row.source.nodeVersion.source.split(" ")[0]}`, action: () => void navigation.openFileAt(wantedFile, null, 0, { pin: true }) });
+        items.push({
+          label: `Open ${row.source.nodeVersion.source.split(" ")[0]}`,
+          action: () => void navigation.openFileAt(wantedFile, null, 0, { pin: true }),
+        });
       }
       const detected = sources.find((source) => source.filePath === row.source.filePath)?.runner ?? row.source.runner;
       items.push({
@@ -230,7 +249,9 @@
       return;
     }
     const rect = element.getBoundingClientRect();
-    contextMenu.open(new MouseEvent("contextmenu", { clientX: rect.left + 24, clientY: rect.bottom }), menuFor(row), { keyboard: true });
+    contextMenu.open(new MouseEvent("contextmenu", { clientX: rect.left + 24, clientY: rect.bottom }), menuFor(row), {
+      keyboard: true,
+    });
   }
 
   function onTreeKeydown(event: KeyboardEvent): void {
@@ -303,11 +324,27 @@
 </script>
 
 <div class="scripts-view">
-  <PanelHead title="Scripts" hideTitle={withCommandKeys("Hide", "view.sidebar")} onhide={() => settings.setLeftPanel(null)}>
-    <button class="icon-btn small" title="Collapse All" aria-label="Collapse all" onclick={collapseAll} disabled={sources.length === 0}>
+  <PanelHead
+    title="Scripts"
+    hideTitle={withCommandKeys("Hide", "view.sidebar")}
+    onhide={() => settings.setLeftPanel(null)}
+  >
+    <button
+      class="icon-btn small"
+      title="Collapse All"
+      aria-label="Collapse all"
+      onclick={collapseAll}
+      disabled={sources.length === 0}
+    >
       <Icon name="chevrons-left" size={14} />
     </button>
-    <button class="icon-btn small" title="Refresh" aria-label="Refresh scripts" onclick={() => void load(folderPaths)} disabled={loading}>
+    <button
+      class="icon-btn small"
+      title="Refresh"
+      aria-label="Refresh scripts"
+      onclick={() => void load(folderPaths)}
+      disabled={loading}
+    >
       <Icon name="refresh" size={13} />
     </button>
   </PanelHead>

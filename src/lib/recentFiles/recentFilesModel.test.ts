@@ -16,7 +16,10 @@ describe("recentFileRows", () => {
   it("lists the workspace's files most recent first with their folder", () => {
     const rows = recentFileRows(files, folders, "", false);
     expect(paths(rows)).toEqual(["/w/src/app.ts", "/w/src/cart.ts", "/w/README.md"]);
-    expect(rows[1]).toMatchObject({ edited: true, file: { name: "cart.ts", folderParts: [{ text: "src", match: false }] } });
+    expect(rows[1]).toMatchObject({
+      edited: true,
+      file: { name: "cart.ts", folderParts: [{ text: "src", match: false }] },
+    });
   });
 
   it("keeps the edited files only", () => {

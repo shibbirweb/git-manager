@@ -15,7 +15,12 @@ export function clampDiffSplit(ratio: number): number {
  * start, their total width, and the width of the change arrows between them
  * (which never grow or shrink).
  */
-export function splitFromPointer(pointerX: number, editorsLeft: number, editorsWidth: number, gutterWidth: number): number {
+export function splitFromPointer(
+  pointerX: number,
+  editorsLeft: number,
+  editorsWidth: number,
+  gutterWidth: number,
+): number {
   const shared = editorsWidth - gutterWidth;
   if (shared <= 0) {
     return DEFAULT_DIFF_SPLIT;

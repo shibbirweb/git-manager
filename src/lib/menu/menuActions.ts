@@ -113,7 +113,9 @@ function hasSelection(active: Element | null): boolean {
 
 async function saveAll(): Promise<void> {
   const dirty = repoStore.dirtyPaths;
-  const saved = await Promise.all(dirty.filter((tabPath) => !isUntitledTab(tabPath)).map((filePath) => fileCommands.save(filePath, { quiet: true })));
+  const saved = await Promise.all(
+    dirty.filter((tabPath) => !isUntitledTab(tabPath)).map((filePath) => fileCommands.save(filePath, { quiet: true })),
+  );
   // Each Untitled tab asks where to save, one dialog at a time.
   for (const tabPath of dirty.filter((candidate) => isUntitledTab(candidate))) {
     saved.push(await fileCommands.save(tabPath, { quiet: true }));
@@ -161,7 +163,9 @@ async function focusGroupAt(index: number): Promise<void> {
   // The diff, the Log or another kind of tab: its first text editor, else nothing keeps the old group's focus.
   await tick();
   const group = document.querySelector<HTMLElement>(".editor-group.focused");
-  const editor = group?.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-content, :scope > :not(.file-host) .cm-content");
+  const editor = group?.querySelector<HTMLElement>(
+    ".file-host:not(.hidden) .cm-content, :scope > :not(.file-host) .cm-content",
+  );
   if (editor) {
     editor.focus();
   } else if (document.activeElement instanceof HTMLElement && !group?.contains(document.activeElement)) {
@@ -285,7 +289,9 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.fileIconsMaterial": app(() => settings.setPreference("fileIcons", "material")),
   "view.detectIndentation": app(() => settings.setPreference("detectIndentation", !settings.detectIndentation)),
   "view.notifications": app(() => notifications.toggle()),
-  "view.doNotDisturb": app(() => settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb)),
+  "view.doNotDisturb": app(() =>
+    settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb),
+  ),
   "view.clearCache": app(() => void clearCache()),
   "view.markdownEditor": setMarkdownMode("editor"),
   "view.markdownSplit": setMarkdownMode("split"),

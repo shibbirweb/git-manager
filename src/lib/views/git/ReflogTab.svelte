@@ -192,10 +192,18 @@
       { label: "Show Commit", hint: "Enter", disabled: !commit, action: () => showCommit(entry) },
       { label: "Copy Revision Hash", disabled: !commit, action: () => void copyHash(entry) },
       { separator: true },
-      { label: "New Branch Here...", disabled: !commit || busy, action: () => void newBranchFrom(entry.newId, "", repoTarget(repoRoot, repoStore.refs)) },
+      {
+        label: "New Branch Here...",
+        disabled: !commit || busy,
+        action: () => void newBranchFrom(entry.newId, "", repoTarget(repoRoot, repoStore.refs)),
+      },
       { label: "Checkout Revision", disabled: !commit || busy, action: () => void checkout(entry) },
       { separator: true },
-      { label: "Reset Current Branch to Here...", disabled: !commit || busy || operation, action: () => resetHere(entry) },
+      {
+        label: "Reset Current Branch to Here...",
+        disabled: !commit || busy || operation,
+        action: () => resetHere(entry),
+      },
     ];
     contextMenu.open(event, items);
   }

@@ -108,7 +108,8 @@
       ];
     }
     if (isSubmoduleEntry(file) && group !== "conflicts") {
-      items = group === "staged" ? items : items.filter((item) => !("label" in item) || item.label !== "Discard Changes...");
+      items =
+        group === "staged" ? items : items.filter((item) => !("label" in item) || item.label !== "Discard Changes...");
       items.push({ separator: true }, ...submoduleEntryItems(repoRoot, file.path));
     }
     const ignoreItem = group === "conflicts" ? null : ignoreMenu(repoRoot, file.path, file.path.endsWith("/"));

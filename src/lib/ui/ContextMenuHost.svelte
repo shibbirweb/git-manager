@@ -2,7 +2,16 @@
   import { tick } from "svelte";
   import Icon from "./Icon.svelte";
   import { contextMenu, type MenuItem } from "./menu.svelte";
-  import { firstIndex, hasSubmenu, isSelectable, lastIndex, matchIndex, rootPosition, stepIndex, submenuPosition } from "./menuNav";
+  import {
+    firstIndex,
+    hasSubmenu,
+    isSelectable,
+    lastIndex,
+    matchIndex,
+    rootPosition,
+    stepIndex,
+    submenuPosition,
+  } from "./menuNav";
 
   let layerEl = $state<HTMLDivElement | null>(null);
   let menuEls = $state<(HTMLDivElement | null)[]>([]);

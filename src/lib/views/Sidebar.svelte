@@ -34,7 +34,10 @@
     buildRows({
       refs: repoStore.refs,
       stashes: repoStore.stashes,
-      worktrees: worktreeStore.repoRoot !== null && worktreeStore.repoRoot === repoStore.repo?.root ? worktreeStore.list : undefined,
+      worktrees:
+        worktreeStore.repoRoot !== null && worktreeStore.repoRoot === repoStore.repo?.root
+          ? worktreeStore.list
+          : undefined,
       filter,
       isExpanded: (key) => collapse.isExpanded(key, filtering),
     }),
@@ -235,7 +238,11 @@
 </script>
 
 <div class="sidebar-view">
-  <PanelHead title="Branches and Stashes" hideTitle={withCommandKeys("Hide", "view.sidebar")} onhide={() => settings.setLeftPanel(null)}>
+  <PanelHead
+    title="Branches and Stashes"
+    hideTitle={withCommandKeys("Hide", "view.sidebar")}
+    onhide={() => settings.setLeftPanel(null)}
+  >
     <button
       class="icon-btn small"
       onclick={() => {

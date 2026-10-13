@@ -41,11 +41,15 @@
   onclick={() => onclick?.()}
   onmousemove={() => onhover?.()}
 >
-  <span class="icon">{#if icon}<Icon name={icon} size="normal" />{/if}</span>
+  <span class="icon"
+    >{#if icon}<Icon name={icon} size="normal" />{/if}</span
+  >
   <span class="name" class:current>{label}</span>
   {#if variant === "item"}
     <span class="hint">{hint}</span>
-    <span class="chevron">{#if chevron}<Icon name="chevron-right" size="compact" />{/if}</span>
+    <span class="chevron"
+      >{#if chevron}<Icon name="chevron-right" size="compact" />{/if}</span
+    >
   {/if}
 </button>
 

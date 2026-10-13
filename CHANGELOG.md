@@ -139,6 +139,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- The Git dialogs (Push, Pull, Merge, Rebase, Reset, Rollback, Shelve, Clone, Remotes, Branches, New Worktree, New Task, Interactive Rebase and the GitHub dialogs) are built from the app's shared component library. Their widths snap to five standard sizes, and Shelve and Rollback list each file with its name, folder and change, like the Changes panel.
 - Markdown Preview Only is now called Rich Editor, with an eye-and-pencil icon, in the path bar, View > Markdown and Settings > Editor > Markdown preview, since you can type in it.
 - The memory readout in the status bar shows a memory icon and the size (such as 597 MB) instead of the word Memory, so it takes less room. The tooltip still says what it is.
 - The welcome screen looks like the JetBrains one: a sidebar with Projects, Customize and Learn, and the app version. Projects is one searchable list of recent workspaces and folders with a colored badge each; the arrow keys and Enter open one, and its ... menu can open it in a new window, reveal it in Finder, copy its path or remove it. Open, Clone and Open Workspace from File sit next to the search. Customize sets the theme, color theme, font sizes and rounded panels, Learn links to the docs, the shortcuts and What's New, and Star on GitHub, Report a Bug and Request a Feature stay at the bottom of the sidebar.

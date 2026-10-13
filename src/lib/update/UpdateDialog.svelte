@@ -20,7 +20,9 @@
   }
 
   function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+    return value
+      ? new Date(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+      : "";
   }
 </script>
 
@@ -64,9 +66,12 @@
         <button class="btn small link" onclick={() => void updates.open(newest.url)}>View on GitHub</button>
         <div class="spacer"></div>
         {#if skipped}
-          <button class="btn" onclick={() => updates.unskip()} title="Announce this version again">Stop Skipping</button>
+          <button class="btn" onclick={() => updates.unskip()} title="Announce this version again">Stop Skipping</button
+          >
         {:else}
-          <button class="btn" onclick={() => updates.skip(newest)} title="Do not announce this version again">Skip This Version</button>
+          <button class="btn" onclick={() => updates.skip(newest)} title="Do not announce this version again"
+            >Skip This Version</button
+          >
         {/if}
         <button class="btn" onclick={close}>Later</button>
         <button class="btn primary" onclick={() => void updates.download(newest)}>

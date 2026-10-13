@@ -3,7 +3,7 @@
 A small label beside a name, like "primary" or "folder" in the AI panel.
 
 ```ts
-import Tag from "$ui/components/Tag.svelte";
+import Tag from "@git-manager/ui/components/Tag.svelte";
 ```
 
 Group: Feedback. Also known as: Tag, Chip, Label.

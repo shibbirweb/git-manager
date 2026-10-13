@@ -3,7 +3,7 @@
 A few answers to pick from, each a card with a label and a line of description.
 
 ```ts
-import ChoiceList from "$ui/components/ChoiceList.svelte";
+import ChoiceList from "@git-manager/ui/components/ChoiceList.svelte";
 ```
 
 Group: Forms. Also known as: Choices, Option cards.

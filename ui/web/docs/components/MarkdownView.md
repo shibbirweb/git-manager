@@ -3,7 +3,7 @@
 Rendered Markdown in the app's preview typography: headings, lists, tasks, tables, code, quotes.
 
 ```ts
-import MarkdownView from "$ui/components/MarkdownView.svelte";
+import MarkdownView from "@git-manager/ui/components/MarkdownView.svelte";
 ```
 
 Group: Editor. Also known as: Markdown, Preview, Prose.

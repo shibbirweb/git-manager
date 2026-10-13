@@ -4,7 +4,7 @@
 import { getChunks } from "@codemirror/merge";
 import { RangeSetBuilder } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import { icons, type IconName } from "$lib/ui/icons";
+import { icons, type IconName } from "@git-manager/ui/icons";
 
 const addedLine = Decoration.line({ class: "cm-diffAdded" });
 const deletedLine = Decoration.line({ class: "cm-diffDeleted" });

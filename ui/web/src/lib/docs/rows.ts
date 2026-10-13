@@ -1,7 +1,7 @@
 import { prop, type ComponentDoc } from "./types";
 
 const KIND = '"added" | "modified" | "typechange" | "deleted" | "renamed" | "untracked" | "conflicted" | null';
-const VIEW = '{ kind: "image"; src: string } | { kind: "class"; className: string } | null';
+const VIEW = '{ kind: "image"; src: string } | { kind: "mask"; className: string } | null';
 const DEPTH = '"none" | "one" | "two" | "three"';
 
 export const rowDocs: ComponentDoc[] = [

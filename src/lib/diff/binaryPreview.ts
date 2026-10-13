@@ -106,7 +106,11 @@ function ratio(position: number, size: number, client: number): number {
 /** The scroll position of `to` at the same place as `from`, in proportion to each range. */
 export function syncedScroll(from: ScrollBox, to: ScrollBox): { left: number; top: number } {
   return {
-    left: Math.round(ratio(from.scrollLeft, from.scrollWidth, from.clientWidth) * Math.max(0, to.scrollWidth - to.clientWidth)),
-    top: Math.round(ratio(from.scrollTop, from.scrollHeight, from.clientHeight) * Math.max(0, to.scrollHeight - to.clientHeight)),
+    left: Math.round(
+      ratio(from.scrollLeft, from.scrollWidth, from.clientWidth) * Math.max(0, to.scrollWidth - to.clientWidth),
+    ),
+    top: Math.round(
+      ratio(from.scrollTop, from.scrollHeight, from.clientHeight) * Math.max(0, to.scrollHeight - to.clientHeight),
+    ),
   };
 }

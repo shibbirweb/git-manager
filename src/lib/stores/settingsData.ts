@@ -59,7 +59,11 @@ export type FileIconMode = "off" | "minimal" | "material";
 export const FILE_ICON_CHOICES: { value: FileIconMode; label: string; hint: string }[] = [
   { value: "off", label: "No icons", hint: "One plain icon for every file. Uses no extra memory." },
   { value: "minimal", label: "Minimal", hint: "Simple colored shapes for common file types." },
-  { value: "material", label: "Material Icons", hint: "Colored icons for over 1,000 file types, from Material Icon Theme." },
+  {
+    value: "material",
+    label: "Material Icons",
+    hint: "Colored icons for over 1,000 file types, from Material Icon Theme.",
+  },
 ];
 
 const FILE_ICON_MODES = FILE_ICON_CHOICES.map((choice) => choice.value);
@@ -86,12 +90,32 @@ export type FileToolbarSwitchKey =
   | "fileToolbarMarkdownFormat";
 
 export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; hint: string }[] = [
-  { key: "fileToolbarBreadcrumbs", label: "Breadcrumbs", hint: "The folders and file as a Navigation Bar. Off, Jump to Navigation Bar shows it over the editor." },
+  {
+    key: "fileToolbarBreadcrumbs",
+    label: "Breadcrumbs",
+    hint: "The folders and file as a Navigation Bar. Off, Jump to Navigation Bar shows it over the editor.",
+  },
   { key: "fileToolbarBadges", label: "Badges", hint: "Unsaved, Modified, New file and the number of conflicts." },
-  { key: "fileToolbarChanges", label: "Change arrows", hint: "Previous and next change with the counter. F7 and Shift+F7 work either way." },
-  { key: "fileToolbarBlame", label: "Blame", hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame." },
-  { key: "fileToolbarCopyPath", label: "Copy relative path", hint: "Copies the file's path inside the workspace folder." },
-  { key: "fileToolbarMarkdownView", label: "Markdown view switch", hint: "Editor, Editor and Preview, Rich Editor. Also in View > Markdown." },
+  {
+    key: "fileToolbarChanges",
+    label: "Change arrows",
+    hint: "Previous and next change with the counter. F7 and Shift+F7 work either way.",
+  },
+  {
+    key: "fileToolbarBlame",
+    label: "Blame",
+    hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame.",
+  },
+  {
+    key: "fileToolbarCopyPath",
+    label: "Copy relative path",
+    hint: "Copies the file's path inside the workspace folder.",
+  },
+  {
+    key: "fileToolbarMarkdownView",
+    label: "Markdown view switch",
+    hint: "Editor, Editor and Preview, Rich Editor. Also in View > Markdown.",
+  },
   {
     key: "fileToolbarMarkdownFormat",
     label: "Markdown formatting row",
@@ -202,7 +226,8 @@ export const MIN_CHANGES_LIST_WIDTH = 160;
 export const MAX_RECENT = 12;
 
 /** JetBrains Mono when it is installed, else VS Code's default editor font on macOS, else Windows' own code fonts. */
-export const DEFAULT_EDITOR_FONT = "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace";
+export const DEFAULT_EDITOR_FONT =
+  "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace";
 /** Earlier defaults, read as today's so a saved copy of one does not count as a custom font. */
 const OLD_DEFAULT_EDITOR_FONTS = ["'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace"];
 
@@ -227,7 +252,10 @@ export const MONOSPACE_FONTS = [
  * value, drops repeated families and makes sure a generic monospace fallback comes last.
  */
 export function normalizeFontFamily(value: string): string {
-  const cleaned = value.replace(/[;{}<>\\]/g, "").trim().slice(0, 200);
+  const cleaned = value
+    .replace(/[;{}<>\\]/g, "")
+    .trim()
+    .slice(0, 200);
   if (!cleaned) {
     return DEFAULT_EDITOR_FONT;
   }
@@ -894,7 +922,10 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     fileToolbarBlame: pickBoolean(data.fileToolbarBlame, defaultPreferences.fileToolbarBlame),
     fileToolbarCopyPath: pickBoolean(data.fileToolbarCopyPath, defaultPreferences.fileToolbarCopyPath),
     fileToolbarMarkdownView: pickBoolean(data.fileToolbarMarkdownView, defaultPreferences.fileToolbarMarkdownView),
-    fileToolbarMarkdownFormat: pickBoolean(data.fileToolbarMarkdownFormat, defaultPreferences.fileToolbarMarkdownFormat),
+    fileToolbarMarkdownFormat: pickBoolean(
+      data.fileToolbarMarkdownFormat,
+      defaultPreferences.fileToolbarMarkdownFormat,
+    ),
     editorFontSize: pickNumber(data.editorFontSize, defaultPreferences.editorFontSize, ...FONT_SIZE_RANGE.editor),
     editorLineHeight: roundTo(
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),
@@ -910,16 +941,34 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     ),
     fontLigatures: pickBoolean(data.fontLigatures, defaultPreferences.fontLigatures),
     syntaxHighlighting: pickBoolean(data.syntaxHighlighting, defaultPreferences.syntaxHighlighting),
-    tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize) ? (data.tabSize as number) : defaultPreferences.tabSize,
+    tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize)
+      ? (data.tabSize as number)
+      : defaultPreferences.tabSize,
     detectIndentation: pickBoolean(data.detectIndentation, defaultPreferences.detectIndentation),
     wordWrap: pickBoolean(data.wordWrap, defaultPreferences.wordWrap),
     renderWhitespace: pickOneOf(data.renderWhitespace, RENDER_WHITESPACE_VALUES, defaultPreferences.renderWhitespace),
     editorCursorStyle: pickOneOf(data.editorCursorStyle, EDITOR_CURSOR_STYLES, defaultPreferences.editorCursorStyle),
-    editorCursorWidth: pickInteger(data.editorCursorWidth, defaultPreferences.editorCursorWidth, ...EDITOR_CURSOR_WIDTH_RANGE),
-    editorCursorBlinking: pickOneOf(data.editorCursorBlinking, EDITOR_CURSOR_BLINKINGS, defaultPreferences.editorCursorBlinking),
+    editorCursorWidth: pickInteger(
+      data.editorCursorWidth,
+      defaultPreferences.editorCursorWidth,
+      ...EDITOR_CURSOR_WIDTH_RANGE,
+    ),
+    editorCursorBlinking: pickOneOf(
+      data.editorCursorBlinking,
+      EDITOR_CURSOR_BLINKINGS,
+      defaultPreferences.editorCursorBlinking,
+    ),
     editorCursorSmoothCaret: pickBoolean(data.editorCursorSmoothCaret, defaultPreferences.editorCursorSmoothCaret),
-    editorCaretExtraTop: pickInteger(data.editorCaretExtraTop, defaultPreferences.editorCaretExtraTop, ...CARET_EXTRA_RANGE),
-    editorCaretExtraBottom: pickInteger(data.editorCaretExtraBottom, defaultPreferences.editorCaretExtraBottom, ...CARET_EXTRA_RANGE),
+    editorCaretExtraTop: pickInteger(
+      data.editorCaretExtraTop,
+      defaultPreferences.editorCaretExtraTop,
+      ...CARET_EXTRA_RANGE,
+    ),
+    editorCaretExtraBottom: pickInteger(
+      data.editorCaretExtraBottom,
+      defaultPreferences.editorCaretExtraBottom,
+      ...CARET_EXTRA_RANGE,
+    ),
     editorAutoCloseBrackets: pickBoolean(data.editorAutoCloseBrackets, defaultPreferences.editorAutoCloseBrackets),
     editorCompletion: pickBoolean(data.editorCompletion, defaultPreferences.editorCompletion),
     editorCompletionOnTyping: pickBoolean(data.editorCompletionOnTyping, defaultPreferences.editorCompletionOnTyping),
@@ -938,7 +987,10 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     reopenWindows: pickBoolean(data.reopenWindows, defaultPreferences.reopenWindows),
     tabLimit: pickTabLimit(data.tabLimit),
     unloadHiddenTabs: pickBoolean(data.unloadHiddenTabs, defaultPreferences.unloadHiddenTabs),
-    unloadHiddenTabsMinutes: pickUnloadTabMinutes(data.unloadHiddenTabsMinutes, defaultPreferences.unloadHiddenTabsMinutes),
+    unloadHiddenTabsMinutes: pickUnloadTabMinutes(
+      data.unloadHiddenTabsMinutes,
+      defaultPreferences.unloadHiddenTabsMinutes,
+    ),
     splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
     wrapTabs: pickBoolean(data.wrapTabs, defaultPreferences.wrapTabs),
     singleTabTitle: pickBoolean(data.singleTabTitle, defaultPreferences.singleTabTitle),
@@ -952,7 +1004,8 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     blameGutter: pickBoolean(data.blameGutter, defaultPreferences.blameGutter),
     mouseWheelZoom: pickBoolean(data.mouseWheelZoom, defaultPreferences.mouseWheelZoom),
     checkForUpdates: pickBoolean(data.checkForUpdates, defaultPreferences.checkForUpdates),
-    updateChannel: channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
+    updateChannel:
+      channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
     ignoreWhitespace: pickBoolean(data.ignoreWhitespace, defaultPreferences.ignoreWhitespace),
     diffLayout: pickOneOf(data.diffLayout, DIFF_LAYOUTS, defaultPreferences.diffLayout),
     logAllRefs: pickBoolean(data.logAllRefs, defaultPreferences.logAllRefs),
@@ -972,18 +1025,38 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     gitConsole: pickBoolean(data.gitConsole, defaultPreferences.gitConsole),
     terminalShell: pickShell(data.terminalShell),
     terminalFontFamily: normalizeTerminalFontFamily(data.terminalFontFamily),
-    terminalFontSize: pickNumber(data.terminalFontSize, defaultPreferences.terminalFontSize, ...FONT_SIZE_RANGE.terminal),
-    terminalLineHeight: pickTenths(data.terminalLineHeight, defaultPreferences.terminalLineHeight, ...TERMINAL_LINE_HEIGHT_RANGE),
+    terminalFontSize: pickNumber(
+      data.terminalFontSize,
+      defaultPreferences.terminalFontSize,
+      ...FONT_SIZE_RANGE.terminal,
+    ),
+    terminalLineHeight: pickTenths(
+      data.terminalLineHeight,
+      defaultPreferences.terminalLineHeight,
+      ...TERMINAL_LINE_HEIGHT_RANGE,
+    ),
     terminalLetterSpacing: pickInteger(
       data.terminalLetterSpacing,
       defaultPreferences.terminalLetterSpacing,
       ...TERMINAL_LETTER_SPACING_RANGE,
     ),
-    terminalFontWeight: pickOneOf(data.terminalFontWeight, TERMINAL_FONT_WEIGHTS, defaultPreferences.terminalFontWeight),
-    terminalFontWeightBold: pickOneOf(data.terminalFontWeightBold, TERMINAL_FONT_WEIGHTS, defaultPreferences.terminalFontWeightBold),
+    terminalFontWeight: pickOneOf(
+      data.terminalFontWeight,
+      TERMINAL_FONT_WEIGHTS,
+      defaultPreferences.terminalFontWeight,
+    ),
+    terminalFontWeightBold: pickOneOf(
+      data.terminalFontWeightBold,
+      TERMINAL_FONT_WEIGHTS,
+      defaultPreferences.terminalFontWeightBold,
+    ),
     terminalLigatures: pickBoolean(data.terminalLigatures, defaultPreferences.terminalLigatures),
     terminalNerdFontIcons: pickBoolean(data.terminalNerdFontIcons, defaultPreferences.terminalNerdFontIcons),
-    terminalCursorStyle: pickOneOf(data.terminalCursorStyle, TERMINAL_CURSOR_STYLES, defaultPreferences.terminalCursorStyle),
+    terminalCursorStyle: pickOneOf(
+      data.terminalCursorStyle,
+      TERMINAL_CURSOR_STYLES,
+      defaultPreferences.terminalCursorStyle,
+    ),
     terminalCursorBlink: pickBoolean(data.terminalCursorBlink, defaultPreferences.terminalCursorBlink),
     terminalScrollback: clampTerminalScrollback(data.terminalScrollback),
     terminalCopyOnSelect: pickBoolean(data.terminalCopyOnSelect, defaultPreferences.terminalCopyOnSelect),
@@ -1006,9 +1079,12 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     aiAgentArgs: pickAgentArgs(data.aiAgentArgs),
     aiUsagePosition: pickOneOf(data.aiUsagePosition, AI_USAGE_POSITIONS, defaultPreferences.aiUsagePosition),
     computerAwakeMode: pickOneOf(data.computerAwakeMode, COMPUTER_AWAKE_MODES, defaultPreferences.computerAwakeMode),
-    aiUsageHidden: AI_USAGE_PROVIDERS.map((provider) => provider.id).filter((id) => pickStrings(data.aiUsageHidden).includes(id)),
+    aiUsageHidden: AI_USAGE_PROVIDERS.map((provider) => provider.id).filter((id) =>
+      pickStrings(data.aiUsageHidden).includes(id),
+    ),
     aiAgentCommands: pickAgentCommands(data.aiAgentCommands),
-    aiDefaultAgent: typeof data.aiDefaultAgent === "string" && AI_AGENT_ID.test(data.aiDefaultAgent) ? data.aiDefaultAgent : "",
+    aiDefaultAgent:
+      typeof data.aiDefaultAgent === "string" && AI_AGENT_ID.test(data.aiDefaultAgent) ? data.aiDefaultAgent : "",
     aiWorktreeLinks: Array.isArray(data.aiWorktreeLinks)
       ? pickStrings(data.aiWorktreeLinks)
           .map((name) => name.trim())
@@ -1016,12 +1092,31 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
           .slice(0, 20)
       : defaultPreferences.aiWorktreeLinks,
     memoryLogEnabled: pickBoolean(data.memoryLogEnabled, defaultPreferences.memoryLogEnabled),
-    memoryLogIntervalMs: pickInteger(data.memoryLogIntervalMs, defaultPreferences.memoryLogIntervalMs, ...MEMORY_LOG_INTERVAL_RANGE),
-    memoryLogThresholdMb: pickNumber(data.memoryLogThresholdMb, defaultPreferences.memoryLogThresholdMb, ...MEMORY_LOG_THRESHOLD_RANGE),
+    memoryLogIntervalMs: pickInteger(
+      data.memoryLogIntervalMs,
+      defaultPreferences.memoryLogIntervalMs,
+      ...MEMORY_LOG_INTERVAL_RANGE,
+    ),
+    memoryLogThresholdMb: pickNumber(
+      data.memoryLogThresholdMb,
+      defaultPreferences.memoryLogThresholdMb,
+      ...MEMORY_LOG_THRESHOLD_RANGE,
+    ),
     localHistoryEnabled: pickBoolean(data.localHistoryEnabled, defaultPreferences.localHistoryEnabled),
-    localHistoryDays: pickInteger(data.localHistoryDays, defaultPreferences.localHistoryDays, ...LOCAL_HISTORY_DAYS_RANGE),
-    localHistorySizeMb: pickInteger(data.localHistorySizeMb, defaultPreferences.localHistorySizeMb, ...LOCAL_HISTORY_SIZE_MB_RANGE),
-    notificationsDoNotDisturb: pickBoolean(data.notificationsDoNotDisturb, defaultPreferences.notificationsDoNotDisturb),
+    localHistoryDays: pickInteger(
+      data.localHistoryDays,
+      defaultPreferences.localHistoryDays,
+      ...LOCAL_HISTORY_DAYS_RANGE,
+    ),
+    localHistorySizeMb: pickInteger(
+      data.localHistorySizeMb,
+      defaultPreferences.localHistorySizeMb,
+      ...LOCAL_HISTORY_SIZE_MB_RANGE,
+    ),
+    notificationsDoNotDisturb: pickBoolean(
+      data.notificationsDoNotDisturb,
+      defaultPreferences.notificationsDoNotDisturb,
+    ),
   };
   const known = new Set(Object.keys(defaultPreferences));
   // Legacy browser storage mixed state into the same object; keep only real extras.
@@ -1060,7 +1155,9 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     lastRunVersion: pickString(data.lastRunVersion),
     skippedVersion: pickString(data.skippedVersion),
     activeRepos: Object.fromEntries(
-      Object.entries(asObject(data.activeRepos)).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      Object.entries(asObject(data.activeRepos)).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string",
+      ),
     ),
     activeRepoAuto: pickBoolean(data.activeRepoAuto, true),
     scriptNodeVersions: Object.fromEntries(
@@ -1080,7 +1177,11 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     terminalListWidth: pickNumber(data.terminalListWidth, DEFAULT_TERMINAL_LIST_WIDTH, MIN_TERMINAL_LIST_WIDTH, 1200),
     changesListWidth: pickNumber(data.changesListWidth, DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, 2000),
     changesListVisible: pickBoolean(data.changesListVisible, true),
-    markdownPreviewRatio: pickNumber(data.markdownPreviewRatio, DEFAULT_MARKDOWN_PREVIEW_RATIO, ...MARKDOWN_PREVIEW_RATIO_RANGE),
+    markdownPreviewRatio: pickNumber(
+      data.markdownPreviewRatio,
+      DEFAULT_MARKDOWN_PREVIEW_RATIO,
+      ...MARKDOWN_PREVIEW_RATIO_RANGE,
+    ),
     recentCommands: pickRecentCommands(data.recentCommands),
     commitMessages: parseMessageHistory(data.commitMessages),
     openTabs: parseTabSessions(data.openTabs),

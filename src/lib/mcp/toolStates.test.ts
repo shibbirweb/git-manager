@@ -10,12 +10,54 @@ import {
   withToolStates,
 } from "./toolStates";
 
-const status = { name: "git_status", title: "Git Status", description: "Shows the status.", category: "Git", readOnly: true, destructive: false };
-const send = { name: "send_terminal_text", title: "Send Text", description: "Types into a terminal.", category: "Terminal", readOnly: false, destructive: true };
-const open = { name: "open_file", title: "Open File", description: "Opens a file.", category: "Files", readOnly: true, destructive: false };
-const trash = { name: "trash_paths", title: "Move to Trash", description: "Moves files to the Trash.", category: "Files", readOnly: false, destructive: true };
-const create = { name: "create_file", title: "Create File", description: "Creates a file.", category: "Files", readOnly: false, destructive: false };
-const commit = { name: "git_commit", title: "Commit", description: "Commits.", category: "Git", readOnly: false, destructive: false };
+const status = {
+  name: "git_status",
+  title: "Git Status",
+  description: "Shows the status.",
+  category: "Git",
+  readOnly: true,
+  destructive: false,
+};
+const send = {
+  name: "send_terminal_text",
+  title: "Send Text",
+  description: "Types into a terminal.",
+  category: "Terminal",
+  readOnly: false,
+  destructive: true,
+};
+const open = {
+  name: "open_file",
+  title: "Open File",
+  description: "Opens a file.",
+  category: "Files",
+  readOnly: true,
+  destructive: false,
+};
+const trash = {
+  name: "trash_paths",
+  title: "Move to Trash",
+  description: "Moves files to the Trash.",
+  category: "Files",
+  readOnly: false,
+  destructive: true,
+};
+const create = {
+  name: "create_file",
+  title: "Create File",
+  description: "Creates a file.",
+  category: "Files",
+  readOnly: false,
+  destructive: false,
+};
+const commit = {
+  name: "git_commit",
+  title: "Commit",
+  description: "Commits.",
+  category: "Git",
+  readOnly: false,
+  destructive: false,
+};
 
 describe("tool switches", () => {
   it("default to on unless destructive", () => {
@@ -29,7 +71,15 @@ describe("tool switches", () => {
   });
 
   it("follow the backend's default for a tool that starts off without being destructive", () => {
-    const clone = { name: "clone_repository", title: "Clone", description: "Clones.", category: "Git", readOnly: false, destructive: false, defaultEnabled: false };
+    const clone = {
+      name: "clone_repository",
+      title: "Clone",
+      description: "Clones.",
+      category: "Git",
+      readOnly: false,
+      destructive: false,
+      defaultEnabled: false,
+    };
     expect(toolEnabled(clone, {})).toBe(false);
     expect(toolEnabled(clone, { clone_repository: true })).toBe(true);
     expect(withToolStates({}, [clone], true)).toEqual({ clone_repository: true });
@@ -57,7 +107,12 @@ describe("tool switches", () => {
     expect(withDefaultStates(states, [status, send, open])).toEqual({ trash_paths: true, git_commit: false });
     const restored = withDefaultStates(states, [status, send, trash, commit]);
     expect(restored).toEqual({});
-    expect([status, send, trash, commit].map((tool) => toolEnabled(tool, restored))).toEqual([true, false, false, true]);
+    expect([status, send, trash, commit].map((tool) => toolEnabled(tool, restored))).toEqual([
+      true,
+      false,
+      false,
+      true,
+    ]);
   });
 });
 

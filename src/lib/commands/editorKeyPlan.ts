@@ -30,7 +30,11 @@ function editorAction(spec: CommandSpec): EditorAction | null {
  */
 const IN_EDITOR = new Set<CommandId>(["edit.navigationBar"]);
 
-export function editorKeyPlan(specs: readonly CommandSpec[], overrides: ShortcutOverrides, platform: MenuPlatform): EditorKeyPlan {
+export function editorKeyPlan(
+  specs: readonly CommandSpec[],
+  overrides: ShortcutOverrides,
+  platform: MenuPlatform,
+): EditorKeyPlan {
   const plan: EditorKeyPlan = { commands: [], window: [], blocked: [] };
   const idOf = (accelerator: string | null) => (accelerator === null ? null : acceleratorId(accelerator, platform));
   // Every key an editor command answers to now: an editor key wins inside the editor.

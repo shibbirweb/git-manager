@@ -47,21 +47,6 @@ export const builderCases: ParityCase[] = [
     ],
   },
   {
-    id: "row-entry",
-    sources: ["src/lib/views/git/PushDialog.svelte"],
-    html:
-      '<div class="commits"><div class="commit"><span class="subject truncate">Round tax</span>' +
-      '<span class="author truncate dim">Ada</span><span class="when dim">2 hours ago</span>' +
-      '<span class="hash mono dim">a1b2c3d</span></div><div class="commit"><span class="subject">Add</span>' +
-      "</div></div>",
-    pairs: [
-      { name: "entry", ref: ".commit", lib: ".row" },
-      { name: "author", ref: ".commit .author", lib: ".row > .stack:nth-child(2)", ignore: COLUMN },
-      { name: "when", ref: ".commit .when", lib: ".row > .stack:nth-child(3)", ignore: COLUMN },
-      { name: "hash", ref: ".commit .hash", lib: ".row > .stack:nth-child(4)", ignore: COLUMN },
-    ],
-  },
-  {
     id: "row-large",
     sources: ["src/lib/views/Welcome.svelte"],
     html:

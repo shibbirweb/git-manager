@@ -3,7 +3,7 @@
 A changed file's status letter in its color: A, M, D, R, U, C or T.
 
 ```ts
-import StatusLetter from "$ui/components/StatusLetter.svelte";
+import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
 ```
 
 Group: Feedback.

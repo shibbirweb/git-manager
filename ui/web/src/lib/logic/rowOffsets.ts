@@ -1,6 +1,6 @@
 // A long list whose rows differ in height, like the Git Console's entries that open to show their output: each
 // row's top comes from the heights measured so far, and an estimate stands in for rows never drawn.
-import type { RowRange } from "./virtualWindow";
+import { visibleRows, type RowRange } from "./virtualWindow";
 
 /** Each row's top, then the total height as the last entry (length count + 1). */
 export function rowOffsets(count: number, heightOf: (index: number) => number): number[] {
@@ -47,4 +47,29 @@ export function scrollToShowBox(top: number, bottom: number, scrollTop: number, 
     return Math.min(top, bottom - viewportHeight);
   }
   return null;
+}
+
+export interface ListWindow extends RowRange {
+  /** The rows' full height in CSS, or null when every row is drawn and the list sizes itself. */
+  total: string | null;
+}
+
+/**
+ * The rows a list draws: every row, or with fixed `rowPx` rows (`offsets` null) or measured `offsets`, the ones in
+ * view of a box `viewportHeight` tall scrolled to `scrollTop`.
+ */
+export function listWindow(
+  count: number,
+  rowPx: number | null,
+  offsets: number[] | null,
+  scrollTop: number,
+  viewportHeight: number,
+): ListWindow {
+  if (rowPx === null) {
+    return { first: 0, last: count, total: null };
+  }
+  const range = offsets
+    ? visibleByOffsets(offsets, scrollTop, viewportHeight)
+    : visibleRows(scrollTop, viewportHeight, rowPx, count);
+  return { ...range, total: `${offsets ? offsets[count] : count * rowPx}px` };
 }

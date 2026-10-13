@@ -50,7 +50,10 @@ export function sourceProps(source: string): SourceProp[] | null {
     }
     const name = /^[A-Za-z_$][\w$]*/.exec(part)?.[0] ?? part;
     // `lineNumbers: numbered = true` renames the prop inside the component; the default follows the new name.
-    const rest = part.slice(name.length).trim().replace(/^:\s*[A-Za-z_$][\w$]*\s*/, "");
+    const rest = part
+      .slice(name.length)
+      .trim()
+      .replace(/^:\s*[A-Za-z_$][\w$]*\s*/, "");
     // `value = $bindable()` binds but has no default: the prop stays required.
     const hasDefault = rest.startsWith("=") && !/^=\s*\$bindable\(\s*\)$/.test(rest);
     return { name, hasDefault, bindable: rest.includes("$bindable(") };

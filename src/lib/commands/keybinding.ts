@@ -240,12 +240,25 @@ export function formatAccelerator(accelerator: string, platform: MenuPlatform): 
 export function sameShortcut(first: string, second: string, platform: MenuPlatform): boolean {
   const a = parseAccelerator(first, platform);
   const b = parseAccelerator(second, platform);
-  return a !== null && b !== null && a.code === b.code && a.ctrl === b.ctrl && a.alt === b.alt && a.shift === b.shift && a.meta === b.meta;
+  return (
+    a !== null &&
+    b !== null &&
+    a.code === b.code &&
+    a.ctrl === b.ctrl &&
+    a.alt === b.alt &&
+    a.shift === b.shift &&
+    a.meta === b.meta
+  );
 }
 
 /** One string per set of keys ("ctrl+shift:KeyP"), so bindings compare and group in maps. */
 export function bindingId(binding: Keybinding): string {
-  const modifiers = [binding.ctrl ? "ctrl" : "", binding.alt ? "alt" : "", binding.shift ? "shift" : "", binding.meta ? "meta" : ""];
+  const modifiers = [
+    binding.ctrl ? "ctrl" : "",
+    binding.alt ? "alt" : "",
+    binding.shift ? "shift" : "",
+    binding.meta ? "meta" : "",
+  ];
   return `${modifiers.filter(Boolean).join("+")}:${binding.code}`;
 }
 

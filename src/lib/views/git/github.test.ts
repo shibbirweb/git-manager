@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { RemoteInfo } from "$lib/types";
-import { gitHubCompareUrl, gitHubFileUrl, gitHubPullsUrl, linkRevision, parseGitHubUrl, pickGitHubRemote } from "./github";
+import {
+  gitHubCompareUrl,
+  gitHubFileUrl,
+  gitHubPullsUrl,
+  linkRevision,
+  parseGitHubUrl,
+  pickGitHubRemote,
+} from "./github";
 
 function remote(name: string, fetchUrl: string | null, defaultBranch: string | null = null): RemoteInfo {
   return { name, fetchUrl, pushUrl: fetchUrl, defaultBranch };
@@ -55,7 +62,12 @@ describe("pickGitHubRemote", () => {
   ];
 
   it("prefers the upstream's remote, then origin", () => {
-    expect(pickGitHubRemote(remotes, "fork")).toEqual({ owner: "me", repo: "project", remoteName: "fork", defaultBranch: null });
+    expect(pickGitHubRemote(remotes, "fork")).toEqual({
+      owner: "me",
+      repo: "project",
+      remoteName: "fork",
+      defaultBranch: null,
+    });
     expect(pickGitHubRemote(remotes, "backup")?.remoteName).toBe("origin");
     expect(pickGitHubRemote(remotes)?.defaultBranch).toBe("develop");
   });

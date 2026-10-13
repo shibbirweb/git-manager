@@ -23,8 +23,11 @@
   const headingRole = $derived(heading === null ? undefined : "heading");
 </script>
 
-{#snippet titleText()}{#if titleMatches.length > 0}<HighlightText text={title} ranges={titleMatches} variant="search"
-  />{:else}{title}{/if}{/snippet}
+{#snippet titleText()}{#if titleMatches.length > 0}<HighlightText
+      text={title}
+      ranges={titleMatches}
+      variant="search"
+    />{:else}{title}{/if}{/snippet}
 
 <div class="section-title {variant}">
   <!-- A bar spaces its count like its buttons; the others follow the title after a space, as in running text. -->

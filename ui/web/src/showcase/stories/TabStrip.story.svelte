@@ -46,7 +46,9 @@
   />
   <Stack direction="row" align="center" gap="sm">
     <IconButton icon="eye" label="Toggle focus" active={!focused} onclick={() => (focused = !focused)} />
-    <Text tone="dim">Active: {active}. Drag a tab: the others slide aside (Escape cancels). Double-click
-      keeps a preview tab; the wheel scrolls the row.</Text>
+    <Text tone="dim"
+      >Active: {active}. Drag a tab: the others slide aside (Escape cancels). Double-click keeps a preview tab; the
+      wheel scrolls the row.</Text
+    >
   </Stack>
 </Stack>

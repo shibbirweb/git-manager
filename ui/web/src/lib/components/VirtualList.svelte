@@ -61,8 +61,7 @@
 >
   <div class="spacer" style:height="{items.length * rowPx}px">
     {#each items.slice(range.first, range.last) as item, offset (range.first + offset)}
-      <div class="slot" role="listitem" style:top="{(range.first + offset) * rowPx}px"
-        style:height="{rowPx}px">
+      <div class="slot" role="listitem" style:top="{(range.first + offset) * rowPx}px" style:height="{rowPx}px">
         {@render row(item, range.first + offset)}
       </div>
     {/each}

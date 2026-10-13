@@ -22,7 +22,9 @@ describe("buildTerminalTheme", () => {
   });
 
   it("covers the 16 ANSI colors", () => {
-    const ansi = Object.keys(THEME_TOKENS).filter((key) => /^(bright)?(black|red|green|yellow|blue|magenta|cyan|white)$/i.test(key));
+    const ansi = Object.keys(THEME_TOKENS).filter((key) =>
+      /^(bright)?(black|red|green|yellow|blue|magenta|cyan|white)$/i.test(key),
+    );
     expect(ansi).toHaveLength(16);
   });
 });

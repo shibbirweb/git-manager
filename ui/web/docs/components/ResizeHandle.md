@@ -3,7 +3,7 @@
 A drag handle on a panel's edge: a line that becomes an accent bar on hover; keys and double-click.
 
 ```ts
-import ResizeHandle from "$ui/components/ResizeHandle.svelte";
+import ResizeHandle from "@git-manager/ui/components/ResizeHandle.svelte";
 ```
 
 Group: Layout. Also known as: Resizable handle.

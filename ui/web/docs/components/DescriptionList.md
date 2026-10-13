@@ -3,7 +3,7 @@
 Label and value pairs in two columns, like a commit's Author, Date and Parents.
 
 ```ts
-import DescriptionList from "$ui/components/DescriptionList.svelte";
+import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
 ```
 
 Group: Layout.

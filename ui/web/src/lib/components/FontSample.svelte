@@ -51,12 +51,11 @@
   style:font-weight={fontWeight}
   style:letter-spacing={letterSpacing === null ? null : `${letterSpacing}px`}
   style:--sample-line-height={lineHeight}
-  style:--sample-bold-weight={boldWeight}
-  >{#each lines as line, index (index)}<div class:dim={line.dim}
-      >{#each line.parts ?? [] as part, partIndex (partIndex)}<span class:dim={part.dim} class:bold={part.bold}
-          >{part.text}</span
-        >{/each}{line.text || (line.parts?.length ? "" : " ")}</div
-    >{/each}</pre>
+  style:--sample-bold-weight={boldWeight}>{#each lines as line, index (index)}<div
+      class:dim={line.dim}>{#each line.parts ?? [] as part, partIndex (partIndex)}<span
+          class:dim={part.dim}
+          class:bold={part.bold}>{part.text}</span
+        >{/each}{line.text || (line.parts?.length ? "" : " ")}</div>{/each}</pre>
 
 <style>
   .sample {
@@ -81,7 +80,9 @@
   .no-ligatures,
   .no-ligatures > div {
     font-variant-ligatures: none;
-    font-feature-settings: "liga" 0, "calt" 0;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
   }
 
   .dim {

@@ -43,7 +43,18 @@
     onSave: () => void;
   }
 
-  let { filePath, docVersion, getSource, view, visible, syncScroll, initialLine, onLeave, onToggleTask, onSave }: Props = $props();
+  let {
+    filePath,
+    docVersion,
+    getSource,
+    view,
+    visible,
+    syncScroll,
+    initialLine,
+    onLeave,
+    onToggleTask,
+    onSave,
+  }: Props = $props();
 
   const MIN_DELAY_MS = 150;
   const MAX_DELAY_MS = 1000;
@@ -213,7 +224,9 @@
       return;
     }
     lead("editor");
-    scroller.scrollTop = isScrolledToEnd(view.scrollDOM) ? scroller.scrollHeight : preview.offsetForLine(scroller, editorTopLine(view));
+    scroller.scrollTop = isScrolledToEnd(view.scrollDOM)
+      ? scroller.scrollHeight
+      : preview.offsetForLine(scroller, editorTopLine(view));
   }
 
   function syncFromPreview(): void {
@@ -296,7 +309,9 @@
     event.preventDefault();
     const destination = preview.linkTarget(link);
     if (destination.kind === "external") {
-      void openUrl(destination.url).catch((error: unknown) => toast.error("Could not open the link", errorMessage(error)));
+      void openUrl(destination.url).catch((error: unknown) =>
+        toast.error("Could not open the link", errorMessage(error)),
+      );
     } else if (destination.kind === "anchor") {
       const element = preview.anchorElement(destination.id);
       if (element) {
@@ -316,7 +331,8 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    const saveKey = (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "s";
+    const saveKey =
+      (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "s";
     if (saveKey && usesDefaultKeys("file.save")) {
       event.preventDefault();
       onSave();

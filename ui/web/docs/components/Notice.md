@@ -3,7 +3,7 @@
 A tinted banner with an icon, a message and an optional action on the right.
 
 ```ts
-import Notice from "$ui/components/Notice.svelte";
+import Notice from "@git-manager/ui/components/Notice.svelte";
 ```
 
 Group: Feedback. Also known as: Alert, Banner, Callout.

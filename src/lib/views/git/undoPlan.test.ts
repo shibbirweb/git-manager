@@ -38,13 +38,27 @@ const inputs = (overrides: Partial<UndoInputs> = {}): UndoInputs => ({
   ...overrides,
 });
 
-const deleted = (deletedAt: number): DeletedBranch => ({ repoRoot: "/r", branchName: "topic", commitId: OLD, deletedAt });
+const deleted = (deletedAt: number): DeletedBranch => ({
+  repoRoot: "/r",
+  branchName: "topic",
+  commitId: OLD,
+  deletedAt,
+});
 
 describe("undoPlan", () => {
   it("undoes a commit softly back to its parent", () => {
     const plan = undoPlan(inputs());
-    expect(plan).toMatchObject({ kind: "moveHead", mode: "soft", headId: NEW, commitId: OLD, pushed: false, title: "Undo Commit" });
-    expect(plan.kind === "moveHead" && plan.message).toBe('Undo the commit "Add login" on main? Its changes stay staged.');
+    expect(plan).toMatchObject({
+      kind: "moveHead",
+      mode: "soft",
+      headId: NEW,
+      commitId: OLD,
+      pushed: false,
+      title: "Undo Commit",
+    });
+    expect(plan.kind === "moveHead" && plan.message).toBe(
+      'Undo the commit "Add login" on main? Its changes stay staged.',
+    );
   });
 
   it("warns when the commit is pushed", () => {
@@ -54,12 +68,25 @@ describe("undoPlan", () => {
   });
 
   it("undoes an amend softly to the commit before it", () => {
-    expect(undoPlan(inputs({ last: last({ action: "amend" }) }))).toMatchObject({ kind: "moveHead", mode: "soft", title: "Undo Amend", commitId: OLD });
+    expect(undoPlan(inputs({ last: last({ action: "amend" }) }))).toMatchObject({
+      kind: "moveHead",
+      mode: "soft",
+      title: "Undo Amend",
+      commitId: OLD,
+    });
   });
 
   it("undoes merges, pulls and resets keeping local changes", () => {
-    expect(undoPlan(inputs({ last: last({ action: "merge" }) }))).toMatchObject({ kind: "moveHead", mode: "keep", title: "Undo Merge" });
-    expect(undoPlan(inputs({ last: last({ action: "pull" }) }))).toMatchObject({ kind: "moveHead", mode: "keep", title: "Undo Pull" });
+    expect(undoPlan(inputs({ last: last({ action: "merge" }) }))).toMatchObject({
+      kind: "moveHead",
+      mode: "keep",
+      title: "Undo Merge",
+    });
+    expect(undoPlan(inputs({ last: last({ action: "pull" }) }))).toMatchObject({
+      kind: "moveHead",
+      mode: "keep",
+      title: "Undo Pull",
+    });
     const reset = undoPlan(inputs({ last: last({ action: "reset" }, { pushed: true }) }));
     expect(reset).toMatchObject({ kind: "moveHead", mode: "keep", title: "Undo Reset", pushed: false });
   });
@@ -80,7 +107,9 @@ describe("undoPlan", () => {
     const plan = undoPlan(inputs({ deleted: deleted(2_000_000) }));
     expect(plan).toMatchObject({ kind: "restoreBranch", branchName: "topic", commitId: OLD });
     expect(undoPlan(inputs({ deleted: deleted(500_000) }))).toMatchObject({ kind: "moveHead" });
-    expect(undoPlan(inputs({ deleted: deleted(2_000_000), localBranches: ["main", "topic"] }))).toMatchObject({ kind: "moveHead" });
+    expect(undoPlan(inputs({ deleted: deleted(2_000_000), localBranches: ["main", "topic"] }))).toMatchObject({
+      kind: "moveHead",
+    });
     expect(undoPlan(inputs({ last: null, deleted: deleted(1) }))).toMatchObject({ kind: "restoreBranch" });
   });
 

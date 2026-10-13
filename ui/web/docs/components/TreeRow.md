@@ -3,7 +3,7 @@
 One row of a Tree: chevron, icon, name or rename field, decoration and detail.
 
 ```ts
-import TreeRow from "$ui/components/TreeRow.svelte";
+import TreeRow from "@git-manager/ui/components/TreeRow.svelte";
 ```
 
 Group: Navigation.

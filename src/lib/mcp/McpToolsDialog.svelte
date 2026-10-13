@@ -128,9 +128,19 @@
     </div>
 
     <div class="toolbar">
-      <input class="input filter" placeholder="Filter tools" bind:value={filter} bind:this={filterEl} aria-label="Filter tools" />
-      <button class="btn small" onclick={() => void setMany(shown, true)} disabled={shown.length === 0}>Turn All On</button>
-      <button class="btn small" onclick={() => void setMany(shown, false)} disabled={shown.length === 0}>Turn All Off</button>
+      <input
+        class="input filter"
+        placeholder="Filter tools"
+        bind:value={filter}
+        bind:this={filterEl}
+        aria-label="Filter tools"
+      />
+      <button class="btn small" onclick={() => void setMany(shown, true)} disabled={shown.length === 0}
+        >Turn All On</button
+      >
+      <button class="btn small" onclick={() => void setMany(shown, false)} disabled={shown.length === 0}
+        >Turn All Off</button
+      >
       <button
         class="btn small"
         onclick={() => void restoreDefaults()}
@@ -150,7 +160,9 @@
         <section>
           <div class="group-head">
             <h3>{group.category}</h3>
-            <span class="dim">{group.tools.filter((tool) => toolEnabled(tool, settings.mcpTools)).length} of {group.tools.length}</span>
+            <span class="dim"
+              >{group.tools.filter((tool) => toolEnabled(tool, settings.mcpTools)).length} of {group.tools.length}</span
+            >
             <div class="spacer"></div>
             <button class="link" onclick={() => void setMany(group.tools, true)}>Turn All On</button>
             <button class="link" onclick={() => void setMany(group.tools, false)}>Turn All Off</button>
@@ -162,7 +174,9 @@
                 <div class="tool-title">
                   <span class="name">{tool.title}</span>
                   <code class="selectable">{tool.name}</code>
-                  <span class="badge" class:danger={badge === "destructive"} class:write={badge === "can change files"}>{badge}</span>
+                  <span class="badge" class:danger={badge === "destructive"} class:write={badge === "can change files"}
+                    >{badge}</span
+                  >
                 </div>
                 <span class="description">{tool.description}</span>
               </div>

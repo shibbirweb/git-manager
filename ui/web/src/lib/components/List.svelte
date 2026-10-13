@@ -17,9 +17,8 @@
   import { ListScroll, wireField } from "../logic/listWiring.svelte";
   import { presetVar, type RowHeight, type ViewHeight } from "../logic/presets";
   import { RowHeights } from "../logic/rowHeights.svelte";
-  import { visibleByOffsets } from "../logic/rowOffsets";
+  import { listWindow } from "../logic/rowOffsets";
   import { modifiersOf, selectRow, type Modifiers } from "../logic/treeSelect";
-  import { visibleRows } from "../logic/virtualWindow";
   import { scales } from "../styles/tokens";
 
   interface Props {
@@ -86,36 +85,27 @@
   const shownHeight = $derived(virtual !== null && height === "auto" ? "fill" : height);
   // A driving field keeps the focus: the list is not tabbable and its rows do not take the focus when clicked.
   const drives = $derived(interactive && field !== null && fieldKeys === "drive");
-  const skipAt = (index: number) => skip(items[index]);
 
   let viewport = $state<HTMLDivElement | null>(null);
   const scroll = new ListScroll();
   let viewportHeight = $state(0);
   let anchor = $state<string | null>(null);
 
-  // Measured heights by item key; rows not drawn yet count as the `virtual` estimate.
+  // With `measure`, each drawn row is measured when its height changes; rows not drawn yet count as `virtual`.
   const rowHeights = new RowHeights();
   const measuring = $derived(virtual !== null && measure);
   const offsets = $derived(measuring ? rowHeights.offsets(keys, rowPx) : null);
   const range = $derived(
-    virtual === null
-      ? { first: 0, last: items.length }
-      : offsets
-        ? visibleByOffsets(offsets, scroll.top, viewportHeight)
-        : visibleRows(scroll.top, viewportHeight, rowPx, items.length),
+    listWindow(items.length, virtual === null ? null : rowPx, offsets, scroll.top, viewportHeight),
   );
-  const totalHeight = $derived(virtual === null ? null : `${offsets ? offsets[items.length] : items.length * rowPx}px`);
   const activeId = $derived(
     interactive && currentIndex >= range.first && currentIndex < range.last ? `${uid}-${currentIndex}` : undefined,
   );
 
-  // Measures a drawn row whenever its height changes; only lists with `measure` do.
   const measureRow = (node: HTMLElement, key: string) => (measuring ? rowHeights.observe(node, key) : {});
 
   onDestroy(() => rowHeights.dispose());
-  function isSelected(key: string): boolean {
-    return multiple ? selection.includes(key) : selected === key;
-  }
+  const isSelected = (key: string) => (multiple ? selection.includes(key) : selected === key);
 
   function select(index: number, modifiers: Modifiers) {
     const item = items[index];
@@ -150,8 +140,16 @@
     void reveal(index);
   }
 
-  scroll.follow(() => viewport, () => follow, () => [items.length, totalHeight]);
-  wireField(() => field, () => (drives ? { listId: uid, activeId } : null), (event) => onKey(event, true));
+  scroll.follow(
+    () => viewport,
+    () => follow,
+    () => [items.length, range.total],
+  );
+  wireField(
+    () => field,
+    () => (drives ? { listId: uid, activeId } : null),
+    (event) => onKey(event, true),
+  );
 
   // measure: an entry that opens keeps its new height in view while it is the current row.
   scroll.keep(
@@ -170,7 +168,7 @@
     state: () => ({
       current: currentIndex,
       count: items.length,
-      skip: skipAt,
+      skip: (index: number) => skip(items[index]),
       tree: role === "tree",
       multiple,
       levels: () => items.map((item) => level(item)),
@@ -204,6 +202,7 @@
   aria-label={label}
   aria-multiselectable={role === "listbox" && multiple ? true : undefined}
   aria-activedescendant={drives ? undefined : activeId}
+  data-driven={drives || undefined}
   style:max-height={shownHeight === "fill" || shownHeight === "auto" ? null : presetVar("viewHeight", shownHeight)}
   onscroll={() => viewport && scroll.update(viewport, items.length, onnearend)}
   onkeydown={(event) => onKey(event, false)}
@@ -211,7 +210,7 @@
   {#if items.length === 0}
     {@render empty?.()}
   {:else}
-    <div class="rows" style:height={totalHeight}>
+    <div class="rows" style:height={range.total}>
       {#each items.slice(range.first, range.last) as item, offset (keys[range.first + offset])}
         {@const index = range.first + offset}
         {@const key = keys[index]}

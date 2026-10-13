@@ -25,11 +25,21 @@ export function fetchAll(repoRoot?: string): Promise<unknown> {
 
 /** Fetches the default remote; `prune` also drops branches deleted there. */
 export function fetchRemote(repoRoot?: string, prune = false): Promise<unknown> {
-  return repoStore.runOp("Fetch", (repoPath) => api.fetch(repoPath, prune), prune ? "Fetched and pruned" : "Fetched", repoRoot);
+  return repoStore.runOp(
+    "Fetch",
+    (repoPath) => api.fetch(repoPath, prune),
+    prune ? "Fetched and pruned" : "Fetched",
+    repoRoot,
+  );
 }
 
 export function pull(repoRoot?: string, rebase = false): Promise<unknown> {
-  return repoStore.runOp("Pull", (repoPath) => api.pull(repoPath, rebase), rebase ? "Pulled and rebased" : "Pulled", repoRoot);
+  return repoStore.runOp(
+    "Pull",
+    (repoPath) => api.pull(repoPath, rebase),
+    rebase ? "Pulled and rebased" : "Pulled",
+    repoRoot,
+  );
 }
 
 /** Pushes the current branch; `askForce` first offers a force push with --force-with-lease. */
@@ -52,7 +62,12 @@ export async function push(askForce = false, repoRoot?: string): Promise<void> {
 /** Pushes a branch that has no upstream yet and tracks it. */
 export async function publishBranch(repoRoot?: string): Promise<boolean> {
   const branchName = headOf(repoRoot)?.branch ?? "branch";
-  const outcome = await repoStore.runOp("Publish", (repoPath) => api.push(repoPath, false), `Published ${branchName}`, repoRoot);
+  const outcome = await repoStore.runOp(
+    "Publish",
+    (repoPath) => api.push(repoPath, false),
+    `Published ${branchName}`,
+    repoRoot,
+  );
   return outcome !== undefined;
 }
 

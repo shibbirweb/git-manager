@@ -8,13 +8,6 @@
 
 <Stack direction="row" align="stretch" gap="none">
   <Stack padding="md"><Text>Panel: {size}px</Text></Stack>
-  <ResizeHandle
-    {size}
-    side="left"
-    preset="list"
-    max={400}
-    label="Resize"
-    onresize={(next) => (size = next)}
-  />
+  <ResizeHandle {size} side="left" preset="list" max={400} label="Resize" onresize={(next) => (size = next)} />
   <Stack padding="md"><Text tone="dim">Hover the line between them.</Text></Stack>
 </Stack>

@@ -47,7 +47,9 @@ describe("parsePreferences", () => {
     }).preferences;
     expect(parsed.aiUsagePosition).toBe("left");
     expect(parsed.aiUsageHidden).toEqual(["codex"]);
-    expect(parsed.aiAgentCommands).toEqual({ claude: { command: "claude-beta", fullAutonomyArgs: "", promptStyle: "typed" } });
+    expect(parsed.aiAgentCommands).toEqual({
+      claude: { command: "claude-beta", fullAutonomyArgs: "", promptStyle: "typed" },
+    });
     expect(parsePreferences({ aiUsagePosition: "top" }).preferences.aiUsagePosition).toBe("right");
   });
 
@@ -59,12 +61,12 @@ describe("parsePreferences", () => {
 
   it("starts with VS Code's cursor and keeps hand-edited cursor values in range", () => {
     const parsed = parsePreferences({}).preferences;
-    expect([parsed.editorCursorStyle, parsed.editorCursorWidth, parsed.editorCursorBlinking, parsed.editorCursorSmoothCaret]).toEqual([
-      "line",
-      2,
-      "blink",
-      false,
-    ]);
+    expect([
+      parsed.editorCursorStyle,
+      parsed.editorCursorWidth,
+      parsed.editorCursorBlinking,
+      parsed.editorCursorSmoothCaret,
+    ]).toEqual(["line", 2, "blink", false]);
     expect([parsed.editorCaretExtraTop, parsed.editorCaretExtraBottom]).toEqual([0, 0]);
     const custom = parsePreferences({
       editorCursorStyle: "block-outline",
@@ -74,44 +76,69 @@ describe("parsePreferences", () => {
       editorCaretExtraTop: 2.6,
       editorCaretExtraBottom: -4,
     }).preferences;
-    expect([custom.editorCursorStyle, custom.editorCursorWidth, custom.editorCursorBlinking, custom.editorCursorSmoothCaret]).toEqual([
-      "block-outline",
-      6,
-      "expand",
-      true,
-    ]);
+    expect([
+      custom.editorCursorStyle,
+      custom.editorCursorWidth,
+      custom.editorCursorBlinking,
+      custom.editorCursorSmoothCaret,
+    ]).toEqual(["block-outline", 6, "expand", true]);
     expect([custom.editorCaretExtraTop, custom.editorCaretExtraBottom]).toEqual([3, 0]);
-    const wrong = parsePreferences({ editorCursorStyle: "bar", editorCursorBlinking: "fast", editorCaretExtraTop: "2" }).preferences;
-    expect([wrong.editorCursorStyle, wrong.editorCursorBlinking, wrong.editorCaretExtraTop]).toEqual(["line", "blink", 0]);
+    const wrong = parsePreferences({
+      editorCursorStyle: "bar",
+      editorCursorBlinking: "fast",
+      editorCaretExtraTop: "2",
+    }).preferences;
+    expect([wrong.editorCursorStyle, wrong.editorCursorBlinking, wrong.editorCaretExtraTop]).toEqual([
+      "line",
+      "blink",
+      0,
+    ]);
   });
 
   it("keeps the memory log off and its numbers in range", () => {
     const parsed = parsePreferences({}).preferences;
     expect([parsed.memoryLogEnabled, parsed.memoryLogIntervalMs, parsed.memoryLogThresholdMb]).toEqual([false, 500, 5]);
-    const custom = parsePreferences({ memoryLogEnabled: true, memoryLogIntervalMs: 20, memoryLogThresholdMb: 9000 }).preferences;
-    expect([custom.memoryLogEnabled, custom.memoryLogIntervalMs, custom.memoryLogThresholdMb]).toEqual([true, 100, 500]);
+    const custom = parsePreferences({
+      memoryLogEnabled: true,
+      memoryLogIntervalMs: 20,
+      memoryLogThresholdMb: 9000,
+    }).preferences;
+    expect([custom.memoryLogEnabled, custom.memoryLogIntervalMs, custom.memoryLogThresholdMb]).toEqual([
+      true,
+      100,
+      500,
+    ]);
     expect(parsePreferences({ memoryLogThresholdMb: "x" }).preferences.memoryLogThresholdMb).toBe(5);
   });
 
   it("keeps Local History on for 7 days and 200 MB, within range", () => {
-    const keys = ["localHistoryEnabled", "localHistoryDays", "localHistorySizeMb", "notificationsDoNotDisturb"] as const;
+    const keys = [
+      "localHistoryEnabled",
+      "localHistoryDays",
+      "localHistorySizeMb",
+      "notificationsDoNotDisturb",
+    ] as const;
     const values = (data: Record<string, unknown>) => {
       const preferences = parsePreferences(data).preferences;
       return keys.map((key) => preferences[key]);
     };
     expect(values({})).toEqual([true, 7, 200, false]);
-    expect(values({ localHistoryEnabled: false, localHistoryDays: 500, localHistorySizeMb: 1, notificationsDoNotDisturb: true })).toEqual([
-      false,
-      90,
-      10,
-      true,
-    ]);
-    expect(values({ localHistoryEnabled: "no", localHistoryDays: "3", localHistorySizeMb: null, notificationsDoNotDisturb: 1 })).toEqual([
-      true,
-      7,
-      200,
-      false,
-    ]);
+    expect(
+      values({
+        localHistoryEnabled: false,
+        localHistoryDays: 500,
+        localHistorySizeMb: 1,
+        notificationsDoNotDisturb: true,
+      }),
+    ).toEqual([false, 90, 10, true]);
+    expect(
+      values({
+        localHistoryEnabled: "no",
+        localHistoryDays: "3",
+        localHistorySizeMb: null,
+        notificationsDoNotDisturb: 1,
+      }),
+    ).toEqual([true, 7, 200, false]);
   });
 
   it("keeps the Git Console off unless it was turned on", () => {
@@ -124,8 +151,14 @@ describe("parsePreferences", () => {
     const preferences = parsePreferences({}).preferences;
     expect(preferences.mcpEnabled).toBe(false);
     expect(preferences.cliEnabled).toBe(false);
-    expect(parsePreferences({ mcpEnabled: true, cliEnabled: true }).preferences).toMatchObject({ mcpEnabled: true, cliEnabled: true });
-    expect(parsePreferences({ mcpEnabled: "on", cliEnabled: 1 }).preferences).toMatchObject({ mcpEnabled: false, cliEnabled: false });
+    expect(parsePreferences({ mcpEnabled: true, cliEnabled: true }).preferences).toMatchObject({
+      mcpEnabled: true,
+      cliEnabled: true,
+    });
+    expect(parsePreferences({ mcpEnabled: "on", cliEnabled: 1 }).preferences).toMatchObject({
+      mcpEnabled: false,
+      cliEnabled: false,
+    });
   });
 
   it("accepts only whole MCP ports from 1024 to 65535", () => {
@@ -145,14 +178,18 @@ describe("parsePreferences", () => {
   it("keeps only true or false tool switches with valid names", () => {
     expect(parsePreferences({}).preferences.mcpTools).toEqual({});
     expect(
-      parsePreferences({ mcpTools: { git_status: false, send_terminal_text: true, bad: "yes", "Not A Name": true, n: null } }).preferences.mcpTools,
+      parsePreferences({
+        mcpTools: { git_status: false, send_terminal_text: true, bad: "yes", "Not A Name": true, n: null },
+      }).preferences.mcpTools,
     ).toEqual({ git_status: false, send_terminal_text: true });
     expect(pickToolStates(["git_status"])).toEqual({});
     expect(pickToolStates("git_status")).toEqual({});
   });
 
   it("caps the tool switches", () => {
-    const many = Object.fromEntries(Array.from({ length: MAX_MCP_TOOL_STATES + 50 }, (_, index) => [`tool_${index}`, false]));
+    const many = Object.fromEntries(
+      Array.from({ length: MAX_MCP_TOOL_STATES + 50 }, (_, index) => [`tool_${index}`, false]),
+    );
     expect(Object.keys(pickToolStates(many))).toHaveLength(MAX_MCP_TOOL_STATES);
   });
 
@@ -186,7 +223,9 @@ describe("parsePreferences", () => {
 
   it("defaults the editor to 13 px JetBrains Mono, falling back to Menlo, then Windows' code fonts", () => {
     expect(defaultPreferences.editorFontSize).toBe(13);
-    expect(DEFAULT_EDITOR_FONT).toBe("'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace");
+    expect(DEFAULT_EDITOR_FONT).toBe(
+      "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace",
+    );
     // A saved value is kept, so changing a default never touches what the user picked.
     expect(parsePreferences({ editorFontSize: 12.5, editorLineHeight: 1.55 }).preferences).toMatchObject({
       editorFontSize: 12.5,
@@ -223,10 +262,19 @@ describe("parsePreferences", () => {
       editorBracketPairColors: true,
       editorMatchBrackets: true,
     });
-    const edited = parsePreferences({ editorCompletion: false, editorFoldGutter: "no", editorIndentGuides: false }).preferences;
+    const edited = parsePreferences({
+      editorCompletion: false,
+      editorFoldGutter: "no",
+      editorIndentGuides: false,
+    }).preferences;
     expect(edited.editorCompletion).toBe(false);
     expect(edited.editorFoldGutter).toBe(true);
-    const extras = parsePreferences({ editorStickyScroll: false, editorMinimap: true, editorBracketPairColors: 1, editorMatchBrackets: false }).preferences;
+    const extras = parsePreferences({
+      editorStickyScroll: false,
+      editorMinimap: true,
+      editorBracketPairColors: 1,
+      editorMatchBrackets: false,
+    }).preferences;
     expect(extras.editorStickyScroll).toBe(false);
     expect(extras.editorMinimap).toBe(true);
     expect(defaultPreferences.detectIndentation).toBe(true);
@@ -265,7 +313,13 @@ describe("parsePreferences", () => {
 
   it("falls back to defaults for missing or invalid values", () => {
     expect(parsePreferences(null).preferences).toEqual(defaultPreferences);
-    const { preferences } = parsePreferences({ theme: "neon", tabSize: 3, uiFontSize: 99, wordWrap: "yes", updateChannel: "beta" });
+    const { preferences } = parsePreferences({
+      theme: "neon",
+      tabSize: 3,
+      uiFontSize: 99,
+      wordWrap: "yes",
+      updateChannel: "beta",
+    });
     expect(preferences.theme).toBe("system");
     expect(preferences.tabSize).toBe(4);
     expect(preferences.uiFontSize).toBe(16);
@@ -289,8 +343,17 @@ describe("parsePreferences", () => {
 
   it("validates the tab and saving settings", () => {
     const defaults = parsePreferences({}).preferences;
-    expect([defaults.reopenTabsOnStart, defaults.tabLimit, defaults.autoSave, defaults.autoSaveDelayMs]).toEqual([true, 0, "off", 1000]);
-    expect([defaults.trimTrailingWhitespace, defaults.insertFinalNewline, defaults.trimFinalNewlines]).toEqual([false, false, false]);
+    expect([defaults.reopenTabsOnStart, defaults.tabLimit, defaults.autoSave, defaults.autoSaveDelayMs]).toEqual([
+      true,
+      0,
+      "off",
+      1000,
+    ]);
+    expect([defaults.trimTrailingWhitespace, defaults.insertFinalNewline, defaults.trimFinalNewlines]).toEqual([
+      false,
+      false,
+      false,
+    ]);
     const custom = parsePreferences({
       reopenTabsOnStart: false,
       tabLimit: 1,
@@ -310,14 +373,20 @@ describe("parsePreferences", () => {
       trimFinalNewlines: true,
     });
     expect(custom.extra).toEqual({});
-    const wrong = parsePreferences({ reopenTabsOnStart: "no", tabLimit: -2, autoSave: "always", autoSaveDelayMs: 5, insertFinalNewline: 1 }).preferences;
-    expect([wrong.reopenTabsOnStart, wrong.tabLimit, wrong.autoSave, wrong.autoSaveDelayMs, wrong.insertFinalNewline]).toEqual([
-      true,
-      0,
-      "off",
-      100,
-      false,
-    ]);
+    const wrong = parsePreferences({
+      reopenTabsOnStart: "no",
+      tabLimit: -2,
+      autoSave: "always",
+      autoSaveDelayMs: 5,
+      insertFinalNewline: 1,
+    }).preferences;
+    expect([
+      wrong.reopenTabsOnStart,
+      wrong.tabLimit,
+      wrong.autoSave,
+      wrong.autoSaveDelayMs,
+      wrong.insertFinalNewline,
+    ]).toEqual([true, 0, "off", 100, false]);
     expect(parsePreferences({ tabLimit: 500 }).preferences.tabLimit).toBe(100);
   });
 
@@ -470,7 +539,11 @@ describe("parsePreferences", () => {
       terminalDropPaths: false,
     });
     expect(flipped.extra).toEqual({});
-    const invalid = parsePreferences({ terminalFind: "off", terminalOptionAsMeta: 1, terminalSmoothScrolling: "yes" }).preferences;
+    const invalid = parsePreferences({
+      terminalFind: "off",
+      terminalOptionAsMeta: 1,
+      terminalSmoothScrolling: "yes",
+    }).preferences;
     expect(invalid.terminalFind).toBe(true);
     expect(invalid.terminalOptionAsMeta).toBe(false);
     expect(invalid.terminalSmoothScrolling).toBe(false);
@@ -482,7 +555,9 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ terminalScrollback: 10 }).preferences.terminalScrollback).toBe(1000);
     expect(parsePreferences({ terminalScrollback: 1e9 }).preferences.terminalScrollback).toBe(100000);
     expect(parsePreferences({ terminalScrollback: "lots" }).preferences.terminalScrollback).toBe(5000);
-    expect(parsePreferences({ terminalScrollback: Number.POSITIVE_INFINITY }).preferences.terminalScrollback).toBe(5000);
+    expect(parsePreferences({ terminalScrollback: Number.POSITIVE_INFINITY }).preferences.terminalScrollback).toBe(
+      5000,
+    );
     expect(clampTerminalScrollback(500)).toBe(1000);
     expect(clampTerminalScrollback(null)).toBe(5000);
   });
@@ -523,7 +598,10 @@ describe("parseState", () => {
     expect(extra).toEqual({ somethingNew: true });
     expect(parseState({ leftPanel: "scripts" }).state.leftPanel).toBe("scripts");
     expect(parseState({ activeRepoAuto: false }).state.activeRepoAuto).toBe(false);
-    expect(parseState({ scriptNodeVersions: { "/a/package.json": "default", "/b/package.json": 18, "/c/package.json": "" } }).state.scriptNodeVersions).toEqual({
+    expect(
+      parseState({ scriptNodeVersions: { "/a/package.json": "default", "/b/package.json": 18, "/c/package.json": "" } })
+        .state.scriptNodeVersions,
+    ).toEqual({
       "/a/package.json": "default",
     });
   });
@@ -592,7 +670,10 @@ describe("parseState", () => {
   it("validates the Command Palette's recently used commands", () => {
     expect(parseState({}).state.recentCommands).toEqual([]);
     expect(parseState({ recentCommands: "git.push" }).state.recentCommands).toEqual([]);
-    expect(parseState({ recentCommands: ["git.push", 7, "git.push", "view.log"] }).state.recentCommands).toEqual(["git.push", "view.log"]);
+    expect(parseState({ recentCommands: ["git.push", 7, "git.push", "view.log"] }).state.recentCommands).toEqual([
+      "git.push",
+      "view.log",
+    ]);
     const many = Array.from({ length: 30 }, (_, index) => `command.${index}`);
     expect(parseState({ recentCommands: many }).state.recentCommands).toHaveLength(20);
     expect(stateToJson(parseState({ recentCommands: ["git.pull"] }).state, {}).recentCommands).toEqual(["git.pull"]);
@@ -602,7 +683,10 @@ describe("parseState", () => {
 
   it("keeps the open tabs of each workspace, validated", () => {
     const openTabs = {
-      "/w": { tabs: [{ path: "/w/a.ts", preview: false, pinned: true, position: { line: 3, column: 1, topLine: 0 } }], active: "/w/a.ts" },
+      "/w": {
+        tabs: [{ path: "/w/a.ts", preview: false, pinned: true, position: { line: 3, column: 1, topLine: 0 } }],
+        active: "/w/a.ts",
+      },
       "/bad": { tabs: [{ path: "relative.ts" }] },
     };
     const { state, extra } = parseState({ openTabs });
@@ -619,7 +703,10 @@ describe("parseState", () => {
   });
 
   it("keeps the Recent Files of each workspace, validated", () => {
-    const recentFileLists = { "/w": [{ filePath: "/w/a.ts", edited: true }, { filePath: "relative.ts" }], "/empty": [] };
+    const recentFileLists = {
+      "/w": [{ filePath: "/w/a.ts", edited: true }, { filePath: "relative.ts" }],
+      "/empty": [],
+    };
     const { state, extra } = parseState({ recentFileLists });
     expect(state.recentFileLists).toEqual({ "/w": [{ filePath: "/w/a.ts", edited: true }] });
     expect(extra).toEqual({});
@@ -628,7 +715,12 @@ describe("parseState", () => {
   });
 
   it("round-trips through stateToJson", () => {
-    const { state, extra } = parseState({ recentFolders: ["/a"], lastSession: [], terminalHeight: 300, somethingNew: 1 });
+    const { state, extra } = parseState({
+      recentFolders: ["/a"],
+      lastSession: [],
+      terminalHeight: 300,
+      somethingNew: 1,
+    });
     const json = stateToJson(state, extra);
     expect(json.somethingNew).toBe(1);
     expect(json.terminalHeight).toBe(300);
@@ -686,10 +778,9 @@ describe("sessionSteps", () => {
 describe("changedPreferenceKeys", () => {
   it("compares records by content", () => {
     expect(changedPreferenceKeys({ ...defaultPreferences, mcpTools: {} })).toEqual([]);
-    expect(changedPreferenceKeys({ ...defaultPreferences, mcpTools: { git_status: false }, mcpEnabled: true })).toEqual([
-      "mcpEnabled",
-      "mcpTools",
-    ]);
+    expect(changedPreferenceKeys({ ...defaultPreferences, mcpTools: { git_status: false }, mcpEnabled: true })).toEqual(
+      ["mcpEnabled", "mcpTools"],
+    );
   });
 });
 
@@ -703,7 +794,10 @@ describe("color theme preferences", () => {
   });
 
   it("keep known themes of the right mode", () => {
-    const { preferences } = parsePreferences({ lightColorTheme: "solarized-light", darkColorTheme: "high-contrast-dark" });
+    const { preferences } = parsePreferences({
+      lightColorTheme: "solarized-light",
+      darkColorTheme: "high-contrast-dark",
+    });
     expect(preferences.lightColorTheme).toBe("solarized-light");
     expect(preferences.darkColorTheme).toBe("high-contrast-dark");
   });
@@ -712,7 +806,9 @@ describe("color theme preferences", () => {
     expect(parsePreferences({ lightColorTheme: "no-such-theme" }).preferences.lightColorTheme).toBe("gm-light");
     expect(parsePreferences({ darkColorTheme: 7 }).preferences.darkColorTheme).toBe("gm-dark");
     expect(parsePreferences({ lightColorTheme: "dracula" }).preferences.lightColorTheme).toBe("gm-light");
-    expect(parsePreferences({ darkColorTheme: "github-light-high-contrast" }).preferences.darkColorTheme).toBe("gm-dark");
+    expect(parsePreferences({ darkColorTheme: "github-light-high-contrast" }).preferences.darkColorTheme).toBe(
+      "gm-dark",
+    );
   });
 
   it("are known keys, not extras", () => {
@@ -728,7 +824,11 @@ describe("color theme preferences", () => {
 describe("commit message settings", () => {
   it("defaults to history and the subject guide on, with no templates", () => {
     const { preferences } = parsePreferences({});
-    expect([preferences.commitMessageHistory, preferences.commitSubjectGuide, preferences.commitTemplates]).toEqual([true, true, []]);
+    expect([preferences.commitMessageHistory, preferences.commitSubjectGuide, preferences.commitTemplates]).toEqual([
+      true,
+      true,
+      [],
+    ]);
     expect(changedPreferenceKeys(preferences)).toEqual([]);
   });
 
@@ -736,7 +836,10 @@ describe("commit message settings", () => {
     const { preferences, extra } = parsePreferences({
       commitMessageHistory: false,
       commitSubjectGuide: "yes",
-      commitTemplates: [{ name: "Feature", text: "feat:[{ticket}] " }, { name: "", text: "dropped" }],
+      commitTemplates: [
+        { name: "Feature", text: "feat:[{ticket}] " },
+        { name: "", text: "dropped" },
+      ],
     });
     expect(preferences.commitMessageHistory).toBe(false);
     expect(preferences.commitSubjectGuide).toBe(true);
@@ -761,14 +864,17 @@ describe("keybindings", () => {
   it("keeps custom keys for known commands and drops the rest", () => {
     expect(parsePreferences({}).preferences.keybindings).toEqual({});
     expect(
-      parsePreferences({ keybindings: { "git.push": "F5", "view.sidebar": null, "made.up": "F6", "git.pull": "Nope+P" } }).preferences
-        .keybindings,
+      parsePreferences({
+        keybindings: { "git.push": "F5", "view.sidebar": null, "made.up": "F6", "git.pull": "Nope+P" },
+      }).preferences.keybindings,
     ).toEqual({ "git.push": "F5", "view.sidebar": null });
     expect(parsePreferences({ keybindings: "F5" }).preferences.keybindings).toEqual({});
   });
 
   it("counts custom keys as a changed preference", () => {
-    expect(changedPreferenceKeys({ ...defaultPreferences, keybindings: { "git.push": "F5" } })).toEqual(["keybindings"]);
+    expect(changedPreferenceKeys({ ...defaultPreferences, keybindings: { "git.push": "F5" } })).toEqual([
+      "keybindings",
+    ]);
   });
 });
 

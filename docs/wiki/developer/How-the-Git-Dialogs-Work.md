@@ -15,7 +15,7 @@ flowchart LR
   Menu["Git menu, Changes ... menu,<br/>Branches popup"] --> Store["gitDialogs.open({ kind, repoRoot })"]
   Store --> Host["GitDialogHost.svelte<br/>mounts it fresh"]
   Host --> Dialog["PushDialog, PullDialog, ..."]
-  Dialog --> Frame["GitDialogFrame:<br/>Esc, Cmd+Enter, focus"]
+  Dialog --> Frame["Dialog from the UI library:<br/>Esc, Cmd+Enter, focus"]
   Dialog --> Confirm["dialogs.confirm on top"]
   Dialog --> Run["repoStore.runOp / run"]
   Run --> Api["api.ts to Rust commands"]
@@ -23,7 +23,7 @@ flowchart LR
 
 `gitDialogs.svelte.ts` holds the one open dialog as a tagged value (`push`, `pull`, `reset`, `rollback`, `remotes`, `clone`, `update`, `merge`, `rebaseBranch`, `rebase`, plus the ones other chapters cover). `GitDialogHost.svelte` renders it inside `{#key active}`, so every open mounts fresh and starts from the repository's current state.
 
-`GitDialogFrame.svelte` draws the overlay, title, body and footer. Escape cancels, Cmd+Enter (Ctrl+Enter) runs the main action, and the first field gets the focus. It ignores keys while a confirmation from `dialogs` (DialogHost) is on top, and `closable={false}` keeps it open while work runs, as during a clone. While a Git dialog is open, guarded menu items and window shortcuts do nothing (`shortcutsBlocked`).
+Each dialog is the UI library's `Dialog` with `variant="form"` (see [UI-Library.md](UI-Library.md)), and its body is built only from library parts: `Field`, `Input`, `Select`, `RadioGroup`, `Checkbox`, `ListBox`, `CodeBlock` for the command preview, `Text` and `Stack`. The dialog draws the overlay, title, scrolling body and footer; Escape cancels, Cmd+Enter (Ctrl+Enter) runs the main action, and the first field (or the one marked `autofocus`) gets the focus. It handles keys on its own element, so a confirmation from `dialogs` (DialogHost) on top keeps its keys, and `dismissible={false}` keeps it open while work runs, as during a clone. While a Git dialog is open, guarded menu items and window shortcuts do nothing (`shortcutsBlocked`).
 
 The dialog closes before the git command runs. `repoStore.runOp` and `run` then show the busy state, the toast and refresh the status, like every other git action.
 
@@ -76,7 +76,8 @@ sequenceDiagram
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/git/gitDialogs.svelte.ts`, `GitDialogHost.svelte`, `GitDialogFrame.svelte` | The store, the host and the frame |
+| `src/lib/views/git/gitDialogs.svelte.ts`, `GitDialogHost.svelte` | The store and the host |
+| `ui/web/src/lib/components/Dialog.svelte` | The frame every Git dialog uses (library) |
 | `src/lib/views/git/PushDialog.svelte`, `PullDialog.svelte`, `UpdateProjectDialog.svelte` | Remotes |
 | `src/lib/views/git/MergeDialog.svelte`, `RebaseBranchDialog.svelte` | Merge and Rebase |
 | `src/lib/views/git/ResetDialog.svelte`, `RollbackDialog.svelte` | Reset and Rollback |

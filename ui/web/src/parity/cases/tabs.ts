@@ -48,9 +48,7 @@ export const tabCases: ParityCase[] = [
     id: "tab-lifted",
     sources: [TABS],
     html: `<div class="tab-strip">${tab("lifted", "cart.ts")}</div>`,
-    pairs: [
-      { name: "tab", ref: ".tab.lifted", lib: ".tab.lifted", ignore: { ...TEXT, height: "the strip sets it" } },
-    ],
+    pairs: [{ name: "tab", ref: ".tab.lifted", lib: ".tab.lifted", ignore: { ...TEXT, height: "the strip sets it" } }],
   },
   {
     id: "new-tab",

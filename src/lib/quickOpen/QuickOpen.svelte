@@ -186,7 +186,9 @@
   });
 
   const range = $derived(visibleRange(scrollTop, viewportHeight, ROW_HEIGHT, rows.length));
-  const visible = $derived(rows.slice(range.start, range.end).map((row, offset) => ({ row, index: range.start + offset })));
+  const visible = $derived(
+    rows.slice(range.start, range.end).map((row, offset) => ({ row, index: range.start + offset })),
+  );
 
   const modeLabel = $derived(PREFIXES.find((entry) => entry.mode === parsed.mode)?.label ?? "");
 
@@ -348,7 +350,12 @@
         return;
       }
       symbols = symbolRows(results.items, folders);
-      symbolIndex = { files: results.files, symbols: results.symbols, done: results.done, truncated: results.truncated };
+      symbolIndex = {
+        files: results.files,
+        symbols: results.symbols,
+        done: results.done,
+        truncated: results.truncated,
+      };
       error = null;
       if (!results.done) {
         retryWhile("workspaceSymbols", text, querySymbols);
@@ -454,10 +461,15 @@
       picker.onPick(filePath);
       return;
     }
-    void navigation.openFileAt(filePath, line !== null ? Math.max(0, line - 1) : null, column !== null ? Math.max(0, column - 1) : null, {
-      pin: true,
-      toSide,
-    });
+    void navigation.openFileAt(
+      filePath,
+      line !== null ? Math.max(0, line - 1) : null,
+      column !== null ? Math.max(0, column - 1) : null,
+      {
+        pin: true,
+        toSide,
+      },
+    );
   }
 
   function runPaletteCommand(command: PaletteItem): void {
@@ -636,12 +648,22 @@
           >
             {#if row.kind === "file"}
               <Icon name="file" size={14} />
-              <span class="name">{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
-              <span class="folder">{#each row.file.folderParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
+              <span class="name"
+                >{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                    >{:else}{part.text}{/if}{/each}</span
+              >
+              <span class="folder"
+                >{#each row.file.folderParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                    >{:else}{part.text}{/if}{/each}</span
+              >
             {:else if row.kind === "command"}
               <span class="title"
-                ><span class="category">{#each row.command.categoryParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}:</span
-                > {#each row.command.titleParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span
+                ><span class="category"
+                  >{#each row.command.categoryParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                      >{:else}{part.text}{/if}{/each}:</span
+                >
+                {#each row.command.titleParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                    >{:else}{part.text}{/if}{/each}</span
               >
               {#if row.command.checked}
                 <span class="check" title="On"><Icon name="check" size={13} /></span>
@@ -657,7 +679,10 @@
             {:else if row.kind === "outline"}
               <span class="indent" style="width: {row.item.depth * 14}px"></span>
               <span class="badge {row.item.kind.tone}" title={row.item.kind.label}>{row.item.kind.letter}</span>
-              <span class="name">{#each row.item.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
+              <span class="name"
+                >{#each row.item.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                    >{:else}{part.text}{/if}{/each}</span
+              >
               {#if row.item.container}
                 <span class="container">in {row.item.container}</span>
               {/if}

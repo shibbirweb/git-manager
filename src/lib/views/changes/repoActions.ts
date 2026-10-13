@@ -6,7 +6,18 @@ import type { Refs, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import type { MenuItem } from "$lib/ui/menu.svelte";
 import { toast } from "$lib/ui/toast.svelte";
-import { fetchAll, fetchRemote, focusCommitMessage, publishBranch, pull, push, pushTags, showLog, stash, syncRepo } from "../gitActions";
+import {
+  fetchAll,
+  fetchRemote,
+  focusCommitMessage,
+  publishBranch,
+  pull,
+  push,
+  pushTags,
+  showLog,
+  stash,
+  syncRepo,
+} from "../gitActions";
 import { withRepoExtras } from "../git/repoExtras";
 import {
   applyStash,
@@ -176,7 +187,9 @@ export async function commitFromRow(repoRoot: string): Promise<void> {
 
 export async function undoLastCommit(repoRoot: string): Promise<void> {
   const head = repoStore.statuses[repoRoot]?.head ?? null;
-  const parts = [`Undo the last commit${head?.branch ? ` on ${head.branch}` : ""} in ${repoName(repoRoot)}? Its changes stay staged.`];
+  const parts = [
+    `Undo the last commit${head?.branch ? ` on ${head.branch}` : ""} in ${repoName(repoRoot)}? Its changes stay staged.`,
+  ];
   if (head?.upstream && head.ahead === 0) {
     parts.push(`It is already on ${head.upstream}, so pushing afterwards needs a force push.`);
   }
@@ -267,11 +280,16 @@ async function pickRef(
 }
 
 export async function createBranchFrom(target: RepoTarget, repoRoot: string): Promise<void> {
-  const picked = await pickRef(target, `Create Branch From... (${repoName(repoRoot)})`, "Select a ref to create the branch from", {
-    remote: true,
-    tags: true,
-    skipCurrent: false,
-  });
+  const picked = await pickRef(
+    target,
+    `Create Branch From... (${repoName(repoRoot)})`,
+    "Select a ref to create the branch from",
+    {
+      remote: true,
+      tags: true,
+      skipCurrent: false,
+    },
+  );
   if (!picked || picked.kind === "create" || picked.kind === "createFrom") {
     return;
   }

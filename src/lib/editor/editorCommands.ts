@@ -23,7 +23,14 @@ import type { EditorAction } from "$lib/menu/menuIds";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { EDITOR_SHORTCUTS } from "./editorShortcuts";
 import { findCommand, replaceCommand, selectAllOccurrences } from "./findPanel.svelte";
-import { duplicateSelection, joinLines, lineTargetPosition, parseLineTarget, sortLines, toggleCase } from "./textCommands";
+import {
+  duplicateSelection,
+  joinLines,
+  lineTargetPosition,
+  parseLineTarget,
+  sortLines,
+  toggleCase,
+} from "./textCommands";
 
 function fromSpec(build: (state: EditorState) => TransactionSpec | null): Command {
   return (view) => {
@@ -51,7 +58,8 @@ async function promptGoToLine(view: EditorView): Promise<void> {
     label: `Line[:column] (1-${state.doc.lines})`,
     initial: `${current.number}:${head - current.from + 1}`,
     confirmLabel: "Go",
-    validate: (value) => (parseLineTarget(value, state.doc.lines) ? null : "Enter a line number, optionally with :column"),
+    validate: (value) =>
+      parseLineTarget(value, state.doc.lines) ? null : "Enter a line number, optionally with :column",
   });
   // The editor may have closed while the dialog was open.
   if (!view.dom.isConnected) {

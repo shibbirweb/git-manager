@@ -4,16 +4,6 @@ const FILL = { width: "fills its parent" };
 
 export const listCases: ParityCase[] = [
   {
-    id: "remotes",
-    sources: ["src/lib/views/git/RemotesDialog.svelte"],
-    html:
-      '<div class="remotes"><div class="remote"><div class="info"><span class="name">origin</span>' +
-      '<span class="url">git@x:y.git</span></div></div></div>',
-    pairs: [
-      { name: "box", ref: ".remotes", lib: ".list-box", ignore: { ...FILL, height: "follows its rows" } },
-    ],
-  },
-  {
     id: "local-history",
     sources: ["src/lib/localHistory/LocalHistoryDialog.svelte"],
     html:
@@ -21,9 +11,7 @@ export const listCases: ParityCase[] = [
       '<span class="label safety">Before reset</span></button></div>' +
       '<button class="deleted-row"><span class="name">tax.ts</span><span class="dim folder">src</span>' +
       '<span class="dim when">2d</span></button>',
-    pairs: [
-      { name: "pane", ref: ".versions", lib: ".pane", ignore: { height: "follows its rows" } },
-    ],
+    pairs: [{ name: "pane", ref: ".versions", lib: ".pane", ignore: { height: "follows its rows" } }],
   },
   {
     id: "release-notes",

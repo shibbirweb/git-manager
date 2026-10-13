@@ -5,7 +5,7 @@
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import type { IconName } from "@git-manager/ui/icons";
   import { toast } from "$lib/ui/toast.svelte";
   import { badgeText, bellTitle, kindLabel, type NotificationKind } from "./notificationModel";
   import { notifications } from "./notifications.svelte";

@@ -113,7 +113,11 @@ export function pickSelected(files: ChangesTabFile[], selectedPath: string | nul
 }
 
 /** The next or previous file for Up and Down. */
-export function stepSelection(files: ChangesTabFile[], selectedPath: string | null, step: 1 | -1): ChangesTabFile | null {
+export function stepSelection(
+  files: ChangesTabFile[],
+  selectedPath: string | null,
+  step: 1 | -1,
+): ChangesTabFile | null {
   if (files.length === 0) {
     return null;
   }
@@ -128,7 +132,11 @@ export const MIN_CHANGES_DIFF_WIDTH = 240;
  * The file list's width: the saved one, kept between the minimum and what the diff can
  * spare. Before the tab is measured (width 0) the saved width is used as it is.
  */
-export function changesListBounds(savedWidth: number, bodyWidth: number, minWidth: number): { width: number; max: number } {
+export function changesListBounds(
+  savedWidth: number,
+  bodyWidth: number,
+  minWidth: number,
+): { width: number; max: number } {
   if (bodyWidth <= 0) {
     return { width: Math.max(minWidth, savedWidth), max: Math.max(minWidth, savedWidth) };
   }

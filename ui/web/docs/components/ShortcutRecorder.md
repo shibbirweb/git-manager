@@ -3,7 +3,7 @@
 A command's keys that can be changed: click, press the new keys, Esc cancels.
 
 ```ts
-import ShortcutRecorder from "$ui/components/ShortcutRecorder.svelte";
+import ShortcutRecorder from "@git-manager/ui/components/ShortcutRecorder.svelte";
 ```
 
 Group: Forms. Also known as: Hotkey input.

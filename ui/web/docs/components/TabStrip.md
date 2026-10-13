@@ -3,7 +3,7 @@
 The editor's tab strip: icon, name, hint and a close button; a dot for unsaved edits, italic previews.
 
 ```ts
-import TabStrip from "$ui/components/TabStrip.svelte";
+import TabStrip from "@git-manager/ui/components/TabStrip.svelte";
 ```
 
 Group: Navigation. Also known as: Tabs, Editor tabs.

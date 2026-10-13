@@ -20,7 +20,17 @@ import {
 import { notifications } from "./notifications.svelte";
 
 function entry(id: number, kind: NotificationKind = "info", extra: Partial<NotificationEntry> = {}): NotificationEntry {
-  return { id, kind, title: `m${id}`, detail: null, time: 1000, read: false, action: null, actionUsed: false, ...extra };
+  return {
+    id,
+    kind,
+    title: `m${id}`,
+    detail: null,
+    time: 1000,
+    read: false,
+    action: null,
+    actionUsed: false,
+    ...extra,
+  };
 }
 
 describe("notification list", () => {
@@ -35,7 +45,13 @@ describe("notification list", () => {
   });
 
   it("counts unread errors and warnings only", () => {
-    const list = [entry(1, "error"), entry(2, "warning"), entry(3, "info"), entry(4, "success"), entry(5, "error", { read: true })];
+    const list = [
+      entry(1, "error"),
+      entry(2, "warning"),
+      entry(3, "info"),
+      entry(4, "success"),
+      entry(5, "error", { read: true }),
+    ];
     expect(unreadAlerts(list)).toBe(2);
     const read = markAllRead(list);
     expect(unreadAlerts(read)).toBe(0);

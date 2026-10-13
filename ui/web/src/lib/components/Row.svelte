@@ -49,9 +49,7 @@
 
   const inList = isInsideList();
   const button = $derived(!inList && onclick !== undefined);
-  const indent = $derived(
-    depth > 0 ? `calc(var(--row-${size}-padding-x) + ${depth} * var(--row-indent))` : null,
-  );
+  const indent = $derived(depth > 0 ? `calc(var(--row-${size}-padding-x) + ${depth} * var(--row-indent))` : null);
 
   /** Clicks on a control inside the row (an action button, a rename field) belong to that control. */
   function onControl(event: MouseEvent): boolean {
@@ -169,7 +167,8 @@
   }
 
   :global([role="listbox"]:focus-within) .row.selected,
-  :global([role="tree"]:focus-within) .row.selected {
+  :global([role="tree"]:focus-within) .row.selected,
+  :global([data-driven]) .row.selected {
     background: var(--selected);
   }
 

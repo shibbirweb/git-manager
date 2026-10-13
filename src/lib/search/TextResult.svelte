@@ -13,7 +13,10 @@
   <span class="count">{row.count}</span>
 {:else}
   <span class="number">{row.line}</span>
-  <span class="text">{#each row.parts as part, partIndex (partIndex)}{#if part.match}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}</span>
+  <span class="text"
+    >{#each row.parts as part, partIndex (partIndex)}{#if part.match}<mark>{part.text}</mark
+        >{:else}{part.text}{/if}{/each}</span
+  >
 {/if}
 
 <style>

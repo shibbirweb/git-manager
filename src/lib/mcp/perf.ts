@@ -45,7 +45,9 @@ class LongTaskWatcher {
   private since = 0;
 
   get supported(): boolean {
-    return typeof PerformanceObserver !== "undefined" && (PerformanceObserver.supportedEntryTypes ?? []).includes("longtask");
+    return (
+      typeof PerformanceObserver !== "undefined" && (PerformanceObserver.supportedEntryTypes ?? []).includes("longtask")
+    );
   }
 
   /** What was seen since the last call; the first call starts watching. */
@@ -128,7 +130,9 @@ export async function uiPerformance(sampleMs: number): Promise<Record<string, un
     markdownDiagrams: document.querySelectorAll(".md-mermaid svg").length,
     // The hidden frame that holds the mermaid library; false once no document with diagrams is open.
     mermaidLoaded: mermaidLoaded(),
-    markdownDiagramErrors: [...document.querySelectorAll(".md-mermaid-error")].slice(0, 3).map((element) => element.textContent ?? ""),
+    markdownDiagramErrors: [...document.querySelectorAll(".md-mermaid-error")]
+      .slice(0, 3)
+      .map((element) => element.textContent ?? ""),
     longTasks: tasks,
     frames: frames ? { sampleMs, ...frames } : null,
     windowVisible: document.visibilityState === "visible",

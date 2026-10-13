@@ -42,7 +42,10 @@ describe("editor features", () => {
       expect(featureApplies(feature, "diff", all), feature).toBe(true);
       expect(featureApplies(feature, "merge", all), feature).toBe(true);
     }
-    expect(changedFeatures(defaults, { ...defaults, minimap: true, matchBrackets: false })).toEqual(["minimap", "matchBrackets"]);
+    expect(changedFeatures(defaults, { ...defaults, minimap: true, matchBrackets: false })).toEqual([
+      "minimap",
+      "matchBrackets",
+    ]);
   });
 
   it("keeps typing aids, folding and scrolling past the end to the file editor", () => {
@@ -70,7 +73,10 @@ describe("editor features", () => {
 
   it("rebuilds only the features that changed", () => {
     expect(changedFeatures(defaults, defaults)).toEqual([]);
-    expect(changedFeatures(defaults, { ...defaults, foldGutter: false, rulerColumn: 80 })).toEqual(["foldGutter", "ruler"]);
+    expect(changedFeatures(defaults, { ...defaults, foldGutter: false, rulerColumn: 80 })).toEqual([
+      "foldGutter",
+      "ruler",
+    ]);
     expect(changedFeatures(defaults, { ...defaults, completionOnTyping: false })).toEqual(["completion"]);
     // While completion is off, its typing option changes nothing in the editors.
     const noCompletion = { ...defaults, completion: false };

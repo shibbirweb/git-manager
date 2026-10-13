@@ -28,7 +28,7 @@
     <div class="rows">
       {#each values as [name, value] (name)}
         <code>--{kebab(scale)}-{kebab(name)}</code>
-        <span class="bar" style:width="{Math.min(scale === "motion" ? value / 2 : value, 240)}px"></span>
+        <span class="bar" style:width="{Math.min(scale === 'motion' ? value / 2 : value, 240)}px"></span>
         <code class="value">{value}{scale === "motion" ? " ms" : " px"}</code>
       {/each}
     </div>

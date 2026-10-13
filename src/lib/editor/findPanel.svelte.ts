@@ -21,7 +21,15 @@ import {
   setSearchQuery,
 } from "@codemirror/search";
 import { EditorSelection, type Extension, StateEffect, StateField, Transaction } from "@codemirror/state";
-import { type Command, EditorView, type KeyBinding, keymap, type Panel, runScopeHandlers, type ViewUpdate } from "@codemirror/view";
+import {
+  type Command,
+  EditorView,
+  type KeyBinding,
+  keymap,
+  type Panel,
+  runScopeHandlers,
+  type ViewUpdate,
+} from "@codemirror/view";
 import { mount, tick, unmount } from "svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import FindBar from "./FindBar.svelte";
@@ -90,7 +98,10 @@ const excludedField = StateField.define<readonly Span[]>({
     let next = value;
     if (transaction.docChanged && next.length > 0) {
       next = next
-        .map((span) => ({ from: transaction.changes.mapPos(span.from, 1), to: transaction.changes.mapPos(span.to, -1) }))
+        .map((span) => ({
+          from: transaction.changes.mapPos(span.from, 1),
+          to: transaction.changes.mapPos(span.to, -1),
+        }))
         .filter((span) => span.to > span.from);
     }
     for (const effect of transaction.effects) {
@@ -105,7 +116,8 @@ const excludedField = StateField.define<readonly Span[]>({
 });
 
 /** One function for every query, since queries compare their test by identity. */
-const notExcluded: MatchTest = (_match, state, from, to) => !isExcluded(state.field(excludedField, false) ?? [], from, to);
+const notExcluded: MatchTest = (_match, state, from, to) =>
+  !isExcluded(state.field(excludedField, false) ?? [], from, to);
 
 function hasExclusions(view: EditorView): boolean {
   return (view.state.field(excludedField, false) ?? []).length > 0;
@@ -164,7 +176,9 @@ class FindPanel implements Panel {
       this.bar.readOnly = update.state.readOnly;
       this.bar.replaceOpen = this.bar.replaceOpen && !this.bar.readOnly;
     }
-    const typed = update.transactions.some((transaction) => transaction.annotation(Transaction.userEvent) === TYPING_EVENT);
+    const typed = update.transactions.some(
+      (transaction) => transaction.annotation(Transaction.userEvent) === TYPING_EVENT,
+    );
     if (update.selectionSet && !typed) {
       this.anchor = update.state.selection.main.from;
     }
@@ -213,7 +227,11 @@ class FindPanel implements Panel {
 
   private count(): void {
     this.bar.notice = null;
-    this.bar.counter = counterView(this.bar.search, countMatches(this.view.state, this.query, COUNT_CAP), this.bar.error);
+    this.bar.counter = counterView(
+      this.bar.search,
+      countMatches(this.view.state, this.query, COUNT_CAP),
+      this.bar.error,
+    );
   }
 
   /** Puts the fields and toggles into the editor's query; typing also jumps to the first match. */
@@ -253,7 +271,10 @@ class FindPanel implements Panel {
       return;
     }
     if (countMatches(this.view.state, this.query, SELECT_CAP).capped) {
-      toast.info("Too many matches to select", `Select All Occurrences works up to ${SELECT_CAP.toLocaleString()} matches.`);
+      toast.info(
+        "Too many matches to select",
+        `Select All Occurrences works up to ${SELECT_CAP.toLocaleString()} matches.`,
+      );
     }
   }
 
@@ -295,7 +316,14 @@ class FindPanel implements Panel {
     }
     // Option+C / W / X toggle Match Case, Words and Regex (by the physical key: Option types other characters).
     if (event.altKey && !mod && !event.shiftKey) {
-      const option = event.code === "KeyC" ? "matchCase" : event.code === "KeyW" ? "wholeWords" : event.code === "KeyX" ? "regex" : null;
+      const option =
+        event.code === "KeyC"
+          ? "matchCase"
+          : event.code === "KeyW"
+            ? "wholeWords"
+            : event.code === "KeyX"
+              ? "regex"
+              : null;
       if (option) {
         event.preventDefault();
         this.toggle(option);
@@ -435,7 +463,10 @@ export function selectAllOccurrences(view: EditorView): boolean {
     return false;
   }
   if (found.tooMany) {
-    toast.info("Too many occurrences to select", `Select All Occurrences works up to ${SELECT_CAP.toLocaleString()} matches.`);
+    toast.info(
+      "Too many occurrences to select",
+      `Select All Occurrences works up to ${SELECT_CAP.toLocaleString()} matches.`,
+    );
     return true;
   }
   view.dispatch({

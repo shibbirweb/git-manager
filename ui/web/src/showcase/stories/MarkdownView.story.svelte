@@ -21,7 +21,7 @@
       "| feat/cart | 2 ahead |",
       "",
       "```ts",
-      'export const total = (items: number[]) => items.reduce((sum, item) => sum + item, 0);',
+      "export const total = (items: number[]) => items.reduce((sum, item) => sum + item, 0);",
       "```",
     ].join("\n"),
   );

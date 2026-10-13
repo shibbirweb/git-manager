@@ -47,7 +47,8 @@ export async function pickAndSaveWorkspace(): Promise<void> {
   }
   const first = workspace.folders[0]?.root ?? "";
   const parent = first.slice(0, Math.max(1, first.lastIndexOf("/")));
-  const defaultPath = workspace.file ?? `${parent}/${workspace.name.replace(/[^\w.-]+/g, "-") || "workspace"}.gitmanager-workspace`;
+  const defaultPath =
+    workspace.file ?? `${parent}/${workspace.name.replace(/[^\w.-]+/g, "-") || "workspace"}.gitmanager-workspace`;
   const target = await save({
     title: "Save Workspace As",
     defaultPath,

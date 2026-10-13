@@ -198,7 +198,10 @@
       return;
     }
     if (!(await navigation.fileExists(target.filePath))) {
-      toast.info(`${fileName} is not in the work tree`, "It was deleted or never existed there, so there is no file to open.");
+      toast.info(
+        `${fileName} is not in the work tree`,
+        "It was deleted or never existed there, so there is no file to open.",
+      );
       return;
     }
     const editor = newEditor();
@@ -300,7 +303,12 @@
         scheduleStrip();
       }
     });
-    const sideExtensions = (changes: boolean, findHost: HTMLElement | null, side: DiffSide, numbered = true): Extension[] =>
+    const sideExtensions = (
+      changes: boolean,
+      findHost: HTMLElement | null,
+      side: DiffSide,
+      numbered = true,
+    ): Extension[] =>
       baseExtensions({
         readOnly: true,
         lineNumbers: numbered,
@@ -321,7 +329,9 @@
     const diffConfig = fileDiff.hunks
       ? { scanLimit: SCAN_LIMIT, override: hunkDiff(fileDiff.original, fileDiff.modified, fileDiff.hunks) }
       : { scanLimit: SCAN_LIMIT };
-    const blameExtensions = blame ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }) : [];
+    const blameExtensions = blame
+      ? blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter })
+      : [];
 
     let editor: EditorView;
     let shown: InlineDoc | null = null;
@@ -355,10 +365,17 @@
       inlineDoc = inlineShown;
     } else {
       const merge = new MergeView({
-        a: { doc: fileDiff.original, extensions: [sideExtensions(diffMode === "unstaged", findHostA, "old"), collapse ? splitFolds() : []] },
+        a: {
+          doc: fileDiff.original,
+          extensions: [sideExtensions(diffMode === "unstaged", findHostA, "old"), collapse ? splitFolds() : []],
+        },
         b: {
           doc: fileDiff.modified,
-          extensions: [sideExtensions(diffMode === "staged", findHostB, "new"), blameExtensions, collapse ? splitFolds() : []],
+          extensions: [
+            sideExtensions(diffMode === "staged", findHostB, "new"),
+            blameExtensions,
+            collapse ? splitFolds() : [],
+          ],
         },
         parent: target,
         diffConfig,
@@ -545,14 +562,18 @@
     const node = event.target instanceof Node ? event.target : null;
     const oldEditor = view?.a ?? null;
     const shownNew = newEditor();
-    const editor = node && oldEditor?.dom.contains(node) ? oldEditor : node && shownNew?.dom.contains(node) ? shownNew : null;
+    const editor =
+      node && oldEditor?.dom.contains(node) ? oldEditor : node && shownNew?.dom.contains(node) ? shownNew : null;
     if (!target || !editor) {
       return;
     }
     activeSide = editor === oldEditor ? "old" : "new";
     // A click outside the selection moves the cursor there first, like other editors.
     const position = editor.posAtCoords({ x: event.clientX, y: event.clientY });
-    if (position !== null && !editor.state.selection.ranges.some((range) => position >= range.from && position <= range.to)) {
+    if (
+      position !== null &&
+      !editor.state.selection.ranges.some((range) => position >= range.from && position <= range.to)
+    ) {
       editor.dispatch({ selection: { anchor: position } });
     }
     const count = selectionSize(currentSelection());
@@ -568,7 +589,9 @@
         ? [item("Stage Selected Lines", "stage"), item("Discard Selected Lines...", "discard", true)]
         : [item("Unstage Selected Lines", "unstage")];
     const { state } = editor;
-    const copied = state.selection.ranges.filter((range) => !range.empty).map((range) => state.sliceDoc(range.from, range.to));
+    const copied = state.selection.ranges
+      .filter((range) => !range.empty)
+      .map((range) => state.sliceDoc(range.from, range.to));
     items.push(
       { separator: true },
       {

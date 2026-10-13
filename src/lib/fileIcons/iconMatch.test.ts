@@ -40,7 +40,14 @@ describe("iconFor", () => {
 
 describe("normalizeIconMap", () => {
   it("defaults every part of a damaged map", () => {
-    expect(normalizeIconMap(null)).toEqual({ source: "", file: "", extensions: {}, names: {}, lightExtensions: {}, lightNames: {} });
+    expect(normalizeIconMap(null)).toEqual({
+      source: "",
+      file: "",
+      extensions: {},
+      names: {},
+      lightExtensions: {},
+      lightNames: {},
+    });
     const map = normalizeIconMap({ file: "file", extensions: { ts: "typescript" }, names: [1], lightNames: "x" });
     expect(map.names).toEqual({});
     expect(map.lightNames).toEqual({});
@@ -66,7 +73,13 @@ describe("the Material Icons map", () => {
   });
 
   it("has an SVG for every icon it names, and no other", () => {
-    const icons = new Set([map.file, ...Object.values(map.extensions), ...Object.values(map.names), ...Object.values(map.lightExtensions), ...Object.values(map.lightNames)]);
+    const icons = new Set([
+      map.file,
+      ...Object.values(map.extensions),
+      ...Object.values(map.names),
+      ...Object.values(map.lightExtensions),
+      ...Object.values(map.lightNames),
+    ]);
     const files = new Set(Object.keys(import.meta.glob("/static/file-icons/material/*.svg")));
     expect([...icons].filter((icon) => !files.has(`/static/file-icons/material/${icon}.svg`))).toEqual([]);
     expect(files.size).toBe(icons.size);

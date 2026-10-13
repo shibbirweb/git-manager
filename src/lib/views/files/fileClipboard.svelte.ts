@@ -30,7 +30,10 @@ class FileClipboard {
   forget(removed: string[]): void {
     const gone = new Set(pathsUnder(this.paths, removed));
     if (gone.size > 0) {
-      this.set(this.mode ?? "copy", this.paths.filter((path) => !gone.has(path)));
+      this.set(
+        this.mode ?? "copy",
+        this.paths.filter((path) => !gone.has(path)),
+      );
     }
   }
 }

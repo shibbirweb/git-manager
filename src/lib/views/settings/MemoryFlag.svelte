@@ -9,8 +9,11 @@
 </script>
 
 {#if cost}
-  <span class="memory-flag" class:minor={cost.minor ?? false} title={memoryFlagTitle(cost)} aria-label={memoryFlagTitle(cost)}
-    >{cost.amount}</span
+  <span
+    class="memory-flag"
+    class:minor={cost.minor ?? false}
+    title={memoryFlagTitle(cost)}
+    aria-label={memoryFlagTitle(cost)}>{cost.amount}</span
   >
 {/if}
 

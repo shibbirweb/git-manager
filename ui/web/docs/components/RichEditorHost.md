@@ -3,7 +3,7 @@
 The page a rich Markdown editor (TipTap) is mounted into, in the preview's typography.
 
 ```ts
-import RichEditorHost from "$ui/components/RichEditorHost.svelte";
+import RichEditorHost from "@git-manager/ui/components/RichEditorHost.svelte";
 ```
 
 Group: Editor. Also known as: Rich editor, WYSIWYG.

@@ -3,7 +3,7 @@
 A Settings row: title and hint on the left, the control on the right, or under them when stacked.
 
 ```ts
-import SettingRow from "$ui/components/SettingRow.svelte";
+import SettingRow from "@git-manager/ui/components/SettingRow.svelte";
 ```
 
 Group: Forms.

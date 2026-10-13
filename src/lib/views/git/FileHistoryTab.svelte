@@ -32,7 +32,9 @@
 
   const selected = $derived(entries.find((entry) => entry.commit.id === selectedId) ?? null);
   // CommitDetails mounts again per commit, so one token is enough.
-  const preferredFile = $derived(selected ? { commitId: selected.commit.id, path: selected.path, line: null, token: 1 } : null);
+  const preferredFile = $derived(
+    selected ? { commitId: selected.commit.id, path: selected.path, line: null, token: 1 } : null,
+  );
 
   $effect(() => {
     void repoRoot;
@@ -176,7 +178,15 @@
       <div class="dim selectable">{loadError}</div>
     </div>
   {:else}
-    <div class="list" bind:this={listEl} role="listbox" tabindex="0" aria-label="Commits" onscroll={onScroll} onkeydown={onKeydown}>
+    <div
+      class="list"
+      bind:this={listEl}
+      role="listbox"
+      tabindex="0"
+      aria-label="Commits"
+      onscroll={onScroll}
+      onkeydown={onKeydown}
+    >
       {#each entries as entry (entry.commit.id)}
         <div
           class="entry"
@@ -212,7 +222,11 @@
             {loadedShortId}
             {onSelectCommit}
             {preferredFile}
-            onOpenInTab={(path) => repoStore.openCommitTab(repoRoot, selected.commit.id, { summary: selected.commit.summary, filePath: path })}
+            onOpenInTab={(path) =>
+              repoStore.openCommitTab(repoRoot, selected.commit.id, {
+                summary: selected.commit.summary,
+                filePath: path,
+              })}
           />
         {/key}
       {/if}

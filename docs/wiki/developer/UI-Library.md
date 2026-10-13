@@ -54,6 +54,8 @@ flowchart LR
 - `web/src/lib/styles/markdown.test.ts`: the Markdown styles stay equal to the app's preview.
 - `bun run check` type-checks `ui/web` with its own tsconfig.
 
+The app imports the library as the local package `@git-manager/ui`; how it moves onto it is in [UI-Library-Migration.md](UI-Library-Migration.md).
+
 ## Parity with the app
 
 `bun run ui:parity` proves each component looks exactly like the app's own UI. Each case in `ui/web/src/parity/cases/` holds the app's markup, styled by the CSS read at test time from the app's real `.svelte` files and `app.css`. Svelte's scoping weight is kept, so rules compete as they do in the app. Next to it sits the library component in the same state. Elements that a child component draws, such as an icon, are marked so the app's scoped rules skip them, as Svelte's scoping does. A browser compares 36 computed properties (stroke width included) of each pair at rest, on hover and on focus, pseudo-elements included, in light and dark. Any difference fails. Known app bugs, where the library is right, are listed with their reason instead, such as the dialog's red confirm button turning blue on hover. Side-by-side screenshots land in `ui/web/.parity/`, which is not committed.

@@ -3,7 +3,12 @@ import { folderLabel, parsePrompt, REMEMBER_MS, rememberedPassword } from "./ask
 
 describe("parsePrompt", () => {
   it("reads git's username and password prompts", () => {
-    expect(parsePrompt("Username for 'https://github.com': ")).toMatchObject({ kind: "username", host: "github.com", user: null, secret: false });
+    expect(parsePrompt("Username for 'https://github.com': ")).toMatchObject({
+      kind: "username",
+      host: "github.com",
+      user: null,
+      secret: false,
+    });
     expect(parsePrompt("Password for 'https://octocat@github.com': ")).toMatchObject({
       kind: "password",
       host: "github.com",
@@ -20,7 +25,11 @@ describe("parsePrompt", () => {
       keyPath: "/Users/me/.ssh/id_ed25519",
       secret: true,
     });
-    expect(parsePrompt("git@example.com's password: ")).toMatchObject({ kind: "password", user: "git", host: "example.com" });
+    expect(parsePrompt("git@example.com's password: ")).toMatchObject({
+      kind: "password",
+      user: "git",
+      host: "example.com",
+    });
     const hostKey = parsePrompt(
       "The authenticity of host 'github.com (140.82.121.4)' can't be established.\nED25519 key fingerprint is SHA256:abc.\n" +
         "Are you sure you want to continue connecting (yes/no/[fingerprint])? ",

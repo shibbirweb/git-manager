@@ -12,8 +12,8 @@
   <h1>Colors</h1>
   <p class="intro">
     The built-in Light and Dark themes, from <code>ui/design-tokens/colors.json</code>. Components use them as
-    <code>var(--name)</code>; color themes replace them at run time. Native apps get the same names from the
-    generated Swift, XAML and GTK files.
+    <code>var(--name)</code>; color themes replace them at run time. Native apps get the same names from the generated
+    Swift, XAML and GTK files.
   </p>
   <div class="grid">
     {#each entries as [name, value] (name)}

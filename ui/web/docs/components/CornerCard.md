@@ -3,7 +3,7 @@
 A small card in a view's bottom right corner with a message and a button, like The agent ended.
 
 ```ts
-import CornerCard from "$ui/components/CornerCard.svelte";
+import CornerCard from "@git-manager/ui/components/CornerCard.svelte";
 ```
 
 Group: Feedback. Also known as: Toast in view.

@@ -111,7 +111,10 @@ export function changedFeatures(previous: EditorFeatureOptions, next: EditorFeat
   return EDITOR_FEATURES.filter((feature) => {
     switch (feature) {
       case "completion":
-        return previous.completion !== next.completion || (next.completion && previous.completionOnTyping !== next.completionOnTyping);
+        return (
+          previous.completion !== next.completion ||
+          (next.completion && previous.completionOnTyping !== next.completionOnTyping)
+        );
       case "ruler":
         return previous.rulerColumn !== next.rulerColumn;
       default:

@@ -126,7 +126,11 @@
     <div class="body">
       <div class="side">
         <div class="section-title">Files that differ <span class="dim">({comparison.files.length})</span></div>
-        <BranchFileList files={comparison.files} selectedPath={selected?.path ?? null} onselect={(file) => void select(file)} />
+        <BranchFileList
+          files={comparison.files}
+          selectedPath={selected?.path ?? null}
+          onselect={(file) => void select(file)}
+        />
       </div>
       <div class="diff">
         {#if diffError}
@@ -144,7 +148,9 @@
             />
           {/key}
         {:else}
-          <div class="placeholder dim">{comparison.files.length === 0 ? "The working tree matches this branch." : "Select a file"}</div>
+          <div class="placeholder dim">
+            {comparison.files.length === 0 ? "The working tree matches this branch." : "Select a file"}
+          </div>
         {/if}
       </div>
     </div>

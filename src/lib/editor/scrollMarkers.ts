@@ -147,7 +147,10 @@ export function scrollMarkers(source: MarkSource = fieldSource): Extension {
 }
 
 class ChangeGutterMarker extends GutterMarker {
-  constructor(readonly kind: ChangeMark["kind"], readonly atEnd = false) {
+  constructor(
+    readonly kind: ChangeMark["kind"],
+    readonly atEnd = false,
+  ) {
     super();
   }
 
@@ -197,7 +200,11 @@ export function buildGutterSet(doc: EditorState["doc"], marks: readonly ChangeMa
   for (const mark of sorted) {
     if (mark.to > mark.from) {
       const marker =
-        mark.kind === "conflict" ? gutterMarkers.conflict : mark.kind === "added" ? gutterMarkers.added : gutterMarkers.modified;
+        mark.kind === "conflict"
+          ? gutterMarkers.conflict
+          : mark.kind === "added"
+            ? gutterMarkers.added
+            : gutterMarkers.modified;
       for (let line = mark.from; line < Math.min(mark.to, doc.lines); line++) {
         ranges.push(marker.range(doc.line(line + 1).from));
       }
@@ -227,7 +234,8 @@ export function gutterMarkerSource(source: MarkSource): {
 } {
   const field = StateField.define<GutterCache>({
     create: () => ({ marks: null, set: RangeSet.empty }),
-    update: (cache, tr) => (tr.docChanged && cache.marks ? { marks: cache.marks, set: cache.set.map(tr.changes) } : cache),
+    update: (cache, tr) =>
+      tr.docChanged && cache.marks ? { marks: cache.marks, set: cache.set.map(tr.changes) } : cache,
   });
   const markers = (state: EditorState): RangeSet<GutterMarker> => {
     const marks = source(state);

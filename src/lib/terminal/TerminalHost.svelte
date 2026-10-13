@@ -43,11 +43,15 @@
         return;
       }
       if (overKey !== null) {
-        viewOf(overKey)?.dispatchEvent(new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: false } }));
+        viewOf(overKey)?.dispatchEvent(
+          new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: false } }),
+        );
       }
       overKey = terminalKey;
       if (terminalKey !== null) {
-        viewOf(terminalKey)?.dispatchEvent(new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: true } }));
+        viewOf(terminalKey)?.dispatchEvent(
+          new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: true } }),
+        );
       }
     }
 

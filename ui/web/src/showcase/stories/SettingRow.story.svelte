@@ -18,11 +18,7 @@
 
 <Stack gap="none">
   <SearchField label="Search settings" placeholder="Search settings" bind:value={query} />
-  <SettingRow
-    title="Word wrap"
-    titleMatches={matches("Word wrap")}
-    hint="Wrap long lines in editors and diffs."
-  >
+  <SettingRow title="Word wrap" titleMatches={matches("Word wrap")} hint="Wrap long lines in editors and diffs.">
     <Switch label="Word wrap" bind:checked={wrap} />
   </SettingRow>
   <SettingRow

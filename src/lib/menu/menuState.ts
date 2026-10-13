@@ -279,7 +279,9 @@ export function menuState(inputs: MenuInputs): MenuState {
   state["window.moveTabToOtherGroup"] = { enabled: grouping && inputs.shownView === "file" && inputs.tabCount > 0 };
   state["window.focusLeftGroup"] = { enabled: grouping && groups.count > 1 && groups.focusedIndex !== 0 };
   // With one group it splits the tab on screen to the right.
-  state["window.focusRightGroup"] = { enabled: grouping && (groups.count > 1 ? groups.focusedIndex !== 1 : groups.canSplit) };
+  state["window.focusRightGroup"] = {
+    enabled: grouping && (groups.count > 1 ? groups.focusedIndex !== 1 : groups.canSplit),
+  };
   state["window.focusNextGroup"] = { enabled: grouping && groups.count > 1 };
   state["window.focusPreviousGroup"] = { enabled: grouping && groups.count > 1 };
   state["window.closeGroup"] = { enabled: grouping && groups.count > 1 };
@@ -296,7 +298,11 @@ const OPERATION_NAMES: Partial<Record<OpKind, string>> = {
 };
 
 /** The Git menu: what needs a repository, a branch, a remote, an operation or a current file. */
-export function gitMenuState(repo: GitRepoInputs | null, gitFile: GitFileInputs | null, blameGutter: boolean): MenuState {
+export function gitMenuState(
+  repo: GitRepoInputs | null,
+  gitFile: GitFileInputs | null,
+  blameGutter: boolean,
+): MenuState {
   const state: MenuState = {};
   const ready = repo !== null && !repo.busy;
   const operation = repo?.op ?? "none";
@@ -343,7 +349,11 @@ export function gitMenuState(repo: GitRepoInputs | null, gitFile: GitFileInputs 
     visible: name !== null,
     text: name ? `Continue ${name}` : "Continue",
   };
-  state["git.abortOp"] = { enabled: ready && name !== null, visible: name !== null, text: name ? `Abort ${name}` : "Abort" };
+  state["git.abortOp"] = {
+    enabled: ready && name !== null,
+    visible: name !== null,
+    text: name ? `Abort ${name}` : "Abort",
+  };
   state["git.skipCommit"] = { enabled: ready, visible: operation === "rebase" };
 
   state["git.showLog"] = { enabled: repo !== null };
@@ -412,7 +422,10 @@ export function countLabel(label: string, count: number, word: string): string {
 }
 
 /** The parts of `next` that differ from what the menu shows (`shown`). */
-export function changedState(shown: ReadonlyMap<MenuAction, ItemState>, next: MenuState): [MenuAction, Partial<ItemState>][] {
+export function changedState(
+  shown: ReadonlyMap<MenuAction, ItemState>,
+  next: MenuState,
+): [MenuAction, Partial<ItemState>][] {
   const changes: [MenuAction, Partial<ItemState>][] = [];
   for (const [action, wanted] of Object.entries(next) as [MenuAction, ItemState][]) {
     const current = shown.get(action);

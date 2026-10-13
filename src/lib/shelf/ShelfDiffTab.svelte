@@ -53,7 +53,9 @@
     </div>
   {:else if result}
     {#if result.partial}
-      <div class="note dim">The original of {filePath} is no longer in the repository: only the changed lines show.</div>
+      <div class="note dim">
+        The original of {filePath} is no longer in the repository: only the changed lines show.
+      </div>
     {:else if result.file.oldPath && result.file.oldPath !== result.file.path}
       <div class="note dim">{shelvedFileLabel(result.file)}</div>
     {/if}

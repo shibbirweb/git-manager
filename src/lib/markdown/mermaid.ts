@@ -96,7 +96,16 @@ function mermaidConfig(dark: boolean): MermaidConfig {
     suppressErrorRendering: true,
     fontFamily: FONT_FAMILY,
     // Diagrams cannot loosen security or inject page CSS through %%{init}%% directives.
-    secure: ["secure", "securityLevel", "startOnLoad", "maxTextSize", "suppressErrorRendering", "maxEdges", "themeCSS", "htmlLabels"],
+    secure: [
+      "secure",
+      "securityLevel",
+      "startOnLoad",
+      "maxTextSize",
+      "suppressErrorRendering",
+      "maxEdges",
+      "themeCSS",
+      "htmlLabels",
+    ],
   } as MermaidConfig;
 }
 

@@ -45,7 +45,9 @@ describe("symbolRows", () => {
   });
 
   it("leads the title with the workspace folder only when there are several", () => {
-    expect(symbolRows([item({ root: "/other", path: "/other/src/cart.ts" })], two)[0].title).toBe("other/src/cart.ts:42");
+    expect(symbolRows([item({ root: "/other", path: "/other/src/cart.ts" })], two)[0].title).toBe(
+      "other/src/cart.ts:42",
+    );
   });
 
   it("gives every kind a letter", () => {

@@ -37,11 +37,7 @@
 
 <div class="clean-list" role="group" aria-label="Repositories without changes">
   <div class="list-header">
-    <button
-      class="list-toggle"
-      onclick={() => changesLayout.toggleClean(sections.length)}
-      aria-expanded={!collapsed}
-    >
+    <button class="list-toggle" onclick={() => changesLayout.toggleClean(sections.length)} aria-expanded={!collapsed}>
       <Icon name={collapsed ? "chevron-right" : "chevron-down"} size={13} />
       <span class="list-label">No Changes</span>
       <span class="list-count">{sections.length}</span>

@@ -79,7 +79,11 @@ export function dragLabel(names: string[], mode: DropMode): string {
  * reports the window's own coordinates, which are already points (CSS pixels at zoom 1);
  * Windows and Linux report device pixels.
  */
-export function dropPointToCss(position: { x: number; y: number }, scale: number, platform: MenuPlatform): { x: number; y: number } {
+export function dropPointToCss(
+  position: { x: number; y: number },
+  scale: number,
+  platform: MenuPlatform,
+): { x: number; y: number } {
   const factor = platform === "macos" || !(scale > 0) ? 1 : scale;
   return { x: position.x / factor, y: position.y / factor };
 }

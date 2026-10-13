@@ -123,7 +123,10 @@ class ChangesSelection {
     const origPath = selection.area === "staged" ? (file.origPath ?? null) : null;
     // The diff on screen is this file's: ask whether it changed instead of reading it again.
     const shown = this.diff;
-    const known = shown && shown.path === selection.path && this.diffKey === diffKey(selection, origPath) ? (shown.version ?? null) : null;
+    const known =
+      shown && shown.path === selection.path && this.diffKey === diffKey(selection, origPath)
+        ? (shown.version ?? null)
+        : null;
     try {
       const result = await api.getFileDiffIfChanged(repoRoot, selection.path, origPath, selection.area, known);
       if (token !== this.loadToken) {
@@ -208,7 +211,8 @@ class ChangesSelection {
     const origPath = selection.area === "staged" ? (file.origPath ?? null) : null;
     const knownVersion = currentDiff.version ?? null;
     changesLayout.focusRepo(repoRoot);
-    const work = (repoPath: string) => api.applySelectedLines(repoPath, filePath, origPath, action, lineSelection, knownVersion);
+    const work = (repoPath: string) =>
+      api.applySelectedLines(repoPath, filePath, origPath, action, lineSelection, knownVersion);
     // Serialized with hunk staging so quick actions reach the index in order.
     const done = this.stageQueue.then(() => repoStore.run(LINE_LABELS[action], work, { repoPath: repoRoot }));
     this.stageQueue = done;
@@ -228,7 +232,12 @@ class ChangesSelection {
   }
 
   /** A deleted file has no lines to pick: offer the whole file instead. */
-  private async applyWholeDeletion(action: LineAction, repoRoot: string, filePath: string, fileName: string): Promise<void> {
+  private async applyWholeDeletion(
+    action: LineAction,
+    repoRoot: string,
+    filePath: string,
+    fileName: string,
+  ): Promise<void> {
     const choices = {
       stage: { title: "Stage Deletion", question: "Stage the deletion of the whole file?", label: "Stage" },
       unstage: { title: "Unstage Deletion", question: "Unstage the deletion of the whole file?", label: "Unstage" },

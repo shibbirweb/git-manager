@@ -3,7 +3,7 @@
 A section whose header opens and closes it: chevron, bold title, count and hover actions.
 
 ```ts
-import Collapsible from "$ui/components/Collapsible.svelte";
+import Collapsible from "@git-manager/ui/components/Collapsible.svelte";
 ```
 
 Group: Navigation. Also known as: Accordion, Collapsible, Disclosure.

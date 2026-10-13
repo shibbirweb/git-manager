@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { ScriptSource } from "$lib/types";
-import { relativeFolder, scriptArgs, scriptCommand, scriptRows, shellQuote, sourceLabel, terminalName } from "./scriptsModel";
+import {
+  relativeFolder,
+  scriptArgs,
+  scriptCommand,
+  scriptRows,
+  shellQuote,
+  sourceLabel,
+  terminalName,
+} from "./scriptsModel";
 
 function source(changes: Partial<ScriptSource> = {}): ScriptSource {
   return {
@@ -52,7 +60,11 @@ describe("scriptCommand", () => {
 describe("labels", () => {
   it("names the file with its package and folder", () => {
     expect(sourceLabel(source(), false)).toEqual({ title: "package.json", detail: "shop" });
-    const nested = source({ filePath: "/work/app/packages/ui/package.json", folderPath: "/work/app/packages/ui", packageName: null });
+    const nested = source({
+      filePath: "/work/app/packages/ui/package.json",
+      folderPath: "/work/app/packages/ui",
+      packageName: null,
+    });
     expect(relativeFolder(nested)).toBe("packages/ui");
     expect(sourceLabel(nested, false)).toEqual({ title: "package.json", detail: "packages/ui" });
     expect(sourceLabel(nested, true)).toEqual({ title: "package.json", detail: "app/packages/ui" });
@@ -73,9 +85,18 @@ describe("scriptRows", () => {
   });
 
   it("filters by name or command and opens matching files", () => {
-    const other = source({ kind: "make", filePath: "/work/app/Makefile", runner: "make", packageName: null, scripts: [{ name: "deploy", command: "./deploy.sh", line: 3 }] });
+    const other = source({
+      kind: "make",
+      filePath: "/work/app/Makefile",
+      runner: "make",
+      packageName: null,
+      scripts: [{ name: "deploy", command: "./deploy.sh", line: 3 }],
+    });
     const rows = scriptRows([source(), other], "vite BUILD", () => true);
-    expect(rows.map((row) => (row.kind === "script" ? row.script.name : row.source.filePath))).toEqual(["/work/app/package.json", "build"]);
+    expect(rows.map((row) => (row.kind === "script" ? row.script.name : row.source.filePath))).toEqual([
+      "/work/app/package.json",
+      "build",
+    ]);
     expect(scriptRows([source(), other], "nothing-like-this", () => false)).toEqual([]);
   });
 });

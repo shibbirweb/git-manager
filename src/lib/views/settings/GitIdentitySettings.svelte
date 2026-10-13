@@ -28,13 +28,16 @@
   const localEmailError = $derived(validateIdentityEmail(localEmail, false));
   const globalChanged = $derived(
     globalIdentity !== null &&
-      (globalName.trim() !== (globalIdentity.global.name ?? "") || globalEmail.trim() !== (globalIdentity.global.email ?? "")),
+      (globalName.trim() !== (globalIdentity.global.name ?? "") ||
+        globalEmail.trim() !== (globalIdentity.global.email ?? "")),
   );
   const localChanged = $derived(
     repoIdentity !== null &&
       (localName.trim() !== (repoIdentity.local.name ?? "") || localEmail.trim() !== (repoIdentity.local.email ?? "")),
   );
-  const hasLocal = $derived(repoIdentity !== null && (repoIdentity.local.name !== null || repoIdentity.local.email !== null));
+  const hasLocal = $derived(
+    repoIdentity !== null && (repoIdentity.local.name !== null || repoIdentity.local.email !== null),
+  );
   const effective = $derived.by(() => {
     if (!repoIdentity) {
       return null;
@@ -174,9 +177,27 @@
       {/if}
     </div>
     <div class="fields">
-      <input class="input" bind:value={globalName} placeholder="Name" aria-label="Global name" autocomplete="off" spellcheck="false" />
-      <input class="input" bind:value={globalEmail} placeholder="Email" aria-label="Global email" autocomplete="off" spellcheck="false" />
-      <button class="btn small" onclick={() => void saveGlobal()} disabled={!globalChanged || saving !== null || !!globalNameError || !!globalEmailError}>
+      <input
+        class="input"
+        bind:value={globalName}
+        placeholder="Name"
+        aria-label="Global name"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <input
+        class="input"
+        bind:value={globalEmail}
+        placeholder="Email"
+        aria-label="Global email"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button
+        class="btn small"
+        onclick={() => void saveGlobal()}
+        disabled={!globalChanged || saving !== null || !!globalNameError || !!globalEmailError}
+      >
         Save
       </button>
     </div>
@@ -216,7 +237,11 @@
           autocomplete="off"
           spellcheck="false"
         />
-        <button class="btn small" onclick={() => void saveLocal()} disabled={!localChanged || saving !== null || !!localNameError || !!localEmailError}>
+        <button
+          class="btn small"
+          onclick={() => void saveLocal()}
+          disabled={!localChanged || saving !== null || !!localNameError || !!localEmailError}
+        >
           Save
         </button>
       </div>

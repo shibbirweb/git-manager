@@ -44,6 +44,8 @@ export function shellQuote(filePath: string, style: QuoteStyle): string {
 
 /** What a drop types: each path quoted, separated and followed by a space, ready for more typing. */
 export function dropText(filePaths: string[], style: QuoteStyle): string {
-  const words = filePaths.filter((filePath) => filePath && !filePath.includes("\0")).map((filePath) => shellQuote(filePath, style));
+  const words = filePaths
+    .filter((filePath) => filePath && !filePath.includes("\0"))
+    .map((filePath) => shellQuote(filePath, style));
   return words.length > 0 ? `${words.join(" ")} ` : "";
 }

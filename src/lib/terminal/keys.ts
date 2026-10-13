@@ -68,7 +68,11 @@ export function shellOwns(binding: Keybinding, platform: MenuPlatform): boolean 
  * of the shell (Ctrl+Shift+P on Windows and Linux, Ctrl+`). Editor commands are left out:
  * they do nothing in a terminal.
  */
-export function terminalAppKeys(specs: readonly CommandSpec[], overrides: ShortcutOverrides, platform: MenuPlatform): Set<string> {
+export function terminalAppKeys(
+  specs: readonly CommandSpec[],
+  overrides: ShortcutOverrides,
+  platform: MenuPlatform,
+): Set<string> {
   const keys = new Set<string>();
   for (const spec of specs) {
     const shortcut = spec.scope === "global" ? effectiveShortcut(spec, overrides) : null;

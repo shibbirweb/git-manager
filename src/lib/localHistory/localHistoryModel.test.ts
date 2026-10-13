@@ -83,7 +83,10 @@ describe("the version list", () => {
     expect(older).not.toBe("Today");
     expect(older).not.toBe("Yesterday");
 
-    const groups = groupByDay([snap(at(2026, 10, 3, 14)), snap(at(2026, 10, 3, 9)), snap(at(2026, 10, 2)), snap(at(2026, 9, 28))], now);
+    const groups = groupByDay(
+      [snap(at(2026, 10, 3, 14)), snap(at(2026, 10, 3, 9)), snap(at(2026, 10, 2)), snap(at(2026, 9, 28))],
+      now,
+    );
     expect(groups.map((group) => [group.title, group.snapshots.length])).toEqual([
       ["Today", 2],
       ["Yesterday", 1],

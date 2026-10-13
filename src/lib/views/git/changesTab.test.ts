@@ -36,7 +36,10 @@ describe("changes tab", () => {
       file("b.ts", { conflicted: true }),
       file("c.ts", { origPath: "old.ts", staged: "renamed" }),
       file("d.ts", { origPath: "x.ts", unstaged: "modified" }),
-      file("lib", { unstaged: "modified", submodule: { newCommits: true, modifiedContent: false, untrackedContent: false } }),
+      file("lib", {
+        unstaged: "modified",
+        submodule: { newCommits: true, modifiedContent: false, untrackedContent: false },
+      }),
     ]);
     expect(files.map((entry) => entry.path)).toEqual(["b.ts", "a.ts", "c.ts", "d.ts", "lib"]);
     expect(files[2].origPath).toBe("old.ts");
@@ -70,7 +73,11 @@ describe("changes tab", () => {
     expect(fileActions(file("a", { unstaged: "modified" }))).toEqual(["discard", "stage"]);
     expect(fileActions(file("a", { unstaged: "untracked" }))).toEqual(["discard", "stage"]);
     expect(fileActions(file("a", { staged: "added" }))).toEqual(["unstage"]);
-    expect(fileActions(file("a", { staged: "modified", unstaged: "modified" }))).toEqual(["unstage", "discard", "stage"]);
+    expect(fileActions(file("a", { staged: "modified", unstaged: "modified" }))).toEqual([
+      "unstage",
+      "discard",
+      "stage",
+    ]);
     expect(fileActions(file("a", { conflicted: true, staged: "modified", unstaged: "modified" }))).toEqual(["resolve"]);
     expect(fileActions(file("lib", { unstaged: "modified", submodule }))).toEqual(["stage"]);
     expect(fileActions(file("a"))).toEqual([]);

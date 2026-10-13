@@ -27,7 +27,7 @@ export const controlCases: ParityCase[] = [
     sources: ["src/lib/askpass/AskpassDialog.svelte"],
     html:
       `<div class="head"><span class="badge">${iconSvg("lock", 15)}</span><div class="head-text">` +
-      "<h2>Password</h2><p class=\"dim\">git asks for this.</p></div></div>",
+      '<h2>Password</h2><p class="dim">git asks for this.</p></div></div>',
     pairs: [
       { name: "head", ref: ".head", lib: ".head", ignore: FILL },
       { name: "icon tile", ref: ".badge", lib: ".icon-tile" },

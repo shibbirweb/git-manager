@@ -47,19 +47,6 @@ export const moreCases: ParityCase[] = [
     ],
   },
   {
-    id: "gist-parts",
-    sources: ["src/lib/views/github/CreateGistDialog.svelte"],
-    html:
-      '<div class="segmented"><button class="on">Secret</button><button>Public</button></div>' +
-      '<pre class="preview">let a = 1;</pre>',
-    pairs: [
-      { name: "joined", ref: ".segmented", lib: ".segmented.joined", ignore: TEXT },
-      { name: "on", ref: ".segmented button.on", lib: ".segmented .on", ignore: TEXT },
-      { name: "off", ref: ".segmented button:not(.on)", lib: ".segmented button:not(.on)", ignore: TEXT },
-      { name: "preview", ref: ".preview", lib: ".preview", ignore: FILL },
-    ],
-  },
-  {
     id: "commit-options",
     sources: ["src/lib/views/changes/CommitOptionsPopover.svelte"],
     html:
@@ -77,22 +64,6 @@ export const moreCases: ParityCase[] = [
     sources: ["src/lib/views/settings/MemoryFlag.svelte"],
     html: '<span class="memory-flag" style="margin: 0">+60 MB</span>',
     pairs: [{ name: "flag", ref: ".memory-flag", lib: ".pill.outline", ignore: { ...TEXT, cursor: "a help cursor" } }],
-  },
-  {
-    id: "reset-modes",
-    sources: ["src/lib/views/git/ResetDialog.svelte"],
-    html:
-      '<label class="mode"><input type="radio" /><span class="mode-text"><span class="mode-label danger">Hard' +
-      '</span><span class="hint">Throw away.</span></span></label>',
-    pairs: [
-      {
-        name: "mode",
-        ref: ".mode",
-        lib: ".radio",
-        ignore: { ...FILL, "column-gap": DRIFT, height: "the reference hint has no dialog font size" },
-      },
-      { name: "label", ref: ".mode-label", lib: ".label.danger", ignore: { width: "follows the wider hint" } },
-    ],
   },
   {
     id: "branch-file-list",

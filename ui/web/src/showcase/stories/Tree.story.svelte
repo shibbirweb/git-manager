@@ -37,10 +37,7 @@
 </script>
 
 <Stack gap="sm">
-  <div
-    role="presentation"
-    onkeydown={(event) => event.key === "F2" && selected && (renaming = selected)}
-  >
+  <div role="presentation" onkeydown={(event) => event.key === "F2" && selected && (renaming = selected)}>
     <Tree
       label="Files"
       {nodes}

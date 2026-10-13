@@ -13,12 +13,11 @@
   import { openShelveDialog } from "$lib/shelf/shelfActions.svelte";
   import type { FileStatus, RevisionDiff } from "$lib/types";
   import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import type { IconName } from "@git-manager/ui/icons";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
-  import LayoutToggleIcon from "../LayoutToggleIcon.svelte";
+  import LayoutIcon from "@git-manager/ui/components/LayoutIcon.svelte";
   import CommitBox from "../changes/CommitBox.svelte";
-  import CommitLayoutIcon from "../changes/CommitLayoutIcon.svelte";
   import { splitPath, statusLetter, statusTitle } from "../changes/fileStatus";
   import { copyText, discard, stage, unstage } from "../changes/mutations";
   import {
@@ -175,7 +174,11 @@
         items.push({ label: "Open File", action: () => openFile(file) });
       }
       if (!file.submodule) {
-        items.push({ label: "Shelve Changes...", disabled: busy, action: () => openShelveDialog(repoRoot, [status.path]) });
+        items.push({
+          label: "Shelve Changes...",
+          disabled: busy,
+          action: () => openShelveDialog(repoRoot, [status.path]),
+        });
       }
       const ignoreItem = ignoreMenu(repoRoot, status.path, status.path.endsWith("/"));
       if (ignoreItem) {
@@ -250,7 +253,7 @@
       aria-label="Commit box per repository"
       aria-pressed={perRepo}
     >
-      <CommitLayoutIcon {perRepo} size={14} />
+      <LayoutIcon kind={perRepo ? "commit-per-repo" : "commit-single"} size="normal" />
     </button>
     <button
       type="button"
@@ -260,7 +263,7 @@
       aria-label={listVisible ? "Hide file list" : "Show file list"}
       aria-pressed={listVisible}
     >
-      <LayoutToggleIcon side="left" visible={listVisible} size={14} />
+      <LayoutIcon kind="sidebar-left" active={listVisible} size="normal" />
     </button>
     <button type="button" class="btn" class:spinning={refreshing} onclick={() => void refresh()} title="Refresh">
       <Icon name="refresh" size={13} />
@@ -276,13 +279,26 @@
         <div class="side" style="width: {list.width}px">
           {#if perRepo}
             <!-- Commit box per repository: above the files, like the sidebar. -->
-            <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} placement="top" />
+            <CommitBox
+              {repo}
+              stagedCount={bulk.unstage.length}
+              {conflictCount}
+              multiRepo={false}
+              choices={[]}
+              onpick={() => {}}
+              placement="top"
+            />
           {/if}
           <div class="section-title">
             <span class="truncate">Changed files <span class="dim">({files.length})</span></span>
             <span class="bulk-actions">
               {#if bulk.unstage.length > 0}
-                <button class="action" onclick={() => unstage(repoRoot, bulk.unstage)} disabled={busy} title="Unstage all">
+                <button
+                  class="action"
+                  onclick={() => unstage(repoRoot, bulk.unstage)}
+                  disabled={busy}
+                  title="Unstage all"
+                >
                   <Icon name="minus" size={13} />
                 </button>
               {/if}
@@ -335,7 +351,9 @@
                 <span class="name truncate" class:deleted={file.kind === "deleted"}>{parts.name}</span>
                 <span class="dir truncate dim">{parts.directory}</span>
                 {#if staged}
-                  <span class="tag" title={staged === "staged" ? "All changes are staged" : "Some changes are staged"}>{staged}</span>
+                  <span class="tag" title={staged === "staged" ? "All changes are staged" : "Some changes are staged"}
+                    >{staged}</span
+                  >
                 {/if}
                 <span class="actions">
                   {#each fileActions(file.status) as action (action)}
@@ -363,7 +381,14 @@
           </div>
           <!-- The sidebar's commit box: the draft is kept per repository, so both show the same message. -->
           {#if !perRepo}
-            <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} />
+            <CommitBox
+              {repo}
+              stagedCount={bulk.unstage.length}
+              {conflictCount}
+              multiRepo={false}
+              choices={[]}
+              onpick={() => {}}
+            />
           {/if}
         </div>
         <ResizeHandle
@@ -395,7 +420,9 @@
               mode="readonly"
               leftLabel="HEAD"
               rightLabel="Working Tree"
-              workingFile={selected.kind === "deleted" ? null : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
+              workingFile={selected.kind === "deleted"
+                ? null
+                : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
               {previewSides}
             />
           {/key}

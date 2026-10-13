@@ -24,24 +24,6 @@ export function shelveCandidates(files: FileStatus[]): FileStatus[] {
   return (files ?? []).filter((file) => !file.conflicted && !file.path.endsWith("/") && !file.submodule);
 }
 
-export function statusLetter(file: FileStatus): string {
-  if (file.unstaged === "untracked" && !file.staged) {
-    return "U";
-  }
-  switch (file.staged ?? file.unstaged) {
-    case "added":
-      return "A";
-    case "deleted":
-      return "D";
-    case "renamed":
-      return "R";
-    case "typechange":
-      return "T";
-    default:
-      return "M";
-  }
-}
-
 const CHANGE_LETTERS: Record<ShelvedChange, string> = {
   added: "A",
   modified: "M",

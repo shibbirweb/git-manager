@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { type ClosedTab, MAX_CLOSED_TABS, popClosedTab, pushClosedTabs, reopenAt, type ReopenTab, updateClosedPosition } from "./closedTabs";
+import {
+  type ClosedTab,
+  MAX_CLOSED_TABS,
+  popClosedTab,
+  pushClosedTabs,
+  reopenAt,
+  type ReopenTab,
+  updateClosedPosition,
+} from "./closedTabs";
 
 function closed(path: string, index = 0): ClosedTab {
   return { path, index, preview: false, pinned: false, position: null };
@@ -51,7 +59,12 @@ describe("reopenAt", () => {
     { path: "/a", preview: false, dirty: false },
     { path: "/b", preview: false, dirty: true },
   ];
-  const make = (entry: ClosedTab): ReopenTab => ({ path: entry.path, preview: false, dirty: false, pinned: entry.pinned });
+  const make = (entry: ClosedTab): ReopenTab => ({
+    path: entry.path,
+    preview: false,
+    dirty: false,
+    pinned: entry.pinned,
+  });
 
   it("puts the tab back at its old index and makes it active", () => {
     const { tabs: next, active } = reopenAt(tabs, { ...closed("/x", 1), pinned: true }, make);

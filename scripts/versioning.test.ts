@@ -70,7 +70,12 @@ describe("next versions", () => {
 
 describe("release workflow helpers", () => {
   it("counts only commits that change the program as untried", () => {
-    const subjects = ["chore:[GM-7] release 0.4.0-beta.1", "docs:[GM-8] readme", "test:[GM-9] more", "fix:[GM-10] crash"];
+    const subjects = [
+      "chore:[GM-7] release 0.4.0-beta.1",
+      "docs:[GM-8] readme",
+      "test:[GM-9] more",
+      "fix:[GM-10] crash",
+    ];
     expect(untriedSubjects(subjects)).toEqual(["fix:[GM-10] crash"]);
     expect(untriedSubjects(subjects.slice(0, 3))).toEqual([]);
   });
@@ -82,7 +87,8 @@ describe("release workflow helpers", () => {
 });
 
 describe("changelog", () => {
-  const text = "# Changelog\n\n## [Unreleased]\n\n### Added\n- New.\n\n## [0.3.1] - 2026-09-01\n\n- Old.\n\n[0.3.1]: https://x/y\n";
+  const text =
+    "# Changelog\n\n## [Unreleased]\n\n### Added\n- New.\n\n## [0.3.1] - 2026-09-01\n\n- Old.\n\n[0.3.1]: https://x/y\n";
 
   it("returns sections without link definitions", () => {
     expect(changelogSection(text)).toBe("### Added\n- New.");

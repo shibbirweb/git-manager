@@ -132,134 +132,133 @@
 {#if active}
   <div class="overlay" role="presentation" onmousedown={(event) => event.target === event.currentTarget && cancel()}>
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-    <form
-      onsubmit={(event) => {
-        event.preventDefault();
-        submit();
-      }}
-    >
-      <h2 id="dialog-title">{active.options.title}</h2>
+      <form
+        onsubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+      >
+        <h2 id="dialog-title">{active.options.title}</h2>
 
-      {#if active.type === "confirm"}
-        {#if active.options.message}
-          <p class="message selectable">{active.options.message}</p>
-        {/if}
-        <div class="actions">
-          <button type="button" class="btn" onclick={cancel}>{active.options.cancelLabel ?? "Cancel"}</button>
-          <button bind:this={confirmEl} type="submit" class="btn primary" class:danger-fill={active.options.danger}>
-            {active.options.confirmLabel ?? "OK"}
-          </button>
-        </div>
-      {:else if active.type === "prompt"}
-        <label class="field">
-          {#if active.options.label}
-            <span>{active.options.label}</span>
+        {#if active.type === "confirm"}
+          {#if active.options.message}
+            <p class="message selectable">{active.options.message}</p>
           {/if}
+          <div class="actions">
+            <button type="button" class="btn" onclick={cancel}>{active.options.cancelLabel ?? "Cancel"}</button>
+            <button bind:this={confirmEl} type="submit" class="btn primary" class:danger-fill={active.options.danger}>
+              {active.options.confirmLabel ?? "OK"}
+            </button>
+          </div>
+        {:else if active.type === "prompt"}
+          <label class="field">
+            {#if active.options.label}
+              <span>{active.options.label}</span>
+            {/if}
+            <input
+              bind:this={inputEl}
+              class="input"
+              bind:value
+              placeholder={active.options.placeholder ?? ""}
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </label>
+          {#if validationError && value}
+            <div class="error">{validationError}</div>
+          {/if}
+          {#if active.options.secondary}
+            <label class="field secondary">
+              <span>{active.options.secondary.label}</span>
+              <textarea
+                class="input"
+                bind:value={secondary}
+                placeholder={active.options.secondary.placeholder ?? ""}
+                rows="3"
+                spellcheck="true"
+                onkeydown={onSecondaryKeydown}></textarea>
+            </label>
+          {/if}
+          {#if active.options.checkbox}
+            <label class="check">
+              <input type="checkbox" bind:checked />
+              {active.options.checkbox.label}
+            </label>
+          {/if}
+          <div class="actions">
+            <button type="button" class="btn" onclick={cancel}>Cancel</button>
+            <button type="submit" class="btn primary" disabled={!!validationError || !value.trim()}>
+              {active.options.confirmLabel ?? "OK"}
+            </button>
+          </div>
+        {:else if active.type === "pick"}
           <input
             bind:this={inputEl}
-            class="input"
+            class="input filter"
             bind:value
-            placeholder={active.options.placeholder ?? ""}
+            oninput={filterChanged}
+            onkeydown={onFilterKeydown}
+            placeholder={active.options.placeholder ?? "Type to filter"}
             spellcheck="false"
             autocomplete="off"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="pick-list"
+            aria-activedescendant={pickIndex >= 0 ? `pick-row-${pickIndex}` : undefined}
           />
-        </label>
-        {#if validationError && value}
-          <div class="error">{validationError}</div>
-        {/if}
-        {#if active.options.secondary}
-          <label class="field secondary">
-            <span>{active.options.secondary.label}</span>
-            <textarea
-              class="input"
-              bind:value={secondary}
-              placeholder={active.options.secondary.placeholder ?? ""}
-              rows="3"
-              spellcheck="true"
-              onkeydown={onSecondaryKeydown}
-            ></textarea>
-          </label>
-        {/if}
-        {#if active.options.checkbox}
-          <label class="check">
-            <input type="checkbox" bind:checked />
-            {active.options.checkbox.label}
-          </label>
-        {/if}
-        <div class="actions">
-          <button type="button" class="btn" onclick={cancel}>Cancel</button>
-          <button type="submit" class="btn primary" disabled={!!validationError || !value.trim()}>
-            {active.options.confirmLabel ?? "OK"}
-          </button>
-        </div>
-      {:else if active.type === "pick"}
-        <input
-          bind:this={inputEl}
-          class="input filter"
-          bind:value
-          oninput={filterChanged}
-          onkeydown={onFilterKeydown}
-          placeholder={active.options.placeholder ?? "Type to filter"}
-          spellcheck="false"
-          autocomplete="off"
-          role="combobox"
-          aria-expanded="true"
-          aria-controls="pick-list"
-          aria-activedescendant={pickIndex >= 0 ? `pick-row-${pickIndex}` : undefined}
-        />
-        <div bind:this={listEl} id="pick-list" class="pick-list" role="listbox" aria-label={active.options.title}>
-          {#each rows as row, index (index)}
-            {#if row.kind === "group"}
-              <div class="pick-group" role="presentation">{row.label}</div>
+          <div bind:this={listEl} id="pick-list" class="pick-list" role="listbox" aria-label={active.options.title}>
+            {#each rows as row, index (index)}
+              {#if row.kind === "group"}
+                <div class="pick-group" role="presentation">{row.label}</div>
+              {:else}
+                <button
+                  type="button"
+                  id="pick-row-{index}"
+                  class="pick-row"
+                  class:highlighted={index === pickIndex}
+                  role="option"
+                  aria-selected={index === pickIndex}
+                  tabindex="-1"
+                  disabled={row.item.disabled}
+                  onmousemove={() => {
+                    if (!row.item.disabled) {
+                      pickIndex = index;
+                    }
+                  }}
+                  onclick={() => pick(row.item.value)}
+                >
+                  <span class="pick-label truncate">{row.item.label}</span>
+                  {#if row.item.description}
+                    <span class="pick-description truncate">{row.item.description}</span>
+                  {/if}
+                </button>
+              {/if}
             {:else}
-              <button
-                type="button"
-                id="pick-row-{index}"
-                class="pick-row"
-                class:highlighted={index === pickIndex}
-                role="option"
-                aria-selected={index === pickIndex}
-                tabindex="-1"
-                disabled={row.item.disabled}
-                onmousemove={() => {
-                  if (!row.item.disabled) {
-                    pickIndex = index;
-                  }
-                }}
-                onclick={() => pick(row.item.value)}
-              >
-                <span class="pick-label truncate">{row.item.label}</span>
-                {#if row.item.description}
-                  <span class="pick-description truncate">{row.item.description}</span>
+              <div class="pick-empty dim">{active.options.emptyText ?? "Nothing matches"}</div>
+            {/each}
+          </div>
+          <div class="actions">
+            <button type="button" class="btn" onclick={cancel}>Cancel</button>
+          </div>
+        {:else if active.type === "choose"}
+          {#if active.options.message}
+            <p class="message selectable">{active.options.message}</p>
+          {/if}
+          <div class="choices">
+            {#each active.options.options as option (option.value)}
+              <button type="button" class="choice" class:danger={option.danger} onclick={() => pick(option.value)}>
+                <span class="choice-label">{option.label}</span>
+                {#if option.description}
+                  <span class="dim">{option.description}</span>
                 {/if}
               </button>
-            {/if}
-          {:else}
-            <div class="pick-empty dim">{active.options.emptyText ?? "Nothing matches"}</div>
-          {/each}
-        </div>
-        <div class="actions">
-          <button type="button" class="btn" onclick={cancel}>Cancel</button>
-        </div>
-      {:else if active.type === "choose"}
-        {#if active.options.message}
-          <p class="message selectable">{active.options.message}</p>
+            {/each}
+          </div>
+          <div class="actions">
+            <button type="button" class="btn" onclick={cancel}>Cancel</button>
+          </div>
         {/if}
-        <div class="choices">
-          {#each active.options.options as option (option.value)}
-            <button type="button" class="choice" class:danger={option.danger} onclick={() => pick(option.value)}>
-              <span class="choice-label">{option.label}</span>
-              {#if option.description}
-                <span class="dim">{option.description}</span>
-              {/if}
-            </button>
-          {/each}
-        </div>
-        <div class="actions">
-          <button type="button" class="btn" onclick={cancel}>Cancel</button>
-        </div>
-      {/if}
-    </form>
+      </form>
     </div>
   </div>
 {/if}

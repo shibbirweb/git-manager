@@ -142,7 +142,10 @@ export function parsePatch(value: unknown): ConfigPatch {
     Array.isArray(path) && path.every((key) => typeof key === "string");
   const set = Array.isArray(data.set)
     ? data.set
-        .filter((entry): entry is { path: string[]; value: JsonValue } => isPlainObject(entry) && isPath(entry.path) && "value" in entry)
+        .filter(
+          (entry): entry is { path: string[]; value: JsonValue } =>
+            isPlainObject(entry) && isPath(entry.path) && "value" in entry,
+        )
         .map((entry) => ({ path: entry.path, value: entry.value }))
     : [];
   const remove = Array.isArray(data.remove) ? data.remove.filter(isPath) : [];

@@ -22,9 +22,6 @@
   />
 {:else if id === "status-dot"}
   <StatusDot tone="success" />
-{:else if id === "link-avatar"}
-  <Avatar text="AL" />
-  <Link onclick={run}>Create a token</Link>
 {:else if id === "chip-pill-mark"}
   <Chip text="2 waiting" tone="warning" onclick={run} />
   <Mark text="CC" />

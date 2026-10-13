@@ -3,7 +3,7 @@
 Lays out children in a row or a column with a gap from the spacing tokens.
 
 ```ts
-import Stack from "$ui/components/Stack.svelte";
+import Stack from "@git-manager/ui/components/Stack.svelte";
 ```
 
 Group: Layout. Also known as: Flex, HStack, VStack, Box.
@@ -31,12 +31,15 @@ Use for every layout instead of writing CSS: rows of buttons, label and value pa
 - `width` (`"auto" | "icon" | "xsmall" | "small" | "medium" | "large" | "xlarge"`, default `"auto"`): A set width so
   rows line up: icon 16, xsmall 70 (a hash), small 80, medium 90, large 120, xlarge 140.
 - `scroll` (`"none" | "y" | "x" | "both"`, default `"none"`): Scrolls its content in its own box; pair with `grow`.
+- `maxHeight` (`"none" | "xsmall" | "small" | "medium" | "large"`, default `"none"`): Grows up to 120, 160, 240 or 360
+  px, then scrolls with `scroll="y"` (a short list in a dialog).
 - `sticky` (`boolean`, default `false`): Stays at the top of the region scrolling under it, on the panel color with a
   line under it.
-- `element` (`"div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form"`, default
-  `"div"`): The HTML element; main, aside and nav mark a page's regions for screen readers.
-- `role` (`"group" | "region" | "tabpanel" | "presentation" | null`, default `null`): Its role for screen readers, like
-  tabpanel for the content under Tabs.
+- `element` (`"div" | "span" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form"`,
+  default `"div"`): The HTML element; main, aside and nav mark a page's regions for screen readers; span fits inside a
+  label, like a Checkbox's rich label.
+- `role` (`"group" | "region" | "tabpanel" | "alert" | "status" | "presentation" | null`, default `null`): Its role for
+  screen readers: tabpanel for the content under Tabs, alert for an error that appears.
 - `label` (`string`): Accessible name, for sections and lists.
 - `busy` (`boolean`, default `false`): Tells screen readers it is loading (aria-busy), like a panel refreshing its list.
 - `responsive` (`boolean`, default `false`): Measures its width so what is inside can step aside with `hideAt` or

@@ -23,7 +23,9 @@ export function scrollAreaName(target: EventTarget | null): string {
       return name;
     }
   }
-  return element.className && typeof element.className === "string" ? `element .${element.className.split(/\s+/)[0]}` : "page";
+  return element.className && typeof element.className === "string"
+    ? `element .${element.className.split(/\s+/)[0]}`
+    : "page";
 }
 
 /** What is on screen, as one log label; equal labels mean nothing changed. */

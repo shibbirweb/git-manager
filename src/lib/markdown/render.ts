@@ -49,7 +49,21 @@ function renderEnv(env: Env | undefined): RenderEnv {
 }
 
 const TASK_MARK = /^\[([ xX])\][ \t]+/;
-const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+const VOID_TAGS = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "source",
+  "track",
+  "wbr",
+]);
 const HTML_TAG = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*?(\/?)>/g;
 
 /** Tags a raw HTML block leaves open (negative when it closes earlier ones). */
@@ -117,7 +131,10 @@ function taskLists(state: StateCore): void {
     // The list that holds the item: the nearest list opening one level up.
     for (let back = index - 3; back >= 0; back--) {
       const candidate = tokens[back];
-      if ((candidate.type === "bullet_list_open" || candidate.type === "ordered_list_open") && candidate.level === item.level - 1) {
+      if (
+        (candidate.type === "bullet_list_open" || candidate.type === "ordered_list_open") &&
+        candidate.level === item.level - 1
+      ) {
         if (!String(candidate.attrGet("class") ?? "").includes("contains-task-list")) {
           candidate.attrJoin("class", "contains-task-list");
         }
@@ -191,7 +208,8 @@ export function createRenderer(hooks: RenderHooks): { render: (source: string) =
         segments.push({ html: md.renderer.render(slice, md.options, env), line: slice[0].map?.[0] ?? 0 });
       }
       const hasRawHtml = tokens.some(
-        (token) => token.type === "html_block" || (token.children?.some((child) => child.type === "html_inline") ?? false),
+        (token) =>
+          token.type === "html_block" || (token.children?.some((child) => child.type === "html_inline") ?? false),
       );
       return { segments, hasMermaid: env.hasMermaid, hasRawHtml };
     },

@@ -67,7 +67,8 @@ function lineDecorations(doc: Text, marks: LineMark[]): DecorationSet {
     if (start < end) {
       const last = Math.min(end, lineCount) - 1;
       for (let index = start; index <= last; index++) {
-        const edge = start === last ? "cm-mc-single" : index === start ? "cm-mc-first" : index === last ? "cm-mc-last" : "";
+        const edge =
+          start === last ? "cm-mc-single" : index === start ? "cm-mc-first" : index === last ? "cm-mc-last" : "";
         const line = doc.line(index + 1);
         decorations.push(Decoration.line({ class: `cm-mc-line cm-mc-${mark.type} ${edge}` }).range(line.from));
       }
@@ -106,7 +107,11 @@ export function sideMarks(
 ): LineMark[] {
   return chunks
     .filter((chunk) => sideChanged(chunk, side) && !(side === "ours" ? chunk.oursDone : chunk.theirsDone))
-    .map((chunk) => ({ range: sideRange(chunk, side), type: changeType(chunk, side), inline: inlineFor?.(chunk) ?? null }));
+    .map((chunk) => ({
+      range: sideRange(chunk, side),
+      type: changeType(chunk, side),
+      inline: inlineFor?.(chunk) ?? null,
+    }));
 }
 
 const resultDecorations = EditorView.decorations.compute([chunkField, "doc"], (state) =>
@@ -144,7 +149,10 @@ const mergeTheme = EditorView.theme({
   ".cm-mc-gap-before": { boxShadow: "inset 0 2px 0 var(--mc-edge)" },
   ".cm-mc-gap-after": { boxShadow: "inset 0 -2px 0 var(--mc-edge)" },
   // Keep the active-line tint from hiding chunk colors.
-  ".cm-activeLine.cm-mc-line": { backgroundImage: "linear-gradient(var(--editor-active-line), var(--editor-active-line))", backgroundBlendMode: "multiply" },
+  ".cm-activeLine.cm-mc-line": {
+    backgroundImage: "linear-gradient(var(--editor-active-line), var(--editor-active-line))",
+    backgroundBlendMode: "multiply",
+  },
 });
 
 export function resultExtensions(initial: ChunkState[]): Extension[] {

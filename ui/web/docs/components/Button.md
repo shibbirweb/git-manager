@@ -3,7 +3,7 @@
 A text button: Default, Primary for the main action, Danger, or Danger primary for a destructive confirm.
 
 ```ts
-import Button from "$ui/components/Button.svelte";
+import Button from "@git-manager/ui/components/Button.svelte";
 ```
 
 Group: Actions. Also known as: Button.

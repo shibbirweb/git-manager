@@ -3,7 +3,7 @@
 A floating badge at the top of the window that shows a value for a moment, such as the zoom level.
 
 ```ts
-import ZoomBadge from "$ui/components/ZoomBadge.svelte";
+import ZoomBadge from "@git-manager/ui/components/ZoomBadge.svelte";
 ```
 
 Group: Feedback. Also known as: Zoom, HUD.

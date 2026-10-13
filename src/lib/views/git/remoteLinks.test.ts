@@ -17,14 +17,18 @@ describe("remoteWebUrl", () => {
   it("turns ssh and git remotes into https pages without their port", () => {
     expect(remoteWebUrl("git@github.com:acme/app.git")).toBe("https://github.com/acme/app");
     expect(remoteWebUrl("git@bitbucket.org:team/app.git")).toBe("https://bitbucket.org/team/app");
-    expect(remoteWebUrl("ssh://git@gitlab.example.com:2222/group/app.git")).toBe("https://gitlab.example.com/group/app");
+    expect(remoteWebUrl("ssh://git@gitlab.example.com:2222/group/app.git")).toBe(
+      "https://gitlab.example.com/group/app",
+    );
     expect(remoteWebUrl("git://example.org/pub/app.git")).toBe("https://example.org/pub/app");
     expect(remoteWebUrl("git+ssh://git@example.org/app")).toBe("https://example.org/app");
   });
 
   it("maps Azure DevOps ssh remotes to their web page", () => {
     expect(remoteWebUrl("git@ssh.dev.azure.com:v3/org/project/app")).toBe("https://dev.azure.com/org/project/_git/app");
-    expect(remoteWebUrl("https://org@dev.azure.com/org/project/_git/app")).toBe("https://dev.azure.com/org/project/_git/app");
+    expect(remoteWebUrl("https://org@dev.azure.com/org/project/_git/app")).toBe(
+      "https://dev.azure.com/org/project/_git/app",
+    );
   });
 
   it("has no page for local paths, file URLs or nothing", () => {

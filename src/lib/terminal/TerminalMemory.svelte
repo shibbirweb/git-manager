@@ -50,7 +50,12 @@
     </div>
     <div class="rows">
       {#each rows as row (row.terminalId)}
-        <button class="row" disabled={row.terminalKey === null} title={terminalMemoryTitle(row)} onclick={() => show(row.terminalKey)}>
+        <button
+          class="row"
+          disabled={row.terminalKey === null}
+          title={terminalMemoryTitle(row)}
+          onclick={() => show(row.terminalKey)}
+        >
           <Icon name={icons[row.kind]} size={11} />
           <span class="label">{row.label}</span>
           {#if row.folderName}

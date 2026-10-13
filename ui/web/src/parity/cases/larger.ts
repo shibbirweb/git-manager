@@ -40,18 +40,6 @@ export const largerCases: ParityCase[] = [
     ],
   },
   {
-    id: "reorder-list",
-    sources: ["src/lib/views/git/InteractiveRebaseDialog.svelte"],
-    html:
-      '<div class="rows"><div class="row-wrap"><div class="commit" style="display: flex">' +
-      '<span class="grip">&#8942;&#8942;</span><span>a1b2c3d</span></div></div></div>',
-    pairs: [
-      { name: "list", ref: ".rows", lib: ".rows", ignore: { ...FILL, height: "follows its rows" } },
-      { name: "row wrap", ref: ".row-wrap", lib: ".row-wrap", ignore: FILL },
-      { name: "grip", ref: ".grip", lib: ".grip" },
-    ],
-  },
-  {
     id: "shortcut-recorder",
     sources: ["src/lib/views/settings/KeyboardShortcuts.svelte"],
     html: '<button class="keys"><kbd>⌘K</kbd></button>',

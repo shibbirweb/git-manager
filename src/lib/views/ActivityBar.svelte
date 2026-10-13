@@ -6,7 +6,7 @@
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import type { IconName } from "@git-manager/ui/icons";
   import { changesSelection } from "./changes/selection.svelte";
 
   interface Item {
@@ -43,7 +43,9 @@
     >
       <Icon name={item.icon} size={19} strokeWidth={1.8} />
       {#if item.panel === "changes" && repoStore.totalChanges > 0}
-        <span class="badge" class:conflict={conflicts > 0}>{repoStore.totalChanges > 99 ? "99+" : repoStore.totalChanges}</span>
+        <span class="badge" class:conflict={conflicts > 0}
+          >{repoStore.totalChanges > 99 ? "99+" : repoStore.totalChanges}</span
+        >
       {/if}
     </button>
   {/each}
@@ -53,7 +55,9 @@
     class="item"
     class:active={changesSelection.logShown}
     onclick={() => changesSelection.toggleLog()}
-    title="{withCommandKeys('Log: commit history and graph', 'view.log')}{changesSelection.logShown ? ', click to hide' : ''}"
+    title="{withCommandKeys('Log: commit history and graph', 'view.log')}{changesSelection.logShown
+      ? ', click to hide'
+      : ''}"
     aria-label="Log"
     aria-pressed={changesSelection.logShown}
   >
@@ -65,7 +69,9 @@
     class="item"
     class:active={settings.leftPanel === "scripts"}
     onclick={() => settings.toggleLeftPanel("scripts")}
-    title={settings.leftPanel === "scripts" ? "Scripts, click to hide" : "Scripts: run npm, Composer, Make and other project scripts"}
+    title={settings.leftPanel === "scripts"
+      ? "Scripts, click to hide"
+      : "Scripts: run npm, Composer, Make and other project scripts"}
     aria-label="Scripts"
     aria-pressed={settings.leftPanel === "scripts"}
   >

@@ -3,7 +3,7 @@
 The label that follows the pointer while files are dragged.
 
 ```ts
-import DragGhost from "$ui/components/DragGhost.svelte";
+import DragGhost from "@git-manager/ui/components/DragGhost.svelte";
 ```
 
 Group: Feedback. Also known as: Drag preview.

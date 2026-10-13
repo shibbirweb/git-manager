@@ -119,10 +119,14 @@ export async function newBranchFrom(
   if (!result) {
     return;
   }
-  await repoStore.run("Create branch", (repoPath) => api.createBranch(repoPath, result.value, startPoint, result.checked), {
-    success: result.checked ? `Created and switched to ${result.value}` : `Created ${result.value}`,
-    repoPath: target.repoRoot,
-  });
+  await repoStore.run(
+    "Create branch",
+    (repoPath) => api.createBranch(repoPath, result.value, startPoint, result.checked),
+    {
+      success: result.checked ? `Created and switched to ${result.value}` : `Created ${result.value}`,
+      repoPath: target.repoRoot,
+    },
+  );
 }
 
 export function mergeIntoCurrent(refName: string, target: RepoTarget = activeTarget()): void {

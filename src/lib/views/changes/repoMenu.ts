@@ -268,7 +268,11 @@ export function repoMenuItems(state: RepoActionState, handlers: RepoMenuHandlers
       action: handlers.commit,
       disabled: busy || commitBlocked(state, false) !== null,
     },
-    { label: "Commit Staged", action: handlers.commitStaged, disabled: busy || commitModeBlocked(state, "staged") !== null },
+    {
+      label: "Commit Staged",
+      action: handlers.commitStaged,
+      disabled: busy || commitModeBlocked(state, "staged") !== null,
+    },
     { label: "Commit All", action: handlers.commitAll, disabled: busy || commitModeBlocked(state, "all") !== null },
     { separator: true },
     { label: "Undo Last Commit", action: handlers.undoLastCommit, disabled: opBlocked || state.unborn },
@@ -282,7 +286,12 @@ export function repoMenuItems(state: RepoActionState, handlers: RepoMenuHandlers
   const changeItems: MenuItem[] = [
     { label: "Stage All Changes", action: handlers.stageAll, disabled: busy || state.unstagedCount === 0 },
     { label: "Unstage All Changes", action: handlers.unstageAll, disabled: busy || state.stagedCount === 0 },
-    { label: "Discard All Changes", action: handlers.discardAll, disabled: busy || state.unstagedCount === 0, danger: true },
+    {
+      label: "Discard All Changes",
+      action: handlers.discardAll,
+      disabled: busy || state.unstagedCount === 0,
+      danger: true,
+    },
   ];
 
   const canPull = hasBranch && state.upstream !== null && !opBlocked;

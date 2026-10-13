@@ -111,7 +111,10 @@ class ControlMarker extends GutterMarker {
   }
 
   toDOM(): Node {
-    const button = this.control === "stage" ? revertButton("Stage this change", "plus") : revertButton("Unstage this change", "minus");
+    const button =
+      this.control === "stage"
+        ? revertButton("Stage this change", "plus")
+        : revertButton("Unstage this change", "minus");
     // Mousedown, like the side by side buttons, so the click never moves the cursor first.
     button.addEventListener("mousedown", (event) => {
       event.preventDefault();
@@ -212,6 +215,8 @@ export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
     numberGutter("old", doc, kinds),
     numberGutter("new", doc, kinds),
     control ? controlGutter(doc, control, onControl) : [],
-    collapse ? inlineFolds(collapsedRuns(doc, FOLD_MARGIN, FOLD_MIN_SIZE).map(([from, to]) => ({ first: from + 1, last: to }))) : [],
+    collapse
+      ? inlineFolds(collapsedRuns(doc, FOLD_MARGIN, FOLD_MIN_SIZE).map(([from, to]) => ({ first: from + 1, last: to })))
+      : [],
   ];
 }

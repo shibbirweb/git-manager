@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { DoubleShift, type ShiftTapKey } from "./doubleShift";
 
-function key(type: "keydown" | "keyup", keyName: string, timeStamp: number, extra: Partial<ShiftTapKey> = {}): ShiftTapKey {
+function key(
+  type: "keydown" | "keyup",
+  keyName: string,
+  timeStamp: number,
+  extra: Partial<ShiftTapKey> = {},
+): ShiftTapKey {
   return {
     type,
     key: keyName,
@@ -39,7 +44,12 @@ describe("DoubleShift", () => {
   });
 
   it("ignores Shift held with another key, like typing a capital letter", () => {
-    const capital = [key("keydown", "Shift", 0), key("keydown", "A", 30), key("keyup", "A", 60), key("keyup", "Shift", 90)];
+    const capital = [
+      key("keydown", "Shift", 0),
+      key("keydown", "A", 30),
+      key("keyup", "A", 60),
+      key("keyup", "Shift", 90),
+    ];
     expect(feed([...capital, ...tap(150)])).toEqual([]);
     expect(feed([...tap(0), ...capital.map((event) => ({ ...event, timeStamp: event.timeStamp + 150 }))])).toEqual([]);
   });
@@ -62,7 +72,9 @@ describe("DoubleShift", () => {
     expect(feed([...tap(0, 600), ...tap(700)])).toEqual([]);
     const withCmd = [key("keydown", "Shift", 0, { metaKey: true }), key("keyup", "Shift", 50, { metaKey: true })];
     expect(feed([...withCmd, ...tap(120)])).toEqual([]);
-    expect(feed([...tap(0), key("keydown", "Shift", 150, { altKey: true }), key("keyup", "Shift", 200, { altKey: true })])).toEqual([]);
+    expect(
+      feed([...tap(0), key("keydown", "Shift", 150, { altKey: true }), key("keyup", "Shift", 200, { altKey: true })]),
+    ).toEqual([]);
   });
 
   it("skips auto repeat and IME composition", () => {

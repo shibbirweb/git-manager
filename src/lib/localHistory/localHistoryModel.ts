@@ -11,7 +11,12 @@ export type ReloadReason = "external" | "revert";
  * the text the editor had (when history does not have it yet, the backend skips repeats) and
  * the new text. File > Revert keeps the unsaved edits it throws away.
  */
-export function reloadRecords(filePath: string, previousText: string, eol: Eol, reason: ReloadReason): LocalHistoryRecord[] {
+export function reloadRecords(
+  filePath: string,
+  previousText: string,
+  eol: Eol,
+  reason: ReloadReason,
+): LocalHistoryRecord[] {
   if (reason === "revert") {
     return [{ filePath, text: previousText, eol, label: "beforeRevert" }];
   }

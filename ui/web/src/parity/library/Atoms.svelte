@@ -14,11 +14,7 @@
   const none = () => undefined;
 </script>
 
-{#if id === "rebase-segment"}
-  <div style="width: 400px"><SectionTitle variant="band" title="Commits to rebase" /></div>
-{:else if id === "branches-group"}
-  <div style="width: 400px"><SectionTitle variant="picker" title="Local" /></div>
-{:else if id === "history-day"}
+{#if id === "history-day"}
   <div style="width: 300px"><SectionTitle variant="day" title="Today" /></div>
 {:else if id === "mcp-group"}
   <div style="width: 400px"><SectionTitle variant="divided" title="Git" /></div>

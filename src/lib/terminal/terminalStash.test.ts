@@ -29,7 +29,14 @@ const run: TerminalDescriptor = {
   key: 5,
   name: "dev",
   location: "run",
-  run: { runId: "npm:dev", program: "npm", args: ["run", "dev"], cwd: "/work/app", nodeBinDir: null, description: "npm run dev" },
+  run: {
+    runId: "npm:dev",
+    program: "npm",
+    args: ["run", "dev"],
+    cwd: "/work/app",
+    nodeBinDir: null,
+    description: "npm run dev",
+  },
   group: 4,
 };
 
@@ -46,7 +53,9 @@ describe("terminal descriptors", () => {
   it("round-trip shells and runs", () => {
     expect(parseDescriptor(describeTerminal(shell))).toEqual(shell);
     expect(parseDescriptor(describeTerminal(run))).toEqual(run);
-    expect(parseDescriptor(describeTerminal({ ...shell, location: "editor", renamed: true, exited: true, exitCode: 2 }))).toEqual({
+    expect(
+      parseDescriptor(describeTerminal({ ...shell, location: "editor", renamed: true, exited: true, exitCode: 2 })),
+    ).toEqual({
       ...shell,
       location: "editor",
       renamed: true,
@@ -62,8 +71,21 @@ describe("terminal descriptors", () => {
       name: "Claude Code",
       renamed: true,
       location: "editor",
-      run: { runId: "agent:7", program: "claude", args: [], cwd: "/work/app-fix", nodeBinDir: null, description: "claude" },
-      agent: { agentId: "claude", folderPath: "/work/app-fix", title: "Fixing login", state: "working", changedAt: 1_700_000_000_000 },
+      run: {
+        runId: "agent:7",
+        program: "claude",
+        args: [],
+        cwd: "/work/app-fix",
+        nodeBinDir: null,
+        description: "claude",
+      },
+      agent: {
+        agentId: "claude",
+        folderPath: "/work/app-fix",
+        title: "Fixing login",
+        state: "working",
+        changedAt: 1_700_000_000_000,
+      },
     };
     expect(parseDescriptor(describeTerminal(agent))).toEqual(agent);
     const broken = parseDescriptor(JSON.stringify({ ...agent, run: { program: "claude" } }));
@@ -93,7 +115,9 @@ describe("the panel layout", () => {
       started: false,
       groupSizes: {},
     });
-    expect(parseLayout(JSON.stringify({ ...layout, panelTab: "nope", groupSizes: { 2: [3] } })).panelTab).toBe("terminal");
+    expect(parseLayout(JSON.stringify({ ...layout, panelTab: "nope", groupSizes: { 2: [3] } })).panelTab).toBe(
+      "terminal",
+    );
     expect(parseLayout(JSON.stringify({ ...layout, groupSizes: { 2: [3] } })).groupSizes).toEqual({});
   });
 
@@ -102,7 +126,12 @@ describe("the panel layout", () => {
       layout: "",
       terminals: [{ terminalId: 11, descriptor: describeTerminal({ ...shell, key: 8 }), snapshot: "" }],
     });
-    expect(fittedLayout({ ...layout, started: false }, terminals)).toEqual({ ...layout, activeKey: 8, runActiveKey: null, started: true });
+    expect(fittedLayout({ ...layout, started: false }, terminals)).toEqual({
+      ...layout,
+      activeKey: 8,
+      runActiveKey: null,
+      started: true,
+    });
   });
 });
 
@@ -118,7 +147,9 @@ describe("restoredTerminals", () => {
       ],
     });
     expect(result.dropped).toEqual([22, 23]);
-    expect(result.terminals.map((terminal) => [terminal.descriptor.key, terminal.terminalId, terminal.snapshot])).toEqual([
+    expect(
+      result.terminals.map((terminal) => [terminal.descriptor.key, terminal.terminalId, terminal.snapshot]),
+    ).toEqual([
       [3, 21, "$ ls"],
       [5, null, "failed"],
     ]);

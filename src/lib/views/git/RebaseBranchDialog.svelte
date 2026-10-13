@@ -2,7 +2,17 @@
      (opens the Interactive Rebase dialog), --rebase-merges, --keep-empty, --root,
      --update-refs and --onto with an upstream for the three-argument form. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { onMount, untrack } from "svelte";
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { Refs } from "$lib/types";
@@ -10,7 +20,6 @@
   import { toast } from "$lib/ui/toast.svelte";
   import { decodeRefPick, refPickItems } from "../changes/repoPickers";
   import { loadDetails } from "../changes/repoActions";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import {
     DEFAULT_REBASE_OPTIONS,
@@ -40,10 +49,18 @@
   const branchLabel = $derived(options.branchName || current || "HEAD");
   const operation = $derived((status?.op.kind ?? "none") !== "none");
   const error = $derived(validateRebase(options));
-  const interactiveElsewhere = $derived(options.interactive && options.branchName !== null && options.branchName !== current);
+  const interactiveElsewhere = $derived(
+    options.interactive && options.branchName !== null && options.branchName !== current,
+  );
   const command = $derived(rebaseCommand(options));
-  const canStart = $derived(error === null && !interactiveElsewhere && !operation && !starting && repoStore.busy === null);
+  const canStart = $derived(
+    error === null && !interactiveElsewhere && !operation && !starting && repoStore.busy === null,
+  );
   const localBranches = $derived((refs?.local ?? []).map((branch) => branch.name));
+  const branchChoices = $derived([
+    { value: "", label: current ? `${current} (current)` : "HEAD (detached)" },
+    ...localBranches.filter((name) => name !== current).map((name) => ({ value: name, label: name })),
+  ]);
 
   onMount(() => {
     void loadDetails(repoRoot).then((details) => {
@@ -102,51 +119,55 @@
     const label = branchLabel;
     const target = request.root && !request.useOnto ? "its root" : (request.onto ?? onto);
     close();
-    await repoStore.runOp("Rebase", (repoPath) => api.rebaseWithOptions(repoPath, request), `Rebased ${label} onto ${target}`, repoRoot);
+    await repoStore.runOp(
+      "Rebase",
+      (repoPath) => api.rebaseWithOptions(repoPath, request),
+      `Rebased ${label} onto ${target}`,
+      repoRoot,
+    );
   }
 </script>
 
-<GitDialogFrame title="Rebase {branchLabel}" width={580} onCancel={close} onSubmit={() => void submit()}>
+<Dialog open variant="form" title="Rebase {branchLabel}" width="medium" onclose={close} onsubmit={() => void submit()}>
   {#if operation}
-    <p class="error">Finish or abort the {status?.op.description ?? "operation"} in progress first.</p>
+    <Text size="small" tone="danger">
+      Finish or abort the {status?.op.description ?? "operation"} in progress first.
+    </Text>
   {/if}
-  <label class="field">
-    <span>Branch to rebase</span>
-    <select
-      class="input"
+  <Field label="Branch to rebase" look="compact">
+    <Select
+      label="Branch to rebase"
+      width="fill"
       value={options.branchName ?? ""}
-      onchange={(event) => (options = { ...options, branchName: event.currentTarget.value || null })}
-    >
-      <option value="">{current ? `${current} (current)` : "HEAD (detached)"}</option>
-      {#each localBranches.filter((name) => name !== current) as name (name)}
-        <option value={name}>{name}</option>
-      {/each}
-    </select>
-  </label>
+      onchange={(value) => (options = { ...options, branchName: value || null })}
+      options={branchChoices}
+    />
+  </Field>
   {#if !options.root || options.useOnto}
-    <label class="field">
-      <span>{options.useOnto ? "New base (--onto)" : "Onto branch or commit"}</span>
-      <div class="row">
-        <input
-          class="input mono grow"
+    {@const ontoLabel = options.useOnto ? "New base (--onto)" : "Onto branch or commit"}
+    <Field label={ontoLabel} look="compact">
+      <Stack direction="row" align="center" gap="md">
+        <Input
+          mono
+          width="fill"
           value={options.onto ?? ""}
           oninput={(event) => (options = { ...options, onto: event.currentTarget.value })}
           placeholder="main"
           spellcheck="false"
           autocomplete="off"
-          aria-label={options.useOnto ? "New base (--onto)" : "Onto branch or commit"}
-          data-autofocus
+          aria-label={ontoLabel}
+          autofocus
         />
-        <button type="button" class="btn" onclick={() => void choose("onto")}>Choose...</button>
-      </div>
-    </label>
+        <Button onclick={() => void choose("onto")}>Choose...</Button>
+      </Stack>
+    </Field>
   {/if}
   {#if options.useOnto && !options.root}
-    <label class="field">
-      <span>Upstream: only the commits after it move</span>
-      <div class="row">
-        <input
-          class="input mono grow"
+    <Field label="Upstream: only the commits after it move" look="compact">
+      <Stack direction="row" align="center" gap="md">
+        <Input
+          mono
+          width="fill"
           value={options.upstream ?? ""}
           oninput={(event) => (options = { ...options, upstream: event.currentTarget.value })}
           placeholder="old-base"
@@ -154,64 +175,43 @@
           autocomplete="off"
           aria-label="Upstream: only the commits after it move"
         />
-        <button type="button" class="btn" onclick={() => void choose("upstream")}>Choose...</button>
-      </div>
-    </label>
+        <Button onclick={() => void choose("upstream")}>Choose...</Button>
+      </Stack>
+    </Field>
   {/if}
-  <div class="flags">
+  <Stack gap="xs">
     {#each REBASE_FLAGS as entry (entry.flag)}
-      {@const disabled = rebaseFlagDisabled(options, entry.flag)}
-      <label class="check flag" class:disabled>
-        <input
-          type="checkbox"
-          checked={options[entry.flag]}
-          {disabled}
-          onchange={(event) => setFlag(entry.flag, event.currentTarget.checked)}
-        />
-        <span class="mono">{entry.label}</span>
-        <span class="hint">{entry.description}</span>
-      </label>
+      <Checkbox
+        checked={options[entry.flag]}
+        disabled={rebaseFlagDisabled(options, entry.flag)}
+        onchange={(checked) => setFlag(entry.flag, checked)}
+      >
+        <Stack element="span" direction="row" align="center" gap="xs">
+          <Stack element="span" width="large"><Text mono>{entry.label}</Text></Stack>
+          <Text variant="hint" tone="faint">{entry.description}</Text>
+        </Stack>
+      </Checkbox>
     {/each}
-  </div>
+  </Stack>
   {#if options.interactive}
-    <div class="hint">Merge commits in the range are kept automatically.</div>
+    <Text variant="hint" tone="faint">Merge commits in the range are kept automatically.</Text>
   {/if}
   {#if interactiveElsewhere}
-    <div class="error">--interactive rebases the checked-out branch: check out {options.branchName} first.</div>
+    <Text size="small" tone="danger">
+      --interactive rebases the checked-out branch: check out {options.branchName} first.
+    </Text>
   {:else if error && ((options.onto ?? "") !== "" || options.useOnto)}
-    <div class="error">{error}</div>
+    <Text size="small" tone="danger">{error}</Text>
   {/if}
-  <div class="command selectable">{command}</div>
+  <CodeBlock variant="command" text={command} label="Command" />
 
-  {#snippet footer()}
-    <span class="hint">&#8984;Enter to rebase</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={close}>Cancel</button>
-    <button type="button" class="btn primary" disabled={!canStart} onclick={() => void submit()}>
-      {options.interactive ? "Next..." : "Rebase"}
-    </button>
+  {#snippet footnote()}
+    <Text variant="hint" tone="faint">{localKeys("CmdOrCtrl+Enter")} to rebase</Text>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .grow {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .flags {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .flag {
-    display: grid;
-    grid-template-columns: auto 120px 1fr;
-    align-items: center;
-  }
-
-  .disabled {
-    opacity: 0.55;
-  }
-</style>
+  {#snippet actions()}
+    <Button onclick={close}>Cancel</Button>
+    <Button variant="primary" disabled={!canStart} onclick={() => void submit()}>
+      {options.interactive ? "Next..." : "Rebase"}
+    </Button>
+  {/snippet}
+</Dialog>

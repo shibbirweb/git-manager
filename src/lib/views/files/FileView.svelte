@@ -44,7 +44,7 @@
   import type { FileContent, HeadVersion } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import type { IconName } from "@git-manager/ui/icons";
   import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
@@ -98,7 +98,9 @@
       line: line.number,
       column: selection.head - line.from + 1,
       selected: selection.to - selection.from,
-      selectedLines: selection.empty ? 0 : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
+      selectedLines: selection.empty
+        ? 0
+        : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
       eol: file.eol,
       tabSize: state.tabSize,
       indentTabs: editorIndent(state).useTabs,
@@ -121,13 +123,9 @@
   const folder = $derived(folderFor(repoStore.workspace?.folders ?? [], filePath));
   /** Path inside the workspace folder, for display and copying. */
   const folderPath = $derived(folder ? relativeTo(folder.root, filePath) : filePath);
-  const location = $derived(
-    locateAbsolute(repoStore.repos, filePath),
-  );
+  const location = $derived(locateAbsolute(repoStore.repos, filePath));
   const repoStatus = $derived(location ? (repoStore.statuses[location.repo.root] ?? null) : null);
-  const tone = $derived(
-    location ? (tonesByPath(repoStatus?.files ?? []).get(location.repoPath) ?? null) : null,
-  );
+  const tone = $derived(location ? (tonesByPath(repoStatus?.files ?? []).get(location.repoPath) ?? null) : null);
   const toneLabel = $derived(
     tone === "conflict" ? "Conflicted" : tone === "added" ? "New file" : tone === "modified" ? "Modified" : null,
   );
@@ -339,7 +337,9 @@
           }
           // Only the changed part is replaced, so the caret and scroll stay; scrolled to the end, a growing log is followed.
           const scroller = view.scrollDOM;
-          const following = change.to === previousText.length && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
+          const following =
+            change.to === previousText.length &&
+            scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
           view.dispatch({ changes: change });
           if (following) {
             view.dispatch({ effects: EditorView.scrollIntoView(view.state.doc.length, { y: "end" }) });
@@ -453,7 +453,12 @@
     marksFor = { doc, blobId: headVersion?.blobId ?? null };
     let marks: ChangeMark[] = [];
     try {
-      const result = await api.lineChangeMarks(owner.repo.root, owner.repoPath, headPath(owner.repoPath), doc.toString());
+      const result = await api.lineChangeMarks(
+        owner.repo.root,
+        owner.repoPath,
+        headPath(owner.repoPath),
+        doc.toString(),
+      );
       marks = result.marks;
       if (view === shown && shown.state.doc === doc) {
         marksFor = { doc, blobId: result.head.blobId };
@@ -488,7 +493,8 @@
       kind: "conflict",
     }));
     const outside = changes.filter(
-      (mark) => !conflictMarks.some((conflict) => mark.from < conflict.to && Math.max(mark.to, mark.from + 1) > conflict.from),
+      (mark) =>
+        !conflictMarks.some((conflict) => mark.from < conflict.to && Math.max(mark.to, mark.from + 1) > conflict.from),
     );
     const result = [...outside, ...conflictMarks].sort((a, b) => a.from - b.from);
     markMemo = { changes, conflicts, result };
@@ -789,7 +795,8 @@
       editable: view !== null && editable && loadError === null,
       saving,
       conflicted: tone === "conflict",
-      inMergeTool: location !== null && repoStore.repo?.root === location.repo.root && repoStore.mergeTarget === location.repoPath,
+      inMergeTool:
+        location !== null && repoStore.repo?.root === location.repo.root && repoStore.mergeTarget === location.repoPath,
     });
     if (!ok) {
       return;
@@ -1053,7 +1060,12 @@
         {/if}
         <!-- Save and Revert live in the File menu (Cmd+S), not here. -->
         {#if toolbar.copyPath}
-          <button class="tool" onclick={() => void copyPath()} title="Copy relative path" aria-label="Copy relative path">
+          <button
+            class="tool"
+            onclick={() => void copyPath()}
+            title="Copy relative path"
+            aria-label="Copy relative path"
+          >
             <Icon name="copy" size={12} />
           </button>
         {/if}
@@ -1085,10 +1097,20 @@
     <div class="conflict-bar" role="toolbar" aria-label="Conflict actions">
       <span class="conflict-icon" aria-hidden="true"><Icon name="alert" size={13} /></span>
       {#if conflictCount > 0}
-        <button class="btn small" onclick={() => acceptAll("current")} disabled={saving} title="Resolve every conflict with the current side">
+        <button
+          class="btn small"
+          onclick={() => acceptAll("current")}
+          disabled={saving}
+          title="Resolve every conflict with the current side"
+        >
           Accept All Current
         </button>
-        <button class="btn small" onclick={() => acceptAll("incoming")} disabled={saving} title="Resolve every conflict with the incoming side">
+        <button
+          class="btn small"
+          onclick={() => acceptAll("incoming")}
+          disabled={saving}
+          title="Resolve every conflict with the incoming side"
+        >
           Accept All Incoming
         </button>
       {/if}

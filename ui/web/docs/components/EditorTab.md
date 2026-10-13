@@ -3,7 +3,7 @@
 One tab of a TabStrip: icon, name, hint and close button (a dot while unsaved).
 
 ```ts
-import EditorTab from "$ui/components/EditorTab.svelte";
+import EditorTab from "@git-manager/ui/components/EditorTab.svelte";
 ```
 
 Group: Navigation.

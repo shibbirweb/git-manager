@@ -32,21 +32,4 @@ export const rowCases: ParityCase[] = [
       { name: "ahead", ref: ".sync", lib: ".sync" },
     ],
   },
-  {
-    id: "fieldset",
-    sources: ["src/lib/views/git/PullDialog.svelte", "src/lib/views/git/GitDialogFrame.svelte"],
-    html:
-      '<div class="dialog"><fieldset class="modes"><legend class="hint">Integrate the incoming changes with</legend>' +
-      '<label><input type="radio" name="m" checked /> Merge</label>' +
-      '<label><input type="radio" name="m" /> Rebase</label></fieldset></div>',
-    pairs: [
-      {
-        name: "fieldset",
-        ref: ".modes",
-        lib: ".fieldset",
-        ignore: { ...FILL, height: "each dialog draws its own option rows; RadioGroup is checked on its own" },
-      },
-      { name: "legend", ref: "legend", lib: "legend", ignore: FILL },
-    ],
-  },
 ];

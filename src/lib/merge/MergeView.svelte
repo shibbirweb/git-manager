@@ -131,7 +131,13 @@
       </div>
     {:else if doc}
       {#key version}
-        <MergeEditor bind:this={editor} {doc} onApply={applyResult} onCancel={() => repoStore.closeMerge()} onReload={reload} />
+        <MergeEditor
+          bind:this={editor}
+          {doc}
+          onApply={applyResult}
+          onCancel={() => repoStore.closeMerge()}
+          onReload={reload}
+        />
       {/key}
     {:else}
       <div class="notice dim">Loading...</div>

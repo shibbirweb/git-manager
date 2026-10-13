@@ -3,7 +3,14 @@ import { runAfterClose, runFinishedMessage, runHeader } from "./runs";
 
 describe("run messages", () => {
   it("prints the command above and the exit code below, like JetBrains", () => {
-    const header = runHeader({ runId: "x", program: "pnpm", args: ["run", "dev"], cwd: "/app", nodeBinDir: null, description: "pnpm run dev" });
+    const header = runHeader({
+      runId: "x",
+      program: "pnpm",
+      args: ["run", "dev"],
+      cwd: "/app",
+      nodeBinDir: null,
+      description: "pnpm run dev",
+    });
     expect(header).toBe("\x1b[2mpnpm run dev\x1b[0m\r\n\r\n");
     expect(runFinishedMessage(0)).toContain("Process finished with exit code 0");
     expect(runFinishedMessage(1)).toContain("Process finished with exit code 1");

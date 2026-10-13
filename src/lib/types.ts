@@ -616,8 +616,7 @@ export interface FileContent {
  * repository (repo-relative path) at a revision: `HEAD`, `index`, a full commit id or `<id>^`.
  */
 export type PreviewSource =
-  | { kind: "worktree"; filePath: string }
-  | { kind: "revision"; repoRoot: string; revision: string; filePath: string };
+  { kind: "worktree"; filePath: string } | { kind: "revision"; repoRoot: string; revision: string; filePath: string };
 
 export interface PreviewStat {
   exists: boolean;

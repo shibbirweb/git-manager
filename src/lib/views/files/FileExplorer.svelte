@@ -175,7 +175,15 @@
     const present = new Set(onDisk.map((entry) => entry.path));
     for (const path of gone) {
       if (!present.has(path)) {
-        entries.push({ name: baseName(path), path, isDir: false, ignored: false, isRepo: false, deleted: true, isFolderRoot: false });
+        entries.push({
+          name: baseName(path),
+          path,
+          isDir: false,
+          ignored: false,
+          isRepo: false,
+          deleted: true,
+          isFolderRoot: false,
+        });
       }
     }
     return entries.sort(compareEntries);
@@ -323,7 +331,9 @@
         }
       }
     }
-    const next = applyAnswers({ children, expanded, truncated, rootErrors }, answers, stamps, (dirPath) => current.has(dirPath));
+    const next = applyAnswers({ children, expanded, truncated, rootErrors }, answers, stamps, (dirPath) =>
+      current.has(dirPath),
+    );
     children = next.children;
     expanded = next.expanded;
     truncated = next.truncated;
@@ -477,7 +487,10 @@
     if (rows.length === 0) {
       return;
     }
-    const index = Math.max(0, rows.findIndex((row) => row.entry.path === selection.focus));
+    const index = Math.max(
+      0,
+      rows.findIndex((row) => row.entry.path === selection.focus),
+    );
     const row = rows[index];
     const modified = event.metaKey || event.ctrlKey || event.altKey;
     if (event.shiftKey && !modified && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
@@ -610,7 +623,8 @@
       label: `In ${label}`,
       placeholder: isDir ? "Folder name, or a/b for nested folders" : "File name, or folder/file.ts",
       confirmLabel: "Create",
-      validate: (value) => nameProblem(value, { nested: true, taken, folderLabel: label, ignoreCase: PLATFORM !== "linux" }),
+      validate: (value) =>
+        nameProblem(value, { nested: true, taken, folderLabel: label, ignoreCase: PLATFORM !== "linux" }),
     });
     if (!result) {
       listEl?.focus();
@@ -645,7 +659,13 @@
       selection: renameSelection(name, target.isDir),
       confirmLabel: "Rename",
       validate: (value) =>
-        nameProblem(value, { nested: false, taken, folderLabel: label, current: name, ignoreCase: PLATFORM !== "linux" }),
+        nameProblem(value, {
+          nested: false,
+          taken,
+          folderLabel: label,
+          current: name,
+          ignoreCase: PLATFORM !== "linux",
+        }),
     });
     if (!result || result.value === name) {
       listEl?.focus();
@@ -882,7 +902,8 @@
     const selected = selection.paths.has(row.entry.path) ? selectedEntries() : [];
     // Two selected files offer Compare Selected above the file operations (whose first item is a separator).
     const compareItems = selected.length > 1 ? compareStore.filesPanelItems(selected) : [];
-    const multiItems = selected.length > 1 ? [...compareItems, ...fileOpMenu(selected).slice(compareItems.length > 0 ? 0 : 1)] : [];
+    const multiItems =
+      selected.length > 1 ? [...compareItems, ...fileOpMenu(selected).slice(compareItems.length > 0 ? 0 : 1)] : [];
     if (multiItems.length > 0) {
       contextMenu.open(event, multiItems);
       return;
@@ -926,7 +947,12 @@
         { label: "Open", action: () => void repoStore.openFile(absolute, { pin: true }) },
         { label: "Open Preview", action: () => void repoStore.openFile(absolute) },
         ...(settings.splitEditor
-          ? [{ label: "Open to the Side", action: () => void repoStore.openFile(absolute, { pin: true, toSide: true }) }]
+          ? [
+              {
+                label: "Open to the Side",
+                action: () => void repoStore.openFile(absolute, { pin: true, toSide: true }),
+              },
+            ]
           : []),
         { label: "Show Local History", action: () => localHistory.openFile(absolute) },
       ];
@@ -939,7 +965,8 @@
       items.push({ separator: true }, ...compareStore.filesPanelItems([row.entry]));
     }
     items.push(...fileOpMenu([row.entry]));
-    const ignoreItem = location && !row.entry.deleted ? ignoreMenu(location.repo.root, location.repoPath, row.entry.isDir) : null;
+    const ignoreItem =
+      location && !row.entry.deleted ? ignoreMenu(location.repo.root, location.repoPath, row.entry.isDir) : null;
     if (ignoreItem) {
       items.push({ separator: true }, ignoreItem);
     }
@@ -967,7 +994,10 @@
       return;
     }
     selection = EMPTY_SELECTION;
-    contextMenu.open(event, fileOpMenu([{ path: singleRoot, isDir: true, isFolderRoot: true, deleted: false }]).slice(1));
+    contextMenu.open(
+      event,
+      fileOpMenu([{ path: singleRoot, isDir: true, isFolderRoot: true, deleted: false }]).slice(1),
+    );
   }
 
   function toneClass(entry: TreeEntry): FileTone | "ignored" | "" {
@@ -1047,7 +1077,8 @@
     updateTarget(pointer.x, pointer.y, pointerDrag.sourcePaths, pointerDrag.mode);
     if (listEl) {
       const rect = listEl.getBoundingClientRect();
-      const step = pointer.x >= rect.left && pointer.x <= rect.right ? autoScrollStep(pointer.y, rect.top, rect.bottom) : 0;
+      const step =
+        pointer.x >= rect.left && pointer.x <= rect.right ? autoScrollStep(pointer.y, rect.top, rect.bottom) : 0;
       if (step !== 0) {
         listEl.scrollTop += step;
       }
@@ -1075,7 +1106,14 @@
 
   function onRowMouseDown(event: MouseEvent, row: Row): void {
     suppressClick = false;
-    if (event.button !== 0 || event.shiftKey || event.metaKey || event.ctrlKey || row.entry.deleted || row.entry.isFolderRoot) {
+    if (
+      event.button !== 0 ||
+      event.shiftKey ||
+      event.metaKey ||
+      event.ctrlKey ||
+      row.entry.deleted ||
+      row.entry.isFolderRoot
+    ) {
       return;
     }
     pendingDrag = { row, x: event.clientX, y: event.clientY };
@@ -1179,7 +1217,8 @@
       clearDropFeedback();
       return;
     }
-    const paths = event.type === "over" ? (finderPaths ?? []) : event.paths.map((nativePath) => fromNativePath(nativePath));
+    const paths =
+      event.type === "over" ? (finderPaths ?? []) : event.paths.map((nativePath) => fromNativePath(nativePath));
     if (event.type === "drop") {
       const hit = hitTest(point.x, point.y);
       const targetDir = hit.inside ? dropFolder(hit.row?.entry ?? null, singleRoot) : null;
@@ -1229,7 +1268,12 @@
       {repoStore.workspace?.name ?? "Files"}
     </span>
     <div class="spacer"></div>
-    <button class="icon-btn small" onclick={() => void pickAndAddFolder()} title="Add Folder to Workspace..." aria-label="Add folder to workspace">
+    <button
+      class="icon-btn small"
+      onclick={() => void pickAndAddFolder()}
+      title="Add Folder to Workspace..."
+      aria-label="Add folder to workspace"
+    >
       <Icon name="plus" size={14} />
     </button>
     <button

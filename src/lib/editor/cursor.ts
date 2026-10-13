@@ -67,7 +67,13 @@ function shapeOf(style: EditorCursorStyle, width: number): Declarations {
         backgroundColor: `color-mix(in srgb, ${COLOR} 55%, transparent)`,
       };
     case "block-outline":
-      return { borderLeft: "none", marginLeft: "0", width: CHAR_WIDTH, outline: `1px solid ${COLOR}`, outlineOffset: "-1px" };
+      return {
+        borderLeft: "none",
+        marginLeft: "0",
+        width: CHAR_WIDTH,
+        outline: `1px solid ${COLOR}`,
+        outlineOffset: "-1px",
+      };
     case "underline":
     case "underline-thin":
       return {
@@ -80,7 +86,10 @@ function shapeOf(style: EditorCursorStyle, width: number): Declarations {
 }
 
 /** Keyframes and timing of each blinking mode. */
-const BLINKS: Record<Exclude<EditorCursorBlinking, "solid">, { frames: Record<string, Declarations>; timing: string }> = {
+const BLINKS: Record<
+  Exclude<EditorCursorBlinking, "solid">,
+  { frames: Record<string, Declarations>; timing: string }
+> = {
   blink: {
     frames: { "0%": {}, "50%": { opacity: "0" }, "100%": {} },
     timing: `${BLINK_MS}ms steps(1) infinite`,

@@ -6,7 +6,9 @@
   import Icon from "$lib/ui/Icon.svelte";
 
   // A hidden agent that finished or needs the user marks the AI icon too, while the panel is not shown.
-  const agentBell = $derived(!settings.aiPanelShown && terminalStore.terminals.some((terminal) => terminal.agent && terminal.bell));
+  const agentBell = $derived(
+    !settings.aiPanelShown && terminalStore.terminals.some((terminal) => terminal.agent && terminal.bell),
+  );
 </script>
 
 <nav class="activity" aria-label="Right sidebar">

@@ -36,7 +36,10 @@
     }
   });
   /** Hosting services take a token where git says password. */
-  const tokenHint = $derived(parsed?.kind === "username" || (parsed?.kind === "password" && parsed.host !== null && !parsed.text.includes("'s password")));
+  const tokenHint = $derived(
+    parsed?.kind === "username" ||
+      (parsed?.kind === "password" && parsed.host !== null && !parsed.text.includes("'s password")),
+  );
 
   // A new question starts empty and takes the keyboard.
   $effect(() => {
@@ -104,7 +107,13 @@
           {#if parsed.kind === "username"}
             <label class="field">
               <span>Username</span>
-              <input bind:this={firstField} class="input" bind:value={username} autocomplete="username" spellcheck="false" />
+              <input
+                bind:this={firstField}
+                class="input"
+                bind:value={username}
+                autocomplete="username"
+                spellcheck="false"
+              />
             </label>
           {/if}
           {#if parsed.kind === "passphrase" && parsed.keyPath}
@@ -150,7 +159,9 @@
             </span>
           </label>
           {#if tokenHint}
-            <p class="hint dim">GitHub, GitLab and Bitbucket take a personal access token or app password here, not your account password.</p>
+            <p class="hint dim">
+              GitHub, GitLab and Bitbucket take a personal access token or app password here, not your account password.
+            </p>
           {/if}
           {#if parsed.kind === "username"}
             <p class="hint dim">Git saves it with your credential helper, if one is set, so you are not asked again.</p>
@@ -160,7 +171,13 @@
         <div class="actions">
           <button type="button" class="btn" onclick={cancel}>Cancel</button>
           <button bind:this={confirmButton} type="submit" class="btn primary">
-            {parsed.kind === "confirm" ? "Connect" : parsed.kind === "username" ? "Sign In" : parsed.kind === "passphrase" ? "Unlock" : "OK"}
+            {parsed.kind === "confirm"
+              ? "Connect"
+              : parsed.kind === "username"
+                ? "Sign In"
+                : parsed.kind === "passphrase"
+                  ? "Unlock"
+                  : "OK"}
           </button>
         </div>
       </form>

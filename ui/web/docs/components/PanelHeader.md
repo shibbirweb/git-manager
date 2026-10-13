@@ -3,7 +3,7 @@
 A panel's header: its title in small capitals on the left, its action buttons on the right.
 
 ```ts
-import PanelHeader from "$ui/components/PanelHeader.svelte";
+import PanelHeader from "@git-manager/ui/components/PanelHeader.svelte";
 ```
 
 Group: Layout.

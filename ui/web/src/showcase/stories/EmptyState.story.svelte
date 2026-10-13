@@ -16,14 +16,7 @@
 <EmptyState variant="notice" title="No AI agents found" hint="Install an agent, then press Refresh.">
   {#snippet action()}<Button size="small">AI Settings...</Button>{/snippet}
 </EmptyState>
-<EmptyState
-  icon="check"
-  iconStyle="circle"
-  iconTone="success"
-  strong
-  title="All committed"
-  hint="Nothing to commit."
-/>
+<EmptyState icon="check" iconStyle="circle" iconTone="success" strong title="All committed" hint="Nothing to commit." />
 <EmptyState
   icon="folder-git"
   iconTone="faint"

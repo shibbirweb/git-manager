@@ -14,7 +14,13 @@ import {
   parseAccelerator,
   toAccelerator,
 } from "./keybinding";
-import { APP_COMMAND_IDS, type CommandId, type CommandSpec, effectiveShortcut, type ShortcutOverrides } from "./registry";
+import {
+  APP_COMMAND_IDS,
+  type CommandId,
+  type CommandSpec,
+  effectiveShortcut,
+  type ShortcutOverrides,
+} from "./registry";
 
 const KNOWN_COMMANDS = new Set<string>([...MENU_ACTIONS, ...APP_COMMAND_IDS]);
 
@@ -132,7 +138,12 @@ export function recordKeys(event: KeyPress, platform: MenuPlatform): RecordedKey
     return null;
   }
   const accelerator = toAccelerator(binding, platform);
-  return { binding, accelerator, text: formatAccelerator(accelerator, platform), problem: shortcutProblem(binding, platform) };
+  return {
+    binding,
+    accelerator,
+    text: formatAccelerator(accelerator, platform),
+    problem: shortcutProblem(binding, platform),
+  };
 }
 
 /**
@@ -236,7 +247,9 @@ export function shortcutConflicts(
   const conflicts = new Map<CommandId, CommandSpec[]>();
   for (const group of byKeys.values()) {
     for (const spec of group) {
-      const others = group.filter((other) => other.id !== spec.id && (isChanged(spec, overrides) || isChanged(other, overrides)));
+      const others = group.filter(
+        (other) => other.id !== spec.id && (isChanged(spec, overrides) || isChanged(other, overrides)),
+      );
       if (others.length > 0) {
         conflicts.set(spec.id, others);
       }

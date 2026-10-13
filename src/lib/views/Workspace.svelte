@@ -4,7 +4,12 @@
   import { api } from "$lib/api";
   import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { DEFAULT_PANEL_WIDTH, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, settings } from "$lib/stores/settings.svelte";
+  import {
+    DEFAULT_PANEL_WIDTH,
+    DEFAULT_TERMINAL_HEIGHT,
+    MIN_TERMINAL_HEIGHT,
+    settings,
+  } from "$lib/stores/settings.svelte";
   import { groupRects, layoutSplitters, type Rect, type Splitter } from "$lib/stores/groupLayout";
   import TerminalHost from "$lib/terminal/TerminalHost.svelte";
   import TerminalPanel from "$lib/terminal/TerminalPanel.svelte";
@@ -62,7 +67,9 @@
   const MIN_MAIN = 360;
   /** Width of one icon strip at the window edge (the left and right activity bars). */
   const ACTIVITY_BAR_WIDTH = 44;
-  const ACTIVITY_BARS = $derived(ACTIVITY_BAR_WIDTH * (Number(settings.leftBarVisible) + Number(settings.rightBarVisible)));
+  const ACTIVITY_BARS = $derived(
+    ACTIVITY_BAR_WIDTH * (Number(settings.leftBarVisible) + Number(settings.rightBarVisible)),
+  );
   /** The editor keeps at least this much height above the terminal panel. */
   const MIN_EDITOR_HEIGHT = 120;
   // Loaded the first time the Scripts panel shows.
@@ -262,31 +269,31 @@
       <ActivityBar />
     {/if}
     {#if leftOpen}
-    <aside class="sidebar" style="width: {sidebarWidth}px">
-      {#if settings.leftPanel === "changes"}
-        <ChangesView />
-      {:else if settings.leftPanel === "scripts"}
-        {#await loadScriptsPanel() then module}
-          <module.default />
-        {/await}
-      {:else if repoStore.repo}
-        {#key repoStore.repo.root}
-          <Sidebar />
-        {/key}
-      {:else}
-        <NoRepository compact />
-      {/if}
-    </aside>
-    <ResizeHandle
-      label="Resize sidebar"
-      panel="left"
-      size={sidebarWidth}
-      min={MIN_PANEL}
-      max={sidebarMax}
-      defaultSize={DEFAULT_PANEL_WIDTH}
-      onResize={(width) => (settings.sidebarWidth = width)}
-      onCommit={() => settings.save()}
-    />
+      <aside class="sidebar" style="width: {sidebarWidth}px">
+        {#if settings.leftPanel === "changes"}
+          <ChangesView />
+        {:else if settings.leftPanel === "scripts"}
+          {#await loadScriptsPanel() then module}
+            <module.default />
+          {/await}
+        {:else if repoStore.repo}
+          {#key repoStore.repo.root}
+            <Sidebar />
+          {/key}
+        {:else}
+          <NoRepository compact />
+        {/if}
+      </aside>
+      <ResizeHandle
+        label="Resize sidebar"
+        panel="left"
+        size={sidebarWidth}
+        min={MIN_PANEL}
+        max={sidebarMax}
+        defaultSize={DEFAULT_PANEL_WIDTH}
+        onResize={(width) => (settings.sidebarWidth = width)}
+        onCommit={() => settings.save()}
+      />
     {/if}
     <main class="main" bind:clientHeight={mainHeight}>
       <div class="editor-area" bind:clientWidth={areaWidth} bind:clientHeight={areaHeight}>

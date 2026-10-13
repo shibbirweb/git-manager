@@ -23,7 +23,14 @@ import { gitDialogs } from "./gitDialogs.svelte";
 import { currentGitFile, fileStatusOf } from "./gitMenuInputs";
 import { rollbackPaths, updatePlan, updateProgressText } from "./gitOptions";
 import { headLineRange } from "./lineHistoryRange";
-import { gitHubCompareUrl, gitHubFileUrl, gitHubPullsUrl, type LineRange, linkRevision, pickGitHubRemote } from "./github";
+import {
+  gitHubCompareUrl,
+  gitHubFileUrl,
+  gitHubPullsUrl,
+  type LineRange,
+  linkRevision,
+  pickGitHubRemote,
+} from "./github";
 import { remoteLinkPickItems, remoteLinks } from "./remoteLinks";
 
 /** How many recent commits the commit pickers list. */
@@ -124,11 +131,19 @@ export async function updateProject(): Promise<void> {
   let updated = 0;
   for (const [index, step] of plan.steps.entries()) {
     const label = updateProgressText(index, plan.steps.length, step.name);
-    const outcome = await repoStore.runOp(label, (repoPath) => api.pullWithOptions(repoPath, null, null, mode, false), undefined, step.repoRoot);
+    const outcome = await repoStore.runOp(
+      label,
+      (repoPath) => api.pullWithOptions(repoPath, null, null, mode, false),
+      undefined,
+      step.repoRoot,
+    );
     if (!outcome || outcome.conflicts) {
       const left = plan.steps.length - index - 1;
       if (left > 0) {
-        toast.info(`Update stopped at ${step.name}`, `${left} ${left === 1 ? "repository was" : "repositories were"} not updated.`);
+        toast.info(
+          `Update stopped at ${step.name}`,
+          `${left} ${left === 1 ? "repository was" : "repositories were"} not updated.`,
+        );
       }
       return;
     }
@@ -139,7 +154,10 @@ export async function updateProject(): Promise<void> {
     toast.info("Nothing to update", skipped || undefined);
     return;
   }
-  toast.success(updated === 1 ? "Updated 1 repository" : `Updated ${updated} repositories`, skipped ? `Skipped\n${skipped}` : undefined);
+  toast.success(
+    updated === 1 ? "Updated 1 repository" : `Updated ${updated} repositories`,
+    skipped ? `Skipped\n${skipped}` : undefined,
+  );
 }
 
 // Branches, tags, reset, cherry-pick
@@ -195,7 +213,12 @@ export async function cherryPickFromMenu(): Promise<void> {
     toast.info("Merge commits cannot be cherry-picked here");
     return;
   }
-  await repoStore.runOp("Cherry-pick", (repoPath) => api.cherryPick(repoPath, commit.id), `Cherry-picked ${commit.shortId}`, repoRoot);
+  await repoStore.runOp(
+    "Cherry-pick",
+    (repoPath) => api.cherryPick(repoPath, commit.id),
+    `Cherry-picked ${commit.shortId}`,
+    repoRoot,
+  );
 }
 
 // Interactive rebase
@@ -354,7 +377,8 @@ export async function unstashFromMenu(): Promise<void> {
   if (!repoRoot) {
     return;
   }
-  const stashes: StashEntry[] = repoStore.stashes.length > 0 ? repoStore.stashes : await api.getStashes(repoRoot).catch(() => []);
+  const stashes: StashEntry[] =
+    repoStore.stashes.length > 0 ? repoStore.stashes : await api.getStashes(repoRoot).catch(() => []);
   if (stashes.length === 0) {
     toast.info("There are no stashes");
     return;
@@ -495,7 +519,8 @@ export async function compareCurrentFileWithBranch(): Promise<void> {
   if (!file) {
     return;
   }
-  const refs = file.repoRoot === repoStore.repo?.root ? repoStore.refs : await api.getRefs(file.repoRoot).catch(() => null);
+  const refs =
+    file.repoRoot === repoStore.repo?.root ? repoStore.refs : await api.getRefs(file.repoRoot).catch(() => null);
   const picked = decodeRefPick(
     await dialogs.pick({
       title: `Compare ${file.filePath} with Branch`,
@@ -549,7 +574,13 @@ export async function showSelectionHistory(): Promise<void> {
     toast.info("No history for these lines", "They are not committed yet. Select lines that are in the last commit.");
     return;
   }
-  openGitTab({ kind: "lineHistory", repoRoot: file.repoRoot, filePath: file.filePath, startLine: committed.start, endLine: committed.end });
+  openGitTab({
+    kind: "lineHistory",
+    repoRoot: file.repoRoot,
+    filePath: file.filePath,
+    startLine: committed.start,
+    endLine: committed.end,
+  });
 }
 
 export async function rollbackCurrentFile(): Promise<void> {

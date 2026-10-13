@@ -142,7 +142,9 @@ export class CodeHighlighter {
     if (!this.enabled) {
       return;
     }
-    const extensions = new Set(languages.map(fenceExtension).filter((extension): extension is string => extension !== null));
+    const extensions = new Set(
+      languages.map(fenceExtension).filter((extension): extension is string => extension !== null),
+    );
     await Promise.all(
       [...extensions]
         .filter((extension) => !this.parsers.has(extension))

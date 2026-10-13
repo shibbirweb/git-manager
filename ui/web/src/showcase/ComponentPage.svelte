@@ -60,7 +60,9 @@
                 {#if prop.bindable}<span class="note">bindable</span>{/if}
               </td>
               <td><code>{prop.type}</code></td>
-              <td>{#if prop.default !== undefined}<code>{prop.default}</code>{/if}</td>
+              <td
+                >{#if prop.default !== undefined}<code>{prop.default}</code>{/if}</td
+              >
               <td>{prop.description}</td>
             </tr>
           {/each}
@@ -70,13 +72,17 @@
     {#if doc.rules?.length}
       <section>
         <h2>Rules</h2>
-        <ul>{#each doc.rules as rule (rule)}<li>{rule}</li>{/each}</ul>
+        <ul>
+          {#each doc.rules as rule (rule)}<li>{rule}</li>{/each}
+        </ul>
       </section>
     {/if}
     {#if doc.replaces.length}
       <section>
         <h2>Replaces in the app</h2>
-        <ul>{#each doc.replaces as markup (markup)}<li><code>{markup}</code></li>{/each}</ul>
+        <ul>
+          {#each doc.replaces as markup (markup)}<li><code>{markup}</code></li>{/each}
+        </ul>
       </section>
     {/if}
   {/if}

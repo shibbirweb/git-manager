@@ -42,17 +42,6 @@
   <EmptyState icon="check" iconStyle="circle" iconTone="success" strong title="All committed" />
 {:else if id === "no-repository"}
   <EmptyState icon="folder-git" iconTone="faint" strong title="No repo" />
-{:else if id === "gist-parts"}
-  <Segmented
-    label="Visibility"
-    variant="joined"
-    value="secret"
-    options={[
-      { value: "secret", label: "Secret" },
-      { value: "public", label: "Public" },
-    ]}
-  />
-  <CodeBlock variant="preview" text="let a = 1;" />
 {:else if id === "commit-options"}
   <Button size="small" icon="settings" aria-label="Options" badge={2} />
   <Segmented
@@ -66,13 +55,6 @@
   />
 {:else if id === "memory-flag"}
   <Pill tone="warning" variant="outline">+60 MB</Pill>
-{:else if id === "reset-modes"}
-  <RadioGroup
-    label="Reset"
-    name="reset"
-    value="soft"
-    options={[{ value: "hard", label: "Hard", description: "Throw away.", danger: true }]}
-  />
 {:else if id === "branch-file-list"}
   <div role="listbox" aria-label="Files">
     <FileRow variant="list" kind="added" name="cart.ts" directory="src" selected />

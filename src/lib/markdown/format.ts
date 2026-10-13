@@ -116,7 +116,9 @@ export function toggleInline(state: EditorState, style: InlineStyle): Transactio
       const end = to - inner * 2;
       return {
         changes,
-        range: range.empty ? EditorSelection.cursor(Math.max(from, Math.min(end, range.head - inner))) : EditorSelection.range(from, end),
+        range: range.empty
+          ? EditorSelection.cursor(Math.max(from, Math.min(end, range.head - inner)))
+          : EditorSelection.range(from, end),
       };
     }
     const outer = outerMarkers(state, from, to, rule);
@@ -137,7 +139,9 @@ export function toggleInline(state: EditorState, style: InlineStyle): Transactio
     ];
     return {
       changes,
-      range: range.empty ? EditorSelection.cursor(from + size + caretOffset) : EditorSelection.range(from + size, to + size),
+      range: range.empty
+        ? EditorSelection.cursor(from + size + caretOffset)
+        : EditorSelection.range(from + size, to + size),
     };
   });
   return { ...spec, scrollIntoView: true, userEvent: USER_EVENT };
@@ -180,7 +184,12 @@ export function toggleLink(state: EditorState): TransactionSpec {
 /** Line edits with the selection kept after inserted prefixes. */
 function lineEdit(state: EditorState, changes: ChangeSpec[]): TransactionSpec {
   const changeSet = state.changes(changes);
-  return { changes: changeSet, selection: state.selection.map(changeSet, 1), scrollIntoView: true, userEvent: USER_EVENT };
+  return {
+    changes: changeSet,
+    selection: state.selection.map(changeSet, 1),
+    scrollIntoView: true,
+    userEvent: USER_EVENT,
+  };
 }
 
 /**

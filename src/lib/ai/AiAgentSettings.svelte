@@ -52,7 +52,11 @@
   function preview(agent: AgentDefinition, mode: "normal" | "full"): string {
     const configured = configuredAgent(agent);
     const first = promptArguments(configured, "<first prompt>");
-    const args = [...configured.baseArgs, ...agentArguments(configured, mode, settings.aiAgentArgs[agent.id] ?? ""), ...first.args];
+    const args = [
+      ...configured.baseArgs,
+      ...agentArguments(configured, mode, settings.aiAgentArgs[agent.id] ?? ""),
+      ...first.args,
+    ];
     return `${commandLine(configured.program, args)}${first.typed ? "   (then types the first prompt)" : ""}`;
   }
 </script>
@@ -104,7 +108,8 @@
               onchange={(event) => setField(agent, "command", event.currentTarget.value)}
               aria-label="{agent.label} command"
             />
-            <span class="hint">The program and any first arguments, or a full path. Empty uses {defaults.command}.</span>
+            <span class="hint">The program and any first arguments, or a full path. Empty uses {defaults.command}.</span
+            >
           </label>
           <label class="field">
             <span>Full-autonomy flags</span>

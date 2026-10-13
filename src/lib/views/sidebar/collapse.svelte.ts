@@ -17,8 +17,9 @@ function load(): [string, boolean][] {
     if (!parsed || typeof parsed !== "object") {
       return [];
     }
-    return Object.entries(parsed as Record<string, unknown>)
-      .filter((entry): entry is [string, boolean] => typeof entry[1] === "boolean");
+    return Object.entries(parsed as Record<string, unknown>).filter(
+      (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+    );
   } catch {
     return [];
   }

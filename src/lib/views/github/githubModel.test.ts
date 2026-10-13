@@ -93,9 +93,9 @@ describe("sync fork", () => {
     expect(forkCompareUrl({ owner: "me", repo: "fork" }, { owner: "octo", repo: "original" }, "main")).toBe(
       "https://github.com/me/fork/compare/main...octo:original:main?expand=1",
     );
-    expect(forkCompareUrl({ owner: "me", repo: "fork" }, { owner: "octo", repo: "original" }, "feat/a b", "trunk")).toBe(
-      "https://github.com/me/fork/compare/feat/a%20b...octo:original:trunk?expand=1",
-    );
+    expect(
+      forkCompareUrl({ owner: "me", repo: "fork" }, { owner: "octo", repo: "original" }, "feat/a b", "trunk"),
+    ).toBe("https://github.com/me/fork/compare/feat/a%20b...octo:original:trunk?expand=1");
   });
 });
 

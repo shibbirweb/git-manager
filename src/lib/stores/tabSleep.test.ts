@@ -11,7 +11,12 @@ describe("tabsToSleep", () => {
   it("starts counting when a hidden tab is first seen", () => {
     const lastShown = new Map<string, number>();
     expect(tabsToSleep([entry("a", true), entry("b", false)], lastShown, 0, 15 * MINUTE)).toEqual([]);
-    expect(lastShown).toEqual(new Map([["a", 0], ["b", 0]]));
+    expect(lastShown).toEqual(
+      new Map([
+        ["a", 0],
+        ["b", 0],
+      ]),
+    );
     expect(tabsToSleep([entry("a", true), entry("b", false)], lastShown, 14 * MINUTE, 15 * MINUTE)).toEqual([]);
     expect(tabsToSleep([entry("a", true), entry("b", false)], lastShown, 15 * MINUTE, 15 * MINUTE)).toEqual(["b"]);
   });
@@ -24,12 +29,20 @@ describe("tabsToSleep", () => {
   });
 
   it("keeps tabs that cannot sleep: unsaved edits, other tab kinds, already asleep", () => {
-    const lastShown = new Map([["dirty", 0], ["commit", 0]]);
-    expect(tabsToSleep([entry("dirty", false, false), entry("commit", false, false)], lastShown, 60 * MINUTE, 5 * MINUTE)).toEqual([]);
+    const lastShown = new Map([
+      ["dirty", 0],
+      ["commit", 0],
+    ]);
+    expect(
+      tabsToSleep([entry("dirty", false, false), entry("commit", false, false)], lastShown, 60 * MINUTE, 5 * MINUTE),
+    ).toEqual([]);
   });
 
   it("forgets closed tabs", () => {
-    const lastShown = new Map([["gone", 0], ["a", 0]]);
+    const lastShown = new Map([
+      ["gone", 0],
+      ["a", 0],
+    ]);
     tabsToSleep([entry("a", true)], lastShown, MINUTE, 5 * MINUTE);
     expect([...lastShown.keys()]).toEqual(["a"]);
   });

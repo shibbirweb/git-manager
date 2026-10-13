@@ -103,7 +103,12 @@ function rangeHasMarker(doc: Text, from: number, to: number): boolean {
  * line (before or after the edit) looks like a marker, the markers are the same lines as before
  * and only move: typing costs a look at the edited lines instead of a scan of the whole file.
  */
-export function updateConflicts(regions: ConflictRegion[], changes: ChangeSet, oldDoc: Text, newDoc: Text): ConflictRegion[] {
+export function updateConflicts(
+  regions: ConflictRegion[],
+  changes: ChangeSet,
+  oldDoc: Text,
+  newDoc: Text,
+): ConflictRegion[] {
   let touched = false;
   changes.iterChangedRanges((fromA, toA, fromB, toB) => {
     touched ||= rangeHasMarker(oldDoc, fromA, toA) || rangeHasMarker(newDoc, fromB, toB);

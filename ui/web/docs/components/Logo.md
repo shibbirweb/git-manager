@@ -3,7 +3,7 @@
 The app's logo: the merge mark on an accent tile.
 
 ```ts
-import Logo from "$ui/components/Logo.svelte";
+import Logo from "@git-manager/ui/components/Logo.svelte";
 ```
 
 Group: Feedback. Also known as: Brand, App icon.

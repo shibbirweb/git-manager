@@ -98,7 +98,16 @@ function emitTree<T>(
     }
     const key = `${prefix}${folderName}/`;
     const expanded = isExpanded(key);
-    rows.push({ kind: "group", icon: "folder", key, depth, parentKey, label: folderName, count: child.count, expanded });
+    rows.push({
+      kind: "group",
+      icon: "folder",
+      key,
+      depth,
+      parentKey,
+      label: folderName,
+      count: child.count,
+      expanded,
+    });
     if (expanded) {
       emitTree(child, key, depth + 1, key, isExpanded, makeLeaf, rows);
     }
@@ -148,7 +157,14 @@ export function buildRows(input: BuildRowsInput): SidebarRow[] {
         1,
         parentKey,
         input.isExpanded,
-        (label, branch, key, depth, leafParent) => ({ kind: "local", key, depth, parentKey: leafParent, label, branch }),
+        (label, branch, key, depth, leafParent) => ({
+          kind: "local",
+          key,
+          depth,
+          parentKey: leafParent,
+          label,
+          branch,
+        }),
         rows,
       );
     }
@@ -198,7 +214,14 @@ export function buildRows(input: BuildRowsInput): SidebarRow[] {
           2,
           groupKey,
           input.isExpanded,
-          (label, branch, key, depth, leafParent) => ({ kind: "remote", key, depth, parentKey: leafParent, label, branch }),
+          (label, branch, key, depth, leafParent) => ({
+            kind: "remote",
+            key,
+            depth,
+            parentKey: leafParent,
+            label,
+            branch,
+          }),
           rows,
         );
       }
@@ -217,7 +240,14 @@ export function buildRows(input: BuildRowsInput): SidebarRow[] {
         1,
         parentKey,
         input.isExpanded,
-        (label, tagName, key, depth, leafParent) => ({ kind: "tag", key, depth, parentKey: leafParent, label, tagName }),
+        (label, tagName, key, depth, leafParent) => ({
+          kind: "tag",
+          key,
+          depth,
+          parentKey: leafParent,
+          label,
+          tagName,
+        }),
         rows,
       );
     }

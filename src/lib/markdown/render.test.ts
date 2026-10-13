@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { createRenderer, openTagBalance } from "./render";
 
-const renderer = createRenderer({ highlight: (code, language) => (language === "js" ? `<span class="tok-keyword">${code.trim()}</span>` : null) });
+const renderer = createRenderer({
+  highlight: (code, language) => (language === "js" ? `<span class="tok-keyword">${code.trim()}</span>` : null),
+});
 const html = (source: string) =>
   renderer
     .render(source)
@@ -34,20 +36,26 @@ describe("Markdown rendering", () => {
   it("turns task items into checkboxes with their source line", () => {
     const out = html("- [ ] todo\n- [x] done\n- [] not a task");
     expect(out).toContain('<ul data-line="0" class="contains-task-list">');
-    expect(out).toContain('<li data-line="0" class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" data-task-line="0"> todo</li>');
+    expect(out).toContain(
+      '<li data-line="0" class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" data-task-line="0"> todo</li>',
+    );
     expect(out).toContain('data-task-line="1" checked> done');
-    expect(out).toContain("<li data-line=\"2\">[] not a task</li>");
+    expect(out).toContain('<li data-line="2">[] not a task</li>');
   });
 
   it("highlights fenced code through the hook and escapes the rest", () => {
-    expect(html("```js\nlet a;\n```")).toContain('<pre class="md-code" data-line="0"><code class="language-js"><span class="tok-keyword">let a;</span></code></pre>');
+    expect(html("```js\nlet a;\n```")).toContain(
+      '<pre class="md-code" data-line="0"><code class="language-js"><span class="tok-keyword">let a;</span></code></pre>',
+    );
     expect(html("```\n<b>\n```")).toContain("<code>&lt;b&gt;\n</code>");
   });
 
   it("leaves mermaid blocks as placeholders", () => {
     const result = renderer.render("text\n\n```mermaid\ngraph TD; A-->B\n```");
     expect(result.hasMermaid).toBe(true);
-    expect(result.segments.map((segment) => segment.html).join("")).toContain('<div class="md-mermaid" data-line="2"><pre class="md-mermaid-source">graph TD; A--&gt;B\n</pre></div>');
+    expect(result.segments.map((segment) => segment.html).join("")).toContain(
+      '<div class="md-mermaid" data-line="2"><pre class="md-mermaid-source">graph TD; A--&gt;B\n</pre></div>',
+    );
     expect(renderer.render("no diagrams").hasMermaid).toBe(false);
   });
 

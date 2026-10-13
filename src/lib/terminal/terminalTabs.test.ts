@@ -32,7 +32,9 @@ describe("terminal tab paths", () => {
   });
 
   it("finds the terminals among closed tabs", () => {
-    expect(terminalKeysOf(["/work/a.ts", "terminal:3", commitTabPath("/work", "a9f492bf"), "terminal:1"])).toEqual([3, 1]);
+    expect(terminalKeysOf(["/work/a.ts", "terminal:3", commitTabPath("/work", "a9f492bf"), "terminal:1"])).toEqual([
+      3, 1,
+    ]);
     expect(terminalKeysOf([])).toEqual([]);
   });
 
@@ -71,7 +73,10 @@ describe("panelAfterLeave", () => {
   it("shows the right neighbour among the panel's terminals when the shown one leaves", () => {
     expect(panelAfterLeave(terminals, 3, { activeKey: 3, panelOpen: true })).toEqual({ activeKey: 4, panelOpen: true });
     expect(panelAfterLeave(terminals, 4, { activeKey: 4, panelOpen: true })).toEqual({ activeKey: 3, panelOpen: true });
-    expect(panelAfterLeave(terminals, 1, { activeKey: 1, panelOpen: false })).toEqual({ activeKey: 3, panelOpen: false });
+    expect(panelAfterLeave(terminals, 1, { activeKey: 1, panelOpen: false })).toEqual({
+      activeKey: 3,
+      panelOpen: false,
+    });
   });
 
   it("keeps the shown terminal when another one leaves", () => {
@@ -83,7 +88,10 @@ describe("panelAfterLeave", () => {
       { key: 1, location: "editor" },
       { key: 5, location: "panel" },
     ];
-    expect(panelAfterLeave(placed, 5, { activeKey: 5, panelOpen: true })).toEqual({ activeKey: null, panelOpen: false });
+    expect(panelAfterLeave(placed, 5, { activeKey: 5, panelOpen: true })).toEqual({
+      activeKey: null,
+      panelOpen: false,
+    });
   });
 
   it("leaves the panel alone when a terminal in the editor goes", () => {

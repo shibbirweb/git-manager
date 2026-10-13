@@ -9,7 +9,14 @@ import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { highlightTree } from "@lezer/highlight";
 import { codeHighlighters } from "./highlighter";
-import { headingScopes, indentScopes, type LineText, MAX_STICKY_LINES, type Scope, stickyLinesFor } from "./stickyScope";
+import {
+  headingScopes,
+  indentScopes,
+  type LineText,
+  MAX_STICKY_LINES,
+  type Scope,
+  stickyLinesFor,
+} from "./stickyScope";
 
 /** Longest stretch of a pinned line that is drawn; the rest is off screen anyway. */
 const MAX_DRAWN_CHARS = 400;
@@ -202,7 +209,11 @@ const plugin = ViewPlugin.fromClass(
     }
 
     schedule(): void {
-      this.view.requestMeasure({ key: this, read: (view) => this.measure(view), write: (measure) => this.draw(measure) });
+      this.view.requestMeasure({
+        key: this,
+        read: (view) => this.measure(view),
+        write: (measure) => this.draw(measure),
+      });
     }
 
     measure(view: EditorView): StickyMeasure {
@@ -210,19 +221,39 @@ const plugin = ViewPlugin.fromClass(
       const editor = view.dom.getBoundingClientRect();
       const heightAtTop = (scroller.top - view.documentTop) / view.scaleY;
       const rowHeight = view.defaultLineHeight;
-      const empty: StickyMeasure = { lines: [], top: 0, left: 0, width: 0, rowHeight, gutterWidth: 0, numberRight: 0, textLeft: 0 };
+      const empty: StickyMeasure = {
+        lines: [],
+        top: 0,
+        left: 0,
+        width: 0,
+        rowHeight,
+        gutterWidth: 0,
+        numberRight: 0,
+        textLeft: 0,
+      };
       if (heightAtTop <= 1) {
         return empty;
       }
       const { state } = view;
       const lineAt = (height: number) => state.doc.lineAt(view.lineBlockAtHeight(height).from).number;
       const top = lineAt(heightAtTop);
-      const below = Array.from({ length: MAX_STICKY_LINES }, (_unused, index) => lineAt(heightAtTop + (index + 1) * rowHeight));
+      const below = Array.from({ length: MAX_STICKY_LINES }, (_unused, index) =>
+        lineAt(heightAtTop + (index + 1) * rowHeight),
+      );
       const key = `${top}|${below.join(",")}`;
-      if (key !== this.foundKey || this.foundState?.doc !== state.doc || syntaxTree(this.foundState) !== syntaxTree(state)) {
+      if (
+        key !== this.foundKey ||
+        this.foundState?.doc !== state.doc ||
+        syntaxTree(this.foundState) !== syntaxTree(state)
+      ) {
         this.foundKey = key;
         this.foundState = state;
-        this.found = stickyLinesFor(top, scopeSource(state), (count) => below[count - 1] ?? top + count, lineTextOf(state));
+        this.found = stickyLinesFor(
+          top,
+          scopeSource(state),
+          (count) => below[count - 1] ?? top + count,
+          lineTextOf(state),
+        );
       }
       const lines = this.found;
       if (lines.length === 0) {
@@ -259,7 +290,11 @@ const plugin = ViewPlugin.fromClass(
       dom.style.lineHeight = `${measure.rowHeight}px`;
       dom.style.tabSize = String(view.state.tabSize);
       const key = `${measure.lines.join(",")}|${measure.gutterWidth}|${measure.numberRight}|${measure.rowHeight}`;
-      if (key !== this.drawnKey || this.lastState?.doc !== view.state.doc || syntaxTree(this.lastState) !== syntaxTree(view.state)) {
+      if (
+        key !== this.drawnKey ||
+        this.lastState?.doc !== view.state.doc ||
+        syntaxTree(this.lastState) !== syntaxTree(view.state)
+      ) {
         this.drawnKey = key;
         this.lastState = view.state;
         dom.replaceChildren(...measure.lines.map((lineNumber, index) => this.row(lineNumber, index, measure)));

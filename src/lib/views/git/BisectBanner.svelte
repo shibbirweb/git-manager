@@ -33,15 +33,35 @@
       {#if bisect.firstBad}
         <button class="btn small primary" onclick={() => showFirstBad(repoRoot)}>Show Commit</button>
       {:else}
-        <button class="btn small" disabled={busy} onclick={() => void markBisect("good")} title="The checked out commit works">
+        <button
+          class="btn small"
+          disabled={busy}
+          onclick={() => void markBisect("good")}
+          title="The checked out commit works"
+        >
           Good
         </button>
-        <button class="btn small" disabled={busy} onclick={() => void markBisect("bad")} title="The checked out commit has the problem">
+        <button
+          class="btn small"
+          disabled={busy}
+          onclick={() => void markBisect("bad")}
+          title="The checked out commit has the problem"
+        >
           Bad
         </button>
-        <button class="btn small" disabled={busy} onclick={() => void markBisect("skip")} title="This commit cannot be tested">Skip</button>
+        <button
+          class="btn small"
+          disabled={busy}
+          onclick={() => void markBisect("skip")}
+          title="This commit cannot be tested">Skip</button
+        >
       {/if}
-      <button class="btn small" disabled={busy} onclick={() => void resetBisect()} title="End the bisect and go back to {bisect.start}">
+      <button
+        class="btn small"
+        disabled={busy}
+        onclick={() => void resetBisect()}
+        title="End the bisect and go back to {bisect.start}"
+      >
         Reset
       </button>
     </div>

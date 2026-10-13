@@ -29,13 +29,7 @@
   <Button onclick={() => (open = "panel")}>Shortcuts (panel)</Button>
   <Button onclick={() => (open = "prompt")}>Password (icon)</Button>
 </Stack>
-<Dialog
-  open={open === "panel"}
-  variant="panel"
-  title="Keyboard Shortcuts"
-  width="xlarge"
-  onclose={() => (open = null)}
->
+<Dialog open={open === "panel"} variant="panel" title="Keyboard Shortcuts" width="xlarge" onclose={() => (open = null)}>
   {#snippet toolbar()}
     <Toolbar variant="dialog" label="Filter">
       <SearchField label="Filter shortcuts" placeholder="Filter shortcuts" bind:value={filter} />

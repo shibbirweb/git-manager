@@ -3,7 +3,7 @@
 A row of formatting buttons above a text, in groups split by thin lines.
 
 ```ts
-import FormatToolbar from "$ui/components/FormatToolbar.svelte";
+import FormatToolbar from "@git-manager/ui/components/FormatToolbar.svelte";
 ```
 
 Group: Editor. Also known as: Toolbar, Formatting.

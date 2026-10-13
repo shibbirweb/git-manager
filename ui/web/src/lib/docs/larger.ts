@@ -97,10 +97,11 @@ export const largerDocs: ComponentDoc[] = [
   {
     name: "ReorderList",
     group: "Navigation",
-    summary: "Rows the user orders by dragging their grip, like Interactive Rebase's commits.",
+    summary: "Rows the user orders by dragging, like Interactive Rebase's commits.",
     usage:
       "Use for short lists whose order matters. Up and Down move between rows; Alt+Up and Alt+Down move the " +
-      "focused row and the focus follows it. Keys typed in a control inside a row stay with that control.",
+      "focused row and the focus follows it. Keys typed in a control inside a row stay with that control. Near " +
+      "the edges a drag scrolls the list; Escape cancels it.",
     aliases: ["Sortable", "Drag list"],
     props: [
       prop("items", "T[]", "The rows in order.", { required: true, data: true }),
@@ -108,11 +109,28 @@ export const largerDocs: ComponentDoc[] = [
       prop("label", "string", "Accessible name.", { required: true }),
       prop("onreorder", "(from: number, to: number) => void", "A row moved.", { required: true, data: true }),
       prop("row", "Snippet<[T, number]>", "Draws a row after its grip.", { required: true, data: true }),
+      prop("rowLabel", "(item: T) => string", "What screen readers say for a row, before its move hint."),
+      prop("canDrop", "(from: number, to: number) => boolean", "Whether a dragged row may land there; a refused " +
+        "place shows no line.", { default: "() => true" }),
+      prop("dragBy", '"grip" | "row"', "Drag by the grip only, or anywhere on the row but its controls.", {
+        default: '"grip"',
+      }),
+      prop("maxHeight", '"none" | "xsmall" | "small" | "medium" | "large"', "Scrolls past 120, 160, 240 or 360 px.", {
+        default: '"none"',
+      }),
+      prop("onkey", "(event: KeyboardEvent, index: number) => void", "Keys on a focused row it does not use, such " +
+        "as a rebase action's letter."),
+      prop("heading", "Snippet<[T, number]>", "Drawn above a row and not dragged, such as a group's title.", {
+        data: true,
+      }),
+      prop("detail", "Snippet<[T, number]>", "Drawn under a row inside its place, such as a message box.", {
+        data: true,
+      }),
     ],
     examples: [
       { title: "Rebase", code: '<ReorderList label="Commits" {items} itemKey={(c) => c.id} {onreorder}>...' },
     ],
-    logic: ["reorder.ts"],
+    logic: ["reorder.ts", "treeDrag.ts"],
     replaces: [".rows / .row-wrap / .grip in InteractiveRebaseDialog.svelte"],
   },
   {

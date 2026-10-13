@@ -21,9 +21,7 @@
   const run = () => undefined;
 </script>
 
-{#if id === "remotes"}
-  <ListBox label="Remotes"><Text>origin</Text></ListBox>
-{:else if id === "local-history"}
+{#if id === "local-history"}
   <Pane label="Versions"><Text>10:42</Text></Pane>
 {:else if id === "release-notes"}
   <MarkdownView variant="notes" label="Notes" source={"### Added\n\nA `ui` library."} />

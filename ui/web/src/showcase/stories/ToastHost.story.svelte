@@ -12,9 +12,7 @@
   <Button onclick={() => toasts.show("info", "Fetched 3 new commits")}>Info</Button>
   <Button onclick={() => toasts.show("warning", "The branch is behind its upstream")}>Warning</Button>
   <Button onclick={() => toasts.show("error", "Push failed", "! [rejected] main -> main (fetch first)")}>Error</Button>
-  <Button
-    onclick={() => toasts.show("success", "Stashed changes", undefined, { label: "Undo", run: () => undefined })}
-  >
+  <Button onclick={() => toasts.show("success", "Stashed changes", undefined, { label: "Undo", run: () => undefined })}>
     With a button
   </Button>
 </Stack>

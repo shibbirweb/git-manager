@@ -1,7 +1,9 @@
 <!-- Asked before a GitHub item that needs an account; continues with that item once signed in. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import type { GitHubAccount } from "$lib/types";
-  import GitDialogFrame from "../git/GitDialogFrame.svelte";
   import { closeGitHubDialog } from "./githubDialogs";
   import GitHubSignInForm from "./GitHubSignInForm.svelte";
 
@@ -18,11 +20,11 @@
   }
 </script>
 
-<GitDialogFrame title="Sign In to GitHub" width={520} onCancel={closeGitHubDialog}>
-  <div class="hint">{actionLabel} needs a GitHub account.</div>
+<Dialog open variant="form" title="Sign In to GitHub" width="normal" onclose={closeGitHubDialog}>
+  <Text variant="hint" tone="faint">{actionLabel} needs a GitHub account.</Text>
   <GitHubSignInForm onSignedIn={signedIn} />
 
-  {#snippet footer()}
-    <button type="button" class="btn" onclick={closeGitHubDialog}>Cancel</button>
+  {#snippet actions()}
+    <Button onclick={closeGitHubDialog}>Cancel</Button>
   {/snippet}
-</GitDialogFrame>
+</Dialog>

@@ -65,7 +65,11 @@ export function startFolder(input: StartFolderInput): string | null {
  * while it still exists on this machine (or while the list is unknown); null
  * means the login shell.
  */
-export function resolveShellId(requestedShellId: string | null, defaultShellId: string | null, shells: ShellProfile[]): string | null {
+export function resolveShellId(
+  requestedShellId: string | null,
+  defaultShellId: string | null,
+  shells: ShellProfile[],
+): string | null {
   if (requestedShellId) {
     return requestedShellId;
   }
@@ -80,7 +84,9 @@ export function resolveShellId(requestedShellId: string | null, defaultShellId: 
 
 /** Display name of the shell a terminal will run, before it has started. */
 export function shellNameFor(shellId: string | null, shells: ShellProfile[]): string {
-  const shell = shellId ? shells.find((profile) => profile.id === shellId) : shells.find((profile) => profile.isDefault);
+  const shell = shellId
+    ? shells.find((profile) => profile.id === shellId)
+    : shells.find((profile) => profile.isDefault);
   if (shell) {
     return shell.name;
   }

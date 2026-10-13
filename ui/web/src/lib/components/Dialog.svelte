@@ -92,8 +92,10 @@
     onpointermove={(event) => mover.move(event)}
     onpointerup={() => mover.end()}
     onpointercancel={() => mover.end()}
-    ondblclick={() => movable && mover.center()}>{title}</h2
+    ondblclick={() => movable && mover.center()}
   >
+    {title}
+  </h2>
 {/snippet}
 
 {#if open}

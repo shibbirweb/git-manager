@@ -3,7 +3,7 @@
 A card over a dimmed window while something long happens: spinner, title, step and hint.
 
 ```ts
-import LoadingOverlay from "$ui/components/LoadingOverlay.svelte";
+import LoadingOverlay from "@git-manager/ui/components/LoadingOverlay.svelte";
 ```
 
 Group: Overlays.

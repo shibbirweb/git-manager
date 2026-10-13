@@ -22,7 +22,10 @@ function checkSchema(schema: Schema, where: string): void {
     }
     for (const [name, property] of Object.entries(properties)) {
       expect(name, `${where} property name`).toMatch(/^[a-z][A-Za-z]*$/);
-      expect(typeof property.description === "string" && property.description.length > 0, `${where}.${name} description`).toBe(true);
+      expect(
+        typeof property.description === "string" && property.description.length > 0,
+        `${where}.${name} description`,
+      ).toBe(true);
       checkSchema(property, `${where}.${name}`);
     }
   }

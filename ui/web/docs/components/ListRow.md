@@ -3,7 +3,7 @@
 A row of a pick or command list: a label and a dim description; the highlighted row is accent-filled.
 
 ```ts
-import ListRow from "$ui/components/ListRow.svelte";
+import ListRow from "@git-manager/ui/components/ListRow.svelte";
 ```
 
 Group: Navigation. Also known as: Item, Option.

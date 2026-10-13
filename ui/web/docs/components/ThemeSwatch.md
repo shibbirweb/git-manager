@@ -3,7 +3,7 @@
 A color theme's preview chip: code on its background and bars of its main colors.
 
 ```ts
-import ThemeSwatch from "$ui/components/ThemeSwatch.svelte";
+import ThemeSwatch from "@git-manager/ui/components/ThemeSwatch.svelte";
 ```
 
 Group: Feedback.

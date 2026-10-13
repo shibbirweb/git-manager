@@ -39,31 +39,4 @@ export const agentCases: ParityCase[] = [
     html: '<pre class="prompt selectable" style="width: 400px">Password for https://github.com:</pre>',
     pairs: [{ name: "prompt", ref: ".prompt", lib: ".block", ignore: FILL }],
   },
-  {
-    id: "new-task-bits",
-    sources: ["src/lib/ai/NewTaskDialog.svelte"],
-    html:
-      `<button type="button" class="btn small add-agent">${iconSvg("plus", 12)} Add Agent to Race</button>` +
-      `<span class="target dim truncate">${iconSvg("branch", 11)}cart</span>`,
-    pairs: [
-      {
-        name: "add agent",
-        ref: ".add-agent",
-        lib: ".button",
-        states: ["hover"],
-        ignore: { ...TEXT, "column-gap": "drift: 4px here, a small Button is 6px" },
-      },
-      {
-        name: "target",
-        ref: ".target",
-        lib: '[aria-label="Target"] .text',
-        ignore: {
-          ...TEXT,
-          height: "the app's row is the text",
-          "white-space": "Text truncate",
-          "column-gap": "the Stack around it sets the gap",
-        },
-      },
-    ],
-  },
 ];

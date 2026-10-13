@@ -59,7 +59,11 @@ export type Level = "patch" | "minor" | "major" | "beta" | "release";
  * beta of the next minor (or `suggested`) release; from a beta, `beta` is the
  * next beta and `release` finishes it.
  */
-export function nextVersion(current: string, level: Level, suggested: "patch" | "minor" | "major" = "minor"): string | null {
+export function nextVersion(
+  current: string,
+  level: Level,
+  suggested: "patch" | "minor" | "major" = "minor",
+): string | null {
   const [core] = current.split("-");
   const [major, minor, patch] = core.split(".").map(Number);
   const stable = {
@@ -106,7 +110,9 @@ export function untriedSubjects(subjects: string[]): string[] {
 
 /** The next free ticket number for `key` (like GM), one past the highest used in these subjects. */
 export function nextTicket(subjects: string[], key: string): number {
-  const used = subjects.flatMap((subject) => [...subject.matchAll(new RegExp(`\\[${key}-(\\d+)\\]`, "g"))].map((match) => Number(match[1])));
+  const used = subjects.flatMap((subject) =>
+    [...subject.matchAll(new RegExp(`\\[${key}-(\\d+)\\]`, "g"))].map((match) => Number(match[1])),
+  );
   return used.length > 0 ? Math.max(...used) + 1 : 1;
 }
 

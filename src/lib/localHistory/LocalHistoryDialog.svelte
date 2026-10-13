@@ -247,7 +247,14 @@
       </div>
     {:else}
       <div class="body">
-        <div class="versions" bind:this={listEl} role="listbox" tabindex="0" aria-label="Versions" onkeydown={onListKeydown}>
+        <div
+          class="versions"
+          bind:this={listEl}
+          role="listbox"
+          tabindex="0"
+          aria-label="Versions"
+          onkeydown={onListKeydown}
+        >
           {#each groups as group (group.title)}
             <div class="day">{group.title}</div>
             {#each group.snapshots as snapshot (snapshot.hash + snapshot.time)}
@@ -281,7 +288,9 @@
                 Restore File
               </button>
             {/if}
-            <button class="btn small" disabled={!textual} onclick={() => diff && void localHistory.copy(diff.original)}>Copy</button>
+            <button class="btn small" disabled={!textual} onclick={() => diff && void localHistory.copy(diff.original)}
+              >Copy</button
+            >
             <span class="hint dim">
               {#if history.exists}
                 Revert puts this version in the editor; Undo takes it back.

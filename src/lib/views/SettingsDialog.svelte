@@ -53,7 +53,14 @@
   import Icon from "$lib/ui/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { updates } from "$lib/update/updates.svelte";
-  import { claudeAddCommand, cliExamples, cliPrefix, LOCAL_BIN_PATH_LINE, maskToken, mcpJsonConfig } from "$lib/mcp/connect";
+  import {
+    claudeAddCommand,
+    cliExamples,
+    cliPrefix,
+    LOCAL_BIN_PATH_LINE,
+    maskToken,
+    mcpJsonConfig,
+  } from "$lib/mcp/connect";
   import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
@@ -78,7 +85,13 @@
   import { GPG_SIGN_CHOICES } from "./changes/commitOptions";
   import { AUTO_SAVE_DELAY_RANGE } from "$lib/editor/autoSave";
   import { AUTO_FETCH_INTERVAL_RANGE } from "$lib/stores/autoFetchPlan";
-  import { DEFAULT_TAB_LIMIT_NUMBER, NO_TAB_LIMIT, pickTabLimit, SINGLE_TAB, TAB_LIMIT_RANGE } from "$lib/stores/tabLimit";
+  import {
+    DEFAULT_TAB_LIMIT_NUMBER,
+    NO_TAB_LIMIT,
+    pickTabLimit,
+    SINGLE_TAB,
+    TAB_LIMIT_RANGE,
+  } from "$lib/stores/tabLimit";
   import type { AutoSaveMode } from "$lib/stores/settingsData";
   import { localHistory } from "$lib/localHistory/localHistory.svelte";
   import { usageText } from "$lib/localHistory/localHistoryModel";
@@ -165,14 +178,21 @@
   let rowsEl = $state<HTMLDivElement | null>(null);
   const shortcutPlatform = currentPlatform();
   const shortcutSpecs = commandSpecs(shortcutPlatform);
-  const sectionLabels = Object.fromEntries(sections.map((item) => [item.id, item.label])) as Record<SettingsSection, string>;
+  const sectionLabels = Object.fromEntries(sections.map((item) => [item.id, item.label])) as Record<
+    SettingsSection,
+    string
+  >;
   const searchTerms = $derived(searchWords(searchQuery));
   const searching = $derived(searchTerms.length > 0);
   const foundEntries = $derived(matchingEntries(searchTerms, sectionLabels));
   /** Commands the Keyboard Shortcuts list shows for this search. */
   const foundShortcuts = $derived(
     searching
-      ? shortcutRows(shortcutSpecs, settings.keybindings, shortcutPlatform, { query: searchQuery, keys: null, changedOnly: false }).length
+      ? shortcutRows(shortcutSpecs, settings.keybindings, shortcutPlatform, {
+          query: searchQuery,
+          keys: null,
+          changedOnly: false,
+        }).length
       : 0,
   );
   const visibleSections = $derived(
@@ -348,7 +368,8 @@
   let scrollbackDraft = $state<number | null>(settings.terminalScrollback);
 
   function applyScrollback(): void {
-    const next = typeof scrollbackDraft === "number" ? clampTerminalScrollback(scrollbackDraft) : settings.terminalScrollback;
+    const next =
+      typeof scrollbackDraft === "number" ? clampTerminalScrollback(scrollbackDraft) : settings.terminalScrollback;
     scrollbackDraft = next;
     if (next !== settings.terminalScrollback) {
       set("terminalScrollback", next);
@@ -458,7 +479,9 @@
         : "Past the limit, opening a file closes the file tab you used least recently.",
   );
   /** Number of tabs being typed; applied on Enter or when the field loses focus. */
-  let tabLimitDraft = $state<number | null>(settings.tabLimit > SINGLE_TAB ? settings.tabLimit : DEFAULT_TAB_LIMIT_NUMBER);
+  let tabLimitDraft = $state<number | null>(
+    settings.tabLimit > SINGLE_TAB ? settings.tabLimit : DEFAULT_TAB_LIMIT_NUMBER,
+  );
   $effect(() => {
     if (settings.tabLimit > SINGLE_TAB) {
       tabLimitDraft = settings.tabLimit;
@@ -467,11 +490,21 @@
 
   function chooseTabLimit(choice: "none" | "single" | "number"): void {
     const draft = typeof tabLimitDraft === "number" ? pickTabLimit(tabLimitDraft) : DEFAULT_TAB_LIMIT_NUMBER;
-    set("tabLimit", choice === "none" ? NO_TAB_LIMIT : choice === "single" ? SINGLE_TAB : draft > SINGLE_TAB ? draft : DEFAULT_TAB_LIMIT_NUMBER);
+    set(
+      "tabLimit",
+      choice === "none"
+        ? NO_TAB_LIMIT
+        : choice === "single"
+          ? SINGLE_TAB
+          : draft > SINGLE_TAB
+            ? draft
+            : DEFAULT_TAB_LIMIT_NUMBER,
+    );
   }
 
   function applyTabLimit(): void {
-    const limit = typeof tabLimitDraft === "number" ? pickTabLimit(Math.max(TAB_LIMIT_RANGE[0], tabLimitDraft)) : settings.tabLimit;
+    const limit =
+      typeof tabLimitDraft === "number" ? pickTabLimit(Math.max(TAB_LIMIT_RANGE[0], tabLimitDraft)) : settings.tabLimit;
     tabLimitDraft = limit;
     if (limit !== settings.tabLimit) {
       set("tabLimit", limit);
@@ -481,7 +514,11 @@
   const autoSaveChoices: { value: AutoSaveMode; label: string; hint: string }[] = [
     { value: "off", label: "Off", hint: "Files are saved only when you save them." },
     { value: "afterDelay", label: "After a delay", hint: "Save a short pause after the last edit." },
-    { value: "onFocusChange", label: "On focus change", hint: "Save when you leave the editor: another tab, another panel or another app." },
+    {
+      value: "onFocusChange",
+      label: "On focus change",
+      hint: "Save when you leave the editor: another tab, another panel or another app.",
+    },
   ];
 
   let autoSaveDelayDraft = $state<number | null>(settings.autoSaveDelayMs);
@@ -593,7 +630,8 @@
   async function resetState(): Promise<void> {
     const ok = await dialogs.confirm({
       title: "Reset state.json",
-      message: "Replace state.json with a fresh file? The recent folders, last session and panel sizes saved in it are lost.",
+      message:
+        "Replace state.json with a fresh file? The recent folders, last session and panel sizes saved in it are lost.",
       confirmLabel: "Reset",
       danger: true,
     });
@@ -619,7 +657,13 @@
 
   function onKeydown(event: KeyboardEvent): void {
     // Escape empties the search first, then closes the dialog.
-    if (event.key === "Escape" && !dialogs.active && !event.defaultPrevented && event.target === searchInput && searchQuery !== "") {
+    if (
+      event.key === "Escape" &&
+      !dialogs.active &&
+      !event.defaultPrevented &&
+      event.target === searchInput &&
+      searchQuery !== ""
+    ) {
       event.preventDefault();
       clearSearch();
       return;
@@ -722,8 +766,8 @@
         <div class="error-banner">
           <Icon name="alert" size={15} />
           <div>
-            <strong>state.json could not be read</strong>, so recent folders and panel sizes start empty and it will not be
-            overwritten.
+            <strong>state.json could not be read</strong>, so recent folders and panel sizes start empty and it will not
+            be overwritten.
             <div class="dim selectable">{settings.stateLoadError}</div>
           </div>
           <div class="banner-actions">
@@ -763,8 +807,8 @@
             <div class="label">
               <span>Rounded panels</span>
               <span class="hint">
-                Show the sidebars, editors and the bottom panel as rounded panels with space between them. Works with every
-                color theme.
+                Show the sidebars, editors and the bottom panel as rounded panels with space between them. Works with
+                every color theme.
               </span>
             </div>
             <input
@@ -779,8 +823,8 @@
               <span>File toolbar</span>
               <span class="hint">
                 The bar with a file's path, badges and buttons: above the code, under it, or hidden. Pick its parts
-                below. Without the path, {commandKeys("edit.navigationBar") ?? "Jump to Navigation Bar"} shows the Navigation Bar
-                over the editor.
+                below. Without the path, {commandKeys("edit.navigationBar") ?? "Jump to Navigation Bar"} shows the Navigation
+                Bar over the editor.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="File toolbar">
@@ -835,8 +879,9 @@
             <div class="label">
               <span>File icons<MemoryFlag setting="fileIcons" /></span>
               <span class="hint">
-                Icons by file type in the Files panel, the Changes list and commit file lists. Also in View > File Icons.
-                Minimal and Material Icons use more memory, Material Icons the most. An icon set loads only while it is chosen.
+                Icons by file type in the Files panel, the Changes list and commit file lists. Also in View > File
+                Icons. Minimal and Material Icons use more memory, Material Icons the most. An icon set loads only while
+                it is chosen.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="File icons">
@@ -920,12 +965,21 @@
             </div>
             <div class="font-picks">
               {#each MONOSPACE_FONTS as family (family)}
-                <button class="font-pick" style="font-family: '{family}', monospace" onclick={() => addFont(family)} title="Use {family}">
+                <button
+                  class="font-pick"
+                  style="font-family: '{family}', monospace"
+                  onclick={() => addFont(family)}
+                  title="Use {family}"
+                >
                   {family}
                 </button>
               {/each}
             </div>
-            <pre class="font-preview code-ligatures" style="font-family: {normalizeFontFamily(fontDraft)}; font-size: {settings.editorFontSize}px; font-weight: {settings.editorFontWeight}; line-height: {settings.editorLineHeight}">function greet(name: string) &#123;
+            <pre
+              class="font-preview code-ligatures"
+              style="font-family: {normalizeFontFamily(
+                fontDraft,
+              )}; font-size: {settings.editorFontSize}px; font-weight: {settings.editorFontWeight}; line-height: {settings.editorLineHeight}">function greet(name: string) &#123;
   return `Hello, $&#123;name&#125;!`; // 0O 1lI =&gt; != ===
 &#125;</pre>
           </div>
@@ -951,8 +1005,8 @@
             <div class="label">
               <span>Editor font weight</span>
               <span class="hint">
-                How thick code is drawn. Light (300) looks calm on dark themes. Needs a font with several weights, such as
-                JetBrains Mono or SF Mono; other fonts use their closest weight.
+                How thick code is drawn. Light (300) looks calm on dark themes. Needs a font with several weights, such
+                as JetBrains Mono or SF Mono; other fonts use their closest weight.
               </span>
             </div>
             <div class="range">
@@ -973,7 +1027,9 @@
           <div class="row">
             <div class="label">
               <span>Line spacing</span>
-              <span class="hint">Space between lines of code, as a multiple of the font size. The default is {defaultPreferences.editorLineHeight}.</span>
+              <span class="hint"
+                >Space between lines of code, as a multiple of the font size. The default is {defaultPreferences.editorLineHeight}.</span
+              >
             </div>
             <div class="range">
               <input
@@ -994,8 +1050,8 @@
             <div class="label">
               <span>Change font size with Ctrl + mouse wheel</span>
               <span class="hint">
-                Hold Control (or Command) and scroll over an editor, diff or merge pane to make the code bigger or smaller.
-                A trackpad pinch works too.
+                Hold Control (or Command) and scroll over an editor, diff or merge pane to make the code bigger or
+                smaller. A trackpad pinch works too.
               </span>
             </div>
             <input
@@ -1024,9 +1080,9 @@
             <div class="label">
               <span>Syntax highlighting<MemoryFlag setting="syntaxHighlighting" /></span>
               <span class="hint">
-                Color code by its language in editors, diffs, the merge tool and Markdown code blocks. Off, code is plain text
-                and no language grammar is loaded, which saves memory with big files. Fold arrows and bracket pair colors need
-                it; sticky scroll then follows the indentation.
+                Color code by its language in editors, diffs, the merge tool and Markdown code blocks. Off, code is
+                plain text and no language grammar is loaded, which saves memory with big files. Fold arrows and bracket
+                pair colors need it; sticky scroll then follows the indentation.
               </span>
             </div>
             <input
@@ -1039,11 +1095,18 @@
           <div class="row">
             <div class="label">
               <span>Tab size</span>
-              <span class="hint">Spaces per indent level, and the width of a tab, for files whose indentation is not detected.</span>
+              <span class="hint"
+                >Spaces per indent level, and the width of a tab, for files whose indentation is not detected.</span
+              >
             </div>
             <div class="segmented" role="radiogroup" aria-label="Tab size">
               {#each TAB_SIZES as size (size)}
-                <button role="radio" aria-checked={settings.tabSize === size} class:on={settings.tabSize === size} onclick={() => set("tabSize", size)}>
+                <button
+                  role="radio"
+                  aria-checked={settings.tabSize === size}
+                  class:on={settings.tabSize === size}
+                  onclick={() => set("tabSize", size)}
+                >
                   {size}
                 </button>
               {/each}
@@ -1052,7 +1115,9 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Detect indentation</span>
-              <span class="hint">Indent like the file already does: tabs or spaces, and how many. Also in View > Detect Indentation.</span>
+              <span class="hint"
+                >Indent like the file already does: tabs or spaces, and how many. Also in View > Detect Indentation.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -1085,9 +1150,16 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Word wrap</span>
-              <span class="hint">Wrap long lines in the file editor. Diffs and the merge tool never wrap so their panes stay aligned.</span>
+              <span class="hint"
+                >Wrap long lines in the file editor. Diffs and the merge tool never wrap so their panes stay aligned.</span
+              >
             </div>
-            <input type="checkbox" class="switch" checked={settings.wordWrap} onchange={(event) => set("wordWrap", event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.wordWrap}
+              onchange={(event) => set("wordWrap", event.currentTarget.checked)}
+            />
           </label>
           <label class="row toggle-row">
             <div class="label">
@@ -1131,7 +1203,8 @@
             <div class="label">
               <span>Cursor blinking</span>
               <span class="hint">
-                {EDITOR_CURSOR_BLINKING_CHOICES.find((choice) => choice.value === settings.editorCursorBlinking)?.hint ?? ""}
+                {EDITOR_CURSOR_BLINKING_CHOICES.find((choice) => choice.value === settings.editorCursorBlinking)
+                  ?.hint ?? ""}
                 The cursor stays visible while you type.
               </span>
             </div>
@@ -1188,13 +1261,20 @@
                 <span>{row.label}</span>
                 <span class="hint">{row.hint}</span>
               </div>
-              <input type="checkbox" class="switch" checked={settings[row.key]} onchange={(event) => set(row.key, event.currentTarget.checked)} />
+              <input
+                type="checkbox"
+                class="switch"
+                checked={settings[row.key]}
+                onchange={(event) => set(row.key, event.currentTarget.checked)}
+              />
             </label>
             {#if row.key === "editorCompletion" && settings.editorCompletion}
               <label class="row toggle-row sub-row">
                 <div class="label">
                   <span>Show completion while typing</span>
-                  <span class="hint">Off, only Ctrl+Space opens the list. Markdown and plain text always wait for Ctrl+Space.</span>
+                  <span class="hint"
+                    >Off, only Ctrl+Space opens the list. Markdown and plain text always wait for Ctrl+Space.</span
+                  >
                 </div>
                 <input
                   type="checkbox"
@@ -1214,7 +1294,11 @@
               type="checkbox"
               class="switch"
               checked={settings.editorRulerColumn > 0}
-              onchange={(event) => set("editorRulerColumn", event.currentTarget.checked ? pickRulerColumn(rulerDraft) || DEFAULT_RULER_COLUMN : 0)}
+              onchange={(event) =>
+                set(
+                  "editorRulerColumn",
+                  event.currentTarget.checked ? pickRulerColumn(rulerDraft) || DEFAULT_RULER_COLUMN : 0,
+                )}
             />
           </label>
           {#if settings.editorRulerColumn > 0}
@@ -1247,8 +1331,8 @@
             <div class="label">
               <span>Reopen tabs on start</span>
               <span class="hint">
-                Open the files a folder or workspace had in tabs last time, also when you open it again later. Each file loads
-                when you first show its tab.
+                Open the files a folder or workspace had in tabs last time, also when you open it again later. Each file
+                loads when you first show its tab.
               </span>
             </div>
             <input
@@ -1277,7 +1361,8 @@
             <div class="label">
               <span>Split editor</span>
               <span class="hint">
-                Show groups of tabs side by side or stacked with Window > Split Right and Split Down. Turning it off moves every tab into one group.
+                Show groups of tabs side by side or stacked with Window > Split Right and Split Down. Turning it off
+                moves every tab into one group.
               </span>
             </div>
             <input
@@ -1321,7 +1406,9 @@
             <div class="row sub-row">
               <div class="label">
                 <span>Most file tabs</span>
-                <span class="hint">From {TAB_LIMIT_RANGE[0]} to {TAB_LIMIT_RANGE[1]}. Commit, history and terminal tabs do not count.</span>
+                <span class="hint"
+                  >From {TAB_LIMIT_RANGE[0]} to {TAB_LIMIT_RANGE[1]}. Commit, history and terminal tabs do not count.</span
+                >
               </div>
               <input
                 class="input number-input"
@@ -1346,7 +1433,9 @@
             <label class="row toggle-row sub-row">
               <div class="label">
                 <span>Single tab title</span>
-                <span class="hint">With only one tab open, show its name in the middle of the strip instead of a tab.</span>
+                <span class="hint"
+                  >With only one tab open, show its name in the middle of the strip instead of a tab.</span
+                >
               </div>
               <input
                 type="checkbox"
@@ -1361,8 +1450,8 @@
               <span>Unload hidden tabs</span>
               <span class="hint">
                 A file tab you have not looked at for a while gives its editor back, about 4 MB each. The tab stays, and
-                opening it again goes back to the same place, but its undo history starts over. Tabs with unsaved changes
-                are never unloaded.
+                opening it again goes back to the same place, but its undo history starts over. Tabs with unsaved
+                changes are never unloaded.
               </span>
             </div>
             <input
@@ -1419,7 +1508,8 @@
               <div class="label">
                 <span>Delay</span>
                 <span class="hint">
-                  Milliseconds after the last edit, from {AUTO_SAVE_DELAY_RANGE[0]} to {AUTO_SAVE_DELAY_RANGE[1]}. The default is
+                  Milliseconds after the last edit, from {AUTO_SAVE_DELAY_RANGE[0]} to {AUTO_SAVE_DELAY_RANGE[1]}. The
+                  default is
                   {defaultPreferences.autoSaveDelayMs}.
                 </span>
               </div>
@@ -1446,8 +1536,8 @@
             <div class="label">
               <span>Remember unsaved changes</span>
               <span class="hint">
-                Keep the text of new files and unsaved edits when you close the window or quit, and bring the tabs back with it
-                next time. Off, closing asks before unsaved changes are lost.
+                Keep the text of new files and unsaved edits when you close the window or quit, and bring the tabs back
+                with it next time. Off, closing asks before unsaved changes are lost.
               </span>
             </div>
             <input
@@ -1463,7 +1553,12 @@
                 <span>{row.label}</span>
                 <span class="hint">{row.hint}</span>
               </div>
-              <input type="checkbox" class="switch" checked={settings[row.key]} onchange={(event) => set(row.key, event.currentTarget.checked)} />
+              <input
+                type="checkbox"
+                class="switch"
+                checked={settings[row.key]}
+                onchange={(event) => set(row.key, event.currentTarget.checked)}
+              />
             </label>
           {/each}
           <h4 class="group-title">Local History</h4>
@@ -1471,8 +1566,8 @@
             <div class="label">
               <span>Keep local history</span>
               <span class="hint">
-                Keeps a version of a file on every save, when it changes outside the app and before Discard, Rollback
-                or Revert. Files over 1 MB are skipped. Open it from a tab's menu or File, Show Local History.
+                Keeps a version of a file on every save, when it changes outside the app and before Discard, Rollback or
+                Revert. Files over 1 MB are skipped. Open it from a tab's menu or File, Show Local History.
               </span>
             </div>
             <input
@@ -1523,7 +1618,11 @@
               <span>Stored</span>
               <span class="hint">{usageText(historyUsage) || "In ~/.gitmanager/local-history."}</span>
             </div>
-            <button class="btn small danger" disabled={historyUsage?.snapshots === 0} onclick={() => void clearLocalHistory()}>
+            <button
+              class="btn small danger"
+              disabled={historyUsage?.snapshots === 0}
+              onclick={() => void clearLocalHistory()}
+            >
               Clear Local History
             </button>
           </div>
@@ -1531,7 +1630,10 @@
           <div class="row">
             <div class="label">
               <span>Markdown preview<MemoryFlag setting="markdownViewMode" /></span>
-              <span class="hint">How Markdown files open. Each file can switch with the buttons at the top right of its editor and keeps its choice until the app restarts.</span>
+              <span class="hint"
+                >How Markdown files open. Each file can switch with the buttons at the top right of its editor and keeps
+                its choice until the app restarts.</span
+              >
             </div>
             <div class="segmented" role="radiogroup" aria-label="Markdown preview">
               {#each markdownModes as mode (mode.value)}
@@ -1549,7 +1651,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Current line blame</span>
-              <span class="hint">Show the author, age and commit of the cursor line at its end. {clickModifier}+click it to show the commit in the Log; add {optionKey} to copy the commit hash.</span>
+              <span class="hint"
+                >Show the author, age and commit of the cursor line at its end. {clickModifier}+click it to show the
+                commit in the Log; add {optionKey} to copy the commit hash.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -1561,7 +1666,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Blame gutter<MemoryFlag setting="blameGutter" /></span>
-              <span class="hint">A column with the commit, author and age of every block of lines. Also toggled with the Blame button in the path bar and the diff toolbar.</span>
+              <span class="hint"
+                >A column with the commit, author and age of every block of lines. Also toggled with the Blame button in
+                the path bar and the diff toolbar.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -1575,8 +1683,8 @@
             <div class="label">
               <span>Diff layout</span>
               <span class="hint">
-                Show every diff side by side, or inline in one column with removed lines above the lines that replace them.
-                The two buttons in the diff toolbar change this setting too.
+                Show every diff side by side, or inline in one column with removed lines above the lines that replace
+                them. The two buttons in the diff toolbar change this setting too.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Diff layout">
@@ -1595,7 +1703,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Ignore whitespace in the merge tool</span>
-              <span class="hint">Start merges with whitespace-only differences hidden. The Ignore whitespace button in the merge tool changes this setting too.</span>
+              <span class="hint"
+                >Start merges with whitespace-only differences hidden. The Ignore whitespace button in the merge tool
+                changes this setting too.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -1607,19 +1718,32 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Show all branches in the log</span>
-              <span class="hint">Include every local and remote branch, like <code>git log --branches --remotes</code>. Tags and stashes are not followed.</span>
+              <span class="hint"
+                >Include every local and remote branch, like <code>git log --branches --remotes</code>. Tags and stashes
+                are not followed.</span
+              >
             </div>
-            <input type="checkbox" class="switch" checked={settings.logAllRefs} onchange={(event) => set("logAllRefs", event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.logAllRefs}
+              onchange={(event) => set("logAllRefs", event.currentTarget.checked)}
+            />
           </label>
           <label class="row toggle-row">
             <div class="label">
               <span>Auto fetch</span>
               <span class="hint">
-                Fetch every remote in the background while the window is in use, one repository at a time. It never asks for a
-                password; a failed fetch waits longer and shows a note in the status bar.
+                Fetch every remote in the background while the window is in use, one repository at a time. It never asks
+                for a password; a failed fetch waits longer and shows a note in the status bar.
               </span>
             </div>
-            <input type="checkbox" class="switch" checked={settings.autoFetch} onchange={(event) => set("autoFetch", event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.autoFetch}
+              onchange={(event) => set("autoFetch", event.currentTarget.checked)}
+            />
           </label>
           {#if settings.autoFetch}
             <div class="row sub-row">
@@ -1652,7 +1776,9 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Sign off commits</span>
-              <span class="hint">Add a Signed-off-by trailer to every commit (<code>--signoff</code>). Also in Commit Options.</span>
+              <span class="hint"
+                >Add a Signed-off-by trailer to every commit (<code>--signoff</code>). Also in Commit Options.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -1664,7 +1790,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>GPG sign commits</span>
-              <span class="hint">Default follows <code>commit.gpgSign</code>; Sign adds <code>-S</code>, Do not sign adds <code>--no-gpg-sign</code>.</span>
+              <span class="hint"
+                >Default follows <code>commit.gpgSign</code>; Sign adds <code>-S</code>, Do not sign adds
+                <code>--no-gpg-sign</code>.</span
+              >
             </div>
             <select
               class="input select"
@@ -1681,22 +1810,27 @@
             <div class="label">
               <span>Git Console</span>
               <span class="hint">
-                Keep a list of the git commands the app runs, with their output. It shows as the Git Console tab in the bottom
-                panel, next to Terminal (View &gt; Git Console). Off, nothing is recorded or loaded.
+                Keep a list of the git commands the app runs, with their output. It shows as the Git Console tab in the
+                bottom panel, next to Terminal (View &gt; Git Console). Off, nothing is recorded or loaded.
               </span>
               {#if settings.gitConsole && repoStore.workspace}
                 <button class="btn small show-console" onclick={showGitConsole}>Show Git Console</button>
               {/if}
             </div>
-            <input type="checkbox" class="switch" checked={settings.gitConsole} onchange={(event) => set("gitConsole", event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.gitConsole}
+              onchange={(event) => set("gitConsole", event.currentTarget.checked)}
+            />
           </label>
           <h4 class="group-title">Commit identity</h4>
           <div class="row stacked">
             <div class="label">
               <span>Name and email</span>
               <span class="hint">
-                Written into every commit (<code>user.name</code> and <code>user.email</code>). A repository's own values win
-                over the global ones; leave a field empty to remove it.
+                Written into every commit (<code>user.name</code> and <code>user.email</code>). A repository's own
+                values win over the global ones; leave a field empty to remove it.
               </span>
             </div>
             <GitIdentitySettings />
@@ -1706,9 +1840,9 @@
             <div class="label">
               <span>Commit box</span>
               <span class="hint">
-                Single puts one commit box under the Changes list, with a picker for the repository, like JetBrains IDEs. Per
-                repository puts a commit box at the top of each repository, like VS Code. The button in the Changes title bar
-                changes this setting too.
+                Single puts one commit box under the Changes list, with a picker for the repository, like JetBrains
+                IDEs. Per repository puts a commit box at the top of each repository, like VS Code. The button in the
+                Changes title bar changes this setting too.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Commit box">
@@ -1728,11 +1862,13 @@
             <div class="label">
               <span>Message history</span>
               <span class="hint">
-                The clock in the commit box ({localKeys("CmdOrCtrl+E")}, or Up in an empty box) lists your recent commit messages and messages
-                that were not committed. They are kept in state.json, up to 30 per repository.
+                The clock in the commit box ({localKeys("CmdOrCtrl+E")}, or Up in an empty box) lists your recent commit
+                messages and messages that were not committed. They are kept in state.json, up to 30 per repository.
               </span>
               {#if settings.commitMessageHistory && Object.keys(settings.commitMessages).length > 0}
-                <button class="btn small show-console" onclick={() => void clearMessageHistory()}>Clear Saved Messages</button>
+                <button class="btn small show-console" onclick={() => void clearMessageHistory()}
+                  >Clear Saved Messages</button
+                >
               {/if}
             </div>
             <input
@@ -1785,7 +1921,12 @@
                   Also toggled with {commandKeys("view.filesPanel")}.{/if}
               </span>
             </div>
-            <input type="checkbox" class="switch" checked={settings.filesPanelShown} onchange={() => settings.toggleExplorer()} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.filesPanelShown}
+              onchange={() => settings.toggleExplorer()}
+            />
           </label>
           <label class="row toggle-row">
             <div class="label">
@@ -1803,7 +1944,8 @@
             <div class="label">
               <span>Left sidebar</span>
               <span class="hint">
-                Also toggled from the activity bar{#if commandKeys("view.sidebar")} or with {commandKeys("view.sidebar")}{/if}.
+                Also toggled from the activity bar{#if commandKeys("view.sidebar")}
+                  or with {commandKeys("view.sidebar")}{/if}.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Left sidebar">
@@ -1823,7 +1965,8 @@
             <div class="label">
               <span>Reopen windows on start</span>
               <span class="hint">
-                Open every window that was open when you quit, each with its folders. Off: only the last folders you had open.
+                Open every window that was open when you quit, each with its folders. Off: only the last folders you had
+                open.
               </span>
             </div>
             <input
@@ -1864,9 +2007,7 @@
           <div class="row stacked">
             <div class="label">
               <span>Font family</span>
-              <span class="hint">
-                A comma-separated list. Leave it empty to use the editor font.
-              </span>
+              <span class="hint"> A comma-separated list. Leave it empty to use the editor font. </span>
             </div>
             <div class="font-row">
               <input
@@ -1921,7 +2062,11 @@
               style:font-size="{settings.terminalFontSize}px"
               style:font-weight={xtermFontWeight(settings.terminalFontWeight)}
               style:letter-spacing="{settings.terminalLetterSpacing / (window.devicePixelRatio || 1)}px"
-              style:--term-line-height={settings.terminalLineHeight}><div><span class="dim">&#xf07b; ~/git-manager &#xe0b0; &#xe0a0; main</span> &#x276f; git log --oneline</div><div><span style:font-weight={xtermFontWeight(settings.terminalFontWeightBold)}>a1b2c3d</span> fix: a =&gt; b != c === d -&gt; e</div><div>0O 1lI {"{ }"} [ ] | &amp;&amp; ||</div></pre>
+              style:--term-line-height={settings.terminalLineHeight}><div><span class="dim"
+                  >&#xf07b; ~/git-manager &#xe0b0; &#xe0a0; main</span
+                > &#x276f; git log --oneline</div><div><span
+                  style:font-weight={xtermFontWeight(settings.terminalFontWeightBold)}>a1b2c3d</span
+                > fix: a =&gt; b != c === d -&gt; e</div><div>0O 1lI {"{ }"} [ ] | &amp;&amp; ||</div></pre>
           </div>
           <div class="row">
             <div class="label">
@@ -2016,9 +2161,9 @@
             <div class="label">
               <span>Font ligatures</span>
               <span class="hint">
-                Draw <code>=&gt;</code>, <code>!=</code> and similar as single glyphs with fonts such as Fira Code or
-                JetBrains Mono. A ligature splits where colors change or under the cursor, and fonts whose ligatures
-                change the text width can misalign columns. Ligatures draw without GPU acceleration.
+                Draw <code>=&gt;</code>, <code>!=</code> and similar as single glyphs with fonts such as Fira Code or JetBrains
+                Mono. A ligature splits where colors change or under the cursor, and fonts whose ligatures change the text
+                width can misalign columns. Ligatures draw without GPU acceleration.
               </span>
             </div>
             <input
@@ -2081,8 +2226,8 @@
               <span>Scrollback<MemoryFlag setting="terminalScrollback" /></span>
               <span class="hint">
                 Lines kept for scrolling back, {TERMINAL_SCROLLBACK_RANGE[0].toLocaleString()} to
-                {TERMINAL_SCROLLBACK_RANGE[1].toLocaleString()}. A full terminal uses about 2 KB per line in a wide window:
-                about 10 MB at 5,000 lines and 200 MB at 100,000.
+                {TERMINAL_SCROLLBACK_RANGE[1].toLocaleString()}. A full terminal uses about 2 KB per line in a wide
+                window: about 10 MB at 5,000 lines and 200 MB at 100,000.
               </span>
             </div>
             <input
@@ -2118,7 +2263,9 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Find in terminal</span>
-              <span class="hint">{localKeys(onMac ? "Cmd+F" : "Ctrl+Shift+F")} searches the output. Off, the search code is never loaded.</span>
+              <span class="hint"
+                >{localKeys(onMac ? "Cmd+F" : "Ctrl+Shift+F")} searches the output. Off, the search code is never loaded.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2130,7 +2277,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Clickable file paths</span>
-              <span class="hint">{clickModifier}+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside an open folder become links.</span>
+              <span class="hint"
+                >{clickModifier}+click a path such as <code>src/app.ts:12:5</code> to open it at that line. Only files inside
+                an open folder become links.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2154,7 +2304,9 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Visual bell</span>
-              <span class="hint">A short flash when the shell rings the bell, or a dot on a terminal that is out of sight.</span>
+              <span class="hint"
+                >A short flash when the shell rings the bell, or a dot on a terminal that is out of sight.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2178,7 +2330,10 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Option as Meta key</span>
-              <span class="hint">macOS: Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as å.</span>
+              <span class="hint"
+                >macOS: Option+B, Option+F and other emacs keys work in the shell. Off, Option types characters such as
+                å.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2208,7 +2363,11 @@
           <label class="row toggle-row">
             <div class="label">
               <span>GPU acceleration<MemoryFlag setting="terminalGpuAcceleration" /></span>
-              <span class="hint">Recommended. Draws with WebGL, which keeps busy output smooth and uses less CPU. It uses about 70 MB more for the first terminal, mostly graphics memory, and about 10 MB for each other one. With font ligatures on, the regular renderer is used.</span>
+              <span class="hint"
+                >Recommended. Draws with WebGL, which keeps busy output smooth and uses less CPU. It uses about 70 MB
+                more for the first terminal, mostly graphics memory, and about 10 MB for each other one. With font
+                ligatures on, the regular renderer is used.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2220,7 +2379,9 @@
           <label class="row toggle-row">
             <div class="label">
               <span>Unicode 11 widths</span>
-              <span class="hint">Emoji and wide characters take the right number of columns. Applies to output printed after the change.</span>
+              <span class="hint"
+                >Emoji and wide characters take the right number of columns. Applies to output printed after the change.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2256,8 +2417,8 @@
               <span>Keep computer awake</span>
               <span class="hint">
                 Choose On, Agent, or Off. Agent mode keeps the screen on and stops idle sleep and the screen lock while
-                agents work, so long runs finish. Closing the lid still puts a Mac to sleep. Also in the status bar
-                (the coffee cup).
+                agents work, so long runs finish. Closing the lid still puts a Mac to sleep. Also in the status bar (the
+                coffee cup).
               </span>
             </div>
             <select
@@ -2344,9 +2505,9 @@
             <div class="label">
               <span>Agents</span>
               <span class="hint">
-                Found on your login shell's PATH. Open an agent to change the command that starts it, its
-                full-autonomy flags, how it takes a first prompt and extra arguments, so a provider's renamed command
-                or flag needs no app update.
+                Found on your login shell's PATH. Open an agent to change the command that starts it, its full-autonomy
+                flags, how it takes a first prompt and extra arguments, so a provider's renamed command or flag needs no
+                app update.
               </span>
             </div>
             <AiAgentSettings />
@@ -2368,12 +2529,17 @@
             <div class="label">
               <span>MCP server</span>
               <span class="hint">
-                MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor use Git Manager: read what it shows,
-                run its features and measure its performance. Off by default. When on, it only listens on this Mac and every
-                request needs the secret token below.
+                MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor use Git Manager: read what it
+                shows, run its features and measure its performance. Off by default. When on, it only listens on this
+                Mac and every request needs the secret token below.
               </span>
             </div>
-            <input type="checkbox" class="switch" checked={settings.mcpEnabled} onchange={(event) => set("mcpEnabled", event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.mcpEnabled}
+              onchange={(event) => set("mcpEnabled", event.currentTarget.checked)}
+            />
           </label>
           <div class="row">
             <div class="label">
@@ -2410,9 +2576,14 @@
               </div>
               <div class="path-row">
                 <code class="path selectable">{showToken ? mcpToken : maskToken(mcpToken)}</code>
-                <button class="btn small" onclick={() => (showToken = !showToken)}>{showToken ? "Hide" : "Show"}</button>
+                <button class="btn small" onclick={() => (showToken = !showToken)}>{showToken ? "Hide" : "Show"}</button
+                >
                 <button class="btn small" onclick={() => void copy(mcpToken)}>Copy</button>
-                <button class="btn small danger" onclick={() => void mcpStore.regenerateToken()} disabled={mcpStore.working}>New Token</button>
+                <button
+                  class="btn small danger"
+                  onclick={() => void mcpStore.regenerateToken()}
+                  disabled={mcpStore.working}>New Token</button
+                >
               </div>
             </div>
             <div class="row stacked">
@@ -2421,7 +2592,10 @@
                 <span class="hint">Run this once in a terminal.</span>
               </div>
               <div class="snippet">
-                <pre class="command selectable">{claudeAddCommand(mcpUrl, showToken ? mcpToken : maskToken(mcpToken))}</pre>
+                <pre class="command selectable">{claudeAddCommand(
+                    mcpUrl,
+                    showToken ? mcpToken : maskToken(mcpToken),
+                  )}</pre>
                 <button class="btn small" onclick={() => void copy(claudeAddCommand(mcpUrl, mcpToken))}>Copy</button>
               </div>
             </div>
@@ -2431,7 +2605,10 @@
                 <span class="hint">Most MCP clients read a config like this one.</span>
               </div>
               <div class="snippet">
-                <pre class="command selectable">{mcpJsonConfig(mcpUrl, showToken ? mcpToken : maskToken(mcpToken))}</pre>
+                <pre class="command selectable">{mcpJsonConfig(
+                    mcpUrl,
+                    showToken ? mcpToken : maskToken(mcpToken),
+                  )}</pre>
                 <button class="btn small" onclick={() => void copy(mcpJsonConfig(mcpUrl, mcpToken))}>Copy</button>
               </div>
             </div>
@@ -2449,11 +2626,19 @@
             <div class="label">
               <span>Command line tool</span>
               <span class="hint">
-                Lets scripts and AI agents in a terminal use the same tools, for example <code>git-manager cli tools</code> or
+                Lets scripts and AI agents in a terminal use the same tools, for example <code
+                  >git-manager cli tools</code
+                >
+                or
                 <code>git-manager cli call git_status repoPath=...</code>. Git Manager must be running.
               </span>
             </div>
-            <input type="checkbox" class="switch" checked={settings.cliEnabled} onchange={(event) => set("cliEnabled", event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              class="switch"
+              checked={settings.cliEnabled}
+              onchange={(event) => set("cliEnabled", event.currentTarget.checked)}
+            />
           </label>
           {#if mcpStatus}
             <div class="row">
@@ -2466,7 +2651,9 @@
                 </span>
               </div>
               {#if mcpStatus.cliInstalledPath}
-                <button class="btn small" onclick={() => void mcpStore.uninstallCli()} disabled={mcpStore.working}>Remove</button>
+                <button class="btn small" onclick={() => void mcpStore.uninstallCli()} disabled={mcpStore.working}
+                  >Remove</button
+                >
               {:else}
                 <button class="btn small" onclick={() => void mcpStore.installCli()} disabled={mcpStore.working}>
                   {onMac ? "Install in ~/.local/bin" : "Install"}
@@ -2477,7 +2664,9 @@
               <div class="row stacked">
                 <div class="label">
                   <span>~/.local/bin is not on your PATH</span>
-                  <span class="hint">Add this line to <code>~/.zshrc</code>, then open a new terminal, to type <code>git-manager</code> anywhere.</span>
+                  <span class="hint"
+                    >Add this line to <code>~/.zshrc</code>, then open a new terminal, to type <code>git-manager</code> anywhere.</span
+                  >
                 </div>
                 <div class="snippet">
                   <pre class="command selectable">{LOCAL_BIN_PATH_LINE}</pre>
@@ -2489,8 +2678,8 @@
                 <div class="label">
                   <span>The folder is not on your PATH</span>
                   <span class="hint">
-                    Windows keeps it there for every user unless it was removed. Add it back under Edit environment variables
-                    for your account (Path), then open a new terminal, to type <code>git-manager</code> anywhere.
+                    Windows keeps it there for every user unless it was removed. Add it back under Edit environment
+                    variables for your account (Path), then open a new terminal, to type <code>git-manager</code> anywhere.
                   </span>
                 </div>
                 <div class="snippet">
@@ -2573,7 +2762,9 @@
                 <span>Log file</span>
                 <code class="path selectable">{memoryLog.status.path}</code>
               </div>
-              <button class="btn small" onclick={() => void revealMemoryLog()}>{revealLabel(platformName(navigator.userAgent))}</button>
+              <button class="btn small" onclick={() => void revealMemoryLog()}
+                >{revealLabel(platformName(navigator.userAgent))}</button
+              >
             </div>
           {/if}
         {:else if section === "updates"}
@@ -2584,13 +2775,17 @@
             </div>
             <div class="update-actions">
               <code class="path">{updates.current ?? "unknown"}</code>
-              <button class="btn small" onclick={() => void updates.check(true)} disabled={updates.checking}>Check Now</button>
+              <button class="btn small" onclick={() => void updates.check(true)} disabled={updates.checking}
+                >Check Now</button
+              >
             </div>
           </div>
           <label class="row toggle-row">
             <div class="label">
               <span>Check for updates automatically</span>
-              <span class="hint">Asks GitHub for new releases every few hours. Nothing is downloaded or installed without you.</span>
+              <span class="hint"
+                >Asks GitHub for new releases every few hours. Nothing is downloaded or installed without you.</span
+              >
             </div>
             <input
               type="checkbox"
@@ -2604,7 +2799,8 @@
               <span>Update channel</span>
               <span class="hint">
                 Stable gets finished releases only. Beta also gets pre-releases with new features to try early.
-                Automatic follows betas only when this build is a beta. Now following: <strong>{updates.channel}</strong>.
+                Automatic follows betas only when this build is a beta. Now following: <strong>{updates.channel}</strong
+                >.
               </span>
             </div>
             <div class="segmented" role="radiogroup" aria-label="Update channel">
@@ -2692,7 +2888,9 @@
             <div class="path-row">
               <code class="path selectable">{settings.configDir ?? "~/.gitmanager"}</code>
               {#if settings.configDir}
-                <button class="btn small" onclick={() => void copy(`${settings.configDir}/settings.json`)}>Copy settings.json Path</button>
+                <button class="btn small" onclick={() => void copy(`${settings.configDir}/settings.json`)}
+                  >Copy settings.json Path</button
+                >
               {/if}
             </div>
           </div>
@@ -3112,13 +3310,17 @@
   .terminal-preview,
   .terminal-preview > div {
     font-variant-ligatures: none;
-    font-feature-settings: "liga" 0, "calt" 0;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
   }
 
   .terminal-preview.liga-on,
   .terminal-preview.liga-on > div {
     font-variant-ligatures: common-ligatures contextual;
-    font-feature-settings: "liga" 1, "calt" 1;
+    font-feature-settings:
+      "liga" 1,
+      "calt" 1;
   }
 
   .terminal-preview .dim {

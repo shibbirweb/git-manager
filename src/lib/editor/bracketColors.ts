@@ -19,7 +19,9 @@ const STREAM_LOOKBACK = 10_000;
 
 const SKIPPED_STREAM_TOKENS = /string|comment|regexp/i;
 
-const marks = Array.from({ length: BRACKET_LEVELS }, (_unused, level) => Decoration.mark({ class: `cm-gm-bracket-${level + 1}` }));
+const marks = Array.from({ length: BRACKET_LEVELS }, (_unused, level) =>
+  Decoration.mark({ class: `cm-gm-bracket-${level + 1}` }),
+);
 const unmatched = Decoration.mark({ class: "cm-gm-bracket-unmatched" });
 
 /** A bracket node of a real grammar is named after its character ("(", "}"...). */
@@ -46,7 +48,10 @@ export function openBracketsAt(tree: Tree, from: number): number {
 }
 
 /** Bracket decorations for the visible ranges of a state. */
-export function bracketDecorations(state: EditorState, visibleRanges: readonly { from: number; to: number }[]): DecorationSet {
+export function bracketDecorations(
+  state: EditorState,
+  visibleRanges: readonly { from: number; to: number }[],
+): DecorationSet {
   const tree = syntaxTree(state);
   const builder = new RangeSetBuilder<Decoration>();
   if (tree.length === 0) {

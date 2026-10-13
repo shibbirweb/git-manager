@@ -16,7 +16,7 @@
   import type { RichAction } from "$lib/markdown/richEditor";
   import type { MarkdownViewMode } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import type { IconName } from "@git-manager/ui/icons";
   import { contextMenu } from "$lib/ui/menu.svelte";
 
   type FormatCommand = (state: EditorState) => TransactionSpec;
@@ -44,17 +44,47 @@
   }
 
   const inlineButtons: FormatButton[] = [
-    { icon: "bold", label: `Bold (${localKeys("CmdOrCtrl+B")})`, command: (state) => toggleInline(state, "bold"), richAction: "bold" },
-    { icon: "italic", label: `Italic (${localKeys("CmdOrCtrl+I")})`, command: (state) => toggleInline(state, "italic"), richAction: "italic" },
-    { icon: "strikethrough", label: "Strikethrough", command: (state) => toggleInline(state, "strikethrough"), richAction: "strikethrough" },
+    {
+      icon: "bold",
+      label: `Bold (${localKeys("CmdOrCtrl+B")})`,
+      command: (state) => toggleInline(state, "bold"),
+      richAction: "bold",
+    },
+    {
+      icon: "italic",
+      label: `Italic (${localKeys("CmdOrCtrl+I")})`,
+      command: (state) => toggleInline(state, "italic"),
+      richAction: "italic",
+    },
+    {
+      icon: "strikethrough",
+      label: "Strikethrough",
+      command: (state) => toggleInline(state, "strikethrough"),
+      richAction: "strikethrough",
+    },
     { icon: "code", label: "Inline code", command: (state) => toggleInline(state, "code"), richAction: "code" },
     { icon: "link", label: `Link (${localKeys("CmdOrCtrl+K")})`, command: toggleLink, richAction: null },
   ];
 
   const blockButtons: FormatButton[] = [
-    { icon: "list", label: "Bulleted list", command: (state) => toggleLinePrefix(state, "bullet"), richAction: "bullet" },
-    { icon: "list-ordered", label: "Numbered list", command: (state) => toggleLinePrefix(state, "ordered"), richAction: "ordered" },
-    { icon: "list-checks", label: "Task list", command: (state) => toggleLinePrefix(state, "task"), richAction: "task" },
+    {
+      icon: "list",
+      label: "Bulleted list",
+      command: (state) => toggleLinePrefix(state, "bullet"),
+      richAction: "bullet",
+    },
+    {
+      icon: "list-ordered",
+      label: "Numbered list",
+      command: (state) => toggleLinePrefix(state, "ordered"),
+      richAction: "ordered",
+    },
+    {
+      icon: "list-checks",
+      label: "Task list",
+      command: (state) => toggleLinePrefix(state, "task"),
+      richAction: "task",
+    },
     { icon: "quote", label: "Quote", command: (state) => toggleLinePrefix(state, "quote"), richAction: "quote" },
     { icon: "code-block", label: "Code block", command: toggleCodeBlock, richAction: "codeBlock" },
     { icon: "table", label: "Table", command: (state) => insertTable(state), richAction: "table" },
@@ -84,7 +114,10 @@
     contextMenu.open(event, [
       ...levels,
       { separator: true },
-      { label: "Normal text", action: () => (rich ? onRichFormat("paragraph") : onFormat((state) => setHeading(state, 0))) },
+      {
+        label: "Normal text",
+        action: () => (rich ? onRichFormat("paragraph") : onFormat((state) => setHeading(state, 0))),
+      },
     ]);
   }
 </script>
@@ -92,17 +125,36 @@
 <div class="markdown-toolbar" role="toolbar" aria-label="Markdown">
   <div class="format">
     {#each inlineButtons as button (button.icon)}
-      <button class="tool" onmousedown={keepFocus} onclick={() => press(button)} title={button.label} aria-label={button.label}>
+      <button
+        class="tool"
+        onmousedown={keepFocus}
+        onclick={() => press(button)}
+        title={button.label}
+        aria-label={button.label}
+      >
         <Icon name={button.icon} size={14} />
       </button>
     {/each}
-    <button class="tool heading" onmousedown={keepFocus} onclick={openHeadings} title="Heading" aria-label="Heading" aria-haspopup="menu">
+    <button
+      class="tool heading"
+      onmousedown={keepFocus}
+      onclick={openHeadings}
+      title="Heading"
+      aria-label="Heading"
+      aria-haspopup="menu"
+    >
       <Icon name="heading" size={14} />
       <Icon name="chevron-down" size={10} />
     </button>
     <span class="divider" aria-hidden="true"></span>
     {#each blockButtons as button (button.icon)}
-      <button class="tool" onmousedown={keepFocus} onclick={() => press(button)} title={button.label} aria-label={button.label}>
+      <button
+        class="tool"
+        onmousedown={keepFocus}
+        onclick={() => press(button)}
+        title={button.label}
+        aria-label={button.label}
+      >
         <Icon name={button.icon} size={14} />
       </button>
     {/each}

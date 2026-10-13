@@ -104,7 +104,8 @@ export function saveCleanupChanges(doc: LineSource, options: SaveCleanupOptions)
   if (options.insertFinalNewline) {
     const last = doc.line(doc.lines);
     const lastChange = changes[changes.length - 1];
-    const trimmedLast = lastChange && lastChange.to === doc.length ? last.text.slice(0, lastChange.from - last.from) : last.text;
+    const trimmedLast =
+      lastChange && lastChange.to === doc.length ? last.text.slice(0, lastChange.from - last.from) : last.text;
     const endsWithNewline = doc.lines > 1 && trimmedLast === "";
     const empty = doc.lines === 1 && trimmedLast === "";
     if (!endsWithNewline && !empty) {

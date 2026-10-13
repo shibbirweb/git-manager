@@ -79,7 +79,7 @@ export const scales = {
   controlWidth: { xsmall: 80, number: 110, small: 120, medium: 180, large: 280 },
   popoverWidth: { small: 256, medium: 300, large: 360 },
   dialogWidth: { small: 460, normal: 520, medium: 560, large: 620, xlarge: 760, full: 1200 },
-  viewHeight: { small: 160, medium: 240, large: 360 },
+  viewHeight: { xsmall: 120, small: 160, medium: 240, large: 360 },
   columnWidth: { small: 140, medium: 180, large: 240 },
   rowHeight: { compact: 22, normal: 24, relaxed: 26, comfortable: 28 },
   textRows: { small: 2, normal: 3, large: 5, xlarge: 8 },

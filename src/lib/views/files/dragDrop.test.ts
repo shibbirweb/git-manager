@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { AUTO_SCROLL_EDGE_PX, autoScrollStep, DRAG_THRESHOLD_PX, checkDrop, dragLabel, dropFolder, dropPointToCss, pastDragThreshold } from "./dragDrop";
+import {
+  AUTO_SCROLL_EDGE_PX,
+  autoScrollStep,
+  DRAG_THRESHOLD_PX,
+  checkDrop,
+  dragLabel,
+  dropFolder,
+  dropPointToCss,
+  pastDragThreshold,
+} from "./dragDrop";
 import cases from "./nameRules.cases.json";
 
 describe("dropFolder", () => {

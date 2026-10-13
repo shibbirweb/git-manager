@@ -5,15 +5,7 @@
   import Icon from "./Icon.svelte";
 
   export type RefKind =
-    | "head"
-    | "local"
-    | "remote"
-    | "tag"
-    | "more"
-    | "bisect-bad"
-    | "bisect-good"
-    | "bisect-skip"
-    | "bisect-current";
+    "head" | "local" | "remote" | "tag" | "more" | "bisect-bad" | "bisect-good" | "bisect-skip" | "bisect-current";
 
   interface Props {
     kind: RefKind;

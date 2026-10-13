@@ -6,18 +6,6 @@ const TEXT = { width: "follows its text" };
 
 export const atomCases: ParityCase[] = [
   {
-    id: "rebase-segment",
-    sources: ["src/lib/views/git/InteractiveRebaseDialog.svelte"],
-    html: '<div class="list" style="width: 400px"><div class="segment-title">Commits to rebase</div></div>',
-    pairs: [{ name: "title", ref: ".segment-title", lib: ".section-title", ignore: FILL }],
-  },
-  {
-    id: "branches-group",
-    sources: ["src/lib/views/git/BranchesPopup.svelte"],
-    html: '<div class="branches" style="width: 400px"><div class="group">Local</div></div>',
-    pairs: [{ name: "title", ref: ".group", lib: ".section-title", ignore: FILL }],
-  },
-  {
     id: "history-day",
     sources: ["src/lib/localHistory/LocalHistoryDialog.svelte"],
     html: '<div class="versions" style="width: 300px"><div class="day">Today</div></div>',
@@ -105,7 +93,8 @@ export const atomCases: ParityCase[] = [
   {
     id: "file-bar-bottom",
     sources: ["src/lib/views/files/FileView.svelte"],
-    html: '<div class="file-view bar-bottom" style="display: flex; flex-direction: column; width: 400px">' +
+    html:
+      '<div class="file-view bar-bottom" style="display: flex; flex-direction: column; width: 400px">' +
       '<div class="file-bar">cart.ts</div></div>',
     pairs: [{ name: "bar", ref: ".file-bar", lib: ".toolbar", ignore: FILL }],
   },

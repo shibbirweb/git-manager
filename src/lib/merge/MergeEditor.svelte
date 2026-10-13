@@ -111,7 +111,8 @@
     } else if (chunk.kind === "conflict" && otherRange.start < otherRange.end) {
       reference = rangeText(sides[other], otherRange);
     }
-    const spans = range.start < range.end && reference !== null ? changedSpans(reference, rangeText(sides[side], range)) : null;
+    const spans =
+      range.start < range.end && reference !== null ? changedSpans(reference, rangeText(sides[side], range)) : null;
     inlineCache.set(key, spans);
     return spans;
   }
@@ -239,7 +240,9 @@
     canUndo = undoDepth(state) > 0;
     canRedo = redoDepth(state) > 0;
     // Side decorations only depend on which sides are still open.
-    const signature = chunks.map((chunk) => `${chunk.id}${chunk.oursDone ? 1 : 0}${chunk.theirsDone ? 1 : 0}`).join(",");
+    const signature = chunks
+      .map((chunk) => `${chunk.id}${chunk.oursDone ? 1 : 0}${chunk.theirsDone ? 1 : 0}`)
+      .join(",");
     if (signature !== lastMarkSignature) {
       lastMarkSignature = signature;
       const oursMarks = sideMarks(chunks, "ours", (chunk) => inlineSpans(chunk, "ours"));
@@ -352,7 +355,10 @@
         continue;
       }
       const range = sideRange(chunk, side);
-      if (!overlaps(range.start, range.end, sideVisible) && !overlaps(chunk.result.start, chunk.result.end, resultVisible)) {
+      if (
+        !overlaps(range.start, range.end, sideVisible) &&
+        !overlaps(chunk.result.start, chunk.result.end, resultVisible)
+      ) {
         continue;
       }
       const sideSpan = span(sideView, range.start, range.end, originTop);
@@ -610,7 +616,12 @@
       >
         <Icon name="chevrons-right" size={15} />
       </button>
-      <button class="icon-btn wand" onclick={() => applyAllNonConflicting()} disabled={nonConflicting === 0} title="Apply all non-conflicting changes">
+      <button
+        class="icon-btn wand"
+        onclick={() => applyAllNonConflicting()}
+        disabled={nonConflicting === 0}
+        title="Apply all non-conflicting changes"
+      >
         <Icon name="wand" size={15} />
         <span>Apply non-conflicting</span>
       </button>
@@ -625,7 +636,12 @@
     </div>
     <div class="divider"></div>
     <div class="group">
-      <button class="icon-btn" onclick={() => navigate(-1)} disabled={counts.changes === 0} title="Previous change (Shift+F7)">
+      <button
+        class="icon-btn"
+        onclick={() => navigate(-1)}
+        disabled={counts.changes === 0}
+        title="Previous change (Shift+F7)"
+      >
         <Icon name="arrow-up" size={15} />
       </button>
       <button class="icon-btn" onclick={() => navigate(1)} disabled={counts.changes === 0} title="Next change (F7)">
@@ -634,10 +650,20 @@
     </div>
     <div class="divider"></div>
     <div class="group">
-      <button class="icon-btn" onclick={runUndo} disabled={!canUndo} title="Undo ({localKeys('CmdOrCtrl+Z')} in the result)">
+      <button
+        class="icon-btn"
+        onclick={runUndo}
+        disabled={!canUndo}
+        title="Undo ({localKeys('CmdOrCtrl+Z')} in the result)"
+      >
         <Icon name="undo" size={15} />
       </button>
-      <button class="icon-btn" onclick={runRedo} disabled={!canRedo} title="Redo ({localKeys('CmdOrCtrl+Shift+Z')} in the result)">
+      <button
+        class="icon-btn"
+        onclick={runRedo}
+        disabled={!canRedo}
+        title="Redo ({localKeys('CmdOrCtrl+Shift+Z')} in the result)"
+      >
         <Icon name="redo" size={15} />
       </button>
     </div>
@@ -714,10 +740,20 @@
 
   <div class="footer">
     <div class="group">
-      <button class="btn" onclick={() => acceptWhole("ours")} disabled={saving} title="Resolve the whole file with the left version">
+      <button
+        class="btn"
+        onclick={() => acceptWhole("ours")}
+        disabled={saving}
+        title="Resolve the whole file with the left version"
+      >
         Accept Left
       </button>
-      <button class="btn" onclick={() => acceptWhole("theirs")} disabled={saving} title="Resolve the whole file with the right version">
+      <button
+        class="btn"
+        onclick={() => acceptWhole("theirs")}
+        disabled={saving}
+        title="Resolve the whole file with the right version"
+      >
         Accept Right
       </button>
     </div>

@@ -156,7 +156,13 @@ export function visibleRange(
  * The scroll position that shows row `index`, or `scrollTop` when it already shows.
  * Selecting the first selectable row scrolls to the top so its heading shows too.
  */
-export function scrollToShow(index: number, scrollTop: number, viewportHeight: number, rowHeight: number, firstIndex: number): number {
+export function scrollToShow(
+  index: number,
+  scrollTop: number,
+  viewportHeight: number,
+  rowHeight: number,
+  firstIndex: number,
+): number {
   if (index <= firstIndex) {
     return 0;
   }

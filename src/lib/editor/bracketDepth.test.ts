@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { bracketCandidates, colorBrackets, isBracket, isOpenBracket } from "./bracketDepth";
 
-const levels = (text: string, startDepth = 0) => colorBrackets(bracketCandidates(text, 0), startDepth).map((bracket) => bracket.level);
+const levels = (text: string, startDepth = 0) =>
+  colorBrackets(bracketCandidates(text, 0), startDepth).map((bracket) => bracket.level);
 
 describe("bracket depth", () => {
   it("finds the bracket characters of a text with their positions", () => {

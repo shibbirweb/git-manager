@@ -50,7 +50,9 @@
   const changedCount = $derived(Object.keys(overrides).length);
   const editingSpec = $derived(specs.find((spec) => spec.id === editingId) ?? null);
   const pendingConflicts = $derived(
-    pending && !pending.problem && editingId ? commandsWithKeys(specs, overrides, platform, pending.accelerator, editingId) : [],
+    pending && !pending.problem && editingId
+      ? commandsWithKeys(specs, overrides, platform, pending.accelerator, editingId)
+      : [],
   );
 
   function isPlain(event: KeyboardEvent): boolean {
@@ -168,7 +170,14 @@
         onkeydown={onSearchKeydown}
       />
     {:else}
-      <input class="input" bind:this={searchInput} bind:value={query} placeholder="Search by name or keys" aria-label="Search shortcuts" spellcheck="false" />
+      <input
+        class="input"
+        bind:this={searchInput}
+        bind:value={query}
+        placeholder="Search by name or keys"
+        aria-label="Search shortcuts"
+        spellcheck="false"
+      />
     {/if}
     <button
       class="btn small"
@@ -236,12 +245,22 @@
         {/if}
         <div class="actions">
           {#if !editing && row.shortcut}
-            <button class="icon-btn" title="Remove the keys" aria-label="Remove the keys" onclick={() => removeKeys(row.spec)}>
+            <button
+              class="icon-btn"
+              title="Remove the keys"
+              aria-label="Remove the keys"
+              onclick={() => removeKeys(row.spec)}
+            >
               <Icon name="x" size={13} />
             </button>
           {/if}
           {#if !editing && row.changed}
-            <button class="icon-btn" title="Reset to the default" aria-label="Reset to the default" onclick={() => resetKeys(row.spec)}>
+            <button
+              class="icon-btn"
+              title="Reset to the default"
+              aria-label="Reset to the default"
+              onclick={() => resetKeys(row.spec)}
+            >
               <Icon name="undo" size={13} />
             </button>
           {/if}
@@ -263,7 +282,11 @@
               <button class="btn small" onclick={() => save(false)}>Keep Both</button>
               <button class="btn small primary" onclick={() => save(true)}>Replace</button>
             {:else}
-              <button class="btn small primary" disabled={!pending || pending.problem !== null} onclick={() => save(false)}>Save</button>
+              <button
+                class="btn small primary"
+                disabled={!pending || pending.problem !== null}
+                onclick={() => save(false)}>Save</button
+              >
             {/if}
             <button class="btn small" onclick={stopEditing}>Cancel</button>
           </div>

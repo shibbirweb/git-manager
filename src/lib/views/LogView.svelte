@@ -158,7 +158,9 @@
     const index = commitId ? indexById.get(commitId) : undefined;
     const commit = index === undefined ? null : (commits[index] ?? null);
     logSelection.current =
-      commit && repoPath ? { repoRoot: repoPath, commitId: commit.id, shortId: commit.shortId, summary: commit.summary } : null;
+      commit && repoPath
+        ? { repoRoot: repoPath, commitId: commit.id, shortId: commit.shortId, summary: commit.summary }
+        : null;
   });
 
   $effect(() => () => {
@@ -724,11 +726,21 @@
       <span class="count dim">{countLabel}</span>
     {/if}
     {#if query && hasMore && initialLoaded}
-      <button class="btn small" onclick={() => void loadMore()} disabled={loading} title="Load the next page of history to search it">
+      <button
+        class="btn small"
+        onclick={() => void loadMore()}
+        disabled={loading}
+        title="Load the next page of history to search it"
+      >
         Load more
       </button>
     {/if}
-    <button class="icon-btn" onclick={() => changesSelection.toggleLog()} title={withCommandKeys("Hide Log", "view.log")} aria-label="Hide log">
+    <button
+      class="icon-btn"
+      onclick={() => changesSelection.toggleLog()}
+      title={withCommandKeys("Hide Log", "view.log")}
+      aria-label="Hide log"
+    >
       <Icon name="x" size={14} />
     </button>
   </div>
@@ -810,11 +822,19 @@
                     </span>
                   {/each}
                   {#if refs.length > MAX_BADGES}
-                    <span class="ref ref-more" title={refs.slice(MAX_BADGES).map((ref) => ref.name).join(", ")}>
+                    <span
+                      class="ref ref-more"
+                      title={refs
+                        .slice(MAX_BADGES)
+                        .map((ref) => ref.name)
+                        .join(", ")}
+                    >
                       +{refs.length - MAX_BADGES}
                     </span>
                   {/if}
-                  <span class="summary truncate" title={`${commit.summary}\nDouble-click to open in a tab`}>{commit.summary}</span>
+                  <span class="summary truncate" title={`${commit.summary}\nDouble-click to open in a tab`}
+                    >{commit.summary}</span
+                  >
                 </div>
                 <div class="col-author truncate" title={commit.authorEmail}>{commit.authorName}</div>
                 <div class="col-date truncate" title={fullDate(commit.time)}>{relativeTime(commit.time, now)}</div>
@@ -1145,7 +1165,13 @@
     position: relative;
     z-index: 1;
     cursor: row-resize;
-    background: linear-gradient(to bottom, transparent 2px, var(--border-strong) 2px, var(--border-strong) 3px, transparent 3px);
+    background: linear-gradient(
+      to bottom,
+      transparent 2px,
+      var(--border-strong) 2px,
+      var(--border-strong) 3px,
+      transparent 3px
+    );
   }
 
   .details-pane {

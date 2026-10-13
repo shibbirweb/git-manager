@@ -16,7 +16,11 @@ export interface RecentFile {
 export const MAX_RECENT_FILES = 50;
 
 /** `files` with `filePath` first; the same array when it already is. Not a file (terminal, commit): unchanged. */
-export function touchRecent(files: readonly RecentFile[], filePath: string, limit = MAX_RECENT_FILES): readonly RecentFile[] {
+export function touchRecent(
+  files: readonly RecentFile[],
+  filePath: string,
+  limit = MAX_RECENT_FILES,
+): readonly RecentFile[] {
   if (isPseudoTab(filePath) || files[0]?.filePath === filePath) {
     return files;
   }
@@ -26,7 +30,11 @@ export function touchRecent(files: readonly RecentFile[], filePath: string, limi
 }
 
 /** `files` with `filePath` marked edited (added first when missing); the same array when nothing changes. */
-export function markEdited(files: readonly RecentFile[], filePath: string, limit = MAX_RECENT_FILES): readonly RecentFile[] {
+export function markEdited(
+  files: readonly RecentFile[],
+  filePath: string,
+  limit = MAX_RECENT_FILES,
+): readonly RecentFile[] {
   if (isPseudoTab(filePath)) {
     return files;
   }
@@ -53,7 +61,8 @@ export function parseRecentList(value: unknown): RecentFile[] {
     if (files.length >= MAX_RECENT_FILES) {
       break;
     }
-    const data = entry && typeof entry === "object" && !Array.isArray(entry) ? (entry as Record<string, unknown>) : null;
+    const data =
+      entry && typeof entry === "object" && !Array.isArray(entry) ? (entry as Record<string, unknown>) : null;
     const filePath = data?.filePath;
     if (!data || !isSavablePath(filePath) || isPseudoTab(filePath) || seen.has(filePath)) {
       continue;

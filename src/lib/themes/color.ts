@@ -63,7 +63,12 @@ export function mix(color: string, other: string, weight: number): string {
   const from = rgba(color);
   const to = rgba(other);
   const t = Math.min(1, Math.max(0, weight));
-  return hexOf({ r: from.r + (to.r - from.r) * t, g: from.g + (to.g - from.g) * t, b: from.b + (to.b - from.b) * t, a: 1 });
+  return hexOf({
+    r: from.r + (to.r - from.r) * t,
+    g: from.g + (to.g - from.g) * t,
+    b: from.b + (to.b - from.b) * t,
+    a: 1,
+  });
 }
 
 /** The color at `alpha` opacity, as rgba(). */

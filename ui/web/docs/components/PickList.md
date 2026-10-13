@@ -3,7 +3,7 @@
 A filterable list to pick one item: words filter, arrows move, Enter picks, Esc cancels.
 
 ```ts
-import PickList from "$ui/components/PickList.svelte";
+import PickList from "@git-manager/ui/components/PickList.svelte";
 ```
 
 Group: Navigation. Also known as: Command, Combobox, Quick pick.

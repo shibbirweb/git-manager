@@ -4,7 +4,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import Icon from "$lib/ui/Icon.svelte";
-  import LayoutToggleIcon from "./LayoutToggleIcon.svelte";
+  import LayoutIcon from "@git-manager/ui/components/LayoutIcon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { recentEntries, shortPath } from "./recentEntries";
   import {
@@ -21,9 +21,7 @@
   import { navigation } from "$lib/stores/navigation.svelte";
 
   const head = $derived(repoStore.status?.head);
-  const branchLabel = $derived(
-    head?.branch ?? (head?.shortId ? `HEAD detached at ${head.shortId}` : "No branch"),
-  );
+  const branchLabel = $derived(head?.branch ?? (head?.shortId ? `HEAD detached at ${head.shortId}` : "No branch"));
   const busy = $derived(repoStore.busy !== null || repoStore.repo === null);
   // A separate repository picker only helps when the folder is not simply one repository.
   const showRepoPicker = $derived(
@@ -38,12 +36,20 @@
   function workspaceMenu(event: MouseEvent): void {
     const openRoots = repoStore.workspace?.folders.map((folder) => folder.root) ?? [];
     const recent = recentEntries(settings, { file: repoStore.workspace?.file ?? null, folderRoots: openRoots });
-    const items: MenuItem[] = recent.map((entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecent(entry) }));
+    const items: MenuItem[] = recent.map((entry) => ({
+      label: entry.label,
+      hint: entry.hint,
+      action: () => void openRecent(entry),
+    }));
     if (items.length > 0) {
       items.push(
         {
           label: "Open Recent in New Window",
-          submenu: recent.map((entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecentInNewWindow(entry) })),
+          submenu: recent.map((entry) => ({
+            label: entry.label,
+            hint: entry.hint,
+            action: () => void openRecentInNewWindow(entry),
+          })),
         },
         { separator: true },
       );
@@ -63,7 +69,11 @@
     if (openRoots.length > 1) {
       items.push({ separator: true });
       for (const folder of repoStore.workspace?.folders ?? []) {
-        items.push({ label: `Remove "${folder.name}" from Workspace`, hint: shortPath(folder.root), action: () => void repoStore.removeFolder(folder.root) });
+        items.push({
+          label: `Remove "${folder.name}" from Workspace`,
+          hint: shortPath(folder.root),
+          action: () => void repoStore.removeFolder(folder.root),
+        });
       }
     }
     items.push(
@@ -83,7 +93,10 @@
       const isActive = repo.root === repoStore.repo?.root;
       return {
         label: `${isActive ? "\u2713 " : "   "}${repo.name}`,
-        hint: [repo.relativePath && repo.relativePath !== repo.name ? repo.relativePath : "", count > 0 ? `${count}` : ""]
+        hint: [
+          repo.relativePath && repo.relativePath !== repo.name ? repo.relativePath : "",
+          count > 0 ? `${count}` : "",
+        ]
           .filter(Boolean)
           .join("  "),
         action: () => void repoStore.setActiveRepo(repo.root),
@@ -146,7 +159,11 @@
       </button>
     </div>
     <div class="divider"></div>
-    <button class="pill" onclick={workspaceMenu} title={(repoStore.workspace?.folders ?? []).map((folder) => folder.root).join("\n")}>
+    <button
+      class="pill"
+      onclick={workspaceMenu}
+      title={(repoStore.workspace?.folders ?? []).map((folder) => folder.root).join("\n")}
+    >
       <Icon name="folder" size={14} />
       <span class="strong truncate">{repoStore.workspace?.name}</span>
       <Icon name="chevron-down" size={12} />
@@ -161,22 +178,22 @@
       </button>
     {/if}
     {#if repoStore.repo}
-    <button class="pill" onclick={branchMenu} title="Branch: {branchLabel}. Click to switch branches">
-      <Icon name="branch" size={14} />
-      <span class="truncate branch-name">{branchLabel}</span>
-      {#if head && (head.ahead > 0 || head.behind > 0)}
-        <span class="counts dim">
-          {#if head.ahead > 0}<span title="Commits to push">{head.ahead}<Icon name="arrow-up" size={11} /></span>{/if}
-          {#if head.behind > 0}<span title="Commits to pull">{head.behind}<Icon name="arrow-down" size={11} /></span>{/if}
-        </span>
-      {/if}
-      <Icon name="chevron-down" size={12} />
-    </button>
+      <button class="pill" onclick={branchMenu} title="Branch: {branchLabel}. Click to switch branches">
+        <Icon name="branch" size={14} />
+        <span class="truncate branch-name">{branchLabel}</span>
+        {#if head && (head.ahead > 0 || head.behind > 0)}
+          <span class="counts dim">
+            {#if head.ahead > 0}<span title="Commits to push">{head.ahead}<Icon name="arrow-up" size={11} /></span>{/if}
+            {#if head.behind > 0}<span title="Commits to pull">{head.behind}<Icon name="arrow-down" size={11} /></span
+              >{/if}
+          </span>
+        {/if}
+        <Icon name="chevron-down" size={12} />
+      </button>
     {:else}
       <span class="dim no-repo">No git repository</span>
     {/if}
   </div>
-
 
   <div class="right">
     {#if repoStore.busy}
@@ -194,7 +211,7 @@
       aria-label="Toggle left activity bar"
       aria-pressed={settings.leftBarVisible}
     >
-      <LayoutToggleIcon side="left" visible={settings.leftBarVisible} />
+      <LayoutIcon kind="sidebar-left" active={settings.leftBarVisible} />
     </button>
     <button
       class="icon-btn"
@@ -203,13 +220,18 @@
       aria-label="Toggle right activity bar"
       aria-pressed={settings.rightBarVisible}
     >
-      <LayoutToggleIcon side="right" visible={settings.rightBarVisible} />
+      <LayoutIcon kind="sidebar-right" active={settings.rightBarVisible} />
     </button>
     <div class="divider"></div>
     <button class="icon-btn" onclick={toggleTheme} title="Toggle light/dark theme">
       <Icon name="sun" size={15} />
     </button>
-    <button class="icon-btn" onclick={() => settings.openDialog()} title={withCommandKeys("Settings", "app.settings")} aria-label="Settings">
+    <button
+      class="icon-btn"
+      onclick={() => settings.openDialog()}
+      title={withCommandKeys("Settings", "app.settings")}
+      aria-label="Settings"
+    >
       <Icon name="settings" size={15} />
     </button>
   </div>
@@ -320,17 +342,6 @@
     height: 26px;
     min-width: 26px;
   }
-
-
-
-
-
-
-
-
-
-
-
 
   .busy {
     display: flex;

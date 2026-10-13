@@ -22,7 +22,11 @@ export function statusOf(entry: GitCommandEntry): EntryStatus {
 }
 
 /** Adds or replaces `entry` (an event), keeping the list ordered by id and capped. */
-export function upsertEntry(entries: GitCommandEntry[], entry: GitCommandEntry, max = MAX_CONSOLE_ENTRIES): GitCommandEntry[] {
+export function upsertEntry(
+  entries: GitCommandEntry[],
+  entry: GitCommandEntry,
+  max = MAX_CONSOLE_ENTRIES,
+): GitCommandEntry[] {
   const last = entries[entries.length - 1];
   let next: GitCommandEntry[];
   if (!last || entry.id > last.id) {

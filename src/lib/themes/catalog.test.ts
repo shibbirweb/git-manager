@@ -19,7 +19,8 @@ function cssBlock(selector: string): Record<string, string> {
 
 /** app.css values with var() references resolved, like the browser's computed style. */
 function resolved(values: Record<string, string>): Record<string, string> {
-  const read = (value: string): string => value.replace(/var\((--[a-z0-9-]+)\)/g, (_, token: string) => read(values[token] ?? ""));
+  const read = (value: string): string =>
+    value.replace(/var\((--[a-z0-9-]+)\)/g, (_, token: string) => read(values[token] ?? ""));
   return Object.fromEntries(Object.entries(values).map(([token, value]) => [token, read(value)]));
 }
 
@@ -44,12 +45,16 @@ describe("catalog", () => {
   });
 
   it("covers every color token app.css defines", () => {
-    const appTokens = Object.keys(root).filter((token) => !/^--(font-|ui-size|code-size|radius|panel-gap|panel-radius)/.test(token));
+    const appTokens = Object.keys(root).filter(
+      (token) => !/^--(font-|ui-size|code-size|radius|panel-gap|panel-radius)/.test(token),
+    );
     expect([...COLOR_TOKENS].sort()).toEqual(appTokens.sort());
   });
 
   it("matches the built-in light and dark sets in app.css", () => {
-    expect(colorsOf(DEFAULT_LIGHT_THEME)).toEqual(Object.fromEntries(COLOR_TOKENS.map((token) => [token, resolved(root)[token]])));
+    expect(colorsOf(DEFAULT_LIGHT_THEME)).toEqual(
+      Object.fromEntries(COLOR_TOKENS.map((token) => [token, resolved(root)[token]])),
+    );
     const dark = resolved({ ...root, ...darkBlock });
     expect(colorsOf(DEFAULT_DARK_THEME)).toEqual(Object.fromEntries(COLOR_TOKENS.map((token) => [token, dark[token]])));
   });

@@ -132,7 +132,10 @@
   }
 
   function outputText(entry: GitCommandEntry): string {
-    return [entry.stdout, entry.stderr, entry.error ?? ""].map((text) => (text ?? "").replace(/\s+$/, "")).filter(Boolean).join("\n");
+    return [entry.stdout, entry.stderr, entry.error ?? ""]
+      .map((text) => (text ?? "").replace(/\s+$/, ""))
+      .filter(Boolean)
+      .join("\n");
   }
 
   function openMenu(event: MouseEvent, entry: GitCommandEntry): void {
@@ -165,7 +168,13 @@
   <div class="toolbar">
     <div class="filter">
       <Icon name="search" size={13} />
-      <input class="filter-input" placeholder="Filter commands" aria-label="Filter commands" bind:value={filter} spellcheck="false" />
+      <input
+        class="filter-input"
+        placeholder="Filter commands"
+        aria-label="Filter commands"
+        bind:value={filter}
+        spellcheck="false"
+      />
       {#if filter}
         <button class="icon-btn tiny" onclick={() => (filter = "")} title="Clear filter" aria-label="Clear filter">
           <Icon name="x" size={12} />
@@ -177,7 +186,9 @@
       {entries.length === 1 ? "command" : "commands"}
     </span>
     <div class="spacer"></div>
-    <button class="btn small" onclick={() => void clear()} disabled={entries.length === 0} title="Clear the console">Clear</button>
+    <button class="btn small" onclick={() => void clear()} disabled={entries.length === 0} title="Clear the console"
+      >Clear</button
+    >
   </div>
 
   {#if loadError}
@@ -187,7 +198,14 @@
       {entries.length === 0 ? "Git commands the app runs show up here." : "No commands match the filter."}
     </div>
   {:else}
-    <div class="list" bind:this={listEl} bind:clientHeight={viewportHeight} onscroll={onScroll} role="list" aria-label="Git commands">
+    <div
+      class="list"
+      bind:this={listEl}
+      bind:clientHeight={viewportHeight}
+      onscroll={onScroll}
+      role="list"
+      aria-label="Git commands"
+    >
       <div class="spacer-box" style="height: {layout.total}px">
         {#each visible as entry, index (entry.id)}
           {@const open = openIds.has(entry.id)}

@@ -22,7 +22,9 @@ export type StartStep =
 export const MAIN_WINDOW = "main";
 
 function strings(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim() !== "") : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.trim() !== "")
+    : [];
 }
 
 /** Reads the backend's answer; anything malformed is the main window's usual start. */
@@ -43,7 +45,9 @@ export function startStep(start: WindowStart, launchPath: string | null): StartS
     if (start.open.workspaceFile) {
       return { kind: "workspaceFile", filePath: start.open.workspaceFile };
     }
-    return start.open.folderPaths.length > 0 ? { kind: "folders", folderPaths: start.open.folderPaths } : { kind: "welcome" };
+    return start.open.folderPaths.length > 0
+      ? { kind: "folders", folderPaths: start.open.folderPaths }
+      : { kind: "welcome" };
   }
   return launchPath ? { kind: "launch", path: launchPath } : { kind: "session" };
 }

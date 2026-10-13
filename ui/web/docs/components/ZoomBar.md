@@ -3,7 +3,7 @@
 An image preview's zoom controls: out, the zoom in percent, in, Fit and 100%.
 
 ```ts
-import ZoomBar from "$ui/components/ZoomBar.svelte";
+import ZoomBar from "@git-manager/ui/components/ZoomBar.svelte";
 ```
 
 Group: Editor. Also known as: Zoom.

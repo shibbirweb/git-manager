@@ -189,12 +189,13 @@ export function stripTitle(markdown: string): string {
 export function countWords(markdown: string): number {
   return segments(markdown)
     .filter((segment) => !segment.code)
-    .map((segment) =>
-      segment.text
-        .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-        .replace(/[#*_`>|-]/g, " ")
-        .split(/\s+/)
-        .filter((word) => /[A-Za-z0-9]/.test(word)).length,
+    .map(
+      (segment) =>
+        segment.text
+          .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+          .replace(/[#*_`>|-]/g, " ")
+          .split(/\s+/)
+          .filter((word) => /[A-Za-z0-9]/.test(word)).length,
     )
     .reduce((sum, count) => sum + count, 0);
 }
@@ -217,7 +218,10 @@ export function pageProblems(markdown: string): string[] {
     if (!segment.code || !/^\s*```\s*mermaid\s*$/.test(firstLine)) {
       continue;
     }
-    const body = segment.text.split("\n").slice(1, -1).filter((line) => line.trim() !== "" && !line.trim().startsWith("%%"));
+    const body = segment.text
+      .split("\n")
+      .slice(1, -1)
+      .filter((line) => line.trim() !== "" && !line.trim().startsWith("%%"));
     const kind = (body[0] ?? "").trim().split(/\s+/)[0] ?? "";
     if (!MERMAID_TYPES.includes(kind)) {
       problems.push(`has a mermaid block that does not start with a diagram type (found "${kind || "nothing"}")`);
@@ -230,7 +234,11 @@ export function pageProblems(markdown: string): string[] {
 export function manifestProblems(manifest: Manifest): string[] {
   const problems: string[] = [];
   const usagePages = new Set(manifest.usage.map((entry) => entry.page));
-  const all = [...manifest.usage.map((entry) => entry.page), ...manifest.developer.map((entry) => entry.page), ...manifest.features.map((feature) => feature.developer)];
+  const all = [
+    ...manifest.usage.map((entry) => entry.page),
+    ...manifest.developer.map((entry) => entry.page),
+    ...manifest.features.map((feature) => feature.developer),
+  ];
   const names = new Map<string, string>();
   for (const page of all) {
     const name = pageName(page);

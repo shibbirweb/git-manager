@@ -131,12 +131,14 @@ export function defaultChannel(currentVersion: string): Channel {
 
 /** Releases newer than `currentVersion` on `channel`, newest first. */
 export function newerReleases(currentVersion: string, channel: Channel, releases: Release[]): Release[] {
-  return releases
-    .filter((release) => channel === "beta" || !release.prerelease)
-    // A beta version that was not flagged as a pre-release still stays off the stable channel.
-    .filter((release) => channel === "beta" || (parseVersion(release.version)?.pre.length ?? 0) === 0)
-    .filter((release) => compareVersions(release.version, currentVersion) > 0)
-    .sort((a, b) => compareVersions(b.version, a.version));
+  return (
+    releases
+      .filter((release) => channel === "beta" || !release.prerelease)
+      // A beta version that was not flagged as a pre-release still stays off the stable channel.
+      .filter((release) => channel === "beta" || (parseVersion(release.version)?.pre.length ?? 0) === 0)
+      .filter((release) => compareVersions(release.version, currentVersion) > 0)
+      .sort((a, b) => compareVersions(b.version, a.version))
+  );
 }
 
 /** Skipping a version also silences everything older than it. */

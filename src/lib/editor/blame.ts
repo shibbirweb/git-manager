@@ -3,7 +3,15 @@
 // gutter column with the commit, author and age of every block of lines.
 
 import { Compartment, type EditorState, type Extension, StateEffect, StateField } from "@codemirror/state";
-import { EditorView, GutterMarker, gutter, layer, type LayerMarker, ViewPlugin, type ViewUpdate } from "@codemirror/view";
+import {
+  EditorView,
+  GutterMarker,
+  gutter,
+  layer,
+  type LayerMarker,
+  ViewPlugin,
+  type ViewUpdate,
+} from "@codemirror/view";
 import { api, errorMessage } from "$lib/api";
 import { fullDate, relativeTime } from "$lib/log/format";
 import type { NavLocation } from "$lib/stores/navHistory";
@@ -434,7 +442,12 @@ export interface InlineBlameSource {
  * Fetches blame for the editor's current text (or an inline diff's new text). Results for
  * text that changed while the request ran are dropped; the caller asks again later.
  */
-export async function loadBlame(view: EditorView, target: BlameTarget, eol: Eol, inline: InlineBlameSource | null = null): Promise<void> {
+export async function loadBlame(
+  view: EditorView,
+  target: BlameTarget,
+  eol: Eol,
+  inline: InlineBlameSource | null = null,
+): Promise<void> {
   const doc = view.state.doc;
   const text = inline?.text ?? doc.toString();
   const lineCount = inline ? text.split("\n").length : doc.lines;

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { type GitTabRef, gitTabPath, gitTabsInFolder, gitTabTitle, isGitTab, parseGitTabPath, revisionLabel } from "./gitTabs";
+import {
+  type GitTabRef,
+  gitTabPath,
+  gitTabsInFolder,
+  gitTabTitle,
+  isGitTab,
+  parseGitTabPath,
+  revisionLabel,
+} from "./gitTabs";
 import { isPseudoTab } from "./pseudoTabs";
 import { tabLabels, tabsInFolder } from "./tabs";
 
@@ -41,9 +49,15 @@ describe("git tabs", () => {
 
   it("titles each kind", () => {
     expect(gitTabTitle(refs[0]).name).toBe("History: a|b c.ts");
-    expect(gitTabTitle(refs[1])).toEqual({ name: "History: main.ts:3-9", title: "History of lines 3-9 of src/main.ts (app)" });
+    expect(gitTabTitle(refs[1])).toEqual({
+      name: "History: main.ts:3-9",
+      title: "History of lines 3-9 of src/main.ts (app)",
+    });
     expect(gitTabTitle(refs[2]).name).toBe("README.md vs feature/x");
-    expect(gitTabTitle(refs[3])).toEqual({ name: "Shelved: new file.txt", title: "dir/new file.txt in shelved changes (app)" });
+    expect(gitTabTitle(refs[3])).toEqual({
+      name: "Shelved: new file.txt",
+      title: "dir/new file.txt in shelved changes (app)",
+    });
     expect(gitTabTitle(refs[4])).toEqual({ name: "Reflog: a|pp", title: "Reflog of a|pp" });
     expect(revisionLabel("0123456789abcdef0123456789abcdef01234567")).toBe("01234567");
   });

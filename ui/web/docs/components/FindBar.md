@@ -3,7 +3,7 @@
 The editor's find and replace bar: find field with toggles, match counter, previous, next and close.
 
 ```ts
-import FindBar from "$ui/components/FindBar.svelte";
+import FindBar from "@git-manager/ui/components/FindBar.svelte";
 ```
 
 Group: Editor. Also known as: Find, Search bar.

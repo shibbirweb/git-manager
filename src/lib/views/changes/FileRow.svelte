@@ -23,8 +23,19 @@
     oncontextmenu: (event: MouseEvent) => void;
   }
 
-  let { file, kind, selected, id, nested = false, actions, badge = null, note = null, onselect, onactivate, oncontextmenu }: Props =
-    $props();
+  let {
+    file,
+    kind,
+    selected,
+    id,
+    nested = false,
+    actions,
+    badge = null,
+    note = null,
+    onselect,
+    onactivate,
+    oncontextmenu,
+  }: Props = $props();
 
   const parts = $derived(splitPath(file.path));
   const title = $derived(

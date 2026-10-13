@@ -3,7 +3,7 @@
 A labelled form field: the label, the control, then a hint or an error under it.
 
 ```ts
-import Field from "$ui/components/Field.svelte";
+import Field from "@git-manager/ui/components/Field.svelte";
 ```
 
 Group: Forms. Also known as: Field, Form item, Label.

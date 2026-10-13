@@ -11,7 +11,9 @@ const NAV_BAR = { commandId: "edit.navigationBar", key: "Meta-ArrowUp" };
 describe("editorKeyPlan", () => {
   it("only takes the Navigation Bar key without custom keys", () => {
     expect(editorKeyPlan(specs, {}, "macos")).toEqual({ ...EMPTY_KEY_PLAN, window: [NAV_BAR] });
-    expect(editorKeyPlan(linuxSpecs, {}, "linux").window).toEqual([{ commandId: "edit.navigationBar", key: "Alt-Home" }]);
+    expect(editorKeyPlan(linuxSpecs, {}, "linux").window).toEqual([
+      { commandId: "edit.navigationBar", key: "Alt-Home" },
+    ]);
   });
 
   it("follows a custom Navigation Bar key, and leaves the editor alone without one", () => {
@@ -35,7 +37,11 @@ describe("editorKeyPlan", () => {
   });
 
   it("does not block a default key another editor command took", () => {
-    const plan = editorKeyPlan(specs, { "code.duplicate": "CmdOrCtrl+D", "code.selectNextOccurrence": "CmdOrCtrl+Shift+D" }, "macos");
+    const plan = editorKeyPlan(
+      specs,
+      { "code.duplicate": "CmdOrCtrl+D", "code.selectNextOccurrence": "CmdOrCtrl+Shift+D" },
+      "macos",
+    );
     expect(plan.commands).toEqual([
       { commandId: "code.duplicate", key: "Meta-d" },
       { commandId: "code.selectNextOccurrence", key: "Shift-Meta-d" },
@@ -66,7 +72,9 @@ describe("editorKeyPlan", () => {
 
   it("compares plans by content", () => {
     const overrides = { "code.duplicate": "F6" };
-    expect(sameKeyPlan(editorKeyPlan(specs, overrides, "macos"), editorKeyPlan(specs, { ...overrides }, "macos"))).toBe(true);
+    expect(sameKeyPlan(editorKeyPlan(specs, overrides, "macos"), editorKeyPlan(specs, { ...overrides }, "macos"))).toBe(
+      true,
+    );
     expect(sameKeyPlan(editorKeyPlan(specs, overrides, "macos"), EMPTY_KEY_PLAN)).toBe(false);
   });
 });

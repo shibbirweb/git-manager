@@ -3,7 +3,7 @@
 Views side by side in one panel, like split terminals: shares of the width, lines between, focus line.
 
 ```ts
-import PaneRow from "$ui/components/PaneRow.svelte";
+import PaneRow from "@git-manager/ui/components/PaneRow.svelte";
 ```
 
 Group: Layout. Also known as: Split panes.

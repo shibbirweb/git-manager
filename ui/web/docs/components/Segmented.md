@@ -3,7 +3,7 @@
 A row of mutually exclusive choices (a toggle group), like Light / Dark / System. Arrow keys move.
 
 ```ts
-import Segmented from "$ui/components/Segmented.svelte";
+import Segmented from "@git-manager/ui/components/Segmented.svelte";
 ```
 
 Group: Actions. Also known as: Toggle group, Segmented control.

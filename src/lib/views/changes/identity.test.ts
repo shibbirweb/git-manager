@@ -33,7 +33,9 @@ describe("commit identity", () => {
       email: "",
       scope: "global",
     });
-    expect(identityPrefill(identity({ name: null, email: "work@example.com" }, { name: "Ann", email: "ann@example.com" }))).toEqual({
+    expect(
+      identityPrefill(identity({ name: null, email: "work@example.com" }, { name: "Ann", email: "ann@example.com" })),
+    ).toEqual({
       name: "Ann",
       email: "work@example.com",
       scope: "local",

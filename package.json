@@ -15,6 +15,9 @@
     "url": "https://github.com/shibbirweb/git-manager/issues"
   },
   "type": "module",
+  "workspaces": [
+    "ui/web"
+  ],
   "scripts": {
     "dev": "bun --bun vite dev",
     "build": "bun --bun vite build",
@@ -29,10 +32,14 @@
     "ui:tokens": "bun ui/design-tokens/scripts/tokens.ts",
     "ui:parity": "bun --bun ui/web/scripts/parity.ts",
     "ui:mcp": "bun ui/mcp/server.ts",
-    "ui:themes": "bun --bun ui/web/scripts/themes.ts"
+    "ui:themes": "bun --bun ui/web/scripts/themes.ts",
+    "ui:migration": "bun ui/web/scripts/migration.ts",
+    "format": "bun --bun prettier --write \"src/**/*.{ts,svelte,css}\" \"ui/**/*.{ts,svelte,css,json}\" \"scripts/**/*.ts\"",
+    "format:check": "bun --bun prettier --check \"src/**/*.{ts,svelte,css}\" \"ui/**/*.{ts,svelte,css,json}\" \"scripts/**/*.ts\""
   },
   "license": "MIT",
   "dependencies": {
+    "@git-manager/ui": "workspace:*",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-cpp": "^6.0.3",
@@ -95,6 +102,8 @@
     "happy-dom": "20.14.5",
     "material-icon-theme": "5.39.0",
     "playwright": "^1.63.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
     "svelte": "^5.56.3",
     "svelte-check": "^4.6.0",
     "typescript": "~6.0.3",

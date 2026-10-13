@@ -7,17 +7,7 @@
   import Icon from "./Icon.svelte";
 
   type IconButtonSize =
-    | "large"
-    | "normal"
-    | "header"
-    | "compact"
-    | "small"
-    | "chevron"
-    | "inline"
-    | "mini"
-    | "micro"
-    | "tool"
-    | "row";
+    "large" | "normal" | "header" | "compact" | "small" | "chevron" | "inline" | "mini" | "micro" | "tool" | "row";
 
   interface Props extends Omit<HTMLButtonAttributes, "children" | "class" | "style"> {
     icon: IconName;

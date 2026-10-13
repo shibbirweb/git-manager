@@ -48,7 +48,8 @@ let shopApp = "";
 let mediaSite = "";
 let brandKit = "";
 
-const appVersion = /^version\s*=\s*"([^"]+)"/m.exec(readFileSync(join(PROJECT, "src-tauri/Cargo.toml"), "utf8"))?.[1] ?? "0.0.0";
+const appVersion =
+  /^version\s*=\s*"([^"]+)"/m.exec(readFileSync(join(PROJECT, "src-tauri/Cargo.toml"), "utf8"))?.[1] ?? "0.0.0";
 
 // ---------------------------------------------------------------------------------------------
 // Scenario: what the page answers itself
@@ -147,7 +148,13 @@ function cannedNodeVersions(): unknown[] {
 
 /** The same on every machine; terminal_spawn still starts the real shell at that path. */
 function cannedShells(): unknown[] {
-  const shell = (name: string, args: string[], isDefault: boolean) => ({ id: `/bin/${name}`, name, path: `/bin/${name}`, args, isDefault });
+  const shell = (name: string, args: string[], isDefault: boolean) => ({
+    id: `/bin/${name}`,
+    name,
+    path: `/bin/${name}`,
+    args,
+    isDefault,
+  });
   return [shell("zsh", ["-l"], true), shell("bash", ["-l"], false), shell("sh", [], false), shell("dash", [], false)];
 }
 
@@ -166,7 +173,7 @@ function writeDemoAgent(): string {
     "printf '> '",
     "while IFS= read -r line; do",
     "  printf '\\033]0;\u280b %s\\007' \"$line\"",
-    "  echo \"Reading the code for: $line\"",
+    '  echo "Reading the code for: $line"',
     "  sleep 600",
     "done",
     "",
@@ -184,7 +191,9 @@ function cannedAiUsage(): unknown[] {
       status: "ok",
       session: { usedPercent: 42, windowMinutes: 300, resetsAt: now + 135 * 60_000 },
       weekly: { usedPercent: 83, windowMinutes: 10_080, resetsAt: now + 52 * 3_600_000 },
-      modelWeekly: [{ model: "Fable", window: { usedPercent: 57, windowMinutes: 10_080, resetsAt: now + 52 * 3_600_000 } }],
+      modelWeekly: [
+        { model: "Fable", window: { usedPercent: 57, windowMinutes: 10_080, resetsAt: now + 52 * 3_600_000 } },
+      ],
       plan: "max",
       message: null,
     },
@@ -265,7 +274,8 @@ function installOverrides(config: PageConfig): void {
     throw { kind: "blocked", message: `screenshots.ts does not run ${cmd}` };
   };
   // Exact folder or below it: a bare prefix would also let a sibling like /tmp/gitmanager-docs-x through.
-  const inside = (value: string) => value === config.allowedRoot || value.startsWith(`${config.allowedRoot.replace(/\/+$/, "")}/`);
+  const inside = (value: string) =>
+    value === config.allowedRoot || value.startsWith(`${config.allowedRoot.replace(/\/+$/, "")}/`);
   const unsaved = new Map<string, { tabPath: string; workspaceId: string; savedAt: number; text: string }>();
   let mcpStatus = { ...config.mcp };
   let memoryLog = { enabled: false, path: "/Users/you/.gitmanager/logs/memory.log", intervalMs: 500, thresholdMb: 5 };
@@ -286,7 +296,10 @@ function installOverrides(config: PageConfig): void {
     // Settings are written as patches; relayed, they would patch your own settings.json and
     // state.json with the demo (its folder became the last session and the only recent folder).
     update_config: (args) => {
-      const { configName, patch } = args as { configName: string; patch: { set?: { path: string[]; value: unknown }[]; remove?: string[][] } };
+      const { configName, patch } = args as {
+        configName: string;
+        patch: { set?: { path: string[]; value: unknown }[]; remove?: string[][] };
+      };
       const root = (store[configName] ?? {}) as Record<string, unknown>;
       // The object holding the last key of `path`, made on the way for a set.
       const parentOf = (path: string[], make: boolean): Record<string, unknown> | null => {
@@ -372,7 +385,11 @@ function installOverrides(config: PageConfig): void {
     cli_uninstall: blocked("cli_uninstall"),
     // The memory log would write into ~/.gitmanager/logs.
     memory_log_configure: (args) => {
-      const { enabled, intervalMs, thresholdMb } = args as { enabled: boolean; intervalMs: number; thresholdMb: number };
+      const { enabled, intervalMs, thresholdMb } = args as {
+        enabled: boolean;
+        intervalMs: number;
+        thresholdMb: number;
+      };
       memoryLog = { ...memoryLog, enabled, intervalMs, thresholdMb };
       return structuredClone(memoryLog);
     },
@@ -390,8 +407,15 @@ function installOverrides(config: PageConfig): void {
     unsaved_write: (args) => {
       const bytes = args as Uint8Array;
       const split = bytes.indexOf(10);
-      const meta = JSON.parse(new TextDecoder().decode(bytes.subarray(0, split))) as { tabPath: string; workspaceId: string };
-      unsaved.set(meta.tabPath, { ...meta, savedAt: Date.now(), text: new TextDecoder().decode(bytes.subarray(split + 1)) });
+      const meta = JSON.parse(new TextDecoder().decode(bytes.subarray(0, split))) as {
+        tabPath: string;
+        workspaceId: string;
+      };
+      unsaved.set(meta.tabPath, {
+        ...meta,
+        savedAt: Date.now(),
+        text: new TextDecoder().decode(bytes.subarray(split + 1)),
+      });
       return null;
     },
     unsaved_read: (args) => structuredClone(unsaved.get((args as { tabPath: string }).tabPath) ?? null),
@@ -462,7 +486,13 @@ function installOverrides(config: PageConfig): void {
     ],
     ["plugin:resources|", () => null],
   ];
-  const shots = { pending: 0, blocked: [] as string[], inflight: {} as Record<string, number>, calls: [] as string[], slow: [] as string[] };
+  const shots = {
+    pending: 0,
+    blocked: [] as string[],
+    inflight: {} as Record<string, number>,
+    calls: [] as string[],
+    slow: [] as string[],
+  };
   const blockedPrefixes = ["plugin:dialog|", "plugin:opener|", "plugin:window|", "plugin:webview|", "plugin:process|"];
   let inner: Invoke | null = null;
 
@@ -558,7 +588,9 @@ function installOverrides(config: PageConfig): void {
 
 function buildDemo(): void {
   rmSync(DEMO_DIR, { recursive: true, force: true });
-  execFileSync("bash", [join(PROJECT, "scripts/make-docs-demo.sh"), DEMO_DIR], { stdio: ["ignore", "ignore", "inherit"] });
+  execFileSync("bash", [join(PROJECT, "scripts/make-docs-demo.sh"), DEMO_DIR], {
+    stdio: ["ignore", "ignore", "inherit"],
+  });
   demo = realpathSync(DEMO_DIR);
   acme = join(demo, "acme");
   storefront = join(acme, "storefront");
@@ -575,7 +607,10 @@ function buildDemo(): void {
  * src/lib/views/files/previewSource.ts builds without Tauri, are answered here from the demo.
  */
 function previewResponse(url: string): { status: number; body?: Buffer; contentType?: string } {
-  const [kind, ...parts] = new URL(url).pathname.split("/").slice(1).map((part) => decodeURIComponent(part));
+  const [kind, ...parts] = new URL(url).pathname
+    .split("/")
+    .slice(1)
+    .map((part) => decodeURIComponent(part));
   const inDemo = (path: string) => path.startsWith(`${demo}/`) && !path.split("/").includes("..");
   const filePath = kind === "worktree" ? parts[0] : parts[2];
   const contentType = previewOf(filePath ?? "")?.mime;
@@ -589,7 +624,10 @@ function previewResponse(url: string): { status: number; body?: Buffer; contentT
     if (kind === "revision" && parts.length === 3 && inDemo(parts[0])) {
       const [repoRoot, revision, relativePath] = parts;
       const spec = revision === "index" ? `:0:${relativePath}` : `${revision}:${relativePath}`;
-      const body = execFileSync("git", ["-C", repoRoot, "show", spec], { stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 });
+      const body = execFileSync("git", ["-C", repoRoot, "show", spec], {
+        stdio: ["ignore", "pipe", "ignore"],
+        maxBuffer: 64 * 1024 * 1024,
+      });
       return { status: 200, body, contentType };
     }
   } catch {
@@ -664,13 +702,19 @@ class Shot {
         const inflight = await this.page.evaluate(
           () => (window as unknown as { __GM_SHOTS__: { inflight: Record<string, number> } }).__GM_SHOTS__.inflight,
         );
-        const names = Object.entries(inflight).filter((entry) => entry[1] > 0).map((entry) => entry[0]);
+        const names = Object.entries(inflight)
+          .filter((entry) => entry[1] > 0)
+          .map((entry) => entry[0]);
         console.warn(`  ${this.name}: still waiting on ${names.join(", ")}`);
-        const slow = await this.page.evaluate(() => (window as unknown as { __GM_SHOTS__: { slow: string[] } }).__GM_SHOTS__.slow);
+        const slow = await this.page.evaluate(
+          () => (window as unknown as { __GM_SHOTS__: { slow: string[] } }).__GM_SHOTS__.slow,
+        );
         console.warn(`  slow: ${slow.join(" | ")} now ${Date.now() % 100000}`);
         break;
       }
-      const pending = await this.page.evaluate(() => (window as unknown as { __GM_SHOTS__: { pending: number } }).__GM_SHOTS__.pending);
+      const pending = await this.page.evaluate(
+        () => (window as unknown as { __GM_SHOTS__: { pending: number } }).__GM_SHOTS__.pending,
+      );
       if (pending > 0) {
         quietSince = Date.now();
       } else if (Date.now() - quietSince >= quietMs) {
@@ -752,7 +796,9 @@ class Shot {
 
   async activateRepo(repoName: string): Promise<void> {
     await this.page.locator('header button[title^="Active repository:"]').click();
-    await this.menu().getByRole("menuitem", { name: new RegExp(`^\\S*\\s*${repoName}\\b`) }).click();
+    await this.menu()
+      .getByRole("menuitem", { name: new RegExp(`^\\S*\\s*${repoName}\\b`) })
+      .click();
     await this.settle();
   }
 
@@ -775,8 +821,12 @@ class Shot {
   }
 
   /** Union of the elements' boxes plus padding, kept inside the window. */
-  async clipAround(targets: Locator[], padding: number | { top?: number; right?: number; bottom?: number; left?: number } = 0) {
-    const pad = typeof padding === "number" ? { top: padding, right: padding, bottom: padding, left: padding } : padding;
+  async clipAround(
+    targets: Locator[],
+    padding: number | { top?: number; right?: number; bottom?: number; left?: number } = 0,
+  ) {
+    const pad =
+      typeof padding === "number" ? { top: padding, right: padding, bottom: padding, left: padding } : padding;
     let left = Infinity;
     let top = Infinity;
     let right = -Infinity;
@@ -825,7 +875,9 @@ class Shot {
       await this.settle();
     }
     await this.clearToasts();
-    const blocked = await this.page.evaluate(() => (window as unknown as { __GM_SHOTS__: { blocked: string[] } }).__GM_SHOTS__.blocked);
+    const blocked = await this.page.evaluate(
+      () => (window as unknown as { __GM_SHOTS__: { blocked: string[] } }).__GM_SHOTS__.blocked,
+    );
     const unexpected = blocked.filter((entry) => !entry.startsWith("plugin:window|"));
     if (unexpected.length > 0) {
       console.warn(`  ${this.name}: blocked ${unexpected.join(", ")}`);
@@ -868,7 +920,11 @@ function appPid(): number | null {
 
 let bridgePid: number | null = null;
 
-async function openApp(browser: Browser, name: string, scenario: Scenario): Promise<{ context: BrowserContext; shot: Shot }> {
+async function openApp(
+  browser: Browser,
+  name: string,
+  scenario: Scenario,
+): Promise<{ context: BrowserContext; shot: Shot }> {
   const viewport = scenario.viewport ?? VIEWPORT;
   const context = await browser.newContext({
     viewport,
@@ -877,10 +933,16 @@ async function openApp(browser: Browser, name: string, scenario: Scenario): Prom
   });
   const releases = scenario.releases ?? [];
   await context.route("https://api.github.com/**", (route) => route.fulfill({ json: releases }));
-  await context.route("http://gmpreview.localhost/**", (route) => route.fulfill(previewResponse(route.request().url())));
+  await context.route("http://gmpreview.localhost/**", (route) =>
+    route.fulfill(previewResponse(route.request().url())),
+  );
   const page = await context.newPage();
   page.on("pageerror", (error) => console.warn(`  ${name}: page error: ${error.message}`));
-  page.on("console", (message) => { if (process.env.GM_SHOTS_CONSOLE) { console.warn(`  console: ${message.text()}`); } });
+  page.on("console", (message) => {
+    if (process.env.GM_SHOTS_CONSOLE) {
+      console.warn(`  console: ${message.text()}`);
+    }
+  });
   if (scenario.clock) {
     await page.clock.install();
   }
@@ -998,7 +1060,10 @@ async function openSettings(shot: Shot, section: string): Promise<Locator> {
   await shot.page.getByRole("button", { name: "Settings", exact: true }).click();
   const dialog = shot.page.getByRole("dialog");
   await dialog.waitFor();
-  await dialog.getByRole("navigation", { name: "Settings sections" }).getByRole("button", { name: section, exact: true }).click();
+  await dialog
+    .getByRole("navigation", { name: "Settings sections" })
+    .getByRole("button", { name: section, exact: true })
+    .click();
   await shot.settle();
   return dialog;
 }
@@ -1020,33 +1085,41 @@ async function openMergeTool(shot: Shot): Promise<void> {
   await shot.settle(600);
 }
 
-define("welcome", async (shot) => {
-  // Close the folder like a user would; the Welcome screen then lists what was opened before.
-  await shot.page.locator("header .pill").first().click();
-  await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
-  await shot.page.locator(".welcome").waitFor();
-  await shot.save();
-}, () => ({
-  state: {
-    recentFolders: [designSystem, storefront, paymentsApi],
-    recentWorkspaces: [[acme, designSystem]],
+define(
+  "welcome",
+  async (shot) => {
+    // Close the folder like a user would; the Welcome screen then lists what was opened before.
+    await shot.page.locator("header .pill").first().click();
+    await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
+    await shot.page.locator(".welcome").waitFor();
+    await shot.save();
   },
-}));
+  () => ({
+    state: {
+      recentFolders: [designSystem, storefront, paymentsApi],
+      recentWorkspaces: [[acme, designSystem]],
+    },
+  }),
+);
 
 define("window-overview", async (shot) => {
   await overview(shot);
   await shot.save();
 });
 
-define("workspace-folders", async (shot) => {
-  await shot.page.getByRole("button", { name: "Add folder to workspace" }).click();
-  await shot.fileRow(designSystem).waitFor();
-  await shot.settle();
-  await shot.expand(join(designSystem, "tokens"));
-  await shot.page.mouse.move(640, 400);
-  const explorer = shot.page.locator("aside.explorer");
-  await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
-}, () => ({ dialogFolder: designSystem }));
+define(
+  "workspace-folders",
+  async (shot) => {
+    await shot.page.getByRole("button", { name: "Add folder to workspace" }).click();
+    await shot.fileRow(designSystem).waitFor();
+    await shot.settle();
+    await shot.expand(join(designSystem, "tokens"));
+    await shot.page.mouse.move(640, 400);
+    const explorer = shot.page.locator("aside.explorer");
+    await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
+  },
+  () => ({ dialogFolder: designSystem }),
+);
 
 define("repository-switcher", async (shot) => {
   // The menu opens where the pill is clicked; click near its bottom edge so the pill stays visible.
@@ -1055,7 +1128,9 @@ define("repository-switcher", async (shot) => {
   await pill.click({ position: { x: 12, y: (pillBox?.height ?? 28) - 3 } });
   await shot.menu().waitFor();
   await shot.page.mouse.move(640, 600);
-  await shot.save(await shot.clipAround([shot.page.locator("header .left"), shot.menu()], { top: 0, left: 0, right: 40, bottom: 24 }));
+  await shot.save(
+    await shot.clipAround([shot.page.locator("header .left"), shot.menu()], { top: 0, left: 0, right: 40, bottom: 24 }),
+  );
 });
 
 define("init-repository", async (shot) => {
@@ -1074,13 +1149,17 @@ define("files-panel", async (shot) => {
   await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
 });
 
-define("file-icons", async (shot) => {
-  await shot.expand(storefront, join(storefront, "src"));
-  await shot.page.locator("aside.explorer img.file-type-image").first().waitFor();
-  await shot.page.mouse.move(640, 400);
-  const explorer = shot.page.locator("aside.explorer");
-  await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
-}, () => ({ settings: { fileIcons: "material" } }));
+define(
+  "file-icons",
+  async (shot) => {
+    await shot.expand(storefront, join(storefront, "src"));
+    await shot.page.locator("aside.explorer img.file-type-image").first().waitFor();
+    await shot.page.mouse.move(640, 400);
+    const explorer = shot.page.locator("aside.explorer");
+    await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
+  },
+  () => ({ settings: { fileIcons: "material" } }),
+);
 
 define("files-context-menu", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
@@ -1097,7 +1176,10 @@ define("file-ops-menu", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
   await shot.fileRow(cartTs()).click({ button: "right" });
   await shot.menu().waitFor();
-  await shot.menu().getByRole("menuitem", { name: /^Rename\.\.\./ }).hover();
+  await shot
+    .menu()
+    .getByRole("menuitem", { name: /^Rename\.\.\./ })
+    .hover();
   const explorer = shot.page.locator("aside.explorer");
   const panel = await shot.clipPanel(explorer, [shot.menu(), explorer.locator('[role="treeitem"]').last()], 24);
   const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
@@ -1107,7 +1189,10 @@ define("file-ops-menu", async (shot) => {
 define("file-ops-rename", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
   await shot.fileRow(cartTs()).click({ button: "right" });
-  await shot.menu().getByRole("menuitem", { name: /^Rename\.\.\./ }).click();
+  await shot
+    .menu()
+    .getByRole("menuitem", { name: /^Rename\.\.\./ })
+    .click();
   const dialog = shot.page.getByRole("dialog", { name: "Rename File" });
   await dialog.waitFor();
   // The name is preselected without its extension ("cart" of cart.ts).
@@ -1135,7 +1220,15 @@ define("editor-tabs", async (shot) => {
 
 /** Opens enough files to fill or overflow the tab strip, in this order. */
 async function openManyTabs(shot: Shot): Promise<void> {
-  for (const file of ["README.md", "package.json", "src/index.ts", "src/catalog.ts", "src/pricing.ts", "src/shipping.ts", "src/checkout.ts"]) {
+  for (const file of [
+    "README.md",
+    "package.json",
+    "src/index.ts",
+    "src/catalog.ts",
+    "src/pricing.ts",
+    "src/shipping.ts",
+    "src/checkout.ts",
+  ]) {
     await shot.openFile(join(storefront, file));
   }
   await shot.openFile(cartTs());
@@ -1157,18 +1250,26 @@ define("tabs-pinned", async (shot) => {
 });
 
 // Settings > Editor > Wrap tabs: a narrow window shows the tabs on two rows.
-define("tabs-wrapped", async (shot) => {
-  await openManyTabs(shot);
-  await shot.page.mouse.move(5, 690);
-  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
-}, () => ({ settings: { wrapTabs: true }, viewport: { width: 900, height: 700 } }));
+define(
+  "tabs-wrapped",
+  async (shot) => {
+    await openManyTabs(shot);
+    await shot.page.mouse.move(5, 690);
+    await shot.save(await shot.clipAround([shot.page.locator(".tab-strip").first()], { bottom: 60 }));
+  },
+  () => ({ settings: { wrapTabs: true }, viewport: { width: 900, height: 700 } }),
+);
 
 // Settings > Editor > Tab limit > Single tab title: in single tab mode, one open file shows its name centered above the code.
-define("single-tab-title", async (shot) => {
-  await shot.openFile(cartTs());
-  await shot.page.mouse.move(5, 690);
-  await shot.save(await shot.clipAround([shot.page.locator(".tab-strip.single").first()], { bottom: 60 }));
-}, () => ({ settings: { tabLimit: 1 } }));
+define(
+  "single-tab-title",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await shot.page.mouse.move(5, 690);
+    await shot.save(await shot.clipAround([shot.page.locator(".tab-strip.single").first()], { bottom: 60 }));
+  },
+  () => ({ settings: { tabLimit: 1 } }),
+);
 
 // Window > Split Right, then Split Down: cart.ts on the left, pricing.ts above checkout.ts on the right.
 define("split-editor-grid", async (shot) => {
@@ -1184,56 +1285,84 @@ define("split-editor-grid", async (shot) => {
   await shot.save();
 });
 
-define("unsaved-changes-close", async (shot) => {
-  await shot.openFile(cartTs());
-  await clickLine(shot, "setQuantity(productId");
-  await shot.page.keyboard.type("// Quantities below one remove the line.\n");
-  await shot.page.locator(".file-host:not(.hidden) .badge.unsaved").waitFor();
-  await shot.page.locator("header .pill").first().click();
-  await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
-  const dialog = shot.page.getByRole("dialog", { name: "Unsaved Changes" });
-  await dialog.waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-  // Keep the edit: the folder stays open with the tab still unsaved.
-  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
-  await dialog.waitFor({ state: "hidden" });
-  await shot.page.locator(".file-host:not(.hidden) .badge.unsaved").waitFor();
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "unsaved-changes-close",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await clickLine(shot, "setQuantity(productId");
+    await shot.page.keyboard.type("// Quantities below one remove the line.\n");
+    await shot.page.locator(".file-host:not(.hidden) .badge.unsaved").waitFor();
+    await shot.page.locator("header .pill").first().click();
+    await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
+    const dialog = shot.page.getByRole("dialog", { name: "Unsaved Changes" });
+    await dialog.waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+    // Keep the edit: the folder stays open with the tab still unsaved.
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await dialog.waitFor({ state: "hidden" });
+    await shot.page.locator(".file-host:not(.hidden) .badge.unsaved").waitFor();
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
-define("editor-change-markers", async (shot) => {
-  await shot.openFile(cartTs());
-  await clickLine(shot, "useDiscount(code");
-  await shot.save(shot.page.locator("main.main"));
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "editor-change-markers",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await clickLine(shot, "useDiscount(code");
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
-define("changes-sidebar", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  await shot.page.mouse.move(640, 300);
-  await shot.save(shot.page.locator("aside.sidebar"));
-}, () => ({ viewport: { width: 1280, height: 560 }, state: { sidebarWidth: 360 } }));
+define(
+  "changes-sidebar",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    await shot.page.mouse.move(640, 300);
+    await shot.save(shot.page.locator("aside.sidebar"));
+  },
+  () => ({ viewport: { width: 1280, height: 560 }, state: { sidebarWidth: 360 } }),
+);
 
-define("commit-box", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  const message = shot.page.getByRole("textbox", { name: "Commit message" });
-  await message.click();
-  await shot.page.keyboard.type("Cart: set line quantities\n\nZero removes the line, and totals never go below zero.");
-  await shot.save(shot.page.locator(".commit-box"));
-}, () => ({ state: { sidebarWidth: 360 } }));
+define(
+  "commit-box",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    const message = shot.page.getByRole("textbox", { name: "Commit message" });
+    await message.click();
+    await shot.page.keyboard.type(
+      "Cart: set line quantities\n\nZero removes the line, and totals never go below zero.",
+    );
+    await shot.save(shot.page.locator(".commit-box"));
+  },
+  () => ({ state: { sidebarWidth: 360 } }),
+);
 
 // Settings > Git > Commit box > Per repository: a message box at the top of each repository.
-define("commit-box-per-repo", async (shot) => {
-  // payments-api's long file lists fold away, so both repositories and their boxes fit.
-  const payments = shot.page.getByRole("group", { name: "payments-api", exact: true });
-  for (const group of ["Conflicts", "Staged", "Changes"]) {
-    await payments.locator(".group-toggle", { hasText: group }).click();
-  }
-  const box = shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("textbox", { name: "Commit message" });
-  await box.click();
-  await shot.page.keyboard.type("Cart: set line quantities");
-  await shot.page.mouse.move(640, 300);
-  await shot.save(shot.page.locator("aside.sidebar"));
-}, () => ({ viewport: { width: 1280, height: 720 }, settings: { commitBoxLayout: "perRepo" }, state: { sidebarWidth: 360 } }));
+define(
+  "commit-box-per-repo",
+  async (shot) => {
+    // payments-api's long file lists fold away, so both repositories and their boxes fit.
+    const payments = shot.page.getByRole("group", { name: "payments-api", exact: true });
+    for (const group of ["Conflicts", "Staged", "Changes"]) {
+      await payments.locator(".group-toggle", { hasText: group }).click();
+    }
+    const box = shot.page
+      .getByRole("group", { name: "storefront", exact: true })
+      .getByRole("textbox", { name: "Commit message" });
+    await box.click();
+    await shot.page.keyboard.type("Cart: set line quantities");
+    await shot.page.mouse.move(640, 300);
+    await shot.save(shot.page.locator("aside.sidebar"));
+  },
+  () => ({
+    viewport: { width: 1280, height: 720 },
+    settings: { commitBoxLayout: "perRepo" },
+    state: { sidebarWidth: 360 },
+  }),
+);
 
 // A remote that wants a login: git asks through askpass, and the app shows the sign-in dialog.
 define("askpass-sign-in", async (shot) => {
@@ -1241,7 +1370,8 @@ define("askpass-sign-in", async (shot) => {
   const server = Bun.serve({
     port: 0,
     hostname: "127.0.0.1",
-    fetch: () => new Response("Authentication required", { status: 401, headers: { "WWW-Authenticate": 'Basic realm="Git"' } }),
+    fetch: () =>
+      new Response("Authentication required", { status: 401, headers: { "WWW-Authenticate": 'Basic realm="Git"' } }),
   });
   try {
     // A retry finds the remote of the first try, with an older port.
@@ -1275,7 +1405,11 @@ define("diff-view", async (shot) => {
   await collapseRepo(shot, "payments-api");
   // More room for the two sides.
   await shot.page.getByRole("button", { name: "Hide files" }).click();
-  await shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("cart.ts").click();
+  await shot.page
+    .getByRole("group", { name: "storefront", exact: true })
+    .getByRole("group", { name: "Changes" })
+    .getByText("cart.ts")
+    .click();
   await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
   await shot.settle(500);
   // Hovering a changed block shows its stage button more clearly.
@@ -1288,7 +1422,9 @@ define("operation-banner", async (shot) => {
   const banner = shot.page.getByRole("button", { name: "Abort", exact: true });
   await banner.waitFor();
   await shot.page.mouse.move(640, 500);
-  await shot.save(await shot.clipAround([shot.page.locator("header.header"), shot.page.locator(".workspace > .banner")]));
+  await shot.save(
+    await shot.clipAround([shot.page.locator("header.header"), shot.page.locator(".workspace > .banner")]),
+  );
 });
 
 define("conflicts-dialog", async (shot) => {
@@ -1298,15 +1434,19 @@ define("conflicts-dialog", async (shot) => {
   await shot.save(dialog);
 });
 
-define("inline-conflict-actions", async (shot) => {
-  await shot.activateRepo("payments-api");
-  await shot.openFile(appTs());
-  // With the Files panel open the bar wraps, so the counter shows on its second line.
-  await shot.page.locator(".cm-conflict-actions .cm-conflict-count").first().waitFor();
-  await shot.settle();
-  await shot.page.mouse.move(640, 790);
-  await shot.save(shot.page.locator("main.main"));
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "inline-conflict-actions",
+  async (shot) => {
+    await shot.activateRepo("payments-api");
+    await shot.openFile(appTs());
+    // With the Files panel open the bar wraps, so the counter shows on its second line.
+    await shot.page.locator(".cm-conflict-actions .cm-conflict-count").first().waitFor();
+    await shot.settle();
+    await shot.page.mouse.move(640, 790);
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
 define("merge-tool", async (shot) => {
   await openMergeTool(shot);
@@ -1341,107 +1481,151 @@ define("blame-inline", async (shot) => {
   await shot.save({ x: editorBox.x, y: top, width: editorBox.width, height });
 });
 
-define("blame-gutter", async (shot) => {
-  await shot.openFile(cartTs());
-  await shot.page.getByRole("toolbar", { name: "File actions" }).getByRole("button", { name: "Blame" }).click();
-  await shot.page.locator(".file-host:not(.hidden) .cm-blame-gutter .cm-blame-cell", { hasText: "Maya Chen" }).first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(shot.page.locator("main.main"));
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "blame-gutter",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await shot.page.getByRole("toolbar", { name: "File actions" }).getByRole("button", { name: "Blame" }).click();
+    await shot.page
+      .locator(".file-host:not(.hidden) .cm-blame-gutter .cm-blame-cell", { hasText: "Maya Chen" })
+      .first()
+      .waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
-define("log-graph", async (shot) => {
-  await shot.showLog();
-  await shot.page.mouse.move(640, 790);
-  await shot.save();
-}, logScenario);
+define(
+  "log-graph",
+  async (shot) => {
+    await shot.showLog();
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
+  },
+  logScenario,
+);
 
-define("commit-details", async (shot) => {
-  await shot.showLog();
-  await commitRow(shot, "Cart: discount codes and totals").click();
-  const files = shot.page.locator(".log-view").getByRole("listbox", { name: "Changed files" });
-  await files.waitFor();
-  await files.getByText("cart.ts").first().click();
-  await shot.page.locator(".log-view .cm-editor").first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save();
-}, logScenario);
+define(
+  "commit-details",
+  async (shot) => {
+    await shot.showLog();
+    await commitRow(shot, "Cart: discount codes and totals").click();
+    const files = shot.page.locator(".log-view").getByRole("listbox", { name: "Changed files" });
+    await files.waitFor();
+    await files.getByText("cart.ts").first().click();
+    await shot.page.locator(".log-view .cm-editor").first().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
+  },
+  logScenario,
+);
 
-define("commit-tab", async (shot) => {
-  await shot.showLog();
-  await commitRow(shot, "Cart: discount codes and totals").dblclick();
-  const tab = shot.page.locator(".commit-tab");
-  await tab.getByRole("listbox", { name: "Changed files" }).waitFor();
-  await tab.locator(".cm-editor").first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save();
-}, logScenario);
+define(
+  "commit-tab",
+  async (shot) => {
+    await shot.showLog();
+    await commitRow(shot, "Cart: discount codes and totals").dblclick();
+    const tab = shot.page.locator(".commit-tab");
+    await tab.getByRole("listbox", { name: "Changed files" }).waitFor();
+    await tab.locator(".cm-editor").first().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
+  },
+  logScenario,
+);
 
-define("log-context-menu", async (shot) => {
-  await shot.showLog();
-  await commitRow(shot, "Cart: discount codes and totals").click({ button: "right" });
-  await shot.menu().waitFor();
-  const list = shot.page.locator('[aria-label="Commits"]');
-  const across = await shot.clipAround([list], 0);
-  const down = await shot.clipAround([shot.menu(), commitRow(shot, "Cart: discount codes and totals")], { top: 70, bottom: 24 });
-  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
-}, logScenario);
+define(
+  "log-context-menu",
+  async (shot) => {
+    await shot.showLog();
+    await commitRow(shot, "Cart: discount codes and totals").click({ button: "right" });
+    await shot.menu().waitFor();
+    const list = shot.page.locator('[aria-label="Commits"]');
+    const across = await shot.clipAround([list], 0);
+    const down = await shot.clipAround([shot.menu(), commitRow(shot, "Cart: discount codes and totals")], {
+      top: 70,
+      bottom: 24,
+    });
+    await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+  },
+  logScenario,
+);
 
-define("branches-panel", async (shot) => {
-  await openBranches(shot);
-  await sidebarRow(shot, /^\s*Tags/).click();
-  await shot.settle();
-  await shot.page.mouse.move(640, 790);
-  const sidebar = shot.page.locator("aside.sidebar");
-  await shot.save(await shot.clipPanel(sidebar, [sidebar.locator(".sidebar-row").last()], 16));
-}, branchesScenario);
+define(
+  "branches-panel",
+  async (shot) => {
+    await openBranches(shot);
+    await sidebarRow(shot, /^\s*Tags/).click();
+    await shot.settle();
+    await shot.page.mouse.move(640, 790);
+    const sidebar = shot.page.locator("aside.sidebar");
+    await shot.save(await shot.clipPanel(sidebar, [sidebar.locator(".sidebar-row").last()], 16));
+  },
+  branchesScenario,
+);
 
-define("branch-context-menu", async (shot) => {
-  await openBranches(shot);
-  await sidebarRow(shot, "tax-rates").click({ button: "right" });
-  await shot.menu().waitFor();
-  const sidebar = shot.page.locator("aside.sidebar");
-  const panel = await shot.clipPanel(sidebar, [shot.menu(), sidebar.locator(".sidebar-row").last()], 16);
-  const across = await shot.clipAround([sidebar, shot.menu()], { right: 16 });
-  await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
-}, branchesScenario);
+define(
+  "branch-context-menu",
+  async (shot) => {
+    await openBranches(shot);
+    await sidebarRow(shot, "tax-rates").click({ button: "right" });
+    await shot.menu().waitFor();
+    const sidebar = shot.page.locator("aside.sidebar");
+    const panel = await shot.clipPanel(sidebar, [shot.menu(), sidebar.locator(".sidebar-row").last()], 16);
+    const across = await shot.clipAround([sidebar, shot.menu()], { right: 16 });
+    await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
+  },
+  branchesScenario,
+);
 
-define("stashes", async (shot) => {
-  await openBranches(shot);
-  const stash = sidebarRow(shot, "WIP: free shipping threshold");
-  await stash.hover();
-  await shot.settle();
-  const section = sidebarRow(shot, /^\s*Stashes/);
-  const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
-  const sectionBox = await section.boundingBox();
-  const stashBox = await stash.boundingBox();
-  if (!sidebar || !sectionBox || !stashBox) {
-    throw new Error("stashes: the stash list is not visible");
-  }
-  const top = Math.max(sidebar.y, sectionBox.y - 120);
-  await shot.save({ x: sidebar.x, y: top, width: sidebar.width, height: stashBox.y + stashBox.height + 16 - top });
-}, branchesScenario);
+define(
+  "stashes",
+  async (shot) => {
+    await openBranches(shot);
+    const stash = sidebarRow(shot, "WIP: free shipping threshold");
+    await stash.hover();
+    await shot.settle();
+    const section = sidebarRow(shot, /^\s*Stashes/);
+    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+    const sectionBox = await section.boundingBox();
+    const stashBox = await stash.boundingBox();
+    if (!sidebar || !sectionBox || !stashBox) {
+      throw new Error("stashes: the stash list is not visible");
+    }
+    const top = Math.max(sidebar.y, sectionBox.y - 120);
+    await shot.save({ x: sidebar.x, y: top, width: sidebar.width, height: stashBox.y + stashBox.height + 16 - top });
+  },
+  branchesScenario,
+);
 
 // File > New File: an Untitled tab named after its first line, beside a file tab, with unsaved text.
-define("new-file-untitled", async (shot) => {
-  await shot.openFile(join(storefront, "README.md"));
-  await shot.openFile(cartTs());
-  await menuAction(shot, "file.newFile");
-  const editor = shot.page.locator(".file-host:not(.hidden) .cm-content");
-  await editor.waitFor();
-  await editor.click();
-  await shot.page.keyboard.type("Release notes\n\n- Faster checkout\n- Fix the cart total when a coupon is removed\n");
-  await shot.settle(600);
-  await shot.page.mouse.move(640, 700);
-  const main = shot.page.locator("main.main");
-  const box = await main.boundingBox();
-  if (!box) {
-    throw new Error("new-file-untitled: no editor area");
-  }
-  await shot.save({ x: box.x, y: box.y, width: box.width, height: 260 });
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "new-file-untitled",
+  async (shot) => {
+    await shot.openFile(join(storefront, "README.md"));
+    await shot.openFile(cartTs());
+    await menuAction(shot, "file.newFile");
+    const editor = shot.page.locator(".file-host:not(.hidden) .cm-content");
+    await editor.waitFor();
+    await editor.click();
+    await shot.page.keyboard.type(
+      "Release notes\n\n- Faster checkout\n- Fix the cart total when a coupon is removed\n",
+    );
+    await shot.settle(600);
+    await shot.page.mouse.move(640, 700);
+    const main = shot.page.locator("main.main");
+    const box = await main.boundingBox();
+    if (!box) {
+      throw new Error("new-file-untitled: no editor area");
+    }
+    await shot.save({ x: box.x, y: box.y, width: box.width, height: 260 });
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
 define("settings-remember-unsaved", async (shot) => {
   const dialog = await openSettings(shot, "Editor");
@@ -1459,7 +1643,10 @@ define("back-forward", async (shot) => {
   await shot.page.mouse.move(640, 500);
   const header = shot.page.locator("header.header");
   const headerBox = await header.boundingBox();
-  const clip = await shot.clipAround([shot.page.getByRole("group", { name: "Navigation history" }), header.getByTitle(/^Branch:/)], { left: 0, right: 12 });
+  const clip = await shot.clipAround(
+    [shot.page.getByRole("group", { name: "Navigation history" }), header.getByTitle(/^Branch:/)],
+    { left: 0, right: 12 },
+  );
   await shot.save({ ...clip, y: headerBox?.y ?? 0, height: headerBox?.height ?? clip.height });
 });
 
@@ -1472,11 +1659,15 @@ for (const [name, section] of [
   ["settings-files", "Settings Files"],
   ["settings-about", "About"],
 ] as const) {
-  define(name, async (shot) => {
-    const dialog = await openSettings(shot, section);
-    await shot.page.mouse.move(5, 790);
-    await shot.save(dialog);
-  }, () => (name === "settings-files" ? { settings: { tabSize: 2, wordWrap: true } } : {}));
+  define(
+    name,
+    async (shot) => {
+      const dialog = await openSettings(shot, section);
+      await shot.page.mouse.move(5, 790);
+      await shot.save(dialog);
+    },
+    () => (name === "settings-files" ? { settings: { tabSize: 2, wordWrap: true } } : {}),
+  );
 }
 
 // The Editor section scrolls; this is its lower part, from the Editing features group down.
@@ -1487,30 +1678,46 @@ define("settings-editor-more", async (shot) => {
   await shot.save(dialog);
 });
 
-define("settings-state-error", async (shot) => {
-  // The start-up toast points at Settings; dismiss it so only the banner tells the story.
-  const toastError = shot.page.locator(".toasts .toast.error", { hasText: "state.json could not be read" });
-  await toastError.waitFor();
-  await toastError.getByRole("button", { name: "Dismiss" }).click();
-  const dialog = await openSettings(shot, "Settings Files");
-  await dialog.getByText("state.json could not be read").waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ stateLoadError: "/Users/you/.gitmanager/state.json is not valid JSON: expected value at line 1 column 1" }));
+define(
+  "settings-state-error",
+  async (shot) => {
+    // The start-up toast points at Settings; dismiss it so only the banner tells the story.
+    const toastError = shot.page.locator(".toasts .toast.error", { hasText: "state.json could not be read" });
+    await toastError.waitFor();
+    await toastError.getByRole("button", { name: "Dismiss" }).click();
+    const dialog = await openSettings(shot, "Settings Files");
+    await dialog.getByText("state.json could not be read").waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ stateLoadError: "/Users/you/.gitmanager/state.json is not valid JSON: expected value at line 1 column 1" }),
+);
 
-define("editor-conflict-toolbar", async (shot) => {
-  await shot.activateRepo("payments-api");
-  await shot.openFile(appTs());
-  await shot.page.locator(".cm-conflict-actions").first().waitFor();
-  await shot.page.mouse.move(640, 790);
-  const host = shot.page.locator(".file-host:not(.hidden)");
-  await shot.save(await shot.clipAround([host.locator(".file-bar"), host.getByRole("toolbar", { name: "Conflict actions" })], { bottom: 4 }));
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "editor-conflict-toolbar",
+  async (shot) => {
+    await shot.activateRepo("payments-api");
+    await shot.openFile(appTs());
+    await shot.page.locator(".cm-conflict-actions").first().waitFor();
+    await shot.page.mouse.move(640, 790);
+    const host = shot.page.locator(".file-host:not(.hidden)");
+    await shot.save(
+      await shot.clipAround([host.locator(".file-bar"), host.getByRole("toolbar", { name: "Conflict actions" })], {
+        bottom: 4,
+      }),
+    );
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
 define("diff-hunk-staging", async (shot) => {
   await collapseRepo(shot, "payments-api");
   await shot.page.getByRole("button", { name: "Hide files" }).click();
-  await shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("cart.ts").click();
+  await shot.page
+    .getByRole("group", { name: "storefront", exact: true })
+    .getByRole("group", { name: "Changes" })
+    .getByText("cart.ts")
+    .click();
   await shot.page.locator(".diff-view .diff-revert").first().waitFor();
   await shot.settle(500);
   const stage = shot.page.locator(".diff-view .diff-revert").first();
@@ -1525,76 +1732,113 @@ define("diff-hunk-staging", async (shot) => {
 define("empty-main", async (shot) => {
   await shot.page.mouse.move(640, 790);
   const main = await shot.clipAround([shot.page.locator("main.main")]);
-  const content = await shot.clipAround([shot.page.locator("main.main .empty .logo"), shot.page.locator("main.main .empty .actions")], 56);
+  const content = await shot.clipAround(
+    [shot.page.locator("main.main .empty .logo"), shot.page.locator("main.main .empty .actions")],
+    56,
+  );
   // From the top, so the Navigation Bar above the welcome screen is in the shot.
   await shot.save({ x: main.x, width: main.width, y: main.y, height: content.y + content.height - main.y });
 });
 
-define("git-progress", async (shot) => {
-  // The header has no Fetch button any more: start it from the repository's ... menu.
-  await collapseRepo(shot, "payments-api");
-  await shot.page.getByRole("button", { name: "More actions for storefront" }).click();
-  await menuLevel(shot, 0).waitFor();
-  const submenu = await openSubmenu(shot, 0, "Pull, Push");
-  await submenu.getByRole("menuitem", { name: "Fetch From All Remotes" }).click();
-  const busy = shot.page.locator("header .busy");
-  await busy.waitFor();
-  await shot.page.mouse.move(640, 500);
-  const header = shot.page.locator("header.header");
-  const headerBox = await header.boundingBox();
-  const clip = await shot.clipAround([busy, header.getByTitle("Settings (Cmd+,)")], { left: 14, right: 14 });
-  await shot.save({ ...clip, y: headerBox?.y ?? 0, height: headerBox?.height ?? clip.height }, { settle: false });
-}, () => ({ holdFetchMs: 6000, state: { sidebarWidth: 360 } }));
+define(
+  "git-progress",
+  async (shot) => {
+    // The header has no Fetch button any more: start it from the repository's ... menu.
+    await collapseRepo(shot, "payments-api");
+    await shot.page.getByRole("button", { name: "More actions for storefront" }).click();
+    await menuLevel(shot, 0).waitFor();
+    const submenu = await openSubmenu(shot, 0, "Pull, Push");
+    await submenu.getByRole("menuitem", { name: "Fetch From All Remotes" }).click();
+    const busy = shot.page.locator("header .busy");
+    await busy.waitFor();
+    await shot.page.mouse.move(640, 500);
+    const header = shot.page.locator("header.header");
+    const headerBox = await header.boundingBox();
+    const clip = await shot.clipAround([busy, header.getByTitle("Settings (Cmd+,)")], { left: 14, right: 14 });
+    await shot.save({ ...clip, y: headerBox?.y ?? 0, height: headerBox?.height ?? clip.height }, { settle: false });
+  },
+  () => ({ holdFetchMs: 6000, state: { sidebarWidth: 360 } }),
+);
 
-define("scan-repositories", async (shot) => {
-  const pill = shot.page.locator("header .pill").first();
-  const pillBox = await pill.boundingBox();
-  await pill.click({ position: { x: 12, y: (pillBox?.height ?? 28) - 3 } });
-  await shot.menu().getByRole("menuitem", { name: "Scan for Repositories" }).waitFor();
-  await shot.page.mouse.move(640, 700);
-  await shot.save(await shot.clipAround([shot.page.locator("header .left"), shot.menu()], { top: 0, left: 0, right: 40, bottom: 24 }));
-}, () => ({ state: { recentFolders: [designSystem] } }));
+define(
+  "scan-repositories",
+  async (shot) => {
+    const pill = shot.page.locator("header .pill").first();
+    const pillBox = await pill.boundingBox();
+    await pill.click({ position: { x: 12, y: (pillBox?.height ?? 28) - 3 } });
+    await shot.menu().getByRole("menuitem", { name: "Scan for Repositories" }).waitFor();
+    await shot.page.mouse.move(640, 700);
+    await shot.save(
+      await shot.clipAround([shot.page.locator("header .left"), shot.menu()], {
+        top: 0,
+        left: 0,
+        right: 40,
+        bottom: 24,
+      }),
+    );
+  },
+  () => ({ state: { recentFolders: [designSystem] } }),
+);
 
-define("dark-theme", async (shot) => {
-  await overview(shot);
-  await shot.save();
-}, () => ({ colorScheme: "dark" }));
+define(
+  "dark-theme",
+  async (shot) => {
+    await overview(shot);
+    await shot.save();
+  },
+  () => ({ colorScheme: "dark" }),
+);
 
-define("update-dialog", async (shot) => {
-  // The first automatic check runs 30 seconds after start; jump there instead of waiting.
-  await shot.page.clock.fastForward(31000);
-  const item = shot.page.getByRole("button", { name: /Update available/ });
-  await item.waitFor();
-  await item.click();
-  const dialog = shot.page.getByRole("dialog");
-  await dialog.waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ releases: githubReleases(), clock: true }));
+define(
+  "update-dialog",
+  async (shot) => {
+    // The first automatic check runs 30 seconds after start; jump there instead of waiting.
+    await shot.page.clock.fastForward(31000);
+    const item = shot.page.getByRole("button", { name: /Update available/ });
+    await item.waitFor();
+    await item.click();
+    const dialog = shot.page.getByRole("dialog");
+    await dialog.waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ releases: githubReleases(), clock: true }),
+);
 
 // A manual check opens the dialog even for a skipped newest release, marked as skipped.
-define("update-dialog-skipped", async (shot) => {
-  const settingsDialog = await openSettings(shot, "Updates");
-  await settingsDialog.getByRole("button", { name: "Check Now", exact: true }).click();
-  const dialog = shot.page.getByRole("dialog", { name: /is available/ });
-  await dialog.waitFor();
-  await dialog.getByText("You skipped this version.").waitFor();
-  await dialog.getByRole("button", { name: "Stop Skipping", exact: true }).waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ releases: githubReleases(), state: { skippedVersion: "0.1.0" } }));
+define(
+  "update-dialog-skipped",
+  async (shot) => {
+    const settingsDialog = await openSettings(shot, "Updates");
+    await settingsDialog.getByRole("button", { name: "Check Now", exact: true }).click();
+    const dialog = shot.page.getByRole("dialog", { name: /is available/ });
+    await dialog.waitFor();
+    await dialog.getByText("You skipped this version.").waitFor();
+    await dialog.getByRole("button", { name: "Stop Skipping", exact: true }).waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ releases: githubReleases(), state: { skippedVersion: "0.1.0" } }),
+);
 
-define("whats-new", async (shot) => {
-  const dialog = shot.page.getByRole("dialog");
-  await dialog.waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ state: { lastRunVersion: "0.0.9" } }));
+define(
+  "whats-new",
+  async (shot) => {
+    const dialog = shot.page.getByRole("dialog");
+    await dialog.waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ state: { lastRunVersion: "0.0.9" } }),
+);
 
 define("status-bar", async (shot) => {
   await shot.openFile(cartTs());
   await clickLine(shot, "useDiscount(code");
-  await shot.page.locator("footer.status-bar").getByRole("button", { name: /^Memory / }).waitFor();
+  await shot.page
+    .locator("footer.status-bar")
+    .getByRole("button", { name: /^Memory / })
+    .waitFor();
   await shot.save(shot.page.locator("footer.status-bar"));
 });
 
@@ -1619,22 +1863,25 @@ define("help-menu", async (shot) => {
   await shot.save({ x: left, y: top, width: VIEWPORT.width - left, height: VIEWPORT.height - top });
 });
 
-define("mergetool-mode", async (shot) => {
-  await shot.page.locator(".mergetool .cm-editor").nth(2).waitFor();
-  await shot.settle(600);
-  await shot.page.mouse.move(640, 790);
-  await shot.save();
-}, () => ({
-  launch: {
-    mode: "mergeTool",
-    base: join(paymentsApi, "src/app_BASE_4242.ts"),
-    local: join(paymentsApi, "src/app_LOCAL_4242.ts"),
-    remote: join(paymentsApi, "src/app_REMOTE_4242.ts"),
-    merged: appTs(),
+define(
+  "mergetool-mode",
+  async (shot) => {
+    await shot.page.locator(".mergetool .cm-editor").nth(2).waitFor();
+    await shot.settle(600);
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
   },
-  mergetool: { repoPath: paymentsApi, conflictPath: "src/app.ts" },
-}));
-
+  () => ({
+    launch: {
+      mode: "mergeTool",
+      base: join(paymentsApi, "src/app_BASE_4242.ts"),
+      local: join(paymentsApi, "src/app_LOCAL_4242.ts"),
+      remote: join(paymentsApi, "src/app_REMOTE_4242.ts"),
+      merged: appTs(),
+    },
+    mergetool: { repoPath: paymentsApi, conflictPath: "src/app.ts" },
+  }),
+);
 
 // ---------------------------------------------------------------------------------------------
 // Helpers for the shots below: app modules, menu actions and real commands from the page.
@@ -1659,7 +1906,9 @@ async function invokeApp<T = unknown>(shot: Shot, cmd: string, args: Record<stri
   // The backend's errors are plain objects, which Playwright would print as [object Object].
   const result = (await shot.page.evaluate(
     ([name, values]) =>
-      (window as unknown as { __TAURI_INTERNALS__: { invoke: (c: string, a: unknown) => Promise<unknown> } }).__TAURI_INTERNALS__
+      (
+        window as unknown as { __TAURI_INTERNALS__: { invoke: (c: string, a: unknown) => Promise<unknown> } }
+      ).__TAURI_INTERNALS__
         .invoke(name, values)
         .then(
           (value) => ({ ok: true, value }),
@@ -1782,58 +2031,85 @@ function bottomPanel(shot: Shot): Locator {
 }
 
 /** The editor area plus the bottom panel, with the activity bar on the left. */
-async function clipEditorAndPanel(shot: Shot, editorLines = 300): Promise<{ x: number; y: number; width: number; height: number }> {
+async function clipEditorAndPanel(
+  shot: Shot,
+  editorLines = 300,
+): Promise<{ x: number; y: number; width: number; height: number }> {
   const panel = await bottomPanel(shot).boundingBox();
   if (!panel) {
     throw new Error(`${shot.name}: the bottom panel is not visible`);
   }
   const top = Math.max(0, panel.y - editorLines);
-  return { x: 0, y: top, width: shot.viewport.width, height: Math.min(shot.viewport.height, panel.y + panel.height) - top };
+  return {
+    x: 0,
+    y: top,
+    width: shot.viewport.width,
+    height: Math.min(shot.viewport.height, panel.y + panel.height) - top,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------
 // Terminal and Scripts
 
-define("terminal-panel", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  await shot.openFile(cartTs());
-  const key = await newTerminal(shot);
-  await terminalType(shot, key, "git log --oneline -5\r");
-  await terminalShows(shot, "lazy load product images");
-  await shot.page.mouse.move(640, 300);
-  await shot.save();
-}, terminalScenario);
+define(
+  "terminal-panel",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    await shot.openFile(cartTs());
+    const key = await newTerminal(shot);
+    await terminalType(shot, key, "git log --oneline -5\r");
+    await terminalShows(shot, "lazy load product images");
+    await shot.page.mouse.move(640, 300);
+    await shot.save();
+  },
+  terminalScenario,
+);
 
-define("terminal-shell-menu", async (shot) => {
-  await newTerminal(shot);
-  await bottomPanel(shot).getByRole("button", { name: "New terminal with shell" }).click();
-  await shot.menu().waitFor();
-  await shot.settle();
-  const head = bottomPanel(shot).locator("header.head");
-  await shot.save(await shot.clipAround([head, shot.menu()], 16));
-}, terminalScenario);
+define(
+  "terminal-shell-menu",
+  async (shot) => {
+    await newTerminal(shot);
+    await bottomPanel(shot).getByRole("button", { name: "New terminal with shell" }).click();
+    await shot.menu().waitFor();
+    await shot.settle();
+    const head = bottomPanel(shot).locator("header.head");
+    await shot.save(await shot.clipAround([head, shot.menu()], 16));
+  },
+  terminalScenario,
+);
 
-define("terminal-list", async (shot) => {
-  const first = await newTerminal(shot);
-  await terminalType(shot, first, "git status --short\r");
-  const second = await newTerminal(shot);
-  const server = await newTerminal(shot, { folderPath: designSystem });
-  await inApp(shot, `const { terminalStore } = await imp(${JSON.stringify(TERMINAL_STORE)}); terminalStore.rename(${server}, "server"); terminalStore.select(${second});`);
-  await terminalType(shot, second, "ls\r");
-  await terminalShows(shot, "package.json");
-  await shot.page.mouse.move(640, 200);
-  await shot.save(bottomPanel(shot));
-}, () => terminalScenario(twoFolderScenario()));
+define(
+  "terminal-list",
+  async (shot) => {
+    const first = await newTerminal(shot);
+    await terminalType(shot, first, "git status --short\r");
+    const second = await newTerminal(shot);
+    const server = await newTerminal(shot, { folderPath: designSystem });
+    await inApp(
+      shot,
+      `const { terminalStore } = await imp(${JSON.stringify(TERMINAL_STORE)}); terminalStore.rename(${server}, "server"); terminalStore.select(${second});`,
+    );
+    await terminalType(shot, second, "ls\r");
+    await terminalShows(shot, "package.json");
+    await shot.page.mouse.move(640, 200);
+    await shot.save(bottomPanel(shot));
+  },
+  () => terminalScenario(twoFolderScenario()),
+);
 
-define("terminal-editor-tab", async (shot) => {
-  await shot.openFile(cartTs());
-  await shot.openFile(join(storefront, "README.md"));
-  const key = await newTerminal(shot, { location: "editor" });
-  await terminalType(shot, key, "git status\r");
-  await terminalShows(shot, "Changes not staged");
-  await shot.page.mouse.move(640, 790);
-  await shot.save(shot.page.locator("main.main"));
-}, terminalScenario);
+define(
+  "terminal-editor-tab",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await shot.openFile(join(storefront, "README.md"));
+    const key = await newTerminal(shot, { location: "editor" });
+    await terminalType(shot, key, "git status\r");
+    await terminalShows(shot, "Changes not staged");
+    await shot.page.mouse.move(640, 790);
+    await shot.save(shot.page.locator("main.main"));
+  },
+  terminalScenario,
+);
 
 define("terminal-settings", async (shot) => {
   const dialog = await openSettings(shot, "Terminal");
@@ -1841,38 +2117,52 @@ define("terminal-settings", async (shot) => {
   await shot.save(dialog);
 });
 
-define("terminal-find", async (shot) => {
-  await shot.openFile(cartTs());
-  const key = await newTerminal(shot);
-  await terminalType(shot, key, "git log --oneline -8\r");
-  await terminalShows(shot, "lazy load product images");
-  // Cmd+F inside the terminal opens its find bar, as a person would.
-  await bottomPanel(shot).locator(".terminal-view:not(.hidden) .xterm-helper-textarea").focus();
-  await shot.page.keyboard.press("Meta+f");
-  const field = bottomPanel(shot).getByRole("textbox", { name: "Find in terminal" });
-  await field.fill("product");
-  await bottomPanel(shot).locator(".find-bar .counter", { hasText: " of " }).waitFor();
-  await shot.page.mouse.move(640, 200);
-  await shot.settle();
-  await shot.save(await clipEditorAndPanel(shot, 120));
-}, terminalScenario);
+define(
+  "terminal-find",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    const key = await newTerminal(shot);
+    await terminalType(shot, key, "git log --oneline -8\r");
+    await terminalShows(shot, "lazy load product images");
+    // Cmd+F inside the terminal opens its find bar, as a person would.
+    await bottomPanel(shot).locator(".terminal-view:not(.hidden) .xterm-helper-textarea").focus();
+    await shot.page.keyboard.press("Meta+f");
+    const field = bottomPanel(shot).getByRole("textbox", { name: "Find in terminal" });
+    await field.fill("product");
+    await bottomPanel(shot).locator(".find-bar .counter", { hasText: " of " }).waitFor();
+    await shot.page.mouse.move(640, 200);
+    await shot.settle();
+    await shot.save(await clipEditorAndPanel(shot, 120));
+  },
+  terminalScenario,
+);
 
-define("terminal-split", async (shot) => {
-  const first = await newTerminal(shot);
-  await terminalType(shot, first, "git status --short\r");
-  const second = await newTerminal(shot, { splitFrom: first });
-  await terminalType(shot, second, "ls\r");
-  await terminalShows(shot, "package.json");
-  const server = await newTerminal(shot, { folderPath: designSystem });
-  // The split pair on screen, the third terminal alone in the list below it.
-  await inApp(shot, `const { terminalStore } = await imp(${JSON.stringify(TERMINAL_STORE)}); terminalStore.rename(${server}, "server"); terminalStore.select(${second});`);
-  await shot.page.mouse.move(640, 200);
-  await shot.settle();
-  await shot.save(bottomPanel(shot));
-}, () => terminalScenario(twoFolderScenario()));
+define(
+  "terminal-split",
+  async (shot) => {
+    const first = await newTerminal(shot);
+    await terminalType(shot, first, "git status --short\r");
+    const second = await newTerminal(shot, { splitFrom: first });
+    await terminalType(shot, second, "ls\r");
+    await terminalShows(shot, "package.json");
+    const server = await newTerminal(shot, { folderPath: designSystem });
+    // The split pair on screen, the third terminal alone in the list below it.
+    await inApp(
+      shot,
+      `const { terminalStore } = await imp(${JSON.stringify(TERMINAL_STORE)}); terminalStore.rename(${server}, "server"); terminalStore.select(${second});`,
+    );
+    await shot.page.mouse.move(640, 200);
+    await shot.settle();
+    await shot.save(bottomPanel(shot));
+  },
+  () => terminalScenario(twoFolderScenario()),
+);
 
 function scriptsScenario(): Scenario {
-  return twoFolderScenario({ state: { leftPanel: "scripts", explorerOpen: false, sidebarWidth: 400 }, viewport: { width: 1280, height: 520 } });
+  return twoFolderScenario({
+    state: { leftPanel: "scripts", explorerOpen: false, sidebarWidth: 400 },
+    viewport: { width: 1280, height: 520 },
+  });
 }
 
 function scriptsPanel(shot: Shot): Locator {
@@ -1885,41 +2175,56 @@ async function openScripts(shot: Shot): Promise<void> {
 }
 
 function scriptRow(shot: Shot, name: string): Locator {
-  return scriptsPanel(shot).locator(".row.script").filter({ has: shot.page.locator(".name", { hasText: new RegExp(`^${name}$`) }) }).first();
+  return scriptsPanel(shot)
+    .locator(".row.script")
+    .filter({ has: shot.page.locator(".name", { hasText: new RegExp(`^${name}$`) }) })
+    .first();
 }
 
-define("scripts-panel", async (shot) => {
-  await openScripts(shot);
-  await scriptRow(shot, "test").click();
-  await shot.page.mouse.move(900, 500);
-  await shot.settle();
-  // The activity bar down to its Scripts button, next to the panel.
-  const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
-  const header = await shot.page.locator("header.header").boundingBox();
-  if (!sidebar || !header) {
-    throw new Error("scripts-panel: no sidebar");
-  }
-  await shot.save({ x: 0, y: header.y + header.height, width: sidebar.x + sidebar.width, height: sidebar.height });
-}, scriptsScenario);
+define(
+  "scripts-panel",
+  async (shot) => {
+    await openScripts(shot);
+    await scriptRow(shot, "test").click();
+    await shot.page.mouse.move(900, 500);
+    await shot.settle();
+    // The activity bar down to its Scripts button, next to the panel.
+    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+    const header = await shot.page.locator("header.header").boundingBox();
+    if (!sidebar || !header) {
+      throw new Error("scripts-panel: no sidebar");
+    }
+    await shot.save({ x: 0, y: header.y + header.height, width: sidebar.x + sidebar.width, height: sidebar.height });
+  },
+  scriptsScenario,
+);
 
-define("scripts-node-version", async (shot) => {
-  await openScripts(shot);
-  const source = scriptsPanel(shot).locator('[role="treeitem"]', { hasText: "package.json" }).first();
-  await source.locator(".node-badge").click();
-  await shot.menu().waitFor();
-  await shot.settle();
-  await shot.page.mouse.move(900, 700);
-  await shot.save(await shot.clipAround([source, shot.menu()], 16));
-}, scriptsScenario);
+define(
+  "scripts-node-version",
+  async (shot) => {
+    await openScripts(shot);
+    const source = scriptsPanel(shot).locator('[role="treeitem"]', { hasText: "package.json" }).first();
+    await source.locator(".node-badge").click();
+    await shot.menu().waitFor();
+    await shot.settle();
+    await shot.page.mouse.move(900, 700);
+    await shot.save(await shot.clipAround([source, shot.menu()], 16));
+  },
+  scriptsScenario,
+);
 
-define("scripts-run-tab", async (shot) => {
-  await openScripts(shot);
-  await scriptRow(shot, "check").dblclick();
-  await bottomPanel(shot).locator(".run-view .xterm-rows", { hasText: "Process finished" }).first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(900, 300);
-  await shot.save(bottomPanel(shot));
-}, scriptsScenario);
+define(
+  "scripts-run-tab",
+  async (shot) => {
+    await openScripts(shot);
+    await scriptRow(shot, "check").dblclick();
+    await bottomPanel(shot).locator(".run-view .xterm-rows", { hasText: "Process finished" }).first().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(900, 300);
+    await shot.save(bottomPanel(shot));
+  },
+  scriptsScenario,
+);
 
 // ---------------------------------------------------------------------------------------------
 // Search Everywhere, find and replace, editing
@@ -1930,7 +2235,10 @@ function searchPopup(shot: Shot): Locator {
 
 /** Opens Search Everywhere like its shortcut (double Shift, Cmd+P, Cmd+O...) and types a query. */
 async function openSearch(shot: Shot, opener: string, query: string, replace = false): Promise<Locator> {
-  await inApp(shot, `(await imp("/src/lib/search/fileSearchStore.svelte.ts")).fileSearch.open(${JSON.stringify(opener)}, "", ${replace});`);
+  await inApp(
+    shot,
+    `(await imp("/src/lib/search/fileSearchStore.svelte.ts")).fileSearch.open(${JSON.stringify(opener)}, "", ${replace});`,
+  );
   const popup = searchPopup(shot);
   await popup.waitFor();
   await shot.settle();
@@ -1953,69 +2261,93 @@ async function savePopup(shot: Shot, popup: Locator, padding = 16): Promise<void
   await shot.save(await shot.clipAround([popup], padding));
 }
 
-define("search-everywhere-all", async (shot) => {
-  await shot.openFile(cartTs());
-  const popup = await openSearch(shot, "everywhere", "cart");
-  await popup.locator(".section", { hasText: "Files" }).waitFor();
-  await shot.page.mouse.move(5, 790);
-  await savePopup(shot, popup);
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "search-everywhere-all",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    const popup = await openSearch(shot, "everywhere", "cart");
+    await popup.locator(".section", { hasText: "Files" }).waitFor();
+    await shot.page.mouse.move(5, 790);
+    await savePopup(shot, popup);
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
-define("search-everywhere-recent", async (shot) => {
-  await shot.openFile(join(storefront, "README.md"));
-  await shot.openFile(join(storefront, "src/catalog.ts"));
-  await shot.openFile(cartTs());
-  const popup = await openSearch(shot, "files", "");
-  await popup.locator(".section", { hasText: "Recent Files" }).waitFor();
-  await shot.page.mouse.move(5, 790);
-  await savePopup(shot, popup);
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "search-everywhere-recent",
+  async (shot) => {
+    await shot.openFile(join(storefront, "README.md"));
+    await shot.openFile(join(storefront, "src/catalog.ts"));
+    await shot.openFile(cartTs());
+    const popup = await openSearch(shot, "files", "");
+    await popup.locator(".section", { hasText: "Recent Files" }).waitFor();
+    await shot.page.mouse.move(5, 790);
+    await savePopup(shot, popup);
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
 // Recent Files (Cmd+E): the file before the one on screen is selected.
-define("recent-files", async (shot) => {
-  await shot.openFile(join(storefront, "README.md"));
-  await shot.openFile(join(storefront, "src/catalog.ts"));
-  await shot.openFile(cartTs());
-  await menuAction(shot, "edit.recentFiles");
-  const popup = shot.page.locator('.popup[role="dialog"][aria-label="Recent Files"]');
-  await popup.waitFor();
-  await shot.settle(300);
-  await shot.page.mouse.move(5, 790);
-  await savePopup(shot, popup);
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "recent-files",
+  async (shot) => {
+    await shot.openFile(join(storefront, "README.md"));
+    await shot.openFile(join(storefront, "src/catalog.ts"));
+    await shot.openFile(cartTs());
+    await menuAction(shot, "edit.recentFiles");
+    const popup = shot.page.locator('.popup[role="dialog"][aria-label="Recent Files"]');
+    await popup.waitFor();
+    await shot.settle(300);
+    await shot.page.mouse.move(5, 790);
+    await savePopup(shot, popup);
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
 // Navigation Bar (Cmd+Up): the path bar with the file's folder listed and the file selected.
-define("navigation-bar", async (shot) => {
-  await shot.openFile(cartTs());
-  await menuAction(shot, "edit.navigationBar");
-  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
-  await popup.locator(".row.selected").waitFor();
-  await shot.settle(300);
-  await shot.page.mouse.move(5, 790);
-  await shot.save(await shot.clipAround([shot.page.locator(".file-bar").first(), popup], 12));
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "navigation-bar",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await menuAction(shot, "edit.navigationBar");
+    const popup = shot.page.locator('.nav-popup[role="dialog"]');
+    await popup.locator(".row.selected").waitFor();
+    await shot.settle(300);
+    await shot.page.mouse.move(5, 790);
+    await shot.save(await shot.clipAround([shot.page.locator(".file-bar").first(), popup], 12));
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
 // File toolbar Bottom: the whole path bar under the code, its list opened upward.
-define("navigation-bar-bottom", async (shot) => {
-  await shot.openFile(cartTs());
-  await menuAction(shot, "edit.navigationBar");
-  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
-  await popup.locator(".row.selected").waitFor();
-  await shot.settle(300);
-  await shot.page.mouse.move(5, 300);
-  await shot.save(await shot.clipAround([shot.page.locator(".file-view.bar-bottom .file-bar").first(), popup], 12));
-}, () => ({ settings: { currentLineBlame: false, fileToolbar: "bottom" } }));
+define(
+  "navigation-bar-bottom",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await menuAction(shot, "edit.navigationBar");
+    const popup = shot.page.locator('.nav-popup[role="dialog"]');
+    await popup.locator(".row.selected").waitFor();
+    await shot.settle(300);
+    await shot.page.mouse.move(5, 300);
+    await shot.save(await shot.clipAround([shot.page.locator(".file-view.bar-bottom .file-bar").first(), popup], 12));
+  },
+  () => ({ settings: { currentLineBlame: false, fileToolbar: "bottom" } }),
+);
 
 // File toolbar Hidden: Cmd+Up shows the bar floating at the top left of the editor.
-define("navigation-bar-hidden", async (shot) => {
-  await shot.openFile(cartTs());
-  await menuAction(shot, "edit.navigationBar");
-  const popup = shot.page.locator(".nav-popup[role=\"dialog\"]");
-  await popup.locator(".row.selected").waitFor();
-  await shot.settle(300);
-  await shot.page.mouse.move(5, 790);
-  await shot.save(await shot.clipAround([shot.page.locator(".editor-group.focused"), popup], { bottom: 12 }));
-}, () => ({ settings: { currentLineBlame: false, fileToolbar: "none" } }));
+define(
+  "navigation-bar-hidden",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await menuAction(shot, "edit.navigationBar");
+    const popup = shot.page.locator('.nav-popup[role="dialog"]');
+    await popup.locator(".row.selected").waitFor();
+    await shot.settle(300);
+    await shot.page.mouse.move(5, 790);
+    await shot.save(await shot.clipAround([shot.page.locator(".editor-group.focused"), popup], { bottom: 12 }));
+  },
+  () => ({ settings: { currentLineBlame: false, fileToolbar: "none" } }),
+);
 
 define("search-everywhere-files", async (shot) => {
   const popup = await openSearch(shot, "files", "cart");
@@ -2049,66 +2381,87 @@ define("replace-in-files", async (shot) => {
   await savePopup(shot, popup);
 });
 
-define("find-replace-bar", async (shot) => {
-  await shot.openFile(cartTs());
-  await clickLine(shot, "export interface CartLine");
-  await shot.page.keyboard.press("Meta+r");
-  const bar = shot.page.locator('.file-host:not(.hidden) [role="search"][aria-label="Find in file"]');
-  await bar.waitFor();
-  const find = bar.getByRole("textbox", { name: "Find" });
-  await find.fill("line");
-  await find.press("Enter");
-  await bar.getByRole("textbox", { name: "Replace" }).fill("entry");
-  await shot.settle(300);
-  await shot.page.mouse.move(640, 790);
-  const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
-  const box = await editor.boundingBox();
-  if (!box) {
-    throw new Error("find-replace-bar: no editor");
-  }
-  await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 420) });
-}, () => ({ settings: { currentLineBlame: false } }));
+define(
+  "find-replace-bar",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await clickLine(shot, "export interface CartLine");
+    await shot.page.keyboard.press("Meta+r");
+    const bar = shot.page.locator('.file-host:not(.hidden) [role="search"][aria-label="Find in file"]');
+    await bar.waitFor();
+    const find = bar.getByRole("textbox", { name: "Find" });
+    await find.fill("line");
+    await find.press("Enter");
+    await bar.getByRole("textbox", { name: "Replace" }).fill("entry");
+    await shot.settle(300);
+    await shot.page.mouse.move(640, 790);
+    const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+    const box = await editor.boundingBox();
+    if (!box) {
+      throw new Error("find-replace-bar: no editor");
+    }
+    await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 420) });
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
 
-define("editor-whitespace", async (shot) => {
-  await shot.openFile(join(designSystem, "Makefile"));
-  await shot.page.mouse.move(640, 790);
-  const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
-  const box = await editor.boundingBox();
-  if (!box) {
-    throw new Error("editor-whitespace: no editor");
-  }
-  await shot.save({ x: box.x, y: box.y, width: Math.min(box.width, 620), height: Math.min(box.height, 300) });
-}, () => twoFolderScenario({ settings: { renderWhitespace: "all", currentLineBlame: false } }));
+define(
+  "editor-whitespace",
+  async (shot) => {
+    await shot.openFile(join(designSystem, "Makefile"));
+    await shot.page.mouse.move(640, 790);
+    const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+    const box = await editor.boundingBox();
+    if (!box) {
+      throw new Error("editor-whitespace: no editor");
+    }
+    await shot.save({ x: box.x, y: box.y, width: Math.min(box.width, 620), height: Math.min(box.height, 300) });
+  },
+  () => twoFolderScenario({ settings: { renderWhitespace: "all", currentLineBlame: false } }),
+);
 
 // Completion, indent guides and fold arrows (one block folded, the pointer over the gutter).
-define("editor-features", async (shot) => {
-  await shot.openFile(cartTs());
-  await clickLine(shot, "useDiscount(code");
-  await menuAction(shot, "code.collapse");
-  await clickLine(shot, "line.quantity = quantity;");
-  await shot.page.keyboard.press("End");
-  await shot.page.keyboard.press("Enter");
-  await shot.page.keyboard.type("this.disc");
-  const completion = shot.page.locator(".file-host:not(.hidden) .cm-tooltip-autocomplete");
-  await completion.waitFor();
-  await shot.settle(300);
-  const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
-  const box = await editor.boundingBox();
-  const gutter = await shot.page.locator(".file-host:not(.hidden) .cm-gutters").boundingBox();
-  if (!box || !gutter) {
-    throw new Error("editor-features: no editor");
-  }
-  // The gutter is as tall as the file: point at its visible part so the open arrows show.
-  await shot.page.mouse.move(gutter.x + gutter.width - 7, box.y + 60);
-  await shot.settle(300);
-  // End on a whole line.
-  const last = await shot.editorLine("get count(): number").boundingBox();
-  const bottom = last ? last.y + last.height : box.y + 560;
-  await shot.save({ x: box.x, y: box.y, width: Math.min(box.width, 760), height: Math.min(box.height, bottom - box.y) });
-}, () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false, tabSize: 2 } }));
+define(
+  "editor-features",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await clickLine(shot, "useDiscount(code");
+    await menuAction(shot, "code.collapse");
+    await clickLine(shot, "line.quantity = quantity;");
+    await shot.page.keyboard.press("End");
+    await shot.page.keyboard.press("Enter");
+    await shot.page.keyboard.type("this.disc");
+    const completion = shot.page.locator(".file-host:not(.hidden) .cm-tooltip-autocomplete");
+    await completion.waitFor();
+    await shot.settle(300);
+    const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+    const box = await editor.boundingBox();
+    const gutter = await shot.page.locator(".file-host:not(.hidden) .cm-gutters").boundingBox();
+    if (!box || !gutter) {
+      throw new Error("editor-features: no editor");
+    }
+    // The gutter is as tall as the file: point at its visible part so the open arrows show.
+    await shot.page.mouse.move(gutter.x + gutter.width - 7, box.y + 60);
+    await shot.settle(300);
+    // End on a whole line.
+    const last = await shot.editorLine("get count(): number").boundingBox();
+    const bottom = last ? last.y + last.height : box.y + 560;
+    await shot.save({
+      x: box.x,
+      y: box.y,
+      width: Math.min(box.width, 760),
+      height: Math.min(box.height, bottom - box.y),
+    });
+  },
+  () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false, tabSize: 2 } }),
+);
 
 /** Opens an image or PDF from notes/ in the preview and returns the tab's area. */
-async function openPreview(shot: Shot, fileName: string, ready: string): Promise<{ x: number; y: number; width: number; height: number }> {
+async function openPreview(
+  shot: Shot,
+  fileName: string,
+  ready: string,
+): Promise<{ x: number; y: number; width: number; height: number }> {
   await shot.expand(notes);
   await shot.fileRow(join(notes, fileName)).dblclick();
   await shot.page.locator(`.file-host:not(.hidden) .media ${ready}`).waitFor();
@@ -2121,58 +2474,84 @@ async function openPreview(shot: Shot, fileName: string, ready: string): Promise
   return box;
 }
 
-define("media-preview-image", async (shot) => {
-  const box = await openPreview(shot, "logo.png", "img");
-  await shot.save(box);
-}, () => twoFolderScenario({ state: { explorerOpen: true }, viewport: { width: 1280, height: 760 } }));
+define(
+  "media-preview-image",
+  async (shot) => {
+    const box = await openPreview(shot, "logo.png", "img");
+    await shot.save(box);
+  },
+  () => twoFolderScenario({ state: { explorerOpen: true }, viewport: { width: 1280, height: 760 } }),
+);
 
-define("diff-binary-image", async (shot) => {
-  const changes = shot.page.getByRole("group", { name: "brand-kit", exact: true }).getByRole("group", { name: "Changes" });
-  await changes.getByText("logo.png").click();
-  await shot.page.waitForFunction(() => {
-    const images = [...document.querySelectorAll<HTMLImageElement>(".diff-view .binary-preview img")];
-    return images.length === 2 && images.every((image) => image.complete && image.naturalWidth > 0);
-  });
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(await shot.clipAround([shot.page.locator(".diff-view")], 0));
-}, () => ({ launch: { mode: "app", repoPath: brandKit }, state: { activeRepos: {}, explorerOpen: false } }));
+define(
+  "diff-binary-image",
+  async (shot) => {
+    const changes = shot.page
+      .getByRole("group", { name: "brand-kit", exact: true })
+      .getByRole("group", { name: "Changes" });
+    await changes.getByText("logo.png").click();
+    await shot.page.waitForFunction(() => {
+      const images = [...document.querySelectorAll<HTMLImageElement>(".diff-view .binary-preview img")];
+      return images.length === 2 && images.every((image) => image.complete && image.naturalWidth > 0);
+    });
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(await shot.clipAround([shot.page.locator(".diff-view")], 0));
+  },
+  () => ({ launch: { mode: "app", repoPath: brandKit }, state: { activeRepos: {}, explorerOpen: false } }),
+);
 
 // media-preview-pdf.png is taken by hand: Playwright's WebKit has no PDF viewer, so this page would
 // show an empty frame. Open notes/lorem-ipsum.pdf of the demo in the real app window and capture it
 // (git-manager cli screenshot, or Cmd+Shift+4 then Space), then crop to the document. See
 // docs/wiki/developer/How-the-Image-and-PDF-Preview-Works.md.
 
-define("diff-inline", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  await shot.page.getByRole("button", { name: "Hide files" }).click();
-  await shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("cart.ts").click();
-  await shot.page.locator(".diff-view .cm-inlineDiff .cm-inlineModified").first().waitFor();
-  await shot.settle(500);
-  const view = shot.page.locator(".diff-view");
-  const box = await view.boundingBox();
-  if (!box) {
-    throw new Error("diff-inline: no diff view");
-  }
-  await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 560) });
-}, () => ({ state: { diffLayout: "inline" } }));
+define(
+  "diff-inline",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    await shot.page.getByRole("button", { name: "Hide files" }).click();
+    await shot.page
+      .getByRole("group", { name: "storefront", exact: true })
+      .getByRole("group", { name: "Changes" })
+      .getByText("cart.ts")
+      .click();
+    await shot.page.locator(".diff-view .cm-inlineDiff .cm-inlineModified").first().waitFor();
+    await shot.settle(500);
+    const view = shot.page.locator(".diff-view");
+    const box = await view.boundingBox();
+    if (!box) {
+      throw new Error("diff-inline: no diff view");
+    }
+    await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 560) });
+  },
+  () => ({ state: { diffLayout: "inline" } }),
+);
 
-define("diff-split-resize", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  await shot.page.getByRole("button", { name: "Hide files" }).click();
-  await shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("cart.ts").click();
-  await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
-  await shot.settle(500);
-  const handle = shot.page.locator(".diff-view .split-handle").first();
-  await handle.hover();
-  await shot.settle();
-  const view = shot.page.locator(".diff-view");
-  const box = await view.boundingBox();
-  if (!box) {
-    throw new Error("diff-split-resize: no diff view");
-  }
-  await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 560) });
-}, () => ({ state: { diffSplitRatio: 0.38 } }));
+define(
+  "diff-split-resize",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    await shot.page.getByRole("button", { name: "Hide files" }).click();
+    await shot.page
+      .getByRole("group", { name: "storefront", exact: true })
+      .getByRole("group", { name: "Changes" })
+      .getByText("cart.ts")
+      .click();
+    await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
+    await shot.settle(500);
+    const handle = shot.page.locator(".diff-view .split-handle").first();
+    await handle.hover();
+    await shot.settle();
+    const view = shot.page.locator(".diff-view");
+    const box = await view.boundingBox();
+    if (!box) {
+      throw new Error("diff-split-resize: no diff view");
+    }
+    await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 560) });
+  },
+  () => ({ state: { diffSplitRatio: 0.38 } }),
+);
 
 // ---------------------------------------------------------------------------------------------
 // Markdown, color themes and Settings
@@ -2190,8 +2569,8 @@ async function scrollLineToTop(shot: Shot, text: string): Promise<void> {
   await clickLine(shot, text);
   await shot.page.evaluate((needle) => {
     const scroller = document.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-scroller");
-    const line = [...document.querySelectorAll<HTMLElement>(".file-host:not(.hidden) .cm-content .cm-line")].find((element) =>
-      (element.textContent ?? "").includes(needle),
+    const line = [...document.querySelectorAll<HTMLElement>(".file-host:not(.hidden) .cm-content .cm-line")].find(
+      (element) => (element.textContent ?? "").includes(needle),
     );
     if (scroller && line) {
       scroller.scrollTop += line.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 24;
@@ -2201,113 +2580,161 @@ async function scrollLineToTop(shot: Shot, text: string): Promise<void> {
 }
 
 function markdownScenario(extra: Scenario = {}): Scenario {
-  return { ...extra, state: { explorerOpen: false, ...(extra.state ?? {}) }, settings: { currentLineBlame: false, ...(extra.settings ?? {}) } };
+  return {
+    ...extra,
+    state: { explorerOpen: false, ...(extra.state ?? {}) },
+    settings: { currentLineBlame: false, ...(extra.settings ?? {}) },
+  };
 }
 
-define("markdown-split", async (shot) => {
-  await openMarkdown(shot);
-  await shot.page.locator(".file-host:not(.hidden) table").first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(shot.page.locator("main.main"));
-}, () => markdownScenario());
+define(
+  "markdown-split",
+  async (shot) => {
+    await openMarkdown(shot);
+    await shot.page.locator(".file-host:not(.hidden) table").first().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => markdownScenario(),
+);
 
-define("markdown-toolbar", async (shot) => {
-  await openMarkdown(shot);
-  await clickLine(shot, "## Steps");
-  const toolbar = shot.page.locator('.file-host:not(.hidden) [role="toolbar"][aria-label="Markdown"]');
-  await toolbar.getByRole("button", { name: "Heading", exact: true }).click();
-  await shot.menu().waitFor();
-  await shot.settle();
-  await shot.page.mouse.move(640, 790);
-  // The view switch sits in the path bar above the formatting row.
-  const modes = shot.page.locator('.file-host:not(.hidden) [role="radiogroup"][aria-label="Markdown view"]');
-  await shot.save(await shot.clipAround([toolbar, modes, shot.menu()], 10));
-}, () => markdownScenario());
+define(
+  "markdown-toolbar",
+  async (shot) => {
+    await openMarkdown(shot);
+    await clickLine(shot, "## Steps");
+    const toolbar = shot.page.locator('.file-host:not(.hidden) [role="toolbar"][aria-label="Markdown"]');
+    await toolbar.getByRole("button", { name: "Heading", exact: true }).click();
+    await shot.menu().waitFor();
+    await shot.settle();
+    await shot.page.mouse.move(640, 790);
+    // The view switch sits in the path bar above the formatting row.
+    const modes = shot.page.locator('.file-host:not(.hidden) [role="radiogroup"][aria-label="Markdown view"]');
+    await shot.save(await shot.clipAround([toolbar, modes, shot.menu()], 10));
+  },
+  () => markdownScenario(),
+);
 
-define("markdown-rich-editor", async (shot) => {
-  await openMarkdown(shot);
-  const rich = shot.page.locator(".file-host:not(.hidden) .rich-markdown");
-  await rich.waitFor();
-  await rich.locator("table").first().waitFor();
-  await shot.settle(600);
-  // A caret at the end of the intro paragraph shows that the page is editable.
-  const intro = rich.locator("p", { hasText: "Checkout turns a cart" }).first();
-  const box = await intro.boundingBox();
-  if (box) {
-    await intro.click({ position: { x: box.width - 2, y: box.height - 6 } });
-    await shot.page.keyboard.press("End");
-  }
-  // The preview follows the source position, which can leave it scrolled down: show the top.
-  await shot.page.evaluate(() => {
-    let element: HTMLElement | null = document.querySelector<HTMLElement>(".file-host:not(.hidden) .rich-markdown");
-    while (element) {
-      element.scrollTop = 0;
-      element = element.parentElement;
+define(
+  "markdown-rich-editor",
+  async (shot) => {
+    await openMarkdown(shot);
+    const rich = shot.page.locator(".file-host:not(.hidden) .rich-markdown");
+    await rich.waitFor();
+    await rich.locator("table").first().waitFor();
+    await shot.settle(600);
+    // A caret at the end of the intro paragraph shows that the page is editable.
+    const intro = rich.locator("p", { hasText: "Checkout turns a cart" }).first();
+    const box = await intro.boundingBox();
+    if (box) {
+      await intro.click({ position: { x: box.width - 2, y: box.height - 6 } });
+      await shot.page.keyboard.press("End");
     }
-  });
-  await shot.settle(400);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(shot.page.locator("main.main"));
-}, () => markdownScenario({ settings: { markdownViewMode: "preview" } }));
+    // The preview follows the source position, which can leave it scrolled down: show the top.
+    await shot.page.evaluate(() => {
+      let element: HTMLElement | null = document.querySelector<HTMLElement>(".file-host:not(.hidden) .rich-markdown");
+      while (element) {
+        element.scrollTop = 0;
+        element = element.parentElement;
+      }
+    });
+    await shot.settle(400);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => markdownScenario({ settings: { markdownViewMode: "preview" } }),
+);
 
-define("markdown-mermaid", async (shot) => {
-  await openMarkdown(shot);
-  await scrollLineToTop(shot, "## Flow");
-  await shot.page.locator(".file-host:not(.hidden) .md-mermaid svg").first().waitFor();
-  await shot.settle(600);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(shot.page.locator("main.main"));
-}, () => markdownScenario());
+define(
+  "markdown-mermaid",
+  async (shot) => {
+    await openMarkdown(shot);
+    await scrollLineToTop(shot, "## Flow");
+    await shot.page.locator(".file-host:not(.hidden) .md-mermaid svg").first().waitFor();
+    await shot.settle(600);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => markdownScenario(),
+);
 
 async function waitForColorTheme(shot: Shot, themeId: string): Promise<void> {
   await shot.page.waitForFunction((id) => document.documentElement.getAttribute("data-color-theme") === id, themeId);
   await shot.settle();
 }
 
-define("color-theme-pickers", async (shot) => {
-  const dialog = await openSettings(shot, "Editor");
-  await waitForColorTheme(shot, "dracula");
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "dracula" } }));
+define(
+  "color-theme-pickers",
+  async (shot) => {
+    const dialog = await openSettings(shot, "Editor");
+    await waitForColorTheme(shot, "dracula");
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "dracula" } }),
+);
 
-define("color-theme-dracula", async (shot) => {
-  await waitForColorTheme(shot, "dracula");
-  await overview(shot);
-  await shot.save();
-}, () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "dracula" } }));
+define(
+  "color-theme-dracula",
+  async (shot) => {
+    await waitForColorTheme(shot, "dracula");
+    await overview(shot);
+    await shot.save();
+  },
+  () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "dracula" } }),
+);
 
-define("color-theme-solarized-light", async (shot) => {
-  await waitForColorTheme(shot, "solarized-light");
-  await overview(shot);
-  await shot.save();
-}, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "solarized-light" } }));
+define(
+  "color-theme-solarized-light",
+  async (shot) => {
+    await waitForColorTheme(shot, "solarized-light");
+    await overview(shot);
+    await shot.save();
+  },
+  () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "solarized-light" } }),
+);
 
-define("rounded-panels", async (shot) => {
-  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
-  await overview(shot);
-  await shot.save();
-}, () => ({ colorScheme: "dark", settings: { theme: "dark", roundedPanels: true } }));
+define(
+  "rounded-panels",
+  async (shot) => {
+    await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
+    await overview(shot);
+    await shot.save();
+  },
+  () => ({ colorScheme: "dark", settings: { theme: "dark", roundedPanels: true } }),
+);
 
-define("rounded-panels-islands-light", async (shot) => {
-  await waitForColorTheme(shot, "islands-light");
-  await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
-  await overview(shot);
-  await shot.save();
-}, () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light", roundedPanels: true } }));
+define(
+  "rounded-panels-islands-light",
+  async (shot) => {
+    await waitForColorTheme(shot, "islands-light");
+    await shot.page.waitForFunction(() => document.documentElement.hasAttribute("data-rounded-panels"));
+    await overview(shot);
+    await shot.save();
+  },
+  () => ({ colorScheme: "light", settings: { theme: "light", lightColorTheme: "islands-light", roundedPanels: true } }),
+);
 
-define("color-theme-high-contrast", async (shot) => {
-  await waitForColorTheme(shot, "high-contrast-dark");
-  await shot.page.waitForFunction(() => document.documentElement.getAttribute("data-contrast") === "high");
-  await collapseRepo(shot, "payments-api");
-  await shot.page.getByRole("button", { name: "Hide files" }).click();
-  await shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("cart.ts").click();
-  await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save();
-}, () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "high-contrast-dark" } }));
+define(
+  "color-theme-high-contrast",
+  async (shot) => {
+    await waitForColorTheme(shot, "high-contrast-dark");
+    await shot.page.waitForFunction(() => document.documentElement.getAttribute("data-contrast") === "high");
+    await collapseRepo(shot, "payments-api");
+    await shot.page.getByRole("button", { name: "Hide files" }).click();
+    await shot.page
+      .getByRole("group", { name: "storefront", exact: true })
+      .getByRole("group", { name: "Changes" })
+      .getByText("cart.ts")
+      .click();
+    await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
+  },
+  () => ({ colorScheme: "dark", settings: { theme: "dark", darkColorTheme: "high-contrast-dark" } }),
+);
 
 /** Scrolls the Settings section so the row or heading with this text is at the top. */
 async function scrollSettingsTo(dialog: Locator, text: string): Promise<void> {
@@ -2343,17 +2770,21 @@ define("settings-unload-hidden-tabs", async (shot) => {
   await shot.save(dialog);
 });
 
-define("editor-font-weight", async (shot) => {
-  const dialog = await openSettings(shot, "Editor");
-  await scrollSettingsTo(dialog, "Editor font family");
-  await shot.settle();
-  const preview = dialog.locator(".font-preview");
-  const weight = dialog.locator(".row", { hasText: "Editor font weight" }).first();
-  const across = await shot.clipAround([dialog.locator(".rows")], 0);
-  const down = await shot.clipAround([preview, weight], { top: 12, bottom: 12 });
-  await shot.page.mouse.move(5, 790);
-  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
-}, () => ({ settings: { editorFontWeight: 300 } }));
+define(
+  "editor-font-weight",
+  async (shot) => {
+    const dialog = await openSettings(shot, "Editor");
+    await scrollSettingsTo(dialog, "Editor font family");
+    await shot.settle();
+    const preview = dialog.locator(".font-preview");
+    const weight = dialog.locator(".row", { hasText: "Editor font weight" }).first();
+    const across = await shot.clipAround([dialog.locator(".rows")], 0);
+    const down = await shot.clipAround([preview, weight], { top: 12, bottom: 12 });
+    await shot.page.mouse.move(5, 790);
+    await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+  },
+  () => ({ settings: { editorFontWeight: 300 } }),
+);
 
 define("settings-automation", async (shot) => {
   const dialog = await openSettings(shot, "Automation");
@@ -2361,59 +2792,89 @@ define("settings-automation", async (shot) => {
   await shot.save(dialog);
 });
 
-define("git-console-setting", async (shot) => {
-  const dialog = await openSettings(shot, "Git");
-  const row = dialog.locator(".row", { hasText: "Show Git Console" }).first();
-  await row.waitFor();
-  const above = row.locator("xpath=preceding-sibling::*[1]");
-  await shot.page.mouse.move(5, 790);
-  await shot.save(await shot.clipAround([above, row], { top: 0, bottom: 8, left: 0, right: 0 }));
-}, () => ({ settings: { gitConsole: true } }));
+define(
+  "git-console-setting",
+  async (shot) => {
+    const dialog = await openSettings(shot, "Git");
+    const row = dialog.locator(".row", { hasText: "Show Git Console" }).first();
+    await row.waitFor();
+    const above = row.locator("xpath=preceding-sibling::*[1]");
+    await shot.page.mouse.move(5, 790);
+    await shot.save(await shot.clipAround([above, row], { top: 0, bottom: 8, left: 0, right: 0 }));
+  },
+  () => ({ settings: { gitConsole: true } }),
+);
 
-const signedInAccount = { host: "github.com", login: "maya-chen", name: "Maya Chen", source: "token", missingScopes: [] };
+const signedInAccount = {
+  host: "github.com",
+  login: "maya-chen",
+  name: "Maya Chen",
+  source: "token",
+  missingScopes: [],
+};
 
-define("github-sign-in", async (shot) => {
-  const dialog = await openSettings(shot, "GitHub");
-  await dialog.getByRole("button", { name: "Use GitHub CLI" }).waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ github: { account: null, cli: { installed: true, signedIn: true } } }));
+define(
+  "github-sign-in",
+  async (shot) => {
+    const dialog = await openSettings(shot, "GitHub");
+    await dialog.getByRole("button", { name: "Use GitHub CLI" }).waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ github: { account: null, cli: { installed: true, signedIn: true } } }),
+);
 
-define("github-signed-in", async (shot) => {
-  const dialog = await openSettings(shot, "GitHub");
-  await dialog.getByRole("button", { name: "Sign Out" }).waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ github: { account: signedInAccount, cli: { installed: false, signedIn: false } } }));
+define(
+  "github-signed-in",
+  async (shot) => {
+    const dialog = await openSettings(shot, "GitHub");
+    await dialog.getByRole("button", { name: "Sign Out" }).waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ github: { account: signedInAccount, cli: { installed: false, signedIn: false } } }),
+);
 
-define("mcp-settings", async (shot) => {
-  const dialog = await openSettings(shot, "Automation");
-  await dialog.getByText("Running at http://127.0.0.1:48731/mcp").first().waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ settings: { mcpEnabled: true, mcpPort: 48731 } }));
+define(
+  "mcp-settings",
+  async (shot) => {
+    const dialog = await openSettings(shot, "Automation");
+    await dialog.getByText("Running at http://127.0.0.1:48731/mcp").first().waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ settings: { mcpEnabled: true, mcpPort: 48731 } }),
+);
 
-define("mcp-cli-settings", async (shot) => {
-  const dialog = await openSettings(shot, "Automation");
-  await dialog.getByRole("button", { name: "Install in ~/.local/bin" }).waitFor();
-  await scrollSettingsTo(dialog, "Command line tool");
-  await shot.page.mouse.move(5, 790);
-  await shot.save(dialog);
-}, () => ({ settings: { mcpEnabled: false, cliEnabled: true } }));
+define(
+  "mcp-cli-settings",
+  async (shot) => {
+    const dialog = await openSettings(shot, "Automation");
+    await dialog.getByRole("button", { name: "Install in ~/.local/bin" }).waitFor();
+    await scrollSettingsTo(dialog, "Command line tool");
+    await shot.page.mouse.move(5, 790);
+    await shot.save(dialog);
+  },
+  () => ({ settings: { mcpEnabled: false, cliEnabled: true } }),
+);
 
-define("memory-log-settings", async (shot) => {
-  const dialog = await openSettings(shot, "Automation");
-  await dialog.getByRole("button", { name: "Reveal in Finder" }).waitFor();
-  await scrollSettingsTo(dialog, "Memory log");
-  await shot.settle();
-  const heading = dialog.locator(".group-title", { hasText: "Memory log" });
-  const last = dialog.locator(".row", { hasText: "Log file" }).first();
-  const rows = dialog.locator(".rows");
-  const across = await shot.clipAround([rows], 0);
-  const down = await shot.clipAround([heading, last], { top: 12, bottom: 12 });
-  await shot.page.mouse.move(5, 790);
-  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
-}, () => ({ settings: { memoryLogEnabled: true } }));
+define(
+  "memory-log-settings",
+  async (shot) => {
+    const dialog = await openSettings(shot, "Automation");
+    await dialog.getByRole("button", { name: "Reveal in Finder" }).waitFor();
+    await scrollSettingsTo(dialog, "Memory log");
+    await shot.settle();
+    const heading = dialog.locator(".group-title", { hasText: "Memory log" });
+    const last = dialog.locator(".row", { hasText: "Log file" }).first();
+    const rows = dialog.locator(".rows");
+    const across = await shot.clipAround([rows], 0);
+    const down = await shot.clipAround([heading, last], { top: 12, bottom: 12 });
+    await shot.page.mouse.move(5, 790);
+    await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+  },
+  () => ({ settings: { memoryLogEnabled: true } }),
+);
 
 define("settings-memory-flags", async (shot) => {
   const dialog = await openSettings(shot, "Terminal");
@@ -2432,10 +2893,12 @@ define("settings-memory-flags", async (shot) => {
 
 /** A storefront commit id by its summary, read with git in this script. */
 function storefrontCommit(summary: string): string {
-  return execFileSync("git", ["-C", storefront, "log", "--all", "--format=%H %s"], { encoding: "utf8" })
-    .split("\n")
-    .find((line) => line.slice(41) === summary)
-    ?.slice(0, 40) ?? "";
+  return (
+    execFileSync("git", ["-C", storefront, "log", "--all", "--format=%H %s"], { encoding: "utf8" })
+      .split("\n")
+      .find((line) => line.slice(41) === summary)
+      ?.slice(0, 40) ?? ""
+  );
 }
 
 /** Opens a Git dialog through its menu action and waits for it. */
@@ -2477,47 +2940,59 @@ function editorArea(shot: Shot): Locator {
   return shot.page.locator("main.main");
 }
 
-define("git-menu-file-history", async (shot) => {
-  await shot.openFile(cartTs());
-  await menuAction(shot, "git.file.history");
-  const row = shot.page.locator("main.main").getByText("Cart: discount codes and totals rounded to cents").first();
-  await row.waitFor();
-  await row.click();
-  await shot.page.locator("main.main .cm-editor").last().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(editorArea(shot));
-}, () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false } }));
+define(
+  "git-menu-file-history",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await menuAction(shot, "git.file.history");
+    const row = shot.page.locator("main.main").getByText("Cart: discount codes and totals rounded to cents").first();
+    await row.waitFor();
+    await row.click();
+    await shot.page.locator("main.main .cm-editor").last().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(editorArea(shot));
+  },
+  () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false } }),
+);
 
-define("git-menu-line-history", async (shot) => {
-  await shot.openFile(cartTs());
-  // Three lines above the uncommitted insert, so the working copy and HEAD number them alike.
-  await clickLine(shot, "export class Cart");
-  await shot.page.keyboard.press("Home");
-  await shot.page.keyboard.press("Shift+ArrowDown");
-  await shot.page.keyboard.press("Shift+ArrowDown");
-  await shot.page.keyboard.press("Shift+End");
-  await menuAction(shot, "git.file.historySelection");
-  await shot.page.locator("main.main .tab", { hasText: "History: cart.ts:" }).first().waitFor();
-  await shot.settle(800);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(editorArea(shot));
-}, () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false } }));
+define(
+  "git-menu-line-history",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    // Three lines above the uncommitted insert, so the working copy and HEAD number them alike.
+    await clickLine(shot, "export class Cart");
+    await shot.page.keyboard.press("Home");
+    await shot.page.keyboard.press("Shift+ArrowDown");
+    await shot.page.keyboard.press("Shift+ArrowDown");
+    await shot.page.keyboard.press("Shift+End");
+    await menuAction(shot, "git.file.historySelection");
+    await shot.page.locator("main.main .tab", { hasText: "History: cart.ts:" }).first().waitFor();
+    await shot.settle(800);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(editorArea(shot));
+  },
+  () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false } }),
+);
 
-define("git-menu-compare-revision", async (shot) => {
-  const revision = storefrontCommit("Cart: support quantities and a subtotal");
-  await shot.openFile(cartTs());
-  await inApp(
-    shot,
-    `const { repoStore } = await imp("/src/lib/stores/repo.svelte.ts");
+define(
+  "git-menu-compare-revision",
+  async (shot) => {
+    const revision = storefrontCommit("Cart: support quantities and a subtotal");
+    await shot.openFile(cartTs());
+    await inApp(
+      shot,
+      `const { repoStore } = await imp("/src/lib/stores/repo.svelte.ts");
      const { gitTabPath } = await imp("/src/lib/stores/gitTabs.ts");
      repoStore.openPseudoTab(gitTabPath({ kind: "compare", repoRoot: ${JSON.stringify(storefront)}, filePath: "src/cart.ts", revision: ${JSON.stringify(revision)} }));`,
-  );
-  await shot.page.locator("main.main .cm-editor").last().waitFor();
-  await shot.settle(800);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(editorArea(shot));
-}, () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false } }));
+    );
+    await shot.page.locator("main.main .cm-editor").last().waitFor();
+    await shot.settle(800);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(editorArea(shot));
+  },
+  () => ({ state: { explorerOpen: false }, settings: { currentLineBlame: false } }),
+);
 
 define("git-push-dialog", async (shot) => {
   const dialog = await gitDialog(shot, "git.push");
@@ -2554,15 +3029,18 @@ define("git-rebase-dialog", async (shot) => {
 
 define("git-reset-dialog", async (shot) => {
   const dialog = await gitDialog(shot, "git.resetHead");
-  await dialog.locator("input.revision").fill("HEAD~1");
-  await dialog.getByText(/^Commit [0-9a-f]{8}/).first().waitFor();
+  await dialog.getByPlaceholder("HEAD, a commit id or a branch").fill("HEAD~1");
+  await dialog
+    .getByText(/^Commit [0-9a-f]{8}/)
+    .first()
+    .waitFor();
   await shot.settle(300);
   await saveDialog(shot, dialog);
 });
 
 define("git-rollback-dialog", async (shot) => {
   const dialog = await gitDialog(shot, "git.rollback");
-  await dialog.locator("label.file").last().locator("input").uncheck();
+  await dialog.locator('[aria-label="Files to roll back"]').getByRole("checkbox").last().uncheck();
   await shot.settle(300);
   await saveDialog(shot, dialog);
 });
@@ -2591,23 +3069,31 @@ async function openRebaseFromLog(shot: Shot, summary: string): Promise<Locator> 
 }
 
 function rebaseRow(dialog: Locator, summary: string): Locator {
-  return dialog.locator(".commit", { hasText: summary }).first();
+  return dialog.getByRole("button", { name: new RegExp(summary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).first();
 }
 
-define("interactive-rebase-dialog", async (shot) => {
-  const dialog = await openRebaseFromLog(shot, "Cart: discount codes and totals rounded to cents");
-  await rebaseRow(dialog, "Docs: explain the cart API").locator("select").selectOption("reword");
-  const reword = dialog.locator("textarea.message").first();
-  await reword.fill("Docs: explain the cart API and discount codes");
-  await rebaseRow(dialog, "Catalog: lazy load product images").locator("select").selectOption("squash");
-  await shot.settle(300);
-  await saveDialog(shot, dialog);
-}, logScenario);
+define(
+  "interactive-rebase-dialog",
+  async (shot) => {
+    const dialog = await openRebaseFromLog(shot, "Cart: discount codes and totals rounded to cents");
+    await rebaseRow(dialog, "Docs: explain the cart API").locator("select").selectOption("reword");
+    const reword = dialog.getByLabel(/^New message for /).first();
+    await reword.fill("Docs: explain the cart API and discount codes");
+    await rebaseRow(dialog, "Catalog: lazy load product images").locator("select").selectOption("squash");
+    await shot.settle(300);
+    await saveDialog(shot, dialog);
+  },
+  logScenario,
+);
 
-define("interactive-rebase-merges", async (shot) => {
-  const dialog = await openRebaseFromLog(shot, "Catalog: search by name");
-  await saveDialog(shot, dialog);
-}, logScenario);
+define(
+  "interactive-rebase-merges",
+  async (shot) => {
+    const dialog = await openRebaseFromLog(shot, "Catalog: search by name");
+    await saveDialog(shot, dialog);
+  },
+  logScenario,
+);
 
 // ---------------------------------------------------------------------------------------------
 // Repository actions, commit options, .gitignore, Branches popup
@@ -2628,18 +3114,26 @@ async function openRepoMenu(shot: Shot, repoName: string): Promise<Locator> {
   return menu;
 }
 
-define("repo-actions-row", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  await shot.page.mouse.move(640, 500);
-  const header = repoHeader(shot, "storefront");
-  const staged = shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Staged" }).locator(".group-header, button").first();
-  const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
-  const down = await shot.clipAround([header, staged], { top: 4, bottom: 4 });
-  if (!sidebar) {
-    throw new Error("repo-actions-row: no sidebar");
-  }
-  await shot.save({ x: sidebar.x, width: sidebar.width, y: down.y, height: down.height });
-}, () => wideSidebar());
+define(
+  "repo-actions-row",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    await shot.page.mouse.move(640, 500);
+    const header = repoHeader(shot, "storefront");
+    const staged = shot.page
+      .getByRole("group", { name: "storefront", exact: true })
+      .getByRole("group", { name: "Staged" })
+      .locator(".group-header, button")
+      .first();
+    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+    const down = await shot.clipAround([header, staged], { top: 4, bottom: 4 });
+    if (!sidebar) {
+      throw new Error("repo-actions-row: no sidebar");
+    }
+    await shot.save({ x: sidebar.x, width: sidebar.width, y: down.y, height: down.height });
+  },
+  () => wideSidebar(),
+);
 
 /** Starts a clip at the sidebar's left edge, so it does not cut through the activity bar. */
 async function fromSidebarEdge(shot: Shot, clip: { x: number; y: number; width: number; height: number }) {
@@ -2651,20 +3145,38 @@ async function fromSidebarEdge(shot: Shot, clip: { x: number; y: number; width: 
   return { ...clip, x: left, width: clip.x + clip.width - left };
 }
 
-define("repo-actions-menu", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  const menu = await openRepoMenu(shot, "storefront");
-  const submenu = await openSubmenu(shot, 0, "Branch");
-  const top = shot.page.locator("aside.sidebar .head").first();
-  await shot.save(await fromSidebarEdge(shot, await shot.clipAround([top, repoHeader(shot, "storefront"), menu, submenu], { top: 0, right: 16, bottom: 16 })));
-}, () => wideSidebar());
+define(
+  "repo-actions-menu",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    const menu = await openRepoMenu(shot, "storefront");
+    const submenu = await openSubmenu(shot, 0, "Branch");
+    const top = shot.page.locator("aside.sidebar .head").first();
+    await shot.save(
+      await fromSidebarEdge(
+        shot,
+        await shot.clipAround([top, repoHeader(shot, "storefront"), menu, submenu], { top: 0, right: 16, bottom: 16 }),
+      ),
+    );
+  },
+  () => wideSidebar(),
+);
 
-define("remotes-pull-push-menu", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  const menu = await openRepoMenu(shot, "storefront");
-  const submenu = await openSubmenu(shot, 0, "Pull, Push");
-  await shot.save(await fromSidebarEdge(shot, await shot.clipAround([repoHeader(shot, "storefront"), menu, submenu], { top: 4, right: 16, bottom: 16 })));
-}, () => wideSidebar());
+define(
+  "remotes-pull-push-menu",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    const menu = await openRepoMenu(shot, "storefront");
+    const submenu = await openSubmenu(shot, 0, "Pull, Push");
+    await shot.save(
+      await fromSidebarEdge(
+        shot,
+        await shot.clipAround([repoHeader(shot, "storefront"), menu, submenu], { top: 4, right: 16, bottom: 16 }),
+      ),
+    );
+  },
+  () => wideSidebar(),
+);
 
 async function typeCommitMessage(shot: Shot): Promise<void> {
   await collapseRepo(shot, "payments-api");
@@ -2672,36 +3184,54 @@ async function typeCommitMessage(shot: Shot): Promise<void> {
   await shot.page.keyboard.type("Cart: set line quantities\n\nZero removes the line, and totals never go below zero.");
 }
 
-define("commit-dropdown", async (shot) => {
-  await typeCommitMessage(shot);
-  await shot.page.getByRole("button", { name: "More commit actions" }).click();
-  await shot.menu().waitFor();
-  await shot.settle();
-  await shot.save(await shot.clipAround([shot.page.locator(".commit-box"), shot.menu()], 8));
-}, () => wideSidebar());
+define(
+  "commit-dropdown",
+  async (shot) => {
+    await typeCommitMessage(shot);
+    await shot.page.getByRole("button", { name: "More commit actions" }).click();
+    await shot.menu().waitFor();
+    await shot.settle();
+    await shot.save(await shot.clipAround([shot.page.locator(".commit-box"), shot.menu()], 8));
+  },
+  () => wideSidebar(),
+);
 
-define("commit-options", async (shot) => {
-  await typeCommitMessage(shot);
-  await shot.page.locator('button[aria-label="Commit Options"]').click();
-  const panel = shot.page.locator('[role="dialog"][aria-label="Commit Options"]');
-  await panel.waitFor();
-  await shot.settle();
-  await shot.save(await shot.clipAround([panel, shot.page.locator(".commit-box")], 8));
-}, () => wideSidebar({ settings: { commitSignOff: true } }));
+define(
+  "commit-options",
+  async (shot) => {
+    await typeCommitMessage(shot);
+    await shot.page.locator('button[aria-label="Commit Options"]').click();
+    const panel = shot.page.locator('[role="dialog"][aria-label="Commit Options"]');
+    await panel.waitFor();
+    await shot.settle();
+    await shot.save(await shot.clipAround([panel, shot.page.locator(".commit-box")], 8));
+  },
+  () => wideSidebar({ settings: { commitSignOff: true } }),
+);
 
-define("gitignore-menu", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  const row = shot.page.getByRole("group", { name: "storefront", exact: true }).getByRole("group", { name: "Changes" }).getByText("wishlist.ts");
-  await row.click({ button: "right" });
-  const menu = menuLevel(shot, 0);
-  await menu.waitFor();
-  const submenu = await openSubmenu(shot, 0, "Add to .gitignore");
-  await shot.save(await shot.clipAround([row, menu, submenu], 16));
-}, () => wideSidebar());
+define(
+  "gitignore-menu",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    const row = shot.page
+      .getByRole("group", { name: "storefront", exact: true })
+      .getByRole("group", { name: "Changes" })
+      .getByText("wishlist.ts");
+    await row.click({ button: "right" });
+    const menu = menuLevel(shot, 0);
+    await menu.waitFor();
+    const submenu = await openSubmenu(shot, 0, "Add to .gitignore");
+    await shot.save(await shot.clipAround([row, menu, submenu], 16));
+  },
+  () => wideSidebar(),
+);
 
 async function openBranchesPopup(shot: Shot): Promise<Locator> {
   await collapseRepo(shot, "payments-api");
-  await repoHeader(shot, "storefront").getByRole("button", { name: /^Checkout branch or tag, current main/ }).first().click();
+  await repoHeader(shot, "storefront")
+    .getByRole("button", { name: /^Checkout branch or tag, current main/ })
+    .first()
+    .click();
   const dialog = topDialog(shot);
   await dialog.getByRole("listbox", { name: "Branches" }).getByRole("option").first().waitFor();
   await shot.settle(300);
@@ -2709,57 +3239,81 @@ async function openBranchesPopup(shot: Shot): Promise<Locator> {
 }
 
 async function openBranchSubmenu(shot: Shot, dialog: Locator, branchName: string): Promise<Locator> {
-  await dialog.getByRole("listbox", { name: "Branches" }).getByRole("option").filter({ has: shot.page.locator(".name", { hasText: new RegExp(`^${branchName}$`) }) }).first().click();
+  await dialog
+    .getByRole("listbox", { name: "Branches" })
+    .getByRole("option")
+    .filter({ has: shot.page.getByText(branchName, { exact: true }) })
+    .first()
+    .click();
   const menu = shot.menu().last();
   await menu.waitFor();
   await shot.settle(300);
   return menu;
 }
 
-define("branches-popup", async (shot) => {
-  const dialog = await openBranchesPopup(shot);
-  const menu = await openBranchSubmenu(shot, dialog, "fix/tax-rates");
-  await shot.save(await shot.clipAround([dialog, menu], 16));
-}, () => wideSidebar());
+define(
+  "branches-popup",
+  async (shot) => {
+    const dialog = await openBranchesPopup(shot);
+    const menu = await openBranchSubmenu(shot, dialog, "fix/tax-rates");
+    await shot.save(await shot.clipAround([dialog, menu], 16));
+  },
+  () => wideSidebar(),
+);
 
-define("branches-compare-tab", async (shot) => {
-  const dialog = await openBranchesPopup(shot);
-  const menu = await openBranchSubmenu(shot, dialog, "fix/tax-rates");
-  await menu.getByRole("menuitem", { name: "Compare with 'main'" }).click();
-  const tab = shot.page.locator("main.main");
-  await tab.getByText(/^Files that differ/).first().waitFor();
-  await shot.settle(400);
-  const firstFile = tab.locator(".file, [role='option']", { hasText: ".ts" }).first();
-  await firstFile.click();
-  await tab.locator(".cm-editor").first().waitFor();
-  await shot.settle(600);
-  await shot.page.mouse.move(640, 790);
-  await shot.save(tab);
-}, () => wideSidebar({ state: { explorerOpen: false } }));
+define(
+  "branches-compare-tab",
+  async (shot) => {
+    const dialog = await openBranchesPopup(shot);
+    const menu = await openBranchSubmenu(shot, dialog, "fix/tax-rates");
+    await menu.getByRole("menuitem", { name: "Compare with 'main'" }).click();
+    const tab = shot.page.locator("main.main");
+    await tab
+      .getByText(/^Files that differ/)
+      .first()
+      .waitFor();
+    await shot.settle(400);
+    const firstFile = tab.locator(".file, [role='option']", { hasText: ".ts" }).first();
+    await firstFile.click();
+    await tab.locator(".cm-editor").first().waitFor();
+    await shot.settle(600);
+    await shot.page.mouse.move(640, 790);
+    await shot.save(tab);
+  },
+  () => wideSidebar({ state: { explorerOpen: false } }),
+);
 
 // ---------------------------------------------------------------------------------------------
 // Git Console, Shelf, GitHub, worktrees, submodules and Git LFS
 
-define("git-console", async (shot) => {
-  await collapseRepo(shot, "payments-api");
-  // Only commands run after the switch is on are recorded; start from an empty list.
-  await invokeApp(shot, "git_console_clear", {});
-  await invokeApp(shot, "stage_files", { repoPath: storefront, filePaths: ["src/wishlist.ts"] });
-  await invokeApp(shot, "unstage_files", { repoPath: storefront, filePaths: ["src/wishlist.ts"] });
-  await invokeApp(shot, "fetch_all", { repoPath: storefront });
-  await invokeApp(shot, "pull", { repoPath: paymentsApi, rebase: false }).catch(() => undefined);
-  await invokeApp(shot, "fetch", { repoPath: storefront, prune: true });
-  await shot.settle();
-  await inApp(shot, `(await imp(${JSON.stringify(TERMINAL_STORE)})).terminalStore.showTab("gitConsole");`);
-  const list = shot.page.getByRole("list", { name: "Git commands" });
-  await list.waitFor();
-  await shot.settle(500);
-  await shot.clearToasts().catch(() => undefined);
-  await list.locator(".entry", { has: shot.page.locator(".status.failed, .status.error") }).first().locator(".row").click();
-  await shot.settle(400);
-  await shot.page.mouse.move(640, 200);
-  await shot.save();
-}, () => ({ settings: { gitConsole: true, currentLineBlame: false } }));
+define(
+  "git-console",
+  async (shot) => {
+    await collapseRepo(shot, "payments-api");
+    // Only commands run after the switch is on are recorded; start from an empty list.
+    await invokeApp(shot, "git_console_clear", {});
+    await invokeApp(shot, "stage_files", { repoPath: storefront, filePaths: ["src/wishlist.ts"] });
+    await invokeApp(shot, "unstage_files", { repoPath: storefront, filePaths: ["src/wishlist.ts"] });
+    await invokeApp(shot, "fetch_all", { repoPath: storefront });
+    await invokeApp(shot, "pull", { repoPath: paymentsApi, rebase: false }).catch(() => undefined);
+    await invokeApp(shot, "fetch", { repoPath: storefront, prune: true });
+    await shot.settle();
+    await inApp(shot, `(await imp(${JSON.stringify(TERMINAL_STORE)})).terminalStore.showTab("gitConsole");`);
+    const list = shot.page.getByRole("list", { name: "Git commands" });
+    await list.waitFor();
+    await shot.settle(500);
+    await shot.clearToasts().catch(() => undefined);
+    await list
+      .locator(".entry", { has: shot.page.locator(".status.failed, .status.error") })
+      .first()
+      .locator(".row")
+      .click();
+    await shot.settle(400);
+    await shot.page.mouse.move(640, 200);
+    await shot.save();
+  },
+  () => ({ settings: { gitConsole: true, currentLineBlame: false } }),
+);
 
 define("shelf-shelve-dialog", async (shot) => {
   await inApp(shot, `(await imp("/src/lib/shelf/shelfActions.svelte.ts")).openShelveDialog();`);
@@ -2773,9 +3327,19 @@ define("shelf-shelve-dialog", async (shot) => {
 define("shelf-panel", async (shot) => {
   // keepInWorkingTree leaves the files as they are, so later shots see the same changes.
   try {
-    await invokeApp(shot, "shelve_changes", { repoPath: storefront, name: "Shipping and wishlist", filePaths: ["src/shipping.ts", "src/wishlist.ts"], keepInWorkingTree: true });
+    await invokeApp(shot, "shelve_changes", {
+      repoPath: storefront,
+      name: "Shipping and wishlist",
+      filePaths: ["src/shipping.ts", "src/wishlist.ts"],
+      keepInWorkingTree: true,
+    });
     await shot.page.waitForTimeout(1100);
-    await invokeApp(shot, "shelve_changes", { repoPath: storefront, name: "Cart quantities", filePaths: ["src/cart.ts"], keepInWorkingTree: true });
+    await invokeApp(shot, "shelve_changes", {
+      repoPath: storefront,
+      name: "Cart quantities",
+      filePaths: ["src/cart.ts"],
+      keepInWorkingTree: true,
+    });
     await inApp(shot, `(await imp("/src/lib/shelf/shelfActions.svelte.ts")).showShelf();`);
     const list = shot.page.getByRole("tree", { name: "Shelved changes" });
     const first = list.locator(".entry", { hasText: "Cart quantities" }).first();
@@ -2790,32 +3354,43 @@ define("shelf-panel", async (shot) => {
   }
 });
 
-define("github-share-dialog", async (shot) => {
-  await inApp(shot, `await (await imp("/src/lib/views/github/githubActions.ts")).shareProjectOnGitHub();`);
-  const dialog = topDialog(shot);
-  await dialog.locator("label.field", { hasText: "Repository name" }).waitFor();
-  await dialog.locator("label.field", { hasText: "Description" }).locator("input").fill("Shared colors and spacing for Acme apps");
-  await shot.settle(300);
-  await saveDialog(shot, dialog);
-}, () =>
-  twoFolderScenario({
-    github: { account: signedInAccount },
-    state: { activeRepos: { [`${acme}\n${designSystem}`]: designSystem } },
-  }));
+define(
+  "github-share-dialog",
+  async (shot) => {
+    await inApp(shot, `await (await imp("/src/lib/views/github/githubActions.ts")).shareProjectOnGitHub();`);
+    const dialog = topDialog(shot);
+    await dialog.locator("label.field", { hasText: "Repository name" }).waitFor();
+    await dialog
+      .locator("label.field", { hasText: "Description" })
+      .locator("input")
+      .fill("Shared colors and spacing for Acme apps");
+    await shot.settle(300);
+    await saveDialog(shot, dialog);
+  },
+  () =>
+    twoFolderScenario({
+      github: { account: signedInAccount },
+      state: { activeRepos: { [`${acme}\n${designSystem}`]: designSystem } },
+    }),
+);
 
-define("github-gist-dialog", async (shot) => {
-  await shot.openFile(cartTs());
-  await clickLine(shot, "/** Sets the quantity");
-  await shot.page.keyboard.press("Home");
-  for (let line = 0; line < 11; line++) {
-    await shot.page.keyboard.press("Shift+ArrowDown");
-  }
-  await inApp(shot, `await (await imp("/src/lib/views/github/githubActions.ts")).createGist();`);
-  const dialog = topDialog(shot);
-  await dialog.locator("label.field", { hasText: "Description" }).locator("input").fill("Cart quantity helper");
-  await shot.settle(300);
-  await saveDialog(shot, dialog);
-}, () => ({ github: { account: signedInAccount }, settings: { currentLineBlame: false } }));
+define(
+  "github-gist-dialog",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    await clickLine(shot, "/** Sets the quantity");
+    await shot.page.keyboard.press("Home");
+    for (let line = 0; line < 11; line++) {
+      await shot.page.keyboard.press("Shift+ArrowDown");
+    }
+    await inApp(shot, `await (await imp("/src/lib/views/github/githubActions.ts")).createGist();`);
+    const dialog = topDialog(shot);
+    await dialog.locator("label.field", { hasText: "Description" }).locator("input").fill("Cart quantity helper");
+    await shot.settle(300);
+    await saveDialog(shot, dialog);
+  },
+  () => ({ github: { account: signedInAccount }, settings: { currentLineBlame: false } }),
+);
 
 const worktreeFix = () => join(demo, "storefront-fix-tax-rates");
 const worktreeReview = () => join(demo, "storefront-review");
@@ -2842,29 +3417,33 @@ function removeDemoWorktrees(): void {
   git("worktree", "prune");
 }
 
-define("worktrees-section", async (shot) => {
-  addDemoWorktrees();
-  try {
-    await openBranches(shot);
-    const heading = sidebarRow(shot, /^\s*Worktrees/);
-    await heading.waitFor();
-    await heading.scrollIntoViewIfNeeded();
-    const last = shot.page.locator("aside.sidebar .sidebar-row", { hasText: "locked" }).last();
-    await last.waitFor();
-    await heading.hover();
-    await shot.settle();
-    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
-    const stashes = await sidebarRow(shot, /^\s*Stashes/).boundingBox();
-    const lastBox = await last.boundingBox();
-    if (!sidebar || !lastBox || !stashes) {
-      throw new Error("worktrees-section: the section is not visible");
+define(
+  "worktrees-section",
+  async (shot) => {
+    addDemoWorktrees();
+    try {
+      await openBranches(shot);
+      const heading = sidebarRow(shot, /^\s*Worktrees/);
+      await heading.waitFor();
+      await heading.scrollIntoViewIfNeeded();
+      const last = shot.page.locator("aside.sidebar .sidebar-row", { hasText: "locked" }).last();
+      await last.waitFor();
+      await heading.hover();
+      await shot.settle();
+      const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+      const stashes = await sidebarRow(shot, /^\s*Stashes/).boundingBox();
+      const lastBox = await last.boundingBox();
+      if (!sidebar || !lastBox || !stashes) {
+        throw new Error("worktrees-section: the section is not visible");
+      }
+      const top = Math.max(sidebar.y, stashes.y - 8);
+      await shot.save({ x: sidebar.x, y: top, width: sidebar.width, height: lastBox.y + lastBox.height + 12 - top });
+    } finally {
+      removeDemoWorktrees();
     }
-    const top = Math.max(sidebar.y, stashes.y - 8);
-    await shot.save({ x: sidebar.x, y: top, width: sidebar.width, height: lastBox.y + lastBox.height + 12 - top });
-  } finally {
-    removeDemoWorktrees();
-  }
-}, () => ({ state: { sidebarWidth: 400 } }));
+  },
+  () => ({ state: { sidebarWidth: 400 } }),
+);
 
 define("worktrees-new-dialog", async (shot) => {
   await inApp(shot, `(await imp("/src/lib/views/git/worktrees/worktreeActions.ts")).openNewWorktreeDialog();`);
@@ -2874,7 +3453,6 @@ define("worktrees-new-dialog", async (shot) => {
   await shot.settle(300);
   await saveDialog(shot, dialog);
 });
-
 
 // AI panel: the demo's projects with storefront's worktrees; agents are the demo's stand-in only.
 function aiScenario(extra: Scenario = {}): Scenario {
@@ -2898,38 +3476,46 @@ async function startDemoAgent(shot: Shot, worktreeLabel: string): Promise<void> 
   await shot.menu().getByText("Claude Code", { exact: true }).click();
 }
 
-define("ai-panel", async (shot) => {
-  addDemoWorktrees();
-  try {
-    // The panel read the worktrees when it opened, before this shot added them.
-    await aiPanel(shot).getByRole("button", { name: "Refresh", exact: true }).click();
-    await aiPanel(shot).locator(".card-head", { hasText: "fix/tax-rates" }).waitFor();
-    await startDemoAgent(shot, "fix/tax-rates");
-    // The terminal may draw with the GPU, so its text is not in the page: the panel says when the agent runs.
-    await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
-    // Ready comes as the process starts; give it a moment to print before typing.
-    await shot.page.waitForTimeout(800);
-    await shot.page.keyboard.type("Update the tax rates for 2026");
-    await shot.page.keyboard.press("Enter");
-    await aiPanel(shot).locator('.agent [aria-label="Working"]').waitFor();
-    await shot.page.mouse.move(640, 790);
-    await shot.settle(500);
-    await shot.save(await shot.clipAround([shot.page.locator("main.main"), aiPanel(shot)]));
-  } finally {
-    removeDemoWorktrees();
-  }
-}, () => aiScenario({ settings: { aiPermissionMode: "normal" }, viewport: { width: 1280, height: 560 } }));
+define(
+  "ai-panel",
+  async (shot) => {
+    addDemoWorktrees();
+    try {
+      // The panel read the worktrees when it opened, before this shot added them.
+      await aiPanel(shot).getByRole("button", { name: "Refresh", exact: true }).click();
+      await aiPanel(shot).locator(".card-head", { hasText: "fix/tax-rates" }).waitFor();
+      await startDemoAgent(shot, "fix/tax-rates");
+      // The terminal may draw with the GPU, so its text is not in the page: the panel says when the agent runs.
+      await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+      // Ready comes as the process starts; give it a moment to print before typing.
+      await shot.page.waitForTimeout(800);
+      await shot.page.keyboard.type("Update the tax rates for 2026");
+      await shot.page.keyboard.press("Enter");
+      await aiPanel(shot).locator('.agent [aria-label="Working"]').waitFor();
+      await shot.page.mouse.move(640, 790);
+      await shot.settle(500);
+      await shot.save(await shot.clipAround([shot.page.locator("main.main"), aiPanel(shot)]));
+    } finally {
+      removeDemoWorktrees();
+    }
+  },
+  () => aiScenario({ settings: { aiPermissionMode: "normal" }, viewport: { width: 1280, height: 560 } }),
+);
 
-define("ai-new-tab", async (shot) => {
-  await startDemoAgent(shot, "main");
-  await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
-  const plus = shot.page.locator(".tab-strip .new-tab").first();
-  await plus.click();
-  await shot.menu().waitFor();
-  await shot.settle();
-  const tab = shot.page.locator(".tab-strip .tab").first();
-  await shot.save(await shot.clipAround([tab, plus, shot.menu()], { top: 0, left: 0, right: 120, bottom: 16 }));
-}, () => aiScenario({ settings: { aiPermissionMode: "normal" } }));
+define(
+  "ai-new-tab",
+  async (shot) => {
+    await startDemoAgent(shot, "main");
+    await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+    const plus = shot.page.locator(".tab-strip .new-tab").first();
+    await plus.click();
+    await shot.menu().waitFor();
+    await shot.settle();
+    const tab = shot.page.locator(".tab-strip .tab").first();
+    await shot.save(await shot.clipAround([tab, plus, shot.menu()], { top: 0, left: 0, right: 120, bottom: 16 }));
+  },
+  () => aiScenario({ settings: { aiPermissionMode: "normal" } }),
+);
 
 /** Opens New Task from storefront's + in the AI panel and fills it in: a race of two agents with a prompt. */
 async function fillNewTask(shot: Shot): Promise<Locator> {
@@ -2939,144 +3525,208 @@ async function fillNewTask(shot: Shot): Promise<Locator> {
   const dialog = shot.page.getByRole("dialog");
   await dialog.getByText("New Task", { exact: true }).waitFor();
   await dialog.getByPlaceholder("Fix the login race").fill("Round tax to cents");
-  await dialog.locator(".agent-select").first().waitFor();
+  await dialog.getByLabel("Agent 1", { exact: true }).waitFor();
   await dialog.getByRole("button", { name: "Add Agent to Race" }).click();
-  await dialog.getByPlaceholder("What should the agents do?").fill("Round every tax amount to whole cents and add tests.");
+  await dialog
+    .getByPlaceholder("What should the agents do?")
+    .fill("Round every tax amount to whole cents and add tests.");
   return dialog;
 }
 
-define("ai-new-task", async (shot) => {
-  const dialog = await fillNewTask(shot);
-  await shot.page.mouse.move(5, 790);
-  await shot.settle();
-  await shot.save(dialog);
-}, () => aiScenario({ settings: { aiPermissionMode: "normal" } }));
-
-define("ai-usage", async (shot) => {
-  const usage = shot.page.locator('.status-bar [aria-label="AI usage"]');
-  await usage.locator("button").first().waitFor();
-  await usage.locator("button").first().click();
-  const details = shot.page.locator('[role="dialog"][aria-label="AI usage details"]');
-  await details.waitFor();
-  await shot.page.mouse.move(5, 300);
-  await shot.settle();
-  await shot.save(await shot.clipAround([usage, details], { top: 12, left: 24, right: 12, bottom: 0 }));
-}, () => ({ aiUsage: true }));
-
-define("ai-agent-command", async (shot) => {
-  const dialog = await openSettings(shot, "AI");
-  await dialog.getByText("1 of 9 found on your PATH.").waitFor();
-  const head = dialog.locator(".agent-head", { hasText: "Claude Code" });
-  await head.click();
-  await dialog.getByLabel("Claude Code extra arguments").fill("--model opus");
-  await dialog.getByLabel("Claude Code extra arguments").press("Tab");
-  // The Settings list scrolls: bring the opened agent to the top of it.
-  await head.evaluate((element) => element.scrollIntoView({ block: "start" }));
-  await shot.settle();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(await shot.clipAround([head, dialog.locator(".agent.expanded .actions")], { top: 8, left: 12, right: 12, bottom: 12 }));
-}, () => aiScenario({ state: { explorerOpen: false } }));
-
-define("memory-terminals", async (shot) => {
-  await startDemoAgent(shot, "main");
-  await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
-  await startDemoAgent(shot, "main");
-  await aiPanel(shot).locator('.agent [aria-label="Ready"]').nth(1).waitFor();
-  await newTerminal(shot);
-  const memory = shot.page.locator("footer.status-bar .memory");
-  await memory.getByRole("button", { name: /^Memory / }).click();
-  const terminals = shot.page.locator('[aria-label="Terminal memory"]');
-  await terminals.locator(".row").nth(2).waitFor();
-  await shot.page.mouse.move(5, 300);
-  await shot.settle();
-  await shot.save(await shot.clipAround([memory, shot.page.locator('[role="dialog"][aria-label="Memory usage"]')], {
-    top: 12,
-    left: 24,
-    right: 12,
-    bottom: 0,
-  }));
-}, () =>
-  aiScenario({
-    ...terminalScenario({ settings: { aiPermissionMode: "normal" } }),
-    terminalMemory: [412 * 1024 * 1024, 268 * 1024 * 1024, 6 * 1024 * 1024],
-  }),
+define(
+  "ai-new-task",
+  async (shot) => {
+    const dialog = await fillNewTask(shot);
+    await shot.page.mouse.move(5, 790);
+    await shot.settle();
+    await shot.save(dialog);
+  },
+  () => aiScenario({ settings: { aiPermissionMode: "normal" } }),
 );
 
-define("keep-awake", async (shot) => {
-  const button = shot.page.locator('.status-bar button[aria-label^="Keep computer awake"]');
-  await button.click();
-  const menu = shot.page.locator('[role="menu"][aria-label="Keep computer awake"]');
-  await menu.waitFor();
-  await shot.page.mouse.move(5, 300);
-  await shot.settle();
-  await shot.save(await shot.clipAround([button, menu], { top: 12, left: 40, right: 12, bottom: 0 }));
-}, () => ({ settings: { computerAwakeMode: "agent" } }));
+define(
+  "ai-usage",
+  async (shot) => {
+    const usage = shot.page.locator('.status-bar [aria-label="AI usage"]');
+    await usage.locator("button").first().waitFor();
+    await usage.locator("button").first().click();
+    const details = shot.page.locator('[role="dialog"][aria-label="AI usage details"]');
+    await details.waitFor();
+    await shot.page.mouse.move(5, 300);
+    await shot.settle();
+    await shot.save(await shot.clipAround([usage, details], { top: 12, left: 24, right: 12, bottom: 0 }));
+  },
+  () => ({ aiUsage: true }),
+);
 
-define("ai-permission", async (shot) => {
-  await startDemoAgent(shot, "main");
-  const dialog = shot.page.getByRole("dialog");
-  await dialog.getByText("How Should AI Agents Work?").waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.settle();
-  await shot.save(dialog);
-}, () => aiScenario());
+define(
+  "ai-agent-command",
+  async (shot) => {
+    const dialog = await openSettings(shot, "AI");
+    await dialog.getByText("1 of 9 found on your PATH.").waitFor();
+    const head = dialog.locator(".agent-head", { hasText: "Claude Code" });
+    await head.click();
+    await dialog.getByLabel("Claude Code extra arguments").fill("--model opus");
+    await dialog.getByLabel("Claude Code extra arguments").press("Tab");
+    // The Settings list scrolls: bring the opened agent to the top of it.
+    await head.evaluate((element) => element.scrollIntoView({ block: "start" }));
+    await shot.settle();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(
+      await shot.clipAround([head, dialog.locator(".agent.expanded .actions")], {
+        top: 8,
+        left: 12,
+        right: 12,
+        bottom: 12,
+      }),
+    );
+  },
+  () => aiScenario({ state: { explorerOpen: false } }),
+);
 
-define("ai-settings", async (shot) => {
-  const dialog = await openSettings(shot, "AI");
-  await dialog.getByText("1 of 9 found on your PATH.").waitFor();
-  await shot.page.mouse.move(5, 790);
-  await shot.settle();
-  await shot.save(dialog);
-}, () => aiScenario({ state: { explorerOpen: false } }));
+define(
+  "memory-terminals",
+  async (shot) => {
+    await startDemoAgent(shot, "main");
+    await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+    await startDemoAgent(shot, "main");
+    await aiPanel(shot).locator('.agent [aria-label="Ready"]').nth(1).waitFor();
+    await newTerminal(shot);
+    const memory = shot.page.locator("footer.status-bar .memory");
+    await memory.getByRole("button", { name: /^Memory / }).click();
+    const terminals = shot.page.locator('[aria-label="Terminal memory"]');
+    await terminals.locator(".row").nth(2).waitFor();
+    await shot.page.mouse.move(5, 300);
+    await shot.settle();
+    await shot.save(
+      await shot.clipAround([memory, shot.page.locator('[role="dialog"][aria-label="Memory usage"]')], {
+        top: 12,
+        left: 24,
+        right: 12,
+        bottom: 0,
+      }),
+    );
+  },
+  () =>
+    aiScenario({
+      ...terminalScenario({ settings: { aiPermissionMode: "normal" } }),
+      terminalMemory: [412 * 1024 * 1024, 268 * 1024 * 1024, 6 * 1024 * 1024],
+    }),
+);
 
-define("submodules-changes", async (shot) => {
-  const changes = shot.page.getByRole("group", { name: "shop-app", exact: true }).getByRole("group", { name: "Changes" });
-  const row = changes.locator(".file-row, [role='treeitem'], .row", { hasText: "acme" }).first();
-  await row.waitFor();
-  await row.click({ button: "right" });
-  await shot.menu().waitFor();
-  await shot.settle();
-  const sidebar = shot.page.locator("aside.sidebar");
-  const panel = await shot.clipPanel(sidebar, [shot.menu(), row], 16);
-  const across = await shot.clipAround([sidebar, shot.menu()], { right: 12 });
-  await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
-}, () => ({ launch: { mode: "app", repoPath: shopApp }, state: { activeRepos: {}, sidebarWidth: 360 } }));
+define(
+  "keep-awake",
+  async (shot) => {
+    const button = shot.page.locator('.status-bar button[aria-label^="Keep computer awake"]');
+    await button.click();
+    const menu = shot.page.locator('[role="menu"][aria-label="Keep computer awake"]');
+    await menu.waitFor();
+    await shot.page.mouse.move(5, 300);
+    await shot.settle();
+    await shot.save(await shot.clipAround([button, menu], { top: 12, left: 40, right: 12, bottom: 0 }));
+  },
+  () => ({ settings: { computerAwakeMode: "agent" } }),
+);
+
+define(
+  "ai-permission",
+  async (shot) => {
+    await startDemoAgent(shot, "main");
+    const dialog = shot.page.getByRole("dialog");
+    await dialog.getByText("How Should AI Agents Work?").waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.settle();
+    await shot.save(dialog);
+  },
+  () => aiScenario(),
+);
+
+define(
+  "ai-settings",
+  async (shot) => {
+    const dialog = await openSettings(shot, "AI");
+    await dialog.getByText("1 of 9 found on your PATH.").waitFor();
+    await shot.page.mouse.move(5, 790);
+    await shot.settle();
+    await shot.save(dialog);
+  },
+  () => aiScenario({ state: { explorerOpen: false } }),
+);
+
+define(
+  "submodules-changes",
+  async (shot) => {
+    const changes = shot.page
+      .getByRole("group", { name: "shop-app", exact: true })
+      .getByRole("group", { name: "Changes" });
+    const row = changes.locator(".file-row, [role='treeitem'], .row", { hasText: "acme" }).first();
+    await row.waitFor();
+    await row.click({ button: "right" });
+    await shot.menu().waitFor();
+    await shot.settle();
+    const sidebar = shot.page.locator("aside.sidebar");
+    const panel = await shot.clipPanel(sidebar, [shot.menu(), row], 16);
+    const across = await shot.clipAround([sidebar, shot.menu()], { right: 12 });
+    await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
+  },
+  () => ({ launch: { mode: "app", repoPath: shopApp }, state: { activeRepos: {}, sidebarWidth: 360 } }),
+);
 
 define("submodules-add-dialog", async (shot) => {
   await inApp(shot, `(await imp("/src/lib/views/git/submodules/submoduleActions.ts")).openAddSubmoduleDialog();`);
   const dialog = topDialog(shot);
   await dialog.waitFor();
-  await dialog.locator("label.field", { hasText: "Repository URL" }).locator("input").fill("https://github.com/acme/themes.git");
+  await dialog
+    .locator("label.field", { hasText: "Repository URL" })
+    .locator("input")
+    .fill("https://github.com/acme/themes.git");
   await dialog.locator("label.field", { hasText: "Branch to follow" }).locator("input").fill("main");
   await shot.settle(300);
   await saveDialog(shot, dialog);
 });
 
-const lfsInstalled = { version: "git-lfs/3.6.1 (GitHub; darwin arm64; go 1.23.3)", used: true, patterns: ["*.png"], files: ["assets/hero.png"] };
+const lfsInstalled = {
+  version: "git-lfs/3.6.1 (GitHub; darwin arm64; go 1.23.3)",
+  used: true,
+  patterns: ["*.png"],
+  files: ["assets/hero.png"],
+};
 
-define("lfs-diff", async (shot) => {
-  await shot.page.getByRole("group", { name: "media-site", exact: true }).getByRole("group", { name: "Staged" }).getByText("hero.png").click();
-  await shot.page.locator(".diff-view").getByText("Stored in Git LFS").first().waitFor();
-  await shot.settle(500);
-  await shot.page.mouse.move(640, 790);
-  await shot.save();
-}, () => ({
-  launch: { mode: "app", repoPath: mediaSite },
-  state: { activeRepos: {}, explorerOpen: false },
-  lfsStatus: lfsInstalled,
-  localStorage: { "git-manager.lfs.installNoticeShown": "1" },
-}));
+define(
+  "lfs-diff",
+  async (shot) => {
+    await shot.page
+      .getByRole("group", { name: "media-site", exact: true })
+      .getByRole("group", { name: "Staged" })
+      .getByText("hero.png")
+      .click();
+    await shot.page.locator(".diff-view").getByText("Stored in Git LFS").first().waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
+  },
+  () => ({
+    launch: { mode: "app", repoPath: mediaSite },
+    state: { activeRepos: {}, explorerOpen: false },
+    lfsStatus: lfsInstalled,
+    localStorage: { "git-manager.lfs.installNoticeShown": "1" },
+  }),
+);
 
-define("lfs-not-installed", async (shot) => {
-  const dialog = topDialog(shot);
-  await dialog.getByText("Git LFS Is Not Installed").waitFor();
-  await shot.settle(300);
-  await saveDialog(shot, dialog);
-}, () => ({
-  launch: { mode: "app", repoPath: mediaSite },
-  state: { activeRepos: {} },
-  lfsStatus: { version: null, used: true, patterns: ["*.png"], files: [] },
-}));
+define(
+  "lfs-not-installed",
+  async (shot) => {
+    const dialog = topDialog(shot);
+    await dialog.getByText("Git LFS Is Not Installed").waitFor();
+    await shot.settle(300);
+    await saveDialog(shot, dialog);
+  },
+  () => ({
+    launch: { mode: "app", repoPath: mediaSite },
+    state: { activeRepos: {} },
+    lfsStatus: { version: null, used: true, patterns: ["*.png"], files: [] },
+  }),
+);
 
 // ---------------------------------------------------------------------------------------------
 // MCP, workspaces
@@ -3088,26 +3738,44 @@ function mcpRunning(): Scenario {
     mcpActivity: [
       { tool: "git_status", at: now - 95000, durationMs: 12, ok: true, error: null, client: "mcp" },
       { tool: "get_app_state", at: now - 61000, durationMs: 4, ok: true, error: null, client: "cli" },
-      { tool: "git_push", at: now - 20000, durationMs: 1, ok: false, error: "This tool is turned off in Git Manager (Help > Available MCP Tools).", client: "mcp" },
+      {
+        tool: "git_push",
+        at: now - 20000,
+        durationMs: 1,
+        ok: false,
+        error: "This tool is turned off in Git Manager (Help > Available MCP Tools).",
+        client: "mcp",
+      },
     ],
   };
 }
 
-define("mcp-tools-dialog", async (shot) => {
-  await inApp(shot, `(await imp("/src/lib/mcp/mcpStore.svelte.ts")).mcpStore.openToolsDialog();`);
-  const dialog = topDialog(shot);
-  await dialog.getByText(/tools on/).first().waitFor();
-  await shot.settle(500);
-  await saveDialog(shot, dialog);
-}, mcpRunning);
+define(
+  "mcp-tools-dialog",
+  async (shot) => {
+    await inApp(shot, `(await imp("/src/lib/mcp/mcpStore.svelte.ts")).mcpStore.openToolsDialog();`);
+    const dialog = topDialog(shot);
+    await dialog
+      .getByText(/tools on/)
+      .first()
+      .waitFor();
+    await shot.settle(500);
+    await saveDialog(shot, dialog);
+  },
+  mcpRunning,
+);
 
-define("workspace-opening", async (shot) => {
-  const card = shot.page.getByText("Big folders take a moment", { exact: false }).first();
-  await card.waitFor({ timeout: 15000 });
-  const box = shot.page.locator('.card[role="status"]', { has: card }).first();
-  await shot.page.mouse.move(5, 790);
-  await shot.save(await shot.clipAround([box], 48), { settle: false });
-}, () => ({ hold: { open_workspace: 9000 }, noWait: true }));
+define(
+  "workspace-opening",
+  async (shot) => {
+    const card = shot.page.getByText("Big folders take a moment", { exact: false }).first();
+    await card.waitFor({ timeout: 15000 });
+    const box = shot.page.locator('.card[role="status"]', { has: card }).first();
+    await shot.page.mouse.move(5, 790);
+    await shot.save(await shot.clipAround([box], 48), { settle: false });
+  },
+  () => ({ hold: { open_workspace: 9000 }, noWait: true }),
+);
 
 // NEW-SHOTS-END
 
@@ -3157,7 +3825,9 @@ async function main(): Promise<void> {
           lastError = error;
           if (page && process.env.GM_SHOTS_FAILURES) {
             // What the page looked like when the shot failed, for debugging a define().
-            await page.screenshot({ path: join(process.env.GM_SHOTS_FAILURES, `${spec.name}-${attempt}.png`) }).catch(() => undefined);
+            await page
+              .screenshot({ path: join(process.env.GM_SHOTS_FAILURES, `${spec.name}-${attempt}.png`) })
+              .catch(() => undefined);
           }
           if (attempt === 1) {
             process.stdout.write("retrying ... ");
@@ -3176,7 +3846,9 @@ async function main(): Promise<void> {
         console.error(`  ${message}`);
         if (/No app window answered|did not answer through the bridge/.test(message)) {
           // macOS pauses a web view whose window is hidden, so every later shot would fail too.
-          console.error("\nThe app window stopped answering. Keep the Git Manager window visible (not minimized or covered) while shots run.");
+          console.error(
+            "\nThe app window stopped answering. Keep the Git Manager window visible (not minimized or covered) while shots run.",
+          );
           break;
         }
       } else {

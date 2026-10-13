@@ -21,7 +21,10 @@ const DECORATION_RE_GLOBAL = new RegExp(`[${MARKS}]`, "gu");
 
 // Whole words only: "~/codex/ready" or "reworking" must not count.
 const AGENT_NAMES = "claude|codex|copilot|cursor|gemini|opencode|aider|qwen";
-const AGENT_NAME_RE = new RegExp(String.raw`(?<![\w./\\-])(${AGENT_NAMES})(?:\.(?:exe|cmd|bat|ps1))?(?![\w./\\-])`, "i");
+const AGENT_NAME_RE = new RegExp(
+  String.raw`(?<![\w./\\-])(${AGENT_NAMES})(?:\.(?:exe|cmd|bat|ps1))?(?![\w./\\-])`,
+  "i",
+);
 const IDLE_WORD_RE = /(?<![\w./\\-])(ready|idle|done)(?![\w-])/i;
 const WORKING_WORD_RE = /(?<![\w./\\-])(working|thinking|running)(?![\w-])/i;
 /** OpenCode's own titles: "OC | <session summary>"; the summary is subject matter, never status. */

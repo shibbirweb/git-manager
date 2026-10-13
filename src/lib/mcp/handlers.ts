@@ -122,7 +122,9 @@ function fileTab(args: ToolArgs): string {
   const given = raw !== null && isUntitledTab(raw) ? raw : optionalPath(args, "filePath");
   const filePath = given ?? (changesSelection.shownView === "file" ? repoStore.openFilePath : null);
   if (!filePath || (isPseudoTab(filePath) && !isUntitledTab(filePath))) {
-    throw new ToolArgError(given ? "Not an open file tab" : "No file tab is on screen; pass filePath or open_file first");
+    throw new ToolArgError(
+      given ? "Not an open file tab" : "No file tab is on screen; pass filePath or open_file first",
+    );
   }
   if (!repoStore.tabs.some((tab) => tab.path === filePath)) {
     throw new ToolArgError("That file is not open in a tab; open it with open_file first");
@@ -144,10 +146,17 @@ async function runMenuCommand(args: ToolArgs): Promise<Structured> {
   const action = requiredEnum(args, "action", MENU_ACTIONS);
   // The menu waits behind dialogs, Search Everywhere and the merge tool; say so instead of doing nothing.
   if (shortcutsBlocked()) {
-    throw new ToolArgError(`A dialog is open in the app (${openDialog()?.kind ?? "dialog"}); it waits for the user or close_dialog`);
+    throw new ToolArgError(
+      `A dialog is open in the app (${openDialog()?.kind ?? "dialog"}); it waits for the user or close_dialog`,
+    );
   }
   // Find and Code items act on the focused editor: focus the file on screen first.
-  if (isEditorAction(action) && !editorFocus.focused && changesSelection.shownView === "file" && repoStore.openFilePath) {
+  if (
+    isEditorAction(action) &&
+    !editorFocus.focused &&
+    changesSelection.shownView === "file" &&
+    repoStore.openFilePath
+  ) {
     fileCommands.focus(repoStore.openFilePath);
     await waitUntil(() => editorFocus.focused, 300);
   }
@@ -281,7 +290,9 @@ async function openFile(args: ToolArgs): Promise<Structured> {
   const filePath = insideWorkspace(requiredPath(args, "filePath"));
   const line = optionalInteger(args, "line", 1, 10_000_000);
   const column = optionalInteger(args, "column", 1, 1_000_000);
-  await navigation.openFileAt(filePath, line === null ? null : line - 1, column === null ? 0 : column - 1, { pin: true });
+  await navigation.openFileAt(filePath, line === null ? null : line - 1, column === null ? 0 : column - 1, {
+    pin: true,
+  });
   const opened = repoStore.openFilePath === filePath;
   if (!opened) {
     throw new ToolArgError("The file did not open (the switch was cancelled in the app)");
@@ -339,7 +350,9 @@ function inspectElements(args: ToolArgs): Structured {
   const selector = requiredString(args, "selector", 500);
   const limit = optionalInteger(args, "limit", 1, 100) ?? 20;
   const rawStyles = Array.isArray(args.styles) ? args.styles : [];
-  const styles = rawStyles.filter((name): name is string => typeof name === "string" && /^-?[a-z][a-z-]*$/.test(name)).slice(0, 30);
+  const styles = rawStyles
+    .filter((name): name is string => typeof name === "string" && /^-?[a-z][a-z-]*$/.test(name))
+    .slice(0, 30);
   let found: Element[];
   try {
     found = [...document.querySelectorAll(selector)];
@@ -357,7 +370,12 @@ function inspectElements(args: ToolArgs): Structured {
       tag: element.tagName.toLowerCase(),
       classes: typeof element.className === "string" ? element.className : "",
       text: (element.textContent ?? "").trim().slice(0, 80),
-      rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
+      rect: {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      },
       visible: rect.width > 0 && rect.height > 0 && computed.visibility !== "hidden" && computed.display !== "none",
       styles: values,
     };
@@ -394,7 +412,12 @@ async function saveFile(args: ToolArgs): Promise<Structured> {
   if (isUntitledTab(filePath)) {
     // The save dialog waits for the user, longer than a tool call may wait.
     void fileCommands.save(filePath, { quiet: true });
-    return { filePath, saved: false, asked: true, note: "An Untitled tab has no file yet, so the app asks the user where to save it." };
+    return {
+      filePath,
+      saved: false,
+      asked: true,
+      note: "An Untitled tab has no file yet, so the app asks the user where to save it.",
+    };
   }
   const saved = await fileCommands.save(filePath, { quiet: true });
   if (!saved) {
@@ -424,10 +447,16 @@ function showChangesDiff(args: ToolArgs): Structured {
   return { repoPath, filePath, area };
 }
 
-async function loadScripts(): Promise<{ sources: ScriptSource[]; installs: Awaited<ReturnType<typeof api.listNodeVersions>> }> {
+async function loadScripts(): Promise<{
+  sources: ScriptSource[];
+  installs: Awaited<ReturnType<typeof api.listNodeVersions>>;
+}> {
   requireWorkspace();
   const folderPaths = (repoStore.workspace?.folders ?? []).map((folder) => folder.root);
-  const [found, installs] = await Promise.all([api.listProjectScripts(folderPaths), api.listNodeVersions().catch(() => [])]);
+  const [found, installs] = await Promise.all([
+    api.listProjectScripts(folderPaths),
+    api.listNodeVersions().catch(() => []),
+  ]);
   return {
     sources: (found ?? []).map((source) => withRunner(source, runnerOverrides.get(source.filePath))),
     installs: installs ?? [],
@@ -478,7 +507,9 @@ async function runScript(args: ToolArgs): Promise<Structured> {
     throw new ToolArgError(`That file has no script named "${scriptName}"`);
   }
   const runId = scriptRunId(source, script);
-  const running = terminalStore.runSessions.find((entry) => entry.run?.runId === runId && entry.terminalId !== null && !entry.exited);
+  const running = terminalStore.runSessions.find(
+    (entry) => entry.run?.runId === runId && entry.terminalId !== null && !entry.exited,
+  );
   if (running) {
     throw new ToolArgError(`It is still running in the Run tab (runKey ${running.key}); stop it with stop_run first`);
   }
@@ -541,7 +572,9 @@ async function scrollView(args: ToolArgs): Promise<Structured> {
   const rounds = optionalInteger(args, "rounds", 1, 10) ?? 1;
   const element = findScroller(target);
   if (!element) {
-    throw new ToolArgError(`Nothing scrollable is visible for "${target}"; show it first (for example open a long file)`);
+    throw new ToolArgError(
+      `Nothing scrollable is visible for "${target}"; show it first (for example open a long file)`,
+    );
   }
   const outcome = await scrollWalk(element, speed, rounds);
   return { target, ...outcome };

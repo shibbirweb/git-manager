@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { fileKeyOp, fileOpAccelerator, fileOpGroups, type FileKey, type FileOpTarget, movableTargets, targetFolder } from "./fileOps";
+import {
+  fileKeyOp,
+  fileOpAccelerator,
+  fileOpGroups,
+  type FileKey,
+  type FileOpTarget,
+  movableTargets,
+  targetFolder,
+} from "./fileOps";
 
 const file: FileOpTarget = { path: "/w/src/cart.ts", isDir: false, isFolderRoot: false, deleted: false };
 const folder: FileOpTarget = { path: "/w/src", isDir: true, isFolderRoot: false, deleted: false };
@@ -12,7 +20,11 @@ function ops(groups: ReturnType<typeof fileOpGroups>): string[][] {
 
 describe("fileOpGroups", () => {
   it("offers everything for one file or folder", () => {
-    const expected = [["newFile", "newFolder"], ["cut", "copy", "paste", "duplicate"], ["rename", "trash"]];
+    const expected = [
+      ["newFile", "newFolder"],
+      ["cut", "copy", "paste", "duplicate"],
+      ["rename", "trash"],
+    ];
     expect(ops(fileOpGroups([file], true))).toEqual(expected);
     expect(ops(fileOpGroups([folder], true))).toEqual(expected);
   });

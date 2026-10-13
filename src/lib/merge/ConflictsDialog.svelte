@@ -93,7 +93,11 @@
   }
 
   async function continueOp(): Promise<void> {
-    const outcome = await repoStore.runOp("Continue", (repoPath) => api.continueOperation(repoPath), "Operation completed");
+    const outcome = await repoStore.runOp(
+      "Continue",
+      (repoPath) => api.continueOperation(repoPath),
+      "Operation completed",
+    );
     if (outcome && !outcome.conflicts) {
       repoStore.conflictsOpen = false;
     }
@@ -195,7 +199,9 @@
                   <span class="tag">binary</span>
                 {/if}
               </span>
-              <span class="side" class:deleted={sideStatus(file.kind, "ours") === "Deleted"}>{sideStatus(file.kind, "ours")}</span>
+              <span class="side" class:deleted={sideStatus(file.kind, "ours") === "Deleted"}
+                >{sideStatus(file.kind, "ours")}</span
+              >
               <span class="side" class:deleted={sideStatus(file.kind, "theirs") === "Deleted"}>
                 {sideStatus(file.kind, "theirs")}
               </span>
@@ -204,7 +210,9 @@
         </div>
         <div class="actions">
           <button class="btn" onclick={() => accept("ours")} disabled={selectedFiles.length === 0}>Accept Yours</button>
-          <button class="btn" onclick={() => accept("theirs")} disabled={selectedFiles.length === 0}>Accept Theirs</button>
+          <button class="btn" onclick={() => accept("theirs")} disabled={selectedFiles.length === 0}
+            >Accept Theirs</button
+          >
           <button class="btn primary" onclick={() => openMerge(single)} disabled={!canMerge}>Merge...</button>
         </div>
       </div>

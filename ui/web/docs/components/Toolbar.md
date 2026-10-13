@@ -3,7 +3,7 @@
 A row of controls along a view's edge: a tab's top bar, a panel's bar, the editors' bars, footers.
 
 ```ts
-import Toolbar from "$ui/components/Toolbar.svelte";
+import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
 ```
 
 Group: Layout. Also known as: Toolbar, Button group, Action bar, Footer.

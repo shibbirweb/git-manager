@@ -8,7 +8,7 @@
   import { untrack, type Snippet } from "svelte";
   import { BarSize, provideBarSize, useNarrow } from "../logic/barSize.svelte";
   import type { NarrowStep } from "../logic/breakpoints";
-  import { presetVar, type CellWidth } from "../logic/presets";
+  import { presetVar, type CellWidth, type ViewHeight } from "../logic/presets";
   import { gapValue, type Gap } from "../logic/scale";
 
   interface Props {
@@ -23,9 +23,10 @@
     grow?: boolean;
     width?: CellWidth | "auto";
     scroll?: "none" | "y" | "x" | "both";
+    maxHeight?: Exclude<ViewHeight, "fill"> | "none";
     sticky?: boolean;
-    element?: "div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form";
-    role?: "group" | "region" | "tabpanel" | "presentation" | null;
+    element?: "div" | "span" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form";
+    role?: "group" | "region" | "tabpanel" | "alert" | "status" | "presentation" | null;
     label?: string;
     busy?: boolean;
     responsive?: boolean;
@@ -45,6 +46,7 @@
     grow = false,
     width = "auto",
     scroll = "none",
+    maxHeight = "none",
     sticky = false,
     element = "div",
     role = null,
@@ -71,13 +73,15 @@
   class:scroll={scroll !== "none"}
   class:sticky
   class:hidden={hidden()}
+  class:grow
   {role}
   aria-label={label}
   aria-busy={busy || undefined}
   use:bar.observe={responsive}
   style:flex-direction={direction}
   style:gap={gapValue(gap)}
-  style:padding="{gapValue(paddingY ?? padding)} {gapValue(paddingX ?? padding)}"
+  style:padding="{gapValue(paddingY ?? padding)}
+  {gapValue(paddingX ?? padding)}"
   style:align-items={FLEX[align] ?? align}
   style:justify-content={FLEX[justify] ?? justify}
   style:flex-wrap={wrap ? "wrap" : "nowrap"}
@@ -85,6 +89,7 @@
   style:width={width === "auto" ? null : presetVar("cellWidth", width)}
   style:overflow-x={scroll === "x" || scroll === "both" ? "auto" : null}
   style:overflow-y={scroll === "y" || scroll === "both" ? "auto" : null}
+  style:max-height={maxHeight === "none" ? null : presetVar("viewHeight", maxHeight)}
 >
   {@render children()}
 </svelte:element>
@@ -99,6 +104,11 @@
 
   .hidden {
     display: none;
+  }
+
+  /* A growing Stack shares its parent's space, so it may also shrink below its content (a tab's body). */
+  .grow {
+    min-height: 0;
   }
 
   /* A scrolling region may be smaller than its content, so it can shrink inside its parent. */

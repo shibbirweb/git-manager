@@ -3,7 +3,7 @@
 The drawn layout glyphs: a window with its left or right sidebar, and the commit box layouts.
 
 ```ts
-import LayoutIcon from "$ui/components/LayoutIcon.svelte";
+import LayoutIcon from "@git-manager/ui/components/LayoutIcon.svelte";
 ```
 
 Group: Actions.

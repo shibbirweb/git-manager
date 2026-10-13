@@ -22,7 +22,9 @@
   const tabShown = $derived(placement === "editor" && changesSelection.tabOnScreen(terminalTabPath(terminal.key)));
   const visible = $derived(
     placement === "panel"
-      ? terminalStore.panelOpen && terminalStore.panelTab === "terminal" && terminalStore.paneSlots[terminal.key] !== undefined
+      ? terminalStore.panelOpen &&
+          terminalStore.panelTab === "terminal" &&
+          terminalStore.paneSlots[terminal.key] !== undefined
       : placement === "run"
         ? terminalStore.panelOpen && terminalStore.panelTab === "run" && terminalStore.runActiveKey === terminal.key
         : tabShown,

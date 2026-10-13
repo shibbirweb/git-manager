@@ -3,7 +3,7 @@
 How much of something is used: a label and value over a bar.
 
 ```ts
-import Meter from "$ui/components/Meter.svelte";
+import Meter from "@git-manager/ui/components/Meter.svelte";
 ```
 
 Group: Feedback. Also known as: Meter, Usage bar, Gauge.

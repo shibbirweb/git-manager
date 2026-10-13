@@ -3,7 +3,7 @@
 A grid of equal columns: a fixed count, or as many as fit at a minimum width.
 
 ```ts
-import Grid from "$ui/components/Grid.svelte";
+import Grid from "@git-manager/ui/components/Grid.svelte";
 ```
 
 Group: Layout. Also known as: Grid.

@@ -22,7 +22,11 @@ export const MAX_CLOSED_TABS = 20;
  * `closed` pushed on top of `stack` (the newest last). A path closed again replaces its
  * older entry, so the stack never offers the same tab twice; the oldest go past `limit`.
  */
-export function pushClosedTabs(stack: readonly ClosedTab[], closed: readonly ClosedTab[], limit = MAX_CLOSED_TABS): ClosedTab[] {
+export function pushClosedTabs(
+  stack: readonly ClosedTab[],
+  closed: readonly ClosedTab[],
+  limit = MAX_CLOSED_TABS,
+): ClosedTab[] {
   if (closed.length === 0) {
     return stack.slice();
   }

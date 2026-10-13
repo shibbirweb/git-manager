@@ -32,7 +32,10 @@ function status(branch: string | null, shortId: string | null = null): RepoStatu
 
 describe("screenRepo", () => {
   it("follows a file tab to the deepest repository", () => {
-    expect(screenRepo(input({ openFilePath: "/work/web/src/app.ts" }))).toEqual({ kind: "repo", repoRoot: "/work/web" });
+    expect(screenRepo(input({ openFilePath: "/work/web/src/app.ts" }))).toEqual({
+      kind: "repo",
+      repoRoot: "/work/web",
+    });
     expect(screenRepo(input({ openFilePath: "/work/web/vendor/lib/a.c" }))).toEqual({
       kind: "repo",
       repoRoot: "/work/web/vendor/lib",

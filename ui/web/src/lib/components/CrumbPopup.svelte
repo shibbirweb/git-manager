@@ -72,7 +72,9 @@
         onmousemove={() => (selected = index)}
         onclick={() => onpick(entry)}
       >
-        <span class="icon">{#if entry.icon}<Icon name={entry.icon} size="normal" />{/if}</span>
+        <span class="icon"
+          >{#if entry.icon}<Icon name={entry.icon} size="normal" />{/if}</span
+        >
         <span class="name">{entry.name}</span>
         {#if entry.folder}<span class="more"><Icon name="chevron-right" size="small" /></span>{/if}
       </div>

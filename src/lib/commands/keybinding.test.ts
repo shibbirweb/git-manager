@@ -19,22 +19,64 @@ function press(key: string, code: string, modifiers: Partial<KeyPress> = {}): Ke
 
 describe("parseAccelerator", () => {
   it("reads menu accelerators per platform", () => {
-    expect(parseAccelerator("CmdOrCtrl+Shift+P", "macos")).toEqual({ ctrl: false, alt: false, shift: true, meta: true, code: "KeyP" });
-    expect(parseAccelerator("CmdOrCtrl+Shift+P", "windows")).toEqual({ ctrl: true, alt: false, shift: true, meta: false, code: "KeyP" });
-    expect(parseAccelerator("Ctrl+`", "macos")).toEqual({ ctrl: true, alt: false, shift: false, meta: false, code: "Backquote" });
+    expect(parseAccelerator("CmdOrCtrl+Shift+P", "macos")).toEqual({
+      ctrl: false,
+      alt: false,
+      shift: true,
+      meta: true,
+      code: "KeyP",
+    });
+    expect(parseAccelerator("CmdOrCtrl+Shift+P", "windows")).toEqual({
+      ctrl: true,
+      alt: false,
+      shift: true,
+      meta: false,
+      code: "KeyP",
+    });
+    expect(parseAccelerator("Ctrl+`", "macos")).toEqual({
+      ctrl: true,
+      alt: false,
+      shift: false,
+      meta: false,
+      code: "Backquote",
+    });
     expect(parseAccelerator("Cmd+Shift+]", "macos")?.code).toBe("BracketRight");
-    expect(parseAccelerator("Alt+Z", "linux")).toEqual({ ctrl: false, alt: true, shift: false, meta: false, code: "KeyZ" });
+    expect(parseAccelerator("Alt+Z", "linux")).toEqual({
+      ctrl: false,
+      alt: true,
+      shift: false,
+      meta: false,
+      code: "KeyZ",
+    });
   });
 
   it("reads a minus or plus key after its separator", () => {
     expect(parseAccelerator("CmdOrCtrl+-", "macos")?.code).toBe("Minus");
-    expect(parseAccelerator("Ctrl+Shift+-", "linux")).toEqual({ ctrl: true, alt: false, shift: true, meta: false, code: "Minus" });
+    expect(parseAccelerator("Ctrl+Shift+-", "linux")).toEqual({
+      ctrl: true,
+      alt: false,
+      shift: true,
+      meta: false,
+      code: "Minus",
+    });
     expect(parseAccelerator("CmdOrCtrl+=", "macos")?.code).toBe("Equal");
   });
 
   it("reads CodeMirror keys", () => {
-    expect(parseAccelerator("Mod-Shift-d", "macos")).toEqual({ ctrl: false, alt: false, shift: true, meta: true, code: "KeyD" });
-    expect(parseAccelerator("Ctrl-Meta-g", "macos")).toEqual({ ctrl: true, alt: false, shift: false, meta: true, code: "KeyG" });
+    expect(parseAccelerator("Mod-Shift-d", "macos")).toEqual({
+      ctrl: false,
+      alt: false,
+      shift: true,
+      meta: true,
+      code: "KeyD",
+    });
+    expect(parseAccelerator("Ctrl-Meta-g", "macos")).toEqual({
+      ctrl: true,
+      alt: false,
+      shift: false,
+      meta: true,
+      code: "KeyG",
+    });
     expect(parseAccelerator("Alt-ArrowUp", "linux")?.code).toBe("ArrowUp");
   });
 
@@ -59,8 +101,12 @@ describe("matchesAccelerator", () => {
     expect(matchesAccelerator(press("p", "KeyP", { metaKey: true }), "CmdOrCtrl+P", "macos")).toBe(true);
     expect(matchesAccelerator(press("p", "KeyP", { ctrlKey: true }), "CmdOrCtrl+P", "macos")).toBe(false);
     expect(matchesAccelerator(press("p", "KeyP", { ctrlKey: true }), "CmdOrCtrl+P", "windows")).toBe(true);
-    expect(matchesAccelerator(press("P", "KeyP", { metaKey: true, shiftKey: true }), "CmdOrCtrl+P", "macos")).toBe(false);
-    expect(matchesAccelerator(press("P", "KeyP", { metaKey: true, shiftKey: true }), "CmdOrCtrl+Shift+P", "macos")).toBe(true);
+    expect(matchesAccelerator(press("P", "KeyP", { metaKey: true, shiftKey: true }), "CmdOrCtrl+P", "macos")).toBe(
+      false,
+    );
+    expect(
+      matchesAccelerator(press("P", "KeyP", { metaKey: true, shiftKey: true }), "CmdOrCtrl+Shift+P", "macos"),
+    ).toBe(true);
   });
 
   it("matches letters by the typed key, and by the physical key with Option", () => {
@@ -69,14 +115,22 @@ describe("matchesAccelerator", () => {
     // Option+Z types "Ω" on macOS.
     expect(matchesAccelerator(press("Ω", "KeyZ", { altKey: true }), "Alt+Z", "macos")).toBe(true);
     // Shift changes the character of symbol keys, so they match physically.
-    expect(matchesAccelerator(press("~", "Backquote", { ctrlKey: true, shiftKey: true }), "Ctrl+Shift+`", "macos")).toBe(true);
+    expect(
+      matchesAccelerator(press("~", "Backquote", { ctrlKey: true, shiftKey: true }), "Ctrl+Shift+`", "macos"),
+    ).toBe(true);
   });
 });
 
 describe("writing keys", () => {
   it("turns key presses into bindings, skipping lone modifiers", () => {
     expect(keybindingFromEvent(press("Shift", "ShiftLeft", { shiftKey: true }))).toBeNull();
-    expect(keybindingFromEvent(press("k", "KeyK", { metaKey: true }))).toEqual({ ctrl: false, alt: false, shift: false, meta: true, code: "KeyK" });
+    expect(keybindingFromEvent(press("k", "KeyK", { metaKey: true }))).toEqual({
+      ctrl: false,
+      alt: false,
+      shift: false,
+      meta: true,
+      code: "KeyK",
+    });
   });
 
   it("writes bindings back as accelerators that parse to the same keys", () => {
@@ -85,11 +139,16 @@ describe("writing keys", () => {
         const binding = parseAccelerator(accelerator, platform);
         expect(binding).not.toBeNull();
         if (binding) {
-          expect(sameShortcut(toAccelerator(binding, platform), accelerator, platform), `${accelerator} ${platform}`).toBe(true);
+          expect(
+            sameShortcut(toAccelerator(binding, platform), accelerator, platform),
+            `${accelerator} ${platform}`,
+          ).toBe(true);
         }
       }
     }
-    expect(toAccelerator({ ctrl: true, alt: false, shift: true, meta: true, code: "KeyP" }, "macos")).toBe("CmdOrCtrl+Ctrl+Shift+P");
+    expect(toAccelerator({ ctrl: true, alt: false, shift: true, meta: true, code: "KeyP" }, "macos")).toBe(
+      "CmdOrCtrl+Ctrl+Shift+P",
+    );
   });
 
   it("formats for display like the menus", () => {

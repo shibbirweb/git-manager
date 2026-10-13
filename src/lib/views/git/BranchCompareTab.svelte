@@ -68,7 +68,12 @@
       return null;
     }
     return {
-      original: { kind: "revision", repoRoot, revision: comparison.baseId, filePath: selected.origPath ?? selected.path },
+      original: {
+        kind: "revision",
+        repoRoot,
+        revision: comparison.baseId,
+        filePath: selected.origPath ?? selected.path,
+      },
       modified: { kind: "revision", repoRoot, revision: comparison.branchId, filePath: selected.path },
     };
   });
@@ -81,7 +86,13 @@
       return;
     }
     try {
-      const next = await api.revisionsFileDiff(repoRoot, comparison.baseId, comparison.branchId, file.path, file.origPath);
+      const next = await api.revisionsFileDiff(
+        repoRoot,
+        comparison.baseId,
+        comparison.branchId,
+        file.path,
+        file.origPath,
+      );
       if (token === diffToken) {
         diff = next;
         diffError = null;
@@ -138,9 +149,15 @@
             <div class="none dim">Only the first 1000 commits of each side are listed.</div>
           {/if}
         </div>
-        <div class="section-title files-title">Files that differ <span class="dim">({comparison.files.length})</span></div>
+        <div class="section-title files-title">
+          Files that differ <span class="dim">({comparison.files.length})</span>
+        </div>
         <div class="files">
-          <BranchFileList files={comparison.files} selectedPath={selected?.path ?? null} onselect={(file) => void select(file)} />
+          <BranchFileList
+            files={comparison.files}
+            selectedPath={selected?.path ?? null}
+            onselect={(file) => void select(file)}
+          />
         </div>
       </div>
       <div class="diff">
@@ -159,7 +176,9 @@
             />
           {/key}
         {:else}
-          <div class="placeholder dim">{comparison.files.length === 0 ? "The branches have the same files." : "Select a file"}</div>
+          <div class="placeholder dim">
+            {comparison.files.length === 0 ? "The branches have the same files." : "Select a file"}
+          </div>
         {/if}
       </div>
     </div>

@@ -71,7 +71,10 @@
     const next = rows;
     const text = query;
     untrack(() => {
-      selected = keepIndex !== null ? Math.min(keepIndex, Math.max(0, next.length - 1)) : initialRecentSelection(next, activePath, text);
+      selected =
+        keepIndex !== null
+          ? Math.min(keepIndex, Math.max(0, next.length - 1))
+          : initialRecentSelection(next, activePath, text);
       keepIndex = null;
     });
   });
@@ -122,7 +125,9 @@
   function deletesRow(event: KeyboardEvent): boolean {
     if (event.key === "Delete" && !event.altKey && !event.shiftKey) {
       const field = input;
-      return field === null || (field.selectionStart === field.value.length && field.selectionEnd === field.value.length);
+      return (
+        field === null || (field.selectionStart === field.value.length && field.selectionEnd === field.value.length)
+      );
     }
     // Cmd+Backspace on a Mac keyboard without a Delete key, when there is nothing to erase.
     return mac && event.key === "Backspace" && event.metaKey && query === "";
@@ -241,13 +246,15 @@
       >
         <FileTypeIcon fileName={row.file.name} />
         <span class="name"
-          >{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span
+          >{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+              >{:else}{part.text}{/if}{/each}</span
         >
         {#if dirty}
           <span class="dirty" title="Unsaved changes"></span>
         {/if}
         <span class="folder"
-          >{#each row.file.folderParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span
+          >{#each row.file.folderParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+              >{:else}{part.text}{/if}{/each}</span
         >
         <button
           class="remove"

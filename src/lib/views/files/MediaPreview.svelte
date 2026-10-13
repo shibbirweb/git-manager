@@ -114,17 +114,41 @@
 <div class="media">
   <div class="bar" role="toolbar" aria-label="Preview">
     {#if preview.kind === "image"}
-      <button class="btn small icon-only" onclick={() => zoomBy(-1)} disabled={!natural} title="Zoom out" aria-label="Zoom out">
+      <button
+        class="btn small icon-only"
+        onclick={() => zoomBy(-1)}
+        disabled={!natural}
+        title="Zoom out"
+        aria-label="Zoom out"
+      >
         <Icon name="minus" size={13} />
       </button>
       <span class="zoom" aria-live="polite">{natural ? zoomLabel(shownZoom) : ""}</span>
-      <button class="btn small icon-only" onclick={() => zoomBy(1)} disabled={!natural} title="Zoom in" aria-label="Zoom in">
+      <button
+        class="btn small icon-only"
+        onclick={() => zoomBy(1)}
+        disabled={!natural}
+        title="Zoom in"
+        aria-label="Zoom in"
+      >
         <Icon name="plus" size={13} />
       </button>
-      <button class="btn small" class:on={zoom === null} onclick={() => (zoom = null)} disabled={!natural} title="Fit the image in the view">
+      <button
+        class="btn small"
+        class:on={zoom === null}
+        onclick={() => (zoom = null)}
+        disabled={!natural}
+        title="Fit the image in the view"
+      >
         Fit
       </button>
-      <button class="btn small" class:on={zoom === 1} onclick={() => (zoom = 1)} disabled={!natural} title="Show the image at its real size">
+      <button
+        class="btn small"
+        class:on={zoom === 1}
+        onclick={() => (zoom = 1)}
+        disabled={!natural}
+        title="Show the image at its real size"
+      >
         100%
       </button>
     {/if}
@@ -148,7 +172,8 @@
         draggable="false"
         style:width={natural ? `${Math.max(1, Math.round(natural.width * shownZoom))}px` : null}
         onload={onImageLoad}
-        onerror={() => (error = "This image could not be shown. The file may be damaged or in a format WebKit does not support.")}
+        onerror={() =>
+          (error = "This image could not be shown. The file may be damaged or in a format WebKit does not support.")}
       />
     </div>
   {:else}

@@ -95,7 +95,9 @@ export class SharedDocs<V> {
     if (!doc) {
       return [];
     }
-    return doc.members.filter((candidate) => candidate !== member && candidate.view !== null).map((candidate) => candidate.view as V);
+    return doc.members
+      .filter((candidate) => candidate !== member && candidate.view !== null)
+      .map((candidate) => candidate.view as V);
   }
 
   /** The first editor of the file (or one that never joined): it alone reloads the file quietly. */
@@ -108,7 +110,10 @@ export class SharedDocs<V> {
 export const sharedDocs = new SharedDocs<EditorView>();
 
 /** The `dispatchTransactions` of a file editor: update it, then replay its text changes in the other views of the file. */
-export function syncedDispatch(filePath: string, member: DocMember<EditorView>): (trs: readonly Transaction[], view: EditorView) => void {
+export function syncedDispatch(
+  filePath: string,
+  member: DocMember<EditorView>,
+): (trs: readonly Transaction[], view: EditorView) => void {
   return (trs, view) => {
     view.update(trs);
     for (const tr of trs) {

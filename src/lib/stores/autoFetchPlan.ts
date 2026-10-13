@@ -24,7 +24,9 @@ export interface RepoFetchState {
 
 export function intervalMs(intervalMinutes: number): number {
   const [min, max] = AUTO_FETCH_INTERVAL_RANGE;
-  const minutes = Number.isFinite(intervalMinutes) ? Math.min(max, Math.max(min, Math.round(intervalMinutes))) : DEFAULT_AUTO_FETCH_MINUTES;
+  const minutes = Number.isFinite(intervalMinutes)
+    ? Math.min(max, Math.max(min, Math.round(intervalMinutes)))
+    : DEFAULT_AUTO_FETCH_MINUTES;
   return minutes * 60 * 1000;
 }
 
@@ -125,7 +127,14 @@ export function autoFetchHint(failures: readonly FetchFailure[], now: number): {
     return null;
   }
   const kinds = new Set(failures.map((failure) => failure.kind));
-  const label = kinds.size > 1 ? "Auto fetch failed" : kinds.has("auth") ? "Fetch needs sign-in" : kinds.has("offline") ? "Fetch offline" : "Auto fetch failed";
+  const label =
+    kinds.size > 1
+      ? "Auto fetch failed"
+      : kinds.has("auth")
+        ? "Fetch needs sign-in"
+        : kinds.has("offline")
+          ? "Fetch offline"
+          : "Auto fetch failed";
   const text = failures.length > 1 ? `${label} (${failures.length})` : label;
   const nextRetry = Math.min(...failures.map((failure) => failure.retryAt));
   const lines = failures.map((failure) => `${failure.repoName}: ${failure.message || "fetch failed"}`);

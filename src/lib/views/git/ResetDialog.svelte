@@ -1,13 +1,21 @@
 <!-- The Reset HEAD dialog: the revision to reset the current branch to (HEAD, a commit
      id or a branch) and the mode, each with its one-line explanation. Hard asks first. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { untrack } from "svelte";
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { CommitSummary, ResetMode } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { decodeRefPick, refPickItems } from "../changes/repoPickers";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { RESET_MODES, validateRevision } from "./gitOptions";
   import { undoAction } from "./undoActions";
@@ -30,7 +38,10 @@
   const branch = $derived(repoStore.statuses[repoRoot]?.head.branch ?? "HEAD");
   const revisionError = $derived(validateRevision(revision));
   const canReset = $derived(
-    revisionError === null && resolved?.revision === revision.trim() && resolveError === null && repoStore.busy === null,
+    revisionError === null &&
+      resolved?.revision === revision.trim() &&
+      resolveError === null &&
+      repoStore.busy === null,
   );
 
   $effect(() => {
@@ -105,7 +116,9 @@
     if (mode === "hard") {
       const confirmed = await dialogs.confirm({
         title: "Hard Reset",
-        message: `Reset ${branch} to ${target.revision} (${shortId}) and discard every uncommitted change? This cannot be undone.`,
+        message:
+          `Reset ${branch} to ${target.revision} (${shortId}) and discard every uncommitted change? ` +
+          "This cannot be undone.",
         confirmLabel: "Reset",
         danger: true,
       });
@@ -123,94 +136,39 @@
   }
 </script>
 
-<GitDialogFrame title="Reset HEAD" width={540} onCancel={close} onSubmit={() => void submit()}>
-  <label class="field">
-    <span>Reset {branch} to</span>
-    <div class="row">
-      <input
-        class="input mono revision"
+<Dialog open variant="form" title="Reset HEAD" width="medium" onclose={close} onsubmit={() => void submit()}>
+  <Field
+    label="Reset {branch} to"
+    look="compact"
+    error={revisionError && revision !== "" ? revisionError : resolveError || null}
+    hint={resolved ? `Commit ${resolved.commitId.slice(0, 8)}` : ""}
+  >
+    <Stack direction="row" align="center" gap="md">
+      <Input
+        mono
+        width="fill"
         bind:value={revision}
         spellcheck="false"
         autocomplete="off"
         placeholder="HEAD, a commit id or a branch"
         aria-label="Reset {branch} to"
       />
-      <button type="button" class="btn" onclick={() => void pickCommit()}>Commit...</button>
-      <button type="button" class="btn" onclick={() => void pickBranch()}>Branch...</button>
-    </div>
-  </label>
-  {#if revisionError && revision !== ""}
-    <div class="error">{revisionError}</div>
-  {:else if resolveError}
-    <div class="error">{resolveError}</div>
-  {:else if resolved}
-    <div class="hint">Commit <span class="mono">{resolved.commitId.slice(0, 8)}</span></div>
-  {/if}
+      <Button onclick={() => void pickCommit()}>Commit...</Button>
+      <Button onclick={() => void pickBranch()}>Branch...</Button>
+    </Stack>
+  </Field>
 
-  <fieldset class="modes">
-    <legend class="hint">Reset type</legend>
-    {#each RESET_MODES as option (option.value)}
-      <label class="mode">
-        <input type="radio" name="reset-mode" value={option.value} bind:group={mode} />
-        <span class="mode-text">
-          <span class="mode-label" class:danger={option.danger}>{option.label}</span>
-          <span class="hint">{option.description}</span>
-        </span>
-      </label>
-    {/each}
-  </fieldset>
+  <Fieldset legend="Reset type">
+    <RadioGroup name="reset-mode" label="Reset type" bind:value={mode} options={RESET_MODES} />
+  </Fieldset>
 
-  {#snippet footer()}
-    <span class="hint">&#8984;Enter to reset</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={close}>Cancel</button>
-    <button type="button" class="btn primary" class:danger-fill={mode === "hard"} disabled={!canReset} onclick={() => void submit()}>
-      Reset
-    </button>
+  {#snippet footnote()}
+    <Text variant="hint" tone="faint">{localKeys("CmdOrCtrl+Enter")} to reset</Text>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .revision {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .modes {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 4px 0 0;
-    padding: 0;
-    border: none;
-  }
-
-  .modes legend {
-    padding: 0;
-    margin-bottom: 4px;
-  }
-
-  .mode {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .mode input {
-    margin-top: 2px;
-  }
-
-  .mode-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .mode-label {
-    font-weight: 500;
-  }
-
-  .mode-label.danger {
-    color: var(--danger);
-  }
-</style>
+  {#snippet actions()}
+    <Button onclick={close}>Cancel</Button>
+    <Button variant={mode === "hard" ? "danger-primary" : "primary"} disabled={!canReset} onclick={() => void submit()}>
+      Reset
+    </Button>
+  {/snippet}
+</Dialog>

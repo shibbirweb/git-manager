@@ -62,7 +62,9 @@
     const entry = entries[Math.max(0, Math.min(entries.length - 1, index))];
     if (entry) {
       selectedId = entry.commit.id;
-      requestAnimationFrame(() => listEl?.querySelector(`[data-commit="${entry.commit.id}"]`)?.scrollIntoView({ block: "nearest" }));
+      requestAnimationFrame(() =>
+        listEl?.querySelector(`[data-commit="${entry.commit.id}"]`)?.scrollIntoView({ block: "nearest" }),
+      );
     }
   }
 
@@ -90,7 +92,9 @@
     {#if loading}
       <span class="dim">Loading...</span>
     {:else}
-      <span class="count dim">{entries.length}{entries.length >= LIMIT ? "+" : ""} {entries.length === 1 ? "commit" : "commits"}</span>
+      <span class="count dim"
+        >{entries.length}{entries.length >= LIMIT ? "+" : ""} {entries.length === 1 ? "commit" : "commits"}</span
+      >
     {/if}
     <button class="icon-btn" onclick={() => void load()} disabled={loading} title="Refresh">
       <Icon name="refresh" size={14} />
@@ -100,7 +104,9 @@
     <div class="placeholder">
       <div>Could not trace these lines</div>
       <div class="dim selectable">{loadError}</div>
-      <div class="hint dim">Line numbers are those of the last commit when the tab opened; newer commits can shift them.</div>
+      <div class="hint dim">
+        Line numbers are those of the last commit when the tab opened; newer commits can shift them.
+      </div>
     </div>
   {:else}
     <div class="list" bind:this={listEl} role="listbox" tabindex="0" aria-label="Commits" onkeydown={onKeydown}>

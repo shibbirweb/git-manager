@@ -10,7 +10,10 @@ import { findKeymap } from "./findPanel.svelte";
 function normalize(key: string): string {
   const parts = key.split("-");
   const name = parts.pop() ?? "";
-  return [...parts.map((part) => (part === "Cmd" ? "Meta" : part)).sort(), name.length === 1 ? name.toLowerCase() : name].join("-");
+  return [
+    ...parts.map((part) => (part === "Cmd" ? "Meta" : part)).sort(),
+    name.length === 1 ? name.toLowerCase() : name,
+  ].join("-");
 }
 
 const KEYMAPS: Record<KeySource, readonly KeyBinding[]> = {
@@ -55,7 +58,10 @@ describe("acceleratorFor", () => {
 
 describe("EDITOR_SHORTCUTS", () => {
   it("names a key the editor really binds to the menu item's command", () => {
-    for (const [action, shortcut] of Object.entries(EDITOR_SHORTCUTS) as [EditorAction, NonNullable<(typeof EDITOR_SHORTCUTS)[EditorAction]>][]) {
+    for (const [action, shortcut] of Object.entries(EDITOR_SHORTCUTS) as [
+      EditorAction,
+      NonNullable<(typeof EDITOR_SHORTCUTS)[EditorAction]>,
+    ][]) {
       const key = shortcutKey(shortcut, "macos");
       expect(boundCommand(KEYMAPS[shortcut.source], key), `${action} on ${key}`).toBe(EDITOR_COMMANDS[action].run);
     }

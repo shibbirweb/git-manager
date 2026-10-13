@@ -16,16 +16,7 @@
     onerror?: () => void;
   }
 
-  let {
-    src,
-    alt,
-    scale = null,
-    element = $bindable(null),
-    onmeasure,
-    onzoom,
-    onscroll,
-    onerror,
-  }: Props = $props();
+  let { src, alt, scale = null, element = $bindable(null), onmeasure, onzoom, onscroll, onerror }: Props = $props();
 
   let natural = $state.raw<NaturalSize | null>(null);
   let boxWidth = $state(0);

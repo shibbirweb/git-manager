@@ -175,13 +175,14 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   ],
 };
 
-export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = Object.entries(SECTION_ENTRIES).flatMap(([section, specs]) =>
-  specs.map(([label, keywords, parent]) => ({
-    section: section as SettingsSection,
-    label,
-    keywords: keywords ?? "",
-    parent: parent ?? null,
-  })),
+export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = Object.entries(SECTION_ENTRIES).flatMap(
+  ([section, specs]) =>
+    specs.map(([label, keywords, parent]) => ({
+      section: section as SettingsSection,
+      label,
+      keywords: keywords ?? "",
+      parent: parent ?? null,
+    })),
 );
 
 const WORD = /[\p{L}\p{N}]+/gu;
@@ -209,7 +210,9 @@ export function matchingEntries(
   if (words.length === 0) {
     return [];
   }
-  return index.filter((entry) => textMatches(`${entry.label} ${entry.keywords} ${sectionLabels[entry.section]}`, words));
+  return index.filter((entry) =>
+    textMatches(`${entry.label} ${entry.keywords} ${sectionLabels[entry.section]}`, words),
+  );
 }
 
 /**
@@ -223,7 +226,10 @@ export function highlightSpans(text: string, words: readonly string[]): [number,
   }
   const lower = text.toLowerCase();
   for (const match of lower.matchAll(WORD)) {
-    const longest = words.reduce((best, word) => (word.length > best && match[0].startsWith(word) ? word.length : best), 0);
+    const longest = words.reduce(
+      (best, word) => (word.length > best && match[0].startsWith(word) ? word.length : best),
+      0,
+    );
     if (longest > 0) {
       const start = match.index ?? 0;
       spans.push([start, start + longest]);

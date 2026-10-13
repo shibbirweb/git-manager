@@ -19,7 +19,8 @@ export interface MemoryCost {
 export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
   fileIcons: {
     amount: "up to +25 MB",
-    detail: "With 2,400 changed files, Minimal adds 2 to 10 MB and Material Icons 10 to 15 MB more. Fewer files cost less.",
+    detail:
+      "With 2,400 changed files, Minimal adds 2 to 10 MB and Material Icons 10 to 15 MB more. Fewer files cost less.",
   },
   syntaxHighlighting: {
     amount: "+35 MB",
@@ -51,7 +52,8 @@ export const MEMORY_COSTS: Partial<Record<keyof Preferences, MemoryCost>> = {
   },
   recentFiles: {
     amount: "about +1 MB",
-    detail: "Keeping the list costs about 1 MB, within the measuring noise, and the popup uses about 17 MB more only while it is open.",
+    detail:
+      "Keeping the list costs about 1 MB, within the measuring noise, and the popup uses about 17 MB more only while it is open.",
     minor: true,
   },
   terminalGpuAcceleration: {

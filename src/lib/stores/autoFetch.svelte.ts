@@ -142,7 +142,14 @@ class AutoFetchStore {
         return;
       }
       const repoRoots = repoStore.repos.map((repo) => repo.root);
-      const repoRoot = pickDueRepo(repoRoots, this.states, settings.autoFetchIntervalMinutes, now, this.startedAt, this.lastFetchEndedAt);
+      const repoRoot = pickDueRepo(
+        repoRoots,
+        this.states,
+        settings.autoFetchIntervalMinutes,
+        now,
+        this.startedAt,
+        this.lastFetchEndedAt,
+      );
       if (repoRoot) {
         await this.fetch(repoRoot);
       }

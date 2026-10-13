@@ -18,8 +18,8 @@
     <Stack gap="xs">
       <Text variant="display" element="h1">Layout</Text>
       <Text tone="dim">
-        Grid and breakpoints from ui/design-tokens/tokens.json. Windows are compact, regular or wide; panels are
-        tiny to wide. Layouts change at these widths on every platform.
+        Grid and breakpoints from ui/design-tokens/tokens.json. Windows are compact, regular or wide; panels are tiny to
+        wide. Layouts change at these widths on every platform.
       </Text>
     </Stack>
     <Stack gap="sm">

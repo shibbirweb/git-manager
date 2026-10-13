@@ -8,7 +8,6 @@ import {
   formatShelfDate,
   shelveCandidates,
   shelvedFileLabel,
-  statusLetter,
   validSelection,
 } from "./shelfModel";
 
@@ -35,9 +34,6 @@ describe("shelf names and labels", () => {
     expect(changeLetter("renamed")).toBe("R");
     expect(fileCountLabel(1)).toBe("1 file");
     expect(fileCountLabel(3)).toBe("3 files");
-    expect(statusLetter(status("n", { unstaged: "untracked" }))).toBe("U");
-    expect(statusLetter(status("s", { staged: "added", unstaged: "modified" }))).toBe("A");
-    expect(statusLetter(status("d", { unstaged: "deleted" }))).toBe("D");
   });
 
   it("leaves conflicts, nested repositories and submodules out of Shelve Changes", () => {

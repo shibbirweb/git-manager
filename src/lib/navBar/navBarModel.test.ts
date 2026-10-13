@@ -24,7 +24,12 @@ const paths = (crumbs: ReturnType<typeof crumbsFor>) => crumbs.map((crumb) => `$
 describe("crumbsFor", () => {
   it("lists the folder, each folder down the path and the file", () => {
     const crumbs = crumbsFor(one, "shop", "/w/shop/src/cart/cart.ts", repos);
-    expect(paths(crumbs)).toEqual(["folder:/w/shop", "dir:/w/shop/src", "dir:/w/shop/src/cart", "file:/w/shop/src/cart/cart.ts"]);
+    expect(paths(crumbs)).toEqual([
+      "folder:/w/shop",
+      "dir:/w/shop/src",
+      "dir:/w/shop/src/cart",
+      "file:/w/shop/src/cart/cart.ts",
+    ]);
     expect(crumbs[0]).toMatchObject({ name: "shop", isRepo: true });
     expect(crumbs[3]).toMatchObject({ name: "cart.ts", isRepo: false });
   });

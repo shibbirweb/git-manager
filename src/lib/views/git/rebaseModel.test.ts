@@ -32,7 +32,12 @@ function commit(id: string, message: string, isMerge = false): RebaseCommit {
   };
 }
 
-const commits = [commit("a", "First\n\nBody one\n"), commit("b", "Second\n"), commit("c", "Third\n"), commit("d", "Fourth\n")];
+const commits = [
+  commit("a", "First\n\nBody one\n"),
+  commit("b", "Second\n"),
+  commit("c", "Third\n"),
+  commit("d", "Fourth\n"),
+];
 
 describe("rebase rows", () => {
   it("start as picks with each commit's message", () => {
@@ -77,7 +82,12 @@ describe("rebase rows", () => {
     expect(isMessageSquash(rows, 1)).toBe(false);
     expect(isMessageSquash(rows, 2)).toBe(true);
     const entries = rebaseEntries(rows);
-    expect(entries.map((entry) => entry.message)).toEqual(["New first\n", null, "New first\n\nSecond\n\nThird\n", null]);
+    expect(entries.map((entry) => entry.message)).toEqual([
+      "New first\n",
+      null,
+      "New first\n\nSecond\n\nThird\n",
+      null,
+    ]);
   });
 
   it("reorders and resets", () => {
@@ -100,13 +110,17 @@ describe("rebase rows", () => {
     expect(validateRows(rows)).toBeNull();
     expect(validateRows(setAction(rows, 0, "squash"))).toBe("The first commit cannot be squashed or fixed up");
     // A dropped first row makes the next one first.
-    expect(validateRows(setAction(setAction(rows, 0, "drop"), 1, "fixup"))).toBe("The first commit cannot be squashed or fixed up");
+    expect(validateRows(setAction(setAction(rows, 0, "drop"), 1, "fixup"))).toBe(
+      "The first commit cannot be squashed or fixed up",
+    );
     let dropped = rows;
     for (let index = 0; index < rows.length; index++) {
       dropped = setAction(dropped, index, "drop");
     }
     expect(validateRows(dropped)).toBe("At least one commit must remain");
-    expect(validateRows(setMessage(setAction(rows, 1, "reword"), 1, "  \n"))).toBe("The message of bbbbbbbb cannot be empty");
+    expect(validateRows(setMessage(setAction(rows, 1, "reword"), 1, "  \n"))).toBe(
+      "The message of bbbbbbbb cannot be empty",
+    );
     expect(validateRows(initialRows([commit("a", "A"), commit("m", "Merge", true)]))).toMatch(/merge commits/);
     expect(validateRows([])).toBe("There are no commits to rebase");
   });

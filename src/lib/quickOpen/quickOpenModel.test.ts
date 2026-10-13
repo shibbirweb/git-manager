@@ -68,7 +68,10 @@ describe("Go to Line", () => {
 
   it("describes where Enter goes, clamped to the document", () => {
     const caret = { line: 12, column: 4, lineCount: 340 };
-    expect(lineRow("", caret)).toEqual({ label: "Current line: 12, column 4. Type a line number between 1 and 340.", target: null });
+    expect(lineRow("", caret)).toEqual({
+      label: "Current line: 12, column 4. Type a line number between 1 and 340.",
+      target: null,
+    });
     expect(lineRow("120", caret)).toEqual({ label: "Go to line 120", target: { line: 120, column: 1 } });
     expect(lineRow("120:5", caret)).toEqual({ label: "Go to line 120, column 5", target: { line: 120, column: 5 } });
     expect(lineRow("9000", caret).target).toEqual({ line: 340, column: 1 });
@@ -136,7 +139,12 @@ describe("recent files", () => {
     const recent = pathRows(["/repo/src/cart.ts"], folders);
     const results = pathRows(["/repo/src/cart.ts", "/repo/src/cart.test.ts"], folders);
     const rows = fileRows(recent, results, true);
-    expect(rows.map((row) => row.key)).toEqual(["h:recent", "r:/repo/src/cart.ts", "h:files", "f:/repo/src/cart.test.ts"]);
+    expect(rows.map((row) => row.key)).toEqual([
+      "h:recent",
+      "r:/repo/src/cart.ts",
+      "h:files",
+      "f:/repo/src/cart.test.ts",
+    ]);
     expect(fileRows([], results, true).map((row) => row.kind)).toEqual(["file", "file"]);
     expect(fileRows(recent, results, false).map((row) => row.key)).toEqual(["h:recent", "r:/repo/src/cart.ts"]);
   });

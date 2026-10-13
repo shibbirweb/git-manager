@@ -120,7 +120,10 @@ export class MarkdownPreviewDom {
       segment.wrapper.remove();
     }
     const changed = segments.slice(prefix, segments.length - suffix);
-    const wrappers = this.wrapSegments(changed.map((segment) => segment.html), hasRawHtml);
+    const wrappers = this.wrapSegments(
+      changed.map((segment) => segment.html),
+      hasRawHtml,
+    );
     const inserted: ShownSegment[] = wrappers.map((wrapper, index) => {
       this.body.insertBefore(wrapper, before);
       return { signature: signatures[prefix + index], line: changed[index].line, wrapper };
@@ -143,7 +146,9 @@ export class MarkdownPreviewDom {
    */
   private wrapSegments(htmls: string[], hasRawHtml: boolean): HTMLElement[] {
     if (!hasRawHtml && htmls.length > 8) {
-      const fragment = this.engine.sanitizeMarkdownHtml(htmls.map((html) => `<div class="md-block">${html}</div>`).join(""));
+      const fragment = this.engine.sanitizeMarkdownHtml(
+        htmls.map((html) => `<div class="md-block">${html}</div>`).join(""),
+      );
       const wrappers = [...fragment.children].filter((child): child is HTMLElement => child instanceof HTMLElement);
       if (wrappers.length === htmls.length && wrappers.every((wrapper) => wrapper.className === "md-block")) {
         return wrappers;
@@ -227,7 +232,8 @@ export class MarkdownPreviewDom {
       })
       .catch((error: unknown) => {
         if (image.isConnected) {
-          const reason = error && typeof error === "object" && "message" in error ? String(error.message) : "Image not found";
+          const reason =
+            error && typeof error === "object" && "message" in error ? String(error.message) : "Image not found";
           image.replaceWith(placeholder(`${alt || "Image"}: ${reason}`, raw));
         }
       });
@@ -238,7 +244,9 @@ export class MarkdownPreviewDom {
     if (this.images.size === 0) {
       return;
     }
-    const shown = new Set([...this.body.querySelectorAll("img[data-gm-file]")].map((image) => (image as HTMLElement).dataset.gmFile));
+    const shown = new Set(
+      [...this.body.querySelectorAll("img[data-gm-file]")].map((image) => (image as HTMLElement).dataset.gmFile),
+    );
     for (const filePath of this.images.keys()) {
       if (!shown.has(filePath)) {
         this.images.delete(filePath);

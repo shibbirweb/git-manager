@@ -3,7 +3,7 @@
 A short table in a bordered box: a sticky header and 28 px rows that can be selected.
 
 ```ts
-import Table from "$ui/components/Table.svelte";
+import Table from "@git-manager/ui/components/Table.svelte";
 ```
 
 Group: Navigation. Also known as: Grid, Simple table.

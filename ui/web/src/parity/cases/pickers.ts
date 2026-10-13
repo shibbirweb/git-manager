@@ -25,45 +25,6 @@ export const pickerCases: ParityCase[] = [
     ],
   },
   {
-    id: "popup-rows",
-    sources: ["src/lib/views/git/GitDialogFrame.svelte", "src/lib/views/git/BranchesPopup.svelte"],
-    html:
-      '<div class="dialog"><div class="actions-list"><button type="button" class="action">' +
-      `${iconSvg("plus", 13)} New Branch...</button></div><div class="branches">` +
-      `<div class="branch highlighted">${iconSvg("check", 13)}<span class="name truncate current">main</span>` +
-      `<span class="hint truncate">origin/main</span>${iconSvg("chevron-right", 12)}</div></div></div>`,
-    pairs: [
-      { name: "action", ref: ".action", lib: ".row.action", states: ["hover"], ignore: FILL },
-      { name: "item", ref: ".branch", lib: ".row.item", ignore: FILL },
-      { name: "name", ref: ".branch .name", lib: ".row.item .name", ignore: TEXT },
-      { name: "hint", ref: ".branch .hint", lib: ".row.item .hint", ignore: TEXT },
-    ],
-  },
-  {
-    id: "rebase-row",
-    sources: ["src/lib/views/git/InteractiveRebaseDialog.svelte"],
-    html:
-      '<div class="list"><div class="commit melded" tabindex="0" role="button">' +
-      '<span class="grip">&#8942;&#8942;</span>' +
-      '<select class="input action"><option>squash</option></select>' +
-      '<span class="hash mono">a1b2c3d</span><span class="subject truncate">Round tax</span>' +
-      '<span class="author truncate dim">Ada</span><span class="when dim">2h</span></div></div>',
-    pairs: [
-      {
-        name: "row",
-        ref: ".commit",
-        lib: ".row",
-        ignore: {
-          ...FILL,
-          display: "ReorderList's row is a flex row with the grip, then RebaseRow's grid",
-          "grid-template-columns": "ReorderList adds the grip",
-          cursor: "the library drags by the grip, which has the grab cursor",
-        },
-      },
-      { name: "grip", ref: ".grip", lib: ".grip", ignore: { width: "a grid column in the app; text in the library" } },
-    ],
-  },
-  {
     id: "option-list",
     sources: ["src/lib/views/settings/ColorThemePicker.svelte"],
     html:

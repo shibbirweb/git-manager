@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { type BranchTabRef, branchTabPath, branchTabsInFolder, branchTabTitle, isBranchTab, parseBranchTabPath } from "./branchTabs";
+import {
+  type BranchTabRef,
+  branchTabPath,
+  branchTabsInFolder,
+  branchTabTitle,
+  isBranchTab,
+  parseBranchTabPath,
+} from "./branchTabs";
 import { isPseudoTab } from "./pseudoTabs";
 import { tabLabels, tabsInFolder } from "./tabs";
 
@@ -37,7 +44,10 @@ describe("branch tabs", () => {
   });
 
   it("titles each kind, labels it in the strip and closes with its folder", () => {
-    expect(branchTabTitle(refs[0])).toEqual({ name: "feature/a|b vs main", title: "feature/a|b compared with main (app)" });
+    expect(branchTabTitle(refs[0])).toEqual({
+      name: "feature/a|b vs main",
+      title: "feature/a|b compared with main (app)",
+    });
     expect(branchTabTitle(refs[1]).name).toBe("origin/release 1 vs Working Tree");
     expect(branchTabTitle(refs[2])).toEqual({ name: "Changes: app", title: "Uncommitted changes in app" });
     const paths = refs.map(branchTabPath);

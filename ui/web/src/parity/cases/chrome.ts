@@ -105,7 +105,8 @@ export const chromeCases: ParityCase[] = [
   {
     id: "resize-handle-rows",
     sources: ["src/lib/ui/ResizeHandle.svelte"],
-    html: '<div style="display: flex; flex-direction: column; width: 300px"><div class="handle horizontal" ' +
+    html:
+      '<div style="display: flex; flex-direction: column; width: 300px"><div class="handle horizontal" ' +
       'tabindex="0"></div></div>',
     pairs: [
       { name: "handle", ref: ".handle", lib: ".handle", ignore: { width: "the panel's width" } },

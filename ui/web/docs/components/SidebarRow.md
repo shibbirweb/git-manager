@@ -3,7 +3,7 @@
 A sidebar row for branches, tags, stashes and worktrees, or a small-caps group heading.
 
 ```ts
-import SidebarRow from "$ui/components/SidebarRow.svelte";
+import SidebarRow from "@git-manager/ui/components/SidebarRow.svelte";
 ```
 
 Group: Navigation.

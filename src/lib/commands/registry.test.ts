@@ -75,14 +75,31 @@ describe("buildCommandSpecs", () => {
 
   it("takes titles, categories and keys from the menu", () => {
     const byId = new Map(specs.map((spec) => [spec.id, spec]));
-    expect(byId.get("git.commit")).toMatchObject({ title: "Commit", category: "Git", defaultShortcut: "Cmd+K", scope: "global" });
+    expect(byId.get("git.commit")).toMatchObject({
+      title: "Commit",
+      category: "Git",
+      defaultShortcut: "Cmd+K",
+      scope: "global",
+    });
     expect(byId.get("git.file.history")).toMatchObject({ title: "Show History", category: "Git > Current File" });
     expect(byId.get("file.clearRecent")).toMatchObject({ category: "File > Open Recent" });
-    expect(byId.get("app.settings")).toMatchObject({ title: "Settings", category: "App", defaultShortcut: "CmdOrCtrl+," });
+    expect(byId.get("app.settings")).toMatchObject({
+      title: "Settings",
+      category: "App",
+      defaultShortcut: "CmdOrCtrl+,",
+    });
     expect(byId.get("view.commandPalette")).toMatchObject({ defaultShortcut: "CmdOrCtrl+Shift+P", inPalette: false });
     expect(byId.get("edit.goToFile")).toMatchObject({ defaultShortcut: "CmdOrCtrl+P", inPalette: true });
-    expect(byId.get("edit.recentFiles")).toMatchObject({ title: "Recent Files", defaultShortcut: "CmdOrCtrl+E", inPalette: true });
-    expect(byId.get("edit.navigationBar")).toMatchObject({ title: "Jump to Navigation Bar", defaultShortcut: "Cmd+Up", inPalette: true });
+    expect(byId.get("edit.recentFiles")).toMatchObject({
+      title: "Recent Files",
+      defaultShortcut: "CmdOrCtrl+E",
+      inPalette: true,
+    });
+    expect(byId.get("edit.navigationBar")).toMatchObject({
+      title: "Jump to Navigation Bar",
+      defaultShortcut: "Cmd+Up",
+      inPalette: true,
+    });
     expect(byId.get("code.lineComment")).toMatchObject({ scope: "editor", defaultShortcut: "CmdOrCtrl+/" });
     expect(byId.get("view.sidebar")?.checkable).toBe(true);
     expect(byId.get("nav.goBack")).toMatchObject({ menuAction: null, defaultShortcut: "Ctrl+-", needsWorkspace: true });
@@ -116,7 +133,9 @@ describe("shortcuts", () => {
     expect(commandForKey(specs, press, "macos")?.id).toBe("view.commandPalette");
     expect(commandForKey(specs, { ...press, shiftKey: false, key: "p" }, "macos")?.id).toBe("edit.goToFile");
     expect(commandForKey(specs, press, "macos", { "view.commandPalette": null })).toBeNull();
-    expect(commandForKey(specs, { ...press, key: "j", code: "KeyJ" }, "macos", { "git.push": "CmdOrCtrl+Shift+J" })?.id).toBe("git.push");
+    expect(
+      commandForKey(specs, { ...press, key: "j", code: "KeyJ" }, "macos", { "git.push": "CmdOrCtrl+Shift+J" })?.id,
+    ).toBe("git.push");
   });
 });
 
@@ -137,9 +156,9 @@ describe("commandViews", () => {
     expect(view(idle, "code.lineComment")).toMatchObject({ enabled: false, reason: "Needs a text editor" });
     const editing = { ...idle, editor: { focused: true, inText: true, writable: true } };
     expect(view(editing, "code.lineComment")).toMatchObject({ enabled: true, reason: null });
-    expect(view({ ...idle, editor: { focused: true, inText: true, writable: false } }, "code.lineComment")?.reason).toBe(
-      "The editor is read-only",
-    );
+    expect(
+      view({ ...idle, editor: { focused: true, inText: true, writable: false } }, "code.lineComment")?.reason,
+    ).toBe("The editor is read-only");
     const noFolder = { ...idle, workspace: null, repo: null, activeFile: null };
     expect(view(noFolder, "git.commit")?.reason).toBe("Open a folder first");
     expect(view(noFolder, "nav.goBack")).toMatchObject({ enabled: false, reason: "Open a folder first" });
@@ -159,7 +178,9 @@ describe("commandViews", () => {
     const staged = { ...idle, shownView: "diff" as const, diffLines: "staged" as const };
     expect(view(staged, "git.lines.stage")?.reason).toBe("Needs an unstaged diff");
     expect(view(staged, "git.lines.unstage")).toMatchObject({ enabled: true, reason: null });
-    expect(view({ ...staged, diffLines: "unstaged" as const }, "git.lines.unstage")?.reason).toBe("Needs a staged diff");
+    expect(view({ ...staged, diffLines: "unstaged" as const }, "git.lines.unstage")?.reason).toBe(
+      "Needs a staged diff",
+    );
   });
 });
 
@@ -173,7 +194,9 @@ describe("paletteList", () => {
     expect(firstDisabled).toBeGreaterThan(0);
     expect(list.other.slice(firstDisabled).every((item) => !item.enabled)).toBe(true);
     const text = (parts: { text: string }[]) => parts.map((part) => part.text).join("");
-    const enabledLabels = list.other.slice(0, firstDisabled).map((item) => `${text(item.categoryParts)}: ${text(item.titleParts)}`);
+    const enabledLabels = list.other
+      .slice(0, firstDisabled)
+      .map((item) => `${text(item.categoryParts)}: ${text(item.titleParts)}`);
     expect(enabledLabels).toEqual([...enabledLabels].sort((a, b) => a.localeCompare(b)));
   });
 
@@ -196,7 +219,10 @@ describe("paletteList", () => {
     expect(matches.length).toBeGreaterThan(0);
     const firstDisabled = matches.findIndex((item) => !item.enabled);
     expect(matches.slice(firstDisabled).every((item) => !item.enabled)).toBe(true);
-    expect(matches.find((item) => item.commandId === "code.lineComment")).toMatchObject({ enabled: false, reason: "Needs a text editor" });
+    expect(matches.find((item) => item.commandId === "code.lineComment")).toMatchObject({
+      enabled: false,
+      reason: "Needs a text editor",
+    });
     const plain = paletteList(views(idle), "fetch", [], "macos").other.map((item) => item.commandId);
     expect(plain[0]).toBe("git.fetchCurrent");
     const lifted = paletteList(views(idle), "fetch", ["git.fetch"], "macos").other.map((item) => item.commandId);
@@ -214,7 +240,11 @@ describe("custom keys and the native menu", () => {
   });
 
   it("puts custom keys on the items and takes removed ones off", () => {
-    const accelerators = menuAccelerators(menuSpec("macos", "app"), { "git.push": "F5", "view.commandPalette": null, "nav.goBack": "F6" });
+    const accelerators = menuAccelerators(menuSpec("macos", "app"), {
+      "git.push": "F5",
+      "view.commandPalette": null,
+      "nav.goBack": "F6",
+    });
     expect(accelerators.get("git.push")).toBe("F5");
     expect(accelerators.get("view.commandPalette")).toBeNull();
     // App commands have no menu item.

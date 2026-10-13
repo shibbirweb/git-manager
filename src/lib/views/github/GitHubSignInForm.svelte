@@ -2,6 +2,13 @@
      access token (sent once to Rust, which verifies it and keeps it in the keychain) or the
      GitHub CLI's own login. Used by Settings > GitHub and the sign-in dialog. -->
 <script lang="ts">
+  import Avatar from "@git-manager/ui/components/Avatar.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Link from "@git-manager/ui/components/Link.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { errorMessage } from "$lib/api";
   import type { GitHubAccount } from "$lib/types";
@@ -101,31 +108,31 @@
   }
 </script>
 
-<div class="github-account">
+<Stack gap="mdPlus">
   {#if account}
-    <div class="signed-in">
-      <span class="avatar" aria-hidden="true">{accountInitials(account)}</span>
-      <div class="who">
-        <strong class="selectable">{account.login}</strong>
-        <span class="hint">
+    <Stack direction="row" align="center" gap="mdPlus">
+      <Avatar text={accountInitials(account)} label={account.login} />
+      <Stack gap="xxs" grow>
+        <Text weight="semibold" selectable>{account.login}</Text>
+        <Text variant="hint" tone="faint">
           {account.name ? `${account.name}, ` : ""}{account.host},
           {account.source === "ghCli" ? "through the GitHub CLI" : "token in the keychain"}
-        </span>
-      </div>
-      <button type="button" class="btn small" onclick={() => void signOut()} disabled={working !== null}>
+        </Text>
+      </Stack>
+      <Button size="small" onclick={() => void signOut()} disabled={working !== null}>
         {working === "signOut" ? "Signing Out..." : "Sign Out"}
-      </button>
-    </div>
+      </Button>
+    </Stack>
     {#if scopeHint}
-      <div class="warning">{scopeHint}</div>
+      <Text size="small" tone="warning">{scopeHint}</Text>
     {/if}
   {:else}
-    <label class="token-field">
-      <span>Sign in with a token</span>
-      <div class="token-row">
-        <input
-          class="input mono token"
+    <Field label="Sign in with a token" look="compact">
+      <Stack direction="row" align="center" gap="md">
+        <Input
           type="password"
+          mono
+          width="fill"
           bind:value={token}
           onkeydown={onTokenKeydown}
           disabled={working !== null}
@@ -133,130 +140,38 @@
           autocomplete="off"
           spellcheck="false"
           aria-label="Personal access token"
-          data-autofocus
+          autofocus
         />
-        <button
-          type="button"
-          class="btn primary"
+        <Button
+          variant="primary"
           onclick={() => void signInWithToken()}
           disabled={working !== null || token.trim() === ""}
         >
           {working === "token" ? "Signing In..." : "Sign In"}
-        </button>
-      </div>
-    </label>
-    <div class="hint">
-      A classic token with the <code>repo</code> and <code>gist</code> scopes
-      (<button type="button" class="link" onclick={() => void updates.open(TOKEN_URL)}>create one on GitHub</button>).
-      It is checked with GitHub, then kept only in the system keychain.
-    </div>
+        </Button>
+      </Stack>
+    </Field>
+    <Text variant="hint" tone="faint">
+      A classic token with the <Text variant="code">repo</Text> and <Text variant="code">gist</Text> scopes (<Link
+        onclick={() => void updates.open(TOKEN_URL)}>create one on GitHub</Link
+      >). It is checked with GitHub, then kept only in the system keychain.
+    </Text>
     {#if cli?.installed}
-      <div class="cli-row">
-        <button
-          type="button"
-          class="btn"
-          onclick={() => void signInWithCli()}
-          disabled={working !== null || !cli.signedIn}
-        >
+      <Stack direction="row" align="center" gap="md">
+        <Button onclick={() => void signInWithCli()} disabled={working !== null || !cli.signedIn}>
           {working === "cli" ? "Signing In..." : "Use GitHub CLI"}
-        </button>
-        <span class="hint">
+        </Button>
+        <Text variant="hint" tone="faint">
           {cli.signedIn
             ? "Uses the login of gh, asked each time; nothing is stored."
             : "gh is installed but not signed in: run gh auth login first."}
-        </span>
-      </div>
+        </Text>
+      </Stack>
     {/if}
   {/if}
   {#if problem}
-    <div class="problem selectable" role="alert">{problem}</div>
+    <Stack role="alert">
+      <Text size="small" tone="danger" selectable>{problem}</Text>
+    </Stack>
   {/if}
-</div>
-
-<style>
-  .github-account {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .signed-in {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .avatar {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--accent-text);
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .who {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .token-field {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .token-field > span {
-    color: var(--text-dim);
-    font-size: 12px;
-  }
-
-  .token-row,
-  .cli-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .token {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .hint {
-    color: var(--text-faint);
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  .link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--accent);
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .link:hover {
-    text-decoration: underline;
-  }
-
-  .warning {
-    color: var(--warning);
-    font-size: 12px;
-  }
-
-  .problem {
-    color: var(--danger);
-    font-size: 12px;
-  }
-</style>
+</Stack>

@@ -138,7 +138,11 @@ describe("extendSelection", () => {
 
 describe("topLevel", () => {
   it("drops paths inside another selected folder", () => {
-    expect(topLevel(["/w/src", "/w/src/a.ts", "/w/srcx.ts", "/w/README.md"])).toEqual(["/w/src", "/w/srcx.ts", "/w/README.md"]);
+    expect(topLevel(["/w/src", "/w/src/a.ts", "/w/srcx.ts", "/w/README.md"])).toEqual([
+      "/w/src",
+      "/w/srcx.ts",
+      "/w/README.md",
+    ]);
   });
 
   it("gives the same answers as the first version on random paths", () => {
@@ -161,7 +165,9 @@ describe("topLevel", () => {
 
 describe("retargetSelection", () => {
   it("follows renamed and moved rows", () => {
-    const selection = retargetSelection(selectRange(selectOnly("/w/src"), order, "/w/src/a.ts"), [{ from: "/w/src", to: "/w/lib" }]);
+    const selection = retargetSelection(selectRange(selectOnly("/w/src"), order, "/w/src/a.ts"), [
+      { from: "/w/src", to: "/w/lib" },
+    ]);
     expect([...selection.paths]).toEqual(["/w/lib", "/w/lib/a.ts"]);
     expect(selection.anchor).toBe("/w/lib");
     expect(selection.focus).toBe("/w/lib/a.ts");

@@ -62,7 +62,11 @@ function filterBlocks(containerEl: Element, matched: Set<Element>): boolean {
  * matched words. A label found only by its extra words is highlighted whole; a hidden sub-row points
  * at its parent row.
  */
-export function showSettingsMatches(rootEl: HTMLElement, entries: readonly SettingsSearchEntry[], words: readonly string[]): void {
+export function showSettingsMatches(
+  rootEl: HTMLElement,
+  entries: readonly SettingsSearchEntry[],
+  words: readonly string[],
+): void {
   const labelsByText = new Map<string, HTMLElement[]>();
   for (const labelEl of rootEl.querySelectorAll<HTMLElement>(LABEL_SELECTOR)) {
     const text = labelText(labelEl);
@@ -92,7 +96,9 @@ export function showSettingsMatches(rootEl: HTMLElement, entries: readonly Setti
     }
   }
   const matchedBlocks = new Set<Element>(
-    [...painted].map((labelEl) => labelEl.closest(".row, .link-row, .group-title")).filter((block): block is Element => block !== null),
+    [...painted]
+      .map((labelEl) => labelEl.closest(".row, .link-row, .group-title"))
+      .filter((block): block is Element => block !== null),
   );
   filterBlocks(rootEl, matchedBlocks);
   if (supported()) {

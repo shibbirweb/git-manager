@@ -18,7 +18,10 @@ export function reloadChange(previous: string, next: string): ReloadChange | nul
     start++;
   }
   let end = 0;
-  while (end < shorter - start && previous.charCodeAt(previous.length - 1 - end) === next.charCodeAt(next.length - 1 - end)) {
+  while (
+    end < shorter - start &&
+    previous.charCodeAt(previous.length - 1 - end) === next.charCodeAt(next.length - 1 - end)
+  ) {
     end++;
   }
   return { from: start, to: previous.length - end, insert: next.slice(start, next.length - end) };

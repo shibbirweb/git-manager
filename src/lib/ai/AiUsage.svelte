@@ -9,7 +9,15 @@
   import { agentById } from "./agents";
   import { agentMark, formatAge } from "./panelView";
   import { usageStore } from "./usageStore.svelte";
-  import { namedWindows, providerTitle, resetIn, tightestWindow, usageLevel, usageText, windowLines } from "./usageView";
+  import {
+    namedWindows,
+    providerTitle,
+    resetIn,
+    tightestWindow,
+    usageLevel,
+    usageText,
+    windowLines,
+  } from "./usageView";
 
   /** Which side of the status bar it sits on, so the details open toward the window. */
   let { side }: { side: "left" | "right" } = $props();
@@ -62,7 +70,6 @@
     const age = formatAge(at - updatedAt);
     return age === "now" ? "updated just now" : `updated ${age} ago`;
   }
-
 </script>
 
 <svelte:window
@@ -83,10 +90,18 @@
     {#each usageStore.shown as usage (usage.provider)}
       {@const tightest = tightestWindow(usage)}
       {@const level = tightest ? usageLevel(tightest.usedPercent) : "ok"}
-      <button class="usage-item {level}" class:dim={usage.status !== "ok"} title={title(usage)} aria-expanded={open} onclick={toggle}>
+      <button
+        class="usage-item {level}"
+        class:dim={usage.status !== "ok"}
+        title={title(usage)}
+        aria-expanded={open}
+        onclick={toggle}
+      >
         <span class="mark">{agentMark(usage.provider)}</span>
         {#if usage.status === "ok" && tightest}
-          <span class="bar" aria-hidden="true"><span class="fill" style:width="{Math.max(4, tightest.usedPercent)}%"></span></span>
+          <span class="bar" aria-hidden="true"
+            ><span class="fill" style:width="{Math.max(4, tightest.usedPercent)}%"></span></span
+          >
           <span class="text">{usageText(usage, now)}</span>
         {:else if usage.status === "signedOut"}
           <span>signed out</span>

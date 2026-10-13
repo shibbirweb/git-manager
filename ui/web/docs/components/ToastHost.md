@@ -3,7 +3,7 @@
 Draws toasts in the bottom right corner: a colored edge for the kind, title, detail and buttons.
 
 ```ts
-import ToastHost from "$ui/components/ToastHost.svelte";
+import ToastHost from "@git-manager/ui/components/ToastHost.svelte";
 ```
 
 Group: Overlays. Also known as: Toast, Sonner, Snackbar.

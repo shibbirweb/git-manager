@@ -25,12 +25,7 @@
 
 {#if id === "tree-states"}
   <div style="width: 300px; height: 120px; display: flex">
-    <Tree
-      label="Files"
-      nodes={files}
-      iconFor={() => "file"}
-      decorate={(node) => decorations[node.id] ?? null}
-    />
+    <Tree label="Files" nodes={files} iconFor={() => "file"} decorate={(node) => decorations[node.id] ?? null} />
   </div>
   <div role="tree" aria-label="Drop" style="width: 300px">
     <TreeRow

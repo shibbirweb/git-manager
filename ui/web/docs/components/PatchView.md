@@ -3,7 +3,7 @@
 A patch in monospace with added and removed lines tinted, hunk headers in the accent color.
 
 ```ts
-import PatchView from "$ui/components/PatchView.svelte";
+import PatchView from "@git-manager/ui/components/PatchView.svelte";
 ```
 
 Group: Editor. Also known as: Patch, Unified diff.

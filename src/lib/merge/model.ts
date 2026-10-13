@@ -260,7 +260,12 @@ export function ignoreSide(chunks: ChunkState[], chunkId: number, side: SideName
  * it to changes coming from one side. Edits are expressed against the
  * original document, as CodeMirror expects for a single transaction.
  */
-export function applyNonConflicting(doc: Text, chunks: ChunkState[], sides: SideTexts, only?: SideName): ChunkAction | null {
+export function applyNonConflicting(
+  doc: Text,
+  chunks: ChunkState[],
+  sides: SideTexts,
+  only?: SideName,
+): ChunkAction | null {
   const changes: LineEdit[] = [];
   const next: ChunkState[] = [];
   let delta = 0;
@@ -270,7 +275,13 @@ export function applyNonConflicting(doc: Text, chunks: ChunkState[], sides: Side
       result: { start: chunk.result.start + delta, end: chunk.result.end + delta },
     };
     const side: SideName | null =
-      chunk.kind === "oursOnly" ? "ours" : chunk.kind === "theirsOnly" ? "theirs" : chunk.kind === "bothSame" ? "ours" : null;
+      chunk.kind === "oursOnly"
+        ? "ours"
+        : chunk.kind === "theirsOnly"
+          ? "theirs"
+          : chunk.kind === "bothSame"
+            ? "ours"
+            : null;
     const eligible =
       side !== null &&
       !isResolved(chunk) &&
@@ -393,7 +404,12 @@ export function unresolvedCounts(chunks: ChunkState[]): ResolutionCounts {
 export type Anchor = [source: number, target: number];
 
 /** Line anchors mapping a side pane to the result pane. */
-export function sideToResultAnchors(chunks: ChunkState[], side: SideName, sideLines: number, resultLines: number): Anchor[] {
+export function sideToResultAnchors(
+  chunks: ChunkState[],
+  side: SideName,
+  sideLines: number,
+  resultLines: number,
+): Anchor[] {
   const anchors: Anchor[] = [[0, 0]];
   for (const chunk of chunks) {
     const range = sideRange(chunk, side);

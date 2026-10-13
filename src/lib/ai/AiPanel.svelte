@@ -175,7 +175,11 @@
 {/snippet}
 
 <div class="ai-view">
-  <PanelHead title="AI Agents" hideTitle={withCommandKeys("Hide", "view.aiPanel")} onhide={() => settings.toggleRightPanel("ai")}>
+  <PanelHead
+    title="AI Agents"
+    hideTitle={withCommandKeys("Hide", "view.aiPanel")}
+    onhide={() => settings.toggleRightPanel("ai")}
+  >
     <button
       class="icon-btn small"
       title="Collapse All"
@@ -241,7 +245,8 @@
       {#if counts.waiting > 0}
         <button class="pill waiting" title="Show the agent that needs you" onclick={showFirstWaiting}>
           <AgentStateIcon state="waiting" />
-          {counts.waiting} {counts.waiting === 1 ? "needs you" : "need you"}
+          {counts.waiting}
+          {counts.waiting === 1 ? "needs you" : "need you"}
         </button>
       {/if}
       {#if counts.working > 0}
@@ -404,7 +409,9 @@
     {:else if noAgents}
       <div class="notice">
         <strong>No AI agents found</strong>
-        <span>Install Claude Code, Codex, Gemini CLI or another agent, then press Refresh. Blank Terminal still works.</span>
+        <span
+          >Install Claude Code, Codex, Gemini CLI or another agent, then press Refresh. Blank Terminal still works.</span
+        >
         <button class="btn small" onclick={() => settings.openDialog("ai")}>AI Settings...</button>
       </div>
     {:else if sessions.length === 0}

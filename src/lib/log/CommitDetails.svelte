@@ -61,7 +61,9 @@
 
   const current = $derived(details && details.id === commitId ? details : null);
   const files = $derived(details?.files ?? []);
-  const selectedFile = $derived(current ? ((current.files ?? []).find((file) => file.path === selectedPath) ?? null) : null);
+  const selectedFile = $derived(
+    current ? ((current.files ?? []).find((file) => file.path === selectedPath) ?? null) : null,
+  );
   /** The line of the diff on screen to scroll to, from `preferredFile`. */
   const revealLine = $derived.by(() => {
     const preferred = preferredFile;
@@ -79,7 +81,13 @@
     const newline = message.indexOf("\n");
     return {
       subject: newline === -1 ? message.trim() : message.slice(0, newline).trim(),
-      rest: newline === -1 ? "" : message.slice(newline + 1).replace(/^\s*\n/, "").trimEnd(),
+      rest:
+        newline === -1
+          ? ""
+          : message
+              .slice(newline + 1)
+              .replace(/^\s*\n/, "")
+              .trimEnd(),
     };
   });
 
@@ -164,7 +172,12 @@
         diff: result,
         previewSides: {
           original: hasParent
-            ? { kind: "revision", repoRoot: targetRepoPath, revision: parentRevision(commitFullId), filePath: file.origPath ?? file.path }
+            ? {
+                kind: "revision",
+                repoRoot: targetRepoPath,
+                revision: parentRevision(commitFullId),
+                filePath: file.origPath ?? file.path,
+              }
             : null,
           modified: { kind: "revision", repoRoot: targetRepoPath, revision: commitFullId, filePath: file.path },
         },
@@ -201,7 +214,9 @@
     }
     const current = files.findIndex((file) => file.path === selectedPath);
     const next =
-      event.key === "ArrowDown" ? Math.min(files.length - 1, current + 1) : Math.max(0, current === -1 ? 0 : current - 1);
+      event.key === "ArrowDown"
+        ? Math.min(files.length - 1, current + 1)
+        : Math.max(0, current === -1 ? 0 : current - 1);
     selectedPath = files[next]?.path ?? null;
     filesEl?.querySelector<HTMLElement>(`[data-index="${next}"]`)?.scrollIntoView({ block: "nearest" });
   }
@@ -297,7 +312,14 @@
       <div class="files-header dim">
         {files.length === 1 ? "1 changed file" : `${files.length} changed files`}
       </div>
-      <div class="files" role="listbox" tabindex="0" aria-label="Changed files" bind:this={filesEl} onkeydown={onFilesKeydown}>
+      <div
+        class="files"
+        role="listbox"
+        tabindex="0"
+        aria-label="Changed files"
+        bind:this={filesEl}
+        onkeydown={onFilesKeydown}
+      >
         {#each files as file, index (file.path)}
           <div
             class="file"
@@ -313,7 +335,9 @@
             <span class="status status-{file.status}">{statusLetter(file.status)}</span>
             <FileTypeIcon fileName={file.path} plain={false} />
             <span class="name truncate" class:deleted={file.status === "deleted"}>{fileName(file.path)}</span>
-            <span class="dir dim truncate">{file.origPath ? `from ${fileName(file.origPath)} ` : ""}{fileDir(file.path)}</span>
+            <span class="dir dim truncate"
+              >{file.origPath ? `from ${fileName(file.origPath)} ` : ""}{fileDir(file.path)}</span
+            >
           </div>
         {:else}
           <div class="state dim">No file changes</div>
@@ -388,7 +412,13 @@
     position: relative;
     z-index: 1;
     cursor: col-resize;
-    background: linear-gradient(to right, transparent 2px, var(--border-strong) 2px, var(--border-strong) 3px, transparent 3px);
+    background: linear-gradient(
+      to right,
+      transparent 2px,
+      var(--border-strong) 2px,
+      var(--border-strong) 3px,
+      transparent 3px
+    );
   }
 
   .state {

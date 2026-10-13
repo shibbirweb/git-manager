@@ -15,13 +15,7 @@ import type { ShellProfile, TerminalInfo } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import type { MenuItem } from "$lib/ui/menu.svelte";
 import { platformName } from "$lib/update/releases";
-import {
-  resolveShellId,
-  shellNameFor,
-  startFolder,
-  uniqueTerminalName,
-  validateTerminalName,
-} from "./terminals";
+import { resolveShellId, shellNameFor, startFolder, uniqueTerminalName, validateTerminalName } from "./terminals";
 import { runAfterClose, type RunSpec } from "./runs";
 import {
   describeLayout,
@@ -214,7 +208,9 @@ class TerminalStore {
     if (this.paneSlots[terminalKey] !== element) {
       return;
     }
-    this.paneSlots = Object.fromEntries(Object.entries(this.paneSlots).filter(([slotKey]) => Number(slotKey) !== terminalKey));
+    this.paneSlots = Object.fromEntries(
+      Object.entries(this.paneSlots).filter(([slotKey]) => Number(slotKey) !== terminalKey),
+    );
   }
 
   /** The pane widths of a group with `count` panes. */
@@ -349,7 +345,10 @@ class TerminalStore {
     }
     const layout = fittedLayout(parseLayout(stash.layout), terminals);
     for (const restored of terminals) {
-      this.restoring.set(restored.descriptor.key, { snapshot: restored.snapshot, reattach: restored.terminalId !== null });
+      this.restoring.set(restored.descriptor.key, {
+        snapshot: restored.snapshot,
+        reattach: restored.terminalId !== null,
+      });
     }
     this.terminals = terminals.map(({ descriptor, terminalId }) => ({ ...descriptor, terminalId }));
     this.nextKey = Math.max(this.nextKey, ...terminals.map((restored) => restored.descriptor.key + 1));
@@ -806,7 +805,9 @@ class TerminalStore {
     const shellName = info.shell?.name ?? "";
     const name = entry.renamed || !shellName ? entry.name : uniqueTerminalName(shellName, others);
     const agent =
-      entry.agent?.state === "starting" ? { ...entry.agent, state: "ready" as const, changedAt: Date.now() } : entry.agent;
+      entry.agent?.state === "starting"
+        ? { ...entry.agent, state: "ready" as const, changedAt: Date.now() }
+        : entry.agent;
     this.update(terminalKey, { terminalId: info.terminalId, name, cwd: info.cwd ?? entry.cwd, agent });
     return true;
   }
@@ -873,7 +874,13 @@ class TerminalStore {
         action: () => void this.create({ shellId: entry.shellId, folderPath: entry.cwd, location }),
       },
       ...(location === "panel"
-        ? [{ label: "Split Terminal", hint: isMacPlatform() ? "Cmd+\\" : "Ctrl+Shift+5", action: () => void this.split(terminalKey) }]
+        ? [
+            {
+              label: "Split Terminal",
+              hint: isMacPlatform() ? "Cmd+\\" : "Ctrl+Shift+5",
+              action: () => void this.split(terminalKey),
+            },
+          ]
         : []),
       { label: "Rename...", action: () => void this.promptRename(terminalKey) },
       { separator: true },
@@ -1027,7 +1034,9 @@ class TerminalStore {
   }
 
   private update(terminalKey: number, patch: Partial<TerminalEntry>): void {
-    this.terminals = this.terminals.map((terminal) => (terminal.key === terminalKey ? { ...terminal, ...patch } : terminal));
+    this.terminals = this.terminals.map((terminal) =>
+      terminal.key === terminalKey ? { ...terminal, ...patch } : terminal,
+    );
   }
 }
 

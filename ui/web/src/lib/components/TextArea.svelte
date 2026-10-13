@@ -33,8 +33,7 @@
   class:mono
   style:resize
   aria-invalid={invalid || undefined}
-  {...rest}
-></textarea>
+  {...rest}></textarea>
 
 <style>
   .input {

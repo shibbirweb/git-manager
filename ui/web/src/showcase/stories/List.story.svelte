@@ -214,14 +214,7 @@
 
   <Text variant="sectionLabel">follow: stays at the bottom while entries arrive, until you scroll up</Text>
   <Stack direction="row"><Button onclick={runCommand}>Run a command</Button></Stack>
-  <List
-    label="Console"
-    role="list"
-    items={consoleLines}
-    itemKey={(line) => String(line.id)}
-    height="small"
-    follow
-  >
+  <List label="Console" role="list" items={consoleLines} itemKey={(line) => String(line.id)} height="small" follow>
     {#snippet row(line)}
       <Row><Text mono size="small">{line.text}</Text></Row>
     {/snippet}

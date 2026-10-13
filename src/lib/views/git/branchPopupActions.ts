@@ -18,7 +18,13 @@ import {
   renameLocalBranch,
   type RepoTarget,
 } from "../sidebar/actions";
-import { type BranchAction, type BranchActionRow, type BranchPopupContext, localBranchActions, remoteBranchActions } from "./branchPopup";
+import {
+  type BranchAction,
+  type BranchActionRow,
+  type BranchPopupContext,
+  localBranchActions,
+  remoteBranchActions,
+} from "./branchPopup";
 import { gitDialogs } from "./gitDialogs.svelte";
 import { DEFAULT_REBASE_OPTIONS, rebaseRequest } from "./integrateOptions";
 
@@ -33,7 +39,12 @@ function openBranchTab(ref: BranchTabRef): void {
 }
 
 /** Checks out `name` (a local branch, or a remote one as its tracking branch), then rebases it onto `current`. */
-function checkoutAndRebase(target: RepoTarget, repoRoot: string, picked: PopupBranch, current: string): Promise<OpOutcome | undefined> {
+function checkoutAndRebase(
+  target: RepoTarget,
+  repoRoot: string,
+  picked: PopupBranch,
+  current: string,
+): Promise<OpOutcome | undefined> {
   const localName = picked.kind === "local" ? picked.branch.name : picked.remoteBranch.branch;
   return repoStore.runOp(
     "Rebase",
@@ -42,7 +53,10 @@ function checkoutAndRebase(target: RepoTarget, repoRoot: string, picked: PopupBr
         await api.checkoutRemoteBranch(repoPath, picked.remoteBranch.name, localName);
         return api.rebaseWithOptions(repoPath, rebaseRequest({ ...DEFAULT_REBASE_OPTIONS, onto: current }));
       }
-      return api.rebaseWithOptions(repoPath, rebaseRequest({ ...DEFAULT_REBASE_OPTIONS, onto: current, branchName: localName }));
+      return api.rebaseWithOptions(
+        repoPath,
+        rebaseRequest({ ...DEFAULT_REBASE_OPTIONS, onto: current, branchName: localName }),
+      );
     },
     `Checked out ${localName} and rebased it onto ${current}`,
     target.repoRoot ?? repoRoot,
@@ -79,10 +93,21 @@ function update(repoRoot: string, picked: PopupBranch): Promise<unknown> {
     );
   }
   const branchName = nameOf(picked);
-  return repoStore.runOp("Update", (repoPath) => api.updateBranch(repoPath, branchName), `Updated ${branchName}`, repoRoot);
+  return repoStore.runOp(
+    "Update",
+    (repoPath) => api.updateBranch(repoPath, branchName),
+    `Updated ${branchName}`,
+    repoRoot,
+  );
 }
 
-function run(action: BranchAction, picked: PopupBranch, target: RepoTarget, repoRoot: string, current: string | null): void {
+function run(
+  action: BranchAction,
+  picked: PopupBranch,
+  target: RepoTarget,
+  repoRoot: string,
+  current: string | null,
+): void {
   const name = nameOf(picked);
   switch (action) {
     case "checkout":
@@ -150,7 +175,9 @@ export function branchMenuItems(
   repoRoot: string,
 ): MenuItem[] {
   const rows: BranchActionRow[] =
-    picked.kind === "local" ? localBranchActions(picked.branch, context) : remoteBranchActions(picked.remoteBranch, context);
+    picked.kind === "local"
+      ? localBranchActions(picked.branch, context)
+      : remoteBranchActions(picked.remoteBranch, context);
   return rows.map((row) =>
     row === "separator"
       ? { separator: true }

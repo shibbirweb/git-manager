@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import type { MenuItem } from "./menu.svelte";
-import { firstIndex, hasSubmenu, isSelectable, lastIndex, matchIndex, rootPosition, stepIndex, submenuPosition } from "./menuNav";
+import {
+  firstIndex,
+  hasSubmenu,
+  isSelectable,
+  lastIndex,
+  matchIndex,
+  rootPosition,
+  stepIndex,
+  submenuPosition,
+} from "./menuNav";
 
 const action = vi.fn();
 const items: MenuItem[] = [
@@ -49,7 +58,10 @@ describe("menu placement", () => {
   const menu = { width: 200, height: 300 };
 
   it("opens a submenu to the right of its row", () => {
-    expect(submenuPosition({ left: 100, right: 300, top: 50, bottom: 74 }, menu, viewport)).toEqual({ left: 298, top: 45 });
+    expect(submenuPosition({ left: 100, right: 300, top: 50, bottom: 74 }, menu, viewport)).toEqual({
+      left: 298,
+      top: 45,
+    });
   });
 
   it("flips a submenu to the left at the window edge and keeps it on screen", () => {

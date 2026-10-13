@@ -59,6 +59,8 @@ describe("patterns", () => {
     expect(ignoreChoices("README", false)).toEqual([{ kind: "file", pattern: "/README", scopePath: "README" }]);
     expect(ignoreChoices("dist", true)).toEqual([{ kind: "folder", pattern: "/dist/", scopePath: "dist" }]);
     expect(ignoreChoices("", true)).toEqual([]);
-    expect(ignoreChoices("bad\nname.txt", false)).toEqual([{ kind: "extension", pattern: "*.txt", scopePath: "bad\nname.txt" }]);
+    expect(ignoreChoices("bad\nname.txt", false)).toEqual([
+      { kind: "extension", pattern: "*.txt", scopePath: "bad\nname.txt" },
+    ]);
   });
 });

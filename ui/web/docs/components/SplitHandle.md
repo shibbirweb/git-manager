@@ -3,7 +3,7 @@
 A handle between two side-by-side views in one box: drag or arrow keys move the split.
 
 ```ts
-import SplitHandle from "$ui/components/SplitHandle.svelte";
+import SplitHandle from "@git-manager/ui/components/SplitHandle.svelte";
 ```
 
 Group: Layout. Also known as: Splitter.

@@ -3,7 +3,7 @@
 One row of the log's commit graph: lane lines in the palette's lane colors and the commit node.
 
 ```ts
-import CommitGraph from "$ui/components/CommitGraph.svelte";
+import CommitGraph from "@git-manager/ui/components/CommitGraph.svelte";
 ```
 
 Group: Editor. Also known as: Graph.

@@ -1,11 +1,11 @@
 <!-- A file's type icon. The app works out which icon a file gets (Settings > Appearance > File icons) and passes
-     it as `view`: an image from the Material set or a class of the Minimal set. Without one it shows the plain
+     it as `view`: an image from the Material set or a mask class of the Minimal set. Without one it shows the plain
      file icon, or nothing when `plain` is false. -->
 <script lang="ts">
   import { iconPx, type IconSize } from "../logic/presets";
   import Icon from "./Icon.svelte";
 
-  export type FileIconView = { kind: "image"; src: string } | { kind: "class"; className: string } | null;
+  export type FileIconView = { kind: "image"; src: string } | { kind: "mask"; className: string } | null;
 
   interface Props {
     view: FileIconView;

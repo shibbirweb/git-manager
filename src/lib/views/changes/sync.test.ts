@@ -25,7 +25,12 @@ describe("sync plan", () => {
   });
 
   it("counts what will be pulled and pushed", () => {
-    expect(syncPlan(head({ ahead: 1, behind: 2 }))).toEqual({ kind: "sync", pull: 2, push: 1, upstream: "origin/main" });
+    expect(syncPlan(head({ ahead: 1, behind: 2 }))).toEqual({
+      kind: "sync",
+      pull: 2,
+      push: 1,
+      upstream: "origin/main",
+    });
   });
 });
 

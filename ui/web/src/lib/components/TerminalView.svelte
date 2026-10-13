@@ -58,8 +58,8 @@
     let observer: ResizeObserver | null = null;
     let stopTheme: (() => void) | null = null;
     // xterm loads on first use, so a page without a terminal pays nothing for it.
-    void Promise.all([import("@xterm/xterm"), import("@xterm/addon-fit"), import("@xterm/xterm/css/xterm.css")])
-      .then(([xterm, fitModule]) => {
+    void Promise.all([import("@xterm/xterm"), import("@xterm/addon-fit"), import("@xterm/xterm/css/xterm.css")]).then(
+      ([xterm, fitModule]) => {
         if (disposed || !host || !root) {
           return;
         }
@@ -86,7 +86,8 @@
         });
         term = created;
         onready?.(created);
-      });
+      },
+    );
     return () => {
       disposed = true;
       clearTimeout(flashTimer);
@@ -241,11 +242,15 @@
   /* WebKit joins ligatures by default, so off is set explicitly. */
   .terminal-view :global(.xterm-rows) {
     font-variant-ligatures: none;
-    font-feature-settings: "liga" 0, "calt" 0;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
   }
 
   .terminal-view.ligatures :global(.xterm-rows) {
     font-variant-ligatures: common-ligatures contextual;
-    font-feature-settings: "liga" 1, "calt" 1;
+    font-feature-settings:
+      "liga" 1,
+      "calt" 1;
   }
 </style>

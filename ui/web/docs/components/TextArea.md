@@ -3,7 +3,7 @@
 A multi-line text field, like the commit message box.
 
 ```ts
-import TextArea from "$ui/components/TextArea.svelte";
+import TextArea from "@git-manager/ui/components/TextArea.svelte";
 ```
 
 Group: Forms. Also known as: Textarea.

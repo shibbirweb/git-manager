@@ -47,7 +47,15 @@
   import SymbolResult from "./SymbolResult.svelte";
   import { symbolRows, type SymbolRow } from "./symbolSearchModel";
   import TextResult from "./TextResult.svelte";
-  import { appendBatch, DEFAULT_TEXT_OPTIONS, EMPTY_TEXT, nextSearchId, searchable, type TextResults, textStatus } from "./textSearchModel";
+  import {
+    appendBatch,
+    DEFAULT_TEXT_OPTIONS,
+    EMPTY_TEXT,
+    nextSearchId,
+    searchable,
+    type TextResults,
+    textStatus,
+  } from "./textSearchModel";
 
   const FILE_LIMIT = 50;
   const SYMBOL_LIMIT = 50;
@@ -106,7 +114,9 @@
   const hasQuery = $derived(splitLocation(shownQuery).text !== "");
   const rows = $derived(tabRows(tab, { hasQuery, recent, files, classes, members, symbols, text }));
   const range = $derived(visibleRange(scrollTop, viewportHeight, ROW_HEIGHT, rows.length));
-  const visible = $derived(rows.slice(range.start, range.end).map((row, offset) => ({ row, index: range.start + offset })));
+  const visible = $derived(
+    rows.slice(range.start, range.end).map((row, offset) => ({ row, index: range.start + offset })),
+  );
 
   onMount(() => {
     previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -256,7 +266,12 @@
       } else {
         symbols = next;
       }
-      symbolIndex = { files: results.files, symbols: results.symbols, done: results.done, truncated: results.truncated };
+      symbolIndex = {
+        files: results.files,
+        symbols: results.symbols,
+        done: results.done,
+        truncated: results.truncated,
+      };
       shownQuery = value;
       error = null;
       return !results.done;
@@ -479,14 +494,24 @@
       // From the query as typed, even if its results are still on the way.
       const { line, column } = splitLocation(query);
       close();
-      void navigation.openFileAt(row.file.path, line !== null ? Math.max(0, line - 1) : null, column !== null ? Math.max(0, column - 1) : null, {
-        pin,
-      });
+      void navigation.openFileAt(
+        row.file.path,
+        line !== null ? Math.max(0, line - 1) : null,
+        column !== null ? Math.max(0, column - 1) : null,
+        {
+          pin,
+        },
+      );
       return;
     }
     if (row.kind === "symbol") {
       close();
-      void navigation.openFileAt(row.symbol.path, Math.max(0, row.symbol.line - 1), Math.max(0, row.symbol.column - 1), { pin });
+      void navigation.openFileAt(
+        row.symbol.path,
+        Math.max(0, row.symbol.line - 1),
+        Math.max(0, row.symbol.column - 1),
+        { pin },
+      );
       return;
     }
     if (row.kind === "textLine") {
@@ -501,7 +526,14 @@
     }
     // Option+C / W / X toggle Match case, Words and Regex.
     if (tab === "text" && event.altKey && !event.metaKey && !event.ctrlKey) {
-      const option = event.code === "KeyC" ? "matchCase" : event.code === "KeyW" ? "wholeWords" : event.code === "KeyX" ? "regex" : null;
+      const option =
+        event.code === "KeyC"
+          ? "matchCase"
+          : event.code === "KeyW"
+            ? "wholeWords"
+            : event.code === "KeyX"
+              ? "regex"
+              : null;
       if (option) {
         event.preventDefault();
         event.stopPropagation();
@@ -780,8 +812,14 @@
           >
             {#if row.kind === "file"}
               <Icon name="file" size={14} />
-              <span class="name">{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
-              <span class="folder">{#each row.file.folderParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b>{:else}{part.text}{/if}{/each}</span>
+              <span class="name"
+                >{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                    >{:else}{part.text}{/if}{/each}</span
+              >
+              <span class="folder"
+                >{#each row.file.folderParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
+                    >{:else}{part.text}{/if}{/each}</span
+              >
             {:else if row.kind === "symbol"}
               <SymbolResult symbol={row.symbol} />
             {:else if row.kind === "more"}

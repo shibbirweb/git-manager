@@ -83,7 +83,9 @@ export function deadCommits(rows: RebaseRow[], steps: RebaseStep[]): Set<string>
   if (steps.length === 0) {
     return dead;
   }
-  const dropped = new Set(rows.filter((row) => row.commit.isMerge && row.action === "drop").map((row) => row.commit.id));
+  const dropped = new Set(
+    rows.filter((row) => row.commit.isMerge && row.action === "drop").map((row) => row.commit.id),
+  );
   const definedIn = new Map<string, number>();
   const uses: string[][] = [];
   let segment = -1;
@@ -148,7 +150,8 @@ export function segmentTitles(steps: RebaseStep[], commits: RebaseCommit[], onto
     } else {
       start = `starts at ${(reset.commitId ?? "").slice(0, 8)}, which stays in place`;
     }
-    const role = segment === resets.length - 1 ? "Current branch" : mergedBy ? `Merged by ${mergedBy.shortId}` : "Branch";
+    const role =
+      segment === resets.length - 1 ? "Current branch" : mergedBy ? `Merged by ${mergedBy.shortId}` : "Branch";
     titles.push(`${role}: ${start}`);
   };
   for (const step of steps) {

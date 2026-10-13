@@ -99,7 +99,12 @@ export interface EditorOptions {
   lineNumbers?: boolean;
 }
 
-export function baseExtensions({ readOnly = false, kind, extensions = [], lineNumbers: numbered = true }: EditorOptions = {}): Extension[] {
+export function baseExtensions({
+  readOnly = false,
+  kind,
+  extensions = [],
+  lineNumbers: numbered = true,
+}: EditorOptions = {}): Extension[] {
   const common: Extension[] = [
     numbered ? lineNumbers() : [],
     highlightSpecialChars(),

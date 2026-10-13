@@ -36,7 +36,9 @@ describe("shortcutSections", () => {
     const titles = shortcutSections("macos").map((section) => section.title);
     expect(titles).toContain("Search and navigation");
     expect(titles).toContain("Merge tool and diffs");
-    const search = shortcutSections("macos").flatMap((section) => section.rows).find((row) => row.label === "Search Everywhere");
+    const search = shortcutSections("macos")
+      .flatMap((section) => section.rows)
+      .find((row) => row.label === "Search Everywhere");
     expect(search?.keys).toEqual(["⇧ ⇧"]);
   });
 
@@ -53,8 +55,12 @@ describe("shortcutSections", () => {
     expect(all.some((entry) => entry.keys.some((keys) => keys.includes("PgDn") || keys.includes("PgUp")))).toBe(false);
     for (const platform of ["macos", "windows"] as const) {
       const windowMenu = menuShortcuts(platform).find((section) => section.title === "Window menu");
-      expect(windowMenu?.rows.find((entry) => entry.label === "Next Tab")?.keys).toEqual(row(platform, "Next Tab")?.keys);
-      expect(windowMenu?.rows.find((entry) => entry.label === "Previous Tab")?.keys).toEqual(row(platform, "Previous Tab")?.keys);
+      expect(windowMenu?.rows.find((entry) => entry.label === "Next Tab")?.keys).toEqual(
+        row(platform, "Next Tab")?.keys,
+      );
+      expect(windowMenu?.rows.find((entry) => entry.label === "Previous Tab")?.keys).toEqual(
+        row(platform, "Previous Tab")?.keys,
+      );
     }
   });
 
@@ -68,7 +74,8 @@ describe("shortcutSections", () => {
   });
 
   it("lists the Files panel keys per platform", () => {
-    const files = (platform: "macos" | "windows") => shortcutSections(platform).find((section) => section.title === "Files panel");
+    const files = (platform: "macos" | "windows") =>
+      shortcutSections(platform).find((section) => section.title === "Files panel");
     expect(files("macos")?.rows.find((entry) => entry.label === "Move to Trash")?.keys).toEqual(["⌘⌫", "⌦"]);
     expect(files("windows")?.rows.find((entry) => entry.label === "Move to Trash")?.keys).toEqual(["Delete"]);
     expect(files("windows")?.rows.find((entry) => entry.label === "Duplicate")?.keys).toEqual(["Ctrl+D"]);
@@ -98,7 +105,12 @@ describe("commit box shortcuts", () => {
 
 describe("shortcutSections with custom keys", () => {
   it("shows changed keys and leaves out removed ones", () => {
-    const sections = shortcutSections("macos", { "git.push": "F5", "view.sidebar": null, "nav.goBack": "Ctrl+[", "terminal.new": null });
+    const sections = shortcutSections("macos", {
+      "git.push": "F5",
+      "view.sidebar": null,
+      "nav.goBack": "Ctrl+[",
+      "terminal.new": null,
+    });
     const rows = sections.flatMap((section) => section.rows);
     expect(rows.find((row) => row.label === "Push")?.keys).toEqual(["F5"]);
     expect(rows.some((row) => row.label === "Sidebar")).toBe(false);

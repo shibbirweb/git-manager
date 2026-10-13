@@ -19,7 +19,7 @@ export default defineConfig({
   server: {
     port: 1430,
     strictPort: true,
-    // Tokens (src/app.css) and icons (src/lib/ui/icons.ts) live in the app.
+    // The colors (src/app.css) live in the app.
     fs: { allow: [repoRoot] },
   },
 });

@@ -148,7 +148,10 @@
   <div class="labels">
     <div class="label" title={labels.left}>{labels.left}</div>
     <div class="label-gap"></div>
-    <div class="label result">{labels.result} {#if fileName}<span class="file">{fileName}</span>{/if}</div>
+    <div class="label result">
+      {labels.result}
+      {#if fileName}<span class="file">{fileName}</span>{/if}
+    </div>
     <div class="label-gap"></div>
     <div class="label theirs" title={labels.right}>{labels.right}</div>
   </div>

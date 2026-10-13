@@ -18,10 +18,4 @@
   <Tag tone="warning">missing</Tag>
 {:else if id === "askpass-prompt"}
   <div style="width: 400px"><CodeBlock variant="prompt" text="Password for https://github.com:" /></div>
-{:else if id === "new-task-bits"}
-  <Button size="small" icon="plus">Add Agent to Race</Button>
-  <Stack direction="row" gap="xs" align="center" label="Target">
-    <Icon name="branch" size="small" />
-    <Text size="small" mono tone="dim" truncate>cart</Text>
-  </Stack>
 {/if}

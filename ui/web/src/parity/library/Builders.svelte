@@ -28,16 +28,6 @@
       </Row>
     {/snippet}
   </List>
-{:else if id === "row-entry"}
-  <ListBox label="Commits">
-    <Row size="entry" line>
-      <Stack grow><Text truncate>Round tax</Text></Stack>
-      <Stack width="large"><Text tone="dim" truncate>Ada</Text></Stack>
-      <Stack width="small"><Text tone="dim" size="small">2 hours ago</Text></Stack>
-      <Stack width="xsmall"><Text mono tone="faint" size="compact">a1b2c3d</Text></Stack>
-    </Row>
-    <Row size="entry" line><Text>Add</Text></Row>
-  </ListBox>
 {:else if id === "row-large"}
   <Row size="large" onclick={run}>
     <Icon name="book" size="xlarge" />

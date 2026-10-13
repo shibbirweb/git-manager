@@ -3,7 +3,7 @@
 A short bulleted list of facts, such as the settings changed from their defaults.
 
 ```ts
-import BulletList from "$ui/components/BulletList.svelte";
+import BulletList from "@git-manager/ui/components/BulletList.svelte";
 ```
 
 Group: Feedback. Also known as: List, Bullets.

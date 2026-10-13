@@ -19,7 +19,11 @@ import {
   toWorkspacePath,
 } from "./workspacePaths";
 
-const repo = (root: string, relativePath = ""): RepoInfo => ({ root, name: root.split("/").pop() ?? root, relativePath });
+const repo = (root: string, relativePath = ""): RepoInfo => ({
+  root,
+  name: root.split("/").pop() ?? root,
+  relativePath,
+});
 
 const repos = [repo("/work", ""), repo("/work/apps/web", "apps/web"), repo("/work/apps/webhooks", "apps/webhooks")];
 
@@ -140,7 +144,10 @@ describe("Windows paths", () => {
 
   it("maps drive paths to repositories", () => {
     const windowsRepos = [repo("C:/work", ""), repo("C:/work/apps/web", "apps/web")];
-    expect(locateAbsolute(windowsRepos, "C:/work/apps/web/src/a.ts")).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
+    expect(locateAbsolute(windowsRepos, "C:/work/apps/web/src/a.ts")).toEqual({
+      repo: windowsRepos[1],
+      repoPath: "src/a.ts",
+    });
     expect(joinPath("C:/", "work")).toBe("C:/work");
     expect(baseName("C:/work/apps")).toBe("apps");
   });
@@ -151,9 +158,14 @@ describe("letter case", () => {
 
   it("ignores case on Windows", () => {
     expect(samePath("C:/Work/Shop", "c:/work/shop", true)).toBe(true);
-    expect(locateAbsolute(windowsRepos, "c:/work/shop/APPS/WEB/src/a.ts", true)).toEqual({ repo: windowsRepos[1], repoPath: "src/a.ts" });
+    expect(locateAbsolute(windowsRepos, "c:/work/shop/APPS/WEB/src/a.ts", true)).toEqual({
+      repo: windowsRepos[1],
+      repoPath: "src/a.ts",
+    });
     expect(folderFor([{ root: "C:/Work/Shop", name: "shop" }], "C:/WORK/shop/x.ts", true)?.name).toBe("shop");
-    expect(movedPath("c:/work/shop/old/a.ts", [{ from: "C:/Work/Shop/old", to: "C:/Work/Shop/new" }], true)).toBe("C:/Work/Shop/new/a.ts");
+    expect(movedPath("c:/work/shop/old/a.ts", [{ from: "C:/Work/Shop/old", to: "C:/Work/Shop/new" }], true)).toBe(
+      "C:/Work/Shop/new/a.ts",
+    );
     expect(pathsUnder(["C:/WORK/SHOP/a.ts", "D:/other/b.ts"], ["c:/work/shop"], true)).toEqual(["C:/WORK/SHOP/a.ts"]);
   });
 

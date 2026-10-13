@@ -2,7 +2,15 @@ import { describe, expect, it } from "vitest";
 import { FILE_TOOLBAR_SWITCHES, SETTINGS_SECTIONS, type SettingsSection } from "$lib/stores/settingsData";
 import dialogSource from "../SettingsDialog.svelte?raw";
 import { CARET_EXTRA_ROWS, EDITOR_FEATURE_ROWS, SAVE_CLEANUP_ROWS } from "./settingsRows";
-import { highlightSpans, matchingEntries, type SearchBlock, SETTINGS_SEARCH_INDEX, searchWords, textMatches, visibleBlocks } from "./settingsSearch";
+import {
+  highlightSpans,
+  matchingEntries,
+  type SearchBlock,
+  SETTINGS_SEARCH_INDEX,
+  searchWords,
+  textMatches,
+  visibleBlocks,
+} from "./settingsSearch";
 
 const LABELS: Record<SettingsSection, string> = {
   appearance: "Appearance",
@@ -39,7 +47,9 @@ function dialogLabels(): Map<SettingsSection, Set<string>> {
   return labels;
 }
 
-const LIST_LABELS = new Set([...FILE_TOOLBAR_SWITCHES, ...CARET_EXTRA_ROWS, ...EDITOR_FEATURE_ROWS, ...SAVE_CLEANUP_ROWS].map((row) => row.label));
+const LIST_LABELS = new Set(
+  [...FILE_TOOLBAR_SWITCHES, ...CARET_EXTRA_ROWS, ...EDITOR_FEATURE_ROWS, ...SAVE_CLEANUP_ROWS].map((row) => row.label),
+);
 
 describe("settings search index", () => {
   const fromDialog = dialogLabels();
@@ -50,7 +60,9 @@ describe("settings search index", () => {
 
   it("lists every row and group title the dialog shows", () => {
     for (const [section, labels] of fromDialog) {
-      const indexed = new Set(SETTINGS_SEARCH_INDEX.filter((entry) => entry.section === section).map((entry) => entry.label));
+      const indexed = new Set(
+        SETTINGS_SEARCH_INDEX.filter((entry) => entry.section === section).map((entry) => entry.label),
+      );
       for (const label of labels) {
         expect(indexed.has(label), `${section}: "${label}" is missing from settingsSearch.ts`).toBe(true);
       }
@@ -66,7 +78,9 @@ describe("settings search index", () => {
 
   it("points sub-rows at a row of the same section", () => {
     for (const entry of SETTINGS_SEARCH_INDEX.filter((item) => item.parent !== null)) {
-      const parentFound = SETTINGS_SEARCH_INDEX.some((item) => item.section === entry.section && item.label === entry.parent);
+      const parentFound = SETTINGS_SEARCH_INDEX.some(
+        (item) => item.section === entry.section && item.label === entry.parent,
+      );
       expect(parentFound, `${entry.section}: parent "${entry.parent}" of "${entry.label}"`).toBe(true);
     }
   });
@@ -99,7 +113,10 @@ describe("textMatches", () => {
 describe("matchingEntries", () => {
   it("finds rows by label in every section that has them", () => {
     const found = matchingEntries(searchWords("ligatures"), LABELS);
-    expect(found.map((entry) => `${entry.section}/${entry.label}`)).toEqual(["editor/Font ligatures", "terminal/Font ligatures"]);
+    expect(found.map((entry) => `${entry.section}/${entry.label}`)).toEqual([
+      "editor/Font ligatures",
+      "terminal/Font ligatures",
+    ]);
   });
 
   it("finds rows by their extra words", () => {
