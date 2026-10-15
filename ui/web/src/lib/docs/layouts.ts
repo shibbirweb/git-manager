@@ -30,7 +30,9 @@ export const layoutPartDocs: ComponentDoc[] = [
     name: "PaneRow",
     group: "Layout",
     summary: "Views side by side in one panel, like split terminals: shares of the width, lines between, focus line.",
-    usage: "Use inside a positioned panel; put ResizeHandles between panes in `pane` when they can be resized.",
+    usage:
+      "Use inside a positioned panel. With `onresize` a handle between two panes moves their split: it gets the " +
+      "left pane's index, its new share of the whole width and the smallest share, for the app to store.",
     aliases: ["Split panes"],
     props: [
       prop("panes", "{ key; share: number }[]", "Each pane and its share of the width.", {
@@ -38,7 +40,9 @@ export const layoutPartDocs: ComponentDoc[] = [
         data: true,
       }),
       prop("focused", "string | null", "The focused pane: an accent line on top.", { default: "null" }),
+      prop("resizeLabel", "string", "Accessible name of the handles.", { default: '"Resize panes"' }),
       prop("pane", "Snippet<[P, index]>", "Draws a pane and its index.", { required: true }),
+      prop("onresize", "(index: number, share: number, minShare: number) => void", "A handle moved a split."),
     ],
     examples: [{ title: "Terminals", code: "<PaneRow panes={panes} focused={key} {pane} />" }],
     replaces: [".panes and .pane in src/lib/terminal/TerminalPanel.svelte"],

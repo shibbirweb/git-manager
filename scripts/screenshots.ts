@@ -1960,8 +1960,10 @@ function twoFolderScenario(extra: Scenario = {}): Scenario {
 const TERMINAL_STORE = "/src/lib/terminal/terminalStore.svelte.ts";
 
 /** A neutral shell for terminal shots: sh reads none of your startup files. */
+// GPU drawing leaves xterm's text rows empty, so shots draw terminals with the DOM renderer to wait on their text.
 function terminalScenario(extra: Scenario = {}): Scenario {
-  return { ...extra, settings: { terminalShell: "/bin/sh", currentLineBlame: false, ...(extra.settings ?? {}) } };
+  const settings = { terminalShell: "/bin/sh", currentLineBlame: false, terminalGpuAcceleration: false };
+  return { ...extra, settings: { ...settings, ...(extra.settings ?? {}) } };
 }
 
 /** Starts a terminal (like the + button) and waits for its first prompt. */
@@ -2028,7 +2030,7 @@ async function closeTerminals(page: Page): Promise<void> {
 }
 
 function bottomPanel(shot: Shot): Locator {
-  return shot.page.locator('section.panel[aria-label="Bottom panel"]');
+  return shot.page.getByRole("region", { name: "Bottom panel", exact: true });
 }
 
 /** The editor area plus the bottom panel, with the activity bar on the left. */
@@ -2073,7 +2075,7 @@ define(
     await bottomPanel(shot).getByRole("button", { name: "New terminal with shell" }).click();
     await shot.menu().waitFor();
     await shot.settle();
-    const head = bottomPanel(shot).locator("header.head");
+    const head = bottomPanel(shot).getByRole("toolbar", { name: "Bottom panel" });
     await shot.save(await shot.clipAround([head, shot.menu()], 16));
   },
   terminalScenario,
@@ -2129,7 +2131,7 @@ define(
     await bottomPanel(shot).locator(".terminal-view:not(.hidden) .xterm-helper-textarea").focus();
     await shot.page.keyboard.press("Meta+f");
     const field = bottomPanel(shot).getByRole("textbox", { name: "Find in terminal" });
-    await field.fill("product");
+    await field.fill("cart");
     await bottomPanel(shot).locator(".find-bar .counter", { hasText: " of " }).waitFor();
     await shot.page.mouse.move(640, 200);
     await shot.settle();
@@ -2162,6 +2164,7 @@ define(
 function scriptsScenario(): Scenario {
   return twoFolderScenario({
     state: { leftPanel: "scripts", explorerOpen: false, sidebarWidth: 400 },
+    settings: { terminalGpuAcceleration: false },
     viewport: { width: 1280, height: 520 },
   });
 }

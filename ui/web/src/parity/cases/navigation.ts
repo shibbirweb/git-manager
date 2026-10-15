@@ -30,24 +30,6 @@ export const navigationCases: ParityCase[] = [
     ],
   },
   {
-    id: "panel-tabs",
-    sources: ["src/lib/terminal/TerminalPanel.svelte"],
-    html:
-      '<header class="head"><div class="tabs"><button class="tab selected">Terminal</button>' +
-      '<button class="tab">Run</button><button class="tab">Git Console</button></div></header>',
-    pairs: [
-      { name: "selected", ref: ".tab.selected", lib: ".tab.selected", ignore: { height: "the header's height" } },
-      { name: "underline", ref: ".tab.selected", lib: ".tab.selected", pseudo: "::after" },
-      {
-        name: "other",
-        ref: ".tab:nth-child(2)",
-        lib: ".tab:nth-child(2)",
-        states: ["hover"],
-        ignore: { height: "the header's height" },
-      },
-    ],
-  },
-  {
     id: "tree-row",
     sources: ["src/lib/views/files/FileExplorer.svelte"],
     html:

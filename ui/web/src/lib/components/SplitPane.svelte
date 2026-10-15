@@ -1,5 +1,6 @@
 <!-- Two panes side by side (or one above the other) with a ResizeHandle between them. `size` is the first pane's
-     width or height in px; the second pane takes the rest. -->
+     width or height in px and the second takes the rest, or the other way round with `sized="second"`. Without
+     `second` the first pane is shown alone and stays mounted, so its content does not move. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { PanelPreset } from "../logic/presets";
@@ -8,6 +9,7 @@
   interface Props {
     direction?: "row" | "column";
     size: number;
+    sized?: "first" | "second";
     preset?: PanelPreset;
     max?: number;
     label: string;
@@ -17,12 +19,13 @@
     inPanel?: boolean;
     oncommit?: (size: number) => void;
     first: Snippet;
-    second: Snippet;
+    second?: Snippet;
   }
 
   let {
     direction = "row",
     size = $bindable(),
+    sized = "first",
     preset = "pane",
     max = 800,
     label,
@@ -32,21 +35,34 @@
     first,
     second,
   }: Props = $props();
+
+  // The handle's side is where the sized pane sits, relative to it.
+  const handleSide = $derived(
+    direction === "row" ? (sized === "first" ? "left" : "right") : sized === "first" ? "top" : "bottom",
+  );
+
+  function basis(pane: "first" | "second"): string | null {
+    return pane === sized && second ? `${size}px` : null;
+  }
 </script>
 
 {#snippet panes()}
-  <div class="first" style:flex-basis="{size}px">{@render first()}</div>
-  <ResizeHandle
-    {size}
-    side={direction === "row" ? "left" : "bottom"}
-    {preset}
-    {max}
-    {label}
-    {inPanel}
-    onresize={(next) => (size = next)}
-    {oncommit}
-  />
-  <div class="second">{@render second()}</div>
+  <div class="first" class:rest={sized === "second" || !second} style:flex-basis={basis("first")}>
+    {@render first()}
+  </div>
+  {#if second}
+    <ResizeHandle
+      {size}
+      side={handleSide}
+      {preset}
+      {max}
+      {label}
+      {inPanel}
+      onresize={(next) => (size = next)}
+      {oncommit}
+    />
+    <div class="second" class:rest={sized === "first"} style:flex-basis={basis("second")}>{@render second()}</div>
+  {/if}
 {/snippet}
 
 {#if direction === "row"}
@@ -78,13 +94,18 @@
   }
 
   .second {
-    flex: 1;
+    flex: none;
     display: flex;
     flex-direction: column;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
     border-left: 1px solid var(--border-strong);
+  }
+
+  /* The pane that takes the rest of the room. */
+  .rest {
+    flex: 1;
   }
 
   .column .second {

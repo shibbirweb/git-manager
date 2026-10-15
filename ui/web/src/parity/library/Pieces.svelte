@@ -22,6 +22,4 @@
       <Divider direction="vertical" />
     {/snippet}
   </AppHeader>
-{:else if id === "tree-line"}
-  <div style="display: flex; height: 24px"><TreeLine position="first" /></div>
 {/if}

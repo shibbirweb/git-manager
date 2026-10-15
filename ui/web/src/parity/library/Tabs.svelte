@@ -26,16 +26,6 @@
   <div class="tab-strip" role="tablist" aria-label="Tabs"><EditorTab tab={cart} lifted closable /></div>
 {:else if id === "new-tab"}
   <TabStrip label="Tabs" tabs={[cart]} active="cart" onclose={none} onnew={none} newLabel="New agent" />
-{:else if id === "terminal-head"}
-  <Toolbar variant="compact" label="Terminal">
-    <Stack direction="row" gap="sm" align="center">
-      <Text truncate size="small">zsh</Text>
-      <Text truncate size="small" tone="dim">storefront</Text>
-    </Stack>
-    <IconButton icon="plus" label="New Terminal" size="compact" tone="dim" iconSize="regular" />
-    <IconButton icon="chevron-down" label="New terminal with shell" size="chevron" tone="dim" iconSize="compact" />
-    <Divider direction="vertical" strong />
-  </Toolbar>
 {:else if id === "run-tools"}
   <IconButton icon="refresh" label="Rerun" iconSize="normal" tone="success" />
   <IconButton icon="stop" label="Stop" iconSize="normal" tone="danger" />

@@ -42,14 +42,4 @@ export const pieceCases: ParityCase[] = [
       { name: "busy", ref: ".busy", lib: ".busy", ignore: TEXT },
     ],
   },
-  {
-    id: "tree-line",
-    sources: ["src/lib/terminal/TerminalPanel.svelte"],
-    html: '<div style="display: flex; height: 24px"><span class="tree first"></span></div>',
-    pairs: [
-      { name: "line", ref: ".tree", lib: ".tree" },
-      { name: "vertical", ref: ".tree", lib: ".tree", pseudo: "::before" },
-      { name: "tick", ref: ".tree", lib: ".tree", pseudo: "::after" },
-    ],
-  },
 ];

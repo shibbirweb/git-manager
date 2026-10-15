@@ -57,16 +57,6 @@
       { id: "diff", label: "app.css", icon: "git-compare", hint: "Working Tree" },
     ]}
   />
-{:else if id === "panel-tabs"}
-  <Tabs
-    label="Panel views"
-    value="terminal"
-    tabs={[
-      { value: "terminal", label: "Terminal" },
-      { value: "run", label: "Run" },
-      { value: "console", label: "Git Console" },
-    ]}
-  />
 {:else if id === "tree-row"}
   <Tree
     label="Files"

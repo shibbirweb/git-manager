@@ -17,6 +17,8 @@
   "src/lib/shelf/ShelveDialog.svelte",
   "src/lib/terminal/TerminalFrame.svelte",
   "src/lib/terminal/TerminalHost.svelte",
+  "src/lib/terminal/TerminalList.svelte",
+  "src/lib/terminal/TerminalPanel.svelte",
   "src/lib/terminal/TerminalSlot.svelte",
   "src/lib/ui/SearchToggles.svelte",
   "src/lib/ui/Toasts.svelte",

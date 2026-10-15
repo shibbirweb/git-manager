@@ -244,8 +244,7 @@
 
 <style>
   .shelf {
-    position: absolute;
-    inset: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;

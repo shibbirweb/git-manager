@@ -59,7 +59,7 @@ Each link starts without an underline. Hovering adds key listeners, and Cmd (Ctr
 
 Every `TerminalEntry` has a `group`. Panel terminals with the same group form a split; a new split goes right after its source in the list, so a group's members stay together. `splitPanes.ts` holds the rules: `terminalGroups`, `groupMembers`, `normalizeSizes`, `sizesAfterSplit` (halves the source pane), `sizesAfterClose` (the neighbor takes the room) and `resizePanes` (a divider moves width between two panes, never below `MIN_PANE_WIDTH`). Sizes are fractions, kept per group for the session in `groupSizes`.
 
-`TerminalPanel.svelte` renders one pane per member of the active terminal's group and registers it with `setPaneSlot`; `slotFor` sends a panel terminal to its pane, or to the view area while its group is hidden. `TerminalFrame` hides frames that are not shown, so an empty frame never covers a pane. Focus follows click: `focusin` on a view calls `focusPane`, which makes it the active terminal without stealing focus. `panelAfterLeave` hands over to a pane of the same group first.
+`TerminalPanel.svelte` draws the active terminal's group with the UI library's `PaneRow`, whose handles resize the split, and registers each pane's `ElementHost` with `setPaneSlot`; `slotFor` sends a panel terminal to its pane, or to the view area while its group is hidden. `TerminalFrame` hides frames that are not shown, so an empty frame never covers a pane. Focus follows click: `focusin` on a view calls `focusPane`, which makes it the active terminal without stealing focus. `panelAfterLeave` hands over to a pane of the same group first.
 
 ### Drops, rename and bell
 

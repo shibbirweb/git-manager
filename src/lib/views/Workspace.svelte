@@ -380,7 +380,15 @@
             oncommit={() => settings.save()}
           />
         {/if}
-        <TerminalPanel height={terminalHeight} />
+        <!-- The bottom panel's frame stays mounted while hidden, so parked terminals keep running. -->
+        <section
+          class="bottom-panel"
+          class:hidden={!terminalStore.panelOpen}
+          style:height="{terminalHeight}px"
+          aria-label="Bottom panel"
+        >
+          <TerminalPanel />
+        </section>
       {/if}
     </main>
     {#if settings.explorerOpen}
@@ -547,6 +555,27 @@
 
   :global(html[data-rounded-panels]) .editor-area {
     --group-gap-half: calc(var(--panel-gap) / 2);
+  }
+
+  /* Positioned, so it paints over an editor view that overflows a short editor area. */
+  .bottom-panel {
+    position: relative;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-top: 1px solid var(--border-strong);
+    background: var(--editor-bg);
+  }
+
+  .bottom-panel.hidden {
+    display: none;
+  }
+
+  :global(html[data-rounded-panels]) .bottom-panel {
+    border-top: none;
+    border-radius: var(--panel-radius);
+    overflow: hidden;
   }
 
   :global(html[data-rounded-panels]) .editor-group {

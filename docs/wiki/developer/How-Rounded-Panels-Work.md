@@ -18,7 +18,7 @@ flowchart LR
   H --> R["ResizeHandle.svelte: handle fills the gap"]
   H --> F["Header, StatusBar, activity bars: frame color"]
   H --> T["EditorTabs.svelte: pill tabs"]
-  H --> P["TerminalPanel.svelte: rounded panel"]
+  H --> P["Workspace.svelte .bottom-panel: rounded panel"]
 ```
 
 ### The setting
@@ -27,7 +27,7 @@ flowchart LR
 
 ### Gaps and corners
 
-Two size tokens in `src/app.css` set the look: `--panel-gap` (6px) and `--panel-radius` (10px). In `Workspace.svelte`, `.body`, `.main` and `.editor-area` get `gap: var(--panel-gap)`, and `.body` gets padding on the sides and the bottom plus the frame color as its background. The sidebar, each `.editor-group`, the terminal `.panel` and the Files panel get `border-radius` and lose their divider borders. Editor groups and the terminal panel also get `overflow: hidden` so their contents are clipped to the corners.
+Two size tokens in `src/app.css` set the look: `--panel-gap` (6px) and `--panel-radius` (10px). In `Workspace.svelte`, `.body`, `.main` and `.editor-area` get `gap: var(--panel-gap)`, and `.body` gets padding on the sides and the bottom plus the frame color as its background. The sidebar, each `.editor-group`, the `.bottom-panel` frame around the terminal panel and the Files panel get `border-radius` and lose their divider borders. Editor groups and the terminal panel also get `overflow: hidden` so their contents are clipped to the corners.
 
 The activity bars get a negative margin equal to the gap, so they stay flush with the window edge while the panels keep their gap.
 
@@ -65,7 +65,7 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 | `src/lib/ui/ResizeHandle.svelte` | handles that fill the gaps |
 | `src/lib/views/Header.svelte`, `StatusBar.svelte`, `ActivityBar.svelte`, `RightActivityBar.svelte` | frame color, no dividers |
 | `src/lib/views/EditorTabs.svelte` | pill tabs |
-| `src/lib/terminal/TerminalPanel.svelte` | the rounded bottom panel |
+| `src/lib/views/Workspace.svelte` (`.bottom-panel`) | the rounded bottom panel |
 | `src/lib/views/files/FileView.svelte` | the file toolbar's rounded corners at the bottom |
 
 ## Design decisions

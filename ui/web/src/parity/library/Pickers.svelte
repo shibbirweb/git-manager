@@ -48,25 +48,10 @@
   </Table>
 {:else if id === "drag-ghost"}
   <DragGhost text="3 files" x={0} y={0} />
-{:else if id === "rename-field"}
-  <RenameField value="zsh" onrename={none} />
-  <RenameField value="build" invalid onrename={none} />
 {:else if id === "corner-card"}
   <CornerCard message="Agent exited">
     {#snippet action()}<Button size="small">Restart</Button>{/snippet}
   </CornerCard>
-{:else if id === "pane-row"}
-  <div style="position: relative; height: 120px">
-    <PaneRow
-      panes={[
-        { key: "a", share: 1 },
-        { key: "b", share: 1 },
-      ]}
-      focused="b"
-    >
-      {#snippet pane()}{/snippet}
-    </PaneRow>
-  </div>
 {:else if id === "crumb-popup"}
   <CrumbPopup
     label="src"

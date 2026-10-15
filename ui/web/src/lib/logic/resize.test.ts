@@ -14,6 +14,12 @@ describe("resizing", () => {
     expect(draggedSize("bottom", 200, -50, 100, 400)).toBe(250);
   });
 
+  it("grows a top pane downwards", () => {
+    expect(draggedSize("top", 200, 30, 100, 400)).toBe(230);
+    expect(keyedSize("top", "ArrowDown", false, 200, 100, 400)).toBe(210);
+    expect(keyedSize("top", "ArrowUp", true, 200, 100, 400)).toBe(160);
+  });
+
   it("moves 10px per arrow key, 40px with Shift, and ignores other keys", () => {
     expect(keyedSize("left", "ArrowRight", false, 200, 100, 400)).toBe(210);
     expect(keyedSize("right", "ArrowLeft", true, 200, 100, 400)).toBe(240);

@@ -1,6 +1,6 @@
 # SplitPane
 
-Two panes side by side or stacked, with a ResizeHandle between; `size` is the first pane's px.
+Two panes side by side or stacked, with a ResizeHandle between; `size` is one pane's px.
 
 ```ts
 import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
@@ -15,7 +15,8 @@ Use for a sidebar and an editor, or an editor and a bottom panel. Save `size` in
 ## Props
 
 - `direction` (`"row" | "column"`, default `"row"`): Side by side or one above the other.
-- `size` (`number`, required, bindable): The first pane's width (row) or height (column) in px, as the user dragged it.
+- `size` (`number`, required, bindable): The sized pane's width (row) or height (column) in px, as the user dragged it.
+- `sized` (`"first" | "second"`, default `"first"`): Which pane `size` is: second for a list on the right.
 - `preset` (`"sidebar" | "bottom" | "list" | "pane" | "files"`, default `"pane"`): The smallest and default size.
 - `max` (`number`, default `800`): Largest size, from the window's room.
 - `label` (`string`, required): Accessible name of the handle, e.g. `Resize the sidebar`.
@@ -24,7 +25,7 @@ Use for a sidebar and an editor, or an editor and a bottom panel. Save `size` in
 - `inPanel` (`boolean`, default `false`): Between views inside one panel: the handle keeps its size in rounded looks.
 - `oncommit` (`(size: number) => void`): Called once when a drag or key press ends, to save the size.
 - `first` (`Snippet`, required): The first pane.
-- `second` (`Snippet`, required): The second pane; it takes the rest.
+- `second` (`Snippet`): The second pane; leave it out to show the first alone, still mounted.
 
 ## Example: Sidebar
 

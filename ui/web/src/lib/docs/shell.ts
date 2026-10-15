@@ -4,15 +4,18 @@ export const shellDocs: ComponentDoc[] = [
   {
     name: "SplitPane",
     group: "Layout",
-    summary: "Two panes side by side or stacked, with a ResizeHandle between; `size` is the first pane's px.",
+    summary: "Two panes side by side or stacked, with a ResizeHandle between; `size` is one pane's px.",
     usage: "Use for a sidebar and an editor, or an editor and a bottom panel. Save `size` in oncommit.",
     aliases: ["Resizable", "Splitter"],
     props: [
       prop("direction", '"row" | "column"', "Side by side or one above the other.", { default: '"row"' }),
-      prop("size", "number", "The first pane's width (row) or height (column) in px, as the user dragged it.", {
+      prop("size", "number", "The sized pane's width (row) or height (column) in px, as the user dragged it.", {
         required: true,
         bindable: true,
         data: true,
+      }),
+      prop("sized", '"first" | "second"', "Which pane `size` is: second for a list on the right.", {
+        default: '"first"',
       }),
       prop("preset", '"sidebar" | "bottom" | "list" | "pane" | "files"', "The smallest and default size.", {
         default: '"pane"',
@@ -31,7 +34,7 @@ export const shellDocs: ComponentDoc[] = [
         data: true,
       }),
       prop("first", "Snippet", "The first pane.", { required: true }),
-      prop("second", "Snippet", "The second pane; it takes the rest.", { required: true }),
+      prop("second", "Snippet", "The second pane; leave it out to show the first alone, still mounted."),
     ],
     examples: [
       {
@@ -55,7 +58,9 @@ export const shellDocs: ComponentDoc[] = [
         required: true,
         data: true,
       }),
-      prop("side", '"left" | "right" | "bottom"', "Where the panel is, relative to the handle.", { required: true }),
+      prop("side", '"left" | "right" | "top" | "bottom"', "Where the panel is, relative to the handle.", {
+        required: true,
+      }),
       prop("preset", '"sidebar" | "bottom" | "list" | "pane" | "files"', "The smallest and default size.", {
         required: true,
       }),

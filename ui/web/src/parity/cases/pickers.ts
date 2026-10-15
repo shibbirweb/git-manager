@@ -31,35 +31,12 @@ export const pickerCases: ParityCase[] = [
     pairs: [{ name: "ghost", ref: ".drag-ghost", lib: ".drag-ghost", ignore: { transform: "the library offsets it" } }],
   },
   {
-    id: "rename-field",
-    sources: ["src/lib/terminal/TerminalPanel.svelte"],
-    html: '<div class="tab"><input class="rename" value="zsh" /><input class="rename invalid" value="build" /></div>',
-    pairs: [
-      { name: "field", ref: ".rename:not(.invalid)", lib: ".rename:not(.invalid)", states: ["focus"], ignore: TAB },
-      { name: "invalid", ref: ".rename.invalid", lib: ".rename.invalid", ignore: TAB },
-    ],
-  },
-  {
     id: "corner-card",
     sources: ["src/lib/terminal/TerminalView.svelte"],
     html:
       '<div class="terminal" style="position: relative; height: 120px"><div class="agent-ended" role="status">' +
       '<span>Agent exited</span><button class="btn small">Restart</button></div></div>',
     pairs: [{ name: "card", ref: ".agent-ended", lib: ".corner-card", ignore: TEXT }],
-  },
-  {
-    id: "pane-row",
-    sources: ["src/lib/terminal/TerminalPanel.svelte"],
-    html:
-      '<div class="views" style="position: relative; height: 120px"><div class="panes">' +
-      '<div class="pane" style="flex: 1 1 0px"></div><div class="pane focused after-first" ' +
-      'style="flex: 1 1 0px"></div></div></div>',
-    pairs: [
-      { name: "panes", ref: ".panes", lib: ".panes", ignore: FILL },
-      { name: "pane", ref: ".pane:not(.after-first)", lib: ".pane:not(.after-first)" },
-      { name: "second", ref: ".pane.after-first", lib: ".pane.after-first" },
-      { name: "focus line", ref: ".pane.focused", lib: ".pane.focused", pseudo: "::after" },
-    ],
   },
   {
     id: "crumb-popup",

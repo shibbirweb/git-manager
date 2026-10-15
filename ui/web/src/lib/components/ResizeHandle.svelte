@@ -36,7 +36,7 @@
   const min = $derived(minSize ?? scales.panelMin[preset]);
   const defaultSize = $derived(resetSize ?? scales.panelDefault[preset]);
 
-  const horizontal = $derived(side === "bottom");
+  const horizontal = $derived(side === "bottom" || side === "top");
   let dragging = $state(false);
   let startPosition = 0;
   let startSize = 0;

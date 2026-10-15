@@ -59,21 +59,6 @@ export const tabCases: ParityCase[] = [
     pairs: [{ name: "button", ref: ".new-tab", lib: ".new-tab", states: ["hover"] }],
   },
   {
-    id: "terminal-head",
-    sources: [PANEL],
-    html:
-      '<header class="head"><span class="single"><span class="name truncate">zsh</span>' +
-      '<span class="folder truncate">storefront</span></span><div class="spacer"></div><div class="new">' +
-      `<button class="icon-btn small">${iconSvg("plus", 15)}</button><button class="icon-btn small chevron">` +
-      `${iconSvg("chevron-down", 12)}</button></div><span class="divider"></span></header>`,
-    pairs: [
-      { name: "single", ref: ".single", lib: ".stack", ignore: TEXT },
-      { name: "folder", ref: ".single .folder", lib: ".stack .text:last-child", ignore: TEXT },
-      { name: "chevron", ref: ".chevron", lib: ".icon-button.chevron", states: ["hover"] },
-      { name: "divider", ref: ".divider", lib: ".divider" },
-    ],
-  },
-  {
     id: "run-tools",
     sources: ["src/lib/terminal/RunView.svelte"],
     html:
