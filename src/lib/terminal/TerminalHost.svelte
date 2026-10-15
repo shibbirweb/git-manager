@@ -7,6 +7,7 @@
   on a terminal, while there is a terminal and the setting is on.
 -->
 <script lang="ts">
+  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
   import { getCurrentWebview, type DragDropEvent } from "@tauri-apps/api/webview";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { settings } from "$lib/stores/settings.svelte";
@@ -97,14 +98,8 @@
   });
 </script>
 
-<div class="terminal-host" aria-hidden="true">
+<ElementHost hidden>
   {#each terminalStore.terminals as terminal (terminal.key)}
     <TerminalFrame {terminal} />
   {/each}
-</div>
-
-<style>
-  .terminal-host {
-    display: none;
-  }
-</style>
+</ElementHost>

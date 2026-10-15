@@ -46,10 +46,6 @@
   <Table label="Conflicts" {columns} rows={conflicts} rowKey={(row) => row.name} selected="cart.ts">
     {#snippet cell(row, column)}{row[column.id as keyof typeof row]}{/snippet}
   </Table>
-{:else if id === "option-list"}
-  <OptionList label="Theme" groups={themes} optionKey={(theme) => theme.id} value="monokai">
-    {#snippet option(theme)}{theme.name}{/snippet}
-  </OptionList>
 {:else if id === "drag-ghost"}
   <DragGhost text="3 files" x={0} y={0} />
 {:else if id === "rename-field"}

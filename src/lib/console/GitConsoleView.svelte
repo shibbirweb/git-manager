@@ -7,7 +7,7 @@
   import { api, errorMessage, onGitCommand } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { GitCommandEntry } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import {
@@ -167,7 +167,7 @@
 <div class="console">
   <div class="toolbar">
     <div class="filter">
-      <Icon name="search" size={13} />
+      <Icon name="search" size="medium" />
       <input
         class="filter-input"
         placeholder="Filter commands"
@@ -177,7 +177,7 @@
       />
       {#if filter}
         <button class="icon-btn tiny" onclick={() => (filter = "")} title="Clear filter" aria-label="Clear filter">
-          <Icon name="x" size={12} />
+          <Icon name="x" size="compact" />
         </button>
       {/if}
     </div>
@@ -219,7 +219,7 @@
               aria-expanded={open}
               title={commandText(entry)}
             >
-              <Icon name={open ? "chevron-down" : "chevron-right"} size={12} />
+              <Icon name={open ? "chevron-down" : "chevron-right"} size="compact" />
               <span class="time dim">{formatTime(entry.startedAt)}</span>
               <span class="repo truncate">{repoLabel(entry.repoPath)}</span>
               <span class="command truncate">{commandText(entry)}</span>

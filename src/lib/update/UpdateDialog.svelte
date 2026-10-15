@@ -1,7 +1,7 @@
 <!-- "A new version is available": notes for every release since this one, and a download link.
      A manual check can also open it for a version the user skipped, marked as such. -->
 <script lang="ts">
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import ReleaseNotes from "./ReleaseNotes.svelte";
   import { updates } from "./updates.svelte";
 
@@ -32,7 +32,7 @@
   <div class="overlay" role="presentation" onmousedown={(event) => event.target === event.currentTarget && close()}>
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="update-title">
       <div class="head">
-        <div class="badge"><Icon name="arrow-down" size={18} /></div>
+        <div class="badge"><Icon name="arrow-down" size="xlarge" /></div>
         <div>
           <h2 id="update-title">Git Manager {newest.version} is available</h2>
           <p class="dim">
@@ -75,7 +75,7 @@
         {/if}
         <button class="btn" onclick={close}>Later</button>
         <button class="btn primary" onclick={() => void updates.download(newest)}>
-          <Icon name="arrow-down" size={13} />
+          <Icon name="arrow-down" size="medium" />
           Download
         </button>
       </div>

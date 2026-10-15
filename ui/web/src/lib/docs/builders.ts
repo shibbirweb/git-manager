@@ -1,6 +1,6 @@
 import { prop, type ComponentDoc } from "./types";
 
-const ROW_SIZE = '"tree" | "list" | "history" | "entry" | "large"';
+const ROW_SIZE = '"tree" | "list" | "history" | "entry" | "large" | "section" | "group"';
 const ROW_HEIGHT = '"compact" | "normal" | "relaxed" | "comfortable" | null';
 const VIEW_HEIGHT = '"auto" | "fill" | "small" | "medium" | "large"';
 
@@ -12,7 +12,9 @@ export const builderDocs: ComponentDoc[] = [
     usage:
       "Build every list row from it: put Icon, Text, Tag, StatusLetter and the like inside, and a Spacer before " +
       "what sits at the end. Pick the size for the place: tree (24 px, sidebars), list (24 px, file lists), " +
-      "history (26 px, commit lists), entry (grows, 4 px above and below, dialogs) or large (56 px, Welcome). " +
+      "history (26 px, commit lists), entry (grows, 4 px above and below, dialogs), large (56 px, Welcome), " +
+      "section (28 px, a repository's header) or group (24 px, lined up with a Collapsible's title, like the " +
+      "repositories under No Changes). " +
       "Put Rows in a List for the keyboard and selection; alone, a Row with `onclick` is a button.",
     aliases: ["List item", "Item", "Row", "Cell"],
     props: [
@@ -30,8 +32,17 @@ export const builderDocs: ComponentDoc[] = [
       prop("line", "boolean", "A line under the row, for rows in a ListBox (the last one has none).", {
         default: "false",
       }),
+      prop("mark", "boolean", "An accent stripe on its left edge, such as the active repository's header.", {
+        default: "false",
+      }),
       prop("title", "string", "Tooltip, such as the full path."),
       prop("label", "string", "Accessible name, when the content alone does not say it."),
+      prop("id", "string", "Its element id, so a list that keeps the focus elsewhere can point at it or scroll " +
+        "to it.", {
+        data: true,
+      }),
+      prop("item", '"option" | "treeitem" | null', "An item of a ListRegion that keeps the keys: its role and " +
+        "selection for screen readers, and no tab stop; clicks still run onclick.", { default: "null" }),
       prop("actions", "Snippet", "Small buttons at the end; their clicks do not select the row."),
       prop("children", "Snippet", "The row's content.", { required: true }),
       prop("onclick", "(event: MouseEvent) => void", "Pressed (outside a List, this makes it a button)."),
@@ -85,7 +96,8 @@ export const builderDocs: ComponentDoc[] = [
       "several. `skip` names headings the keys pass over. `virtual` draws only the rows in view: give it the " +
       "Row's height (normal for tree and list rows, relaxed for history rows). A filter field drives it with " +
       "`field`: Down or Enter moves the focus in, or with `fieldKeys=\"drive\"` the field keeps the focus while " +
-      "Up, Down and Enter work the list (Quick Open, Recent Files, the Branches popup).",
+      "Up, Down and Enter work the list (Quick Open, Recent Files, the Branches popup). `focus()` takes the " +
+      "focus and `reveal(key, place)` scrolls a row the app selected into view, to the middle with `center`.",
     aliases: ["Listbox", "Tree view", "Selectable list", "Virtual list"],
     props: [
       prop("items", "T[]", "Every row's item, headings included.", { required: true, data: true }),

@@ -5,7 +5,7 @@
   import { settings } from "$lib/stores/settings.svelte";
   import { AI_USAGE_PROVIDERS } from "$lib/stores/settingsData";
   import type { ProviderUsage } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { agentById } from "./agents";
   import { agentMark, formatAge } from "./panelView";
   import { usageStore } from "./usageStore.svelte";
@@ -125,7 +125,7 @@
             disabled={usageStore.loading}
             onclick={() => void usageStore.refresh(true).then(() => (now = Date.now()))}
           >
-            <Icon name="refresh" size={12} />
+            <Icon name="refresh" size="compact" />
           </button>
         </div>
         {#each usageStore.shown as usage (usage.provider)}

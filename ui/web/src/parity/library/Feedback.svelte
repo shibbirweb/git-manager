@@ -16,29 +16,10 @@
   let { id }: { id: string } = $props();
 </script>
 
-{#if id === "spinner"}
-  <Spinner />
-{:else if id === "badge"}
-  <Badge count={4} />
-{:else if id === "tag"}
-  <Tag>primary</Tag>
-{:else if id === "kbd"}
+{#if id === "kbd"}
   <Kbd keys="⌘P" />
 {:else if id === "progress"}
   <Stack direction="row"><Stack grow><ProgressBar value={0.57} label="Memory" /></Stack></Stack>
-{:else if id === "notice"}
-  <Notice tone="danger">The folder could not be opened.</Notice>
-{:else if id === "empty-state"}
-  <Stack direction="row">
-    <EmptyState icon="alert" title="Could not compare the files" hint="The file is missing." />
-  </Stack>
-{:else if id === "empty-panel"}
-  <EmptyState variant="panel" icon="bot" title="No folder open" hint="Open a folder to start AI agents in it." />
-  <EmptyState variant="notice" title="No AI agents found" hint="Press Refresh." />
-{:else if id === "card"}
-  <Card><Stack padding="none"><span></span></Stack></Card>
 {:else if id === "field"}
   <Field label="Name" error="Branch names cannot contain spaces"><Input value="has space" invalid /></Field>
-{:else if id === "toast"}
-  <ToastHost items={[{ id: 1, kind: "success", title: "Pushed to origin/main" }]} ondismiss={() => undefined} />
 {/if}

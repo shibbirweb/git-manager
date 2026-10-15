@@ -3,27 +3,41 @@
 <script lang="ts">
   import type { IconName } from "../icons";
   import Icon from "./Icon.svelte";
+  import StatusIcon from "./StatusIcon.svelte";
+
+  type Status = "starting" | "working" | "waiting" | "done" | "exited" | "idle";
 
   interface Props {
     text: string;
     variant?: "filter" | "pick" | "badge";
     tone?: "neutral" | "warning";
     icon?: IconName | null;
+    /** A status mark before the words in place of `icon`, such as the AI panel's "2 need you". */
+    status?: Status | null;
     fontFamily?: string;
     title?: string;
     onclick?: () => void;
   }
 
-  let { text, variant = "filter", tone = "neutral", icon = null, fontFamily, title, onclick }: Props = $props();
+  let {
+    text,
+    variant = "filter",
+    tone = "neutral",
+    icon = null,
+    status = null,
+    fontFamily,
+    title,
+    onclick,
+  }: Props = $props();
 </script>
 
 {#if onclick}
   <button class="chip {variant} {tone}" type="button" {title} style:font-family={fontFamily} {onclick}>
-    {#if icon}<Icon name={icon} size="small" />{/if}{text}
+    {#if status}<StatusIcon state={status} label={text} />{:else if icon}<Icon name={icon} size="small" />{/if}{text}
   </button>
 {:else}
   <span class="chip {variant} {tone}" {title} style:font-family={fontFamily}>
-    {#if icon}<Icon name={icon} size="small" />{/if}{text}
+    {#if status}<StatusIcon state={status} label={text} />{:else if icon}<Icon name={icon} size="small" />{/if}{text}
   </span>
 {/if}
 

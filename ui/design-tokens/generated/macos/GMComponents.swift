@@ -15,6 +15,7 @@ public enum GMButtonTokens {
     public static let ghostMaxWidth: CGFloat = 280
     public static let heightMini: CGFloat = 20
     public static let paddingXMini: CGFloat = 8
+    public static let iconOnlyPaddingX: CGFloat = 6
 }
 
 public enum GMIconButtonTokens {
@@ -47,6 +48,14 @@ public enum GMInputTokens {
     public static let paddingY: CGFloat = 6
     public static let radius: CGFloat = 6
     public static let focusRing: CGFloat = 2
+}
+
+public enum GMTextAreaTokens {
+    public static let shortHeight: CGFloat = 56
+    public static let tallHeight: CGFloat = 96
+    public static let toolsInset: CGFloat = 3
+    public static let toolsGap: CGFloat = 1
+    public static let toolsRoom: CGFloat = 12
 }
 
 public enum GMSelectTokens {
@@ -222,6 +231,7 @@ public enum GMPopoverTokens {
     public static let radius: CGFloat = 8
     public static let formPadding: CGFloat = 12
     public static let formGap: CGFloat = 8
+    public static let windowInset: CGFloat = 8
 }
 
 public enum GMToastTokens {
@@ -261,19 +271,4 @@ public enum GMTreeTokens {
     public static let gap: CGFloat = 4
     public static let paddingRight: CGFloat = 8
     public static let paddingY: CGFloat = 4
-}
-
-public enum GMCollapsibleTokens {
-    public static let height: CGFloat = 26
-    public static let gap: CGFloat = 5
-    public static let paddingLeft: CGFloat = 4
-    public static let paddingRight: CGFloat = 6
-    public static let nestedIndent: CGFloat = 16
-}
-
-public enum GMListRowTokens {
-    public static let paddingX: CGFloat = 8
-    public static let paddingY: CGFloat = 5
-    public static let radius: CGFloat = 4
-    public static let gap: CGFloat = 8
 }

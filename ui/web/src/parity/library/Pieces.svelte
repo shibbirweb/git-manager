@@ -22,13 +22,6 @@
       <Divider direction="vertical" />
     {/snippet}
   </AppHeader>
-{:else if id === "welcome-pieces"}
-  <Logo />
-  <Tile icon="folder" label="Open" onclick={run} />
-  <ResourceLink icon="book" title="Docs" description="A guide." onclick={run} />
-  <Avatar text="SF" shape="tile" color="cyan" />
-{:else if id === "symbol-badge"}
-  <SymbolBadge letter="C" tone="type" />
 {:else if id === "tree-line"}
   <div style="display: flex; height: 24px"><TreeLine position="first" /></div>
 {/if}

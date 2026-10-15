@@ -65,19 +65,6 @@ export const navigationCases: ParityCase[] = [
     ],
   },
   {
-    id: "collapsible",
-    sources: ["src/lib/views/changes/RepoSection.svelte"],
-    html:
-      `<div class="group-header"><button class="group-toggle">${iconSvg("chevron-down", 13)}` +
-      '<span class="group-label">Staged Changes</span><span class="group-count">2</span></button></div>',
-    pairs: [
-      { name: "header", ref: ".group-header", lib: ".header", states: ["hover"], ignore: { width: "fills the list" } },
-      { name: "toggle", ref: ".group-toggle", lib: ".toggle", ignore: { width: "fills the header" } },
-      { name: "title", ref: ".group-label", lib: ".title" },
-      { name: "count", ref: ".group-count", lib: ".count" },
-    ],
-  },
-  {
     id: "list-row",
     sources: ["src/lib/ui/DialogHost.svelte"],
     html:

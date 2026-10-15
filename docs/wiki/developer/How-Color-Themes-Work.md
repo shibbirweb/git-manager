@@ -96,8 +96,8 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 ## Known gaps
 
-- `src/lib/log/GraphCell.svelte` has eight hard-coded lane colors.
-- The Settings switch knob is a hard-coded white (`.switch` in `SettingsDialog.svelte`).
+- The log graph's eight lane colors are one set for every theme (`graphLane` in `ui/design-tokens/palette.json`).
+- The switch knob is hard-coded white (the library's `Switch.svelte`).
 - The rich Markdown editor does not redraw its diagrams on a theme change; `richEditor.ts` has no `watchTheme`.
 - At startup, `app.css` shows the built-in theme of the macOS appearance until `settings.init()` has read settings.json, and another theme waits for the catalog chunk, so the default colors can flash.
 

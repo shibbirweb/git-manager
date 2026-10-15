@@ -37,7 +37,7 @@ flowchart LR
 
 ### Cards
 
-`panelView.ts` draws the rows: `groupRows` makes a section per project with a card per worktree and its agents inside; `filterRows` keeps what matches every word of the filter, with the worktree and project around a matching agent; `mostUrgent` gives a card its mark; `attentionCounts` fills the "needs you" and "working" pills; `formatAge` writes "4m" from the agent's `changedAt`, refreshed every 30 s while the panel is open. `AgentStateIcon.svelte` draws the marks (the spinner only while an agent works). Menus and worktree actions live in `panelActions.ts`.
+`panelView.ts` draws the rows: `groupRows` makes a section per project with a card per worktree and its agents inside; `filterRows` keeps what matches every word of the filter, with the worktree and project around a matching agent; `mostUrgent` gives a card its mark; `attentionCounts` fills the "needs you" and "working" pills; `formatAge` writes "4m" from the agent's `changedAt`, refreshed every 30 s while the panel is open. `AgentStateIcon.svelte` draws the marks with the UI library's `StatusIcon` (the spinner only while an agent works). Menus and worktree actions live in `panelActions.ts`.
 
 ### Starting an agent
 
@@ -66,7 +66,7 @@ An agent tab survives a clean exit (shells close), shows "Agent exited" with Res
 | `src/lib/ai/sessions.svelte.ts` | Installed agents, starting, the permission question, New AI Agent |
 | `src/lib/ai/panelView.ts` | Sections and cards, filter, counts, ages, agent marks |
 | `src/lib/ai/panelActions.ts` | Row menus, New Worktree, Remove Worktree |
-| `src/lib/ai/AiPanel.svelte`, `AgentStateIcon.svelte` | The panel and its state marks |
+| `src/lib/ai/AiPanel.svelte`, `AiPanelRows.svelte`, `AgentStateIcon.svelte` | The panel, its tree rows and state marks |
 | `src/lib/ai/AiAgentSettings.svelte` | Settings > AI agent list |
 | `src/lib/terminal/terminalStore.svelte.ts` | `startAgent`, `restartAgent`, `setAgentTitle`, agent menus |
 | `src-tauri/src/run_process.rs`, `commands/ai.rs` | `find_agent_programs` |

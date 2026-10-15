@@ -5,7 +5,10 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Spacer from "@git-manager/ui/components/Spacer.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import { HEAD_REVISION, INDEX_REVISION } from "$lib/views/files/previewSource";
   import { buildSections, displayPath, findFile, findSection, splitSections } from "./sections";
   import { changesSelection } from "./selection.svelte";
@@ -71,11 +74,11 @@
   });
 </script>
 
-<div class="changes-diff">
+<Stack gap="none" grow surface="editor">
   {#if repoStore.repos.length === 0}
-    <div class="placeholder dim">This folder has no git repository yet.</div>
+    <EmptyState titleTone="dim" title="This folder has no git repository yet." />
   {:else if !anyLoaded}
-    <div class="placeholder"></div>
+    <Spacer />
   {:else if selected && changesSelection.diff}
     <DiffView
       diff={changesSelection.diff}
@@ -102,86 +105,28 @@
       {previewSides}
     />
   {:else if selected && changesSelection.diffError}
-    <div class="placeholder">
-      <div class="error-title">Could not load the diff</div>
-      <div class="dim selectable">{changesSelection.diffError}</div>
-    </div>
+    <EmptyState titleTone="danger" strong title="Could not load the diff" hint={changesSelection.diffError} />
   {:else if selected}
-    <div class="placeholder loading dim">Loading diff...</div>
+    <EmptyState titleTone="dim" title="Loading diff..." delayed />
   {:else if changed.length === 0}
-    <div class="placeholder">
-      <div class="clean-icon"><Icon name="check" size={22} /></div>
-      <div class="empty-title">
-        {multiRepo ? `No changes in ${repoStore.repos.length} repositories` : "Working tree clean"}
-      </div>
-      <div class="dim">There are no changes to commit.</div>
-    </div>
+    <EmptyState
+      icon="check"
+      iconStyle="circle"
+      iconTone="success"
+      strong
+      title={multiRepo ? `No changes in ${repoStore.repos.length} repositories` : "Working tree clean"}
+      hint="There are no changes to commit."
+    />
   {:else}
-    <div class="placeholder dim">
-      <div>{conflictTotal > 0 ? "Resolve conflicts to continue" : "Select a file in Changes to see its diff"}</div>
-      {#if panelHidden}
-        <button class="btn small" onclick={() => settings.setLeftPanel("changes")}>
-          <Icon name="git-compare" size={13} />
-          Show Changes
-        </button>
-      {/if}
-    </div>
+    <EmptyState
+      titleTone="dim"
+      title={conflictTotal > 0 ? "Resolve conflicts to continue" : "Select a file in Changes to see its diff"}
+    >
+      {#snippet action()}
+        {#if panelHidden}
+          <Button size="small" icon="git-compare" onclick={() => settings.setLeftPanel("changes")}>Show Changes</Button>
+        {/if}
+      {/snippet}
+    </EmptyState>
   {/if}
-</div>
-
-<style>
-  .changes-diff {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px;
-    text-align: center;
-  }
-
-  .clean-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    margin-bottom: 6px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--success) 14%, transparent);
-    color: var(--success);
-  }
-
-  .empty-title,
-  .error-title {
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .error-title {
-    color: var(--danger);
-  }
-
-  .loading {
-    animation: appear 0.2s ease 0.25s both;
-  }
-
-  @keyframes appear {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-</style>
+</Stack>

@@ -38,6 +38,7 @@ public enum GMFontSize {
     public static let title: CGFloat = 14
     public static let heading: CGFloat = 15
     public static let lead: CGFloat = 16
+    public static let page: CGFloat = 18
     public static let display: CGFloat = 22
 }
 
@@ -197,10 +198,15 @@ public enum GMViewHeight {
     public static let large: CGFloat = 360
 }
 
+public enum GMViewWidth {
+    public static let page: CGFloat = 600
+}
+
 public enum GMColumnWidth {
     public static let small: CGFloat = 140
     public static let medium: CGFloat = 180
     public static let large: CGFloat = 240
+    public static let xlarge: CGFloat = 320
 }
 
 public enum GMRowHeight {
@@ -222,6 +228,7 @@ public enum GMPanelMin {
     public static let bottom: CGFloat = 80
     public static let list: CGFloat = 120
     public static let pane: CGFloat = 120
+    public static let files: CGFloat = 160
 }
 
 public enum GMPanelDefault {
@@ -229,6 +236,7 @@ public enum GMPanelDefault {
     public static let bottom: CGFloat = 260
     public static let list: CGFloat = 180
     public static let pane: CGFloat = 260
+    public static let files: CGFloat = 320
 }
 
 public enum GMCodeHeight {
@@ -253,6 +261,7 @@ public enum GMLabelColumn {
 
 public enum GMCellWidth {
     public static let icon: CGFloat = 16
+    public static let xxsmall: CGFloat = 40
     public static let xsmall: CGFloat = 70
     public static let small: CGFloat = 80
     public static let medium: CGFloat = 90

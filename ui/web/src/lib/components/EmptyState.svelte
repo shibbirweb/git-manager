@@ -14,7 +14,7 @@
     iconTone?: "inherit" | "faint" | "accent" | "success";
     strong?: boolean;
     titleSize?: "normal" | "large";
-    titleTone?: "default" | "danger";
+    titleTone?: "default" | "dim" | "danger";
     overlay?: boolean;
     delayed?: boolean;
     action?: Snippet;
@@ -138,6 +138,10 @@
   .title.large {
     font-size: var(--font-size-title);
     font-weight: var(--font-weight-semibold);
+  }
+
+  .title.dim {
+    color: var(--text-dim);
   }
 
   .title.danger {

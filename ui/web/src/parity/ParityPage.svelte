@@ -25,14 +25,11 @@
   import Pieces from "./library/Pieces.svelte";
   import Rows from "./library/Rows.svelte";
   import Search from "./library/Search.svelte";
-  import Sections from "./library/Sections.svelte";
-  import SettingsMore from "./library/SettingsMore.svelte";
   import Shell from "./library/Shell.svelte";
   import States from "./library/States.svelte";
   import Status from "./library/Status.svelte";
   import Surfaces from "./library/Surfaces.svelte";
   import Tabs from "./library/Tabs.svelte";
-  import Welcome from "./library/Welcome.svelte";
 
   const appSources = import.meta.glob<string>("../../../../src/lib/**/*.svelte", { query: "?raw", import: "default" });
 
@@ -83,13 +80,10 @@
       <Lists id={parityCase.id} />
       <Pickers id={parityCase.id} />
       <Chrome id={parityCase.id} />
-      <Sections id={parityCase.id} />
       <Tabs id={parityCase.id} />
       <States id={parityCase.id} />
       <Atoms id={parityCase.id} />
       <Status id={parityCase.id} />
-      <Welcome id={parityCase.id} />
-      <SettingsMore id={parityCase.id} />
       <History id={parityCase.id} />
       <Search id={parityCase.id} />
       <Dialogs id={parityCase.id} />

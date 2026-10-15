@@ -52,6 +52,11 @@
     <x:Double x:Key="GmTextHeadingLineHeight">0</x:Double>
     <x:Int32 x:Key="GmTextHeadingCharacterSpacing">0</x:Int32>
     <x:Boolean x:Key="GmTextHeadingUppercase">False</x:Boolean>
+    <x:Double x:Key="GmTextPageTitleSize">18</x:Double>
+    <x:Int32 x:Key="GmTextPageTitleWeight">600</x:Int32>
+    <x:Double x:Key="GmTextPageTitleLineHeight">0</x:Double>
+    <x:Int32 x:Key="GmTextPageTitleCharacterSpacing">0</x:Int32>
+    <x:Boolean x:Key="GmTextPageTitleUppercase">False</x:Boolean>
     <x:Double x:Key="GmTextDisplaySize">22</x:Double>
     <x:Int32 x:Key="GmTextDisplayWeight">600</x:Int32>
     <x:Double x:Key="GmTextDisplayLineHeight">0</x:Double>

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { graphPaths, graphWidth, laneColor, laneX, SEGMENT_IN, SEGMENT_OUT, SEGMENT_PASS } from "./graphModel";
 
 describe("the graph", () => {
-  it("places lanes like the app's GraphCell", () => {
+  it("places lanes at the token gap after the token pad", () => {
     expect(laneX(0)).toBe(9);
     expect(laneX(2)).toBe(37);
     expect(graphWidth(1)).toBe(18);

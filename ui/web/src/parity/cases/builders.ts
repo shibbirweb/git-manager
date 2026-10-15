@@ -36,33 +36,6 @@ export const builderCases: ParityCase[] = [
     ],
   },
   {
-    id: "row-list",
-    sources: ["src/lib/views/git/BranchFileList.svelte"],
-    html:
-      '<div class="files" role="listbox" tabindex="0"><div class="file"><span class="name truncate">cart.ts</span>' +
-      '</div><div class="file selected"><span class="name truncate">tax.ts</span></div></div>',
-    pairs: [
-      { name: "row", ref: ".file:not(.selected)", lib: ".row:not(.selected)", states: ["hover"] },
-      { name: "selected", ref: ".file.selected", lib: ".row.selected" },
-    ],
-  },
-  {
-    id: "row-large",
-    sources: ["src/lib/views/Welcome.svelte"],
-    html:
-      `<button class="learn-item">${iconSvg("book", 18)}<span class="text"><span class="name">Documentation` +
-      '</span><span class="dim">A guide to every feature.</span></span></button>',
-    pairs: [
-      {
-        name: "large",
-        ref: ".learn-item",
-        lib: ".row",
-        states: ["hover"],
-        ignore: { ...TEXT, cursor: "a Row is a list item (default cursor); the app's tile is a link-like button" },
-      },
-    ],
-  },
-  {
     id: "link-expanded",
     sources: ["src/lib/update/WhatsNewDialog.svelte"],
     html: `<button class="older-toggle">${iconSvg("chevron-right", 12)} Earlier versions</button>`,
@@ -84,17 +57,6 @@ export const builderCases: ParityCase[] = [
           ),
         ),
       },
-    ],
-  },
-  {
-    id: "card-states",
-    sources: ["src/lib/ai/AiPanel.svelte"],
-    html:
-      '<div class="card selected" style="margin: 0"><div style="height: 40px"></div></div>' +
-      '<div class="card missing" style="margin: 0"><div style="height: 40px"></div></div>',
-    pairs: [
-      { name: "selected", ref: ".card.selected", lib: ".card.selected", ignore: HEIGHT },
-      { name: "missing", ref: ".card.missing", lib: ".card.faded", ignore: HEIGHT },
     ],
   },
 ];

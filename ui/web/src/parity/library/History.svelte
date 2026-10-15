@@ -13,13 +13,7 @@
   let { id }: { id: string } = $props();
 </script>
 
-{#if id === "log-refs"}
-  <RefLabel kind="more" label="+3" />
-  <RefLabel kind="bisect-bad" label="bad" />
-  <RefLabel kind="bisect-good" label="good" />
-  <RefLabel kind="bisect-skip" label="skip" />
-  <RefLabel kind="bisect-current" label="current" />
-{:else if id === "details-parts"}
+{#if id === "details-parts"}
   <Button size="small" icon="commit">Open in Tab</Button>
   <Link size="small" mono>a1b2c3d</Link>
   <div style="width: 300px"><SectionTitle variant="caption" title="3 files changed" /></div>

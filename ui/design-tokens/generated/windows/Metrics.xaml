@@ -16,6 +16,7 @@
     <x:Double x:Key="GmFontSizeTitle">14</x:Double>
     <x:Double x:Key="GmFontSizeHeading">15</x:Double>
     <x:Double x:Key="GmFontSizeLead">16</x:Double>
+    <x:Double x:Key="GmFontSizePage">18</x:Double>
     <x:Double x:Key="GmFontSizeDisplay">22</x:Double>
     <x:Int32 x:Key="GmFontWeightRegular">400</x:Int32>
     <x:Int32 x:Key="GmFontWeightMedium">500</x:Int32>
@@ -125,9 +126,11 @@
     <x:Double x:Key="GmViewHeightSmall">160</x:Double>
     <x:Double x:Key="GmViewHeightMedium">240</x:Double>
     <x:Double x:Key="GmViewHeightLarge">360</x:Double>
+    <x:Double x:Key="GmViewWidthPage">600</x:Double>
     <x:Double x:Key="GmColumnWidthSmall">140</x:Double>
     <x:Double x:Key="GmColumnWidthMedium">180</x:Double>
     <x:Double x:Key="GmColumnWidthLarge">240</x:Double>
+    <x:Double x:Key="GmColumnWidthXlarge">320</x:Double>
     <x:Double x:Key="GmRowHeightCompact">22</x:Double>
     <x:Double x:Key="GmRowHeightNormal">24</x:Double>
     <x:Double x:Key="GmRowHeightRelaxed">26</x:Double>
@@ -140,10 +143,12 @@
     <x:Double x:Key="GmPanelMinBottom">80</x:Double>
     <x:Double x:Key="GmPanelMinList">120</x:Double>
     <x:Double x:Key="GmPanelMinPane">120</x:Double>
+    <x:Double x:Key="GmPanelMinFiles">160</x:Double>
     <x:Double x:Key="GmPanelDefaultSidebar">260</x:Double>
     <x:Double x:Key="GmPanelDefaultBottom">260</x:Double>
     <x:Double x:Key="GmPanelDefaultList">180</x:Double>
     <x:Double x:Key="GmPanelDefaultPane">260</x:Double>
+    <x:Double x:Key="GmPanelDefaultFiles">320</x:Double>
     <x:Double x:Key="GmCodeHeightSmall">200</x:Double>
     <x:Double x:Key="GmCodeHeightMedium">360</x:Double>
     <x:Double x:Key="GmCodeHeightLarge">520</x:Double>
@@ -156,6 +161,7 @@
     <x:Double x:Key="GmLabelColumnMedium">120</x:Double>
     <x:Double x:Key="GmLabelColumnLarge">130</x:Double>
     <x:Double x:Key="GmCellWidthIcon">16</x:Double>
+    <x:Double x:Key="GmCellWidthXxsmall">40</x:Double>
     <x:Double x:Key="GmCellWidthXsmall">70</x:Double>
     <x:Double x:Key="GmCellWidthSmall">80</x:Double>
     <x:Double x:Key="GmCellWidthMedium">90</x:Double>

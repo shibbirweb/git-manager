@@ -14,7 +14,6 @@ import { historyCases } from "./cases/history";
 import { largerCases } from "./cases/larger";
 import { listCases } from "./cases/lists";
 import { markCases } from "./cases/marks";
-import { moreCases } from "./cases/more";
 import { navigationCases } from "./cases/navigation";
 import { overlayCases } from "./cases/overlays";
 import { panelCases } from "./cases/panels";
@@ -22,16 +21,13 @@ import { pickerCases } from "./cases/pickers";
 import { pieceCases } from "./cases/pieces";
 import { rowCases } from "./cases/rows";
 import { searchCases } from "./cases/search";
-import { sectionCases } from "./cases/sections";
 import { settingsCases } from "./cases/settings";
-import { settingsMoreCases } from "./cases/settingsMore";
 import { shellCases } from "./cases/shell";
 import { stateCases } from "./cases/states";
 import { statusCases } from "./cases/status";
 import { surfaceCases } from "./cases/surfaces";
 import { tabCases } from "./cases/tabs";
 import { variantCases } from "./cases/variants";
-import { welcomeCases } from "./cases/welcome";
 import { workspaceCases } from "./cases/workspace";
 import type { ParityCase } from "./types";
 
@@ -52,19 +48,15 @@ export const parityCases: ParityCase[] = [
   ...controlCases,
   ...variantCases,
   ...panelCases,
-  ...moreCases,
   ...listCases,
   ...workspaceCases,
   ...settingsCases,
   ...pickerCases,
   ...chromeCases,
-  ...sectionCases,
   ...tabCases,
   ...stateCases,
   ...atomCases,
   ...statusCases,
-  ...welcomeCases,
-  ...settingsMoreCases,
   ...historyCases,
   ...searchCases,
   ...dialogCases,

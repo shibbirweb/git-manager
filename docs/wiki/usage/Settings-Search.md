@@ -2,7 +2,7 @@
 
 Settings has many sections and many rows. Instead of clicking through them, type what you are looking for in the search field at the top left of the Settings dialog. The list of sections shrinks to the ones that have a match, and the open section shows only the matching settings, with the matching words highlighted.
 
-[TODO:settings-search.png]
+![Settings filtered by a search for font](../images/settings-search.png)
 
 *Searching for "font": only the sections with a font setting stay in the list, and the Editor section shows only its font settings.*
 

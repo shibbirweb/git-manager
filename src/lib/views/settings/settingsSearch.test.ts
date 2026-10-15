@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FILE_TOOLBAR_SWITCHES, SETTINGS_SECTIONS, type SettingsSection } from "$lib/stores/settingsData";
-import dialogSource from "../SettingsDialog.svelte?raw";
+import sectionViewSource from "./SettingsSectionView.svelte?raw";
 import { CARET_EXTRA_ROWS, EDITOR_FEATURE_ROWS, SAVE_CLEANUP_ROWS } from "./settingsRows";
 import {
   highlightSpans,
@@ -30,18 +30,25 @@ const LABELS: Record<SettingsSection, string> = {
 /** A warning, not a setting. */
 const NOT_INDEXED = new Set(["~/.local/bin is not on your PATH"]);
 
-/** The literal row labels, group titles and About links of each section in SettingsDialog.svelte. */
+/** The section files' source, by component name: AppearanceSettings, ... */
+const SECTION_FILES = Object.fromEntries(
+  Object.entries(import.meta.glob<string>("./*.svelte", { query: "?raw", import: "default", eager: true })).map(
+    ([path, source]) => [path.replace(/^\.\/|\.svelte$/g, ""), source],
+  ),
+);
+
+/** The literal row titles, group titles and About links of each section, from the files it shows. */
 function dialogLabels(): Map<SettingsSection, Set<string>> {
-  const template = dialogSource.slice(dialogSource.indexOf('<div class="rows"'));
-  const parts = template.split(/\{(?:#if|:else if) section === "(\w+)"\}/);
+  const parts = sectionViewSource.split(/\{(?:#if|:else if) section === "(\w+)"\}/);
   const labels = new Map<SettingsSection, Set<string>>();
   for (let index = 1; index < parts.length; index += 2) {
-    const body = parts[index + 1];
-    const found = [
-      ...body.matchAll(/<div class="label">\s*<span>([^<{]+)/g),
-      ...body.matchAll(/<h4 class="group-title">([^<]+)<\/h4>/g),
-      ...body.matchAll(/<strong>([^<{]+)<\/strong>/g),
-    ].map((match) => match[1].trim());
+    const components = [...parts[index + 1].matchAll(/<(\w+Settings|KeyboardShortcuts)\b/g)].map((match) => match[1]);
+    const found = components.flatMap((name) => {
+      const body = SECTION_FILES[name] ?? "";
+      // About's links are a list of { title } objects.
+      const links = name === "AboutSettings" ? [...body.matchAll(/^\s+title: "([^"]+)",$/gm)] : [];
+      return [...body.matchAll(/<Settings(?:Row|Group)\s+title="([^"{]+)"/g), ...links].map((match) => match[1].trim());
+    });
     labels.set(parts[index] as SettingsSection, new Set(found.filter((label) => !NOT_INDEXED.has(label))));
   }
   return labels;
@@ -72,7 +79,7 @@ describe("settings search index", () => {
   it("lists nothing the dialog does not show", () => {
     for (const entry of SETTINGS_SEARCH_INDEX) {
       const known = fromDialog.get(entry.section)?.has(entry.label) || LIST_LABELS.has(entry.label);
-      expect(known, `${entry.section}: "${entry.label}" is not in SettingsDialog.svelte`).toBe(true);
+      expect(known, `${entry.section}: "${entry.label}" is not in its section's files`).toBe(true);
     }
   });
 

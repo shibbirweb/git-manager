@@ -24,6 +24,9 @@ Use `truncate` for paths and names that may not fit.
 - `weight` (`"regular" | "medium" | "semibold" | "bold"`): Font weight, overriding the style's.
 - `mono` (`boolean`, default `false`): Monospace, for hashes, paths and code.
 - `truncate` (`boolean`, default `false`): One line with an ellipsis; give `title` the full text.
+- `giveWay` (`boolean`, default `false`): With truncate: in a tight row it shortens before its neighbours, down to
+  nothing, so the row's smallest width leaves it out (a branch name next to buttons, a repository's folder after its
+  name).
 - `selectable` (`boolean`, default `false`): Lets the user select the text (the app turns selection off by default).
 - `tabular` (`boolean`, default `false`): Digits of one width, for times, durations, sizes and counts.
 - `wrap` (`"normal" | "anywhere" | "pre"`, default `"normal"`): Anywhere breaks long paths; pre keeps line breaks

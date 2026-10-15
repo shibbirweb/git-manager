@@ -18,6 +18,8 @@ filter: sums up and filters a list (AI panel). pick: offers a value, such as a f
 - `variant` (`"filter" | "pick" | "badge"`, default `"filter"`): A filter, a value to pick, or a small bordered fact.
 - `tone` (`"neutral" | "warning"`, default `"neutral"`): Warning for something waiting on you.
 - `icon` (`IconName | null`, default `null`): An icon before the words.
+- `status` (`"starting" | "working" | "waiting" | "done" | "exited" | "idle" | null`, default `null`): A status mark
+  before the words in place of `icon`, such as the AI panel's 2 need you.
 - `fontFamily` (`string`): Shows the words in this font (font picks); data, not design.
 - `title` (`string`): A tooltip.
 - `onclick` (`() => void`): Makes it a button.

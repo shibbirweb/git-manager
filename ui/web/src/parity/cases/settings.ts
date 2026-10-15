@@ -10,31 +10,6 @@ const STRUCTURE = {
 
 export const settingsCases: ParityCase[] = [
   {
-    id: "settings-parts",
-    sources: ["src/lib/views/SettingsDialog.svelte"],
-    html:
-      '<div class="content"><div class="group-title">Editor</div><pre class="font-preview">let a = 1;</pre>' +
-      '<ul class="changed"><li>theme: dark</li></ul><div class="about"><div class="about-logo">' +
-      `${iconSvg("merge", 26)}</div><div class="about-name">Git Manager</div></div>` +
-      `<div class="link-list"><button class="link-row">${iconSvg("book", 16)}<span><strong>Docs</strong>` +
-      '<span class="dim">The wiki.</span></span></button></div><div class="range"><span class="value weight-value">' +
-      "Regular</span></div></div>",
-    pairs: [
-      { name: "group title", ref: ".group-title", lib: ".section-title.group", ignore: FILL },
-      { name: "font sample", ref: ".font-preview", lib: ".sample", ignore: FILL },
-      { name: "changed list", ref: ".changed", lib: ".list", ignore: FILL },
-      { name: "about logo", ref: ".about-logo", lib: ".logo.medium" },
-      { name: "link card", ref: ".link-row", lib: ".resource.card", states: ["hover"], ignore: FILL },
-      { name: "wide value", ref: ".weight-value", lib: ".value.wide" },
-    ],
-  },
-  {
-    id: "settings-content-head",
-    sources: ["src/lib/views/SettingsDialog.svelte"],
-    html: '<div class="content-head"><h3>Editor</h3></div>',
-    pairs: [{ name: "head", ref: ".content-head", lib: ".head.content", ignore: FILL }],
-  },
-  {
     id: "panel-filter",
     sources: ["src/lib/views/Sidebar.svelte"],
     html:

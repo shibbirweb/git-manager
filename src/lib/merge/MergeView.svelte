@@ -4,7 +4,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { MergeDocument, Side } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import MergeEditor from "./MergeEditor.svelte";
 
   let { repoPath, conflictPath }: { repoPath: string; conflictPath: string } = $props();
@@ -93,26 +93,26 @@
 
 <div class="overlay" role="dialog" aria-modal="true" aria-label="Merge {conflictPath}">
   <div class="title-bar">
-    <Icon name="merge" size={15} />
+    <Icon name="merge" size="regular" />
     <span class="title">Merge Revisions for</span>
     <span class="path mono truncate selectable">{conflictPath}</span>
     <div class="spacer"></div>
     <button class="icon-btn" onclick={close} title="Close" aria-label="Close merge">
-      <Icon name="x" size={15} />
+      <Icon name="x" size="regular" />
     </button>
   </div>
 
   <div class="content">
     {#if loadError}
       <div class="notice">
-        <Icon name="alert" size={22} />
+        <Icon name="alert" size="emphasis" />
         <p>Could not load this conflict.</p>
         <pre class="selectable">{loadError}</pre>
         <button class="btn" onclick={() => repoStore.closeMerge()}>Close</button>
       </div>
     {:else if doc && fileLevelReason}
       <div class="notice">
-        <Icon name="alert" size={22} />
+        <Icon name="alert" size="emphasis" />
         <p>{fileLevelReason}</p>
         <div class="choices">
           <button class="btn" onclick={() => acceptSide("ours")}>

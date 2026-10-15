@@ -7,7 +7,7 @@
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
   import { onDestroy, untrack } from "svelte";
   import { errorMessage } from "$lib/api";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { platformName } from "$lib/update/releases";
   import { formatSize } from "../git/lfs/lfsModel";
@@ -121,7 +121,7 @@
         title="Zoom out"
         aria-label="Zoom out"
       >
-        <Icon name="minus" size={13} />
+        <Icon name="minus" size="medium" />
       </button>
       <span class="zoom" aria-live="polite">{natural ? zoomLabel(shownZoom) : ""}</span>
       <button
@@ -131,7 +131,7 @@
         title="Zoom in"
         aria-label="Zoom in"
       >
-        <Icon name="plus" size={13} />
+        <Icon name="plus" size="medium" />
       </button>
       <button
         class="btn small"

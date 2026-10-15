@@ -38,15 +38,15 @@ CrumbPopup
 [What each one is for](docs/groups/Navigation.md)
 
 TabStrip, Tabs, Tree, VirtualList, Collapsible, ListRow, PickList, Breadcrumbs, List, FileRow, SidebarRow, SideNav,
-EditorTab, TreeRow, DataTable, ReorderList, ResourceLink, SessionTabs, Table, PopupRow
+EditorTab, TreeRow, DataTable, ReorderList, ResourceLink, SessionTabs, ListRegion, Table, PopupRow
 
 ## Layout
 
 [What each one is for](docs/groups/Layout.md)
 
 Stack, Text, Grid, Card, Divider, Row, Spacer, Time, SplitPane, ResizeHandle, StatusBar, StatusItem, ActivityBar,
-PanelHeader, DescriptionList, AppShell, Toolbar, SectionTitle, AppHeader, TreeLine, ListBox, Pane, SplitGrid, PaneRow,
-SplitHandle
+PanelHeader, DescriptionList, AppShell, Toolbar, SectionTitle, AppHeader, TreeLine, ListBox, Pane, ElementHost,
+SplitGrid, PaneRow, SplitHandle
 
 ## Editor
 

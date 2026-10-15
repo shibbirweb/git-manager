@@ -22,6 +22,10 @@ Use for details or a few choices next to a control. Use Menu for a list of comma
 - `padding` (`"menu" | "panel" | "form"`, default `"menu"`): 4px for menu-like lists, 12 by 14px for detail panels, 12px
   and a column of fields for a small form (Commit Options).
 - `textSize` (`"normal" | "small"`, default `"normal"`): Small (12px) for the status bar's popovers.
+- `layer` (`"anchor" | "window"`, default `"anchor"`): Under its trigger in the page, or floating over the window and
+  kept inside it, so a scrolling or narrow panel cannot cut it off (Commit Options).
+- `autofocus` (`boolean`, default `false`): Its first field takes the focus when it opens, and Esc gives the focus back
+  to the trigger, for a small form.
 - `trigger` (`Snippet<[{ toggle: () => void; open: boolean }]>`, required): The button that opens it.
 - `children` (`Snippet`, required): The panel's content.
 
@@ -40,3 +44,8 @@ Use for details or a few choices next to a control. Use Menu for a list of comma
 
 - `<div class="details" role="dialog"> in StatusBar`
 - `<div class="menu"> in KeepAwake and AiUsage`
+- `<div class="panel" role="dialog"> with its fixed place in CommitOptionsPopover.svelte`
+
+## Logic
+
+- `logic/popoverPlace.ts`

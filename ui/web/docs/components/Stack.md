@@ -24,17 +24,32 @@ Use for every layout instead of writing CSS: rows of buttons, label and value pa
   `null`): Space at the left and right, overriding `padding`.
 - `paddingY` (`"none" | "xxs" | "xs" | "sm" | "md" | "mdPlus" | "lg" | "lgPlus" | "xl" | "xxl" | "xxxl" | null`, default
   `null`): Space at the top and bottom, overriding `padding`.
+- `paddingLeft` (`"none" | "xxs" | "xs" | "sm" | "md" | "mdPlus" | "lg" | "lgPlus" | "xl" | "xxl" | "xxxl" | null`,
+  default `null`): Space at the left only, overriding the others there: an indent, such as a repository's own commit box
+  under its header.
 - `align` (`"start" | "center" | "end" | "stretch" | "baseline"`, default `"stretch"`): Cross-axis alignment.
 - `justify` (`"start" | "center" | "end" | "between"`, default `"start"`): Main-axis distribution.
 - `wrap` (`boolean`, default `false`): Wrap onto more lines.
 - `grow` (`boolean`, default `false`): Take the free space of its own parent stack.
-- `width` (`"auto" | "icon" | "xsmall" | "small" | "medium" | "large" | "xlarge"`, default `"auto"`): A set width so
-  rows line up: icon 16, xsmall 70 (a hash), small 80, medium 90, large 120, xlarge 140.
+- `shrink` (`boolean | "first"`, default `false`): Its content's size, but it may give way when the row is too narrow (a
+  group of names that truncate); first gives way before its siblings, down to its smallest width, so its buttons stay
+  whole (a repository row's branch name shortens before the repository's).
+- `width` (`"auto" | "icon" | "xxsmall" | "xsmall" | "small" | "medium" | "large" | "xlarge"`, default `"auto"`): A set
+  width so rows line up: icon 16, xxsmall 40 (a line number), xsmall 70 (a hash), small 80, medium 90, large 120, xlarge
+  140.
 - `scroll` (`"none" | "y" | "x" | "both"`, default `"none"`): Scrolls its content in its own box; pair with `grow`.
 - `maxHeight` (`"none" | "xsmall" | "small" | "medium" | "large"`, default `"none"`): Grows up to 120, 160, 240 or 360
   px, then scrolls with `scroll="y"` (a short list in a dialog).
+- `maxWidth` (`"none" | "page"`, default `"none"`): At most 600 px wide (page), such as a page of settings that would
+  read badly across a wide window.
+- `height` (`"auto" | "window"`, default `"auto"`): Its content's height, or the whole window's (a screen such as the
+  welcome screen).
+- `surface` (`"none" | "editor" | "panel" | "alt"`, default `"none"`): Paints a theme background behind it: the editor,
+  a panel, or the alternate panel color.
 - `sticky` (`boolean`, default `false`): Stays at the top of the region scrolling under it, on the panel color with a
   line under it.
+- `line` (`"none" | "top" | "bottom"`, default `"none"`): A strong line on its top or bottom edge, such as the commit
+  box docked under a list.
 - `element` (`"div" | "span" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | "form"`,
   default `"div"`): The HTML element; main, aside and nav mark a page's regions for screen readers; span fits inside a
   label, like a Checkbox's rich label.

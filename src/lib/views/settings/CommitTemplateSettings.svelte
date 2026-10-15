@@ -4,7 +4,12 @@
   import { untrack } from "svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import TextArea from "@git-manager/ui/components/TextArea.svelte";
   import {
     type CommitTemplate,
     MAX_COMMIT_TEMPLATES,
@@ -54,12 +59,12 @@
   }
 </script>
 
-<div class="templates">
+<Stack gap="mdPlus">
   {#each rows as row, index (index)}
-    <div class="template">
-      <div class="template-head">
-        <input
-          class="input name"
+    <Stack gap="xs">
+      <Stack direction="row" align="center" gap="sm">
+        <Input
+          width="fill"
           value={row.name}
           oninput={(event) => {
             row.name = event.currentTarget.value;
@@ -69,93 +74,35 @@
           autocomplete="off"
           spellcheck="false"
         />
-        <button
-          class="icon-btn"
-          onclick={() => void remove(index)}
-          title="Delete template"
-          aria-label="Delete template"
-        >
-          <Icon name="trash" size={13} />
-        </button>
-      </div>
+        <IconButton icon="trash" iconSize="medium" label="Delete template" onclick={() => void remove(index)} />
+      </Stack>
       {#if errors[index]}
-        <div class="error">{errors[index]}</div>
+        <Text size="small" tone="danger">{errors[index]}</Text>
       {/if}
-      <textarea
-        class="input text"
+      <TextArea
+        mono
+        rows="normal"
         value={row.text}
         oninput={(event) => {
           row.text = event.currentTarget.value;
           persist();
         }}
         maxlength={MAX_TEMPLATE_TEXT_LENGTH}
-        rows="3"
         aria-label="Template text"
-        spellcheck="false"></textarea>
-    </div>
+        spellcheck="false"
+      />
+    </Stack>
   {:else}
-    <div class="hint">No templates yet.</div>
+    <Text variant="hint">No templates yet.</Text>
   {/each}
-  <div class="actions">
-    <button class="btn small" onclick={add} disabled={rows.length >= MAX_COMMIT_TEMPLATES}>Add Template</button>
-  </div>
-  <div class="hint">
+  <Stack direction="row">
+    <Button size="small" onclick={add} disabled={rows.length >= MAX_COMMIT_TEMPLATES}>Add Template</Button>
+  </Stack>
+  <Text variant="hint">
     Placeholders:
     {#each TEMPLATE_PLACEHOLDERS as placeholder, index (placeholder.token)}
-      <code>{placeholder.token}</code> {placeholder.hint}{index < TEMPLATE_PLACEHOLDERS.length - 1 ? ", " : "."}
+      <Text variant="code">{placeholder.token}</Text>
+      {placeholder.hint}{index < TEMPLATE_PLACEHOLDERS.length - 1 ? ", " : "."}
     {/each}
-  </div>
-</div>
-
-<style>
-  .templates {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .template {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .template-head {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .name {
-    flex: 1;
-    min-width: 0;
-    font-weight: 500;
-  }
-
-  .text {
-    width: 100%;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  .actions {
-    display: flex;
-  }
-
-  .hint {
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.6;
-  }
-
-  code {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-  }
-
-  .error {
-    font-size: 12px;
-    color: var(--danger);
-  }
-</style>
+  </Text>
+</Stack>

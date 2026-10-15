@@ -2,7 +2,7 @@
 // near the end, follow new entries at the bottom). Call them while the List starts, like any $effect.
 import { tick, untrack } from "svelte";
 import { isAtBottom, isNearEnd } from "./listScroll";
-import { scrollToShowBox } from "./rowOffsets";
+import { scrollToCenterBox, scrollToShowBox } from "./rowOffsets";
 
 /** Listens to a field's keys; with `combobox`, the field also names the list and its highlighted row. */
 export function wireField(
@@ -30,6 +30,11 @@ export function wireField(
   });
 }
 
+export type RevealPlace = "nearest" | "center";
+
+/** A row's top and bottom inside a list that draws only the rows in view. */
+export type RowBox = [number, number];
+
 export class ListScroll {
   top = $state(0);
   #atBottom = true;
@@ -46,12 +51,28 @@ export class ListScroll {
     }
   }
 
-  /** Scrolls the least needed to show the box from `top` to `bottom`. */
-  show(viewport: HTMLElement, top: number, bottom: number): void {
-    const target = scrollToShowBox(top, bottom, viewport.scrollTop, viewport.clientHeight);
+  /** Scrolls the least needed to show the box from `top` to `bottom`, or puts it in the middle with `center`. */
+  show(viewport: HTMLElement, top: number, bottom: number, place: RevealPlace = "nearest"): void {
+    const target =
+      place === "center"
+        ? scrollToCenterBox(top, bottom, viewport.clientHeight)
+        : scrollToShowBox(top, bottom, viewport.scrollTop, viewport.clientHeight);
     if (target !== null) {
       viewport.scrollTop = target;
     }
+  }
+
+  /** Brings a row into view: by its element `rowId` when every row is drawn (`box` null), else by its box. */
+  async reveal(viewport: HTMLElement | null, rowId: string, box: RowBox | null, place: RevealPlace): Promise<void> {
+    if (!viewport) {
+      return;
+    }
+    if (box === null) {
+      await tick();
+      document.getElementById(rowId)?.scrollIntoView({ block: place });
+      return;
+    }
+    this.show(viewport, box[0], box[1], place);
   }
 
   /** Calls `reveal` whenever `height` changes to a measured value (a current row that opens or closes). */

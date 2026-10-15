@@ -23,7 +23,7 @@
   import { unsavedText } from "$lib/stores/unsavedText.svelte";
   import { isUntitledTab } from "$lib/stores/untitledTabs";
   import { folderFor, relativeTo } from "$lib/stores/workspacePaths";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { changesSelection } from "./changes/selection.svelte";
@@ -437,12 +437,12 @@
   {#if primary && changesSelection.selected}
     <div class="tab diff" class:active={diffShown} title={diffTitle} role="presentation">
       <button class="tab-main" role="tab" aria-selected={diffShown} onclick={() => (repoStore.view = "diff")}>
-        <Icon name="git-compare" size={13} />
+        <Icon name="git-compare" size="medium" />
         <span class="name">{diffName}</span>
         <span class="hint">Diff</span>
       </button>
       <button class="tab-close" onclick={() => changesSelection.close()} aria-label="Close diff" title="Close">
-        <Icon name="x" size={12} />
+        <Icon name="x" size="compact" />
       </button>
     </div>
   {/if}
@@ -502,7 +502,7 @@
                 : branchTab || isCompareTab(tab.path)
                   ? "git-compare"
                   : "file"}
-          size={13}
+          size="medium"
         />
         <span class="name" class:mono={commit}
           >{terminal?.name ?? (untitled ? unsavedText.title(tab.path) : null) ?? label?.name ?? tab.path}</span
@@ -520,7 +520,7 @@
           title={tab.dirty ? "Pinned, unsaved changes. Unpin" : "Pinned. Unpin"}
         >
           <span class="dot"></span>
-          <span class="x"><Icon name="pin" size={12} /></span>
+          <span class="x"><Icon name="pin" size="compact" /></span>
         </button>
       {:else}
         <button
@@ -530,7 +530,7 @@
           title={tab.dirty ? "Unsaved changes. Close" : "Close"}
         >
           <span class="dot"></span>
-          <span class="x"><Icon name="x" size={12} /></span>
+          <span class="x"><Icon name="x" size="compact" /></span>
         </button>
       {/if}
     </div>
@@ -546,7 +546,7 @@
         contextMenu.openBelow(event.currentTarget, startMenu(agentFolder));
       }}
     >
-      <Icon name="plus" size={14} />
+      <Icon name="plus" size="normal" />
     </button>
   {/if}
 </div>

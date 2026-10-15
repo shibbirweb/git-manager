@@ -34,6 +34,8 @@ export const overlayDocs: ComponentDoc[] = [
         "a password; Enter in a text area or on a button does not.", { default: "false" }),
       prop("actions", "Snippet", "Buttons on the right under the content."),
       prop("sidebar", "Snippet", "The side column of a split dialog, such as a SideNav."),
+      prop("contentTitle", "string", "Split: a head over the content, such as the open section's name, with a " +
+        "close button; with movable it drags the dialog too.", { default: '""' }),
       prop("children", "Snippet", "The content.", { required: true }),
     ],
     examples: [
@@ -81,6 +83,10 @@ export const overlayDocs: ComponentDoc[] = [
         default: '"menu"',
       }),
       prop("textSize", '"normal" | "small"', "Small (12px) for the status bar's popovers.", { default: '"normal"' }),
+      prop("layer", '"anchor" | "window"', "Under its trigger in the page, or floating over the window and kept " +
+        "inside it, so a scrolling or narrow panel cannot cut it off (Commit Options).", { default: '"anchor"' }),
+      prop("autofocus", "boolean", "Its first field takes the focus when it opens, and Esc gives the focus back " +
+        "to the trigger, for a small form.", { default: "false" }),
       prop("trigger", "Snippet<[{ toggle: () => void; open: boolean }]>", "The button that opens it.", {
         required: true,
       }),
@@ -96,7 +102,12 @@ export const overlayDocs: ComponentDoc[] = [
           "  {/snippet}\n  ...\n</Popover>",
       },
     ],
-    replaces: ['<div class="details" role="dialog"> in StatusBar', '<div class="menu"> in KeepAwake and AiUsage'],
+    replaces: [
+      '<div class="details" role="dialog"> in StatusBar',
+      '<div class="menu"> in KeepAwake and AiUsage',
+      '<div class="panel" role="dialog"> with its fixed place in CommitOptionsPopover.svelte',
+    ],
+    logic: ["popoverPlace.ts"],
   },
   {
     name: "Menu",

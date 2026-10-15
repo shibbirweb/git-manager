@@ -13,6 +13,7 @@
   --button-ghost-max-width: 280px;
   --button-height-mini: 20px;
   --button-padding-x-mini: 8px;
+  --button-icon-only-padding-x: 6px;
   --icon-button-size: var(--size-control);
   --icon-button-size-small: var(--size-icon-button-small);
   --icon-button-size-compact: 24px;
@@ -39,6 +40,11 @@
   --input-padding-y: 6px;
   --input-radius: var(--radius-control);
   --input-focus-ring: 2px;
+  --text-area-short-height: 56px;
+  --text-area-tall-height: 96px;
+  --text-area-tools-inset: 3px;
+  --text-area-tools-gap: 1px;
+  --text-area-tools-room: 12px;
   --select-arrow-inset: 8px;
   --select-arrow-space: 28px;
   --select-small-arrow-inset: 6px;
@@ -160,6 +166,7 @@
   --popover-radius: var(--radius-menu);
   --popover-form-padding: 12px;
   --popover-form-gap: 8px;
+  --popover-window-inset: 8px;
   --toast-max-width: 420px;
   --toast-gap: 8px;
   --toast-radius: var(--radius-menu);
@@ -216,6 +223,8 @@
   --activity-bar-dot-inset: 7px;
   --activity-bar-dot-ring: 2px;
   --activity-bar-badge-bottom: 3px;
+  --activity-bar-separator-width: 22px;
+  --activity-bar-separator-space: 4px;
   --status-bar-height: var(--size-status-bar);
   --status-bar-item-height: var(--size-row-item);
   --status-bar-item-padding-x: 7px;
@@ -263,13 +272,4 @@
   --file-row-tag-padding-x: 5px;
   --file-row-tag-line-height: 14px;
   --file-row-list-padding-x: 10px;
-  --sidebar-row-height: var(--size-tree-row);
-  --sidebar-row-gap: 5px;
-  --sidebar-row-padding-left: 6px;
-  --sidebar-row-padding-right: 6px;
-  --sidebar-row-indent: 12px;
-  --sidebar-row-chevron: 14px;
-  --sidebar-row-button-size: 20px;
-  --description-list-row-gap: 3px;
-  --description-list-column-gap: 10px;
 }

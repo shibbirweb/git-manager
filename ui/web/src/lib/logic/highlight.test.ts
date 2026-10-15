@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { highlightParts, mergeRanges } from "./highlight";
+import { highlightParts, mergeRanges, partsToRanges } from "./highlight";
 
 describe("highlight", () => {
   it("cuts text into plain and matched parts", () => {
@@ -38,5 +38,23 @@ describe("highlight", () => {
   it("keeps plain text whole without matches", () => {
     expect(highlightParts("main", [])).toEqual([{ text: "main", match: false }]);
     expect(highlightParts("", [])).toEqual([{ text: "", match: false }]);
+  });
+});
+
+describe("partsToRanges", () => {
+  it("joins the parts and marks the matched ones", () => {
+    const parts = [
+      { text: "Cart", match: true },
+      { text: "Item", match: false },
+      { text: "s", match: true },
+    ];
+    expect(partsToRanges(parts)).toEqual({
+      text: "CartItems",
+      ranges: [
+        [0, 4],
+        [8, 9],
+      ],
+    });
+    expect(partsToRanges([])).toEqual({ text: "", ranges: [] });
   });
 });

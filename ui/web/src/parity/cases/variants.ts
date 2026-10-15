@@ -38,15 +38,6 @@ export const variantCases: ParityCase[] = [
     pairs: [{ name: "badge", ref: ".badge", lib: ".badge.small", ignore: TEXT }],
   },
   {
-    id: "outline-tag",
-    sources: ["src/lib/views/changes/RepoSection.svelte"],
-    html: '<span class="kind-badge">submodule</span><span class="badge">12</span>',
-    pairs: [
-      { name: "tag", ref: ".kind-badge", lib: ".tag.outline", ignore: { ...TEXT, ...INLINE } },
-      { name: "count", ref: ".badge", lib: ".badge.large", ignore: { ...TEXT, ...INLINE } },
-    ],
-  },
-  {
     id: "file-bar",
     sources: ["src/lib/views/files/FileView.svelte"],
     html:
@@ -62,25 +53,6 @@ export const variantCases: ParityCase[] = [
       { name: "mode on", ref: ".modes button.on", lib: ".segmented.small button.on" },
       { name: "conflict bar", ref: ".conflict-bar", lib: ".toolbar.conflict", ignore: FILL },
     ],
-  },
-  {
-    id: "welcome-nav",
-    sources: ["src/lib/views/Welcome.svelte"],
-    html:
-      '<div class="sections"><button class="section active">Projects</button></div>' +
-      `<div class="sidebar-links"><button class="sidebar-link">${iconSvg("book", 14)}Docs</button></div>` +
-      `<label class="search">${iconSvg("search", 14)}<input /></label>`,
-    pairs: [
-      { name: "section", ref: ".section", lib: ".large .nav-item", ignore: FILL },
-      { name: "link", ref: ".sidebar-link", lib: ".links .nav-item", states: ["hover"], ignore: FILL },
-      { name: "search", ref: ".search", lib: ".search.large", ignore: FILL },
-    ],
-  },
-  {
-    id: "activity-dot",
-    sources: ["src/lib/views/RightActivityBar.svelte"],
-    html: '<button class="item"><span class="badge"></span></button>',
-    pairs: [{ name: "dot", ref: ".badge", lib: ".dot" }],
   },
   {
     id: "diff-labels",

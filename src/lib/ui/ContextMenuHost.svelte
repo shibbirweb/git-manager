@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import Icon from "./Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "./menu.svelte";
   import {
     firstIndex,
@@ -262,7 +262,7 @@
             >
               <span class="label">{item.label}</span>
               {#if "submenu" in item}
-                <span class="chevron"><Icon name="chevron-right" size={13} /></span>
+                <span class="chevron"><Icon name="chevron-right" size="medium" /></span>
               {:else if item.hint}
                 <span class="hint">{item.hint}</span>
               {/if}

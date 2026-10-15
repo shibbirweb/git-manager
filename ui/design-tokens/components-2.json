@@ -25,6 +25,8 @@
     "indent": 14, "chevron": 14, "actionsGap": 2, "treeHeight": "{size.treeRow}", "treePaddingX": 6, "treeGap": 5,
     "listHeight": "{size.treeRow}", "listPaddingX": 10, "listGap": 8, "historyHeight": 26, "historyPaddingX": 10,
     "historyGap": 10, "entryPaddingY": 4, "entryPaddingX": 10, "entryGap": 10, "largeMinHeight": 56,
-    "largePaddingY": 10, "largePaddingX": 12, "largeGap": 14, "largeRadius": 8
+    "largePaddingY": 10, "largePaddingX": 12, "largeGap": 14, "largeRadius": 8, "sectionHeight": 28,
+    "sectionPaddingX": 5, "sectionGap": 4, "groupHeight": "{size.treeRow}", "groupPaddingLeft": 24,
+    "groupPaddingRight": 6, "groupGap": 6, "markWidth": 3, "markInset": 5
   }
 }

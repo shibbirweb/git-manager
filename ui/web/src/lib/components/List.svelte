@@ -14,7 +14,7 @@
   import { markInsideList, onRowControl } from "../logic/listContext";
   import { drivenSelection, type FieldKeys } from "../logic/listField";
   import { handleListKey, type ListHost } from "../logic/listKeys";
-  import { ListScroll, wireField } from "../logic/listWiring.svelte";
+  import { ListScroll, wireField, type RevealPlace, type RowBox } from "../logic/listWiring.svelte";
   import { presetVar, type RowHeight, type ViewHeight } from "../logic/presets";
   import { RowHeights } from "../logic/rowHeights.svelte";
   import { listWindow } from "../logic/rowOffsets";
@@ -122,22 +122,26 @@
     onselect?.(item);
   }
 
-  async function reveal(index: number) {
-    if (!viewport || index < 0) {
-      return;
-    }
-    if (virtual === null) {
-      await tick();
-      document.getElementById(`${uid}-${index}`)?.scrollIntoView({ block: "nearest" });
-      return;
-    }
+  async function revealIndex(index: number, place: RevealPlace = "nearest") {
     const top = offsets ? offsets[index] : index * rowPx;
-    scroll.show(viewport, top, offsets ? offsets[index + 1] : top + rowPx);
+    const box: RowBox | null = virtual === null ? null : [top, offsets ? offsets[index + 1] : top + rowPx];
+    await scroll.reveal(index < 0 ? null : viewport, `${uid}-${index}`, box, place);
+  }
+
+  /** Takes the focus, such as when the app moves it into the list. */
+  export function focus(): void {
+    viewport?.focus({ preventScroll: true });
+  }
+
+  /** Scrolls a row into view after the app changed `items` or `selected`: the least needed, or to the middle. */
+  export async function reveal(key: string, place: RevealPlace = "nearest"): Promise<void> {
+    await tick();
+    await revealIndex(keys.indexOf(key), place);
   }
 
   function moveTo(index: number, range: boolean) {
     select(index, { toggle: false, range });
-    void reveal(index);
+    void revealIndex(index);
   }
 
   scroll.follow(
@@ -154,7 +158,7 @@
   // measure: an entry that opens keeps its new height in view while it is the current row.
   scroll.keep(
     () => (measuring && selected !== null ? (rowHeights.heights[selected] ?? 0) : 0),
-    () => void reveal(currentIndex),
+    () => void revealIndex(currentIndex),
   );
 
   // A driving field always has a row highlighted, like a combobox.
@@ -274,11 +278,7 @@
     min-height: 0;
   }
 
-  .fill,
-  .small,
-  .medium,
-  .large,
-  .virtual {
+  .list:not(.auto) {
     overflow-y: auto;
   }
 

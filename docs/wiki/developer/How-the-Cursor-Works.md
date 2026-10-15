@@ -36,7 +36,7 @@ flowchart LR
 | `src/lib/editor/setup.ts` | Adds `editorCursor(cursorOptions(settings))` to every editor, diff and merge pane |
 | `src/lib/App.svelte` | The effect that applies changed cursor settings |
 | `src/lib/stores/settingsData.ts` | The six keys, their choices, ranges and validation |
-| `src/lib/views/SettingsDialog.svelte` | The rows in Settings, Editor |
+| `src/lib/views/settings/EditorTextSettings.svelte` | The rows in Settings, Editor |
 
 ## Design decisions
 

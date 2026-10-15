@@ -1,7 +1,9 @@
 <!-- A bordered, scrolling list to pick one option from, in groups, like Settings' color themes: a group's label in
-     small capitals, then its options (drawn in `option`, such as a ThemeSwatch and a name). Arrow keys move. -->
+     small capitals, then its options (drawn in `option`, such as a ThemeSwatch and a name). Arrow keys, Home, End
+     and the page keys move. -->
 <script lang="ts" generics="T">
   import type { Snippet } from "svelte";
+  import { optionMove } from "../logic/optionMove";
 
   interface OptionGroup<V> {
     label: string;
@@ -19,7 +21,13 @@
 
   let { groups, optionKey, value = $bindable(null), label, option, onpick }: Props = $props();
 
+  const uid = $props.id();
   const flat = $derived(groups.flatMap((group) => group.options));
+  let listEl = $state<HTMLDivElement | null>(null);
+
+  function optionId(key: string): string {
+    return `${uid}-${key}`;
+  }
 
   function pick(entry: T): void {
     value = optionKey(entry);
@@ -27,22 +35,38 @@
   }
 
   function keydown(event: KeyboardEvent): void {
-    const step = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
-    if (step === 0 || flat.length === 0) {
+    const at = flat.findIndex((entry) => optionKey(entry) === value);
+    const next = optionMove(at, event.key, flat.length);
+    if (next === null) {
       return;
     }
     event.preventDefault();
-    const at = flat.findIndex((entry) => optionKey(entry) === value);
-    pick(flat[Math.min(flat.length - 1, Math.max(0, at + step))]);
+    pick(flat[next]);
   }
+
+  // The picked option stays in view: at the start (a theme far down the list) and after the keys move it.
+  $effect(() => {
+    if (listEl && value !== null) {
+      document.getElementById(optionId(value))?.scrollIntoView({ block: "nearest" });
+    }
+  });
 </script>
 
-<div class="list" role="listbox" aria-label={label} tabindex="0" onkeydown={keydown}>
+<div
+  bind:this={listEl}
+  class="list"
+  role="listbox"
+  aria-label={label}
+  aria-activedescendant={value === null ? undefined : optionId(value)}
+  tabindex="0"
+  onkeydown={keydown}
+>
   {#each groups as group (group.label)}
     <div class="group-label" role="presentation">{group.label}</div>
     {#each group.options as entry (optionKey(entry))}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
+        id={optionId(optionKey(entry))}
         class="option"
         class:selected={optionKey(entry) === value}
         role="option"

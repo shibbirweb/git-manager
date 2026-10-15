@@ -48,7 +48,8 @@ export const navigationDocs: ComponentDoc[] = [
     usage: "Use in a panel header to switch its views. Use Segmented for a setting with a few choices.",
     aliases: ["Tabs"],
     props: [
-      prop("tabs", "{ value: T; label: string }[]", "The tabs in order.", { required: true }),
+      prop("tabs", "{ value: T; label: string; title?: string }[]", "The tabs in order; `title` is a tooltip, " +
+        "such as the tab's shortcut.", { required: true }),
       prop("value", "T extends string", "The shown tab.", { required: true, bindable: true }),
       prop("label", "string", "Accessible name of the tab list.", { required: true }),
       prop("variant", '"panel" | "underline"', "Panel tabs in small capitals, or normal words with a thick " +

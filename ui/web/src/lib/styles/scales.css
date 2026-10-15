@@ -93,9 +93,11 @@
   --view-height-small: 160px;
   --view-height-medium: 240px;
   --view-height-large: 360px;
+  --view-width-page: 600px;
   --column-width-small: 140px;
   --column-width-medium: 180px;
   --column-width-large: 240px;
+  --column-width-xlarge: 320px;
   --row-height-compact: 22px;
   --row-height-normal: 24px;
   --row-height-relaxed: 26px;
@@ -108,10 +110,12 @@
   --panel-min-bottom: 80px;
   --panel-min-list: 120px;
   --panel-min-pane: 120px;
+  --panel-min-files: 160px;
   --panel-default-sidebar: 260px;
   --panel-default-bottom: 260px;
   --panel-default-list: 180px;
   --panel-default-pane: 260px;
+  --panel-default-files: 320px;
   --code-height-small: 200px;
   --code-height-medium: 360px;
   --code-height-large: 520px;
@@ -124,6 +128,7 @@
   --label-column-medium: 120px;
   --label-column-large: 130px;
   --cell-width-icon: 16px;
+  --cell-width-xxsmall: 40px;
   --cell-width-xsmall: 70px;
   --cell-width-small: 80px;
   --cell-width-medium: 90px;

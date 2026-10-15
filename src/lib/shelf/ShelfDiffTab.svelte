@@ -5,7 +5,9 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import DiffView from "$lib/diff/DiffView.svelte";
   import type { ShelfFileDiff } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Notice from "@git-manager/ui/components/Notice.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import { shelfState } from "./shelfActions.svelte";
   import { shelvedFileLabel } from "./shelfModel";
 
@@ -44,20 +46,16 @@
   }
 </script>
 
-<div class="shelf-diff">
+<Stack gap="none" grow surface="editor">
   {#if loadError}
-    <div class="placeholder">
-      <Icon name="alert" size={18} />
-      <div>Could not show the shelved change</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
+    <EmptyState icon="alert" title="Could not show the shelved change" hint={loadError} />
   {:else if result}
     {#if result.partial}
-      <div class="note dim">
+      <Notice variant="banner">
         The original of {filePath} is no longer in the repository: only the changed lines show.
-      </div>
+      </Notice>
     {:else if result.file.oldPath && result.file.oldPath !== result.file.path}
-      <div class="note dim">{shelvedFileLabel(result.file)}</div>
+      <Notice variant="banner">{shelvedFileLabel(result.file)}</Notice>
     {/if}
     <DiffView
       diff={result.diff}
@@ -68,36 +66,6 @@
       workingFile={{ filePath: joinPath(repoRoot, filePath), sameLines: false }}
     />
   {:else}
-    <div class="placeholder dim">Loading...</div>
+    <EmptyState title="Loading..." delayed />
   {/if}
-</div>
-
-<style>
-  .shelf-diff {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .note {
-    flex: none;
-    padding: 6px 12px;
-    border-bottom: 1px solid var(--border-strong);
-    background: var(--panel-alt);
-    font-size: 12px;
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px;
-    text-align: center;
-  }
-</style>
+</Stack>

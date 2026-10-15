@@ -18,21 +18,6 @@ const COLORS = colorBugs("rest", BUG);
 
 export const historyCases: ParityCase[] = [
   {
-    id: "log-refs",
-    sources: ["src/lib/views/LogView.svelte"],
-    html:
-      '<div style="--row-bg: var(--panel)"><span class="ref ref-more">+3</span><span class="ref bisect-bad">bad' +
-      '</span><span class="ref bisect-good">good</span><span class="ref bisect-skip">skip</span>' +
-      '<span class="ref bisect-current">current</span></div>',
-    pairs: [
-      { name: "more", ref: ".ref-more", lib: ".ref.more", ignore: TEXT },
-      { name: "bad", ref: ".bisect-bad", lib: ".ref.bisect-bad", ignore: TEXT },
-      { name: "good", ref: ".bisect-good", lib: ".ref.bisect-good", ignore: TEXT },
-      { name: "skip", ref: ".bisect-skip", lib: ".ref.bisect-skip", ignore: TEXT },
-      { name: "current", ref: ".bisect-current", lib: ".ref.bisect-current", ignore: TEXT },
-    ],
-  },
-  {
     id: "details-parts",
     sources: [DETAILS],
     html:

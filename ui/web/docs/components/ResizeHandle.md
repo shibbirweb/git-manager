@@ -16,8 +16,11 @@ Use beside a panel whose size the parent keeps. SplitPane wraps it for the commo
 
 - `size` (`number`, required): The panel's current width, or height for the bottom side.
 - `side` (`"left" | "right" | "bottom"`, required): Where the panel is, relative to the handle.
-- `preset` (`"sidebar" | "bottom" | "list" | "pane"`, required): The smallest and default size, from the tokens.
+- `preset` (`"sidebar" | "bottom" | "list" | "pane" | "files"`, required): The smallest and default size.
 - `max` (`number`, required): Largest size, from the window's room.
+- `min` (`number | null`, default `null`): Smallest size when the layout decides it, instead of the preset's.
+- `defaultSize` (`number | null`, default `null`): Size a double-click resets to when the layout decides it, such as
+  half of a split.
 - `label` (`string`, required): Accessible name.
 - `inPanel` (`boolean`, default `false`): Between views inside one panel (editor groups): keeps its size in rounded
   looks.

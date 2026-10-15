@@ -950,6 +950,8 @@ class SettingsStore {
     root.style.setProperty("--code-size", `${this.editorFontSize}px`);
     root.style.setProperty("--code-line-height", String(this.editorLineHeight));
     root.style.setProperty("--font-mono", this.editorFontFamily);
+    // The UI library's monospace text (hashes, paths, search results) uses the same font as the editor.
+    root.style.setProperty("--font-family-mono", this.editorFontFamily);
     root.style.setProperty("--code-weight", String(this.editorFontWeight));
     root.setAttribute("data-ligatures", this.fontLigatures ? "on" : "off");
     root.toggleAttribute("data-rounded-panels", this.roundedPanels);

@@ -14,8 +14,8 @@ Use before a file name wherever changes are listed. FileRow already shows it.
 
 ## Props
 
-- `kind` (`"added" | "modified" | "typechange" | "deleted" | "renamed" | "untracked" | "conflicted" | null`, required):
-  The change; null for a conflict.
+- `kind` (`"added" | "modified" | "typechange" | "deleted" | "renamed" | "copied" | "untracked" | "conflicted" | null`,
+  required): The change; null for a conflict.
 
 ## Example: Modified
 

@@ -23,7 +23,7 @@
     TextSearchBatch,
     TextSearchOptions,
   } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { countLabel } from "./countLabel";
   import { fileSearch } from "./fileSearchStore.svelte";
   import { pathRows, recentFiles, resultRows, type SearchRow, splitLocation } from "./fileSearchModel";
@@ -719,10 +719,10 @@
         onmousedown={(event) => event.preventDefault()}
         onclick={toggleReplace}
       >
-        <Icon name={replaceOpen ? "chevron-down" : "chevron-right"} size={14} />
+        <Icon name={replaceOpen ? "chevron-down" : "chevron-right"} size="normal" />
       </button>
     {/if}
-    <Icon name="search" size={15} />
+    <Icon name="search" size="regular" />
     <input
       bind:this={input}
       value={query}
@@ -811,7 +811,7 @@
             onclick={(event) => activate(row, !(event.shiftKey || event.metaKey))}
           >
             {#if row.kind === "file"}
-              <Icon name="file" size={14} />
+              <Icon name="file" size="normal" />
               <span class="name"
                 >{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
                     >{:else}{part.text}{/if}{/each}</span
@@ -823,7 +823,7 @@
             {:else if row.kind === "symbol"}
               <SymbolResult symbol={row.symbol} />
             {:else if row.kind === "more"}
-              <Icon name="more" size={14} />
+              <Icon name="more" size="normal" />
               <span class="name">{row.label}</span>
             {:else}
               <TextResult {row} />

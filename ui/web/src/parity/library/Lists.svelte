@@ -23,19 +23,8 @@
 
 {#if id === "local-history"}
   <Pane label="Versions"><Text>10:42</Text></Pane>
-{:else if id === "release-notes"}
-  <MarkdownView variant="notes" label="Notes" source={"### Added\n\nA `ui` library."} />
 {:else if id === "scripts-shelf"}
   <Chip variant="badge" tone="warning" text="Node 22" onclick={run} />
-{:else if id === "settings-parts"}
-  <SectionTitle variant="group" title="Editor" />
-  <FontSample label="Sample" lines={[{ text: "let a = 1;" }]} />
-  <BulletList items={["theme: dark"]} label="Changed">{#snippet item(entry)}{entry}{/snippet}</BulletList>
-  <Logo size="medium" />
-  <ResourceLink variant="card" icon="book" title="Docs" description="The wiki." onclick={run} />
-  <Slider label="Weight" value={400} min={100} max={900} valueWidth="wide" format={() => "Regular"} />
-{:else if id === "settings-content-head"}
-  <DialogHead size="content" title="Editor" />
 {:else if id === "panel-filter"}
   <Toolbar variant="search" label="Filter"><SearchField label="Filter" size="compact" /></Toolbar>
 {:else if id === "console-filter"}

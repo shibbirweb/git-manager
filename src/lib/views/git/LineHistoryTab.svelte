@@ -6,7 +6,7 @@
   import { fullDate, relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { LineHistoryEntry } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { patchLines } from "./patchLines";
 
   interface Props {
@@ -86,7 +86,7 @@
 
 <div class="line-history">
   <div class="toolbar">
-    <Icon name="history" size={14} />
+    <Icon name="history" size="normal" />
     <span class="title truncate">History of {rangeLabel} of <span class="mono">{filePath}</span></span>
     <span class="spacer"></span>
     {#if loading}
@@ -97,7 +97,7 @@
       >
     {/if}
     <button class="icon-btn" onclick={() => void load()} disabled={loading} title="Refresh">
-      <Icon name="refresh" size={14} />
+      <Icon name="refresh" size="normal" />
     </button>
   </div>
   {#if loadError}

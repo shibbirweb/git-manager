@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import { untrack } from "svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import type { IconName } from "@git-manager/ui/icons";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { type TerminalEntry, terminalStore } from "./terminalStore.svelte";
@@ -62,7 +62,7 @@
         onkeydown={() => undefined}
         oncontextmenu={(event) => contextMenu.open(event, terminalStore.runMenuItems(session.key))}
       >
-        <span class="state {state.tone}"><Icon name={state.icon} size={11} /></span>
+        <span class="state {state.tone}"><Icon name={state.icon} size="small" /></span>
         <span class="name truncate">{session.name}</span>
         <button
           class="close"
@@ -73,7 +73,7 @@
             void terminalStore.closeRun(session.key);
           }}
         >
-          <Icon name="x" size={11} />
+          <Icon name="x" size="small" />
         </button>
       </div>
     {/each}
@@ -87,7 +87,7 @@
         title={running ? "Stop and Rerun" : "Rerun"}
         aria-label="Rerun"
       >
-        <Icon name="refresh" size={14} />
+        <Icon name="refresh" size="normal" />
       </button>
       <button
         class="icon-btn small stop"
@@ -96,7 +96,7 @@
         title="Stop"
         aria-label="Stop"
       >
-        <Icon name="stop" size={13} />
+        <Icon name="stop" size="medium" />
       </button>
     </div>
     <div class="slot" bind:this={slotEl}></div>

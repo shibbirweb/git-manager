@@ -48,6 +48,8 @@ export const markDocs: ComponentDoc[] = [
       }),
       prop("tone", '"neutral" | "warning"', "Warning for something waiting on you.", { default: '"neutral"' }),
       prop("icon", "IconName | null", "An icon before the words.", { default: "null" }),
+      prop("status", '"starting" | "working" | "waiting" | "done" | "exited" | "idle" | null', "A status mark before " +
+        "the words in place of `icon`, such as the AI panel's 2 need you.", { default: "null" }),
       prop("fontFamily", "string", "Shows the words in this font (font picks); data, not design.", { data: true }),
       prop("title", "string", "A tooltip."),
       prop("onclick", "() => void", "Makes it a button."),

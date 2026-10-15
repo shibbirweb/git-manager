@@ -952,7 +952,7 @@ async function openApp(
   if (scenario.noWait) {
     return { context, shot };
   }
-  const ready = page.locator(".workspace, .welcome, .mergetool").first();
+  const ready = page.locator(".workspace, .mergetool, [aria-label='Welcome sections']").first();
   try {
     await ready.waitFor({ timeout: 20000 });
   } catch {
@@ -987,7 +987,7 @@ const appTs = () => join(paymentsApi, "src/app.ts");
 
 /** Collapses a repository in the Changes sidebar so the next one has room. */
 async function collapseRepo(shot: Shot, repoName: string): Promise<void> {
-  const toggle = shot.page.getByRole("group", { name: repoName, exact: true }).locator("button.repo-toggle");
+  const toggle = repoHeader(shot, repoName);
   if ((await toggle.getAttribute("aria-expanded")) === "true") {
     await toggle.click();
     await shot.settle();
@@ -1091,7 +1091,7 @@ define(
     // Close the folder like a user would; the Welcome screen then lists what was opened before.
     await shot.page.locator("header .pill").first().click();
     await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
-    await shot.page.locator(".welcome").waitFor();
+    await shot.page.getByRole("navigation", { name: "Welcome sections" }).waitFor();
     await shot.save();
   },
   () => ({
@@ -1335,7 +1335,7 @@ define(
     await shot.page.keyboard.type(
       "Cart: set line quantities\n\nZero removes the line, and totals never go below zero.",
     );
-    await shot.save(shot.page.locator(".commit-box"));
+    await shot.save(commitBox(shot));
   },
   () => ({ state: { sidebarWidth: 360 } }),
 );
@@ -1347,7 +1347,7 @@ define(
     // payments-api's long file lists fold away, so both repositories and their boxes fit.
     const payments = shot.page.getByRole("group", { name: "payments-api", exact: true });
     for (const group of ["Conflicts", "Staged", "Changes"]) {
-      await payments.locator(".group-toggle", { hasText: group }).click();
+      await payments.getByRole("region", { name: group, exact: true }).getByRole("button").first().click();
     }
     const box = shot.page
       .getByRole("group", { name: "storefront", exact: true })
@@ -1512,10 +1512,11 @@ define(
   async (shot) => {
     await shot.showLog();
     await commitRow(shot, "Cart: discount codes and totals").click();
-    const files = shot.page.locator(".log-view").getByRole("listbox", { name: "Changed files" });
+    const log = shot.page.getByRole("region", { name: "Log", exact: true });
+    const files = log.getByRole("listbox", { name: "Changed files" });
     await files.waitFor();
     await files.getByText("cart.ts").first().click();
-    await shot.page.locator(".log-view .cm-editor").first().waitFor();
+    await log.locator(".cm-editor").first().waitFor();
     await shot.settle(500);
     await shot.page.mouse.move(640, 790);
     await shot.save();
@@ -1528,7 +1529,7 @@ define(
   async (shot) => {
     await shot.showLog();
     await commitRow(shot, "Cart: discount codes and totals").dblclick();
-    const tab = shot.page.locator(".commit-tab");
+    const tab = shot.page.getByRole("region", { name: "Commit", exact: true });
     await tab.getByRole("listbox", { name: "Changed files" }).waitFor();
     await tab.locator(".cm-editor").first().waitFor();
     await shot.settle(500);
@@ -2737,10 +2738,33 @@ define(
 );
 
 /** Scrolls the Settings section so the row or heading with this text is at the top. */
+/** The scrolling rows of the open Settings section. */
+function settingsRows(dialog: Locator): Locator {
+  return dialog.getByRole("region", { name: "Settings content" });
+}
+
+/**
+ * A row of the open Settings section by its title, or by the exact words of a button in it. Hints may name other
+ * settings, so the hint text is not used; a title may end with a memory flag.
+ */
+function settingsRow(dialog: Locator, title: string): Locator {
+  const page = dialog.page();
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const named = page
+    .locator(".title", { hasText: new RegExp(`^${escaped}`) })
+    .or(page.getByText(title, { exact: true }));
+  return dialog.locator(".row").filter({ has: named }).first();
+}
+
+/** A group title of the open Settings section. */
+function settingsGroup(dialog: Locator, title: string): Locator {
+  return dialog.getByRole("heading", { name: title, level: 4 });
+}
+
 async function scrollSettingsTo(dialog: Locator, text: string): Promise<void> {
-  await dialog.locator(".rows").evaluate((rows, needle) => {
-    const target = [...rows.querySelectorAll<HTMLElement>(".row, .group-title")].find((element) =>
-      (element.querySelector(".label > span")?.textContent ?? element.textContent ?? "").trim().startsWith(needle),
+  await settingsRows(dialog).evaluate((rows, needle) => {
+    const target = [...rows.querySelectorAll<HTMLElement>(".row, [role='heading']")].find((element) =>
+      (element.querySelector(".title")?.textContent ?? element.textContent ?? "").trim().startsWith(needle),
     );
     if (target) {
       rows.scrollTop += target.getBoundingClientRect().top - rows.getBoundingClientRect().top - 8;
@@ -2777,8 +2801,8 @@ define(
     await scrollSettingsTo(dialog, "Editor font family");
     await shot.settle();
     const preview = dialog.locator(".font-preview");
-    const weight = dialog.locator(".row", { hasText: "Editor font weight" }).first();
-    const across = await shot.clipAround([dialog.locator(".rows")], 0);
+    const weight = settingsRow(dialog, "Editor font weight");
+    const across = await shot.clipAround([settingsRows(dialog)], 0);
     const down = await shot.clipAround([preview, weight], { top: 12, bottom: 12 });
     await shot.page.mouse.move(5, 790);
     await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
@@ -2796,7 +2820,7 @@ define(
   "git-console-setting",
   async (shot) => {
     const dialog = await openSettings(shot, "Git");
-    const row = dialog.locator(".row", { hasText: "Show Git Console" }).first();
+    const row = settingsRow(dialog, "Show Git Console");
     await row.waitFor();
     const above = row.locator("xpath=preceding-sibling::*[1]");
     await shot.page.mouse.move(5, 790);
@@ -2865,9 +2889,9 @@ define(
     await dialog.getByRole("button", { name: "Reveal in Finder" }).waitFor();
     await scrollSettingsTo(dialog, "Memory log");
     await shot.settle();
-    const heading = dialog.locator(".group-title", { hasText: "Memory log" });
-    const last = dialog.locator(".row", { hasText: "Log file" }).first();
-    const rows = dialog.locator(".rows");
+    const heading = settingsGroup(dialog, "Memory log");
+    const last = settingsRow(dialog, "Log file");
+    const rows = settingsRows(dialog);
     const across = await shot.clipAround([rows], 0);
     const down = await shot.clipAround([heading, last], { top: 12, bottom: 12 });
     await shot.page.mouse.move(5, 790);
@@ -2880,9 +2904,9 @@ define("settings-memory-flags", async (shot) => {
   const dialog = await openSettings(shot, "Terminal");
   await scrollSettingsTo(dialog, "Rendering");
   await shot.settle();
-  const heading = dialog.locator(".group-title", { hasText: "Rendering" });
-  const gpu = dialog.locator(".row", { hasText: "GPU acceleration" }).first();
-  const across = await shot.clipAround([dialog.locator(".rows")], 0);
+  const heading = settingsGroup(dialog, "Rendering");
+  const gpu = settingsRow(dialog, "GPU acceleration");
+  const across = await shot.clipAround([settingsRows(dialog)], 0);
   const down = await shot.clipAround([heading, gpu], { top: 12, bottom: 12 });
   await shot.page.mouse.move(5, 790);
   await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
@@ -3103,7 +3127,16 @@ function wideSidebar(extra: Scenario = {}): Scenario {
 }
 
 function repoHeader(shot: Shot, repoName: string): Locator {
-  return shot.page.getByRole("group", { name: repoName, exact: true }).locator(".repo-header").first();
+  // The header is a Row (role button with aria-expanded); the groups' toggles inside are real buttons.
+  return shot.page
+    .getByRole("group", { name: repoName, exact: true })
+    .locator("[role='button'][aria-expanded]")
+    .first();
+}
+
+/** The commit box under the Changes list (or a repository's own, with several). */
+function commitBox(shot: Shot): Locator {
+  return shot.page.getByRole("group", { name: "Commit box", exact: true }).first();
 }
 
 async function openRepoMenu(shot: Shot, repoName: string): Promise<Locator> {
@@ -3122,8 +3155,8 @@ define(
     const header = repoHeader(shot, "storefront");
     const staged = shot.page
       .getByRole("group", { name: "storefront", exact: true })
-      .getByRole("group", { name: "Staged" })
-      .locator(".group-header, button")
+      .getByRole("region", { name: "Staged", exact: true })
+      .getByRole("button")
       .first();
     const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
     const down = await shot.clipAround([header, staged], { top: 4, bottom: 4 });
@@ -3191,7 +3224,7 @@ define(
     await shot.page.getByRole("button", { name: "More commit actions" }).click();
     await shot.menu().waitFor();
     await shot.settle();
-    await shot.save(await shot.clipAround([shot.page.locator(".commit-box"), shot.menu()], 8));
+    await shot.save(await shot.clipAround([commitBox(shot), shot.menu()], 8));
   },
   () => wideSidebar(),
 );
@@ -3204,7 +3237,7 @@ define(
     const panel = shot.page.locator('[role="dialog"][aria-label="Commit Options"]');
     await panel.waitFor();
     await shot.settle();
-    await shot.save(await shot.clipAround([panel, shot.page.locator(".commit-box")], 8));
+    await shot.save(await shot.clipAround([panel, commitBox(shot)], 8));
   },
   () => wideSidebar({ settings: { commitSignOff: true } }),
 );
@@ -3463,13 +3496,16 @@ function aiScenario(extra: Scenario = {}): Scenario {
   };
 }
 
+/** An agent's row in the AI panel: a tree item with no buttons (project rows and worktree heads have some). */
+const AGENT_ROW = '[role="treeitem"]:not(:has(button))';
+
 function aiPanel(shot: Shot): Locator {
   return shot.page.locator("aside.explorer");
 }
 
 /** Starts the stand-in agent in a worktree row of the AI panel, through the row's + menu. */
 async function startDemoAgent(shot: Shot, worktreeLabel: string): Promise<void> {
-  const row = aiPanel(shot).locator(".card-head", { hasText: worktreeLabel }).first();
+  const row = aiPanel(shot).getByRole("treeitem").filter({ hasText: worktreeLabel }).first();
   await row.waitFor();
   await row.hover();
   await row.locator('button[aria-label^="Start an agent"]').click();
@@ -3483,15 +3519,19 @@ define(
     try {
       // The panel read the worktrees when it opened, before this shot added them.
       await aiPanel(shot).getByRole("button", { name: "Refresh", exact: true }).click();
-      await aiPanel(shot).locator(".card-head", { hasText: "fix/tax-rates" }).waitFor();
+      await aiPanel(shot).getByRole("treeitem").filter({ hasText: "fix/tax-rates" }).first().waitFor();
       await startDemoAgent(shot, "fix/tax-rates");
       // The terminal may draw with the GPU, so its text is not in the page: the panel says when the agent runs.
-      await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+      await aiPanel(shot)
+        .locator(AGENT_ROW + ' [aria-label="Ready"]')
+        .waitFor();
       // Ready comes as the process starts; give it a moment to print before typing.
       await shot.page.waitForTimeout(800);
       await shot.page.keyboard.type("Update the tax rates for 2026");
       await shot.page.keyboard.press("Enter");
-      await aiPanel(shot).locator('.agent [aria-label="Working"]').waitFor();
+      await aiPanel(shot)
+        .locator(AGENT_ROW + ' [aria-label="Working"]')
+        .waitFor();
       await shot.page.mouse.move(640, 790);
       await shot.settle(500);
       await shot.save(await shot.clipAround([shot.page.locator("main.main"), aiPanel(shot)]));
@@ -3506,7 +3546,9 @@ define(
   "ai-new-tab",
   async (shot) => {
     await startDemoAgent(shot, "main");
-    await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+    await aiPanel(shot)
+      .locator(AGENT_ROW + ' [aria-label="Ready"]')
+      .waitFor();
     const plus = shot.page.locator(".tab-strip .new-tab").first();
     await plus.click();
     await shot.menu().waitFor();
@@ -3519,7 +3561,7 @@ define(
 
 /** Opens New Task from storefront's + in the AI panel and fills it in: a race of two agents with a prompt. */
 async function fillNewTask(shot: Shot): Promise<Locator> {
-  const project = aiPanel(shot).locator(".project", { hasText: "storefront" }).first();
+  const project = aiPanel(shot).getByRole("treeitem").filter({ hasText: "storefront" }).first();
   await project.hover();
   await project.locator('button[aria-label^="New task"]').click();
   const dialog = shot.page.getByRole("dialog");
@@ -3588,9 +3630,14 @@ define(
   "memory-terminals",
   async (shot) => {
     await startDemoAgent(shot, "main");
-    await aiPanel(shot).locator('.agent [aria-label="Ready"]').waitFor();
+    await aiPanel(shot)
+      .locator(AGENT_ROW + ' [aria-label="Ready"]')
+      .waitFor();
     await startDemoAgent(shot, "main");
-    await aiPanel(shot).locator('.agent [aria-label="Ready"]').nth(1).waitFor();
+    await aiPanel(shot)
+      .locator(AGENT_ROW + ' [aria-label="Ready"]')
+      .nth(1)
+      .waitFor();
     await newTerminal(shot);
     const memory = shot.page.locator("footer.status-bar .memory");
     await memory.getByRole("button", { name: /^Memory / }).click();
@@ -3658,8 +3705,8 @@ define(
   async (shot) => {
     const changes = shot.page
       .getByRole("group", { name: "shop-app", exact: true })
-      .getByRole("group", { name: "Changes" });
-    const row = changes.locator(".file-row, [role='treeitem'], .row", { hasText: "acme" }).first();
+      .getByRole("region", { name: "Changes", exact: true });
+    const row = changes.getByRole("option").filter({ hasText: "acme" }).first();
     await row.waitFor();
     await row.click({ button: "right" });
     await shot.menu().waitFor();

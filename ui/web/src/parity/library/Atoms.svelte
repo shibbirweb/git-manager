@@ -36,9 +36,6 @@
       {#snippet end()}<IconButton icon="x" label="Remove" size="micro" tone="faint" iconSize="compact" />{/snippet}
     </PaletteRow>
   </div>
-{:else if id === "keymap-recorder"}
-  <ShortcutRecorder label="Commit" keys="⌘K" recording onrecord={none} />
-  <ShortcutRecorder label="Push" keys="⌘K" onrecord={none} />
 {:else if id === "file-bar-bottom"}
   <div style="width: 400px"><Toolbar variant="file" placement="bottom" label="File">cart.ts</Toolbar></div>
 {/if}

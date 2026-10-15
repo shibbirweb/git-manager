@@ -11,6 +11,10 @@
     preset?: PanelPreset;
     max?: number;
     label: string;
+    /** Its own measured width (row) or height (column), so the app can work out `max`. */
+    extent?: number;
+    /** Between views inside one panel: the handle keeps its size in rounded looks. */
+    inPanel?: boolean;
     oncommit?: (size: number) => void;
     first: Snippet;
     second: Snippet;
@@ -22,13 +26,15 @@
     preset = "pane",
     max = 800,
     label,
+    extent = $bindable(0),
+    inPanel = false,
     oncommit,
     first,
     second,
   }: Props = $props();
 </script>
 
-<div class="split" class:column={direction === "column"}>
+{#snippet panes()}
   <div class="first" style:flex-basis="{size}px">{@render first()}</div>
   <ResizeHandle
     {size}
@@ -36,11 +42,18 @@
     {preset}
     {max}
     {label}
+    {inPanel}
     onresize={(next) => (size = next)}
     {oncommit}
   />
   <div class="second">{@render second()}</div>
-</div>
+{/snippet}
+
+{#if direction === "row"}
+  <div class="split" bind:clientWidth={extent}>{@render panes()}</div>
+{:else}
+  <div class="split column" bind:clientHeight={extent}>{@render panes()}</div>
+{/if}
 
 <style>
   .split {

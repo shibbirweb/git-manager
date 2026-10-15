@@ -13,7 +13,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import type { TerminalOutputMessage } from "$lib/types";
   import { platformName } from "$lib/update/releases";
@@ -1018,7 +1018,7 @@
   {/if}
   {#if phase === "failed"}
     <div class="status failed" role="alert">
-      <Icon name="alert" size={16} />
+      <Icon name="alert" size="large" />
       <strong>{startupFailureTitle(term !== null, shellName)}</strong>
       {#if failure}
         <span class="detail selectable">{failure}</span>

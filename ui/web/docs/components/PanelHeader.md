@@ -14,7 +14,8 @@ Use at the top of every side and bottom panel. Put IconButtons with size compact
 
 ## Props
 
-- `title` (`string`, required): The panel's name.
+- `title` (`string`, required): The panel's name; it shortens first when the panel is narrow.
+- `count` (`number | null`, default `null`): A quiet count after the title, such as the number of changed files.
 - `actions` (`Snippet`): Buttons on the right.
 
 ## Example: Changes panel
@@ -31,3 +32,4 @@ Use at the top of every side and bottom panel. Put IconButtons with size compact
 
 - `PanelHead.svelte`
 - `<header class="head"> in TerminalPanel.svelte`
+- `<div class="head"> with its .count in ChangesView.svelte`

@@ -18,7 +18,18 @@
   } from "$lib/commands/shortcutSettings";
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import Divider from "@git-manager/ui/components/Divider.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Kbd from "@git-manager/ui/components/Kbd.svelte";
+  import Pill from "@git-manager/ui/components/Pill.svelte";
+  import ShortcutRecorder from "@git-manager/ui/components/ShortcutRecorder.svelte";
+  import Spacer from "@git-manager/ui/components/Spacer.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
 
   let { filter = "" }: { filter?: string } = $props();
 
@@ -41,7 +52,6 @@
   /** The command whose keys are being recorded. */
   let editingId = $state<CommandId | null>(null);
   let pending = $state<RecordedKeys | null>(null);
-  let recorder = $state<HTMLElement | null>(null);
 
   const overrides = $derived(settings.keybindings);
   const rows = $derived(
@@ -90,11 +100,9 @@
     searchInput?.focus();
   }
 
-  async function startEditing(spec: CommandSpec): Promise<void> {
+  function startEditing(spec: CommandSpec): void {
     editingId = spec.id;
     pending = null;
-    await tick();
-    recorder?.focus();
   }
 
   function stopEditing(): void {
@@ -102,13 +110,8 @@
     pending = null;
   }
 
-  function onRecorderKeydown(event: KeyboardEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    if (isPlain(event) && event.key === "Escape") {
-      stopEditing();
-      return;
-    }
+  /** A key press while recording (the recorder takes Esc itself): Enter saves, other keys are recorded. */
+  function onRecord(event: KeyboardEvent): void {
     if (isPlain(event) && event.key === "Enter") {
       if (pending && !pending.problem && pendingConflicts.length === 0) {
         save(false);
@@ -157,316 +160,131 @@
   }
 </script>
 
-<div class="toolbar">
-  <div class="search">
-    {#if searchByKeys}
-      <input
-        class="input"
-        readonly
-        bind:this={searchInput}
-        value={searchText}
-        placeholder="Press keys to search"
-        aria-label="Press keys to search"
-        onkeydown={onSearchKeydown}
-      />
-    {:else}
-      <input
-        class="input"
-        bind:this={searchInput}
-        bind:value={query}
-        placeholder="Search by name or keys"
-        aria-label="Search shortcuts"
-        spellcheck="false"
-      />
-    {/if}
-    <button
-      class="btn small"
-      class:on={searchByKeys}
+<Stack sticky gap="md" paddingY="lg">
+  <Stack direction="row" align="center" gap="md">
+    <Stack grow>
+      {#if searchByKeys}
+        <Input
+          width="fill"
+          readonly
+          bind:element={searchInput}
+          value={searchText}
+          placeholder="Press keys to search"
+          aria-label="Press keys to search"
+          onkeydown={onSearchKeydown}
+        />
+      {:else}
+        <Input
+          width="fill"
+          bind:element={searchInput}
+          bind:value={query}
+          placeholder="Search by name or keys"
+          aria-label="Search shortcuts"
+          spellcheck="false"
+        />
+      {/if}
+    </Stack>
+    <Button
+      size="small"
+      variant={searchByKeys ? "accent" : "default"}
       aria-pressed={searchByKeys}
       title="Search by pressing the keys"
       onclick={() => void toggleSearchByKeys()}
     >
       Record Keys
-    </button>
-  </div>
-  <div class="filters">
-    <label class="check">
-      <input type="checkbox" bind:checked={changedOnly} />
-      Changed only
-    </label>
-    <span class="dim count">{rows.length} commands</span>
-    <button class="btn small" disabled={changedCount === 0} onclick={() => void resetAll()}>Reset All</button>
-  </div>
-  <div class="fixed dim">
-    <kbd>{mac ? "⇧ ⇧" : "Shift Shift"}</kbd>
-    <span>Search Everywhere. Pressing Shift twice is fixed.</span>
-  </div>
-</div>
+    </Button>
+  </Stack>
+  <Stack direction="row" align="center" gap="md">
+    <Checkbox label="Changed only" bind:checked={changedOnly} />
+    <Spacer />
+    <Text tone="dim">{rows.length} commands</Text>
+    <Button size="small" disabled={changedCount === 0} onclick={() => void resetAll()}>Reset All</Button>
+  </Stack>
+  <Stack direction="row" align="center" gap="md">
+    <Kbd keys={mac ? "⇧ ⇧" : "Shift Shift"} />
+    <Text size="small" tone="dim">Search Everywhere. Pressing Shift twice is fixed.</Text>
+  </Stack>
+</Stack>
 
-<ul class="list" aria-label="Keyboard shortcuts">
+<Stack element="ul" gap="none" label="Keyboard shortcuts">
   {#each rows as row (row.spec.id)}
     {@const editing = editingId === row.spec.id}
-    <li class="item" class:editing>
-      <div class="main">
-        <div class="name">
-          <span class="title truncate" title={row.label}>
-            <span class="category">{row.spec.category}:</span>
-            {row.spec.title}
-          </span>
+    <Stack element="li" gap="none" surface={editing ? "alt" : "none"}>
+      <Stack direction="row" align="center" gap="mdPlus" paddingX="sm" paddingY="xs">
+        <Stack direction="row" align="center" gap="sm" grow>
+          <Text truncate title={row.label}><Text tone="dim">{row.spec.category}:</Text> {row.spec.title}</Text>
           {#if row.changed}
-            <span class="changed" title={changedTitle(row)}>Changed</span>
+            <Pill tone="selected" title={changedTitle(row)}>Changed</Pill>
           {/if}
           {#if row.conflicts.length > 0}
-            <span class="conflict" title={`Same keys as ${row.conflicts.join(", ")}`}>
-              <Icon name="alert" size={12} />
-              Conflict
-            </span>
+            <Pill tone="warning" variant="outline" title={`Same keys as ${row.conflicts.join(", ")}`}>
+              <Icon name="alert" size="compact" /> Conflict
+            </Pill>
           {/if}
-        </div>
-        {#if editing}
-          <div
-            class="recorder"
-            tabindex="0"
-            role="textbox"
-            aria-label="Press the new keys"
-            bind:this={recorder}
-            onkeydown={onRecorderKeydown}
-          >
-            {pending ? pending.text : "Press keys"}
-          </div>
-        {:else}
-          <button class="keys" title="Change the keys" onclick={() => void startEditing(row.spec)}>
-            {#if row.keysText}
-              <kbd>{row.keysText}</kbd>
-            {:else}
-              <span class="dim">None</span>
-            {/if}
-          </button>
-        {/if}
-        <div class="actions">
+        </Stack>
+        <ShortcutRecorder
+          label={row.label}
+          keys={row.keysText ?? ""}
+          bind:recording={() => editing, (on) => (on ? startEditing(row.spec) : stopEditing())}
+          pending={pending?.text ?? null}
+          onrecord={onRecord}
+          oncancel={stopEditing}
+        />
+        <Stack direction="row" justify="end" gap="xxs" width="xsmall">
           {#if !editing && row.shortcut}
-            <button
-              class="icon-btn"
-              title="Remove the keys"
-              aria-label="Remove the keys"
+            <IconButton
+              icon="x"
+              iconSize="medium"
+              size="mini"
+              label="Remove the keys"
               onclick={() => removeKeys(row.spec)}
-            >
-              <Icon name="x" size={13} />
-            </button>
+            />
           {/if}
           {#if !editing && row.changed}
-            <button
-              class="icon-btn"
-              title="Reset to the default"
-              aria-label="Reset to the default"
+            <IconButton
+              icon="undo"
+              iconSize="medium"
+              size="mini"
+              label="Reset to the default"
               onclick={() => resetKeys(row.spec)}
-            >
-              <Icon name="undo" size={13} />
-            </button>
+            />
           {/if}
-        </div>
-      </div>
+        </Stack>
+      </Stack>
       {#if editing}
-        <div class="edit">
+        <Stack direction="row" align="center" justify="between" gap="mdPlus" paddingX="sm" paddingY="xs">
           {#if pending?.problem}
-            <span class="problem">{pending.problem}</span>
+            <Text size="small" tone="warning">{pending.problem}</Text>
           {:else if pendingConflicts.length > 0}
-            <span class="problem">
+            <Text size="small" tone="warning">
               Also used by {pendingConflicts.map((spec) => `${spec.category}: ${spec.title}`).join(", ")}.
-            </span>
+            </Text>
           {:else}
-            <span class="dim">{pending ? "Enter saves." : "Press the new keys."} Esc cancels.</span>
+            <Text size="small" tone="dim">{pending ? "Enter saves." : "Press the new keys."} Esc cancels.</Text>
           {/if}
-          <div class="edit-actions">
+          <Stack direction="row" gap="sm">
             {#if pendingConflicts.length > 0}
-              <button class="btn small" onclick={() => save(false)}>Keep Both</button>
-              <button class="btn small primary" onclick={() => save(true)}>Replace</button>
+              <Button size="small" onclick={() => save(false)}>Keep Both</Button>
+              <Button size="small" variant="primary" onclick={() => save(true)}>Replace</Button>
             {:else}
-              <button
-                class="btn small primary"
+              <Button
+                size="small"
+                variant="primary"
                 disabled={!pending || pending.problem !== null}
-                onclick={() => save(false)}>Save</button
+                onclick={() => save(false)}
               >
+                Save
+              </Button>
             {/if}
-            <button class="btn small" onclick={stopEditing}>Cancel</button>
-          </div>
-        </div>
+            <Button size="small" onclick={stopEditing}>Cancel</Button>
+          </Stack>
+        </Stack>
       {/if}
-    </li>
+      <Divider strong={false} />
+    </Stack>
   {:else}
-    <li class="empty dim">No command matches.</li>
+    <Stack element="li" paddingX="sm" paddingY="xl">
+      <Text tone="dim">No command matches.</Text>
+    </Stack>
   {/each}
-</ul>
-
-<style>
-  .toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 0 10px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .search,
-  .filters,
-  .fixed {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .search .input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .btn.on {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .count {
-    margin-left: auto;
-  }
-
-  .fixed {
-    font-size: 12px;
-  }
-
-  .list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .item {
-    border-bottom: 1px solid var(--border);
-  }
-
-  .item.editing {
-    background: var(--panel-alt);
-  }
-
-  .main {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 34px;
-    padding: 2px 6px;
-  }
-
-  .name {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  .category {
-    color: var(--text-dim);
-  }
-
-  .changed,
-  .conflict {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 3px;
-    padding: 0 6px;
-    border-radius: 9px;
-    font-size: 11px;
-    line-height: 18px;
-  }
-
-  .changed {
-    background: var(--selected);
-    color: var(--text);
-  }
-
-  .conflict {
-    color: var(--warning);
-    border: 1px solid var(--warning);
-  }
-
-  .keys,
-  .recorder {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: flex-end;
-    width: 150px;
-    min-height: 26px;
-    padding: 0 6px;
-    border: 1px solid transparent;
-    border-radius: var(--radius);
-    background: none;
-    color: var(--text);
-    cursor: pointer;
-  }
-
-  .keys:hover {
-    border-color: var(--border-strong);
-  }
-
-  .recorder {
-    justify-content: center;
-    border-color: var(--accent);
-    background: var(--panel);
-    cursor: text;
-    outline: none;
-  }
-
-  .actions {
-    display: flex;
-    flex-shrink: 0;
-    justify-content: flex-end;
-    gap: 2px;
-    width: 56px;
-  }
-
-  kbd {
-    padding: 1px 6px;
-    border: 1px solid var(--border-strong);
-    border-bottom-width: 2px;
-    border-radius: 5px;
-    background: var(--panel-alt);
-    color: var(--text);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    white-space: nowrap;
-  }
-
-  .edit {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 0 6px 8px;
-    font-size: 12px;
-  }
-
-  .edit-actions {
-    display: flex;
-    flex-shrink: 0;
-    gap: 6px;
-  }
-
-  .problem {
-    color: var(--warning);
-  }
-
-  .empty {
-    padding: 16px 6px;
-  }
-</style>
+</Stack>

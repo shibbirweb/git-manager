@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { applyStash, dropStash, newBranchFrom } from "./actions";
   import { openNewWorktreeDialog } from "../git/worktrees/worktreeActions";
@@ -35,7 +35,7 @@
 </script>
 
 {#if row.kind === "section"}
-  <span class="chevron"><Icon name={row.expanded ? "chevron-down" : "chevron-right"} size={12} /></span>
+  <span class="chevron"><Icon name={row.expanded ? "chevron-down" : "chevron-right"} size="compact" /></span>
   <span class="section-label">{row.label}</span>
   <span class="count">{row.count}</span>
   <span class="spacer"></span>
@@ -50,7 +50,7 @@
       }}
       ondblclick={stop}
     >
-      <Icon name="plus" size={13} />
+      <Icon name="plus" size="medium" />
     </button>
   {:else if row.section === "worktrees"}
     <button
@@ -63,37 +63,37 @@
       }}
       ondblclick={stop}
     >
-      <Icon name="plus" size={13} />
+      <Icon name="plus" size="medium" />
     </button>
   {/if}
 {:else if row.kind === "group"}
-  <span class="chevron"><Icon name={row.expanded ? "chevron-down" : "chevron-right"} size={12} /></span>
-  <span class="icon dim"><Icon name={row.icon} size={14} /></span>
+  <span class="chevron"><Icon name={row.expanded ? "chevron-down" : "chevron-right"} size="compact" /></span>
+  <span class="icon dim"><Icon name={row.icon} size="normal" /></span>
   <span class="label truncate">{row.label}</span>
   <span class="count">{row.count}</span>
 {:else if row.kind === "local"}
   <span class="icon" class:current={row.branch.isHead}>
-    <Icon name={row.branch.isHead ? "check" : "branch"} size={14} />
+    <Icon name={row.branch.isHead ? "check" : "branch"} size="normal" />
   </span>
   <span class="label truncate" class:strong={row.branch.isHead} title={localTooltip()}>{row.label}</span>
   {#if row.branch.ahead > 0 || row.branch.behind > 0}
     <span class="sync dim">
       {#if row.branch.ahead > 0}
-        <span title="Commits to push">{row.branch.ahead}<Icon name="arrow-up" size={10} /></span>
+        <span title="Commits to push">{row.branch.ahead}<Icon name="arrow-up" size="xsmall" /></span>
       {/if}
       {#if row.branch.behind > 0}
-        <span title="Commits to pull">{row.branch.behind}<Icon name="arrow-down" size={10} /></span>
+        <span title="Commits to pull">{row.branch.behind}<Icon name="arrow-down" size="xsmall" /></span>
       {/if}
     </span>
   {/if}
 {:else if row.kind === "remote"}
-  <span class="icon dim"><Icon name="branch" size={14} /></span>
+  <span class="icon dim"><Icon name="branch" size="normal" /></span>
   <span class="label truncate" title={row.branch.name}>{row.label}</span>
 {:else if row.kind === "tag"}
-  <span class="icon dim"><Icon name="tag" size={14} /></span>
+  <span class="icon dim"><Icon name="tag" size="normal" /></span>
   <span class="label truncate" title={row.tagName}>{row.label}</span>
 {:else if row.kind === "stash"}
-  <span class="icon dim"><Icon name="stash" size={14} /></span>
+  <span class="icon dim"><Icon name="stash" size="normal" /></span>
   <span class="label truncate" title={row.stash.message}>{row.stash.message}</span>
   <span class="stash-ref dim">stash@&#123;{row.stash.index}&#125;</span>
   <span class="stash-actions">
@@ -107,7 +107,7 @@
       }}
       ondblclick={stop}
     >
-      <Icon name="check" size={13} />
+      <Icon name="check" size="medium" />
     </button>
     <button
       class="icon-btn row-btn"
@@ -119,7 +119,7 @@
       }}
       ondblclick={stop}
     >
-      <Icon name="arrow-up" size={13} />
+      <Icon name="arrow-up" size="medium" />
     </button>
     <button
       class="icon-btn row-btn danger"
@@ -131,12 +131,12 @@
       }}
       ondblclick={stop}
     >
-      <Icon name="x" size={13} />
+      <Icon name="x" size="medium" />
     </button>
   </span>
 {:else if row.kind === "worktree"}
   <span class="icon" class:current={row.worktree.isCurrent} class:dim={!row.worktree.isCurrent}>
-    <Icon name={row.worktree.isCurrent ? "check" : "folder-git"} size={14} />
+    <Icon name={row.worktree.isCurrent ? "check" : "folder-git"} size="normal" />
   </span>
   <span
     class="label truncate"

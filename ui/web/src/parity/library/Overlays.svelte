@@ -76,8 +76,6 @@
     focused={false}
     nodes={[{ id: "src", label: "src", children: [{ id: "src/a.ts", label: "a.ts" }] }]}
   />
-{:else if id === "collapsible"}
-  <Collapsible title="Staged Changes" count={2}><Text>cart.ts</Text></Collapsible>
 {:else if id === "list-row"}
   <Stack gap="none">
     <ListRow label="main" description="current" highlighted />

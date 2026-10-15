@@ -5,7 +5,7 @@
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { SHORTCUTS_URL } from "$lib/update/releases";
   import { updates } from "$lib/update/updates.svelte";
   import { helpDialogs } from "./helpDialogs.svelte";
@@ -50,7 +50,7 @@
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="head">
       <h2 id="shortcuts-title">Keyboard Shortcuts</h2>
-      <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size={15} /></button>
+      <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size="regular" /></button>
     </div>
     <div class="toolbar">
       <input

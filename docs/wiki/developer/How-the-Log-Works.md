@@ -30,7 +30,7 @@ sequenceDiagram
 
 `log::page` walks from HEAD with git2. When `allRefs` is set (the `logAllRefs` setting, on by default) it also pushes every local and remote branch, like `git log --branches --remotes` (tags and stashes are not walked). Each `CommitSummary` carries its parents and its ref labels.
 
-`GraphBuilder` in `src/lib/log/graph.ts` gives each commit a lane. It keeps its lane state between calls, so page after page gives the same picture as the whole history at once. Rows store edges as flat number quadruples, and `GraphCell.svelte` draws them.
+`GraphBuilder` in `src/lib/log/graph.ts` gives each commit a lane. It keeps its lane state between calls, so page after page gives the same picture as the whole history at once. Rows store edges as flat number quadruples, and the UI library's `CommitGraph` draws them, with lane colors from `ui/design-tokens/palette.json`.
 
 ```mermaid
 flowchart TD
@@ -67,9 +67,12 @@ An effect publishes the selected commit to `logSelection.current` (`src/lib/log/
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/LogView.svelte` | The Log: paging, virtual list, filter, selection, focus, context menu |
+| `src/lib/views/LogView.svelte` | Toolbar, filter, selection, blame focus, details split |
+| `src/lib/log/logHistory.svelte.ts` | `LogHistory`: pages, reloads, `find` |
+| `src/lib/log/LogTable.svelte` | Rows, on the library's `DataTable` |
+| `src/lib/log/logFilter.ts`, `commitMenu.ts` | Filter and counts; right-click menu |
 | `src/lib/log/graph.ts` | `GraphBuilder`: incremental lane layout |
-| `src/lib/log/GraphCell.svelte` | Draws one row of the graph; `LANE_COLORS` |
+| `ui/web/src/lib/components/CommitGraph.svelte`, `logic/graphModel.ts` | Draws one row of the graph (UI library) |
 | `src/lib/log/CommitDetails.svelte` | Commit message, changed files and per-file diff, `revealLine` |
 | `src/lib/log/lineMatch.ts` | `findLine`: which diff line to scroll to |
 | `src/lib/log/format.ts` | Dates and ref label sorting |
@@ -83,7 +86,7 @@ An effect publishes the selected commit to `logSelection.current` (`src/lib/log/
 
 **Page the history and lay out the graph incrementally.** Loading the whole history first would be slow and heavy on big repositories. The lane state carried between pages gives the same graph without redoing earlier pages. The backend is simpler: each page walks again from the tips and skips `offset` commits, so deep pages cost more.
 
-**Keep commit data outside Svelte runes.** Proxies on tens of thousands of objects cost memory and time; one `version` counter is cheap, but every change must bump it.
+**Keep commit data outside Svelte runes.** Proxies on tens of thousands of objects cost memory and time; one `version` counter is cheap, but every change must bump it (`LogHistory` does).
 
 **Filter only what is loaded.** Filtering loaded commits is instant, and the label says "of N loaded commits" so nobody is misled.
 
@@ -96,22 +99,23 @@ An effect publishes the selected commit to `logSelection.current` (`src/lib/log/
 
 **A type check failure in `focusCommit`.**
 - **The issue:** `bun run check` failed while diff steps were added to Back/Forward.
-- **Why it happened:** a new `token` parameter on `focusCommit` clashed with the local `token` that holds the load generation.
-- **The fix and why we chose it:** the parameter was renamed to `focusToken`, keeping the generation check untouched.
+- **Why it happened:** a new `token` parameter clashed with the local load generation `token`.
+- **The fix and why we chose it:** renaming the parameter kept the generation check untouched.
 
 ## Tests
 
-- `src/lib/log/graph.test.ts`: linear history, branch and merge, lane reuse, octopus merges, several roots, duplicate parents, page-by-page equals all-at-once, and rows never reference lanes outside their width.
+- `src/lib/log/graph.test.ts`: linear history, merges, lane reuse, octopus merges, several roots, duplicate parents, paging equals all-at-once, rows stay within their width.
 - `src-tauri/src/git/tests.rs`: `log_page_orders_newest_first_and_pages`, `log_page_in_unborn_repo_is_empty`, `log_page_labels_refs_and_includes_all_refs`, `log_details_lists_files_with_rename`, `diff_commit_file_sides`.
 - `src-tauri/src/commands/tests.rs`: `cherry_pick_conflict_then_continue`, `revert_conflict_then_continue`, `reset_and_checkout_commit`.
 - `src-tauri/src/commands/history.rs`: `reset_keep_moves_the_branch_and_keeps_local_changes`, which also checks that an option-like revision and an unknown mode are refused.
+- `src/lib/log/logFilter.test.ts`: matching, counts, the +N chip.
 - `src/lib/log/lineMatch.test.ts`: `findLine` keeps or moves the line, ties, no match, CRLF.
 
 Graph changes need a case in `graph.test.ts`; history command changes need a Rust test on a real repository from `test_support.rs`.
 
 ## Keeping this page in sync
 
-- Update this page when `LogView.svelte`, `graph.ts`, `git/log.rs` or `commands/history.rs` change behavior, page size or menu items.
+- Update this page when `LogView.svelte`, `logHistory.svelte.ts`, `graph.ts`, `git/log.rs` or `commands/history.rs` change behavior, page size or menu items.
 - Update [History and Log](../usage/History-and-Log.md) for any visible change.
 - Retake `log-graph.png`, `commit-details.png` and `log-context-menu.png` when the Log looks different.
 - See also [How Blame Works](How-Blame-Works.md), [How Navigation Works](How-Navigation-Works.md) and [Frontend](Frontend.md).

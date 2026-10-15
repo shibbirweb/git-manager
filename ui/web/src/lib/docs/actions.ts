@@ -17,8 +17,9 @@ export const actionDocs: ComponentDoc[] = [
       "Use IconButton for icon-only commands in toolbars and rows.",
     aliases: ["Button"],
     props: [
-      prop("variant", '"default" | "primary" | "danger" | "danger-primary" | "ghost"', "Look and weight; ghost " +
-        "is borderless, like the header's pickers.", { default: '"default"' }),
+      prop("variant", '"default" | "primary" | "danger" | "danger-primary" | "ghost" | "accent"', "Look and " +
+        "weight; ghost is borderless, like the header's pickers; accent has accent words and border, like Commit " +
+        "Options while options are on. An icon alone keeps 6px at each side.", { default: '"default"' }),
       prop("size", '"normal" | "small" | "tiny" | "mini"', "Small is 24px (toolbars, rows); tiny 22px (media bars); " +
         "mini 20px (group headers).", {
         default: '"normal"',
@@ -38,6 +39,16 @@ export const actionDocs: ComponentDoc[] = [
       prop("trailingIcon", `${ICON_NAME} | null`, "An icon after the text, such as a picker's chevron.", {
         default: "null",
       }),
+      prop("layout", '"sidebar-left" | "sidebar-right" | "commit-single" | "commit-per-repo" | null', "A drawn " +
+        "layout glyph (see LayoutIcon) in place of `icon`, such as the Changes tab's file list toggle.", {
+        default: "null",
+      }),
+      prop("layoutActive", "boolean", "Fills the layout glyph, such as while the file list is shown.", {
+        default: "false",
+      }),
+      prop("spinning", "boolean", "The icon turns, such as Refresh while it runs.", { default: "false" }),
+      prop("width", '"auto" | "fill"', "Its words' width, or its parent's whole width with the words centered " +
+        "(Sync Changes under the commit box).", { default: '"auto"' }),
       prop("type", '"button" | "submit" | "reset"', "The button's form type.", { default: '"button"' }),
       prop("keepFocus", "boolean", "Pressing it leaves the focus where it was, such as in a search field.", {
         default: "false",
@@ -78,7 +89,11 @@ export const actionDocs: ComponentDoc[] = [
     usage: "Use in toolbars, panel headers, rows and tab strips. Use Button when the command needs a word.",
     aliases: ["Toggle"],
     props: [
-      prop("icon", ICON_NAME, "The icon.", { required: true }),
+      prop("icon", ICON_NAME, "The icon; give it or `layout`."),
+      prop("layout", '"sidebar-left" | "sidebar-right" | "commit-single" | "commit-per-repo" | null', "A drawn " +
+        "layout glyph (see LayoutIcon) in place of `icon`, such as the commit box layout toggle.", {
+        default: "null",
+      }),
       prop("label", "string", "Accessible name; also the tooltip unless `title` is given.", { required: true }),
       prop("iconSize", "IconSize", "A named icon size (see Icon).", { default: '"large"' }),
       prop("size", ICON_BUTTON_SIZE,

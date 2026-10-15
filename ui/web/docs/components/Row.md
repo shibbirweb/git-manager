@@ -12,13 +12,14 @@ Group: Layout. Also known as: List item, Item, Row, Cell.
 
 Build every list row from it: put Icon, Text, Tag, StatusLetter and the like inside, and a Spacer before what sits at
 the end. Pick the size for the place: tree (24 px, sidebars), list (24 px, file lists), history (26 px, commit lists),
-entry (grows, 4 px above and below, dialogs) or large (56 px, Welcome). Put Rows in a List for the keyboard and
-selection; alone, a Row with `onclick` is a button.
+entry (grows, 4 px above and below, dialogs), large (56 px, Welcome), section (28 px, a repository's header) or group
+(24 px, lined up with a Collapsible's title, like the repositories under No Changes). Put Rows in a List for the
+keyboard and selection; alone, a Row with `onclick` is a button.
 
 ## Props
 
-- `size` (`"tree" | "list" | "history" | "entry" | "large"`, default `"list"`): Height, side padding and gap for the
-  place it is used.
+- `size` (`"tree" | "list" | "history" | "entry" | "large" | "section" | "group"`, default `"list"`): Height, side
+  padding and gap for the place it is used.
 - `selected` (`boolean`, default `false`): The selected row; stronger while its List has the focus.
 - `disabled` (`boolean`, default `false`): Faint and cannot be pressed.
 - `depth` (`number`, default `0`): Indent levels, for nested rows.
@@ -26,8 +27,12 @@ selection; alone, a Row with `onclick` is a button.
 - `align` (`"center" | "baseline"`, default `"center"`): Baseline for rows of words in two sizes.
 - `actionsShown` (`"hover" | "always"`, default `"hover"`): Show `actions` only on hover and focus, or always.
 - `line` (`boolean`, default `false`): A line under the row, for rows in a ListBox (the last one has none).
+- `mark` (`boolean`, default `false`): An accent stripe on its left edge, such as the active repository's header.
 - `title` (`string`): Tooltip, such as the full path.
 - `label` (`string`): Accessible name, when the content alone does not say it.
+- `id` (`string`): Its element id, so a list that keeps the focus elsewhere can point at it or scroll to it.
+- `item` (`"option" | "treeitem" | null`, default `null`): An item of a ListRegion that keeps the keys: its role and
+  selection for screen readers, and no tab stop; clicks still run onclick.
 - `actions` (`Snippet`): Small buttons at the end; their clicks do not select the row.
 - `children` (`Snippet`, required): The row's content.
 - `onclick` (`(event: MouseEvent) => void`): Pressed (outside a List, this makes it a button).

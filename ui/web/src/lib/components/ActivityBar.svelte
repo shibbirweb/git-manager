@@ -1,5 +1,6 @@
 <!-- The vertical icon bar beside a side panel: one button per panel, the open one tinted with an accent line, and
-     an optional count badge. Items after a `null` entry sit at the bottom. -->
+     an optional count badge. Items after a `null` entry sit at the bottom; a "divider" entry draws a short line.
+     An item's own `active` lets several be on at once (a panel and the terminal); `title` is its tooltip. -->
 <script lang="ts">
   import type { IconName } from "../icons";
   import Badge from "./Badge.svelte";
@@ -14,10 +15,15 @@
     dot?: boolean;
     /** A glyph that looks big at the bar's size (play) is drawn a step smaller. */
     smallIcon?: boolean;
+    /** Shown as on, whatever `active` says; for toggles that are on independently. */
+    active?: boolean;
+    /** The tooltip, such as the name with its shortcut; defaults to `label`. */
+    title?: string;
+    badgeTone?: "accent" | "danger";
   }
 
   interface Props {
-    items: (ActivityItem | null)[];
+    items: (ActivityItem | null | "divider")[];
     active?: string | null;
     label: string;
     side?: "left" | "right";
@@ -28,17 +34,20 @@
 </script>
 
 <nav class="activity {side}" aria-label={label}>
-  {#each items as item, index (item?.id ?? `spacer-${index}`)}
+  {#each items as item, index (typeof item === "object" && item ? item.id : `${item}-${index}`)}
     {#if item === null}
       <div class="spacer"></div>
+    {:else if item === "divider"}
+      <div class="divider" role="separator"></div>
     {:else}
+      {@const on = item.active ?? item.id === active}
       <button
         class="item"
-        class:active={item.id === active}
+        class:active={on}
         type="button"
         aria-label={item.label}
-        aria-pressed={item.id === active}
-        title={item.label}
+        aria-pressed={on}
+        title={item.title ?? item.label}
         onclick={() => {
           active = item.id;
           onselect?.(item.id);
@@ -49,7 +58,7 @@
           <span class="dot" aria-hidden="true"></span>
         {/if}
         {#if item.badge}
-          <span class="badge"><Badge count={item.badge} /></span>
+          <span class="badge"><Badge count={item.badge} tone={item.badgeTone ?? "accent"} /></span>
         {/if}
       </button>
     {/if}
@@ -116,6 +125,14 @@
 
   .spacer {
     flex: 1;
+  }
+
+  .divider {
+    flex: none;
+    width: var(--activity-bar-separator-width);
+    height: 1px;
+    margin: var(--activity-bar-separator-space) 0;
+    background: var(--border-strong);
   }
 
   .badge {

@@ -134,7 +134,8 @@ export const feedbackDocs: ComponentDoc[] = [
         default: '"plain"',
       }),
       prop("titleSize", '"normal" | "large"', "A larger title, as on a failed view.", { default: '"normal"' }),
-      prop("titleTone", '"default" | "danger"', "A red title for errors.", { default: '"default"' }),
+      prop("titleTone", '"default" | "dim" | "danger"', "A dim one-line placeholder (Loading..., Select a " +
+        "file) or a red title for errors.", { default: '"default"' }),
       prop("overlay", "boolean", "Covers its positioned parent, over the content.", { default: "false" }),
       prop("delayed", "boolean", "Fades in after 250 ms, so a loading message does not flash when the work is " +
         "quick.", { default: "false" }),

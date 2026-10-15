@@ -1,16 +1,20 @@
-<!-- A borderless button with an icon (and optional text after it). `label` is its accessible name and tooltip. -->
+<!-- A borderless button with an icon or a layout glyph (and optional text after it). `label` is its accessible name
+     and tooltip. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
   import type { IconName } from "../icons";
   import type { IconSize } from "../logic/presets";
   import Icon from "./Icon.svelte";
+  import LayoutIcon from "./LayoutIcon.svelte";
 
   type IconButtonSize =
     "large" | "normal" | "header" | "compact" | "small" | "chevron" | "inline" | "mini" | "micro" | "tool" | "row";
 
   interface Props extends Omit<HTMLButtonAttributes, "children" | "class" | "style"> {
-    icon: IconName;
+    icon?: IconName;
+    /** A drawn layout glyph in place of `icon`, such as the commit box layout toggle. */
+    layout?: "sidebar-left" | "sidebar-right" | "commit-single" | "commit-per-repo" | null;
     label: string;
     iconSize?: IconSize;
     size?: IconButtonSize;
@@ -28,6 +32,7 @@
 
   let {
     icon,
+    layout = null,
     label,
     iconSize = "large",
     size = "normal",
@@ -75,9 +80,11 @@
     rest.onmousedown?.(event);
   }}
 >
-  {#if spinning}
+  {#if layout}
+    <LayoutIcon kind={layout} size={iconSize} />
+  {:else if icon && spinning}
     <span class="spin"><Icon name={icon} size={iconSize} /></span>
-  {:else}
+  {:else if icon}
     <Icon name={icon} size={iconSize} />
   {/if}
   {#if count}<span class="count">{count}</span>{/if}

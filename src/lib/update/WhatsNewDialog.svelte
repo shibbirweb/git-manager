@@ -1,7 +1,7 @@
 <!-- What's New: the changelog built into this version, so it works offline. -->
 <script lang="ts">
   import changelogText from "../../../CHANGELOG.md?raw";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { entryFor, releasedEntries } from "./changelog";
   import ReleaseNotes from "./ReleaseNotes.svelte";
   import { updates } from "./updates.svelte";
@@ -39,7 +39,7 @@
 <div class="overlay" role="presentation" onmousedown={(event) => event.target === event.currentTarget && close()}>
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="whats-new-title">
     <div class="head">
-      <div class="badge"><Icon name="wand" size={18} /></div>
+      <div class="badge"><Icon name="wand" size="xlarge" /></div>
       <div>
         <h2 id="whats-new-title">What's New in Git Manager {updates.current ?? ""}</h2>
         <p class="dim">
@@ -59,7 +59,7 @@
 
       {#if older.length > 0}
         <button class="older-toggle" onclick={() => (showOlder = !showOlder)}>
-          <Icon name={showOlder ? "chevron-down" : "chevron-right"} size={12} />
+          <Icon name={showOlder ? "chevron-down" : "chevron-right"} size="compact" />
           Earlier versions
         </button>
         {#if showOlder}

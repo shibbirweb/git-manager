@@ -14,11 +14,19 @@ export const shellDocs: ComponentDoc[] = [
         bindable: true,
         data: true,
       }),
-      prop("preset", '"sidebar" | "bottom" | "list" | "pane"', "The smallest and default size, from the tokens.", {
+      prop("preset", '"sidebar" | "bottom" | "list" | "pane" | "files"', "The smallest and default size.", {
         default: '"pane"',
       }),
       prop("max", "number", "Largest size, from the window's room.", { default: "800", data: true }),
       prop("label", "string", "Accessible name of the handle, e.g. `Resize the sidebar`.", { required: true }),
+      prop("extent", "number", "Its own measured width (row) or height (column), so the app can work out `max`.", {
+        default: "0",
+        bindable: true,
+        data: true,
+      }),
+      prop("inPanel", "boolean", "Between views inside one panel: the handle keeps its size in rounded looks.", {
+        default: "false",
+      }),
       prop("oncommit", "(size: number) => void", "Called once when a drag or key press ends, to save the size.", {
         data: true,
       }),
@@ -48,10 +56,16 @@ export const shellDocs: ComponentDoc[] = [
         data: true,
       }),
       prop("side", '"left" | "right" | "bottom"', "Where the panel is, relative to the handle.", { required: true }),
-      prop("preset", '"sidebar" | "bottom" | "list" | "pane"', "The smallest and default size, from the tokens.", {
+      prop("preset", '"sidebar" | "bottom" | "list" | "pane" | "files"', "The smallest and default size.", {
         required: true,
       }),
       prop("max", "number", "Largest size, from the window's room.", { required: true, data: true }),
+      prop("min", "number | null", "Smallest size when the layout decides it, instead of the preset's.", {
+        default: "null",
+        data: true,
+      }),
+      prop("defaultSize", "number | null", "Size a double-click resets to when the layout decides it, such as " +
+        "half of a split.", { default: "null", data: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("inPanel", "boolean", "Between views inside one panel (editor groups): keeps its size in rounded looks.", {
         default: "false",
@@ -122,14 +136,18 @@ export const shellDocs: ComponentDoc[] = [
     name: "ActivityBar",
     group: "Layout",
     summary: "The vertical icon bar beside a side panel; the open panel is tinted with an accent line.",
-    usage: "Use at the window's left or right edge. A `null` item pushes the rest to the bottom.",
+    usage:
+      "Use at the window's left or right edge. A `null` item pushes the rest to the bottom; \"divider\" draws a " +
+      "short line between groups. Give an item `active` when it is on by itself (the Log, the terminal).",
     aliases: ["Sidebar"],
     props: [
-      prop("items", "({ id; icon; label; badge?: number; dot?: boolean; smallIcon?: boolean } | null)[]",
-        "The panels.", {
-        required: true,
-        data: true,
-      }),
+      prop(
+        "items",
+        "({ id; icon; label; badge?: number; badgeTone?: \"accent\" | \"danger\"; dot?: boolean; " +
+          "smallIcon?: boolean; active?: boolean; title?: string } | null | \"divider\")[]",
+        "The panels; `title` is the tooltip, such as the name with its shortcut.",
+        { required: true, data: true },
+      ),
       prop("active", "string | null", "The open panel's id.", { default: "null", bindable: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("side", '"left" | "right"', "Which window edge; moves the border and accent line.", {

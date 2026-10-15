@@ -19,7 +19,8 @@ Use when a list or view has nothing to show. Say what the user can do next in `h
 - `icon` (`IconName | null`, default `null`): An icon above the title.
 - `iconStyle` (`"plain" | "circle" | "large-circle"`, default `"plain"`): The icon alone, or on a round tinted badge.
 - `titleSize` (`"normal" | "large"`, default `"normal"`): A larger title, as on a failed view.
-- `titleTone` (`"default" | "danger"`, default `"default"`): A red title for errors.
+- `titleTone` (`"default" | "dim" | "danger"`, default `"default"`): A dim one-line placeholder (Loading..., Select a
+  file) or a red title for errors.
 - `overlay` (`boolean`, default `false`): Covers its positioned parent, over the content.
 - `delayed` (`boolean`, default `false`): Fades in after 250 ms, so a loading message does not flash when the work is
   quick.

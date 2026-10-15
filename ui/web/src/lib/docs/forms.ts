@@ -39,16 +39,27 @@ export const formDocs: ComponentDoc[] = [
     props: [
       prop("value", "string", "The text.", { default: '""', bindable: true }),
       prop("rows", '"small" | "normal" | "large" | "xlarge"', "Visible lines: 2, 3, 5 or 8.", { default: '"normal"' }),
+      prop("height", '"rows" | "short" | "tall"', "Its height from `rows`, or a set height: short 56 px (a " +
+        "repository's own commit box), tall 96 px (the commit message).", { default: '"rows"' }),
       prop("resize", '"none" | "vertical"', "Whether the user can drag its height.", { default: '"none"' }),
       prop("invalid", "boolean", "Red border and aria-invalid.", { default: "false" }),
       prop("mono", "boolean", "Monospace text.", { default: "false" }),
       prop("element", "HTMLTextAreaElement | null", "The textarea element.", { default: "null", bindable: true }),
+      prop("tools", "Snippet", "Small buttons in its top right corner (IconButton size small, tone dim), such as " +
+        "Message History; the text keeps clear of them."),
       restProp("HTMLTextarea", "placeholder, disabled, aria-label, onkeydown"),
     ],
     examples: [
-      { title: "Commit message", code: '<TextArea bind:value={message} rows={4} placeholder="Commit message" />' },
+      { title: "Commit message", code: '<TextArea bind:value={message} rows="large" placeholder="Commit message" />' },
+      {
+        title: "With tools in the corner",
+        code:
+          '<TextArea bind:value={message} height="tall" aria-label="Commit message">\n  {#snippet tools()}\n' +
+          '    <IconButton icon="history" label="Message History" size="small" tone="dim" iconSize="medium" />\n' +
+          "  {/snippet}\n</TextArea>",
+      },
     ],
-    replaces: ['<textarea class="input" ...>'],
+    replaces: ['<textarea class="input" ...>', '<div class="message-wrap"> and .message-tools in CommitBox.svelte'],
   },
   {
     name: "Select",
@@ -65,6 +76,7 @@ export const formDocs: ComponentDoc[] = [
       prop("size", '"normal" | "small"', "Small: 24px, inside a settings line.", { default: '"normal"' }),
       prop("width", '"auto" | "fill" | "xsmall" | "small" | "medium" | "large"', "auto, the parent's width, or " +
         "80, 120, 180 or 280 px.", { default: '"auto"' }),
+      prop("title", "string", "Tooltip, such as the chosen repository's full path."),
       prop("onchange", "(value: T) => void", "Called with the new value."),
     ],
     examples: [
@@ -87,6 +99,7 @@ export const formDocs: ComponentDoc[] = [
       prop("label", "string", "The text, when `children` is not given.", { default: '""' }),
       prop("disabled", "boolean", "Disables it.", { default: "false" }),
       prop("size", '"normal" | "small"', "Small: 12px dim words, for an option in a bar.", { default: '"normal"' }),
+      prop("title", "string", "Tooltip, such as why it is off."),
       prop("onchange", "(checked: boolean) => void", "Called with the new state."),
       prop("children", "Snippet", "Rich label content instead of `label`."),
     ],
@@ -208,10 +221,16 @@ export const formDocs: ComponentDoc[] = [
       prop("title", "string", "The setting's name.", { required: true }),
       prop("titleMatches", "[number, number][]", "Ranges [start, end) of the title a search found, in the " +
         "warning tint (Settings search).", { default: "[]", data: true }),
-      prop("hint", "string", "One sentence on what it does.", { default: '""' }),
+      prop("hint", "string", "One sentence on what it does; `backtick` words show as code, such as a git option.", {
+        default: '""',
+      }),
       prop("stacked", "boolean", "Control under the text, for wide controls.", { default: "false" }),
       prop("nested", "boolean", "Indented under the setting it belongs to.", { default: "false" }),
       prop("plain", "boolean", "No line between rows and a regular label (welcome screen).", { default: "false" }),
+      prop("toggle", "boolean", "The whole row is its Switch's label: a click on the words flips it.", {
+        default: "false",
+      }),
+      prop("mark", "Snippet", "Something small after the title, such as a memory cost flag."),
       prop("hintContent", "Snippet", "A rich hint (with a link) instead of `hint`."),
       prop("children", "Snippet", "The control.", { required: true }),
     ],

@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import { tick } from "svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { askpass } from "./askpass.svelte";
   import { folderLabel, parsePrompt } from "./askpassPrompt";
 
@@ -92,7 +92,7 @@
         }}
       >
         <div class="head">
-          <span class="badge"><Icon name={parsed.kind === "confirm" ? "alert" : "lock"} size={15} /></span>
+          <span class="badge"><Icon name={parsed.kind === "confirm" ? "alert" : "lock"} size="regular" /></span>
           <div class="head-text">
             <h2 id="askpass-title">{title}</h2>
             {#if repoName}
@@ -153,7 +153,7 @@
                   aria-label={reveal ? "Hide password" : "Show password"}
                   aria-pressed={reveal}
                 >
-                  <Icon name="eye" size={14} />
+                  <Icon name="eye" size="normal" />
                 </button>
               {/if}
             </span>

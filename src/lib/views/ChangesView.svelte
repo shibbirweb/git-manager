@@ -3,10 +3,14 @@
   import { tick, untrack } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import ListRegion from "@git-manager/ui/components/ListRegion.svelte";
+  import PanelHeader from "@git-manager/ui/components/PanelHeader.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import CleanRepoList from "./changes/CleanRepoList.svelte";
   import CommitBox from "./changes/CommitBox.svelte";
-  import LayoutIcon from "@git-manager/ui/components/LayoutIcon.svelte";
   import { commitDraft } from "./changes/commitDraft.svelte";
   import { rowElementId, sameSelection, type FileSelection, type GroupId } from "./changes/fileStatus";
   import { changesLayout } from "./changes/layout.svelte";
@@ -36,7 +40,7 @@
   /** Settings > Git > Commit box: a box at the top of each repository instead of one under the list. */
   const perRepo = $derived(settings.commitBoxLayout === "perRepo");
 
-  let listEl = $state<HTMLDivElement | null>(null);
+  let list = $state<ListRegion | null>(null);
 
   function isHidden(repoRoot: string, group: GroupId): boolean {
     return (multiRepo && changesLayout.isRepoCollapsed(repoRoot)) || changesLayout.isGroupCollapsed(repoRoot, group);
@@ -82,7 +86,7 @@
       line: 0,
     });
     changesSelection.pick(selection);
-    listEl?.focus();
+    list?.focus();
   }
 
   // Keyboard
@@ -106,7 +110,7 @@
       }
       changesSelection.pick(visibleRows[next]);
       await tick();
-      listEl?.querySelector(".row.selected")?.scrollIntoView({ block: "nearest" });
+      list?.reveal();
       return;
     }
     if (!selected || !selectedFile || busy) {
@@ -134,66 +138,70 @@
   }
 </script>
 
-<div class="panel">
-  <div class="head">
-    <span class="title">Changes</span>
-    {#if repoStore.totalChanges > 0}
-      <span class="count">{repoStore.totalChanges}</span>
-    {/if}
-    <div class="spacer"></div>
-    {#if repos.length > 0}
-      <button
-        class="icon-btn small"
-        onclick={() => settings.setPreference("commitBoxLayout", perRepo ? "single" : "perRepo")}
-        title={perRepo ? "Show One Commit Box" : "Show a Commit Box per Repository"}
-        aria-label="Commit box per repository"
-        aria-pressed={perRepo}
-      >
-        <LayoutIcon kind={perRepo ? "commit-per-repo" : "commit-single"} size="regular" />
-      </button>
-    {/if}
-    {#if !multiRepo && sections[0]?.status}
-      <!-- One repository: its actions sit in the title bar. -->
-      <RepoActions section={sections[0]} />
-    {:else}
-      <button
-        class="icon-btn small"
-        onclick={() => void repoStore.refreshAll()}
-        title="Refresh All"
-        aria-label="Refresh all"
-      >
-        <Icon name="refresh" size={13} />
-      </button>
-    {/if}
-    <button
-      class="icon-btn small"
-      onclick={() => settings.setLeftPanel(null)}
-      title={withCommandKeys("Hide", "view.sidebar")}
-      aria-label="Hide changes"
-    >
-      <Icon name="x" size={14} />
-    </button>
-  </div>
+<Stack grow gap="none" surface="panel">
+  <Stack responsive>
+    <PanelHeader title="Changes" count={repoStore.totalChanges > 0 ? repoStore.totalChanges : null}>
+      {#snippet actions()}
+        {#if repos.length > 0}
+          <IconButton
+            layout={perRepo ? "commit-per-repo" : "commit-single"}
+            iconSize="regular"
+            size="compact"
+            onclick={() => settings.setPreference("commitBoxLayout", perRepo ? "single" : "perRepo")}
+            title={perRepo ? "Show One Commit Box" : "Show a Commit Box per Repository"}
+            label="Commit box per repository"
+            aria-pressed={perRepo}
+          />
+        {/if}
+        {#if !multiRepo && sections[0]?.status}
+          <!-- One repository: its actions sit in the title bar. -->
+          <RepoActions section={sections[0]} />
+        {:else}
+          <IconButton
+            icon="refresh"
+            iconSize="medium"
+            size="compact"
+            onclick={() => void repoStore.refreshAll()}
+            title="Refresh All"
+            label="Refresh all"
+          />
+        {/if}
+        <IconButton
+          icon="x"
+          iconSize="normal"
+          size="compact"
+          onclick={() => settings.setLeftPanel(null)}
+          title={withCommandKeys("Hide", "view.sidebar")}
+          label="Hide changes"
+        />
+      {/snippet}
+    </PanelHeader>
+  </Stack>
 
   {#if repoStore.workspace && repos.length === 0}
-    <div class="placeholder no-repo">
-      <div class="empty-icon"><Icon name="folder-git" size={20} /></div>
-      <div class="empty-title">No git repository</div>
-      <div class="dim">Initialize one here, or scan again after adding one.</div>
-      <div class="empty-actions">
-        <button class="btn small primary" onclick={initRepository} disabled={busy}>Initialize Repository</button>
-        <button class="btn small" onclick={() => void repoStore.rediscover()} disabled={busy}>Scan Again</button>
-      </div>
-    </div>
+    <EmptyState
+      variant="pane"
+      icon="folder-git"
+      iconStyle="circle"
+      iconTone="accent"
+      strong
+      title="No git repository"
+      hint="Initialize one here, or scan again after adding one."
+    >
+      {#snippet action()}
+        <Stack direction="row" wrap justify="center" gap="md">
+          <Button size="small" variant="primary" onclick={initRepository} disabled={busy}>Initialize Repository</Button>
+          <Button size="small" onclick={() => void repoStore.rediscover()} disabled={busy}>Scan Again</Button>
+        </Stack>
+      {/snippet}
+    </EmptyState>
   {:else}
-    <div
-      class="file-list"
-      role="listbox"
-      tabindex="0"
-      aria-label="Changed files"
-      aria-activedescendant={activeRowId}
-      bind:this={listEl}
-      onkeydown={onListKeydown}
+    <ListRegion
+      label="Changed files"
+      activeId={activeRowId}
+      paddingY="xs"
+      onkeydown={(event) => void onListKeydown(event)}
+      bind:this={list}
     >
       {#if !multiRepo}
         {#if perRepo && commitTarget && sections[0]?.status && sections[0].changeCount === 0}
@@ -209,10 +217,7 @@
           />
         {/if}
         {#if sections[0]?.status && sections[0].changeCount === 0}
-          <div class="list-empty">
-            <div class="clean-icon"><Icon name="check" size={18} /></div>
-            <div class="dim">Working tree clean</div>
-          </div>
+          <EmptyState icon="check" iconStyle="circle" iconTone="success" titleTone="dim" title="Working tree clean" />
         {:else if sections[0]}
           <RepoSection
             section={sections[0]}
@@ -224,27 +229,35 @@
           />
         {/if}
       {:else}
-        {#if changed.length === 0}
-          <div class="list-empty">
-            <div class="clean-icon"><Icon name="check" size={18} /></div>
-            <div class="dim">No changes in {repos.length} repositories</div>
-          </div>
-        {/if}
-        {#each changed as section (section.repo.root)}
-          <RepoSection
-            {section}
-            multiRepo={true}
-            active={section.repo.root === activeRoot}
-            selected={selected?.repoRoot === section.repo.root ? selected : null}
-            onselect={clickRow}
-            commitBox={perRepo}
-          />
-        {/each}
-        {#if split.clean.length > 0}
-          <CleanRepoList sections={split.clean} {activeRoot} />
-        {/if}
+        <Stack gap="sm">
+          {#if changed.length === 0}
+            <EmptyState
+              icon="check"
+              iconStyle="circle"
+              iconTone="success"
+              titleTone="dim"
+              title="No changes in {repos.length} repositories"
+            />
+          {:else}
+            <Stack gap="xxs">
+              {#each changed as section (section.repo.root)}
+                <RepoSection
+                  {section}
+                  multiRepo={true}
+                  active={section.repo.root === activeRoot}
+                  selected={selected?.repoRoot === section.repo.root ? selected : null}
+                  onselect={clickRow}
+                  commitBox={perRepo}
+                />
+              {/each}
+            </Stack>
+          {/if}
+          {#if split.clean.length > 0}
+            <CleanRepoList sections={split.clean} {activeRoot} />
+          {/if}
+        </Stack>
       {/if}
-    </div>
+    </ListRegion>
     {#if commitTarget && !perRepo}
       <CommitBox
         repo={commitTarget}
@@ -256,128 +269,4 @@
       />
     {/if}
   {/if}
-</div>
-
-<style>
-  .panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    min-width: 0;
-    background: var(--panel);
-  }
-
-  .head {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    height: 34px;
-    padding: 0 6px 0 12px;
-    border-bottom: 1px solid var(--border-strong);
-    container: repo-row / inline-size;
-  }
-
-  /* The title gives way first in a narrow sidebar, so the buttons never run into the close button. */
-  .title {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
-  }
-
-  /*
-   * RepoActions may shrink in a repository row, but here it keeps its buttons whole (the branch
-   * name still hides). A long branch name shortens before the title does.
-   */
-  .head > :global(.repo-row-actions) {
-    flex-shrink: 1000;
-    min-width: auto;
-  }
-
-  .count {
-    flex: none;
-    min-width: 18px;
-    padding: 0 5px;
-    border-radius: 9px;
-    background: var(--hover);
-    font-size: 11px;
-    line-height: 16px;
-    text-align: center;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .icon-btn.small {
-    height: 24px;
-    min-width: 24px;
-  }
-
-  .file-list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 4px 0;
-    outline: none;
-  }
-
-  .list-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 28px 16px;
-    text-align: center;
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 20px 14px;
-    text-align: center;
-  }
-
-  .clean-icon,
-  .empty-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-  }
-
-  .clean-icon {
-    background: color-mix(in srgb, var(--success) 14%, transparent);
-    color: var(--success);
-  }
-
-  .empty-icon {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent);
-  }
-
-  .empty-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .empty-title {
-    font-weight: 600;
-  }
-</style>
+</Stack>

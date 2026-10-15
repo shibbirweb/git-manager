@@ -4,7 +4,7 @@
   import { fullDate, relativeTime } from "$lib/log/format";
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import type { IconName } from "@git-manager/ui/icons";
   import { toast } from "$lib/ui/toast.svelte";
   import { badgeText, bellTitle, kindLabel, type NotificationKind } from "./notificationModel";
@@ -62,7 +62,7 @@
     title={bellTitle(unread, notifications.items.length, doNotDisturb)}
     aria-label="Notifications"
   >
-    <Icon name={doNotDisturb ? "bell-off" : "bell"} size={12} />
+    <Icon name={doNotDisturb ? "bell-off" : "bell"} size="compact" />
     {#if unread > 0}
       <span class="badge" class:error={hasUnreadError}>{badgeText(unread)}</span>
     {/if}
@@ -86,7 +86,7 @@
       <div class="list">
         {#each notifications.items as entry (entry.id)}
           <div class="entry {entry.kind}">
-            <span class="kind" title={kindLabel(entry.kind)}><Icon name={kindIcon(entry.kind)} size={13} /></span>
+            <span class="kind" title={kindLabel(entry.kind)}><Icon name={kindIcon(entry.kind)} size="medium" /></span>
             <div class="body">
               <div class="title-row">
                 <span class="title selectable">{entry.title}</span>

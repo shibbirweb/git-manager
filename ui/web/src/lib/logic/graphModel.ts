@@ -1,4 +1,4 @@
-// The log graph's drawing for one row, the same as the app's GraphCell: lanes LANE_GAP apart after GRAPH_PAD,
+// The log graph's drawing for one row (the app's log uses it): lanes LANE_GAP apart after GRAPH_PAD,
 // edges as quadruples [kind, from lane, to lane, color] (pass: top to bottom, in: top to the node, out: the node to
 // the bottom), colors cycling through the palette's lane colors.
 import { componentTokens } from "../styles/tokens";

@@ -86,7 +86,7 @@ A pinned tab gets the `pinned` class. Its close button becomes an unpin button w
 | `src/lib/views/tabDrag.ts` | `dropGap` and `edgeScrollStep` |
 | `src/lib/views/EditorTabs.svelte` | the drag, the preview order, the pin button and the wrap styles |
 | `src/lib/stores/settingsData.ts` | the `wrapTabs` preference (off by default) |
-| `src/lib/views/SettingsDialog.svelte` | the Wrap tabs switch in Settings > Editor |
+| `src/lib/views/settings/EditorFeatureSettings.svelte` | the Wrap tabs switch in Settings > Editor |
 
 ## Design decisions
 

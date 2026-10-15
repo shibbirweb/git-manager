@@ -1,5 +1,7 @@
 <!-- A drag handle on a panel's edge: a thin line that turns into an accent bar on hover. Drag or use the arrow keys
-     (Shift for bigger steps) to resize; double-click resets. `side` says where the panel is. -->
+     (Shift for bigger steps) to resize; double-click resets. `side` says where the panel is. The preset gives the
+     smallest and default size; `min` and `defaultSize` replace them when they come from the layout, such as half
+     of a split. -->
 <script lang="ts">
   import type { PanelPreset } from "../logic/presets";
   import { draggedSize, keyedSize, type PanelSide } from "../logic/resize";
@@ -10,16 +12,29 @@
     side: PanelSide;
     preset: PanelPreset;
     max: number;
+    min?: number | null;
+    defaultSize?: number | null;
     label: string;
     inPanel?: boolean;
     onresize: (size: number) => void;
     oncommit?: (size: number) => void;
   }
 
-  let { size, side, preset, max, label, inPanel = false, onresize, oncommit }: Props = $props();
+  let {
+    size,
+    side,
+    preset,
+    max,
+    min: minSize = null,
+    defaultSize: resetSize = null,
+    label,
+    inPanel = false,
+    onresize,
+    oncommit,
+  }: Props = $props();
 
-  const min = $derived(scales.panelMin[preset]);
-  const defaultSize = $derived(scales.panelDefault[preset]);
+  const min = $derived(minSize ?? scales.panelMin[preset]);
+  const defaultSize = $derived(resetSize ?? scales.panelDefault[preset]);
 
   const horizontal = $derived(side === "bottom");
   let dragging = $state(false);

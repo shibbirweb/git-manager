@@ -25,55 +25,6 @@ export const shellCases: ParityCase[] = [
     ],
   },
   {
-    id: "activity-bar",
-    sources: ["src/lib/views/ActivityBar.svelte"],
-    html:
-      `<nav class="activity"><button class="item">${iconSvg("file", 19, 1.8)}</button>` +
-      `<button class="item active">${iconSvg("git-compare", 19, 1.8)}</button></nav>`,
-    pairs: [
-      { name: "bar", ref: ".activity", lib: ".activity", ignore: { height: "the window's height" } },
-      { name: "item", ref: ".item:not(.active)", lib: ".item:not(.active)", states: ["hover"] },
-      { name: "active", ref: ".item.active", lib: ".item.active" },
-      { name: "indicator", ref: ".item.active", lib: ".item.active", pseudo: "::before" },
-      { name: "icon", ref: ".item:not(.active) svg", lib: ".item:not(.active) svg" },
-    ],
-  },
-  {
-    id: "resize-handle",
-    sources: ["src/lib/ui/ResizeHandle.svelte"],
-    html: '<div style="display: flex; height: 120px"><div class="handle" tabindex="0"></div></div>',
-    pairs: [
-      { name: "handle", ref: ".handle", lib: ".handle", ignore: { height: "the panel's height" } },
-      {
-        name: "line",
-        ref: ".handle",
-        lib: ".handle",
-        pseudo: "::after",
-        states: ["hover"],
-        ignore: { height: "the panel's height" },
-      },
-    ],
-  },
-  {
-    id: "search-toggles",
-    sources: ["src/lib/ui/SearchToggles.svelte"],
-    html:
-      '<div class="toggles"><button class="toggle">Cc</button><button class="toggle on">W</button>' +
-      '<button class="toggle">.*</button></div>' +
-      '<div class="toggles compact"><button class="toggle">Cc</button><button class="toggle on">W</button>' +
-      '<button class="toggle">.*</button></div>',
-    pairs: [
-      {
-        name: "off",
-        ref: ".toggles:not(.compact) .toggle:nth-child(1)",
-        lib: ".toggles:not(.compact) .toggle:nth-child(1)",
-        states: ["hover"],
-      },
-      { name: "on", ref: ".toggles:not(.compact) .toggle.on", lib: ".toggles:not(.compact) .toggle.on" },
-      { name: "compact", ref: ".compact .toggle:nth-child(1)", lib: ".compact .toggle:nth-child(1)" },
-    ],
-  },
-  {
     id: "find-bar",
     sources: ["src/lib/editor/FindBar.svelte"],
     html:

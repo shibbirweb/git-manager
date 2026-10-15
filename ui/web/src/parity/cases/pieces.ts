@@ -43,40 +43,6 @@ export const pieceCases: ParityCase[] = [
     ],
   },
   {
-    id: "welcome-pieces",
-    sources: ["src/lib/views/Welcome.svelte"],
-    html:
-      `<div class="logo">${iconSvg("merge", 22)}</div>` +
-      `<button class="tile"><span class="tile-icon">${iconSvg("folder", 24)}</span>Open</button>` +
-      `<button class="learn-item">${iconSvg("book", 18)}<span class="text"><span class="name">Docs</span>` +
-      '<span class="dim">A guide.</span></span></button>' +
-      '<ul class="projects"><li class="row selected"><button class="project"><span class="badge badge-cyan">SF</span>' +
-      '<span class="text"><span class="name truncate">storefront</span><span class="path dim truncate">~/sf</span>' +
-      "</span></button></li></ul>",
-    pairs: [
-      { name: "logo", ref: ".logo", lib: ".logo" },
-      { name: "tile", ref: ".tile", lib: ".tile" },
-      { name: "tile icon", ref: ".tile-icon", lib: ".tile-icon", states: ["hover"] },
-      { name: "learn item", ref: ".learn-item", lib: ".resource", states: ["hover"], ignore: TEXT },
-      { name: "learn title", ref: ".learn-item .name", lib: ".resource .title" },
-      {
-        name: "project tile",
-        ref: ".badge",
-        lib: ".avatar",
-        ignore: {
-          "background-color": "the library puts the gradient's deep color under it for contrast checks",
-          cursor: "the app's tile sits in the project row's button",
-        },
-      },
-    ],
-  },
-  {
-    id: "symbol-badge",
-    sources: ["src/lib/search/SymbolResult.svelte"],
-    html: '<span class="badge type">C</span>',
-    pairs: [{ name: "badge", ref: ".badge", lib: ".badge" }],
-  },
-  {
     id: "tree-line",
     sources: ["src/lib/terminal/TerminalPanel.svelte"],
     html: '<div style="display: flex; height: 24px"><span class="tree first"></span></div>',

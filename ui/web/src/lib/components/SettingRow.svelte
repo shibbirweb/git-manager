@@ -2,6 +2,7 @@
      `titleMatches` marks the words a search found in the title. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { inlineCodeParts } from "../logic/inlineCode";
   import HighlightText from "./HighlightText.svelte";
 
   interface Props {
@@ -12,6 +13,10 @@
     nested?: boolean;
     /** Plain: no line between rows and a regular label, like the welcome screen's Customize page. */
     plain?: boolean;
+    /** The whole row is its switch's label: a click on the words flips it. */
+    toggle?: boolean;
+    /** Something small after the title, such as a memory cost flag. */
+    mark?: Snippet;
     hintContent?: Snippet;
     children: Snippet;
   }
@@ -23,30 +28,45 @@
     stacked = false,
     nested = false,
     plain = false,
+    toggle = false,
+    mark,
     hintContent,
     children,
   }: Props = $props();
 </script>
 
-<div class="row" class:stacked class:nested class:plain>
+<svelte:element this={toggle ? "label" : "div"} class="row" class:stacked class:nested class:plain class:toggle>
   <div class="label">
     <span class="title"
       >{#if titleMatches.length > 0}<HighlightText
           text={title}
           ranges={titleMatches}
           variant="search"
-        />{:else}{title}{/if}</span
+        />{:else}{title}{/if}{#if mark}{" "}{@render mark()}{/if}</span
     >
     {#if hintContent}
       <span class="hint">{@render hintContent()}</span>
     {:else if hint}
-      <span class="hint">{hint}</span>
+      <span class="hint"
+        >{#each inlineCodeParts(hint) as part, index (index)}{#if part.code}<code>{part.text}</code
+            >{:else}{part.text}{/if}{/each}</span
+      >
     {/if}
   </div>
   {@render children()}
-</div>
+</svelte:element>
 
 <style>
+  /* `backtick` words of a hint, such as a git option. */
+  .hint code {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xsmall);
+  }
+
+  .toggle {
+    cursor: pointer;
+  }
+
   /* A setting that belongs to the one above it. */
   .nested {
     padding-left: var(--setting-row-nested-indent);

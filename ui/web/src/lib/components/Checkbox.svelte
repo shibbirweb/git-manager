@@ -8,6 +8,8 @@
     label?: string;
     disabled?: boolean;
     size?: "normal" | "small";
+    /** Tooltip, such as why it is off. */
+    title?: string;
     onchange?: (checked: boolean) => void;
     children?: Snippet;
   }
@@ -18,12 +20,13 @@
     label = "",
     disabled = false,
     size = "normal",
+    title,
     onchange,
     children,
   }: Props = $props();
 </script>
 
-<label class="check {size}" class:disabled>
+<label class="check {size}" class:disabled {title}>
   <input type="checkbox" bind:checked {indeterminate} {disabled} onchange={() => onchange?.(checked)} />
   {#if children}
     {@render children()}

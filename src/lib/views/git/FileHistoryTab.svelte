@@ -8,7 +8,7 @@
   import { gitTabPath } from "$lib/stores/gitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { FileHistoryEntry } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
 
@@ -161,7 +161,7 @@
 
 <div class="history-tab">
   <div class="toolbar">
-    <Icon name="history" size={14} />
+    <Icon name="history" size="normal" />
     <span class="title truncate">History of <span class="mono">{filePath}</span></span>
     <span class="spacer"></span>
     {#if loading}
@@ -169,7 +169,7 @@
     {/if}
     <span class="count dim">{entries.length}{hasMore ? "+" : ""} {entries.length === 1 ? "commit" : "commits"}</span>
     <button class="icon-btn" onclick={() => void reload()} disabled={loading} title="Refresh">
-      <Icon name="refresh" size={14} />
+      <Icon name="refresh" size="normal" />
     </button>
   </div>
   {#if loadError}

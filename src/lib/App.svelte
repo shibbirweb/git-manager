@@ -1,48 +1,28 @@
 <script lang="ts">
+  import ZoomBadge from "@git-manager/ui/components/ZoomBadge.svelte";
+  import AppOverlays from "./AppOverlays.svelte";
   import { onMount, untrack } from "svelte";
   import { api, currentWindowLabel, errorMessage } from "$lib/api";
-  import AskpassDialog from "$lib/askpass/AskpassDialog.svelte";
   import { askpass } from "$lib/askpass/askpass.svelte";
   import { viewLabel, watchScrolling } from "$lib/debug/memoryEvents";
-  import { helpDialogs } from "$lib/help/helpDialogs.svelte";
   import { memoryLog } from "$lib/debug/memoryLog.svelte";
   import { WheelZoom } from "$lib/editor/wheelZoom";
-  import { cursorOptions, setEditorCursor } from "$lib/editor/cursor";
-  import { featureOptions } from "$lib/editor/featurePlan";
-  import { setEditorFeatures } from "$lib/editor/features";
-  import { setCommandKeys } from "$lib/editor/commandKeys";
-  import { editorKeyPlan } from "$lib/commands/editorKeyPlan";
-  import { runCommand, usesDefaultKeys, windowKeys } from "$lib/commands/commandRuntime";
-  import { setRenderWhitespace } from "$lib/editor/whitespace";
-  import { setSyntaxHighlighting } from "$lib/editor/languages";
-  import { setWordWrap } from "$lib/editor/wordWrap";
-  import { setFileIcons } from "$lib/fileIcons/fileIcons.svelte";
-  import { setIndentation } from "$lib/editor/indentation";
+  import { followEditorSettings } from "$lib/editorSettingsSync.svelte";
+  import { usesDefaultKeys } from "$lib/commands/commandRuntime";
   import { appMenu } from "$lib/menu/appMenu.svelte";
-  import { quickOpen } from "$lib/quickOpen/quickOpenStore.svelte";
   import { startMcpBridge } from "$lib/mcp/bridge";
   import { keepAwake } from "$lib/ai/keepAwakeStore.svelte";
-  import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import { localHistory } from "$lib/localHistory/localHistory.svelte";
-  import { notifications } from "$lib/notifications/notifications.svelte";
+  import { mcpStore } from "$lib/mcp/mcpStore.svelte";
   import MergeToolApp from "$lib/merge/MergeToolApp.svelte";
   import { fileCommands } from "$lib/stores/fileCommands.svelte";
   import { isWorkspaceFile, repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { sessionSteps } from "$lib/stores/settingsData";
-  import { TAB_SLEEP_CHECK_MS } from "$lib/stores/tabSleep";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import type { LaunchMode } from "$lib/types";
-  import ContextMenuHost from "$lib/ui/ContextMenuHost.svelte";
-  import DialogHost from "$lib/ui/DialogHost.svelte";
-  import Toasts from "$lib/ui/Toasts.svelte";
-  import GitDialogHost from "$lib/views/git/GitDialogHost.svelte";
   import { toast } from "$lib/ui/toast.svelte";
-  import SettingsDialog from "$lib/views/SettingsDialog.svelte";
-  import UpdateDialog from "$lib/update/UpdateDialog.svelte";
   import { updates } from "$lib/update/updates.svelte";
-  import WhatsNewDialog from "$lib/update/WhatsNewDialog.svelte";
-  import OpeningProgress from "$lib/views/OpeningProgress.svelte";
   import Welcome from "$lib/views/Welcome.svelte";
   import Workspace from "$lib/views/Workspace.svelte";
   import { changesSelection } from "$lib/views/changes/selection.svelte";
@@ -169,61 +149,7 @@
     untrack(() => localHistory.configure(enabled, days, sizeMb));
   });
 
-  // Do Not Disturb keeps non-error toasts in the bell's list only.
-  $effect(() => {
-    notifications.doNotDisturb = settings.notificationsDoNotDisturb;
-  });
-
-  // Open editors follow the Render whitespace setting without being rebuilt.
-  $effect(() => {
-    setRenderWhitespace(settings.renderWhitespace);
-  });
-
-  // And the cursor settings.
-  $effect(() => {
-    setEditorCursor(cursorOptions(settings));
-  });
-
-  // And Unload hidden tabs: file tabs out of sight for a while give their editors back.
-  $effect(() => {
-    if (!settings.unloadHiddenTabs) {
-      return;
-    }
-    const delayMs = settings.unloadHiddenTabsMinutes * 60_000;
-    const timer = setInterval(() => repoStore.sleepHiddenTabs(delayMs), TAB_SLEEP_CHECK_MS);
-    return () => clearInterval(timer);
-  });
-
-  // And syntax highlighting: off, editors drop their grammar and syntax tree.
-  $effect(() => {
-    setSyntaxHighlighting(settings.syntaxHighlighting);
-  });
-
-  // And word wrap (View > Word Wrap, Option+Z).
-  $effect(() => {
-    setWordWrap(settings.wordWrap);
-  });
-
-  // And the file type icons: an icon set loads only while it is chosen.
-  $effect(() => {
-    void setFileIcons(settings.fileIcons, settings.colorMode === "light");
-  });
-
-  // And the indentation: each open editor reads its file again with the new settings.
-  $effect(() => {
-    setIndentation({ detect: settings.detectIndentation, tabSize: settings.tabSize });
-  });
-
-  // And the editor features (auto-close, completion, folding, guides...); a feature turned off leaves the editors.
-  $effect(() => {
-    setEditorFeatures(featureOptions(settings));
-  });
-
-  // And the custom keyboard shortcuts; a window command with a custom key also runs from an editor.
-  $effect(() => {
-    const keys = windowKeys();
-    untrack(() => setCommandKeys(editorKeyPlan(keys.specs, keys.overrides, keys.platform), runCommand));
-  });
+  followEditorSettings();
 
   onMount(() => {
     settings.applyTheme();
@@ -334,45 +260,6 @@
   <Welcome />
 {/if}
 
-{#if settings.dialogOpen}
-  <SettingsDialog />
-{/if}
-
-{#if updates.dialogOpen}
-  <UpdateDialog />
-{/if}
-
-{#if updates.whatsNewOpen}
-  <WhatsNewDialog />
-{/if}
-
-<AskpassDialog />
-
-{#if helpDialogs.shortcutsOpen}
-  {#await import("$lib/help/ShortcutsDialog.svelte") then module}
-    <module.default />
-  {/await}
-{/if}
-
-<!-- Quick Open and the Command Palette (Cmd+P, Shift+Cmd+P); also on the welcome screen. -->
-{#if quickOpen.isOpen && launch?.mode === "app"}
-  {#await import("$lib/quickOpen/QuickOpen.svelte") then module}
-    <module.default />
-  {/await}
-{/if}
-
-{#if localHistory.target && launch?.mode === "app"}
-  {#await import("$lib/localHistory/LocalHistoryDialog.svelte") then module}
-    <module.default />
-  {/await}
-{/if}
-
-{#if mcpStore.toolsDialogOpen}
-  {#await import("$lib/mcp/McpToolsDialog.svelte") then module}
-    <module.default />
-  {/await}
-{/if}
-
 <svelte:window
   onkeydown={(event) => {
     // Cmd+, opens Settings, as in every macOS app. The page sees the key before the menu's
@@ -390,32 +277,6 @@
   }}
 />
 
-{#if zoomBadge !== null}
-  <div class="zoom-badge" role="status">Editor font size {zoomBadge}px</div>
-{/if}
+<ZoomBadge open={zoomBadge !== null} text="Editor font size {zoomBadge ?? 0}px" />
 
-<OpeningProgress />
-<Toasts />
-{#if launch?.mode !== "mergeTool"}
-  <GitDialogHost />
-{/if}
-<DialogHost />
-<ContextMenuHost />
-
-<style>
-  .zoom-badge {
-    position: fixed;
-    top: 56px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1100;
-    padding: 6px 14px;
-    border-radius: 16px;
-    background: var(--panel);
-    border: 1px solid var(--border-strong);
-    box-shadow: var(--shadow);
-    font-size: 12.5px;
-    font-weight: 500;
-    pointer-events: none;
-  }
-</style>
+<AppOverlays {launch} />

@@ -6,7 +6,7 @@
   import DiffView from "$lib/diff/DiffView.svelte";
   import type { ChangedFile, CommitDetails, FileDiff } from "$lib/types";
   import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { parentRevision } from "$lib/views/files/previewSource";
   import { fileDir, fileName, fullDate, statusLetter } from "./format";
@@ -249,7 +249,7 @@
   <div class="left" style="width: {leftWidth}px">
     {#if detailsError}
       <div class="state dim">
-        <Icon name="alert" size={16} />
+        <Icon name="alert" size="large" />
         <span>Could not load commit: {detailsError}</span>
       </div>
     {:else if !details}
@@ -264,7 +264,7 @@
               onclick={() => onOpenInTab?.(selectedPath)}
               title="Open this commit in an editor tab, with the diff in the whole editor area (or double-click the commit or a file)"
             >
-              <Icon name="commit" size={13} />
+              <Icon name="commit" size="medium" />
               Open in Tab
             </button>
           {/if}
@@ -288,7 +288,7 @@
           <dd class="hash">
             <span class="mono selectable truncate">{details.id}</span>
             <button class="icon-btn tiny" onclick={copyHash} title="Copy revision hash">
-              <Icon name="copy" size={12} />
+              <Icon name="copy" size="compact" />
             </button>
           </dd>
           {#if details.parents.length > 0}
@@ -349,7 +349,7 @@
   <div class="right">
     {#if diffError}
       <div class="state dim">
-        <Icon name="alert" size={16} />
+        <Icon name="alert" size="large" />
         <span>Could not load diff: {diffError}</span>
       </div>
     {:else if shown}

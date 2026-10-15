@@ -174,6 +174,8 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The Match Case, Words and Regex tooltips in find bars said Option on Windows; they now say Alt there.
+- The Log's Author, Date and Hash columns line up with their headings; the rows sat a little to the right of them.
 - Drop-down lists (Settings, the Git dialogs, Interactive Rebase, the commit box's Commit to) show their arrow inside the box, with room around it, instead of against the right edge.
 - GitHub requests with a saved token (Sign In, Share Project, Sync Fork, Create Gist) no longer close the app: the web client was built without the TLS feature its own check asks for.
 - The Markdown Rich Editor (until now Preview Only) edits existing files safely: untouched text keeps its exact spelling (list markers, emphasis, table padding, blank lines, line endings), and a file the editor cannot keep exactly (some HTML, reference-style links, footnotes, over 600 KB) stays read-only with a note saying why. README-style HTML tables are kept as they are. The rich editor is now built on TipTap.

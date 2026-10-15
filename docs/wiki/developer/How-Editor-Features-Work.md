@@ -69,7 +69,7 @@ sequenceDiagram
 | `src/lib/editor/ruler.ts`, `layerGeometry.ts` | The margin line and the text origin |
 | `src/lib/editor/languages.ts` | Names, grammars and lazy imports |
 | `src/lib/stores/settingsData.ts` | The nine keys and `pickRulerColumn` |
-| `src/lib/views/SettingsDialog.svelte` | The Editing features group |
+| `src/lib/views/settings/EditorFeatureSettings.svelte` | The Editing features group |
 
 ## Design decisions
 

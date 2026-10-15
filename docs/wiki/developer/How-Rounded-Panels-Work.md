@@ -58,7 +58,7 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 | --- | --- |
 | `src/lib/stores/settingsData.ts` | `roundedPanels` type, default and parsing |
 | `src/lib/stores/settings.svelte.ts` | the store field and `data-rounded-panels` in `applyAppearance()` |
-| `src/lib/views/SettingsDialog.svelte` | the Appearance switch |
+| `src/lib/views/settings/AppearanceSettings.svelte` | the Appearance switch |
 | `src/app.css` | `--panel-gap`, `--panel-radius` and the built-in `--frame` |
 | `src/lib/themes/tokens.ts`, `catalog.ts` | `--frame` as a color token, `frameColor()` |
 | `src/lib/views/Workspace.svelte` | gaps, padding, frame, rounded panels |

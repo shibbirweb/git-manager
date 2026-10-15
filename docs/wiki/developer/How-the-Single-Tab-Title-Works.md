@@ -53,7 +53,7 @@ Dragging needs at least two tabs (`startDrag` returns null otherwise), so the ti
 | `src/lib/views/EditorTabs.svelte` | the `single` class and its styles |
 | `src/lib/stores/settingsData.ts` | the `singleTabTitle` preference (on by default) |
 | `src/lib/stores/settings.svelte.ts` | the reactive `singleTabTitle` field and saving it |
-| `src/lib/views/SettingsDialog.svelte` | the Single tab title switch, shown under Tab limit only while Single tab is chosen |
+| `src/lib/views/settings/EditorFeatureSettings.svelte` | the Single tab title switch, shown under Tab limit only while Single tab is chosen |
 
 ## Design decisions
 

@@ -45,6 +45,9 @@ public enum GMTextStyles {
     public static let heading = GMTextStyle(
         family: GMFontFamilyUi.names, size: 15, weight: .semibold,
         lineHeight: nil, letterSpacing: 0, uppercase: false, tone: nil)
+    public static let pageTitle = GMTextStyle(
+        family: GMFontFamilyUi.names, size: 18, weight: .semibold,
+        lineHeight: nil, letterSpacing: 0, uppercase: false, tone: nil)
     public static let display = GMTextStyle(
         family: GMFontFamilyUi.names, size: 22, weight: .semibold,
         lineHeight: nil, letterSpacing: 0, uppercase: false, tone: nil)

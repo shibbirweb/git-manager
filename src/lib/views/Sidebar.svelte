@@ -3,7 +3,7 @@
   import { tick } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import {
     checkoutLocalBranch,
@@ -254,11 +254,11 @@
       title="Refresh"
       aria-label="Refresh branches"
     >
-      <Icon name="refresh" size={13} />
+      <Icon name="refresh" size="medium" />
     </button>
   </PanelHead>
   <div class="filter">
-    <span class="filter-icon"><Icon name="search" size={13} /></span>
+    <span class="filter-icon"><Icon name="search" size="medium" /></span>
     <input
       class="input filter-input"
       type="text"
@@ -278,7 +278,7 @@
           collapse.resetFilterState();
         }}
       >
-        <Icon name="x" size={12} />
+        <Icon name="x" size="compact" />
       </button>
     {/if}
   </div>

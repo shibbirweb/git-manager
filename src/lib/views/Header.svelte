@@ -3,7 +3,7 @@
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import LayoutIcon from "@git-manager/ui/components/LayoutIcon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { recentEntries, shortPath } from "./recentEntries";
@@ -146,7 +146,7 @@
         title="Go Back (Ctrl+-)"
         aria-label="Go back"
       >
-        <Icon name="arrow-left" size={15} />
+        <Icon name="arrow-left" size="regular" />
       </button>
       <button
         class="icon-btn history-btn"
@@ -155,7 +155,7 @@
         title="Go Forward (Ctrl+Shift+-)"
         aria-label="Go forward"
       >
-        <Icon name="arrow-right" size={15} />
+        <Icon name="arrow-right" size="regular" />
       </button>
     </div>
     <div class="divider"></div>
@@ -164,31 +164,33 @@
       onclick={workspaceMenu}
       title={(repoStore.workspace?.folders ?? []).map((folder) => folder.root).join("\n")}
     >
-      <Icon name="folder" size={14} />
+      <Icon name="folder" size="normal" />
       <span class="strong truncate">{repoStore.workspace?.name}</span>
-      <Icon name="chevron-down" size={12} />
+      <Icon name="chevron-down" size="compact" />
     </button>
     {#if showRepoPicker}
       <span class="sep">/</span>
       <button class="pill" onclick={repoPickerMenu} title="Active repository: {repoStore.repo?.root ?? 'none'}">
-        <Icon name="folder-git" size={14} />
+        <Icon name="folder-git" size="normal" />
         <span class="truncate">{repoStore.repo?.name ?? "Select repository"}</span>
         <span class="repo-count dim">{repoStore.repos.length}</span>
-        <Icon name="chevron-down" size={12} />
+        <Icon name="chevron-down" size="compact" />
       </button>
     {/if}
     {#if repoStore.repo}
       <button class="pill" onclick={branchMenu} title="Branch: {branchLabel}. Click to switch branches">
-        <Icon name="branch" size={14} />
+        <Icon name="branch" size="normal" />
         <span class="truncate branch-name">{branchLabel}</span>
         {#if head && (head.ahead > 0 || head.behind > 0)}
           <span class="counts dim">
-            {#if head.ahead > 0}<span title="Commits to push">{head.ahead}<Icon name="arrow-up" size={11} /></span>{/if}
-            {#if head.behind > 0}<span title="Commits to pull">{head.behind}<Icon name="arrow-down" size={11} /></span
+            {#if head.ahead > 0}<span title="Commits to push">{head.ahead}<Icon name="arrow-up" size="small" /></span
+              >{/if}
+            {#if head.behind > 0}<span title="Commits to pull"
+                >{head.behind}<Icon name="arrow-down" size="small" /></span
               >{/if}
           </span>
         {/if}
-        <Icon name="chevron-down" size={12} />
+        <Icon name="chevron-down" size="compact" />
       </button>
     {:else}
       <span class="dim no-repo">No git repository</span>
@@ -224,7 +226,7 @@
     </button>
     <div class="divider"></div>
     <button class="icon-btn" onclick={toggleTheme} title="Toggle light/dark theme">
-      <Icon name="sun" size={15} />
+      <Icon name="sun" size="regular" />
     </button>
     <button
       class="icon-btn"
@@ -232,7 +234,7 @@
       title={withCommandKeys("Settings", "app.settings")}
       aria-label="Settings"
     >
-      <Icon name="settings" size={15} />
+      <Icon name="settings" size="regular" />
     </button>
   </div>
 </header>

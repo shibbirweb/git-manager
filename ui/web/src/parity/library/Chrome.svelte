@@ -24,15 +24,7 @@
   ];
 </script>
 
-{#if id === "op-banner"}
-  <Notice variant="banner" icon="merge"><strong>Merging</strong> <Text tone="dim">· all resolved</Text></Notice>
-  <Notice variant="banner" tone="danger"><strong>Merging</strong></Notice>
-{:else if id === "bisect-banner"}
-  <Notice variant="banner" tone="warning" icon="bug"><strong>Bisecting</strong></Notice>
-  <Notice variant="banner" tone="success" icon="bug"><strong>Found it</strong></Notice>
-{:else if id === "toast-action"}
-  <ToastHost items={toasts} ondismiss={none} onaction={none} />
-{:else if id === "pick-groups"}
+{#if id === "pick-groups"}
   <PickList label="Branches" items={[{ value: "main", label: "main", group: "Local" }]} onpick={none} />
   <PickList label="Branches" items={[]} onpick={none} />
 {:else if id === "header-history"}
@@ -50,8 +42,4 @@
       <Button size="small">Clear All</Button>
     {/snippet}
   </Toolbar>
-{:else if id === "resize-handle-rows"}
-  <div style="display: flex; flex-direction: column; width: 300px">
-    <ResizeHandle side="bottom" preset="bottom" size={200} max={400} label="Resize" onresize={none} />
-  </div>
 {/if}

@@ -10,11 +10,14 @@ Group: Layout. Also known as: Sidebar.
 
 ## When to use
 
-Use at the window's left or right edge. A `null` item pushes the rest to the bottom.
+Use at the window's left or right edge. A `null` item pushes the rest to the bottom; "divider" draws a short line
+between groups. Give an item `active` when it is on by itself (the Log, the terminal).
 
 ## Props
 
-- `items` (`({ id; icon; label; badge?: number; dot?: boolean; smallIcon?: boolean } | null)[]`, required): The panels.
+- `items` (`({ id; icon; label; badge?: number; badgeTone?: "accent" | "danger"; dot?: boolean; smallIcon?: boolean;
+  active?: boolean; title?: string } | null | "divider")[]`, required): The panels; `title` is the tooltip, such as the
+  name with its shortcut.
 - `active` (`string | null`, default `null`, bindable): The open panel's id.
 - `label` (`string`, required): Accessible name.
 - `side` (`"left" | "right"`, default `"left"`): Which window edge; moves the border and accent line.

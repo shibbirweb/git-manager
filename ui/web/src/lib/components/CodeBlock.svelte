@@ -5,7 +5,7 @@
 
   interface Props {
     text: string;
-    variant?: "output" | "command" | "detail" | "preview" | "prompt";
+    variant?: "output" | "command" | "detail" | "preview" | "prompt" | "value";
     maxHeight?: CodeHeight;
     label?: string;
   }
@@ -19,6 +19,19 @@
   style:max-height={maxHeight === "none" ? null : presetVar("codeHeight", maxHeight)}>{text}</pre>
 
 <style>
+  /* One short value on its own, such as a folder path or a token next to its buttons. */
+  .value {
+    flex: 0 1 auto;
+    padding: var(--code-block-value-padding-y) var(--code-block-value-padding-x);
+    border-radius: var(--code-block-value-radius);
+    background: var(--panel-alt);
+    color: var(--text);
+    font-size: var(--font-size-small);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    user-select: text;
+  }
+
   .block {
     box-sizing: border-box;
     margin: 0;

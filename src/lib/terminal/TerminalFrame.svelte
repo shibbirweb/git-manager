@@ -5,6 +5,7 @@
   Only the frame moves, so Svelte's own bookkeeping of the list stays intact.
 -->
 <script lang="ts">
+  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
   import { onMount, untrack } from "svelte";
   import { changesSelection } from "$lib/views/changes/selection.svelte";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";
@@ -52,20 +53,9 @@
   });
 </script>
 
-<div class="parking" bind:this={parking}>
+<ElementHost onready={(element) => void (parking = element)}>
   <!-- Hidden frames must not cover the pane that shows another terminal. -->
-  <div class="frame" class:hidden={!visible} bind:this={frame}>
+  <ElementHost fill="cover" hidden={!visible} onready={(element) => void (frame = element)}>
     <TerminalView {terminal} {visible} {placement} />
-  </div>
-</div>
-
-<style>
-  .frame {
-    position: absolute;
-    inset: 0;
-  }
-
-  .frame.hidden {
-    display: none;
-  }
-</style>
+  </ElementHost>
+</ElementHost>

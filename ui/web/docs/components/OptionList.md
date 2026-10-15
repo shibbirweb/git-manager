@@ -10,7 +10,8 @@ Group: Forms. Also known as: Listbox, Theme list.
 
 ## When to use
 
-Draw each option in `option` (a ThemeSwatch and a name). Arrow keys move.
+Draw each option in `option` (a ThemeSwatch and a name). The arrows, Home, End and the page keys move, and the picked
+option stays in view.
 
 ## Props
 
@@ -30,3 +31,7 @@ Draw each option in `option` (a ThemeSwatch and a name). Arrow keys move.
 ## Replaces in the app
 
 - `.list and .option in src/lib/views/settings/ColorThemePicker.svelte`
+
+## Logic
+
+- `logic/optionMove.ts`

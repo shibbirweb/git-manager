@@ -80,7 +80,7 @@ The popup is moved to `<body>` with the `portal` action: the path bar is a CSS s
 | `src/lib/views/files/FileView.svelte` | Mounts the bar in the path bar (Top) or under the code (Bottom) and claims it for the tab on screen |
 | `src/lib/navBar/navTarget.svelte.ts` | What the floating bar points at |
 | `src/lib/views/EmptyMain.svelte` | The bar on top or at the foot of the welcome screen, and its **Navigation Bar** button |
-| `src/lib/stores/settingsData.ts`, `views/SettingsDialog.svelte` | The `fileToolbar` setting and its Settings row |
+| `src/lib/stores/settingsData.ts`, `views/settings/AppearanceSettings.svelte` | The `fileToolbar` setting and its Settings row |
 | `src/lib/views/Workspace.svelte` | The floating bar, and the text field check for the key |
 | `src/lib/ui/portal.ts` | Moves the popup to `<body>` |
 | `src/lib/menu/menuSpec.ts`, `menuState.ts`, `menuActions.ts` | Edit > Jump to Navigation Bar |

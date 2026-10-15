@@ -38,12 +38,6 @@ export const barCases: ParityCase[] = [
     ],
   },
   {
-    id: "section-title",
-    sources: ["src/lib/views/git/ChangesTab.svelte"],
-    html: '<div class="section-title">Staged <span class="dim">3</span></div>',
-    pairs: [{ name: "bar", ref: ".section-title", lib: ".section-title.bar", ignore: FILL }],
-  },
-  {
     id: "section-title-list",
     sources: ["src/lib/views/git/BranchCompareTab.svelte"],
     html: '<div class="section-title">Commits only in main <span class="dim">4</span></div>',

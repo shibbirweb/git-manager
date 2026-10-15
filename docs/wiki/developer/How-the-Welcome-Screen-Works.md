@@ -48,12 +48,14 @@ Customize calls the same settings methods as the Settings window (`setTheme`, `s
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/Welcome.svelte` | The sidebar, the three pages, the project rows and their menu |
+| `src/lib/views/Welcome.svelte` | The sidebar and the page switch |
+| `src/lib/views/welcome/WelcomeProjects.svelte` | Projects: the search, the project rows and their menu, the greeting |
+| `src/lib/views/welcome/WelcomeCustomize.svelte`, `WelcomeLearn.svelte` | The Customize and Learn pages |
 | `src/lib/views/welcomeModel.ts` | Initials, badge colors, subtitles, search and keyboard selection |
 | `src/lib/views/recentEntries.ts` | The recent list shared with the folder menu and Open Recent |
 | `src/lib/views/repoPicker.ts` | Opening a pick or a recent entry, in this window or a new one |
 | `src/lib/views/settings/ColorThemePicker.svelte` | The color theme list, shared with Settings |
-| `src/lib/ui/icons.ts` | The `book` and `keyboard` icons of Learn |
+| `ui/web/src/lib/icons.ts` | The `book` and `keyboard` icons of Learn |
 
 ## Design decisions
 

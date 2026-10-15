@@ -8,7 +8,14 @@
   import DiffView from "$lib/diff/DiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ChangedFile, RevisionDiff, WorktreeComparison } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Pane from "@git-manager/ui/components/Pane.svelte";
+  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import BranchFileList from "./BranchFileList.svelte";
 
   interface Props {
@@ -107,34 +114,29 @@
   }
 </script>
 
-<div class="worktree-tab">
-  <div class="toolbar">
-    <Icon name="git-compare" size={14} />
-    <span class="title truncate"><strong>{revision}</strong> compared with the working tree</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={() => void load()} title="Refresh">
-      <Icon name="refresh" size={13} />
-    </button>
-  </div>
+<Stack gap="none" grow surface="panel">
+  <Toolbar label="Compare" variant="tab">
+    <Icon name="git-compare" size="normal" />
+    <Text truncate><Text weight="semibold">{revision}</Text> compared with the working tree</Text>
+    {#snippet end()}
+      <Button icon="refresh" title="Refresh" aria-label="Refresh" onclick={() => void load()} />
+    {/snippet}
+  </Toolbar>
   {#if loadError}
-    <div class="placeholder">
-      <Icon name="alert" size={18} />
-      <div>Could not compare {revision} with the working tree</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
+    <EmptyState icon="alert" title="Could not compare {revision} with the working tree" hint={loadError} />
   {:else if comparison}
-    <div class="body">
-      <div class="side">
-        <div class="section-title">Files that differ <span class="dim">({comparison.files.length})</span></div>
+    <Stack direction="row" gap="none" grow>
+      <Pane label="Files that differ" width="xlarge">
+        <SectionTitle variant="list" title="Files that differ" count={comparison.files.length} />
         <BranchFileList
           files={comparison.files}
           selectedPath={selected?.path ?? null}
           onselect={(file) => void select(file)}
         />
-      </div>
-      <div class="diff">
+      </Pane>
+      <Stack gap="none" grow surface="editor">
         {#if diffError}
-          <div class="placeholder dim selectable">{diffError}</div>
+          <EmptyState titleTone="dim" title={diffError} />
         {:else if result && selected}
           {#key `${comparison.commitId}:${selected.path}`}
             <DiffView
@@ -148,76 +150,14 @@
             />
           {/key}
         {:else}
-          <div class="placeholder dim">
-            {comparison.files.length === 0 ? "The working tree matches this branch." : "Select a file"}
-          </div>
+          <EmptyState
+            titleTone="dim"
+            title={comparison.files.length === 0 ? "The working tree matches this branch." : "Select a file"}
+          />
         {/if}
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   {:else}
-    <div class="placeholder dim">Loading...</div>
+    <EmptyState titleTone="dim" title="Loading..." delayed />
   {/if}
-</div>
-
-<style>
-  .worktree-tab {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 10px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .title {
-    min-width: 0;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .body {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .side {
-    flex: 0 0 320px;
-    min-width: 0;
-    overflow-y: auto;
-    border-right: 1px solid var(--border-strong);
-  }
-
-  .section-title {
-    padding: 6px 10px 3px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-dim);
-  }
-
-  .diff {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .placeholder {
-    padding: 24px;
-    text-align: center;
-  }
-</style>
+</Stack>

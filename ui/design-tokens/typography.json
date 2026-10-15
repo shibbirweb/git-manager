@@ -10,7 +10,8 @@
   },
   "fontSize": {
     "nano": 9, "micro": 9.5, "tiny": 10, "mini": 10.5, "xsmall": 11, "compact": 11.5, "small": 12, "codeSmall": 12.5,
-    "ui": 13, "medium": 13.5, "code": 13, "title": 14, "heading": 15, "lead": 16, "display": 22
+    "ui": 13, "medium": 13.5, "code": 13, "title": 14, "heading": 15, "lead": 16, "page": 18,
+    "display": 22
   },
   "fontWeight": {"regular": 400, "medium": 500, "semibold": 600, "bold": 700},
   "lineHeight": {"dense": 1.25, "snug": 1.4, "normal": 1.45, "relaxed": 1.5, "sample": 1.55, "loose": 1.6, "airy": 1.7},
@@ -35,6 +36,7 @@
     },
     "title": {"font": "ui", "size": "{fontSize.title}", "weight": "{fontWeight.semibold}"},
     "heading": {"font": "ui", "size": "{fontSize.heading}", "weight": "{fontWeight.semibold}"},
+    "pageTitle": {"font": "ui", "size": "{fontSize.page}", "weight": "{fontWeight.semibold}"},
     "display": {"font": "ui", "size": "{fontSize.display}", "weight": "{fontWeight.semibold}"},
     "paragraph": {
       "font": "ui", "size": "{fontSize.ui}", "weight": "{fontWeight.regular}", "lineHeight": "{lineHeight.relaxed}"

@@ -14,6 +14,10 @@
     size?: "normal" | "small";
     icon?: IconName | null;
     disabled?: boolean;
+    /** Only the main part is off; the arrow still opens the menu (Commit with nothing staged, Amend still works). */
+    actionDisabled?: boolean;
+    /** The main part's tooltip, such as why it is off. */
+    title?: string;
     onclick: () => void;
   }
 
@@ -25,6 +29,8 @@
     size = "normal",
     icon = null,
     disabled = false,
+    actionDisabled = false,
+    title,
     onclick,
   }: Props = $props();
 
@@ -42,7 +48,9 @@
 </script>
 
 <span class="split" role="group" aria-label={text}>
-  <span class="main"><Button {variant} {size} {icon} {disabled} {onclick}>{text}</Button></span>
+  <span class="main">
+    <Button {variant} {size} {icon} disabled={disabled || actionDisabled} {title} {onclick}>{text}</Button>
+  </span>
   <span class="arrow">
     <Button
       bind:element={arrow}

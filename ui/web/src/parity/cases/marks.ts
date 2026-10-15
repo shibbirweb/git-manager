@@ -23,21 +23,6 @@ export const markCases: ParityCase[] = [
     pairs: [{ name: "dot", ref: ".status", lib: ".dot" }],
   },
   {
-    id: "chip-pill-mark",
-    sources: ["src/lib/ai/AiPanel.svelte"],
-    html: '<button class="pill waiting">2 waiting</button><span class="badge">CC</span>',
-    pairs: [
-      { name: "chip", ref: ".pill", lib: ".chip", ignore: TEXT },
-      { name: "mark", ref: ".badge", lib: ".mark" },
-    ],
-  },
-  {
-    id: "font-chip",
-    sources: ["src/lib/views/SettingsDialog.svelte"],
-    html: '<button class="font-pick">Menlo</button>',
-    pairs: [{ name: "chip", ref: ".font-pick", lib: ".chip", states: ["hover"], ignore: TEXT }],
-  },
-  {
     id: "pill",
     sources: ["src/lib/views/files/FileView.svelte"],
     html: '<span class="badge unsaved">Unsaved</span>',
@@ -54,11 +39,5 @@ export const markCases: ParityCase[] = [
       { name: "bar", ref: ".bar", lib: ".bar", ignore: FILL },
       { name: "fill", ref: ".fill", lib: ".fill", ignore: FILL },
     ],
-  },
-  {
-    id: "zoom-badge",
-    sources: ["src/lib/App.svelte"],
-    html: '<div class="zoom-badge">110%</div>',
-    pairs: [{ name: "badge", ref: ".zoom-badge", lib: ".zoom-badge" }],
   },
 ];

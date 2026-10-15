@@ -2,8 +2,8 @@ import { prop, type ComponentDoc } from "./types";
 
 const NARROW_STEP = '"tiny" | "narrow" | "compact" | "medium" | null';
 
-const CELL_WIDTH = "A set width so rows line up: icon 16, xsmall 70 (a hash), small 80, medium 90, large 120, " +
-  "xlarge 140.";
+const CELL_WIDTH = "A set width so rows line up: icon 16, xxsmall 40 (a line number), xsmall 70 (a hash), small " +
+  "80, medium 90, large 120, xlarge 140.";
 const GAP = '"none" | "xxs" | "xs" | "sm" | "md" | "mdPlus" | "lg" | "lgPlus" | "xl" | "xxl" | "xxxl"';
 const TONE = '"default" | "dim" | "faint" | "accent" | "danger" | "success" | "warning"';
 const TEXT_SIZE =
@@ -25,13 +25,20 @@ export const layoutDocs: ComponentDoc[] = [
       prop("padding", GAP, "Space inside the edges.", { default: '"none"' }),
       prop("paddingX", `${GAP} | null`, "Space at the left and right, overriding `padding`.", { default: "null" }),
       prop("paddingY", `${GAP} | null`, "Space at the top and bottom, overriding `padding`.", { default: "null" }),
+      prop("paddingLeft", `${GAP} | null`, "Space at the left only, overriding the others there: an indent, such " +
+        "as a repository's own commit box under its header.", { default: "null" }),
       prop("align", '"start" | "center" | "end" | "stretch" | "baseline"', "Cross-axis alignment.", {
         default: '"stretch"',
       }),
       prop("justify", '"start" | "center" | "end" | "between"', "Main-axis distribution.", { default: '"start"' }),
       prop("wrap", "boolean", "Wrap onto more lines.", { default: "false" }),
       prop("grow", "boolean", "Take the free space of its own parent stack.", { default: "false" }),
-      prop("width", '"auto" | "icon" | "xsmall" | "small" | "medium" | "large" | "xlarge"', CELL_WIDTH, {
+      prop("shrink", 'boolean | "first"', "Its content's size, but it may give way when the row is too narrow (a " +
+        "group of names that truncate); first gives way before its siblings, down to its smallest width, so " +
+        "its buttons stay whole (a repository row's branch name shortens before the repository's).", {
+        default: "false",
+      }),
+      prop("width", '"auto" | "icon" | "xxsmall" | "xsmall" | "small" | "medium" | "large" | "xlarge"', CELL_WIDTH, {
         default: '"auto"',
       }),
       prop("scroll", '"none" | "y" | "x" | "both"', "Scrolls its content in its own box; pair with `grow`.", {
@@ -39,8 +46,16 @@ export const layoutDocs: ComponentDoc[] = [
       }),
       prop("maxHeight", '"none" | "xsmall" | "small" | "medium" | "large"', "Grows up to 120, 160, 240 or 360 " +
         'px, then scrolls with `scroll="y"` (a short list in a dialog).', { default: '"none"' }),
+      prop("maxWidth", '"none" | "page"', "At most 600 px wide (page), such as a page of settings that would read " +
+        "badly across a wide window.", { default: '"none"' }),
+      prop("height", '"auto" | "window"', "Its content's height, or the whole window's (a screen such as the " +
+        "welcome screen).", { default: '"auto"' }),
+      prop("surface", '"none" | "editor" | "panel" | "alt"', "Paints a theme background behind it: the editor, " +
+        "a panel, or the alternate panel color.", { default: '"none"' }),
       prop("sticky", "boolean", "Stays at the top of the region scrolling under it, on the panel color with a " +
         "line under it.", { default: "false" }),
+      prop("line", '"none" | "top" | "bottom"', "A strong line on its top or bottom edge, such as the commit box " +
+        "docked under a list.", { default: '"none"' }),
       prop("element", '"div" | "span" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "ul" | "li" | ' +
         '"form"', "The HTML element; main, aside and nav mark a page's regions for screen readers; span fits inside " +
         "a label, like a Checkbox's rich label.", { default: '"div"' }),
@@ -97,6 +112,9 @@ export const layoutDocs: ComponentDoc[] = [
       prop("weight", '"regular" | "medium" | "semibold" | "bold"', "Font weight, overriding the style's."),
       prop("mono", "boolean", "Monospace, for hashes, paths and code.", { default: "false" }),
       prop("truncate", "boolean", "One line with an ellipsis; give `title` the full text.", { default: "false" }),
+      prop("giveWay", "boolean", "With truncate: in a tight row it shortens before its neighbours, down to nothing, " +
+        "so the row's smallest width leaves it out (a branch name next to buttons, a repository's folder after its " +
+        "name).", { default: "false" }),
       prop("selectable", "boolean", "Lets the user select the text (the app turns selection off by default).", {
         default: "false",
       }),

@@ -28,14 +28,6 @@
       </Row>
     {/snippet}
   </List>
-{:else if id === "row-large"}
-  <Row size="large" onclick={run}>
-    <Icon name="book" size="xlarge" />
-    <Stack gap="xxs"><Text>Documentation</Text><Text tone="dim">A guide to every feature.</Text></Stack>
-  </Row>
 {:else if id === "link-expanded"}
   <Link tone="dim" expanded={false} onclick={run}>Earlier versions</Link>
-{:else if id === "card-states"}
-  <Card selected><Stack padding="none"><span></span></Stack></Card>
-  <Card dim><Stack padding="none"><span></span></Stack></Card>
 {/if}

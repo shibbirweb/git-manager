@@ -87,7 +87,7 @@ When on, the worst case is bounded: 500 entries and 4 MB of output, plus the arg
 | `src/lib/terminal/TerminalPanel.svelte`, `terminalStore.svelte.ts` | The panel tab and `showTab`, `toggleTab`, `closeGitConsole` |
 | `src/lib/App.svelte` | Sends the setting to Rust once settings are loaded |
 | `src/lib/stores/settingsData.ts` | `gitConsole`, default `false` |
-| `src/lib/views/SettingsDialog.svelte` | The switch and Show Git Console button |
+| `src/lib/views/settings/GitSettings.svelte` | The switch and Show Git Console button |
 | `src-tauri/src/mcp/tools/git_read.rs` | The `git_console_entries` MCP tool, which says when the console is off |
 
 ## Design decisions

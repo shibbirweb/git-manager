@@ -19,6 +19,8 @@
     disabled?: boolean;
     width?: ControlWidth;
     size?: "normal" | "small";
+    /** Tooltip, such as the chosen repository's full path. */
+    title?: string;
     onchange?: (value: T) => void;
   }
 
@@ -29,6 +31,7 @@
     disabled = false,
     width = "auto",
     size = "normal",
+    title,
     onchange,
   }: Props = $props();
 </script>
@@ -37,6 +40,7 @@
   <select
     class="input"
     aria-label={label}
+    {title}
     {disabled}
     {value}
     onchange={(event) => {

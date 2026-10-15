@@ -8,7 +8,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ReflogEntry } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { newBranchFrom, repoTarget } from "../sidebar/actions";
@@ -215,7 +215,7 @@
 
 <div class="reflog-tab">
   <div class="toolbar">
-    <Icon name="history" size={14} />
+    <Icon name="history" size="normal" />
     <span class="title">Reflog of</span>
     <select class="input ref-select" bind:value={refName} aria-label="Reference">
       <option value="HEAD">HEAD</option>
@@ -229,7 +229,7 @@
     {/if}
     <span class="count dim">{total} {total === 1 ? "entry" : "entries"}</span>
     <button class="icon-btn" onclick={() => void reload()} disabled={loading} title="Refresh">
-      <Icon name="refresh" size={14} />
+      <Icon name="refresh" size="normal" />
     </button>
   </div>
   {#if loadError}

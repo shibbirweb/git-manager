@@ -82,15 +82,6 @@ export const atomCases: ParityCase[] = [
     ],
   },
   {
-    id: "keymap-recorder",
-    sources: ["src/lib/views/settings/KeyboardShortcuts.svelte"],
-    html: '<div class="recorder" tabindex="0" role="textbox">Press keys</div><button class="keys">⌘K</button>',
-    pairs: [
-      { name: "recorder", ref: ".recorder", lib: ".recorder", states: ["focus"] },
-      { name: "keys", ref: ".keys", lib: ".keys", states: ["hover"] },
-    ],
-  },
-  {
     id: "file-bar-bottom",
     sources: ["src/lib/views/files/FileView.svelte"],
     html:

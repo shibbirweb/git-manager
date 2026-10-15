@@ -6,6 +6,7 @@
   interface PanelTab<V extends string> {
     value: V;
     label: string;
+    title?: string;
   }
 
   interface Props {
@@ -59,6 +60,7 @@
       type="button"
       role="tab"
       aria-selected={tab.value === value}
+      title={tab.title}
       tabindex={tab.value === value && !keepFocus ? 0 : -1}
       onmousedown={(event) => keepFocus && event.preventDefault()}
       onclick={() => choose(tab.value)}

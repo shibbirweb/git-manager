@@ -43,7 +43,7 @@ The Markdown view mode survives because `viewMode.ts` remembers it per file for 
 | `src/lib/stores/repo.svelte.ts` | `sleepHiddenTabs`, `tabShownAt`, waking in `tabsChanged` |
 | `src/lib/App.svelte` | The 30 second interval, only while the setting is on |
 | `src/lib/stores/settingsData.ts` | `unloadHiddenTabs` (true) and `unloadHiddenTabsMinutes` (15) |
-| `src/lib/views/SettingsDialog.svelte` | The switch and the Unload after choices |
+| `src/lib/views/settings/EditorFeatureSettings.svelte` | The switch and the Unload after choices |
 
 ## Design decisions
 

@@ -31,7 +31,7 @@ export const listDocs: ComponentDoc[] = [
     aliases: ["Side column", "Sidebar"],
     props: [
       prop("label", "string", "Accessible name.", { required: true }),
-      prop("width", '"small" | "medium" | "large"', "140, 180 or 240 px.", { default: '"large"' }),
+      prop("width", '"small" | "medium" | "large" | "xlarge"', "140, 180, 240 or 320 px.", { default: '"large"' }),
       prop("side", '"left" | "right"', "Where it sits; the line goes on the other side.", { default: '"left"' }),
       prop("line", '"strong" | "soft"', "Its edge line; soft for the welcome screen's sidebar.", {
         default: '"strong"',

@@ -1,6 +1,7 @@
 // A changed file's kind as the letter and tone the Changes list shows, the same on every platform.
 
-export type FileKind = "added" | "modified" | "typechange" | "deleted" | "renamed" | "untracked" | "conflicted";
+export type FileKind =
+  "added" | "modified" | "typechange" | "deleted" | "renamed" | "copied" | "untracked" | "conflicted";
 
 const LETTERS: Record<FileKind, string> = {
   added: "A",
@@ -8,6 +9,7 @@ const LETTERS: Record<FileKind, string> = {
   typechange: "T",
   deleted: "D",
   renamed: "R",
+  copied: "C",
   untracked: "U",
   conflicted: "C",
 };

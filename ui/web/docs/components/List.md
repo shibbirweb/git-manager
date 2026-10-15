@@ -15,6 +15,8 @@ Enter or a double-click activates, Left and Right fold tree rows, `multiple` sel
 keys pass over. `virtual` draws only the rows in view: give it the Row's height (normal for tree and list rows, relaxed
 for history rows). A filter field drives it with `field`: Down or Enter moves the focus in, or with `fieldKeys="drive"`
 the field keeps the focus while Up, Down and Enter work the list (Quick Open, Recent Files, the Branches popup).
+`focus()` takes the focus and `reveal(key, place)` scrolls a row the app selected into view, to the middle with
+`center`.
 
 ## Props
 

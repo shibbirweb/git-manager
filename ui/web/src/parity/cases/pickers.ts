@@ -25,20 +25,6 @@ export const pickerCases: ParityCase[] = [
     ],
   },
   {
-    id: "option-list",
-    sources: ["src/lib/views/settings/ColorThemePicker.svelte"],
-    html:
-      '<div class="picker"><div class="list" role="listbox" tabindex="0"><div role="group">' +
-      '<div class="group-label">Dark</div><div class="option selected" role="option">Monokai</div>' +
-      '<div class="option" role="option">Dark</div></div></div></div>',
-    pairs: [
-      { name: "list", ref: ".list", lib: ".list", ignore: FILL },
-      { name: "group", ref: ".group-label", lib: ".group-label", ignore: FILL },
-      { name: "selected", ref: ".option.selected", lib: ".option.selected", ignore: FILL },
-      { name: "option", ref: ".option:not(.selected)", lib: ".option:not(.selected)", states: ["hover"], ignore: FILL },
-    ],
-  },
-  {
     id: "drag-ghost",
     sources: ["src/lib/views/files/FileExplorer.svelte"],
     html: '<div class="drag-ghost" style="left: 14px; top: 10px">3 files</div>',

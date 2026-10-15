@@ -7,7 +7,8 @@
   "button": {
     "height": "{size.control}", "heightSmall": "{size.controlSmall}", "heightTiny": 22, "iconOnlyTinyWidth": 24,
     "paddingX": 12, "paddingXSmall": 8, "gap": 6, "radius": "{radius.control}", "fontSizeSmall": "{fontSize.small}",
-    "ghostPaddingX": 8, "ghostMaxWidth": 280, "heightMini": 20, "paddingXMini": 8
+    "ghostPaddingX": 8, "ghostMaxWidth": 280, "heightMini": 20, "paddingXMini": 8,
+    "iconOnlyPaddingX": 6
   },
   "iconButton": {
     "size": "{size.control}", "sizeSmall": "{size.iconButtonSmall}", "sizeCompact": 24, "toolWidth": 24,
@@ -16,6 +17,7 @@
     "chevronPaddingX": 2, "miniSize": 20, "miniPaddingX": 3, "microSize": 18, "microRadius": 3, "sizeLarge": 30
   },
   "input": {"height": "{size.control}", "paddingX": 8, "paddingY": 6, "radius": "{radius.control}", "focusRing": 2},
+  "textArea": {"shortHeight": 56, "tallHeight": 96, "toolsInset": 3, "toolsGap": 1, "toolsRoom": 12},
   "select": {"arrowInset": 8, "arrowSpace": 28, "smallArrowInset": 6, "smallArrowSpace": 22},
   "switch": {"width": 34, "height": 20, "knob": 16, "inset": 2, "radius": 10},
   "segmented": {
@@ -57,7 +59,7 @@
   },
   "popover": {
     "offset": 2, "padding": 4, "panelPaddingY": 12, "panelPaddingX": 14, "radius": "{radius.menu}", "formPadding": 12,
-    "formGap": 8
+    "formGap": 8, "windowInset": 8
   },
   "toast": {
     "maxWidth": 420, "gap": 8, "radius": "{radius.menu}", "edge": 4, "paddingY": 10, "paddingLeft": 12,
@@ -81,7 +83,7 @@
   "resizeHandle": {"hitArea": 5, "line": 1, "activeLine": 3},
   "activityBar": {
     "width": 44, "item": 36, "radius": "{radius.menu}", "gap": 2, "padding": 6, "indicator": 2, "dot": 7, "dotInset": 7,
-    "dotRing": 2, "badgeBottom": 3
+    "dotRing": 2, "badgeBottom": 3, "separatorWidth": 22, "separatorSpace": 4
   },
   "statusBar": {
     "height": "{size.statusBar}", "itemHeight": "{size.rowItem}", "itemPaddingX": 7, "gap": 12, "itemGap": 5,
@@ -108,7 +110,8 @@
   "descriptionList": {"rowGap": 3, "columnGap": 10},
   "codeBlock": {
     "paddingX": 8, "paddingY": 5, "radius": "{radius.control}", "lineHeight": 17, "previewPaddingY": 6,
-    "previewPaddingX": 8, "promptPadding": 10, "promptMaxHeight": 220
+    "previewPaddingX": 8, "promptPadding": 10, "promptMaxHeight": 220, "valuePaddingY": 4, "valuePaddingX": 8,
+    "valueRadius": 5
   },
   "fieldset": {"gap": 6, "legendGap": 4, "labelColumn": 130},
   "sideNav": {

@@ -22,6 +22,7 @@ Use for five or more choices, or long labels. Use Segmented for two to four shor
 - `size` (`"normal" | "small"`, default `"normal"`): Small: 24px, inside a settings line.
 - `width` (`"auto" | "fill" | "xsmall" | "small" | "medium" | "large"`, default `"auto"`): auto, the parent's width, or
   80, 120, 180 or 280 px.
+- `title` (`string`): Tooltip, such as the chosen repository's full path.
 - `onchange` (`(value: T) => void`): Called with the new value.
 
 ## Example: Cursor style

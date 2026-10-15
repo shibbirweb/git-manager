@@ -20,8 +20,11 @@
 </div>
 
 <style>
+  /* A column, so a growing Stack inside can push what follows to the bottom (the welcome sidebar's links). */
   .pane {
     flex: none;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     padding: var(--pane-padding-top) 0 var(--pane-padding-bottom);
     background: var(--panel-alt);

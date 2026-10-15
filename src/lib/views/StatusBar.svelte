@@ -16,7 +16,7 @@
   import type { MemoryUsage } from "$lib/types";
   import { editorStatus } from "$lib/stores/editorStatus.svelte";
   import { formatBytes } from "$lib/ui/formatBytes";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import NotificationBell from "$lib/notifications/NotificationBell.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { changesSelection } from "./changes/selection.svelte";
@@ -160,7 +160,7 @@
         onclick={() => void openRepoPicker()}
         title="Repository {contextRepo.root}{settings.activeRepoAuto ? ' (Auto)' : ''}. Click to select a repository."
       >
-        <Icon name="folder-git" size={12} />
+        <Icon name="folder-git" size="compact" />
         <span>{contextRepo.name}</span>
       </button>
       {#if branch}
@@ -169,7 +169,7 @@
           onclick={() => openBranchPicker(contextRepo.root)}
           title="Branch {branch} of {contextRepo.name}. Click to check out another branch."
         >
-          <Icon name="branch" size={12} />
+          <Icon name="branch" size="compact" />
           <span class="branch-name">{branch}</span>
         </button>
       {/if}
@@ -182,7 +182,7 @@
           title={rowSyncTooltip(sync)}
           aria-label={sync.kind === "publish" ? "Publish Branch" : "Synchronize Changes"}
         >
-          <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={12} />
+          <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size="compact" />
           {#if syncBadge}
             <span>{syncBadge}</span>
           {/if}
@@ -194,7 +194,7 @@
           onclick={() => repoStore.openPseudoTab(branchTabPath({ kind: "changes", repoRoot: contextRepo.root }))}
           title="Changed files in {contextRepo.name}. Click to see them in a tab."
         >
-          <Icon name="git-compare" size={12} />
+          <Icon name="git-compare" size="compact" />
           <span>{changes} {changes === 1 ? "change" : "changes"}</span>
         </button>
       {/if}
@@ -204,7 +204,7 @@
           onclick={() => void showConflicts()}
           title="Resolve conflicts in {contextRepo.name}"
         >
-          <Icon name="alert" size={12} />
+          <Icon name="alert" size="compact" />
           <span>{conflicts} {conflicts === 1 ? "conflict" : "conflicts"}</span>
         </button>
       {/if}
@@ -218,15 +218,15 @@
           onclick={() => void openRepoPicker()}
           title="This file is not inside a git repository. Click to select a repository."
         >
-          <Icon name="folder" size={12} /> No repository
+          <Icon name="folder" size="compact" /> No repository
         </button>
       {:else}
         <span class="item static" title="This file is not inside a git repository"
-          ><Icon name="folder" size={12} /> No repository</span
+          ><Icon name="folder" size="compact" /> No repository</span
         >
       {/if}
     {:else if repoStore.workspace}
-      <span class="item static"><Icon name="folder" size={12} /> {repoStore.workspace.name}</span>
+      <span class="item static"><Icon name="folder" size="compact" /> {repoStore.workspace.name}</span>
     {/if}
     {#if settings.aiUsagePosition === "left"}
       <AiUsage side="left" />
@@ -256,13 +256,13 @@
     {/if}
     {#if autoFetch.hint}
       <button class="item fetch-hint" onclick={() => autoFetch.retryNow()} title={autoFetch.hint.title}>
-        <Icon name="cloud" size={12} />
+        <Icon name="cloud" size="compact" />
         <span>{autoFetch.hint.text}</span>
       </button>
     {/if}
     {#if updates.available}
       <button class="item update" onclick={() => (updates.dialogOpen = true)} title="See what's new and download">
-        <Icon name="arrow-down" size={12} />
+        <Icon name="arrow-down" size="compact" />
         <span>Update available: {updates.available.version}{updates.available.prerelease ? " (beta)" : ""}</span>
       </button>
     {/if}
@@ -284,7 +284,7 @@
       title="Star Git Manager on GitHub"
       aria-label="Star on GitHub"
     >
-      <Icon name="star" size={12} />
+      <Icon name="star" size="compact" />
     </button>
     <button
       class="item icon-only"
@@ -292,7 +292,7 @@
       title="Report a bug or request a feature"
       aria-label="Report an issue"
     >
-      <Icon name="bug" size={12} />
+      <Icon name="bug" size="compact" />
     </button>
     {#if memory && memory.totalBytes > 0}
       <div class="memory" bind:this={memoryEl}>
@@ -303,7 +303,7 @@
           title="Memory used by Git Manager and its web view processes. Click for details."
           aria-label="Memory {formatBytes(memory.totalBytes)}"
         >
-          <Icon name="memory" size={13} />
+          <Icon name="memory" size="medium" />
           <span>{formatBytes(memory.totalBytes)}</span>
         </button>
         {#if onMac}
@@ -313,7 +313,7 @@
             title="Clear Cache: restart this window's interface to give back all the memory it holds. The screen blinks once; your folder and tabs come back."
             aria-label="Clear Cache"
           >
-            <Icon name="brush" size={12} />
+            <Icon name="brush" size="compact" />
           </button>
         {/if}
         {#if detailsOpen}

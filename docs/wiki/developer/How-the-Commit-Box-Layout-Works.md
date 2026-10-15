@@ -46,12 +46,12 @@ The repositories' boxes sit inside the Changes list, whose key handler moves the
 | File | What it does |
 | --- | --- |
 | `src/lib/stores/settingsData.ts` | `CommitBoxLayout`, `COMMIT_BOX_LAYOUT_CHOICES`, the default and validation |
-| `src/lib/views/changes/CommitBox.svelte` | The `placement` prop and its styles |
+| `src/lib/views/changes/CommitBox.svelte` | The `placement` prop: its edge line, padding and message height |
 | `src/lib/views/changes/RepoSection.svelte` | The box at the top of a section |
 | `src/lib/views/ChangesView.svelte` | The title bar button, where the boxes go, the key guard |
 | `src/lib/views/git/ChangesTab.svelte` | The toolbar button and the box above or under the files |
 | `src/lib/views/changes/CommitLayoutIcon.svelte` | The button's icon: one box at the foot, or one in each half |
-| `src/lib/views/SettingsDialog.svelte`, `settings/settingsSearch.ts` | The Commit box row and its search words |
+| `src/lib/views/settings/GitSettings.svelte`, `settings/settingsSearch.ts` | The Commit box row and its search words |
 
 ## Design decisions
 

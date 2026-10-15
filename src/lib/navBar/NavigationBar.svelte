@@ -17,7 +17,7 @@
   import { navigation } from "$lib/stores/navigation.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { folderFor, relativeTo } from "$lib/stores/workspacePaths";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { portal } from "$lib/ui/portal";
   import { repoTones, type RepoTones, workspaceTones } from "$lib/views/files/tones";
   import {
@@ -432,7 +432,7 @@
   {#each crumbs as crumb, index (crumb.path)}
     {@const icon = crumbIcon(crumb)}
     {#if index > 0}
-      <span class="sep" aria-hidden="true"><Icon name="chevron-right" size={11} /></span>
+      <span class="sep" aria-hidden="true"><Icon name="chevron-right" size="small" /></span>
     {/if}
     <button
       class="crumb {crumb.kind}"
@@ -451,7 +451,7 @@
       {#if crumb.kind === "file"}
         <FileTypeIcon fileName={crumb.name} size="compact" />
       {:else if icon}
-        <Icon name={icon} size={12} />
+        <Icon name={icon} size="compact" />
       {/if}
       <span class="crumb-name">{crumb.name}</span>
     </button>
@@ -471,7 +471,7 @@
     style:width="{Math.min(POPUP_WIDTH, window.innerWidth - 16)}px"
   >
     <div class="field" class:empty={query === ""}>
-      <Icon name="search" size={12} />
+      <Icon name="search" size="compact" />
       <input
         bind:this={input}
         bind:value={query}
@@ -514,7 +514,7 @@
         >
           <span class="icon">
             {#if row.item.isDir}
-              <Icon name={row.item.isRepo ? "folder-git" : "folder"} size={14} />
+              <Icon name={row.item.isRepo ? "folder-git" : "folder"} size="normal" />
             {:else}
               <FileTypeIcon fileName={row.item.name} />
             {/if}
@@ -524,7 +524,7 @@
                 >{:else}{part.text}{/if}{/each}</span
           >
           {#if row.item.isDir}
-            <span class="more" aria-hidden="true"><Icon name="chevron-right" size={11} /></span>
+            <span class="more" aria-hidden="true"><Icon name="chevron-right" size="small" /></span>
           {/if}
         </div>
       {:else}
@@ -542,7 +542,7 @@
             onmousedown={(event) => event.preventDefault()}
             onclick={searchEverywhere}
           >
-            <span class="icon"><Icon name="search" size={13} /></span>
+            <span class="icon"><Icon name="search" size="medium" /></span>
             <span class="name">Search everywhere for "{query.trim()}"</span>
           </div>
         {:else}

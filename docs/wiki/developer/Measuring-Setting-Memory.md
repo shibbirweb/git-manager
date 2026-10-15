@@ -59,7 +59,7 @@ Everything else stayed within about 10 MB in both directions, which is the noise
 | --- | --- |
 | `src/lib/views/settings/memoryCost.ts` | `MEMORY_COSTS`: the amount and the tooltip sentence of each setting |
 | `src/lib/views/settings/MemoryFlag.svelte` | The mark beside a setting's name; nothing is drawn for a setting without a cost |
-| `src/lib/views/SettingsDialog.svelte` | Puts `<MemoryFlag setting="..." />` in the label of each measured row |
+| `src/lib/views/settings/*Settings.svelte` | Put `<MemoryFlag setting="..." />` in the `mark` of each measured row |
 
 ## Design decisions
 
@@ -77,6 +77,6 @@ Everything else stayed within about 10 MB in both directions, which is the noise
 
 ## Keeping this page in sync
 
-- Measure again after a change that can move memory: a new renderer, a new addon, a CodeMirror upgrade or a new view. Update `memoryCost.ts`, this table, the hints in `SettingsDialog.svelte`, [Memory Use](../usage/Memory-Use.md) and the settings usage pages together.
+- Measure again after a change that can move memory: a new renderer, a new addon, a CodeMirror upgrade or a new view. Update `memoryCost.ts`, this table, the hints in the section files under `views/settings/`, [Memory Use](../usage/Memory-Use.md) and the settings usage pages together.
 - A new setting that might cost memory needs its own A/B pair before it gets a mark.
 - See [How Memory Is Measured](How-Memory-Is-Measured.md) for the readout and `git-manager cli memory`.

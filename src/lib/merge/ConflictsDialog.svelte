@@ -4,7 +4,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ConflictFile, ConflictSummary, FileConflictKind, Side } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
 
   let summary = $state.raw<ConflictSummary | null>(null);
   let loadError = $state<string | null>(null);
@@ -156,14 +156,14 @@
         <span class="dim truncate">{summary.op.description}</span>
       {/if}
       <div class="spacer"></div>
-      <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size={15} /></button>
+      <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size="regular" /></button>
     </div>
 
     {#if loadError}
       <p class="error selectable">{loadError}</p>
     {:else if summary && files.length === 0}
       <div class="done">
-        <div class="done-icon"><Icon name="check" size={22} /></div>
+        <div class="done-icon"><Icon name="check" size="emphasis" /></div>
         <p>All conflicts are resolved.</p>
         {#if summary.op.kind !== "none" && summary.op.kind !== "other"}
           <button class="btn primary" onclick={continueOp}>Continue {opLabel}</button>
@@ -190,7 +190,7 @@
               onkeydown={() => undefined}
             >
               <span class="name truncate">
-                <Icon name="file" size={13} />
+                <Icon name="file" size="medium" />
                 <span class="file">{slash >= 0 ? file.path.slice(slash + 1) : file.path}</span>
                 {#if slash >= 0}
                   <span class="dir dim">{file.path.slice(0, slash)}</span>

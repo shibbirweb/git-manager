@@ -29,7 +29,7 @@
   }
 </script>
 
-<Stack direction="row" grow>
+<Stack direction="row" grow role="region" label="Commit">
   {#if ref}
     <CommitDetails
       repoPath={ref.repoRoot}

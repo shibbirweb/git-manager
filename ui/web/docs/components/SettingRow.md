@@ -17,10 +17,12 @@ Use for every setting in Settings and in settings-like panels. Put one control i
 - `title` (`string`, required): The setting's name.
 - `titleMatches` (`[number, number][]`, default `[]`): Ranges [start, end) of the title a search found, in the warning
   tint (Settings search).
-- `hint` (`string`, default `""`): One sentence on what it does.
+- `hint` (`string`, default `""`): One sentence on what it does; `backtick` words show as code, such as a git option.
 - `stacked` (`boolean`, default `false`): Control under the text, for wide controls.
 - `nested` (`boolean`, default `false`): Indented under the setting it belongs to.
 - `plain` (`boolean`, default `false`): No line between rows and a regular label (welcome screen).
+- `toggle` (`boolean`, default `false`): The whole row is its Switch's label: a click on the words flips it.
+- `mark` (`Snippet`): Something small after the title, such as a memory cost flag.
 - `hintContent` (`Snippet`): A rich hint (with a link) instead of `hint`.
 - `children` (`Snippet`, required): The control.
 

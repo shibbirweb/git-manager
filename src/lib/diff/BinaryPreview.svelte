@@ -7,7 +7,7 @@
 <script lang="ts">
   import { onDestroy, untrack } from "svelte";
   import { errorMessage } from "$lib/api";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { nextZoom, previewOf, type PreviewKind, zoomLabel } from "$lib/views/files/mediaPreview";
   import { type OpenedPreview, openPreview } from "$lib/views/files/previewScheme";
   import { sourceName } from "$lib/views/files/previewSource";
@@ -169,7 +169,7 @@
         title="Zoom out"
         aria-label="Zoom out"
       >
-        <Icon name="minus" size={13} />
+        <Icon name="minus" size="medium" />
       </button>
       <span class="zoom" aria-live="polite">{measured ? zoomLabel(shownZoom) : ""}</span>
       <button
@@ -179,7 +179,7 @@
         title="Zoom in"
         aria-label="Zoom in"
       >
-        <Icon name="plus" size={13} />
+        <Icon name="plus" size="medium" />
       </button>
       <button
         class="btn small"

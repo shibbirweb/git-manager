@@ -61,7 +61,7 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 | `src/lib/editor/blame.ts`, `blameModel.ts` | `loadBlame` for an inline source, `expandBlame`, `REMOVED_LINE` |
 | `src/lib/editor/setup.ts` | The `lineNumbers` option of `baseExtensions` |
 | `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `diffLayout` preference and `DIFF_LAYOUT_CHOICES` |
-| `src/lib/views/SettingsDialog.svelte`, `settings/settingsSearch.ts` | The Diff layout row and its search words |
+| `src/lib/views/settings/GitSettings.svelte`, `settings/settingsSearch.ts` | The Diff layout row and its search words |
 
 ## Design decisions
 

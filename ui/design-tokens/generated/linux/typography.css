@@ -14,6 +14,7 @@
   --font-size-title: 14px;
   --font-size-heading: 15px;
   --font-size-lead: 16px;
+  --font-size-page: 18px;
   --font-size-display: 22px;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -92,6 +93,12 @@
   --text-heading-line-height: normal;
   --text-heading-letter-spacing: normal;
   --text-heading-transform: none;
+  --text-page-title-family: var(--font-family-ui);
+  --text-page-title-size: 18px;
+  --text-page-title-weight: 600;
+  --text-page-title-line-height: normal;
+  --text-page-title-letter-spacing: normal;
+  --text-page-title-transform: none;
   --text-display-family: var(--font-family-ui);
   --text-display-size: 22px;
   --text-display-weight: 600;

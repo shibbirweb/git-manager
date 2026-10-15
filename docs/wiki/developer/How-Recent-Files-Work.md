@@ -69,7 +69,7 @@ With it off, `openRecentFiles` in `workspaceActions.ts` shows an info toast with
 | `src/lib/recentFiles/recentFilesModel.ts` | Popup rows, filtering, the first selected row |
 | `src/lib/recentFiles/RecentFiles.svelte` | The popup |
 | `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `recentFiles` setting and the `recentFileLists` key of `state.json` |
-| `src/lib/views/SettingsDialog.svelte`, `views/settings/memoryCost.ts` | The Settings row and its memory mark |
+| `src/lib/views/settings/EditorFeatureSettings.svelte`, `views/settings/memoryCost.ts` | The Settings row and its memory mark |
 | `src/lib/menu/menuSpec.ts`, `menuState.ts`, `menuActions.ts` | Edit > Recent Files |
 | `src/lib/views/workspaceShortcuts.ts`, `workspaceActions.ts` | The window key and the open guard |
 | `src/lib/quickOpen/QuickOpen.svelte`, `src/lib/search/FileSearch.svelte` | Their recent sections read the same list |

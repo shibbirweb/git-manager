@@ -27,7 +27,7 @@
   } from "$lib/stores/workspacePaths";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { platformName } from "$lib/update/releases";
@@ -1274,7 +1274,7 @@
       title="Add Folder to Workspace..."
       aria-label="Add folder to workspace"
     >
-      <Icon name="plus" size={14} />
+      <Icon name="plus" size="normal" />
     </button>
     <button
       class="icon-btn small"
@@ -1283,16 +1283,16 @@
       title={openedFile ? "Select Opened File" : "Select Opened File (open a file first)"}
       aria-label="Select opened file"
     >
-      <Icon name="locate" size={14} />
+      <Icon name="locate" size="normal" />
     </button>
     <button class="icon-btn small" onclick={collapseAll} title="Collapse all" aria-label="Collapse all">
-      <Icon name="chevron-up" size={14} />
+      <Icon name="chevron-up" size="normal" />
     </button>
     <button class="icon-btn small" onclick={() => void refreshLoaded()} title="Refresh" aria-label="Refresh">
-      <Icon name="refresh" size={13} />
+      <Icon name="refresh" size="medium" />
     </button>
     <button class="icon-btn small" onclick={() => settings.toggleExplorer()} title="Hide files" aria-label="Hide files">
-      <Icon name="x" size={14} />
+      <Icon name="x" size="normal" />
     </button>
   </div>
 
@@ -1351,12 +1351,12 @@
           >
             <span class="chevron">
               {#if row.entry.isDir}
-                <Icon name={row.expanded ? "chevron-down" : "chevron-right"} size={12} />
+                <Icon name={row.expanded ? "chevron-down" : "chevron-right"} size="compact" />
               {/if}
             </span>
             <span class="icon">
               {#if row.entry.isDir}
-                <Icon name={row.entry.isRepo ? "folder-git" : "folder"} size={14} />
+                <Icon name={row.entry.isRepo ? "folder-git" : "folder"} size="normal" />
               {:else}
                 <FileTypeIcon fileName={row.entry.name} />
               {/if}

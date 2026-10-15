@@ -22,15 +22,8 @@
   />
 {:else if id === "status-dot"}
   <StatusDot tone="success" />
-{:else if id === "chip-pill-mark"}
-  <Chip text="2 waiting" tone="warning" onclick={run} />
-  <Mark text="CC" />
-{:else if id === "font-chip"}
-  <Chip variant="pick" text="Menlo" onclick={run} />
 {:else if id === "pill"}
   <Pill tone="warning">Unsaved</Pill>
 {:else if id === "meter"}
   <Meter label="Web content" value="181 MB" fraction={0.45} />
-{:else if id === "zoom-badge"}
-  <ZoomBadge text="110%" />
 {/if}

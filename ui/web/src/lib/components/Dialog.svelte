@@ -28,6 +28,8 @@
     footnote?: Snippet;
     toolbar?: Snippet;
     sidebar?: Snippet;
+    /** Split: a head over the content, such as the open section's name, with a close button; it moves it too. */
+    contentTitle?: string;
     children: Snippet;
   }
 
@@ -48,6 +50,7 @@
     footnote,
     toolbar,
     sidebar,
+    contentTitle = "",
     children,
   }: Props = $props();
 
@@ -56,6 +59,8 @@
   let returnFocus: HTMLElement | null = null;
 
   const mover = new DialogMover();
+  const grab = () => (movable ? dialogEl : null);
+  const dragHint = $derived(movable ? "Drag to move, double-click to center" : undefined);
   function close(): void {
     open = false;
     onclose?.();
@@ -83,19 +88,7 @@
 </script>
 
 {#snippet heading()}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <h2
-    id={titleId}
-    class:handle={movable}
-    title={movable ? "Drag to move, double-click to center" : undefined}
-    onpointerdown={(event) => movable && dialogEl && mover.start(event, dialogEl)}
-    onpointermove={(event) => mover.move(event)}
-    onpointerup={() => mover.end()}
-    onpointercancel={() => mover.end()}
-    ondblclick={() => movable && mover.center()}
-  >
-    {title}
-  </h2>
+  <h2 id={titleId} class:handle={movable} title={dragHint} use:mover.handle={grab}>{title}</h2>
 {/snippet}
 
 {#if open}
@@ -121,7 +114,14 @@
           {@render heading()}
           {@render sidebar?.()}
         </div>
-        <div class="content">{@render children()}</div>
+        <div class="content">
+          {#if contentTitle}
+            <div class:handle={movable} title={dragHint} use:mover.handle={grab}>
+              <DialogHead title={contentTitle} size="content" onclose={dismissible ? close : undefined} />
+            </div>
+          {/if}
+          {@render children()}
+        </div>
       {:else}
         {#if icon || subtitle || variant === "panel"}
           <DialogHead

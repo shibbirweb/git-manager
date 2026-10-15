@@ -6,7 +6,7 @@
   import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/scrollMarkers";
   import { baseExtensions, editorLanguage } from "$lib/editor/setup";
   import type { FileDiff, LineAction, LineHunk, LineSelection } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { hunkDiff, hunkRanges, SCAN_LIMIT } from "./hunkDiff";
   import {
     applyBlock,
@@ -650,7 +650,7 @@
       disabled={!textual || identical || chunkCount === 0}
       title="Previous change (Shift+F7)"
     >
-      <Icon name="arrow-up" size={14} />
+      <Icon name="arrow-up" size="normal" />
     </button>
     <button
       class="icon-btn small"
@@ -658,7 +658,7 @@
       disabled={!textual || identical || chunkCount === 0}
       title="Next change (F7)"
     >
-      <Icon name="arrow-down" size={14} />
+      <Icon name="arrow-down" size="normal" />
     </button>
     {#if textual && !identical}
       <span class="counter dim">{counterLabel}</span>
@@ -674,7 +674,7 @@
         title="Side by side: old text on the left, new on the right"
         aria-label="Side by side"
       >
-        <Icon name="split-view" size={13} />
+        <Icon name="split-view" size="medium" />
       </button>
       <button
         class="toggle layout-button"
@@ -685,7 +685,7 @@
         title="Inline: removed lines above the lines that replace them"
         aria-label="Inline"
       >
-        <Icon name="split-rows" size={13} />
+        <Icon name="split-rows" size="medium" />
       </button>
     </span>
     <button
@@ -696,7 +696,7 @@
       disabled={!textual || identical}
       title="Collapse unchanged fragments"
     >
-      <Icon name="list-tree" size={13} />
+      <Icon name="list-tree" size="medium" />
       Collapse unchanged
     </button>
     {#if blame && textual && !identical}
@@ -707,13 +707,13 @@
         aria-pressed={settings.blameGutter}
         title="Show who changed each line and when (git blame)"
       >
-        <Icon name="history" size={13} />
+        <Icon name="history" size="medium" />
         Blame
       </button>
     {/if}
     {#if workingFile}
       <button class="toggle" onclick={() => void openWorkingFile()} title="Open the file itself in an editor tab">
-        <Icon name="external-link" size={13} />
+        <Icon name="external-link" size="medium" />
         Open File
       </button>
     {/if}
@@ -726,7 +726,7 @@
           disabled={selectedLines === 0}
           title={lineTitle("Stage the selected lines, or the change at the cursor", "stage")}
         >
-          <Icon name="plus" size={13} />
+          <Icon name="plus" size="medium" />
           Stage Lines
         </button>
         <button
@@ -735,7 +735,7 @@
           disabled={selectedLines === 0}
           title={lineTitle("Discard the selected lines in the work tree", "discard")}
         >
-          <Icon name="discard" size={13} />
+          <Icon name="discard" size="medium" />
           Discard Lines
         </button>
       {:else}
@@ -745,7 +745,7 @@
           disabled={selectedLines === 0}
           title={lineTitle("Unstage the selected lines, or the change at the cursor", "unstage")}
         >
-          <Icon name="minus" size={13} />
+          <Icon name="minus" size="medium" />
           Unstage Lines
         </button>
       {/if}
@@ -782,7 +782,7 @@
       <div class="labels">
         <span class="label inline-label" title={`${leftLabel} to ${rightLabel}`}>
           <span class="truncate">{leftLabel}</span>
-          <Icon name="arrow-right" size={11} />
+          <Icon name="arrow-right" size="small" />
           <span class="truncate">{rightLabel}</span>
         </span>
       </div>

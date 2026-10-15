@@ -15,6 +15,8 @@
     weight?: Weight;
     mono?: boolean;
     truncate?: boolean;
+    /** With truncate: in a tight row it shortens first, down to nothing, so the row's smallest width leaves it out. */
+    giveWay?: boolean;
     selectable?: boolean;
     tabular?: boolean;
     wrap?: "normal" | "anywhere" | "pre";
@@ -33,6 +35,7 @@
     weight,
     mono = false,
     truncate = false,
+    giveWay = false,
     selectable = false,
     tabular = false,
     wrap = "normal",
@@ -48,31 +51,47 @@
   const narrow = useNarrow(() => hideAt);
 </script>
 
-<svelte:element
-  this={element}
-  class="text"
-  class:truncate
-  class:selectable
-  class:tabular
-  class:anywhere={wrap === "anywhere"}
-  class:pre={wrap === "pre"}
-  class:strike
-  class:hidden={narrow()}
-  {title}
-  style:color={toneColor(shownTone)}
-  style:font-family={mono ? "var(--font-family-mono)" : textStyleVar(variant, "family")}
-  style:font-size={size ? fontSize(size) : textStyleVar(variant, "size")}
-  style:font-weight={weight ? fontWeight(weight) : textStyleVar(variant, "weight")}
-  style:line-height={textStyleVar(variant, "line-height")}
-  style:letter-spacing={textStyleVar(variant, "letter-spacing")}
-  style:text-transform={textStyleVar(variant, "transform")}
->
-  {@render children()}
-</svelte:element>
+{#snippet words()}
+  <svelte:element
+    this={element}
+    class="text"
+    class:truncate
+    class:selectable
+    class:tabular
+    class:anywhere={wrap === "anywhere"}
+    class:pre={wrap === "pre"}
+    class:strike
+    class:hidden={narrow()}
+    {title}
+    style:color={toneColor(shownTone)}
+    style:font-family={mono ? "var(--font-family-mono)" : textStyleVar(variant, "family")}
+    style:font-size={size ? fontSize(size) : textStyleVar(variant, "size")}
+    style:font-weight={weight ? fontWeight(weight) : textStyleVar(variant, "weight")}
+    style:line-height={textStyleVar(variant, "line-height")}
+    style:letter-spacing={textStyleVar(variant, "letter-spacing")}
+    style:text-transform={textStyleVar(variant, "transform")}
+  >
+    {@render children()}
+  </svelte:element>
+{/snippet}
+
+{#if giveWay}
+  <span class="give-way">{@render words()}</span>
+{:else}
+  {@render words()}
+{/if}
 
 <style>
   .text {
     margin: 0;
+  }
+
+  /* Shortens before its neighbours, down to nothing: a grid track whose smallest width is 0, not the longest word. */
+  .give-way {
+    flex: 0 1000 auto;
+    display: inline-grid;
+    grid-template-columns: minmax(0, max-content);
+    min-width: 0;
   }
 
   .truncate {

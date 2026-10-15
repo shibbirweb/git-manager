@@ -30,7 +30,9 @@ export const largerDocs: ComponentDoc[] = [
     summary: "A table of many rows with a header, like the log: named column widths, a lead column, selection.",
     usage:
       "Use for long lists with columns (commits, remotes, shortcuts). Only rows in view are drawn. Draw cells " +
-      "with the `cell` snippet, or let the table show the row's value under each column id.",
+      "with the `cell` snippet, or let the table show the row's value under each column id. The keys are List's " +
+      "(arrows, Page keys, Home, End, Enter). `focus()` takes the focus and `reveal(key, place)` scrolls a row the " +
+      "app selected into view, to the middle with `center` (a commit opened from blame).",
     aliases: ["Table", "Data table", "Grid"],
     props: [
       prop("columns", "DataColumn[] ({ id; label; width: fill|xsmall|small|side|medium|large; tone?; mono?; small? })",
@@ -45,15 +47,20 @@ export const largerDocs: ComponentDoc[] = [
       prop("selected", "string | null", "The selected row's id.", { default: "null", bindable: true }),
       prop("leadWidth", "number", "The lead column's width, such as the graph's.", { default: "0", data: true }),
       prop("strong", "(row: T) => boolean", "Rows whose first column is bold (HEAD).", { default: "() => false" }),
+      prop("field", "HTMLInputElement | null", "A filter field above it: Down or Enter there moves the focus in.", {
+        default: "null",
+      }),
       prop("lead", "Snippet<[T]>", "A column before the others, such as CommitGraph."),
       prop("cell", "Snippet<[T, DataColumn]>", "Draws a cell."),
+      prop("empty", "Snippet", "Shown under the header when there are no rows, such as an EmptyState."),
       prop("onopen", "(row: T) => void", "Double-click or Enter."),
       prop("oncontextmenu", "(row: T, event: MouseEvent) => void", "Right-click, for its Menu."),
+      prop("onnearend", "() => void", "Scrolled near the end: load the next page (once per row count)."),
     ],
     examples: [
       { title: "Commits", code: '<DataTable label="Commits" {columns} rows={commits} rowKey={(c) => c.id} />' },
     ],
-    logic: ["table.ts", "virtualWindow.ts"],
+    logic: ["table.ts", "listWiring.svelte.ts"],
     replaces: ['the .columns header and .row list of LogView.svelte', "RemotesDialog and McpToolsDialog lists"],
   },
   {

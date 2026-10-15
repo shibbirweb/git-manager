@@ -49,6 +49,11 @@ export function scrollToShowBox(top: number, bottom: number, scrollTop: number, 
   return null;
 }
 
+/** The scrollTop that puts the middle of a row from `top` to `bottom` in the middle of the view (never below 0). */
+export function scrollToCenterBox(top: number, bottom: number, viewportHeight: number): number {
+  return Math.max(0, Math.round((top + bottom - viewportHeight) / 2));
+}
+
 export interface ListWindow extends RowRange {
   /** The rows' full height in CSS, or null when every row is drawn and the list sizes itself. */
   total: string | null;

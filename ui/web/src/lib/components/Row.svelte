@@ -7,7 +7,7 @@
   import { isInsideList } from "../logic/listContext";
   import Icon from "./Icon.svelte";
 
-  type RowSize = "tree" | "list" | "history" | "entry" | "large";
+  type RowSize = "tree" | "list" | "history" | "entry" | "large" | "section" | "group";
 
   interface Props {
     size?: RowSize;
@@ -18,8 +18,14 @@
     align?: "center" | "baseline";
     actionsShown?: "hover" | "always";
     line?: boolean;
+    /** An accent stripe on its left edge, such as the active repository's header. */
+    mark?: boolean;
     title?: string;
     label?: string;
+    /** Its element id, so a list that keeps the focus elsewhere can point at it or scroll to it. */
+    id?: string;
+    /** An item of a ListRegion that keeps the keys: its role and selection for screen readers, and no tab stop. */
+    item?: "option" | "treeitem" | null;
     actions?: Snippet;
     children: Snippet;
     onclick?: (event: MouseEvent) => void;
@@ -37,8 +43,11 @@
     align = "center",
     actionsShown = "hover",
     line = false,
+    mark = false,
     title,
     label,
+    id,
+    item = null,
     actions,
     children,
     onclick,
@@ -48,8 +57,9 @@
   }: Props = $props();
 
   const inList = isInsideList();
-  const button = $derived(!inList && onclick !== undefined);
-  const indent = $derived(depth > 0 ? `calc(var(--row-${size}-padding-x) + ${depth} * var(--row-indent))` : null);
+  const button = $derived(!inList && item === null && onclick !== undefined);
+  const start = $derived(size === "group" ? "padding-left" : "padding-x");
+  const indent = $derived(depth > 0 ? `calc(var(--row-${size}-${start}) + ${depth} * var(--row-indent))` : null);
 
   /** Clicks on a control inside the row (an action button, a rename field) belong to that control. */
   function onControl(event: MouseEvent): boolean {
@@ -76,11 +86,14 @@
   class:disabled
   class:baseline={align === "baseline"}
   class:line
-  role={button ? "button" : undefined}
-  tabindex={button && !disabled ? 0 : undefined}
+  class:mark
+  role={item ?? (button ? "button" : undefined)}
+  tabindex={button && !disabled ? 0 : item ? -1 : undefined}
+  aria-selected={item ? selected : undefined}
   aria-label={label}
+  {id}
   aria-disabled={button && disabled ? true : undefined}
-  aria-expanded={button && typeof expanded === "boolean" ? expanded : undefined}
+  aria-expanded={(button || item === "treeitem") && typeof expanded === "boolean" ? expanded : undefined}
   {title}
   style:padding-left={indent}
   onclick={(event) => {
@@ -150,6 +163,35 @@
     min-height: var(--row-large-min-height);
     padding: var(--row-large-padding-y) var(--row-large-padding-x);
     border-radius: var(--row-large-radius);
+  }
+
+  /* A repository's header in the Changes panel: taller than a list row. */
+  .section {
+    gap: var(--row-section-gap);
+    min-height: var(--row-section-height);
+    padding: 0 var(--row-section-padding-x);
+  }
+
+  /* A row under a Collapsible's header, its content lined up with the header's title (No Changes). */
+  .group {
+    gap: var(--row-group-gap);
+    height: var(--row-group-height);
+    padding: 0 var(--row-group-padding-right) 0 var(--row-group-padding-left);
+  }
+
+  .mark {
+    position: relative;
+  }
+
+  .mark::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: var(--row-mark-inset);
+    bottom: var(--row-mark-inset);
+    width: var(--row-mark-width);
+    border-radius: 0 var(--radius-tiny) var(--radius-tiny) 0;
+    background: var(--accent);
   }
 
   /* A line under the row, for rows in a ListBox; the box drops the last one. */

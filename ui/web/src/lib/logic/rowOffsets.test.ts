@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { listWindow, rowOffsets, scrollToShowBox, visibleByOffsets } from "./rowOffsets";
+import { listWindow, rowOffsets, scrollToCenterBox, scrollToShowBox, visibleByOffsets } from "./rowOffsets";
 
 describe("rowOffsets", () => {
   it("adds the heights up, ending with the total", () => {
@@ -40,6 +40,16 @@ describe("scrollToShowBox", () => {
 
   it("shows the top of a row taller than the view", () => {
     expect(scrollToShowBox(300, 700, 0, 100)).toBe(300);
+  });
+});
+
+describe("scrollToCenterBox", () => {
+  it("puts the row in the middle of the view", () => {
+    expect(scrollToCenterBox(500, 526, 200)).toBe(413);
+  });
+
+  it("stops at the top for rows near the start", () => {
+    expect(scrollToCenterBox(26, 52, 200)).toBe(0);
   });
 });
 

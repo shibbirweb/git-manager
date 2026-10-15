@@ -10,7 +10,7 @@
   import { baseName, folderFor, parentOf, relativeTo } from "$lib/stores/workspacePaths";
   import type { DeletedLocalFile, FileDiff, FileLocalHistory, LocalSnapshot } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { localHistory } from "./localHistory.svelte";
   import { groupByDay, isSafetyCopy, movedSelection, sizeText, snapshotLabel, timeText } from "./localHistoryModel";
 
@@ -195,10 +195,10 @@
           title="Back to Recently Deleted"
           aria-label="Back"
         >
-          <Icon name="arrow-left" size={14} />
+          <Icon name="arrow-left" size="normal" />
         </button>
       {/if}
-      <Icon name="history" size={15} />
+      <Icon name="history" size="regular" />
       {#if filePath}
         <h2>Local History: {baseName(filePath)}</h2>
         <span class="path dim selectable" title={filePath}>{displayPath(parentOf(filePath))}</span>
@@ -208,13 +208,13 @@
       {/if}
       <span class="spacer"></span>
       <button class="icon-btn" onclick={() => localHistory.close()} title="Close" aria-label="Close">
-        <Icon name="x" size={14} />
+        <Icon name="x" size="normal" />
       </button>
     </header>
 
     {#if loadError}
       <div class="placeholder">
-        <Icon name="alert" size={18} />
+        <Icon name="alert" size="xlarge" />
         <div>Could not read Local History</div>
         <div class="dim selectable">{loadError}</div>
       </div>
@@ -227,7 +227,7 @@
         <div class="deleted-list">
           {#each deleted as item (item.filePath)}
             <button class="deleted-row" onclick={() => localHistory.openFile(item.filePath, target.folderPaths)}>
-              <Icon name="file" size={13} />
+              <Icon name="file" size="medium" />
               <span class="name">{baseName(item.filePath)}</span>
               <span class="dim folder" title={item.filePath}>{displayPath(parentOf(item.filePath))}</span>
               <span class="dim when" title={fullDate(Math.floor(item.latest.time / 1000))}>
@@ -301,7 +301,7 @@
           </div>
           {#if diffError}
             <div class="placeholder">
-              <Icon name="alert" size={18} />
+              <Icon name="alert" size="xlarge" />
               <div class="dim selectable">{diffError}</div>
             </div>
           {:else if diff && filePath}

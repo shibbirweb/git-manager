@@ -24,7 +24,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { FileSearchProgress, OutlineResult, SymbolSearchProgress } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import {
     type CaretInfo,
     commandRows,
@@ -592,7 +592,7 @@
 
 <div class="popup" role="dialog" aria-label="Quick Open">
   <div class="field">
-    <Icon name={parsed.mode === "commands" ? "carets" : "search"} size={15} />
+    <Icon name={parsed.mode === "commands" ? "carets" : "search"} size="regular" />
     <input
       bind:this={input}
       {value}
@@ -647,7 +647,7 @@
             onclick={() => activate(row)}
           >
             {#if row.kind === "file"}
-              <Icon name="file" size={14} />
+              <Icon name="file" size="normal" />
               <span class="name"
                 >{#each row.file.nameParts as part, partIndex (partIndex)}{#if part.match}<b>{part.text}</b
                     >{:else}{part.text}{/if}{/each}</span
@@ -666,7 +666,7 @@
                     >{:else}{part.text}{/if}{/each}</span
               >
               {#if row.command.checked}
-                <span class="check" title="On"><Icon name="check" size={13} /></span>
+                <span class="check" title="On"><Icon name="check" size="medium" /></span>
               {/if}
               {#if !row.command.enabled && row.command.reason}
                 <span class="reason">{row.command.reason}</span>
@@ -688,7 +688,7 @@
               {/if}
               <span class="folder">:{row.item.line}</span>
             {:else if row.kind === "line"}
-              <Icon name="arrow-right" size={14} />
+              <Icon name="arrow-right" size="normal" />
               <span class="name">{row.label}</span>
             {:else if row.kind === "help"}
               <kbd class="prefix">{row.prefix === "" ? "..." : row.prefix}</kbd>

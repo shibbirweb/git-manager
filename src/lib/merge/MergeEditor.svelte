@@ -7,7 +7,7 @@
   import { baseExtensions, editorLanguage } from "$lib/editor/setup";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import type { ChangeMark } from "$lib/editor/lineDiff";
   import { changeMarkField, type MarkSource, scrollMarkers, setChangeMarks } from "$lib/editor/scrollMarkers";
   import {
@@ -614,7 +614,7 @@
         disabled={nonConflicting === 0}
         title="Apply non-conflicting changes from the left"
       >
-        <Icon name="chevrons-right" size={15} />
+        <Icon name="chevrons-right" size="regular" />
       </button>
       <button
         class="icon-btn wand"
@@ -622,7 +622,7 @@
         disabled={nonConflicting === 0}
         title="Apply all non-conflicting changes"
       >
-        <Icon name="wand" size={15} />
+        <Icon name="wand" size="regular" />
         <span>Apply non-conflicting</span>
       </button>
       <button
@@ -631,7 +631,7 @@
         disabled={nonConflicting === 0}
         title="Apply non-conflicting changes from the right"
       >
-        <Icon name="chevrons-left" size={15} />
+        <Icon name="chevrons-left" size="regular" />
       </button>
     </div>
     <div class="divider"></div>
@@ -642,10 +642,10 @@
         disabled={counts.changes === 0}
         title="Previous change (Shift+F7)"
       >
-        <Icon name="arrow-up" size={15} />
+        <Icon name="arrow-up" size="regular" />
       </button>
       <button class="icon-btn" onclick={() => navigate(1)} disabled={counts.changes === 0} title="Next change (F7)">
-        <Icon name="arrow-down" size={15} />
+        <Icon name="arrow-down" size="regular" />
       </button>
     </div>
     <div class="divider"></div>
@@ -656,7 +656,7 @@
         disabled={!canUndo}
         title="Undo ({localKeys('CmdOrCtrl+Z')} in the result)"
       >
-        <Icon name="undo" size={15} />
+        <Icon name="undo" size="regular" />
       </button>
       <button
         class="icon-btn"
@@ -664,7 +664,7 @@
         disabled={!canRedo}
         title="Redo ({localKeys('CmdOrCtrl+Shift+Z')} in the result)"
       >
-        <Icon name="redo" size={15} />
+        <Icon name="redo" size="regular" />
       </button>
     </div>
     <div class="divider"></div>
@@ -675,7 +675,7 @@
       onclick={toggleWhitespace}
       title="Ignore whitespace differences when comparing"
     >
-      <Icon name="pilcrow" size={13} />
+      <Icon name="pilcrow" size="medium" />
       Ignore whitespace
     </button>
     <div class="spacer"></div>
@@ -705,10 +705,10 @@
             title={connector.append ? "Append left change" : "Apply left change"}
             onclick={() => apply(connector.id, "ours")}
           >
-            <Icon name="chevrons-right" size={12} strokeWidth={2.5} />
+            <Icon name="chevrons-right" size="compact" stroke="bold" />
           </button>
           <button class="chunk-btn ignore" title="Ignore left change" onclick={() => ignore(connector.id, "ours")}>
-            <Icon name="x" size={11} strokeWidth={2.5} />
+            <Icon name="x" size="small" stroke="bold" />
           </button>
         </div>
       {/each}
@@ -723,14 +723,14 @@
       {#each rightConnectors as connector (connector.id)}
         <div class="buttons right" style="top: {connector.buttonY}px">
           <button class="chunk-btn ignore" title="Ignore right change" onclick={() => ignore(connector.id, "theirs")}>
-            <Icon name="x" size={11} strokeWidth={2.5} />
+            <Icon name="x" size="small" stroke="bold" />
           </button>
           <button
             class="chunk-btn apply {connector.type}"
             title={connector.append ? "Append right change" : "Apply right change"}
             onclick={() => apply(connector.id, "theirs")}
           >
-            <Icon name="chevrons-left" size={12} strokeWidth={2.5} />
+            <Icon name="chevrons-left" size="compact" stroke="bold" />
           </button>
         </div>
       {/each}

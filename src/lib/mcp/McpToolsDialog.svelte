@@ -5,7 +5,7 @@
   import { settings } from "$lib/stores/settings.svelte";
   import type { McpToolInfo } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { mcpStore } from "./mcpStore.svelte";
   import {
     changedTools,
@@ -117,7 +117,7 @@
     <div class="head">
       <div class="title-row">
         <h2 id="mcp-tools-title">Available MCP Tools</h2>
-        <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size={15} /></button>
+        <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size="regular" /></button>
       </div>
       <div class="status">
         <span class="dot" class:on={status?.running} class:error={!!status?.error || !!mcpStore.statusError}></span>

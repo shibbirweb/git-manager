@@ -22,9 +22,9 @@ export const contentDocs: ComponentDoc[] = [
     aliases: ["Pre", "Output"],
     props: [
       prop("text", "string", "The text.", { required: true }),
-      prop("variant", '"output" | "command" | "detail" | "preview" | "prompt"',
-        "Console output, a dialog's git command, error details, a file's text before it is used (a gist), or " +
-        "an agent's prompt.", {
+      prop("variant", '"output" | "command" | "detail" | "preview" | "prompt" | "value"',
+        "Console output, a dialog's git command, error details, a file's text before it is used (a gist), an " +
+        "agent's prompt, or one short value next to its buttons (a folder path, a token).", {
         default: '"output"',
       }),
       prop("maxHeight", '"none" | "small" | "medium" | "large"', "Scroll beyond 200, 360 or 520 px.", {
@@ -105,6 +105,9 @@ export const contentDocs: ComponentDoc[] = [
       prop("size", '"normal" | "small"', "Height.", { default: '"normal"' }),
       prop("icon", "IconName | null", "An icon before the text.", { default: "null" }),
       prop("disabled", "boolean", "Disables both parts.", { default: "false" }),
+      prop("actionDisabled", "boolean", "Only the main part is off; the arrow still opens the menu, such as " +
+        "Commit with nothing staged while Commit (Amend) still works.", { default: "false" }),
+      prop("title", "string", "The main part's tooltip, such as why it is off."),
       prop("onclick", "() => void", "The main action.", { required: true }),
     ],
     examples: [{ title: "Commit", code: '<SplitButton text="Commit" menuLabel="More" {items} onclick={commit} />' }],

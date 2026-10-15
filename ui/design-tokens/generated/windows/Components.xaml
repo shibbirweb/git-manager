@@ -15,6 +15,7 @@
     <x:Double x:Key="GmButtonGhostMaxWidth">280</x:Double>
     <x:Double x:Key="GmButtonHeightMini">20</x:Double>
     <x:Double x:Key="GmButtonPaddingXMini">8</x:Double>
+    <x:Double x:Key="GmButtonIconOnlyPaddingX">6</x:Double>
     <x:Double x:Key="GmIconButtonSize">28</x:Double>
     <x:Double x:Key="GmIconButtonSizeSmall">22</x:Double>
     <x:Double x:Key="GmIconButtonSizeCompact">24</x:Double>
@@ -41,6 +42,11 @@
     <x:Double x:Key="GmInputPaddingY">6</x:Double>
     <x:Double x:Key="GmInputRadius">6</x:Double>
     <x:Double x:Key="GmInputFocusRing">2</x:Double>
+    <x:Double x:Key="GmTextAreaShortHeight">56</x:Double>
+    <x:Double x:Key="GmTextAreaTallHeight">96</x:Double>
+    <x:Double x:Key="GmTextAreaToolsInset">3</x:Double>
+    <x:Double x:Key="GmTextAreaToolsGap">1</x:Double>
+    <x:Double x:Key="GmTextAreaToolsRoom">12</x:Double>
     <x:Double x:Key="GmSelectArrowInset">8</x:Double>
     <x:Double x:Key="GmSelectArrowSpace">28</x:Double>
     <x:Double x:Key="GmSelectSmallArrowInset">6</x:Double>
@@ -162,6 +168,7 @@
     <x:Double x:Key="GmPopoverRadius">8</x:Double>
     <x:Double x:Key="GmPopoverFormPadding">12</x:Double>
     <x:Double x:Key="GmPopoverFormGap">8</x:Double>
+    <x:Double x:Key="GmPopoverWindowInset">8</x:Double>
     <x:Double x:Key="GmToastMaxWidth">420</x:Double>
     <x:Double x:Key="GmToastGap">8</x:Double>
     <x:Double x:Key="GmToastRadius">8</x:Double>
@@ -218,6 +225,8 @@
     <x:Double x:Key="GmActivityBarDotInset">7</x:Double>
     <x:Double x:Key="GmActivityBarDotRing">2</x:Double>
     <x:Double x:Key="GmActivityBarBadgeBottom">3</x:Double>
+    <x:Double x:Key="GmActivityBarSeparatorWidth">22</x:Double>
+    <x:Double x:Key="GmActivityBarSeparatorSpace">4</x:Double>
     <x:Double x:Key="GmStatusBarHeight">24</x:Double>
     <x:Double x:Key="GmStatusBarItemHeight">20</x:Double>
     <x:Double x:Key="GmStatusBarItemPaddingX">7</x:Double>
@@ -265,13 +274,4 @@
     <x:Double x:Key="GmFileRowTagPaddingX">5</x:Double>
     <x:Double x:Key="GmFileRowTagLineHeight">14</x:Double>
     <x:Double x:Key="GmFileRowListPaddingX">10</x:Double>
-    <x:Double x:Key="GmSidebarRowHeight">24</x:Double>
-    <x:Double x:Key="GmSidebarRowGap">5</x:Double>
-    <x:Double x:Key="GmSidebarRowPaddingLeft">6</x:Double>
-    <x:Double x:Key="GmSidebarRowPaddingRight">6</x:Double>
-    <x:Double x:Key="GmSidebarRowIndent">12</x:Double>
-    <x:Double x:Key="GmSidebarRowChevron">14</x:Double>
-    <x:Double x:Key="GmSidebarRowButtonSize">20</x:Double>
-    <x:Double x:Key="GmDescriptionListRowGap">3</x:Double>
-    <x:Double x:Key="GmDescriptionListColumnGap">10</x:Double>
 </ResourceDictionary>

@@ -4,7 +4,7 @@
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { changesSelection } from "./changes/selection.svelte";
   import { openFileSearch, openNavigationBar, openQuickOpen } from "./workspaceActions";
 
@@ -27,16 +27,16 @@
     </div>
   {/if}
   <div class="empty">
-    <div class="logo"><Icon name="merge" size={28} /></div>
+    <div class="logo"><Icon name="merge" size="giant" /></div>
     <p class="title">{repoStore.workspace?.name ?? "Git Manager"}</p>
     <div class="actions">
       <button class="action" onclick={() => settings.setLeftPanel("changes")}>
-        <Icon name="git-compare" size={15} />
+        <Icon name="git-compare" size="regular" />
         <span>Review changes</span>
         {#if keys.changes}<kbd>{keys.changes}</kbd>{/if}
       </button>
       <button class="action" onclick={() => changesSelection.toggleLog()} disabled={!repoStore.repo}>
-        <Icon name="history" size={15} />
+        <Icon name="history" size="regular" />
         <span>Show the Log</span>
         {#if keys.log}<kbd>{keys.log}</kbd>{/if}
       </button>
@@ -48,21 +48,21 @@
           }
         }}
       >
-        <Icon name="list-tree" size={15} />
+        <Icon name="list-tree" size="regular" />
         <span>Open a file from the Files panel</span>
       </button>
       <button class="action" onclick={() => openQuickOpen("")}>
-        <Icon name="file" size={15} />
+        <Icon name="file" size="regular" />
         <span>Go to File</span>
         {#if keys.goToFile}<kbd>{keys.goToFile}</kbd>{/if}
       </button>
       <button class="action" onclick={() => openFileSearch("everywhere")}>
-        <Icon name="search" size={15} />
+        <Icon name="search" size="regular" />
         <span>Search Everywhere</span>
         <kbd>Shift Shift</kbd>
       </button>
       <button class="action" onclick={openNavigationBar}>
-        <Icon name="chevrons-right" size={15} />
+        <Icon name="chevrons-right" size="regular" />
         <span>Navigation Bar</span>
         {#if keys.navigationBar}<kbd>{keys.navigationBar}</kbd>{/if}
       </button>

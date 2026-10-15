@@ -20,23 +20,6 @@
     {/snippet}
     {#snippet end()}<StatusItem icon="memory" text="181 MB" open onclick={run} />{/snippet}
   </StatusBar>
-{:else if id === "activity-bar"}
-  <ActivityBar
-    label="Side panels"
-    active="changes"
-    items={[
-      { id: "files", icon: "file", label: "Files" },
-      { id: "changes", icon: "git-compare", label: "Changes" },
-    ]}
-  />
-{:else if id === "resize-handle"}
-  <!-- The harness gives the handle a panel's height, like the reference. -->
-  <div style="display: flex; height: 120px">
-    <ResizeHandle size={200} side="left" preset="list" max={400} label="Resize" onresize={run} />
-  </div>
-{:else if id === "search-toggles"}
-  <SearchToggles {options} />
-  <SearchToggles {options} compact />
 {:else if id === "find-bar"}
   <FindBar query="total" current={1} total={4} />
 {/if}

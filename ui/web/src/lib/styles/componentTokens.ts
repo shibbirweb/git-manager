@@ -14,6 +14,7 @@ export const componentTokens1 = {
     ghostMaxWidth: 280,
     heightMini: 20,
     paddingXMini: 8,
+    iconOnlyPaddingX: 6,
   },
   iconButton: {
     size: 28,
@@ -39,6 +40,7 @@ export const componentTokens1 = {
     sizeLarge: 30,
   },
   input: { height: 28, paddingX: 8, paddingY: 6, radius: 6, focusRing: 2 },
+  textArea: { shortHeight: 56, tallHeight: 96, toolsInset: 3, toolsGap: 1, toolsRoom: 12 },
   select: { arrowInset: 8, arrowSpace: 28, smallArrowInset: 6, smallArrowSpace: 22 },
   switch: { width: 34, height: 20, knob: 16, inset: 2, radius: 10 },
   segmented: {
@@ -134,7 +136,16 @@ export const componentTokens1 = {
     itemGap: 24,
     separatorInset: 6,
   },
-  popover: { offset: 2, padding: 4, panelPaddingY: 12, panelPaddingX: 14, radius: 8, formPadding: 12, formGap: 8 },
+  popover: {
+    offset: 2,
+    padding: 4,
+    panelPaddingY: 12,
+    panelPaddingX: 14,
+    radius: 8,
+    formPadding: 12,
+    formGap: 8,
+    windowInset: 8,
+  },
   toast: {
     maxWidth: 420,
     gap: 8,
@@ -173,6 +184,8 @@ export const componentTokens1 = {
     dotInset: 7,
     dotRing: 2,
     badgeBottom: 3,
+    separatorWidth: 22,
+    separatorSpace: 4,
   },
   statusBar: {
     height: 24,
@@ -236,6 +249,9 @@ export const componentTokens1 = {
     previewPaddingX: 8,
     promptPadding: 10,
     promptMaxHeight: 220,
+    valuePaddingY: 4,
+    valuePaddingX: 8,
+    valueRadius: 5,
   },
   fieldset: { gap: 6, legendGap: 4, labelColumn: 130 },
   sideNav: {
@@ -254,17 +270,4 @@ export const componentTokens1 = {
   themeSwatch: { width: 64, height: 22, paddingX: 4, gap: 4, bar: 4, barHeight: 12, radius: 4 },
   banner: { paddingX: 12, paddingY: 6, gap: 10 },
   formDialog: { paddingTop: 18, paddingX: 20, paddingBottom: 16, bodyGap: 10, actionsTop: 16 },
-  splitDialog: {
-    width: 760,
-    height: 520,
-    radius: 12,
-    navWidth: 190,
-    navPaddingTop: 16,
-    navPaddingX: 10,
-    navPaddingBottom: 12,
-  },
-  compactField: { gap: 5 },
-  newTab: { size: 26, margin: 4, radius: 6 },
-  dataTable: { headerHeight: 24, headerPaddingRight: 20, cellPaddingLeft: 12, rowPaddingRight: 10 },
-  commitGraph: { laneGap: 14, pad: 9, node: 4, nodeHead: 4.5, halo: 7.5, ring: 4, line: 2 },
 } as const;

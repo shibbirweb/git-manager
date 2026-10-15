@@ -11,7 +11,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { NodeInstall, ProjectScript, ScriptSource } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem, type MenuSubmenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import PanelHead from "$lib/views/PanelHead.svelte";
@@ -336,7 +336,7 @@
       onclick={collapseAll}
       disabled={sources.length === 0}
     >
-      <Icon name="chevrons-left" size={14} />
+      <Icon name="chevrons-left" size="normal" />
     </button>
     <button
       class="icon-btn small"
@@ -345,12 +345,12 @@
       onclick={() => void load(folderPaths)}
       disabled={loading}
     >
-      <Icon name="refresh" size={13} />
+      <Icon name="refresh" size="medium" />
     </button>
   </PanelHead>
   <div class="toolbar">
     <div class="filter">
-      <span class="filter-icon"><Icon name="search" size={13} /></span>
+      <span class="filter-icon"><Icon name="search" size="medium" /></span>
       <input
         class="input filter-input"
         type="text"
@@ -363,7 +363,7 @@
       />
       {#if filter}
         <button class="icon-btn clear" title="Clear filter" aria-label="Clear filter" onclick={() => (filter = "")}>
-          <Icon name="x" size={12} />
+          <Icon name="x" size="compact" />
         </button>
       {/if}
     </div>
@@ -404,15 +404,15 @@
       >
         {#if row.kind === "source"}
           {@const label = sourceLabel(row.source, severalFolders)}
-          <Icon name={row.expanded ? "chevron-down" : "chevron-right"} size={12} />
-          <Icon name="file" size={14} />
+          <Icon name={row.expanded ? "chevron-down" : "chevron-right"} size="compact" />
+          <Icon name="file" size="normal" />
           <span class="title truncate" title={row.source.filePath}>{label.title}</span>
           {#if label.detail}
             <span class="detail dim truncate">{label.detail}</span>
           {/if}
           <span class="spacer"></span>
           {#if row.source.error}
-            <span class="error-mark" title={row.source.error}><Icon name="alert" size={13} /></span>
+            <span class="error-mark" title={row.source.error}><Icon name="alert" size="medium" /></span>
           {:else}
             {@const pick = nodePick(row.source)}
             {#if pick && nodeBadge(pick)}
@@ -440,7 +440,7 @@
               run(row.source, row.script);
             }}
           >
-            <Icon name="play" size={11} />
+            <Icon name="play" size="small" />
           </button>
           <span class="name truncate" title={scriptTitle(row.source, row.script)}>{row.script.name}</span>
           {#if row.script.command}

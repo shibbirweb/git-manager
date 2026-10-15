@@ -25,8 +25,6 @@
     <ToggleButton variant="outline" label="Highlight words" text="Highlight words" pressed />
   </Toolbar>
   <Toolbar variant="footer" label="Merge actions"><Text tone="dim" size="small">2 left</Text></Toolbar>
-{:else if id === "section-title"}
-  <SectionTitle variant="bar" title="Staged" count={3} />
 {:else if id === "section-title-list"}
   <SectionTitle title="Commits only in main" count={4} />
 {/if}

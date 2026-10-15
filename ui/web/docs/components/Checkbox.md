@@ -19,6 +19,7 @@ Use for options inside a dialog or list. Use Switch for settings that apply at o
 - `label` (`string`, default `""`): The text, when `children` is not given.
 - `disabled` (`boolean`, default `false`): Disables it.
 - `size` (`"normal" | "small"`, default `"normal"`): Small: 12px dim words, for an option in a bar.
+- `title` (`string`): Tooltip, such as why it is off.
 - `onchange` (`(checked: boolean) => void`): Called with the new state.
 - `children` (`Snippet`): Rich label content instead of `label`.
 

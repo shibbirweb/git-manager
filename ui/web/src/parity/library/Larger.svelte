@@ -11,21 +11,7 @@
   const commit = { id: "a1b2c3d", subject: "Round tax", author: "Ada", date: "1 Oct" };
 </script>
 
-{#if id === "data-table"}
-  <DataTable
-    label="Commits"
-    height="small"
-    rows={[commit]}
-    rowKey={(row) => row.id}
-    selected="a1b2c3d"
-    columns={[
-      { id: "subject", label: "Subject", width: "fill" },
-      { id: "author", label: "Author", width: "medium", tone: "dim" },
-      { id: "date", label: "Date", width: "small", tone: "dim" },
-      { id: "id", label: "Hash", width: "xsmall", tone: "faint", small: true },
-    ]}
-  />
-{:else if id === "command-palette"}
+{#if id === "command-palette"}
   <CommandPalette
     label="Go to File"
     placeholder="File name"
@@ -36,6 +22,4 @@
       { id: "tax", title: "tax.ts" },
     ]}
   />
-{:else if id === "shortcut-recorder"}
-  <ShortcutRecorder label="Commit" keys="⌘K" onrecord={run} />
 {/if}

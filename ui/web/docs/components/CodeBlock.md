@@ -15,8 +15,9 @@ Use for read-only text that needs no highlighting. Use CodeView for highlighted 
 ## Props
 
 - `text` (`string`, required): The text.
-- `variant` (`"output" | "command" | "detail" | "preview" | "prompt"`, default `"output"`): Console output, a dialog's
-  git command, error details, a file's text before it is used (a gist), or an agent's prompt.
+- `variant` (`"output" | "command" | "detail" | "preview" | "prompt" | "value"`, default `"output"`): Console output, a
+  dialog's git command, error details, a file's text before it is used (a gist), an agent's prompt, or one short value
+  next to its buttons (a folder path, a token).
 - `maxHeight` (`"none" | "small" | "medium" | "large"`, default `"none"`): Scroll beyond 200, 360 or 520 px.
 - `label` (`string`): Accessible name.
 

@@ -22,7 +22,8 @@
     text-align: center;
   }
 
-  .kind-added {
+  .kind-added,
+  .kind-copied {
     color: var(--success);
   }
 

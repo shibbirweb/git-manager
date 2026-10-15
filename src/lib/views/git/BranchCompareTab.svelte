@@ -10,7 +10,7 @@
   import { relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { BranchComparison, ChangedFile, CommitSummary, FileDiff } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import BranchFileList from "./BranchFileList.svelte";
 
   interface Props {
@@ -125,17 +125,17 @@
 
 <div class="compare-tab">
   <div class="toolbar">
-    <Icon name="git-compare" size={14} />
+    <Icon name="git-compare" size="normal" />
     <span class="title truncate"><strong>{branchName}</strong> compared with <strong>{baseName}</strong></span>
     {#if loading}<span class="spinner" aria-label="Loading"></span>{/if}
     <span class="spacer"></span>
     <button type="button" class="btn" onclick={() => void load()} title="Refresh">
-      <Icon name="refresh" size={13} />
+      <Icon name="refresh" size="medium" />
     </button>
   </div>
   {#if loadError}
     <div class="placeholder">
-      <Icon name="alert" size={18} />
+      <Icon name="alert" size="xlarge" />
       <div>Could not compare {branchName} with {baseName}</div>
       <div class="dim selectable">{loadError}</div>
     </div>

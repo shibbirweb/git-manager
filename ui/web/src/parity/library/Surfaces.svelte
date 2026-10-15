@@ -8,18 +8,7 @@
   const run = () => undefined;
 </script>
 
-{#if id === "format-toolbar"}
-  <FormatToolbar
-    label="Markdown"
-    onaction={run}
-    items={[
-      { id: "bold", icon: "bold", label: "Bold" },
-      { id: "heading", icon: "heading", label: "Heading", menu: true },
-      null,
-      { id: "quote", icon: "quote", label: "Quote" },
-    ]}
-  />
-{:else if id === "merge-connector"}
+{#if id === "merge-connector"}
   <!-- In MergeView the connector stretches to the panes; here a box as tall as the reference stands in. -->
   <div style="display: flex; height: 60px">
     <MergeConnector

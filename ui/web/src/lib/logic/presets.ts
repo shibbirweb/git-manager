@@ -9,6 +9,7 @@ export type ControlWidth = keyof typeof scales.controlWidth | "auto" | "fill";
 export type PopoverWidth = keyof typeof scales.popoverWidth | "auto";
 export type DialogWidth = keyof typeof scales.dialogWidth;
 export type ViewHeight = keyof typeof scales.viewHeight | "fill";
+export type ViewWidth = keyof typeof scales.viewWidth;
 export type ColumnWidth = keyof typeof scales.columnWidth;
 export type RowHeight = keyof typeof scales.rowHeight;
 export type TextRows = keyof typeof scales.textRows;

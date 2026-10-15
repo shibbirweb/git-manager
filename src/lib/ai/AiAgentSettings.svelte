@@ -5,7 +5,7 @@
   import { onMount } from "svelte";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { type AgentOverride, defaultFields, PROMPT_STYLES, withField } from "./agentConfig";
   import { AGENTS, type AgentDefinition, agentArguments, commandLine, promptArguments } from "./agents";
   import { agentPrograms, configuredAgent } from "./sessions.svelte";
@@ -71,7 +71,7 @@
       {/if}
     </span>
     <button class="btn small" onclick={() => void agentPrograms.load(true)} disabled={agentPrograms.loading}>
-      <Icon name="refresh" size={12} />
+      <Icon name="refresh" size="compact" />
       Look Again
     </button>
   </div>
@@ -84,7 +84,7 @@
     {@const changed = configured.customized || (settings.aiAgentArgs[agent.id] ?? "") !== ""}
     <div class="agent" class:expanded>
       <button class="agent-head" aria-expanded={expanded} onclick={() => (open = expanded ? null : agent.id)}>
-        <Icon name={expanded ? "chevron-down" : "chevron-right"} size={12} />
+        <Icon name={expanded ? "chevron-down" : "chevron-right"} size="compact" />
         <span class="name">{agent.label}</span>
         {#if changed}
           <span class="tag">changed</span>

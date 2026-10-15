@@ -1,6 +1,7 @@
 import { prop, type ComponentDoc } from "./types";
 
-const KIND = '"added" | "modified" | "typechange" | "deleted" | "renamed" | "untracked" | "conflicted" | null';
+const KIND =
+  '"added" | "modified" | "typechange" | "deleted" | "renamed" | "copied" | "untracked" | "conflicted" | null';
 const VIEW = '{ kind: "image"; src: string } | { kind: "mask"; className: string } | null';
 const DEPTH = '"none" | "one" | "two" | "three"';
 
@@ -11,7 +12,11 @@ export const rowDocs: ComponentDoc[] = [
     summary: "A panel's header: its title in small capitals on the left, its action buttons on the right.",
     usage: "Use at the top of every side and bottom panel. Put IconButtons with size compact in `actions`.",
     props: [
-      prop("title", "string", "The panel's name.", { required: true }),
+      prop("title", "string", "The panel's name; it shortens first when the panel is narrow.", { required: true }),
+      prop("count", "number | null", "A quiet count after the title, such as the number of changed files.", {
+        default: "null",
+        data: true,
+      }),
       prop("actions", "Snippet", "Buttons on the right."),
     ],
     examples: [
@@ -23,7 +28,11 @@ export const rowDocs: ComponentDoc[] = [
           "</PanelHeader>",
       },
     ],
-    replaces: ["PanelHead.svelte", '<header class="head"> in TerminalPanel.svelte'],
+    replaces: [
+      "PanelHead.svelte",
+      '<header class="head"> in TerminalPanel.svelte',
+      '<div class="head"> with its .count in ChangesView.svelte',
+    ],
   },
   {
     name: "StatusLetter",
@@ -68,6 +77,10 @@ export const rowDocs: ComponentDoc[] = [
         "files (no indent, selected over hover).", { default: '"changes"' }),
       prop("checked", "boolean | null", "A checkbox when not null.", { default: "null", bindable: true }),
       prop("title", "string", "Tooltip, such as the full path."),
+      prop("id", "string", "Its element id, so a list can point screen readers at the selected row."),
+      prop("keepFocus", "boolean", "A click leaves the focus where it was, in a list that owns the keys.", {
+        default: "false",
+      }),
       prop("actions", "{ icon: IconName; title: string; danger?: boolean; run: () => void }[]", "Hover actions.", {
         default: "[]",
       }),

@@ -43,9 +43,9 @@
   import { localHistory } from "$lib/localHistory/localHistory.svelte";
   import type { FileContent, HeadVersion } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import type { IconName } from "@git-manager/ui/icons";
-  import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
+  import ResizeHandle from "@git-manager/ui/components/ResizeHandle.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import MarkdownPreview from "./MarkdownPreview.svelte";
@@ -1030,7 +1030,7 @@
             title="Previous change or conflict (Shift+F7)"
             aria-label="Previous change or conflict"
           >
-            <Icon name="arrow-up" size={13} />
+            <Icon name="arrow-up" size="medium" />
           </button>
           <button
             class="tool"
@@ -1039,7 +1039,7 @@
             title="Next change or conflict (F7)"
             aria-label="Next change or conflict"
           >
-            <Icon name="arrow-down" size={13} />
+            <Icon name="arrow-down" size="medium" />
           </button>
           <span class="nav-label">{navLabel}</span>
           {#if toolbar.blame || toolbar.copyPath || toolbar.markdownView}
@@ -1055,7 +1055,7 @@
             aria-label="Blame"
             aria-pressed={settings.blameGutter}
           >
-            <Icon name="history" size={13} />
+            <Icon name="history" size="medium" />
           </button>
         {/if}
         <!-- Save and Revert live in the File menu (Cmd+S), not here. -->
@@ -1066,7 +1066,7 @@
             title="Copy relative path"
             aria-label="Copy relative path"
           >
-            <Icon name="copy" size={12} />
+            <Icon name="copy" size="compact" />
           </button>
         {/if}
         {#if toolbar.markdownView}
@@ -1083,7 +1083,7 @@
                 title={mode.label}
                 aria-label={mode.label}
               >
-                <Icon name={mode.icon} size={13} />
+                <Icon name={mode.icon} size="medium" />
               </button>
             {/each}
           </div>
@@ -1095,7 +1095,7 @@
   <!-- Conflict actions are a tool for this file, so they get their own strip while it has conflicts. -->
   {#if conflictCount > 0 || tone === "conflict"}
     <div class="conflict-bar" role="toolbar" aria-label="Conflict actions">
-      <span class="conflict-icon" aria-hidden="true"><Icon name="alert" size={13} /></span>
+      <span class="conflict-icon" aria-hidden="true"><Icon name="alert" size="medium" /></span>
       {#if conflictCount > 0}
         <button
           class="btn small"
@@ -1116,12 +1116,12 @@
       {/if}
       {#if tone === "conflict"}
         <button class="btn small" onclick={() => void openMergeTool()} disabled={saving}>
-          <Icon name="merge" size={13} />
+          <Icon name="merge" size="medium" />
           Resolve in Merge Tool
         </button>
         {#if conflictCount === 0 && editable}
           <button class="btn small primary" onclick={markResolved} disabled={saving} title="Save the file and stage it">
-            <Icon name="check" size={13} />
+            <Icon name="check" size="medium" />
             Mark as Resolved
           </button>
         {/if}
@@ -1162,14 +1162,15 @@
     {#if showPreview}
       {#if viewMode === "split"}
         <ResizeHandle
+          preset="pane"
           label="Resize Markdown preview"
-          panel="right"
+          side="right"
           size={previewWidth}
           min={Math.round(areaWidth * MARKDOWN_PREVIEW_RATIO_RANGE[0])}
           max={Math.round(areaWidth * MARKDOWN_PREVIEW_RATIO_RANGE[1])}
           defaultSize={Math.round(areaWidth / 2)}
-          onResize={(size) => resizePreview(size, false)}
-          onCommit={(size) => resizePreview(size, true)}
+          onresize={(size) => resizePreview(size, false)}
+          oncommit={(size) => resizePreview(size, true)}
         />
       {/if}
       <div

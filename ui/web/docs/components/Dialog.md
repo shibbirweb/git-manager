@@ -34,6 +34,8 @@ Primary button in `actions`, last.
   a password; Enter in a text area or on a button does not.
 - `actions` (`Snippet`): Buttons on the right under the content.
 - `sidebar` (`Snippet`): The side column of a split dialog, such as a SideNav.
+- `contentTitle` (`string`, default `""`): Split: a head over the content, such as the open section's name, with a close
+  button; with movable it drags the dialog too.
 - `children` (`Snippet`, required): The content.
 
 ## Rules

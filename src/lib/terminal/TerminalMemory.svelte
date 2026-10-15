@@ -6,7 +6,7 @@
   import { api } from "$lib/api";
   import type { TerminalMemory } from "$lib/types";
   import { formatBytes } from "$lib/ui/formatBytes";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { terminalMemoryRows, terminalMemoryTitle, terminalMemoryTotal } from "./terminalMemory";
   import { terminalStore } from "./terminalStore.svelte";
 
@@ -56,7 +56,7 @@
           title={terminalMemoryTitle(row)}
           onclick={() => show(row.terminalKey)}
         >
-          <Icon name={icons[row.kind]} size={11} />
+          <Icon name={icons[row.kind]} size="small" />
           <span class="label">{row.label}</span>
           {#if row.folderName}
             <span class="folder">{row.folderName}</span>

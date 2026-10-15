@@ -12,10 +12,6 @@
   let { id }: { id: string } = $props();
 </script>
 
-{#if id === "ai-panel-bits"}
-  <div style="width: 300px"><SectionTitle variant="caps" title="storefront" /></div>
-  <IconButton icon="plus" label="New agent" size="inline" tone="dim" iconSize="medium" />
-  <Tag tone="warning">missing</Tag>
-{:else if id === "askpass-prompt"}
+{#if id === "askpass-prompt"}
   <div style="width: 400px"><CodeBlock variant="prompt" text="Password for https://github.com:" /></div>
 {/if}

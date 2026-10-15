@@ -12,7 +12,7 @@
   import { moveSelection } from "$lib/search/fileSearchModel";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { repoTones, type RepoTones, workspaceTones } from "$lib/views/files/tones";
   import { initialRecentSelection, recentFileRows, type RecentRow } from "./recentFilesModel";
@@ -205,7 +205,7 @@
       onclick={toggleEdited}
     >
       {#if editedOnly}
-        <Icon name="check" size={12} />
+        <Icon name="check" size="compact" />
       {/if}
       Edited only
       {#if ownKeyLabel}
@@ -214,7 +214,7 @@
     </button>
   </div>
   <div class="field">
-    <Icon name="search" size={14} />
+    <Icon name="search" size="normal" />
     <input
       bind:this={input}
       bind:value={query}
@@ -266,7 +266,7 @@
             remove(index);
           }}
         >
-          <Icon name="x" size={12} />
+          <Icon name="x" size="compact" />
         </button>
       </div>
     {:else}

@@ -59,9 +59,6 @@
   <PaletteRow item={{ id: "d", title: "tax.ts", dirty: true }} />
 {:else if id === "small-badge"}
   <Badge count={3} size="small" tone="warning" />
-{:else if id === "outline-tag"}
-  <Tag variant="outline">submodule</Tag>
-  <Badge count={12} size="large" tone="quiet" />
 {:else if id === "file-bar"}
   <Toolbar variant="file" label="File">
     <Divider direction="vertical" />
@@ -69,12 +66,6 @@
     <Segmented label="Mode" size="small" value="a" options={[{ value: "a", icon: "split-view", title: "A" }]} />
   </Toolbar>
   <Toolbar variant="conflict" label="Conflicts"><Icon name="alert" size="medium" tone="danger" /></Toolbar>
-{:else if id === "welcome-nav"}
-  <SideNav label="Sections" variant="large" active="p" items={[{ id: "p", label: "Projects" }]} />
-  <SideNav label="Links" variant="links" items={[{ id: "d", label: "Docs", icon: "book" }]} />
-  <SearchField label="Search" size="large" />
-{:else if id === "activity-dot"}
-  <ActivityBar label="Right" items={[{ id: "ai", icon: "bot", label: "AI", dot: true }]} />
 {:else if id === "diff-labels"}
   <DiffView
     label="Diff"

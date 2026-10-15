@@ -4,12 +4,7 @@
   import { api } from "$lib/api";
   import { autoFetch } from "$lib/stores/autoFetch.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import {
-    DEFAULT_PANEL_WIDTH,
-    DEFAULT_TERMINAL_HEIGHT,
-    MIN_TERMINAL_HEIGHT,
-    settings,
-  } from "$lib/stores/settings.svelte";
+  import { MIN_TERMINAL_HEIGHT, settings } from "$lib/stores/settings.svelte";
   import { groupRects, layoutSplitters, type Rect, type Splitter } from "$lib/stores/groupLayout";
   import TerminalHost from "$lib/terminal/TerminalHost.svelte";
   import TerminalPanel from "$lib/terminal/TerminalPanel.svelte";
@@ -25,7 +20,7 @@
   import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
   import { navBarStore } from "$lib/navBar/navBarStore.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
+  import ResizeHandle from "@git-manager/ui/components/ResizeHandle.svelte";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { navTarget } from "$lib/navBar/navTarget.svelte";
   import ActivityBar from "./ActivityBar.svelte";
@@ -285,14 +280,13 @@
         {/if}
       </aside>
       <ResizeHandle
+        preset="sidebar"
         label="Resize sidebar"
-        panel="left"
+        side="left"
         size={sidebarWidth}
-        min={MIN_PANEL}
         max={sidebarMax}
-        defaultSize={DEFAULT_PANEL_WIDTH}
-        onResize={(width) => (settings.sidebarWidth = width)}
-        onCommit={() => settings.save()}
+        onresize={(width) => (settings.sidebarWidth = width)}
+        oncommit={() => settings.save()}
       />
     {/if}
     <main class="main" bind:clientHeight={mainHeight}>
@@ -360,14 +354,15 @@
           {@const min = Math.min(MIN_GROUP_SIZE, Math.round(length / 2))}
           <div class="group-splitter" class:down={splitter.direction === "down"} style={splitterStyle(splitter)}>
             <ResizeHandle
+              preset="pane"
               label="Resize editor groups"
-              panel={splitter.direction === "right" ? "left" : "bottom"}
+              side={splitter.direction === "right" ? "left" : "bottom"}
               size={Math.round(length * (splitter.direction === "right" ? splitter.ratio : 1 - splitter.ratio))}
               {min}
               max={Math.max(min, Math.round(length) - min)}
               defaultSize={Math.round(length / 2)}
-              onResize={(size) => resizeSplit(splitter, size, false)}
-              onCommit={(size) => resizeSplit(splitter, size, true)}
+              onresize={(size) => resizeSplit(splitter, size, false)}
+              oncommit={(size) => resizeSplit(splitter, size, true)}
               inPanel
             />
           </div>
@@ -376,14 +371,13 @@
       {#if terminalStore.started}
         {#if terminalStore.panelOpen}
           <ResizeHandle
+            preset="bottom"
             label="Resize terminal panel"
-            panel="bottom"
+            side="bottom"
             size={terminalHeight}
-            min={MIN_TERMINAL_HEIGHT}
             max={terminalMax}
-            defaultSize={DEFAULT_TERMINAL_HEIGHT}
-            onResize={(height) => (settings.terminalHeight = height)}
-            onCommit={() => settings.save()}
+            onresize={(height) => (settings.terminalHeight = height)}
+            oncommit={() => settings.save()}
           />
         {/if}
         <TerminalPanel height={terminalHeight} />
@@ -391,14 +385,13 @@
     </main>
     {#if settings.explorerOpen}
       <ResizeHandle
+        preset="sidebar"
         label={settings.rightPanel === "ai" ? "Resize AI sidebar" : "Resize files sidebar"}
-        panel="right"
+        side="right"
         size={explorerWidth}
-        min={MIN_PANEL}
         max={explorerMax}
-        defaultSize={DEFAULT_PANEL_WIDTH}
-        onResize={(width) => (settings.explorerWidth = width)}
-        onCommit={() => settings.save()}
+        onresize={(width) => (settings.explorerWidth = width)}
+        oncommit={() => settings.save()}
       />
       <aside class="explorer" style="width: {explorerWidth}px">
         {#if settings.rightPanel === "ai"}

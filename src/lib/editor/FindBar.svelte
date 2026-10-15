@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import { localKeys, withCommandKeys } from "$lib/commands/commandRuntime";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import SearchToggles from "$lib/ui/SearchToggles.svelte";
   import { type FindBarActions, type FindBarState, type FindField, focusLater } from "./findPanel.svelte";
 
@@ -41,12 +41,12 @@
         onmousedown={keepFocus}
         onclick={() => actions.toggleReplace()}
       >
-        <Icon name={showReplace ? "chevron-down" : "chevron-right"} size={14} />
+        <Icon name={showReplace ? "chevron-down" : "chevron-right"} size="normal" />
       </button>
     {/if}
 
     <div class="field find" class:problem title={bar.error ?? undefined}>
-      <span class="magnifier"><Icon name="search" size={13} /></span>
+      <span class="magnifier"><Icon name="search" size="medium" /></span>
       <input
         bind:this={findInput}
         value={bar.search}
@@ -73,7 +73,7 @@
         onmousedown={keepFocus}
         onclick={() => actions.previous()}
       >
-        <Icon name="arrow-up" size={14} />
+        <Icon name="arrow-up" size="normal" />
       </button>
       <button
         type="button"
@@ -84,7 +84,7 @@
         onmousedown={keepFocus}
         onclick={() => actions.next()}
       >
-        <Icon name="arrow-down" size={14} />
+        <Icon name="arrow-down" size="normal" />
       </button>
       <button
         type="button"
@@ -95,7 +95,7 @@
         onmousedown={keepFocus}
         onclick={() => actions.selectAll()}
       >
-        <Icon name="carets" size={14} />
+        <Icon name="carets" size="normal" />
       </button>
     </div>
 
@@ -107,7 +107,7 @@
       onmousedown={keepFocus}
       onclick={() => actions.close()}
     >
-      <Icon name="x" size={14} />
+      <Icon name="x" size="normal" />
     </button>
 
     {#if showReplace}

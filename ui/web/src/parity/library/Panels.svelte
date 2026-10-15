@@ -28,35 +28,4 @@
   <div style="position: relative; height: 60px">
     <FloatingFindBar query="" counter="1 of 2" />
   </div>
-{:else if id === "underline-tabs"}
-  <Tabs
-    label="Scope"
-    variant="underline"
-    value="all"
-    tabs={[
-      { value: "all", label: "All" },
-      { value: "files", label: "Files" },
-    ]}
-  />
-{:else if id === "changes-empty"}
-  <EmptyState icon="check" iconStyle="circle" iconTone="success" strong title="All committed" />
-{:else if id === "no-repository"}
-  <EmptyState icon="folder-git" iconTone="faint" strong title="No repo" />
-{:else if id === "commit-options"}
-  <Button size="small" icon="settings" aria-label="Options" badge={2} />
-  <Segmented
-    label="Signing"
-    variant="split"
-    value="sign"
-    options={[
-      { value: "sign", label: "Sign" },
-      { value: "off", label: "Off" },
-    ]}
-  />
-{:else if id === "memory-flag"}
-  <Pill tone="warning" variant="outline">+60 MB</Pill>
-{:else if id === "branch-file-list"}
-  <div role="listbox" aria-label="Files">
-    <FileRow variant="list" kind="added" name="cart.ts" directory="src" selected />
-  </div>
 {/if}

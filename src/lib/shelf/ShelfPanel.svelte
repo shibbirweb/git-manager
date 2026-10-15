@@ -6,7 +6,7 @@
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ShelfEntry, ShelvedFile } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import {
     deleteEntry,
@@ -167,7 +167,7 @@
       title="Refresh"
       aria-label="Refresh"
     >
-      <Icon name="refresh" size={14} />
+      <Icon name="refresh" size="normal" />
     </button>
   </div>
 
@@ -188,8 +188,8 @@
             oncontextmenu={(event) => entryMenu(event, entry)}
             title="{entry.name}{entry.branch ? `\nFrom ${entry.branch}` : ''}\n{formatShelfDate(entry.createdAt)}"
           >
-            <Icon name={open ? "chevron-down" : "chevron-right"} size={12} />
-            <Icon name="stash" size={14} />
+            <Icon name={open ? "chevron-down" : "chevron-right"} size="compact" />
+            <Icon name="stash" size="normal" />
             <span class="name truncate">{entry.name}</span>
             <span class="meta dim">{fileCountLabel(entry.files.length)}</span>
             <span class="meta dim">{formatShelfDate(entry.createdAt)}</span>
@@ -202,7 +202,7 @@
               title="Unshelve..."
               aria-label="Unshelve {entry.name}"
             >
-              <Icon name="arrow-up" size={13} />
+              <Icon name="arrow-up" size="medium" />
             </button>
             <button
               class="icon-btn tiny danger"
@@ -211,7 +211,7 @@
               title="Delete..."
               aria-label="Delete {entry.name}"
             >
-              <Icon name="trash" size={13} />
+              <Icon name="trash" size="medium" />
             </button>
           </span>
           {#if open}

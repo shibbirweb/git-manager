@@ -15,8 +15,8 @@ actions to two or three icons.
 
 ## Props
 
-- `kind` (`"added" | "modified" | "typechange" | "deleted" | "renamed" | "untracked" | "conflicted" | null`, required):
-  The change.
+- `kind` (`"added" | "modified" | "typechange" | "deleted" | "renamed" | "copied" | "untracked" | "conflicted" | null`,
+  required): The change.
 - `name` (`string`, required): The file name.
 - `directory` (`string`, default `""`): The folder, dim after the name.
 - `note` (`string`, default `""`): Dim text in brackets, such as the old name.
@@ -29,6 +29,8 @@ actions to two or three icons.
   commit's files (no indent, selected over hover).
 - `checked` (`boolean | null`, default `null`, bindable): A checkbox when not null.
 - `title` (`string`): Tooltip, such as the full path.
+- `id` (`string`): Its element id, so a list can point screen readers at the selected row.
+- `keepFocus` (`boolean`, default `false`): A click leaves the focus where it was, in a list that owns the keys.
 - `actions` (`{ icon: IconName; title: string; danger?: boolean; run: () => void }[]`, default `[]`): Hover actions.
 - `onselect` (`() => void`): Clicked.
 - `onactivate` (`() => void`): Double-clicked or Enter.

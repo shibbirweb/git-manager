@@ -38,3 +38,16 @@ export function highlightParts(text: string, ranges: [number, number][]): TextPa
   }
   return parts;
 }
+
+/** Ranges from text already cut into parts (a search model's output), for HighlightText. */
+export function partsToRanges(parts: readonly TextPart[]): { text: string; ranges: [number, number][] } {
+  const ranges: [number, number][] = [];
+  let at = 0;
+  for (const part of parts) {
+    if (part.match && part.text.length > 0) {
+      ranges.push([at, at + part.text.length]);
+    }
+    at += part.text.length;
+  }
+  return { text: parts.map((part) => part.text).join(""), ranges };
+}

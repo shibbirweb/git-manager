@@ -61,6 +61,7 @@ export const SCALES = [
   "popoverWidth",
   "dialogWidth",
   "viewHeight",
+  "viewWidth",
   "columnWidth",
   "rowHeight",
   "textRows",

@@ -58,7 +58,10 @@ export const pickerDocs: ComponentDoc[] = [
     name: "OptionList",
     group: "Forms",
     summary: "A bordered list to pick one option from, in groups, like Settings' color themes.",
-    usage: "Draw each option in `option` (a ThemeSwatch and a name). Arrow keys move.",
+    usage:
+      "Draw each option in `option` (a ThemeSwatch and a name). The arrows, Home, End and the page keys move, and " +
+      "the picked option stays in view.",
+    logic: ["optionMove.ts"],
     aliases: ["Listbox", "Theme list"],
     props: [
       prop("groups", "{ label; options: T[] }[]", "The groups.", { required: true, data: true }),

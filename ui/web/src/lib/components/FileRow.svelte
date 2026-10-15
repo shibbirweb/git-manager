@@ -27,6 +27,8 @@
     variant?: "changes" | "list";
     checked?: boolean | null;
     title?: string;
+    id?: string;
+    keepFocus?: boolean;
     actions?: FileAction[];
     onselect?: () => void;
     onactivate?: () => void;
@@ -45,6 +47,8 @@
     variant = "changes",
     checked = $bindable(null),
     title,
+    id,
+    keepFocus = false,
     actions = [],
     onselect,
     onactivate,
@@ -59,7 +63,9 @@
   role="option"
   tabindex="-1"
   aria-selected={selected}
+  {id}
   {title}
+  onmousedown={(event) => keepFocus && event.preventDefault()}
   onclick={() => onselect?.()}
   ondblclick={() => onactivate?.()}
   oncontextmenu={(event) => {

@@ -3,7 +3,7 @@
   Regex, the match count, previous and next. TerminalView owns the search; this only shows it.
 -->
 <script lang="ts">
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import SearchToggles from "$lib/ui/SearchToggles.svelte";
   import { findBarKey, type TerminalFindOptions } from "./find";
 
@@ -63,7 +63,7 @@
 
 <div class="find-bar" role="search" aria-label="Find in terminal">
   <div class="field" class:problem>
-    <span class="magnifier"><Icon name="search" size={13} /></span>
+    <span class="magnifier"><Icon name="search" size="medium" /></span>
     <input
       bind:this={input}
       value={query}
@@ -88,7 +88,7 @@
     onmousedown={keepFocus}
     onclick={onPrevious}
   >
-    <Icon name="arrow-up" size={14} />
+    <Icon name="arrow-up" size="normal" />
   </button>
   <button
     type="button"
@@ -99,10 +99,10 @@
     onmousedown={keepFocus}
     onclick={onNext}
   >
-    <Icon name="arrow-down" size={14} />
+    <Icon name="arrow-down" size="normal" />
   </button>
   <button type="button" class="icon" title="Close (Esc)" aria-label="Close" onmousedown={keepFocus} onclick={onClose}>
-    <Icon name="x" size={14} />
+    <Icon name="x" size="normal" />
   </button>
 </div>
 

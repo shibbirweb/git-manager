@@ -13,14 +13,4 @@ export const listCases: ParityCase[] = [
       '<span class="dim when">2d</span></button>',
     pairs: [{ name: "pane", ref: ".versions", lib: ".pane", ignore: { height: "follows its rows" } }],
   },
-  {
-    id: "release-notes",
-    sources: ["src/lib/update/ReleaseNotes.svelte"],
-    html: '<div class="notes"><h3>Added</h3><p>A <code>ui</code> library.</p></div>',
-    pairs: [
-      { name: "notes", ref: ".notes", lib: ".md-notes", ignore: { ...FILL, height: "follows its text" } },
-      { name: "heading", ref: "h3", lib: "h3", ignore: FILL },
-      { name: "code", ref: "code", lib: "code" },
-    ],
-  },
 ];

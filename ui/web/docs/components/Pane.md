@@ -15,7 +15,7 @@ Use for a list beside its content, such as Local History's versions.
 ## Props
 
 - `label` (`string`, required): Accessible name.
-- `width` (`"small" | "medium" | "large"`, default `"large"`): 140, 180 or 240 px.
+- `width` (`"small" | "medium" | "large" | "xlarge"`, default `"large"`): 140, 180, 240 or 320 px.
 - `side` (`"left" | "right"`, default `"left"`): Where it sits; the line goes on the other side.
 - `line` (`"strong" | "soft"`, default `"strong"`): Its edge line; soft for the welcome screen's sidebar.
 - `children` (`Snippet`, required): Its content.

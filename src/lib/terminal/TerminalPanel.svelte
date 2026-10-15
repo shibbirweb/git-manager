@@ -7,9 +7,9 @@
   import { untrack } from "svelte";
   import ShelfPanel from "$lib/shelf/ShelfPanel.svelte";
   import RunView from "./RunView.svelte";
-  import { DEFAULT_TERMINAL_LIST_WIDTH, MIN_TERMINAL_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
-  import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
+  import { MIN_TERMINAL_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import ResizeHandle from "@git-manager/ui/components/ResizeHandle.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { platformName } from "$lib/update/releases";
   import { groupRowPosition, MIN_PANE_WIDTH } from "./splitPanes";
@@ -227,7 +227,7 @@
           title="New Terminal (Ctrl+Shift+`)"
           aria-label="New Terminal"
         >
-          <Icon name="plus" size={15} />
+          <Icon name="plus" size="regular" />
         </button>
         <button
           class="icon-btn small chevron"
@@ -235,7 +235,7 @@
           title="New Terminal With Shell..."
           aria-label="New terminal with shell"
         >
-          <Icon name="chevron-down" size={12} />
+          <Icon name="chevron-down" size="compact" />
         </button>
       </div>
       <button
@@ -245,7 +245,7 @@
         title="Split Terminal ({splitHint})"
         aria-label="Split Terminal"
       >
-        <Icon name="split-view" size={14} />
+        <Icon name="split-view" size="normal" />
       </button>
       <button
         class="icon-btn small"
@@ -254,7 +254,7 @@
         title="Move Terminal into Editor Area"
         aria-label="Move Terminal into Editor Area"
       >
-        <Icon name="app-window" size={14} />
+        <Icon name="app-window" size="normal" />
       </button>
       <button
         class="icon-btn small"
@@ -263,7 +263,7 @@
         title="Kill Terminal"
         aria-label="Kill Terminal"
       >
-        <Icon name="trash" size={14} />
+        <Icon name="trash" size="normal" />
       </button>
       <span class="divider" aria-hidden="true"></span>
     {/if}
@@ -273,7 +273,7 @@
       title="Hide Panel (Ctrl+`)"
       aria-label="Hide panel"
     >
-      <Icon name="x" size={15} />
+      <Icon name="x" size="regular" />
     </button>
   </header>
 
@@ -285,14 +285,14 @@
           {#if index > 0 && active && panesWidth > 0}
             {@const pair = (paneSizes[index - 1] ?? 0) + (paneSizes[index] ?? 0)}
             <ResizeHandle
+              preset="pane"
               label="Resize split terminals"
-              panel="left"
+              side="left"
               inPanel={true}
               size={(paneSizes[index - 1] ?? 0) * panesWidth}
-              min={MIN_PANE_WIDTH}
               max={Math.max(MIN_PANE_WIDTH, pair * panesWidth - MIN_PANE_WIDTH)}
               defaultSize={(pair * panesWidth) / 2}
-              onResize={(width) => {
+              onresize={(width) => {
                 if (active) {
                   terminalStore.resizePane(active.group, index - 1, width / panesWidth, MIN_PANE_WIDTH / panesWidth);
                 }
@@ -324,15 +324,14 @@
     {/if}
     {#if onTerminal && several}
       <ResizeHandle
+        preset="list"
         label="Resize terminal list"
-        panel="right"
+        side="right"
         inPanel={true}
         size={listWidth}
-        min={MIN_TERMINAL_LIST_WIDTH}
         max={listMax}
-        defaultSize={DEFAULT_TERMINAL_LIST_WIDTH}
-        onResize={(width) => (settings.terminalListWidth = width)}
-        onCommit={() => settings.save()}
+        onresize={(width) => (settings.terminalListWidth = width)}
+        oncommit={() => settings.save()}
       />
       <ul class="list" role="listbox" aria-label="Terminals" style="width: {listWidth}px">
         {#each terminalStore.panelGroups as group (group.group)}
@@ -358,7 +357,7 @@
                 {#if position !== "single"}
                   <span class="tree {position}" aria-hidden="true"></span>
                 {/if}
-                <Icon name="terminal" size={14} />
+                <Icon name="terminal" size="normal" />
                 {#if renamingKey === terminal.key}
                   {@render renameField(terminal.name)}
                 {:else}
@@ -377,7 +376,7 @@
                   title="Kill Terminal"
                   aria-label="Kill {terminal.name}"
                 >
-                  <Icon name="trash" size={13} />
+                  <Icon name="trash" size="medium" />
                 </button>
               </li>
             {/if}

@@ -14,7 +14,9 @@ Use in toolbars, panel headers, rows and tab strips. Use Button when the command
 
 ## Props
 
-- `icon` (`IconName`, required): The icon.
+- `icon` (`IconName`): The icon; give it or `layout`.
+- `layout` (`"sidebar-left" | "sidebar-right" | "commit-single" | "commit-per-repo" | null`, default `null`): A drawn
+  layout glyph (see LayoutIcon) in place of `icon`, such as the commit box layout toggle.
 - `label` (`string`, required): Accessible name; also the tooltip unless `title` is given.
 - `iconSize` (`IconSize`, default `"large"`): A named icon size (see Icon).
 - `size` (`"large" | "normal" | "header" | "compact" | "small" | "chevron" | "inline" | "mini" | "micro" | "tool" |

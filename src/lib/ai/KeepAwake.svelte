@@ -3,7 +3,7 @@
 <script lang="ts">
   import { settings } from "$lib/stores/settings.svelte";
   import type { ComputerAwakeMode } from "$lib/stores/settingsData";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { platformName } from "$lib/update/releases";
   import { keepAwake } from "./keepAwakeStore.svelte";
   import { AWAKE_MODES, AWAKE_TITLE, lidNote, modeLabel, statusText } from "./keepAwakeModel";
@@ -47,7 +47,7 @@
     aria-expanded={open}
     onclick={() => (open = !open)}
   >
-    <Icon name="coffee" size={12} />
+    <Icon name="coffee" size="compact" />
     <span class="label">{modeLabel(mode)}</span>
     <span class="dot" aria-hidden="true"></span>
   </button>

@@ -16,9 +16,12 @@ Use for a sidebar and an editor, or an editor and a bottom panel. Save `size` in
 
 - `direction` (`"row" | "column"`, default `"row"`): Side by side or one above the other.
 - `size` (`number`, required, bindable): The first pane's width (row) or height (column) in px, as the user dragged it.
-- `preset` (`"sidebar" | "bottom" | "list" | "pane"`, default `"pane"`): The smallest and default size, from the tokens.
+- `preset` (`"sidebar" | "bottom" | "list" | "pane" | "files"`, default `"pane"`): The smallest and default size.
 - `max` (`number`, default `800`): Largest size, from the window's room.
 - `label` (`string`, required): Accessible name of the handle, e.g. `Resize the sidebar`.
+- `extent` (`number`, default `0`, bindable): Its own measured width (row) or height (column), so the app can work out
+  `max`.
+- `inPanel` (`boolean`, default `false`): Between views inside one panel: the handle keeps its size in rounded looks.
 - `oncommit` (`(size: number) => void`): Called once when a drag or key press ends, to save the size.
 - `first` (`Snippet`, required): The first pane.
 - `second` (`Snippet`, required): The second pane; it takes the rest.

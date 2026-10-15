@@ -1,13 +1,14 @@
 <!-- A table of many rows with a header, like the log: columns with named widths (or the rest of the row), an
-     optional leading column such as the commit graph, a selected row, arrow keys and Enter. Only rows in view are
-     drawn. -->
+     optional leading column such as the commit graph, and a List under the header that owns the keys, the
+     selection and the scrolling. Only rows in view are drawn. -->
 <script lang="ts" generics="T">
   import type { Snippet } from "svelte";
+  import type { RevealPlace } from "../logic/listWiring.svelte";
   import type { RowHeight, ViewHeight } from "../logic/presets";
   import { presetVar } from "../logic/presets";
   import { toneColor } from "../logic/scale";
   import { cellText, type DataColumn } from "../logic/table";
-  import VirtualList from "./VirtualList.svelte";
+  import List from "./List.svelte";
 
   interface Props {
     columns: DataColumn[];
@@ -19,10 +20,13 @@
     selected?: string | null;
     leadWidth?: number;
     strong?: (row: T) => boolean;
+    field?: HTMLInputElement | null;
     lead?: Snippet<[T]>;
     cell?: Snippet<[T, DataColumn]>;
+    empty?: Snippet;
     onopen?: (row: T) => void;
     oncontextmenu?: (row: T, event: MouseEvent) => void;
+    onnearend?: () => void;
   }
 
   let {
@@ -35,31 +39,29 @@
     selected = $bindable(null),
     leadWidth = 0,
     strong = () => false,
+    field = null,
     lead,
     cell,
+    empty,
     onopen,
     oncontextmenu,
+    onnearend,
   }: Props = $props();
 
-  const selectedIndex = $derived(rows.findIndex((row) => rowKey(row) === selected));
+  let list = $state<{ focus: () => void; reveal: (key: string, place?: RevealPlace) => Promise<void> } | null>(null);
+
+  /** Takes the focus, such as after a click that should leave the keys with the table. */
+  export function focus(): void {
+    list?.focus();
+  }
+
+  /** Scrolls a row into view after the app selected it: the least needed, or to the middle. */
+  export function reveal(key: string, place: RevealPlace = "nearest"): Promise<void> {
+    return list?.reveal(key, place) ?? Promise.resolve();
+  }
 
   function widthOf(column: DataColumn): string | null {
     return column.width === "fill" ? null : presetVar("tableColumn", column.width);
-  }
-
-  function onkeydown(event: KeyboardEvent): void {
-    if (!rows.length) {
-      return;
-    }
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const step = event.key === "ArrowDown" ? 1 : -1;
-      const next = Math.min(rows.length - 1, Math.max(0, (selectedIndex < 0 ? -step : selectedIndex) + step));
-      selected = rowKey(rows[next]);
-    } else if (event.key === "Enter" && selectedIndex >= 0) {
-      event.preventDefault();
-      onopen?.(rows[selectedIndex]);
-    }
   }
 </script>
 
@@ -76,44 +78,41 @@
       </div>
     {/each}
   </div>
-  <div class="body" role="listbox" aria-label={label} tabindex="0" {onkeydown}>
-    <VirtualList items={rows} {rowHeight} {label} {height} keepInView={selectedIndex >= 0 ? selectedIndex : null}>
-      {#snippet row(item)}
-        <div
-          class="row"
-          class:selected={rowKey(item) === selected}
-          class:strong={strong(item)}
-          role="option"
-          tabindex="-1"
-          aria-selected={rowKey(item) === selected}
-          onmousedown={() => (selected = rowKey(item))}
-          ondblclick={() => onopen?.(item)}
-          oncontextmenu={(event) => {
-            selected = rowKey(item);
-            oncontextmenu?.(item, event);
-          }}
-          onkeydown={() => undefined}
-        >
-          {#if lead}
-            <div class="lead">{@render lead(item)}</div>
-          {/if}
-          {#each columns as column, index (column.id)}
-            <div
-              class="col"
-              class:fill={column.width === "fill"}
-              class:first-fill={index === 0 && column.width === "fill" && lead}
-              class:mono={column.mono}
-              class:small={column.small}
-              style:width={widthOf(column)}
-              style:color={column.tone ? toneColor(column.tone) : null}
-            >
-              {#if cell}{@render cell(item, column)}{:else}{cellText(item, column)}{/if}
-            </div>
-          {/each}
-        </div>
-      {/snippet}
-    </VirtualList>
-  </div>
+  <List
+    bind:this={list}
+    items={rows}
+    itemKey={rowKey}
+    {label}
+    {height}
+    virtual={rowHeight}
+    bind:selected
+    {field}
+    {empty}
+    onactivate={onopen}
+    oncontextmenu={(event, row) => oncontextmenu?.(row, event)}
+    {onnearend}
+  >
+    {#snippet row(item, state)}
+      <div class="row" class:selected={state.selected} class:strong={strong(item)}>
+        {#if lead}
+          <div class="lead">{@render lead(item)}</div>
+        {/if}
+        {#each columns as column, index (column.id)}
+          <div
+            class="col"
+            class:fill={column.width === "fill"}
+            class:first-fill={index === 0 && column.width === "fill" && lead}
+            class:mono={column.mono}
+            class:small={column.small}
+            style:width={widthOf(column)}
+            style:color={column.tone ? toneColor(column.tone) : null}
+          >
+            {#if cell}{@render cell(item, column)}{:else}{cellText(item, column)}{/if}
+          </div>
+        {/each}
+      </div>
+    {/snippet}
+  </List>
 </div>
 
 <style>
@@ -142,14 +141,6 @@
     padding-left: calc(var(--lead-width) + var(--space-2));
   }
 
-  .body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    outline: none;
-  }
-
   .row {
     --row-bg: var(--panel);
     display: flex;
@@ -168,7 +159,7 @@
     --row-bg: var(--selected-inactive);
   }
 
-  .body:focus-within .row.selected {
+  .table:focus-within .row.selected {
     --row-bg: var(--selected);
   }
 

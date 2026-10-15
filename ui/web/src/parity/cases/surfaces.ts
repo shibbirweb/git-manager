@@ -5,25 +5,6 @@ const BOLD_STROKE = "the app's merge buttons draw 2.5; the design system has one
 
 export const surfaceCases: ParityCase[] = [
   {
-    id: "format-toolbar",
-    sources: ["src/lib/views/files/MarkdownToolbar.svelte"],
-    html:
-      '<div class="markdown-toolbar" role="toolbar"><div class="format">' +
-      `<button class="tool">${iconSvg("bold", 14)}</button>` +
-      `<button class="tool heading">${iconSvg("heading", 14)}${iconSvg("chevron-down", 10)}</button>` +
-      '<span class="divider"></span>' +
-      `<button class="tool">${iconSvg("quote", 14)}</button></div></div>`,
-    pairs: [
-      { name: "toolbar", ref: ".markdown-toolbar", lib: ".toolbar", ignore: { width: "fills its parent" } },
-      { name: "group", ref: ".format", lib: ".format" },
-      { name: "tool", ref: ".tool:not(.heading)", lib: ".tool:not([aria-haspopup])", states: ["hover"] },
-      { name: "tool icon", ref: ".tool:not(.heading) svg", lib: ".tool:not([aria-haspopup]) svg" },
-      { name: "menu tool", ref: ".tool.heading", lib: ".tool[aria-haspopup]" },
-      { name: "chevron", ref: ".tool.heading svg + svg", lib: ".tool[aria-haspopup] svg + svg" },
-      { name: "divider", ref: ".divider", lib: ".divider" },
-    ],
-  },
-  {
     id: "merge-connector",
     sources: ["src/lib/merge/MergeEditor.svelte"],
     html:
