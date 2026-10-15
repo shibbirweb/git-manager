@@ -13,7 +13,7 @@ Two columns halve the width of each version. In a narrow window, or with long li
 The layout is the `diffLayout` preference in `settings.json`: `"sideBySide"` (the default) or `"inline"`, read with `pickOneOf` against `DIFF_LAYOUT_CHOICES` in `settingsData.ts`, so any other value falls back to side by side. Two places set it with `settings.setPreference("diffLayout", ...)`, so they always agree:
 
 - **Diff layout** in Settings > Git, a segmented control like File toolbar, found by Settings search under words such as "unified" and "split".
-- Two buttons in a `role="group"` in the diff toolbar of `DiffView.svelte`, with the `split-view` and `split-rows` icons. They are disabled when the diff has no text to show (binary, too large, LFS or identical). The build effect reads the setting, so a click tears the old view down and builds the other one; the layout is part of the scroll key.
+- Two buttons in a `role="group"` in the diff toolbar (`DiffToolbar.svelte`), with the `split-view` and `split-rows` icons. They are disabled when the diff has no text to show (binary, too large, LFS or identical). The build effect reads the setting, so a click tears the old view down and builds the other one; the layout is part of the scroll key.
 
 ### The inline document
 
@@ -57,7 +57,7 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 | `src/lib/diff/inlineDoc.ts` | The document, word marks, selection, `applyBlock`, folds, line mapping |
 | `src/lib/diff/inlineView.ts` | `inlineDiffExtensions`: colors, gutters, buttons, folds |
 | `src/lib/diff/foldField.ts`, `foldModel.ts` | The fold bars and their 10 line steps, shared with side by side |
-| `src/lib/diff/DiffView.svelte` | The toolbar buttons and building either layout |
+| `src/lib/diff/DiffToolbar.svelte`, `diffViews.ts` | The toolbar buttons and building either layout |
 | `src/lib/editor/blame.ts`, `blameModel.ts` | `loadBlame` for an inline source, `expandBlame`, `REMOVED_LINE` |
 | `src/lib/editor/setup.ts` | The `lineNumbers` option of `baseExtensions` |
 | `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `diffLayout` preference and `DIFF_LAYOUT_CHOICES` |
@@ -83,6 +83,6 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 
 ## Keeping this page in sync
 
-- Update this page when `inlineDoc.ts`, `inlineView.ts` or the inline parts of `DiffView.svelte` and `blame.ts` change.
+- Update this page when `inlineDoc.ts`, `inlineView.ts` or the inline parts of `diffViews.ts` and `blame.ts` change.
 - Update [Inline Diffs](../usage/Inline-Diffs.md) and retake `diff-inline.png` for visible changes.
 - Related: [How Diffs Work](How-Diffs-Work.md), [Settings Reference](Settings-Reference.md).

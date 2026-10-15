@@ -66,12 +66,4 @@
     <Segmented label="Mode" size="small" value="a" options={[{ value: "a", icon: "split-view", title: "A" }]} />
   </Toolbar>
   <Toolbar variant="conflict" label="Conflicts"><Icon name="alert" size="medium" tone="danger" /></Toolbar>
-{:else if id === "diff-labels"}
-  <DiffView
-    label="Diff"
-    original="a"
-    modified="b"
-    height="small"
-    sideLabels={{ original: "HEAD", modified: "Working tree" }}
-  />
 {/if}

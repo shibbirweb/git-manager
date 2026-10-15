@@ -43,6 +43,7 @@
     responsive?: boolean;
     hideAt?: NarrowStep | null;
     children: Snippet;
+    onshown?: (shown: boolean) => void;
   }
 
   let {
@@ -72,6 +73,7 @@
     responsive = false,
     hideAt = null,
     children,
+    onshown,
   }: Props = $props();
 
   // The parent's width first, then this Stack's own for what is inside.
@@ -79,6 +81,26 @@
   const bar = new BarSize();
   if (untrack(() => responsive)) {
     provideBarSize(bar);
+  }
+
+  /** With `onshown`: reports when it gets or loses a size (a background tab is hidden with display: none). */
+  function watchShown(node: HTMLElement, callback: ((shown: boolean) => void) | undefined) {
+    let report = callback;
+    let last: boolean | null = null;
+    const observer = report
+      ? new ResizeObserver(() => {
+          const shown = node.clientWidth > 0 && node.clientHeight > 0;
+          if (shown !== last) {
+            last = shown;
+            report?.(shown);
+          }
+        })
+      : null;
+    observer?.observe(node);
+    return {
+      update: (next: ((shown: boolean) => void) | undefined) => (report = next),
+      destroy: () => observer?.disconnect(),
+    };
   }
 
   const FLEX: Record<string, string> = { start: "flex-start", end: "flex-end", between: "space-between" };
@@ -101,6 +123,7 @@
   aria-label={label}
   aria-busy={busy || undefined}
   use:bar.observe={responsive}
+  use:watchShown={onshown}
   style:flex-direction={direction}
   style:gap={gapValue(gap)}
   style:padding="{gapValue(paddingY ?? padding)}

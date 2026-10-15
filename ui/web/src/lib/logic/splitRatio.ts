@@ -9,9 +9,13 @@ export function clampRatio(ratio: number): number {
   return Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio));
 }
 
-/** The ratio where the pointer is, inside a box from `left` that is `width` wide. */
-export function pointerRatio(clientX: number, left: number, width: number): number {
-  return width > 0 ? clampRatio((clientX - left) / width) : 0.5;
+/**
+ * The ratio where the pointer is, inside a box from `left` that is `width` wide; `gutter` px between the sides
+ * (a diff's change arrows) belong to neither and never grow.
+ */
+export function pointerRatio(clientX: number, left: number, width: number, gutter = 0): number {
+  const shared = width - gutter;
+  return shared > 0 ? clampRatio((clientX - left) / shared) : 0.5;
 }
 
 /** The ratio after an arrow key (Shift moves five times as far); null for other keys. */

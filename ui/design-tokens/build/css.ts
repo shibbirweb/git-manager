@@ -37,9 +37,15 @@ export function textStyleLines(tokens: Tokens, indent: string): string[] {
   return lines;
 }
 
-/** A component part as CSS: a px number or a var() of the scale token it refers to. */
-export function componentValue(value: number | Reference): string {
-  return typeof value === "number" ? `${value}px` : `var(--${kebabName(value.group)}-${kebabName(value.name)})`;
+/**
+ * A component part as CSS: a px number or a var() of the scale token it refers to. A stacking layer ("layer",
+ * "splitterLayer") is a plain number, since a z-index with a unit is ignored.
+ */
+export function componentValue(value: number | Reference, part = ""): string {
+  if (typeof value !== "number") {
+    return `var(--${kebabName(value.group)}-${kebabName(value.name)})`;
+  }
+  return /(^l|L)ayer$/.test(part) ? String(value) : `${value}px`;
 }
 
 /** tokens.css: the entry point the library and the app import; it pulls in every generated sheet. */
@@ -97,7 +103,7 @@ export function typographyCss(tokens: Tokens): string {
 export function componentBlocksCss(tokens: Tokens): string[][] {
   return Object.entries(tokens.components).map(([component, parts]) =>
     Object.entries(parts).map(
-      ([part, value]) => `  --${kebabName(component)}-${kebabName(part)}: ${componentValue(value)};`,
+      ([part, value]) => `  --${kebabName(component)}-${kebabName(part)}: ${componentValue(value, part)};`,
     ),
   );
 }

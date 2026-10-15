@@ -11,20 +11,6 @@ export const barCases: ParityCase[] = [
     pairs: [{ name: "toolbar", ref: ".toolbar", lib: ".toolbar", ignore: FILL }],
   },
   {
-    id: "toolbar-editor",
-    sources: ["src/lib/diff/DiffView.svelte"],
-    html:
-      '<div class="toolbar"><span class="counter dim">2 of 5</span><div class="divider"></div>' +
-      `<button class="toggle active" aria-pressed="true">${iconSvg("list-tree", 13)}<span>Collapse</span></button>` +
-      `<button class="toggle layout-button">${iconSvg("split-rows", 13)}</button></div>`,
-    pairs: [
-      { name: "toolbar", ref: ".toolbar", lib: ".toolbar", ignore: FILL },
-      { name: "divider", ref: ".divider", lib: ".divider" },
-      { name: "toggle on", ref: ".toggle.active", lib: ".toggle.active", states: ["hover"] },
-      { name: "icon toggle", ref: ".toggle.layout-button", lib: ".toggle.icon-only", states: ["hover"] },
-    ],
-  },
-  {
     id: "toolbar-merge",
     sources: ["src/lib/merge/MergeEditor.svelte"],
     html:

@@ -58,17 +58,6 @@ export const pickerCases: ParityCase[] = [
     ],
   },
   {
-    id: "split-handle",
-    sources: ["src/lib/diff/DiffView.svelte"],
-    html:
-      '<div class="diff-host" style="position: relative; height: 80px"><div class="split-handle" style="left: 50%" ' +
-      'role="separator" tabindex="0"></div></div>',
-    pairs: [
-      { name: "handle", ref: ".split-handle", lib: ".split-handle", states: ["hover"] },
-      { name: "line", ref: ".split-handle", lib: ".split-handle", pseudo: "::after" },
-    ],
-  },
-  {
     id: "split-grid",
     sources: ["src/lib/views/Workspace.svelte"],
     html:

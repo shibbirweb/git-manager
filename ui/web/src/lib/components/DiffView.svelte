@@ -11,8 +11,7 @@
   import { languageSupport, type CodeLanguage } from "../editor/languages";
   import { diffTheme, editorTheme } from "../editor/theme";
   import { presetVar, type ViewHeight } from "../logic/presets";
-  import Icon from "./Icon.svelte";
-  import SplitHandle from "./SplitHandle.svelte";
+  import DiffFrame from "./DiffFrame.svelte";
 
   interface Props {
     original: string;
@@ -90,33 +89,20 @@
 
 <div
   class="frame"
-  role="region"
-  aria-label={label}
   style:height={height === "fill" ? null : presetVar("viewHeight", height)}
   style:flex={height === "fill" ? null : "none"}
 >
-  <!-- The two sides' names over the panes; inline shows "old -> new" in one label. -->
-  {#if sideLabels}
-    <div class="labels">
-      {#if layout === "inline"}
-        <span class="label inline" title="{sideLabels.original} to {sideLabels.modified}">
-          <span class="name">{sideLabels.original}</span>
-          <Icon name="arrow-right" size="small" />
-          <span class="name">{sideLabels.modified}</span>
-        </span>
-      {:else}
-        <span class="label name" title={sideLabels.original}>{sideLabels.original}</span>
-        <span class="gap"></span>
-        <span class="label name" title={sideLabels.modified}>{sideLabels.modified}</span>
-      {/if}
-    </div>
-  {/if}
-  <div class="body" style:--diff-left={ratio} style:--diff-right={1 - ratio}>
-    <div class="diff" bind:this={host}></div>
-    {#if layout === "split"}
-      <SplitHandle bind:ratio label="Resize the sides" oncommit={(value) => oncommitratio?.(value)} />
-    {/if}
-  </div>
+  <DiffFrame
+    {layout}
+    {label}
+    {sideLabels}
+    bind:ratio
+    oncommitratio={(value) => oncommitratio?.(value)}
+    onready={(parts) => {
+      host = parts.body;
+      return () => (host = null);
+    }}
+  />
 </div>
 
 <style>
@@ -128,75 +114,5 @@
     min-width: 0;
     min-height: 0;
     width: 100%;
-  }
-
-  .labels {
-    flex: none;
-    display: flex;
-    align-items: center;
-    height: var(--diff-labels-height);
-    border-bottom: 1px solid var(--border);
-    background: var(--panel-alt);
-    color: var(--text-dim);
-    font-size: var(--font-size-compact);
-  }
-
-  .label {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 0 var(--diff-labels-padding-x);
-  }
-
-  .inline {
-    display: flex;
-    align-items: center;
-    gap: var(--diff-labels-gap);
-  }
-
-  .name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .gap {
-    flex: none;
-    width: 1px;
-    align-self: stretch;
-    background: var(--border-strong);
-  }
-
-  .body {
-    position: relative;
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .body :global(.cm-mergeViewEditor:first-child) {
-    flex-grow: var(--diff-left, 1);
-  }
-
-  .body :global(.cm-mergeViewEditor:last-child) {
-    flex-grow: var(--diff-right, 1);
-  }
-
-  .diff {
-    flex: 1;
-    align-self: stretch;
-    min-width: 0;
-    min-height: 0;
-    width: 100%;
-    overflow: auto;
-    background: var(--editor-bg);
-  }
-
-  .diff :global(.cm-mergeView),
-  .diff :global(.cm-editor) {
-    height: 100%;
-  }
-
-  .diff :global(.cm-mergeViewEditor + .cm-mergeViewEditor) {
-    border-left: 1px solid var(--border-strong);
   }
 </style>

@@ -1407,13 +1407,13 @@ define("diff-view", async (shot) => {
   await shot.page.getByRole("button", { name: "Hide files" }).click();
   await shot.page
     .getByRole("group", { name: "storefront", exact: true })
-    .getByRole("group", { name: "Changes" })
+    .getByRole("region", { name: "Changes" })
     .getByText("cart.ts")
     .click();
-  await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
+  await shot.page.locator("[aria-label='Diff'] .cm-mergeView, [aria-label='Diff'] .cm-merge-a").first().waitFor();
   await shot.settle(500);
   // Hovering a changed block shows its stage button more clearly.
-  await shot.page.locator(".diff-view .diff-revert").first().hover();
+  await shot.page.locator("[aria-label='Diff'] .diff-revert").first().hover();
   await shot.save();
 });
 
@@ -1716,15 +1716,15 @@ define("diff-hunk-staging", async (shot) => {
   await shot.page.getByRole("button", { name: "Hide files" }).click();
   await shot.page
     .getByRole("group", { name: "storefront", exact: true })
-    .getByRole("group", { name: "Changes" })
+    .getByRole("region", { name: "Changes" })
     .getByText("cart.ts")
     .click();
-  await shot.page.locator(".diff-view .diff-revert").first().waitFor();
+  await shot.page.locator("[aria-label='Diff'] .diff-revert").first().waitFor();
   await shot.settle(500);
-  const stage = shot.page.locator(".diff-view .diff-revert").first();
+  const stage = shot.page.locator("[aria-label='Diff'] .diff-revert").first();
   await stage.hover();
   await shot.settle();
-  const view = shot.page.locator(".diff-view");
+  const view = shot.page.getByRole("region", { name: "Diff", exact: true }).first();
   const across = await shot.clipAround([view], 0);
   const down = await shot.clipAround([view.locator(".toolbar"), stage], { bottom: 150 });
   await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
@@ -2492,15 +2492,15 @@ define(
   async (shot) => {
     const changes = shot.page
       .getByRole("group", { name: "brand-kit", exact: true })
-      .getByRole("group", { name: "Changes" });
+      .getByRole("region", { name: "Changes" });
     await changes.getByText("logo.png").click();
     await shot.page.waitForFunction(() => {
-      const images = [...document.querySelectorAll<HTMLImageElement>(".diff-view .binary-preview img")];
+      const images = [...document.querySelectorAll<HTMLImageElement>("[aria-label='Diff'] .binary-preview img")];
       return images.length === 2 && images.every((image) => image.complete && image.naturalWidth > 0);
     });
     await shot.settle(500);
     await shot.page.mouse.move(640, 790);
-    await shot.save(await shot.clipAround([shot.page.locator(".diff-view")], 0));
+    await shot.save(await shot.clipAround([shot.page.getByRole("region", { name: "Diff", exact: true }).first()], 0));
   },
   () => ({ launch: { mode: "app", repoPath: brandKit }, state: { activeRepos: {}, explorerOpen: false } }),
 );
@@ -2517,19 +2517,19 @@ define(
     await shot.page.getByRole("button", { name: "Hide files" }).click();
     await shot.page
       .getByRole("group", { name: "storefront", exact: true })
-      .getByRole("group", { name: "Changes" })
+      .getByRole("region", { name: "Changes" })
       .getByText("cart.ts")
       .click();
-    await shot.page.locator(".diff-view .cm-inlineDiff .cm-inlineModified").first().waitFor();
+    await shot.page.locator("[aria-label='Diff'] .cm-inlineDiff .cm-inlineModified").first().waitFor();
     await shot.settle(500);
-    const view = shot.page.locator(".diff-view");
+    const view = shot.page.getByRole("region", { name: "Diff", exact: true }).first();
     const box = await view.boundingBox();
     if (!box) {
       throw new Error("diff-inline: no diff view");
     }
     await shot.save({ x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 560) });
   },
-  () => ({ state: { diffLayout: "inline" } }),
+  () => ({ settings: { diffLayout: "inline" } }),
 );
 
 define(
@@ -2539,15 +2539,15 @@ define(
     await shot.page.getByRole("button", { name: "Hide files" }).click();
     await shot.page
       .getByRole("group", { name: "storefront", exact: true })
-      .getByRole("group", { name: "Changes" })
+      .getByRole("region", { name: "Changes" })
       .getByText("cart.ts")
       .click();
-    await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
+    await shot.page.locator("[aria-label='Diff'] .cm-mergeView, [aria-label='Diff'] .cm-merge-a").first().waitFor();
     await shot.settle(500);
-    const handle = shot.page.locator(".diff-view .split-handle").first();
+    const handle = shot.page.getByRole("separator", { name: "Resize the two sides of the diff" }).first();
     await handle.hover();
     await shot.settle();
-    const view = shot.page.locator(".diff-view");
+    const view = shot.page.getByRole("region", { name: "Diff", exact: true }).first();
     const box = await view.boundingBox();
     if (!box) {
       throw new Error("diff-split-resize: no diff view");
@@ -2729,10 +2729,10 @@ define(
     await shot.page.getByRole("button", { name: "Hide files" }).click();
     await shot.page
       .getByRole("group", { name: "storefront", exact: true })
-      .getByRole("group", { name: "Changes" })
+      .getByRole("region", { name: "Changes" })
       .getByText("cart.ts")
       .click();
-    await shot.page.locator(".diff-view .cm-mergeView, .diff-view .cm-merge-a").first().waitFor();
+    await shot.page.locator("[aria-label='Diff'] .cm-mergeView, [aria-label='Diff'] .cm-merge-a").first().waitFor();
     await shot.settle(500);
     await shot.page.mouse.move(640, 790);
     await shot.save();
@@ -3251,7 +3251,7 @@ define(
     await collapseRepo(shot, "payments-api");
     const row = shot.page
       .getByRole("group", { name: "storefront", exact: true })
-      .getByRole("group", { name: "Changes" })
+      .getByRole("region", { name: "Changes" })
       .getByText("wishlist.ts");
     await row.click({ button: "right" });
     const menu = menuLevel(shot, 0);
@@ -3747,10 +3747,15 @@ define(
   async (shot) => {
     await shot.page
       .getByRole("group", { name: "media-site", exact: true })
-      .getByRole("group", { name: "Staged" })
+      .getByRole("region", { name: "Staged" })
       .getByText("hero.png")
       .click();
-    await shot.page.locator(".diff-view").getByText("Stored in Git LFS").first().waitFor();
+    await shot.page
+      .getByRole("region", { name: "Diff", exact: true })
+      .first()
+      .getByText("Stored in Git LFS")
+      .first()
+      .waitFor();
     await shot.settle(500);
     await shot.page.mouse.move(640, 790);
     await shot.save();

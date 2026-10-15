@@ -9,6 +9,11 @@ describe("split ratio", () => {
     expect(pointerRatio(300, 100, 0)).toBe(0.5);
   });
 
+  it("leaves the gutter between the sides out of the shared width", () => {
+    expect(pointerRatio(288, 100, 400, 24)).toBe(0.5);
+    expect(pointerRatio(300, 100, 24, 24)).toBe(0.5);
+  });
+
   it("moves by key, further with Shift", () => {
     expect(keyedRatio(0.5, "ArrowLeft", false)).toBeCloseTo(0.48);
     expect(keyedRatio(0.5, "ArrowRight", true)).toBeCloseTo(0.6);

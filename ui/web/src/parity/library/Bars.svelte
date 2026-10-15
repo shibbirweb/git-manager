@@ -12,13 +12,6 @@
 
 {#if id === "toolbar-tab"}
   <Toolbar label="History"><Icon name="history" size="normal" /><Text>History</Text></Toolbar>
-{:else if id === "toolbar-editor"}
-  <Toolbar variant="editor" label="Diff">
-    <Text tone="dim" size="small">2 of 5</Text>
-    <Divider direction="vertical" />
-    <ToggleButton icon="list-tree" label="Collapse unchanged" text="Collapse" pressed />
-    <ToggleButton icon="split-rows" label="Inline" />
-  </Toolbar>
 {:else if id === "toolbar-merge"}
   <Toolbar variant="merge" label="Merge">
     <Divider direction="vertical" />

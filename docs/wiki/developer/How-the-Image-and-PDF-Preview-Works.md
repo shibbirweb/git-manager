@@ -64,7 +64,7 @@ DiffView mounts the preview inside a host bound to its width. A hidden tab is `d
 | `src/lib/views/files/FileView.svelte` | Chooses the preview, mounts it only while active, `previewToken` |
 | `src/lib/diff/binaryPreview.ts` | `PreviewSides`, `showsBinaryPreview`, `sideState`, `sideInfo`, `sharedFit`, `syncedScroll` |
 | `src/lib/diff/BinaryPreview.svelte` | The two sides of a diff |
-| `src/lib/diff/DiffView.svelte` | `previewSides`, the on-screen host |
+| `src/lib/diff/DiffView.svelte` | `previewSides`; a Stack's `onshown` keeps the preview only while on screen |
 | `src/lib/views/files/previewScheme.ts` | `openPreview` |
 
 ## Design decisions

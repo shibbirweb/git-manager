@@ -13,6 +13,7 @@ export const componentTokens3 = {
     closeRadius: 3,
   },
   diffLabels: { height: 24, paddingX: 12, gap: 6 },
+  diffFrame: { controls: 24, ruler: 12, revertHeight: 20, revertRadius: 4 },
   codeView: { copyHeight: 22 },
   editorTab: { dirtyDot: 8 },
   pickList: { maxHeight: 340, groupPaddingBottom: 3 },

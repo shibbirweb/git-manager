@@ -6,6 +6,8 @@
   "src/lib/ai/AiPanelRows.svelte",
   "src/lib/ai/NewTaskDialog.svelte",
   "src/lib/compare/FileCompareTab.svelte",
+  "src/lib/diff/DiffToolbar.svelte",
+  "src/lib/diff/DiffView.svelte",
   "src/lib/fileIcons/FileTypeIcon.svelte",
   "src/lib/log/CommitTab.svelte",
   "src/lib/log/LogTable.svelte",

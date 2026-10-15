@@ -35,5 +35,4 @@ Use for file diffs, the Changes diff and compare tabs. The app adds staging butt
 
 ## Replaces in the app
 
-- `src/lib/diff/DiffView.svelte`
 - `src/lib/views/changes/ChangesDiff.svelte panes`

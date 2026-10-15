@@ -1,16 +1,17 @@
 <!-- A handle between two side-by-side views inside one box, like the split diff's: drag it or use the arrow keys
      (Shift for bigger steps) to move the split, which `ratio` holds (0 to 1, data); double-click centers it. Its
-     parent must be positioned. -->
+     parent must be positioned. `gutter` px between the sides, such as a diff's change arrows, never grow. -->
 <script lang="ts">
   import { keyedRatio, pointerRatio } from "../logic/splitRatio";
 
   interface Props {
     ratio?: number;
+    gutter?: number;
     label: string;
     oncommit?: (ratio: number) => void;
   }
 
-  let { ratio = $bindable(0.5), label, oncommit }: Props = $props();
+  let { ratio = $bindable(0.5), gutter = 0, label, oncommit }: Props = $props();
 
   let dragging = $state(false);
   let handle = $state<HTMLDivElement | null>(null);
@@ -18,7 +19,7 @@
   function move(event: PointerEvent): void {
     const box = handle?.parentElement?.getBoundingClientRect();
     if (dragging && box) {
-      ratio = pointerRatio(event.clientX, box.left, box.width);
+      ratio = pointerRatio(event.clientX, box.left, box.width, gutter);
     }
   }
 </script>
@@ -35,7 +36,7 @@
   aria-valuemin={0}
   aria-valuemax={100}
   tabindex="0"
-  style:left="{ratio * 100}%"
+  style:left="calc((100% - {gutter}px) * {ratio})"
   onpointerdown={(event) => {
     event.preventDefault();
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);

@@ -63,8 +63,6 @@
     ]}
     onpick={none}
   />
-{:else if id === "split-handle"}
-  <div style="position: relative; height: 80px"><SplitHandle label="Resize the sides" /></div>
 {:else if id === "split-grid"}
   <div style="display: flex; flex-direction: column; height: 120px">
     <SplitGrid groups={halves} splitters={split}>

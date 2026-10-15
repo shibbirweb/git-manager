@@ -62,6 +62,8 @@ Use for every layout instead of writing CSS: rows of buttons, label and value pa
 - `hideAt` (`"tiny" | "narrow" | "compact" | "medium" | null`, default `null`): In a responsive Toolbar or Stack under
   220, 320, 480 or 600 px, it goes with what it holds.
 - `children` (`Snippet`, required): The content.
+- `onshown` (`(shown: boolean) => void`): It got or lost a size, such as a hidden background tab: drop heavy content (a
+  preview's files) while it is hidden.
 
 ## Rules
 

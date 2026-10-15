@@ -10,11 +10,12 @@ Group: Layout. Also known as: Splitter.
 
 ## When to use
 
-DiffView uses it in its split layout. Put it in a positioned box; double-click centers.
+DiffFrame uses it between a diff's sides. Put it in a positioned box; double-click centers.
 
 ## Props
 
 - `ratio` (`number`, default `0.5`, bindable): The split, 0 to 1.
+- `gutter` (`number`, default `0`): Px between the sides that never grow, such as a diff's change arrows.
 - `label` (`string`, required): Accessible name.
 - `oncommit` (`(ratio: number) => void`): A drag ended or a key moved it: save it.
 

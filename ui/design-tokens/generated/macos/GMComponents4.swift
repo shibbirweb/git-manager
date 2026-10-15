@@ -84,6 +84,13 @@ public enum GMDiffLabelsTokens {
     public static let gap: CGFloat = 6
 }
 
+public enum GMDiffFrameTokens {
+    public static let controls: CGFloat = 24
+    public static let ruler: CGFloat = 12
+    public static let revertHeight: CGFloat = 20
+    public static let revertRadius: CGFloat = 4
+}
+
 public enum GMCodeViewTokens {
     public static let copyHeight: CGFloat = 22
 }

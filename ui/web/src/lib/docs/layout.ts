@@ -70,6 +70,8 @@ export const layoutDocs: ComponentDoc[] = [
       prop("hideAt", NARROW_STEP, "In a responsive Toolbar or Stack under 220, 320, 480 or 600 px, it goes " +
         "with what it holds.", { default: "null" }),
       prop("children", "Snippet", "The content.", { required: true }),
+      prop("onshown", "(shown: boolean) => void", "It got or lost a size, such as a hidden background tab: " +
+        "drop heavy content (a preview's files) while it is hidden."),
     ],
     examples: [
       {

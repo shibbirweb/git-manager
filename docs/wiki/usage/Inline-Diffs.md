@@ -2,7 +2,7 @@
 
 Every diff can show its two versions side by side, or inline in one column. Inline is handy in a narrow window, or when long lines get cut off in two columns.
 
-[TODO:diff-inline.png]
+![An inline diff: removed lines above the lines that replace them](../images/diff-inline.png)
 
 *An inline diff of cart.ts: the old and new line numbers on the left, each change's removed lines above the lines that replace them, and the layout buttons in the toolbar.*
 

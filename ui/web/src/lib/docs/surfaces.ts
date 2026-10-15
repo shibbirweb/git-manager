@@ -55,7 +55,45 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("extensions", EXTENSIONS, "More CodeMirror extensions, on both sides.", { default: "[]" }),
     ],
     examples: [{ title: "A file's change", code: '<DiffView label="app.ts" {original} {modified} language="ts" />' }],
-    replaces: ["src/lib/diff/DiffView.svelte", "src/lib/views/changes/ChangesDiff.svelte panes"],
+    replaces: ["src/lib/views/changes/ChangesDiff.svelte panes"],
+  },
+  {
+    name: "DiffFrame",
+    group: "Editor",
+    summary: "The frame of a diff whose editors the app builds: side names, find bar slots, body, split handle.",
+    usage:
+      "Use when the app builds the diff's CodeMirror editors itself (staging, blame, folds). `onready` hands over " +
+      "the body and a find bar container per side; labels, find bars and editors share `ratio`. DiffView is " +
+      "built on it.",
+    aliases: ["Diff", "Diff host"],
+    props: [
+      prop("layout", '"split" | "inline"', "Side by side, or one column with one label and one find bar.", {
+        default: '"split"',
+      }),
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("sideLabels", "{ original: string; modified: string } | null", "Names over the two sides.", {
+        default: "null",
+      }),
+      prop("controls", "boolean", "A column for the change arrows between the sides.", { default: "false" }),
+      prop("ruler", "boolean", "Room for a change overview ruler at the right of one editor.", { default: "false" }),
+      prop("ratio", "number", "The split between the sides; drag the handle to change it.", {
+        default: "0.5",
+        bindable: true,
+        data: true,
+      }),
+      prop("oncommitratio", "(ratio: number) => void", "A drag or a key ended: save the ratio."),
+      prop("onready", "(parts: DiffFrameParts) => void | (() => void)", "The body and find bar hosts, once shown."),
+      prop("oncontextmenu", "(event: MouseEvent) => void", "Right-click in the body, for the diff's menu."),
+    ],
+    rules: ["Never draw UI in the body: it holds only the editors the app builds."],
+    examples: [
+      {
+        title: "The Changes diff",
+        code: '<DiffFrame label="cart.ts" sideLabels={names} controls ruler bind:ratio onready={build} />',
+      },
+    ],
+    logic: ["splitRatio.ts"],
+    replaces: ["src/lib/diff/DiffView.svelte (labels, find bars, body and split handle)"],
   },
   {
     name: "MergeView",

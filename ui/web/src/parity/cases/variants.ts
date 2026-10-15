@@ -54,16 +54,4 @@ export const variantCases: ParityCase[] = [
       { name: "conflict bar", ref: ".conflict-bar", lib: ".toolbar.conflict", ignore: FILL },
     ],
   },
-  {
-    id: "diff-labels",
-    sources: ["src/lib/diff/DiffView.svelte"],
-    html:
-      '<div class="labels"><span class="label truncate">HEAD</span><span class="gap"></span>' +
-      '<span class="label truncate">Working tree</span></div>',
-    pairs: [
-      { name: "labels", ref: ".labels", lib: ".labels", ignore: FILL },
-      { name: "label", ref: ".label", lib: ".label", ignore: FILL },
-      { name: "gap", ref: ".gap", lib: ".gap" },
-    ],
-  },
 ];

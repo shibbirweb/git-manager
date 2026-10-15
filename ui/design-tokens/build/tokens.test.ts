@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { argbHex, parseShadow, parseTokenColor } from "./color";
+import { componentValue } from "./css";
 import { buildTokens, camelName, designTokens, kebabName, parseReference, resolved } from "./model";
 import { tokenOutputs } from "./outputs";
 
@@ -61,6 +62,15 @@ describe("references", () => {
   it("refuse a missing token or a stray string", () => {
     expect(() => buildTokens({}, { size: {} }, { button: { height: "{size.nope}" } })).toThrow("does not exist");
     expect(() => buildTokens({}, {}, { button: { height: "28px" } })).toThrow("neither a number");
+  });
+});
+
+describe("component values", () => {
+  it("give sizes px and leave stacking layers plain numbers", () => {
+    expect(componentValue(24, "height")).toBe("24px");
+    expect(componentValue(5, "layer")).toBe("5");
+    expect(componentValue(20, "splitterLayer")).toBe("20");
+    expect(componentValue({ group: "size", name: "control" }, "height")).toBe("var(--size-control)");
   });
 });
 

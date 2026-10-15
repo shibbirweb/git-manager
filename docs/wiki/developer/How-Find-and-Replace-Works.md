@@ -4,7 +4,7 @@ There are two tools: the find and replace bar inside every CodeMirror editor, an
 
 ## Why we need it
 
-CodeMirror's own search panel has no match counter, no Exclude and no Select All Occurrences button, and does not match the app. People coming from JetBrains expect Cmd+R, Option+C, W and X and a "3/12" counter. Replace in Files renames a word across a project without leaving the app.
+CodeMirror's own search panel has no counter, no Exclude and no Select All Occurrences, and does not match the app. JetBrains users expect Cmd+R, Option+C, W, X and a "3/12" counter. Replace in Files renames a word across a project without leaving the app.
 
 ## How it works
 
@@ -33,7 +33,7 @@ flowchart LR
 - **Select All Occurrences** uses `selectMatches` while the bar is open, otherwise `occurrenceRanges` (the selection, or the whole word at the caret, case-sensitive), up to `SELECT_CAP` (1,000).
 - **Keys.** `findKeymap` replaces CodeMirror's `searchKeymap` with the same keys plus Cmd+R and Ctrl+Cmd+G. Keys pressed in the bar's fields that the bar does not handle go through `runScopeHandlers(view, event, "search-panel")`, so Cmd+G and the merge tool's Cmd+Enter work from the fields.
 
-Read-only editors get the find row only. In a diff, both sides share one scroller, so `DiffView.svelte` gives each side `panels({ topContainer })` with a host above the diff; a bar inside the editor would scroll away and push its side out of line.
+Read-only editors get the find row only. In a diff, both sides share one scroller, so each side gets `panels({ topContainer })` with a host above the diff (the library's `DiffFrame`); a bar inside the editor would scroll away and push its side out of line.
 
 The Edit menu items (Find, Replace, Find Next, Find Previous, Select All Occurrences) take their keys from `EDITOR_SHORTCUTS` with `source: "find"`. The editor sees a key before the menu, so a key never runs twice. See [How editing code works](How-Editing-Code-Works.md).
 
@@ -71,7 +71,7 @@ After a write, `repoStore.filesWritten` refreshes the status of the touched repo
 | `src/lib/editor/FindBar.svelte` | The bar's fields and buttons |
 | `src/lib/editor/findModel.ts` | `buildQuery`, `selectionQuery`, `countMatches`, `counterView`, `occurrenceRanges` |
 | `src/lib/ui/SearchToggles.svelte` | The Cc, W and .\* toggles, shared with the Text tab |
-| `src/lib/diff/DiffView.svelte` | Find bar hosts above each diff side |
+| `src/lib/diff/diffEditors.svelte.ts`, `DiffFrame` (UI library) | Find bar hosts above each diff side |
 | `src/lib/search/FileSearch.svelte` | The Replace field, the two-step replace |
 | `src/lib/search/replaceModel.ts` | Confirmation and summary texts |
 | `src-tauri/src/text_search/replace.rs` | Templates, the replace run, `write_atomic` |
