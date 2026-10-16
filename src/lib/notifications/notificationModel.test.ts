@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { toast } from "$lib/ui/toast.svelte";
+import { MAX_TOASTS, toast } from "$lib/ui/toast.svelte";
 import {
   ACTION_LIFETIME_MS,
   actionAvailable,
@@ -7,12 +7,13 @@ import {
   bellTitle,
   CHECKED_ACTION_LIFETIME_MS,
   dropStaleActions,
-  kindLabel,
+  hasUnreadError,
   markActionUsed,
   markAllRead,
   MAX_NOTIFICATIONS,
   type NotificationEntry,
   type NotificationKind,
+  removeNotification,
   shouldPopUp,
   unreadAlerts,
 } from "./notificationModel";
@@ -24,6 +25,7 @@ function entry(id: number, kind: NotificationKind = "info", extra: Partial<Notif
     kind,
     title: `m${id}`,
     detail: null,
+    source: null,
     time: 1000,
     read: false,
     action: null,
@@ -115,9 +117,19 @@ describe("notification list", () => {
     expect(shouldPopUp("error", true)).toBe(true);
   });
 
+  it("nothing pops up while the list is shown", () => {
+    expect(shouldPopUp("error", false, true)).toBe(false);
+    expect(shouldPopUp("info", true, true)).toBe(false);
+  });
+
+  it("removes one message and tells an unread error apart", () => {
+    const list = [entry(1, "error", { read: true }), entry(2, "warning"), entry(3, "error")];
+    expect(removeNotification(list, 3).map((item) => item.id)).toEqual([1, 2]);
+    expect(hasUnreadError(list)).toBe(true);
+    expect(hasUnreadError(removeNotification(list, 3))).toBe(false);
+  });
+
   it("words the kinds and tooltip", () => {
-    expect(kindLabel("warning")).toBe("Warning");
-    expect(kindLabel("success")).toBe("Done");
     expect(bellTitle(0, 0, false)).toBe("No notifications");
     expect(bellTitle(1, 3, false)).toBe("1 unread problem");
     expect(bellTitle(0, 1, true)).toBe("1 notification. Do Not Disturb is on");
@@ -184,9 +196,52 @@ describe("toasts and the notification history", () => {
     expect(toast.items).toHaveLength(0);
   });
 
-  it("messages that arrive while the list is open are already read", () => {
+  it("messages that arrive while the list is open are already read, and nothing pops up", () => {
     notifications.setOpen(true);
     toast.error("Pull failed");
     expect(notifications.unread).toBe(0);
+    expect(toast.items).toHaveLength(0);
+    expect(notifications.fresh.has(notifications.items[0].id)).toBe(true);
+  });
+
+  it("marks what was unread when the list opened, until it closes", () => {
+    toast.info("Fetched");
+    toast.warning("Behind");
+    notifications.setOpen(true);
+    expect([...notifications.fresh].sort()).toEqual(notifications.items.map((item) => item.id).sort());
+    notifications.setOpen(false);
+    expect(notifications.fresh.size).toBe(0);
+    notifications.setOpen(true);
+    expect(notifications.fresh.size).toBe(0);
+  });
+
+  it("keeps where a message came from and clears one on its own", () => {
+    toast.success("Pushed", undefined, "kb_dashboard");
+    toast.info("Fetched");
+    expect(toast.items[0].source).toBe("kb_dashboard");
+    expect(notifications.items.map((item) => item.source)).toEqual([null, "kb_dashboard"]);
+    notifications.remove(notifications.items[0].id);
+    expect(notifications.items.map((item) => item.title)).toEqual(["Pushed"]);
+  });
+
+  it("a toast stays while the pointer is over it and closes a little after it leaves", () => {
+    toast.info("Fetched");
+    const toastId = toast.items[0].id;
+    toast.hold(toastId, true);
+    vi.advanceTimersByTime(60_000);
+    expect(toast.items).toHaveLength(1);
+    toast.hold(toastId, false);
+    vi.advanceTimersByTime(3000);
+    expect(toast.items).toHaveLength(0);
+  });
+
+  it("shows at most a few toasts; older ones stay in the list", () => {
+    for (let index = 0; index < MAX_TOASTS + 2; index++) {
+      toast.info(`Fetched ${index}`);
+    }
+    expect(toast.items.map((item) => item.title)).toEqual(
+      Array.from({ length: MAX_TOASTS }, (_, index) => `Fetched ${index + 2}`),
+    );
+    expect(notifications.items).toHaveLength(MAX_TOASTS + 2);
   });
 });

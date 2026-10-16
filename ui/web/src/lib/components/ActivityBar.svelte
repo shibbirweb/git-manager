@@ -19,7 +19,7 @@
     active?: boolean;
     /** The tooltip, such as the name with its shortcut; defaults to `label`. */
     title?: string;
-    badgeTone?: "accent" | "danger";
+    badgeTone?: "accent" | "danger" | "warning";
   }
 
   interface Props {

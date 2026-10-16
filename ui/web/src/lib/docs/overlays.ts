@@ -172,22 +172,28 @@ export const overlayDocs: ComponentDoc[] = [
   {
     name: "ToastHost",
     group: "Overlays",
-    summary: "Draws toasts in the bottom right corner: a colored edge for the kind, title, detail and buttons.",
+    summary:
+      "Draws toasts as Notification balloons in the bottom right corner, above the status bar and beside the right " +
+      "activity bar.",
     usage:
       "Render one per window with a store's items. The library's createToasts() is a simple store; the app's " +
       "toast store also records the notification history and renders through ToastHost the same way.",
-    aliases: ["Toast", "Sonner", "Snackbar"],
+    aliases: ["Toast", "Sonner", "Snackbar", "Balloon"],
     props: [
       prop("items", "ToastItem[] (logic/toastModel.ts)", "The toasts to show, oldest first.", { required: true }),
       prop("ondismiss", "(id: number) => void", "Close one (the x button).", { required: true, data: true }),
-      prop("onaction", "(id: number) => void", "Run a toast's button, then close it.", { data: true }),
+      prop("onaction", "(id: number) => void", "Run a toast's link, then close it.", { data: true }),
+      prop("onhold", "(id: number, held: boolean) => void", "The pointer is over a toast (true) or left it, so " +
+        "the store keeps it while it is read.", { data: true }),
     ],
+    rules: ["Keep a toast open while the pointer is over it: pass the store's hold to `onhold`."],
     examples: [
       {
         title: "With the library store",
         code:
           "const toasts = createToasts();\n" +
-          "<ToastHost items={toasts.items} ondismiss={toasts.dismiss} onaction={toasts.runAction} />",
+          "<ToastHost items={toasts.items} ondismiss={toasts.dismiss} onaction={toasts.runAction}\n" +
+          "  onhold={toasts.hold} />",
       },
     ],
     logic: ["toastModel.ts"],

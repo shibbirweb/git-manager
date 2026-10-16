@@ -167,15 +167,9 @@
   --popover-form-padding: 12px;
   --popover-form-gap: 8px;
   --popover-window-inset: 8px;
-  --toast-max-width: 420px;
-  --toast-gap: 8px;
-  --toast-radius: var(--radius-menu);
-  --toast-edge: 4px;
-  --toast-padding-y: 10px;
-  --toast-padding-left: 12px;
-  --toast-padding-right: 8px;
-  --toast-offset: 16px;
-  --toast-detail-max-height: 160px;
+  --toast-offset-right: 52px;
+  --toast-offset-bottom: 36px;
+  --toast-gap: 10px;
   --tab-strip-height: var(--size-tab-strip);
   --tab-strip-tab-max-width: 240px;
   --tab-strip-tab-padding-left: 12px;
@@ -269,4 +263,14 @@
   --panel-header-padding-right: 6px;
   --panel-header-gap: 6px;
   --panel-header-button-size: 24px;
+  --file-row-height: var(--size-tree-row);
+  --file-row-padding-left: 28px;
+  --file-row-nested-padding-left: 40px;
+  --file-row-padding-right: 6px;
+  --file-row-gap: 8px;
+  --file-row-letter-width: 12px;
+  --file-row-action-size: 20px;
+  --file-row-tag-padding-x: 5px;
+  --file-row-tag-line-height: 14px;
+  --file-row-list-padding-x: 10px;
 }

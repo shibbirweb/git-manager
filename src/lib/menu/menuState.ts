@@ -51,6 +51,8 @@ export interface MenuInputs {
   detectIndentation?: boolean;
   /** Do Not Disturb (only errors pop up). */
   doNotDisturb?: boolean;
+  /** The right sidebar shows the Notifications panel. */
+  notificationsOpen?: boolean;
   /**
    * The Changes diff that offers line actions: "unstaged" (Stage and Discard Selected Lines)
    * or "staged" (Unstage); null or missing without one.
@@ -243,7 +245,7 @@ export function menuState(inputs: MenuInputs): MenuState {
     state[action] = { enabled: true, checked: (inputs.fileIcons ?? "off") === mode };
   }
   state["view.detectIndentation"] = { enabled: true, checked: inputs.detectIndentation ?? false };
-  state["view.notifications"] = { enabled: true };
+  state["view.notifications"] = { enabled: workspace, checked: workspace && (inputs.notificationsOpen ?? false) };
   state["view.doNotDisturb"] = { enabled: true, checked: inputs.doNotDisturb ?? false };
   state["view.clearCache"] = { enabled: true };
   for (const [action, theme] of THEME_ITEMS) {

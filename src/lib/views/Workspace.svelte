@@ -24,6 +24,7 @@
   import { navTarget } from "$lib/navBar/navTarget.svelte";
   import ActivityBar from "./ActivityBar.svelte";
   import AiPanel from "$lib/ai/AiPanel.svelte";
+  import NotificationsPanel from "$lib/notifications/NotificationsPanel.svelte";
   import FileExplorer from "./files/FileExplorer.svelte";
   import ChangesView from "./ChangesView.svelte";
   import Header from "./Header.svelte";
@@ -39,6 +40,11 @@
 
   /** Each side of a split keeps at least this many pixels. */
   const MIN_GROUP_SIZE = 120;
+  const RIGHT_LABELS = {
+    files: "Resize files sidebar",
+    ai: "Resize AI sidebar",
+    notifications: "Resize notifications sidebar",
+  } as const;
   const FULL_RECT = { x: 0, y: 0, width: 1, height: 1 };
   const leftOpen = $derived(settings.leftPanel !== null);
   let areaWidth = $state(0);
@@ -159,6 +165,8 @@
 {#snippet right()}
   {#if settings.rightPanel === "ai"}
     <AiPanel />
+  {:else if settings.rightPanel === "notifications"}
+    <NotificationsPanel />
   {:else}
     <FileExplorer />
   {/if}
@@ -177,7 +185,7 @@
   bind:sidebarWidth={() => settings.sidebarWidth, (width) => (settings.sidebarWidth = width)}
   bind:rightWidth={() => settings.explorerWidth, (width) => (settings.explorerWidth = width)}
   bind:bottomHeight={() => settings.terminalHeight, (height) => (settings.terminalHeight = height)}
-  rightLabel={settings.rightPanel === "ai" ? "Resize AI sidebar" : "Resize files sidebar"}
+  rightLabel={RIGHT_LABELS[settings.rightPanel]}
   bottomLabel="Resize terminal panel"
   bottomHidden={!terminalStore.panelOpen}
   oncommit={() => settings.save()}

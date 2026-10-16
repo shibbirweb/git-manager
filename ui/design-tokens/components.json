@@ -61,10 +61,7 @@
     "offset": 2, "padding": 4, "panelPaddingY": 12, "panelPaddingX": 14, "radius": "{radius.menu}", "formPadding": 12,
     "formGap": 8, "windowInset": 8
   },
-  "toast": {
-    "maxWidth": 420, "gap": 8, "radius": "{radius.menu}", "edge": 4, "paddingY": 10, "paddingLeft": 12,
-    "paddingRight": 8, "offset": 16, "detailMaxHeight": 160
-  },
+  "toast": {"offsetRight": 52, "offsetBottom": 36, "gap": 10},
   "tabStrip": {
     "height": "{size.tabStrip}", "tabMaxWidth": 240, "tabPaddingLeft": 12, "tabPaddingRight": 6, "gap": 6,
     "closeSize": 20, "indicator": 2, "singlePaddingLeft": 24, "roundedGap": 2, "roundedPaddingX": 6,

@@ -23,7 +23,7 @@ export type ThemeSetting = "system" | "light" | "dark";
 export type LeftPanel = "changes" | "branches" | "scripts" | null;
 
 /** What the right sidebar shows while it is open: the file tree or the AI agents. */
-export type RightPanel = "files" | "ai";
+export type RightPanel = "files" | "ai" | "notifications";
 
 /** How a diff shows its two versions: in two columns, or in one with removed lines above added ones. */
 export type DiffLayout = "sideBySide" | "inline";
@@ -1182,7 +1182,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
         .slice(-MAX_SCRIPT_NODE_VERSIONS),
     ),
     explorerOpen: pickBoolean(data.explorerOpen, true),
-    rightPanel: data.rightPanel === "ai" ? "ai" : "files",
+    rightPanel: data.rightPanel === "ai" || data.rightPanel === "notifications" ? data.rightPanel : "files",
     leftBarVisible: pickBoolean(data.leftBarVisible, true),
     rightBarVisible: pickBoolean(data.rightBarVisible, true),
     diffSplitRatio: pickNumber(data.diffSplitRatio, 0.5, 0.15, 0.85),

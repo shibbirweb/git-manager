@@ -151,7 +151,7 @@ export const shellDocs: ComponentDoc[] = [
     props: [
       prop(
         "items",
-        "({ id; icon; label; badge?: number; badgeTone?: \"accent\" | \"danger\"; dot?: boolean; " +
+        "({ id; icon; label; badge?: number; badgeTone?: \"accent\" | \"danger\" | \"warning\"; dot?: boolean; " +
           "smallIcon?: boolean; active?: boolean; title?: string } | null | \"divider\")[]",
         "The panels; `title` is the tooltip, such as the name with its shortcut.",
         { required: true, data: true },

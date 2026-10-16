@@ -242,6 +242,10 @@ export const icons = {
     "M8.67 3.17A6 6 0 0 1 18 8c0 2.5.44 4.17 1.05 5.33",
     "m2 2 20 20",
   ],
+  // Notification kinds: info, done and a problem, each in a circle like the IDE balloons.
+  info: [circle(12, 12, 10), "M12 16v-4", "M12 8h.01"],
+  "circle-check": [circle(12, 12, 10), "m9 12 2 2 4-4"],
+  "circle-alert": [circle(12, 12, 10), "M12 8v4", "M12 16h.01"],
 } satisfies Record<string, string[]>;
 
 export type IconName = keyof typeof icons;

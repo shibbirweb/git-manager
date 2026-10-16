@@ -829,6 +829,11 @@ class SettingsStore {
     return this.explorerOpen && this.rightPanel === "ai";
   }
 
+  /** The right sidebar is open on the Notifications panel. */
+  get notificationsPanelShown(): boolean {
+    return this.explorerOpen && this.rightPanel === "notifications";
+  }
+
   /** Shows `panel` in the right sidebar, opening it. */
   showRightPanel(panel: RightPanel): void {
     this.rightPanel = panel;

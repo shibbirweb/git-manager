@@ -90,9 +90,9 @@ export function openRecentFiles(): void {
     return;
   }
   if (!settings.recentFiles) {
-    toast.show("info", "Recent Files is off", "Turn it on in Settings > Editor > Recent Files.", 8000, {
-      label: "Open Settings",
-      run: () => settings.openDialog("editor"),
+    toast.show("info", "Recent Files is off", "Turn it on in Settings > Editor > Recent Files.", {
+      timeoutMs: 8000,
+      action: { label: "Open Settings", run: () => settings.openDialog("editor") },
     });
     return;
   }

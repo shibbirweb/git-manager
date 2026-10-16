@@ -169,15 +169,9 @@
     <x:Double x:Key="GmPopoverFormPadding">12</x:Double>
     <x:Double x:Key="GmPopoverFormGap">8</x:Double>
     <x:Double x:Key="GmPopoverWindowInset">8</x:Double>
-    <x:Double x:Key="GmToastMaxWidth">420</x:Double>
-    <x:Double x:Key="GmToastGap">8</x:Double>
-    <x:Double x:Key="GmToastRadius">8</x:Double>
-    <x:Double x:Key="GmToastEdge">4</x:Double>
-    <x:Double x:Key="GmToastPaddingY">10</x:Double>
-    <x:Double x:Key="GmToastPaddingLeft">12</x:Double>
-    <x:Double x:Key="GmToastPaddingRight">8</x:Double>
-    <x:Double x:Key="GmToastOffset">16</x:Double>
-    <x:Double x:Key="GmToastDetailMaxHeight">160</x:Double>
+    <x:Double x:Key="GmToastOffsetRight">52</x:Double>
+    <x:Double x:Key="GmToastOffsetBottom">36</x:Double>
+    <x:Double x:Key="GmToastGap">10</x:Double>
     <x:Double x:Key="GmTabStripHeight">34</x:Double>
     <x:Double x:Key="GmTabStripTabMaxWidth">240</x:Double>
     <x:Double x:Key="GmTabStripTabPaddingLeft">12</x:Double>
@@ -271,4 +265,14 @@
     <x:Double x:Key="GmPanelHeaderPaddingRight">6</x:Double>
     <x:Double x:Key="GmPanelHeaderGap">6</x:Double>
     <x:Double x:Key="GmPanelHeaderButtonSize">24</x:Double>
+    <x:Double x:Key="GmFileRowHeight">24</x:Double>
+    <x:Double x:Key="GmFileRowPaddingLeft">28</x:Double>
+    <x:Double x:Key="GmFileRowNestedPaddingLeft">40</x:Double>
+    <x:Double x:Key="GmFileRowPaddingRight">6</x:Double>
+    <x:Double x:Key="GmFileRowGap">8</x:Double>
+    <x:Double x:Key="GmFileRowLetterWidth">12</x:Double>
+    <x:Double x:Key="GmFileRowActionSize">20</x:Double>
+    <x:Double x:Key="GmFileRowTagPaddingX">5</x:Double>
+    <x:Double x:Key="GmFileRowTagLineHeight">14</x:Double>
+    <x:Double x:Key="GmFileRowListPaddingX">10</x:Double>
 </ResourceDictionary>

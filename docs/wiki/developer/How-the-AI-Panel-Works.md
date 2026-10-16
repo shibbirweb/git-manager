@@ -23,7 +23,7 @@ flowchart LR
 
 ### The right sidebar
 
-`settings.rightPanel` (`"files"` or `"ai"`, saved per window in state.json) says what the right sidebar shows; `explorerOpen` still says whether it is open. `toggleRightPanel(panel)` hides the sidebar when that panel is shown and switches to it otherwise, so the two activity bar buttons (`RightActivityBar.svelte`) behave like the left bar's. `settings.filesPanelShown` and `aiPanelShown` are what menus, MCP and the buttons read. `Workspace.svelte` mounts one panel at a time.
+`settings.rightPanel` (`"files"`, `"ai"` or `"notifications"`, saved per window in state.json) says what the right sidebar shows; `explorerOpen` still says whether it is open. `toggleRightPanel(panel)` hides the sidebar when that panel is shown and switches to it otherwise, so the activity bar buttons (`RightActivityBar.svelte`) behave like the left bar's. Menus, MCP and the buttons read `settings.filesPanelShown`, `aiPanelShown` and `notificationsPanelShown` ([notifications](How-Notifications-Work.md)). `Workspace.svelte` mounts one panel at a time.
 
 ### Projects, worktrees and rows
 

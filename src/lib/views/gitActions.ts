@@ -104,7 +104,7 @@ export async function syncRepo(repoRoot: string): Promise<boolean> {
       return false;
     }
   }
-  toast.success(syncDoneMessage(plan.pull, ahead));
+  toast.success(syncDoneMessage(plan.pull, ahead), undefined, repoStore.notificationSource(repoRoot));
   return true;
 }
 

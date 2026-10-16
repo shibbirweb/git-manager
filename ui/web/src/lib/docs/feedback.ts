@@ -164,4 +164,54 @@ export const feedbackDocs: ComponentDoc[] = [
       '<div class="placeholder loading"> with its `appear` animation (ChangesDiff)',
     ],
   },
+  {
+    name: "Notification",
+    group: "Feedback",
+    summary:
+      "One notification like the JetBrains IDEs draw it: the kind's icon, a bold title, where it came from, the " +
+      "detail and an action link.",
+    usage:
+      "ToastHost draws each toast as a balloon; a notification list draws each message as a row with its time. " +
+      "Use Notice for a lasting message inside a view, and CornerCard for a view's own small prompt.",
+    aliases: ["Notification", "Balloon", "Toast", "Alert"],
+    props: [
+      prop("kind", '"info" | "success" | "warning" | "error"', "The icon and its color: i, a check, a triangle " +
+        "or a mark in a circle.", { required: true }),
+      prop("title", "string", "The message, such as Pushed.", { required: true, data: true }),
+      prop("detail", "string | null", "More text under it, such as git's output; selectable and scrolled when long.",
+        { default: "null", data: true }),
+      prop("source", "string | null", "Where it came from, such as the repository, in dim text.", {
+        default: "null",
+        data: true,
+      }),
+      prop("time", "number | null", "When it came, in milliseconds since 1970; a row shows it after the source, " +
+        "as 5 min ago.", {
+        default: "null",
+        data: true,
+      }),
+      prop("actionLabel", "string | null", "A link under the text, such as Undo.", { default: "null", data: true }),
+      prop("variant", '"balloon" | "row"', "Balloon: a floating card with a shadow (a toast). Row: flat, for a list.",
+        { default: '"balloon"' }),
+      prop("unread", "boolean", "An accent dot after the title, for a message not seen yet.", { default: "false" }),
+      prop("onaction", "() => void", "The link was pressed."),
+      prop("ondismiss", "() => void", "Shows a close button that appears on hover; pressed."),
+      prop("onhold", "(held: boolean) => void", "The pointer or the focus came in (true) or left (false), so a toast " +
+        "can stay while it is read."),
+    ],
+    rules: ["Keep the title short; put git's output in `detail`, not the title."],
+    examples: [
+      {
+        title: "A failed push",
+        code:
+          '<Notification kind="error" title="Push failed" detail={stderr} source="kb_dashboard"\n' +
+          "  ondismiss={() => close()} />",
+      },
+      {
+        title: "In a list",
+        code: '<Notification variant="row" kind="success" title="Pushed" time={entry.time} unread={!entry.read} />',
+      },
+    ],
+    logic: ["toastModel.ts"],
+    replaces: ["the message rows of src/lib/notifications/NotificationBell.svelte", "the .toast block of ToastHost"],
+  },
 ];

@@ -12,7 +12,6 @@ import { focusedEditor, runEditorCommand, runTextEdit } from "$lib/editor/editor
 import { steppedFontSize } from "$lib/editor/wheelZoom";
 import { localHistory } from "$lib/localHistory/localHistory.svelte";
 import { mcpStore } from "$lib/mcp/mcpStore.svelte";
-import { notifications } from "$lib/notifications/notifications.svelte";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { openShelveDialog, showShelf } from "$lib/shelf/shelfActions.svelte";
@@ -289,7 +288,7 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.fileIconsMinimal": app(() => settings.setPreference("fileIcons", "minimal")),
   "view.fileIconsMaterial": app(() => settings.setPreference("fileIcons", "material")),
   "view.detectIndentation": app(() => settings.setPreference("detectIndentation", !settings.detectIndentation)),
-  "view.notifications": app(() => notifications.toggle()),
+  "view.notifications": workspace(() => settings.toggleRightPanel("notifications")),
   "view.doNotDisturb": app(() =>
     settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb),
   ),

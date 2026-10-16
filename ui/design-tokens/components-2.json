@@ -21,6 +21,10 @@
     "iconWidth": 16, "width": 340, "maxHeight": 440, "minHeight": 120, "offset": 3, "inset": 8, "roomBelow": 200,
     "layer": 890
   },
+  "notification": {
+    "width": 380, "radius": "{radius.dialog}", "paddingY": 12, "paddingLeft": 12, "paddingRight": 8, "gap": 10,
+    "lineGap": 4, "rowPaddingY": 10, "rowPaddingLeft": 12, "rowPaddingRight": 6, "detailMaxHeight": 160, "dot": 7
+  },
   "splitHandle": {"width": 7, "line": 3, "layer": 5},
   "windowLayer": {"layer": 500},
   "row": {

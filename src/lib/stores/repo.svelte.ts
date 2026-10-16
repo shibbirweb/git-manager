@@ -986,6 +986,7 @@ class RepoStore {
     }
     this.busy = label;
     this.progress = "";
+    const source = this.notificationSource(repoPath);
     // A toast with a button waits for the refresh, so its button sees the state after the work.
     let withAction: { message: string; result: T } | null = null;
     try {
@@ -994,11 +995,11 @@ class RepoStore {
       if (message && options.action) {
         withAction = { message, result };
       } else if (message) {
-        toast.success(message);
+        toast.success(message, undefined, source);
       }
       return result;
     } catch (error) {
-      toast.error(`${label} failed`, errorMessage(error));
+      toast.error(`${label} failed`, errorMessage(error), source);
       return undefined;
     } finally {
       this.busy = null;
@@ -1012,9 +1013,9 @@ class RepoStore {
       if (withAction) {
         const action = options.action?.(withAction.result) ?? null;
         if (action) {
-          toast.successWithAction(withAction.message, undefined, action);
+          toast.successWithAction(withAction.message, undefined, action, source);
         } else {
-          toast.success(withAction.message);
+          toast.success(withAction.message, undefined, source);
         }
       }
     }
@@ -1031,16 +1032,25 @@ class RepoStore {
     if (!outcome) {
       return undefined;
     }
+    const source = this.notificationSource(repoPath ?? this.repo?.root ?? "");
     if (outcome.conflicts) {
-      toast.info(`${label} stopped with conflicts`, "Resolve them to continue.");
+      toast.info(`${label} stopped with conflicts`, "Resolve them to continue.", source);
       if (repoPath) {
         await this.setActiveRepo(repoPath);
       }
       this.conflictsOpen = true;
     } else if (successMessage) {
-      toast.success(successMessage);
+      toast.success(successMessage, undefined, source);
     }
     return outcome;
+  }
+
+  /** The repository's name on a notification when the workspace has several; with one, the name says nothing. */
+  notificationSource(repoPath: string): string | null {
+    if (this.repos.length < 2) {
+      return null;
+    }
+    return this.repos.find((repo) => repo.root === repoPath)?.name ?? null;
   }
 
   /** Absolute paths of the file tabs with unsaved edits. */

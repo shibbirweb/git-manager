@@ -150,6 +150,7 @@ export function currentMenuInputs(mode: MenuMode): MenuInputs {
     fileIcons: settings.fileIcons,
     detectIndentation: settings.detectIndentation,
     doNotDisturb: settings.notificationsDoNotDisturb,
+    notificationsOpen: settings.notificationsPanelShown,
     diffLines: diffLines.target?.mode ?? null,
     editor: { focused: editorFocus.focused, inText: editorFocus.inText, writable: editorFocus.writable },
     hasRecent:

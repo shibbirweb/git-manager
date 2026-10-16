@@ -189,7 +189,7 @@ function viewMenu(platform: MenuPlatform): TopMenu {
         check("view.fileIconsMaterial", "Material Icons"),
       ],
     },
-    item("view.notifications", "Notifications"),
+    check("view.notifications", "Notifications"),
     check("view.doNotDisturb", "Do Not Disturb"),
     item("view.clearCache", "Clear Cache"),
     separator,

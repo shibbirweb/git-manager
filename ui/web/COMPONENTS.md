@@ -23,8 +23,8 @@ ShortcutRecorder, ChoiceList, RenameField, OptionList
 
 [What each one is for](docs/groups/Feedback.md)
 
-Spinner, Badge, Tag, Kbd, ProgressBar, Notice, EmptyState, StatusLetter, FileIcon, RefLabel, StatusIcon, ThemeSwatch,
-StatusDot, Avatar, Pill, Mark, Meter, ZoomBadge, SymbolBadge, Logo, BulletList, CornerCard, DragGhost
+Spinner, Badge, Tag, Kbd, ProgressBar, Notice, EmptyState, Notification, StatusLetter, FileIcon, RefLabel, StatusIcon,
+ThemeSwatch, StatusDot, Avatar, Pill, Mark, Meter, ZoomBadge, SymbolBadge, Logo, BulletList, CornerCard, DragGhost
 
 ## Overlays
 

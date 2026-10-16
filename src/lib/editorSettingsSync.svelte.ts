@@ -19,9 +19,15 @@ import { settings } from "$lib/stores/settings.svelte";
 import { TAB_SLEEP_CHECK_MS } from "$lib/stores/tabSleep";
 
 export function followEditorSettings(): void {
-  // Do Not Disturb keeps non-error toasts in the bell's list only.
+  // Do Not Disturb keeps non-error toasts in the notification list only.
   $effect(() => {
     notifications.doNotDisturb = settings.notificationsDoNotDisturb;
+  });
+
+  // The Notifications panel marks what it shows as read, and keeps toasts away while it is shown.
+  $effect(() => {
+    const shown = repoStore.workspace !== null && settings.notificationsPanelShown;
+    untrack(() => notifications.setOpen(shown));
   });
 
   // Open editors follow the Render whitespace setting without being rebuilt.

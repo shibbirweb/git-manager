@@ -15,9 +15,9 @@ between groups. Give an item `active` when it is on by itself (the Log, the term
 
 ## Props
 
-- `items` (`({ id; icon; label; badge?: number; badgeTone?: "accent" | "danger"; dot?: boolean; smallIcon?: boolean;
-  active?: boolean; title?: string } | null | "divider")[]`, required): The panels; `title` is the tooltip, such as the
-  name with its shortcut.
+- `items` (`({ id; icon; label; badge?: number; badgeTone?: "accent" | "danger" | "warning"; dot?: boolean; smallIcon?:
+  boolean; active?: boolean; title?: string } | null | "divider")[]`, required): The panels; `title` is the tooltip,
+  such as the name with its shortcut.
 - `active` (`string | null`, default `null`, bindable): The open panel's id.
 - `label` (`string`, required): Accessible name.
 - `side` (`"left" | "right"`, default `"left"`): Which window edge; moves the border and accent line.

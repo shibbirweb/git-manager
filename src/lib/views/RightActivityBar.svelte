@@ -1,7 +1,10 @@
-<!-- Activity bar on the right edge, mirroring the left one: shows the Files or the AI panel in the right sidebar. -->
+<!-- Activity bar on the right edge, mirroring the left one: shows the Files, the AI or (from the bell at the bottom)
+     the Notifications panel in the right sidebar. -->
 <script lang="ts">
   import ActivityBar from "@git-manager/ui/components/ActivityBar.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
+  import { bellTitle, hasUnreadError } from "$lib/notifications/notificationModel";
+  import { notifications } from "$lib/notifications/notifications.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 
@@ -26,11 +29,26 @@
       dot: agentBell,
       title: `${withCommandKeys("AI Agents", "view.aiPanel")}${settings.aiPanelShown ? ", click to hide" : ""}`,
     },
+    null,
+    {
+      id: "notifications",
+      icon: settings.notificationsDoNotDisturb ? ("bell-off" as const) : ("bell" as const),
+      label: "Notifications",
+      active: settings.notificationsPanelShown,
+      badge: notifications.unread,
+      badgeTone: hasUnreadError(notifications.items) ? ("danger" as const) : ("warning" as const),
+      title: withCommandKeys(
+        bellTitle(notifications.unread, notifications.items.length, settings.notificationsDoNotDisturb),
+        "view.notifications",
+      ),
+    },
   ]);
 
   function select(id: string): void {
     if (id === "files") {
       settings.toggleExplorer();
+    } else if (id === "notifications") {
+      settings.toggleRightPanel("notifications");
     } else {
       settings.toggleRightPanel("ai");
     }

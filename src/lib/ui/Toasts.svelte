@@ -4,4 +4,9 @@
   import { toast } from "./toast.svelte";
 </script>
 
-<ToastHost items={toast.items} ondismiss={(id) => toast.dismiss(id)} onaction={(id) => toast.runAction(id)} />
+<ToastHost
+  items={toast.items}
+  ondismiss={(id) => toast.dismiss(id)}
+  onaction={(id) => toast.runAction(id)}
+  onhold={(id, held) => toast.hold(id, held)}
+/>
