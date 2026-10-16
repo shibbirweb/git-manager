@@ -142,6 +142,7 @@ The other Layout choices are in `state.json`, below.
 | `leftBarVisible`, `rightBarVisible` | true | boolean | `Workspace.svelte`, `Header.svelte`, View menu |
 | `leftPanel` | `"changes"` | `changes`, `branches`, `scripts` or null | left sidebar |
 | `sidebarWidth`, `explorerWidth` | 260 | 120 to 2000 | side panels |
+| `commitInfoHeight` | 260 | 80 to 2000 | `log/CommitDetails.svelte`: the message and details above the changed files |
 | `terminalHeight` | 260 | 80 to 2000 | terminal panel |
 | `terminalListWidth` | 180 | 120 to 1200 | terminal list |
 | `changesListWidth` | 320 | 160 to 2000 | Changes tab file list |

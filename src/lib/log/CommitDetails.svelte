@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { errorMessage } from "$lib/api";
+  import { settings } from "$lib/stores/settings.svelte";
   import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import Button from "@git-manager/ui/components/Button.svelte";
   import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
@@ -50,6 +51,8 @@
   const diffLoading = $derived(loader.diffLoading);
   let leftWidth = $state(360);
   let width = $state(0);
+  /** The commit details column's height, for the largest size of its message and details. */
+  let infoHeight = $state(0);
 
   const current = $derived(details && details.id === commitId ? details : null);
   const selectedRow = $derived(current ? loader.selectedRow : null);
@@ -176,35 +179,50 @@
   {:else if !details}
     <EmptyState title="Loading commit..." titleTone="dim" delayed />
   {:else}
-    <Stack gap="sm" padding="lg" scroll="y" maxHeight="large" line="bottom">
-      <Stack direction="row" gap="md" align="start">
-        <Stack grow>
-          <Text weight="semibold" selectable wrap="anywhere">{body.subject || "(no message)"}</Text>
+    <SplitPane
+      direction="column"
+      label="Resize the commit message and the changed files"
+      preset="bottom"
+      inPanel
+      bind:size={settings.commitInfoHeight}
+      bind:extent={infoHeight}
+      max={Math.max(80, infoHeight - 120)}
+      oncommit={() => settings.save()}
+    >
+      {#snippet first()}
+        <Stack gap="sm" padding="lg" scroll="y" grow>
+          <Stack direction="row" gap="md" align="start">
+            <Stack grow>
+              <Text weight="semibold" selectable wrap="anywhere">{body.subject || "(no message)"}</Text>
+            </Stack>
+            {#if onOpenInTab}
+              <Button
+                size="small"
+                icon="commit"
+                title={OPEN_TAB_TITLE}
+                onclick={() => onOpenInTab?.(selectedRow?.file.path ?? null)}
+              >
+                Open in Tab
+              </Button>
+            {/if}
+          </Stack>
+          {#if body.rest}
+            <Text size="codeSmall" wrap="pre" selectable element="p">{body.rest}</Text>
+          {/if}
+          <DescriptionList label="Commit" items={facts} value={fact} />
         </Stack>
-        {#if onOpenInTab}
-          <Button
-            size="small"
-            icon="commit"
-            title={OPEN_TAB_TITLE}
-            onclick={() => onOpenInTab?.(selectedRow?.file.path ?? null)}
-          >
-            Open in Tab
-          </Button>
-        {/if}
-      </Stack>
-      {#if body.rest}
-        <Text size="codeSmall" wrap="pre" selectable element="p">{body.rest}</Text>
-      {/if}
-      <DescriptionList label="Commit" items={facts} value={fact} />
-    </Stack>
-    <CommitFileList
-      {details}
-      rows={loader.rows}
-      view={loader.mergeView}
-      bind:selected={loader.selectedKey}
-      onview={(view) => loader.setMergeView(view)}
-      onopen={onOpenInTab}
-    />
+      {/snippet}
+      {#snippet second()}
+        <CommitFileList
+          {details}
+          rows={loader.rows}
+          view={loader.mergeView}
+          bind:selected={loader.selectedKey}
+          onview={(view) => loader.setMergeView(view)}
+          onopen={onOpenInTab}
+        />
+      {/snippet}
+    </SplitPane>
   {/if}
 {/snippet}
 

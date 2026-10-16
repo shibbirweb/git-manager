@@ -303,6 +303,7 @@ class SettingsStore {
   leftPanel = $state<LeftPanel>(initialState.leftPanel);
   sidebarWidth = $state(initialState.sidebarWidth);
   explorerWidth = $state(initialState.explorerWidth);
+  commitInfoHeight = $state(initialState.commitInfoHeight);
   terminalHeight = $state(initialState.terminalHeight);
   terminalListWidth = $state(initialState.terminalListWidth);
   changesListWidth = $state(initialState.changesListWidth);
@@ -565,6 +566,7 @@ class SettingsStore {
       leftPanel: this.leftPanel,
       sidebarWidth: this.sidebarWidth,
       explorerWidth: this.explorerWidth,
+      commitInfoHeight: this.commitInfoHeight,
       terminalHeight: this.terminalHeight,
       terminalListWidth: this.terminalListWidth,
       changesListWidth: this.changesListWidth,

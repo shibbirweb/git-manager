@@ -223,6 +223,8 @@ export const TERMINAL_LETTER_SPACING_RANGE = [0, 5] as const;
 export const TERMINAL_SCROLLBACK_RANGE = [1000, 100000] as const;
 
 export const DEFAULT_PANEL_WIDTH = 260;
+/** The commit details' default height, the UI library's bottom panel default (double-click goes back to it). */
+export const DEFAULT_COMMIT_INFO_HEIGHT = 260;
 /** Height of the terminal panel below the editor. */
 export const DEFAULT_TERMINAL_HEIGHT = 260;
 export const MIN_TERMINAL_HEIGHT = 80;
@@ -724,6 +726,8 @@ export interface UiState {
   leftPanel: LeftPanel;
   sidebarWidth: number;
   explorerWidth: number;
+  /** Height of a commit's message and details above its changed files (History panel, commit tabs). */
+  commitInfoHeight: number;
   /** Height of the terminal panel. */
   terminalHeight: number;
   /** Width of the terminal list beside the panel. */
@@ -910,6 +914,7 @@ const STATE_KEYS = [
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
+  "commitInfoHeight",
   "terminalHeight",
   "terminalListWidth",
   "changesListWidth",
@@ -1194,6 +1199,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     leftPanel: panel === "changes" || panel === "branches" || panel === "scripts" || panel === null ? panel : "changes",
     sidebarWidth: pickNumber(data.sidebarWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
     explorerWidth: pickNumber(data.explorerWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
+    commitInfoHeight: pickNumber(data.commitInfoHeight, DEFAULT_COMMIT_INFO_HEIGHT, 80, 2000),
     terminalHeight: pickNumber(data.terminalHeight, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, 2000),
     terminalListWidth: pickNumber(data.terminalListWidth, DEFAULT_TERMINAL_LIST_WIDTH, MIN_TERMINAL_LIST_WIDTH, 1200),
     changesListWidth: pickNumber(data.changesListWidth, DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, 2000),
@@ -1231,6 +1237,7 @@ export const WINDOW_STATE_KEYS = [
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
+  "commitInfoHeight",
   "terminalHeight",
   "terminalListWidth",
   "markdownPreviewRatio",
@@ -1258,6 +1265,7 @@ export function stateToJson(state: UiState, extra: Json): Json {
     leftPanel: state.leftPanel,
     sidebarWidth: state.sidebarWidth,
     explorerWidth: state.explorerWidth,
+    commitInfoHeight: state.commitInfoHeight,
     terminalHeight: state.terminalHeight,
     terminalListWidth: state.terminalListWidth,
     changesListWidth: state.changesListWidth,

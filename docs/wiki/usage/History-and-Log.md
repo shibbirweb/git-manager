@@ -38,7 +38,7 @@ The filter only searches loaded commits; **Load more** next to the count searche
 
 *The selected commit: message, author, date, hash, parents, changed files and the diff.*
 
-Selecting a commit opens its details under the list. Drag the bars between the list, the details and the diff to resize them.
+Selecting a commit opens its details under the list. Drag the bars between the list, the details and the diff to resize them, and the bar above the changed files to give the message more or less height.
 
 On the left:
 

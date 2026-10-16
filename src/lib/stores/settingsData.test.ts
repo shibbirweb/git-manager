@@ -7,6 +7,7 @@ import {
   clampTerminalScrollback,
   DEFAULT_EDITOR_FONT,
   DEFAULT_MCP_PORT,
+  DEFAULT_COMMIT_INFO_HEIGHT,
   DEFAULT_PANEL_WIDTH,
   DEFAULT_TERMINAL_HEIGHT,
   DEFAULT_TERMINAL_LIST_WIDTH,
@@ -624,6 +625,13 @@ describe("parseState", () => {
     expect(parseState({ diffSplitRatio: 0.3 }).state.diffSplitRatio).toBe(0.3);
     expect(parseState({ diffSplitRatio: 0.99 }).state.diffSplitRatio).toBe(0.85);
     expect(parseState({ diffSplitRatio: "wide" }).state.diffSplitRatio).toBe(0.5);
+  });
+
+  it("keeps the commit details' height between 80 px and 2000 px", () => {
+    expect(parseState({}).state.commitInfoHeight).toBe(DEFAULT_COMMIT_INFO_HEIGHT);
+    expect(parseState({ commitInfoHeight: 400 }).state.commitInfoHeight).toBe(400);
+    expect(parseState({ commitInfoHeight: 10 }).state.commitInfoHeight).toBe(80);
+    expect(parseState({ commitInfoHeight: 400 }).extra).toEqual({});
   });
 
   it("keeps a saved three-pane split only when every pane keeps its share", () => {
