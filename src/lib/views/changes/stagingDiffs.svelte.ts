@@ -3,7 +3,7 @@
 // takes them: each side pane against the index in the middle.
 import { api, errorMessage } from "$lib/api";
 import { flipHunks } from "$lib/diff/threeWay";
-import type { FileDiff, FileStatus } from "$lib/types";
+import type { Eol, FileDiff, FileStatus } from "$lib/types";
 
 /** A file the staging view can show: a plain modified file in the index, the work tree or both. */
 export function stagingViewFits(file: FileStatus | null): boolean {
@@ -27,6 +27,11 @@ export function workTreeSide(unstaged: FileDiff): FileDiff {
 
 function textual(diff: FileDiff): boolean {
   return !diff.binary && !diff.tooLarge && !diff.lfs;
+}
+
+/** The index's line ending, from HEAD against the index; an empty index follows HEAD. */
+export function indexEol(staged: FileDiff): Eol {
+  return staged.modified === "" ? staged.originalEol : staged.modifiedEol;
 }
 
 /** The same texts: the shown diff stays, so a status refresh does not rebuild the panes. */

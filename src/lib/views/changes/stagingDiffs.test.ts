@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FileDiff, FileStatus } from "$lib/types";
-import { stagingViewFits, workTreeSide } from "./stagingDiffs.svelte";
+import { indexEol, stagingViewFits, workTreeSide } from "./stagingDiffs.svelte";
 
 function file(staged: FileStatus["staged"], unstaged: FileStatus["unstaged"], conflicted = false): FileStatus {
   return { path: "a.ts", origPath: null, staged, unstaged, conflicted };
@@ -20,6 +20,16 @@ describe("stagingViewFits", () => {
     expect(stagingViewFits(file(null, "untracked"))).toBe(false);
     expect(stagingViewFits(file("modified", "modified", true))).toBe(false);
     expect(stagingViewFits(null)).toBe(false);
+  });
+});
+
+describe("indexEol", () => {
+  const staged = (modified: string, originalEol: "lf" | "crlf", modifiedEol: "lf" | "crlf") =>
+    ({ original: "a\n", modified, originalEol, modifiedEol }) as FileDiff;
+
+  it("keeps the index's own line ending, and follows HEAD when the index is empty", () => {
+    expect(indexEol(staged("a\r\n", "lf", "crlf"))).toBe("crlf");
+    expect(indexEol(staged("", "crlf", "lf"))).toBe("crlf");
   });
 });
 

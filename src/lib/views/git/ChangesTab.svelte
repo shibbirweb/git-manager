@@ -1,11 +1,13 @@
-<!-- The Changes tab (status bar > N changes): the uncommitted files of a repository, each
-     compared with HEAD, staged and unstaged together. Follows the live status, and stages,
-     unstages, discards and commits like the Changes sidebar. -->
+<!-- The Changes tab (status bar > N changes): a repository's uncommitted files, each compared with HEAD (staged and
+     unstaged together) or in the staging view. Follows the live status, and stages, unstages, discards and commits
+     like the Changes sidebar. -->
 <script lang="ts">
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
+  import { setDiffLayout, showThreeColumns } from "$lib/diff/diffPanes";
+  import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { MIN_CHANGES_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
@@ -20,6 +22,7 @@
   import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import ChangesTabList from "./ChangesTabList.svelte";
   import { splitPath } from "../changes/fileStatus";
+  import { indexEol, StagingDiffs, stagingViewFits } from "../changes/stagingDiffs.svelte";
   import { type ChangesTabFile, changesListBounds, changesTabFiles, pickSelected, stepSelection } from "./changesTab";
 
   interface Props {
@@ -82,6 +85,38 @@
     }
   }
 
+  // The staging view of a plain modified file, on the same Three panes setting as the Changes diff.
+  const staging = new StagingDiffs();
+  const stagingFits = $derived(selected ? stagingViewFits(selected.status) : false);
+  const stagingOn = $derived(
+    stagingFits && settings.diffLayout === "sideBySide" && settings.changesDiffPanes === "three",
+  );
+  const stagingKey = $derived(selected ? `${repoRoot}\u0000${selected.path}` : null);
+  $effect(() => {
+    const file = selected;
+    if (!file || !stagingOn) {
+      untrack(() => staging.clear());
+      return;
+    }
+    // A new status (after staging a change) reloads both diffs.
+    void status;
+    void repoStore.fileVersions[repoRoot];
+    untrack(() => void staging.load(repoRoot, file.path));
+  });
+
+  let stageQueue: Promise<unknown> = Promise.resolve();
+
+  /** Writes the index pane's new text; serialized so rapid clicks reach the index in order. */
+  function applyToIndex(content: string, side: "left" | "right"): void {
+    const [filePath, staged] = [selected?.path, staging.staged];
+    if (!filePath || !staged) {
+      return;
+    }
+    const label = side === "right" ? "Stage change" : "Unstage change";
+    const write = (repoPath: string) => api.stageContent(repoPath, filePath, content, indexEol(staged));
+    stageQueue = stageQueue.then(() => repoStore.run(label, write, { repoPath: repoRoot, refresh: "status" }));
+  }
+
   const previewSides = $derived.by((): PreviewSides | null => {
     if (!result || !selected) {
       return null;
@@ -141,6 +176,21 @@
       <EmptyState titleTone="dim" title="No commits yet, so every file is new. Open a file to see it." />
     {:else if diffError}
       <EmptyState titleTone="dim" title={diffError} />
+    {:else if stagingOn && staging.staged && staging.workTree && staging.key === stagingKey}
+      {#key stagingKey}
+        <ThreePaneDiff
+          left={staging.staged}
+          right={staging.workTree}
+          path={selected.path}
+          labels={{ left: "HEAD", result: "Index (staged)", right: "Working Tree" }}
+          label="Staging view of {selected.path.split('/').pop()}"
+          options={{ rightNewer: true, conflicts: false }}
+          applyTitles={{ left: "Unstage this change", right: "Stage this change" }}
+          onapply={applyToIndex}
+          onlayout={(layout) => setDiffLayout("changesDiffPanes", layout)}
+          workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: true }}
+        />
+      {/key}
     {:else if result}
       {#key selected.path}
         <DiffView
@@ -153,6 +203,7 @@
             ? null
             : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
           {previewSides}
+          onThreePanes={stagingFits ? () => showThreeColumns("changesDiffPanes") : null}
         />
       {/key}
     {:else}

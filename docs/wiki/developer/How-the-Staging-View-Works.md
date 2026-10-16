@@ -8,7 +8,7 @@ The two-pane diff shows either the staged or the unstaged half of a file, so a f
 
 ## How it works
 
-`ChangesDiff.svelte` shows `ThreePaneDiff.svelte` when Diff layout is side by side, `settings.changesDiffPanes` is `"three"` and `stagingViewFits` says the file is a plain modified file (not new, deleted, renamed, untracked or conflicted). `StagingDiffs` (`views/changes/stagingDiffs.svelte.ts`) loads both diffs:
+`ChangesDiff.svelte` (and the status bar's Changes tab, `ChangesTab.svelte`) shows `ThreePaneDiff.svelte` when Diff layout is side by side, `settings.changesDiffPanes` is `"three"` and `stagingViewFits` says the file is a plain modified file (not new, deleted, renamed, untracked or conflicted). `StagingDiffs` (`views/changes/stagingDiffs.svelte.ts`) loads both diffs:
 
 ```mermaid
 flowchart LR
@@ -30,7 +30,7 @@ The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three)
 | File | What it does |
 | --- | --- |
 | `src/lib/views/changes/stagingDiffs.svelte.ts` | Which files fit, loading both diffs, the flipped work tree side |
-| `src/lib/views/changes/ChangesDiff.svelte` | Picks the staging view or the two-pane diff |
+| `src/lib/views/changes/ChangesDiff.svelte`, `views/git/ChangesTab.svelte` | Pick the staging view or the two-pane diff |
 | `src/lib/diff/ThreePaneDiff.svelte` | The toolbar and the frame, for merges and staging |
 | `src/lib/diff/threeWay.ts` | `ThreeWayOptions`, `flipHunks`, `takeChange` |
 
@@ -42,7 +42,7 @@ The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three)
 
 ## Tests
 
-- `src/lib/views/changes/stagingDiffs.test.ts`: which files fit and the flipped work tree side.
+- `src/lib/views/changes/stagingDiffs.test.ts`: which files fit, the flipped work tree side and the index's line ending (`indexEol`).
 - `src/lib/diff/threeWay.test.ts`: the staging colors, no conflicts, and staging and unstaging with `takeChange`.
 
 ## Bugs we fixed
@@ -51,6 +51,11 @@ The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three)
 - **The issue:** the two-pane diff has **Open File**, but switching to three panes (staging or a merge commit) lost it.
 - **Why it happened:** `ThreePaneDiff` builds its own toolbar, and Open File lived only in `DiffView`.
 - **The fix and why we chose it:** the open code moved to `openWorkingFile.ts`, which both views call, so the check for a missing file and the toast stay the same in both.
+
+**The Changes tab had no Three panes button.**
+- **The issue:** the diff in the Changes tab (status bar > **N changes**) showed only Side by side and Inline, so a modified file could not open in the staging view there.
+- **Why it happened:** only `ChangesDiff.svelte` passed `onThreePanes` and drew `ThreePaneDiff`; the tab compares with HEAD in its own view.
+- **The fix and why we chose it:** the tab uses the same `stagingViewFits`, `StagingDiffs` and `changesDiffPanes` setting, so both places look and switch alike. Its Stage and Unstage write the index pane's text with `stageContent`, in the index's own line ending (`indexEol`), one click after another.
 
 ## Keeping this page in sync
 
