@@ -218,7 +218,7 @@
       applyTitle={mode === "unstaged" ? "Stage this change" : "Unstage this change"}
       onrevert={reverts && !inline ? (index) => revertChange(editors.changeLines(index)) : undefined}
       revertTitle="Revert this change"
-      colors="sides"
+      colors="oldToNew"
       ruler
       bind:ratio={() => clampDiffSplit(settings.diffSplitRatio), (ratio) => (settings.diffSplitRatio = ratio)}
       oncommitratio={() => settings.save()}

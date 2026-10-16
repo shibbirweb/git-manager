@@ -17,11 +17,12 @@ import type { FoldEdge } from "./foldModel";
 import { fallbackHunks } from "./inlineDoc";
 import { bands } from "./threeWayBands";
 import { paneBlame, startBlame, type ThreeWayBlame, type ThreeWayPane as Pane } from "./threeWayBlame";
-import { diffTheme } from "./mergeExtensions";
+import { diffTheme, toneColors } from "./mergeExtensions";
 import {
   changeSummary,
   parentAnchors,
   parentFold,
+  paneTones,
   parentMarks,
   type ParentSide,
   resultFolds,
@@ -55,6 +56,8 @@ export class ThreeWayEditors {
   summary = $state("");
   changeCount = $state(0);
   current = $state(-1);
+  /** The blamed pane, for the Blame button's display. */
+  blameView: EditorView | null = null;
 
   #views: Record<Pane, EditorView> | null = null;
   #changes: Record<ParentSide, ThreeWayChange[]> = { left: [], right: [] };
@@ -95,16 +98,16 @@ export class ThreeWayEditors {
     const leftHunks = left.hunks ?? fallbackHunks(left.original, left.modified);
     const rightHunks = right.hunks ?? fallbackHunks(right.original, right.modified);
     this.#changes = threeWayChanges(leftHunks, rightHunks, request.options);
-    this.#marks = resultMarks(this.#changes, request.options?.conflicts ?? true);
+    this.#marks = resultMarks(this.#changes, request.options?.conflicts ?? true, paneTones(request.options));
     this.#texts = { left: left.original, result: left.modified, right: right.original };
     this.#anchors = {
       left: parentAnchors(this.#changes.left, texts.left.lines, texts.result.lines),
       right: parentAnchors(this.#changes.right, texts.right.lines, texts.result.lines),
     };
     const marksOf: Record<Pane, LineMark[]> = {
-      left: parentMarks(this.#changes.left, texts.left, texts.result),
+      left: parentMarks(this.#changes.left, texts.left, texts.result, paneTones(request.options).left),
       result: this.#marks,
-      right: parentMarks(this.#changes.right, texts.right, texts.result),
+      right: parentMarks(this.#changes.right, texts.right, texts.result, paneTones(request.options).right),
     };
     const folds = request.collapse ? resultFolds(this.#marks, texts.result.lines) : [];
     const foldsOf = (name: Pane) =>
@@ -120,7 +123,7 @@ export class ThreeWayEditors {
             baseExtensions({ readOnly: true, kind: "merge" }),
             language,
             sideExtensions(),
-            diffTheme,
+            [diffTheme, toneColors],
             changeMarkField,
             scrollMarkers(),
             navigation,
@@ -142,7 +145,7 @@ export class ThreeWayEditors {
       view.dispatch({ effects: [setSideMarks.of(marksOf[name]), setChangeMarks.of(rulerMarks(marksOf[name]))] });
       view.scrollDOM.addEventListener("scroll", () => this.#follow(name), { passive: true });
     }
-    startBlame(this.#views, request.blame ?? null, left, right);
+    this.blameView = startBlame(this.#views, request.blame ?? null, left, right);
     this.summary = changeSummary(this.#marks);
     this.changeCount = this.#marks.length;
     const scrollTop = request.scrollTop ?? null;
@@ -278,11 +281,6 @@ export class ThreeWayEditors {
     return this.#views?.result.scrollDOM.scrollTop ?? null;
   }
 
-  /** One pane's editor, such as the blamed one when the Blame button changes its display. */
-  paneView(name: Pane): EditorView | null {
-    return this.#views?.[name] ?? null;
-  }
-
   destroy(): void {
     this.#token++;
     cancelAnimationFrame(this.#unlockFrame);
@@ -292,7 +290,7 @@ export class ThreeWayEditors {
         view.destroy();
       }
     }
-    this.#views = null;
+    this.#views = this.blameView = null;
     this.leftRibbons = [];
     this.rightRibbons = [];
     this.current = -1;

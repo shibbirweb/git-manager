@@ -16,7 +16,7 @@ The staging view is offered for files that are modified, in the index, the worki
 
 - The bands on the **left** join HEAD to the index: the changes you have staged.
 - The bands on the **right** join the index to the working tree: the changes you have not staged yet.
-- Green marks added lines, gray removed lines and blue changed lines.
+- Like VS Code, each change is red on its older side and green on its newer side: a staged change is red in HEAD and green in the index, and an unstaged change red in the index and green in the working tree.
 
 The toolbar is the same as in every diff. **Blame** shows who wrote each line of the working tree pane.
 

@@ -1,13 +1,16 @@
 <!-- The column between two merge or diff panes: a ribbon per chunk joining its lines on both sides, and the chunk's
      buttons (apply its side's change, ignore it, or revert it in its own pane) at its top, kept inside the column
      while any of the chunk shows. Each button shows only with its handler, so a read-only diff draws ribbons alone.
-     Ribbons take their chunk's kind color, or with `colors="sides"` fade from the old side's red to the new side's
-     green, like VS Code and GitLens. The app measures; this draws. -->
+     Ribbons take their chunk's kind color, or fade from the old side's red to the new side's green, like VS Code
+     and GitLens: `oldToNew` when the old side is on the left, `newToOld` when it is on the right. The app
+     measures; this draws. -->
 <script lang="ts">
   import type { ChunkKind } from "../logic/mergeGeometry";
   import { ribbonPath } from "../logic/mergeGeometry";
   import { componentTokens } from "../styles/tokens";
   import Icon from "./Icon.svelte";
+
+  export type ConnectorColors = "kinds" | "oldToNew" | "newToOld";
 
   export interface ConnectorRibbon {
     index: number;
@@ -28,7 +31,7 @@
     onrevert?: (index: number) => void;
     applyTitle?: string | null;
     revertTitle?: string | null;
-    colors?: "kinds" | "sides";
+    colors?: ConnectorColors;
   }
 
   let {
@@ -60,24 +63,24 @@
 
 <div class="connector" bind:clientHeight={height}>
   <svg {width} aria-hidden="true">
-    {#if colors === "sides"}
+    {#if colors !== "kinds"}
       <defs>
         <linearGradient id="{gradient}-fill">
-          <stop offset="0" class="old-fill" />
-          <stop offset="1" class="new-fill" />
+          <stop offset="0" class={colors === "oldToNew" ? "old-fill" : "new-fill"} />
+          <stop offset="1" class={colors === "oldToNew" ? "new-fill" : "old-fill"} />
         </linearGradient>
         <linearGradient id="{gradient}-edge">
-          <stop offset="0" class="old-edge" />
-          <stop offset="1" class="new-edge" />
+          <stop offset="0" class={colors === "oldToNew" ? "old-edge" : "new-edge"} />
+          <stop offset="1" class={colors === "oldToNew" ? "new-edge" : "old-edge"} />
         </linearGradient>
       </defs>
     {/if}
     {#each ribbons as ribbon (ribbon.index)}
       <path
-        class="ribbon {colors === 'sides' ? '' : ribbon.kind}"
+        class="ribbon {colors === 'kinds' ? ribbon.kind : ''}"
         d={ribbonPath(ribbon.aTop, ribbon.aBottom, ribbon.bTop, ribbon.bBottom, width)}
-        fill={colors === "sides" ? `url(#${gradient}-fill)` : undefined}
-        stroke={colors === "sides" ? `url(#${gradient}-edge)` : undefined}
+        fill={colors === "kinds" ? undefined : `url(#${gradient}-fill)`}
+        stroke={colors === "kinds" ? undefined : `url(#${gradient}-edge)`}
       />
     {/each}
   </svg>

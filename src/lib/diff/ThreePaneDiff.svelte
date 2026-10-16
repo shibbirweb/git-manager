@@ -58,7 +58,7 @@
   // The Blame button and the current line blame setting reach the open panes as they change.
   $effect(() => {
     const display = { inline: settings.currentLineBlame, gutter: settings.blameGutter };
-    const view = blame ? editors.paneView(blame.pane) : null;
+    const view = blame ? editors.blameView : null;
     if (view) {
       setBlameDisplay(view, display);
     }
@@ -105,6 +105,7 @@
           rightRibbons={editors.rightRibbons}
           onapply={onapply ? apply : undefined}
           {applyTitles}
+          colors={{ left: "oldToNew", right: options.rightNewer ? "oldToNew" : "newToOld" }}
           onready={(parts) => {
             const collapse = diffPrefs.collapseUnchanged;
             void editors.build({ parts, left, right, path, collapse, options, scrollTop: keptScroll, blame });

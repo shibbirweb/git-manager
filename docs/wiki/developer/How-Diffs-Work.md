@@ -37,7 +37,7 @@ flowchart LR
 
 - loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`, without padding and joined by bands ([How the connected diff works](How-the-Connected-Diff-Works.md)),
 - folds unchanged lines with `splitFolds` (`foldField.ts`, rules in `foldModel.ts`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
-- adds `chunkKinds`, `diffTheme` and `sideColors` (`mergeExtensions.ts`): `--diff-removed` old side, `--diff-added` new side, like VS Code; `DiffFrame colors="sides"` fades the bands,
+- adds `chunkKinds`, `diffTheme` and `sideColors` (`mergeExtensions.ts`): `--diff-removed` old side, `--diff-added` new side, like VS Code; `DiffFrame colors="oldToNew"` fades the bands,
 - puts a "Stage this change" (unstaged) or "Unstage this change" (staged) arrow on each band, none when read-only,
 - draws the overview ruler with `createStrip`, `layoutTicks` and `renderTicks` from `scrollMarkers.ts`, next to the merge view's scroll container,
 - binds F7 and Shift+F7 to `goToChunk` and restores the scroll position on a rebuild.

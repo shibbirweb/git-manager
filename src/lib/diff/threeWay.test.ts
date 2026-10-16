@@ -5,6 +5,7 @@ import type { LineHunk } from "$lib/types";
 import {
   changeSummary,
   flipHunks,
+  paneTones,
   parentAnchors,
   parentFold,
   parentMarks,
@@ -62,6 +63,16 @@ describe("resultMarks", () => {
     ]);
     expect(changeSummary(marks)).toBe("3 changes");
     expect(rulerMarks(marks)[0]).toEqual({ from: 2, to: 4, kind: "added" });
+  });
+});
+
+describe("tones of a merge commit", () => {
+  it("makes both parents red and the merge result green, and leaves conflicts their own color", () => {
+    expect(paneTones()).toEqual({ left: "old", right: "old" });
+    const marks = resultMarks(threeWayChanges(left, right), true, paneTones());
+    expect(marks.map((mark) => mark.tone)).toEqual(["new", "new", "new"]);
+    const conflict = resultMarks(threeWayChanges([[1, 2, 1, 2]], [[1, 2, 1, 2]]), true, paneTones());
+    expect(conflict.map((mark) => [mark.type, mark.tone])).toEqual([["conflict", undefined]]);
   });
 });
 
@@ -131,6 +142,20 @@ describe("the staging view", () => {
     const changes = threeWayChanges(staged, flipHunks(unstaged), { rightNewer: true, conflicts: false });
     expect(takeChange(index, worktree, changes.right[0])).toBe(worktree);
     expect(takeChange(index, head, changes.left[0])).toBe(head);
+  });
+
+  it("colors each change red where it is older and green where it is newer, like VS Code", () => {
+    const options = { rightNewer: true, conflicts: false };
+    const changes = threeWayChanges(staged, flipHunks(unstaged), options);
+    const tones = paneTones(options);
+    expect(tones).toEqual({ left: "old", right: "new" });
+    // The staged change is newer in the index; the unstaged one is older there than in the work tree.
+    expect(resultMarks(changes, false, tones).map((mark) => mark.tone)).toEqual(["new", "old"]);
+    const workTree = Text.of(worktree.split("\n"));
+    expect(parentMarks(changes.right, workTree, Text.of(index.split("\n")), tones.right)[0].tone).toBe("new");
+    expect(parentMarks(changes.left, Text.of(head.split("\n")), Text.of(index.split("\n")), tones.left)[0].tone).toBe(
+      "old",
+    );
   });
 
   it("merges touching middle ranges without calling them a conflict", () => {

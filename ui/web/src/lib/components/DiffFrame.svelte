@@ -17,7 +17,7 @@
 <script lang="ts">
   import { componentTokens } from "../styles/tokens";
   import Icon from "./Icon.svelte";
-  import MergeConnector, { type ConnectorRibbon } from "./MergeConnector.svelte";
+  import MergeConnector, { type ConnectorColors, type ConnectorRibbon } from "./MergeConnector.svelte";
   import SplitHandle from "./SplitHandle.svelte";
 
   interface Props {
@@ -31,7 +31,7 @@
     onrevert?: (index: number) => void;
     revertTitle?: string | null;
     /** The ribbons: by kind of change, or red to green from the old side to the new (VS Code, GitLens). */
-    colors?: "kinds" | "sides";
+    colors?: ConnectorColors;
     ruler?: boolean;
     ratio?: number;
     oncommitratio?: (ratio: number) => void;

@@ -30,14 +30,16 @@ export function paneEol(name: ThreeWayPane, left: FileDiff, right: FileDiff): Eo
   return name === "left" ? left.originalEol : right.originalEol;
 }
 
-/** Loads the blame into its pane once the panes exist. */
+/** Loads the blame into its pane once the panes exist, and returns that pane. */
 export function startBlame(
   views: Record<ThreeWayPane, EditorView>,
   blame: ThreeWayBlame | null,
   left: FileDiff,
   right: FileDiff,
-): void {
-  if (blame) {
-    void loadBlame(views[blame.pane], blame.target, paneEol(blame.pane, left, right));
+): EditorView | null {
+  if (!blame) {
+    return null;
   }
+  void loadBlame(views[blame.pane], blame.target, paneEol(blame.pane, left, right));
+  return views[blame.pane];
 }

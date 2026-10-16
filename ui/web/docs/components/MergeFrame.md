@@ -25,6 +25,8 @@ the three panes and the box the ribbons are measured from. MergeView is built on
 - `onignore` (`(index: number, side: "left" | "right") => void`): A chunk's Ignore button; left out, none.
 - `applyTitles` (`{ left: string; right: string } | null`, default `null`): The Apply buttons' tooltips per side, such
   as Unstage this change and Stage this change.
+- `colors` (`{ left: ConnectorColors; right: ConnectorColors }`, default `{ left: "kinds", right: "kinds" }`): Each
+  connector's ribbon colors.
 - `onready` (`(parts: MergeFrameParts) => void | (() => void)`): The panes, once shown.
 
 ## Rules

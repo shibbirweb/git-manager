@@ -83,7 +83,7 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("applyTitle", "string | null", "The arrow's tooltip.", { default: "null" }),
       prop("onrevert", "(index: number) => void", "Shows a revert button on each band, such as Revert this change."),
       prop("revertTitle", "string | null", "The revert button's tooltip.", { default: "null" }),
-      prop("colors", '"kinds" | "sides"', "Ribbons by kind of change, or red to green from the old side to the new.", {
+      prop("colors", "ConnectorColors", 'Ribbons by kind ("kinds"), or red to green: "oldToNew" or "newToOld".', {
         default: '"kinds"',
       }),
       prop("ruler", "boolean", "Room for a change overview ruler at the right of one editor.", { default: "false" }),
@@ -133,6 +133,9 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("onignore", '(index: number, side: "left" | "right") => void', "A chunk's Ignore button; left out, none."),
       prop("applyTitles", "{ left: string; right: string } | null", "The Apply buttons' tooltips per side, such as " +
         "Unstage this change and Stage this change.", { default: "null" }),
+      prop("colors", "{ left: ConnectorColors; right: ConnectorColors }", "Each connector's ribbon colors.", {
+        default: '{ left: "kinds", right: "kinds" }',
+      }),
       prop("onready", "(parts: MergeFrameParts) => void | (() => void)", "The panes, once shown."),
     ],
     rules: ["Never draw UI in the panes: they hold only the editors the app builds."],
@@ -196,7 +199,7 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("revertTitle", "string | null", "The revert button's tooltip, such as Revert this change.", {
         default: "null",
       }),
-      prop("colors", '"kinds" | "sides"', "Ribbons by kind of change, or red to green from the old side to the new.", {
+      prop("colors", "ConnectorColors", 'Ribbons by kind ("kinds"), or red to green: "oldToNew" or "newToOld".', {
         default: '"kinds"',
       }),
     ],

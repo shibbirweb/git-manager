@@ -1,7 +1,8 @@
 <!-- The frame of a 3-way merge: the three panes' titles, the three panes that MergeView (or the app's merge tool)
      fills with editors, and the connector columns between them. It draws no editor: `onready` hands over the pane
      elements and the box the ribbons are measured from, and the ribbons come back as props. Without `onapply` and
-     `onignore` the connectors draw ribbons alone, for a read-only 3-pane diff such as a merge commit's. -->
+     `onignore` the connectors draw ribbons alone, for a read-only 3-pane diff such as a merge commit's; `colors` picks
+     each connector's ribbon colors (by kind, or red to green from the older pane to the newer). -->
 <script module lang="ts">
   export interface MergeFrameParts {
     left: HTMLDivElement;
@@ -14,7 +15,7 @@
 
 <script lang="ts">
   import { presetVar, type ViewHeight } from "../logic/presets";
-  import MergeConnector, { type ConnectorRibbon } from "./MergeConnector.svelte";
+  import MergeConnector, { type ConnectorColors, type ConnectorRibbon } from "./MergeConnector.svelte";
 
   interface Props {
     label: string;
@@ -26,6 +27,7 @@
     onapply?: (index: number, side: "left" | "right") => void;
     onignore?: (index: number, side: "left" | "right") => void;
     applyTitles?: { left: string; right: string } | null;
+    colors?: { left: ConnectorColors; right: ConnectorColors };
     onready?: (parts: MergeFrameParts) => void | (() => void);
   }
 
@@ -39,6 +41,7 @@
     onapply,
     onignore,
     applyTitles = null,
+    colors = { left: "kinds", right: "kinds" },
     onready,
   }: Props = $props();
 
@@ -74,6 +77,7 @@
       onapply={onapply ? (index) => onapply(index, "left") : undefined}
       applyTitle={applyTitles?.left ?? null}
       onignore={onignore ? (index) => onignore(index, "left") : undefined}
+      colors={colors.left}
     />
     <div class="pane result-pane" bind:this={result}></div>
     <MergeConnector
@@ -82,6 +86,7 @@
       onapply={onapply ? (index) => onapply(index, "right") : undefined}
       applyTitle={applyTitles?.right ?? null}
       onignore={onignore ? (index) => onignore(index, "right") : undefined}
+      colors={colors.right}
     />
     <div class="pane" bind:this={right}></div>
   </div>

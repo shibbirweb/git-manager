@@ -86,17 +86,40 @@ export function takeChange(middle: string, side: string, change: ThreeWayChange)
   return [...middleLines.slice(0, change.result.start), ...taken, ...middleLines.slice(change.result.end)].join("\n");
 }
 
-/** The middle pane's marks: both sides' ranges, merged where they touch (a conflict in a merge). */
-export function resultMarks(changes: Record<ParentSide, ThreeWayChange[]>, conflicts = true): LineMark[] {
-  const ranges = [...changes.left, ...changes.right]
-    .map((change) => ({ range: { ...change.result }, type: change.type }))
-    .sort((a, b) => a.range.start - b.range.start || a.range.end - b.range.end);
+export type Tone = "old" | "new";
+
+/** Each side pane against the middle, for the red and green: HEAD and the parents are older, the work tree newer. */
+export function paneTones(options: ThreeWayOptions = {}): Record<ParentSide, Tone> {
+  return { left: "old", right: options.rightNewer ? "new" : "old" };
+}
+
+const OTHER_TONE: Record<Tone, Tone> = { old: "new", new: "old" };
+
+/**
+ * The middle pane's marks: both sides' ranges, merged where they touch (a conflict in a merge). With `tones`, each
+ * mark takes the other end of its side's change (red or green); merged marks keep their kind color.
+ */
+export function resultMarks(
+  changes: Record<ParentSide, ThreeWayChange[]>,
+  conflicts = true,
+  tones: Record<ParentSide, Tone> | null = null,
+): LineMark[] {
+  const sideMarks = (side: ParentSide): LineMark[] =>
+    changes[side].map((change) => ({
+      range: { ...change.result },
+      type: change.type,
+      ...(tones ? { tone: OTHER_TONE[tones[side]] } : {}),
+    }));
+  const ranges = [...sideMarks("left"), ...sideMarks("right")].sort(
+    (a, b) => a.range.start - b.range.start || a.range.end - b.range.end,
+  );
   const marks: LineMark[] = [];
   for (const next of ranges) {
     const last = marks[marks.length - 1];
     if (last && touches(last.range, next.range)) {
       last.range.end = Math.max(last.range.end, next.range.end);
       last.type = conflicts ? "conflict" : "modified";
+      last.tone = undefined;
     } else {
       marks.push(next);
     }
@@ -111,14 +134,19 @@ function rangeText(doc: Text, range: LineRange): string {
   return doc.sliceString(doc.line(range.start + 1).from, doc.line(Math.min(range.end, doc.lines)).to);
 }
 
-/** A parent pane's marks, with the words that differ from the result in its changed lines. */
-export function parentMarks(changes: ThreeWayChange[], parent: Text, result: Text): LineMark[] {
+/** A parent pane's marks, with the words that differ from the result in its changed lines, in `tone` when given. */
+export function parentMarks(
+  changes: ThreeWayChange[],
+  parent: Text,
+  result: Text,
+  tone: Tone | null = null,
+): LineMark[] {
   return changes.map((change) => {
     const inline =
       change.parent.start < change.parent.end && change.result.start < change.result.end
         ? changedSpans(rangeText(result, change.result), rangeText(parent, change.parent))
         : null;
-    return { range: change.parent, type: change.type, inline };
+    return { range: change.parent, type: change.type, inline, ...(tone ? { tone } : {}) };
   });
 }
 
