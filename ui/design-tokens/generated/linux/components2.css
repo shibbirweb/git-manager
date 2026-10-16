@@ -137,6 +137,7 @@
   --code-editor-gutter-padding-left: 12px;
   --code-editor-gutter-padding-right: 10px;
   --code-editor-gutter-min-width: 40px;
+  --code-editor-selection-radius: 3px;
   --merge-view-gap: 52px;
   --merge-view-label-padding-x: 12px;
   --merge-view-label-padding-y: 5px;
@@ -272,8 +273,4 @@
   --toggle-button-outline-gap: 6px;
   --toggle-button-filter-height: 26px;
   --toggle-button-filter-padding-x: 9px;
-  --choice-list-gap: 6px;
-  --choice-list-padding-y: 8px;
-  --choice-list-padding-x: 12px;
-  --choice-list-line-gap: 2px;
 }

@@ -4,14 +4,8 @@
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { EditorState, type Extension } from "@codemirror/state";
-import {
-  drawSelection,
-  EditorView,
-  highlightActiveLineGutter,
-  highlightSpecialChars,
-  keymap,
-  lineNumbers,
-} from "@codemirror/view";
+import { EditorView, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from "@codemirror/view";
+import { drawRoundedSelection } from "@git-manager/ui/editor/selection";
 import { settings } from "$lib/stores/settings.svelte";
 import { commandKeys } from "./commandKeys";
 import { codeKeymap } from "./editorCommands";
@@ -108,7 +102,7 @@ export function baseExtensions({
   const common: Extension[] = [
     numbered ? lineNumbers() : [],
     highlightSpecialChars(),
-    drawSelection(),
+    drawRoundedSelection(),
     ...codeHighlighters.map((highlighter) => syntaxHighlighting(highlighter)),
     // Auto-close, completion, folding, guides, word highlight, margin line, sticky scroll,
     // minimap, bracket colors and matching... each switchable in Settings.

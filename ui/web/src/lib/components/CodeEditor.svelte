@@ -6,7 +6,6 @@
   import { syntaxHighlighting } from "@codemirror/language";
   import { Compartment, EditorState, type Extension } from "@codemirror/state";
   import {
-    drawSelection,
     EditorView,
     highlightActiveLine,
     highlightActiveLineGutter,
@@ -16,6 +15,7 @@
   import { classHighlighter } from "@lezer/highlight";
   import { onDestroy, onMount } from "svelte";
   import { languageSupport, type CodeLanguage } from "../editor/languages";
+  import { drawRoundedSelection } from "../editor/selection";
   import { editorTheme } from "../editor/theme";
   import { presetVar, type ViewHeight } from "../logic/presets";
 
@@ -59,7 +59,7 @@
         doc: value,
         extensions: [
           lineNumbers ? [lineNumberGutter(), highlightActiveLineGutter()] : [],
-          drawSelection(),
+          drawRoundedSelection(),
           highlightActiveLine(),
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),

@@ -27,7 +27,7 @@
             <Color x:Key="GmEditorGutter">#FFFFFFFF</Color>
             <Color x:Key="GmEditorLineNumber">#FFAEB3C2</Color>
             <Color x:Key="GmEditorActiveLine">#FFF5F8FE</Color>
-            <Color x:Key="GmEditorSelection">#FFA6D2FF</Color>
+            <Color x:Key="GmEditorSelection">#FFC1C3C9</Color>
             <Color x:Key="GmTermBlack">#FF000000</Color>
             <Color x:Key="GmTermRed">#FFCD3131</Color>
             <Color x:Key="GmTermGreen">#FF00BC00</Color>

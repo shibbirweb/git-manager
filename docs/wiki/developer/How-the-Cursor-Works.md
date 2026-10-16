@@ -10,6 +10,8 @@ People come from VS Code, JetBrains and Sublime Text with strong habits about th
 
 CodeMirror's `drawSelection` draws each cursor as a `.cm-cursor` element inside the `.cm-cursorLayer`, positioned and sized inline by CodeMirror, and blinks the whole layer with its `cm-blink` animation. `cursor.ts` styles those elements instead of drawing its own.
 
+The selection is drawn like PhpStorm's: soft corners on the outside of the shape. CodeMirror draws a selection as up to three boxes (the first line, the full lines between, the last line). `drawRoundedSelection` in the UI library keeps `drawSelection` for the cursors, hides its boxes and draws the same boxes in its own layer, each with a class for every corner that sits on the outside. A corner is square when the box above or below carries on past it, so the joins have no notches. The radius is the `codeEditor.selectionRadius` design token, and the color is still the theme's `--editor-selection` (a soft gray in Light and Islands Light, like PhpStorm).
+
 ```mermaid
 flowchart LR
   S["settings: editorCursor*, editorCaretExtra*"] --> O["cursorOptions"]
@@ -33,7 +35,8 @@ flowchart LR
 | File | What it does |
 | --- | --- |
 | `src/lib/editor/cursor.ts` | `cursorOptions`, `cursorThemeSpec`, `cursorTracker`, `editorCursor`, `setEditorCursor` |
-| `src/lib/editor/setup.ts` | Adds `editorCursor(cursorOptions(settings))` to every editor, diff and merge pane |
+| `src/lib/editor/setup.ts` | Adds `editorCursor(cursorOptions(settings))` and `drawRoundedSelection()` to every editor, diff and merge pane |
+| `ui/web/src/lib/editor/selection.ts` | `drawRoundedSelection` and `outerCorners`, also used by the library's `CodeEditor` |
 | `src/lib/App.svelte` | The effect that applies changed cursor settings |
 | `src/lib/stores/settingsData.ts` | The six keys, their choices, ranges and validation |
 | `src/lib/views/settings/EditorTextSettings.svelte` | The rows in Settings, Editor |
@@ -41,6 +44,8 @@ flowchart LR
 ## Design decisions
 
 **Style CodeMirror's cursor, do not replace it.** CodeMirror already places cursors for every selection range, bidirectional text and wrapped lines. Drawing our own would repeat that work and its bugs.
+
+**Round only the outer corners.** Rounding every box would cut a notch wherever two boxes meet. `outerCorners` works from the boxes' positions, so it holds for wrapped lines and several selections too.
 
 **Use the default character width.** A block over a wide character, such as a tab, is one normal character wide. Measuring the character under every cursor would cost a layout read on each move for a small gain with monospace fonts.
 
@@ -53,6 +58,7 @@ flowchart LR
 ## Tests
 
 - `src/lib/editor/cursor.test.ts`: each shape, the width and thin styles, the extra height, smooth movement, the layer blink turned off, the two keyframe copies and each blinking mode.
+- `ui/web/src/lib/editor/selection.test.ts`: which corners are rounded for one line, three boxes, lines that only touch at a point, lines that overlap and boxes a pixel apart.
 - `src/lib/stores/settingsData.test.ts`: defaults and the clamping of hand-edited cursor values.
 
 How the cursor looks needs a visual check in the app.

@@ -64,7 +64,7 @@ export const componentTokens2 = {
   },
   reorderList: { rowPaddingY: 4, rowPaddingLeft: 6, rowPaddingRight: 10, gap: 8, dropLine: 2 },
   shortcutRecorder: { width: 150, minHeight: 26, paddingX: 6 },
-  codeEditor: { gutterPaddingLeft: 12, gutterPaddingRight: 10, gutterMinWidth: 40 },
+  codeEditor: { gutterPaddingLeft: 12, gutterPaddingRight: 10, gutterMinWidth: 40, selectionRadius: 3 },
   mergeView: { gap: 52, labelPaddingX: 12, labelPaddingY: 5, buttonWidth: 18, buttonHeight: 17, buttonInset: 2 },
   formatToolbar: {
     minHeight: 28,

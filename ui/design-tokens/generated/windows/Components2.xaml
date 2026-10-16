@@ -139,6 +139,7 @@
     <x:Double x:Key="GmCodeEditorGutterPaddingLeft">12</x:Double>
     <x:Double x:Key="GmCodeEditorGutterPaddingRight">10</x:Double>
     <x:Double x:Key="GmCodeEditorGutterMinWidth">40</x:Double>
+    <x:Double x:Key="GmCodeEditorSelectionRadius">3</x:Double>
     <x:Double x:Key="GmMergeViewGap">52</x:Double>
     <x:Double x:Key="GmMergeViewLabelPaddingX">12</x:Double>
     <x:Double x:Key="GmMergeViewLabelPaddingY">5</x:Double>

@@ -71,7 +71,7 @@ public enum GMColor {
     public static let editorActiveLine = Color(
         gmLight: GMRGBA(245, 248, 254, 1), dark: GMRGBA(38, 40, 46, 1))
     public static let editorSelection = Color(
-        gmLight: GMRGBA(166, 210, 255, 1), dark: GMRGBA(33, 66, 131, 1))
+        gmLight: GMRGBA(193, 195, 201, 1), dark: GMRGBA(33, 66, 131, 1))
     public static let termBlack = Color(
         gmLight: GMRGBA(0, 0, 0, 1), dark: GMRGBA(0, 0, 0, 1))
     public static let termRed = Color(

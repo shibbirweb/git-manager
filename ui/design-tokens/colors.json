@@ -27,7 +27,7 @@
   "editor-gutter": {"light": "#ffffff", "dark": "#1e1f22"},
   "editor-line-number": {"light": "#aeb3c2", "dark": "#4b5059"},
   "editor-active-line": {"light": "#f5f8fe", "dark": "#26282e"},
-  "editor-selection": {"light": "#a6d2ff", "dark": "#214283"},
+  "editor-selection": {"light": "#c1c3c9", "dark": "#214283"},
   "term-black": {"light": "#000000", "dark": "#000000"},
   "term-red": {"light": "#cd3131", "dark": "#cd3131"},
   "term-green": {"light": "#00bc00", "dark": "#0dbc79"},

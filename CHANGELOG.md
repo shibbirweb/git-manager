@@ -141,6 +141,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Selected text looks like PhpStorm: soft rounded corners, and a soft gray in the Light and Islands Light themes instead of bright blue.
 - Folded unchanged lines in diffs look like PhpStorm's: a wavy line named after the code below it, such as **Cart > remove()** or **\\App\\Http\\Controllers\\Api > DistrictController > store()**, instead of a gray bar. The **10 lines** buttons show on hover. Merge commits' three panes fold too, all at once.
 - A file changed on both sides of a merge commit opens in three panes, like PhpStorm: parent 1, the merge result and parent 2, with colored bands joining each parent's changes to the result, conflicts the merge resolved in red, a count such as **2 changes, 1 conflict**, and all three panes scrolling together. The toolbar's layout buttons switch between three panes, side by side and inline.
 - The side by side diff looks like PhpStorm's: each side shows its code without blank padding, a colored band between the sides joins every change's lines (so you see where a block came from and where it went), and the other side follows as you scroll to keep matching lines level. The stage and unstage arrows sit on the bands.

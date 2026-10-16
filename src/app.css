@@ -39,7 +39,7 @@
   --editor-gutter: #ffffff;
   --editor-line-number: #aeb3c2;
   --editor-active-line: #f5f8fe;
-  --editor-selection: #a6d2ff;
+  --editor-selection: #c1c3c9;
   /* These follow other tokens unless a color theme (src/lib/themes) sets them. */
   --editor-cursor: var(--text);
 

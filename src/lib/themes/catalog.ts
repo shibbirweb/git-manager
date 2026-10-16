@@ -115,12 +115,12 @@ const GM_LIGHT: ThemeColors = {
   "--editor-gutter": "#ffffff",
   "--editor-line-number": "#aeb3c2",
   "--editor-active-line": "#f5f8fe",
-  "--editor-selection": "#a6d2ff",
+  "--editor-selection": "#c1c3c9",
   "--editor-cursor": "#1e1f22",
   "--term-background": "#ffffff",
   "--term-foreground": "#1e1f22",
   "--term-cursor": "#1e1f22",
-  "--term-selection": "#a6d2ff",
+  "--term-selection": "#c1c3c9",
   "--term-black": "#000000",
   "--term-red": "#cd3131",
   "--term-green": "#00bc00",
@@ -728,12 +728,12 @@ const SPECS: Record<string, ThemeSpec> = {
     },
   },
   // Islands Light: white islands on a grey window. Colors from
-  // ManyIslandsLight.theme.json and its "Light" editor scheme.
+  // ManyIslandsLight.theme.json and its "Light" editor scheme; the selection is the gray PhpStorm shows.
   "islands-light": {
     background: "#ffffff",
     foreground: "#000000",
     accent: "#3871e1",
-    selection: "#a6d2ff",
+    selection: "#c1c3c9",
     ansi: JETBRAINS_ANSI_LIGHT,
     syntax: {
       keyword: "#0033b3",

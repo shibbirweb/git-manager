@@ -53,6 +53,7 @@ public enum GMCodeEditorTokens {
     public static let gutterPaddingLeft: CGFloat = 12
     public static let gutterPaddingRight: CGFloat = 10
     public static let gutterMinWidth: CGFloat = 40
+    public static let selectionRadius: CGFloat = 3
 }
 
 public enum GMMergeViewTokens {
