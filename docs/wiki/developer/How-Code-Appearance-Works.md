@@ -39,7 +39,7 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 | File | What it does |
 | --- | --- |
 | `src/lib/editor/languages.ts` | `editorLanguage`, `setSyntaxHighlighting`, the comment style of each grammar |
-| `src/lib/markdown/highlight.ts` | `CodeHighlighter.setEnabled` for Markdown code blocks |
+| `ui/web/src/lib/markdown/highlight.ts` | `CodeHighlighter.setEnabled` for Markdown code blocks |
 | `src/lib/editor/whitespace.ts` | Render whitespace |
 | `src/lib/editor/indentDetect.ts` | `detectIndentation`, pure |
 | `src/lib/editor/indentation.ts` | The editor's tab size and indent unit, `setIndentation`, `editorIndent` |

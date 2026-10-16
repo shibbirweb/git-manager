@@ -4,9 +4,9 @@
 
 import type { Language } from "@codemirror/language";
 import { highlightCode } from "@lezer/highlight";
-import { codeHighlighters } from "$lib/editor/highlighter";
+import { codeHighlighters } from "../editor/highlighter";
 
-type Parser = Language["parser"];
+export type Parser = Language["parser"];
 
 /** Longer blocks are shown as plain text: highlighting them would stall typing. */
 export const MAX_HIGHLIGHT_CHARS = 100_000;

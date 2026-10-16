@@ -8,7 +8,8 @@ import { createRichMarkdownEditorCodec } from "./rich-markdown-source-transport"
 describe("raw html after fences", () => {
   it.each(["~~~", "```"])("wraps a details block after a %s fence", (fence) => {
     const codec = createRichMarkdownEditorCodec();
-    const source = `Before.\n\n${fence}ts\nconst a = 1;\n${fence}\n\n<details>\n<summary>More</summary>\n\nBody.\n\n</details>\n`;
+    const details = "<details>\n<summary>More</summary>\n\nBody.\n\n</details>\n";
+    const source = `Before.\n\n${fence}ts\nconst a = 1;\n${fence}\n\n${details}`;
     const encoded = encodeRawMarkdownHtmlForRichEditor(source, codec);
     expect(encoded).toContain(`${fence}ts\nconst a = 1;\n${fence}`);
     expect(encoded).not.toContain("<details>");

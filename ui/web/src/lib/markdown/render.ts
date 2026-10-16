@@ -154,7 +154,8 @@ export function createRenderer(hooks: RenderHooks): { render: (source: string) =
 
   md.renderer.rules.task_checkbox = (tokens, index) => {
     const meta = tokens[index].meta as { checked: boolean; line: number };
-    return `<input type="checkbox" class="task-list-item-checkbox" data-task-line="${meta.line}"${meta.checked ? " checked" : ""}> `;
+    const checked = meta.checked ? " checked" : "";
+    return `<input type="checkbox" class="task-list-item-checkbox" data-task-line="${meta.line}"${checked}> `;
   };
 
   md.renderer.rules.fence = (tokens, index, _options, env) => {
@@ -164,11 +165,13 @@ export function createRenderer(hooks: RenderHooks): { render: (source: string) =
     const line = String(token.attrGet("data-line") ?? "0");
     if (language.toLowerCase() === "mermaid") {
       renderEnv(env).hasMermaid = true;
-      return `<div class="md-mermaid" data-line="${line}"><pre class="md-mermaid-source">${escapeHtml(token.content)}</pre></div>\n`;
+      const source = escapeHtml(token.content);
+      return `<div class="md-mermaid" data-line="${line}"><pre class="md-mermaid-source">${source}</pre></div>\n`;
     }
     const highlighted = language ? hooks.highlight(token.content, language) : null;
     const languageClass = language ? ` class="language-${escapeHtml(language)}"` : "";
-    return `<pre class="md-code" data-line="${line}"><code${languageClass}>${highlighted ?? escapeHtml(token.content)}</code></pre>\n`;
+    const code = highlighted ?? escapeHtml(token.content);
+    return `<pre class="md-code" data-line="${line}"><code${languageClass}>${code}</code></pre>\n`;
   };
 
   md.renderer.rules.image = (tokens, index, options, env, self) => {

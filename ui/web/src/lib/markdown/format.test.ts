@@ -1,16 +1,15 @@
 import { EditorSelection, EditorState, type TransactionSpec } from "@codemirror/state";
 import { describe, expect, it } from "vitest";
+import { toggleInline, toggleLink } from "./format";
 import {
   headingLevel,
   insertTable,
   setHeading,
   tableTemplate,
   toggleCodeBlock,
-  toggleInline,
   toggleLinePrefix,
-  toggleLink,
   toggleTaskAt,
-} from "./format";
+} from "./formatLines";
 
 // "‸" marks a cursor, "⟨" and "⟩" a selection; several of them make several ranges.
 function make(marked: string): EditorState {

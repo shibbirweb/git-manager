@@ -5,7 +5,7 @@ The bugs found in the [color themes](How-Color-Themes-Work.md), what caused each
 **Tag and attribute colors never showed.**
 - **The issue:** tags in HTML, XML, Vue and JSX had the type color (Monokai tags were cyan).
 - **Why it happened:** `classHighlighter` has no class for `tagName` or `attributeName` and uses their parents, `typeName` and `propertyName`, so the `.tok-tagName` and `.tok-attributeName` rules never matched.
-- **The fix and why we chose it:** a second highlighter for just those two (`editor/highlighter.ts`) now runs everywhere code is highlighted. It only adds classes, so nothing else changed.
+- **The fix and why we chose it:** a second highlighter for just those two (the UI library's `editor/highlighter.ts`) now runs everywhere code is highlighted. It only adds classes, so nothing else changed.
 
 **Black text on blue buttons in light themes.**
 - **The issue:** Primary and Danger buttons and count badges in Islands Light, One Light and the other light themes had black text that was hard to read.

@@ -50,7 +50,8 @@ function rgba(color: string): Rgba {
 }
 
 function hexOf(color: Rgba): string {
-  return `#${[color.r, color.g, color.b].map((channel) => clampChannel(channel).toString(16).padStart(2, "0")).join("")}`;
+  const channels = [color.r, color.g, color.b].map((channel) => clampChannel(channel).toString(16).padStart(2, "0"));
+  return `#${channels.join("")}`;
 }
 
 /** The color as #rrggbb, dropping any alpha. */

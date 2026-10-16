@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { RichMarkdownEditor } from "./richEditor";
 import { applyEdit, type SourceEdit } from "./richSync";
 
-const root = join(__dirname, "..", "..", "..");
+const root = join(__dirname, "..", "..", "..", "..", "..");
 
 function corpus(): { name: string; text: string }[] {
   const files: { name: string; text: string }[] = [];
@@ -146,7 +146,8 @@ describe("the rich editor keeps existing files", () => {
 describe("the rich editor takes HTML blocks whole", () => {
   it("keeps an indented HTML table (the README's screenshot grid) editable around it", async () => {
     const text =
-      'Intro text.\n\n<table>\n  <tr>\n    <td width="50%"><img src="a.png"><br><b>A</b></td>\n  </tr>\n</table>\n\nOutro text.\n';
+      'Intro text.\n\n<table>\n  <tr>\n    <td width="50%"><img src="a.png"><br><b>A</b></td>\n' +
+      "  </tr>\n</table>\n\nOutro text.\n";
     const session = await open(text);
     expect(session.readOnly).toEqual([]);
     typeInFirstParagraph(session.rich, "Q");

@@ -97,5 +97,10 @@ export default defineConfig(() => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
+    // SvelteKit serves only src/ and node_modules; the UI library's lazy chunks (the Markdown engine and rich
+    // editor, loaded with import()) are requested by their real path under ui/web.
+    fs: {
+      allow: ["ui/web/src"],
+    },
   },
 }));

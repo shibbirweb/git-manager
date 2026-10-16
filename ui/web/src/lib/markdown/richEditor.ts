@@ -5,12 +5,10 @@
 // elsewhere load again here. Loaded the first time a Markdown file shows its preview.
 
 import { Editor } from "@tiptap/core";
-import type { Node as ProseNode } from "@tiptap/pm/model";
 import { Selection, TextSelection } from "@tiptap/pm/state";
-import type { NodeView } from "@tiptap/pm/view";
-import { classifyImage, type LinkContext } from "./links";
-import { releaseMermaid, renderMermaid } from "./mermaid";
-import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
+import type { LinkContext } from "./links";
+import { releaseMermaid } from "./mermaid";
+import { NearScreen } from "./nearScreen";
 import { getMarkdownRichModeUnsupportedMessage } from "./rich/markdown-rich-mode";
 import { exceedsMarkdownRichModeSizeLimit } from "./rich/markdown-rich-size-limit";
 import { encodeRawMarkdownHtmlForRichEditor } from "./rich/raw-markdown-html";
@@ -19,8 +17,8 @@ import { normalizeEmptyListItems } from "./rich/rich-markdown-normalize";
 import { serializeRichMarkdownForReconcile } from "./rich/rich-markdown-reconcile-serializer";
 import { commitRichMarkdownSerialization } from "./rich/rich-markdown-serialization-commit";
 import { createRichMarkdownEditorCodec, type RichMarkdownEditorCodec } from "./rich/rich-markdown-source-transport";
+import { codeView, imageView, type NodeViewContext } from "./richNodeViews";
 import { type SourceEdit, sourceEdit, splitFrontMatter } from "./richSync";
-import { sanitizeSvg } from "./sanitize";
 
 /** What the toolbar asks the rich editor to do. */
 export type RichAction =
@@ -52,7 +50,6 @@ export interface RichEditorOptions {
 
 /** The pause after typing before an edit is saved into the text (Orca's 300 ms: a save re-parses once). */
 const SYNC_DELAY_MS = 300;
-const MERMAID_DELAY_MS = 400;
 const TOO_LARGE = "This file is too large for the rich editor. Edit it in the text editor.";
 
 export class RichMarkdownEditor {
@@ -86,13 +83,14 @@ export class RichMarkdownEditor {
   private start(root: HTMLElement): void {
     // The scroller is the editor root's parent (RichMarkdownView).
     this.nearScreen = new NearScreen(root.parentElement);
+    const views: NodeViewContext = { ...this.options, owner: this, nearScreen: () => this.nearScreen };
     this.editor = new Editor({
       element: root,
       extensions: createRichMarkdownExtensions({
         codec: this.codec,
         nodeViews: {
-          image: ({ node }) => this.imageView(node),
-          codeBlock: ({ node }) => this.codeView(node),
+          image: ({ node }) => imageView(node, views),
+          codeBlock: ({ node }) => codeView(node, views),
         },
       }),
       editable: false,
@@ -294,167 +292,5 @@ export class RichMarkdownEditor {
     if (edit) {
       this.options.onEdit(edit);
     }
-  }
-
-  private imageView(node: ProseNode): NodeView {
-    const dom = document.createElement("img");
-    let shown = "";
-    const show = (current: ProseNode) => {
-      const src = String(current.attrs.src ?? "");
-      dom.alt = String(current.attrs.alt ?? "");
-      dom.title = String(current.attrs.title ?? "");
-      if (src === shown) {
-        return;
-      }
-      shown = src;
-      dom.removeAttribute("src");
-      dom.classList.remove("md-image-blocked");
-      const target = classifyImage(src, this.options.linkContext());
-      if (target.kind === "data") {
-        dom.src = target.url;
-      } else if (target.kind === "local") {
-        const load = () => {
-          void this.options
-            .loadImage(target.filePath)
-            .then((url) => {
-              if (shown === src) {
-                dom.src = url;
-              }
-            })
-            .catch((error: unknown) => {
-              dom.classList.add("md-image-blocked");
-              dom.title = error instanceof Error ? error.message : String(error);
-            });
-        };
-        // Loaded once scrolled near, like the preview's images.
-        const nearScreen = this.nearScreen;
-        if (nearScreen) {
-          nearScreen.unwatch(dom);
-          nearScreen.watch(dom, () => {
-            nearScreen.unwatch(dom);
-            load();
-          });
-        } else {
-          load();
-        }
-      } else {
-        dom.classList.add("md-image-blocked");
-        dom.title = target.kind === "remote" ? "Remote images are not loaded" : target.reason;
-      }
-    };
-    show(node);
-    return {
-      dom,
-      update: (updated) => {
-        if (updated.type !== node.type) {
-          return false;
-        }
-        show(updated);
-        return true;
-      },
-      destroy: () => this.nearScreen?.unwatch(dom),
-    };
-  }
-
-  /**
-   * Code blocks; a mermaid block also shows its diagram under the code. The diagram is drawn
-   * only while it is near the screen and freed when scrolled far away (see nearScreen.ts).
-   */
-  private codeView(node: ProseNode): NodeView {
-    const dom = document.createElement("div");
-    dom.className = "md-rich-code";
-    const pre = document.createElement("pre");
-    const code = document.createElement("code");
-    pre.appendChild(code);
-    dom.appendChild(pre);
-    const diagram = document.createElement("div");
-    diagram.className = "md-mermaid";
-    diagram.contentEditable = "false";
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let latest = "";
-    let drawn: string | null = null;
-    let near = false;
-    let watching = false;
-
-    const render = (delay: number) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        const text = latest;
-        drawn = text;
-        void renderMermaid(this, text, this.options.isDark()).then((result) => {
-          if (drawn !== text || !near) {
-            return;
-          }
-          restoreDiagramHeight(diagram);
-          if ("svg" in result) {
-            // Sanitized like the preview's diagrams: a document's diagram is untrusted input.
-            diagram.replaceChildren(sanitizeSvg(result.svg));
-            diagram.classList.remove("md-mermaid-error");
-          } else {
-            diagram.textContent = result.error;
-            diagram.classList.add("md-mermaid-error");
-          }
-        });
-      }, delay);
-    };
-
-    const update = (current: ProseNode) => {
-      const language = String(current.attrs.language ?? "");
-      code.className = language ? `language-${language}` : "";
-      pre.dataset.language = language;
-      if (language !== "mermaid") {
-        if (watching) {
-          this.nearScreen?.unwatch(diagram);
-          watching = false;
-        }
-        clearTimeout(timer);
-        diagram.remove();
-        drawn = null;
-        return;
-      }
-      latest = current.textContent;
-      if (!diagram.isConnected) {
-        dom.appendChild(diagram);
-      }
-      if (!watching) {
-        watching = true;
-        this.nearScreen?.watch(
-          diagram,
-          () => {
-            near = true;
-            if (drawn !== latest || diagram.childElementCount === 0) {
-              render(0);
-            }
-          },
-          () => {
-            near = false;
-            clearTimeout(timer);
-            drawn = null;
-            releaseDiagram(diagram);
-          },
-        );
-      } else if (near && latest !== drawn) {
-        // Typing in the diagram's code draws it again after a pause.
-        render(MERMAID_DELAY_MS);
-      }
-    };
-    update(node);
-    return {
-      dom,
-      contentDOM: code,
-      update: (updated) => {
-        if (updated.type !== node.type) {
-          return false;
-        }
-        update(updated);
-        return true;
-      },
-      // The diagram is drawn by us, not typed in.
-      ignoreMutation: (mutation) => !code.contains(mutation.target),
-      destroy: () => {
-        clearTimeout(timer);
-        this.nearScreen?.unwatch(diagram);
-      },
-    };
   }
 }

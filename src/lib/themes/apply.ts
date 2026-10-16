@@ -1,7 +1,7 @@
 // Puts a color theme on the document. The built-in Git Manager themes are the
 // sets in src/app.css and need nothing else; any other theme is one generated
 // <style> element with that theme's variables. The <html> attributes change
-// only after the new variables are in place, so watchers (themes/watch.ts)
+// only after the new variables are in place, so watchers (the UI library's logic/themeWatch.ts)
 // that copy colors out of CSS read the new ones.
 
 import { type ColorMode, defaultThemeFor, isHighContrast, pickThemeId, themeInfo } from "./themeIndex";

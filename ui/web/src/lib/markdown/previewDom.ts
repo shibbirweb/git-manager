@@ -7,9 +7,10 @@
 
 import type * as Engine from "./engine";
 import type { CodeHighlighter } from "./highlight";
-import { classifyImage, classifyLink, ID_PREFIX, type LinkContext, type LinkTarget } from "./links";
+import { classifyLink, ID_PREFIX, type LinkContext, type LinkTarget } from "./links";
 import { cachedMermaid, type MermaidResult, releaseMermaid, renderMermaid } from "./mermaid";
 import { NearScreen, releaseDiagram, restoreDiagramHeight } from "./nearScreen";
+import { PreviewImages } from "./previewImages";
 import { buildAnchors, type LineAnchor, lineForOffset, offsetForLine } from "./scrollSync";
 
 type EngineModule = typeof Engine;
@@ -43,21 +44,11 @@ function shiftLines(wrapper: HTMLElement, delta: number): void {
   }
 }
 
-function placeholder(text: string, title: string | null): HTMLElement {
-  const element = document.createElement("span");
-  element.className = "md-image-placeholder";
-  element.textContent = text;
-  if (title) {
-    element.title = title;
-  }
-  return element;
-}
-
 export class MarkdownPreviewDom {
   private renderer: ReturnType<EngineModule["createRenderer"]>;
   private shown: ShownSegment[] = [];
   private mermaidSources = new WeakMap<Element, string>();
-  private images = new Map<string, Promise<string>>();
+  private readonly images: PreviewImages;
   private anchorCache: LineAnchor[] | null = null;
   private lastLineCount = 1;
   /** Diagrams are drawn and local images loaded only near the visible part of the preview. */
@@ -72,6 +63,7 @@ export class MarkdownPreviewDom {
     this.renderer = engine.createRenderer({ highlight: (code, language) => highlighter.highlight(code, language) });
     // The preview's scroller is the body's parent.
     this.nearScreen = new NearScreen(body.parentElement);
+    this.images = new PreviewImages(this.nearScreen, callbacks);
   }
 
   /** Stops watching for diagrams and images to draw; the preview is going away. */
@@ -134,7 +126,7 @@ export class MarkdownPreviewDom {
     this.shown = [...old.slice(0, prefix), ...inserted, ...kept];
     if (inserted.length > 0 || old.length !== segments.length) {
       this.anchorCache = null;
-      this.forgetUnusedImages();
+      this.images.forgetUnused(this.body);
     }
   }
 
@@ -170,7 +162,7 @@ export class MarkdownPreviewDom {
       }
     }
     for (const image of root.querySelectorAll("img[data-gm-src]")) {
-      this.showImage(image as HTMLImageElement);
+      this.images.show(image as HTMLImageElement);
     }
     if (hasMermaid) {
       for (const diagram of root.querySelectorAll<HTMLElement>(".md-mermaid")) {
@@ -188,68 +180,6 @@ export class MarkdownPreviewDom {
             releaseDiagram(diagram);
           },
         );
-      }
-    }
-  }
-
-  private showImage(image: HTMLImageElement): void {
-    const raw = image.getAttribute("data-gm-src") ?? "";
-    const alt = image.getAttribute("alt") ?? "";
-    const target = classifyImage(raw, this.callbacks.linkContext());
-    if (target.kind === "data") {
-      image.src = target.url;
-      return;
-    }
-    if (target.kind === "remote") {
-      image.replaceWith(placeholder(`${alt || "Image"}: Remote image not loaded`, target.url));
-      return;
-    }
-    if (target.kind === "blocked") {
-      image.replaceWith(placeholder(`${alt || "Image"}: ${target.reason}`, raw));
-      return;
-    }
-    image.dataset.gmFile = target.filePath;
-    // Loaded once it is scrolled near, so images far down are never read.
-    this.nearScreen.watch(image, () => {
-      this.nearScreen.unwatch(image);
-      this.loadLocalImage(image, target.filePath, alt, raw);
-    });
-  }
-
-  private loadLocalImage(image: HTMLImageElement, filePath: string, alt: string, raw: string): void {
-    let pending = this.images.get(filePath);
-    if (!pending) {
-      pending = this.callbacks.loadImage(filePath);
-      this.images.set(filePath, pending);
-      // A failed load is tried again on the next render that needs it.
-      pending.catch(() => this.images.delete(filePath));
-    }
-    pending
-      .then((url) => {
-        if (image.isConnected) {
-          image.src = url;
-        }
-      })
-      .catch((error: unknown) => {
-        if (image.isConnected) {
-          const reason =
-            error && typeof error === "object" && "message" in error ? String(error.message) : "Image not found";
-          image.replaceWith(placeholder(`${alt || "Image"}: ${reason}`, raw));
-        }
-      });
-  }
-
-  /** Forgets images no block shows any more; one shown again is read anew (it may have changed). */
-  private forgetUnusedImages(): void {
-    if (this.images.size === 0) {
-      return;
-    }
-    const shown = new Set(
-      [...this.body.querySelectorAll("img[data-gm-file]")].map((image) => (image as HTMLElement).dataset.gmFile),
-    );
-    for (const filePath of this.images.keys()) {
-      if (!shown.has(filePath)) {
-        this.images.delete(filePath);
       }
     }
   }

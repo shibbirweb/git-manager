@@ -1,7 +1,7 @@
 // What a link or image in the Markdown preview points at. Pure, so the rules
 // (what opens in the browser, in the app, or not at all) are tested directly.
 
-import { joinPath, normalizePath, parentOf } from "$lib/stores/workspacePaths";
+import { joinPath, normalizePath, parentOf } from "../logic/paths";
 
 /** Ids of headings and of ids in raw HTML get this prefix, like on GitHub, so they never clash with the app's own. */
 export const ID_PREFIX = "user-content-";
@@ -49,7 +49,10 @@ function splitPath(href: string): { path: string; anchor: string | null } {
   return { path: decode(path), anchor: anchor === "" ? null : anchor };
 }
 
-/** An absolute path for a local link: relative to the document, or "/x" from the root unless it is already a workspace path. */
+/**
+ * An absolute path for a local link: relative to the document, or "/x" from the root unless it is already a workspace
+ * path.
+ */
 function resolveLocal(path: string, context: LinkContext): string {
   if (path.startsWith("/")) {
     const absolute = normalizePath(path);

@@ -95,7 +95,7 @@ export function createTiptapMarkedFacade(): typeof marked {
             return facade;
           };
         default:
-          // oxlint-disable-next-line anti-slop/no-reflect-get -- Proxy `get` trap: only Reflect.get forwards a raw string|symbol key with the proxy receiver.
+          // Proxy `get` trap: only Reflect.get forwards a raw string or symbol key with the proxy receiver.
           return Reflect.get(target, property, receiver);
       }
     },

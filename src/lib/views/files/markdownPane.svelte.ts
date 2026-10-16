@@ -2,9 +2,9 @@
 // keeps its mode for the session, and a switch stays at the same place in the document.
 import type { EditorState, TransactionSpec } from "@codemirror/state";
 import { tick } from "svelte";
-import { editorTopLine, scrollEditorToLine } from "$lib/markdown/editorScroll";
-import { toggleTaskAt } from "$lib/markdown/format";
-import type { SourceEdit } from "$lib/markdown/richSync";
+import { editorTopLine, scrollEditorToLine } from "@git-manager/ui/markdown/editorScroll";
+import { toggleTaskAt } from "@git-manager/ui/markdown/formatLines";
+import type { SourceEdit } from "@git-manager/ui/markdown/richSync";
 import { rememberViewMode, sessionViewMode } from "$lib/markdown/viewMode";
 import { type MarkdownViewMode, settings } from "$lib/stores/settings.svelte";
 import type MarkdownPreview from "./MarkdownPreview.svelte";

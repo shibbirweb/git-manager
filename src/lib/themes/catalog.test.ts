@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import appCss from "../../app.css?raw";
 import { catalogThemeIds, themeColors, themeCss, themeSwatch } from "./catalog";
-import { colorDistance, composite, contrastRatio, mix, parseColor } from "./color";
+import { colorDistance, composite, contrastRatio, mix, parseColor } from "@git-manager/ui/logic/color";
 import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, isHighContrast, THEME_INDEX } from "./themeIndex";
 import { COLOR_TOKENS, type ThemeColors } from "./tokens";
 

@@ -37,7 +37,8 @@ describe("Markdown rendering", () => {
     const out = html("- [ ] todo\n- [x] done\n- [] not a task");
     expect(out).toContain('<ul data-line="0" class="contains-task-list">');
     expect(out).toContain(
-      '<li data-line="0" class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" data-task-line="0"> todo</li>',
+      '<li data-line="0" class="task-list-item">' +
+        '<input type="checkbox" class="task-list-item-checkbox" data-task-line="0"> todo</li>',
     );
     expect(out).toContain('data-task-line="1" checked> done');
     expect(out).toContain('<li data-line="2">[] not a task</li>');
@@ -45,7 +46,8 @@ describe("Markdown rendering", () => {
 
   it("highlights fenced code through the hook and escapes the rest", () => {
     expect(html("```js\nlet a;\n```")).toContain(
-      '<pre class="md-code" data-line="0"><code class="language-js"><span class="tok-keyword">let a;</span></code></pre>',
+      '<pre class="md-code" data-line="0">' +
+        '<code class="language-js"><span class="tok-keyword">let a;</span></code></pre>',
     );
     expect(html("```\n<b>\n```")).toContain("<code>&lt;b&gt;\n</code>");
   });

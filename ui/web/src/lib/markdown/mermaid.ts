@@ -1,17 +1,30 @@
 // Mermaid diagrams for the Markdown preview and the rich editor. The library is large, so it
-// never loads into the window: diagrams are drawn in a hidden frame (src/routes/mermaid-frame)
+// never loads into the window: diagrams are drawn in a hidden frame (the app's page at `frameUrl`)
 // that is made for the first diagram and removed, library and all, shortly after the last
 // document with diagrams closes. Renders run one at a time (mermaid is not reentrant) and are
 // cached by theme and source while the frame lives, so a diagram is drawn again only when its
-// text changes. The built-in themes use mermaid's own light and dark looks; other color themes
+// text changes. The app's built-in themes use mermaid's own light and dark looks; other color themes
 // (data-color-theme on <html>) color diagrams from their CSS variables.
 
 import type { MermaidConfig } from "mermaid";
-import { parseColor } from "$lib/themes/color";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "$lib/themes/themeIndex";
+import { parseColor } from "../logic/color";
 import type { FrameRequest, FrameResponse } from "./mermaidFrame";
 
 export type MermaidResult = { svg: string } | { error: string };
+
+/** Where diagrams are drawn, set once by the app (configureDiagrams). */
+export interface DiagramHost {
+  /** The page that loads mermaid and answers FrameRequest messages (mermaidFrame.ts). */
+  frameUrl: string;
+  /** Color theme ids drawn with mermaid's own light and dark themes. */
+  builtInThemes: readonly string[];
+}
+
+let host: DiagramHost = { frameUrl: "/mermaid-frame", builtInThemes: [] };
+
+export function configureDiagrams(diagramHost: DiagramHost): void {
+  host = diagramHost;
+}
 
 /** Draws diagrams somewhere and can be thrown away; the frame in the app, a fake in tests. */
 export interface DiagramBackend {
@@ -46,7 +59,7 @@ function colorThemeId(): string {
 /** Mermaid's own theme for the built-ins, the color theme's variables otherwise. */
 function themeKey(dark: boolean): string {
   const themeId = colorThemeId();
-  const builtIn = themeId === "" || themeId === DEFAULT_LIGHT_THEME || themeId === DEFAULT_DARK_THEME;
+  const builtIn = themeId === "" || host.builtInThemes.includes(themeId);
   return builtIn ? (dark ? "dark" : "default") : `${dark ? "dark" : "light"}:${themeId}`;
 }
 
@@ -147,7 +160,7 @@ function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
 /** The hidden frame that loads mermaid; removing it frees the library. */
 function createFrameBackend(): DiagramBackend {
   const frame = document.createElement("iframe");
-  frame.src = "/mermaid-frame";
+  frame.src = host.frameUrl;
   frame.title = "Mermaid diagrams";
   frame.tabIndex = -1;
   frame.setAttribute("aria-hidden", "true");

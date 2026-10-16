@@ -75,7 +75,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 | --- | --- |
 | `src/lib/themes/themeIndex.ts` | Ids, names, kinds, defaults, modes, groups, picker keys |
 | `src/lib/themes/catalog.ts` | Palettes, `deriveColors`, `themeCss`, `themeSwatch` |
-| `src/lib/themes/color.ts` | Parsing, mixing, WCAG contrast, Lab distance |
+| `ui/web/src/lib/logic/color.ts` | Parsing, mixing, WCAG contrast, Lab distance |
 | `src/lib/themes/tokens.ts` | The 71 color tokens |
 | `src/lib/themes/apply.ts`, `watch.ts` | Putting a theme on the page; theme change watcher |
 | `src/lib/stores/settings.svelte.ts` | `lightColorTheme`, `darkColorTheme`, `colorMode`, `setColorTheme` |

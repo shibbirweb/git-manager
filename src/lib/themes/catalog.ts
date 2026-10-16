@@ -1,11 +1,20 @@
 // Color theme palettes. Imported lazily (Settings > Editor, or when a
 // non-default theme is active) so the defaults cost nothing. Each theme lists
 // its published editor, syntax and terminal colors; the UI shades (panels,
-// borders, hover, diff tints...) are derived from them with themes/color.ts.
+// borders, hover, diff tints...) are derived from them with the UI library's logic/color.ts.
 // Values are computed on demand and never cached, so only the applied CSS
 // variables stay around.
 
-import { colorDistance, composite, contrastRatio, ensureContrast, fitTint, luminance, mix, withAlpha } from "./color";
+import {
+  colorDistance,
+  composite,
+  contrastRatio,
+  ensureContrast,
+  fitTint,
+  luminance,
+  mix,
+  withAlpha,
+} from "@git-manager/ui/logic/color";
 import {
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,

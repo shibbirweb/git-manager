@@ -42,10 +42,10 @@ Measured on the release app: four Markdown files with four diagrams each, closed
 
 | File | What it does |
 | --- | --- |
-| `src/lib/markdown/mermaid.ts` | Users, the frame backend, the cache, unloading |
-| `src/lib/markdown/mermaidFrame.ts` | Draws in the frame |
-| `src/routes/mermaid-frame/` | The frame page |
-| `src/lib/markdown/previewDom.ts`, `richEditor.ts` | Ask for diagrams and release them |
+| `ui/web/src/lib/markdown/mermaid.ts` | Users, the frame backend, the cache, unloading |
+| `ui/web/src/lib/markdown/mermaidFrame.ts` | Draws in the frame |
+| `src/routes/mermaid-frame/` | The frame page; `markdownContext.ts` passes its URL to `configureDiagrams` |
+| `ui/web/src/lib/markdown/previewDom.ts`, `richNodeViews.ts` | Ask for diagrams and release them |
 | `src/lib/mcp/perf.ts` | `mermaidLoaded` and `markdownDiagramErrors` in `get_ui_performance` |
 
 ## Design decisions
@@ -65,7 +65,7 @@ Measured on the release app: four Markdown files with four diagrams each, closed
 
 ## Tests
 
-`src/lib/markdown/mermaid.test.ts`: nothing loads before the first diagram, each source draws once, the frame and cache go after the last user, a quick redraw keeps the frame, releasing an unknown user does nothing, and a queued request does not bring the frame back. The frame itself was checked in the release app with `get_ui_performance` (`mermaidLoaded`, `markdownDiagrams`, `markdownDiagramErrors`).
+`ui/web/src/lib/markdown/mermaid.test.ts`: nothing loads before the first diagram, each source draws once, the frame and cache go after the last user, a quick redraw keeps the frame, releasing an unknown user does nothing, and a queued request does not bring the frame back. The frame itself was checked in the release app with `get_ui_performance` (`mermaidLoaded`, `markdownDiagrams`, `markdownDiagramErrors`).
 
 ## Keeping this page in sync
 

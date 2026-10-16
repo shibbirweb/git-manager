@@ -10,7 +10,7 @@ import { settings } from "$lib/stores/settings.svelte";
 import { commandKeys } from "./commandKeys";
 import { codeKeymap } from "./editorCommands";
 import { findBar } from "./findPanel.svelte";
-import { codeHighlighters } from "./highlighter";
+import { codeHighlighters } from "@git-manager/ui/editor/highlighter";
 import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
 import { type EditorKind, featureOptions } from "./featurePlan";

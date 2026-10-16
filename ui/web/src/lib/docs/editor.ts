@@ -88,4 +88,92 @@ export const editorDocs: ComponentDoc[] = [
     examples: [{ title: "A snippet", code: '<CodeView source={code} language="ts" />' }],
     replaces: ["read-only CodeMirror views built by hand"],
   },
+  {
+    name: "MarkdownPreview",
+    group: "Editor",
+    summary: "The live preview of a Markdown file: highlighted code, mermaid diagrams, local images and task boxes.",
+    usage:
+      "Use beside or instead of a Markdown file's source editor. It renders after a pause in typing and only while " +
+      "visible. The app opens links (`onlink`) and edits task lines (`ontoggletask`); use MarkdownView for a short, " +
+      "static text such as release notes.",
+    aliases: ["Markdown", "Preview", "Rendered Markdown"],
+    props: [
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("docVersion", "number", "Bumped on every edit; the source is read only when a render runs.", {
+        required: true,
+        data: true,
+      }),
+      prop("getSource", "() => string", "The Markdown text now.", { required: true }),
+      prop("view", "EditorView | null", "The source editor, to scroll with it.", { required: true }),
+      prop("visible", "boolean", "On screen: renders wait while hidden.", { required: true }),
+      prop("syncScroll", "boolean", "The preview and `view` scroll together.", { required: true }),
+      prop("initialLine", "number", "The 0-based source line shown at the top when it opens.", {
+        required: true,
+        data: true,
+      }),
+      prop("highlighting", "boolean", "Highlight code blocks.", { required: true }),
+      prop("loadParser", "(extension: string) => Promise<Parser | null>", "The grammar for a code block.", {
+        required: true,
+      }),
+      prop("linkContext", "() => LinkContext", "Where links and images resolve from.", { required: true }),
+      prop("loadImage", "(filePath: string) => Promise<string>", "The URL of a local image.", { required: true }),
+      prop("isDark", "() => boolean", "The page is dark (diagram colors).", { required: true }),
+      prop("onlink", "(target: LinkTarget) => void", "A link to open: external, a file, or blocked.", {
+        required: true,
+      }),
+      prop("ontoggletask", "(lineIndex: number) => void", "A task box was clicked: edit its source line.", {
+        required: true,
+      }),
+      prop("onleave", "(topLine: number) => void", "The preview closes, with the source line at its top."),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "A key in the page, such as Cmd+S."),
+    ],
+    examples: [
+      {
+        title: "Beside the editor",
+        code:
+          '<MarkdownPreview label="Preview" {docVersion} getSource={() => text} {view} visible syncScroll\n' +
+          "  initialLine={0} highlighting {loadParser} {linkContext} {loadImage} {isDark} onlink={open}\n" +
+          "  ontoggletask={toggle} />",
+      },
+    ],
+    replaces: ["src/lib/views/files/MarkdownPreview.svelte's rendering, scroll sync and clicks"],
+    rules: ["Diagrams draw in a frame page: call configureDiagrams (markdown/mermaid) once with its URL."],
+  },
+  {
+    name: "MarkdownEditor",
+    group: "Editor",
+    summary: "A Markdown file edited like a document (TipTap): edits go into the source text block by block.",
+    usage:
+      "Use for a rich, Typora-style view of a Markdown file. The source text stays the truth: apply `onedit` to it " +
+      "and bump `docVersion` when it changes elsewhere. Call the exported `format`, `toggleLink` and `flush` from a " +
+      "toolbar or before saving.",
+    aliases: ["Rich editor", "WYSIWYG", "Markdown"],
+    props: [
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("docVersion", "number", "Bumped on every change of the source text.", { required: true, data: true }),
+      prop("getSource", "() => string", "The Markdown text now.", { required: true }),
+      prop("initialScroll", "number", "The scroll position to start at.", { required: true, data: true }),
+      prop("linkContext", "() => LinkContext", "Where links and images resolve from.", { required: true }),
+      prop("loadImage", "(filePath: string) => Promise<string>", "The URL of a local image.", { required: true }),
+      prop("isDark", "() => boolean", "The page is dark (diagram colors).", { required: true }),
+      prop("onedit", "(edit: SourceEdit) => void", "An edit made here, to apply to the source text.", {
+        required: true,
+      }),
+      prop("onlink", "(target: LinkTarget) => void", "A Cmd+clicked link to open: external, a file, or blocked.", {
+        required: true,
+      }),
+      prop("onleave", "(scrollTop: number) => void", "It closes, with its scroll position."),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "A key in the page, such as Cmd+S."),
+    ],
+    examples: [
+      {
+        title: "A README",
+        code:
+          '<MarkdownEditor bind:this={editor} label="README.md" {docVersion} getSource={() => text}\n' +
+          "  initialScroll={0} {linkContext} {loadImage} {isDark} onedit={apply} onlink={open} />",
+      },
+    ],
+    replaces: ["src/lib/views/files/RichMarkdownView.svelte's editor lifecycle and link clicks"],
+    rules: ["Diagrams draw in a frame page: call configureDiagrams (markdown/mermaid) once with its URL."],
+  },
 ];

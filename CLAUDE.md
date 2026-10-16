@@ -43,6 +43,10 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
   `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `git-manager-ui` MCP server
   (`ui/mcp/`, registered in `.mcp.json`: list, search and get components, tokens, icons and rules). Tests keep
   docs equal to each component's `$props()`, generated files fresh, and token colors equal to `src/app.css`.
+- **Editor engines live in the library**: the Markdown engine is `ui/web/src/lib/markdown/` with the
+  `MarkdownPreview` and `MarkdownEditor` components; the app keeps only glue (`src/lib/markdown/markdownContext.ts`,
+  `viewMode.ts`) and thin views that pass links, settings and keys as props and events. Library code never imports
+  `$lib`. CodeMirror (`CodeEditor`, `DiffView`, `MergeView`) moves the same way next.
 - **Memory is a feature**: lazy-load directories and languages, virtualize long lists, destroy CodeMirror views on unmount, no persistent backend caches, poll only while visible. Check `cargo build --release` size and the status bar memory readout after big changes.
 
 ## Code style (org rules, mandatory)
