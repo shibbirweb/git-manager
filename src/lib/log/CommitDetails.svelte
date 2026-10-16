@@ -4,8 +4,9 @@
   import { errorMessage } from "$lib/api";
   import DiffView from "$lib/diff/DiffView.svelte";
   import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
+  import { MERGE_PANES_TITLE } from "$lib/diff/diffToolbar";
   import { settings } from "$lib/stores/settings.svelte";
-  import { setDiffLayout, showThreeColumns } from "$lib/diff/diffPanes";
+  import { setDiffLayout, showsThreeColumns, showThreeColumns } from "$lib/diff/diffPanes";
   import type { FileDiff } from "$lib/types";
   import Button from "@git-manager/ui/components/Button.svelte";
   import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
@@ -61,7 +62,7 @@
   const textual = (diff: FileDiff) => !diff.binary && !diff.tooLarge && !diff.lfs;
   /** The 3-pane layout fits this file; the toolbar switches between it and the usual diff (Settings > Git). */
   const threeWayFits = $derived(Boolean(shown?.secondParent && textual(shown.diff) && textual(shown.secondParent)));
-  const threeColumns = $derived(settings.diffLayout === "sideBySide" && settings.mergeDiffPanes === "three");
+  const threeColumns = $derived(showsThreeColumns("mergeDiffPanes"));
   const threeWay = $derived(threeWayFits && threeColumns ? shown : null);
   const threeWayLabels = $derived({
     left: `Parent 1: ${(details?.parents[0] ?? "").slice(0, 8)}`,
@@ -245,6 +246,23 @@
           label="Diff of {threeWay.path.split('/').pop()} against both parents"
           onlayout={(layout) => setDiffLayout("mergeDiffPanes", layout)}
           workingFile={{ filePath: joinPath(repoPath, threeWay.path), sameLines: false }}
+          blame={threeWay.diff.modified === ""
+            ? null
+            : {
+                pane: "result",
+                target: {
+                  repoRoot: repoPath,
+                  filePath: threeWay.path,
+                  revision: commitId,
+                  origin: (line) => ({
+                    kind: "log",
+                    repoRoot: repoPath,
+                    commitId,
+                    filePath: threeWay?.path ?? null,
+                    line,
+                  }),
+                },
+              }}
         />
       {/key}
     {:else if shown}
@@ -253,7 +271,9 @@
           diff={shown.diff}
           path={shown.path}
           mode="readonly"
-          onThreePanes={threeWayFits ? () => showThreeColumns("mergeDiffPanes") : null}
+          threePanes={threeWayFits
+            ? { title: MERGE_PANES_TITLE, open: () => showThreeColumns("mergeDiffPanes") }
+            : null}
           leftLabel={shown.parentLabel}
           rightLabel={shown.label}
           blame={shown.diff.modified === ""

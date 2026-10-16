@@ -18,6 +18,8 @@ The staging view is offered for files that are modified, in the index, the worki
 - The bands on the **right** join the index to the working tree: the changes you have not staged yet.
 - Green marks added lines, gray removed lines and blue changed lines.
 
+The toolbar is the same as in every diff. **Blame** shows who wrote each line of the working tree pane.
+
 Scroll any pane and the others follow, so matching lines stay level. **Collapse unchanged** folds the lines that are the same in all three panes, with the wavy fold bars of the [Diffs](Diffs.md) view. **Open File** opens the file itself in an editor tab, at the line you were looking at in the working tree.
 
 ## Stage and unstage

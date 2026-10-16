@@ -16,6 +16,7 @@ import { foldStep, inlineFolds } from "./foldField";
 import type { FoldEdge } from "./foldModel";
 import { fallbackHunks } from "./inlineDoc";
 import { bands } from "./threeWayBands";
+import { paneBlame, startBlame, type ThreeWayBlame, type ThreeWayPane as Pane } from "./threeWayBlame";
 import { diffTheme } from "./mergeExtensions";
 import {
   changeSummary,
@@ -32,8 +33,6 @@ import {
   type ThreeWayOptions,
 } from "./threeWay";
 
-type Pane = ParentSide | "result";
-
 export interface ThreeWayBuild {
   parts: MergeFrameParts;
   /** The left pane (original) against the middle (modified). */
@@ -46,6 +45,7 @@ export interface ThreeWayBuild {
   options?: ThreeWayOptions;
   /** The middle pane's scroll position to start at, after a rebuild (staging a change rebuilds the view). */
   scrollTop?: number | null;
+  blame?: ThreeWayBlame | null;
 }
 
 export class ThreeWayEditors {
@@ -126,6 +126,7 @@ export class ThreeWayEditors {
             navigation,
             geometry,
             foldsOf(name),
+            paneBlame(name, request.blame ?? null),
             this.#mirrorFolds(name),
             EditorView.editable.of(false),
           ],
@@ -141,6 +142,7 @@ export class ThreeWayEditors {
       view.dispatch({ effects: [setSideMarks.of(marksOf[name]), setChangeMarks.of(rulerMarks(marksOf[name]))] });
       view.scrollDOM.addEventListener("scroll", () => this.#follow(name), { passive: true });
     }
+    startBlame(this.#views, request.blame ?? null, left, right);
     this.summary = changeSummary(this.#marks);
     this.changeCount = this.#marks.length;
     const scrollTop = request.scrollTop ?? null;
@@ -274,6 +276,11 @@ export class ThreeWayEditors {
 
   scrollTop(): number | null {
     return this.#views?.result.scrollDOM.scrollTop ?? null;
+  }
+
+  /** One pane's editor, such as the blamed one when the Blame button changes its display. */
+  paneView(name: Pane): EditorView | null {
+    return this.#views?.[name] ?? null;
   }
 
   destroy(): void {

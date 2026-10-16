@@ -1,5 +1,6 @@
-<!-- The bar over a diff: change arrows and count, the layout, Collapse unchanged, Blame, Open File, the line actions
-     of the Changes diff, and the file's name at the end. -->
+<!-- The bar over every diff, two panes, inline or three panes: change arrows and count, the layout, Collapse
+     unchanged, Blame, Open File, the line actions of the Changes diff, and the file's name at the end. One bar for all
+     of them, so a fix or a new button reaches every diff; each view says what it offers. -->
 <script lang="ts">
   import Button from "@git-manager/ui/components/Button.svelte";
   import Divider from "@git-manager/ui/components/Divider.svelte";
@@ -11,51 +12,58 @@
   import { localKeys } from "$lib/commands/commandRuntime";
   import { settings } from "$lib/stores/settings.svelte";
   import type { LineAction } from "$lib/types";
-  import type { DiffEditors } from "./diffEditors.svelte";
   import { lineTitle } from "./diffLineMenu";
+  import { changeCounter } from "./diffToolbar";
   import { diffPrefs } from "./prefs.svelte";
 
+  export type ToolbarLayout = "three" | "sideBySide" | "inline";
+
   interface Props {
-    editors: DiffEditors;
+    /** The changes to step through, and the one picked (-1 for none). */
+    changeCount: number;
+    current: number;
+    /** What the counter says before a change is picked, such as "4 changes, 1 conflict"; null counts the changes. */
+    summary?: string | null;
+    ongo: (direction: 1 | -1) => void;
     /** A text diff with changes: the arrows, layout and collapse work. */
     textDiff: boolean;
-    inline: boolean;
+    layout: ToolbarLayout;
+    /** The Three panes button's tooltip, or null when this file has no three-pane view. */
+    threePanes?: string | null;
+    onlayout: (layout: ToolbarLayout) => void;
+    collapseTitle?: string;
     showBlame: boolean;
     showOpenFile: boolean;
-    lineMode: "unstaged" | "staged" | null;
-    path: string;
     onopenfile: () => void;
-    onlines: (action: LineAction) => void;
-    /** Offers the 3-pane layout (a merge commit's file, or the Changes diff's staging view). */
-    onthreepanes?: (() => void) | null;
+    lineMode?: "unstaged" | "staged" | null;
+    selectedLines?: number;
+    onlines?: (action: LineAction) => void;
+    path: string;
   }
 
   let {
-    editors,
+    changeCount,
+    current,
+    summary = null,
+    ongo,
     textDiff,
-    inline,
+    layout,
+    threePanes = null,
+    onlayout,
+    collapseTitle = "Collapse unchanged fragments",
     showBlame,
     showOpenFile,
-    lineMode,
-    path,
     onopenfile,
+    lineMode = null,
+    selectedLines = 0,
     onlines,
-    onthreepanes = null,
+    path,
   }: Props = $props();
 
   const fileName = $derived(path.split("/").pop() ?? path);
   const directory = $derived(path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
-  const noChunks = $derived(!textDiff || editors.chunkCount === 0);
-  const counterLabel = $derived.by(() => {
-    const count = editors.chunkCount;
-    if (count === 0) {
-      return "No changes";
-    }
-    if (editors.current < 0) {
-      return count === 1 ? "1 change" : `${count} changes`;
-    }
-    return `${editors.current + 1} of ${count}`;
-  });
+  const noChunks = $derived(!textDiff || changeCount === 0);
+  const counterLabel = $derived(changeCounter(changeCount, current, summary));
 </script>
 
 <Toolbar variant="editor" label="Diff" responsive>
@@ -66,7 +74,7 @@
     label="Previous change"
     title="Previous change ({localKeys('Shift+F7')})"
     disabled={noChunks}
-    onclick={() => editors.goToChunk(-1)}
+    onclick={() => ongo(-1)}
   />
   <IconButton
     icon="arrow-down"
@@ -75,19 +83,19 @@
     label="Next change"
     title="Next change ({localKeys('F7')})"
     disabled={noChunks}
-    onclick={() => editors.goToChunk(1)}
+    onclick={() => ongo(1)}
   />
   {#if textDiff}
     <Text tone="dim" size="small" tabular truncate>{counterLabel}</Text>
   {/if}
   <Divider direction="vertical" />
   <Stack direction="row" gap="none" role="group" label="Diff layout">
-    {#if onthreepanes}
+    {#if threePanes}
       <ToggleButton
         icon="split-three"
         label="Three panes"
-        title={lineMode ? "Three panes: HEAD, the index and the work tree" : "Three panes: both parents and the merge"}
-        bind:pressed={() => false, (on) => on && onthreepanes?.()}
+        title={threePanes}
+        bind:pressed={() => layout === "three", (on) => on && onlayout("three")}
       />
     {/if}
     <ToggleButton
@@ -95,21 +103,21 @@
       label="Side by side"
       title="Side by side: old text on the left, new on the right"
       disabled={!textDiff}
-      bind:pressed={() => !inline, (on) => on && settings.setPreference("diffLayout", "sideBySide")}
+      bind:pressed={() => layout === "sideBySide", (on) => on && onlayout("sideBySide")}
     />
     <ToggleButton
       icon="split-rows"
       label="Inline"
       title="Inline: removed lines above the lines that replace them"
       disabled={!textDiff}
-      bind:pressed={() => inline, (on) => on && settings.setPreference("diffLayout", "inline")}
+      bind:pressed={() => layout === "inline", (on) => on && onlayout("inline")}
     />
   </Stack>
   <ToggleButton
     icon="list-tree"
     text="Collapse unchanged"
     label="Collapse unchanged"
-    title="Collapse unchanged fragments"
+    title={collapseTitle}
     disabled={!textDiff}
     bind:pressed={() => diffPrefs.collapseUnchanged, () => diffPrefs.toggleCollapse()}
   />
@@ -140,9 +148,9 @@
         variant="ghost"
         size="small"
         icon="plus"
-        disabled={editors.selectedLines === 0}
+        disabled={selectedLines === 0}
         title={lineTitle("Stage the selected lines, or the change at the cursor", "stage")}
-        onclick={() => onlines("stage")}
+        onclick={() => onlines?.("stage")}
       >
         Stage Lines
       </Button>
@@ -150,9 +158,9 @@
         variant="ghost"
         size="small"
         icon="discard"
-        disabled={editors.selectedLines === 0}
+        disabled={selectedLines === 0}
         title={lineTitle("Discard the selected lines in the work tree", "discard")}
-        onclick={() => onlines("discard")}
+        onclick={() => onlines?.("discard")}
       >
         Discard Lines
       </Button>
@@ -161,9 +169,9 @@
         variant="ghost"
         size="small"
         icon="minus"
-        disabled={editors.selectedLines === 0}
+        disabled={selectedLines === 0}
         title={lineTitle("Unstage the selected lines, or the change at the cursor", "unstage")}
-        onclick={() => onlines("unstage")}
+        onclick={() => onlines?.("unstage")}
       >
         Unstage Lines
       </Button>

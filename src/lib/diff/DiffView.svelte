@@ -53,7 +53,7 @@
      */
     onLines?: ((action: LineAction, selection: LineSelection, wholeChange?: boolean) => void) | null;
     /** Offers the 3-pane layout in the toolbar (a merge commit's file, or the Changes diff's staging view). */
-    onThreePanes?: (() => void) | null;
+    threePanes?: { title: string; open: () => void } | null;
   }
 
   let {
@@ -68,7 +68,7 @@
     workingFile = null,
     previewSides = null,
     onLines = null,
-    onThreePanes = null,
+    threePanes = null,
   }: Props = $props();
 
   const editors = new DiffEditors(() => revealLine);
@@ -172,16 +172,20 @@
 
 <Stack gap="none" grow surface="editor" role="region" label="Diff">
   <DiffToolbar
-    {editors}
+    changeCount={editors.chunkCount}
+    current={editors.current}
+    ongo={(direction) => editors.goToChunk(direction)}
     textDiff={textual && !identical}
-    {inline}
+    layout={inline ? "inline" : "sideBySide"}
+    threePanes={threePanes?.title ?? null}
+    onlayout={(layout) => (layout === "three" ? threePanes?.open() : settings.setPreference("diffLayout", layout))}
     showBlame={blame !== null}
     showOpenFile={workingFile !== null}
     {lineMode}
+    selectedLines={editors.selectedLines}
     {path}
     onopenfile={openFile}
     onlines={runLines}
-    onthreepanes={onThreePanes}
   />
   {#if !textual}
     {#if binaryPreview && previewSides}

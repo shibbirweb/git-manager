@@ -2,8 +2,10 @@
 <script lang="ts">
   import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
-  import { setDiffLayout, showThreeColumns } from "$lib/diff/diffPanes";
+  import type { BlameTarget } from "$lib/editor/blame";
+  import { setDiffLayout, showsThreeColumns, showThreeColumns } from "$lib/diff/diffPanes";
   import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
+  import { STAGING_PANES_TITLE } from "$lib/diff/diffToolbar";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -47,7 +49,7 @@
   // The staging view: HEAD | the index | the work tree, for a plain modified file, when side by side uses 3 columns.
   const staging = new StagingDiffs();
   const stagingFits = $derived(selected ? stagingViewFits(findFile(sections, selected)) : false);
-  const threeColumns = $derived(settings.diffLayout === "sideBySide" && settings.changesDiffPanes === "three");
+  const threeColumns = $derived(showsThreeColumns("changesDiffPanes"));
   const stagingOn = $derived(Boolean(selected) && stagingFits && threeColumns);
   const stagingKey = $derived(selected ? `${selected.repoRoot}\u0000${selected.path}` : null);
   $effect(() => {
@@ -60,6 +62,21 @@
     void repoStore.statuses[current.repoRoot];
     void repoStore.fileVersions[current.repoRoot];
     untrack(() => void staging.load(current.repoRoot, current.path));
+  });
+
+  /** Blame of the work tree text; a clicked line goes back to this diff. */
+  const blameTarget = $derived.by((): BlameTarget | null => {
+    const current = selected;
+    if (!current) {
+      return null;
+    }
+    const { repoRoot, path, area } = current;
+    return {
+      repoRoot,
+      filePath: path,
+      revision: null,
+      origin: (line) => ({ kind: "diff", repoRoot, path, area, line }),
+    };
   });
 
   /** Bumped when the repository's status changes, so a binary preview loads its files again. */
@@ -118,6 +135,7 @@
           )}
         onlayout={(layout) => setDiffLayout("changesDiffPanes", layout)}
         workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: true }}
+        blame={blameTarget ? { target: blameTarget, pane: "right" } : null}
       />
     {/key}
   {:else if selected && changesSelection.diff}
@@ -130,22 +148,11 @@
       onChange={(target, content) => changesSelection.applyDiffChange(target, content)}
       onLines={(action, lineSelection, wholeChange) =>
         void changesSelection.applyLines(action, lineSelection, wholeChange)}
-      blame={{
-        repoRoot: selected.repoRoot,
-        filePath: selected.path,
-        revision: null,
-        origin: (line) => ({
-          kind: "diff",
-          repoRoot: selected.repoRoot,
-          path: selected.path,
-          area: selected.area,
-          line,
-        }),
-      }}
+      blame={blameTarget}
       revealLine={reveal}
       workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
       {previewSides}
-      onThreePanes={stagingFits ? () => showThreeColumns("changesDiffPanes") : null}
+      threePanes={stagingFits ? { title: STAGING_PANES_TITLE, open: () => showThreeColumns("changesDiffPanes") } : null}
     />
   {:else if selected && changesSelection.diffError}
     <EmptyState titleTone="danger" strong title="Could not load the diff" hint={changesSelection.diffError} />

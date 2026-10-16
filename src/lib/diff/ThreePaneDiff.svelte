@@ -1,21 +1,19 @@
 <!-- A file in three read-only panes, like JetBrains IDEs: a merge commit's parent 1, merge result and parent 2, or the
      staging view's HEAD, index and work tree, with bands joining each side's changes to the middle. With `onapply`
      the bands carry arrows that take a change into the middle (stage or unstage); with `workingFile`, Open File
-     opens the real file. threeWayEditors.svelte.ts builds the editors. -->
+     opens the real file; with `blame`, Blame shows who wrote each line of one pane. threeWayEditors.svelte.ts builds
+     the editors, and the toolbar is the same DiffToolbar as every other diff. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
   import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
   import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
-  import { localKeys } from "$lib/commands/commandRuntime";
-  import type { DiffLayout } from "$lib/stores/settings.svelte";
+  import { setBlameDisplay } from "$lib/editor/blame";
+  import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
   import type { FileDiff } from "$lib/types";
+  import DiffToolbar from "./DiffToolbar.svelte";
   import { openWorkingFile } from "./openWorkingFile";
   import { diffPrefs } from "./prefs.svelte";
   import type { ParentSide, ThreeWayOptions } from "./threeWay";
+  import type { ThreeWayBlame } from "./threeWayBlame";
   import { ThreeWayEditors } from "./threeWayEditors.svelte";
 
   interface Props {
@@ -35,6 +33,8 @@
     onlayout: (layout: DiffLayout) => void;
     /** The file in the work tree (absolute path), for Open File; `sameLines` when the right pane is the work tree. */
     workingFile?: { filePath: string; sameLines: boolean } | null;
+    /** Who wrote each line of one pane: the work tree in the staging view, the merge result for a merge commit. */
+    blame?: ThreeWayBlame | null;
   }
 
   let {
@@ -48,20 +48,21 @@
     applyTitles = null,
     onlayout,
     workingFile = null,
+    blame = null,
   }: Props = $props();
 
   const editors = new ThreeWayEditors();
   /** The middle pane's place when new texts rebuild the panes (after staging a change). */
   let keptScroll: number | null = null;
-  const fileName = $derived(path.split("/").pop() ?? path);
-  const directory = $derived(path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
-  const counter = $derived(
-    editors.changeCount === 0
-      ? "No changes"
-      : editors.current < 0
-        ? editors.summary
-        : `${editors.current + 1} of ${editors.changeCount}`,
-  );
+
+  // The Blame button and the current line blame setting reach the open panes as they change.
+  $effect(() => {
+    const display = { inline: settings.currentLineBlame, gutter: settings.blameGutter };
+    const view = blame ? editors.paneView(blame.pane) : null;
+    if (view) {
+      setBlameDisplay(view, display);
+    }
+  });
 
   /** Opens the real file in an editor tab, at the right pane's line when that pane is the work tree. */
   function openFile(): void {
@@ -79,74 +80,21 @@
 </script>
 
 <Stack grow gap="none">
-  <Toolbar variant="editor" label="Diff" responsive>
-    <IconButton
-      icon="arrow-up"
-      iconSize="normal"
-      size="compact"
-      label="Previous change"
-      title="Previous change ({localKeys('Shift+F7')})"
-      disabled={editors.changeCount === 0}
-      onclick={() => editors.goToChange(-1)}
-    />
-    <IconButton
-      icon="arrow-down"
-      iconSize="normal"
-      size="compact"
-      label="Next change"
-      title="Next change ({localKeys('F7')})"
-      disabled={editors.changeCount === 0}
-      onclick={() => editors.goToChange(1)}
-    />
-    <Text tone="dim" size="small" tabular truncate>{counter}</Text>
-    <Stack direction="row" gap="none" role="group" label="Diff layout">
-      <ToggleButton
-        icon="split-three"
-        label="Three panes"
-        title="Three panes: {labels.left}, {labels.result} and {labels.right}"
-        bind:pressed={() => true, () => undefined}
-      />
-      <ToggleButton
-        icon="split-view"
-        label="Side by side"
-        title="Side by side: two panes"
-        bind:pressed={() => false, (on) => on && onlayout("sideBySide")}
-      />
-      <ToggleButton
-        icon="split-rows"
-        label="Inline"
-        title="Inline: removed lines above the lines that replace them"
-        bind:pressed={() => false, (on) => on && onlayout("inline")}
-      />
-    </Stack>
-    <ToggleButton
-      icon="list-tree"
-      text="Collapse unchanged"
-      label="Collapse unchanged"
-      title="Collapse the lines that match on every side"
-      bind:pressed={() => diffPrefs.collapseUnchanged, () => diffPrefs.toggleCollapse()}
-    />
-    {#if workingFile}
-      <Button
-        variant="ghost"
-        size="small"
-        icon="external-link"
-        title="Open the file itself in an editor tab"
-        onclick={openFile}
-      >
-        Open File
-      </Button>
-    {/if}
-    {#snippet end()}
-      <Stack direction="row" gap="sm" shrink="first" align="baseline">
-        <Text tone="dim" size="small" truncate hideAt="compact">{editors.summary}</Text>
-        <Text truncate giveWay size="small" weight="semibold" title={path}>{fileName}</Text>
-        {#if directory}
-          <Text truncate giveWay tone="dim" size="small" hideAt="compact">{directory}</Text>
-        {/if}
-      </Stack>
-    {/snippet}
-  </Toolbar>
+  <DiffToolbar
+    changeCount={editors.changeCount}
+    current={editors.current}
+    summary={editors.summary}
+    ongo={(direction) => editors.goToChange(direction)}
+    textDiff
+    layout="three"
+    threePanes="Three panes: {labels.left}, {labels.result} and {labels.right}"
+    onlayout={(layout) => layout !== "three" && onlayout(layout)}
+    collapseTitle="Collapse the lines that match on every side"
+    showBlame={blame !== null}
+    showOpenFile={workingFile !== null}
+    onopenfile={openFile}
+    {path}
+  />
   {#key diffPrefs.collapseUnchanged}
     {#key left}
       {#key right}
@@ -159,7 +107,7 @@
           {applyTitles}
           onready={(parts) => {
             const collapse = diffPrefs.collapseUnchanged;
-            void editors.build({ parts, left, right, path, collapse, options, scrollTop: keptScroll });
+            void editors.build({ parts, left, right, path, collapse, options, scrollTop: keptScroll, blame });
             return () => {
               keptScroll = editors.scrollTop();
               editors.destroy();

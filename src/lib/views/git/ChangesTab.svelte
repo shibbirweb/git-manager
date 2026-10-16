@@ -6,8 +6,9 @@
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
-  import { setDiffLayout, showThreeColumns } from "$lib/diff/diffPanes";
+  import { setDiffLayout, showsThreeColumns, showThreeColumns } from "$lib/diff/diffPanes";
   import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
+  import { STAGING_PANES_TITLE } from "$lib/diff/diffToolbar";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { MIN_CHANGES_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
@@ -88,9 +89,7 @@
   // The staging view of a plain modified file, on the same Three panes setting as the Changes diff.
   const staging = new StagingDiffs();
   const stagingFits = $derived(selected ? stagingViewFits(selected.status) : false);
-  const stagingOn = $derived(
-    stagingFits && settings.diffLayout === "sideBySide" && settings.changesDiffPanes === "three",
-  );
+  const stagingOn = $derived(stagingFits && showsThreeColumns("changesDiffPanes"));
   const stagingKey = $derived(selected ? `${repoRoot}\u0000${selected.path}` : null);
   $effect(() => {
     const file = selected;
@@ -105,7 +104,6 @@
   });
 
   let stageQueue: Promise<unknown> = Promise.resolve();
-
   /** Writes the index pane's new text; serialized so rapid clicks reach the index in order. */
   function applyToIndex(content: string, side: "left" | "right"): void {
     const [filePath, staged] = [selected?.path, staging.staged];
@@ -189,6 +187,7 @@
           onapply={applyToIndex}
           onlayout={(layout) => setDiffLayout("changesDiffPanes", layout)}
           workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: true }}
+          blame={{ target: { repoRoot, filePath: selected.path, revision: null }, pane: "right" }}
         />
       {/key}
     {:else if result}
@@ -203,7 +202,10 @@
             ? null
             : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
           {previewSides}
-          onThreePanes={stagingFits ? () => showThreeColumns("changesDiffPanes") : null}
+          blame={selected.kind === "deleted" ? null : { repoRoot, filePath: selected.path, revision: null }}
+          threePanes={stagingFits
+            ? { title: STAGING_PANES_TITLE, open: () => showThreeColumns("changesDiffPanes") }
+            : null}
         />
       {/key}
     {:else}

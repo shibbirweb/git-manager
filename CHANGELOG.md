@@ -145,6 +145,7 @@ GitHub release notes, and the app shows it as "What's New".
 ### Changed
 
 - Side by side diffs use VS Code and GitLens colors: changed lines soft red on the old side and green on the new, changed words in a stronger red or green, and bands that fade from red to green.
+- Every diff has the same toolbar: three panes now offer **Blame** (the working tree in the staging view, the merge result for a merge commit) and match the two-pane bar.
 - Inline diffs color each line like GitLens: removed lines a soft red and added lines green, also inside a changed block, with the changed words in a stronger red or green. Side by side keeps its colors.
 - The Welcome screen's recent projects show the hand cursor, like links.
 - With Rounded panels, a thin line separates the editor tabs from the code, like PhpStorm (it was invisible in dark themes).

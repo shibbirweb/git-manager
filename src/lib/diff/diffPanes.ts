@@ -16,3 +16,8 @@ export function showThreeColumns(panesKey: PanesKey): void {
   settings.setPreference("diffLayout", "sideBySide");
   settings.setPreference(panesKey, "three");
 }
+
+/** The 3-column layout is on for this view: side by side, with 3 columns picked. */
+export function showsThreeColumns(panesKey: PanesKey): boolean {
+  return settings.diffLayout === "sideBySide" && settings[panesKey] === "three";
+}
