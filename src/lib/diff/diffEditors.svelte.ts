@@ -15,7 +15,7 @@ import { newLineOnScreen, revealChange, revealNewLine, rulerMarks, selectedLines
 import { inlineEditor, splitEditors } from "./diffViews";
 import type { InlineDoc } from "./inlineDoc";
 import { type DiffSide, selectionSize } from "./lineSelection";
-import { chunkKinds, diffTheme } from "./mergeExtensions";
+import { chunkKinds, diffTheme, sideColors } from "./mergeExtensions";
 import { chunkSelection } from "./revertChange";
 import { SplitLink } from "./splitLink";
 
@@ -169,6 +169,7 @@ export class DiffEditors {
         extensions: [
           language,
           diffTheme,
+          sideColors,
           chunkKinds,
           navigation,
           geometry,

@@ -17,9 +17,9 @@ The highlighted button is the layout in use, and both places change the same set
 
 ## Reading an inline diff
 
-- The colors are the same as side by side: added lines are green, removed lines are grey, and a changed block (old lines followed by their new lines) is blue.
-- Right before the text, a red **-** marks a removed line and a green **+** an added line, like `git diff` and GitLens. In a blue changed block, where old and new lines share one color, the signs tell them apart.
-- Inside a changed block, the exact words that changed are highlighted, in the old lines and in the new ones.
+- Each line has its own color, like GitLens: removed lines are a soft red and added lines green, also inside a changed block (old lines followed by their new lines).
+- Right before the text, a red **-** marks a removed line and a green **+** an added line, like `git diff` and GitLens.
+- Inside a changed block, the exact words that changed are a stronger red in the old lines and a stronger green in the new ones.
 - Two columns of line numbers sit on the left: the old version's number, then the new version's. A removed line has only an old number, an added line only a new one.
 - The label above the diff names both versions, such as **Index** and **Working Tree**, with an arrow between them.
 

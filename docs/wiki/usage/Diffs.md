@@ -26,8 +26,7 @@ To see both versions in one column instead, click **Inline** in the toolbar. See
 
 ## Reading the diff
 
-- New lines are green on the right, changed lines are blue on both sides, and lines that were only removed are grey on the left.
-- Inside a changed line, the exact words that changed are highlighted.
+- Like VS Code and GitLens, old lines are soft red on the left and new lines green on the right, and the changed words are stronger.
 - The strip next to the scrollbar has a tick for every change. Click a tick to jump there.
 
 ## Move between changes

@@ -25,6 +25,8 @@ a find bar container per side; labels, find bars and editors share `ratio`. Diff
 - `applyTitle` (`string | null`, default `null`): The arrow's tooltip.
 - `onrevert` (`(index: number) => void`): Shows a revert button on each band, such as Revert this change.
 - `revertTitle` (`string | null`, default `null`): The revert button's tooltip.
+- `colors` (`"kinds" | "sides"`, default `"kinds"`): Ribbons by kind of change, or red to green from the old side to the
+  new.
 - `ruler` (`boolean`, default `false`): Room for a change overview ruler at the right of one editor.
 - `ratio` (`number`, default `0.5`, bindable): The split between the sides; drag the handle to change it.
 - `oncommitratio` (`(ratio: number) => void`): A drag or a key ended: save the ratio.

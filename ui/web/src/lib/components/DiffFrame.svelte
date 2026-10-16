@@ -30,6 +30,8 @@
     applyTitle?: string | null;
     onrevert?: (index: number) => void;
     revertTitle?: string | null;
+    /** The ribbons: by kind of change, or red to green from the old side to the new (VS Code, GitLens). */
+    colors?: "kinds" | "sides";
     ruler?: boolean;
     ratio?: number;
     oncommitratio?: (ratio: number) => void;
@@ -47,6 +49,7 @@
     applyTitle = null,
     onrevert,
     revertTitle = null,
+    colors = "kinds",
     ruler = false,
     ratio = $bindable(0.5),
     oncommitratio,
@@ -96,7 +99,7 @@
   <div class="body" class:ruler class:connected bind:this={body} {oncontextmenu}>
     {#if connected && ribbons}
       <div class="connector" style:left="calc((100% - {gutter}px) * {ratio})">
-        <MergeConnector {ribbons} side={applySide} {onapply} {applyTitle} {onrevert} {revertTitle} />
+        <MergeConnector {ribbons} side={applySide} {onapply} {applyTitle} {onrevert} {revertTitle} {colors} />
       </div>
     {/if}
     {#if layout === "split"}

@@ -52,6 +52,9 @@
   --diff-conflict: rgba(229, 87, 101, 0.15);
   --diff-conflict-edge: #e06c78;
   --diff-inline: rgba(53, 116, 240, 0.28);
+  --diff-removed: rgba(229, 83, 75, 0.13);
+  --diff-removed-word: rgba(229, 83, 75, 0.3);
+  --diff-added-word: rgba(76, 175, 80, 0.34);
   --tok-keyword: #0033b3;
   --tok-string: #067d17;
   --tok-number: #1750eb;
@@ -123,6 +126,9 @@
   --diff-conflict: rgba(229, 87, 101, 0.2);
   --diff-conflict-edge: #b8505b;
   --diff-inline: rgba(80, 140, 255, 0.35);
+  --diff-removed: rgba(232, 92, 85, 0.18);
+  --diff-removed-word: rgba(232, 92, 85, 0.36);
+  --diff-added-word: rgba(84, 170, 84, 0.4);
   --tok-keyword: #cf8e6d;
   --tok-string: #6aab73;
   --tok-number: #2aacb8;
@@ -195,6 +201,9 @@
     --diff-conflict: rgba(229, 87, 101, 0.2);
     --diff-conflict-edge: #b8505b;
     --diff-inline: rgba(80, 140, 255, 0.35);
+    --diff-removed: rgba(232, 92, 85, 0.18);
+    --diff-removed-word: rgba(232, 92, 85, 0.36);
+    --diff-added-word: rgba(84, 170, 84, 0.4);
     --tok-keyword: #cf8e6d;
     --tok-string: #6aab73;
     --tok-number: #2aacb8;

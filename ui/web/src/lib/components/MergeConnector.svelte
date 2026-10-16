@@ -1,7 +1,8 @@
 <!-- The column between two merge or diff panes: a ribbon per chunk joining its lines on both sides, and the chunk's
      buttons (apply its side's change, ignore it, or revert it in its own pane) at its top, kept inside the column
      while any of the chunk shows. Each button shows only with its handler, so a read-only diff draws ribbons alone.
-     The app measures; this draws. -->
+     Ribbons take their chunk's kind color, or with `colors="sides"` fade from the old side's red to the new side's
+     green, like VS Code and GitLens. The app measures; this draws. -->
 <script lang="ts">
   import type { ChunkKind } from "../logic/mergeGeometry";
   import { ribbonPath } from "../logic/mergeGeometry";
@@ -27,9 +28,22 @@
     onrevert?: (index: number) => void;
     applyTitle?: string | null;
     revertTitle?: string | null;
+    colors?: "kinds" | "sides";
   }
 
-  let { ribbons, side, onapply, onignore, onrevert, applyTitle = null, revertTitle = null }: Props = $props();
+  let {
+    ribbons,
+    side,
+    onapply,
+    onignore,
+    onrevert,
+    applyTitle = null,
+    revertTitle = null,
+    colors = "kinds",
+  }: Props = $props();
+
+  /** Unique per connector, so the gradients of several diffs on screen never mix. */
+  const gradient = $props.id();
 
   const width = componentTokens.mergeView.gap;
   const { buttonHeight, buttonInset } = componentTokens.mergeView;
@@ -46,10 +60,24 @@
 
 <div class="connector" bind:clientHeight={height}>
   <svg {width} aria-hidden="true">
+    {#if colors === "sides"}
+      <defs>
+        <linearGradient id="{gradient}-fill">
+          <stop offset="0" class="old-fill" />
+          <stop offset="1" class="new-fill" />
+        </linearGradient>
+        <linearGradient id="{gradient}-edge">
+          <stop offset="0" class="old-edge" />
+          <stop offset="1" class="new-edge" />
+        </linearGradient>
+      </defs>
+    {/if}
     {#each ribbons as ribbon (ribbon.index)}
       <path
-        class="ribbon {ribbon.kind}"
+        class="ribbon {colors === 'sides' ? '' : ribbon.kind}"
         d={ribbonPath(ribbon.aTop, ribbon.aBottom, ribbon.bTop, ribbon.bBottom, width)}
+        fill={colors === "sides" ? `url(#${gradient}-fill)` : undefined}
+        stroke={colors === "sides" ? `url(#${gradient}-edge)` : undefined}
       />
     {/each}
   </svg>
@@ -112,6 +140,22 @@
 
   .ribbon {
     stroke-width: 1;
+  }
+
+  .old-fill {
+    stop-color: var(--diff-removed);
+  }
+
+  .new-fill {
+    stop-color: var(--diff-added);
+  }
+
+  .old-edge {
+    stop-color: var(--danger);
+  }
+
+  .new-edge {
+    stop-color: var(--diff-added-edge);
   }
 
   .modified {

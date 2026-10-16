@@ -23,6 +23,8 @@ the column while any of the chunk shows, and each shows only with its handler.
 - `onrevert` (`(index: number) => void`): Revert a chunk in the buttons' own pane.
 - `applyTitle` (`string | null`, default `null`): The apply button's tooltip, such as Stage this change.
 - `revertTitle` (`string | null`, default `null`): The revert button's tooltip, such as Revert this change.
+- `colors` (`"kinds" | "sides"`, default `"kinds"`): Ribbons by kind of change, or red to green from the old side to the
+  new.
 
 ## Example: Between panes
 

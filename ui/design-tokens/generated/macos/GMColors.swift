@@ -128,6 +128,12 @@ public enum GMColor {
         gmLight: GMRGBA(224, 108, 120, 1), dark: GMRGBA(184, 80, 91, 1))
     public static let diffInline = Color(
         gmLight: GMRGBA(53, 116, 240, 0.28), dark: GMRGBA(80, 140, 255, 0.35))
+    public static let diffRemoved = Color(
+        gmLight: GMRGBA(229, 83, 75, 0.13), dark: GMRGBA(232, 92, 85, 0.18))
+    public static let diffRemovedWord = Color(
+        gmLight: GMRGBA(229, 83, 75, 0.3), dark: GMRGBA(232, 92, 85, 0.36))
+    public static let diffAddedWord = Color(
+        gmLight: GMRGBA(76, 175, 80, 0.34), dark: GMRGBA(84, 170, 84, 0.4))
     public static let tokKeyword = Color(
         gmLight: GMRGBA(0, 51, 179, 1), dark: GMRGBA(207, 142, 109, 1))
     public static let tokString = Color(

@@ -1,4 +1,4 @@
-// The inline diff's look: line colors by kind of change, changed words, the number, sign and button columns.
+// The inline diff's look: removed lines soft red and added lines green (GitLens style), changed words, the number, sign and button columns.
 
 import { EditorView } from "@codemirror/view";
 
@@ -6,15 +6,17 @@ export const inlineTheme = EditorView.theme({
   ".cm-content .cm-line.cm-inlineAdded": {
     backgroundColor: "var(--diff-added)",
   },
-  ".cm-content .cm-line.cm-inlineDeleted": {
-    backgroundColor: "var(--diff-deleted)",
-  },
-  ".cm-content .cm-line.cm-inlineModified": {
-    backgroundColor: "var(--diff-modified)",
+  ".cm-content .cm-line.cm-inlineRemoved": {
+    backgroundColor: "var(--diff-removed)",
   },
   ".cm-content .cm-changedText": {
-    background: "var(--diff-inline)",
     borderRadius: "2px",
+  },
+  ".cm-content .cm-changedText-removed": {
+    background: "var(--diff-removed-word)",
+  },
+  ".cm-content .cm-changedText-added": {
+    background: "var(--diff-added-word)",
   },
   ".cm-lineNumbers.cm-inlineNumbers .cm-gutterElement": {
     padding: "0 6px 0 8px",
@@ -23,11 +25,8 @@ export const inlineTheme = EditorView.theme({
   ".cm-gutterElement.cm-inlineGutter-added": {
     backgroundColor: "var(--diff-added)",
   },
-  ".cm-gutterElement.cm-inlineGutter-deleted": {
-    backgroundColor: "var(--diff-deleted)",
-  },
-  ".cm-gutterElement.cm-inlineGutter-modified": {
-    backgroundColor: "var(--diff-modified)",
+  ".cm-gutterElement.cm-inlineGutter-removed": {
+    backgroundColor: "var(--diff-removed)",
   },
   ".cm-inlineSigns .cm-gutterElement": {
     padding: "0 4px",

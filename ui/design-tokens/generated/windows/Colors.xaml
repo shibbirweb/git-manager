@@ -56,6 +56,9 @@
             <Color x:Key="GmDiffConflict">#26E55765</Color>
             <Color x:Key="GmDiffConflictEdge">#FFE06C78</Color>
             <Color x:Key="GmDiffInline">#473574F0</Color>
+            <Color x:Key="GmDiffRemoved">#21E5534B</Color>
+            <Color x:Key="GmDiffRemovedWord">#4DE5534B</Color>
+            <Color x:Key="GmDiffAddedWord">#574CAF50</Color>
             <Color x:Key="GmTokKeyword">#FF0033B3</Color>
             <Color x:Key="GmTokString">#FF067D17</Color>
             <Color x:Key="GmTokNumber">#FF1750EB</Color>
@@ -130,6 +133,9 @@
             <Color x:Key="GmDiffConflict">#33E55765</Color>
             <Color x:Key="GmDiffConflictEdge">#FFB8505B</Color>
             <Color x:Key="GmDiffInline">#59508CFF</Color>
+            <Color x:Key="GmDiffRemoved">#2EE85C55</Color>
+            <Color x:Key="GmDiffRemovedWord">#5CE85C55</Color>
+            <Color x:Key="GmDiffAddedWord">#6654AA54</Color>
             <Color x:Key="GmTokKeyword">#FFCF8E6D</Color>
             <Color x:Key="GmTokString">#FF6AAB73</Color>
             <Color x:Key="GmTokNumber">#FF2AACB8</Color>

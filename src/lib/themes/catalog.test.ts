@@ -135,7 +135,16 @@ describe.each(THEME_INDEX.map((theme) => [theme.name, theme] as const))("%s", (_
   });
 
   it("has diff tints that stand out and keep text readable", () => {
-    for (const token of ["--diff-added", "--diff-deleted", "--diff-modified", "--diff-conflict"] as const) {
+    const tints = [
+      "--diff-added",
+      "--diff-deleted",
+      "--diff-modified",
+      "--diff-conflict",
+      "--diff-removed",
+      "--diff-removed-word",
+      "--diff-added-word",
+    ] as const;
+    for (const token of tints) {
       expect(colorDistance(colors[token], editorBg, editorBg), token).toBeGreaterThanOrEqual(5);
       expect(contrastRatio(text, composite(colors[token], editorBg)), token).toBeGreaterThanOrEqual(4.5);
     }

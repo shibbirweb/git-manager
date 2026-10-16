@@ -1,5 +1,5 @@
-// CodeMirror glue for the inline diff (the document and its logic live in inlineDoc.ts): line
-// colors by kind of change, changed words, the old and new number columns, a Stage or Unstage
+// CodeMirror glue for the inline diff (the document and its logic live in inlineDoc.ts): each
+// line colored by its own change like GitLens (removed lines soft red, added lines green), changed words, the old and new number columns, a Stage or Unstage
 // button per change (with Revert next to Stage), a - or + before each removed or added line, and
 // folded runs of unchanged lines.
 
@@ -22,35 +22,27 @@ export interface InlineViewOptions {
   onRevert: ((block: InlineBlock) => void) | null;
 }
 
-type BlockKind = "added" | "deleted" | "modified";
+/** A changed line's color: removed lines red and added lines green, also inside a modified change. */
+type LineTint = "removed" | "added";
 
-function blockKind(block: InlineBlock): BlockKind {
-  if (block.split === block.from) {
-    return "added";
-  }
-  return block.split === block.to ? "deleted" : "modified";
+/** The color per document line, null for unchanged lines. */
+function lineKinds(doc: InlineDoc): (LineTint | null)[] {
+  return doc.lines.map((line) => {
+    const sign = lineSign(line);
+    return sign === "-" ? "removed" : sign === "+" ? "added" : null;
+  });
 }
 
-/** The kind of change per document line, null for unchanged lines. */
-function lineKinds(doc: InlineDoc): (BlockKind | null)[] {
-  const kinds: (BlockKind | null)[] = new Array<BlockKind | null>(doc.lines.length).fill(null);
-  for (const block of doc.blocks) {
-    const kind = blockKind(block);
-    for (let line = block.from; line < block.to; line++) {
-      kinds[line] = kind;
-    }
-  }
-  return kinds;
-}
-
-const lineClass: Record<BlockKind, Decoration> = {
+const lineClass: Record<LineTint, Decoration> = {
+  removed: Decoration.line({ class: "cm-inlineRemoved" }),
   added: Decoration.line({ class: "cm-inlineAdded" }),
-  deleted: Decoration.line({ class: "cm-inlineDeleted" }),
-  modified: Decoration.line({ class: "cm-inlineModified" }),
 };
-const changedWord = Decoration.mark({ class: "cm-changedText" });
+const changedWord: Record<LineTint, Decoration> = {
+  removed: Decoration.mark({ class: "cm-changedText cm-changedText-removed" }),
+  added: Decoration.mark({ class: "cm-changedText cm-changedText-added" }),
+};
 
-function changeDecorations(state: EditorState, doc: InlineDoc, kinds: readonly (BlockKind | null)[]): DecorationSet {
+function changeDecorations(state: EditorState, doc: InlineDoc, kinds: readonly (LineTint | null)[]): DecorationSet {
   const ranges: Range<Decoration>[] = [];
   kinds.forEach((kind, index) => {
     if (kind && index < state.doc.lines) {
@@ -58,8 +50,9 @@ function changeDecorations(state: EditorState, doc: InlineDoc, kinds: readonly (
     }
   });
   for (const mark of inlineWordMarks(doc)) {
-    if (mark.to <= state.doc.length) {
-      ranges.push(changedWord.range(mark.from, mark.to));
+    const kind = mark.to <= state.doc.length ? kinds[state.doc.lineAt(mark.from).number - 1] : null;
+    if (kind) {
+      ranges.push(changedWord[kind].range(mark.from, mark.to));
     }
   }
   return Decoration.set(ranges, true);
@@ -68,7 +61,7 @@ function changeDecorations(state: EditorState, doc: InlineDoc, kinds: readonly (
 class NumberMarker extends GutterMarker {
   constructor(
     readonly text: string,
-    readonly kind: BlockKind | null,
+    readonly kind: LineTint | null,
   ) {
     super();
     this.elementClass = kind ? `cm-inlineGutter-${kind}` : "";
@@ -83,7 +76,7 @@ class NumberMarker extends GutterMarker {
   }
 }
 
-function numberGutter(side: "old" | "new", doc: InlineDoc, kinds: readonly (BlockKind | null)[]): Extension {
+function numberGutter(side: "old" | "new", doc: InlineDoc, kinds: readonly (LineTint | null)[]): Extension {
   let largest = 1;
   for (const line of doc.lines) {
     largest = Math.max(largest, (side === "old" ? (line.old ?? 0) : (line.new ?? 0)) + 1);
@@ -105,7 +98,7 @@ function numberGutter(side: "old" | "new", doc: InlineDoc, kinds: readonly (Bloc
 class SignMarker extends GutterMarker {
   constructor(
     readonly sign: "-" | "+" | "",
-    readonly kind: BlockKind | null,
+    readonly kind: LineTint | null,
   ) {
     super();
     const signClass = this.sign === "-" ? " cm-inlineSign-removed" : this.sign === "+" ? " cm-inlineSign-added" : "";
@@ -125,9 +118,9 @@ class SignMarker extends GutterMarker {
  * The - and + column right before the text, like git and GitLens print them, so removed and added lines stay apart
  * where a modified change colors them alike. Its band continues the number columns' change colors.
  */
-function signGutter(doc: InlineDoc, kinds: readonly (BlockKind | null)[]): Extension {
+function signGutter(doc: InlineDoc, kinds: readonly (LineTint | null)[]): Extension {
   const markers = new Map<string, SignMarker>();
-  const markerFor = (sign: "-" | "+" | "", kind: BlockKind | null): SignMarker => {
+  const markerFor = (sign: "-" | "+" | "", kind: LineTint | null): SignMarker => {
     const key = `${sign}${kind ?? ""}`;
     let marker = markers.get(key);
     if (!marker) {

@@ -2652,7 +2652,7 @@ define(
       .getByRole("region", { name: "Changes" })
       .getByText("cart.ts")
       .click();
-    await shot.page.locator("[aria-label='Diff'] .cm-inlineDiff .cm-inlineModified").first().waitFor();
+    await shot.page.locator("[aria-label='Diff'] .cm-inlineDiff .cm-inlineRemoved").first().waitFor();
     await shot.settle(500);
     const view = shot.page.getByRole("region", { name: "Diff", exact: true }).first();
     const box = await view.boundingBox();

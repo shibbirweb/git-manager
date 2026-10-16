@@ -51,6 +51,9 @@
 @define-color gm_diff_conflict rgba(229, 87, 101, 0.2);
 @define-color gm_diff_conflict_edge #b8505b;
 @define-color gm_diff_inline rgba(80, 140, 255, 0.35);
+@define-color gm_diff_removed rgba(232, 92, 85, 0.18);
+@define-color gm_diff_removed_word rgba(232, 92, 85, 0.36);
+@define-color gm_diff_added_word rgba(84, 170, 84, 0.4);
 @define-color gm_tok_keyword #cf8e6d;
 @define-color gm_tok_string #6aab73;
 @define-color gm_tok_number #2aacb8;
