@@ -16,6 +16,7 @@
             <Color x:Key="GmAccent">#FF3574F0</Color>
             <Color x:Key="GmAccentHover">#FF2D66D9</Color>
             <Color x:Key="GmAccentText">#FFFFFFFF</Color>
+            <Color x:Key="GmAvatarText">#FFFFFFFF</Color>
             <Color x:Key="GmHover">#FFECEEF2</Color>
             <Color x:Key="GmSelected">#FFD4E2FF</Color>
             <Color x:Key="GmSelectedInactive">#FFE4E6EB</Color>
@@ -89,6 +90,7 @@
             <Color x:Key="GmAccent">#FF3574F0</Color>
             <Color x:Key="GmAccentHover">#FF2D66D9</Color>
             <Color x:Key="GmAccentText">#FFFFFFFF</Color>
+            <Color x:Key="GmAvatarText">#FFFFFFFF</Color>
             <Color x:Key="GmHover">#FF393B40</Color>
             <Color x:Key="GmSelected">#FF2E436E</Color>
             <Color x:Key="GmSelectedInactive">#FF393B40</Color>

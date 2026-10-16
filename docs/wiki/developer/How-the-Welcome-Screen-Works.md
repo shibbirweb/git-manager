@@ -74,10 +74,16 @@ Customize calls the same settings methods as the Settings window (`setTheme`, `s
 - **Why it happened:** `align-items: center` on a `100vh` screen with `overflow: hidden` pushes a taller card past both edges.
 - **The fix and why we chose it:** the card centered with `margin: auto` and let its lists scroll. The JetBrains layout keeps the idea: the screen is the window's height, and only the project list and the Customize and Learn pages scroll.
 
+**The project badges had dark letters on dark tiles.**
+- **The issue:** in Islands Light the initials on the colored tiles were black and hard to read.
+- **Why it happened:** `Avatar` used `--accent-text`, which a theme picks for its accent color. A light accent gets black text, but the tiles are their own deep palette colors.
+- **The fix and why we chose it:** a new `--avatar-text` token. Each theme picks white or black, whichever reads better on the worst of its five tile colors (`themes/catalog.ts`); the default themes use white. One color per theme keeps the CSS simple, and a test checks it on every theme.
+
 ## Tests
 
 - `src/lib/views/welcomeModel.test.ts`: initials, stable badge colors, keys, paths and subtitles, search and the arrow keys.
 - `src/lib/views/recentEntries.test.ts`: the order of the recent list.
+- `src/lib/themes/catalog.test.ts`: the badge letters read on every theme's tile colors (at least 2.9:1; Rose Pine's pale green is the limit).
 
 The look of the pages and the badges in each theme need a visual check in the app.
 

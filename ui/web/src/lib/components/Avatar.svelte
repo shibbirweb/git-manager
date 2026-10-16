@@ -44,6 +44,12 @@
     background: var(--accent);
   }
 
+  /* Palette tiles have their own letter color: the theme's accent text is picked for the accent and could be black
+     on a deep tile. Each theme picks white or black for the five tile colors (themes/catalog.ts). */
+  .tile:not(.accent) {
+    color: var(--avatar-text);
+  }
+
   /* Palette colors shade a terminal color from bright to deep, so the palette follows the color theme; the deep
      color under the gradient is what contrast checks read. */
   .blue {

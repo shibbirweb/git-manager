@@ -184,6 +184,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The initials on the Welcome screen's project tiles are readable again: they were black on dark tiles in themes with a light accent, such as Islands Light.
 - The three-pane views (staging and merge commits) have the **Open File** button again, like the two-pane diff.
 - After Zoom In, Zoom Out or a font change, the selection and the inline blame stay on their line instead of floating above or below it.
 - The inline diff shows its scrollbar again; the change overview at the right covered it.

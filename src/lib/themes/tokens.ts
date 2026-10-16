@@ -14,6 +14,7 @@ export const COLOR_TOKENS = [
   "--accent",
   "--accent-hover",
   "--accent-text",
+  "--avatar-text",
   "--hover",
   "--selected",
   "--selected-inactive",

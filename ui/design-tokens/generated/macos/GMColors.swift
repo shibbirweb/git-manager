@@ -48,6 +48,8 @@ public enum GMColor {
         gmLight: GMRGBA(45, 102, 217, 1), dark: GMRGBA(45, 102, 217, 1))
     public static let accentText = Color(
         gmLight: GMRGBA(255, 255, 255, 1), dark: GMRGBA(255, 255, 255, 1))
+    public static let avatarText = Color(
+        gmLight: GMRGBA(255, 255, 255, 1), dark: GMRGBA(255, 255, 255, 1))
     public static let hover = Color(
         gmLight: GMRGBA(236, 238, 242, 1), dark: GMRGBA(57, 59, 64, 1))
     public static let selected = Color(

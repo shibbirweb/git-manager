@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import appCss from "../../app.css?raw";
 import { catalogThemeIds, themeColors, themeCss, themeSwatch } from "./catalog";
-import { colorDistance, composite, contrastRatio, parseColor } from "./color";
+import { colorDistance, composite, contrastRatio, mix, parseColor } from "./color";
 import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, isHighContrast, THEME_INDEX } from "./themeIndex";
 import { COLOR_TOKENS, type ThemeColors } from "./tokens";
 
@@ -144,5 +144,18 @@ describe.each(THEME_INDEX.map((theme) => [theme.name, theme] as const))("%s", (_
 
   it("has readable button text", () => {
     expect(contrastRatio(colors["--accent-text"], colors["--accent"])).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("project tiles", () => {
+  it("keep their letters readable on every theme's palette colors (Avatar.svelte)", () => {
+    for (const themeId of catalogThemeIds()) {
+      const colors = themeColors(themeId) as ThemeColors;
+      for (const name of ["blue", "green", "magenta", "cyan", "red"]) {
+        const deep = mix(colors[`--term-${name}` as keyof ThemeColors], colors["--term-black"], 0.28);
+        // 3:1 is the bar for large bold text; Rose Pine's pale green tile tops out at 2.95 with either color.
+        expect(contrastRatio(colors["--avatar-text"], deep), `${themeId} ${name}`).toBeGreaterThanOrEqual(2.9);
+      }
+    }
   });
 });

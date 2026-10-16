@@ -103,6 +103,7 @@ const GM_LIGHT: ThemeColors = {
   "--accent": "#3574f0",
   "--accent-hover": "#2d66d9",
   "--accent-text": "#ffffff",
+  "--avatar-text": "#ffffff",
   "--hover": "#eceef2",
   "--selected": "#d4e2ff",
   "--selected-inactive": "#e4e6eb",
@@ -180,6 +181,7 @@ const GM_DARK: ThemeColors = {
   "--accent": "#3574f0",
   "--accent-hover": "#2d66d9",
   "--accent-text": "#ffffff",
+  "--avatar-text": "#ffffff",
   "--hover": "#393b40",
   "--selected": "#2e436e",
   "--selected-inactive": "#393b40",
@@ -2132,6 +2134,11 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const accentText = ["#ffffff", dark ? editorBg : "#000000"].reduce((best, candidate) =>
     contrastRatio(candidate, accent) > contrastRatio(best, accent) ? candidate : best,
   );
+  // Project tiles (Avatar.svelte) shade red, green, blue, magenta and cyan towards the terminal black, which is light in
+  // some light themes: their letters take whichever of white and black reads better on the worst of the five.
+  const tiles = [1, 2, 4, 5, 6].map((index) => mix(spec.ansi[index], spec.ansi[0], 0.28));
+  const worstOnTiles = (candidate: string) => Math.min(...tiles.map((tile) => contrastRatio(candidate, tile)));
+  const avatarText = worstOnTiles("#ffffff") >= worstOnTiles("#000000") ? "#ffffff" : "#000000";
   const success = legible(ui.success ?? (dark ? brightGreen : green), high ? 4.5 : 3);
   const danger = legible(ui.danger ?? (dark ? brightRed : red), high ? 4.5 : 3);
   const warning = legible(ui.warning ?? (dark ? brightYellow : yellow), high ? 4.5 : 3);
@@ -2157,6 +2164,7 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
     "--accent": accent,
     "--accent-hover": mix(accent, dark ? "#ffffff" : "#000000", 0.12),
     "--accent-text": accentText,
+    "--avatar-text": avatarText,
     "--hover": mix(panel, text, high ? 0.16 : dark ? 0.08 : 0.06),
     "--selected": composite(fitTint(accent, panel, text, dark ? 0.3 : 0.18, textMinimum), panel),
     "--selected-inactive": mix(panel, text, dark ? 0.1 : 0.09),
