@@ -493,6 +493,30 @@ export const UI_TOOLS: McpUiToolDef[] = [
     ),
   ),
   tool(
+    "inspect_layout",
+    "Inspect Layout",
+    "Performance",
+    { readOnly: true },
+    "Reports the window's size and the page's own scroll, every scrolled container with its scroll position and sizes, every element that reaches past the window's edge and the focused element, each with a short CSS path. For a UI that moved, was cut off or left a gap.",
+  ),
+  tool(
+    "trace_scrolls",
+    "Trace Scrolls",
+    "Performance",
+    { readOnly: true },
+    "Records what scrolls: start, do the action (open a file, switch a tab), then stop, which returns every scroll event and every scrollIntoView, scrollTo, scrollBy, scrollTop and focus call with its target and the code that made it. A trace left running ends by itself after a minute.",
+    objectSchema(
+      {
+        action: {
+          type: "string",
+          enum: ["start", "stop"],
+          description: "start a trace, or stop it and get the events.",
+        },
+      },
+      ["action"],
+    ),
+  ),
+  tool(
     "scroll_view",
     "Scroll View",
     "Performance",

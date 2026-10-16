@@ -143,6 +143,8 @@ mod tests {
         "send_terminal_text",
         "get_ui_performance",
         "inspect_elements",
+        "inspect_layout",
+        "trace_scrolls",
         "scroll_view",
     ];
 

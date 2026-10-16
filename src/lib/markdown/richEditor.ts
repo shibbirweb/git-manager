@@ -103,6 +103,10 @@ export class RichMarkdownEditor {
       },
       onBlur: () => this.flush(),
     });
+    // Without CSS overflow-anchor (WebKit), ProseMirror keeps the view steady by hand: it moves the scrollTop of
+    // every ancestor up to the page, which slid the whole window up when a file opened. Any value here ("auto" is
+    // the default) makes it leave scrolling to the browser.
+    this.editor.view.dom.style.overflowAnchor = "auto";
     this.load(this.options.source);
   }
 

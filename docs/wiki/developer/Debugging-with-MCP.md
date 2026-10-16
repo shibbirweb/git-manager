@@ -15,13 +15,25 @@ The dev build and a release share `~/.gitmanager`, so they share the token too. 
 
 - `get_app_state`: the workspace, active repository, tabs, panels, terminals, theme and any open dialog. Start here.
 - `take_screenshot`: a PNG of the window, even when other windows cover it (macOS only; macOS asks for Screen Recording permission once). From a terminal: `git-manager cli screenshot /tmp/gm.png`.
-- `inspect_elements`: elements by CSS selector, with their text, position, size, visibility and the computed styles you ask for.
+- `inspect_elements`: elements by CSS selector, with their text, position, size, scroll position, visibility and the computed styles you ask for.
+- `inspect_layout`: the window's size, the page's own scroll, every scrolled container, every element that reaches past the window and the focused element, each with a short CSS path. Use it when the UI moved, was cut off or left a gap.
+- `trace_scrolls`: call it with `action=start`, do the action, then `action=stop`. It returns every scroll and every `scrollIntoView`, `scrollTo`, `scrollBy`, `scrollTop` and `focus` call with its target and the code that made it. A trace left running ends by itself after a minute.
 
 ```sh
 git-manager cli call inspect_elements selector=".cm-editor .cm-activeLine" styles='["background-color","z-index"]'
 ```
 
 To reproduce a problem, drive the UI with `run_menu_command` (any menu item, see `list_menu_commands`), `open_file`, `show_panel`, `show_commit` and `scroll_view`.
+
+```sh
+git-manager cli call trace_scrolls action=start
+git-manager cli call open_file filePath=/path/to/notes.md
+git-manager cli call trace_scrolls action=stop
+```
+
+### Example: the window that slid up
+
+Opening a Markdown file moved the whole app up under the title bar, and screenshots could not say why. `trace_scrolls` around `open_file` listed a `scrollTop` write to every ancestor of the Rich Editor, all from ProseMirror's `restoreScrollStack`. The fix is in [Rich Markdown Bugs We Fixed](Rich-Markdown-Bugs-We-Fixed.md).
 
 ### Example: the invisible selection
 

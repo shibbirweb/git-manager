@@ -38,6 +38,7 @@ import { showLog } from "$lib/views/gitActions";
 import { shortcutsBlocked } from "$lib/views/workspaceActions";
 import { showShelf } from "$lib/shelf/shelfActions.svelte";
 import { fileClipboard } from "$lib/views/files/fileClipboard.svelte";
+import { inspectLayout, scrollState, scrollTrace, TRACE_AUTO_STOP_MS } from "./layoutDebug";
 import { appState, openDialog, terminalInfo, terminalList } from "./appState";
 import {
   capText,
@@ -377,6 +378,7 @@ function inspectElements(args: ToolArgs): Structured {
         height: Math.round(rect.height),
       },
       visible: rect.width > 0 && rect.height > 0 && computed.visibility !== "hidden" && computed.display !== "none",
+      scroll: scrollState(element),
       styles: values,
     };
   });
@@ -639,6 +641,14 @@ const HANDLERS: Record<string, Handler> = {
   get_ui_performance: (args) => uiPerformance(optionalInteger(args, "sampleMs", 0, 5000) ?? 500),
   inspect_elements: (args) => inspectElements(args),
   scroll_view: scrollView,
+  inspect_layout: () => inspectLayout(),
+  trace_scrolls: (args) => {
+    if (requiredEnum(args, "action", ["start", "stop"] as const) === "start") {
+      scrollTrace.start();
+      return { tracing: true, autoStopMs: TRACE_AUTO_STOP_MS };
+    }
+    return scrollTrace.stop();
+  },
 };
 
 /** Answers one request; never throws. */

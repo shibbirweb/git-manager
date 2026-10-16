@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Two debugging tools for the MCP server and `git-manager cli`: `inspect_layout` lists what is scrolled and what reaches past the window, and `trace_scrolls` records every scroll with the code that made it.
 - Staging view, like PhpStorm: the **Three panes** button in the Changes diff shows a modified file as HEAD, the index and the working tree side by side, with bands for what is staged and what is not. The arrows on the bands stage or unstage single changes. Side by side and Inline go back to the usual diff; the choice is remembered.
 - Terminal memory: the memory details in the status bar list each terminal, AI agent and Run script of the window with its memory (the shell and everything it started, such as Claude Code or a dev server), biggest first, with their sum. Click a row to show that terminal.
 - Keep computer awake: the coffee cup in the status bar (or Settings > AI) picks On (always), Agent (while an AI agent works) or Off (the default). While active, the screen stays on, does not lock and the computer does not sleep; it lets go when the agents finish or Git Manager quits. Closing a Mac's lid still puts it to sleep.
@@ -180,6 +181,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- Opening a Markdown file in the Rich Editor no longer slides the whole window up under the title bar (macOS).
 - Collapse unchanged works in the side by side diff again; it folded nothing there (the inline diff was fine).
 - The Match Case, Words and Regex tooltips in find bars said Option on Windows; they now say Alt there.
 - The Back and Forward buttons in the header showed Ctrl+- in their tooltips even after you changed those shortcuts; they now show your keys.

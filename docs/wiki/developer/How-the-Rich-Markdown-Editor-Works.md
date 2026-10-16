@@ -101,6 +101,8 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 
 ## Bugs we fixed
 
+Newer ones: [Rich Markdown Bugs](Rich-Markdown-Bugs-We-Fixed.md).
+
 **Editing an existing file did not work well.**
 - **The issue:** typing in Preview Only (now Rich Editor) on a file could reformat other text, turn the page read-only, or reload it after an edit.
 - **Why it happened:** the old editor (Milkdown) wrote back block by block, which needed remark's block ranges and Milkdown's blocks to line up one to one; often they did not (raw HTML, lists, nested blocks).

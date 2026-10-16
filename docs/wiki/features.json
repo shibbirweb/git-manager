@@ -88,6 +88,7 @@
     { "page": "developer/Terminal-Bugs-We-Fixed.md", "summary": "The terminal bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How the Rich Editor edits the page and patches each edit onto the file's own text, refusing files it cannot keep exactly." },
+    { "page": "developer/Rich-Markdown-Bugs-We-Fixed.md", "summary": "The Rich Editor bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Git-Menu-Links.md", "summary": "How Open Repository in Browser and the GitHub link items turn remote URLs into web pages." },
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
