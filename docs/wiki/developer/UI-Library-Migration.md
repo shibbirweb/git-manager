@@ -59,6 +59,13 @@ flowchart LR
 
 `migration.test.ts` checks the counting on a sample, that every listed file is at zero and exists, and that no parity case reads a migrated file. `bun run check` and `bun run test` must stay clean after every screen.
 
+## Bugs we fixed
+
+**The migration test failed on Windows.**
+- **The issue:** the Windows frontend CI failed "lists only files that exist" with every file in `migrated.json`, while macOS passed.
+- **Why it happened:** `appDebts` named each file with Node's `relative()`, which uses `\` on Windows, but `migrated.json` lists paths with `/`, so no name matched.
+- **The fix and why we chose it:** `repoPath` joins the parts with `/` on every platform, the same rule the app uses for paths, so the list stays one file for all platforms. A test checks that no name holds a `\`.
+
 ## Keeping this page in sync
 
 - Run `bun run ui:migration --update` after migrating a screen, and commit `migrated.json` with it.

@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parityCases } from "../src/parity/cases";
-import { appDebts, debtOf, migratedFiles, score } from "./migration";
+import { appDebts, debtOf, migratedFiles, repoPath, score } from "./migration";
 
 describe("migration", () => {
   it("counts what a file still owns", () => {
@@ -20,6 +20,11 @@ describe("migration", () => {
     const migrated = new Set(migratedFiles());
     const regressed = appDebts().filter((debt) => migrated.has(debt.file) && score(debt) > 0);
     expect(regressed.map((debt) => debt.file)).toEqual([]);
+  });
+
+  it("names files with / on every platform, as migrated.json does", () => {
+    expect(appDebts().every((debt) => !debt.file.includes("\\"))).toBe(true);
+    expect(repoPath(join(__dirname, "../../..", "src", "lib", "App.svelte"))).toBe("src/lib/App.svelte");
   });
 
   it("lists only files that exist", () => {

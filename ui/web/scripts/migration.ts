@@ -6,7 +6,7 @@
 //   bun run ui:migration --check    only fail when a migrated file regressed (CI, tests)
 //   bun run ui:migration --update   add every file now at zero to migrated.json
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
@@ -62,8 +62,13 @@ export function score(debt: FileDebt): number {
   return owned + debt.wideLines + (debt.tooLong ? 1 : 0);
 }
 
+/** A file's repo-relative path with `/` on every platform, as migrated.json lists it (Windows paths use `\`). */
+export function repoPath(path: string): string {
+  return relative(repoRoot, path).split(sep).join("/");
+}
+
 export function appDebts(): FileDebt[] {
-  return svelteFiles(join(repoRoot, "src")).map((path) => debtOf(relative(repoRoot, path), readFileSync(path, "utf8")));
+  return svelteFiles(join(repoRoot, "src")).map((path) => debtOf(repoPath(path), readFileSync(path, "utf8")));
 }
 
 const MIGRATED_PATH = join(repoRoot, "ui/web/migrated.json");
