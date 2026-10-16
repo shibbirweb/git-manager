@@ -1,13 +1,15 @@
 // CodeMirror glue for the inline diff (the document and its logic live in inlineDoc.ts): line
 // colors by kind of change, changed words, the old and new number columns, a Stage or Unstage
-// button per change (with Revert next to Stage), and folded runs of unchanged lines.
+// button per change (with Revert next to Stage), a - or + before each removed or added line, and
+// folded runs of unchanged lines.
 
 import { type EditorState, type Extension, type Range, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, GutterMarker, gutter } from "@codemirror/view";
 import { inlineFolds } from "./foldField";
 import { FOLD_MARGIN, FOLD_MIN_SIZE } from "./foldModel";
-import { collapsedRuns, type InlineBlock, type InlineDoc, inlineWordMarks } from "./inlineDoc";
+import { collapsedRuns, type InlineBlock, type InlineDoc, inlineWordMarks, lineSign } from "./inlineDoc";
 import type { IconName } from "@git-manager/ui/icons";
+import { inlineTheme } from "./inlineTheme";
 import { revertButton } from "./mergeExtensions";
 
 export interface InlineViewOptions {
@@ -100,6 +102,51 @@ function numberGutter(side: "old" | "new", doc: InlineDoc, kinds: readonly (Bloc
   });
 }
 
+class SignMarker extends GutterMarker {
+  constructor(
+    readonly sign: "-" | "+" | "",
+    readonly kind: BlockKind | null,
+  ) {
+    super();
+    const signClass = this.sign === "-" ? " cm-inlineSign-removed" : this.sign === "+" ? " cm-inlineSign-added" : "";
+    this.elementClass = kind ? `cm-inlineGutter-${kind}${signClass}` : "";
+  }
+
+  eq(other: SignMarker): boolean {
+    return other.sign === this.sign && other.kind === this.kind;
+  }
+
+  toDOM(): Node {
+    return document.createTextNode(this.sign);
+  }
+}
+
+/**
+ * The - and + column right before the text, like git and GitLens print them, so removed and added lines stay apart
+ * where a modified change colors them alike. Its band continues the number columns' change colors.
+ */
+function signGutter(doc: InlineDoc, kinds: readonly (BlockKind | null)[]): Extension {
+  const markers = new Map<string, SignMarker>();
+  const markerFor = (sign: "-" | "+" | "", kind: BlockKind | null): SignMarker => {
+    const key = `${sign}${kind ?? ""}`;
+    let marker = markers.get(key);
+    if (!marker) {
+      marker = new SignMarker(sign, kind);
+      markers.set(key, marker);
+    }
+    return marker;
+  };
+  return gutter({
+    class: "cm-inlineSigns",
+    lineMarker: (view, line) => {
+      const index = view.state.doc.lineAt(line.from).number - 1;
+      return markerFor(lineSign(doc.lines[index]), kinds[index] ?? null);
+    },
+    lineMarkerChange: () => false,
+    initialSpacer: () => new SignMarker("+", null),
+  });
+}
+
 /** A gutter button that runs on mousedown, like the side by side buttons, so the click never moves the cursor. */
 function controlButton(title: string, iconName: IconName, run: () => void): HTMLElement {
   const button = revertButton(title, iconName);
@@ -175,72 +222,6 @@ function controlGutter(
   });
 }
 
-const inlineTheme = EditorView.theme({
-  ".cm-content .cm-line.cm-inlineAdded": {
-    backgroundColor: "var(--diff-added)",
-  },
-  ".cm-content .cm-line.cm-inlineDeleted": {
-    backgroundColor: "var(--diff-deleted)",
-  },
-  ".cm-content .cm-line.cm-inlineModified": {
-    backgroundColor: "var(--diff-modified)",
-  },
-  ".cm-content .cm-changedText": {
-    background: "var(--diff-inline)",
-    borderRadius: "2px",
-  },
-  ".cm-lineNumbers.cm-inlineNumbers .cm-gutterElement": {
-    padding: "0 6px 0 8px",
-    minWidth: "28px",
-  },
-  ".cm-gutterElement.cm-inlineGutter-added": {
-    backgroundColor: "var(--diff-added)",
-  },
-  ".cm-gutterElement.cm-inlineGutter-deleted": {
-    backgroundColor: "var(--diff-deleted)",
-  },
-  ".cm-gutterElement.cm-inlineGutter-modified": {
-    backgroundColor: "var(--diff-modified)",
-  },
-  ".cm-inlineControls .cm-gutterElement": {
-    display: "flex",
-    alignItems: "center",
-    padding: "0 2px",
-  },
-  ".cm-inlineControls .diff-controls": {
-    display: "inline-flex",
-    gap: "2px",
-  },
-  ".cm-inlineControls .diff-revert, .cm-inlineControls .diff-revert-spacer": {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "18px",
-    height: "16px",
-  },
-  ".cm-inlineControls .diff-revert": {
-    padding: "0",
-    border: "none",
-    borderRadius: "4px",
-    background: "transparent",
-    color: "var(--accent)",
-    cursor: "pointer",
-  },
-  ".cm-inlineControls .diff-revert:hover": {
-    background: "var(--hover)",
-    color: "var(--accent-hover)",
-  },
-  ".cm-inlineControls .diff-revert.diff-revert-change": {
-    color: "var(--text-dim)",
-  },
-  ".cm-inlineControls .diff-revert.diff-revert-change:hover": {
-    color: "var(--danger)",
-  },
-  ".cm-inlineControls .diff-revert svg": {
-    pointerEvents: "none",
-  },
-});
-
 /** Everything the inline diff's editor needs on top of the read-only base. */
 export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
   const { doc, collapse, control, onControl, onRevert } = options;
@@ -257,6 +238,7 @@ export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
     numberGutter("old", doc, kinds),
     numberGutter("new", doc, kinds),
     control ? controlGutter(doc, control, onControl, control === "stage" ? onRevert : null) : [],
+    signGutter(doc, kinds),
     collapse
       ? inlineFolds(collapsedRuns(doc, FOLD_MARGIN, FOLD_MIN_SIZE).map(([from, to]) => ({ first: from + 1, last: to })))
       : [],

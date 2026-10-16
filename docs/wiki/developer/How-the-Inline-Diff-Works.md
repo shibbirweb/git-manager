@@ -38,6 +38,7 @@ Hunks that do not fit the texts (`hunkRanges` returns null), or a payload withou
 - line classes by kind of change (added green, removed grey, modified blue, the `--diff-*` tokens) and changed-word marks from `inlineWordMarks`, which diffs each modified block's old lines against its new lines,
 - two number gutters, old then new, that tint changed rows like the code,
 - a gutter with a Stage (+) or Unstage (-) button on the first line of each change,
+- a sign gutter right before the text: `lineSign` gives `-` for a removed line and `+` for an added one, in `--danger` red and `--success` green, like `git diff` and GitLens. A modified block colors its old and new lines alike, so the signs are what tell them apart. Markers are shared per sign and kind,
 - folded unchanged runs from `collapsedRuns` (3 lines of margin, at least 4 folded), drawn by `inlineFolds` from `foldField.ts`, the same folds as the side by side layout. They are block widgets in a `StateField`, as block decorations must be. A run opens 10 lines at a time from either edge, fully when its label is clicked, and fully when the cursor lands in it, so a Find match or a reveal is never hidden.
 
 ### Mapping back to the two versions
@@ -55,7 +56,7 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 | File | What it does |
 | --- | --- |
 | `src/lib/diff/inlineDoc.ts` | The document, word marks, selection, `applyBlock`, folds, line mapping |
-| `src/lib/diff/inlineView.ts` | `inlineDiffExtensions`: colors, gutters, buttons, folds |
+| `src/lib/diff/inlineView.ts`, `inlineTheme.ts` | `inlineDiffExtensions`: colors, gutters, signs, buttons, folds; the look |
 | `src/lib/diff/foldField.ts`, `foldModel.ts` | The fold bars and their 10 line steps, shared with side by side |
 | `src/lib/diff/DiffToolbar.svelte`, `diffViews.ts` | The toolbar buttons and building either layout |
 | `src/lib/editor/blame.ts`, `blameModel.ts` | `loadBlame` for an inline source, `expandBlame`, `REMOVED_LINE` |
@@ -75,7 +76,7 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 
 ## Tests
 
-- `src/lib/diff/inlineDoc.test.ts`: document order and numbers, line mapping, new and unchanged files, exact selections, stage and unstage text, word marks only in modified blocks, ruler ticks, folds with margins, the fallback hunks.
+- `src/lib/diff/inlineDoc.test.ts`: document order and numbers, line mapping, new and unchanged files, exact selections, stage and unstage text, the - and + signs, word marks only in modified blocks, ruler ticks, folds with margins, the fallback hunks.
 - `src/lib/editor/blameModel.test.ts`: `expandBlame` blanks removed lines and records new lines for Back and Forward.
 - `src/lib/stores/settingsData.test.ts`: the `diffLayout` preference defaults to side by side and rejects unknown values.
 - `src/lib/views/settings/settingsSearch.test.ts`: the Diff layout row is in the dialog and its search index.

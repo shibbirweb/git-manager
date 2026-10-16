@@ -9,6 +9,7 @@ import {
   inlineChangeMarks,
   inlineSelection,
   inlineWordMarks,
+  lineSign,
   newLineAt,
 } from "./inlineDoc";
 
@@ -35,6 +36,11 @@ describe("buildInlineDoc", () => {
       "added",
       "added",
     ]);
+  });
+
+  it("marks removed lines with - and added lines with +, like git, inside a modified change too", () => {
+    expect(doc.lines.map(lineSign)).toEqual(["", "-", "+", "", "-", "-", "+", "+"]);
+    expect(lineSign(undefined)).toBe("");
   });
 
   it("numbers every line on both sides", () => {

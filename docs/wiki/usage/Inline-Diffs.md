@@ -4,7 +4,7 @@ Every diff can show its two versions side by side, or inline in one column. Inli
 
 ![An inline diff: removed lines above the lines that replace them](../images/diff-inline.png)
 
-*An inline diff of cart.ts: the old and new line numbers on the left, each change's removed lines above the lines that replace them, and the layout buttons in the toolbar.*
+*An inline diff of cart.ts: the old and new line numbers on the left, a red - or green + before each changed line, each change's removed lines above the lines that replace them, and the layout buttons in the toolbar.*
 
 ## Switch the layout
 
@@ -18,6 +18,7 @@ The highlighted button is the layout in use, and both places change the same set
 ## Reading an inline diff
 
 - The colors are the same as side by side: added lines are green, removed lines are grey, and a changed block (old lines followed by their new lines) is blue.
+- Right before the text, a red **-** marks a removed line and a green **+** an added line, like `git diff` and GitLens. In a blue changed block, where old and new lines share one color, the signs tell them apart.
 - Inside a changed block, the exact words that changed are highlighted, in the old lines and in the new ones.
 - Two columns of line numbers sit on the left: the old version's number, then the new version's. A removed line has only an old number, an added line only a new one.
 - The label above the diff names both versions, such as **Index** and **Working Tree**, with an arrow between them.
