@@ -29,7 +29,7 @@ The sizes follow the JetBrains screen: a 240 px sidebar with 36 px items, 32 px 
 The pure helpers live in `welcomeModel.ts`:
 
 - `projectInitials(name)` takes the first letters of the first two words (split at spaces, dashes, underscores, dots and camelCase), or two letters of a single word.
-- `badgeColor(key)` hashes the entry's path to one of five colors, so a project keeps its color from run to run.
+- `badgeColor(key)` hashes the entry's path to one of five colors, so a project keeps its color from run to run. The open workspace's `id` is the same key (the workspace file, or the folder roots joined), so `projectTintFor` (`stores/projectTint.ts`) gives the open project its tile's color. `windowChrome.tint` passes it to the library's `AppShell`, which paints the window frame with a radial glow from the top left corner (`--app-shell-tint-width` by `--app-shell-tint-height`, fading to nothing), under the transparent rounded header, the activity bars and the gaps between panels. In the flat look `AppHeader` draws its own glow instead. The `projectColorHeader` preference turns it off. On macOS the windows hide the system title strip (`titleBarStyle: Overlay` in `tauri.conf.json` and `mac_title_bar` in `commands/window.rs`), so the glow reaches the top edge and the window buttons sit in our top bar: `windowChrome.controlsInBar` gives `AppHeader` `windowControls`, which leaves room for them and marks its empty space as the drag area.
 - `entrySubtitle` writes the paths with the home folder as `~` (`shortPath`).
 - `filterEntries` keeps entries where every word of the query appears in the name or a path.
 - `moveSelection` moves the picked row with Up, Down, Home and End.

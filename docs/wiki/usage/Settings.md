@@ -8,9 +8,9 @@ Settings change how Git Manager looks and behaves, apply at once and are saved. 
 - Or press Cmd+,, or choose **Git Manager > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
 - Or click the gear on the [welcome screen](Welcome-Screen.md).
 
-Settings opens on **Appearance**. The **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
+Settings opens on **Appearance**. The status bar's **Spaces** opens **Editor**, the terminal's **Default Shell...** opens **Terminal**, and **About Git Manager** opens **About**.
 
-The sections are on the left, with a [search field](Settings-Search.md) above them. Press Esc or click the x to close. Drag the title to move the dialog; double-click it to center it.
+The sections are on the left, with a [search field](Settings-Search.md) above them. Esc or the x closes it. Drag the title to move it; double-click it to center it.
 
 **Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). Panel choices and sizes live in `state.json` and are kept.
 
@@ -23,7 +23,8 @@ The sections are on the left, with a [search field](Settings-Search.md) above th
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Theme | **System** follows the system, or pick **Light** or **Dark**. Colors are picked in **Editor**. | System |
-| Rounded panels | Rounded panels with space between them, in any color theme. See [Rounded Panels](Rounded-Panels.md). | Off |
+| Rounded panels | Rounded panels with space between them. See [Rounded Panels](Rounded-Panels.md). | Off |
+| Project color in the top bar | A glow in the project's [Welcome](Welcome-Screen.md) color. | On |
 | File toolbar | **Top**, **Bottom** or **Hidden**, plus switches. See [Navigation Bar](Navigation-Bar.md#the-file-toolbar-top-bottom-or-hidden). | Top |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
 | File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |

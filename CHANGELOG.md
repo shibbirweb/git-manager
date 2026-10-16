@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- The window glows softly in the open project's color from its top left corner, the same color as its tile on the Welcome page, like PhpStorm, so windows are easy to tell apart. On macOS the window buttons now sit in the app's top bar, with no separate title strip. Turn the color off with **Project color in the top bar** in Settings > Appearance.
 - A commit's message and details (History panel and commit tabs) can be resized: drag the bar above the changed files. The height is remembered.
 - Every diff (Changes, the Changes tab, commits in History and commit tabs, branch and revision compares, shelves, Compare Files and local history) is one view with the same toolbar and buttons. A commit's diff gets **Revert this change** and **Apply this change** for your working tree, and three columns (parent, commit and working tree); **Side by side for commits** in Settings > Git picks them.
 - Inline diffs mark each changed line like `git diff` and GitLens: a red **-** before a removed line and a green **+** before an added one, so old and new lines stay apart inside a changed (blue) block.

@@ -43,3 +43,15 @@
     {/snippet}
   </AppHeader>
 </Card>
+<Card label="Project color">
+  <AppHeader look="rounded" tint="red">
+    {#snippet start()}
+      <Button variant="ghost" icon="folder" trailingIcon="chevron-down">
+        <Text weight="semibold">kpd</Text>
+      </Button>
+      <Button variant="ghost" icon="branch" trailingIcon="chevron-down">
+        <Text>feature/queue-email</Text>
+      </Button>
+    {/snippet}
+  </AppHeader>
+</Card>

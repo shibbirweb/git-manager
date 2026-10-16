@@ -20,6 +20,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   appearance: [
     ["Theme", "light dark system mode macos appearance"],
     ["Rounded panels", "islands corners gap radius layout"],
+    ["Project color in the top bar", "header title bar tint gradient glow welcome tile"],
     ["File toolbar", "path bar breadcrumbs navigation top bottom hidden"],
     ...FILE_TOOLBAR_SWITCHES.map((part): EntrySpec => [part.label, `file toolbar ${part.hint}`, "File toolbar"]),
     ["Interface font size", "ui text zoom menus lists buttons"],

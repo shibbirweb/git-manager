@@ -4,6 +4,7 @@
   import { runWorkspace } from "./workspaceLife.svelte";
   import EditorGroupContent from "./EditorGroupContent.svelte";
   import AppShell from "@git-manager/ui/components/AppShell.svelte";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
   import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
   import SplitGrid from "@git-manager/ui/components/SplitGrid.svelte";
   import type { GridSplitter } from "@git-manager/ui/logic/splitGrid";
@@ -182,6 +183,7 @@
 
 <AppShell
   look={settings.roundedPanels ? "rounded" : "flat"}
+  tint={windowChrome.tint}
   bind:sidebarWidth={() => settings.sidebarWidth, (width) => (settings.sidebarWidth = width)}
   bind:rightWidth={() => settings.explorerWidth, (width) => (settings.explorerWidth = width)}
   bind:bottomHeight={() => settings.terminalHeight, (height) => (settings.terminalHeight = height)}

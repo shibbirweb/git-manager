@@ -78,7 +78,7 @@ export const componentTokens2 = {
     headGap: 8,
   },
   terminalView: { paddingTop: 4, paddingBottom: 2, paddingLeft: 12, messageMaxWidth: 520, dropBorder: 2 },
-  appShell: { minMain: 360, minEditorHeight: 120, panelGap: 6, panelRadius: 10 },
+  appShell: { minMain: 360, minEditorHeight: 120, panelGap: 6, panelRadius: 10, tintWidth: 720, tintHeight: 300 },
   toolbar: {
     tabHeight: 34,
     tabPaddingX: 10,
@@ -202,7 +202,16 @@ export const componentTokens2 = {
   meter: { gap: 4, usageHeight: 6, usageRadius: 3, miniWidth: 32 },
   zoomBadge: { top: 56, paddingY: 6, paddingX: 14, radius: 16 },
   patchView: { paddingY: 6, linePaddingX: 12, lineHeight: 1.5 },
-  appHeader: { height: 42, paddingX: 8, gap: 12, sideGap: 4, dividerLength: 18, busyMaxWidth: 280 },
+  appHeader: {
+    height: 42,
+    paddingX: 8,
+    gap: 12,
+    sideGap: 4,
+    dividerLength: 18,
+    busyMaxWidth: 280,
+    tintWidth: 520,
+    controlsInset: 80,
+  },
   logo: {
     size: 40,
     radius: 10,

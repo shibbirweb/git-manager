@@ -24,6 +24,7 @@
   import { toast } from "$lib/ui/toast.svelte";
   import { updates } from "$lib/update/updates.svelte";
   import Welcome from "$lib/views/Welcome.svelte";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
   import Workspace from "$lib/views/Workspace.svelte";
   import { changesSelection } from "$lib/views/changes/selection.svelte";
   import { syncWorkspaceFolders } from "$lib/views/files/previewScheme";
@@ -155,6 +156,7 @@
     settings.applyTheme();
     // Username, password and passphrase prompts of git and ssh (askpass.rs).
     askpass.start();
+    windowChrome.start();
     void (async () => {
       // Shells left running by a reload of the window would otherwise leak; the ones Clear
       // Cache left for this page come back once the workspace is open.

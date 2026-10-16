@@ -166,6 +166,8 @@
   --app-shell-min-editor-height: 120px;
   --app-shell-panel-gap: 6px;
   --app-shell-panel-radius: 10px;
+  --app-shell-tint-width: 720px;
+  --app-shell-tint-height: 300px;
   --toolbar-tab-height: 34px;
   --toolbar-tab-padding-x: 10px;
   --toolbar-tab-gap: 8px;
@@ -272,7 +274,4 @@
   --status-dot-mark-size: 7px;
   --status-dot-mark-inset: 7px;
   --status-dot-mark-ring: 2px;
-  --avatar-size: 32px;
-  --avatar-tile-size: 36px;
-  --avatar-tile-radius: 8px;
 }

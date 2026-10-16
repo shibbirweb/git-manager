@@ -73,6 +73,8 @@ public enum GMAppShellTokens {
     public static let minEditorHeight: CGFloat = 120
     public static let panelGap: CGFloat = 6
     public static let panelRadius: CGFloat = 10
+    public static let tintWidth: CGFloat = 720
+    public static let tintHeight: CGFloat = 300
 }
 
 public enum GMToolbarTokens {
@@ -259,6 +261,8 @@ public enum GMAppHeaderTokens {
     public static let sideGap: CGFloat = 4
     public static let dividerLength: CGFloat = 18
     public static let busyMaxWidth: CGFloat = 280
+    public static let tintWidth: CGFloat = 520
+    public static let controlsInset: CGFloat = 80
 }
 
 public enum GMLogoTokens {

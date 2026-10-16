@@ -158,6 +158,7 @@ class SettingsStore {
   uiFontSize = $state(initialPreferences.uiFontSize);
   fileIcons = $state<FileIconMode>(initialPreferences.fileIcons);
   roundedPanels = $state(initialPreferences.roundedPanels);
+  projectColorHeader = $state(initialPreferences.projectColorHeader);
   fileToolbar = $state<FileToolbarPlacement>(initialPreferences.fileToolbar);
   fileToolbarBreadcrumbs = $state(initialPreferences.fileToolbarBreadcrumbs);
   fileToolbarBadges = $state(initialPreferences.fileToolbarBadges);
@@ -421,6 +422,7 @@ class SettingsStore {
       uiFontSize: this.uiFontSize,
       fileIcons: this.fileIcons,
       roundedPanels: this.roundedPanels,
+      projectColorHeader: this.projectColorHeader,
       fileToolbar: this.fileToolbar,
       fileToolbarBreadcrumbs: this.fileToolbarBreadcrumbs,
       fileToolbarBadges: this.fileToolbarBadges,

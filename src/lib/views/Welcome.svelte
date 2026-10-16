@@ -4,6 +4,8 @@
 -->
 <script lang="ts">
   import { settings } from "$lib/stores/settings.svelte";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
+  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
   import { updates } from "$lib/update/updates.svelte";
   import Divider from "@git-manager/ui/components/Divider.svelte";
   import IconButton from "@git-manager/ui/components/IconButton.svelte";
@@ -42,48 +44,56 @@
   }
 </script>
 
-<Stack element="main" direction="row" gap="none" height="window" surface="panel">
-  <Pane label="Welcome" line="soft">
-    <Stack grow gap="xxl" paddingX="lg" paddingY="xl">
-      <Stack direction="row" align="center" gap="lg" paddingX="mdPlus">
-        <Logo />
-        <Stack gap="xxs">
-          <Text variant="heading">Git Manager</Text>
-          {#if updates.current}
-            <Text size="small" tone="dim">{updates.current}</Text>
-          {/if}
+<Stack gap="none" height="window" surface="panel">
+  {#if windowChrome.controlsInBar}
+    <!-- The window's own buttons sit here (macOS), and the strip moves the window. -->
+    <AppHeader look="rounded" windowControls>
+      {#snippet start()}{/snippet}
+    </AppHeader>
+  {/if}
+  <Stack element="main" direction="row" gap="none" grow>
+    <Pane label="Welcome" line="soft">
+      <Stack grow gap="xxl" paddingX="lg" paddingY="xl">
+        <Stack direction="row" align="center" gap="lg" paddingX="mdPlus">
+          <Logo />
+          <Stack gap="xxs">
+            <Text variant="heading">Git Manager</Text>
+            {#if updates.current}
+              <Text size="small" tone="dim">{updates.current}</Text>
+            {/if}
+          </Stack>
+        </Stack>
+        <SideNav
+          label="Welcome sections"
+          variant="large"
+          items={SECTIONS}
+          active={section}
+          onselect={(sectionId) => (section = sectionId as Section)}
+        />
+        <Stack grow>{""}</Stack>
+        <Stack gap="mdPlus">
+          <SideNav label="Links" variant="links" items={LINKS} onselect={openLink} />
+          <Divider strong={false} />
+          <Stack paddingX="sm">
+            <IconButton
+              icon="settings"
+              label="Settings"
+              size="large"
+              iconSize="regular"
+              onclick={() => settings.openDialog()}
+            />
+          </Stack>
         </Stack>
       </Stack>
-      <SideNav
-        label="Welcome sections"
-        variant="large"
-        items={SECTIONS}
-        active={section}
-        onselect={(sectionId) => (section = sectionId as Section)}
-      />
-      <Stack grow>{""}</Stack>
-      <Stack gap="mdPlus">
-        <SideNav label="Links" variant="links" items={LINKS} onselect={openLink} />
-        <Divider strong={false} />
-        <Stack paddingX="sm">
-          <IconButton
-            icon="settings"
-            label="Settings"
-            size="large"
-            iconSize="regular"
-            onclick={() => settings.openDialog()}
-          />
-        </Stack>
-      </Stack>
+    </Pane>
+    <Stack grow role="tabpanel" label={SECTIONS.find((item) => item.id === section)?.label}>
+      {#if section === "projects"}
+        <WelcomeProjects />
+      {:else if section === "customize"}
+        <WelcomeCustomize />
+      {:else}
+        <WelcomeLearn />
+      {/if}
     </Stack>
-  </Pane>
-  <Stack grow role="tabpanel" label={SECTIONS.find((item) => item.id === section)?.label}>
-    {#if section === "projects"}
-      <WelcomeProjects />
-    {:else if section === "customize"}
-      <WelcomeCustomize />
-    {:else}
-      <WelcomeLearn />
-    {/if}
   </Stack>
 </Stack>

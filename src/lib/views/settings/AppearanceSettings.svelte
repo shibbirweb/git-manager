@@ -46,6 +46,17 @@
   {/snippet}
   <Switch label="Rounded panels" checked={settings.roundedPanels} onchange={(on) => set("roundedPanels", on)} />
 </SettingsRow>
+<SettingsRow title="Project color in the top bar" toggle>
+  {#snippet hintContent()}
+    A soft glow in the project's color at the left of the top bar, the same color as its tile on the Welcome page, so
+    you can tell windows apart.
+  {/snippet}
+  <Switch
+    label="Project color in the top bar"
+    checked={settings.projectColorHeader}
+    onchange={(on) => set("projectColorHeader", on)}
+  />
+</SettingsRow>
 <SettingsRow title="File toolbar">
   {#snippet hintContent()}
     The bar with a file's path, badges and buttons: above the code, under it, or hidden. Pick its parts below. Without

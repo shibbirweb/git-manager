@@ -4,6 +4,8 @@
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { settings } from "$lib/stores/settings.svelte";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
+  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import Button from "@git-manager/ui/components/Button.svelte";
@@ -12,7 +14,6 @@
   import Icon from "@git-manager/ui/components/Icon.svelte";
   import Stack from "@git-manager/ui/components/Stack.svelte";
   import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import MergeEditor from "./MergeEditor.svelte";
 
@@ -84,11 +85,14 @@
 </script>
 
 <Stack gap="none" height="window" surface="panel">
-  <Toolbar label="Merge" variant="tab">
-    <Icon name="merge" size="regular" tone="dim" />
-    <Text weight="semibold">Merge Revisions for</Text>
-    <Text mono truncate selectable>{doc?.path ?? ""}</Text>
-  </Toolbar>
+  <!-- The window's top bar: on macOS the window's own buttons sit at its left and it moves the window. -->
+  <AppHeader windowControls={windowChrome.controlsInBar}>
+    {#snippet start()}
+      <Icon name="merge" size="regular" tone="dim" />
+      <Text weight="semibold">Merge Revisions for</Text>
+      <Text mono truncate selectable>{doc?.path ?? ""}</Text>
+    {/snippet}
+  </AppHeader>
   <Stack gap="none" grow>
     {#if loadError}
       <EmptyState title="Could not load the files passed by git mergetool.">

@@ -14,6 +14,7 @@
   import { settings } from "$lib/stores/settings.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { recentEntries, shortPath } from "./recentEntries";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
   import {
     openNewWindow,
     openRecent,
@@ -151,6 +152,8 @@
 
 <AppHeader
   look={settings.roundedPanels ? "rounded" : "flat"}
+  tint={windowChrome.tint}
+  windowControls={windowChrome.controlsInBar}
   busy={repoStore.busy ? repoStore.progress || `${repoStore.busy}...` : ""}
   busyTitle={repoStore.progress || undefined}
 >

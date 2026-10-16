@@ -1,15 +1,18 @@
 <!-- The window layout: header and banners on top, activity bars on the outer edges, a resizable side panel on each
      side, the editor area with an optional bottom panel, and the status bar. Panel sizes are data the user drags;
-     they are kept so the editor area never gets narrower or shorter than its minimum. -->
+     they are kept so the editor area never gets narrower or shorter than its minimum. In the rounded look the window
+     frame shows around the panels, and `tint` lights its top left corner in the project's color, like JetBrains. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { presetVar, type ViewHeight } from "../logic/presets";
+  import { presetVar, type ProjectTint, type ViewHeight } from "../logic/presets";
   import { bottomPanelMax, clampPanel, sidePanelMax } from "../logic/shellLayout";
   import { componentTokens, scales } from "../styles/tokens";
   import ResizeHandle from "./ResizeHandle.svelte";
 
   interface Props {
     look?: "flat" | "rounded";
+    /** The rounded look's glow at the top left of the frame; the flat look leaves it to AppHeader. */
+    tint?: ProjectTint;
     height?: ViewHeight;
     sidebarWidth?: number;
     rightWidth?: number;
@@ -32,6 +35,7 @@
 
   let {
     look = "flat",
+    tint = "none",
     height = "fill",
     sidebarWidth = $bindable(scales.panelDefault.sidebar),
     rightWidth = $bindable(scales.panelDefault.sidebar),
@@ -74,7 +78,12 @@
   const shownBottom = $derived(clampPanel(bottomHeight, minBottom, bottomMax));
 </script>
 
-<div class="shell" class:rounded={look === "rounded"} style:height={shownHeight} style:flex={shownHeight && "none"}>
+<div
+  class="shell tint-{tint}"
+  class:rounded={look === "rounded"}
+  style:height={shownHeight}
+  style:flex={shownHeight && "none"}
+>
   {@render header?.()}
   {@render banners?.()}
   <div class="body" bind:clientWidth={bodyWidth}>
@@ -202,11 +211,48 @@
     flex-direction: column;
   }
 
-  /* Rounded panels sit apart on the window color; the resize handles fill the gaps. */
+  /* Rounded panels sit apart on the window frame, which the shell paints once under the header, the activity bars
+     and the gaps, so the glow runs across all of them; the resize handles fill the gaps. */
+  .rounded {
+    background-color: var(--frame);
+  }
+
+  /* The project's glow: strongest in the top left corner and easing out to the right and down, with no edge. */
+  .rounded:not(.tint-none) {
+    background-image: radial-gradient(
+      var(--app-shell-tint-width) var(--app-shell-tint-height) at 0 0,
+      color-mix(in srgb, var(--shell-tint) 30%, transparent) 0%,
+      color-mix(in srgb, var(--shell-tint) 16%, transparent) 35%,
+      color-mix(in srgb, var(--shell-tint) 6%, transparent) 65%,
+      transparent 100%
+    );
+    background-repeat: no-repeat;
+  }
+
+  .tint-blue {
+    --shell-tint: var(--term-blue);
+  }
+
+  .tint-green {
+    --shell-tint: var(--term-green);
+  }
+
+  .tint-magenta {
+    --shell-tint: var(--term-magenta);
+  }
+
+  .tint-cyan {
+    --shell-tint: var(--term-cyan);
+  }
+
+  .tint-red {
+    --shell-tint: var(--term-red);
+  }
+
   .rounded .body {
     gap: var(--app-shell-panel-gap);
     padding: 0 var(--app-shell-panel-gap) var(--app-shell-panel-gap);
-    background: var(--frame);
+    background: transparent;
   }
 
   /* The handles between rounded panels fill the gaps; handles inside a panel (editor groups) keep their size. */
@@ -231,7 +277,7 @@
   }
 
   .rounded .bar > :global(.activity) {
-    background: var(--frame);
+    background: transparent;
     border: none;
   }
 

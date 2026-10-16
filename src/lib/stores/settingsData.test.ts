@@ -291,6 +291,9 @@ describe("parsePreferences", () => {
     expect(defaultPreferences.roundedPanels).toBe(false);
     expect(parsePreferences({ roundedPanels: true }).preferences.roundedPanels).toBe(true);
     expect(parsePreferences({ roundedPanels: "yes" }).preferences.roundedPanels).toBe(false);
+    expect(defaultPreferences.projectColorHeader).toBe(true);
+    expect(parsePreferences({ projectColorHeader: false }).preferences.projectColorHeader).toBe(false);
+    expect(parsePreferences({ projectColorHeader: "no" }).preferences.projectColorHeader).toBe(true);
     expect(defaultPreferences.fileToolbar).toBe("top");
     expect(parsePreferences({ fileToolbar: "bottom" }).preferences.fileToolbar).toBe("bottom");
     expect(parsePreferences({ fileToolbar: "none" }).preferences.fileToolbar).toBe("none");

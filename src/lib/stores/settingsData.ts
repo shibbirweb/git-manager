@@ -300,6 +300,8 @@ export interface Preferences {
   fileIcons: FileIconMode;
   /** Sidebars, editor groups and the bottom panel as rounded panels with space between them. Any color theme. */
   roundedPanels: boolean;
+  /** A glow in the project's Welcome page color at the left of the window's top bar, like JetBrains IDEs. */
+  projectColorHeader: boolean;
   /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
   fileToolbar: FileToolbarPlacement;
   fileToolbarBreadcrumbs: boolean;
@@ -545,6 +547,7 @@ export const defaultPreferences: Preferences = {
   uiFontSize: 13,
   fileIcons: "off",
   roundedPanels: false,
+  projectColorHeader: true,
   fileToolbar: "top",
   fileToolbarBreadcrumbs: true,
   fileToolbarBadges: true,
@@ -938,6 +941,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     uiFontSize: pickNumber(data.uiFontSize, defaultPreferences.uiFontSize, ...FONT_SIZE_RANGE.ui),
     fileIcons: pickOneOf(data.fileIcons, FILE_ICON_MODES, defaultPreferences.fileIcons),
     roundedPanels: pickBoolean(data.roundedPanels, defaultPreferences.roundedPanels),
+    projectColorHeader: pickBoolean(data.projectColorHeader, defaultPreferences.projectColorHeader),
     fileToolbar: pickOneOf(data.fileToolbar, FILE_TOOLBAR_PLACEMENTS, defaultPreferences.fileToolbar),
     fileToolbarBreadcrumbs: pickBoolean(data.fileToolbarBreadcrumbs, defaultPreferences.fileToolbarBreadcrumbs),
     fileToolbarBadges: pickBoolean(data.fileToolbarBadges, defaultPreferences.fileToolbarBadges),

@@ -17,6 +17,8 @@ panel, Right panel and Bottom panel.
 ## Props
 
 - `look` (`"flat" | "rounded"`, default `"flat"`): Lines between panels, or rounded panels on the window color.
+- `tint` (`"none" | "blue" | "green" | "magenta" | "cyan" | "red"`, default `"none"`): Rounded look: a soft glow in the
+  open project's color from the window's top left corner, under the header and around the panels.
 - `height` (`"fill" | "small" | "medium" | "large"`, default `"fill"`): Fill the parent, or 160, 240 or 360 px.
 - `sidebarWidth` (`number`, default `260`, bindable): The left panel's width.
 - `rightWidth` (`number`, default `260`, bindable): The right panel's width.

@@ -168,6 +168,8 @@
     <x:Double x:Key="GmAppShellMinEditorHeight">120</x:Double>
     <x:Double x:Key="GmAppShellPanelGap">6</x:Double>
     <x:Double x:Key="GmAppShellPanelRadius">10</x:Double>
+    <x:Double x:Key="GmAppShellTintWidth">720</x:Double>
+    <x:Double x:Key="GmAppShellTintHeight">300</x:Double>
     <x:Double x:Key="GmToolbarTabHeight">34</x:Double>
     <x:Double x:Key="GmToolbarTabPaddingX">10</x:Double>
     <x:Double x:Key="GmToolbarTabGap">8</x:Double>

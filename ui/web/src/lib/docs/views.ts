@@ -165,6 +165,10 @@ export const viewDocs: ComponentDoc[] = [
       prop("look", '"flat" | "rounded"', "Lines between panels, or rounded panels on the window color.", {
         default: '"flat"',
       }),
+      prop("tint", '"none" | "blue" | "green" | "magenta" | "cyan" | "red"', "Rounded look: a soft glow in the " +
+        "open project's color from the window's top left corner, under the header and around the panels.", {
+        default: '"none"',
+      }),
       prop("height", VIEW_HEIGHT, "Fill the parent, or 160, 240 or 360 px.", { default: '"fill"' }),
       prop("sidebarWidth", "number", "The left panel's width.", { default: "260", bindable: true, data: true }),
       prop("rightWidth", "number", "The right panel's width.", { default: "260", bindable: true, data: true }),
