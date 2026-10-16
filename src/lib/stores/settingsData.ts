@@ -3,6 +3,7 @@
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
 
+import { readThreeSplit, type ThreeSplit } from "@git-manager/ui/logic/threeSplit";
 import type { AgentOverride } from "$lib/ai/agentConfig";
 import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
@@ -718,6 +719,8 @@ export interface UiState {
   rightBarVisible: boolean;
   /** The left side's share of a side-by-side diff (see src/lib/diff/split.ts). */
   diffSplitRatio: number;
+  /** The panes' widths in a three-pane diff (see ui/web/src/lib/logic/threeSplit.ts). */
+  threePaneSplit: ThreeSplit;
   leftPanel: LeftPanel;
   sidebarWidth: number;
   explorerWidth: number;
@@ -903,6 +906,7 @@ const STATE_KEYS = [
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
+  "threePaneSplit",
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
@@ -1186,6 +1190,7 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     leftBarVisible: pickBoolean(data.leftBarVisible, true),
     rightBarVisible: pickBoolean(data.rightBarVisible, true),
     diffSplitRatio: pickNumber(data.diffSplitRatio, 0.5, 0.15, 0.85),
+    threePaneSplit: readThreeSplit(data.threePaneSplit),
     leftPanel: panel === "changes" || panel === "branches" || panel === "scripts" || panel === null ? panel : "changes",
     sidebarWidth: pickNumber(data.sidebarWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
     explorerWidth: pickNumber(data.explorerWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
@@ -1222,6 +1227,7 @@ export const WINDOW_STATE_KEYS = [
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
+  "threePaneSplit",
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
@@ -1248,6 +1254,7 @@ export function stateToJson(state: UiState, extra: Json): Json {
     leftBarVisible: state.leftBarVisible,
     rightBarVisible: state.rightBarVisible,
     diffSplitRatio: state.diffSplitRatio,
+    threePaneSplit: [...state.threePaneSplit],
     leftPanel: state.leftPanel,
     sidebarWidth: state.sidebarWidth,
     explorerWidth: state.explorerWidth,

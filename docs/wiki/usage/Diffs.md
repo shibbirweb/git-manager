@@ -50,6 +50,8 @@ The two sides start equally wide. To give one side more room, drag the line betw
 - With the line focused, the **Left** and **Right** arrow keys move it in small steps, and Shift with an arrow in bigger steps.
 - Each side keeps at least 15% of the width.
 
+Three panes ([Staging View](Staging-View.md), [Merge Tool](Merge-Tool.md)) resize the same way: drag the edge of a column of bands.
+
 The split is remembered and used for every diff, in Changes, the Log and diff tabs alike. The column of change buttons between the sides keeps its width.
 
 ## Find text in a diff

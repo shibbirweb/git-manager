@@ -1,17 +1,20 @@
 <!-- A handle between two side-by-side views inside one box, like the split diff's: drag it or use the arrow keys
-     (Shift for bigger steps) to move the split, which `ratio` holds (0 to 1, data); double-click centers it. Its
-     parent must be positioned. `gutter` px between the sides, such as a diff's change arrows, never grow. -->
+     (Shift for bigger steps) to move the split, which `ratio` holds (0 to 1, data); double-click puts it back at
+     `resetRatio` (the middle). Its parent must be positioned. `gutter` px between the sides, such as a diff's change
+     arrows, never grow. -->
 <script lang="ts">
   import { keyedRatio, pointerRatio } from "../logic/splitRatio";
 
   interface Props {
     ratio?: number;
     gutter?: number;
+    /** Where a double-click puts the split back; a 3-pane view's handles go back to even thirds. */
+    resetRatio?: number;
     label: string;
     oncommit?: (ratio: number) => void;
   }
 
-  let { ratio = $bindable(0.5), gutter = 0, label, oncommit }: Props = $props();
+  let { ratio = $bindable(0.5), gutter = 0, resetRatio = 0.5, label, oncommit }: Props = $props();
 
   let dragging = $state(false);
   let handle = $state<HTMLDivElement | null>(null);

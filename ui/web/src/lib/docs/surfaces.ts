@@ -136,6 +136,13 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("colors", "{ left: ConnectorColors; right: ConnectorColors }", "Each connector's ribbon colors.", {
         default: '{ left: "kinds", right: "kinds" }',
       }),
+      prop("split", "ThreeSplit ([number, number])", "Where the left pane ends and the right pane starts, 0 to 1 " +
+        "of the width the panes share; dragging a connector's edge moves it, double-click makes even thirds.", {
+        default: "[1 / 3, 2 / 3]",
+        bindable: true,
+        data: true,
+      }),
+      prop("oncommitsplit", "(split: ThreeSplit) => void", "A drag ended or a key moved a pane edge: save it."),
       prop("onready", "(parts: MergeFrameParts) => void | (() => void)", "The panes, once shown."),
     ],
     rules: ["Never draw UI in the panes: they hold only the editors the app builds."],
@@ -145,7 +152,7 @@ export const surfaceDocs: ComponentDoc[] = [
         code: '<MergeFrame label="Merge" {labels} {leftRibbons} {rightRibbons} onapply={apply} onready={build} />',
       },
     ],
-    logic: ["mergeGeometry.ts"],
+    logic: ["mergeGeometry.ts", "threeSplit.ts"],
     replaces: ["src/lib/merge/MergeEditor.svelte (pane titles, panes and connectors)"],
   },
   {

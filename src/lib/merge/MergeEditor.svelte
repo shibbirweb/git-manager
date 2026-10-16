@@ -12,6 +12,7 @@
   import { untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { editorLanguage } from "$lib/editor/setup";
+  import { settings } from "$lib/stores/settings.svelte";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { confirmDiscard, confirmReload, confirmSave, statusText } from "./mergeConfirm";
@@ -213,6 +214,8 @@
     rightRibbons={session.rightRibbons}
     onapply={(chunkId, side) => session.apply(chunkId, side === "left" ? "ours" : "theirs")}
     onignore={(chunkId, side) => session.ignore(chunkId, side === "left" ? "ours" : "theirs")}
+    bind:split={() => settings.threePaneSplit, (split) => (settings.threePaneSplit = split)}
+    oncommitsplit={() => settings.save()}
     onready={build}
   />
 

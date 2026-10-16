@@ -299,6 +299,7 @@ class SettingsStore {
   leftBarVisible = $state(initialState.leftBarVisible);
   rightBarVisible = $state(initialState.rightBarVisible);
   diffSplitRatio = $state(initialState.diffSplitRatio);
+  threePaneSplit = $state.raw(initialState.threePaneSplit);
   leftPanel = $state<LeftPanel>(initialState.leftPanel);
   sidebarWidth = $state(initialState.sidebarWidth);
   explorerWidth = $state(initialState.explorerWidth);
@@ -560,6 +561,7 @@ class SettingsStore {
       leftBarVisible: this.leftBarVisible,
       rightBarVisible: this.rightBarVisible,
       diffSplitRatio: this.diffSplitRatio,
+      threePaneSplit: this.threePaneSplit,
       leftPanel: this.leftPanel,
       sidebarWidth: this.sidebarWidth,
       explorerWidth: this.explorerWidth,

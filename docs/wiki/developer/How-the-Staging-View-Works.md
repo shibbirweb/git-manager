@@ -27,6 +27,10 @@ The colors follow VS Code: `paneTones` (`threeWay.ts`) makes the left pane older
 
 Every diff draws the same `DiffToolbar.svelte`: the two-pane `DiffView` and `ThreePaneDiff` pass the counter, the `layout` (`three`, `sideBySide` or `inline`), the Three panes tooltip and what they offer, so a button or a fix reaches both. `threeWayBlame.ts` puts Blame on one pane (`blame.pane`: the work tree here, the merge result for a merge commit). **Open File** shows when the caller passes `workingFile`; it calls `openWorkingFile` (`diff/openWorkingFile.ts`, shared with `DiffView`) at `ThreeWayEditors.lineOnScreen("right")`, the working tree's line.
 
+### Resizing the panes
+
+`MergeFrame` saves two boundaries, `settings.threePaneSplit`, as the panes' `flex-grow` shares. Each connector's outer edge has a `SplitHandle` (the two-pane diff's handle) in a box that leaves out the other connector, so its ratio is a share of the panes' width. `moveThreeSplit` (library `logic/threeSplit.ts`) keeps every pane at 15% or more. The merge tool shares the frame and the setting.
+
 ## Where the code lives
 
 | File | What it does |
@@ -46,6 +50,7 @@ Every diff draws the same `DiffToolbar.svelte`: the two-pane `DiffView` and `Thr
 ## Tests
 
 - `src/lib/views/changes/stagingDiffs.test.ts`: which files fit, the flipped work tree side and the index's line ending (`indexEol`).
+- `threeSplit.test.ts` (UI library) and `settingsData.test.ts`: the panes' boundaries, their minimum and the saved split.
 - `src/lib/diff/threeWay.test.ts`: the staging colors, no conflicts, and staging and unstaging with `takeChange`.
 
 ## Bugs we fixed
@@ -64,6 +69,11 @@ Every diff draws the same `DiffToolbar.svelte`: the two-pane `DiffView` and `Thr
 - **The issue:** three panes had no Blame, no divider after the counter and an extra change count, and the Collapse tooltip differed.
 - **Why it happened:** `ThreePaneDiff` drew its own toolbar, a copy of `DiffToolbar` that fixes did not reach.
 - **The fix and why we chose it:** `DiffToolbar` takes plain props instead of the two-pane editors, and both views draw it, so the buttons, order and spacing live in one place.
+
+**The three panes could not be resized.**
+- **The issue:** the two-pane diff lets you drag the line between its sides, but the three panes kept equal widths, so long lines were cut off in every pane.
+- **Why it happened:** `MergeFrame` gave each pane `flex: 1` and had no handle; only `DiffFrame` had a `SplitHandle`.
+- **The fix and why we chose it:** `MergeFrame` holds two boundaries (`threePaneSplit`) with a `SplitHandle` on each connector's outer edge, reusing the two-pane handle and its pointer math, so dragging, keys and double-click behave the same. Being in the library frame, it reaches the merge tool and merge commits too.
 
 ## Keeping this page in sync
 

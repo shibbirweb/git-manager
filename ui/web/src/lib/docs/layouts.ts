@@ -51,7 +51,9 @@ export const layoutPartDocs: ComponentDoc[] = [
     name: "SplitHandle",
     group: "Layout",
     summary: "A handle between two side-by-side views in one box: drag or arrow keys move the split.",
-    usage: "DiffFrame uses it between a diff's sides. Put it in a positioned box; double-click centers.",
+    usage:
+      "DiffFrame uses it between a diff's sides, MergeFrame on each connector's edge. Put it in a positioned box; " +
+      "double-click puts it back at `resetRatio`.",
     aliases: ["Splitter"],
     props: [
       prop("ratio", "number", "The split, 0 to 1.", { default: "0.5", bindable: true, data: true }),
@@ -59,6 +61,7 @@ export const layoutPartDocs: ComponentDoc[] = [
         default: "0",
         data: true,
       }),
+      prop("resetRatio", "number", "Where a double-click puts the split back.", { default: "0.5", data: true }),
       prop("label", "string", "Accessible name.", { required: true }),
       prop("oncommit", "(ratio: number) => void", "A drag ended or a key moved it: save it."),
     ],

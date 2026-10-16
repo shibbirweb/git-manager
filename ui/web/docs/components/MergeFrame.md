@@ -27,6 +27,10 @@ the three panes and the box the ribbons are measured from. MergeView is built on
   as Unstage this change and Stage this change.
 - `colors` (`{ left: ConnectorColors; right: ConnectorColors }`, default `{ left: "kinds", right: "kinds" }`): Each
   connector's ribbon colors.
+- `split` (`ThreeSplit ([number, number])`, default `[1 / 3, 2 / 3]`, bindable): Where the left pane ends and the right
+  pane starts, 0 to 1 of the width the panes share; dragging a connector's edge moves it, double-click makes even
+  thirds.
+- `oncommitsplit` (`(split: ThreeSplit) => void`): A drag ended or a key moved a pane edge: save it.
 - `onready` (`(parts: MergeFrameParts) => void | (() => void)`): The panes, once shown.
 
 ## Rules
@@ -46,3 +50,4 @@ the three panes and the box the ribbons are measured from. MergeView is built on
 ## Logic
 
 - `logic/mergeGeometry.ts`
+- `logic/threeSplit.ts`

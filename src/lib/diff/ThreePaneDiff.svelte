@@ -1,8 +1,8 @@
 <!-- A file in three read-only panes, like JetBrains IDEs: a merge commit's parent 1, merge result and parent 2, or the
      staging view's HEAD, index and work tree, with bands joining each side's changes to the middle. With `onapply`
      the bands carry arrows that take a change into the middle (stage or unstage); with `workingFile`, Open File
-     opens the real file; with `blame`, Blame shows who wrote each line of one pane. threeWayEditors.svelte.ts builds
-     the editors, and the toolbar is the same DiffToolbar as every other diff. -->
+     opens the real file; with `blame`, Blame shows who wrote each line of one pane. The panes' widths are saved.
+     threeWayEditors.svelte.ts builds the editors, and the toolbar is the same DiffToolbar as every other diff. -->
 <script lang="ts">
   import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
   import Stack from "@git-manager/ui/components/Stack.svelte";
@@ -106,6 +106,8 @@
           onapply={onapply ? apply : undefined}
           {applyTitles}
           colors={{ left: "oldToNew", right: options.rightNewer ? "oldToNew" : "newToOld" }}
+          bind:split={() => settings.threePaneSplit, (split) => (settings.threePaneSplit = split)}
+          oncommitsplit={() => settings.save()}
           onready={(parts) => {
             const collapse = diffPrefs.collapseUnchanged;
             void editors.build({ parts, left, right, path, collapse, options, scrollTop: keptScroll, blame });

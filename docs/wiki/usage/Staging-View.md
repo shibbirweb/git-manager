@@ -20,7 +20,7 @@ The staging view is offered for files that are modified, in the index, the worki
 
 The toolbar is the same as in every diff. **Blame** shows who wrote each line of the working tree pane.
 
-Scroll any pane and the others follow, so matching lines stay level. **Collapse unchanged** folds the lines that are the same in all three panes, with the wavy fold bars of the [Diffs](Diffs.md) view. **Open File** opens the file itself in an editor tab, at the line you were looking at in the working tree.
+To make a pane wider, drag the edge of a column of bands, like the line between the sides of a [diff](Diffs.md#resize-the-two-sides). Scroll any pane and the others follow, so matching lines stay level. **Collapse unchanged** folds the lines that are the same in all three panes, with the wavy fold bars of the [Diffs](Diffs.md) view. **Open File** opens the file itself in an editor tab, at the line you were looking at in the working tree.
 
 ## Stage and unstage
 

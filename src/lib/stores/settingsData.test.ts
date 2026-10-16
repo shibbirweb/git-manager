@@ -626,6 +626,13 @@ describe("parseState", () => {
     expect(parseState({ diffSplitRatio: "wide" }).state.diffSplitRatio).toBe(0.5);
   });
 
+  it("keeps a saved three-pane split only when every pane keeps its share", () => {
+    expect(parseState({}).state.threePaneSplit).toEqual([1 / 3, 2 / 3]);
+    expect(parseState({ threePaneSplit: [0.2, 0.6] }).state.threePaneSplit).toEqual([0.2, 0.6]);
+    expect(parseState({ threePaneSplit: [0.6, 0.2] }).state.threePaneSplit).toEqual([1 / 3, 2 / 3]);
+    expect(parseState({ threePaneSplit: "wide" }).state.threePaneSplit).toEqual([1 / 3, 2 / 3]);
+  });
+
   it("shows both activity bars unless state.json says otherwise", () => {
     expect(parseState({}).state.leftBarVisible).toBe(true);
     expect(parseState({}).state.rightBarVisible).toBe(true);

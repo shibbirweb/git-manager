@@ -2,7 +2,8 @@
      fills with editors, and the connector columns between them. It draws no editor: `onready` hands over the pane
      elements and the box the ribbons are measured from, and the ribbons come back as props. Without `onapply` and
      `onignore` the connectors draw ribbons alone, for a read-only 3-pane diff such as a merge commit's; `colors` picks
-     each connector's ribbon colors (by kind, or red to green from the older pane to the newer). -->
+     each connector's ribbon colors (by kind, or red to green from the older pane to the newer). A handle on each
+     connector's edge resizes the panes, which `split` holds; double-click puts them back to even thirds. -->
 <script module lang="ts">
   export interface MergeFrameParts {
     left: HTMLDivElement;
@@ -15,7 +16,10 @@
 
 <script lang="ts">
   import { presetVar, type ViewHeight } from "../logic/presets";
+  import { EVEN_THREE_SPLIT, moveThreeSplit, type ThreeSplit } from "../logic/threeSplit";
+  import { componentTokens } from "../styles/tokens";
   import MergeConnector, { type ConnectorColors, type ConnectorRibbon } from "./MergeConnector.svelte";
+  import SplitHandle from "./SplitHandle.svelte";
 
   interface Props {
     label: string;
@@ -28,6 +32,8 @@
     onignore?: (index: number, side: "left" | "right") => void;
     applyTitles?: { left: string; right: string } | null;
     colors?: { left: ConnectorColors; right: ConnectorColors };
+    split?: ThreeSplit;
+    oncommitsplit?: (split: ThreeSplit) => void;
     onready?: (parts: MergeFrameParts) => void | (() => void);
   }
 
@@ -42,6 +48,8 @@
     onignore,
     applyTitles = null,
     colors = { left: "kinds", right: "kinds" },
+    split = $bindable(EVEN_THREE_SPLIT),
+    oncommitsplit,
     onready,
   }: Props = $props();
 
@@ -50,6 +58,7 @@
   let result = $state<HTMLDivElement | null>(null);
   let right = $state<HTMLDivElement | null>(null);
   let panes = $state<HTMLDivElement | null>(null);
+  const gap = componentTokens.mergeView.gap;
 
   $effect(() => {
     if (left && result && right && panes && onready) {
@@ -58,7 +67,16 @@
   });
 </script>
 
-<div class="merge" role="region" aria-label={label} style:height={shownHeight} style:flex={shownHeight && "none"}>
+<div
+  class="merge"
+  role="region"
+  aria-label={label}
+  style:height={shownHeight}
+  style:flex={shownHeight && "none"}
+  style:--merge-left={split[0]}
+  style:--merge-result={split[1] - split[0]}
+  style:--merge-right={1 - split[1]}
+>
   <div class="labels">
     <div class="label" title={labels.left}>{labels.left}</div>
     <div class="label-gap"></div>
@@ -88,7 +106,26 @@
       onignore={onignore ? (index) => onignore(index, "right") : undefined}
       colors={colors.right}
     />
-    <div class="pane" bind:this={right}></div>
+    <div class="pane right-pane" bind:this={right}></div>
+    <!-- Each box leaves out the other connector, so a handle's ratio is a share of the width the panes share. -->
+    <div class="handle-box first">
+      <SplitHandle
+        bind:ratio={() => split[0], (ratio) => (split = moveThreeSplit(split, 0, ratio))}
+        gutter={gap}
+        resetRatio={EVEN_THREE_SPLIT[0]}
+        label="Resize the left and middle panes"
+        oncommit={() => oncommitsplit?.(split)}
+      />
+    </div>
+    <div class="handle-box second">
+      <SplitHandle
+        bind:ratio={() => split[1], (ratio) => (split = moveThreeSplit(split, 1, ratio))}
+        gutter={gap}
+        resetRatio={EVEN_THREE_SPLIT[1]}
+        label="Resize the middle and right panes"
+        oncommit={() => oncommitsplit?.(split)}
+      />
+    </div>
   </div>
 </div>
 
@@ -112,7 +149,6 @@
   }
 
   .label {
-    flex: 1;
     min-width: 0;
     padding: var(--merge-view-label-padding-y) var(--merge-view-label-padding-x);
     overflow: hidden;
@@ -123,6 +159,22 @@
 
   .label.result {
     text-align: center;
+  }
+
+  /* The labels and panes share the split; the connectors between them never grow. */
+  .label,
+  .pane {
+    flex: var(--merge-left) 1 0;
+  }
+
+  .label.result,
+  .pane.result-pane {
+    flex-grow: var(--merge-result);
+  }
+
+  .label.theirs,
+  .pane.right-pane {
+    flex-grow: var(--merge-right);
   }
 
   .file {
@@ -146,7 +198,6 @@
   }
 
   .pane {
-    flex: 1;
     min-width: 0;
     overflow: hidden;
     background: var(--editor-bg);
@@ -154,6 +205,27 @@
 
   .pane :global(.cm-editor) {
     height: 100%;
+  }
+
+  .handle-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+
+  .handle-box.first {
+    left: 0;
+    right: var(--merge-view-gap);
+  }
+
+  .handle-box.second {
+    left: var(--merge-view-gap);
+    right: 0;
+  }
+
+  .handle-box :global(.split-handle) {
+    pointer-events: auto;
   }
 
   .result-pane {

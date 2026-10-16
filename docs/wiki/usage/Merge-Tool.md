@@ -30,7 +30,7 @@ Colored ribbons connect each change on a side with its place in the result:
 - Grey: removed lines.
 - Red: a conflict, where both sides changed the same lines.
 
-Inside a change, the exact words that differ are highlighted. The three panes scroll together, so matching lines stay next to each other.
+Inside a change, the exact words that differ are highlighted. The three panes scroll together, so matching lines stay next to each other. To make a pane wider, drag the edge of a column of ribbons; double-click it to make the panes equal again.
 
 ## Take changes, one at a time
 
