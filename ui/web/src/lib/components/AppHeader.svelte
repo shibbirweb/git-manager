@@ -23,7 +23,12 @@
   const drag = $derived(windowControls ? "" : undefined);
 </script>
 
-<header class="header {look} tint-{tint}" class:controls={windowControls} data-tauri-drag-region={drag}>
+<header
+  class="header {look} tint-{tint}"
+  class:controls={windowControls}
+  style:--header-tint={tint === "none" ? null : `var(--term-${tint})`}
+  data-tauri-drag-region={drag}
+>
   <div class="start" data-tauri-drag-region={drag}>{@render start()}</div>
   <div class="end" data-tauri-drag-region={drag}>
     {#if busy}
@@ -60,37 +65,24 @@
     padding-left: var(--app-header-controls-inset);
   }
 
-  /* Flat: a soft glow from the left edge, over the bar's own background. The ellipse sits on the bar's middle line and
-     reaches its top and bottom edges fully faded, so it blends into the window above and the panels below, and eases
-     out to the right. Each color is the tile's terminal color, so it follows the color theme. */
+  /* Flat: a soft glow from the left edge, over the bar's own background, fainter in light themes (see AppShell).
+     The ellipse sits on the bar's middle line and reaches its top and bottom edges fully faded, so it blends into the
+     window above and the panels below, and eases out to the right. */
   .flat:not(.tint-none) {
+    --glow-start: light-dark(
+      color-mix(in srgb, var(--header-tint) 14%, transparent),
+      color-mix(in srgb, var(--header-tint) 28%, transparent)
+    );
+    --glow-middle: light-dark(
+      color-mix(in srgb, var(--header-tint) 6%, transparent),
+      color-mix(in srgb, var(--header-tint) 13%, transparent)
+    );
     background-image: radial-gradient(
       var(--app-header-tint-width) 50% at 0 50%,
-      color-mix(in srgb, var(--header-tint) 30%, transparent) 0%,
-      color-mix(in srgb, var(--header-tint) 14%, transparent) 45%,
-      color-mix(in srgb, var(--header-tint) 4%, transparent) 75%,
+      var(--glow-start) 0%,
+      var(--glow-middle) 45%,
       transparent 100%
     );
-  }
-
-  .tint-blue {
-    --header-tint: var(--term-blue);
-  }
-
-  .tint-green {
-    --header-tint: var(--term-green);
-  }
-
-  .tint-magenta {
-    --header-tint: var(--term-magenta);
-  }
-
-  .tint-cyan {
-    --header-tint: var(--term-cyan);
-  }
-
-  .tint-red {
-    --header-tint: var(--term-red);
   }
 
   .start,

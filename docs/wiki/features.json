@@ -95,6 +95,7 @@
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Project-Color-And-Title-Bar.md", "summary": "The project's color glow and the macOS window buttons in the top bar." },
     { "page": "developer/One-Diff-View.md", "summary": "How every place that shows a diff shares one view, its panes and its buttons." },
     { "page": "developer/Diff-Bugs-We-Fixed.md", "summary": "The diff view bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Color-Theme-Bugs-We-Fixed.md", "summary": "The color theme bugs we found, why they happened and how we fixed them." },

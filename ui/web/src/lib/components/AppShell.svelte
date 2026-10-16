@@ -81,6 +81,7 @@
 <div
   class="shell tint-{tint}"
   class:rounded={look === "rounded"}
+  style:--shell-tint={tint === "none" ? null : `var(--term-${tint})`}
   style:height={shownHeight}
   style:flex={shownHeight && "none"}
 >
@@ -217,36 +218,30 @@
     background-color: var(--frame);
   }
 
-  /* The project's glow: strongest in the top left corner and easing out to the right and down, with no edge. */
+  /* The project's glow: strongest in the top left corner and easing out to the right and down, with no edge. A light
+     theme gets a much fainter one, so the dim icons on the frame keep their contrast. The color is the tile's
+     terminal color, so it follows the color theme. */
   .rounded:not(.tint-none) {
+    --glow-start: light-dark(
+      color-mix(in srgb, var(--shell-tint) 12%, transparent),
+      color-mix(in srgb, var(--shell-tint) 26%, transparent)
+    );
+    --glow-middle: light-dark(
+      color-mix(in srgb, var(--shell-tint) 6%, transparent),
+      color-mix(in srgb, var(--shell-tint) 13%, transparent)
+    );
+    --glow-end: light-dark(
+      color-mix(in srgb, var(--shell-tint) 2%, transparent),
+      color-mix(in srgb, var(--shell-tint) 4%, transparent)
+    );
     background-image: radial-gradient(
       var(--app-shell-tint-width) var(--app-shell-tint-height) at 0 0,
-      color-mix(in srgb, var(--shell-tint) 30%, transparent) 0%,
-      color-mix(in srgb, var(--shell-tint) 16%, transparent) 35%,
-      color-mix(in srgb, var(--shell-tint) 6%, transparent) 65%,
+      var(--glow-start) 0%,
+      var(--glow-middle) 35%,
+      var(--glow-end) 65%,
       transparent 100%
     );
     background-repeat: no-repeat;
-  }
-
-  .tint-blue {
-    --shell-tint: var(--term-blue);
-  }
-
-  .tint-green {
-    --shell-tint: var(--term-green);
-  }
-
-  .tint-magenta {
-    --shell-tint: var(--term-magenta);
-  }
-
-  .tint-cyan {
-    --shell-tint: var(--term-cyan);
-  }
-
-  .tint-red {
-    --shell-tint: var(--term-red);
   }
 
   .rounded .body {
