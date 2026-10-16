@@ -1,8 +1,9 @@
 <!-- A file in three read-only panes, like JetBrains IDEs: a merge commit's parent 1, merge result and parent 2, or the
      staging view's HEAD, index and work tree, with bands joining each side's changes to the middle. With `onapply`
-     the bands carry arrows that take a change into the middle (stage or unstage). threeWayEditors.svelte.ts builds
-     the editors. -->
+     the bands carry arrows that take a change into the middle (stage or unstage); with `workingFile`, Open File
+     opens the real file. threeWayEditors.svelte.ts builds the editors. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
   import IconButton from "@git-manager/ui/components/IconButton.svelte";
   import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
   import Stack from "@git-manager/ui/components/Stack.svelte";
@@ -12,6 +13,7 @@
   import { localKeys } from "$lib/commands/commandRuntime";
   import type { DiffLayout } from "$lib/stores/settings.svelte";
   import type { FileDiff } from "$lib/types";
+  import { openWorkingFile } from "./openWorkingFile";
   import { diffPrefs } from "./prefs.svelte";
   import type { ParentSide, ThreeWayOptions } from "./threeWay";
   import { ThreeWayEditors } from "./threeWayEditors.svelte";
@@ -31,6 +33,8 @@
     applyTitles?: { left: string; right: string } | null;
     /** Side by side or Inline in the layout buttons: back to the two-pane diff. */
     onlayout: (layout: DiffLayout) => void;
+    /** The file in the work tree (absolute path), for Open File; `sameLines` when the right pane is the work tree. */
+    workingFile?: { filePath: string; sameLines: boolean } | null;
   }
 
   let {
@@ -43,6 +47,7 @@
     onapply = null,
     applyTitles = null,
     onlayout,
+    workingFile = null,
   }: Props = $props();
 
   const editors = new ThreeWayEditors();
@@ -57,6 +62,13 @@
         ? editors.summary
         : `${editors.current + 1} of ${editors.changeCount}`,
   );
+
+  /** Opens the real file in an editor tab, at the right pane's line when that pane is the work tree. */
+  function openFile(): void {
+    if (workingFile) {
+      void openWorkingFile(workingFile.filePath, workingFile.sameLines ? editors.lineOnScreen("right") : null);
+    }
+  }
 
   function apply(index: number, side: ParentSide): void {
     const middle = editors.taken(side, index);
@@ -114,6 +126,17 @@
       title="Collapse the lines that match on every side"
       bind:pressed={() => diffPrefs.collapseUnchanged, () => diffPrefs.toggleCollapse()}
     />
+    {#if workingFile}
+      <Button
+        variant="ghost"
+        size="small"
+        icon="external-link"
+        title="Open the file itself in an editor tab"
+        onclick={openFile}
+      >
+        Open File
+      </Button>
+    {/if}
     {#snippet end()}
       <Stack direction="row" gap="sm" shrink="first" align="baseline">
         <Text tone="dim" size="small" truncate hideAt="compact">{editors.summary}</Text>

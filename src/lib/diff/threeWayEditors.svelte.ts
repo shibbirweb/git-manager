@@ -11,6 +11,7 @@ import { type LineMark, setSideMarks, sideExtensions } from "$lib/merge/extensio
 import { lineAtCenter, scrollToLine } from "$lib/merge/mergeScroll";
 import { type Anchor, invertAnchors, mapLine } from "$lib/merge/model";
 import type { FileDiff, LineRange } from "$lib/types";
+import { newLineOnScreen } from "./diffPositions";
 import { foldStep, inlineFolds } from "./foldField";
 import type { FoldEdge } from "./foldModel";
 import { fallbackHunks } from "./inlineDoc";
@@ -265,6 +266,12 @@ export class ThreeWayEditors {
   }
 
   /** The middle pane's scroll position, kept across a rebuild. */
+  /** The 0-based line of `pane` at its cursor, or at its top when the cursor is out of sight (for Open File). */
+  lineOnScreen(pane: Pane): number | null {
+    const view = this.#views?.[pane];
+    return view ? newLineOnScreen(view, null) : null;
+  }
+
   scrollTop(): number | null {
     return this.#views?.result.scrollDOM.scrollTop ?? null;
   }

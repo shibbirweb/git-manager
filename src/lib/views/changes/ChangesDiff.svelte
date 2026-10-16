@@ -119,6 +119,7 @@
           settings.setPreference("diffLayout", layout);
           diffPrefs.setStagingThreePanes(false);
         }}
+        workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: true }}
       />
     {/key}
   {:else if selected && changesSelection.diff}

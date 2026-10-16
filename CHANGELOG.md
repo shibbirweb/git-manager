@@ -182,6 +182,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The three-pane views (staging and merge commits) have the **Open File** button again, like the two-pane diff.
 - After Zoom In, Zoom Out or a font change, the selection and the inline blame stay on their line instead of floating above or below it.
 - The inline diff shows its scrollbar again; the change overview at the right covered it.
 - Opening a Markdown file in the Rich Editor no longer slides the whole window up under the title bar (macOS).

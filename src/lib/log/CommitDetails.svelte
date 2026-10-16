@@ -246,6 +246,7 @@
             settings.setPreference("diffLayout", layout);
             diffPrefs.setThreePanes(false);
           }}
+          workingFile={{ filePath: joinPath(repoPath, threeWay.path), sameLines: false }}
         />
       {/key}
     {:else if shown}

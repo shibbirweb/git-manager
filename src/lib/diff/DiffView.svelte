@@ -7,7 +7,6 @@
   import Stack from "@git-manager/ui/components/Stack.svelte";
   import { untrack } from "svelte";
   import { type BlameTarget, setBlameDisplay } from "$lib/editor/blame";
-  import { navigation } from "$lib/stores/navigation.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { FileDiff, LineAction, LineSelection } from "$lib/types";
   import { toast } from "$lib/ui/toast.svelte";
@@ -15,6 +14,7 @@
   import { type PreviewSides, showsBinaryPreview } from "./binaryPreview";
   import { DiffEditors, type DiffMode } from "./diffEditors.svelte";
   import { openLineMenu } from "./diffLineMenu";
+  import { openWorkingFile } from "./openWorkingFile";
   import { diffLines } from "./diffLines.svelte";
   import DiffToolbar from "./DiffToolbar.svelte";
   import { selectionSize } from "./lineSelection";
@@ -146,21 +146,13 @@
   }
 
   /** Opens the real file in an editor tab, at the same line when the right side is the work tree. */
-  async function openWorkingFile(): Promise<void> {
+  function openFile(): void {
     const target = workingFile;
     if (!target) {
       return;
     }
-    if (!(await navigation.fileExists(target.filePath))) {
-      toast.info(
-        `${fileName} is not in the work tree`,
-        "It was deleted or never existed there, so there is no file to open.",
-      );
-      return;
-    }
     const editor = editors.newEditor();
-    const line = target.sameLines && editor ? editors.lineOnScreen(editor) : null;
-    await navigation.openFileAt(target.filePath, line, null, { pin: true });
+    void openWorkingFile(target.filePath, target.sameLines && editor ? editors.lineOnScreen(editor) : null);
   }
 </script>
 
@@ -173,7 +165,7 @@
     showOpenFile={workingFile !== null}
     {lineMode}
     {path}
-    onopenfile={() => void openWorkingFile()}
+    onopenfile={openFile}
     onlines={runLines}
     onthreepanes={onThreePanes}
   />

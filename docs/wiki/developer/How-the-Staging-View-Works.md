@@ -23,7 +23,7 @@ flowchart LR
 
 A band's arrow calls `ThreeWayEditors.taken(side, index)`, which `takeChange` builds: the index text with the change's lines from that side. `changesSelection.applyDiffChange` writes it to the index, the same path as the two-pane arrows. The new status reloads both diffs; `StagingDiffs` keeps a diff whose texts did not change, and `ThreePaneDiff` keeps the middle pane's scroll position when it rebuilds.
 
-The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three) and `ThreePaneDiff`'s `onlayout` (back to two).
+The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three) and `ThreePaneDiff`'s `onlayout` (back to two). **Open File** shows when the caller passes `workingFile`; it calls `openWorkingFile` (`diff/openWorkingFile.ts`, shared with `DiffView`) at `ThreeWayEditors.lineOnScreen("right")`, the working tree's line.
 
 ## Where the code lives
 
@@ -43,6 +43,13 @@ The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three)
 
 - `src/lib/views/changes/stagingDiffs.test.ts`: which files fit and the flipped work tree side.
 - `src/lib/diff/threeWay.test.ts`: the staging colors, no conflicts, and staging and unstaging with `takeChange`.
+
+## Bugs we fixed
+
+**The three panes had no Open File button.**
+- **The issue:** the two-pane diff has **Open File**, but switching to three panes (staging or a merge commit) lost it.
+- **Why it happened:** `ThreePaneDiff` builds its own toolbar, and Open File lived only in `DiffView`.
+- **The fix and why we chose it:** the open code moved to `openWorkingFile.ts`, which both views call, so the check for a missing file and the toast stay the same in both.
 
 ## Keeping this page in sync
 
