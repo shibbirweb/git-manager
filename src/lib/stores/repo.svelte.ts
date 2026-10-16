@@ -7,6 +7,7 @@
 
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { api, errorMessage, onGitProgress, onOpenFilesChanged, onRepoChanged, onWorkspaceChanged } from "$lib/api";
+import { type OpReport, outputSummary } from "$lib/notifications/gitReport";
 import type { OpOutcome, Refs, RemoteInfo, RepoInfo, RepoStatus, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast, type ToastAction } from "$lib/ui/toast.svelte";
@@ -187,15 +188,20 @@ function dormantKey(groupId: number, tabPath: string): string {
 const RESCAN_DELAY_MS = 1000;
 
 interface RunOptions<T> {
-  /** Toast shown on success; a function receives the result. */
-  success?: string | ((result: T) => string | null);
+  /** Toast shown on success; a function receives the result and may write the whole report. */
+  success?: string | ((result: T) => string | OpReport | null);
   /** Refresh the repository afterwards (default true); "status" when the work only touches the index or files. */
   refresh?: boolean | "status";
   /** Repository to run in; defaults to the active one. */
   repoPath?: string;
   /** A button in the success toast, such as Undo; null for none. */
   action?: (result: T) => ToastAction | null;
+  /** The error toast's title; defaults to "<label> failed". */
+  failure?: string;
 }
+
+/** What runOp says when the work went through: a fixed title, or a report built from git's output. */
+export type OpSuccess = string | ((outcome: OpOutcome) => OpReport);
 
 class RepoStore {
   workspace = $state<OpenWorkspace | null>(null);
@@ -988,18 +994,20 @@ class RepoStore {
     this.progress = "";
     const source = this.notificationSource(repoPath);
     // A toast with a button waits for the refresh, so its button sees the state after the work.
-    let withAction: { message: string; result: T } | null = null;
+    let withAction: { message: OpReport; result: T } | null = null;
     try {
       const result = await work(repoPath);
-      const message = typeof options.success === "function" ? options.success(result) : options.success;
+      const said = typeof options.success === "function" ? options.success(result) : options.success;
+      const message: OpReport | null =
+        typeof said === "string" ? { title: said, detail: null, kind: "success" } : (said ?? null);
       if (message && options.action) {
         withAction = { message, result };
       } else if (message) {
-        toast.success(message, undefined, source);
+        toast.show(message.kind, message.title, message.detail ?? undefined, { source });
       }
       return result;
     } catch (error) {
-      toast.error(`${label} failed`, errorMessage(error), source);
+      toast.error(options.failure ?? `${label} failed`, errorMessage(error), source);
       return undefined;
     } finally {
       this.busy = null;
@@ -1013,22 +1021,26 @@ class RepoStore {
       if (withAction) {
         const action = options.action?.(withAction.result) ?? null;
         if (action) {
-          toast.successWithAction(withAction.message, undefined, action, source);
+          toast.successWithAction(withAction.message.title, withAction.message.detail ?? undefined, action, source);
         } else {
-          toast.success(withAction.message, undefined, source);
+          toast.success(withAction.message.title, withAction.message.detail ?? undefined, source);
         }
       }
     }
   }
 
-  /** Like `run`, for operations that may stop on conflicts. */
+  /**
+   * Like `run`, for operations that may stop on conflicts. A fixed success title gets git's summary (refs moved,
+   * files changed) as its detail; a function writes the whole report.
+   */
   async runOp(
     label: string,
     work: (repoPath: string) => Promise<OpOutcome>,
-    successMessage?: string,
+    successMessage?: OpSuccess,
     repoPath?: string,
+    failure?: string,
   ): Promise<OpOutcome | undefined> {
-    const outcome = await this.run(label, work, { repoPath });
+    const outcome = await this.run(label, work, { repoPath, failure });
     if (!outcome) {
       return undefined;
     }
@@ -1039,17 +1051,17 @@ class RepoStore {
         await this.setActiveRepo(repoPath);
       }
       this.conflictsOpen = true;
+    } else if (typeof successMessage === "function") {
+      const report = successMessage(outcome);
+      toast.show(report.kind, report.title, report.detail ?? undefined, { source });
     } else if (successMessage) {
-      toast.success(successMessage, undefined, source);
+      toast.success(successMessage, outputSummary(outcome.output) ?? undefined, source);
     }
     return outcome;
   }
 
-  /** The repository's name on a notification when the workspace has several; with one, the name says nothing. */
+  /** The repository's name on a notification, so a list of pushes and pulls says where each one ran. */
   notificationSource(repoPath: string): string | null {
-    if (this.repos.length < 2) {
-      return null;
-    }
     return this.repos.find((repo) => repo.root === repoPath)?.name ?? null;
   }
 

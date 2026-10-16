@@ -6,19 +6,35 @@ Git Manager tells you when something happens: a push went through, a pull failed
 
 ![Three notification balloons in the bottom right corner](../images/notification-toasts.png)
 
-*A push that went through, a pull that failed with git's message, and a discard with its Undo link.*
+*A push, a pull that failed with git's message, a fetch that found nothing and a pull, each with its repository.*
 
 Each balloon shows:
 
 - An icon for the kind: a blue **i** for information, a green check when something is done, a yellow triangle for a warning, and a red mark for an error.
-- A short title, such as **Pull failed**.
-- The repository it came from, when your workspace has more than one repository.
-- More text when there is some, such as git's own error message. You can select and copy it.
+- A short title that says what happened to which branch, such as **Pushed 2 commits of main to origin/main**.
+- The repository it came from.
+- More text when there is some, such as the commits that moved or git's own error message. You can select and copy it.
 - A link when there is something to do next, such as **Undo**.
 
 Balloons close on their own after a few seconds. Errors stay longest, so there is time to read them. While your pointer is over a balloon it stays open, and it closes a moment after you move away. The **x** in its corner (it shows when you point at the balloon) closes it right away.
 
 At most four balloons show at once. When more arrive, the oldest close early, but they are all still in the panel.
+
+## What the messages say
+
+Git messages name the branch, where it went and what changed, so a list of pushes and pulls across many repositories still tells each one apart:
+
+| Action | Title | More text |
+| --- | --- | --- |
+| Push | Pushed 2 commits of main to origin/main | main: 0867b60..7eba1a2 |
+| First push or Publish | Published feature to origin/feature | New branch feature, Tracks origin/feature |
+| Pull | Pulled origin/main into main | The commits it brought, Fast-forward or a merge commit, the files changed |
+| Fetch | Fetched origin | Each branch that moved, new branches and tags, deleted branches |
+| Sync | Synced main with origin/main | Pulled 3 commits, pushed 1 commit |
+| Commit | Committed on main | The new commit's id and message, the files changed |
+| Update Project | Updated 3 repositories | Each repository and what its pull did |
+
+When there was nothing to do, the message says so with a blue **i**, for example **main is up to date with origin/main** or **Fetched origin: nothing new**. When something fails, the title names the branch too, such as **Could not push main**, and the text below is git's own message.
 
 ## The Notifications panel
 

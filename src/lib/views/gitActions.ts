@@ -6,39 +6,61 @@ import { tick } from "svelte";
 import { api, errorMessage } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
-import type { AppError } from "$lib/types";
+import {
+  fetchReport,
+  publishTitle,
+  pullReport,
+  pushReport,
+  pushTagsReport,
+  syncReport,
+  upstreamRemote,
+} from "$lib/notifications/gitReport";
+import type { AppError, HeadInfo } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import { changesLayout } from "./changes/layout.svelte";
 import { changesSelection } from "./changes/selection.svelte";
-import { syncDoneMessage, syncPlan } from "./changes/sync";
+import { syncPlan } from "./changes/sync";
 
-function headOf(repoRoot?: string) {
+/** A copy of the branch state before an operation, for its message (the refresh after it replaces the state). */
+function headOf(repoRoot?: string): HeadInfo | null {
   const root = repoRoot ?? repoStore.repo?.root;
-  return root ? (repoStore.statuses[root]?.head ?? null) : null;
+  const head = root ? (repoStore.statuses[root]?.head ?? null) : null;
+  return head ? { ...head } : null;
 }
 
 /** Fetches every remote and prunes deleted branches. */
 export function fetchAll(repoRoot?: string): Promise<unknown> {
-  return repoStore.runOp("Fetch", (repoPath) => api.fetchAll(repoPath), "Fetched all remotes", repoRoot);
+  const head = headOf(repoRoot);
+  return repoStore.runOp(
+    "Fetch",
+    (repoPath) => api.fetchAll(repoPath),
+    (outcome) => fetchReport(outcome.output, head, true),
+    repoRoot,
+    "Could not fetch all remotes",
+  );
 }
 
 /** Fetches the default remote; `prune` also drops branches deleted there. */
 export function fetchRemote(repoRoot?: string, prune = false): Promise<unknown> {
+  const head = headOf(repoRoot);
   return repoStore.runOp(
     "Fetch",
     (repoPath) => api.fetch(repoPath, prune),
-    prune ? "Fetched and pruned" : "Fetched",
+    (outcome) => fetchReport(outcome.output, head, false, prune),
     repoRoot,
+    `Could not fetch ${upstreamRemote(head) ?? "the remote"}`,
   );
 }
 
 export function pull(repoRoot?: string, rebase = false): Promise<unknown> {
+  const head = headOf(repoRoot);
   return repoStore.runOp(
     "Pull",
     (repoPath) => api.pull(repoPath, rebase),
-    rebase ? "Pulled and rebased" : "Pulled",
+    (outcome) => pullReport(outcome.output, head, rebase),
     repoRoot,
+    `Could not pull into ${head?.branch ?? "HEAD"}`,
   );
 }
 
@@ -56,23 +78,39 @@ export async function push(askForce = false, repoRoot?: string): Promise<void> {
       return;
     }
   }
-  await repoStore.runOp("Push", (repoPath) => api.push(repoPath, force), force ? "Force pushed" : "Pushed", repoRoot);
+  const head = headOf(repoRoot);
+  await repoStore.runOp(
+    "Push",
+    (repoPath) => api.push(repoPath, force),
+    (outcome) => pushReport(outcome.output, head, force),
+    repoRoot,
+    `Could not push ${head?.branch ?? "HEAD"}`,
+  );
 }
 
 /** Pushes a branch that has no upstream yet and tracks it. */
 export async function publishBranch(repoRoot?: string): Promise<boolean> {
-  const branchName = headOf(repoRoot)?.branch ?? "branch";
+  const head = headOf(repoRoot);
+  const branchName = head?.branch ?? "branch";
   const outcome = await repoStore.runOp(
     "Publish",
     (repoPath) => api.push(repoPath, false),
-    `Published ${branchName}`,
+    (done) => ({ ...pushReport(done.output, head), title: publishTitle(branchName, done.output) }),
     repoRoot,
+    `Could not publish ${branchName}`,
   );
   return outcome !== undefined;
 }
 
 export function pushTags(repoRoot?: string): Promise<unknown> {
-  return repoStore.runOp("Push tags", (repoPath) => api.pushTags(repoPath), "Pushed tags", repoRoot);
+  const head = headOf(repoRoot);
+  return repoStore.runOp(
+    "Push tags",
+    (repoPath) => api.pushTags(repoPath),
+    (outcome) => pushTagsReport(outcome.output, head),
+    repoRoot,
+    "Could not push tags",
+  );
 }
 
 /**
@@ -82,6 +120,7 @@ export function pushTags(repoRoot?: string): Promise<unknown> {
  * Resolves true when everything went through.
  */
 export async function syncRepo(repoRoot: string): Promise<boolean> {
+  const head = headOf(repoRoot);
   const plan = syncPlan(repoStore.statuses[repoRoot]?.head);
   if (plan.kind === "none") {
     return true;
@@ -90,7 +129,13 @@ export async function syncRepo(repoRoot: string): Promise<boolean> {
     return publishBranch(repoRoot);
   }
   if (plan.pull > 0) {
-    const pulled = await repoStore.runOp("Pull", (repoPath) => api.pull(repoPath), undefined, repoRoot);
+    const pulled = await repoStore.runOp(
+      "Pull",
+      (repoPath) => api.pull(repoPath),
+      undefined,
+      repoRoot,
+      `Could not pull into ${head?.branch ?? "HEAD"}`,
+    );
     if (!pulled || pulled.conflicts) {
       return false;
     }
@@ -99,12 +144,19 @@ export async function syncRepo(repoRoot: string): Promise<boolean> {
   // A pull can add a merge commit, so count again before pushing.
   const ahead = repoStore.statuses[repoRoot]?.head?.ahead ?? plan.push;
   if (ahead > 0) {
-    const pushed = await repoStore.runOp("Push", (repoPath) => api.push(repoPath, false), undefined, repoRoot);
+    const pushed = await repoStore.runOp(
+      "Push",
+      (repoPath) => api.push(repoPath, false),
+      undefined,
+      repoRoot,
+      `Could not push ${head?.branch ?? "HEAD"}`,
+    );
     if (!pushed) {
       return false;
     }
   }
-  toast.success(syncDoneMessage(plan.pull, ahead), undefined, repoStore.notificationSource(repoRoot));
+  const report = syncReport(head, plan.pull, ahead);
+  toast.show(report.kind, report.title, report.detail ?? undefined, { source: repoStore.notificationSource(repoRoot) });
   return true;
 }
 
@@ -127,6 +179,7 @@ export async function stash(repoRoot?: string, includeUntracked?: boolean): Prom
   }
   const withUntracked = includeUntracked ?? result.checked;
   // Nothing to stash comes back as an "invalid" error: a note, not a failure.
+  const branchName = headOf(repoRoot)?.branch ?? "HEAD";
   let nothingToStash: string | null = null;
   await repoStore.run(
     "Stash",
@@ -142,10 +195,16 @@ export async function stash(repoRoot?: string, includeUntracked?: boolean): Prom
         throw error;
       }
     },
-    { success: (stashed) => (stashed ? "Changes stashed" : null), repoPath: repoRoot },
+    {
+      success: (stashed) =>
+        stashed
+          ? { title: `Stashed changes on ${branchName}`, detail: result.value.trim() || null, kind: "success" }
+          : null,
+      repoPath: repoRoot,
+    },
   );
   if (nothingToStash) {
-    toast.info(nothingToStash);
+    toast.info(nothingToStash, undefined, repoRoot ? repoStore.notificationSource(repoRoot) : null);
   }
 }
 

@@ -6,6 +6,7 @@ import { EditorView } from "@codemirror/view";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { api, errorMessage } from "$lib/api";
 import { logSelection } from "$lib/log/logSelection.svelte";
+import { pullReport } from "$lib/notifications/gitReport";
 import { gitTabPath, type GitTabRef } from "$lib/stores/gitTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { settings } from "$lib/stores/settings.svelte";
@@ -130,13 +131,17 @@ export async function updateProject(): Promise<void> {
   const plan = updatePlan(repoStore.repos, repoStore.statuses);
   const mode = settings.updateMethod === "rebase" ? "rebase" : "merge";
   let updated = 0;
+  const results: string[] = [];
   for (const [index, step] of plan.steps.entries()) {
     const label = updateProgressText(index, plan.steps.length, step.name);
+    const status = repoStore.statuses[step.repoRoot]?.head ?? null;
+    const head = status ? { ...status } : null;
     const outcome = await repoStore.runOp(
       label,
       (repoPath) => api.pullWithOptions(repoPath, null, null, mode, false),
       undefined,
       step.repoRoot,
+      `Could not update ${step.name} (${head?.branch ?? "HEAD"})`,
     );
     if (!outcome || outcome.conflicts) {
       const left = plan.steps.length - index - 1;
@@ -149,6 +154,7 @@ export async function updateProject(): Promise<void> {
       return;
     }
     updated++;
+    results.push(`${step.name}: ${pullReport(outcome.output, head, mode === "rebase").title}`);
   }
   const skipped = plan.skipped.map((entry) => `${entry.name}: ${entry.reason}`).join("\n");
   if (updated === 0) {
@@ -157,7 +163,7 @@ export async function updateProject(): Promise<void> {
   }
   toast.success(
     updated === 1 ? "Updated 1 repository" : `Updated ${updated} repositories`,
-    skipped ? `Skipped\n${skipped}` : undefined,
+    [results.join("\n"), skipped ? `Skipped\n${skipped}` : ""].filter(Boolean).join("\n\n"),
   );
 }
 

@@ -1790,14 +1790,15 @@ define(
   () => ({ settings: { currentLineBlame: false } }),
 );
 
-/** Puts up a pushed, a failed pull and an undoable message, held on screen like a pointer over them. */
+/** Puts up a push, a failed pull, a fetch and a pull as the app words them, held on screen like a pointer over them. */
 async function showSampleToasts(shot: Shot): Promise<void> {
   await inApp(
     shot,
     `const { toast } = await imp("/src/lib/ui/toast.svelte.ts");
-    toast.success("Pushed 2 commits to origin/main", undefined, "storefront");
-    toast.error("Pull failed", "fatal: Not possible to fast-forward, aborting.", "payments-api");
-    toast.successWithAction("Discarded 3 lines", undefined, { label: "Undo", run: () => undefined }, "storefront");
+    toast.success("Pushed 2 commits of main to origin/main", "main: 0867b60..7eba1a2", "storefront");
+    toast.error("Could not pull into develop", "fatal: Not possible to fast-forward, aborting.", "payments-api");
+    toast.info("Fetched origin: nothing new", undefined, "payments-api");
+    toast.success("Pulled origin/main into main", "origin/main: 7eba1a2..fc63817\\nFast-forward\\n1 file changed, 1 insertion(+)", "storefront");
     for (const item of toast.items) { toast.hold(item.id, true); }`,
   );
   await shot.settle(400);
@@ -1806,8 +1807,8 @@ async function showSampleToasts(shot: Shot): Promise<void> {
 define("notification-toasts", async (shot) => {
   await showSampleToasts(shot);
   const balloons = shot.page.locator(".toasts .notification");
-  await balloons.nth(2).waitFor();
-  await shot.save(await shot.clipAround([balloons.first(), balloons.nth(2)], 16));
+  await balloons.nth(3).waitFor();
+  await shot.save(await shot.clipAround([balloons.first(), balloons.nth(3)], 16));
 });
 
 define("notifications-panel", async (shot) => {
@@ -1819,7 +1820,7 @@ define("notifications-panel", async (shot) => {
   );
   await menuAction(shot, "view.notifications");
   const panel = shot.page.getByRole("region", { name: "Notifications", exact: true });
-  await panel.locator(".notification").nth(2).waitFor();
+  await panel.locator(".notification").nth(3).waitFor();
   const bar = shot.page.getByRole("navigation", { name: "Right sidebar" });
   await shot.page.mouse.move(640, 790);
   await shot.settle();

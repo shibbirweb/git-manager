@@ -1,6 +1,7 @@
 // The actions of a repository row in the Changes view. Each runs in the row's repository, never just the active one.
 
 import { api } from "$lib/api";
+import { commitReport } from "$lib/notifications/gitReport";
 import { repoStore } from "$lib/stores/repo.svelte";
 import type { Refs, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
@@ -132,6 +133,7 @@ export async function commitRepo(repoRoot: string, request: CommitRequest): Prom
   if (!(await ensureIdentity(repoRoot))) {
     return false;
   }
+  const branchName = repoStore.statuses[repoRoot]?.head?.branch ?? null;
   const result = await repoStore.run(
     "Commit",
     (repoPath) =>
@@ -140,7 +142,7 @@ export async function commitRepo(repoRoot: string, request: CommitRequest): Prom
         : api.commit(repoPath, message, request.amend, options),
     {
       repoPath: repoRoot,
-      success: request.amend ? "Commit amended" : "Committed",
+      success: (output) => commitReport(output, branchName, request.amend),
       // Pushed right after, an undo would rewrite what was just published.
       action: () => (request.followUp === "none" ? undoAction(repoRoot, request.amend ? ["amend"] : ["commit"]) : null),
     },
