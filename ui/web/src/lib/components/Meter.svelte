@@ -9,16 +9,17 @@
     detail?: string;
     variant?: "memory" | "usage" | "mini";
     tone?: "accent" | "warning" | "danger";
+    title?: string;
   }
 
-  let { fraction, label = "", value = "", detail = "", variant = "memory", tone = "accent" }: Props = $props();
+  let { fraction, label = "", value = "", detail = "", variant = "memory", tone = "accent", title }: Props = $props();
 
   // The app never draws an empty bar: a sliver shows the meter is there.
   const MINIMUM = { memory: 0, usage: 0.02, mini: 0.04 };
   const width = $derived(`${Math.max(MINIMUM[variant], Math.min(1, Math.max(0, fraction))) * 100}%`);
 </script>
 
-<div class="meter {variant} {tone}">
+<div class="meter {variant} {tone}" {title}>
   {#if variant !== "mini" && (label || value)}
     <div class="row">
       <span>{label}</span>

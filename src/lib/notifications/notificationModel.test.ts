@@ -4,7 +4,6 @@ import {
   ACTION_LIFETIME_MS,
   actionAvailable,
   addNotification,
-  badgeText,
   bellTitle,
   CHECKED_ACTION_LIFETIME_MS,
   dropStaleActions,
@@ -116,10 +115,7 @@ describe("notification list", () => {
     expect(shouldPopUp("error", true)).toBe(true);
   });
 
-  it("words the badge, kinds and tooltip", () => {
-    expect(badgeText(0)).toBe("");
-    expect(badgeText(7)).toBe("7");
-    expect(badgeText(120)).toBe("99+");
+  it("words the kinds and tooltip", () => {
     expect(kindLabel("warning")).toBe("Warning");
     expect(kindLabel("success")).toBe("Done");
     expect(bellTitle(0, 0, false)).toBe("No notifications");

@@ -15,7 +15,7 @@
   import {
     TERMINAL_DRAG_EVENT,
     TERMINAL_DROP_EVENT,
-    TERMINAL_KEY_ATTRIBUTE,
+    terminalScreenId,
     type TerminalDragDetail,
     type TerminalDropDetail,
     terminalKeyAt,
@@ -27,7 +27,7 @@
   const listening = $derived(terminalStore.terminals.length > 0 && settings.terminalDropPaths);
 
   function viewOf(terminalKey: number): Element | null {
-    return document.querySelector(`[${TERMINAL_KEY_ATTRIBUTE}="${terminalKey}"]`);
+    return document.getElementById(terminalScreenId(terminalKey));
   }
 
   $effect(() => {

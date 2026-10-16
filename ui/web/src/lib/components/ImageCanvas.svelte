@@ -3,6 +3,7 @@
      to zoom on Cmd or Ctrl + wheel (and trackpad pinch). MediaView and MediaCompare are built on it. -->
 <script lang="ts">
   import { untrack } from "svelte";
+  import { releaseMedia } from "../logic/releaseMedia";
   import type { NaturalSize } from "../logic/zoom";
 
   interface Props {
@@ -54,6 +55,7 @@
   onscroll={() => onscroll?.()}
 >
   <img
+    use:releaseMedia
     {src}
     {alt}
     draggable="false"

@@ -126,6 +126,7 @@
     <x:Double x:Key="GmViewHeightSmall">160</x:Double>
     <x:Double x:Key="GmViewHeightMedium">240</x:Double>
     <x:Double x:Key="GmViewHeightLarge">360</x:Double>
+    <x:Double x:Key="GmViewHeightXlarge">468</x:Double>
     <x:Double x:Key="GmViewWidthPage">600</x:Double>
     <x:Double x:Key="GmColumnWidthSmall">140</x:Double>
     <x:Double x:Key="GmColumnWidthMedium">180</x:Double>

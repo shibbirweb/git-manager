@@ -30,7 +30,7 @@ import {
   runScopeHandlers,
   type ViewUpdate,
 } from "@codemirror/view";
-import { mount, tick, unmount } from "svelte";
+import { mount, unmount } from "svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import FindBar from "./FindBar.svelte";
 import {
@@ -508,17 +508,4 @@ export function findBar(): Extension {
     excludedField,
     keymap.of(findKeymap),
   ];
-}
-
-/** Waits for Svelte to render, then focuses a field (the Replace row may have just appeared). */
-export function focusLater(input: () => HTMLInputElement | null, select: boolean): void {
-  void tick().then(() => {
-    const element = input();
-    if (element) {
-      element.focus();
-      if (select) {
-        element.select();
-      }
-    }
-  });
 }

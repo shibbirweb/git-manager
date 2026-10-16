@@ -1,16 +1,17 @@
-<!-- A floating list at the top of the window to find and run something: Go to File, Recent Files, Search
-     Everywhere, Run Command. Type to filter (the caller filters and passes `items`), arrows move, Enter picks, Esc
-     or a click outside closes. Rows show an icon, the title with its matches, a dim detail, a folder and keys. -->
+<!-- A floating list at the top of the window to find and run something (Go to File, Search Everywhere, commands).
+     The caller filters and passes `items`; arrows, Ctrl+N/P and Page keys move, Enter picks, Esc or a click outside
+     closes (logic/paletteHighlight.svelte.ts). With `results`, the caller draws its own list driven by `field`. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
   import type { PaletteItem } from "../logic/palette";
+  import { PaletteHighlight } from "../logic/paletteHighlight.svelte";
   import Icon from "./Icon.svelte";
   import PaletteRow from "./PaletteRow.svelte";
 
   interface Props {
     open?: boolean;
-    items: PaletteItem[];
+    items?: PaletteItem[];
     query?: string;
     placeholder?: string;
     status?: string;
@@ -20,18 +21,24 @@
     fieldSize?: "normal" | "compact";
     size?: "normal" | "wide";
     label: string;
-    onpick: (item: PaletteItem) => void;
+    onpick?: (item: PaletteItem, event: KeyboardEvent | MouseEvent) => void;
+    onkeydown?: (event: KeyboardEvent) => void;
     onclose?: () => void;
     head?: Snippet;
     scopes?: Snippet;
+    fieldStart?: Snippet;
     fieldEnd?: Snippet;
+    results?: Snippet;
+    preferred?: string | null;
+    rowEnd?: Snippet<[PaletteItem]>;
+    field?: HTMLInputElement | null;
     replace?: Snippet;
     footer?: Snippet;
   }
 
   let {
     open = $bindable(true),
-    items,
+    items = [],
     query = $bindable(""),
     placeholder = "Type to search",
     status = "",
@@ -42,47 +49,52 @@
     size = "normal",
     label,
     onpick,
+    onkeydown,
     onclose,
     head,
     scopes,
+    fieldStart,
     fieldEnd,
+    results,
+    preferred = null,
+    rowEnd,
+    field = $bindable(null),
     replace,
     footer,
   }: Props = $props();
 
-  let highlighted = $state(0);
-  const pickable = $derived(items.map((item, index) => (item.disabled ? -1 : index)).filter((index) => index >= 0));
-
-  $effect(() => {
-    void items;
-    highlighted = pickable[0] ?? -1;
-  });
+  const highlight = new PaletteHighlight(
+    () => items,
+    () => query,
+    () => preferred,
+  );
 
   function close(): void {
     open = false;
     onclose?.();
   }
 
-  function step(direction: 1 | -1): void {
-    const at = pickable.indexOf(highlighted);
-    highlighted = pickable[Math.min(pickable.length - 1, Math.max(0, at + direction))] ?? -1;
-  }
+  // For the caller: move the highlight (the key that opened it, pressed again), read it (a key that removes it).
+  export const step = (by: number): void => highlight.step(by);
+  export const highlighted = (): PaletteItem | null => items[highlight.index] ?? null;
 
   function keydown(event: KeyboardEvent): void {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    onkeydown?.(event);
+    const action = event.defaultPrevented || event.isComposing ? null : highlight.key(event, results !== undefined);
+    if (action) {
       event.preventDefault();
-      step(event.key === "ArrowDown" ? 1 : -1);
-    } else if (event.key === "Enter" && highlighted >= 0) {
-      event.preventDefault();
-      onpick(items[highlighted]);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
+    }
+    if (action === "pick") {
+      onpick?.(items[highlight.index], event);
+    } else if (action === "close") {
       close();
     }
   }
 
+  /** Focus with the caret at the end, so typing goes on after a prefix such as ">". */
   function focusField(input: HTMLInputElement): void {
     input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
   }
 </script>
 
@@ -92,28 +104,41 @@
     {#if head}<div class="head">{@render head()}</div>{/if}
     {#if scopes}<div class="scopes">{@render scopes()}</div>{/if}
     <div class="field" class:compact={fieldSize === "compact"}>
+      {@render fieldStart?.()}
       <Icon name={fieldIcon} size="normal" />
-      <!-- svelte-ignore a11y_autofocus -->
-      <input class="query" bind:value={query} {placeholder} aria-label={label} use:focusField onkeydown={keydown} />
+      <input
+        class="query"
+        bind:this={field}
+        bind:value={query}
+        {placeholder}
+        aria-label={label}
+        use:focusField
+        onkeydown={keydown}
+      />
       {#if status}<span class="status" class:notice={statusTone === "warning"}>{status}</span>{/if}
       {@render fieldEnd?.()}
     </div>
     {#if replace}<div class="field replace"><span class="indent"></span>{@render replace()}</div>{/if}
-    <div class="list" role="listbox" aria-label={label}>
-      {#each items as item, index (item.id)}
-        {#if item.section && item.section !== items[index - 1]?.section}
-          <div class="section">{item.section}</div>
-        {/if}
-        <PaletteRow
-          {item}
-          selected={index === highlighted}
-          onhover={() => (highlighted = index)}
-          onpick={() => onpick(item)}
-        />
-      {:else}
-        <div class="message">{emptyText}</div>
-      {/each}
-    </div>
+    {#if results}
+      <div class="results">{@render results()}</div>
+    {:else}
+      <div class="list" role="listbox" aria-label={label} bind:this={highlight.list}>
+        {#each items as item, index (item.id)}
+          {#if item.section && item.section !== items[index - 1]?.section}
+            <div class="section">{item.section}</div>
+          {/if}
+          <PaletteRow
+            {item}
+            selected={index === highlight.index}
+            onhover={() => (highlight.index = index)}
+            onpick={(event) => onpick?.(item, event)}
+            end={rowEnd}
+          />
+        {:else}
+          <div class="message">{emptyText}</div>
+        {/each}
+      </div>
+    {/if}
     {#if footer}<div class="hints">{@render footer()}</div>{/if}
   </div>
 {/if}
@@ -180,6 +205,12 @@
 
   .status.notice {
     color: var(--warning);
+  }
+
+  .results {
+    display: flex;
+    flex-direction: column;
+    padding: var(--command-palette-list-padding);
   }
 
   .list {

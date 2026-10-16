@@ -1,5 +1,6 @@
 <!-- The bar across the top of the window: navigation and pickers on the left (they shrink and truncate first), the
-     busy indicator and actions on the right. Vertical Dividers inside take the header's length. -->
+     busy indicator and actions on the right. Vertical Dividers inside take the header's length. The `rounded` look
+     puts it on the window frame's color with no line, like the rounded panels under it. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import Spinner from "./Spinner.svelte";
@@ -7,14 +8,15 @@
   interface Props {
     busy?: string;
     busyTitle?: string;
+    look?: "flat" | "rounded";
     start: Snippet;
     end?: Snippet;
   }
 
-  let { busy = "", busyTitle, start, end }: Props = $props();
+  let { busy = "", busyTitle, look = "flat", start, end }: Props = $props();
 </script>
 
-<header class="header">
+<header class="header {look}">
   <div class="start">{@render start()}</div>
   <div class="end">
     {#if busy}
@@ -40,6 +42,11 @@
     padding: 0 var(--app-header-padding-x);
     border-bottom: 1px solid var(--border-strong);
     background: var(--panel);
+  }
+
+  .rounded {
+    background: var(--frame);
+    border-bottom: none;
   }
 
   .start,

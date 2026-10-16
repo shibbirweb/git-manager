@@ -96,12 +96,49 @@ export const surfaceDocs: ComponentDoc[] = [
     replaces: ["src/lib/diff/DiffView.svelte (labels, find bars, body and split handle)"],
   },
   {
+    name: "MergeFrame",
+    group: "Editor",
+    summary: "The frame of a 3-way merge whose editors the app builds: pane titles, three panes, connectors.",
+    usage:
+      "Use when the app builds the merge's CodeMirror editors itself (its own chunks, undo and scrolling). " +
+      "`onready` hands over the three panes and the box the ribbons are measured from. MergeView is built on it.",
+    aliases: ["Merge", "Merge host"],
+    props: [
+      prop("label", "string", "Accessible name.", { required: true }),
+      prop("labels", "{ left; result; right }", "Pane titles.", {
+        default: '{ left: "Yours", result: "Result", right: "Theirs" }',
+      }),
+      prop("fileName", "string", "Shown dim after the result's title.", { default: '""' }),
+      prop("height", VIEW_HEIGHT, "Fill the parent, or 160, 240 or 360 px.", { default: '"fill"' }),
+      prop("leftRibbons", "ConnectorRibbon[]", "The left connector's ribbons, from the left pane to the result.", {
+        default: "[]",
+        data: true,
+      }),
+      prop("rightRibbons", "ConnectorRibbon[]", "The right connector's ribbons, from the result to the right pane.", {
+        default: "[]",
+        data: true,
+      }),
+      prop("onapply", '(index: number, side: "left" | "right") => void', "A chunk's Apply button."),
+      prop("onignore", '(index: number, side: "left" | "right") => void', "A chunk's Ignore button."),
+      prop("onready", "(parts: MergeFrameParts) => void | (() => void)", "The panes, once shown."),
+    ],
+    rules: ["Never draw UI in the panes: they hold only the editors the app builds."],
+    examples: [
+      {
+        title: "The merge tool",
+        code: '<MergeFrame label="Merge" {labels} {leftRibbons} {rightRibbons} onapply={apply} onready={build} />',
+      },
+    ],
+    logic: ["mergeGeometry.ts"],
+    replaces: ["src/lib/merge/MergeEditor.svelte (pane titles, panes and connectors)"],
+  },
+  {
     name: "MergeView",
     group: "Editor",
     summary: "The 3-way merge: yours, the editable result and theirs, chunks tinted and joined by ribbons.",
     usage:
       "Use for resolving a conflicted file. The app computes the chunks (line ranges in each pane) and applies " +
-      "a chunk when `onapply` is called; scrolling one pane scrolls the others.",
+      "a chunk when `onapply` is called; scrolling one pane scrolls the others. Built on MergeFrame.",
     aliases: ["Merge", "3-way merge", "Conflict"],
     props: [
       prop("left", "string", "Your version.", { required: true, data: true }),
@@ -124,13 +161,14 @@ export const surfaceDocs: ComponentDoc[] = [
       { title: "A conflict", code: '<MergeView label="Merge" {left} {right} {chunks} bind:result onapply={apply} />' },
     ],
     logic: ["mergeGeometry.ts"],
-    replaces: ["src/lib/merge/MergeEditor.svelte panes and connectors"],
+    replaces: ["a merge of three plain texts (the app's merge tool uses MergeFrame)"],
   },
   {
     name: "MergeConnector",
     group: "Editor",
     summary: "The column between two merge panes: a ribbon per chunk and its apply and ignore buttons.",
-    usage: "MergeView measures the panes and draws this between them; use it alone only for a custom merge layout.",
+    usage: "MergeFrame draws this between its panes; use it alone only for a custom merge layout. Its buttons stay " +
+      "inside the column while any of the chunk shows.",
     aliases: ["Ribbon", "Connector"],
     props: [
       prop("ribbons", "ConnectorRibbon[] ({ index; kind; aTop; aBottom; bTop; bBottom })",

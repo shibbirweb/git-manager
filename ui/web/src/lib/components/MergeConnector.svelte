@@ -1,5 +1,6 @@
 <!-- The column between two merge panes: a ribbon per chunk joining its lines on both sides, and the chunk's
-     buttons (apply its side's change, or ignore it) at its top. MergeView measures; this draws. -->
+     buttons (apply its side's change, or ignore it) at its top, kept inside the column while any of the chunk shows.
+     MergeView measures; this draws. -->
 <script lang="ts">
   import type { ChunkKind } from "../logic/mergeGeometry";
   import { ribbonPath } from "../logic/mergeGeometry";
@@ -27,9 +28,19 @@
   let { ribbons, side, onapply, onignore }: Props = $props();
 
   const width = componentTokens.mergeView.gap;
+  const { buttonHeight, buttonInset } = componentTokens.mergeView;
+  let height = $state(0);
+
+  /** The buttons' top: at the chunk's first line, but never above or below the column. */
+  function buttonTop(top: number): number {
+    if (height <= 0) {
+      return top + 1;
+    }
+    return Math.max(buttonInset, Math.min(height - buttonHeight - buttonInset, top + 1));
+  }
 </script>
 
-<div class="connector">
+<div class="connector" bind:clientHeight={height}>
   <svg {width} aria-hidden="true">
     {#each ribbons as ribbon (ribbon.index)}
       <path
@@ -40,7 +51,7 @@
   </svg>
   {#each ribbons as ribbon (ribbon.index)}
     <!-- Apply sits next to its own pane: first on the left, last on the right. -->
-    <div class="buttons {side}" style:top="{(side === 'left' ? ribbon.aTop : ribbon.bTop) + 1}px">
+    <div class="buttons {side}" style:top="{buttonTop(side === 'left' ? ribbon.aTop : ribbon.bTop)}px">
       {#if side === "right"}{@render ignoreButton(ribbon.index)}{/if}
       <button
         class="chunk-btn apply {ribbon.kind}"

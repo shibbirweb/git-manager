@@ -14,7 +14,7 @@ Two parts work together: a pseudo tab for text without a file, and a small store
 
 An Untitled tab is a pseudo tab (see `pseudoTabs.ts`), like terminal and commit tabs. Its path is `untitled:` plus a short id from the time and a random suffix (`newUntitledPath` in `src/lib/stores/untitledTabs.ts`), so it never looks like a file and never clashes across windows or restarts. Being a pseudo tab, it is skipped by the tab limit, Unload hidden tabs, the Files panel and Back / Forward without any special code.
 
-`Workspace.svelte` renders `UntitledView.svelte` for it: a CodeMirror editor with the base extensions and word wrap, no Git features. It registers with `fileCommands` like `FileView`, so File > Save, Save All, Revert and the MCP text tools reach it. The tab is dirty while it has text. The tab strip shows `unsavedText.title(path)`, the first line with text (`untitledTitle`).
+`EditorGroupContent.svelte` renders `UntitledView.svelte` for it: a CodeMirror editor with the base extensions and word wrap, no Git features. It registers with `fileCommands` like `FileView`, so File > Save, Save All, Revert and the MCP text tools reach it. The tab is dirty while it has text. The tab strip shows `unsavedText.title(path)`, the first line with text (`untitledTitle`).
 
 Saving opens the native save dialog (`plugin-dialog`), suggesting `suggestedFileName(text)`. The text is written with the existing `write_worktree_file` command: inside a workspace folder relative to that folder, outside it relative to the chosen file's parent. Inside, `repoStore.replaceUntitledTab` swaps the tab's path for the file's (`replaceTabPath` in `tabs.ts`), so a `FileView` takes its place and reads the file. Outside, the tab closes.
 
@@ -41,7 +41,7 @@ sequenceDiagram
 - **Writing.** On every edit that leaves a tab dirty, the editor calls `unsavedText.schedule`. After 500 ms the text goes to `unsaved_write` as a raw body (one JSON line, then the text), the same format `line_change_marks` uses, so large texts cross the bridge without JSON escaping.
 - **Forgetting.** `repoStore.setDirty(path, false)` (save, revert, editing back to the saved text) and closing a tab by hand call `unsavedText.discard`. Writes and removals of one tab run in a promise chain, so a slow write never brings back text that was just saved.
 - **Leaving.** `confirmCloseWindow` and `confirmDiscardAll` go through `confirmLeave`. With the setting on, `keepUnsaved` writes everything waiting (and any dirty tab never written, for edits made before the setting was on), saves the tab session and flushes settings, then lets the window or workspace go without asking. Clear Cache calls `keepUnsaved` too. Cmd+Q ends the app without asking the page, which is why writes happen during typing and not only at the end.
-- **Restoring.** `restoreTabs` asks `unsavedText.open(workspace.id)` for the kept tabs: Untitled tabs filed under this workspace (or listed in its saved session) and files inside its folders. `keptTabs` turns a file that no longer exists into a new Untitled tab with its text (`moveToUntitled`). `sessionWithKept` (pure, in `tabSession.ts`) merges them into the saved session; with Reopen tabs on start off, only kept tabs stay. Kept tabs come back dirty and not dormant, so Save All reaches them. `FileView.load` reads the kept text and starts the editor from it, with the file on disk as the baseline, so the tab is dirty against the real file.
+- **Restoring.** `restoreTabs` asks `unsavedText.open(workspace.id)` for the kept tabs: Untitled tabs filed under this workspace (or listed in its saved session) and files inside its folders. `keptTabs` turns a file that no longer exists into a new Untitled tab with its text (`moveToUntitled`). `sessionWithKept` (pure, in `tabSession.ts`) merges them into the saved session; with Reopen tabs on start off, only kept tabs stay. Kept tabs come back dirty and not dormant, so Save All reaches them. `FileEditor.load` (`fileEditor.svelte.ts`) reads the kept text and starts the editor from it, with the file on disk as the baseline, so the tab is dirty against the real file.
 - **The workspace id.** Adding or removing a folder, or Save Workspace As, changes the workspace id; `workspaceIdChanged` rewrites the open Untitled tabs under the new id.
 
 ### The store on disk
@@ -55,7 +55,7 @@ sequenceDiagram
 | `src/lib/stores/untitledTabs.ts` | Untitled paths, titles and suggested file names (pure) |
 | `src/lib/stores/unsavedText.svelte.ts` | Scheduling, ordered writes, flush, titles, parked text for moved tabs |
 | `src/lib/views/files/UntitledView.svelte` | The Untitled editor and Save |
-| `src/lib/views/files/FileView.svelte` | Starts from kept text, schedules writes |
+| `src/lib/views/files/fileEditor.svelte.ts` | Starts from kept text, schedules writes |
 | `src/lib/stores/repo.svelte.ts` | `newUntitledTab`, `replaceUntitledTab`, `confirmLeave`, `keepUnsaved`, `keptTabs`, session save and restore |
 | `src/lib/stores/tabSession.ts` | `isSessionTabPath`, `sessionWithKept` |
 | `src/lib/stores/tabs.ts` | `replaceTabPath`, the Untitled label |

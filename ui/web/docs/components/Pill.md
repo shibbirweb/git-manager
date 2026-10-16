@@ -20,12 +20,20 @@ Use next to a name. `strong` for an operation in progress (a repository that is 
 - `variant` (`"fill" | "outline" | "border"`, default `"fill"`): Outline: a small bordered flag, such as a setting's
   memory cost; border: a fill with a border.
 - `title` (`string`): A tooltip.
+- `dotAt` (`"tiny" | "narrow" | "compact" | "medium" | null`, default `null`): In a responsive Toolbar or Stack under
+  220, 320, 480 or 600 px, only a dot in its color shows; the word stays in its name (the file bar).
 - `children` (`Snippet`, required): The word.
 
 ## Example: Unsaved
 
 ```svelte
 <Pill tone="warning">Unsaved</Pill>
+```
+
+## Example: File bar
+
+```svelte
+<Pill tone="accent" title="Modified" dotAt="compact">Modified</Pill>
 ```
 
 ## Replaces in the app

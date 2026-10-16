@@ -1,4 +1,14 @@
+<!-- The merge tool over the whole window, opened from a conflicted file: loads the conflict, offers whole-file
+     choices for binary and deleted files, and otherwise shows MergeEditor. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import WindowLayer from "@git-manager/ui/components/WindowLayer.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -91,44 +101,46 @@
   });
 </script>
 
-<div class="overlay" role="dialog" aria-modal="true" aria-label="Merge {conflictPath}">
-  <div class="title-bar">
-    <Icon name="merge" size="regular" />
-    <span class="title">Merge Revisions for</span>
-    <span class="path mono truncate selectable">{conflictPath}</span>
-    <div class="spacer"></div>
-    <button class="icon-btn" onclick={close} title="Close" aria-label="Close merge">
-      <Icon name="x" size="regular" />
-    </button>
-  </div>
-
-  <div class="content">
+<WindowLayer label="Merge {conflictPath}">
+  <Toolbar variant="tab" label="Merge">
+    <Icon name="merge" size="regular" tone="dim" />
+    <Text weight="semibold">Merge Revisions for</Text>
+    <Text mono truncate selectable>{conflictPath}</Text>
+    {#snippet end()}
+      <IconButton icon="x" iconSize="regular" label="Close merge" title="Close" onclick={close} />
+    {/snippet}
+  </Toolbar>
+  <Stack gap="none" grow>
     {#if loadError}
-      <div class="notice">
-        <Icon name="alert" size="emphasis" />
-        <p>Could not load this conflict.</p>
-        <pre class="selectable">{loadError}</pre>
-        <button class="btn" onclick={() => repoStore.closeMerge()}>Close</button>
-      </div>
+      <EmptyState icon="alert" title="Could not load this conflict.">
+        {#snippet action()}
+          <Stack gap="md" align="center">
+            <CodeBlock variant="detail" text={loadError ?? ""} label="Error" />
+            <Button onclick={() => repoStore.closeMerge()}>Close</Button>
+          </Stack>
+        {/snippet}
+      </EmptyState>
     {:else if doc && fileLevelReason}
-      <div class="notice">
-        <Icon name="alert" size="emphasis" />
-        <p>{fileLevelReason}</p>
-        <div class="choices">
-          <button class="btn" onclick={() => acceptSide("ours")}>
-            {doc.kind === "deletedByUs" ? "Keep Deleted" : "Accept Yours"}
-            <span class="dim">{doc.oursLabel}</span>
-          </button>
-          <button class="btn" onclick={() => acceptSide("theirs")}>
-            {doc.kind === "deletedByThem" ? "Keep Deleted" : "Accept Theirs"}
-            <span class="dim">{doc.theirsLabel}</span>
-          </button>
-          {#if !doc.binary}
-            <button class="btn" onclick={() => (forceText = true)}>Merge Text Anyway</button>
-          {/if}
-        </div>
-        <button class="btn" onclick={() => repoStore.closeMerge()}>Cancel</button>
-      </div>
+      <EmptyState icon="alert" title={fileLevelReason}>
+        {#snippet action()}
+          <Stack gap="lg" align="center">
+            <Stack direction="row" gap="md" justify="center" wrap>
+              <Button onclick={() => acceptSide("ours")}>
+                {doc?.kind === "deletedByUs" ? "Keep Deleted" : "Accept Yours"}
+                <Text tone="dim">{doc?.oursLabel}</Text>
+              </Button>
+              <Button onclick={() => acceptSide("theirs")}>
+                {doc?.kind === "deletedByThem" ? "Keep Deleted" : "Accept Theirs"}
+                <Text tone="dim">{doc?.theirsLabel}</Text>
+              </Button>
+              {#if !doc?.binary}
+                <Button onclick={() => (forceText = true)}>Merge Text Anyway</Button>
+              {/if}
+            </Stack>
+            <Button onclick={() => repoStore.closeMerge()}>Cancel</Button>
+          </Stack>
+        {/snippet}
+      </EmptyState>
     {:else if doc}
       {#key version}
         <MergeEditor
@@ -140,79 +152,7 @@
         />
       {/key}
     {:else}
-      <div class="notice dim">Loading...</div>
+      <EmptyState titleTone="dim" title="Loading..." delayed />
     {/if}
-  </div>
-</div>
-
-<style>
-  .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-  }
-
-  .title-bar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 40px;
-    padding: 0 8px 0 14px;
-    border-bottom: 1px solid var(--border-strong);
-    color: var(--text-dim);
-  }
-
-  .title {
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .path {
-    min-width: 0;
-    color: var(--text);
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .content {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .notice {
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    max-width: 560px;
-    text-align: center;
-    color: var(--text);
-  }
-
-  .notice p {
-    margin: 0;
-  }
-
-  .notice pre {
-    max-width: 100%;
-    white-space: pre-wrap;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .choices {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-</style>
+  </Stack>
+</WindowLayer>

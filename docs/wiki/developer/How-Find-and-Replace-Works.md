@@ -10,7 +10,7 @@ CodeMirror's own search panel has no counter, no Exclude and no Select All Occur
 
 ### The find bar
 
-`findBar()` in `src/lib/editor/findPanel.svelte.ts` is part of `baseExtensions`, so every editor, diff side and merge pane has it. It keeps `@codemirror/search` for matching, highlighting, Next, Previous and Replace, and swaps only the panel: `search({ createPanel })` builds a `FindPanel`, which mounts `FindBar.svelte` into the panel element with Svelte's `mount`.
+`findBar()` in `src/lib/editor/findPanel.svelte.ts` is part of `baseExtensions`, so every editor, diff side and merge pane has it. It keeps `@codemirror/search` for matching, highlighting, Next, Previous and Replace, and swaps only the panel: `search({ createPanel })` builds a `FindPanel`, which mounts `FindBar.svelte` into the panel element with Svelte's `mount`. It maps the panel's state onto the UI library's `FindBar`.
 
 ```mermaid
 flowchart LR
@@ -23,7 +23,7 @@ flowchart LR
   Count --> Bar
 ```
 
-`FindBarState` holds the fields with runes; the panel writes it and the component reads it, and the panel's `update` follows the editor's query.
+`FindBarState` holds the fields with runes; the panel writes it and the component reads it, and the panel's `update` follows the editor's query. Its `onkeydown` runs the panel's keys instead of the library's.
 
 - **Opening.** `openFind` seeds the field with the selection when it is one line of at most 500 characters (`selectionQuery`, escaped when Regex is on). Cmd+F while the bar has focus only selects the field.
 - **Typing** dispatches `setSearchQuery` and selects the first match after `anchor`, where the caret was before the search moved it (the jump's user event `select.search.typing` leaves the anchor alone).
@@ -35,7 +35,7 @@ flowchart LR
 
 Read-only editors get the find row only. In a diff, both sides share one scroller, so each side gets `panels({ topContainer })` with a host above the diff (the library's `DiffFrame`); a bar inside the editor would scroll away and push its side out of line.
 
-The Edit menu items (Find, Replace, Find Next, Find Previous, Select All Occurrences) take their keys from `EDITOR_SHORTCUTS` with `source: "find"`. The editor sees a key before the menu, so a key never runs twice. See [How editing code works](How-Editing-Code-Works.md).
+The Edit menu's find items take their keys from `EDITOR_SHORTCUTS` with `source: "find"`. The editor sees a key before the menu, so a key never runs twice. See [How editing code works](How-Editing-Code-Works.md).
 
 ### Replace in Files
 
@@ -68,11 +68,11 @@ After a write, `repoStore.filesWritten` refreshes the status of the touched repo
 | File | What it does |
 | --- | --- |
 | `src/lib/editor/findPanel.svelte.ts` | The panel, its commands (`openFind`, `closeFind`, `selectAllOccurrences`) and `findKeymap` |
-| `src/lib/editor/FindBar.svelte` | The bar's fields and buttons |
+| `src/lib/editor/FindBar.svelte`, `FindBar` (UI library) | The bar's fields and buttons |
 | `src/lib/editor/findModel.ts` | `buildQuery`, `selectionQuery`, `countMatches`, `counterView`, `occurrenceRanges` |
-| `src/lib/ui/SearchToggles.svelte` | The Cc, W and .\* toggles, shared with the Text tab |
+| `src/lib/ui/SearchToggles.svelte` | The Text tab's Cc, W and .\* toggles |
 | `src/lib/diff/diffEditors.svelte.ts`, `DiffFrame` (UI library) | Find bar hosts above each diff side |
-| `src/lib/search/FileSearch.svelte` | The Replace field, the two-step replace |
+| `src/lib/search/FileSearch.svelte`, `searchReplace.svelte.ts` | The Replace field, the two-step replace |
 | `src/lib/search/replaceModel.ts` | Confirmation and summary texts |
 | `src-tauri/src/text_search/replace.rs` | Templates, the replace run, `write_atomic` |
 | `src-tauri/src/commands/search.rs` | `replace_in_files`, `replace_in_files_cancel` |
@@ -83,11 +83,11 @@ After a write, `repoStore.filesWritten` refreshes the status of the touched repo
 
 **Literal by default.** JetBrains treats the field as plain text unless Regex is on, so `\n` and `$1` mean nothing until you ask for them.
 
-**The editor's Replace All does not ask, Replace in Files does.** Replace All in one file only changes the editor buffer: nothing is saved and Cmd+Z undoes it. Replace in Files writes to disk and has no undo, so it confirms with `danger: true`, as the project rules ask for destructive actions.
+**The editor's Replace All does not ask, Replace in Files does.** Replace All only changes the editor buffer, and Cmd+Z undoes it. Replace in Files writes to disk and has no undo, so it confirms with `danger: true`, as the project rules ask for destructive actions.
 
 **Count first, then write.** The preview gives the dialog exact numbers and the skipped files before anything changes, and the write gets its own id so it can be stopped.
 
-**Skip unsaved files instead of editing their buffers.** Writing the file under an editor with unsaved edits would lose one of the two versions. Skipping and saying so is the safe choice.
+**Skip unsaved files instead of editing their buffers.** Writing a file with unsaved edits would lose one of the two versions.
 
 **Atomic writes.** Other programs, the watcher and git see the old file or the new one, never half of it.
 

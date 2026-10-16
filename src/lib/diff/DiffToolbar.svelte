@@ -65,7 +65,7 @@
     onclick={() => editors.goToChunk(1)}
   />
   {#if textDiff}
-    <Text tone="dim" size="small" tabular>{counterLabel}</Text>
+    <Text tone="dim" size="small" tabular truncate>{counterLabel}</Text>
   {/if}
   <Divider direction="vertical" />
   <Stack direction="row" gap="none" role="group" label="Diff layout">

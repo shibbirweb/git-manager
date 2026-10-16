@@ -23,7 +23,7 @@ flowchart TD
 
 ### The crumbs
 
-`NavigationBar.svelte` draws the crumbs from `crumbsFor` in `navBarModel.ts`: a workspace crumb when there are several folders, the workspace folder, each folder down the path, and the file. The farthest crumb gets the largest `flex-shrink`, so the file name stays readable longest.
+`NavigationBar.svelte` draws the crumbs (the library's `Breadcrumbs`) from `crumbsFor` in `navBarModel.ts`: a workspace crumb when there are several folders, the workspace folder, each folder down the path, and the file. The farthest crumb gets the largest `flex-shrink`, so the file name stays readable longest.
 
 ### Who answers the jump
 
@@ -38,7 +38,7 @@ The `fileToolbar` setting (**Settings > Appearance > File toolbar**: `"top"`, `"
 | Placement | Bars mounted | Cmd+Up goes to |
 | --- | --- | --- |
 | Top | `FileView`'s path bar, the welcome screen's strip (`EmptyMain.svelte`) | The claimed one; on the Log or a diff, the floating bar |
-| Bottom | The same as Top, but `FileView`'s whole `.file-bar` moves under the code (`bar-bottom` sets CSS `order: 1`), and the welcome screen's strip to its foot | The claimed one; on the Log or a diff, the floating bar |
+| Bottom | The same as Top, but `FileView` draws its whole bar (`FileBar.svelte`) under the code, and the welcome screen's strip goes to its foot | The claimed one; on the Log or a diff, the floating bar |
 | Hidden, or the Breadcrumbs switch off | None | The floating bar |
 
 The floating bar points at `navTarget()`: the file on screen in the focused group, else the active repository. `floatingAnchor()` puts it at the top left of `.editor-group.focused`, as JetBrains does with a hidden bar. `place()` opens a popup upward when there is under 200 px below the crumb, as in a bar under the code.
@@ -60,7 +60,7 @@ Each open reads the folder with `api.listDirectories`, as the Files panel does, 
 
 `navRows` filters with `fuzzyMatch` from the Command Palette: letters in order, best score first, ties in listing order, and `highlight` marks the matched letters. With no match, the list offers **Search everywhere for "..."**, which closes the bar and calls `fileSearch.open("files", query)`.
 
-The popup is moved to `<body>` with the `portal` action: the path bar is a CSS size container, which is the containing block of fixed elements inside it, so the bar's `overflow: hidden` would clip the popup.
+The list is the library's `CrumbPopup`, anchored to its crumb: it moves to `<body>` (the bar clips) and opens under the crumb, or above it near the bottom (`crumbPlace`).
 
 ### The key
 
@@ -76,13 +76,13 @@ The popup is moved to `<body>` with the `portal` action: the path bar is a CSS s
 | --- | --- |
 | `src/lib/navBar/navBarModel.ts` | Crumbs, the trail rules, popup items and filtering |
 | `src/lib/navBar/navBarStore.svelte.ts` | Which bar answers the jump, the floating bar, focus restore |
-| `src/lib/navBar/NavigationBar.svelte` | The crumbs, the popup and its keys |
-| `src/lib/views/files/FileView.svelte` | Mounts the bar in the path bar (Top) or under the code (Bottom) and claims it for the tab on screen |
+| `src/lib/navBar/NavigationBar.svelte`, `navBarView.ts`, `navListing.svelte.ts` | The crumbs, the list, its keys and its loading |
+| `src/lib/views/files/FileBar.svelte`, `FileView.svelte` | Mounts the bar in the path bar, at the Top or under the code (Bottom), and claims it for the tab on screen |
 | `src/lib/navBar/navTarget.svelte.ts` | What the floating bar points at |
 | `src/lib/views/EmptyMain.svelte` | The bar on top or at the foot of the welcome screen, and its **Navigation Bar** button |
 | `src/lib/stores/settingsData.ts`, `views/settings/AppearanceSettings.svelte` | The `fileToolbar` setting and its Settings row |
-| `src/lib/views/Workspace.svelte` | The floating bar, and the text field check for the key |
-| `src/lib/ui/portal.ts` | Moves the popup to `<body>` |
+| `src/lib/views/Workspace.svelte`, `workspaceLife.svelte.ts` | The floating bar, and the text field check for the key |
+| `ui/web/src/lib/components/CrumbPopup.svelte`, `logic/crumbs.ts` | The list, placed next to its crumb |
 | `src/lib/menu/menuSpec.ts`, `menuState.ts`, `menuActions.ts` | Edit > Jump to Navigation Bar |
 | `src/lib/views/workspaceShortcuts.ts`, `workspaceActions.ts` | The window key, `textFieldKeeps`, the open guard |
 | `src/lib/commands/editorKeyPlan.ts` | The key inside editors |

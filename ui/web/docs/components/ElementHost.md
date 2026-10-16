@@ -19,7 +19,8 @@ element in `onready`; everything else on a screen is library components.
 - `fill` (`"none" | "grow" | "cover"`, default `"none"`): Its size: its content's, grow in a flex parent, or cover a
   positioned parent.
 - `surface` (`"none" | "editor"`, default `"none"`): Paint the editor background behind it.
-- `hidden` (`boolean`, default `false`): Out of sight and out of the layout, such as a parked terminal.
+- `hidden` (`boolean`, default `false`): Out of sight and out of the layout (hidden attribute), such as a parked
+  terminal.
 - `clip` (`boolean`, default `false`): Hide what overflows its box.
 - `stretch` (`boolean`, default `false`): What the app mounts fills the box, such as a CodeMirror editor.
 - `onready` (`(element: HTMLDivElement) => void | (() => void)`): The element, once in the page; may return a cleanup

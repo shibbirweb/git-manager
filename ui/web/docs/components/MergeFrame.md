@@ -1,0 +1,44 @@
+# MergeFrame
+
+The frame of a 3-way merge whose editors the app builds: pane titles, three panes, connectors.
+
+```ts
+import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
+```
+
+Group: Editor. Also known as: Merge, Merge host.
+
+## When to use
+
+Use when the app builds the merge's CodeMirror editors itself (its own chunks, undo and scrolling). `onready` hands over
+the three panes and the box the ribbons are measured from. MergeView is built on it.
+
+## Props
+
+- `label` (`string`, required): Accessible name.
+- `labels` (`{ left; result; right }`, default `{ left: "Yours", result: "Result", right: "Theirs" }`): Pane titles.
+- `fileName` (`string`, default `""`): Shown dim after the result's title.
+- `height` (`"fill" | "small" | "medium" | "large"`, default `"fill"`): Fill the parent, or 160, 240 or 360 px.
+- `leftRibbons` (`ConnectorRibbon[]`, default `[]`): The left connector's ribbons, from the left pane to the result.
+- `rightRibbons` (`ConnectorRibbon[]`, default `[]`): The right connector's ribbons, from the result to the right pane.
+- `onapply` (`(index: number, side: "left" | "right") => void`): A chunk's Apply button.
+- `onignore` (`(index: number, side: "left" | "right") => void`): A chunk's Ignore button.
+- `onready` (`(parts: MergeFrameParts) => void | (() => void)`): The panes, once shown.
+
+## Rules
+
+- Never draw UI in the panes: they hold only the editors the app builds.
+
+## Example: The merge tool
+
+```svelte
+<MergeFrame label="Merge" {labels} {leftRibbons} {rightRibbons} onapply={apply} onready={build} />
+```
+
+## Replaces in the app
+
+- `src/lib/merge/MergeEditor.svelte (pane titles, panes and connectors)`
+
+## Logic
+
+- `logic/mergeGeometry.ts`

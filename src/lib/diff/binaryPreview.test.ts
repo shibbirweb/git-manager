@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FileDiff, PreviewSource } from "$lib/types";
-import { absentText, sharedFit, showsBinaryPreview, sideInfo, sideState, syncedScroll } from "./binaryPreview";
+import { absentText, compareSide, showsBinaryPreview, sideState } from "./binaryPreview";
 
 function diffOf(overrides: Partial<FileDiff>): FileDiff {
   return {
@@ -74,49 +74,21 @@ describe("sideState", () => {
   });
 });
 
-describe("sideInfo", () => {
-  it("joins the pixel size and the file size", () => {
-    expect(sideInfo({ width: 640, height: 480 }, 2048)).toBe("640 x 480 px, 2 KB");
-    expect(sideInfo(null, 2048)).toBe("2 KB");
-    expect(sideInfo({ width: 1, height: 1 }, 0)).toBe("1 x 1 px");
-    expect(sideInfo(null, 0)).toBe("");
-  });
-});
-
-describe("sharedFit", () => {
-  it("fits both images at one scale", () => {
-    expect(
-      sharedFit(
-        [
-          { width: 200, height: 100 },
-          { width: 400, height: 100 },
-        ],
-        200,
-        200,
-      ),
-    ).toBe(0.5);
-    expect(sharedFit([{ width: 50, height: 50 }, null], 200, 200)).toBe(1);
-    expect(sharedFit([null, null], 200, 200)).toBe(1);
-  });
-});
-
-describe("syncedScroll", () => {
-  const box = (scrollLeft: number, scrollTop: number, scrollWidth: number, scrollHeight: number) => ({
-    scrollLeft,
-    scrollTop,
-    scrollWidth,
-    scrollHeight,
-    clientWidth: 100,
-    clientHeight: 100,
-  });
-
-  it("keeps the same place in proportion to each side's range", () => {
-    expect(syncedScroll(box(50, 100, 200, 300), box(0, 0, 300, 500))).toEqual({ left: 100, top: 200 });
-    expect(syncedScroll(box(50, 50, 200, 200), box(10, 10, 200, 200))).toEqual({ left: 50, top: 50 });
-  });
-
-  it("stays at the start when a side does not scroll", () => {
-    expect(syncedScroll(box(0, 0, 100, 100), box(30, 30, 300, 300))).toEqual({ left: 0, top: 0 });
-    expect(syncedScroll(box(50, 50, 200, 200), box(0, 0, 80, 80))).toEqual({ left: 0, top: 0 });
+describe("compareSide", () => {
+  it("shows a ready file with its size, or says why there is none", () => {
+    const ready = { status: "ready", url: "gmpreview://a.png", size: 2048 } as const;
+    expect(compareSide(ready, "image", "HEAD")).toEqual({
+      label: "HEAD",
+      kind: "image",
+      src: "gmpreview://a.png",
+      info: "2 KB",
+    });
+    expect(compareSide({ status: "loading" }, "image", "HEAD")).toEqual({
+      label: "HEAD",
+      kind: "none",
+      message: "Loading...",
+    });
+    expect(compareSide({ status: "absent", text: "Deleted" }, "pdf", "Working copy").message).toBe("Deleted");
+    expect(compareSide(ready, null, "HEAD").message).toBe("This file cannot be shown.");
   });
 });

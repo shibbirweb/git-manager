@@ -98,7 +98,10 @@ export const shellDocs: ComponentDoc[] = [
     usage: "Use once per window at the bottom. Put StatusItems in `start` and `end`.",
     props: [
       prop("label", "string", "Accessible name.", { default: '"Status bar"' }),
-      prop("start", "Snippet", "Items on the left."),
+      prop("look", '"flat" | "rounded"', "A line on top, or the window frame's color (rounded panels).", {
+        default: '"flat"',
+      }),
+      prop("start", "Snippet", "Items on the left; they clip when the window is narrow."),
       prop("end", "Snippet", "Items on the right."),
     ],
     examples: [

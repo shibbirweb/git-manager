@@ -52,7 +52,7 @@ flowchart LR
 ## Design decisions
 
 - **Snap, do not copy.** When a screen used a size the library does not have, it snaps to the nearest preset instead of adding one. The Git dialogs' ten widths became the library's five (460, 520, 560, 620 and 760 px).
-- **Retire parity for migrated screens.** A parity case compares a library component with the app's own CSS. Once a screen is migrated that CSS is gone, because the app now draws the library itself, so its cases are removed. A test fails if a case still reads a migrated or deleted file.
+- **Retire parity for migrated screens.** A parity case compares a library component with the app's own CSS. Once a screen is migrated that CSS is gone, because the app now draws the library itself, so its cases are removed. A test fails if a case still reads a migrated or deleted file. With every screen migrated, the last two cases (app.css's old `.icon-btn` and `.input`) went with those classes, and the list is empty.
 - **Migrate a whole family at once.** The Git dialogs shared one frame that styled their bodies through global classes, so the frame and all its dialogs moved together and the frame was deleted.
 
 ## Tests

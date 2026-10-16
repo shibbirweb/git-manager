@@ -22,7 +22,8 @@
     { id: "README.md", label: "README.md" },
   ];
   const STATUS: Record<string, TreeDecoration> = {
-    "src/lib/cart.ts": { tone: "accent", badge: "M" },
+    src: { tone: "accent", dot: true, badgeTitle: "Contains changes" },
+    "src/lib/cart.ts": { tone: "accent", badge: "M", badgeTitle: "Modified", title: "src/lib/cart.ts" },
     "src/main.ts": { tone: "success", badge: "A" },
     "src/old.ts": { tone: "danger", strike: true, badge: "D" },
   };
@@ -37,23 +38,34 @@
 </script>
 
 <Stack gap="sm">
-  <div role="presentation" onkeydown={(event) => event.key === "F2" && selected && (renaming = selected)}>
-    <Tree
-      label="Files"
-      {nodes}
-      height="medium"
-      multiple
-      draggable
-      bind:expanded
-      bind:selected
-      bind:selection
-      bind:renaming
-      decorate={(node) => STATUS[node.id] ?? null}
-      onopen={(node) => (note = `Opened ${node.label}`)}
-      onrename={(node, name) => (note = `Renamed ${node.label} to ${name}`)}
-      ondrop={(ids, target, mode) =>
-        (note = `${mode === "copy" ? "Copied" : "Moved"} ${ids.length} into ${target?.label ?? "the top"}`)}
-    />
-  </div>
-  <Text tone="dim">{note} Selected: {selection.length}</Text>
+  <Tree
+    label="Files, F2 renames"
+    {nodes}
+    height="medium"
+    multiple
+    draggable
+    bind:expanded
+    bind:selected
+    bind:selection
+    bind:renaming
+    decorate={(node) => STATUS[node.id] ?? null}
+    canDrag={(node) => node.id !== "README.md"}
+    onkeydown={(event) => {
+      if (event.key === "F2" && selected) {
+        event.preventDefault();
+        renaming = selected;
+      }
+    }}
+    onclick={(node, event) => (note = `Clicked ${node.label}${event.shiftKey ? " with Shift" : ""}`)}
+    onbackgroundmenu={(event) => {
+      event.preventDefault();
+      note = "Right-clicked below the rows";
+    }}
+    onopen={(node) => (note = `Opened ${node.label}`)}
+    onrename={(node, name) => (note = `Renamed ${node.label} to ${name}`)}
+    ondrop={(ids, target, mode) =>
+      (note = `${mode === "copy" ? "Copied" : "Moved"} ${ids.length} into ${target?.label ?? "the top"}`)}
+  />
+  <Tree label="Empty folder" nodes={[]} height="small" empty="This folder is empty." />
+  <Text tone="dim">{note} Selected: {selection.length}. README.md cannot be dragged.</Text>
 </Stack>

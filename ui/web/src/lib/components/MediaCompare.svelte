@@ -1,7 +1,9 @@
 <!-- Two versions of an image or PDF side by side, such as a binary file's change: each side has a head with its
-     name and size, the images share one zoom and scroll together. A side with no file shows its `message`. -->
+     name and size, the images share one zoom and scroll together. A side with no file shows its `message`; an image
+     that cannot load calls `onerror` with its side, so the caller can say why. -->
 <script lang="ts">
-  import { nextZoom, sharedFit, syncedScroll, type NaturalSize } from "../logic/zoom";
+  import { releaseMedia } from "../logic/releaseMedia";
+  import { mediaInfo, nextZoom, sharedFit, syncedScroll, type NaturalSize } from "../logic/zoom";
   import { componentTokens } from "../styles/tokens";
   import ImageCanvas from "./ImageCanvas.svelte";
   import ZoomBar from "./ZoomBar.svelte";
@@ -17,9 +19,10 @@
   interface Props {
     sides: [CompareSide, CompareSide];
     zoom?: number | null;
+    onerror?: (side: number) => void;
   }
 
-  let { sides, zoom = $bindable(null) }: Props = $props();
+  let { sides, zoom = $bindable(null), onerror }: Props = $props();
 
   let naturals = $state.raw<(NaturalSize | null)[]>([null, null]);
   let boxes = $state.raw([
@@ -82,10 +85,11 @@
   {/if}
   <div class="sides">
     {#each sides as side, index (index)}
+      {@const info = mediaInfo(side.kind === "image" ? naturals[index] : null, side.info ?? "")}
       <div class="side">
         <div class="head">
           <span class="label" title={side.label}>{side.label}</span>
-          {#if side.info}<span class="info">{side.info}</span>{/if}
+          {#if info}<span class="info">{info}</span>{/if}
         </div>
         <div class="body">
           {#if side.kind === "image" && side.src}
@@ -97,9 +101,10 @@
               onmeasure={(natural, box) => measure(index, natural, box)}
               onzoom={(direction) => (zoom = nextZoom(zoom ?? fitted, direction))}
               onscroll={() => scrolled(index)}
+              onerror={() => onerror?.(index)}
             />
           {:else if side.kind === "pdf" && side.src}
-            <iframe class="pdf" src={side.src} title={side.label}></iframe>
+            <iframe use:releaseMedia class="pdf" src={side.src} title={side.label}></iframe>
           {:else}
             <div class="message">{side.message ?? ""}</div>
           {/if}

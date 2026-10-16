@@ -196,6 +196,7 @@ public enum GMViewHeight {
     public static let small: CGFloat = 160
     public static let medium: CGFloat = 240
     public static let large: CGFloat = 360
+    public static let xlarge: CGFloat = 468
 }
 
 public enum GMViewWidth {

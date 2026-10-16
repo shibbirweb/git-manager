@@ -2,18 +2,14 @@
      keeps the focus, so its selected row shows the strong color; a `field` above it can drive it instead. `virtual`
      draws only the rows in view; with `measure` rows may differ in height and each drawn row is measured. -->
 <script module lang="ts">
-  export interface ListRowState {
-    index: number;
-    selected: boolean;
-    current: boolean;
-  }
+  export type { ListRowState } from "../logic/listKeys";
 </script>
 
 <script lang="ts" generics="T">
-  import { onDestroy, tick, type Snippet } from "svelte";
+  import { onDestroy, tick, untrack, type Snippet } from "svelte";
   import { markInsideList, onRowControl } from "../logic/listContext";
   import { drivenSelection, type FieldKeys } from "../logic/listField";
-  import { handleListKey, type ListHost } from "../logic/listKeys";
+  import { handleListKey, keyMenuEvent, type KeyInput, type ListHost, type ListRowState } from "../logic/listKeys";
   import { ListScroll, wireField, type RevealPlace, type RowBox } from "../logic/listWiring.svelte";
   import { presetVar, type RowHeight, type ViewHeight } from "../logic/presets";
   import { RowHeights } from "../logic/rowHeights.svelte";
@@ -41,9 +37,11 @@
     row: Snippet<[T, ListRowState]>;
     empty?: Snippet;
     onselect?: (item: T) => void;
-    onactivate?: (item: T) => void;
+    clickActivates?: boolean;
+    onactivate?: (item: T, event?: KeyInput | MouseEvent) => void;
     ontoggle?: (item: T, open: boolean) => void;
-    oncontextmenu?: (event: MouseEvent, item: T) => void;
+    oncontextmenu?: (event: MouseEvent, item: T, fromKeys?: boolean) => void;
+    onkeydown?: (event: KeyboardEvent, fromField: boolean) => void;
     onnearend?: () => void;
   }
 
@@ -67,14 +65,15 @@
     row,
     empty,
     onselect,
+    clickActivates = false,
     onactivate,
     ontoggle,
     oncontextmenu,
+    onkeydown,
     onnearend,
   }: Props = $props();
 
-  markInsideList();
-
+  markInsideList(untrack(() => role !== "list"));
   const uid = $props.id();
   const interactive = $derived(role !== "list");
   const keys = $derived(items.map((item) => itemKey(item)));
@@ -101,9 +100,7 @@
   const activeId = $derived(
     interactive && currentIndex >= range.first && currentIndex < range.last ? `${uid}-${currentIndex}` : undefined,
   );
-
   const measureRow = (node: HTMLElement, key: string) => (measuring ? rowHeights.observe(node, key) : {});
-
   onDestroy(() => rowHeights.dispose());
   const isSelected = (key: string) => (multiple ? selection.includes(key) : selected === key);
 
@@ -180,13 +177,15 @@
     }),
     move: moveTo,
     toggle: (index, open) => ontoggle?.(items[index], open),
-    activate: (index) => onactivate?.(items[index]),
+    activate: (index, event) => onactivate?.(items[index], event),
+    menu: (index) => oncontextmenu?.(keyMenuEvent(document.getElementById(`${uid}-${index}`)), items[index], true),
     selectAll: () => (selection = [...order]),
     focus: () => viewport?.focus(),
   };
 
-  /** A key in the list itself, or in its `field`. */
+  /** A key in the list itself, or in its `field`; the app's `onkeydown` sees it first. */
   function onKey(event: KeyboardEvent, fromField: boolean) {
+    onkeydown?.(event, fromField);
     if (interactive && !event.defaultPrevented && handleListKey(event, fromField ? fieldKeys : null, host)) {
       event.preventDefault();
     }
@@ -241,11 +240,14 @@
           onclick={(event) => {
             if (pickable && !onRowControl(event)) {
               select(index, multiple ? modifiersOf(event) : { toggle: false, range: false });
+              if (clickActivates) {
+                onactivate?.(item, event);
+              }
             }
           }}
           ondblclick={(event) => {
-            if (pickable && !onRowControl(event)) {
-              onactivate?.(item);
+            if (pickable && !clickActivates && !onRowControl(event)) {
+              onactivate?.(item, event);
             }
           }}
           oncontextmenu={(event) => {
@@ -289,8 +291,7 @@
 
   .virtual .item {
     position: absolute;
-    left: 0;
-    right: 0;
+    inset-inline: 0;
   }
 
   .virtual:not(.measured) .item > :global(*) {

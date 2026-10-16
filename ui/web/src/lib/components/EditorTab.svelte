@@ -1,5 +1,5 @@
-<!-- One editor tab of a TabStrip: icon, name, hint and the close button (a dot while unsaved). The strip passes its
-     layout and focus; the tab draws the active, preview, pinned, dirty and lifted states. -->
+<!-- One editor tab of a TabStrip: icon, name, hint and the close button (a dot while unsaved, a pin that unpins with
+     `onunpin`). The strip passes layout, look and focus; the tab draws active, preview, pinned, dirty and lifted. -->
 <script lang="ts">
   import type { IconName } from "../icons";
   import Icon from "./Icon.svelte";
@@ -8,11 +8,15 @@
     id: string;
     label: string;
     icon?: IconName;
+    /** The icon's color, such as a run's state. */
+    iconTone?: "success" | "danger" | "dim";
     hint?: string;
     title?: string;
     preview?: boolean;
     dirty?: boolean;
     pinned?: boolean;
+    mono?: boolean; // the name in the code font, such as a commit's hash
+    fixed?: boolean; // stays where it is, it cannot be dragged (the Diff tab)
   }
 
   interface Props {
@@ -20,11 +24,13 @@
     active?: boolean;
     focused?: boolean;
     layout?: "scroll" | "wrap" | "single";
+    look?: "flat" | "rounded";
     lifted?: boolean;
     closable?: boolean;
     onselect?: () => void;
     ondblclick?: () => void;
     onclose?: () => void;
+    onunpin?: () => void;
     oncontextmenu?: (event: MouseEvent) => void;
     onpointerdown?: (event: PointerEvent) => void;
   }
@@ -34,18 +40,27 @@
     active = false,
     focused = true,
     layout = "scroll",
+    look = "flat",
     lifted = false,
     closable = true,
     onselect,
     ondblclick,
     onclose,
+    onunpin,
     oncontextmenu,
     onpointerdown,
   }: Props = $props();
+
+  // A pinned tab's button unpins it when the strip can; middle click and Close still close it.
+  const unpins = $derived(tab.pinned === true && onunpin !== undefined);
+  const action = $derived(unpins ? "Unpin" : "Close");
+  const state = $derived(
+    unpins ? (tab.dirty ? "Pinned, unsaved changes. " : "Pinned. ") : tab.dirty ? "Unsaved changes. " : "",
+  );
 </script>
 
 <div
-  class="tab {layout}"
+  class="tab {layout} {look}"
   class:active
   class:unfocused={!focused}
   class:preview={tab.preview}
@@ -68,15 +83,21 @@
     ondblclick={() => ondblclick?.()}
   >
     {#if tab.icon}
-      <Icon name={tab.icon} size="medium" />
+      <Icon name={tab.icon} size="medium" tone={tab.iconTone ?? "inherit"} />
     {/if}
-    <span class="name">{tab.label}</span>
+    <span class="name" class:mono={tab.mono}>{tab.label}</span>
     {#if tab.hint}
       <span class="hint">{tab.hint}</span>
     {/if}
   </button>
   {#if closable}
-    <button class="tab-close" type="button" aria-label="Close {tab.label}" onclick={() => onclose?.()}>
+    <button
+      class="tab-close"
+      type="button"
+      aria-label="{action} {tab.label}{tab.dirty ? ' (unsaved changes)' : ''}"
+      title="{state}{action}"
+      onclick={() => (unpins ? onunpin?.() : onclose?.())}
+    >
       <span class="dot" aria-hidden="true"></span>
       <span class="x"><Icon name={tab.pinned ? "pin" : "x"} size="compact" /></span>
     </button>
@@ -107,9 +128,7 @@
   .tab.active::before {
     content: "";
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
+    inset: 0 0 auto;
     height: var(--tab-strip-indicator);
     background: var(--accent);
   }
@@ -151,6 +170,10 @@
     font-style: italic;
   }
 
+  .mono {
+    font-family: var(--font-family-mono);
+  }
+
   .hint {
     flex: none;
     font-size: var(--font-size-compact);
@@ -159,9 +182,8 @@
 
   .tab-close {
     flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     width: var(--tab-strip-close-size);
     height: var(--tab-strip-close-size);
     padding: 0;
@@ -178,13 +200,13 @@
   }
 
   .x {
-    display: flex;
     opacity: 0;
   }
 
   .tab:hover .x,
   .tab.active .x,
-  .tab.pinned .x {
+  .tab.pinned .x,
+  .tab.single .x {
     opacity: 1;
   }
 
@@ -201,10 +223,7 @@
     display: block;
   }
 
-  .tab.dirty .x {
-    display: none;
-  }
-
+  .tab.dirty .x,
   .tab.dirty .tab-close:hover .dot {
     display: none;
   }
@@ -232,7 +251,8 @@
     background: transparent;
   }
 
-  .tab.single::before {
+  .tab.single::before,
+  .tab.rounded::before {
     display: none;
   }
 
@@ -244,8 +264,31 @@
     font-weight: var(--font-weight-medium);
   }
 
-  .tab.single .x {
-    opacity: 1;
+  /* Rounded look: rounded tabs on the editor color, the active one tinted and outlined. */
+  .tab.rounded {
+    height: var(--editor-tab-rounded-height);
+    margin-bottom: 0;
+    border: 1px solid transparent;
+    border-radius: var(--editor-tab-rounded-radius);
+  }
+
+  .tab.rounded.active {
+    background: var(--selected);
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--editor-bg));
+  }
+
+  .tab.rounded.unfocused.active {
+    background: var(--selected-inactive);
+    border-color: var(--border-strong);
+  }
+
+  .tab.rounded .tab-main {
+    padding-left: var(--editor-tab-rounded-padding-left);
+  }
+
+  .tab.rounded.single {
+    background: transparent;
+    border-color: transparent;
   }
 
   /* The tab being dragged floats above the others. */

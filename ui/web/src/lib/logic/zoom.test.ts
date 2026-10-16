@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fitZoom, nextZoom, sharedFit, syncedScroll, zoomLabel } from "./zoom";
+import { fitZoom, mediaInfo, nextZoom, sharedFit, syncedScroll, zoomLabel } from "./zoom";
 
 describe("zoom", () => {
   it("steps to the next level, also from between steps, and stops at the ends", () => {
@@ -42,5 +42,13 @@ describe("zoom", () => {
     const from = { ...box, scrollLeft: 50, scrollWidth: 200 };
     const to = { ...box, scrollLeft: 0, scrollWidth: 400 };
     expect(syncedScroll(from, to)).toEqual({ left: 150, top: 0 });
+  });
+});
+
+describe("mediaInfo", () => {
+  it("puts an image's dimensions before the size", () => {
+    expect(mediaInfo({ width: 640, height: 480 }, "18 KB")).toBe("640 x 480 px, 18 KB");
+    expect(mediaInfo(null, "18 KB")).toBe("18 KB");
+    expect(mediaInfo({ width: 1, height: 2 }, "")).toBe("1 x 2 px");
   });
 });

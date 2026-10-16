@@ -1,6 +1,17 @@
 <!-- Git > Show Reflog: where HEAD (or a branch) pointed before, newest first, paged and
      virtualized, with the selected entry's commit below and actions to go back to it. -->
 <script lang="ts">
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import CommitDetails from "$lib/log/CommitDetails.svelte";
@@ -8,12 +19,11 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ReflogEntry } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { newBranchFrom, repoTarget } from "../sidebar/actions";
   import { gitDialogs } from "./gitDialogs.svelte";
-  import { hasCommit, reflogActionLabel, visibleRange } from "./reflogView";
+  import { hasCommit, reflogActionLabel, reflogActionTone } from "./reflogView";
 
   interface Props {
     repoRoot: string;
@@ -22,8 +32,6 @@
   let { repoRoot }: Props = $props();
 
   const PAGE_SIZE = 300;
-  const ROW_HEIGHT = 26;
-  const OVERSCAN = 10;
 
   let refName = $state("HEAD");
   let branches = $state.raw<string[]>([]);
@@ -31,16 +39,16 @@
   let total = $state(0);
   let loading = $state(false);
   let loadError = $state<string | null>(null);
-  let selectedIndex = $state<number | null>(null);
-  let scrollTop = $state(0);
-  let viewportHeight = $state(0);
-  let listEl = $state<HTMLDivElement | null>(null);
+  let selectedKey = $state<string | null>(null);
+  let listHeight = $state(260);
   let token = 0;
   const now = Date.now();
 
-  const selected = $derived(selectedIndex !== null ? (entries[selectedIndex] ?? null) : null);
-  const range = $derived(visibleRange(scrollTop, viewportHeight, ROW_HEIGHT, entries.length, OVERSCAN));
-  const visible = $derived(entries.slice(range.start, range.end));
+  const selected = $derived(entries.find((entry) => entryKey(entry) === selectedKey) ?? null);
+  const refOptions = $derived([
+    { value: "HEAD", label: "HEAD" },
+    ...branches.map((branchName) => ({ value: branchName, label: branchName })),
+  ]);
   const hasMore = $derived(entries.length < total);
   const busy = $derived(repoStore.busy !== null);
   // HEAD or a branch moved: the reflog has a new entry.
@@ -74,7 +82,7 @@
       }
       entries = page.entries;
       total = page.total;
-      selectedIndex = page.entries.length > 0 ? 0 : null;
+      selectedKey = page.entries.length > 0 ? entryKey(page.entries[0]) : null;
     } catch (error) {
       if (current === token) {
         entries = [];
@@ -112,38 +120,8 @@
     }
   }
 
-  function onScroll(event: Event): void {
-    const element = event.currentTarget as HTMLElement;
-    scrollTop = element.scrollTop;
-    if (element.scrollTop + element.clientHeight > element.scrollHeight - ROW_HEIGHT * 20) {
-      void loadMore();
-    }
-  }
-
-  function select(index: number): void {
-    if (entries.length === 0) {
-      return;
-    }
-    const next = Math.max(0, Math.min(entries.length - 1, index));
-    selectedIndex = next;
-    if (listEl) {
-      const top = next * ROW_HEIGHT;
-      if (top < listEl.scrollTop) {
-        listEl.scrollTop = top;
-      } else if (top + ROW_HEIGHT > listEl.scrollTop + listEl.clientHeight) {
-        listEl.scrollTop = top + ROW_HEIGHT - listEl.clientHeight;
-      }
-    }
-  }
-
-  function onKeydown(event: KeyboardEvent): void {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-      select((selectedIndex ?? -1) + (event.key === "ArrowDown" ? 1 : -1));
-    } else if (event.key === "Enter" && selected) {
-      event.preventDefault();
-      showCommit(selected);
-    }
+  function entryKey(entry: ReflogEntry): string {
+    return String(entry.index);
   }
 
   function showCommit(entry: ReflogEntry): void {
@@ -155,7 +133,9 @@
   async function checkout(entry: ReflogEntry): Promise<void> {
     const confirmed = await dialogs.confirm({
       title: "Checkout Revision",
-      message: `Check out ${entry.newShortId} (${entry.selector}) in detached HEAD state? New commits there will not belong to any branch until you create one.`,
+      message:
+        `Check out ${entry.newShortId} (${entry.selector}) in detached HEAD state? ` +
+        "New commits there will not belong to any branch until you create one.",
       confirmLabel: "Checkout",
     });
     if (!confirmed) {
@@ -180,12 +160,7 @@
     }
   }
 
-  function openMenu(event: MouseEvent, index: number): void {
-    const entry = entries[index];
-    if (!entry) {
-      return;
-    }
-    selectedIndex = index;
+  function openMenu(event: MouseEvent, entry: ReflogEntry, fromKeys: boolean): void {
     const commit = hasCommit(entry);
     const operation = (repoStore.statuses[repoRoot]?.op.kind ?? "none") !== "none";
     const items: MenuItem[] = [
@@ -205,7 +180,7 @@
         action: () => resetHere(entry),
       },
     ];
-    contextMenu.open(event, items);
+    contextMenu.open(event, items, { keyboard: fromKeys });
   }
 
   function loadedShortId(commitId: string): string | null {
@@ -213,233 +188,74 @@
   }
 </script>
 
-<div class="reflog-tab">
-  <div class="toolbar">
+<Stack gap="none" grow surface="panel">
+  <Toolbar variant="panel" label="Reflog">
     <Icon name="history" size="normal" />
-    <span class="title">Reflog of</span>
-    <select class="input ref-select" bind:value={refName} aria-label="Reference">
-      <option value="HEAD">HEAD</option>
-      {#each branches as branchName (branchName)}
-        <option value={branchName}>{branchName}</option>
-      {/each}
-    </select>
-    <span class="spacer"></span>
-    {#if loading}
-      <span class="spinner" aria-hidden="true"></span>
-    {/if}
-    <span class="count dim">{total} {total === 1 ? "entry" : "entries"}</span>
-    <button class="icon-btn" onclick={() => void reload()} disabled={loading} title="Refresh">
-      <Icon name="refresh" size="normal" />
-    </button>
-  </div>
+    <Text weight="semibold">Reflog of</Text>
+    <Select size="small" options={refOptions} bind:value={refName} label="Reference" />
+    {#snippet end()}
+      {#if loading}
+        <Spinner size="small" />
+      {/if}
+      <Text size="small" tone="dim" tabular>{total} {total === 1 ? "entry" : "entries"}</Text>
+      <IconButton
+        icon="refresh"
+        iconSize="normal"
+        size="compact"
+        tone="dim"
+        label="Refresh"
+        disabled={loading}
+        onclick={() => void reload()}
+      />
+    {/snippet}
+  </Toolbar>
   {#if loadError}
-    <div class="placeholder">
-      <div>Could not read the reflog</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
+    <EmptyState title="Could not read the reflog" hint={loadError} />
   {:else}
-    <div
-      class="list"
-      bind:this={listEl}
-      bind:clientHeight={viewportHeight}
-      role="listbox"
-      tabindex="0"
-      aria-label="Reflog entries"
-      onscroll={onScroll}
-      onkeydown={onKeydown}
-    >
-      <div class="spacer-rows" style="height: {entries.length * ROW_HEIGHT}px">
-        {#each visible as entry, offset (entry.index)}
-          {@const index = range.start + offset}
-          <div
-            class="entry"
-            class:selected={index === selectedIndex}
-            role="option"
-            aria-selected={index === selectedIndex}
-            tabindex="-1"
-            style="transform: translateY({index * ROW_HEIGHT}px); height: {ROW_HEIGHT}px"
-            onmousedown={() => (selectedIndex = index)}
-            ondblclick={() => showCommit(entry)}
-            oncontextmenu={(event) => openMenu(event, index)}
-          >
-            <span class="selector mono">{entry.selector}</span>
-            <span class="hash mono">{entry.newShortId}</span>
-            <span class="action action-{entry.action}">{reflogActionLabel(entry.action)}</span>
-            <span class="detail truncate" title={entry.message}>{entry.detail || entry.message}</span>
-            <span class="when dim" title={fullDate(entry.time)}>{relativeTime(entry.time, now)}</span>
-          </div>
-        {/each}
-      </div>
-      {#if entries.length === 0 && !loading}
-        <div class="placeholder dim">This reference has no reflog entries.</div>
-      {/if}
-    </div>
-    <div class="details">
-      {#if selected && hasCommit(selected)}
-        {#key selected.newId}
-          <CommitDetails
-            repoPath={repoRoot}
-            commitId={selected.newId}
-            {loadedShortId}
-            onSelectCommit={(commitId) => repoStore.openCommitTab(repoRoot, commitId)}
-            onOpenInTab={(path) => repoStore.openCommitTab(repoRoot, selected.newId, { filePath: path })}
-          />
-        {/key}
-      {/if}
-    </div>
+    <SplitPane direction="column" preset="list" bind:size={listHeight} label="Resize the reflog list" inPanel>
+      {#snippet first()}
+        <List
+          items={entries}
+          itemKey={entryKey}
+          label="Reflog entries"
+          height="fill"
+          virtual="normal"
+          bind:selected={selectedKey}
+          onnearend={() => void loadMore()}
+          onactivate={showCommit}
+          oncontextmenu={(event, entry, fromKeys) => openMenu(event, entry, fromKeys ?? false)}
+        >
+          {#snippet row(entry, state)}
+            <Row selected={state.selected}>
+              <Stack width="medium"><Text size="small" tone="dim" mono>{entry.selector}</Text></Stack>
+              <Stack width="xsmall"><Text size="small" tone="dim" mono>{entry.newShortId}</Text></Stack>
+              <Stack width="small">
+                <Text size="small" tone={reflogActionTone(entry.action)}>{reflogActionLabel(entry.action)}</Text>
+              </Stack>
+              <Stack grow><Text truncate title={entry.message}>{entry.detail || entry.message}</Text></Stack>
+              <Text size="small" tone="dim" title={fullDate(entry.time)}>{relativeTime(entry.time, now)}</Text>
+            </Row>
+          {/snippet}
+          {#snippet empty()}
+            {#if !loading}
+              <EmptyState variant="panel" title="This reference has no reflog entries." titleTone="dim" />
+            {/if}
+          {/snippet}
+        </List>
+      {/snippet}
+      {#snippet second()}
+        {#if selected && hasCommit(selected)}
+          {#key selected.newId}
+            <CommitDetails
+              repoPath={repoRoot}
+              commitId={selected.newId}
+              {loadedShortId}
+              onSelectCommit={(commitId) => repoStore.openCommitTab(repoRoot, commitId)}
+              onOpenInTab={(path) => repoStore.openCommitTab(repoRoot, selected.newId, { filePath: path })}
+            />
+          {/key}
+        {/if}
+      {/snippet}
+    </SplitPane>
   {/if}
-</div>
-
-<style>
-  .reflog-tab {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 10px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .ref-select {
-    max-width: 260px;
-    height: 24px;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .count {
-    font-size: 12px;
-  }
-
-  .list {
-    position: relative;
-    flex: 0 0 42%;
-    min-height: 80px;
-    overflow-y: auto;
-    outline: none;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .spacer-rows {
-    position: relative;
-  }
-
-  .entry {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 10px;
-    cursor: default;
-  }
-
-  .entry:hover {
-    background: var(--hover);
-  }
-
-  .entry.selected {
-    background: var(--selected-inactive);
-  }
-
-  .list:focus .entry.selected {
-    background: var(--selected);
-  }
-
-  .selector {
-    flex: none;
-    width: 90px;
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-
-  .hash {
-    flex: none;
-    width: 70px;
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-
-  .action {
-    --action-color: var(--text-dim);
-    flex: none;
-    width: 84px;
-    font-size: 11.5px;
-    color: color-mix(in srgb, var(--action-color) 85%, var(--text));
-  }
-
-  .action-commit,
-  .action-initialCommit,
-  .action-amend {
-    --action-color: var(--success);
-  }
-
-  .action-reset,
-  .action-rebase {
-    --action-color: var(--danger);
-  }
-
-  .action-checkout {
-    --action-color: var(--accent);
-  }
-
-  .action-merge,
-  .action-pull,
-  .action-cherryPick,
-  .action-revert {
-    --action-color: var(--warning);
-  }
-
-  .detail {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .when {
-    flex: none;
-    width: 90px;
-    text-align: right;
-    font-size: 12px;
-  }
-
-  .details {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .placeholder {
-    padding: 24px;
-    text-align: center;
-  }
-
-  .spinner {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
+</Stack>

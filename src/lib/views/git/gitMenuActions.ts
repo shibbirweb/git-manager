@@ -32,6 +32,7 @@ import {
   pickGitHubRemote,
 } from "./github";
 import { remoteLinkPickItems, remoteLinks } from "./remoteLinks";
+import { SHOWN_TAB_CONTENT } from "$lib/views/workspaceDom";
 
 /** How many recent commits the commit pickers list. */
 const PICKER_COMMITS = 200;
@@ -56,7 +57,7 @@ function currentFile() {
 
 /** The CodeMirror view of the editor tab on screen. */
 function activeEditorView(): EditorView | null {
-  const element = document.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-editor");
+  const element = document.querySelector<HTMLElement>(`${SHOWN_TAB_CONTENT} .cm-editor`);
   return element ? EditorView.findFromDOM(element) : null;
 }
 

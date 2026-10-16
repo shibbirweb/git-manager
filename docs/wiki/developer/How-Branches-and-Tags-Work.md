@@ -106,13 +106,13 @@ New and renamed branch names are checked by `validateBranchName` before git ever
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/Sidebar.svelte` | The Branches panel: filter, rows, keyboard, menus |
+| `src/lib/views/Sidebar.svelte` | The Branches panel: filter, a library `List` (role tree), Delete and Space keys, menus |
 | `src/lib/views/PanelHead.svelte` | Title row with buttons and a close X, shared by sidebar panels |
 | `src/lib/views/sidebar/tree.ts` | `buildRows`: flat row model with folder grouping |
 | `src/lib/views/sidebar/collapse.svelte.ts` | Saved and temporary collapse state |
-| `src/lib/views/sidebar/RowContent.svelte` | One row: icon, label, ahead and behind |
+| `src/lib/views/sidebar/RowContent.svelte` | One row (a library `Row`): icon, label, ahead and behind, hover buttons |
 | `src/lib/views/sidebar/actions.ts` | Menus, confirmations, `RepoTarget`, `validateBranchName` |
-| `src/lib/ui/menu.svelte.ts`, `src/lib/ui/ContextMenuHost.svelte` | `contextMenu.open` and the right-click menu itself |
+| `src/lib/ui/menu.svelte.ts`, `src/lib/ui/ContextMenuHost.svelte` | `contextMenu.open` and the right-click menu itself (the library's `Menu`) |
 | `src/lib/ui/dialog.svelte.ts`, `src/lib/ui/DialogHost.svelte` | `dialogs.confirm` and `dialogs.prompt`, used for every branch dialog |
 | `src/lib/stores/repo.svelte.ts` | `refs`, `stashes`, `refreshActive`, `run`, `runOp` |
 | `src-tauri/src/commands/branch.rs` | Branch commands |

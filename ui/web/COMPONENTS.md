@@ -30,8 +30,8 @@ StatusDot, Avatar, Pill, Mark, Meter, ZoomBadge, SymbolBadge, Logo, BulletList, 
 
 [What each one is for](docs/groups/Overlays.md)
 
-Dialog, Popover, Menu, MenuButton, ToastHost, LoadingOverlay, CommandPalette, ChoiceMenu, DialogHead, PaletteRow,
-CrumbPopup
+Dialog, Popover, Menu, MenuButton, ToastHost, WindowLayer, LoadingOverlay, CommandPalette, ChoiceMenu, DialogHead,
+PaletteRow, CrumbPopup
 
 ## Navigation
 
@@ -52,6 +52,6 @@ SplitGrid, PaneRow, SplitHandle
 
 [What each one is for](docs/groups/Editor.md)
 
-SearchToggles, FindBar, CodeView, CodeBlock, HighlightText, CommitGraph, CodeEditor, DiffView, DiffFrame, MergeView,
-MergeConnector, MarkdownView, FormatToolbar, MediaView, TerminalView, PatchView, ZoomBar, ImageCanvas, MediaCompare,
-RichEditorHost, FloatingFindBar, FontSample
+SearchToggles, FindBar, CodeView, CodeBlock, HighlightText, CommitGraph, CodeEditor, DiffView, DiffFrame, MergeFrame,
+MergeView, MergeConnector, MarkdownView, FormatToolbar, MediaView, TerminalView, TerminalScreen, PatchView, ZoomBar,
+ImageCanvas, MediaCompare, RichEditorHost, FloatingFindBar, FontSample

@@ -1,90 +1,191 @@
-<!-- The list that opens under a breadcrumb: a filter field, then the folder's entries (icon, name in its git color,
-     a chevron for folders) or a message. Arrow keys move, Enter picks, Escape closes. The caller places it. -->
+<!-- The list that opens under a breadcrumb: a filter field, then the folder's entries (icon, name in its git color
+     with its matches, a chevron for folders) or a message. Arrows, Ctrl+N/P, Page keys and Home/End move, Enter
+     picks, Escape closes. With `anchor`, it moves to <body> and places itself under the crumb, or above it when the
+     room below is short (logic/crumbs.ts). -->
 <script lang="ts">
   import type { IconName } from "../icons";
+  import { crumbPlace } from "../logic/crumbs";
+  import { paletteMove, paletteStep } from "../logic/palette";
+  import { componentTokens } from "../styles/tokens";
+  import FileIcon, { type FileIconView } from "./FileIcon.svelte";
+  import HighlightText from "./HighlightText.svelte";
   import Icon from "./Icon.svelte";
 
   interface CrumbEntry {
     id: string;
     name: string;
+    ranges?: [number, number][];
     icon?: IconName;
+    fileIcon?: FileIconView;
     tone?: "modified" | "added" | "conflict" | "deleted" | "ignored" | "search";
     folder?: boolean;
+    title?: string;
   }
 
   interface Props {
     entries: CrumbEntry[];
     query?: string;
+    selected?: number;
     placeholder?: string;
     message?: string;
     error?: boolean;
+    /** A faint line under the entries, such as that only the first 5000 show. */
+    note?: string;
     label: string;
-    onpick: (entry: CrumbEntry) => void;
+    anchor?: HTMLElement | null;
+    /** The event tells whether Cmd (Ctrl) was held, to open to the side. */
+    onpick: (entry: CrumbEntry, event: KeyboardEvent | MouseEvent) => void;
+    /** Runs first for keys in the field; call preventDefault to keep a key from the list. */
+    onkeydown?: (event: KeyboardEvent) => void;
     onclose?: () => void;
   }
 
   let {
     entries,
     query = $bindable(""),
+    selected = $bindable(0),
     placeholder = "Filter",
     message = "",
     error = false,
+    note = "",
     label,
+    anchor = null,
     onpick,
+    onkeydown,
     onclose,
   }: Props = $props();
 
-  let selected = $state(0);
+  const listId = $props.id();
+  let popup = $state<HTMLDivElement | null>(null);
+  let list = $state<HTMLDivElement | null>(null);
+  const tokens = componentTokens.crumbPopup;
+  const place = $derived(
+    anchor
+      ? crumbPlace(anchor.getBoundingClientRect(), { width: window.innerWidth, height: window.innerHeight }, tokens)
+      : null,
+  );
+
+  /** Whether `node` is inside the list, for a click-outside check. */
+  export function contains(node: Node): boolean {
+    return popup?.contains(node) ?? false;
+  }
+
+  // Keep the selected entry in view.
+  $effect(() => {
+    list?.querySelectorAll<HTMLElement>('[role="option"]')[selected]?.scrollIntoView({ block: "nearest" });
+  });
 
   function keydown(event: KeyboardEvent): void {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const step = event.key === "ArrowDown" ? 1 : -1;
-      selected = Math.min(entries.length - 1, Math.max(0, selected + step));
+    onkeydown?.(event);
+    if (event.defaultPrevented || event.isComposing) {
+      return;
+    }
+    const plain = !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey;
+    const by = paletteStep(event);
+    let used = true;
+    if (by !== 0) {
+      selected = paletteMove(selected, entries.length, by);
+    } else if (plain && query === "" && (event.key === "Home" || event.key === "End")) {
+      selected = event.key === "Home" ? 0 : Math.max(0, entries.length - 1);
     } else if (event.key === "Enter" && entries[selected]) {
-      event.preventDefault();
-      onpick(entries[selected]);
+      onpick(entries[selected], event);
     } else if (event.key === "Escape") {
-      event.preventDefault();
       onclose?.();
+    } else {
+      used = event.key === "Tab";
+    }
+    if (used) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   }
 
   function focus(input: HTMLInputElement): void {
     input.focus();
   }
+
+  /** Floating next to its crumb, out of any container that would clip it. */
+  function toBody(node: HTMLElement): { destroy(): void } | undefined {
+    if (!anchor) {
+      return undefined;
+    }
+    document.body.appendChild(node);
+    return { destroy: () => node.remove() };
+  }
 </script>
 
-<div class="popup" role="dialog" aria-label={label}>
+<div
+  bind:this={popup}
+  class="popup"
+  class:floating={place !== null}
+  role="dialog"
+  aria-label={label}
+  use:toBody
+  style:top={place?.top != null ? `${place.top}px` : null}
+  style:bottom={place?.bottom != null ? `${place.bottom}px` : null}
+  style:left={place ? `${place.left}px` : null}
+  style:width={place ? `${place.width}px` : null}
+>
   <div class="field">
     <Icon name="search" size="medium" />
-    <input bind:value={query} {placeholder} aria-label={label} spellcheck="false" use:focus onkeydown={keydown} />
+    <input
+      bind:value={query}
+      {placeholder}
+      aria-label={label}
+      spellcheck="false"
+      autocomplete="off"
+      role="combobox"
+      aria-expanded="true"
+      aria-controls={listId}
+      aria-activedescendant={entries[selected] ? `${listId}-${selected}` : undefined}
+      use:focus
+      onkeydown={keydown}
+    />
   </div>
-  <div class="list" role="listbox" aria-label={label}>
+  <div
+    bind:this={list}
+    class="list"
+    id={listId}
+    role="listbox"
+    aria-label={label}
+    style:max-height={place ? `${place.maxHeight - tokens.fieldHeight}px` : null}
+  >
     {#each entries as entry, index (entry.id)}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
+        id="{listId}-{index}"
         class="row {entry.tone ?? ''}"
         class:selected={index === selected}
         role="option"
         tabindex="-1"
         aria-selected={index === selected}
+        title={entry.title}
         onmousemove={() => (selected = index)}
-        onclick={() => onpick(entry)}
+        onmousedown={(event) => event.preventDefault()}
+        onclick={(event) => onpick(entry, event)}
       >
         <span class="icon"
-          >{#if entry.icon}<Icon name={entry.icon} size="normal" />{/if}</span
+          >{#if entry.fileIcon !== undefined}<FileIcon view={entry.fileIcon} />{:else if entry.icon}<Icon
+              name={entry.icon}
+              size="normal"
+            />{/if}</span
         >
-        <span class="name">{entry.name}</span>
+        <span class="name"><HighlightText text={entry.name} ranges={entry.ranges ?? []} /></span>
         {#if entry.folder}<span class="more"><Icon name="chevron-right" size="small" /></span>{/if}
       </div>
     {:else}
       {#if message}<div class="message" class:error>{message}</div>{/if}
     {/each}
+    {#if note}<div class="message">{note}</div>{/if}
   </div>
 </div>
 
 <style>
+  .floating {
+    position: fixed;
+    z-index: var(--crumb-popup-layer);
+  }
+
   .popup {
     display: flex;
     flex-direction: column;

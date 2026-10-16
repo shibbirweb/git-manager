@@ -36,7 +36,7 @@ passes its own engine (highlighting, mermaid, local images) as `render`.
 ## Replaces in the app
 
 - `src/lib/views/files/MarkdownPreview.svelte`
-- `the .md-body styles of src/lib/markdown/body.css`
+- `the .md-body styles the app kept in src/lib/markdown`
 
 ## Logic
 

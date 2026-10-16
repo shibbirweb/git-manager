@@ -8,11 +8,28 @@
   import { fileCommands } from "$lib/stores/fileCommands.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { baseName, folderFor, parentOf, relativeTo } from "$lib/stores/workspacePaths";
-  import type { DeletedLocalFile, FileDiff, FileLocalHistory, LocalSnapshot } from "$lib/types";
-  import { dialogs } from "$lib/ui/dialog.svelte";
+  import type { DeletedLocalFile, FileDiff, FileLocalHistory } from "$lib/types";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
   import Icon from "@git-manager/ui/components/Icon.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { localHistory } from "./localHistory.svelte";
-  import { groupByDay, isSafetyCopy, movedSelection, sizeText, snapshotLabel, timeText } from "./localHistoryModel";
+  import {
+    isSafetyCopy,
+    snapshotLabel,
+    snapshotTitle,
+    timeText,
+    versionHash,
+    versionKey,
+    versionRows,
+  } from "./localHistoryModel";
 
   const target = $derived(localHistory.target);
   const filePath = $derived(target?.kind === "file" ? target.filePath : null);
@@ -24,14 +41,15 @@
   let diff = $state.raw<FileDiff | null>(null);
   let diffError = $state<string | null>(null);
   let working = $state(false);
-  let listEl = $state<HTMLDivElement | null>(null);
+  let listWidth = $state(240);
   let loadToken = 0;
   let diffToken = 0;
 
   const snapshots = $derived(history?.snapshots ?? []);
   const selectedIndex = $derived(snapshots.findIndex((snapshot) => snapshot.hash === selectedHash));
   const selected = $derived(selectedIndex >= 0 ? snapshots[selectedIndex] : null);
-  const groups = $derived(groupByDay(snapshots, Date.now()));
+  const rows = $derived(versionRows(snapshots, Date.now()));
+  const selectedKey = $derived(selected ? versionKey(selected) : null);
   const dirty = $derived(filePath !== null && repoStore.isDirty(filePath));
   const textual = $derived(diff !== null && !diff.binary && !diff.tooLarge);
   const folders = $derived(repoStore.workspace?.folders ?? []);
@@ -150,382 +168,130 @@
     }
   }
 
-  function onListKeydown(event: KeyboardEvent): void {
-    const next = movedSelection(snapshots.length, selectedIndex, event.key);
-    if (next !== selectedIndex && next >= 0) {
-      event.preventDefault();
-      selectedHash = snapshots[next].hash;
-      listEl?.querySelector<HTMLElement>(`[data-index="${next}"]`)?.scrollIntoView({ block: "nearest" });
-    }
-  }
-
-  function onWindowKeydown(event: KeyboardEvent): void {
-    if (event.key !== "Escape" || dialogs.active !== null || event.defaultPrevented) {
-      return;
-    }
-    event.preventDefault();
-    localHistory.close();
-  }
-
-  function snapshotTitle(snapshot: LocalSnapshot): string {
-    return `${snapshotLabel(snapshot.label)}, ${fullDate(Math.floor(snapshot.time / 1000))}, ${sizeText(snapshot.size)}`;
-  }
-
   const rightLabel = $derived(history && !history.exists ? "Deleted" : dirty ? "Current (unsaved)" : "Current");
   const leftLabel = $derived(selected ? `${snapshotLabel(selected.label)}, ${timeText(selected.time)}` : "Version");
 </script>
 
-<svelte:window onkeydown={onWindowKeydown} />
+{#snippet back()}
+  {#if target?.kind === "file" && target.fromDeleted}
+    {@const from = target.fromDeleted}
+    <Toolbar variant="dialog" label="Local History">
+      <Button variant="ghost" size="small" icon="arrow-left" onclick={() => localHistory.openDeleted(from)}>
+        Recently Deleted
+      </Button>
+    </Toolbar>
+  {/if}
+{/snippet}
 
-<div
-  class="overlay"
-  role="presentation"
-  onmousedown={(event) => {
-    if (event.target === event.currentTarget) {
-      localHistory.close();
-    }
-  }}
->
-  <div class="dialog" role="dialog" aria-modal="true" aria-label="Local History">
-    <header class="head">
-      {#if target?.kind === "file" && target.fromDeleted}
-        <button
-          class="icon-btn"
-          onclick={() => target.fromDeleted && localHistory.openDeleted(target.fromDeleted)}
-          title="Back to Recently Deleted"
-          aria-label="Back"
-        >
-          <Icon name="arrow-left" size="normal" />
-        </button>
-      {/if}
-      <Icon name="history" size="regular" />
-      {#if filePath}
-        <h2>Local History: {baseName(filePath)}</h2>
-        <span class="path dim selectable" title={filePath}>{displayPath(parentOf(filePath))}</span>
-      {:else}
-        <h2>Recently Deleted</h2>
-        <span class="path dim">Files that are gone but still have versions in Local History</span>
-      {/if}
-      <span class="spacer"></span>
-      <button class="icon-btn" onclick={() => localHistory.close()} title="Close" aria-label="Close">
-        <Icon name="x" size="normal" />
-      </button>
-    </header>
+{#snippet versions()}
+  <Stack grow surface="alt" gap="none">
+    <List
+      items={rows}
+      itemKey={(row) => row.key}
+      label="Versions"
+      height="fill"
+      skip={(row) => row.kind === "day"}
+      bind:selected={() => selectedKey, (key) => (selectedHash = key ? versionHash(key) : null)}
+    >
+      {#snippet row(row, state)}
+        {#if row.kind === "day"}
+          <SectionTitle variant="day" title={row.title} />
+        {:else}
+          <Row selected={state.selected} align="baseline" title={snapshotTitle(row.snapshot)}>
+            <Text mono size="compact" tabular>{timeText(row.snapshot.time)}</Text>
+            <Text truncate tone={isSafetyCopy(row.snapshot.label) ? "warning" : "dim"}>
+              {snapshotLabel(row.snapshot.label)}
+            </Text>
+          </Row>
+        {/if}
+      {/snippet}
+    </List>
+  </Stack>
+{/snippet}
 
-    {#if loadError}
-      <div class="placeholder">
-        <Icon name="alert" size="xlarge" />
-        <div>Could not read Local History</div>
-        <div class="dim selectable">{loadError}</div>
-      </div>
-    {:else if target?.kind === "deleted"}
-      {#if deleted === null}
-        <div class="placeholder dim">Loading...</div>
-      {:else if deleted.length === 0}
-        <div class="placeholder dim">No deleted files with Local History</div>
+{#snippet compare(exists: boolean)}
+  <Stack grow gap="none">
+    <Toolbar variant="pane" label="Version actions">
+      {#if exists}
+        <Button size="small" variant="primary" disabled={!textual || working} onclick={() => void revert()}>
+          Revert to This
+        </Button>
       {:else}
-        <div class="deleted-list">
-          {#each deleted as item (item.filePath)}
-            <button class="deleted-row" onclick={() => localHistory.openFile(item.filePath, target.folderPaths)}>
-              <Icon name="file" size="medium" />
-              <span class="name">{baseName(item.filePath)}</span>
-              <span class="dim folder" title={item.filePath}>{displayPath(parentOf(item.filePath))}</span>
-              <span class="dim when" title={fullDate(Math.floor(item.latest.time / 1000))}>
-                {relativeTime(Math.floor(item.latest.time / 1000))}
-              </span>
-              <span class="dim count">{item.count} {item.count === 1 ? "version" : "versions"}</span>
-            </button>
-          {/each}
-        </div>
+        <Button size="small" variant="primary" disabled={!selected || working} onclick={() => void restore()}>
+          Restore File
+        </Button>
       {/if}
-    {:else if history === null}
-      <div class="placeholder dim">Loading...</div>
-    {:else if snapshots.length === 0}
-      <div class="placeholder dim">
-        <div>No versions of this file yet</div>
-        <div>Versions are kept on save, on outside changes and before discards.</div>
-      </div>
+      <Button size="small" disabled={!textual} onclick={() => diff && void localHistory.copy(diff.original)}
+        >Copy</Button
+      >
+      <Text size="small" tone="dim" truncate>
+        {exists
+          ? "Revert puts this version in the editor; Undo takes it back."
+          : "The file is deleted. Restore writes this version back."}
+      </Text>
+    </Toolbar>
+    {#if diffError}
+      <EmptyState icon="alert" title={diffError} titleTone="dim" />
+    {:else if diff && filePath}
+      <DiffView
+        {diff}
+        path={filePath}
+        mode="readonly"
+        {leftLabel}
+        {rightLabel}
+        workingFile={exists ? { filePath, sameLines: true } : null}
+      />
     {:else}
-      <div class="body">
-        <div
-          class="versions"
-          bind:this={listEl}
-          role="listbox"
-          tabindex="0"
-          aria-label="Versions"
-          onkeydown={onListKeydown}
-        >
-          {#each groups as group (group.title)}
-            <div class="day">{group.title}</div>
-            {#each group.snapshots as snapshot (snapshot.hash + snapshot.time)}
-              {@const index = snapshots.indexOf(snapshot)}
-              <button
-                class="version"
-                class:selected={snapshot.hash === selectedHash}
-                data-index={index}
-                role="option"
-                aria-selected={snapshot.hash === selectedHash}
-                title={snapshotTitle(snapshot)}
-                onclick={() => {
-                  selectedHash = snapshot.hash;
-                  listEl?.focus();
-                }}
-              >
-                <span class="time">{timeText(snapshot.time)}</span>
-                <span class="label" class:safety={isSafetyCopy(snapshot.label)}>{snapshotLabel(snapshot.label)}</span>
-              </button>
-            {/each}
-          {/each}
-        </div>
-        <div class="compare">
-          <div class="toolbar">
-            {#if history.exists}
-              <button class="btn small primary" disabled={!textual || working} onclick={() => void revert()}>
-                Revert to This
-              </button>
-            {:else}
-              <button class="btn small primary" disabled={!selected || working} onclick={() => void restore()}>
-                Restore File
-              </button>
-            {/if}
-            <button class="btn small" disabled={!textual} onclick={() => diff && void localHistory.copy(diff.original)}
-              >Copy</button
-            >
-            <span class="hint dim">
-              {#if history.exists}
-                Revert puts this version in the editor; Undo takes it back.
-              {:else}
-                The file is deleted. Restore writes this version back.
-              {/if}
-            </span>
-          </div>
-          {#if diffError}
-            <div class="placeholder">
-              <Icon name="alert" size="xlarge" />
-              <div class="dim selectable">{diffError}</div>
-            </div>
-          {:else if diff && filePath}
-            <div class="diff">
-              <DiffView
-                {diff}
-                path={filePath}
-                mode="readonly"
-                {leftLabel}
-                {rightLabel}
-                workingFile={history.exists ? { filePath, sameLines: true } : null}
-              />
-            </div>
-          {:else}
-            <div class="placeholder dim">Loading...</div>
-          {/if}
-        </div>
-      </div>
+      <EmptyState title="Loading..." titleTone="dim" delayed />
     {/if}
-  </div>
-</div>
+  </Stack>
+{/snippet}
 
-<style>
-  .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 840;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    width: min(1200px, calc(100vw - 32px));
-    height: min(820px, calc(100vh - 48px));
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--panel);
-    border: 1px solid var(--border-strong);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-  }
-
-  .head {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .path {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .body {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .versions {
-    flex: none;
-    width: 240px;
-    overflow-y: auto;
-    padding: 4px 0 8px;
-    border-right: 1px solid var(--border-strong);
-    background: var(--panel-alt);
-    outline: none;
-  }
-
-  .day {
-    padding: 8px 12px 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-  }
-
-  .version {
-    width: 100%;
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 4px 12px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .version:hover {
-    background: var(--hover);
-  }
-
-  .version.selected {
-    background: var(--selected-inactive);
-  }
-
-  .versions:focus-within .version.selected {
-    background: var(--selected);
-  }
-
-  .time {
-    flex: none;
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-  }
-
-  .label {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-dim);
-  }
-
-  .label.safety {
-    color: var(--warning);
-  }
-
-  .compare {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .hint {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
-  }
-
-  .diff {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .deleted-list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 4px 0;
-  }
-
-  .deleted-row {
-    width: 100%;
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    padding: 6px 14px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .deleted-row:hover {
-    background: var(--hover);
-  }
-
-  .deleted-row .name {
-    flex: none;
-    font-weight: 600;
-  }
-
-  .deleted-row .folder {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .deleted-row .when,
-  .deleted-row .count {
-    flex: none;
-    font-size: 11.5px;
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px;
-    text-align: center;
-  }
-</style>
+<Dialog
+  open
+  variant="view"
+  title={filePath ? `Local History: ${baseName(filePath)}` : "Recently Deleted"}
+  subtitle={filePath ? displayPath(parentOf(filePath)) : "Files that are gone but still have versions in Local History"}
+  icon="history"
+  toolbar={target?.kind === "file" && target.fromDeleted ? back : undefined}
+  onclose={() => localHistory.close()}
+>
+  {#if loadError}
+    <EmptyState icon="alert" title="Could not read Local History" hint={loadError} />
+  {:else if target?.kind === "deleted"}
+    {@const folderPaths = target.folderPaths}
+    {#if deleted === null}
+      <EmptyState title="Loading..." titleTone="dim" delayed />
+    {:else if deleted.length === 0}
+      <EmptyState title="No deleted files with Local History" titleTone="dim" />
+    {:else}
+      <Stack grow scroll="y" gap="none" role="group" label="Deleted files">
+        {#each deleted as item (item.filePath)}
+          <Row size="entry" align="baseline" onclick={() => localHistory.openFile(item.filePath, folderPaths)}>
+            <Icon name="file" size="medium" />
+            <Text>{baseName(item.filePath)}</Text>
+            <Text size="small" tone="dim" truncate title={item.filePath}>{displayPath(parentOf(item.filePath))}</Text>
+            <Text size="small" tone="dim" title={fullDate(Math.floor(item.latest.time / 1000))}>
+              {relativeTime(Math.floor(item.latest.time / 1000))}
+            </Text>
+            <Text size="small" tone="dim">{item.count} {item.count === 1 ? "version" : "versions"}</Text>
+          </Row>
+        {/each}
+      </Stack>
+    {/if}
+  {:else if history === null}
+    <EmptyState title="Loading..." titleTone="dim" delayed />
+  {:else if snapshots.length === 0}
+    <EmptyState
+      title="No versions of this file yet"
+      hint="Versions are kept on save, on outside changes and before discards."
+      titleTone="dim"
+    />
+  {:else}
+    {@const exists = history.exists}
+    <SplitPane label="Resize the versions" preset="list" bind:size={listWidth} max={480}>
+      {#snippet first()}{@render versions()}{/snippet}
+      {#snippet second()}{@render compare(exists)}{/snippet}
+    </SplitPane>
+  {/if}
+</Dialog>

@@ -1,10 +1,18 @@
 <!--
   Git or ssh needs a username, password, passphrase or a yes for a new host (askpass.rs). One
-  question at a time; Cancel lets the git command fail as it did before.
+  question at a time; Cancel lets the git command fail as it did before. An urgent library Dialog: over every
+  other dialog, and its keys never reach the window's shortcuts.
 -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { tick } from "svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { askpass } from "./askpass.svelte";
   import { folderLabel, parsePrompt } from "./askpassPrompt";
 
@@ -17,6 +25,15 @@
   let reveal = $state(false);
   let firstField = $state<HTMLInputElement | null>(null);
   let confirmButton = $state<HTMLButtonElement | null>(null);
+  const confirmLabel = $derived(
+    parsed?.kind === "confirm"
+      ? "Connect"
+      : parsed?.kind === "username"
+        ? "Sign In"
+        : parsed?.kind === "passphrase"
+          ? "Unlock"
+          : "OK",
+  );
 
   const title = $derived.by(() => {
     if (!parsed) {
@@ -71,239 +88,103 @@
       askpass.cancel(question.id);
     }
   }
-
-  // Keys stay in the dialog, so window shortcuts never act behind it.
-  function onKeydown(event: KeyboardEvent): void {
-    event.stopPropagation();
-    if (event.key === "Escape") {
-      event.preventDefault();
-      cancel();
-    }
-  }
 </script>
 
-{#if question && parsed}
-  <div class="overlay" role="presentation" onkeydown={onKeydown}>
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="askpass-title">
-      <form
-        onsubmit={(event) => {
-          event.preventDefault();
-          submit();
-        }}
-      >
-        <div class="head">
-          <span class="badge"><Icon name={parsed.kind === "confirm" ? "alert" : "lock"} size="regular" /></span>
-          <div class="head-text">
-            <h2 id="askpass-title">{title}</h2>
-            {#if repoName}
-              <p class="dim">git asks for this to continue in {repoName}.</p>
-            {/if}
-          </div>
-        </div>
+{#snippet revealButton()}
+  <IconButton
+    icon="eye"
+    iconSize="normal"
+    size="small"
+    tone="dim"
+    active={reveal}
+    label={reveal ? "Hide password" : "Show password"}
+    title={reveal ? "Hide" : "Show"}
+    onclick={() => (reveal = !reveal)}
+  />
+{/snippet}
 
-        {#if parsed.kind === "confirm"}
-          <pre class="prompt selectable">{parsed.text}</pre>
-        {:else}
-          {#if parsed.kind === "username"}
-            <label class="field">
-              <span>Username</span>
-              <input
-                bind:this={firstField}
-                class="input"
-                bind:value={username}
-                autocomplete="username"
-                spellcheck="false"
-              />
-            </label>
-          {/if}
-          {#if parsed.kind === "passphrase" && parsed.keyPath}
-            <p class="key dim selectable">{parsed.keyPath}</p>
-          {/if}
-          {#if parsed.kind === "other"}
-            <p class="prompt-line selectable">{parsed.text}</p>
-          {/if}
-          <label class="field">
-            <span>{parsed.kind === "passphrase" ? "Passphrase" : parsed.kind === "other" ? "Answer" : "Password"}</span>
-            <span class="secret-row">
+{#if question && parsed}
+  <Dialog
+    open
+    urgent
+    variant="form"
+    width="small"
+    {title}
+    subtitle={repoName ? `git asks for this to continue in ${repoName}.` : ""}
+    icon={parsed.kind === "confirm" ? "alert" : "lock"}
+    iconTone={parsed.kind === "confirm" ? "warning" : "accent"}
+    enterSubmits
+    onclose={cancel}
+    onsubmit={submit}
+  >
+    <Stack gap="md">
+      {#if parsed.kind === "confirm"}
+        <CodeBlock variant="detail" text={parsed.text} label="The question" />
+      {:else}
+        {#if parsed.kind === "username"}
+          <Field label="Username">
+            <Input
+              width="fill"
+              bind:value={username}
+              bind:element={firstField}
+              autocomplete="username"
+              spellcheck="false"
+              aria-label="Username"
+            />
+          </Field>
+        {/if}
+        {#if parsed.kind === "passphrase" && parsed.keyPath}
+          <Text size="small" tone="dim" mono selectable wrap="anywhere">{parsed.keyPath}</Text>
+        {/if}
+        {#if parsed.kind === "other"}
+          <Text selectable wrap="anywhere">{parsed.text}</Text>
+        {/if}
+        {@const answerLabel =
+          parsed.kind === "passphrase" ? "Passphrase" : parsed.kind === "other" ? "Answer" : "Password"}
+        <Field label={answerLabel}>
+          <Stack direction="row" align="center" gap="xs">
+            <Stack grow>
               {#if parsed.kind === "username"}
-                <input
-                  class="input"
+                <Input
+                  width="fill"
                   type={reveal ? "text" : "password"}
                   bind:value={secret}
                   autocomplete="current-password"
                   spellcheck="false"
+                  aria-label={answerLabel}
                 />
               {:else}
-                <input
-                  bind:this={firstField}
-                  class="input"
+                <Input
+                  width="fill"
                   type={reveal || !parsed.secret ? "text" : "password"}
                   bind:value={secret}
+                  bind:element={firstField}
                   autocomplete="current-password"
                   spellcheck="false"
+                  aria-label={answerLabel}
                 />
               {/if}
-              {#if parsed.secret || parsed.kind === "username"}
-                <button
-                  type="button"
-                  class="icon-btn reveal"
-                  class:on={reveal}
-                  onclick={() => (reveal = !reveal)}
-                  title={reveal ? "Hide" : "Show"}
-                  aria-label={reveal ? "Hide password" : "Show password"}
-                  aria-pressed={reveal}
-                >
-                  <Icon name="eye" size="normal" />
-                </button>
-              {/if}
-            </span>
-          </label>
-          {#if tokenHint}
-            <p class="hint dim">
-              GitHub, GitLab and Bitbucket take a personal access token or app password here, not your account password.
-            </p>
-          {/if}
-          {#if parsed.kind === "username"}
-            <p class="hint dim">Git saves it with your credential helper, if one is set, so you are not asked again.</p>
-          {/if}
+            </Stack>
+            {#if parsed.secret || parsed.kind === "username"}
+              {@render revealButton()}
+            {/if}
+          </Stack>
+        </Field>
+        {#if tokenHint}
+          <Text size="small" tone="dim" element="p">
+            GitHub, GitLab and Bitbucket take a personal access token or app password here, not your account password.
+          </Text>
         {/if}
-
-        <div class="actions">
-          <button type="button" class="btn" onclick={cancel}>Cancel</button>
-          <button bind:this={confirmButton} type="submit" class="btn primary">
-            {parsed.kind === "confirm"
-              ? "Connect"
-              : parsed.kind === "username"
-                ? "Sign In"
-                : parsed.kind === "passphrase"
-                  ? "Unlock"
-                  : "OK"}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+        {#if parsed.kind === "username"}
+          <Text size="small" tone="dim" element="p">
+            Git saves it with your credential helper, if one is set, so you are not asked again.
+          </Text>
+        {/if}
+      {/if}
+    </Stack>
+    {#snippet actions()}
+      <Button onclick={cancel}>Cancel</Button>
+      <Button variant="primary" bind:element={confirmButton} onclick={submit}>{confirmLabel}</Button>
+    {/snippet}
+  </Dialog>
 {/if}
-
-<style>
-  .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 950;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 14vh;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    width: min(440px, calc(100vw - 32px));
-    padding: 18px 20px 16px;
-    border: 1px solid var(--border-strong);
-    border-radius: 10px;
-    background: var(--panel);
-    box-shadow: var(--shadow);
-  }
-
-  .head {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    margin-bottom: 14px;
-  }
-
-  .badge {
-    flex: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-    color: var(--accent);
-  }
-
-  .head-text {
-    min-width: 0;
-  }
-
-  h2 {
-    margin: 2px 0 2px;
-    font-size: 14px;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  .head-text p {
-    margin: 0;
-    font-size: 12px;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-
-  .field .input {
-    width: 100%;
-  }
-
-  .secret-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .secret-row .input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .reveal {
-    flex: none;
-    width: 28px;
-    height: 28px;
-    color: var(--text-dim);
-  }
-
-  .reveal.on {
-    color: var(--accent);
-  }
-
-  .key,
-  .prompt-line {
-    margin: 0 0 12px;
-    font-size: 12px;
-    overflow-wrap: anywhere;
-  }
-
-  .prompt {
-    max-height: 220px;
-    overflow: auto;
-    margin: 0 0 14px;
-    padding: 10px;
-    border-radius: 6px;
-    background: var(--panel-alt);
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-
-  .hint {
-    margin: -4px 0 10px;
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 6px;
-  }
-</style>

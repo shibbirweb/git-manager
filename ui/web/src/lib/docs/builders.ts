@@ -2,7 +2,7 @@ import { prop, type ComponentDoc } from "./types";
 
 const ROW_SIZE = '"tree" | "list" | "history" | "entry" | "large" | "section" | "group"';
 const ROW_HEIGHT = '"compact" | "normal" | "relaxed" | "comfortable" | null';
-const VIEW_HEIGHT = '"auto" | "fill" | "small" | "medium" | "large"';
+const VIEW_HEIGHT = '"auto" | "fill" | "small" | "medium" | "large" | "xlarge"';
 
 export const builderDocs: ComponentDoc[] = [
   {
@@ -116,7 +116,8 @@ export const builderDocs: ComponentDoc[] = [
       prop("expanded", "(item: T) => boolean | null", "Whether a tree row is open; null for a leaf.", {
         default: "() => null",
       }),
-      prop("height", VIEW_HEIGHT, "Its content's height, its parent's, or scroll past 160, 240 or 360 px.", {
+      prop("height", VIEW_HEIGHT, "Its content's height, its parent's, or scroll past 160, 240, 360 or 468 px " +
+        "(a palette's results).", {
         default: '"auto"',
       }),
       prop("virtual", ROW_HEIGHT, "Draw only the rows in view, each this tall (the estimate with `measure`).", {
@@ -140,9 +141,24 @@ export const builderDocs: ComponentDoc[] = [
       }),
       prop("empty", "Snippet", "Shown when there are no items, such as an EmptyState."),
       prop("onselect", "(item: T) => void", "A row was selected by click or key."),
-      prop("onactivate", "(item: T) => void", "Enter or a double-click on a row."),
+      prop("clickActivates", "boolean", "A click picks a row like Enter, not only selects it (search results).", {
+        default: "false",
+      }),
+      prop("onactivate", "(item: T, event?: KeyInput | MouseEvent) => void", "Enter or a double-click on a row (a " +
+        "click with clickActivates); the event tells whether Shift or Cmd was held."),
       prop("ontoggle", "(item: T, open: boolean) => void", "Left or Right asks to fold or unfold a tree row."),
-      prop("oncontextmenu", "(event: MouseEvent, item: T) => void", "Right-clicked; the row is selected first."),
+      prop(
+        "oncontextmenu",
+        "(event: MouseEvent, item: T, fromKeys?: boolean) => void",
+        "Right-clicked (the row is selected first), or the menu key or Shift+F10 on the current row: `fromKeys`, " +
+          "with the event under the row's start.",
+      ),
+      prop(
+        "onkeydown",
+        "(event: KeyboardEvent, fromField: boolean) => void",
+        "Runs first for a key in the list or its field; call preventDefault to keep the key from the list, " +
+          "such as Delete removing a branch.",
+      ),
       prop("onnearend", "() => void", "Scrolled near the end: load the next page (once per item count)."),
     ],
     logic: [

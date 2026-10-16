@@ -13,9 +13,10 @@ export const navigationDocs: ComponentDoc[] = [
     props: [
       prop(
         "tabs",
-        "{ id: string; label: string; icon?: IconName; hint?: string; title?: string; preview?: boolean; " +
-          "dirty?: boolean; pinned?: boolean }[]",
-        "The tabs in order.",
+        "{ id: string; label: string; icon?: IconName; iconTone?: success|danger|dim; hint?: string; " +
+          "title?: string; preview?: boolean; dirty?: boolean; pinned?: boolean; mono?: boolean; fixed?: boolean }[]",
+        "The tabs in order; `iconTone` colors a run's state, `mono` names a commit, `fixed` (the Diff tab) is never " +
+          "dragged.",
         { required: true },
       ),
       prop("active", "string | null", "The active tab's id.", { default: "null", bindable: true }),
@@ -24,10 +25,13 @@ export const navigationDocs: ComponentDoc[] = [
       prop("layout", '"scroll" | "wrap" | "single"', "One scrolling row, wrapped rows, or a lone centered name.", {
         default: '"scroll"',
       }),
+      prop("look", '"flat" | "rounded"', "Square tabs on the panel color, or rounded tabs on the editor color " +
+        "(rounded panels).", { default: '"flat"' }),
       prop("newLabel", "string", "The + button's name and tooltip.", { default: '"New tab"' }),
       prop("onselect", "(id: string) => void", "A tab was clicked."),
       prop("ondblclick", "(id: string) => void", "A tab was double-clicked, such as to keep a preview tab open."),
       prop("onclose", "(id: string) => void", "Close button or middle click; without it there is no close button."),
+      prop("onunpin", "(id: string) => void", "A pinned tab's pin button unpins it; middle click still closes."),
       prop("oncontextmenu", "(id: string, event: MouseEvent) => void", "Right-click on a tab, for its Menu."),
       prop("onnew", "(event: MouseEvent) => void", "Shows a + after the tabs; open a Menu from it."),
       prop("onreorder", "(from: number, to: number) => void", "Tabs can be dragged; called with the move.", {
@@ -68,7 +72,8 @@ export const navigationDocs: ComponentDoc[] = [
     summary: "A file-tree list: folders open and close, rows indent by depth, and only rows in view are drawn.",
     usage:
       "Use for folders and files or any nested list. Give folders a `children` array (empty when nothing is in " +
-      "them). Keys work like the Files panel; double-click or Enter opens a file.",
+      "them). Keys work like the Files panel; double-click or Enter opens a file. It exports focus(), and " +
+      "dragFromOutside(x, y, ids), endOutsideDrag() and cancelOutsideDrag() for files dragged in from the system.",
     aliases: ["Tree view", "File tree"],
     props: [
       prop("nodes", "N extends TreeNode ({ id: string; label: string; children?: N[] })[]", "The top level.", {
@@ -96,11 +101,21 @@ export const navigationDocs: ComponentDoc[] = [
       prop("iconFor", "(node: N, open: boolean) => IconName | null", "Icon per row.", {
         default: '(node) => (node.children ? "folder" : "file")',
       }),
-      prop("decorate", "(node: N) => TreeDecoration | null", "A row's tone, strike, badge, cut, ignored, root " +
-        "(a workspace folder's header), repo (accent icon) and tag (LFS).", {
+      prop("decorate", "(node: N) => TreeDecoration | null", "A row's tone, strike, badge (with badgeTitle) or dot, " +
+        "cut, ignored, root (a workspace folder's header), repo (accent icon), tag (LFS), title and open.", {
         default: "() => null",
       }),
       prop("detail", "Snippet<[N]>", "Dim content at the end of a row."),
+      prop("customIcon", "Snippet<[N, boolean]>", "Draws a row's icon instead of iconFor, such as a file type icon."),
+      prop("empty", "string", "Shown when there are no rows; the empty tree still takes drops.", { default: '""' }),
+      prop("canDrag", "(node: N) => boolean", "Whether a row can be dragged, such as not a deleted file.", {
+        default: "() => true",
+      }),
+      prop("onclick", "(node: N, event: MouseEvent) => void", "After a click selected the row, such as to open a " +
+        "file on one click."),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "Runs first; call preventDefault to keep a key from the " +
+        "tree, such as Cmd+C."),
+      prop("onbackgroundmenu", "(event: MouseEvent) => void", "Right-click below the rows, for the folder's Menu."),
       prop("onopen", "(node: N) => void", "A file was opened (double-click or Enter)."),
       prop("onrename", "(node: N, name: string) => void", "A rename was confirmed with Enter."),
       prop("ondrop", '(ids: string[], target: N | null, mode: "move" | "copy") => void', "Rows were dropped " +
@@ -212,16 +227,23 @@ export const navigationDocs: ComponentDoc[] = [
     name: "Breadcrumbs",
     group: "Navigation",
     summary: "A path as crumbs separated by chevrons, like the Navigation Bar; the file is bold.",
-    usage: "Use above an editor for the file's path. Open a list of a folder's files from `onselect`.",
+    usage:
+      "Use above an editor for the file's path. Open a list of a folder's files from `onselect`; " +
+      "crumbElement(index) gives a crumb's button to open its list from the keyboard.",
     aliases: ["Breadcrumb", "Path bar"],
     props: [
-      prop("crumbs", '{ label: string; icon?: IconName; kind?: "repo" | "folder" | "file" }[]', "The parts.", {
+      prop("crumbs", '{ label: string; icon?: IconName; fileIcon?: FileIconView; kind?: "repo" | "folder" | "file" }[]',
+        "The parts; the farthest shorten first when narrow.", {
         required: true,
       }),
       prop("label", "string", "Accessible name.", { default: '"Path"' }),
       prop("open", "number | null", "Index of the crumb whose list shows.", { default: "null", data: true }),
       prop("variant", '"inline" | "floating" | "anchored"', "In a bar; floating over the editor; or under the " +
         "tabs, anchored to the editor's top.", { default: '"inline"' }),
+      prop("at", "{ top: number; left: number; maxWidth: number } | null", "Anchored: where the bar sits, such as " +
+        "the focused editor's top left.", { default: "null", data: true }),
+      prop("title", "string", "A tooltip, such as the full path."),
+      prop("element", "HTMLElement | null", "The bar, for a click-outside check.", { default: "null", bindable: true }),
       prop("onselect", "(index: number, element: HTMLElement) => void", "A crumb was clicked.", { data: true }),
     ],
     examples: [

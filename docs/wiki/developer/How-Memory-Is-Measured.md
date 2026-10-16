@@ -70,7 +70,7 @@ flowchart LR
 | `src-tauri/src/memory_log.rs` | The log thread, line format, rotation, `read_tail` |
 | `src-tauri/src/commands/config.rs` | `memory_usage`, `memory_log_configure`, `memory_log_event` |
 | `src/lib/debug/memoryEvents.ts`, `memoryLog.svelte.ts` | UI events for the log, the Settings state |
-| `src/lib/views/StatusBar.svelte` | The readout and its popover |
+| `src/lib/views/MemoryStatus.svelte` | The readout and its popover |
 | `src-tauri/src/mcp/tools/performance.rs`, `recorder.rs` | `get_memory_usage`, `sample_memory`, the recorder |
 
 ## Design decisions

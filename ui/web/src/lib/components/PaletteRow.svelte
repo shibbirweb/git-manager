@@ -14,9 +14,9 @@
     item: PaletteItem;
     selected?: boolean;
     onhover?: () => void;
-    onpick?: () => void;
+    onpick?: (event: MouseEvent) => void;
     /** Buttons at the row's end, such as Remove; they show while the row is hovered or selected. */
-    end?: Snippet;
+    end?: Snippet<[PaletteItem]>;
   }
 
   let { item, selected = false, onhover, onpick, end }: Props = $props();
@@ -33,10 +33,10 @@
   tabindex="-1"
   aria-selected={selected}
   aria-disabled={item.disabled}
-  title={item.disabled ? item.reason : undefined}
+  title={item.disabled ? item.reason : item.tooltip}
   onmousemove={() => !item.disabled && onhover?.()}
   onmousedown={(event) => event.preventDefault()}
-  onclick={() => !item.disabled && onpick?.()}
+  onclick={(event) => !item.disabled && onpick?.(event)}
 >
   {#if indent}<span class="indent" style:width="{indent}px"></span>{/if}
   {#if item.prefix !== undefined}
@@ -49,19 +49,19 @@
     <Icon name={item.icon} size="normal" />
   {/if}
   <span class="title">
-    {#if item.category}<span class="category">{item.category}:</span>{" "}{/if}<HighlightText
-      text={item.title}
-      ranges={item.ranges ?? []}
-    />
+    {#if item.category}<span class="category"
+        ><HighlightText text={item.category} ranges={item.categoryRanges ?? []} />:</span
+      >{" "}{/if}<HighlightText text={item.title} ranges={item.ranges ?? []} />
   </span>
   {#if item.checked}<span class="check" title="On"><Icon name="check" size="medium" /></span>{/if}
   {#if item.disabled && item.reason}<span class="reason">{item.reason}</span>{/if}
   {#if item.container}<span class="container">in {item.container}</span>{/if}
   {#if item.dirty}<span class="dirty" title="Unsaved changes"></span>{/if}
   {#if item.detail}<span class="detail">{item.detail}</span>{/if}
-  {#if item.folder}<span class="folder">{item.folder}</span>{/if}
+  {#if item.folder}<span class="folder"><HighlightText text={item.folder} ranges={item.folderRanges ?? []} /></span
+    >{/if}
   {#if item.keys}<kbd>{item.keys}</kbd>{/if}
-  {#if end}<span class="end">{@render end()}</span>{/if}
+  {#if end}<span class="end">{@render end(item)}</span>{/if}
 </div>
 
 <style>

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { dialogKeyAction, isLineField, type DialogKey, type DialogKeyOptions } from "./dialogKeys";
+import { describe, expect, it, vi } from "vitest";
+import { dialogKeyAction, isLineField, runDialogKey, type DialogKey, type DialogKeyOptions } from "./dialogKeys";
 
 function key(name: string, extra: Partial<DialogKey> = {}): DialogKey {
   return {
@@ -54,5 +54,34 @@ describe("isLineField", () => {
     expect(isLineField({ tagName: "BUTTON", type: "submit" })).toBe(false);
     expect(isLineField({ tagName: "DIV" })).toBe(false);
     expect(isLineField(null)).toBe(false);
+  });
+});
+
+describe("runDialogKey", () => {
+  function event(name: string) {
+    return { ...key(name), target: null, preventDefault: vi.fn(), stopPropagation: vi.fn() };
+  }
+
+  it("keeps every key from the window only in an urgent dialog", () => {
+    const urgent = event("a");
+    runDialogKey(
+      urgent as unknown as KeyboardEvent,
+      { dismissible: true, enterSubmits: false, urgent: true },
+      {
+        close: vi.fn(),
+      },
+    );
+    expect(urgent.stopPropagation).toHaveBeenCalled();
+    const plain = event("a");
+    runDialogKey(plain as unknown as KeyboardEvent, { dismissible: true, enterSubmits: false }, { close: vi.fn() });
+    expect(plain.stopPropagation).not.toHaveBeenCalled();
+  });
+
+  it("closes on Escape", () => {
+    const close = vi.fn();
+    const escape = event("Escape");
+    runDialogKey(escape as unknown as KeyboardEvent, { dismissible: true, enterSubmits: false }, { close });
+    expect(close).toHaveBeenCalled();
+    expect(escape.preventDefault).toHaveBeenCalled();
   });
 });

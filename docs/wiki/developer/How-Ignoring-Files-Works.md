@@ -51,7 +51,7 @@ A pattern does not untrack anything. `tracked_matches` opens a fresh repository 
 | `src/lib/ignore/gitignore.ts` | Pure escaping and pattern choices, `KIND_HINTS` |
 | `src/lib/ignore/ignoreActions.ts` | `ignoreMenu`, `addToIgnore`, `offerUntrack`, `editIgnoreFile` |
 | `src-tauri/src/commands/ignore.rs` | `add_to_ignore`, `ensure_ignore_file`, `untrack_files`, `append_patterns` |
-| `src/lib/views/files/FileExplorer.svelte` | Adds the submenu to file and folder menus (not for deleted rows) |
+| `src/lib/views/files/explorerMenu.ts` | Adds the submenu to file and folder menus (not for deleted rows) |
 | `src/lib/views/changes/RepoSection.svelte` | Adds it to Changes and Staged rows (not to conflicts) |
 
 ## Design decisions

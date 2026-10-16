@@ -40,7 +40,7 @@ flowchart LR
 | --- | --- |
 | `src-tauri/src/ai_usage/` | `mod.rs`, `claude.rs`, `codex.rs`, `time.rs` |
 | `src-tauri/src/commands/ai.rs` | `ai_usage` |
-| `src/lib/ai/usageStore.svelte.ts`, `usageView.ts`, `AiUsage.svelte` | Polling, text and the status bar part |
+| `src/lib/ai/usageStore.svelte.ts`, `usageView.ts`, `AiUsage.svelte` | Polling, text and the status bar part (library `StatusItem`, `Mark`, `Meter`, `Popover`) |
 
 ## Design decisions
 

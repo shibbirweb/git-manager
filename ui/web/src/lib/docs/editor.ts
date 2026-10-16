@@ -24,8 +24,9 @@ export const editorDocs: ComponentDoc[] = [
     group: "Editor",
     summary: "The editor's find and replace bar: find field with toggles, match counter, previous, next and close.",
     usage:
-      "Use above an editor. Enter goes to the next match, Shift+Enter the previous, Esc closes. Read-only " +
-      "editors pass `editable={false}`, which hides Replace.",
+      "Use above an editor. Enter goes to the next match, Shift+Enter the previous, Esc closes, unless the " +
+      "caller passes `onkeydown` to run its own keys. Buttons never take the focus from the fields. Read-only " +
+      "editors pass `editable={false}`, which hides Replace. `focus(field, select)` puts the caret in a field.",
     aliases: ["Find", "Search bar"],
     props: [
       prop("query", "string", "The search text.", { default: '""', bindable: true }),
@@ -35,8 +36,24 @@ export const editorDocs: ComponentDoc[] = [
       prop("editable", "boolean", "Offer Replace (hidden for read-only editors).", { default: "true" }),
       prop("current", "number", "The current match, from 1.", { default: "0", data: true }),
       prop("total", "number", "How many matches.", { default: "0", data: true }),
-      prop("problem", "string | null", "Shown in red instead of the counter, e.g. `Bad regex`.", { default: "null" }),
+      prop("counter", "string | null", "Words instead of the counted `2 of 5`, e.g. a notice.", { default: "null" }),
+      prop("active", "boolean | null", "Enables the step and replace buttons; null means `total > 0`.", {
+        default: "null",
+      }),
+      prop("problem", "string | null", "Tints the field red and is its tooltip, e.g. `Bad regex`.", {
+        default: "null",
+      }),
+      prop("label", "string", "The bar's accessible name.", { default: '"Find in file"' }),
+      prop("titles", "FindBarTitles", "Tooltips per button (previous, next, selectAll, replace, ...).", {
+        default: "{}",
+      }),
+      prop("toggleTitles", "Partial<Record<keyof SearchOptions, string>>", "Tooltips of the toggles.", {
+        default: "{}",
+      }),
       prop("onsearch", "(query: string, options: SearchOptions) => void", "The query or a toggle changed."),
+      prop("onreplaceinput", "(replacement: string) => void", "The replace text changed."),
+      prop("ontogglereplace", "(open: boolean) => void", "The chevron opened or closed Replace."),
+      prop("onkeydown", "(event: KeyboardEvent, field: FindField) => void", "Runs instead of the bar's own keys."),
       prop("onnext", "() => void", "Next match (Enter or the down arrow)."),
       prop("onprevious", "() => void", "Previous match (Shift+Enter or the up arrow)."),
       prop("onreplace", "() => void", "Replace the current match."),

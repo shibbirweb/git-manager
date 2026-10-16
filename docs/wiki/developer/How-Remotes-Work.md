@@ -94,7 +94,7 @@ The arrows in the header, the status bar and the Sync button come from the statu
 | `src/lib/stores/repo.svelte.ts` | `run`, `runOp`, `busy`, `progress` |
 | `src/lib/views/gitActions.ts` | The shared actions, the force push confirm, `syncRepo` |
 | `src/lib/views/changes/sync.ts` | Sync plans and their texts |
-| `src/lib/views/Header.svelte` | The busy pill |
+| `src/lib/views/Header.svelte` | The busy text, through the library's `AppHeader` |
 | `src/lib/ui/toast.svelte.ts`, `src/lib/ui/Toasts.svelte` | The success, info and error toasts that `run` and `runOp` show |
 
 ## Design decisions

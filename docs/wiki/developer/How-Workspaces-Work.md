@@ -67,7 +67,7 @@ The activity bars are the icon strips at each edge. Two header buttons left of t
 | `src/lib/stores/repo.svelte.ts` | `openFolders`, `opening`, `loadAllChanges`, `closeWorkspace`, `rediscover`, `rescan` |
 | `src/lib/views/OpeningProgress.svelte`, `src/lib/stores/openingProgress.ts` | The opening card and its texts |
 | `src/lib/stores/workspacePaths.ts` | `folderFor`, `locateAbsolute`, `relativeTo`, `joinPath` |
-| `src/lib/views/Header.svelte`, `LayoutToggleIcon.svelte`, `Workspace.svelte` | The activity bar toggles and widths |
+| `src/lib/views/Header.svelte`, `Workspace.svelte` | The activity bar toggles (library `Button` with a `layout` glyph) and widths |
 
 ## Design decisions
 

@@ -67,12 +67,13 @@
   },
   "tabStrip": {
     "height": "{size.tabStrip}", "tabMaxWidth": 240, "tabPaddingLeft": 12, "tabPaddingRight": 6, "gap": 6,
-    "closeSize": 20, "indicator": 2, "singlePaddingLeft": 24
+    "closeSize": 20, "indicator": 2, "singlePaddingLeft": 24, "roundedGap": 2, "roundedPaddingX": 6,
+    "roundedWrapPaddingY": 4, "roundedRowGap": 4
   },
   "panelTabs": {"height": 29, "gap": 14, "indicator": 2},
   "tree": {
     "rowHeight": "{size.treeRow}", "indent": 8, "indentStep": 14, "chevron": 12, "gap": 4, "paddingRight": 8,
-    "paddingY": 4
+    "paddingY": 4, "badgeWidth": 16, "dotSize": 6, "dotInset": 5
   },
   "collapsible": {"height": 26, "gap": 5, "paddingLeft": 4, "paddingRight": 6, "nestedIndent": 16},
   "listRow": {"paddingX": 8, "paddingY": 5, "radius": "{radius.small}", "gap": 8},
@@ -147,7 +148,8 @@
   "reorderList": {"rowPaddingY": 4, "rowPaddingLeft": 6, "rowPaddingRight": 10, "gap": 8, "dropLine": 2},
   "shortcutRecorder": {"width": 150, "minHeight": 26, "paddingX": 6},
   "codeEditor": {"gutterPaddingLeft": 12, "gutterPaddingRight": 10, "gutterMinWidth": 40},
-  "mergeView": {"gap": 52, "labelPaddingX": 12, "labelPaddingY": 5, "buttonWidth": 18, "buttonHeight": 17},
+  "mergeView": {"gap": 52, "labelPaddingX": 12, "labelPaddingY": 5, "buttonWidth": 18, "buttonHeight": 17,
+    "buttonInset": 2},
   "formatToolbar": {
     "minHeight": 28, "paddingY": 2, "paddingLeft": 6, "paddingRight": 10, "groupGap": 12, "toolHeight": 22,
     "toolMinWidth": 24, "toolPaddingX": 5, "dividerHeight": 14
@@ -192,7 +194,7 @@
     "height": 22, "paddingLeft": 5, "paddingRight": 8, "gap": 4, "radius": 11, "pickPaddingY": 2, "pickPaddingX": 8,
     "pickRadius": 12, "badgeHeight": 18, "badgePaddingX": 5
   },
-  "pill": {"paddingX": 6, "radius": 8, "lineHeight": 16, "outlineRadius": 9, "tallLineHeight": 18},
+  "pill": {"paddingX": 6, "radius": 8, "lineHeight": 16, "outlineRadius": 9, "tallLineHeight": 18, "dotSize": 8},
   "mark": {"width": 20, "height": 16, "smallPaddingX": 3, "smallLineHeight": 13, "smallRadius": 3},
   "meter": {"gap": 4, "usageHeight": 6, "usageRadius": 3, "miniWidth": 32},
   "zoomBadge": {"top": 56, "paddingY": 6, "paddingX": 14, "radius": 16},
@@ -230,7 +232,8 @@
   "diffLabels": {"height": 24, "paddingX": 12, "gap": 6},
   "diffFrame": {"controls": 24, "ruler": 12, "revertHeight": 20, "revertRadius": 4},
   "codeView": {"copyHeight": 22},
-  "editorTab": {"dirtyDot": 8},
+  "viewDialog": {"height": 820},
+  "editorTab": {"dirtyDot": 8, "roundedHeight": 26, "roundedRadius": 6, "roundedPaddingLeft": 10},
   "pickList": {"maxHeight": 340, "groupPaddingBottom": 3},
   "splitButton": {"arrowPaddingX": 5},
   "richEditor": {"statusMarginY": 16, "statusMarginX": 24, "noticeMaxWidth": 920, "noticeTop": 12},

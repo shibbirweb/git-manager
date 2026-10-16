@@ -1,5 +1,6 @@
-<!-- One row of a Tree: chevron, icon and name (or the rename field), a decoration (tone, strike, cut, ignored,
-     section root, tag, badge) and the detail snippet. The Tree passes the state and handles the events. -->
+<!-- One row of a Tree: chevron, icon (or the Tree's own icon snippet) and name (or the rename field), a decoration
+     (tone, strike, cut, ignored, section root, tag, badge or dot, tooltip) and the detail snippet. The Tree passes
+     the state and handles the events. -->
 <script lang="ts" generics="N extends TreeNode">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
@@ -17,6 +18,7 @@
     renaming: boolean;
     dropTarget: boolean;
     detail?: Snippet<[N]>;
+    customIcon?: Snippet<[N, boolean]>;
     onclick: (event: MouseEvent) => void;
     ondblclick: () => void;
     oncontextmenu: (event: MouseEvent) => void;
@@ -33,6 +35,7 @@
     renaming,
     dropTarget,
     detail,
+    customIcon,
     onclick,
     ondblclick,
     oncontextmenu,
@@ -56,12 +59,14 @@
   class:ignored={decoration?.ignored}
   class:folder-root={decoration?.root}
   class:repo={decoration?.repo}
+  class:open={decoration?.open}
   role="treeitem"
   aria-level={row.depth + 1}
   aria-expanded={row.isFolder ? row.expanded : undefined}
   aria-selected={selected}
   tabindex="-1"
   data-tree-id={row.node.id}
+  title={decoration?.title}
   style:padding-left="calc(var(--tree-indent) + {row.depth} * var(--tree-indent-step))"
   {onclick}
   {ondblclick}
@@ -74,7 +79,9 @@
       <Icon name={row.expanded ? "chevron-down" : "chevron-right"} size="compact" />
     {/if}
   </span>
-  {#if icon}
+  {#if customIcon}
+    <span class="icon">{@render customIcon(row.node, row.expanded)}</span>
+  {:else if icon}
     <span class="icon"><Icon name={icon} size="normal" /></span>
   {/if}
   {#if renaming}
@@ -102,11 +109,19 @@
     >
   {/if}
   {#if decoration?.tag}<Tag variant="outline" size="small">{decoration.tag}</Tag>{/if}
-  {#if decoration?.badge}
-    <span class="badge" style:color={decoration.tone ? toneColor(decoration.tone) : null}>{decoration.badge}</span>
-  {/if}
   {#if detail}
     <span class="detail">{@render detail(row.node)}</span>
+  {/if}
+  {#if decoration?.badge}
+    <span class="badge" title={decoration.badgeTitle} style:color={decoration.tone ? toneColor(decoration.tone) : null}
+      >{decoration.badge}</span
+    >
+  {:else if decoration?.dot}
+    <span
+      class="dot"
+      title={decoration.badgeTitle}
+      style:background={decoration.tone ? toneColor(decoration.tone) : null}
+    ></span>
   {/if}
 </div>
 
@@ -126,7 +141,8 @@
     background: var(--hover);
   }
 
-  .row.selected {
+  .row.selected,
+  .row.open {
     background: var(--selected-inactive);
   }
 
@@ -149,6 +165,10 @@
     color: var(--accent);
   }
 
+  .repo .name {
+    font-weight: var(--font-weight-semibold);
+  }
+
   .cut .name,
   .cut .icon {
     opacity: 0.5;
@@ -157,6 +177,10 @@
   .ignored .name,
   .ignored .icon {
     color: var(--text-faint);
+  }
+
+  .ignored .icon :global(img) {
+    opacity: 0.5;
   }
 
   .folder-root .name {
@@ -186,10 +210,26 @@
 
   .badge {
     flex: none;
+    width: var(--tree-badge-width);
     margin-left: auto;
+    text-align: center;
     font-family: var(--font-mono);
     font-size: var(--font-size-compact);
     font-weight: var(--font-weight-bold);
+  }
+
+  .dot {
+    flex: none;
+    width: var(--tree-dot-size);
+    height: var(--tree-dot-size);
+    margin: 0 var(--tree-dot-inset) 0 auto;
+    border-radius: 50%;
+  }
+
+  /* After a detail, the badge or dot follows it instead of pushing to the end. */
+  .detail + .badge,
+  .detail + .dot {
+    margin-left: var(--space-3);
   }
 
   .detail {

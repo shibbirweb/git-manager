@@ -67,7 +67,7 @@ An agent tab survives a clean exit (shells close), shows "Agent exited" with Res
 | `src/lib/ai/panelView.ts` | Sections and cards, filter, counts, ages, agent marks |
 | `src/lib/ai/panelActions.ts` | Row menus, New Worktree, Remove Worktree |
 | `src/lib/ai/AiPanel.svelte`, `AiPanelRows.svelte`, `AgentStateIcon.svelte` | The panel, its tree rows and state marks |
-| `src/lib/ai/AiAgentSettings.svelte` | Settings > AI agent list |
+| `src/lib/ai/AiAgentSettings.svelte` | Settings > AI agent list (library `Card`, `Row`, `Field`, `Input`, `Select`) |
 | `src/lib/terminal/terminalStore.svelte.ts` | `startAgent`, `restartAgent`, `setAgentTitle`, agent menus |
 | `src-tauri/src/run_process.rs`, `commands/ai.rs` | `find_agent_programs` |
 

@@ -1,10 +1,12 @@
 <!--
-  Find in the terminal, a small bar over its top right corner: the query with Match Case, Words and
-  Regex, the match count, previous and next. TerminalView owns the search; this only shows it.
+  Find in the terminal, a small bar over its top right corner (the UI library's FloatingFindBar): the query with
+  Match Case, Words and Regex, the match count, previous and next. TerminalView owns the search; this only shows it
+  and maps the terminal's own keys (Enter searches up, like xterm's scrollback).
 -->
 <script lang="ts">
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import SearchToggles from "$lib/ui/SearchToggles.svelte";
+  import FloatingFindBar from "@git-manager/ui/components/FloatingFindBar.svelte";
+  import type { SearchOptions } from "@git-manager/ui/components/SearchToggles.svelte";
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { findBarKey, type TerminalFindOptions } from "./find";
 
   interface Props {
@@ -24,7 +26,16 @@
 
   let input = $state<HTMLInputElement | null>(null);
 
-  const searchable = $derived(query !== "");
+  const titles = $derived({
+    previous: `Previous Match (${localKeys("Enter")})`,
+    next: `Next Match (${localKeys("Shift+Enter")})`,
+    close: `Close (${localKeys("Escape")})`,
+  });
+  const toggleTitles = $derived({
+    matchCase: `Match Case (${localKeys("Alt+C")})`,
+    wholeWords: `Words (${localKeys("Alt+W")})`,
+    regex: `Regex (${localKeys("Alt+X")})`,
+  });
 
   export function focus(): void {
     requestAnimationFrame(() => {
@@ -33,6 +44,19 @@
     });
   }
 
+  // The library reports the query and the toggles together; the terminal takes one change at a time.
+  function search(next: string, nextOptions: SearchOptions): void {
+    const option = (Object.keys(nextOptions) as (keyof SearchOptions)[]).find(
+      (key) => nextOptions[key] !== options[key],
+    );
+    if (option) {
+      onToggle(option);
+    } else {
+      onQuery(next);
+    }
+  }
+
+  // Keys stay in the bar, so the terminal never types them.
   function onKeydown(event: KeyboardEvent): void {
     const action = findBarKey(event);
     if (!action) {
@@ -54,157 +78,20 @@
       onToggle("regex");
     }
   }
-
-  /** Buttons never take the focus from the field. */
-  function keepFocus(event: MouseEvent): void {
-    event.preventDefault();
-  }
 </script>
 
-<div class="find-bar" role="search" aria-label="Find in terminal">
-  <div class="field" class:problem>
-    <span class="magnifier"><Icon name="search" size="medium" /></span>
-    <input
-      bind:this={input}
-      value={query}
-      type="text"
-      placeholder="Find"
-      aria-label="Find in terminal"
-      aria-invalid={problem}
-      spellcheck="false"
-      autocomplete="off"
-      oninput={(event) => onQuery(event.currentTarget.value)}
-      onkeydown={onKeydown}
-    />
-    <SearchToggles {options} {onToggle} compact />
-  </div>
-  <span class="counter" class:problem aria-live="polite">{counter}</span>
-  <button
-    type="button"
-    class="icon"
-    title="Previous Match (Enter)"
-    aria-label="Previous Match"
-    disabled={!searchable}
-    onmousedown={keepFocus}
-    onclick={onPrevious}
-  >
-    <Icon name="arrow-up" size="normal" />
-  </button>
-  <button
-    type="button"
-    class="icon"
-    title="Next Match (Shift+Enter)"
-    aria-label="Next Match"
-    disabled={!searchable}
-    onmousedown={keepFocus}
-    onclick={onNext}
-  >
-    <Icon name="arrow-down" size="normal" />
-  </button>
-  <button type="button" class="icon" title="Close (Esc)" aria-label="Close" onmousedown={keepFocus} onclick={onClose}>
-    <Icon name="x" size="normal" />
-  </button>
-</div>
-
-<style>
-  .find-bar {
-    position: absolute;
-    top: 4px;
-    right: 14px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    max-width: calc(100% - 28px);
-    padding: 3px 4px;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    background: var(--panel);
-    box-shadow: var(--shadow);
-    color: var(--text);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    line-height: normal;
-  }
-
-  .field {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    width: 280px;
-    min-width: 0;
-    flex: 0 1 auto;
-    height: 24px;
-    padding: 0 2px 0 6px;
-    border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    background: var(--editor-bg);
-  }
-
-  .field:focus-within {
-    border-color: var(--accent);
-  }
-
-  .field.problem {
-    background: color-mix(in srgb, var(--danger) 13%, var(--editor-bg));
-    border-color: color-mix(in srgb, var(--danger) 55%, var(--border-strong));
-  }
-
-  .magnifier {
-    flex: none;
-    display: flex;
-    color: var(--text-faint);
-  }
-
-  input {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-    padding: 0;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
-  }
-
-  input::placeholder {
-    color: var(--text-faint);
-  }
-
-  .counter {
-    min-width: 64px;
-    padding: 0 6px;
-    color: var(--text-dim);
-    white-space: nowrap;
-  }
-
-  .counter.problem {
-    color: var(--danger);
-  }
-
-  .icon {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-  }
-
-  .icon:hover:not(:disabled) {
-    background: var(--hover);
-    color: var(--text);
-  }
-
-  .icon:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-</style>
+<FloatingFindBar
+  bind:element={input}
+  {query}
+  options={{ ...options }}
+  {counter}
+  {problem}
+  label="Find in terminal"
+  {titles}
+  {toggleTitles}
+  onsearch={search}
+  onkeydown={onKeydown}
+  onprevious={onPrevious}
+  onnext={onNext}
+  onclose={onClose}
+/>

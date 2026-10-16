@@ -1,175 +1,97 @@
 <!-- Main area when no diff, file or Log is open: the Navigation Bar on top, then ways to start. -->
 <script lang="ts">
-  import { commandKeys } from "$lib/commands/commandRuntime";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Logo from "@git-manager/ui/components/Logo.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import type { IconName } from "@git-manager/ui/icons";
+  import { commandKeys, currentPlatform } from "$lib/commands/commandRuntime";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { changesSelection } from "./changes/selection.svelte";
   import { openFileSearch, openNavigationBar, openQuickOpen } from "./workspaceActions";
 
   /** Jump to Navigation Bar lands here while the group showing this screen is focused. */
   const claimed = $derived(repoStore.focusedGroupId === repoStore.primaryGroupId);
-  /** The real keys of each action on this platform, custom ones included. */
-  const keys = $derived({
-    changes: commandKeys("view.changes"),
-    log: commandKeys("view.log"),
-    goToFile: commandKeys("edit.goToFile"),
-    navigationBar: commandKeys("edit.navigationBar"),
-  });
+
+  interface StartAction {
+    icon: IconName;
+    label: string;
+    /** The real keys on this platform, custom ones included; null for none. */
+    keys: string | null;
+    disabled?: boolean;
+    run: () => void;
+  }
+
+  const actions = $derived<StartAction[]>([
+    {
+      icon: "git-compare",
+      label: "Review changes",
+      keys: commandKeys("view.changes"),
+      run: () => settings.setLeftPanel("changes"),
+    },
+    {
+      icon: "history",
+      label: "Show the Log",
+      keys: commandKeys("view.log"),
+      disabled: !repoStore.repo,
+      run: () => changesSelection.toggleLog(),
+    },
+    {
+      icon: "list-tree",
+      label: "Open a file from the Files panel",
+      keys: null,
+      run: () => {
+        if (!settings.filesPanelShown) {
+          settings.showRightPanel("files");
+        }
+      },
+    },
+    { icon: "file", label: "Go to File", keys: commandKeys("edit.goToFile"), run: () => openQuickOpen("") },
+    {
+      icon: "search",
+      label: "Search Everywhere",
+      keys: currentPlatform() === "macos" ? "⇧ ⇧" : "Shift Shift",
+      run: () => openFileSearch("everywhere"),
+    },
+    {
+      icon: "chevrons-right",
+      label: "Navigation Bar",
+      keys: commandKeys("edit.navigationBar"),
+      run: openNavigationBar,
+    },
+  ]);
 </script>
 
-<div class="welcome">
-  <!-- The Navigation Bar over an empty editor: the active repository's path, on top or (Bottom) at the foot. -->
-  {#if settings.fileToolbar === "top" && settings.fileToolbarBreadcrumbs}
-    <div class="nav-strip">
-      <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir {claimed} />
-    </div>
+{#snippet navBar(placement: "top" | "bottom")}
+  <Toolbar variant="file" {placement} label="Navigation Bar">
+    <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir {claimed} />
+  </Toolbar>
+{/snippet}
+
+<Stack gap="none" grow surface="editor">
+  {#if settings.fileToolbarBreadcrumbs && settings.fileToolbar === "top"}
+    {@render navBar("top")}
   {/if}
-  <div class="empty">
-    <div class="logo"><Icon name="merge" size="giant" /></div>
-    <p class="title">{repoStore.workspace?.name ?? "Git Manager"}</p>
-    <div class="actions">
-      <button class="action" onclick={() => settings.setLeftPanel("changes")}>
-        <Icon name="git-compare" size="regular" />
-        <span>Review changes</span>
-        {#if keys.changes}<kbd>{keys.changes}</kbd>{/if}
-      </button>
-      <button class="action" onclick={() => changesSelection.toggleLog()} disabled={!repoStore.repo}>
-        <Icon name="history" size="regular" />
-        <span>Show the Log</span>
-        {#if keys.log}<kbd>{keys.log}</kbd>{/if}
-      </button>
-      <button
-        class="action"
-        onclick={() => {
-          if (!settings.filesPanelShown) {
-            settings.showRightPanel("files");
-          }
-        }}
-      >
-        <Icon name="list-tree" size="regular" />
-        <span>Open a file from the Files panel</span>
-      </button>
-      <button class="action" onclick={() => openQuickOpen("")}>
-        <Icon name="file" size="regular" />
-        <span>Go to File</span>
-        {#if keys.goToFile}<kbd>{keys.goToFile}</kbd>{/if}
-      </button>
-      <button class="action" onclick={() => openFileSearch("everywhere")}>
-        <Icon name="search" size="regular" />
-        <span>Search Everywhere</span>
-        <kbd>Shift Shift</kbd>
-      </button>
-      <button class="action" onclick={openNavigationBar}>
-        <Icon name="chevrons-right" size="regular" />
-        <span>Navigation Bar</span>
-        {#if keys.navigationBar}<kbd>{keys.navigationBar}</kbd>{/if}
-      </button>
-    </div>
-  </div>
-  {#if settings.fileToolbar === "bottom" && settings.fileToolbarBreadcrumbs}
-    <div class="nav-strip bottom">
-      <NavigationBar targetPath={repoStore.repo?.root ?? null} targetIsDir {claimed} />
-    </div>
+  <Stack grow align="center" justify="center" gap="mdPlus" padding="xl" label="Start">
+    <Logo size="soft" />
+    <Text variant="title">{repoStore.workspace?.name ?? "Git Manager"}</Text>
+    <Stack gap="xs">
+      {#each actions as action (action.label)}
+        <Row size="entry" disabled={action.disabled} onclick={action.run}>
+          <Icon name={action.icon} size="regular" tone="dim" />
+          <Stack grow><Text tone="dim">{action.label}</Text></Stack>
+          {#if action.keys}
+            <Text size="small" tone="faint">{action.keys}</Text>
+          {/if}
+        </Row>
+      {/each}
+    </Stack>
+  </Stack>
+  {#if settings.fileToolbarBreadcrumbs && settings.fileToolbar === "bottom"}
+    {@render navBar("bottom")}
   {/if}
-</div>
-
-<style>
-  .welcome {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  /* The same slim bar as a file's path bar (FileView .file-bar). */
-  .nav-strip {
-    flex: none;
-    display: flex;
-    align-items: center;
-    height: 29px;
-    min-width: 0;
-    padding: 0 6px 0 10px;
-    overflow: hidden;
-    border-bottom: 1px solid var(--border-strong);
-    background: var(--panel);
-    color: var(--text-dim);
-    font-size: 12px;
-  }
-
-  .nav-strip.bottom {
-    border-top: 1px solid var(--border-strong);
-    border-bottom: none;
-  }
-
-  .empty {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 24px;
-    background: var(--editor-bg);
-  }
-
-  .logo {
-    width: 56px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent);
-  }
-
-  .title {
-    margin: 0 0 6px;
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 300px;
-  }
-
-  .action {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 7px;
-    background: transparent;
-    color: var(--text-dim);
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .action:hover:not(:disabled) {
-    background: var(--hover);
-    color: var(--text);
-  }
-
-  .action:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-  .action span {
-    flex: 1;
-  }
-
-  kbd {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    color: var(--text-faint);
-  }
-</style>
+</Stack>

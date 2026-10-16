@@ -5,7 +5,20 @@
   import { settings } from "$lib/stores/settings.svelte";
   import type { McpToolInfo } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Link from "@git-manager/ui/components/Link.svelte";
+  import ListBox from "@git-manager/ui/components/ListBox.svelte";
+  import Notice from "@git-manager/ui/components/Notice.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import SearchField from "@git-manager/ui/components/SearchField.svelte";
+  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+  import SettingRow from "@git-manager/ui/components/SettingRow.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Switch from "@git-manager/ui/components/Switch.svelte";
+  import Tag from "@git-manager/ui/components/Tag.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { mcpStore } from "./mcpStore.svelte";
   import {
     changedTools,
@@ -19,7 +32,6 @@
   } from "./toolStates";
 
   let filter = $state("");
-  let filterEl = $state<HTMLInputElement | null>(null);
 
   const tools = $derived(mcpStore.tools);
   const shown = $derived(filterTools(tools, filter));
@@ -43,14 +55,19 @@
     }
     return "Off. Turn it on in Settings > Automation.";
   });
+  // The title's icon tile shows the server's state, like a status light.
+  const statusTone = $derived.by(() => {
+    if (mcpStore.statusError || status?.error) {
+      return "danger";
+    }
+    return status?.running ? "success" : "accent";
+  });
 
   onMount(() => {
     void mcpStore.refreshStatus();
     void mcpStore.loadTools();
     void mcpStore.loadActivity();
-    const stop = mcpStore.followActivity();
-    filterEl?.focus();
-    return stop;
+    return mcpStore.followActivity();
   });
 
   function close(): void {
@@ -66,11 +83,12 @@
   async function setMany(list: McpToolInfo[], enabled: boolean): Promise<void> {
     const risky = enabled ? list.filter((tool) => tool.destructive && !toolEnabled(tool, settings.mcpTools)) : [];
     if (risky.length > 0) {
+      const names = risky.map((tool) => tool.title).join(", ");
       const ok = await dialogs.confirm({
         title: "Turn On Destructive Tools",
-        message: `This turns on ${risky.length === 1 ? "1 destructive tool" : `${risky.length} destructive tools`} (${risky
-          .map((tool) => tool.title)
-          .join(", ")}). Agents can then use them without asking you.`,
+        message:
+          `This turns on ${countOf(risky.length, "destructive tool")} (${names}). ` +
+          "Agents can then use them without asking you.",
         confirmLabel: "Turn On",
         danger: true,
       });
@@ -86,7 +104,8 @@
     const count = changedShown.length;
     const ok = await dialogs.confirm({
       title: "Restore Defaults",
-      message: `This puts ${count === 1 ? "1 tool" : `${count} tools`} back to the default: destructive tools off, every other tool on.`,
+      message:
+        `This puts ${countOf(count, "tool")} back to the default: ` + "destructive tools off, every other tool on.",
       confirmLabel: "Restore",
     });
     if (ok) {
@@ -98,397 +117,113 @@
     settings.setPreference("mcpTools", withToolStates(settings.mcpTools, [tool], enabled));
   }
 
+  function badgeTone(tool: McpToolInfo): "danger" | "warning" | "success" {
+    const badge = toolBadge(tool);
+    if (badge === "destructive") {
+      return "danger";
+    }
+    return badge === "can change files" ? "warning" : "success";
+  }
+
+  function countOf(count: number, noun: string): string {
+    return count === 1 ? `1 ${noun}` : `${count} ${noun}s`;
+  }
+
   function timeOf(at: number): string {
     return new Date(at).toLocaleTimeString();
   }
-
-  function onKeydown(event: KeyboardEvent): void {
-    if (event.key === "Escape" && !dialogs.active && !event.defaultPrevented) {
-      event.preventDefault();
-      close();
-    }
-  }
 </script>
 
-<svelte:window onkeydown={onKeydown} />
-
-<div class="overlay" role="presentation" onmousedown={(event) => event.target === event.currentTarget && close()}>
-  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="mcp-tools-title">
-    <div class="head">
-      <div class="title-row">
-        <h2 id="mcp-tools-title">Available MCP Tools</h2>
-        <button class="icon-btn" onclick={close} aria-label="Close"><Icon name="x" size="regular" /></button>
-      </div>
-      <div class="status">
-        <span class="dot" class:on={status?.running} class:error={!!status?.error || !!mcpStore.statusError}></span>
-        <span class="selectable">{statusLine}</span>
-        <span class="count">{toolCountLabel(enabledCount, tools.length)}</span>
-      </div>
-      <p class="hint">These switches apply to MCP clients and to the command line tool. Destructive tools start off.</p>
-    </div>
-
-    <div class="toolbar">
-      <input
-        class="input filter"
-        placeholder="Filter tools"
-        bind:value={filter}
-        bind:this={filterEl}
-        aria-label="Filter tools"
-      />
-      <button class="btn small" onclick={() => void setMany(shown, true)} disabled={shown.length === 0}
-        >Turn All On</button
-      >
-      <button class="btn small" onclick={() => void setMany(shown, false)} disabled={shown.length === 0}
-        >Turn All Off</button
-      >
-      <button
-        class="btn small"
+<Dialog
+  open
+  variant="panel"
+  width="xlarge"
+  title="Available MCP Tools"
+  subtitle={statusLine}
+  icon="bot"
+  iconTone={statusTone}
+  onclose={close}
+>
+  {#snippet toolbar()}
+    <Toolbar variant="dialog" label="MCP tools">
+      <SearchField size="compact" label="Filter tools" placeholder="Filter tools" bind:value={filter} autofocus />
+      <Button size="small" onclick={() => void setMany(shown, true)} disabled={shown.length === 0}>Turn All On</Button>
+      <Button size="small" onclick={() => void setMany(shown, false)} disabled={shown.length === 0}>
+        Turn All Off
+      </Button>
+      <Button
+        size="small"
         onclick={() => void restoreDefaults()}
         disabled={changedShown.length === 0}
         title="Destructive tools off, every other tool on"
       >
         Restore Defaults
-      </button>
-      <button class="btn small" onclick={openSettings}>Settings...</button>
-    </div>
-
-    <div class="body">
-      {#if mcpStore.toolsError}
-        <p class="hint notice">Only the app window's tools are listed: {mcpStore.toolsError}</p>
-      {/if}
-      {#each groups as group (group.category)}
-        <section>
-          <div class="group-head">
-            <h3>{group.category}</h3>
-            <span class="dim"
-              >{group.tools.filter((tool) => toolEnabled(tool, settings.mcpTools)).length} of {group.tools.length}</span
-            >
-            <div class="spacer"></div>
-            <button class="link" onclick={() => void setMany(group.tools, true)}>Turn All On</button>
-            <button class="link" onclick={() => void setMany(group.tools, false)}>Turn All Off</button>
-          </div>
-          {#each group.tools as tool (tool.name)}
-            {@const badge = toolBadge(tool)}
-            <label class="tool">
-              <div class="tool-text">
-                <div class="tool-title">
-                  <span class="name">{tool.title}</span>
-                  <code class="selectable">{tool.name}</code>
-                  <span class="badge" class:danger={badge === "destructive"} class:write={badge === "can change files"}
-                    >{badge}</span
-                  >
-                </div>
-                <span class="description">{tool.description}</span>
-              </div>
-              <input
-                type="checkbox"
-                class="switch"
-                checked={toolEnabled(tool, settings.mcpTools)}
-                onchange={(event) => setOne(tool, event.currentTarget.checked)}
-                aria-label="Use {tool.title}"
-              />
-            </label>
-          {/each}
-        </section>
-      {:else}
-        <p class="dim empty">{tools.length === 0 ? "Loading tools..." : "No tool matches the filter."}</p>
-      {/each}
-
-      <section class="recent">
-        <div class="group-head">
-          <h3>Recent calls</h3>
-        </div>
-        {#each recent as call, index (`${call.at}-${call.tool}-${index}`)}
-          <div class="call" title={call.error ?? ""}>
-            <span class="call-state" class:failed={!call.ok}>{call.ok ? "ok" : "error"}</span>
-            <code class="call-tool">{call.tool}</code>
-            <span class="client">{call.client === "cli" ? "CLI" : "MCP"}</span>
-            <span class="dim">{timeOf(call.at)}</span>
-            <span class="dim duration">{call.durationMs} ms</span>
-            {#if call.error}
-              <span class="call-error truncate">{call.error}</span>
-            {/if}
-          </div>
-        {:else}
-          <p class="dim empty">No calls yet.</p>
+      </Button>
+      <Button size="small" onclick={openSettings}>Settings...</Button>
+    </Toolbar>
+  {/snippet}
+  <Stack gap="sm">
+    <Stack direction="row" gap="md" align="center" justify="between" paddingY="xs">
+      <Text tone="dim" size="small">
+        These switches apply to MCP clients and to the command line tool. Destructive tools start off.
+      </Text>
+      <Text tone="dim" size="small" tabular>{toolCountLabel(enabledCount, tools.length)}</Text>
+    </Stack>
+    {#if mcpStore.toolsError}
+      <Notice tone="warning">Only the app window's tools are listed: {mcpStore.toolsError}</Notice>
+    {/if}
+    {#each groups as group (group.category)}
+      {@const onCount = group.tools.filter((tool) => toolEnabled(tool, settings.mcpTools)).length}
+      <Stack element="section" gap="none">
+        <SectionTitle variant="group" title={group.category} heading={3}>
+          {#snippet actions()}
+            <Stack direction="row" gap="md" align="center">
+              <Text tone="dim" size="small" tabular>{onCount} of {group.tools.length}</Text>
+              <Link size="small" onclick={() => void setMany(group.tools, true)}>Turn All On</Link>
+              <Link size="small" onclick={() => void setMany(group.tools, false)}>Turn All Off</Link>
+            </Stack>
+          {/snippet}
+        </SectionTitle>
+        {#each group.tools as tool (tool.name)}
+          <SettingRow title={tool.title} hint={tool.description} toggle>
+            {#snippet mark()}
+              <Text mono size="codeSmall" tone="dim" selectable>{tool.name}</Text>
+              <Tag size="small" tone={badgeTone(tool)}>{toolBadge(tool)}</Tag>
+            {/snippet}
+            <Switch
+              label="Use {tool.title}"
+              checked={toolEnabled(tool, settings.mcpTools)}
+              onchange={(enabled) => setOne(tool, enabled)}
+            />
+          </SettingRow>
         {/each}
-      </section>
-    </div>
-  </div>
-</div>
+      </Stack>
+    {:else}
+      <Text tone="dim" element="p">{tools.length === 0 ? "Loading tools..." : "No tool matches the filter."}</Text>
+    {/each}
 
-<style>
-  .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 855;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 7vh;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    width: min(760px, calc(100vw - 32px));
-    max-height: 84vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-    border: 1px solid var(--border-strong);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-  }
-
-  .head {
-    padding: 14px 16px 8px 20px;
-  }
-
-  .title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 15px;
-  }
-
-  .status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 6px;
-    font-size: 12.5px;
-  }
-
-  .dot {
-    flex: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-faint);
-  }
-
-  .dot.on {
-    background: var(--success);
-  }
-
-  .dot.error {
-    background: var(--danger);
-  }
-
-  .count {
-    margin-left: auto;
-    color: var(--text-dim);
-  }
-
-  .hint {
-    margin: 4px 0 0;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .notice {
-    margin: 8px 0;
-  }
-
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 20px 10px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .filter {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 4px 20px 16px;
-  }
-
-  section {
-    padding-top: 10px;
-  }
-
-  .group-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .link {
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--accent);
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .tool {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-  }
-
-  .tool-text {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .tool-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .name {
-    font-weight: 500;
-  }
-
-  code {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-
-  .badge {
-    padding: 0 6px;
-    border-radius: 8px;
-    font-size: 11px;
-    line-height: 17px;
-    background: color-mix(in srgb, var(--success) 14%, transparent);
-    color: var(--success);
-  }
-
-  .badge.write {
-    background: color-mix(in srgb, var(--warning) 16%, transparent);
-    color: var(--warning);
-  }
-
-  .badge.danger {
-    background: color-mix(in srgb, var(--danger) 14%, transparent);
-    color: var(--danger);
-  }
-
-  .description {
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.45;
-  }
-
-  .switch {
-    flex: none;
-    appearance: none;
-    position: relative;
-    width: 34px;
-    height: 20px;
-    margin: 0;
-    border-radius: 10px;
-    background: var(--border-strong);
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  .switch::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--accent-text);
-    box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 25%, transparent);
-    transition: transform 0.15s;
-  }
-
-  .switch:checked {
-    background: var(--accent);
-  }
-
-  .switch:checked::after {
-    transform: translateX(14px);
-  }
-
-  .switch:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    outline-offset: 2px;
-  }
-
-  .empty {
-    margin: 10px 0;
-    font-size: 12.5px;
-  }
-
-  .call {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-  }
-
-  .call-state {
-    flex: none;
-    width: 38px;
-    color: var(--success);
-  }
-
-  .call-state.failed {
-    color: var(--danger);
-  }
-
-  .call-tool {
-    color: var(--text);
-  }
-
-  .client {
-    padding: 0 5px;
-    border-radius: 4px;
-    background: var(--panel-alt);
-    font-size: 11px;
-  }
-
-  .duration {
-    min-width: 54px;
-    text-align: right;
-  }
-
-  .call-error {
-    flex: 1;
-    min-width: 0;
-    color: var(--danger);
-  }
-</style>
+    <Stack element="section" gap="xs">
+      <SectionTitle variant="group" title="Recent calls" heading={3} />
+      {#if recent.length === 0}
+        <Text tone="dim" element="p">No calls yet.</Text>
+      {:else}
+        <ListBox label="Recent calls">
+          {#each recent as call, index (`${call.at}-${call.tool}-${index}`)}
+            <Row size="entry" line title={call.error ?? ""}>
+              <Stack width="xxsmall">
+                <Text size="small" tone={call.ok ? "success" : "danger"}>{call.ok ? "ok" : "error"}</Text>
+              </Stack>
+              <Text mono size="codeSmall" selectable>{call.tool}</Text>
+              <Tag size="small">{call.client === "cli" ? "CLI" : "MCP"}</Tag>
+              <Text tone="dim" size="small" tabular>{timeOf(call.at)}</Text>
+              <Text tone="dim" size="small" tabular>{call.durationMs} ms</Text>
+              {#if call.error}
+                <Text tone="danger" size="small" truncate>{call.error}</Text>
+              {/if}
+            </Row>
+          {/each}
+        </ListBox>
+      {/if}
+    </Stack>
+  </Stack>
+</Dialog>

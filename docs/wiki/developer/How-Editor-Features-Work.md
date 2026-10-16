@@ -20,7 +20,7 @@ flowchart LR
   C -->|"off"| E["empty: nothing in the editor"]
 ```
 
-- **Kinds.** An editor is a `file` editor, a `diff` side or a `merge` pane. `baseExtensions` takes a `kind`; editable panes default to `file` and read-only ones to `diff`, and `MergeEditor.svelte` passes `merge`. `FEATURE_KINDS` in `featurePlan.ts` says where each feature applies.
+- **Kinds.** An editor is a `file` editor, a `diff` side or a `merge` pane. `baseExtensions` takes a `kind`; editable panes default to `file` and read-only ones to `diff`, and the merge tool (`mergeSession.svelte.ts`) passes `merge`. `FEATURE_KINDS` in `featurePlan.ts` says where each feature applies.
 - **Live changes.** A registry plugin remembers every open editor and a facet stores its kind, like `cursor.ts` and `whitespace.ts`. The effect in `App.svelte` calls `setEditorFeatures` with the new options. `changedFeatures` compares them with the last ones, so turning off fold arrows reconfigures only that compartment and the completion state of the others stays.
 - **Lazy code.** Auto-close and completion come from `@codemirror/autocomplete`, about 38 KB. Nothing imports it statically. The first time an editor needs one of the two, `loadAutocomplete` imports it, and once it arrives both compartments are reconfigured in every open editor. Until then the compartments are empty. The other features use code that the editor already loads, so they only need the compartment.
 

@@ -2,6 +2,16 @@
      lacks and the other way round, and the files that differ, each with its diff (the current
      branch on the left). A commit opens in its own tab. Reloads when refs change. -->
 <script lang="ts">
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
@@ -10,7 +20,6 @@
   import { relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { BranchComparison, ChangedFile, CommitSummary, FileDiff } from "$lib/types";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
   import BranchFileList from "./BranchFileList.svelte";
 
   interface Props {
@@ -27,6 +36,7 @@
   let selected = $state.raw<ChangedFile | null>(null);
   let diff = $state.raw<FileDiff | null>(null);
   let diffError = $state<string | null>(null);
+  let sideWidth = $state(360);
   let loadToken = 0;
   let diffToken = 0;
   const now = Date.now();
@@ -111,211 +121,90 @@
 </script>
 
 {#snippet commitList(title: string, commits: CommitSummary[])}
-  <div class="section-title">{title} <span class="dim">({commits.length})</span></div>
+  <SectionTitle {title} count={commits.length} />
   {#each commits as commit (commit.id)}
-    <button type="button" class="commit" onclick={() => openCommit(commit)} title="Open {commit.shortId} in a tab">
-      <span class="hash mono">{commit.shortId}</span>
-      <span class="subject truncate">{commit.summary}</span>
-      <span class="when dim">{relativeTime(commit.time, now)}</span>
-    </button>
+    <Row title="Open {commit.shortId} in a tab" onclick={() => openCommit(commit)}>
+      <Stack width="xsmall"><Text size="small" tone="dim" mono>{commit.shortId}</Text></Stack>
+      <Stack grow><Text truncate>{commit.summary}</Text></Stack>
+      <Text size="small" tone="dim">{relativeTime(commit.time, now)}</Text>
+    </Row>
   {:else}
-    <div class="none dim">None</div>
+    <Stack paddingX="mdPlus" paddingY="xs"><Text size="small" tone="dim">None</Text></Stack>
   {/each}
 {/snippet}
 
-<div class="compare-tab">
-  <div class="toolbar">
+<Stack gap="none" grow surface="panel">
+  <Toolbar variant="panel" label="Branch comparison">
     <Icon name="git-compare" size="normal" />
-    <span class="title truncate"><strong>{branchName}</strong> compared with <strong>{baseName}</strong></span>
-    {#if loading}<span class="spinner" aria-label="Loading"></span>{/if}
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={() => void load()} title="Refresh">
-      <Icon name="refresh" size="medium" />
-    </button>
-  </div>
+    <Text truncate>
+      <Text weight="semibold">{branchName}</Text> compared with <Text weight="semibold">{baseName}</Text>
+    </Text>
+    {#if loading}
+      <Spinner size="small" />
+    {/if}
+    {#snippet end()}
+      <IconButton
+        icon="refresh"
+        iconSize="medium"
+        size="compact"
+        tone="dim"
+        label="Refresh"
+        onclick={() => void load()}
+      />
+    {/snippet}
+  </Toolbar>
   {#if loadError}
-    <div class="placeholder">
-      <Icon name="alert" size="xlarge" />
-      <div>Could not compare {branchName} with {baseName}</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
+    <EmptyState icon="alert" title="Could not compare {branchName} with {baseName}" hint={loadError} />
   {:else if comparison}
-    <div class="body">
-      <div class="side">
-        <div class="commits">
-          {@render commitList(`In ${branchName}, not in ${baseName}`, comparison.branchOnly)}
-          {@render commitList(`In ${baseName}, not in ${branchName}`, comparison.baseOnly)}
-          {#if comparison.truncated}
-            <div class="none dim">Only the first 1000 commits of each side are listed.</div>
-          {/if}
-        </div>
-        <div class="section-title files-title">
-          Files that differ <span class="dim">({comparison.files.length})</span>
-        </div>
-        <div class="files">
-          <BranchFileList
-            files={comparison.files}
-            selectedPath={selected?.path ?? null}
-            onselect={(file) => void select(file)}
-          />
-        </div>
-      </div>
-      <div class="diff">
-        {#if diffError}
-          <div class="placeholder dim selectable">{diffError}</div>
-        {:else if diff && selected}
-          {#key `${comparison.baseId}:${comparison.branchId}:${selected.path}`}
-            <DiffView
-              {diff}
-              path={selected.path}
-              mode="readonly"
-              leftLabel={baseName}
-              rightLabel={branchName}
-              workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: false }}
-              {previewSides}
+    {@const shown = comparison}
+    <SplitPane label="Resize the comparison lists" preset="files" bind:size={sideWidth} inPanel>
+      {#snippet first()}
+        <Stack gap="none" grow>
+          <Stack gap="none" scroll="y" maxHeight="large" line="bottom" label="Commits">
+            {@render commitList(`In ${branchName}, not in ${baseName}`, shown.branchOnly)}
+            {@render commitList(`In ${baseName}, not in ${branchName}`, shown.baseOnly)}
+            {#if shown.truncated}
+              <Stack paddingX="mdPlus" paddingY="xs">
+                <Text size="small" tone="dim">Only the first 1000 commits of each side are listed.</Text>
+              </Stack>
+            {/if}
+          </Stack>
+          <SectionTitle title="Files that differ" count={shown.files.length} />
+          <Stack gap="none" grow scroll="y">
+            <BranchFileList
+              files={shown.files}
+              selectedPath={selected?.path ?? null}
+              onselect={(file) => void select(file)}
             />
-          {/key}
-        {:else}
-          <div class="placeholder dim">
-            {comparison.files.length === 0 ? "The branches have the same files." : "Select a file"}
-          </div>
-        {/if}
-      </div>
-    </div>
+          </Stack>
+        </Stack>
+      {/snippet}
+      {#snippet second()}
+        <Stack gap="none" grow surface="editor">
+          {#if diffError}
+            <EmptyState title={diffError} titleTone="dim" />
+          {:else if diff && selected}
+            {#key `${shown.baseId}:${shown.branchId}:${selected.path}`}
+              <DiffView
+                {diff}
+                path={selected.path}
+                mode="readonly"
+                leftLabel={baseName}
+                rightLabel={branchName}
+                workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: false }}
+                {previewSides}
+              />
+            {/key}
+          {:else}
+            <EmptyState
+              title={shown.files.length === 0 ? "The branches have the same files." : "Select a file"}
+              titleTone="dim"
+            />
+          {/if}
+        </Stack>
+      {/snippet}
+    </SplitPane>
   {:else}
-    <div class="placeholder dim">Loading...</div>
+    <EmptyState title="Loading..." titleTone="dim" delayed />
   {/if}
-</div>
-
-<style>
-  .compare-tab {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 10px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .title {
-    min-width: 0;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .body {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .side {
-    flex: 0 0 360px;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border-strong);
-  }
-
-  .commits {
-    flex: 0 1 50%;
-    min-height: 60px;
-    overflow-y: auto;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .files {
-    flex: 1;
-    min-height: 60px;
-    overflow-y: auto;
-  }
-
-  .section-title {
-    padding: 6px 10px 3px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-dim);
-  }
-
-  .commit {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    height: 24px;
-    padding: 0 10px;
-    border: none;
-    background: none;
-    color: var(--text);
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .commit:hover {
-    background: var(--hover);
-  }
-
-  .hash {
-    flex: none;
-    width: 64px;
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-
-  .subject {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .when {
-    flex: none;
-    font-size: 12px;
-  }
-
-  .none {
-    padding: 2px 10px 6px;
-    font-size: 12px;
-  }
-
-  .diff {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .placeholder {
-    padding: 24px;
-    text-align: center;
-  }
-
-  .spinner {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
+</Stack>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FileSearchItem } from "$lib/types";
-import { highlight, moveSelection, pathRows, recentFiles, resultRows, splitLocation } from "./fileSearchModel";
+import { highlight, pathRows, recentFiles, resultRows, splitLocation } from "./fileSearchModel";
 
 function item(root: string, relativePath: string, indices: number[]): FileSearchItem {
   return { path: `${root}/${relativePath}`, root, relativePath, indices, score: 1 };
@@ -77,17 +77,6 @@ describe("recentFiles", () => {
     const rows = pathRows(["/w/src/a.ts", "/elsewhere/b.ts", "/w"], one);
     expect(rows.map((row) => row.path)).toEqual(["/w/src/a.ts"]);
     expect(rows[0].folderParts).toEqual([{ text: "src", match: false }]);
-  });
-});
-
-describe("selection", () => {
-  it("wraps single steps and clamps page steps", () => {
-    expect(moveSelection(0, 5, -1)).toBe(4);
-    expect(moveSelection(4, 5, 1)).toBe(0);
-    expect(moveSelection(1, 5, 1)).toBe(2);
-    expect(moveSelection(1, 5, 10)).toBe(4);
-    expect(moveSelection(3, 5, -10)).toBe(0);
-    expect(moveSelection(0, 0, 1)).toBe(0);
   });
 });
 

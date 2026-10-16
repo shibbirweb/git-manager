@@ -1,9 +1,14 @@
+<!-- The Branches and Stashes panel: local and remote branches, tags, stashes and worktrees as one tree with a
+     filter. Double-click or Enter checks out; the right-click menus hold everything else. -->
 <script lang="ts">
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import SearchField from "@git-manager/ui/components/SearchField.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
-  import { tick } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import {
     checkoutLocalBranch,
@@ -23,11 +28,9 @@
   import { worktreeMenu, worktreeSectionMenu } from "./git/worktrees/worktreeActions";
   import { worktreeStore } from "./git/worktrees/worktreeStore.svelte";
 
-  const ROW_ID_PREFIX = "sidebar-row-";
-
   let filter = $state("");
+  let filterField = $state<HTMLInputElement | null>(null);
   let selectedKey = $state<string | null>(null);
-  let treeEl = $state<HTMLDivElement | null>(null);
 
   const filtering = $derived(filter.trim().length > 0);
   const rows = $derived(
@@ -48,16 +51,13 @@
     void repoStore.refs;
     void worktreeStore.load(repoStore.repo?.root ?? null);
   });
-  const selectedIndex = $derived(rows.findIndex((row) => row.key === selectedKey));
   const hasMatches = $derived(!filtering || rows.length > 0);
 
-  function rowId(index: number): string {
-    return `${ROW_ID_PREFIX}${index}`;
-  }
-
-  function indent(row: SidebarRow): number {
-    const leafOffset = isCollapsible(row) ? 0 : 14;
-    return 6 + row.depth * 12 + leafOffset;
+  // Down or Enter in the filter then lands on the first match, not on a section.
+  function filterChanged(): void {
+    collapse.resetFilterState();
+    selectedKey =
+      rows.find((row) => row.kind !== "section" && row.kind !== "group" && row.kind !== "empty")?.key ?? null;
   }
 
   function toggle(row: SidebarRow): void {
@@ -72,18 +72,17 @@
     }
   }
 
-  async function selectIndex(index: number): Promise<void> {
-    const row = rows[index] ?? null;
-    if (!row) {
-      return;
+  // Enter folds a section or checks out; a click already folds, so a double-click on a folder does not.
+  function onActivate(row: SidebarRow, event?: unknown): void {
+    if (!isCollapsible(row)) {
+      activate(row);
+    } else if (!(event instanceof MouseEvent)) {
+      toggle(row);
     }
-    selectedKey = row.key;
-    await tick();
-    document.getElementById(rowId(index))?.scrollIntoView({ block: "nearest" });
   }
 
-  function activate(row: SidebarRow | null): void {
-    if (!row || repoStore.busy !== null) {
+  function activate(row: SidebarRow): void {
+    if (repoStore.busy !== null) {
       return;
     }
     if (row.kind === "local") {
@@ -94,6 +93,23 @@
       checkoutRemoteBranch(row.branch);
     } else if (row.kind === "tag") {
       void checkoutTag(row.tagName);
+    }
+  }
+
+  // Delete or Backspace on a branch deletes it; Space folds a section, like Enter.
+  function onListKeydown(event: KeyboardEvent, fromField: boolean): void {
+    const row = rows.find((candidate) => candidate.key === selectedKey) ?? null;
+    if (fromField || !row || event.target instanceof HTMLButtonElement) {
+      return;
+    }
+    if (event.key === "Delete" || event.key === "Backspace") {
+      event.preventDefault();
+      if (row.kind === "local" && !row.branch.isHead && repoStore.busy === null) {
+        void deleteLocalBranch(row.branch.name);
+      }
+    } else if (event.key === " " && isCollapsible(row)) {
+      event.preventDefault();
+      toggle(row);
     }
   }
 
@@ -119,285 +135,69 @@
     }
   }
 
-  function openMenu(event: MouseEvent, row: SidebarRow): void {
+  function openMenu(event: MouseEvent, row: SidebarRow, fromKeys: boolean): void {
     const items = menuFor(row);
     if (items.length === 0) {
       event.preventDefault();
       return;
     }
-    contextMenu.open(event, items);
-  }
-
-  function onRowClick(row: SidebarRow): void {
-    selectedKey = row.key;
-    treeEl?.focus({ preventScroll: true });
-    toggle(row);
-  }
-
-  function onRowContextMenu(event: MouseEvent, row: SidebarRow): void {
-    selectedKey = row.key;
-    treeEl?.focus({ preventScroll: true });
-    openMenu(event, row);
-  }
-
-  function openMenuFromKeyboard(index: number): void {
-    const row = rows[index] ?? null;
-    const element = document.getElementById(rowId(index));
-    if (!row || !element) {
-      return;
-    }
-    const rect = element.getBoundingClientRect();
-    const event = new MouseEvent("contextmenu", { clientX: rect.left + 24, clientY: rect.bottom });
-    openMenu(event, row);
-  }
-
-  function onRowKeydown(event: KeyboardEvent): void {
-    event.stopPropagation();
-    onTreeKeydown(event);
-  }
-
-  function onTreeKeydown(event: KeyboardEvent): void {
-    if (rows.length === 0 || event.target instanceof HTMLButtonElement) {
-      return;
-    }
-    const index = selectedIndex;
-    const row = rows[index] ?? null;
-    switch (event.key) {
-      case "ArrowDown":
-        void selectIndex(index < 0 ? 0 : Math.min(index + 1, rows.length - 1));
-        break;
-      case "ArrowUp":
-        void selectIndex(index <= 0 ? 0 : index - 1);
-        break;
-      case "Home":
-        void selectIndex(0);
-        break;
-      case "End":
-        void selectIndex(rows.length - 1);
-        break;
-      case "ArrowRight":
-        if (isCollapsible(row) && !row.expanded) {
-          setExpanded(row, true);
-        } else if (isCollapsible(row)) {
-          void selectIndex(index + 1);
-        }
-        break;
-      case "ArrowLeft":
-        if (isCollapsible(row) && row.expanded) {
-          setExpanded(row, false);
-        } else if (row?.parentKey) {
-          const parentIndex = rows.findIndex((candidate) => candidate.key === row.parentKey);
-          void selectIndex(parentIndex);
-        }
-        break;
-      case "Enter":
-      case " ":
-        if (isCollapsible(row)) {
-          toggle(row);
-        } else if (event.key === "Enter") {
-          activate(row);
-        }
-        break;
-      case "Delete":
-      case "Backspace":
-        if (row?.kind === "local" && !row.branch.isHead && repoStore.busy === null) {
-          void deleteLocalBranch(row.branch.name);
-        }
-        break;
-      case "ContextMenu":
-        openMenuFromKeyboard(index);
-        break;
-      case "F10":
-        if (!event.shiftKey) {
-          return;
-        }
-        openMenuFromKeyboard(index);
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  }
-
-  function onFilterInput(): void {
-    collapse.resetFilterState();
-  }
-
-  function onFilterKeydown(event: KeyboardEvent): void {
-    if (event.key === "Escape" && filter) {
-      event.preventDefault();
-      filter = "";
-      collapse.resetFilterState();
-    } else if (event.key === "ArrowDown" || event.key === "Enter") {
-      event.preventDefault();
-      const firstLeaf = rows.findIndex((row) => row.kind !== "section" && row.kind !== "group" && row.kind !== "empty");
-      treeEl?.focus();
-      void selectIndex(firstLeaf >= 0 ? firstLeaf : 0);
-    }
+    contextMenu.open(event, items, { keyboard: fromKeys });
   }
 </script>
 
-<div class="sidebar-view">
+<Stack gap="none" grow>
   <PanelHead
     title="Branches and Stashes"
     hideTitle={withCommandKeys("Hide", "view.sidebar")}
     onhide={() => settings.setLeftPanel(null)}
   >
-    <button
-      class="icon-btn small"
+    <IconButton
+      icon="refresh"
+      iconSize="medium"
+      size="small"
+      tone="dim"
+      label="Refresh branches"
+      title="Refresh"
       onclick={() => {
         const repoRoot = repoStore.repo?.root ?? null;
         if (repoRoot) {
           void repoStore.refreshRepo(repoRoot);
         }
       }}
-      title="Refresh"
-      aria-label="Refresh branches"
-    >
-      <Icon name="refresh" size="medium" />
-    </button>
-  </PanelHead>
-  <div class="filter">
-    <span class="filter-icon"><Icon name="search" size="medium" /></span>
-    <input
-      class="input filter-input"
-      type="text"
-      placeholder="Filter branches and tags"
-      spellcheck="false"
-      autocomplete="off"
-      bind:value={filter}
-      oninput={onFilterInput}
-      onkeydown={onFilterKeydown}
     />
-    {#if filter}
-      <button
-        class="icon-btn clear"
-        title="Clear filter"
-        onclick={() => {
-          filter = "";
-          collapse.resetFilterState();
-        }}
-      >
-        <Icon name="x" size="compact" />
-      </button>
-    {/if}
-  </div>
-
-  <div
-    bind:this={treeEl}
-    class="tree"
+  </PanelHead>
+  <Stack paddingX="md" paddingY="sm">
+    <SearchField
+      size="compact"
+      label="Filter branches and tags"
+      placeholder="Filter branches and tags"
+      bind:value={filter}
+      bind:element={filterField}
+      oninput={filterChanged}
+    />
+  </Stack>
+  <List
+    items={rows}
+    itemKey={(row) => row.key}
+    label="Branches, tags and stashes"
     role="tree"
-    tabindex="0"
-    aria-label="Branches, tags and stashes"
-    aria-activedescendant={selectedIndex >= 0 ? rowId(selectedIndex) : undefined}
-    onkeydown={onTreeKeydown}
+    height="fill"
+    field={filterField}
+    bind:selected={selectedKey}
+    level={(row) => row.depth}
+    expanded={(row) => (isCollapsible(row) ? row.expanded : null)}
+    ontoggle={setExpanded}
+    onactivate={onActivate}
+    oncontextmenu={(event, row, fromKeys) => openMenu(event, row, fromKeys ?? false)}
+    onkeydown={onListKeydown}
   >
-    {#each rows as row, index (row.key)}
-      <div
-        id={rowId(index)}
-        class="sidebar-row"
-        class:selected={index === selectedIndex}
-        class:section={row.kind === "section"}
-        role="treeitem"
-        tabindex="-1"
-        aria-level={row.depth + 1}
-        aria-selected={index === selectedIndex}
-        aria-expanded={isCollapsible(row) ? row.expanded : undefined}
-        style="padding-left: {indent(row)}px"
-        onclick={() => onRowClick(row)}
-        ondblclick={() => activate(row)}
-        oncontextmenu={(event) => onRowContextMenu(event, row)}
-        onkeydown={onRowKeydown}
-      >
-        <RowContent {row} />
-      </div>
-    {/each}
-    {#if !hasMatches}
-      <div class="no-matches dim">No matching branches, tags or stashes</div>
-    {/if}
-  </div>
-</div>
-
-<style>
-  .sidebar-view {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
-
-  .filter {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex: none;
-    padding: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .filter-icon {
-    position: absolute;
-    left: 16px;
-    display: inline-flex;
-    color: var(--text-dim);
-    pointer-events: none;
-  }
-
-  .filter-input {
-    flex: 1;
-    min-width: 0;
-    height: 26px;
-    padding-left: 26px;
-    padding-right: 26px;
-  }
-
-  .clear {
-    position: absolute;
-    right: 11px;
-    height: 20px;
-    min-width: 20px;
-    padding: 0;
-    color: var(--text-dim);
-  }
-
-  .tree {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 4px 0 8px;
-    outline: none;
-  }
-
-  .sidebar-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    height: 24px;
-    padding-right: 6px;
-    white-space: nowrap;
-    outline: none;
-  }
-
-  .sidebar-row.section {
-    margin-top: 4px;
-  }
-
-  .sidebar-row:hover {
-    background: var(--hover);
-  }
-
-  .sidebar-row.selected {
-    background: var(--selected-inactive);
-  }
-
-  .tree:focus .sidebar-row.selected,
-  .tree:focus-within .sidebar-row.selected {
-    background: var(--selected);
-  }
-
-  .no-matches {
-    padding: 12px 16px;
-    font-size: 12px;
-  }
-</style>
+    {#snippet row(row, state)}
+      <RowContent {row} selected={state.selected} ontoggle={() => toggle(row)} />
+    {/snippet}
+    {#snippet empty()}
+      {#if !hasMatches}
+        <EmptyState variant="panel" title="No matching branches, tags or stashes" titleTone="dim" />
+      {/if}
+    {/snippet}
+  </List>
+</Stack>

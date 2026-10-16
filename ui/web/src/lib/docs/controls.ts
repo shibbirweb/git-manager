@@ -99,6 +99,7 @@ export const controlDocs: ComponentDoc[] = [
         bindable: true,
         data: true,
       }),
+      prop("onerror", "(side: number) => void", "An image could not load (0 old, 1 new): pass that side a message."),
     ],
     examples: [{ title: "A logo change", code: "<MediaCompare sides={[before, after]} bind:zoom />" }],
     logic: ["zoom.ts"],

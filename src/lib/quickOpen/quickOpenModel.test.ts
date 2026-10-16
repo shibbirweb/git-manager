@@ -5,17 +5,13 @@ import type { OutlineItem } from "$lib/types";
 import {
   commandRows,
   fileRows,
-  firstSelectableRow,
   helpRows,
-  isSelectableRow,
   lineRow,
   matchingRecent,
-  moveSelectableRow,
   outlineRows,
   parseGoToLine,
   parsePickQuery,
   parseQuickOpen,
-  type QuickRow,
   recentOrder,
 } from "./quickOpenModel";
 
@@ -168,18 +164,5 @@ describe("rows and selection", () => {
     const rows = commandRows([command("git.push")], [command("git.pull"), command("git.fetch", false)]);
     expect(rows.map((row) => row.key)).toEqual(["h:recent", "r:git.push", "h:other", "c:git.pull", "c:git.fetch"]);
     expect(commandRows([], [command("git.pull")]).map((row) => row.kind)).toEqual(["command"]);
-  });
-
-  it("skips headings and messages, wrapping single steps", () => {
-    const rows: QuickRow[] = commandRows([command("a")], [command("b"), command("c")]);
-    expect(firstSelectableRow(rows)).toBe(1);
-    expect(moveSelectableRow(rows, 1, 1)).toBe(3);
-    expect(moveSelectableRow(rows, 4, 1)).toBe(1);
-    expect(moveSelectableRow(rows, 1, -1)).toBe(4);
-    expect(moveSelectableRow(rows, 1, 10)).toBe(4);
-    const message: QuickRow[] = [{ kind: "message", key: "message", label: "Nothing" }];
-    expect(moveSelectableRow(message, 0, 1)).toBe(0);
-    expect(isSelectableRow({ kind: "line", key: "line", label: "x", target: null })).toBe(false);
-    expect(isSelectableRow({ kind: "line", key: "line", label: "x", target: { line: 1, column: 1 } })).toBe(true);
   });
 });

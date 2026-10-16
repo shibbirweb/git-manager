@@ -19,7 +19,7 @@ The list is an array of `RecentFile` (`filePath`, `edited`), newest first. The r
 
 ### Following the editor
 
-`recentFilesStore.follow()` in `src/lib/recentFiles/recentFilesStore.svelte.ts` is called once from `Workspace.svelte`, so it lives exactly as long as a workspace is open. It runs three effects:
+`recentFilesStore.follow()` in `src/lib/recentFiles/recentFilesStore.svelte.ts` is called once from `runWorkspace()` (`views/workspaceLife.svelte.ts`), so it lives exactly as long as a workspace is open. It runs three effects:
 
 ```mermaid
 flowchart LR
@@ -67,7 +67,7 @@ With it off, `openRecentFiles` in `workspaceActions.ts` shows an info toast with
 | `src/lib/stores/recentFiles.ts` | The list rules, parsing and saving per workspace |
 | `src/lib/recentFiles/recentFilesStore.svelte.ts` | The open workspace's list, following the editor, popup open state |
 | `src/lib/recentFiles/recentFilesModel.ts` | Popup rows, filtering, the first selected row |
-| `src/lib/recentFiles/RecentFiles.svelte` | The popup |
+| `src/lib/recentFiles/RecentFiles.svelte` | The popup, on the UI library's `CommandPalette` (`preferred` row, Remove buttons) |
 | `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `recentFiles` setting and the `recentFileLists` key of `state.json` |
 | `src/lib/views/settings/EditorFeatureSettings.svelte`, `views/settings/memoryCost.ts` | The Settings row and its memory mark |
 | `src/lib/menu/menuSpec.ts`, `menuState.ts`, `menuActions.ts` | Edit > Recent Files |

@@ -6,13 +6,14 @@
   import { EditorState, type Extension } from "@codemirror/state";
   import { EditorView, lineNumbers } from "@codemirror/view";
   import { classHighlighter } from "@lezer/highlight";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { chunkDecorations, setChunks, type ChunkSide } from "../editor/chunks";
   import { languageSupport, type CodeLanguage } from "../editor/languages";
   import { editorTheme, mergeTheme } from "../editor/theme";
   import type { MergeChunk } from "../logic/mergeGeometry";
-  import { presetVar, type ViewHeight } from "../logic/presets";
-  import MergeConnector, { type ConnectorRibbon } from "./MergeConnector.svelte";
+  import type { ViewHeight } from "../logic/presets";
+  import type { ConnectorRibbon } from "./MergeConnector.svelte";
+  import MergeFrame, { type MergeFrameParts } from "./MergeFrame.svelte";
 
   interface Props {
     left: string;
@@ -44,11 +45,8 @@
     onignore,
   }: Props = $props();
 
-  const shownHeight = $derived(height === "fill" ? null : presetVar("viewHeight", height));
-
-  const hosts: Record<ChunkSide, HTMLDivElement | null> = $state({ left: null, result: null, right: null });
   const views: Partial<Record<ChunkSide, EditorView>> = {};
-  let panesEl = $state<HTMLDivElement | null>(null);
+  let panesEl: HTMLDivElement | null = null;
   let leftRibbons = $state<ConnectorRibbon[]>([]);
   let rightRibbons = $state<ConnectorRibbon[]>([]);
   let syncing = false;
@@ -98,11 +96,13 @@
     requestAnimationFrame(measure);
   }
 
-  onMount(async () => {
+  /** The frame's panes are in the page: an editor goes into each. */
+  async function build(parts: MergeFrameParts): Promise<void> {
+    panesEl = parts.panes;
     const support = await languageSupport(language);
     for (const side of ["left", "result", "right"] as const) {
-      const host = hosts[side];
-      if (!host) {
+      const host = parts[side];
+      if (views[side]) {
         continue;
       }
       views[side] = new EditorView({
@@ -131,7 +131,7 @@
       views[side].scrollDOM.addEventListener("scroll", () => syncScroll(side));
     }
     requestAnimationFrame(measure);
-  });
+  }
 
   $effect(() => {
     const next = chunks;
@@ -144,103 +144,14 @@
   onDestroy(() => Object.values(views).forEach((view) => view?.destroy()));
 </script>
 
-<div class="merge" role="region" aria-label={label} style:height={shownHeight} style:flex={shownHeight && "none"}>
-  <div class="labels">
-    <div class="label" title={labels.left}>{labels.left}</div>
-    <div class="label-gap"></div>
-    <div class="label result">
-      {labels.result}
-      {#if fileName}<span class="file">{fileName}</span>{/if}
-    </div>
-    <div class="label-gap"></div>
-    <div class="label theirs" title={labels.right}>{labels.right}</div>
-  </div>
-  <div class="panes" bind:this={panesEl}>
-    <div class="pane" bind:this={hosts.left}></div>
-    <MergeConnector
-      ribbons={leftRibbons}
-      side="left"
-      onapply={(index) => onapply?.(index, "left")}
-      onignore={(index) => onignore?.(index, "left")}
-    />
-    <div class="pane result-pane" bind:this={hosts.result}></div>
-    <MergeConnector
-      ribbons={rightRibbons}
-      side="right"
-      onapply={(index) => onapply?.(index, "right")}
-      onignore={(index) => onignore?.(index, "right")}
-    />
-    <div class="pane" bind:this={hosts.right}></div>
-  </div>
-</div>
-
-<style>
-  .merge {
-    flex: 1;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .labels {
-    flex: none;
-    display: flex;
-    background: var(--panel-alt);
-    border-bottom: 1px solid var(--border-strong);
-    font-size: var(--font-size-small);
-  }
-
-  .label {
-    flex: 1;
-    min-width: 0;
-    padding: var(--merge-view-label-padding-y) var(--merge-view-label-padding-x);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .label.result {
-    text-align: center;
-  }
-
-  .file {
-    color: var(--text-dim);
-  }
-
-  .label.theirs {
-    text-align: right;
-  }
-
-  .label-gap {
-    flex: none;
-    width: var(--merge-view-gap);
-  }
-
-  .panes {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    position: relative;
-  }
-
-  .pane {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    background: var(--editor-bg);
-  }
-
-  .pane :global(.cm-editor) {
-    height: 100%;
-  }
-
-  .result-pane {
-    box-shadow:
-      inset 1px 0 0 var(--border-strong),
-      inset -1px 0 0 var(--border-strong);
-  }
-</style>
+<MergeFrame
+  {label}
+  {labels}
+  {fileName}
+  {height}
+  {leftRibbons}
+  {rightRibbons}
+  {onapply}
+  {onignore}
+  onready={(parts) => void build(parts)}
+/>

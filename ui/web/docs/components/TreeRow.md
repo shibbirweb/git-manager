@@ -18,10 +18,11 @@ Tree draws these from its nodes; use TreeRow alone only for a custom tree.
 - `icon` (`IconName | null`, required): The row's icon.
 - `selected` (`boolean`, required): In the selection.
 - `focused` (`boolean`, required): The focused row while the tree has the focus.
-- `decoration` (`TreeDecoration | null`, required): Tone, strike and badge.
+- `decoration` (`TreeDecoration | null`, required): Tone, strike, badge or dot, tooltip and states.
 - `renaming` (`boolean`, required): Shows the rename field.
 - `dropTarget` (`boolean`, required): Marked as the drop target.
 - `detail` (`Snippet<[N]>`): Dim content at the end.
+- `customIcon` (`Snippet<[N, boolean]>`): The icon, drawn by the Tree's owner instead of `icon`.
 - `onclick` (`(event: MouseEvent) => void`, required): Clicked.
 - `ondblclick` (`() => void`, required): Double-clicked.
 - `oncontextmenu` (`(event: MouseEvent) => void`, required): Right-clicked.

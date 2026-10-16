@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canHighlight, placeMenu, stepHighlight, type MenuItem } from "./menuModel";
+import { canHighlight, matchHighlight, placeMenu, stepHighlight, type MenuItem } from "./menuModel";
 
 const run = () => undefined;
 const items: MenuItem[] = [
@@ -25,6 +25,16 @@ describe("stepHighlight", () => {
 
   it("knows which items can be highlighted", () => {
     expect(items.map(canHighlight)).toEqual([true, false, false, true, true]);
+  });
+});
+
+describe("matchHighlight", () => {
+  it("jumps to the next item starting with a typed letter, skipping disabled ones", () => {
+    expect(matchHighlight(items, -1, "o")).toBe(0);
+    expect(matchHighlight(items, -1, "C")).toBe(3);
+    expect(matchHighlight(items, -1, "r")).toBe(-1);
+    expect(matchHighlight(items, 4, "d")).toBe(4);
+    expect(matchHighlight(items, 0, "z")).toBe(-1);
   });
 });
 

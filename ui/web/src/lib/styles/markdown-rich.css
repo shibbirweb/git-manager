@@ -1,8 +1,9 @@
-/* The rich Markdown editor (ProseMirror inside RichEditorHost): markdown.css plus what an editable document needs.
-   The same rules as src/lib/views/files/RichMarkdownView.svelte; markdown.test.ts keeps them equal. */
+/* The rich Markdown editor (ProseMirror inside RichEditorHost, which the app's RichMarkdownView.svelte uses):
+   markdown.css plus what an editable document needs. Every rule names .md-body.md-rich, so it outranks
+   markdown.css's .md-body rules for the same elements (cell and list paragraphs). */
 
 /* ProseMirror needs these to keep spaces and wrap like the text. */
-.md-rich .ProseMirror {
+.md-body.md-rich .ProseMirror {
   min-height: 60vh;
   outline: none;
   white-space: pre-wrap;
@@ -10,36 +11,36 @@
   caret-color: var(--text);
 }
 
-.md-rich .ProseMirror > :first-child {
+.md-body.md-rich .ProseMirror > :first-child {
   margin-top: 0;
 }
 
-/* Like the preview (body.css): blocks far off screen are not drawn while scrolling. */
-.md-rich .ProseMirror > * {
+/* Like the preview (markdown.css): blocks far off screen are not drawn while scrolling. */
+.md-body.md-rich .ProseMirror > * {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
 }
 
 /* ProseMirror wraps list items and table cells in paragraphs; space them like the preview. */
-.md-rich li > p,
-.md-rich ul[data-type="taskList"] > li > div > p,
-.md-rich :is(th, td) > p {
+.md-body.md-rich li > p,
+.md-body.md-rich ul[data-type="taskList"] > li > div > p,
+.md-body.md-rich :is(th, td) > p {
   margin: 0;
 }
 
 /* Task items: the box before the text is its own checkbox, which ticks the item. TipTap's node view leaves
    data-type off the li, so items are found through their taskList. */
-.md-rich ul[data-type="taskList"] {
+.md-body.md-rich ul[data-type="taskList"] {
   padding-left: 1.4em;
   list-style: none;
 }
 
-.md-rich ul[data-type="taskList"] > li {
+.md-body.md-rich ul[data-type="taskList"] > li {
   position: relative;
 }
 
 /* The same native box as the preview's, centered on the item's first line. */
-.md-rich ul[data-type="taskList"] > li > label {
+.md-body.md-rich ul[data-type="taskList"] > li > label {
   position: absolute;
   left: -1.4em;
   display: flex;
@@ -48,26 +49,26 @@
   user-select: none;
 }
 
-.md-rich ul[data-type="taskList"] > li > label > input {
+.md-body.md-rich ul[data-type="taskList"] > li > label > input {
   margin: 0;
   accent-color: var(--accent);
   cursor: pointer;
 }
 
-.md-rich ul[data-type="taskList"] > li[data-checked="true"] > div {
+.md-body.md-rich ul[data-type="taskList"] > li[data-checked="true"] > div {
   color: var(--text-dim);
   text-decoration: line-through;
 }
 
-.md-rich .md-rich-code {
+.md-body.md-rich .md-rich-code {
   margin: 0 0 16px;
 }
 
-.md-rich .md-rich-code > pre {
+.md-body.md-rich .md-rich-code > pre {
   margin-bottom: 0;
 }
 
-.md-rich .md-rich-code > pre[data-language]:not([data-language=""])::after {
+.md-body.md-rich .md-rich-code > pre[data-language]:not([data-language=""])::after {
   content: attr(data-language);
   float: right;
   margin-top: -4px;
@@ -76,12 +77,12 @@
   font-size: 11px;
 }
 
-.md-rich .md-rich-code > .md-mermaid {
+.md-body.md-rich .md-rich-code > .md-mermaid {
   margin: 8px 0 0;
   user-select: none;
 }
 
-.md-rich img.md-image-blocked {
+.md-body.md-rich img.md-image-blocked {
   display: inline-block;
   min-width: 48px;
   min-height: 24px;
@@ -89,6 +90,6 @@
   border-radius: 4px;
 }
 
-.md-rich .ProseMirror-selectednode {
+.md-body.md-rich .ProseMirror-selectednode {
   outline: 2px solid var(--accent);
 }

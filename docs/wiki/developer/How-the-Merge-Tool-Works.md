@@ -55,7 +55,7 @@ Lines split on `\n` as in CodeMirror, so a Rust `LineRange` matches the editor l
 
 ### Resolving in the UI
 
-`MergeView.svelte`, an overlay in the main window, loads the document for `MergeEditor.svelte`, which builds three editors (sides read-only). The Result starts from the **base** text and holds the chunk state in `chunkField`, a StateField in `extensions.ts`.
+`MergeView.svelte`, a `WindowLayer` over the main window, loads the document for `MergeEditor.svelte`. `MergeSession` (`mergeSession.svelte.ts`) builds three editors (sides read-only) into the panes of the UI library's `MergeFrame`. The Result starts from the **base** text and holds the chunk state in `chunkField`, a StateField in `extensions.ts`.
 
 `initialChunks` marks the unchanged side done. Each button calls a pure function in `model.ts` and dispatches the result as one transaction:
 
@@ -94,7 +94,9 @@ Cmd+Enter saves from any pane (a high-priority keymap from `applyKeymap`). Escap
 | `src/lib/merge/model.ts` | Pure chunk actions, line edits, scroll mapping |
 | `src/lib/merge/extensions.ts` | `chunkField`, undo support, line decorations, the Cmd+Enter keymap |
 | `src/lib/merge/inline.ts` | Word-level highlights |
-| `src/lib/merge/MergeEditor.svelte` | Three panes, connectors, toolbar, save and cancel |
+| `src/lib/merge/MergeEditor.svelte` | Toolbar, `MergeFrame`, footer, save and cancel |
+| `src/lib/merge/mergeSession.svelte.ts` | The three editors, chunk actions, undo, navigation |
+| `src/lib/merge/mergeRibbons.ts`, `mergeScroll.ts` | Connector ribbons, synced scrolling |
 | `src/lib/merge/MergeView.svelte` | The overlay, reload and file-level fallbacks |
 
 ## Design decisions

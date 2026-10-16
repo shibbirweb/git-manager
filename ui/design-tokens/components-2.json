@@ -18,9 +18,11 @@
   "paneRow": {"focusLine": 1},
   "crumbPopup": {
     "fieldHeight": 28, "fieldPaddingX": 8, "gap": 6, "listPadding": 3, "rowHeight": 24, "rowPaddingX": 6,
-    "iconWidth": 16
+    "iconWidth": 16, "width": 340, "maxHeight": 440, "minHeight": 120, "offset": 3, "inset": 8, "roomBelow": 200,
+    "layer": 890
   },
   "splitHandle": {"width": 7, "line": 3, "layer": 5},
+  "windowLayer": {"layer": 500},
   "row": {
     "indent": 14, "chevron": 14, "actionsGap": 2, "treeHeight": "{size.treeRow}", "treePaddingX": 6, "treeGap": 5,
     "listHeight": "{size.treeRow}", "listPaddingX": 10, "listGap": 8, "historyHeight": 26, "historyPaddingX": 10,

@@ -86,13 +86,25 @@ export const pickerDocs: ComponentDoc[] = [
     usage: "Open it from Breadcrumbs' onselect and place it under the crumb.",
     aliases: ["Folder popup", "Nav popup"],
     props: [
-      prop("entries", "{ id; name; icon?; tone?; folder? }[]", "The entries.", { required: true, data: true }),
+      prop("entries", "{ id; name; ranges?; icon?; fileIcon?; tone?; folder?; title? }[]", "The entries.", {
+        required: true,
+        data: true,
+      }),
       prop("query", "string", "The filter.", { default: '""', bindable: true }),
+      prop("selected", "number", "The highlighted entry.", { default: "0", bindable: true, data: true }),
       prop("placeholder", "string", "The filter's placeholder.", { default: '"Filter"' }),
       prop("message", "string", "Shown when there are no entries.", { default: '""' }),
       prop("error", "boolean", "The message is an error.", { default: "false" }),
+      prop("note", "string", "A faint line under the entries, such as that only the first 5000 show.", {
+        default: '""',
+      }),
+      prop("anchor", "HTMLElement | null", "Its crumb: the list floats over the window under it, or above it near " +
+        "the bottom.", { default: "null" }),
       prop("label", "string", "Accessible name.", { required: true }),
-      prop("onpick", "(entry) => void", "An entry was picked.", { required: true }),
+      prop("onpick", "(entry, event: KeyboardEvent | MouseEvent) => void", "An entry was picked; Cmd may open " +
+        "to the side.", { required: true }),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "Runs first; preventDefault keeps a key from the list " +
+        "(Right goes into a folder, Left out)."),
       prop("onclose", "() => void", "Escape."),
     ],
     examples: [{ title: "A folder", code: '<CrumbPopup label="src" {entries} onpick={open} />' }],

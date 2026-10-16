@@ -45,6 +45,19 @@ export function stepHighlight(items: MenuItem[], index: number, step: 1 | -1): n
   return -1;
 }
 
+/** The next item after `index` whose label starts with a typed letter, wrapping; -1 when none does. */
+export function matchHighlight(items: MenuItem[], index: number, key: string): number {
+  const wanted = key.toLowerCase();
+  for (let tries = 1; tries <= items.length; tries++) {
+    const next = (Math.max(index, -1) + tries) % items.length;
+    const item = items[next];
+    if (canHighlight(item) && !isSeparator(item) && item.label.trimStart().toLowerCase().startsWith(wanted)) {
+      return next;
+    }
+  }
+  return -1;
+}
+
 /** Where a menu of `width` x `height` opens at (x, y) so it stays inside the viewport (with a 4px margin). */
 export function placeMenu(
   x: number,

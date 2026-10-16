@@ -50,7 +50,7 @@ The "git-command" event carries one `GitCommandEntry`, once when a command start
 
 ### The view
 
-`GitConsoleView.svelte` subscribes to the event first, then loads the list and merges events that arrived meanwhile (`mergeEntries`). Each later event goes through `upsertEntry`, which never lets a late "started" event undo a finish. The list is virtualized: `listLayout` computes row tops (24 px rows, open output capped at 14 lines) and `visibleRange` renders the rows in view plus 8 on each side. It follows new entries unless the user scrolled up. Entries are `$state.raw` arrays, replaced, not mutated.
+`GitConsoleView.svelte` subscribes to the event first, then loads the list and merges events that arrived meanwhile (`mergeEntries`). Each later event goes through `upsertEntry`, which never lets a late "started" event undo a finish. The list is the UI library's `List` with `virtual` and `measure`: only the rows in view are drawn, and an opened entry's output (up to 240 px, then it scrolls) is measured. It follows new entries unless the user scrolled up. Entries are `$state.raw` arrays, replaced, not mutated.
 
 ## The switch and memory
 
@@ -82,7 +82,7 @@ When on, the worst case is bounded: 500 entries and 4 MB of output, plus the arg
 | `src-tauri/src/git_console.rs` | `GitConsole`, `CommandRecord`, `record`, limits and redaction |
 | `src-tauri/src/commands/console.rs` | The three commands and the "git-command" emitter |
 | `src-tauri/src/git/cli.rs`, `git/cancel.rs` | Call `record` around every git process |
-| `src/lib/console/GitConsoleView.svelte` | The tab: toolbar, filter, virtualized list, context menu |
+| `src/lib/console/GitConsoleView.svelte` | The tab: toolbar, filter, the library's virtual List (measured rows, follows the end), context menu |
 | `src/lib/console/consoleModel.ts` | Pure list logic: merge, filter, quoting, layout |
 | `src/lib/terminal/TerminalPanel.svelte`, `terminalStore.svelte.ts` | The panel tab and `showTab`, `toggleTab`, `closeGitConsole` |
 | `src/lib/App.svelte` | Sends the setting to Rust once settings are loaded |
@@ -101,7 +101,7 @@ When on, the worst case is bounded: 500 entries and 4 MB of output, plus the arg
 ## Tests
 
 - `src-tauri/src/git_console.rs`: redaction of URLs, config values, headers and token formats; the 500 entry cap; nothing recorded while off and the list dropped; the per-stream and total output caps; a cut never splits a character; entries go from running to finished and are announced; real git commands are recorded and a dropped record is marked failed.
-- `src/lib/console/consoleModel.test.ts`: `upsertEntry`, `mergeEntries`, quoting, durations, the filter, output blocks and the virtual layout.
+- `src/lib/console/consoleModel.test.ts`: `upsertEntry`, `mergeEntries`, quoting, durations, the filter and output blocks.
 - `src/lib/stores/settingsData.test.ts`: `gitConsole` defaults to false and only accepts a boolean.
 - `src/lib/menu/menuState.test.ts`: the View item is hidden while off.
 

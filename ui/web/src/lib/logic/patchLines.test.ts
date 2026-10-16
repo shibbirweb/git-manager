@@ -23,4 +23,32 @@ describe("patch lines", () => {
     expect(patchLines("")).toEqual([]);
     expect(patchLines("\n")).toEqual([{ kind: "context", text: "" }]);
   });
+
+  it("reads a removed line that starts with -- inside a hunk as removed, not a header", () => {
+    const patch = [
+      "diff --git a/src/a.ts b/src/a.ts",
+      "--- a/src/a.ts",
+      "+++ b/src/a.ts",
+      "@@ -2,2 +2,2 @@",
+      " keep",
+      "-old",
+      "+new",
+      "--- not a header inside a hunk",
+      "diff --git a/src/b.ts b/src/b.ts",
+      "--- a/src/b.ts",
+      "",
+    ].join("\n");
+    expect(patchLines(patch).map((line) => line.kind)).toEqual([
+      "file",
+      "file",
+      "file",
+      "hunk",
+      "context",
+      "deleted",
+      "added",
+      "deleted",
+      "file",
+      "file",
+    ]);
+  });
 });

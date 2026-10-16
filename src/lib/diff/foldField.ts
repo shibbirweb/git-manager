@@ -4,10 +4,24 @@
 // lined up.
 
 import { type Chunk, getChunks, mergeViewSiblings } from "@codemirror/merge";
-import { type EditorState, type Extension, StateEffect, StateField } from "@codemirror/state";
+import { type EditorState, type Extension, Facet, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
 import { type FoldEdge, type FoldRange, FOLD_STEP, foldEdges, foldRanges, revealFold } from "./foldModel";
 import { iconSvg } from "./mergeExtensions";
+
+/** Every fold field of an editor, so the folds on screen can be read (tests). */
+const foldFields = Facet.define<StateField<DecorationSet>>();
+
+/** The folded line ranges of an editor, top down. */
+export function foldedLines(state: EditorState): FoldRange[] {
+  const ranges: FoldRange[] = [];
+  for (const field of state.facet(foldFields)) {
+    state.field(field).between(0, state.doc.length, (from, to) => {
+      ranges.push({ first: state.doc.lineAt(from).number, last: state.doc.lineAt(to).number });
+    });
+  }
+  return ranges;
+}
 
 /** Opens the fold around `pos`, a step at one edge or fully. */
 const foldStep = StateEffect.define<{ pos: number; edge: FoldEdge }>({
@@ -123,14 +137,20 @@ function applyStep(folds: DecorationSet, state: EditorState, pos: number, edge: 
  * when a change grows into it.
  */
 function foldField(initial: (state: EditorState) => readonly FoldRange[]): StateField<DecorationSet> {
+  const build = (state: EditorState) =>
+    Decoration.set(
+      initial(state)
+        .filter((range) => range.last <= state.doc.lines)
+        .map((range) => foldDecoration(state, range)),
+    );
   return StateField.define<DecorationSet>({
-    create: (state) =>
-      Decoration.set(
-        initial(state)
-          .filter((range) => range.last <= state.doc.lines)
-          .map((range) => foldDecoration(state, range)),
-      ),
+    create: build,
     update(value, tr) {
+      // MergeView adds its chunks only after both editors' states exist (StateEffect.appendConfig), so the side by
+      // side folds are made when the chunks arrive, not when the field is created.
+      if (!getChunks(tr.startState) && getChunks(tr.state)) {
+        return build(tr.state);
+      }
       let next = value.map(tr.changes);
       for (const effect of tr.effects) {
         if (effect.is(foldStep)) {
@@ -156,7 +176,7 @@ function foldField(initial: (state: EditorState) => readonly FoldRange[]): State
       }
       return next;
     },
-    provide: (field) => EditorView.decorations.from(field),
+    provide: (field) => [EditorView.decorations.from(field), foldFields.of(field)],
   });
 }
 

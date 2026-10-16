@@ -73,7 +73,7 @@ An effect publishes the selected commit to `logSelection.current` (`src/lib/log/
 | `src/lib/log/logFilter.ts`, `commitMenu.ts` | Filter and counts; right-click menu |
 | `src/lib/log/graph.ts` | `GraphBuilder`: incremental lane layout |
 | `ui/web/src/lib/components/CommitGraph.svelte`, `logic/graphModel.ts` | Draws one row of the graph (UI library) |
-| `src/lib/log/CommitDetails.svelte` | Commit message, changed files and per-file diff, `revealLine` |
+| `src/lib/log/CommitDetails.svelte`, `commitLoader.svelte.ts` | Commit message, changed files and per-file diff, `revealLine` |
 | `src/lib/log/lineMatch.ts` | `findLine`: which diff line to scroll to |
 | `src/lib/log/format.ts` | Dates and ref label sorting |
 | `src/lib/log/logSelection.svelte.ts` | The selected commit, for Git menu items |

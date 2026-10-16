@@ -17,8 +17,8 @@ CommandPalette draws these from its items; use it alone only in a custom list.
 - `item` (`PaletteItem`, required): What the row shows; see CommandPalette.
 - `selected` (`boolean`, default `false`): The highlighted row.
 - `onhover` (`() => void`): The pointer moved over it.
-- `onpick` (`() => void`): Clicked (not when disabled).
-- `end` (`Snippet`): Buttons at the end, such as Remove; shown while hovered or selected.
+- `onpick` (`(event: MouseEvent) => void`): Clicked (not when disabled).
+- `end` (`Snippet<[PaletteItem]>`): Buttons at the end, such as Remove; shown while hovered or selected.
 
 ## Example: A file
 

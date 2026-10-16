@@ -186,6 +186,10 @@
     <x:Double x:Key="GmTabStripCloseSize">20</x:Double>
     <x:Double x:Key="GmTabStripIndicator">2</x:Double>
     <x:Double x:Key="GmTabStripSinglePaddingLeft">24</x:Double>
+    <x:Double x:Key="GmTabStripRoundedGap">2</x:Double>
+    <x:Double x:Key="GmTabStripRoundedPaddingX">6</x:Double>
+    <x:Double x:Key="GmTabStripRoundedWrapPaddingY">4</x:Double>
+    <x:Double x:Key="GmTabStripRoundedRowGap">4</x:Double>
     <x:Double x:Key="GmPanelTabsHeight">29</x:Double>
     <x:Double x:Key="GmPanelTabsGap">14</x:Double>
     <x:Double x:Key="GmPanelTabsIndicator">2</x:Double>
@@ -196,6 +200,9 @@
     <x:Double x:Key="GmTreeGap">4</x:Double>
     <x:Double x:Key="GmTreePaddingRight">8</x:Double>
     <x:Double x:Key="GmTreePaddingY">4</x:Double>
+    <x:Double x:Key="GmTreeBadgeWidth">16</x:Double>
+    <x:Double x:Key="GmTreeDotSize">6</x:Double>
+    <x:Double x:Key="GmTreeDotInset">5</x:Double>
     <x:Double x:Key="GmCollapsibleHeight">26</x:Double>
     <x:Double x:Key="GmCollapsibleGap">5</x:Double>
     <x:Double x:Key="GmCollapsiblePaddingLeft">4</x:Double>
@@ -264,14 +271,4 @@
     <x:Double x:Key="GmPanelHeaderPaddingRight">6</x:Double>
     <x:Double x:Key="GmPanelHeaderGap">6</x:Double>
     <x:Double x:Key="GmPanelHeaderButtonSize">24</x:Double>
-    <x:Double x:Key="GmFileRowHeight">24</x:Double>
-    <x:Double x:Key="GmFileRowPaddingLeft">28</x:Double>
-    <x:Double x:Key="GmFileRowNestedPaddingLeft">40</x:Double>
-    <x:Double x:Key="GmFileRowPaddingRight">6</x:Double>
-    <x:Double x:Key="GmFileRowGap">8</x:Double>
-    <x:Double x:Key="GmFileRowLetterWidth">12</x:Double>
-    <x:Double x:Key="GmFileRowActionSize">20</x:Double>
-    <x:Double x:Key="GmFileRowTagPaddingX">5</x:Double>
-    <x:Double x:Key="GmFileRowTagLineHeight">14</x:Double>
-    <x:Double x:Key="GmFileRowListPaddingX">10</x:Double>
 </ResourceDictionary>

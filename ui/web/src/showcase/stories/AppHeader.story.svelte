@@ -34,3 +34,12 @@
     {/snippet}
   </AppHeader>
 </Card>
+<Card label="Rounded header">
+  <AppHeader look="rounded">
+    {#snippet start()}
+      <Button variant="ghost" icon="folder" trailingIcon="chevron-down">
+        <Text weight="semibold">storefront</Text>
+      </Button>
+    {/snippet}
+  </AppHeader>
+</Card>

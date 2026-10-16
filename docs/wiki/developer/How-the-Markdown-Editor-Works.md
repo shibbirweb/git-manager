@@ -76,7 +76,7 @@ Memory follows the screen, not the file length:
 - **Hidden tabs free their preview.** `FileView` mounts `MarkdownPreview` or `RichMarkdownView` only while `isActive`, and keeps the place (`onLeave`, `initialLine`, `richScroll`).
 - **Diagrams and images draw near the screen only.** `nearScreen.ts` has a `NearScreen` class: each preview or rich editor makes one, with one `IntersectionObserver` and a margin of one screen. Far diagrams are freed by `releaseDiagram`, which keeps their height; unused image data URLs are dropped.
 - **The mermaid cache is capped** at 24 entries and 2,000,000 characters and goes with the diagram frame.
-- **Off-screen blocks are not painted:** `content-visibility: auto` in `body.css` and `RichMarkdownView`.
+- **Off-screen blocks are not painted:** `content-visibility: auto` in the library's `markdown.css` and `markdown-rich.css`.
 
 Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 SVGs and 8,562 elements.
 
@@ -90,7 +90,8 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 | `src/lib/markdown/render.ts`, `engine.ts`, `previewDom.ts`, `sanitize.ts` | Rendering, the lazy chunk, segment updates, DOMPurify |
 | `src/lib/markdown/mermaid.ts`, `nearScreen.ts` | Diagrams (through a hidden frame), near-screen drawing |
 | `src/lib/markdown/links.ts`, `slug.ts`, `highlight.ts` | Links and images, heading ids, code colors |
-| `src/lib/markdown/scrollSync.ts`, `editorScroll.ts`, `body.css` | Scroll sync, shared page styles |
+| `src/lib/markdown/scrollSync.ts`, `editorScroll.ts`, `previewScrollSync.ts` | Scroll sync (the page styles are the UI library's `markdown.css`) |
+| `src/lib/markdown/markdownContext.ts` | Dark page, link context and workspace images, shared with the rich editor |
 | `src-tauri/src/commands/files.rs`, `images.rs` | `read_image_data_url`, local images as data URLs |
 
 ## Design decisions

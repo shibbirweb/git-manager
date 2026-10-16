@@ -32,7 +32,7 @@ flowchart TD
 
 ### The strip
 
-`EditorTabs.svelte` derives `single` from that function for its own group and adds the `single` class to the strip. Only the Diff tab counts in the primary group, since only that group shows it.
+`EditorTabs.svelte` derives `single` from that function for its own group and gives the library's `TabStrip` the `single` layout. Only the Diff tab counts in the primary group, since only that group shows it.
 
 Nothing else in the markup changes. The title is the same `.tab` element with the same buttons and handlers, so the right-click menu, middle click, double-click to keep a preview, the dirty dot and the pin button all keep working with no extra code. The CSS does the rest:
 
@@ -50,7 +50,7 @@ Dragging needs at least two tabs (`startDrag` returns null otherwise), so the ti
 | File | What it does |
 | --- | --- |
 | `src/lib/stores/tabs.ts` | `showsTabAsTitle` |
-| `src/lib/views/EditorTabs.svelte` | the `single` class and its styles |
+| `src/lib/views/EditorTabs.svelte`, `ui/web/src/lib/components/EditorTab.svelte` | the `single` layout and its styles |
 | `src/lib/stores/settingsData.ts` | the `singleTabTitle` preference (on by default) |
 | `src/lib/stores/settings.svelte.ts` | the reactive `singleTabTitle` field and saving it |
 | `src/lib/views/settings/EditorFeatureSettings.svelte` | the Single tab title switch, shown under Tab limit only while Single tab is chosen |

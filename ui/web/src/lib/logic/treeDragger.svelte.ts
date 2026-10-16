@@ -1,7 +1,7 @@
 // The pointer drag of a Tree: a press on a row becomes a drag past DRAG_THRESHOLD, the target follows the pointer
 // (treeDrag.ts decides where a drop may land), a closed folder under the pointer opens after HOVER_OPEN_MS, the list
 // scrolls near its edges, Option switches to copy and Escape cancels. Window listeners live only while a press or
-// a drag does.
+// a drag does. A drag from outside the tree (files from the Finder) gets the same target, hover and scrolling.
 import { DRAG_THRESHOLD } from "./reorder";
 import { HOVER_OPEN_MS, treeScrollStep, type DropHit, type DropMode } from "./treeDrag";
 
@@ -12,6 +12,8 @@ export interface TreeDragState {
   mode: DropMode;
   /** The folder a drop goes into, null for the top level, undefined for nowhere. */
   target: string | null | undefined;
+  /** Comes from outside the tree: the system draws its own image, so there is no ghost. */
+  outside?: boolean;
 }
 
 export interface TreeDragHost {
@@ -65,6 +67,30 @@ export class TreeDragger {
     window.removeEventListener("keydown", this.#key, true);
     window.removeEventListener("keyup", this.#key, true);
   };
+
+  /** A drag from outside the tree is at (x, y), carrying `ids` (such as file paths); it always copies. */
+  outside(x: number, y: number, ids: string[]): void {
+    if (this.drag && !this.drag.outside) {
+      return;
+    }
+    if (!this.drag) {
+      this.drag = { ids, x, y, mode: "copy", target: undefined, outside: true };
+      this.#frame = requestAnimationFrame(this.#scroll);
+    } else {
+      this.drag = { ...this.drag, ids };
+    }
+    this.#follow(x, y, "copy");
+  }
+
+  /** The drag from outside ends here: where it lands (undefined for nowhere); the app copies the files in. */
+  endOutside(): string | null | undefined {
+    const drag = this.drag;
+    if (!drag?.outside) {
+      return undefined;
+    }
+    this.cancel();
+    return drag.target;
+  }
 
   #move = (event: PointerEvent): void => {
     const press = this.#press;

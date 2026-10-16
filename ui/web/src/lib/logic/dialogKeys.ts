@@ -45,12 +45,16 @@ export function dialogKeyAction(event: DialogKey, options: DialogKeyOptions): Di
   return plain && options.enterSubmits && options.inLineField ? "submit" : null;
 }
 
-/** Runs what `event` asks of a Dialog: close it or submit it, taking the key from the page. */
+/** Runs what `event` asks of a Dialog: close it or submit it, taking the key from the page. An `urgent` dialog
+ *  keeps every key from the window's shortcuts, so nothing acts behind it. */
 export function runDialogKey(
   event: KeyboardEvent,
-  options: { dismissible: boolean; enterSubmits: boolean },
+  options: { dismissible: boolean; enterSubmits: boolean; urgent?: boolean },
   actions: { close: () => void; submit?: () => void },
 ): void {
+  if (options.urgent) {
+    event.stopPropagation();
+  }
   const inLineField = isLineField(event.target as HTMLInputElement | null);
   const action = dialogKeyAction(event, { ...options, canSubmit: actions.submit !== undefined, inLineField });
   if (action) {

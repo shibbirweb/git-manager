@@ -16,6 +16,7 @@ Use for a binary file's change. A side without a file shows its message, such as
 
 - `sides` (`[side, side] ({ label; kind: image|pdf|none; src?; info?; message? })`, required): Old and new.
 - `zoom` (`number | null`, default `null`, bindable): The shared zoom; null fits both.
+- `onerror` (`(side: number) => void`): An image could not load (0 old, 1 new): pass that side a message.
 
 ## Example: A logo change
 

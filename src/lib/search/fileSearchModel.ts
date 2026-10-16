@@ -103,20 +103,6 @@ export function recentFiles(
 }
 
 /**
- * The row to select after a key: single steps wrap around the ends, page steps
- * stop at them.
- */
-export function moveSelection(selected: number, count: number, step: number): number {
-  if (count === 0) {
-    return 0;
-  }
-  if (Math.abs(step) === 1) {
-    return (selected + step + count) % count;
-  }
-  return Math.max(0, Math.min(count - 1, selected + step));
-}
-
-/**
  * Splits a trailing ":LINE" or ":LINE:COL" off a query, like the backend.
  * An unfinished trailing ":" is dropped.
  */

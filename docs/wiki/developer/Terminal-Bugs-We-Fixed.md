@@ -5,7 +5,7 @@ The bugs we found in the terminal, why they happened and how we fixed them. How 
 **A black strip under the last row.**
 - **The issue:** a thin black band showed at the bottom of the terminal, below the prompt, in every theme.
 - **Why it happened:** xterm 6 paints the theme background on its scroll area, which ends at the last whole row. The viewport under it fills the rest of the height, and xterm's own CSS gives it `background-color: #000`. Whatever was left over after the last row showed that black.
-- **The fix and why we chose it:** `TerminalView.svelte` gives `.xterm-viewport` the `--term-background` token, the same color xterm uses for the rows, so the strip matches in every theme. We kept xterm's layout and only changed the color, since the leftover space is normal: the panel height is rarely a whole number of rows.
+- **The fix and why we chose it:** The UI library's `TerminalScreen` gives `.xterm-viewport` the `--term-background` token, the same color xterm uses for the rows, so the strip matches in every theme. We kept xterm's layout and only changed the color, since the leftover space is normal: the panel height is rarely a whole number of rows.
 
 **Rounded panels hid the edge of a terminal.**
 - **The issue:** the terminal list and split terminals hid 6px of the terminal beside them.

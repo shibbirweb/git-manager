@@ -27,14 +27,14 @@ sequenceDiagram
 
 The Log calls `openCommitTab` from four places: a double-click on a commit row, Enter in the list, **Open in Tab** in the details pane (and its right-click menu), and a double-click on a changed file. `CommitDetails` shows the button and the file double-click only when it gets an `onOpenInTab` callback, so inside the tab itself they are hidden.
 
-`Workspace.svelte` renders `CommitTab` instead of `FileView` for a commit tab path. `CommitTab` parses the path back with `parseCommitTabPath` and renders the same `CommitDetails` the Log uses, at full size. A **Parent** link opens that commit in another tab. Because the tab can show any commit, not only loaded ones, every parent is clickable.
+`EditorGroupContent.svelte` renders `CommitTab` instead of `FileView` for a commit tab path. `CommitTab` parses the path back with `parseCommitTabPath` and renders the same `CommitDetails` the Log uses, at full size. A **Parent** link opens that commit in another tab. Because the tab can show any commit, not only loaded ones, every parent is clickable.
 
 What the path cannot hold lives in `repoStore.commitTabs`: the subject for the tooltip, and `focus`, the file to show. `focus` carries a `token` that changes on every request, so asking for the same file again still switches to it. `applyTabs` drops the entry when its tab closes.
 
 Code that treats a tab path as a file asks `isPseudoTab` (`stores/pseudoTabs.ts`), which knows every kind below, so a new kind is added in one place:
 
-- `EditorTabs.svelte`: icon, label (`tabLabels`), tooltip and menu per kind; a commit tab has **Copy Commit Hash**.
-- `StatusBar.svelte` and `FileExplorer.svelte`: cursor items and file selection only for real files.
+- `editorTabInfo.ts` and `editorTabMenu.ts`: icon, label (`tabLabels`), tooltip and menu per kind; a commit tab has **Copy Commit Hash**.
+- `StatusBar.svelte` and the Files panel (`FileExplorer.svelte`): cursor items and file selection only for real files.
 - `navHistory.ts`: `record` refuses pseudo tabs, and Recent Files skips them.
 - `repoStore.removeFolder`: `tabsInFolder` closes the folder's files and its repositories' commit, Git and branch tabs. Terminal tabs stay.
 
@@ -66,8 +66,8 @@ The Git kinds live in `stores/gitTabs.ts` and render through `views/git/GitTab.s
 | `src/lib/log/CommitTab.svelte` | The tab's content: `CommitDetails` at full size |
 | `src/lib/log/CommitDetails.svelte` | **Open in Tab** and the file double-click (`onOpenInTab`) |
 | `src/lib/views/LogView.svelte` | Double-click, Enter and the menu item call `openInTab` |
-| `src/lib/views/Workspace.svelte` | Picks the view for each tab |
-| `src/lib/views/EditorTabs.svelte` | Icon, label, tooltip and menu for each kind |
+| `src/lib/views/EditorGroupContent.svelte` | Picks the view for each tab |
+| `src/lib/views/editorTabInfo.ts`, `editorTabMenu.ts` | Icon, label, tooltip and menu for each kind |
 
 ## Design decisions
 
@@ -97,4 +97,4 @@ None are recorded yet. When you fix one, add it here with the issue, why it happ
 - Changing how a commit tab opens, looks or closes: update this page, [History and Log](../usage/History-and-Log.md), [Keyboard Shortcuts](../usage/Keyboard-Shortcuts.md) and `commit-tab.png`.
 - Adding Back and Forward steps for pseudo tabs: update the decision above and [How navigation works](How-Navigation-Works.md).
 - New code that walks `repoStore.tabs` must handle pseudo tabs (`isPseudoTab`).
-- A new kind: a prefix that never starts with `/`, then `isPseudoTab`, `tabLabels`, `EditorTabs.svelte`, `Workspace.svelte`, `tabsInFolder` if it belongs to a repository, and a row in the table above.
+- A new kind: a prefix that never starts with `/`, then `isPseudoTab`, `tabLabels`, `editorTabInfo.ts`, `EditorGroupContent.svelte`, `tabsInFolder` if it belongs to a repository, and a row in the table above.

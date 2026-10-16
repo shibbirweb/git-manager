@@ -1,4 +1,4 @@
-// Show Reflog: the labels of the entries and the rows on screen of the virtualized list.
+// Show Reflog: the labels and colors of the entries.
 
 import type { ReflogAction, ReflogEntry } from "$lib/types";
 
@@ -27,17 +27,22 @@ export function hasCommit(entry: ReflogEntry): boolean {
   return !/^0+$/.test(entry.newId);
 }
 
-/** The first and last index (exclusive) of the rows to render, with `overscan` rows around the viewport. */
-export function visibleRange(
-  scrollTop: number,
-  viewportHeight: number,
-  rowHeight: number,
-  count: number,
-  overscan: number,
-): { start: number; end: number } {
-  const first = Math.floor(Math.max(0, scrollTop) / rowHeight);
-  const shown = Math.ceil(Math.max(0, viewportHeight) / rowHeight) + 1;
-  const start = Math.max(0, first - overscan);
-  const end = Math.min(count, first + shown + overscan);
-  return { start: Math.min(start, end), end };
+export type ReflogTone = "success" | "danger" | "accent" | "warning" | "dim";
+
+const TONES: Partial<Record<ReflogAction, ReflogTone>> = {
+  commit: "success",
+  initialCommit: "success",
+  amend: "success",
+  reset: "danger",
+  rebase: "danger",
+  checkout: "accent",
+  merge: "warning",
+  pull: "warning",
+  cherryPick: "warning",
+  revert: "warning",
+};
+
+/** New commits green, history rewrites red, moves blue, combined history amber; the rest dim. */
+export function reflogActionTone(action: ReflogAction): ReflogTone {
+  return TONES[action] ?? "dim";
 }

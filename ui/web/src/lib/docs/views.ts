@@ -23,7 +23,7 @@ export const viewDocs: ComponentDoc[] = [
     ],
     logic: ["markdownTasks.ts"],
     examples: [{ title: "A README", code: '<MarkdownView label="README.md" source={text} />' }],
-    replaces: ["src/lib/views/files/MarkdownPreview.svelte", "the .md-body styles of src/lib/markdown/body.css"],
+    replaces: ["src/lib/views/files/MarkdownPreview.svelte", "the .md-body styles the app kept in src/lib/markdown"],
     rules: [
       "`render` must return sanitized HTML.",
       "Task boxes never change on their own: toggle the source line in `ontoggle` and pass the new source.",
@@ -110,12 +110,56 @@ export const viewDocs: ComponentDoc[] = [
     rules: ["Colors come from the --term-* tokens; never pass an xterm theme."],
   },
   {
+    name: "TerminalScreen",
+    group: "Editor",
+    summary: "The frame of a terminal: the element an xterm view opens in, its states, bell flash and drop outline.",
+    usage:
+      "Use when the app owns its terminals (addons, flow control, moving them between panels): open xterm in the " +
+      "element given to `onready` and return the cleanup. TerminalView is built on it for a plain terminal. " +
+      "Overlays such as a FloatingFindBar or a CornerCard go in `children`.",
+    aliases: ["Terminal frame", "xterm host"],
+    props: [
+      prop("id", "string", "Its element id, so the app can find a terminal's screen, such as for a file drop."),
+      prop("height", VIEW_HEIGHT, "Fill the parent, or 160, 240 or 360 px.", { default: '"fill"' }),
+      prop("hidden", "boolean", "Out of sight and out of the layout, such as a terminal in another tab.", {
+        default: "false",
+      }),
+      prop("status", '"starting" | "ready" | "failed"', "Starting shows a spinner, failed a message.", {
+        default: '"ready"',
+      }),
+      prop("message", "string", "The starting or failed text.", { default: '""' }),
+      prop("detail", "string", "Why it failed, selectable.", { default: '""' }),
+      prop("ligatures", "boolean", "Join ligatures (=>, !=) in fonts that have them.", { default: "false" }),
+      prop("dropTarget", "boolean", "Files are dragged over it: an accent outline.", { default: "false" }),
+      prop("bell", "number", "A bell counter; each new value flashes the screen once.", { default: "0", data: true }),
+      prop("element", "HTMLDivElement | null", "The screen's element, for events the app sends to it.", {
+        default: "null",
+        bindable: true,
+      }),
+      prop(
+        "onready",
+        "(host: HTMLDivElement) => void | (() => void)",
+        "The element to open xterm in; may return a cleanup.",
+      ),
+      prop("onretry", "() => void", "Shows Retry in the failed state."),
+      prop("oncontextmenu", "(event: MouseEvent) => void", "Right-click, for the terminal's Menu."),
+      prop("onfocusin", "(event: FocusEvent) => void", "The terminal took the focus."),
+      prop("children", "Snippet", "Overlays such as the find bar."),
+    ],
+    examples: [
+      { title: "An app's terminal", code: "<TerminalScreen status={phase} onready={(host) => open(host)} />" },
+    ],
+    replaces: ["src/lib/terminal/TerminalView.svelte frame, states, bell and drop outline"],
+    rules: ["Colors come from the --term-* tokens; never pass an xterm theme."],
+  },
+  {
     name: "AppShell",
     group: "Layout",
     summary: "The window layout: header, activity bars, resizable side panels, editor area, bottom panel, status bar.",
     usage:
       "Use once per window. Each region is a snippet; leave one out to hide it. Panel sizes are data the user " +
-      "drags, bound so the app can store them; the editor area keeps its minimum width and height.",
+      "drags, bound so the app can store them; the editor area keeps its minimum width and height. Screen " +
+      "readers hear the panels as Left panel, Right panel and Bottom panel.",
     aliases: ["Layout", "Workspace", "Window"],
     props: [
       prop("look", '"flat" | "rounded"', "Lines between panels, or rounded panels on the window color.", {
@@ -128,6 +172,9 @@ export const viewDocs: ComponentDoc[] = [
       prop("sidebarLabel", "string", "The left handle's name.", { default: '"Resize sidebar"' }),
       prop("rightLabel", "string", "The right handle's name.", { default: '"Resize right sidebar"' }),
       prop("bottomLabel", "string", "The bottom handle's name.", { default: '"Resize bottom panel"' }),
+      prop("bottomHidden", "boolean", "Closed but still mounted, so what runs in it keeps running.", {
+        default: "false",
+      }),
       prop("oncommit", "() => void", "A drag ended: store the sizes."),
       prop("header", "Snippet", "The top bar."),
       prop("banners", "Snippet", "Notices under the header."),

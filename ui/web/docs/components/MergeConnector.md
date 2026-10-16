@@ -10,7 +10,8 @@ Group: Editor. Also known as: Ribbon, Connector.
 
 ## When to use
 
-MergeView measures the panes and draws this between them; use it alone only for a custom merge layout.
+MergeFrame draws this between its panes; use it alone only for a custom merge layout. Its buttons stay inside the column
+while any of the chunk shows.
 
 ## Props
 

@@ -3,7 +3,8 @@
      while the image fits the view. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { fitZoom, nextZoom, type NaturalSize } from "../logic/zoom";
+  import { releaseMedia } from "../logic/releaseMedia";
+  import { fitZoom, mediaInfo, nextZoom, type NaturalSize } from "../logic/zoom";
   import { componentTokens } from "../styles/tokens";
   import Icon from "./Icon.svelte";
   import ImageCanvas from "./ImageCanvas.svelte";
@@ -27,7 +28,7 @@
   // The canvas's padding stays around a fitted image.
   const inset = componentTokens.mediaView.padding * 2;
   const fitted = $derived(fitZoom(natural, box.width - inset, box.height - inset));
-  const shownInfo = $derived(natural ? `${natural.width} x ${natural.height} px${info ? `, ${info}` : ""}` : info);
+  const shownInfo = $derived(mediaInfo(natural, info));
 </script>
 
 <div class="media">
@@ -53,7 +54,7 @@
       onerror={() => (failed = true)}
     />
   {:else if kind === "pdf"}
-    <iframe class="pdf" title={name} {src}></iframe>
+    <iframe use:releaseMedia class="pdf" title={name} {src}></iframe>
   {:else}
     <div class="binary">
       <Icon name="file" size="giant" tone="faint" />

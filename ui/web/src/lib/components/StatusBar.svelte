@@ -1,18 +1,20 @@
-<!-- The bottom status bar: items on the left (repository, branch) and on the right (memory, notifications). -->
+<!-- The bottom status bar: items on the left (repository, branch) and on the right (memory, notifications). The
+     left side clips when the window is narrow; the `rounded` look puts the bar on the window frame's color. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
 
   interface Props {
     label?: string;
+    look?: "flat" | "rounded";
     start?: Snippet;
     end?: Snippet;
   }
 
-  let { label = "Status bar", start, end }: Props = $props();
+  let { label = "Status bar", look = "flat", start, end }: Props = $props();
 </script>
 
-<footer class="status-bar" aria-label={label}>
-  <div class="side">{@render start?.()}</div>
+<footer class="status-bar {look}" aria-label={label}>
+  <div class="side start">{@render start?.()}</div>
   <div class="side">{@render end?.()}</div>
 </footer>
 
@@ -32,10 +34,20 @@
     color: var(--text-dim);
   }
 
+  /* Rounded panels: the bar is part of the window frame. */
+  .rounded {
+    border-top: none;
+    background: var(--frame);
+  }
+
   .side {
     display: flex;
     align-items: center;
     min-width: 0;
     gap: 1px;
+  }
+
+  .start {
+    overflow: hidden;
   }
 </style>

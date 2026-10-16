@@ -124,16 +124,16 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 ## Bugs we fixed
 
-See [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md) (diffs not following edits), [How the editor works](How-the-Editor-Works.md) (the Diff tab that would not close) and [How changes and commits work](How-Changes-and-Commits-Work.md) (staged renames).
+See [Diff Bugs We Fixed](Diff-Bugs-We-Fixed.md), [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md) (diffs not following edits), [How the editor works](How-the-Editor-Works.md) (the Diff tab that would not close) and [How changes and commits work](How-Changes-and-Commits-Work.md) (staged renames).
 
 ## Tests
 
 - `src-tauri/src/git/tests.rs`: `diff_working_file_staged_and_unstaged`, `diff_working_file_staged_in_unborn_repo` and `diff_commit_file_sides`.
 - `src-tauri/src/commands/tests.rs`: `stage_content_updates_index_for_tracked_file`, `stage_content_adds_new_file_and_keeps_executable_mode` and `get_status_and_file_diff_commands`.
 - `src/lib/diff/split.test.ts`: the range; `splitRatio.test.ts` (UI library): the pointer math without the arrows column.
-- `src/lib/diff/foldModel.test.ts`: fold placement and steps.
+- `src/lib/diff/foldModel.test.ts`, `foldField.test.ts`: folds and steps.
 
-Hunk buttons, the drag and Open File need a manual check in the app. See [Testing](Testing.md).
+Hunk buttons, the drag and Open File need a check in the app. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

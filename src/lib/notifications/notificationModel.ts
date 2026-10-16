@@ -93,14 +93,6 @@ export function shouldPopUp(kind: NotificationKind, doNotDisturb: boolean): bool
   return !doNotDisturb || kind === "error";
 }
 
-/** The bell's badge: the count, capped so it stays narrow. */
-export function badgeText(count: number): string {
-  if (count <= 0) {
-    return "";
-  }
-  return count > 99 ? "99+" : String(count);
-}
-
 export function kindLabel(kind: NotificationKind): string {
   switch (kind) {
     case "error":

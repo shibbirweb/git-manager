@@ -58,7 +58,7 @@ flowchart LR
 - `views/gitActions.ts`: Fetch, Pull, Push, Stash, Sync, Tags and Show Log for a repository root, shared by the Git menu and the Changes view.
 - `views/workspaceActions.ts`: what each window shortcut does, shared by the key handler and the View and Edit menus.
 - `stores/pseudoTabs.ts`: the one check for tab paths that are not files (commit, Git, branch and terminal tabs), used by folder lookups, the Files panel and Back and Forward.
-- `ui/pickList.ts` and `ui/menuNav.ts`: the filterable pick dialog and keyboard navigation for context menus and submenus.
+- `ui/DialogHost.svelte` draws `dialogs` with the UI library's `Dialog`, `PickList` and `ChoiceList`; `ui/ContextMenuHost.svelte` draws `contextMenu` with the library's `Menu` (submenus, arrows, Home, End and a typed letter).
 - `diff/split.ts`: the resizable split of side-by-side diffs.
 - `diff/binaryPreview.ts`: when a diff shows an image or PDF side by side, with one zoom for both.
 

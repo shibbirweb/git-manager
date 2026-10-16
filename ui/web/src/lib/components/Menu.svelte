@@ -3,7 +3,15 @@
      MenuButton for a button that opens one. -->
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { canHighlight, isSeparator, isSubmenu, placeMenu, stepHighlight, type MenuItem } from "../logic/menuModel";
+  import {
+    canHighlight,
+    isSeparator,
+    isSubmenu,
+    matchHighlight,
+    placeMenu,
+    stepHighlight,
+    type MenuItem,
+  } from "../logic/menuModel";
   import Icon from "./Icon.svelte";
   import Self from "./Menu.svelte";
 
@@ -57,13 +65,22 @@
     const keys: Record<string, () => void> = {
       ArrowDown: () => (highlighted = stepHighlight(items, highlighted, 1)),
       ArrowUp: () => (highlighted = stepHighlight(items, highlighted, -1)),
+      Home: () => (highlighted = stepHighlight(items, -1, 1)),
+      End: () => (highlighted = stepHighlight(items, 0, -1)),
       ArrowRight: () => isSubmenu(items[highlighted] ?? { separator: true }) && (openSub = highlighted),
       ArrowLeft: () => onclose(true),
       Escape: () => onclose(true),
       Enter: () => run(highlighted),
       " ": () => run(highlighted),
     };
-    const handler = keys[event.key];
+    // A letter jumps to the next item that starts with it.
+    const typed = event.key.length === 1 && event.key !== " " && !event.metaKey && !event.ctrlKey && !event.altKey;
+    const handler = typed
+      ? () => {
+          const match = matchHighlight(items, highlighted, event.key);
+          highlighted = match >= 0 ? match : highlighted;
+        }
+      : keys[event.key];
     if (handler) {
       event.preventDefault();
       event.stopPropagation();

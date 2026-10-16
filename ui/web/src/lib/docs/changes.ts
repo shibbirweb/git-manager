@@ -49,7 +49,7 @@ export const changesDocs: ComponentDoc[] = [
       prop("fill", '"none" | "grow" | "cover"', "Its size: its content's, grow in a flex parent, or cover a " +
         "positioned parent.", { default: '"none"' }),
       prop("surface", '"none" | "editor"', "Paint the editor background behind it.", { default: '"none"' }),
-      prop("hidden", "boolean", "Out of sight and out of the layout, such as a parked terminal.", {
+      prop("hidden", "boolean", "Out of sight and out of the layout (hidden attribute), such as a parked terminal.", {
         default: "false",
       }),
       prop("clip", "boolean", "Hide what overflows its box.", { default: "false" }),

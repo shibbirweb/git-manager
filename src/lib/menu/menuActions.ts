@@ -56,6 +56,7 @@ import {
 import type { WorkspaceShortcut } from "$lib/views/workspaceShortcuts";
 import { closeThisWindow } from "$lib/windows/windowActions";
 import { type EditorAction, isEditorAction, type MenuAction } from "./menuIds";
+import { FOCUSED_GROUP, SHOWN_TAB_CONTENT, TAB_CONTENT } from "$lib/views/workspaceDom";
 
 type Handler = () => unknown;
 
@@ -162,9 +163,9 @@ async function focusGroupAt(index: number): Promise<void> {
   }
   // The diff, the Log or another kind of tab: its first text editor, else nothing keeps the old group's focus.
   await tick();
-  const group = document.querySelector<HTMLElement>(".editor-group.focused");
+  const group = document.querySelector<HTMLElement>(FOCUSED_GROUP);
   const editor = group?.querySelector<HTMLElement>(
-    ".file-host:not(.hidden) .cm-content, :scope > :not(.file-host) .cm-content",
+    `${SHOWN_TAB_CONTENT} .cm-content, :scope > :not(${TAB_CONTENT}) .cm-content`,
   );
   if (editor) {
     editor.focus();

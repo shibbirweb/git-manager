@@ -42,6 +42,13 @@ describe("listKeyCommand", () => {
     expect(listKeyCommand(key("a", { metaKey: true }), state({ multiple: true }))).toEqual({ kind: "selectAll" });
     expect(listKeyCommand(key("a", { metaKey: true }), state())).toBeNull();
   });
+
+  it("opens the current row's menu with the menu key or Shift+F10", () => {
+    expect(listKeyCommand(key("ContextMenu"), state({ current: 3 }))).toEqual({ kind: "menu", index: 3 });
+    expect(listKeyCommand(key("F10", { shiftKey: true }), state({ current: 1 }))).toEqual({ kind: "menu", index: 1 });
+    expect(listKeyCommand(key("F10"), state({ current: 1 }))).toBeNull();
+    expect(listKeyCommand(key("ContextMenu"), state())).toBeNull();
+  });
 });
 
 describe("fieldKeyCommand", () => {
@@ -68,6 +75,7 @@ describe("handleListKey", () => {
       move: vi.fn(),
       toggle: vi.fn(),
       activate: vi.fn(),
+      menu: vi.fn(),
       selectAll: vi.fn(),
       focus: vi.fn(),
     } as unknown as ListHost & Record<string, ReturnType<typeof vi.fn>>;
@@ -84,6 +92,33 @@ describe("handleListKey", () => {
     const target = host(2);
     expect(handleListKey(key("x"), null, target)).toBe(false);
     expect(handleListKey(key("Enter"), null, target)).toBe(true);
-    expect(target.activate).toHaveBeenCalledWith(2);
+    expect(target.activate).toHaveBeenCalledWith(2, expect.objectContaining({ key: "Enter" }));
+  });
+
+  it("moves with Ctrl+N and Ctrl+P and picks with Shift+Enter when a field drives the list", () => {
+    const state: KeyState = {
+      current: 1,
+      count: 4,
+      skip: () => false,
+      tree: false,
+      multiple: false,
+      levels: () => [],
+      expanded: () => null,
+    };
+    expect(fieldKeyCommand({ ...key("n"), ctrlKey: true }, "drive", state)).toEqual({
+      kind: "move",
+      index: 2,
+      range: false,
+    });
+    expect(fieldKeyCommand({ ...key("p"), ctrlKey: true }, "drive", state)).toEqual({
+      kind: "move",
+      index: 0,
+      range: false,
+    });
+    expect(fieldKeyCommand({ ...key("Enter"), shiftKey: true }, "drive", state)).toEqual({
+      kind: "activate",
+      index: 1,
+    });
+    expect(fieldKeyCommand({ ...key("n"), ctrlKey: true }, "enter", state)).toBeNull();
   });
 });

@@ -43,7 +43,7 @@ flowchart LR
 Compare with Revision, Compare with Branch, Show History and Show History for Selection open in editor tabs. Like commit tabs, each has a pseudo path that can never be a file (`stores/gitTabs.ts`), such as `git-fileHistory:<repo>|<file>`. `GitTab.svelte` picks the view:
 
 - `FileHistoryTab.svelte` pages through `file_history`, which runs `git log --follow` so renames are followed. The selected commit shows in `CommitDetails`.
-- `LineHistoryTab.svelte` calls `line_history`, which runs `git log -L start,end:file`. `patchLines.ts` splits each patch into lines to color. `git log -L` counts lines in HEAD (the last commit), so `showSelectionHistory` first maps the editor's selection with `headLineRange` (`views/git/lineHistoryRange.ts`): it diffs the committed text against the editor text with `diffLines` and keeps the committed lines the selection covers. When every selected line is new, a toast says so instead of opening a tab.
+- `LineHistoryTab.svelte` calls `line_history`, which runs `git log -L start,end:file`. The UI library's `PatchView` colors each patch (its `logic/patchLines.ts` splits it into lines). `git log -L` counts lines in HEAD (the last commit), so `showSelectionHistory` first maps the editor's selection with `headLineRange` (`views/git/lineHistoryRange.ts`): it diffs the committed text against the editor text with `diffLines` and keeps the committed lines the selection covers. When every selected line is new, a toast says so instead of opening a tab.
 - `CompareTab.svelte` gets `compare_with_revision` (the file at a revision against the work tree) and shows it in a read-only `DiffView`.
 
 The two history commands live in `src-tauri/src/git/history.rs` and use the git CLI, because libgit2 can neither follow renames nor trace a line range.
@@ -100,7 +100,7 @@ Open Repository in Browser and the GitHub link items only build URLs and open th
 ## Tests
 
 - `src/lib/menu/menuState.test.ts`, "Git menu": ahead and behind labels, branch and remote rules, operation items, Current File rules, GitHub and Clone.
-- `src/lib/views/git/github.test.ts` and `remoteLinks.test.ts` (see [Git Menu Links](Git-Menu-Links.md)), `patchLines.test.ts`, `lineHistoryRange.test.ts` (inserted, deleted, modified and only new lines) and `src/lib/stores/gitTabs.test.ts`.
+- `src/lib/views/git/github.test.ts` and `remoteLinks.test.ts` (see [Git Menu Links](Git-Menu-Links.md)), `lineHistoryRange.test.ts` (inserted, deleted, modified and only new lines) and `src/lib/stores/gitTabs.test.ts`.
 - `src-tauri/src/commands/patch.rs`: `create_patch_writes_the_chosen_changes`, `create_patch_works_before_the_first_commit`, `a_commit_patch_applies_elsewhere`, `apply_patch_falls_back_to_a_three_way_merge`, `apply_patch_reports_why_it_does_not_apply` and `apply_patch_from_text`.
 - `src-tauri/src/commands/history.rs`: `file_history_follows_renames_page_by_page`, `line_history_traces_a_range` and `compare_with_revision_reads_the_old_version`.
 

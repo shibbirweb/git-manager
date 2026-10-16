@@ -1,6 +1,7 @@
 // Local History, the pure parts: what the editor asks to keep when a file reloads, how
 // versions are named and grouped in the window, and the small texts around them.
 
+import { fullDate } from "$lib/log/format";
 import type { Eol, LocalHistoryRecord, LocalHistoryUsage, LocalSnapshot, SnapshotLabel } from "$lib/types";
 
 /** Why an open file's text is replaced by what is on disk. */
@@ -112,22 +113,28 @@ export function usageText(usage: LocalHistoryUsage | null): string {
   return `${versions} of ${files}, ${sizeText(usage.bytes)} on disk.`;
 }
 
-/** The selection after a key press in the version list. */
-export function movedSelection(count: number, current: number, key: string): number {
-  if (count === 0) {
-    return -1;
-  }
-  if (key === "ArrowDown") {
-    return Math.min(count - 1, current + 1);
-  }
-  if (key === "ArrowUp") {
-    return Math.max(0, current - 1);
-  }
-  if (key === "Home") {
-    return 0;
-  }
-  if (key === "End") {
-    return count - 1;
-  }
-  return current;
+/** A row of the version list: a day heading, or a version under it. */
+export type VersionRow =
+  { kind: "day"; key: string; title: string } | { kind: "version"; key: string; snapshot: LocalSnapshot };
+
+/** The versions under their day headings ("Today", "Yesterday", a date), newest first as given. */
+export function versionRows(snapshots: readonly LocalSnapshot[], nowMs: number): VersionRow[] {
+  return groupByDay(snapshots, nowMs).flatMap((group): VersionRow[] => [
+    { kind: "day", key: `day:${group.title}`, title: group.title },
+    ...group.snapshots.map((snapshot) => ({ kind: "version" as const, key: versionKey(snapshot), snapshot })),
+  ]);
+}
+
+/** A version's row key; its hash comes first, so `versionHash` reads it back. */
+export function versionKey(snapshot: LocalSnapshot): string {
+  return `${snapshot.hash}:${snapshot.time}`;
+}
+
+export function versionHash(key: string): string {
+  return key.slice(0, key.lastIndexOf(":"));
+}
+
+/** A version's tooltip: what kept it, when, and its size. */
+export function snapshotTitle(snapshot: LocalSnapshot): string {
+  return `${snapshotLabel(snapshot.label)}, ${fullDate(Math.floor(snapshot.time / 1000))}, ${sizeText(snapshot.size)}`;
 }

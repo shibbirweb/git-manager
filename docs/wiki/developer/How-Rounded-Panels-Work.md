@@ -14,11 +14,11 @@ The whole feature is one boolean attribute on `<html>` and CSS rules that only m
 flowchart LR
   S["settings.roundedPanels"] --> A["applyAppearance()"]
   A --> H["html data-rounded-panels"]
-  H --> W["Workspace.svelte: gaps, frame, rounded sidebar, groups, Files panel"]
+  H --> W["AppShell and SplitGrid look rounded: gaps, frame, rounded panels and groups"]
   H --> R["ResizeHandle.svelte: handle fills the gap"]
   H --> F["Header, StatusBar, activity bars: frame color"]
-  H --> T["EditorTabs.svelte: pill tabs"]
-  H --> P["Workspace.svelte .bottom-panel: rounded panel"]
+  H --> T["TabStrip look rounded: pill tabs"]
+  H --> P["AppShell: the rounded bottom panel"]
 ```
 
 ### The setting
@@ -27,7 +27,7 @@ flowchart LR
 
 ### Gaps and corners
 
-Two size tokens in `src/app.css` set the look: `--panel-gap` (6px) and `--panel-radius` (10px). In `Workspace.svelte`, `.body`, `.main` and `.editor-area` get `gap: var(--panel-gap)`, and `.body` gets padding on the sides and the bottom plus the frame color as its background. The sidebar, each `.editor-group`, the `.bottom-panel` frame around the terminal panel and the Files panel get `border-radius` and lose their divider borders. Editor groups and the terminal panel also get `overflow: hidden` so their contents are clipped to the corners.
+Two size tokens in `src/app.css` set the look: `--panel-gap` (6px) and `--panel-radius` (10px). `Workspace.svelte` passes `look="rounded"` to the library's `AppShell` and `SplitGrid`: the body, main column and editor area get `gap: var(--panel-gap)`, the body gets side and bottom padding on the frame color, and the panels and editor groups get `border-radius` without divider borders. Editor groups and the terminal panel also get `overflow: hidden` so their contents are clipped to the corners.
 
 The activity bars get a negative margin equal to the gap, so they stay flush with the window edge while the panels keep their gap.
 
@@ -50,7 +50,7 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 ### Tabs
 
-`EditorTabs.svelte` draws pill tabs with rounded panels on: the strip takes the editor background, each tab is 26px tall with a 6px radius, and the separators and the accent line on top are gone. The active tab uses `--selected` with an outline mixed from `--accent`. In an unfocused split group it uses `--selected-inactive` and `--border-strong`, like JetBrains.
+With rounded panels on, `EditorTabs.svelte` gives the library's `TabStrip` the `rounded` look, which draws pill tabs: the strip takes the editor background, each tab is 26px tall with a 6px radius, and the separators and the accent line on top are gone. The active tab uses `--selected` with an outline mixed from `--accent`. In an unfocused split group it uses `--selected-inactive` and `--border-strong`, like JetBrains.
 
 ## Where the code lives
 
@@ -61,12 +61,12 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 | `src/lib/views/settings/AppearanceSettings.svelte` | the Appearance switch |
 | `src/app.css` | `--panel-gap`, `--panel-radius` and the built-in `--frame` |
 | `src/lib/themes/tokens.ts`, `catalog.ts` | `--frame` as a color token, `frameColor()` |
-| `src/lib/views/Workspace.svelte` | gaps, padding, frame, rounded panels |
+| `src/lib/views/Workspace.svelte`, `AppShell` and `SplitGrid` (UI library) | gaps, padding, frame, rounded panels |
 | `src/lib/ui/ResizeHandle.svelte` | handles that fill the gaps |
-| `src/lib/views/Header.svelte`, `StatusBar.svelte`, `ActivityBar.svelte`, `RightActivityBar.svelte` | frame color, no dividers |
-| `src/lib/views/EditorTabs.svelte` | pill tabs |
-| `src/lib/views/Workspace.svelte` (`.bottom-panel`) | the rounded bottom panel |
-| `src/lib/views/files/FileView.svelte` | the file toolbar's rounded corners at the bottom |
+| `src/lib/views/Header.svelte`, `StatusBar.svelte`, `ActivityBar.svelte`, `RightActivityBar.svelte` | frame color, no dividers (the library's `AppHeader` and `StatusBar` take `look="rounded"`) |
+| `ui/web/src/lib/components/EditorTab.svelte` | pill tabs (look rounded) |
+| `AppShell` (UI library) | the rounded bottom panel |
+| `SplitGrid` (UI library) | editor groups clip to the panel's corners |
 
 ## Design decisions
 
@@ -76,15 +76,13 @@ The window behind the panels uses the color token `--frame`. Every theme must se
 
 **A derived frame instead of `--bg`.** Many themes paint `--bg` and `--panel` the same, which would hide the gaps. A tested token keeps the look working in all 41 themes.
 
-**The file toolbar is square at the top.** With the File toolbar at the Bottom, `FileView.svelte` gives the bar's two bottom corners `--panel-radius`, so they follow the panel's own corners. At the Top the bar sits right under the tabs, inside the panel, so it stays a square band joined to the tab strip. Rounding its top corners there was tried and made the bar look like a separate box.
+**The file toolbar is square at the top.** With the File toolbar at the Bottom, the editor group's clipping rounds the bar's bottom corners. At the Top the bar sits right under the tabs, inside the panel, so it stays a square band joined to the tab strip. Rounding its top corners there was tried and made the bar look like a separate box.
 
 **Off by default.** Existing users keep the classic look until they choose otherwise.
 
 ## Bugs we fixed
 
-**The editor did not stand out in Git Manager Dark.** In Git Manager Light the editor's tab strip showed as a white rounded panel on the grey window. In Git Manager Dark the frame and the editor were both `#1e1f22`, so the tabs and the top of the editor melted into the window and only the file toolbar showed. The frame was only checked against `--panel`, but in rounded mode the tab strip and the code take `--editor-bg`. The fix sets the Git Manager Dark frame to `#131416` (darker, like the gaps in the JetBrains Islands themes) and makes `frameColor()` and its test keep the frame apart from the editor color too. That also fixed Darcula, Nord, Gruvbox Dark and Rose Pine. Dark themes shade the darker surface, so the frame sits below both.
-
-**The Changes tab lost the line between its list and the diff.** Its handle sits inside one panel but took the gap margins, pulling the diff 6px over the list's border. `ResizeHandle` now takes `inPanel` to keep its normal size, a prop so any handle inside a panel can opt out.
+See [Rounded Panels Bugs We Fixed](Rounded-Panels-Bugs-We-Fixed.md).
 
 ## Tests
 

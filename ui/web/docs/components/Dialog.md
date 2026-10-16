@@ -17,11 +17,14 @@ Primary button in `actions`, last.
 
 - `open` (`boolean`, default `false`, bindable): Shown or hidden.
 - `title` (`string`, required): The heading; also the dialog's accessible name.
-- `variant` (`"message" | "form" | "split" | "panel"`, default `"message"`): A question and buttons, the Git dialogs'
-  form, Settings' side column and content, or a large panel with a scrolling body (Shortcuts, What's New).
+- `variant` (`"message" | "form" | "split" | "panel" | "view"`, default `"message"`): A question and buttons, the Git
+  dialogs' form, Settings' side column and content, a large panel with a scrolling body (Shortcuts, What's New), or a
+  tall centered box whose body is one view without padding (Local History: a list beside a diff).
 - `width` (`"small" | "normal" | "medium" | "large" | "xlarge" | "full"`, default `small (message), normal (form), large
-  (panel)`): 460, 520, 560, 620, 760 or 1200 px; split dialogs have their own size.
+  (panel), full (view)`): 460, 520, 560, 620, 760 or 1200 px; split dialogs have their own size.
 - `dismissible` (`boolean`, default `true`): Esc and a click on the dim area close it.
+- `urgent` (`boolean`, default `false`): A question a running command waits on, such as a git sign-in: it shows over
+  every other dialog and keeps its keys from the window's shortcuts.
 - `movable` (`boolean`, default `false`): Drag the title to move it; double-click the title centers it.
 - `subtitle` (`string`, default `""`): A dim line under the title.
 - `icon` (`IconName | null`, default `null`): An icon on a tinted tile before the title.

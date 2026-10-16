@@ -20,6 +20,7 @@ memory: memory details; usage: AI usage windows (warning and danger tones); mini
 - `detail` (`string`, default `""`): A small line under the bar, such as when it resets.
 - `variant` (`"memory" | "usage" | "mini"`, default `"memory"`): The bar's size and track.
 - `tone` (`"accent" | "warning" | "danger"`, default `"accent"`): The fill's color.
+- `title` (`string`): A tooltip, such as a process's name and id.
 
 ## Example: Memory
 

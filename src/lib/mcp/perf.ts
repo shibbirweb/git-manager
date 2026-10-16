@@ -7,6 +7,7 @@ import { repoStore } from "$lib/stores/repo.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 import { FRAME_MS, frameStats, type FrameStats, largest, nextScroll, type ScrollWalk } from "./perfModel";
 import type { ScrollTarget } from "./toolDefs";
+import { SHOWN_TAB_CONTENT } from "$lib/views/workspaceDom";
 
 /** The main areas of the window, counted on their own. */
 const AREAS: Record<string, string> = {
@@ -141,7 +142,7 @@ export async function uiPerformance(sampleMs: number): Promise<Record<string, un
 
 /** Where each target's scrollable areas are. */
 const SCROLL_SELECTORS: Record<Exclude<ScrollTarget, "auto">, string> = {
-  editor: ".file-host:not(.hidden) .cm-scroller",
+  editor: `${SHOWN_TAB_CONTENT} .cm-scroller`,
   "markdown-preview": ".markdown-preview",
   "rich-markdown": ".rich-markdown",
   log: ".log-view .scroller",

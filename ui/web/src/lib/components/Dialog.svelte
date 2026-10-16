@@ -1,10 +1,12 @@
-<!-- A modal dialog over a dimmed window. `message` (a question and buttons, like confirms), `form` (the Git
-     dialogs: a scrolling body of fields and a footer; Cmd+Enter submits) or `split` (Settings: a side column and
-     a content area). `enterSubmits` lets a plain Enter in a one-line field submit too (a prompt). Esc and a click
-     on the dim area close it unless `dismissible` is false. Focus moves in and back when it closes. -->
+<!-- A modal dialog over a dimmed window: `message` (a question, like confirms), `form` (the Git dialogs; Cmd+Enter
+     submits), `split` (Settings), `panel` (a scrolling body) or `view` (a tall box holding one view, Local History).
+     `enterSubmits` lets Enter in a one-line field submit too. Esc and a click on the dim area close it unless
+     `dismissible` is false. Focus moves in and back when it closes (logic/dialogFocus.ts). -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
+  import { focusInto } from "../logic/dialogFocus";
+  import { DIALOG_OVERLAY, URGENT_DIALOG_LAYER, type DialogVariant } from "../logic/dialogLayout";
   import { runDialogKey } from "../logic/dialogKeys";
   import { DialogMover } from "../logic/dialogMover.svelte";
   import { presetVar, type DialogWidth } from "../logic/presets";
@@ -13,12 +15,13 @@
   interface Props {
     open?: boolean;
     title: string;
-    variant?: "message" | "form" | "split" | "panel";
+    variant?: DialogVariant;
     subtitle?: string;
     icon?: IconName | null;
     iconTone?: "accent" | "success" | "warning" | "danger";
     width?: DialogWidth;
     dismissible?: boolean;
+    urgent?: boolean;
     /** Drag the title to move it; double-click the title to center it again. */
     movable?: boolean;
     onclose?: () => void;
@@ -40,8 +43,9 @@
     subtitle = "",
     icon = null,
     iconTone = "accent",
-    width = variant === "form" ? "normal" : variant === "panel" ? "large" : "small",
+    width = variant === "form" ? "normal" : variant === "panel" ? "large" : variant === "view" ? "full" : "small",
     dismissible = true,
+    urgent = false,
     movable = false,
     onclose,
     onsubmit,
@@ -56,8 +60,9 @@
 
   const titleId = $props.id();
   let dialogEl = $state<HTMLDivElement | null>(null);
-  let returnFocus: HTMLElement | null = null;
 
+  /** Panel and view dialogs: a head with a close button. */
+  const boxed = $derived(variant === "panel" || variant === "view");
   const mover = new DialogMover();
   const grab = () => (movable ? dialogEl : null);
   const dragHint = $derived(movable ? "Drag to move, double-click to center" : undefined);
@@ -67,23 +72,13 @@
   }
 
   $effect(() => {
-    if (!open || !dialogEl) {
-      return;
+    if (open && dialogEl) {
+      return focusInto(dialogEl);
     }
-    returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const first = dialogEl.querySelector<HTMLElement>(
-      "[autofocus], input:not([type=checkbox]):not([type=radio]), textarea, select, button:not(:disabled)",
-    );
-    (first ?? dialogEl).focus();
-    return () => {
-      if (returnFocus?.isConnected) {
-        returnFocus.focus();
-      }
-    };
   });
 
   function onkeydown(event: KeyboardEvent): void {
-    runDialogKey(event, { dismissible, enterSubmits }, { close, submit: onsubmit });
+    runDialogKey(event, { dismissible, enterSubmits, urgent }, { close, submit: onsubmit });
   }
 </script>
 
@@ -94,6 +89,8 @@
 {#if open}
   <div
     class="overlay is-{variant}"
+    style:z-index={urgent ? URGENT_DIALOG_LAYER : DIALOG_OVERLAY[variant].layer}
+    style:padding-top={DIALOG_OVERLAY[variant].top}
     role="presentation"
     onmousedown={(event) => dismissible && event.target === event.currentTarget && close()}
   >
@@ -123,15 +120,15 @@
           {@render children()}
         </div>
       {:else}
-        {#if icon || subtitle || variant === "panel"}
+        {#if icon || subtitle || boxed}
           <DialogHead
             {title}
             {titleId}
             {subtitle}
             {icon}
             {iconTone}
-            size={variant === "panel" ? "panel" : "normal"}
-            onclose={variant === "panel" && dismissible ? close : undefined}
+            size={boxed ? "panel" : "normal"}
+            onclose={boxed && dismissible ? close : undefined}
           />
         {:else}
           {@render heading()}
@@ -150,25 +147,14 @@
 {/if}
 
 <style>
+  /* Layer and top offset per variant: logic/dialogLayout.ts. */
   .overlay {
     position: fixed;
     inset: 0;
-    z-index: 900;
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 14vh;
     background: var(--overlay);
-  }
-
-  .overlay.is-form {
-    z-index: 850;
-    padding-top: 10vh;
-  }
-
-  .overlay.is-split {
-    z-index: 850;
-    padding-top: 8vh;
   }
 
   .dialog {
@@ -218,7 +204,8 @@
   }
 
   .is-form .body,
-  .is-panel .body {
+  .is-panel .body,
+  .is-view .body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
@@ -272,12 +259,8 @@
   }
 
   /* Panel: a large dialog with a scrolling body between its head (and toolbar) and a footer with a line above. */
-  .overlay.is-panel {
-    z-index: 855;
-    padding-top: 8vh;
-  }
-
-  .dialog.is-panel {
+  .dialog.is-panel,
+  .dialog.is-view {
     display: flex;
     flex-direction: column;
     max-height: 84vh;
@@ -288,6 +271,22 @@
   .is-panel .body {
     padding: var(--panel-dialog-body-padding-top) var(--panel-dialog-body-padding-x)
       var(--panel-dialog-body-padding-bottom);
+  }
+
+  /* View: a tall box of a fixed height whose body is one view (a list beside a diff), without padding. */
+  .overlay.is-view {
+    align-items: center;
+  }
+
+  .dialog.is-view {
+    height: min(var(--view-dialog-height), calc(100vh - 2 * var(--space-11)));
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .is-view .body {
+    display: flex;
+    border-top: 1px solid var(--border-strong);
   }
 
   .is-panel .actions {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ReflogEntry } from "$lib/types";
-import { hasCommit, reflogActionLabel, visibleRange } from "./reflogView";
+import { hasCommit, reflogActionLabel, reflogActionTone } from "./reflogView";
 
 describe("reflogView", () => {
   it("labels each action", () => {
@@ -15,10 +15,11 @@ describe("reflogView", () => {
     expect(hasCommit({ ...entry, newId: "ab".repeat(20) })).toBe(true);
   });
 
-  it("renders only the rows on screen", () => {
-    expect(visibleRange(0, 260, 26, 1000, 5)).toEqual({ start: 0, end: 16 });
-    expect(visibleRange(2600, 260, 26, 1000, 5)).toEqual({ start: 95, end: 116 });
-    expect(visibleRange(2600, 260, 26, 50, 5)).toEqual({ start: 50, end: 50 });
-    expect(visibleRange(-10, 0, 26, 3, 5)).toEqual({ start: 0, end: 3 });
+  it("colors actions by what they did to history", () => {
+    expect(reflogActionTone("amend")).toBe("success");
+    expect(reflogActionTone("rebase")).toBe("danger");
+    expect(reflogActionTone("checkout")).toBe("accent");
+    expect(reflogActionTone("cherryPick")).toBe("warning");
+    expect(reflogActionTone("clone")).toBe("dim");
   });
 });

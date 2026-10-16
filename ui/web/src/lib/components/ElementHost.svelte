@@ -41,6 +41,7 @@
   bind:this={element}
   class="host fill-{fill} surface-{surface}"
   class:hidden
+  hidden={hidden || undefined}
   class:clip
   class:stretch
   role={label ? "group" : undefined}

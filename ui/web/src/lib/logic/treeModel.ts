@@ -23,6 +23,14 @@ export interface TreeDecoration {
   repo?: boolean;
   /** A small outlined mark after the name, such as LFS. */
   tag?: string;
+  /** The badge's tooltip, such as "Modified, not staged". */
+  badgeTitle?: string;
+  /** A small dot in the tone at the end, such as a folder holding changes. */
+  dot?: boolean;
+  /** The row's tooltip, such as the full path. */
+  title?: string;
+  /** Shown elsewhere now, such as the file open in the editor: a quiet highlight. */
+  open?: boolean;
 }
 
 export interface TreeRow<N extends TreeNode = TreeNode> {

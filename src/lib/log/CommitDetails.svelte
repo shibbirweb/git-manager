@@ -1,15 +1,25 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
-  import { api, errorMessage } from "$lib/api";
-  import type { PreviewSides } from "$lib/diff/binaryPreview";
+  import { errorMessage } from "$lib/api";
   import DiffView from "$lib/diff/DiffView.svelte";
-  import type { ChangedFile, CommitDetails, FileDiff } from "$lib/types";
+  import type { ChangedFile } from "$lib/types";
   import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Link from "@git-manager/ui/components/Link.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { toast } from "$lib/ui/toast.svelte";
-  import { parentRevision } from "$lib/views/files/previewSource";
-  import { fileDir, fileName, fullDate, statusLetter } from "./format";
+  import { CommitLoader } from "./commitLoader.svelte";
+  import { fileDir, fileName, fullDate } from "./format";
   import { findLine } from "./lineMatch";
 
   interface Props {
@@ -38,31 +48,19 @@
 
   let { repoPath, commitId, loadedShortId, onSelectCommit, preferredFile = null, onOpenInTab = null }: Props = $props();
 
-  let details = $state<CommitDetails | null>(null);
-  let detailsError = $state<string | null>(null);
-  let selectedPath = $state<string | null>(null);
-  /** The diff on screen; kept while the next one loads to avoid flicker. */
-  let shown = $state.raw<{
-    key: string;
-    path: string;
-    label: string;
-    diff: FileDiff;
-    /** Where a binary image or PDF comes from: the first parent (none for a root commit) and the commit. */
-    previewSides: PreviewSides;
-  } | null>(null);
-  let diffError = $state<string | null>(null);
-  let diffLoading = $state(false);
+  const loader = new CommitLoader();
+  const details = $derived(loader.details);
+  const detailsError = $derived(loader.detailsError);
+  const shown = $derived(loader.shown);
+  const diffError = $derived(loader.diffError);
+  const diffLoading = $derived(loader.diffLoading);
   let leftWidth = $state(360);
-  let bodyEl = $state<HTMLDivElement | null>(null);
-  let filesEl = $state<HTMLDivElement | null>(null);
-
-  let detailsToken = 0;
-  let diffToken = 0;
+  let width = $state(0);
 
   const current = $derived(details && details.id === commitId ? details : null);
   const files = $derived(details?.files ?? []);
   const selectedFile = $derived(
-    current ? ((current.files ?? []).find((file) => file.path === selectedPath) ?? null) : null,
+    current ? ((current.files ?? []).find((file) => file.path === loader.selectedPath) ?? null) : null,
   );
   /** The line of the diff on screen to scroll to, from `preferredFile`. */
   const revealLine = $derived.by(() => {
@@ -92,7 +90,7 @@
   });
 
   $effect(() => {
-    void loadDetails(repoPath, commitId);
+    void loader.loadDetails(repoPath, commitId, () => preferredFile);
   });
 
   // Back / Forward to another file of the commit already on screen.
@@ -103,8 +101,8 @@
       return;
     }
     const match = loaded.files.find((file) => file.path === preferred.path || file.origPath === preferred.path);
-    if (match && match.path !== untrack(() => selectedPath)) {
-      selectedPath = match.path;
+    if (match && match.path !== untrack(() => loader.selectedPath)) {
+      loader.selectedPath = match.path;
     }
   });
 
@@ -115,85 +113,11 @@
       return;
     }
     if (!file) {
-      shown = null;
-      diffError = null;
-      diffLoading = false;
+      loader.clearDiff();
       return;
     }
-    void loadDiff(repoPath, commitId, file);
+    void loader.loadDiff(repoPath, commitId, file);
   });
-
-  async function loadDetails(targetRepoPath: string, targetCommitId: string): Promise<void> {
-    const token = ++detailsToken;
-    detailsError = null;
-    try {
-      const result = await api.getCommitDetails(targetRepoPath, targetCommitId);
-      if (token !== detailsToken) {
-        return;
-      }
-      details = result;
-      const preferred =
-        preferredFile && preferredFile.commitId === targetCommitId
-          ? result.files.find((file) => file.path === preferredFile.path || file.origPath === preferredFile.path)
-          : undefined;
-      const keep = result.files.some((file) => file.path === selectedPath);
-      if (preferred) {
-        selectedPath = preferred.path;
-      } else if (!keep) {
-        selectedPath = result.files[0]?.path ?? null;
-      }
-    } catch (error) {
-      if (token !== detailsToken) {
-        return;
-      }
-      details = null;
-      shown = null;
-      selectedPath = null;
-      detailsError = errorMessage(error);
-    }
-  }
-
-  async function loadDiff(targetRepoPath: string, targetCommitId: string, file: ChangedFile): Promise<void> {
-    const token = ++diffToken;
-    diffLoading = true;
-    diffError = null;
-    try {
-      const result = await api.getCommitFileDiff(targetRepoPath, targetCommitId, file.path, file.origPath ?? null);
-      if (token !== diffToken) {
-        return;
-      }
-      // loadDiff runs once these details are loaded; their id is the full one the scheme needs.
-      const commitFullId = details?.id ?? targetCommitId;
-      const hasParent = (details?.parents.length ?? 0) > 0;
-      shown = {
-        key: `${targetCommitId}:${file.path}`,
-        path: file.path,
-        label: targetCommitId.slice(0, 8),
-        diff: result,
-        previewSides: {
-          original: hasParent
-            ? {
-                kind: "revision",
-                repoRoot: targetRepoPath,
-                revision: parentRevision(commitFullId),
-                filePath: file.origPath ?? file.path,
-              }
-            : null,
-          modified: { kind: "revision", repoRoot: targetRepoPath, revision: commitFullId, filePath: file.path },
-        },
-      };
-    } catch (error) {
-      if (token !== diffToken) {
-        return;
-      }
-      shown = null;
-      diffError = errorMessage(error);
-    } finally {
-      if (token === diffToken) {
-        diffLoading = false;
-      }
-    }
-  }
 
   async function copyHash(): Promise<void> {
     try {
@@ -204,154 +128,126 @@
     }
   }
 
-  function onFilesKeydown(event: KeyboardEvent): void {
-    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
-      return;
+  /** Author, date, committer, hash and parents, for the description list. */
+  const facts = $derived.by(() => {
+    if (!details) {
+      return [];
     }
-    event.preventDefault();
-    if (files.length === 0) {
-      return;
+    const items = [
+      { label: "Author", value: details.authorName },
+      { label: "Date", value: fullDate(details.authorTime) },
+    ];
+    if (details.committerName && details.committerName !== details.authorName) {
+      items.push({ label: "Committer", value: `${details.committerName}, ${fullDate(details.committerTime)}` });
     }
-    const current = files.findIndex((file) => file.path === selectedPath);
-    const next =
-      event.key === "ArrowDown"
-        ? Math.min(files.length - 1, current + 1)
-        : Math.max(0, current === -1 ? 0 : current - 1);
-    selectedPath = files[next]?.path ?? null;
-    filesEl?.querySelector<HTMLElement>(`[data-index="${next}"]`)?.scrollIntoView({ block: "nearest" });
+    items.push({ label: "Hash", value: details.id });
+    if (details.parents.length > 0) {
+      items.push({ label: details.parents.length > 1 ? "Parents" : "Parent", value: details.parents.join(" ") });
+    }
+    return items;
+  });
+
+  function fileTitle(file: ChangedFile): string {
+    const path = file.origPath ? `${file.origPath} -> ${file.path}` : file.path;
+    return `${path}${onOpenInTab ? "\nDouble-click to open in a tab" : ""}`;
   }
 
-  function startResize(event: PointerEvent): void {
-    const container = bodyEl;
-    if (!container) {
-      return;
-    }
-    event.preventDefault();
-    const handle = event.currentTarget as HTMLElement;
-    handle.setPointerCapture(event.pointerId);
-    const left = container.getBoundingClientRect().left;
-    const total = container.clientWidth;
-    const move = (moveEvent: PointerEvent): void => {
-      leftWidth = Math.max(220, Math.min(total - 240, moveEvent.clientX - left));
-    };
-    const stop = (): void => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", stop);
-      handle.removeEventListener("pointercancel", stop);
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", stop);
-    handle.addEventListener("pointercancel", stop);
-  }
+  const OPEN_TAB_TITLE =
+    "Open this commit in an editor tab, with the diff in the whole editor area (or double-click the commit or a file)";
 </script>
 
-<div class="details" bind:this={bodyEl}>
-  <div class="left" style="width: {leftWidth}px">
-    {#if detailsError}
-      <div class="state dim">
-        <Icon name="alert" size="large" />
-        <span>Could not load commit: {detailsError}</span>
-      </div>
-    {:else if !details}
-      <div class="state dim">Loading commit...</div>
-    {:else}
-      <section class="info">
-        <div class="subject-row">
-          <div class="subject selectable">{body.subject || "(no message)"}</div>
-          {#if onOpenInTab}
-            <button
-              class="btn small open-tab"
-              onclick={() => onOpenInTab?.(selectedPath)}
-              title="Open this commit in an editor tab, with the diff in the whole editor area (or double-click the commit or a file)"
-            >
-              <Icon name="commit" size="medium" />
-              Open in Tab
-            </button>
-          {/if}
-        </div>
-        {#if body.rest}
-          <pre class="message selectable">{body.rest}</pre>
+{#snippet fact(item: { label: string; value: string })}
+  {#if item.label === "Author" && details}
+    <Text selectable truncate title={details.authorEmail}>
+      {details.authorName}
+      {#if details.authorEmail}<Text tone="dim">&lt;{details.authorEmail}&gt;</Text>{/if}
+    </Text>
+  {:else if item.label === "Hash"}
+    <Stack direction="row" gap="xs" align="center">
+      <Text mono selectable truncate>{item.value}</Text>
+      <IconButton icon="copy" label="Copy revision hash" size="mini" tone="dim" iconSize="medium" onclick={copyHash} />
+    </Stack>
+  {:else if item.label === "Parent" || item.label === "Parents"}
+    <Stack direction="row" gap="sm" wrap>
+      {#each details?.parents ?? [] as parentId (parentId)}
+        {@const loaded = loadedShortId(parentId)}
+        <Link
+          size="small"
+          mono
+          disabled={loaded === null}
+          title={loaded === null ? `${parentId} (not loaded yet)` : `Select ${parentId}`}
+          onclick={() => onSelectCommit(parentId)}
+        >
+          {loaded ?? parentId.slice(0, 8)}
+        </Link>
+      {/each}
+    </Stack>
+  {:else}
+    <Text selectable truncate>{item.value}</Text>
+  {/if}
+{/snippet}
+
+{#snippet info()}
+  {#if detailsError}
+    <EmptyState icon="alert" title="Could not load commit: {detailsError}" titleTone="dim" />
+  {:else if !details}
+    <EmptyState title="Loading commit..." titleTone="dim" delayed />
+  {:else}
+    <Stack gap="sm" padding="lg" scroll="y" maxHeight="large" line="bottom">
+      <Stack direction="row" gap="md" align="start">
+        <Stack grow>
+          <Text weight="semibold" selectable wrap="anywhere">{body.subject || "(no message)"}</Text>
+        </Stack>
+        {#if onOpenInTab}
+          <Button size="small" icon="commit" title={OPEN_TAB_TITLE} onclick={() => onOpenInTab?.(loader.selectedPath)}>
+            Open in Tab
+          </Button>
         {/if}
-        <dl class="meta">
-          <dt>Author</dt>
-          <dd class="selectable truncate" title={details.authorEmail}>
-            {details.authorName}
-            {#if details.authorEmail}<span class="dim">&lt;{details.authorEmail}&gt;</span>{/if}
-          </dd>
-          <dt>Date</dt>
-          <dd class="selectable">{fullDate(details.authorTime)}</dd>
-          {#if details.committerName && details.committerName !== details.authorName}
-            <dt>Committer</dt>
-            <dd class="selectable truncate">{details.committerName}, {fullDate(details.committerTime)}</dd>
-          {/if}
-          <dt>Hash</dt>
-          <dd class="hash">
-            <span class="mono selectable truncate">{details.id}</span>
-            <button class="icon-btn tiny" onclick={copyHash} title="Copy revision hash">
-              <Icon name="copy" size="compact" />
-            </button>
-          </dd>
-          {#if details.parents.length > 0}
-            <dt>{details.parents.length > 1 ? "Parents" : "Parent"}</dt>
-            <dd class="parents">
-              {#each details.parents as parentId (parentId)}
-                {@const loaded = loadedShortId(parentId)}
-                <button
-                  class="parent mono"
-                  disabled={loaded === null}
-                  onclick={() => onSelectCommit(parentId)}
-                  title={loaded === null ? `${parentId} (not loaded yet)` : `Select ${parentId}`}
-                >
-                  {loaded ?? parentId.slice(0, 8)}
-                </button>
-              {/each}
-            </dd>
-          {/if}
-        </dl>
-      </section>
-      <div class="files-header dim">
-        {files.length === 1 ? "1 changed file" : `${files.length} changed files`}
-      </div>
-      <div
-        class="files"
-        role="listbox"
-        tabindex="0"
-        aria-label="Changed files"
-        bind:this={filesEl}
-        onkeydown={onFilesKeydown}
-      >
-        {#each files as file, index (file.path)}
-          <div
-            class="file"
-            class:selected={file.path === selectedPath}
-            role="option"
-            tabindex="-1"
-            aria-selected={file.path === selectedPath}
-            data-index={index}
-            onmousedown={() => (selectedPath = file.path)}
-            ondblclick={() => onOpenInTab?.(file.path)}
-            title={`${file.origPath ? `${file.origPath} -> ${file.path}` : file.path}${onOpenInTab ? "\nDouble-click to open in a tab" : ""}`}
-          >
-            <span class="status status-{file.status}">{statusLetter(file.status)}</span>
-            <FileTypeIcon fileName={file.path} plain={false} />
-            <span class="name truncate" class:deleted={file.status === "deleted"}>{fileName(file.path)}</span>
-            <span class="dir dim truncate"
-              >{file.origPath ? `from ${fileName(file.origPath)} ` : ""}{fileDir(file.path)}</span
-            >
-          </div>
-        {:else}
-          <div class="state dim">No file changes</div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-  <div class="splitter" role="separator" aria-orientation="vertical" onpointerdown={startResize}></div>
-  <div class="right">
+      </Stack>
+      {#if body.rest}
+        <Text size="codeSmall" wrap="pre" selectable element="p">{body.rest}</Text>
+      {/if}
+      <DescriptionList label="Commit" items={facts} value={fact} />
+    </Stack>
+    <SectionTitle variant="caption" title={files.length === 1 ? "1 changed file" : `${files.length} changed files`} />
+    <List
+      items={files}
+      itemKey={(file) => file.path}
+      label="Changed files"
+      height="fill"
+      bind:selected={loader.selectedPath}
+      onactivate={(file) => onOpenInTab?.(file.path)}
+    >
+      {#snippet row(file, state)}
+        <Row selected={state.selected} title={fileTitle(file)} ondblclick={() => onOpenInTab?.(file.path)}>
+          <StatusLetter kind={file.status} />
+          <FileTypeIcon fileName={file.path} plain={false} />
+          <Text truncate strike={file.status === "deleted"} tone={file.status === "deleted" ? "dim" : undefined}>
+            {fileName(file.path)}
+          </Text>
+          <Text size="small" tone="dim" truncate>
+            {file.origPath ? `from ${fileName(file.origPath)} ` : ""}{fileDir(file.path)}
+          </Text>
+        </Row>
+      {/snippet}
+      {#snippet empty()}
+        <EmptyState variant="panel" title="No file changes" titleTone="dim" />
+      {/snippet}
+    </List>
+  {/if}
+{/snippet}
+
+<SplitPane
+  label="Resize the commit details"
+  preset="files"
+  bind:size={leftWidth}
+  bind:extent={width}
+  max={Math.max(220, width - 240)}
+>
+  {#snippet first()}{@render info()}{/snippet}
+  {#snippet second()}
     {#if diffError}
-      <div class="state dim">
-        <Icon name="alert" size="large" />
-        <span>Could not load diff: {diffError}</span>
-      </div>
+      <EmptyState icon="alert" title="Could not load diff: {diffError}" titleTone="dim" />
     {:else if shown}
       {#key shown.key}
         <DiffView
@@ -374,236 +270,9 @@
         />
       {/key}
     {:else if diffLoading}
-      <div class="state dim">Loading diff...</div>
+      <EmptyState title="Loading diff..." titleTone="dim" delayed />
     {:else}
-      <div class="state dim">Select a file to see its changes</div>
+      <EmptyState title="Select a file to see its changes" titleTone="dim" />
     {/if}
-  </div>
-</div>
-
-<style>
-  .details {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    min-width: 0;
-  }
-
-  .left {
-    flex: none;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .splitter {
-    flex: none;
-    width: 5px;
-    margin: 0 -2px;
-    position: relative;
-    z-index: 1;
-    cursor: col-resize;
-    background: linear-gradient(
-      to right,
-      transparent 2px,
-      var(--border-strong) 2px,
-      var(--border-strong) 3px,
-      transparent 3px
-    );
-  }
-
-  .state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .right .state {
-    flex: 1;
-  }
-
-  .info {
-    flex: none;
-    max-height: 45%;
-    overflow: auto;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .subject-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .subject-row .subject {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .open-tab {
-    flex: none;
-    gap: 5px;
-  }
-
-  .subject {
-    font-weight: 600;
-    line-height: 1.4;
-    word-break: break-word;
-  }
-
-  .message {
-    margin: 6px 0 0;
-    font-family: var(--font-ui);
-    font-size: 12.5px;
-    line-height: 1.45;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: var(--text);
-  }
-
-  .meta {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 3px 10px;
-    margin: 10px 0 0;
-    font-size: 12px;
-  }
-
-  .meta dt {
-    color: var(--text-dim);
-  }
-
-  .meta dd {
-    margin: 0;
-    min-width: 0;
-  }
-
-  .hash {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .icon-btn.tiny {
-    height: 20px;
-    min-width: 20px;
-    padding: 0 3px;
-    color: var(--text-dim);
-  }
-
-  .parents {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .parent {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--accent);
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .parent:hover:not(:disabled) {
-    text-decoration: underline;
-  }
-
-  .parent:disabled {
-    color: var(--text-dim);
-    cursor: default;
-  }
-
-  .files-header {
-    flex: none;
-    padding: 6px 12px 4px;
-    font-size: 11.5px;
-  }
-
-  .files {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    outline: none;
-    padding-bottom: 4px;
-  }
-
-  .file {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    height: 24px;
-    padding: 0 12px;
-    cursor: pointer;
-  }
-
-  .file:hover {
-    background: var(--hover);
-  }
-
-  .file.selected {
-    background: var(--selected-inactive);
-  }
-
-  .files:focus-within .file.selected,
-  .files:focus .file.selected {
-    background: var(--selected);
-  }
-
-  .status {
-    flex: none;
-    width: 12px;
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    font-weight: 700;
-    text-align: center;
-    color: var(--accent);
-  }
-
-  .status-added {
-    color: var(--success);
-  }
-
-  .status-deleted {
-    color: var(--danger);
-  }
-
-  .status-renamed,
-  .status-copied {
-    color: color-mix(in srgb, var(--accent) 55%, var(--danger));
-  }
-
-  .status-typechange {
-    color: var(--warning);
-  }
-
-  .name {
-    flex: none;
-    max-width: 70%;
-  }
-
-  .name.deleted {
-    color: var(--text-dim);
-    text-decoration: line-through;
-  }
-
-  .dir {
-    flex: 1;
-    min-width: 0;
-    font-size: 12px;
-  }
-</style>
+  {/snippet}
+</SplitPane>

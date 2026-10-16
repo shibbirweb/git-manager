@@ -4,7 +4,7 @@ This chapter explains how file tabs out of sight give their editors back to save
 
 ## Why we need it
 
-`Workspace.svelte` keeps one `FileView` per file tab and only hides the inactive ones, so switching back is instant and keeps the cursor, scroll and unsaved edits. The price is a full CodeMirror editor, its DOM, blame and change marks for every tab: about 4 MB each, measured ([Measuring Setting Memory](Measuring-Setting-Memory.md)). People keep many tabs open and look at a few. Memory is a feature here (see [Architecture](Architecture.md)), so tabs nobody looks at should not hold it.
+`EditorGroupContent.svelte` keeps one `FileView` per file tab and only hides the inactive ones, so switching back is instant and keeps the cursor, scroll and unsaved edits. The price is a full CodeMirror editor, its DOM, blame and change marks for every tab: about 4 MB each, measured ([Measuring Setting Memory](Measuring-Setting-Memory.md)). People keep many tabs open and look at a few. Memory is a feature here (see [Architecture](Architecture.md)), so tabs nobody looks at should not hold it.
 
 ## How it works
 

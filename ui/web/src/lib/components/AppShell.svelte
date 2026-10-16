@@ -17,6 +17,7 @@
     sidebarLabel?: string;
     rightLabel?: string;
     bottomLabel?: string;
+    bottomHidden?: boolean;
     oncommit?: () => void;
     header?: Snippet;
     banners?: Snippet;
@@ -38,6 +39,7 @@
     sidebarLabel = "Resize sidebar",
     rightLabel = "Resize right sidebar",
     bottomLabel = "Resize bottom panel",
+    bottomHidden = false,
     oncommit,
     header,
     banners,
@@ -80,7 +82,7 @@
       <div class="bar" bind:clientWidth={leftBarWidth}>{@render leftBar()}</div>
     {/if}
     {#if sidebar}
-      <aside class="panel left" style:width="{shownSidebar}px">{@render sidebar()}</aside>
+      <aside class="panel left" aria-label="Left panel" style:width="{shownSidebar}px">{@render sidebar()}</aside>
       <ResizeHandle
         side="left"
         preset="sidebar"
@@ -93,7 +95,7 @@
     {/if}
     <main class="main" bind:clientHeight={mainHeight}>
       <div class="editor">{@render editor()}</div>
-      {#if bottom}
+      {#if bottom && !bottomHidden}
         <ResizeHandle
           side="bottom"
           preset="bottom"
@@ -103,7 +105,17 @@
           onresize={(size) => (bottomHeight = size)}
           oncommit={() => oncommit?.()}
         />
-        <div class="panel bottom" style:height="{shownBottom}px">{@render bottom()}</div>
+      {/if}
+      {#if bottom}
+        <!-- Stays mounted while hidden, so what runs in it (parked terminals) keeps running. -->
+        <section
+          class="panel bottom"
+          class:hidden={bottomHidden}
+          aria-label="Bottom panel"
+          style:height="{shownBottom}px"
+        >
+          {@render bottom()}
+        </section>
       {/if}
     </main>
     {#if right}
@@ -116,7 +128,7 @@
         onresize={(size) => (rightWidth = size)}
         oncommit={() => oncommit?.()}
       />
-      <aside class="panel right" style:width="{shownRightWidth}px">{@render right()}</aside>
+      <aside class="panel right" aria-label="Right panel" style:width="{shownRightWidth}px">{@render right()}</aside>
     {/if}
     {#if rightBar}
       <div class="bar" bind:clientWidth={rightBarWidth}>{@render rightBar()}</div>
@@ -170,6 +182,10 @@
     border-top: 1px solid var(--border-strong);
   }
 
+  .hidden {
+    display: none;
+  }
+
   .main {
     flex: 1;
     min-width: 0;
@@ -203,6 +219,20 @@
     width: auto;
     height: var(--app-shell-panel-gap);
     margin: calc(var(--app-shell-panel-gap) * -1) 0;
+  }
+
+  /* Activity bars are stripes on the window frame, flush with the window edge. */
+  .rounded .bar:first-child {
+    margin-left: calc(var(--app-shell-panel-gap) * -1);
+  }
+
+  .rounded .bar:last-child {
+    margin-right: calc(var(--app-shell-panel-gap) * -1);
+  }
+
+  .rounded .bar > :global(.activity) {
+    background: var(--frame);
+    border: none;
   }
 
   .rounded .main {

@@ -35,6 +35,9 @@ export const pieceDocs: ComponentDoc[] = [
     props: [
       prop("busy", "string", "What is running; shows a spinner with it.", { default: '""' }),
       prop("busyTitle", "string", "A longer tooltip for the busy text."),
+      prop("look", '"flat" | "rounded"', "A line under it, or the window frame's color with rounded panels.", {
+        default: '"flat"',
+      }),
       prop("start", "Snippet", "Left side; shrinks and truncates first.", { required: true }),
       prop("end", "Snippet", "Right side actions."),
     ],

@@ -69,13 +69,16 @@ export const largerDocs: ComponentDoc[] = [
     summary: "A floating list at the top of the window to find and run something, like Go to File.",
     usage:
       "Use for Go to File, Recent Files, Search Everywhere and commands. Filter in the caller (on `query`) and " +
-      "pass the matching items with their match ranges; give sections to group them.",
+      "pass the matching items with their match ranges; give sections to group them. It exports step(by), to " +
+      "move the highlight when the key that opened it is pressed again, and highlighted(), for a key that acts on " +
+      "the highlighted item. Removing the highlighted item keeps the highlight at the same place.",
     aliases: ["Command", "Quick open", "Combobox"],
     props: [
       prop("open", "boolean", "Shown or hidden.", { default: "true", bindable: true }),
-      prop("items", "PaletteItem[] ({ id; title; ranges?; icon?; fileIcon?; badge?; category?; depth?; container?; " +
-        "detail?; folder?; keys?; prefix?; section?; checked?; disabled?; reason?; tone?; dirty? })",
-        "The matching items; see logic/palette.ts.", { required: true, data: true }),
+      prop("items", "PaletteItem[] ({ id; title; ranges?; icon?; fileIcon?; badge?; category?; categoryRanges?; " +
+        "depth?; container?; detail?; folder?; folderRanges?; tooltip?; keys?; prefix?; section?; checked?; " +
+        "disabled?; reason?; tone?; dirty? })",
+        "The matching items; see logic/palette.ts.", { default: "[]", data: true }),
       prop("query", "string", "What was typed.", { default: '""', bindable: true }),
       prop("placeholder", "string", "Shown while empty.", { default: '"Type to search"' }),
       prop("status", "string", "Faint text at the field's end, such as a count.", { default: '""' }),
@@ -89,11 +92,25 @@ export const largerDocs: ComponentDoc[] = [
       }),
       prop("size", '"normal" | "wide"', "Wide for Search Everywhere's longer rows.", { default: '"normal"' }),
       prop("label", "string", "Accessible name.", { required: true }),
-      prop("onpick", "(item: PaletteItem) => void", "An item was picked.", { required: true }),
+      prop("onpick", "(item: PaletteItem, event: KeyboardEvent | MouseEvent) => void", "An item was picked; the " +
+        "event tells whether Cmd (Ctrl) was held, to open to the side."),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "Runs first for keys in the field; preventDefault keeps a " +
+        "key from the palette (switching modes, Tab)."),
       prop("onclose", "() => void", "Esc or a click outside."),
       prop("head", "Snippet", "A title bar above the field, with filters (Recent Files)."),
       prop("scopes", "Snippet", "Scope tabs above the field, such as All, Files, Symbols."),
+      prop("preferred", "string | null", "The item highlighted when the query is new, such as the file before the " +
+        "one on screen.", { default: "null", data: true }),
+      prop("rowEnd", "Snippet<[PaletteItem]>", "Buttons at a row's end, such as Remove; shown while hovered or " +
+        "selected."),
+      prop("fieldStart", "Snippet", "Before the field's icon, such as the chevron that shows a Replace field."),
       prop("fieldEnd", "Snippet", "Toggles at the field's end, such as Match Case."),
+      prop("results", "Snippet", "The caller's own results instead of `items`, such as a virtual List driven by " +
+        "`field` (Search Everywhere); arrows and Enter are left to it."),
+      prop("field", "HTMLInputElement | null", "The search field, to drive a List in `results`.", {
+        default: "null",
+        bindable: true,
+      }),
       prop("replace", "Snippet", "A second row under the field, such as a replace field."),
       prop("footer", "Snippet", "Key hints under the list."),
     ],

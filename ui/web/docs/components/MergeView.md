@@ -11,7 +11,7 @@ Group: Editor. Also known as: Merge, 3-way merge, Conflict.
 ## When to use
 
 Use for resolving a conflicted file. The app computes the chunks (line ranges in each pane) and applies a chunk when
-`onapply` is called; scrolling one pane scrolls the others.
+`onapply` is called; scrolling one pane scrolls the others. Built on MergeFrame.
 
 ## Props
 
@@ -37,7 +37,7 @@ Use for resolving a conflicted file. The app computes the chunks (line ranges in
 
 ## Replaces in the app
 
-- `src/lib/merge/MergeEditor.svelte panes and connectors`
+- `a merge of three plain texts (the app's merge tool uses MergeFrame)`
 
 ## Logic
 

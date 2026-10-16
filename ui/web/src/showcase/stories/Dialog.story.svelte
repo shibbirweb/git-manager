@@ -12,7 +12,7 @@
   import Stack from "$ui/components/Stack.svelte";
   import Text from "$ui/components/Text.svelte";
 
-  let open = $state<"message" | "form" | "split" | "panel" | "prompt" | null>(null);
+  let open = $state<"message" | "form" | "split" | "panel" | "prompt" | "view" | null>(null);
   let filter = $state("");
   let name = $state("");
   let section = $state<string | null>("editor");
@@ -28,6 +28,7 @@
   <Button onclick={() => (open = "split")}>Settings (split)</Button>
   <Button onclick={() => (open = "panel")}>Shortcuts (panel)</Button>
   <Button onclick={() => (open = "prompt")}>Password (icon)</Button>
+  <Button onclick={() => (open = "view")}>Local History (view)</Button>
 </Stack>
 <Dialog open={open === "panel"} variant="panel" title="Keyboard Shortcuts" width="xlarge" onclose={() => (open = null)}>
   {#snippet toolbar()}
@@ -95,4 +96,17 @@
     />
   {/snippet}
   <Stack padding="xl"><Text variant="heading">{section}</Text></Stack>
+</Dialog>
+<Dialog
+  open={open === "view"}
+  variant="view"
+  title="Local History: cart.ts"
+  subtitle="storefront/src/lib"
+  icon="history"
+  onclose={() => (open = null)}
+>
+  <Stack direction="row" grow>
+    <Stack padding="md" surface="alt"><Text>Today</Text></Stack>
+    <Stack grow padding="md"><Text tone="dim">The diff goes here, filling the box.</Text></Stack>
+  </Stack>
 </Dialog>

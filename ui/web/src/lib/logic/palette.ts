@@ -21,12 +21,18 @@ export interface PaletteItem {
   badge?: PaletteBadge;
   /** A command's group, dim before its title ("Git: Pull"). */
   category?: string;
+  /** Matched character ranges in `category`. */
+  categoryRanges?: [number, number][];
   /** Levels of indent in an outline. */
   depth?: number;
   /** A symbol's container, dim after the title ("in Cart"). */
   container?: string;
   detail?: string;
   folder?: string;
+  /** Matched character ranges in `folder`. */
+  folderRanges?: [number, number][];
+  /** The row's tooltip, such as a file's full path. */
+  tooltip?: string;
   keys?: string;
   /** A help row's prefix key, such as ">" for commands. */
   prefix?: string;
@@ -40,4 +46,30 @@ export interface PaletteItem {
   tone?: "added" | "modified" | "conflict" | "deleted";
   /** A file with unsaved changes: a dot after its name. */
   dirty?: boolean;
+}
+
+/** Rows moved by Page Up and Page Down. */
+export const PALETTE_PAGE = 10;
+
+/** How far a key moves a palette's highlight: arrows and Ctrl+N / Ctrl+P one row, Page keys ten; 0 for others. */
+export function paletteStep(event: Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">): number {
+  const ctrlOnly = event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
+  if (event.key === "ArrowDown" || (ctrlOnly && event.key === "n")) {
+    return 1;
+  }
+  if (event.key === "ArrowUp" || (ctrlOnly && event.key === "p")) {
+    return -1;
+  }
+  return event.key === "PageDown" ? PALETTE_PAGE : event.key === "PageUp" ? -PALETTE_PAGE : 0;
+}
+
+/** The next position among `count` pickable rows: single steps wrap around, page steps stop at the ends. */
+export function paletteMove(at: number, count: number, by: number): number {
+  if (count === 0) {
+    return -1;
+  }
+  if (Math.abs(by) === 1) {
+    return (Math.max(0, at) + by + count) % count;
+  }
+  return Math.max(0, Math.min(count - 1, at + by));
 }

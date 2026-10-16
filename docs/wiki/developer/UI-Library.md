@@ -79,4 +79,4 @@ The library's fixed bugs, each with what you saw, why and the fix, are in [UI-Li
 ## Keeping this page in sync
 
 - Update it when the token files, the generators, the rules or the scripts change.
-- Add a parity case (`ui/web/src/parity/cases/`) for every new component that has an app counterpart.
+- Every app screen is on the library now, so the parity list is empty; add a case (`ui/web/src/parity/cases.ts` and a page) only when a new piece must match app markup that is not on the library yet.

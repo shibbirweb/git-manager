@@ -27,6 +27,7 @@
       class:inner-left={edges.left}
       class:inner-top={edges.top}
       class:focused={focused === entry.id}
+      aria-current={focused === entry.id ? "true" : undefined}
       aria-label={groups.length > 1 ? `Editor group ${index + 1}` : "Editor"}
       style:left={box.left}
       style:top={box.top}

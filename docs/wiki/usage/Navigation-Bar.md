@@ -2,7 +2,7 @@
 
 The Navigation Bar lets you move around your project from the keyboard, like the **Navigation Bar** in JetBrains IDEs such as PhpStorm. It is the path above the code: every folder in it opens a small list of what that folder holds, and you can type to search that list.
 
-[TODO:navigation-bar.png]
+![The Navigation Bar with the src folder open](../images/navigation-bar.png)
 
 ## Open it
 

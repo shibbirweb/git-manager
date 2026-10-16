@@ -74,9 +74,16 @@ export const markDocs: ComponentDoc[] = [
         default: '"fill"',
       }),
       prop("title", "string", "A tooltip."),
+      prop("dotAt", '"tiny" | "narrow" | "compact" | "medium" | null', "In a responsive Toolbar or Stack under 220, " +
+        "320, 480 or 600 px, only a dot in its color shows; the word stays in its name (the file bar).", {
+        default: "null",
+      }),
       prop("children", "Snippet", "The word.", { required: true }),
     ],
-    examples: [{ title: "Unsaved", code: '<Pill tone="warning">Unsaved</Pill>' }],
+    examples: [
+      { title: "Unsaved", code: '<Pill tone="warning">Unsaved</Pill>' },
+      { title: "File bar", code: '<Pill tone="accent" title="Modified" dotAt="compact">Modified</Pill>' },
+    ],
     replaces: [".badge in FileView, McpToolsDialog, ColorThemePicker", ".op-badge in RepoSection, CleanRepoList"],
   },
   {
@@ -106,6 +113,7 @@ export const markDocs: ComponentDoc[] = [
       prop("detail", "string", "A small line under the bar, such as when it resets.", { default: '""' }),
       prop("variant", '"memory" | "usage" | "mini"', "The bar's size and track.", { default: '"memory"' }),
       prop("tone", '"accent" | "warning" | "danger"', "The fill's color.", { default: '"accent"' }),
+      prop("title", "string", "A tooltip, such as a process's name and id."),
     ],
     examples: [{ title: "Memory", code: '<Meter label="Web content" value="181 MB" fraction={0.45} />' }],
     replaces: [".process and .bar in StatusBar memory details", ".window, .wide-bar and .bar in AiUsage"],

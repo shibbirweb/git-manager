@@ -62,7 +62,7 @@ Values are computed on demand and never cached, so only the applied CSS variable
 
 Most of the app reads the variables directly, so it follows at once: panels, CodeMirror (its `tok-*` classes), diffs and the merge tool. Code that copies colors out of CSS listens with `watchTheme` (`watch.ts`, a `MutationObserver` on `data-theme`, `data-color-theme` and `data-contrast`):
 
-- The terminal (`TerminalView.svelte`) sets xterm's theme from `currentTerminalTheme()`.
+- The terminal (`terminalInstance.ts`) sets xterm's theme from `currentTerminalTheme()`.
 - The Markdown preview redraws its diagrams. `mermaid.ts` uses mermaid's own themes for the built-ins and the theme's variables for the others.
 
 ### The picker

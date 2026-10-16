@@ -85,13 +85,13 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `terminalCursorStyle` | `"block"` | `block`, `bar`, `underline` | `terminal/options.ts` |
 | `terminalCursorBlink` | true | boolean | `terminal/options.ts` |
 | `terminalScrollback` | 5000 | 1000 to 100000, whole (`clampTerminalScrollback`) | `terminal/options.ts` |
-| `terminalCopyOnSelect` | false | boolean | `TerminalView.svelte` |
+| `terminalCopyOnSelect` | false | boolean | `terminalActions.ts` (`CopyOnSelect`) |
 | `terminalFind` | true | boolean | `terminalAddonPlan`, `keys.ts` (Cmd+F) |
 | `terminalFileLinks` | true | boolean | `terminalAddonPlan`, `TerminalView.svelte` |
 | `terminalGpuAcceleration` | true | boolean | `terminalAddonPlan`, `addons.ts` |
 | `terminalUnicode11` | true | boolean | `terminalAddonPlan`, `addons.ts` |
 | `terminalOptionAsMeta` | false | boolean | `terminal/options.ts` (`macOptionIsMeta`) |
-| `terminalVisualBell` | true | boolean | `TerminalView.svelte` |
+| `terminalVisualBell` | true | boolean | `terminalController.svelte.ts` |
 | `terminalSmoothScrolling` | false | boolean | `terminal/options.ts` (`smoothScrollDuration` 125 ms) |
 | `terminalDropPaths` | true | boolean | `TerminalHost.svelte` |
 
@@ -115,7 +115,7 @@ The MCP server and the memory log are driven only by the main window, never by a
 
 | Key | Default | Accepted | Used by |
 | --- | --- | --- | --- |
-| `confirmDragAndDrop` | true | boolean | `views/files/FileExplorer.svelte` (`moveEntries`) |
+| `confirmDragAndDrop` | true | boolean | `views/files/explorerOps.ts` (`move`) |
 
 The other Layout choices are in `state.json`, below.
 

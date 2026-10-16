@@ -1,5 +1,6 @@
 <!-- A find bar floating over the top right of a view that is not an editor, like the terminal's: the field with its
-     toggles, the match counter, previous, next and close. `problem` (no match, a bad regex) tints it red. -->
+     toggles, the match counter, previous, next and close. `problem` (no match, a bad regex) tints it red. Buttons never
+     take the focus from the field; a caller with its own keys (the terminal's) passes `onkeydown`. -->
 <script lang="ts">
   import Icon from "./Icon.svelte";
   import SearchToggles, { type SearchOptions } from "./SearchToggles.svelte";
@@ -15,6 +16,9 @@
     onnext?: () => void;
     onprevious?: () => void;
     onclose?: () => void;
+    onkeydown?: (event: KeyboardEvent) => void;
+    titles?: Partial<Record<"previous" | "next" | "close", string>>;
+    toggleTitles?: Partial<Record<keyof SearchOptions, string>>;
   }
 
   let {
@@ -28,10 +32,17 @@
     onnext,
     onprevious,
     onclose,
+    onkeydown,
+    titles = {},
+    toggleTitles = {},
   }: Props = $props();
 
+  const keepFocus = (event: MouseEvent) => event.preventDefault();
+
   function keydown(event: KeyboardEvent): void {
-    if (event.key === "Enter") {
+    if (onkeydown) {
+      onkeydown(event);
+    } else if (event.key === "Enter") {
       event.preventDefault();
       (event.shiftKey ? onprevious : onnext)?.();
     } else if (event.key === "Escape") {
@@ -55,16 +66,39 @@
       oninput={() => onsearch?.(query, options)}
       onkeydown={keydown}
     />
-    <SearchToggles bind:options compact onchange={(next) => onsearch?.(query, next)} />
+    <SearchToggles bind:options compact titles={toggleTitles} onchange={(next) => onsearch?.(query, next)} />
   </div>
   <span class="counter" class:problem aria-live="polite">{counter}</span>
-  <button class="icon" type="button" aria-label="Previous Match" disabled={!query} onclick={() => onprevious?.()}>
+  <button
+    class="icon"
+    type="button"
+    aria-label="Previous Match"
+    title={titles.previous ?? "Previous Match"}
+    disabled={!query}
+    onmousedown={keepFocus}
+    onclick={() => onprevious?.()}
+  >
     <Icon name="arrow-up" size="normal" />
   </button>
-  <button class="icon" type="button" aria-label="Next Match" disabled={!query} onclick={() => onnext?.()}>
+  <button
+    class="icon"
+    type="button"
+    aria-label="Next Match"
+    title={titles.next ?? "Next Match"}
+    disabled={!query}
+    onmousedown={keepFocus}
+    onclick={() => onnext?.()}
+  >
     <Icon name="arrow-down" size="normal" />
   </button>
-  <button class="icon" type="button" aria-label="Close" onclick={() => onclose?.()}>
+  <button
+    class="icon"
+    type="button"
+    aria-label="Close"
+    title={titles.close ?? "Close"}
+    onmousedown={keepFocus}
+    onclick={() => onclose?.()}
+  >
     <Icon name="x" size="normal" />
   </button>
 </div>

@@ -56,7 +56,7 @@ After loading, `normalizeEmptyListItems` runs (so an empty list item does not sp
 
 ### Toolbar, keys and clicks
 
-The toolbar's `onRichFormat(action)` runs a TipTap command (`RichMarkdownEditor.run`); Link (Cmd+K) sets or removes a link. Task boxes are TipTap's own checkboxes, styled like the preview's. A click on a link places the caret; Cmd+click follows it (`classifyLink`).
+The toolbar's `onRichFormat(action)` runs a TipTap command (`RichMarkdownEditor.run`); Link (Cmd+K) sets or removes a link. Task boxes are TipTap's checkboxes. A click on a link places the caret; Cmd+click follows it (`classifyLink`).
 
 ### Images and diagrams
 
@@ -72,7 +72,7 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 | `src/lib/markdown/richEditor.ts` | TipTap setup, load, save, actions, node views |
 | `src/lib/markdown/rich/` | The ported core (MIT, `LICENSE-ORCA`): schema, round trip, eligibility, reconcile, HTML placeholders |
 | `src/lib/markdown/richSync.ts` | Front matter split, `sourceEdit` |
-| `src/lib/views/files/RichMarkdownView.svelte` | Mounting, link prompt, clicks, keys, notices, task box styles |
+| `src/lib/views/files/RichMarkdownView.svelte` | Mounting in the library's `RichEditorHost`, link prompt, clicks, keys |
 | `src/lib/views/files/FileView.svelte` | `applyRichEdit`, `richScroll`, mode switches |
 | `vite.config.js` | TipTap entry points in `optimizeDeps` |
 

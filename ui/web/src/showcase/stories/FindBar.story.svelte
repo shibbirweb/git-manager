@@ -33,4 +33,6 @@
     onprevious={() => (current = current > 1 ? current - 1 : total)}
   />
   <Text tone="dim">Type ( with Regex on to see the problem state.</Text>
+  <FindBar query="total" editable={false} counter="Search wrapped" active label="Find in read-only file" />
+  <Text tone="dim">Read-only, with a notice in place of the counter.</Text>
 </Stack>

@@ -4,7 +4,7 @@ Rounded panels give Git Manager the look of the JetBrains **Islands** themes. Th
 
 The setting is **off by default** and works with **every color theme**, not only Islands Light and Islands Dark.
 
-[TODO:rounded-panels.png]
+![The window with rounded panels in a dark theme](../images/rounded-panels.png)
 
 *Git Manager Dark with rounded panels: the Changes sidebar, the editor and the Files panel each sit in their own panel.*
 

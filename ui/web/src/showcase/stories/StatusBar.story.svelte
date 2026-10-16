@@ -18,3 +18,12 @@
     <StatusItem icon="bell" label="Notifications" onclick={() => undefined} />
   {/snippet}
 </StatusBar>
+<StatusBar look="rounded" label="Status bar, rounded">
+  {#snippet start()}
+    <StatusItem icon="folder-git" text="storefront" onclick={() => undefined} />
+    <StatusItem icon="branch" text="main" onclick={() => undefined} />
+  {/snippet}
+  {#snippet end()}
+    <StatusItem icon="memory" text="181 MB" onclick={() => undefined} />
+  {/snippet}
+</StatusBar>

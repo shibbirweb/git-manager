@@ -15,7 +15,8 @@ Use once per window at the bottom. Put StatusItems in `start` and `end`.
 ## Props
 
 - `label` (`string`, default `"Status bar"`): Accessible name.
-- `start` (`Snippet`): Items on the left.
+- `look` (`"flat" | "rounded"`, default `"flat"`): A line on top, or the window frame's color (rounded panels).
+- `start` (`Snippet`): Items on the left; they clip when the window is narrow.
 - `end` (`Snippet`): Items on the right.
 
 ## Example: Branch and memory

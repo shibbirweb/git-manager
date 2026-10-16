@@ -729,7 +729,7 @@ class Shot {
 
   /** A row of the Files panel, by its absolute path (the row's title). */
   fileRow(absolutePath: string): Locator {
-    return this.page.locator(`aside.explorer [role="treeitem"][title="${absolutePath}"]`);
+    return this.page.locator(`aside[aria-label=Right\\ panel] [role="treeitem"][title="${absolutePath}"]`);
   }
 
   /** Expands folders in the Files panel, top down. */
@@ -747,7 +747,7 @@ class Shot {
   /** Opens a file from the Files panel: double-click keeps it, a single click previews it. */
   async openFile(absolutePath: string, options: { preview?: boolean } = {}): Promise<void> {
     // Shots that hide the Files panel open the file the way the panel would.
-    if (!(await this.page.locator("aside.explorer").isVisible())) {
+    if (!(await this.page.locator("aside[aria-label=Right\\ panel]").isVisible())) {
       await this.page.evaluate(
         `(async () => { const { repoStore } = await window.__gmImport("/src/lib/stores/repo.svelte.ts"); await repoStore.openFile(${JSON.stringify(absolutePath)}, { pin: ${options.preview ? "false" : "true"} }); })()`,
       );
@@ -771,7 +771,9 @@ class Shot {
   async editorReady(): Promise<void> {
     // A Markdown file opened in preview mode shows the rich editor instead of CodeMirror.
     await this.page
-      .locator(".file-host:not(.hidden) .cm-content .cm-line, .file-host:not(.hidden) .rich-markdown")
+      .locator(
+        "[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-content .cm-line, [role=group][aria-label=Tab\\ content]:not([hidden]) .rich-markdown",
+      )
       .filter({ visible: true })
       .first()
       .waitFor();
@@ -780,7 +782,9 @@ class Shot {
 
   /** The visible file editor's line that contains this text. */
   editorLine(text: string): Locator {
-    return this.page.locator(".file-host:not(.hidden) .cm-content .cm-line", { hasText: text }).first();
+    return this.page
+      .locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-content .cm-line", { hasText: text })
+      .first();
   }
 
   menu(): Locator {
@@ -952,16 +956,16 @@ async function openApp(
   if (scenario.noWait) {
     return { context, shot };
   }
-  const ready = page.locator(".workspace, .mergetool, [aria-label='Welcome sections']").first();
+  const ready = page.locator(".shell, [role='region'][aria-label^='Merge '], [aria-label='Welcome sections']").first();
   try {
     await ready.waitFor({ timeout: 20000 });
   } catch {
     throw new Error("The app did not answer through the bridge. Is `GM_IPC_BRIDGE=1 bun tauri dev` running?");
   }
   await shot.settle(500);
-  if (await page.locator("aside.explorer").isVisible()) {
+  if (await page.locator("aside[aria-label=Right\\ panel]").isVisible()) {
     // The Files panel lists the workspace once the first directory listing is back.
-    await page.locator('aside.explorer [role="treeitem"]').first().waitFor();
+    await page.locator('aside[aria-label=Right\\ panel] [role="treeitem"]').first().waitFor();
     await shot.settle();
   }
   return { context, shot };
@@ -1000,7 +1004,7 @@ async function collapseRepo(shot: Shot, repoName: string): Promise<void> {
  * scroll the editor sideways to reach the middle of it.
  */
 async function clickLine(shot: Shot, text: string): Promise<void> {
-  const scroller = shot.page.locator(".file-host:not(.hidden) .cm-scroller");
+  const scroller = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-scroller");
   const area = await scroller.boundingBox();
   if (!area) {
     throw new Error(`${shot.name}: no editor on screen`);
@@ -1049,7 +1053,11 @@ async function openBranches(shot: Shot): Promise<void> {
 }
 
 function sidebarRow(shot: Shot, text: string | RegExp): Locator {
-  return shot.page.locator(".sidebar-row", { hasText: text }).first();
+  return shot.page
+    .getByRole("tree", { name: "Branches, tags and stashes" })
+    .getByRole("treeitem")
+    .filter({ hasText: text })
+    .first();
 }
 
 function commitRow(shot: Shot, summary: string): Locator {
@@ -1089,7 +1097,7 @@ define(
   "welcome",
   async (shot) => {
     // Close the folder like a user would; the Welcome screen then lists what was opened before.
-    await shot.page.locator("header .pill").first().click();
+    await shot.page.locator('header button[aria-haspopup="menu"]').first().click();
     await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
     await shot.page.getByRole("navigation", { name: "Welcome sections" }).waitFor();
     await shot.save();
@@ -1115,7 +1123,7 @@ define(
     await shot.settle();
     await shot.expand(join(designSystem, "tokens"));
     await shot.page.mouse.move(640, 400);
-    const explorer = shot.page.locator("aside.explorer");
+    const explorer = shot.page.locator("aside[aria-label=Right\\ panel]");
     await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
   },
   () => ({ dialogFolder: designSystem }),
@@ -1136,7 +1144,7 @@ define("repository-switcher", async (shot) => {
 define("init-repository", async (shot) => {
   await shot.fileRow(notes).click({ button: "right" });
   await shot.menu().waitFor();
-  const explorer = shot.page.locator("aside.explorer");
+  const explorer = shot.page.locator("aside[aria-label=Right\\ panel]");
   const panel = await shot.clipPanel(explorer, [shot.menu()], 24);
   const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
   await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
@@ -1145,7 +1153,7 @@ define("init-repository", async (shot) => {
 define("files-panel", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
   await shot.page.mouse.move(640, 400);
-  const explorer = shot.page.locator("aside.explorer");
+  const explorer = shot.page.locator("aside[aria-label=Right\\ panel]");
   await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
 });
 
@@ -1153,9 +1161,9 @@ define(
   "file-icons",
   async (shot) => {
     await shot.expand(storefront, join(storefront, "src"));
-    await shot.page.locator("aside.explorer img.file-type-image").first().waitFor();
+    await shot.page.locator('aside[aria-label=Right\\ panel] [role="treeitem"] img').first().waitFor();
     await shot.page.mouse.move(640, 400);
-    const explorer = shot.page.locator("aside.explorer");
+    const explorer = shot.page.locator("aside[aria-label=Right\\ panel]");
     await shot.save(await shot.clipPanel(explorer, [explorer.locator('[role="treeitem"]').last()], 24));
   },
   () => ({ settings: { fileIcons: "material" } }),
@@ -1165,7 +1173,7 @@ define("files-context-menu", async (shot) => {
   await shot.expand(storefront, join(storefront, "src"));
   await shot.fileRow(cartTs()).click({ button: "right" });
   await shot.menu().waitFor();
-  const explorer = shot.page.locator("aside.explorer");
+  const explorer = shot.page.locator("aside[aria-label=Right\\ panel]");
   const panel = await shot.clipPanel(explorer, [shot.menu(), explorer.locator('[role="treeitem"]').last()], 24);
   const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
   await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
@@ -1180,7 +1188,7 @@ define("file-ops-menu", async (shot) => {
     .menu()
     .getByRole("menuitem", { name: /^Rename\.\.\./ })
     .hover();
-  const explorer = shot.page.locator("aside.explorer");
+  const explorer = shot.page.locator("aside[aria-label=Right\\ panel]");
   const panel = await shot.clipPanel(explorer, [shot.menu(), explorer.locator('[role="treeitem"]').last()], 24);
   const across = await shot.clipAround([explorer, shot.menu()], { right: 12 });
   await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
@@ -1236,7 +1244,7 @@ async function openManyTabs(shot: Shot): Promise<void> {
 
 /** Pins a tab from its right-click menu. */
 async function pinTabNamed(shot: Shot, fileName: string): Promise<void> {
-  await shot.page.locator(`.tab-strip .tab[data-path$="/${fileName}"]`).first().click({ button: "right" });
+  await shot.page.locator(`.tab-strip .tab[data-tab-id$="/${fileName}"]`).first().click({ button: "right" });
   await shot.menu().getByRole("menuitem", { name: "Pin Tab" }).click();
 }
 
@@ -1278,9 +1286,9 @@ define("split-editor-grid", async (shot) => {
   await menuAction(shot, "window.splitRight");
   await shot.openFile(join(storefront, "src/checkout.ts"));
   await menuAction(shot, "window.splitDown");
-  const groups = shot.page.locator(".editor-group");
-  await groups.nth(1).locator('.tab[data-path$="/pricing.ts"]').click();
-  await groups.nth(0).locator('.tab[data-path$="/cart.ts"]').click();
+  const groups = shot.page.locator('section[aria-label^="Editor"]');
+  await groups.nth(1).locator('.tab[data-tab-id$="/pricing.ts"]').click();
+  await groups.nth(0).locator('.tab[data-tab-id$="/cart.ts"]').click();
   await shot.page.mouse.move(640, 790);
   await shot.save();
 });
@@ -1291,8 +1299,8 @@ define(
     await shot.openFile(cartTs());
     await clickLine(shot, "setQuantity(productId");
     await shot.page.keyboard.type("// Quantities below one remove the line.\n");
-    await shot.page.locator(".file-host:not(.hidden) .badge.unsaved").waitFor();
-    await shot.page.locator("header .pill").first().click();
+    await shot.page.locator('[role=group][aria-label=Tab\\ content]:not([hidden]) [title="Unsaved changes"]').waitFor();
+    await shot.page.locator('header button[aria-haspopup="menu"]').first().click();
     await shot.menu().getByRole("menuitem", { name: "Close Folder" }).click();
     const dialog = shot.page.getByRole("dialog", { name: "Unsaved Changes" });
     await dialog.waitFor();
@@ -1301,7 +1309,7 @@ define(
     // Keep the edit: the folder stays open with the tab still unsaved.
     await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
     await dialog.waitFor({ state: "hidden" });
-    await shot.page.locator(".file-host:not(.hidden) .badge.unsaved").waitFor();
+    await shot.page.locator('[role=group][aria-label=Tab\\ content]:not([hidden]) [title="Unsaved changes"]').waitFor();
   },
   () => ({ settings: { currentLineBlame: false } }),
 );
@@ -1321,7 +1329,7 @@ define(
   async (shot) => {
     await collapseRepo(shot, "payments-api");
     await shot.page.mouse.move(640, 300);
-    await shot.save(shot.page.locator("aside.sidebar"));
+    await shot.save(shot.page.locator("aside[aria-label=Left\\ panel]"));
   },
   () => ({ viewport: { width: 1280, height: 560 }, state: { sidebarWidth: 360 } }),
 );
@@ -1355,7 +1363,7 @@ define(
     await box.click();
     await shot.page.keyboard.type("Cart: set line quantities");
     await shot.page.mouse.move(640, 300);
-    await shot.save(shot.page.locator("aside.sidebar"));
+    await shot.save(shot.page.locator("aside[aria-label=Left\\ panel]"));
   },
   () => ({
     viewport: { width: 1280, height: 720 },
@@ -1423,7 +1431,7 @@ define("operation-banner", async (shot) => {
   await banner.waitFor();
   await shot.page.mouse.move(640, 500);
   await shot.save(
-    await shot.clipAround([shot.page.locator("header.header"), shot.page.locator(".workspace > .banner")]),
+    await shot.clipAround([shot.page.locator("header.header"), shot.page.locator(".shell > .notice.banner")]),
   );
 });
 
@@ -1470,7 +1478,7 @@ define("blame-inline", async (shot) => {
   await clickLine(shot, "useDiscount(code");
   const line = shot.editorLine("useDiscount(code");
   await line.locator(".cm-inline-blame").waitFor();
-  const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+  const editor = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-editor");
   const lineBox = await line.boundingBox();
   const editorBox = await editor.boundingBox();
   if (!lineBox || !editorBox) {
@@ -1487,7 +1495,9 @@ define(
     await shot.openFile(cartTs());
     await shot.page.getByRole("toolbar", { name: "File actions" }).getByRole("button", { name: "Blame" }).click();
     await shot.page
-      .locator(".file-host:not(.hidden) .cm-blame-gutter .cm-blame-cell", { hasText: "Maya Chen" })
+      .locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-blame-gutter .cm-blame-cell", {
+        hasText: "Maya Chen",
+      })
       .first()
       .waitFor();
     await shot.settle(500);
@@ -1563,8 +1573,8 @@ define(
     await sidebarRow(shot, /^\s*Tags/).click();
     await shot.settle();
     await shot.page.mouse.move(640, 790);
-    const sidebar = shot.page.locator("aside.sidebar");
-    await shot.save(await shot.clipPanel(sidebar, [sidebar.locator(".sidebar-row").last()], 16));
+    const sidebar = shot.page.locator("aside[aria-label=Left\\ panel]");
+    await shot.save(await shot.clipPanel(sidebar, [sidebar.getByRole("treeitem").last()], 16));
   },
   branchesScenario,
 );
@@ -1575,8 +1585,8 @@ define(
     await openBranches(shot);
     await sidebarRow(shot, "tax-rates").click({ button: "right" });
     await shot.menu().waitFor();
-    const sidebar = shot.page.locator("aside.sidebar");
-    const panel = await shot.clipPanel(sidebar, [shot.menu(), sidebar.locator(".sidebar-row").last()], 16);
+    const sidebar = shot.page.locator("aside[aria-label=Left\\ panel]");
+    const panel = await shot.clipPanel(sidebar, [shot.menu(), sidebar.getByRole("treeitem").last()], 16);
     const across = await shot.clipAround([sidebar, shot.menu()], { right: 16 });
     await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });
   },
@@ -1591,7 +1601,7 @@ define(
     await stash.hover();
     await shot.settle();
     const section = sidebarRow(shot, /^\s*Stashes/);
-    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+    const sidebar = await shot.page.locator("aside[aria-label=Left\\ panel]").boundingBox();
     const sectionBox = await section.boundingBox();
     const stashBox = await stash.boundingBox();
     if (!sidebar || !sectionBox || !stashBox) {
@@ -1610,7 +1620,7 @@ define(
     await shot.openFile(join(storefront, "README.md"));
     await shot.openFile(cartTs());
     await menuAction(shot, "file.newFile");
-    const editor = shot.page.locator(".file-host:not(.hidden) .cm-content");
+    const editor = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-content");
     await editor.waitFor();
     await editor.click();
     await shot.page.keyboard.type(
@@ -1701,11 +1711,14 @@ define(
     await shot.openFile(appTs());
     await shot.page.locator(".cm-conflict-actions").first().waitFor();
     await shot.page.mouse.move(640, 790);
-    const host = shot.page.locator(".file-host:not(.hidden)");
+    const host = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden])");
     await shot.save(
-      await shot.clipAround([host.locator(".file-bar"), host.getByRole("toolbar", { name: "Conflict actions" })], {
-        bottom: 4,
-      }),
+      await shot.clipAround(
+        [host.getByRole("toolbar", { name: "File actions" }), host.getByRole("toolbar", { name: "Conflict actions" })],
+        {
+          bottom: 4,
+        },
+      ),
     );
   },
   () => ({ settings: { currentLineBlame: false } }),
@@ -1734,7 +1747,10 @@ define("empty-main", async (shot) => {
   await shot.page.mouse.move(640, 790);
   const main = await shot.clipAround([shot.page.locator("main.main")]);
   const content = await shot.clipAround(
-    [shot.page.locator("main.main .empty .logo"), shot.page.locator("main.main .empty .actions")],
+    [
+      shot.page.locator('main.main [aria-label="Start"] > *').first(),
+      shot.page.locator('main.main [aria-label="Start"] > *').last(),
+    ],
     56,
   );
   // From the top, so the Navigation Bar above the welcome screen is in the shot.
@@ -1764,7 +1780,7 @@ define(
 define(
   "scan-repositories",
   async (shot) => {
-    const pill = shot.page.locator("header .pill").first();
+    const pill = shot.page.locator('header button[aria-haspopup="menu"]').first();
     const pillBox = await pill.boundingBox();
     await pill.click({ position: { x: 12, y: (pillBox?.height ?? 28) - 3 } });
     await shot.menu().getByRole("menuitem", { name: "Scan for Repositories" }).waitFor();
@@ -1848,7 +1864,8 @@ define("status-bar-clear-cache", async (shot) => {
   const button = shot.page.getByRole("button", { name: "Clear Cache" });
   await button.waitFor();
   await button.hover();
-  await shot.save(await shot.clipAround([shot.page.locator("footer.status-bar .memory")], { top: 40, left: 160 }));
+  const memory = shot.page.locator("footer.status-bar").getByRole("button", { name: /^Memory / });
+  await shot.save(await shot.clipAround([memory, button], { top: 40, left: 160 }));
 });
 
 define("help-menu", async (shot) => {
@@ -1867,7 +1884,7 @@ define("help-menu", async (shot) => {
 define(
   "mergetool-mode",
   async (shot) => {
-    await shot.page.locator(".mergetool .cm-editor").nth(2).waitFor();
+    await shot.page.locator("[role='region'][aria-label^='Merge '] .cm-editor").nth(2).waitFor();
     await shot.settle(600);
     await shot.page.mouse.move(640, 790);
     await shot.save();
@@ -2180,8 +2197,8 @@ async function openScripts(shot: Shot): Promise<void> {
 
 function scriptRow(shot: Shot, name: string): Locator {
   return scriptsPanel(shot)
-    .locator(".row.script")
-    .filter({ has: shot.page.locator(".name", { hasText: new RegExp(`^${name}$`) }) })
+    .locator('[role="treeitem"][aria-level="2"]')
+    .filter({ has: shot.page.getByText(name, { exact: true }) })
     .first();
 }
 
@@ -2193,7 +2210,7 @@ define(
     await shot.page.mouse.move(900, 500);
     await shot.settle();
     // The activity bar down to its Scripts button, next to the panel.
-    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+    const sidebar = await shot.page.locator("aside[aria-label=Left\\ panel]").boundingBox();
     const header = await shot.page.locator("header.header").boundingBox();
     if (!sidebar || !header) {
       throw new Error("scripts-panel: no sidebar");
@@ -2208,7 +2225,7 @@ define(
   async (shot) => {
     await openScripts(shot);
     const source = scriptsPanel(shot).locator('[role="treeitem"]', { hasText: "package.json" }).first();
-    await source.locator(".node-badge").click();
+    await source.locator('button[title$="Click to change."]').click();
     await shot.menu().waitFor();
     await shot.settle();
     await shot.page.mouse.move(900, 700);
@@ -2222,7 +2239,10 @@ define(
   async (shot) => {
     await openScripts(shot);
     await scriptRow(shot, "check").dblclick();
-    await bottomPanel(shot).locator(".run-view .xterm-rows", { hasText: "Process finished" }).first().waitFor();
+    await bottomPanel(shot)
+      .locator('[aria-label="Run output"] .xterm-rows', { hasText: "Process finished" })
+      .first()
+      .waitFor();
     await shot.settle(500);
     await shot.page.mouse.move(900, 300);
     await shot.save(bottomPanel(shot));
@@ -2251,7 +2271,9 @@ async function openSearch(shot: Shot, opener: string, query: string, replace = f
   }
   // Indexing and searching report in the status at the top right.
   for (let attempt = 0; attempt < 100; attempt++) {
-    const status = (await popup.locator(".status").innerText()).trim();
+    // The palette draws its status only while it has one.
+    const statusEl = popup.locator(".status");
+    const status = (await statusEl.count()) > 0 ? (await statusEl.first().innerText()).trim() : "";
     if (!/^(Indexing|Searching)/.test(status)) {
       break;
     }
@@ -2270,7 +2292,7 @@ define(
   async (shot) => {
     await shot.openFile(cartTs());
     const popup = await openSearch(shot, "everywhere", "cart");
-    await popup.locator(".section", { hasText: "Files" }).waitFor();
+    await popup.locator(".section-title", { hasText: "Files" }).first().waitFor();
     await shot.page.mouse.move(5, 790);
     await savePopup(shot, popup);
   },
@@ -2284,7 +2306,7 @@ define(
     await shot.openFile(join(storefront, "src/catalog.ts"));
     await shot.openFile(cartTs());
     const popup = await openSearch(shot, "files", "");
-    await popup.locator(".section", { hasText: "Recent Files" }).waitFor();
+    await popup.locator(".section-title", { hasText: "Recent Files" }).first().waitFor();
     await shot.page.mouse.move(5, 790);
     await savePopup(shot, popup);
   },
@@ -2314,11 +2336,13 @@ define(
   async (shot) => {
     await shot.openFile(cartTs());
     await menuAction(shot, "edit.navigationBar");
-    const popup = shot.page.locator('.nav-popup[role="dialog"]');
+    const popup = shot.page.locator('[role="dialog"][aria-label^="Navigation bar"]');
     await popup.locator(".row.selected").waitFor();
     await shot.settle(300);
     await shot.page.mouse.move(5, 790);
-    await shot.save(await shot.clipAround([shot.page.locator(".file-bar").first(), popup], 12));
+    await shot.save(
+      await shot.clipAround([shot.page.getByRole("toolbar", { name: "File actions" }).first(), popup], 12),
+    );
   },
   () => ({ settings: { currentLineBlame: false } }),
 );
@@ -2329,11 +2353,13 @@ define(
   async (shot) => {
     await shot.openFile(cartTs());
     await menuAction(shot, "edit.navigationBar");
-    const popup = shot.page.locator('.nav-popup[role="dialog"]');
+    const popup = shot.page.locator('[role="dialog"][aria-label^="Navigation bar"]');
     await popup.locator(".row.selected").waitFor();
     await shot.settle(300);
     await shot.page.mouse.move(5, 300);
-    await shot.save(await shot.clipAround([shot.page.locator(".file-view.bar-bottom .file-bar").first(), popup], 12));
+    await shot.save(
+      await shot.clipAround([shot.page.getByRole("toolbar", { name: "File actions" }).first(), popup], 12),
+    );
   },
   () => ({ settings: { currentLineBlame: false, fileToolbar: "bottom" } }),
 );
@@ -2344,7 +2370,7 @@ define(
   async (shot) => {
     await shot.openFile(cartTs());
     await menuAction(shot, "edit.navigationBar");
-    const popup = shot.page.locator('.nav-popup[role="dialog"]');
+    const popup = shot.page.locator('[role="dialog"][aria-label^="Navigation bar"]');
     await popup.locator(".row.selected").waitFor();
     await shot.settle(300);
     await shot.page.mouse.move(5, 790);
@@ -2391,7 +2417,9 @@ define(
     await shot.openFile(cartTs());
     await clickLine(shot, "export interface CartLine");
     await shot.page.keyboard.press("Meta+r");
-    const bar = shot.page.locator('.file-host:not(.hidden) [role="search"][aria-label="Find in file"]');
+    const bar = shot.page.locator(
+      '[role=group][aria-label=Tab\\ content]:not([hidden]) [role="search"][aria-label="Find in file"]',
+    );
     await bar.waitFor();
     const find = bar.getByRole("textbox", { name: "Find" });
     await find.fill("line");
@@ -2399,7 +2427,7 @@ define(
     await bar.getByRole("textbox", { name: "Replace" }).fill("entry");
     await shot.settle(300);
     await shot.page.mouse.move(640, 790);
-    const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+    const editor = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-editor");
     const box = await editor.boundingBox();
     if (!box) {
       throw new Error("find-replace-bar: no editor");
@@ -2414,7 +2442,7 @@ define(
   async (shot) => {
     await shot.openFile(join(designSystem, "Makefile"));
     await shot.page.mouse.move(640, 790);
-    const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+    const editor = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-editor");
     const box = await editor.boundingBox();
     if (!box) {
       throw new Error("editor-whitespace: no editor");
@@ -2435,12 +2463,16 @@ define(
     await shot.page.keyboard.press("End");
     await shot.page.keyboard.press("Enter");
     await shot.page.keyboard.type("this.disc");
-    const completion = shot.page.locator(".file-host:not(.hidden) .cm-tooltip-autocomplete");
+    const completion = shot.page.locator(
+      "[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-tooltip-autocomplete",
+    );
     await completion.waitFor();
     await shot.settle(300);
-    const editor = shot.page.locator(".file-host:not(.hidden) .cm-editor");
+    const editor = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-editor");
     const box = await editor.boundingBox();
-    const gutter = await shot.page.locator(".file-host:not(.hidden) .cm-gutters").boundingBox();
+    const gutter = await shot.page
+      .locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-gutters")
+      .boundingBox();
     if (!box || !gutter) {
       throw new Error("editor-features: no editor");
     }
@@ -2468,10 +2500,10 @@ async function openPreview(
 ): Promise<{ x: number; y: number; width: number; height: number }> {
   await shot.expand(notes);
   await shot.fileRow(join(notes, fileName)).dblclick();
-  await shot.page.locator(`.file-host:not(.hidden) .media ${ready}`).waitFor();
+  await shot.page.locator(`[role=group][aria-label=Tab\\ content]:not([hidden]) .media ${ready}`).waitFor();
   await shot.settle(1200);
   await shot.page.mouse.move(640, 790);
-  const box = await shot.page.locator(".file-host:not(.hidden)").boundingBox();
+  const box = await shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden])").boundingBox();
   if (!box) {
     throw new Error(`${fileName}: no preview`);
   }
@@ -2564,7 +2596,9 @@ const checkoutMd = () => join(storefront, "docs/checkout.md");
 
 async function openMarkdown(shot: Shot): Promise<void> {
   await shot.openFile(checkoutMd());
-  await shot.page.locator('.file-host:not(.hidden) [role="toolbar"][aria-label="Markdown"]').waitFor();
+  await shot.page
+    .locator('[role=group][aria-label=Tab\\ content]:not([hidden]) [role="toolbar"][aria-label="Markdown"]')
+    .waitFor();
   await shot.settle(500);
 }
 
@@ -2572,10 +2606,14 @@ async function openMarkdown(shot: Shot): Promise<void> {
 async function scrollLineToTop(shot: Shot, text: string): Promise<void> {
   await clickLine(shot, text);
   await shot.page.evaluate((needle) => {
-    const scroller = document.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-scroller");
-    const line = [...document.querySelectorAll<HTMLElement>(".file-host:not(.hidden) .cm-content .cm-line")].find(
-      (element) => (element.textContent ?? "").includes(needle),
+    const scroller = document.querySelector<HTMLElement>(
+      "[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-scroller",
     );
+    const line = [
+      ...document.querySelectorAll<HTMLElement>(
+        "[role=group][aria-label=Tab\\ content]:not([hidden]) .cm-content .cm-line",
+      ),
+    ].find((element) => (element.textContent ?? "").includes(needle));
     if (scroller && line) {
       scroller.scrollTop += line.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 24;
     }
@@ -2595,7 +2633,7 @@ define(
   "markdown-split",
   async (shot) => {
     await openMarkdown(shot);
-    await shot.page.locator(".file-host:not(.hidden) table").first().waitFor();
+    await shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) table").first().waitFor();
     await shot.settle(500);
     await shot.page.mouse.move(640, 790);
     await shot.save(shot.page.locator("main.main"));
@@ -2608,13 +2646,17 @@ define(
   async (shot) => {
     await openMarkdown(shot);
     await clickLine(shot, "## Steps");
-    const toolbar = shot.page.locator('.file-host:not(.hidden) [role="toolbar"][aria-label="Markdown"]');
+    const toolbar = shot.page.locator(
+      '[role=group][aria-label=Tab\\ content]:not([hidden]) [role="toolbar"][aria-label="Markdown"]',
+    );
     await toolbar.getByRole("button", { name: "Heading", exact: true }).click();
     await shot.menu().waitFor();
     await shot.settle();
     await shot.page.mouse.move(640, 790);
     // The view switch sits in the path bar above the formatting row.
-    const modes = shot.page.locator('.file-host:not(.hidden) [role="radiogroup"][aria-label="Markdown view"]');
+    const modes = shot.page.locator(
+      '[role=group][aria-label=Tab\\ content]:not([hidden]) [role="radiogroup"][aria-label="Markdown view"]',
+    );
     await shot.save(await shot.clipAround([toolbar, modes, shot.menu()], 10));
   },
   () => markdownScenario(),
@@ -2624,7 +2666,7 @@ define(
   "markdown-rich-editor",
   async (shot) => {
     await openMarkdown(shot);
-    const rich = shot.page.locator(".file-host:not(.hidden) .rich-markdown");
+    const rich = shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .rich-markdown");
     await rich.waitFor();
     await rich.locator("table").first().waitFor();
     await shot.settle(600);
@@ -2637,7 +2679,9 @@ define(
     }
     // The preview follows the source position, which can leave it scrolled down: show the top.
     await shot.page.evaluate(() => {
-      let element: HTMLElement | null = document.querySelector<HTMLElement>(".file-host:not(.hidden) .rich-markdown");
+      let element: HTMLElement | null = document.querySelector<HTMLElement>(
+        "[role=group][aria-label=Tab\\ content]:not([hidden]) .rich-markdown",
+      );
       while (element) {
         element.scrollTop = 0;
         element = element.parentElement;
@@ -2655,7 +2699,7 @@ define(
   async (shot) => {
     await openMarkdown(shot);
     await scrollLineToTop(shot, "## Flow");
-    await shot.page.locator(".file-host:not(.hidden) .md-mermaid svg").first().waitFor();
+    await shot.page.locator("[role=group][aria-label=Tab\\ content]:not([hidden]) .md-mermaid svg").first().waitFor();
     await shot.settle(600);
     await shot.page.mouse.move(640, 790);
     await shot.save(shot.page.locator("main.main"));
@@ -3161,7 +3205,7 @@ define(
       .getByRole("region", { name: "Staged", exact: true })
       .getByRole("button")
       .first();
-    const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+    const sidebar = await shot.page.locator("aside[aria-label=Left\\ panel]").boundingBox();
     const down = await shot.clipAround([header, staged], { top: 4, bottom: 4 });
     if (!sidebar) {
       throw new Error("repo-actions-row: no sidebar");
@@ -3173,7 +3217,7 @@ define(
 
 /** Starts a clip at the sidebar's left edge, so it does not cut through the activity bar. */
 async function fromSidebarEdge(shot: Shot, clip: { x: number; y: number; width: number; height: number }) {
-  const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+  const sidebar = await shot.page.locator("aside[aria-label=Left\\ panel]").boundingBox();
   if (!sidebar) {
     return clip;
   }
@@ -3187,7 +3231,7 @@ define(
     await collapseRepo(shot, "payments-api");
     const menu = await openRepoMenu(shot, "storefront");
     const submenu = await openSubmenu(shot, 0, "Branch");
-    const top = shot.page.locator("aside.sidebar .head").first();
+    const top = shot.page.locator("aside[aria-label=Left\\ panel] .head").first();
     await shot.save(
       await fromSidebarEdge(
         shot,
@@ -3339,10 +3383,11 @@ define(
     await list.waitFor();
     await shot.settle(500);
     await shot.clearToasts().catch(() => undefined);
+    // The row of a failed command: its status dot is named "Failed...".
     await list
-      .locator(".entry", { has: shot.page.locator(".status.failed, .status.error") })
+      .getByRole("button")
+      .filter({ has: shot.page.locator('[aria-label^="Failed"]') })
       .first()
-      .locator(".row")
       .click();
     await shot.settle(400);
     await shot.page.mouse.move(640, 200);
@@ -3378,7 +3423,7 @@ define("shelf-panel", async (shot) => {
     });
     await inApp(shot, `(await imp("/src/lib/shelf/shelfActions.svelte.ts")).showShelf();`);
     const list = shot.page.getByRole("tree", { name: "Shelved changes" });
-    const first = list.locator(".entry", { hasText: "Cart quantities" }).first();
+    const first = list.getByRole("treeitem").filter({ hasText: "Cart quantities" }).first();
     await first.waitFor();
     await first.click();
     await shot.settle(300);
@@ -3462,11 +3507,11 @@ define(
       const heading = sidebarRow(shot, /^\s*Worktrees/);
       await heading.waitFor();
       await heading.scrollIntoViewIfNeeded();
-      const last = shot.page.locator("aside.sidebar .sidebar-row", { hasText: "locked" }).last();
+      const last = shot.page.locator("aside[aria-label=Left\\ panel] [role=treeitem]", { hasText: "locked" }).last();
       await last.waitFor();
       await heading.hover();
       await shot.settle();
-      const sidebar = await shot.page.locator("aside.sidebar").boundingBox();
+      const sidebar = await shot.page.locator("aside[aria-label=Left\\ panel]").boundingBox();
       const stashes = await sidebarRow(shot, /^\s*Stashes/).boundingBox();
       const lastBox = await last.boundingBox();
       if (!sidebar || !lastBox || !stashes) {
@@ -3503,7 +3548,7 @@ function aiScenario(extra: Scenario = {}): Scenario {
 const AGENT_ROW = '[role="treeitem"]:not(:has(button))';
 
 function aiPanel(shot: Shot): Locator {
-  return shot.page.locator("aside.explorer");
+  return shot.page.locator("aside[aria-label=Right\\ panel]");
 }
 
 /** Starts the stand-in agent in a worktree row of the AI panel, through the row's + menu. */
@@ -3609,7 +3654,7 @@ define(
   async (shot) => {
     const dialog = await openSettings(shot, "AI");
     await dialog.getByText("1 of 9 found on your PATH.").waitFor();
-    const head = dialog.locator(".agent-head", { hasText: "Claude Code" });
+    const head = dialog.locator("[aria-expanded]", { hasText: "Claude Code" }).first();
     await head.click();
     await dialog.getByLabel("Claude Code extra arguments").fill("--model opus");
     await dialog.getByLabel("Claude Code extra arguments").press("Tab");
@@ -3618,7 +3663,7 @@ define(
     await shot.settle();
     await shot.page.mouse.move(5, 790);
     await shot.save(
-      await shot.clipAround([head, dialog.locator(".agent.expanded .actions")], {
+      await shot.clipAround([head, dialog.getByRole("button", { name: "Reset to Default", exact: true })], {
         top: 8,
         left: 12,
         right: 12,
@@ -3642,8 +3687,8 @@ define(
       .nth(1)
       .waitFor();
     await newTerminal(shot);
-    const memory = shot.page.locator("footer.status-bar .memory");
-    await memory.getByRole("button", { name: /^Memory / }).click();
+    const memory = shot.page.locator("footer.status-bar").getByRole("button", { name: /^Memory / });
+    await memory.click();
     const terminals = shot.page.locator('[aria-label="Terminal memory"]');
     await terminals.locator(".row").nth(2).waitFor();
     await shot.page.mouse.move(5, 300);
@@ -3714,7 +3759,7 @@ define(
     await row.click({ button: "right" });
     await shot.menu().waitFor();
     await shot.settle();
-    const sidebar = shot.page.locator("aside.sidebar");
+    const sidebar = shot.page.locator("aside[aria-label=Left\\ panel]");
     const panel = await shot.clipPanel(sidebar, [shot.menu(), row], 16);
     const across = await shot.clipAround([sidebar, shot.menu()], { right: 12 });
     await shot.save({ x: across.x, width: across.width, y: panel.y, height: panel.height });

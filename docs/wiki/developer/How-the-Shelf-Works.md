@@ -83,10 +83,10 @@ Conflicts come back as `OpOutcome { conflicts: true }`, so `repoStore.runOp` ope
 | `src-tauri/src/shelf/patch.rs` | Splitting patches, reading ids and hunks, rebuilding sides |
 | `src-tauri/src/git/cli.rs` | `run_with_env`, `run_bytes_with_env`, `run_with_stdin`, `run_raw` |
 | `src/lib/shelf/ShelveDialog.svelte` | The Shelve Changes dialog |
-| `src/lib/shelf/ShelfPanel.svelte` | The Shelf tab of the bottom panel |
+| `src/lib/shelf/ShelfPanel.svelte` | The Shelf tab of the bottom panel: a library `List` (role tree) of `Row`s |
 | `src/lib/shelf/ShelfDiffTab.svelte` | The read-only "Shelved:" tab |
 | `src/lib/shelf/shelfActions.svelte.ts` | Open dialog, Show Shelf, unshelve, rename, delete, `shelfState.version` |
-| `src/lib/shelf/shelfModel.ts` | Default name, candidates, letters, selection |
+| `src/lib/shelf/shelfModel.ts` | Default name, candidates, the tree's rows, selected files |
 | `src/lib/views/changes/repoMenu.ts`, `RepoSection.svelte` | The Stash submenu items and the file menu item |
 | `src/lib/menu/menuSpec.ts`, `menuActions.ts` | Git > Uncommitted Changes items |
 
@@ -111,7 +111,7 @@ Conflicts come back as `OpOutcome { conflicts: true }`, so `repoStore.runOp` ope
 - `src-tauri/src/commands/shelf.rs`: a round trip of every kind of change (modified, added, deleted, renamed, binary, staged and unstaged); keep in working tree; a partial unshelve keeps the other files; an unshelve onto changed lines stops with conflicts and keeps the shelf; refusing nothing, conflicts and escaping paths; shelving before the first commit; Show Diff rebuilding both sides; rename and delete; the raw listing parser.
 - `src-tauri/src/shelf/store.rs`: ids are checked before touching files, names are trimmed and required, older JSON without optional fields still reads.
 - `src-tauri/src/shelf/patch.rs`: splitting, ids, binary and hunks, missing final newlines, new files, CRLF line endings.
-- `src/lib/shelf/shelfModel.test.ts`: default names, labels, candidates and the file selection.
+- `src/lib/shelf/shelfModel.test.ts`: default names, labels, candidates, the rows and the selected files.
 
 ## Keeping this page in sync
 

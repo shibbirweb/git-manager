@@ -10,8 +10,9 @@ Group: Editor. Also known as: Find, Search bar.
 
 ## When to use
 
-Use above an editor. Enter goes to the next match, Shift+Enter the previous, Esc closes. Read-only editors pass
-`editable={false}`, which hides Replace.
+Use above an editor. Enter goes to the next match, Shift+Enter the previous, Esc closes, unless the caller passes
+`onkeydown` to run its own keys. Buttons never take the focus from the fields. Read-only editors pass
+`editable={false}`, which hides Replace. `focus(field, select)` puts the caret in a field.
 
 ## Props
 
@@ -23,8 +24,16 @@ Use above an editor. Enter goes to the next match, Shift+Enter the previous, Esc
 - `editable` (`boolean`, default `true`): Offer Replace (hidden for read-only editors).
 - `current` (`number`, default `0`): The current match, from 1.
 - `total` (`number`, default `0`): How many matches.
-- `problem` (`string | null`, default `null`): Shown in red instead of the counter, e.g. `Bad regex`.
+- `counter` (`string | null`, default `null`): Words instead of the counted `2 of 5`, e.g. a notice.
+- `active` (`boolean | null`, default `null`): Enables the step and replace buttons; null means `total > 0`.
+- `problem` (`string | null`, default `null`): Tints the field red and is its tooltip, e.g. `Bad regex`.
+- `label` (`string`, default `"Find in file"`): The bar's accessible name.
+- `titles` (`FindBarTitles`, default `{}`): Tooltips per button (previous, next, selectAll, replace, ...).
+- `toggleTitles` (`Partial<Record<keyof SearchOptions, string>>`, default `{}`): Tooltips of the toggles.
 - `onsearch` (`(query: string, options: SearchOptions) => void`): The query or a toggle changed.
+- `onreplaceinput` (`(replacement: string) => void`): The replace text changed.
+- `ontogglereplace` (`(open: boolean) => void`): The chevron opened or closed Replace.
+- `onkeydown` (`(event: KeyboardEvent, field: FindField) => void`): Runs instead of the bar's own keys.
 - `onnext` (`() => void`): Next match (Enter or the down arrow).
 - `onprevious` (`() => void`): Previous match (Shift+Enter or the up arrow).
 - `onreplace` (`() => void`): Replace the current match.

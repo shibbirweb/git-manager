@@ -16,6 +16,17 @@ export const panelDocs: ComponentDoc[] = [
       prop("onready", "(element: HTMLDivElement) => void", "The element to mount the editor on.", {
         required: true,
       }),
+      prop("variant", '"editor" | "preview"', "The rich editor's page, or the read-only preview's (no editor rules).", {
+        default: '"editor"',
+      }),
+      prop("page", "HTMLDivElement | null", "The scrolling page, to keep its scroll or focus it while read-only.", {
+        default: "null",
+        bindable: true,
+      }),
+      prop("onclick", "(event: MouseEvent) => void", "A click in the page, such as on a link."),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "A key in the page, such as Cmd+S."),
+      prop("onauxclick", "(event: MouseEvent) => void", "A middle click in the page, such as on a link."),
+      prop("onscroll", "(event: Event) => void", "The page scrolled, such as to scroll the source with it."),
     ],
     examples: [{ title: "Rich", code: '<RichEditorHost label="README.md" onready={(element) => mount(element)} />' }],
     replaces: ["src/lib/views/files/RichMarkdownView.svelte frame and styles"],
@@ -40,6 +51,13 @@ export const panelDocs: ComponentDoc[] = [
       prop("onnext", "() => void", "Enter or the down button."),
       prop("onprevious", "() => void", "Shift+Enter or the up button."),
       prop("onclose", "() => void", "Esc or the close button."),
+      prop("onkeydown", "(event: KeyboardEvent) => void", "Runs instead of the bar's own Enter and Esc."),
+      prop("titles", 'Partial<Record<"previous" | "next" | "close", string>>', "Tooltips, with their keys.", {
+        default: "{}",
+      }),
+      prop("toggleTitles", "Partial<Record<keyof SearchOptions, string>>", "Tooltips of the toggles.", {
+        default: "{}",
+      }),
     ],
     examples: [
       {

@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SearchRow } from "./fileSearchModel";
-import {
-  emptySource,
-  firstSelectable,
-  keepSelectedKey,
-  moveSelectable,
-  type PopupResults,
-  scrollToShow,
-  SECTION_LIMIT,
-  shownLabel,
-  tabRows,
-  visibleRange,
-} from "./popupRows";
+import { emptySource, type PopupResults, SECTION_LIMIT, shownLabel, tabRows } from "./popupRows";
 import type { SymbolRow } from "./symbolSearchModel";
 import { KIND_INFO } from "./symbolSearchModel";
 import { EMPTY_TEXT } from "./textSearchModel";
@@ -79,51 +68,6 @@ describe("tabRows", () => {
       results({ classes: { rows: many, matched: 10 }, members: { rows: many, matched: 10 } }),
     );
     expect(new Set(rows.map((row) => row.key)).size).toBe(rows.length);
-  });
-});
-
-describe("selection", () => {
-  const rows = tabRows(
-    "all",
-    results({ classes: { rows: many.slice(0, 2), matched: 2 }, files: { rows: [file("/w/x.ts")], matched: 1 } }),
-  );
-  // [header, file, header, c0, c1]
-
-  it("skips headings and wraps single steps", () => {
-    expect(firstSelectable(rows)).toBe(1);
-    expect(moveSelectable(rows, 1, 1)).toBe(3);
-    expect(moveSelectable(rows, 3, 1)).toBe(4);
-    expect(moveSelectable(rows, 4, 1)).toBe(1);
-    expect(moveSelectable(rows, 1, -1)).toBe(4);
-    expect(moveSelectable(rows, 1, 10)).toBe(4);
-    expect(moveSelectable([], 0, 1)).toBe(0);
-  });
-
-  it("keeps the selected row by key when rows refresh", () => {
-    const next = tabRows(
-      "all",
-      results({ classes: { rows: many.slice(1, 3), matched: 2 }, files: { rows: [file("/w/y.ts")], matched: 1 } }),
-    );
-    // [header, y, header, c1, c2]: c1 moves from 4 to 3, the gone file falls back to the first row.
-    expect(keepSelectedKey(rows, 4, next)).toBe(3);
-    expect(keepSelectedKey(rows, 1, next)).toBe(1);
-    expect(keepSelectedKey([], 0, next)).toBe(1);
-  });
-});
-
-describe("virtual list", () => {
-  it("renders the visible rows plus some overscan", () => {
-    expect(visibleRange(0, 260, 26, 1000)).toEqual({ start: 0, end: 17 });
-    expect(visibleRange(2600, 260, 26, 1000)).toEqual({ start: 94, end: 117 });
-    expect(visibleRange(2600, 260, 26, 20)).toEqual({ start: 20, end: 20 });
-    expect(visibleRange(0, 0, 26, 1000).end).toBeGreaterThan(16);
-  });
-
-  it("scrolls just enough to show the selected row", () => {
-    expect(scrollToShow(1, 500, 260, 26, 1)).toBe(0);
-    expect(scrollToShow(5, 0, 260, 26, 1)).toBe(0);
-    expect(scrollToShow(20, 0, 260, 26, 1)).toBe(20 * 26 + 26 - 260);
-    expect(scrollToShow(3, 200, 260, 26, 1)).toBe(78);
   });
 });
 

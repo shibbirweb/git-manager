@@ -15,13 +15,23 @@ export const overlayDocs: ComponentDoc[] = [
     props: [
       prop("open", "boolean", "Shown or hidden.", { default: "false", bindable: true }),
       prop("title", "string", "The heading; also the dialog's accessible name.", { required: true }),
-      prop("variant", '"message" | "form" | "split" | "panel"', "A question and buttons, the Git dialogs' form, " +
-        "Settings' side column and content, or a large panel with a scrolling body (Shortcuts, What's New).", {
+      prop("variant", '"message" | "form" | "split" | "panel" | "view"', "A question and buttons, the Git dialogs' " +
+        "form, Settings' side column and content, a large panel with a scrolling body (Shortcuts, What's New), or a " +
+        "tall centered box whose body is one view without padding (Local History: a list beside a diff).", {
         default: '"message"',
       }),
       prop("width", '"small" | "normal" | "medium" | "large" | "xlarge" | "full"', "460, 520, 560, 620, 760 or " +
-        "1200 px; split dialogs have their own size.", { default: "small (message), normal (form), large (panel)" }),
+        "1200 px; split dialogs have their own size.", {
+        default: "small (message), normal (form), large (panel), full (view)",
+      }),
       prop("dismissible", "boolean", "Esc and a click on the dim area close it.", { default: "true" }),
+      prop(
+        "urgent",
+        "boolean",
+        "A question a running command waits on, such as a git sign-in: it shows over every other dialog and keeps " +
+          "its keys from the window's shortcuts.",
+        { default: "false" },
+      ),
       prop("movable", "boolean", "Drag the title to move it; double-click the title centers it.", { default: "false" }),
       prop("subtitle", "string", "A dim line under the title.", { default: '""' }),
       prop("icon", "IconName | null", "An icon on a tinted tile before the title.", { default: "null" }),
@@ -182,5 +192,30 @@ export const overlayDocs: ComponentDoc[] = [
     ],
     logic: ["toastModel.ts"],
     replaces: ["Toasts.svelte (the store stays toast.svelte.ts)"],
+  },
+  {
+    name: "WindowLayer",
+    group: "Overlays",
+    summary: "A modal page over the whole window, with no dimming or frame; its content fills it as a column.",
+    usage:
+      "Use for a tool that takes the whole window for a while, such as the merge tool: a Toolbar with its title " +
+      "and a close button, then the view. The content handles Esc, so leaving can ask first.",
+    aliases: ["Full-screen overlay", "Modal page"],
+    props: [
+      prop("label", "string", "Accessible name, such as the file being merged.", { required: true }),
+      prop("children", "Snippet", "A Toolbar and a growing view.", { required: true }),
+    ],
+    rules: ["Give the content its own close button: there is no dim area to click and Esc is the content's."],
+    examples: [
+      {
+        title: "The merge tool",
+        code:
+          '<WindowLayer label="Merge src/app.ts">\n' +
+          '  <Toolbar variant="tab" label="Merge">...</Toolbar>\n' +
+          "  <MergeEditor {doc} />\n" +
+          "</WindowLayer>",
+      },
+    ],
+    replaces: ['<div class="overlay" role="dialog"> covering the window in merge/MergeView.svelte'],
   },
 ];

@@ -44,7 +44,7 @@ The result lives in `blameField`, a StateField. `fromInfo` in `blameModel.ts` ke
 
 | Place | Target |
 | --- | --- |
-| File editor (`FileView.svelte`) | The working text, reloaded after saves, commits and outside changes |
+| File editor (`FileView.svelte`, blame in `fileGitInfo.ts`) | The working text, reloaded after saves, commits and outside changes |
 | Changes diff (`ChangesDiff.svelte`) | The right side: the working tree or the staged text |
 | Log commit diff (`CommitDetails.svelte`) | The file at that commit (`revision` is the commit id), skipped when the new side is empty, as after a deletion |
 

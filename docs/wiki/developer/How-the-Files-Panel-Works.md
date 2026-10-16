@@ -8,11 +8,11 @@ People want to browse and open files in the app, like VS Code's explorer, and se
 
 ## How it works
 
-`FileExplorer.svelte` keeps loaded folders in `children`, a map keyed by the **absolute** folder path, and the open folders in `expanded`. Expanding a folder calls `loadDir`:
+`ExplorerTree` (`explorerTree.svelte.ts`) keeps loaded folders in `children`, keyed by the **absolute** folder path, and open folders in `expanded`, as nodes for the library's `Tree`. Opening a folder loads it:
 
 ```mermaid
 sequenceDiagram
-  participant Tree as FileExplorer.svelte
+  participant Tree as explorerTree.svelte.ts
   participant Api as api.ts
   participant Cmd as commands/files.rs
   participant Fs as git/files.rs
@@ -76,12 +76,14 @@ The panel is shown by `settings.explorerOpen`. The Files icon in `RightActivityB
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileExplorer.svelte` | Tree state, lazy loading, virtual rows, keyboard and context menu |
+| `src/lib/views/files/FileExplorer.svelte` | The panel: header, the library Tree, clicks and keys |
+| `src/lib/views/files/explorerTree.svelte.ts` | Loaded folders, open folders, selection, the Tree's nodes |
+| `src/lib/views/files/explorerLook.ts` | Row tones and marks |
 | `src/lib/views/files/tones.ts` | `marksByPath`, `tonesByPath`, `deletedByFolder` |
 | `src/lib/views/files/reveal.ts` | `revealLabel`, `terminalFolderFor` |
-| `src/lib/views/files/locate.ts` | `foldersToOpen`, `centeredScrollTop` for Select Opened File |
+| `src/lib/views/files/locate.ts` | `foldersToOpen` for Select Opened File (the Tree centers the row) |
 | `src/lib/views/RightActivityBar.svelte` | The Files toggle on the right edge |
-| `src/lib/views/Workspace.svelte`, `workspaceShortcuts.ts` | Panel widths and the Cmd+B shortcut |
+| `src/lib/views/Workspace.svelte` (on the library's `AppShell`), `workspaceShortcuts.ts` | Panel widths and the Cmd+B shortcut |
 | `src/lib/ui/ResizeHandle.svelte` | The drag handle that resizes the side panels |
 | `src-tauri/src/commands/files.rs` | `list_directory` and `read_worktree_file` |
 | `src-tauri/src/git/files.rs` | `list_dir`, ignore checks, `read_file` |

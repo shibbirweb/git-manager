@@ -24,6 +24,9 @@ Use over terminals and previews. The editor's own find bar (with replace) is Fin
 - `onnext` (`() => void`): Enter or the down button.
 - `onprevious` (`() => void`): Shift+Enter or the up button.
 - `onclose` (`() => void`): Esc or the close button.
+- `onkeydown` (`(event: KeyboardEvent) => void`): Runs instead of the bar's own Enter and Esc.
+- `titles` (`Partial<Record<"previous" | "next" | "close", string>>`, default `{}`): Tooltips, with their keys.
+- `toggleTitles` (`Partial<Record<keyof SearchOptions, string>>`, default `{}`): Tooltips of the toggles.
 
 ## Example: Terminal
 

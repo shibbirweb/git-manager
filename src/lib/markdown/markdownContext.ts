@@ -1,0 +1,34 @@
+// What the Markdown preview and the rich editor both need from the app: whether the page is dark (diagrams), how
+// links resolve from a document, and which images may load (only from inside the workspace).
+import { repoStore } from "$lib/stores/repo.svelte";
+import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
+import { markdownImageUrl } from "$lib/views/files/previewScheme";
+import type { LinkContext } from "./links";
+
+export function isDarkPage(): boolean {
+  const theme = document.documentElement.getAttribute("data-theme");
+  if (theme === "dark" || theme === "light") {
+    return theme === "dark";
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+/** Links of the document at `documentPath` resolve from its repository (or folder) root. */
+export function documentLinkContext(documentPath: string): LinkContext {
+  const folders = repoStore.workspace?.folders ?? [];
+  const rootPath =
+    locateAbsolute(repoStore.repos, documentPath)?.repo.root ?? folderFor(folders, documentPath)?.root ?? "/";
+  return {
+    documentPath,
+    rootPath,
+    isInWorkspace: (absolutePath) => folderFor(folders, absolutePath) !== null,
+  };
+}
+
+/** An image's preview URL; images outside the workspace never load. */
+export async function workspaceImageUrl(imagePath: string): Promise<string> {
+  if (!folderFor(repoStore.workspace?.folders ?? [], imagePath)) {
+    throw new Error("Image outside the workspace");
+  }
+  return markdownImageUrl(imagePath);
+}

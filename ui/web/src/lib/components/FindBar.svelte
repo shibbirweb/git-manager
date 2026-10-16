@@ -1,28 +1,13 @@
 <!-- The editor's find and replace bar: a chevron that shows Replace, the find field with its toggles, the match
-     counter with previous and next, and close. `problem` (such as a bad regex) tints the field red. -->
+     counter with previous and next, and close. `problem` (such as a bad regex) tints the field red. Buttons never
+     take the focus from the fields; callers with their own keys pass `onkeydown`. -->
 <script lang="ts">
+  import { tick } from "svelte";
+  import { FIND_BAR_TITLES, findCounter, findKey, type FindBarProps as Props, type FindField } from "../logic/findBar";
   import { componentTokens } from "../styles/tokens";
+  import type { IconName } from "../icons";
   import Icon from "./Icon.svelte";
-  import SearchToggles, { type SearchOptions } from "./SearchToggles.svelte";
-
-  interface Props {
-    query?: string;
-    replacement?: string;
-    options?: SearchOptions;
-    showReplace?: boolean;
-    editable?: boolean;
-    current?: number;
-    total?: number;
-    problem?: string | null;
-    onsearch?: (query: string, options: SearchOptions) => void;
-    onnext?: () => void;
-    onprevious?: () => void;
-    onreplace?: () => void;
-    onreplaceall?: () => void;
-    onselectall?: () => void;
-    onexclude?: () => void;
-    onclose?: () => void;
-  }
+  import SearchToggles from "./SearchToggles.svelte";
 
   let {
     query = $bindable(""),
@@ -32,8 +17,16 @@
     editable = true,
     current = 0,
     total = 0,
+    counter = null,
+    active = null,
     problem = null,
+    label = "Find in file",
+    titles = {},
+    toggleTitles = {},
     onsearch,
+    onreplaceinput,
+    ontogglereplace,
+    onkeydown,
     onnext,
     onprevious,
     onreplace,
@@ -50,84 +43,107 @@
   const narrow = $derived(within(componentTokens.findBar.compactBelow));
   const shrink = $derived(within(componentTokens.findBar.shrinkBelow));
   const tiny = $derived(within(componentTokens.findBar.tinyBelow));
+  let findInput = $state<HTMLInputElement | null>(null);
+  let replaceInput = $state<HTMLInputElement | null>(null);
+  const tip = $derived({ ...FIND_BAR_TITLES, ...titles });
+  const shownCounter = $derived(counter ?? problem ?? findCounter(query, current, total));
+  const enabled = $derived(active ?? total > 0);
+  const replaceOpen = $derived(editable && showReplace);
 
-  const counter = $derived(problem ?? (query ? (total ? `${current} of ${total}` : "No results") : ""));
+  /** Puts the focus in a field once it is drawn, its text selected when `select`. */
+  export function focus(field: FindField, select: boolean): void {
+    void tick().then(() => {
+      const input = field === "replace" ? replaceInput : findInput;
+      input?.focus();
+      if (select) {
+        input?.select();
+      }
+    });
+  }
 
-  function keydown(event: KeyboardEvent): void {
-    if (event.key === "Enter") {
+  function keydown(event: KeyboardEvent, field: FindField): void {
+    const action = onkeydown ? null : findKey(event);
+    onkeydown?.(event, field);
+    if (action) {
       event.preventDefault();
-      (event.shiftKey ? onprevious : onnext)?.();
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      onclose?.();
+      ({ next: onnext, previous: onprevious, close: onclose })[action]?.();
     }
+  }
+
+  function toggleReplace(): void {
+    showReplace = !showReplace;
+    ontogglereplace?.(showReplace);
   }
 </script>
 
-<div class="find-bar" class:narrow class:shrink class:tiny role="search" bind:clientWidth={barWidth}>
+{#snippet tool(kind: string, title: string, run: () => void, disabled: boolean, name: string, icon?: IconName)}
+  <button
+    class={kind}
+    class:text={!icon}
+    type="button"
+    aria-label={name}
+    {title}
+    {disabled}
+    onmousedown={(event) => event.preventDefault()}
+    onclick={run}
+  >
+    {#if icon}
+      <Icon name={icon} size="normal" />
+    {:else}
+      {name}
+    {/if}
+  </button>
+{/snippet}
+
+<div class="find-bar" class:narrow class:shrink class:tiny role="search" aria-label={label} bind:clientWidth={barWidth}>
   <div class="grid" class:with-chevron={editable}>
     {#if editable}
-      <button
-        class="icon chevron"
-        type="button"
-        aria-label="Toggle Replace"
-        aria-expanded={showReplace}
-        onclick={() => (showReplace = !showReplace)}
-      >
-        <Icon name={showReplace ? "chevron-down" : "chevron-right"} size="normal" />
-      </button>
+      {@const name = replaceOpen ? "Hide Replace Field" : "Show Replace Field"}
+      {@const icon = replaceOpen ? "chevron-down" : "chevron-right"}
+      {@render tool("", replaceOpen ? name : tip.showReplace, toggleReplace, false, name, icon)}
     {/if}
-    <div class="field find" class:problem={problem !== null}>
+    <div class="field find" class:problem={problem !== null} title={problem ?? undefined}>
       <span class="magnifier"><Icon name="search" size="medium" /></span>
       <input
+        bind:this={findInput}
         bind:value={query}
         placeholder="Find"
         aria-label="Find"
+        aria-invalid={problem !== null}
         spellcheck="false"
+        autocomplete="off"
         oninput={() => onsearch?.(query, options)}
-        onkeydown={keydown}
+        onkeydown={(event) => keydown(event, "find")}
       />
-      <SearchToggles bind:options compact onchange={(next) => onsearch?.(query, next)} />
+      <SearchToggles bind:options compact titles={toggleTitles} onchange={(next) => onsearch?.(query, next)} />
     </div>
     <div class="tools">
-      <span class="counter" class:problem={problem !== null}>{counter}</span>
-      <button class="icon" type="button" aria-label="Previous match" disabled={!total} onclick={() => onprevious?.()}>
-        <Icon name="arrow-up" size="normal" />
-      </button>
-      <button class="icon" type="button" aria-label="Next match" disabled={!total} onclick={() => onnext?.()}>
-        <Icon name="arrow-down" size="normal" />
-      </button>
+      <span class="counter" class:problem={problem !== null} aria-live="polite">{shownCounter}</span>
+      {@render tool("", tip.previous, () => onprevious?.(), !enabled, "Previous Occurrence", "arrow-up")}
+      {@render tool("", tip.next, () => onnext?.(), !enabled, "Next Occurrence", "arrow-down")}
       {#if onselectall}
-        <button
-          class="icon select-all"
-          type="button"
-          aria-label="Select All Occurrences"
-          title="Select All Occurrences"
-          disabled={!total}
-          onclick={() => onselectall()}
-        >
-          <Icon name="carets" size="normal" />
-        </button>
+        {@render tool("select-all", tip.selectAll, onselectall, !enabled, "Select All Occurrences", "carets")}
       {/if}
     </div>
-    <button class="icon close" type="button" aria-label="Close" onclick={() => onclose?.()}>
-      <Icon name="x" size="normal" />
-    </button>
-    {#if editable && showReplace}
+    {@render tool("close", tip.close, () => onclose?.(), false, "Close", "x")}
+    {#if replaceOpen}
       <div class="field replace">
-        <input bind:value={replacement} placeholder="Replace" aria-label="Replace" spellcheck="false" />
+        <input
+          bind:this={replaceInput}
+          bind:value={replacement}
+          placeholder="Replace"
+          aria-label="Replace"
+          spellcheck="false"
+          autocomplete="off"
+          oninput={() => onreplaceinput?.(replacement)}
+          onkeydown={(event) => keydown(event, "replace")}
+        />
       </div>
       <div class="tools replace-tools">
-        <button class="text" type="button" disabled={!total} onclick={() => onreplace?.()}>Replace</button>
-        <button class="text" type="button" disabled={!total} onclick={() => onreplaceall?.()}>Replace All</button>
+        {@render tool("", tip.replace, () => onreplace?.(), !enabled, "Replace")}
+        {@render tool("", tip.replaceAll, () => onreplaceall?.(), !enabled, "Replace All")}
         {#if onexclude}
-          <button
-            class="text exclude"
-            type="button"
-            title="Exclude: skip this match and go to the next"
-            disabled={!total}
-            onclick={() => onexclude()}>Exclude</button
-          >
+          {@render tool("exclude", tip.exclude, onexclude, !enabled, "Exclude")}
         {/if}
       </div>
     {/if}
@@ -147,15 +163,15 @@
 
   .grid {
     display: grid;
-    grid-template-columns: 0 minmax(var(--find-bar-field-min-width), var(--find-bar-field-max-width)) 1fr auto;
+    --first: 0;
+    --field-min: var(--find-bar-field-min-width);
+    grid-template-columns: var(--first) minmax(var(--field-min), var(--find-bar-field-max-width)) 1fr auto;
     align-items: center;
     gap: var(--find-bar-row-gap) var(--space-3);
   }
 
   .with-chevron {
-    grid-template-columns:
-      var(--find-bar-button-size) minmax(var(--find-bar-field-min-width), var(--find-bar-field-max-width))
-      1fr auto;
+    --first: var(--find-bar-button-size);
   }
 
   .field {
@@ -226,12 +242,12 @@
     color: var(--danger);
   }
 
-  .icon,
-  .text {
+  button {
     flex: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-width: var(--find-bar-button-size);
     height: var(--find-bar-button-size);
     padding: 0;
     border: none;
@@ -242,28 +258,18 @@
     cursor: pointer;
   }
 
-  .icon {
-    width: var(--find-bar-button-size);
-  }
-
   .text {
     padding: 0 var(--space-3);
   }
 
-  .icon:hover:not(:disabled),
-  .text:hover:not(:disabled) {
+  button:hover:not(:disabled) {
     background: var(--hover);
     color: var(--text);
   }
 
-  .icon:disabled,
-  .text:disabled {
+  button:disabled {
     opacity: 0.4;
     cursor: default;
-  }
-
-  .chevron {
-    grid-column: 1;
   }
 
   .close {
@@ -284,10 +290,8 @@
     display: none;
   }
 
-  .tiny .with-chevron {
-    grid-template-columns:
-      var(--find-bar-button-size) minmax(var(--find-bar-tiny-field-min-width), var(--find-bar-field-max-width))
-      1fr auto;
+  .tiny .grid {
+    --field-min: var(--find-bar-tiny-field-min-width);
   }
 
   .tiny .text {

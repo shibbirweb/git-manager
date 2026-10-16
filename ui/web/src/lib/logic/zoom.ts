@@ -59,3 +59,9 @@ export function syncedScroll(from: ScrollBox, to: ScrollBox): { left: number; to
     top: Math.round(top * Math.max(0, to.scrollHeight - to.clientHeight)),
   };
 }
+
+/** An image's head line: its dimensions once measured, then the caller's size and type. */
+export function mediaInfo(natural: NaturalSize | null, info: string): string {
+  const size = natural ? `${natural.width} x ${natural.height} px` : "";
+  return [size, info].filter(Boolean).join(", ");
+}

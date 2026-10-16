@@ -1,16 +1,17 @@
-<!-- The editor's tab strip. `scroll` keeps one row that scrolls sideways (the wheel scrolls it too), `wrap` adds
-     rows, `single` shows a lone tab as a centered name. The active tab has the editor color and an accent line,
-     gray when the group does not have the focus, and is kept in view. A + button (onnew) follows the tabs; with
-     onreorder, a dragged tab follows the pointer while the others slide aside (logic/tabDrag.ts). -->
+<!-- The editor's tab strip: one row that scrolls sideways (`scroll`, the wheel too), rows (`wrap`) or a lone centered
+     name (`single`), flat or `rounded`; the active tab stays in view. A + (onnew) follows the tabs; with onreorder a
+     dragged tab follows the pointer while the others slide aside (logic/tabDrag.ts); `fixed` tabs never move. -->
 <script lang="ts">
   import { tick, type Snippet } from "svelte";
   import { DRAG_THRESHOLD, movedItems } from "../logic/reorder";
   import { positions, slideFrom } from "../logic/slide";
   import {
     beginDrag,
+    contentPoint,
     dropGap,
     edgeScrollStep,
     gapIndex,
+    tabBoxes,
     wheelScroll,
     type TabDrag,
     type TabPress,
@@ -24,10 +25,12 @@
     label: string;
     focused?: boolean;
     layout?: "scroll" | "wrap" | "single";
+    look?: "flat" | "rounded";
     newLabel?: string;
     onselect?: (id: string) => void;
     ondblclick?: (id: string) => void;
     onclose?: (id: string) => void;
+    onunpin?: (id: string) => void;
     oncontextmenu?: (id: string, event: MouseEvent) => void;
     onnew?: (event: MouseEvent) => void;
     onreorder?: (from: number, to: number) => void;
@@ -40,10 +43,12 @@
     label,
     focused = true,
     layout = "scroll",
+    look = "flat",
     newLabel = "New tab",
     onselect,
     ondblclick,
     onclose,
+    onunpin,
     oncontextmenu,
     onnew,
     onreorder,
@@ -67,36 +72,23 @@
     return [...(stripEl?.querySelectorAll<HTMLElement>("[data-tab-id]") ?? [])];
   }
 
-  /** A viewport point in the strip's scrolled content coordinates. */
-  function contentPoint(clientX: number, clientY: number): { x: number; y: number } {
-    const rect = stripEl?.getBoundingClientRect();
-    return {
-      x: clientX - (rect?.left ?? 0) + (stripEl?.scrollLeft ?? 0),
-      y: clientY - (rect?.top ?? 0) + (stripEl?.scrollTop ?? 0),
-    };
-  }
-
-  function down(event: PointerEvent, index: number, id: string): void {
+  function down(event: PointerEvent, index: number, tab: EditorTabData): void {
     const onClose = (event.target as Element | null)?.closest(".tab-close");
-    if (onreorder && event.button === 0 && layout !== "single" && !onClose && tabs.length > 1) {
-      press = { id, from: index, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
+    if (onreorder && event.button === 0 && layout !== "single" && !onClose && !tab.fixed && tabs.length > 1) {
+      press = { id: tab.id, from: index, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
     }
   }
 
   function startDrag(current: TabPress): TabDrag {
-    const boxes = tabElements().map((element) => {
-      const rect = element.getBoundingClientRect();
-      const corner = contentPoint(rect.left, rect.top);
-      return { left: corner.x, right: corner.x + rect.width, top: corner.y, bottom: corner.y + rect.height };
-    });
-    return beginDrag(current, boxes, contentPoint(current.startX, current.startY));
+    const boxes = tabBoxes(stripEl, tabElements());
+    return beginDrag(current, boxes, contentPoint(stripEl, current.startX, current.startY));
   }
 
   function follow(clientX: number, clientY: number): void {
     if (!drag) {
       return;
     }
-    const point = contentPoint(clientX, clientY);
+    const point = contentPoint(stripEl, clientX, clientY);
     const gap = dropGap(drag.boxes, point.x, point.y, wrapped);
     if (gap === drag.gap) {
       drag = { ...drag, clientX, clientY };
@@ -163,7 +155,7 @@
     if (!current || !element || !stripEl) {
       return;
     }
-    const point = contentPoint(current.clientX, current.clientY);
+    const point = contentPoint(stripEl, current.clientX, current.clientY);
     let left = point.x - current.grabX;
     if (!wrapped) {
       left = Math.max(0, Math.min(left, stripEl.scrollWidth - element.offsetWidth));
@@ -201,7 +193,7 @@
 
 <div
   bind:this={stripEl}
-  class="tab-strip {layout}"
+  class="tab-strip {layout} {look}"
   class:dragging={drag !== null}
   role="tablist"
   aria-label={label}
@@ -216,14 +208,16 @@
       {tab}
       {focused}
       {layout}
+      {look}
       active={tab.id === active}
       lifted={drag?.id === tab.id}
       closable={onclose !== undefined}
       onselect={() => select(tab.id)}
       ondblclick={ondblclick && (() => ondblclick(tab.id))}
       onclose={() => onclose?.(tab.id)}
+      onunpin={onunpin && (() => onunpin(tab.id))}
       oncontextmenu={(event) => oncontextmenu?.(tab.id, event)}
-      onpointerdown={(event) => down(event, tabs.indexOf(tab), tab.id)}
+      onpointerdown={(event) => down(event, tabs.indexOf(tab), tab)}
     />
   {/each}
   {#if onnew}
@@ -266,6 +260,20 @@
 
   .dragging {
     cursor: grabbing;
+  }
+
+  /* Rounded look: rounded tabs on the editor color with room around them. */
+  .rounded {
+    align-items: center;
+    gap: var(--tab-strip-rounded-gap);
+    padding: 0 var(--tab-strip-rounded-padding-x);
+    background: var(--editor-bg);
+    border-bottom-color: var(--border);
+  }
+
+  .rounded.wrap {
+    padding: var(--tab-strip-rounded-wrap-padding-y) var(--tab-strip-rounded-padding-x);
+    row-gap: var(--tab-strip-rounded-row-gap);
   }
 
   .new-tab {

@@ -1,7 +1,8 @@
 <!-- A file-tree style list: folders open and close, rows indent by depth, and only rows in view are drawn. Click
      selects (Cmd and Shift add with `multiple`), double-click or Enter opens a file, arrow keys move like the Files
      panel. Rows can carry a decoration, be renamed in place, and be dragged onto folders with the pointer (HTML5
-     drag never reaches a Tauri page): Option copies, a hovered folder opens, the list scrolls near its edges. -->
+     drag never reaches a Tauri page): Option copies, a hovered folder opens, the list scrolls near its edges. A drag
+     from outside (dragFromOutside) gets the same target, hover and scrolling. -->
 <script lang="ts" generics="N extends TreeNode">
   import type { Snippet } from "svelte";
   import type { IconName } from "../icons";
@@ -11,6 +12,7 @@
   import { treeKey, treeRows, type TreeDecoration, type TreeNode } from "../logic/treeModel";
   import { modifiersOf, selectRow } from "../logic/treeSelect";
   import DragGhost from "./DragGhost.svelte";
+  import EmptyState from "./EmptyState.svelte";
   import TreeRow from "./TreeRow.svelte";
   import VirtualList from "./VirtualList.svelte";
 
@@ -31,6 +33,13 @@
     iconFor?: (node: N, open: boolean) => IconName | null;
     decorate?: (node: N) => TreeDecoration | null;
     detail?: Snippet<[N]>;
+    customIcon?: Snippet<[N, boolean]>;
+    /** Shown when there are no rows; the empty tree still takes drops. */
+    empty?: string;
+    canDrag?: (node: N) => boolean;
+    onclick?: (node: N, event: MouseEvent) => void;
+    onkeydown?: (event: KeyboardEvent) => void;
+    onbackgroundmenu?: (event: MouseEvent) => void;
     onopen?: (node: N) => void;
     onrename?: (node: N, name: string) => void;
     ondrop?: (ids: string[], target: N | null, mode: DropMode) => void;
@@ -53,6 +62,12 @@
     iconFor = (node: N) => (node.children ? "folder" : "file"),
     decorate = () => null,
     detail,
+    customIcon,
+    empty = "",
+    canDrag = () => true,
+    onclick,
+    onkeydown: onkey,
+    onbackgroundmenu,
     onopen,
     onrename,
     ondrop,
@@ -79,6 +94,40 @@
   });
   const drag = $derived(dragger.drag);
   $effect(() => dragger.cancel);
+  /** The folder a drag would drop into: its row and everything shown inside it are tinted. */
+  const tinted = $derived(drag?.target ?? null);
+
+  /** In the tinted folder: the folder itself and everything shown inside it. */
+  function inTinted(id: string): boolean {
+    for (let current: string | null = id; current !== null; current = parents.get(current) ?? null) {
+      if (current === tinted) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Gives the tree the keyboard focus, such as after a dialog it opened closes. */
+  export function focus(): void {
+    treeEl?.focus();
+  }
+
+  /** A drag from outside the tree (files from the Finder) is at this viewport point. */
+  export function dragFromOutside(x: number, y: number, ids: string[]): void {
+    dragger.outside(x, y, ids);
+  }
+
+  /** It was dropped: the folder it goes into, null for the top level, undefined for nowhere. */
+  export function endOutsideDrag(): string | null | undefined {
+    return dragger.endOutside();
+  }
+
+  /** It left the tree, or something else took it. */
+  export function cancelOutsideDrag(): void {
+    if (dragger.drag?.outside) {
+      dragger.cancel();
+    }
+  }
 
   function findNode(id: string, list: readonly N[] = nodes): N | undefined {
     for (const node of list) {
@@ -109,6 +158,11 @@
     }
   }
 
+  function clickRow(node: N, event: MouseEvent): void {
+    click(node.id, event);
+    onclick?.(node, event);
+  }
+
   function activate(index: number): void {
     const row = rows[index];
     if (row?.isFolder) {
@@ -119,7 +173,8 @@
   }
 
   function onkeydown(event: KeyboardEvent): void {
-    if (renaming !== null) {
+    onkey?.(event);
+    if (renaming !== null || event.defaultPrevented) {
       return;
     }
     const action = treeKey(rows, selectedIndex, event.key);
@@ -144,13 +199,21 @@
 <div
   bind:this={treeEl}
   class="tree"
-  class:drop-root={dropRoot || drag?.target === null}
+  class:drop-root={dropRoot || (drag !== null && drag.target === null)}
   role="tree"
   aria-label={label}
   aria-multiselectable={multiple}
   tabindex="0"
   {onkeydown}
+  oncontextmenu={(event) => {
+    if (!(event.target as Element | null)?.closest("[data-tree-id]")) {
+      onbackgroundmenu?.(event);
+    }
+  }}
 >
+  {#if rows.length === 0 && empty}
+    <EmptyState title={empty} titleTone="dim" variant="panel" />
+  {/if}
   <VirtualList
     bind:element={scroller}
     items={rows}
@@ -167,9 +230,10 @@
         focused={focused && entry.node.id === selected}
         decoration={decorate(entry.node)}
         renaming={renaming === entry.node.id}
-        dropTarget={drag !== null && drag.target === entry.node.id}
+        dropTarget={tinted !== null && inTinted(entry.node.id)}
         {detail}
-        onclick={(event) => click(entry.node.id, event)}
+        {customIcon}
+        onclick={(event) => clickRow(entry.node, event)}
         ondblclick={() => activate(index)}
         oncontextmenu={(event) => {
           if (!isSelected(entry.node.id)) {
@@ -184,7 +248,7 @@
           }
         }}
         onpointerdown={(event) => {
-          if (draggable && renaming === null) {
+          if (draggable && renaming === null && canDrag(entry.node)) {
             dragger.press(event, entry.node.id);
           }
         }}
@@ -192,7 +256,7 @@
     {/snippet}
   </VirtualList>
 </div>
-{#if drag}
+{#if drag && !drag.outside}
   <DragGhost text={dragText(drag.ids.map(labelOf), drag.mode)} x={drag.x} y={drag.y} />
 {/if}
 

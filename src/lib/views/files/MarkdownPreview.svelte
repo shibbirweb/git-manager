@@ -4,6 +4,7 @@
   typing and happen only while the tab is on screen.
 -->
 <script lang="ts">
+  import RichEditorHost from "@git-manager/ui/components/RichEditorHost.svelte";
   import { LanguageSupport } from "@codemirror/language";
   import type { EditorView } from "@codemirror/view";
   import { usesDefaultKeys } from "$lib/commands/commandRuntime";
@@ -11,17 +12,14 @@
   import { onMount, untrack } from "svelte";
   import { errorMessage } from "$lib/api";
   import { languageFor } from "$lib/editor/setup";
-  import { editorTopLine, isScrolledToEnd, scrollEditorToLine } from "$lib/markdown/editorScroll";
   import { CodeHighlighter, fenceLanguages } from "$lib/markdown/highlight";
-  import type { LinkContext } from "$lib/markdown/links";
+  import { documentLinkContext, isDarkPage, workspaceImageUrl } from "$lib/markdown/markdownContext";
   import type { MarkdownPreviewDom } from "$lib/markdown/previewDom";
+  import { PreviewScrollSync } from "$lib/markdown/previewScrollSync";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
   import { watchTheme } from "$lib/themes/watch";
   import { toast } from "$lib/ui/toast.svelte";
-  import { markdownImageUrl } from "$lib/views/files/previewScheme";
-  import "$lib/markdown/body.css";
 
   interface Props {
     /** Absolute path of the Markdown file. */
@@ -60,7 +58,8 @@
   const MAX_DELAY_MS = 1000;
 
   let scroller = $state<HTMLDivElement | null>(null);
-  let body = $state<HTMLDivElement | null>(null);
+  /** The page's document element, from RichEditorHost (before onMount runs). */
+  let body: HTMLDivElement | null = null;
   let loadError = $state<string | null>(null);
   let ready = $state(false);
 
@@ -71,31 +70,6 @@
   let lastRenderMs = 0;
   let firstRender = true;
   let destroyed = false;
-
-  function isDark(): boolean {
-    const theme = document.documentElement.getAttribute("data-theme");
-    if (theme === "dark" || theme === "light") {
-      return theme === "dark";
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
-
-  function linkContext(): LinkContext {
-    const folders = repoStore.workspace?.folders ?? [];
-    const rootPath = locateAbsolute(repoStore.repos, filePath)?.repo.root ?? folderFor(folders, filePath)?.root ?? "/";
-    return {
-      documentPath: filePath,
-      rootPath,
-      isInWorkspace: (absolutePath) => folderFor(folders, absolutePath) !== null,
-    };
-  }
-
-  async function loadImage(imagePath: string): Promise<string> {
-    if (!folderFor(repoStore.workspace?.folders ?? [], imagePath)) {
-      throw new Error("Image outside the workspace");
-    }
-    return markdownImageUrl(imagePath);
-  }
 
   async function loadParser(extension: string) {
     const support = await languageFor(`file.${extension}`);
@@ -117,7 +91,11 @@
         if (destroyed) {
           return;
         }
-        preview = new MarkdownPreviewDom(engine, body, codeHighlighter, { linkContext, loadImage, isDark });
+        preview = new MarkdownPreviewDom(engine, body, codeHighlighter, {
+          linkContext: () => documentLinkContext(filePath),
+          loadImage: workspaceImageUrl,
+          isDark: isDarkPage,
+        });
         ready = true;
         schedule(0);
       })
@@ -137,8 +115,7 @@
         onLeave?.(topLine());
       }
       clearTimeout(renderTimer);
-      clearTimeout(driverTimer);
-      cancelAnimationFrame(syncFrame);
+      sync.dispose();
       stopTheme();
       resize.disconnect();
       preview?.destroy();
@@ -183,13 +160,13 @@
     if (firstRender) {
       firstRender = false;
       if (syncScroll) {
-        syncFromEditor();
+        sync.followEditor();
       } else {
         scrollToLine(initialLine);
       }
-    } else if (syncScroll && driver !== "preview") {
+    } else if (syncScroll && !sync.previewLeads) {
       // The edited part stays in view as blocks above it change height.
-      syncFromEditor();
+      sync.followEditor();
     }
   }
 
@@ -201,81 +178,25 @@
     }
   });
 
-  // Scroll sync: whichever side the user scrolls leads for a moment, so the
-  // other side's own scroll event never echoes back.
-  let driver: "editor" | "preview" | null = null;
-  let driverTimer: ReturnType<typeof setTimeout> | undefined;
-  let syncFrame = 0;
-
-  function lead(side: "editor" | "preview"): boolean {
-    if (driver && driver !== side) {
-      return false;
-    }
-    driver = side;
-    clearTimeout(driverTimer);
-    driverTimer = setTimeout(() => {
-      driver = null;
-    }, 150);
-    return true;
-  }
-
-  function syncFromEditor(): void {
-    if (!view || !scroller || !preview) {
-      return;
-    }
-    lead("editor");
-    scroller.scrollTop = isScrolledToEnd(view.scrollDOM)
-      ? scroller.scrollHeight
-      : preview.offsetForLine(scroller, editorTopLine(view));
-  }
-
-  function syncFromPreview(): void {
-    if (!view || !scroller || !preview) {
-      return;
-    }
-    if (isScrolledToEnd(scroller)) {
-      view.scrollDOM.scrollTop = view.scrollDOM.scrollHeight;
-    } else {
-      scrollEditorToLine(view, preview.lineAtOffset(scroller, scroller.scrollTop));
-    }
-  }
-
-  function onEditorScroll(): void {
-    if (!lead("editor")) {
-      return;
-    }
-    cancelAnimationFrame(syncFrame);
-    syncFrame = requestAnimationFrame(syncFromEditor);
-  }
-
-  function onPreviewScroll(): void {
-    if (!syncScroll || !lead("preview")) {
-      return;
-    }
-    cancelAnimationFrame(syncFrame);
-    syncFrame = requestAnimationFrame(syncFromPreview);
-  }
+  const sync = new PreviewScrollSync({ view: () => view, scroller: () => scroller, preview: () => preview });
 
   $effect(() => {
     const element = ready && syncScroll ? (view?.scrollDOM ?? null) : null;
     if (!element) {
       return;
     }
-    element.addEventListener("scroll", onEditorScroll, { passive: true });
-    return () => element.removeEventListener("scroll", onEditorScroll);
+    element.addEventListener("scroll", sync.editorScrolled, { passive: true });
+    return () => element.removeEventListener("scroll", sync.editorScrolled);
   });
 
   /** Shows a 0-based source line at the top of the preview. */
   export function scrollToLine(lineIndex: number): void {
-    if (scroller && preview) {
-      lead("editor");
-      scroller.scrollTop = preview.offsetForLine(scroller, lineIndex);
-    }
+    sync.scrollToLine(lineIndex);
   }
 
   /** The (fractional) source line at the top of the preview. */
   export function topLine(): number {
-    return scroller && preview ? preview.lineAtOffset(scroller, scroller.scrollTop) : 0;
+    return sync.topLine();
   }
 
   function scrollToElement(element: Element): void {
@@ -340,41 +261,14 @@
   }
 </script>
 
-<!-- Clicks are delegated to links and task boxes inside; Tab reaches it so it can be scrolled with keys. -->
-<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-<div
-  class="markdown-preview"
-  bind:this={scroller}
-  onscroll={onPreviewScroll}
+<RichEditorHost
+  variant="preview"
+  label="Markdown preview"
+  status={loadError ? `Preview failed: ${loadError}` : ready ? "" : "Loading preview..."}
+  bind:page={scroller}
+  onready={(element) => (body = element)}
+  onscroll={() => syncScroll && sync.previewScrolled()}
   onclick={onClick}
   onauxclick={onAuxClick}
   onkeydown={onKeydown}
-  role="document"
-  aria-label="Markdown preview"
-  tabindex="0"
->
-  {#if loadError}
-    <p class="status">Preview failed: {loadError}</p>
-  {:else if !ready}
-    <p class="status">Loading preview...</p>
-  {/if}
-  <div class="md-body selectable" bind:this={body}></div>
-</div>
-
-<style>
-  .markdown-preview {
-    height: 100%;
-    min-width: 0;
-    overflow: auto;
-    outline: none;
-    background: var(--editor-bg);
-    color: var(--text);
-    /* Raw HTML in a document can never draw outside the preview. */
-    contain: layout paint;
-  }
-
-  .status {
-    margin: 16px 24px;
-    color: var(--text-dim);
-  }
-</style>
+/>

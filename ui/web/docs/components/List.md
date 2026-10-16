@@ -30,8 +30,8 @@ the field keeps the focus while Up, Down and Enter work the list (Quick Open, Re
 - `skip` (`(item: T) => boolean`, default `() => false`): Rows that cannot be picked, such as group headings.
 - `level` (`(item: T) => number`, default `() => 0`): A tree row's level, 0 at the top.
 - `expanded` (`(item: T) => boolean | null`, default `() => null`): Whether a tree row is open; null for a leaf.
-- `height` (`"auto" | "fill" | "small" | "medium" | "large"`, default `"auto"`): Its content's height, its parent's, or
-  scroll past 160, 240 or 360 px.
+- `height` (`"auto" | "fill" | "small" | "medium" | "large" | "xlarge"`, default `"auto"`): Its content's height, its
+  parent's, or scroll past 160, 240, 360 or 468 px (a palette's results).
 - `virtual` (`"compact" | "normal" | "relaxed" | "comfortable" | null`, default `null`): Draw only the rows in view,
   each this tall (the estimate with `measure`).
 - `measure` (`boolean`, default `false`): Rows differ in height, like console entries that open: each drawn row is
@@ -43,9 +43,14 @@ the field keeps the focus while Up, Down and Enter work the list (Quick Open, Re
 - `row` (`Snippet<[T, ListRowState]>`, required): Draws a row from its item and { index, selected, current }.
 - `empty` (`Snippet`): Shown when there are no items, such as an EmptyState.
 - `onselect` (`(item: T) => void`): A row was selected by click or key.
-- `onactivate` (`(item: T) => void`): Enter or a double-click on a row.
+- `clickActivates` (`boolean`, default `false`): A click picks a row like Enter, not only selects it (search results).
+- `onactivate` (`(item: T, event?: KeyInput | MouseEvent) => void`): Enter or a double-click on a row (a click with
+  clickActivates); the event tells whether Shift or Cmd was held.
 - `ontoggle` (`(item: T, open: boolean) => void`): Left or Right asks to fold or unfold a tree row.
-- `oncontextmenu` (`(event: MouseEvent, item: T) => void`): Right-clicked; the row is selected first.
+- `oncontextmenu` (`(event: MouseEvent, item: T, fromKeys?: boolean) => void`): Right-clicked (the row is selected
+  first), or the menu key or Shift+F10 on the current row: `fromKeys`, with the event under the row's start.
+- `onkeydown` (`(event: KeyboardEvent, fromField: boolean) => void`): Runs first for a key in the list or its field;
+  call preventDefault to keep the key from the list, such as Delete removing a branch.
 - `onnearend` (`() => void`): Scrolled near the end: load the next page (once per item count).
 
 ## Rules

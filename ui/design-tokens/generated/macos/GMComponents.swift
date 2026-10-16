@@ -255,20 +255,14 @@ public enum GMTabStripTokens {
     public static let closeSize: CGFloat = 20
     public static let indicator: CGFloat = 2
     public static let singlePaddingLeft: CGFloat = 24
+    public static let roundedGap: CGFloat = 2
+    public static let roundedPaddingX: CGFloat = 6
+    public static let roundedWrapPaddingY: CGFloat = 4
+    public static let roundedRowGap: CGFloat = 4
 }
 
 public enum GMPanelTabsTokens {
     public static let height: CGFloat = 29
     public static let gap: CGFloat = 14
     public static let indicator: CGFloat = 2
-}
-
-public enum GMTreeTokens {
-    public static let rowHeight: CGFloat = 24
-    public static let indent: CGFloat = 8
-    public static let indentStep: CGFloat = 14
-    public static let chevron: CGFloat = 12
-    public static let gap: CGFloat = 4
-    public static let paddingRight: CGFloat = 8
-    public static let paddingY: CGFloat = 4
 }

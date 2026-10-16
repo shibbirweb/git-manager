@@ -1,5 +1,5 @@
-/* Rendered Markdown in the library's MarkdownView: the same rules as the app's preview and rich editor
-   (src/lib/markdown/body.css), so both look the same. Colors come from the theme tokens. */
+/* Rendered Markdown in the library's MarkdownView and RichEditorHost, which the app's preview and rich editor use,
+   so both look the same. Colors come from the theme tokens. */
 
 .md-body {
   max-width: 920px;

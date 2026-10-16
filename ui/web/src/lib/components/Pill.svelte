@@ -1,20 +1,27 @@
 <!-- A rounded word that tells a state: unsaved, modified, merging, read-only or "write" on a tool. Tones tint the
-     background with the color; `strong` makes the word bold (a repository's ongoing operation). -->
+     background with the color; `strong` makes the word bold (a repository's ongoing operation). With `dotAt`, a
+     responsive Toolbar or Stack that narrow shows it as a dot in its color; screen readers still read the word. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { useNarrow } from "../logic/barSize.svelte";
+  import type { NarrowStep } from "../logic/breakpoints";
 
   interface Props {
     tone?: "neutral" | "accent" | "success" | "warning" | "danger" | "selected";
     strong?: boolean;
     variant?: "fill" | "outline" | "border";
     title?: string;
+    dotAt?: NarrowStep | null;
     children: Snippet;
   }
 
-  let { tone = "neutral", strong = false, variant = "fill", title, children }: Props = $props();
+  let { tone = "neutral", strong = false, variant = "fill", title, dotAt = null, children }: Props = $props();
+  const dot = useNarrow(() => dotAt);
 </script>
 
-<span class="pill {tone} {variant}" class:strong {title}>{@render children()}</span>
+<span class="pill {tone} {variant}" class:strong class:dot={dot()} {title}
+  ><span class="words">{@render children()}</span></span
+>
 
 <style>
   .pill {
@@ -26,6 +33,23 @@
     white-space: nowrap;
     background: var(--hover);
     color: var(--text-dim);
+  }
+
+  /* The word stays for screen readers; the dot takes its color. */
+  .dot {
+    width: var(--pill-dot-size);
+    height: var(--pill-dot-size);
+    padding: 0;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .dot .words {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 
   .strong {

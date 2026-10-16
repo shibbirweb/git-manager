@@ -99,3 +99,31 @@ export function wheelScroll(event: { deltaX: number; deltaY: number; ctrlKey: bo
   }
   return event.deltaY;
 }
+
+/** The box a strip scrolls: its place on screen and how far it is scrolled. */
+export interface StripBox {
+  getBoundingClientRect(): { left: number; top: number };
+  scrollLeft: number;
+  scrollTop: number;
+}
+
+/** A viewport point in a strip's scrolled content coordinates. */
+export function contentPoint(strip: StripBox | null, clientX: number, clientY: number): { x: number; y: number } {
+  const rect = strip?.getBoundingClientRect();
+  return {
+    x: clientX - (rect?.left ?? 0) + (strip?.scrollLeft ?? 0),
+    y: clientY - (rect?.top ?? 0) + (strip?.scrollTop ?? 0),
+  };
+}
+
+/** Each tab's box in the strip's content coordinates. */
+export function tabBoxes(
+  strip: StripBox | null,
+  tabs: { getBoundingClientRect(): { left: number; top: number; width: number; height: number } }[],
+): TabBox[] {
+  return tabs.map((tab) => {
+    const rect = tab.getBoundingClientRect();
+    const corner = contentPoint(strip, rect.left, rect.top);
+    return { left: corner.x, right: corner.x + rect.width, top: corner.y, bottom: corner.y + rect.height };
+  });
+}

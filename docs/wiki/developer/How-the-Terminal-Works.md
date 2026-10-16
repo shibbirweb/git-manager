@@ -76,7 +76,9 @@ flowchart LR
 | `src-tauri/src/terminal.rs` | Shells, `spawn_pty`, `PtyProcess`, `TerminalRegistry` |
 | `src-tauri/src/commands/terminal.rs` | The `terminal_*` commands and the exit event |
 | `src/lib/terminal/terminalStore.svelte.ts` | Entries, panel state, moves, exits |
-| `src/lib/terminal/TerminalView.svelte` | xterm, spawn, input, resize, menus |
+| `src/lib/terminal/TerminalView.svelte` | The view on the UI library's `TerminalScreen`, and the effects that follow settings and visibility |
+| `src/lib/terminal/terminalController.svelte.ts`, `terminalInstance.ts` | Opening xterm, fitting, Retry, the bell, drops, the menu |
+| `src/lib/terminal/terminalShell.svelte.ts` | Spawning, reconnecting, output with acks, input, resize, the startup status |
 | `src/lib/terminal/TerminalHost.svelte`, `TerminalFrame.svelte`, `TerminalSlot.svelte`, `TerminalPanel.svelte`, `TerminalList.svelte` | Placing the views, the panel and its list |
 | `src/lib/terminal/terminals.ts`, `terminalTabs.ts`, `keys.ts`, `options.ts`, `fonts.ts`, `theme.ts` | Pure helpers |
 

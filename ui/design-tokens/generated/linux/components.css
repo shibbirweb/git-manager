@@ -184,6 +184,10 @@
   --tab-strip-close-size: 20px;
   --tab-strip-indicator: 2px;
   --tab-strip-single-padding-left: 24px;
+  --tab-strip-rounded-gap: 2px;
+  --tab-strip-rounded-padding-x: 6px;
+  --tab-strip-rounded-wrap-padding-y: 4px;
+  --tab-strip-rounded-row-gap: 4px;
   --panel-tabs-height: 29px;
   --panel-tabs-gap: 14px;
   --panel-tabs-indicator: 2px;
@@ -194,6 +198,9 @@
   --tree-gap: 4px;
   --tree-padding-right: 8px;
   --tree-padding-y: 4px;
+  --tree-badge-width: 16px;
+  --tree-dot-size: 6px;
+  --tree-dot-inset: 5px;
   --collapsible-height: 26px;
   --collapsible-gap: 5px;
   --collapsible-padding-left: 4px;
@@ -262,14 +269,4 @@
   --panel-header-padding-right: 6px;
   --panel-header-gap: 6px;
   --panel-header-button-size: 24px;
-  --file-row-height: var(--size-tree-row);
-  --file-row-padding-left: 28px;
-  --file-row-nested-padding-left: 40px;
-  --file-row-padding-right: 6px;
-  --file-row-gap: 8px;
-  --file-row-letter-width: 12px;
-  --file-row-action-size: 20px;
-  --file-row-tag-padding-x: 5px;
-  --file-row-tag-line-height: 14px;
-  --file-row-list-padding-x: 10px;
 }

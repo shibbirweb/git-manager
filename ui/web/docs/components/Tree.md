@@ -11,7 +11,8 @@ Group: Navigation. Also known as: Tree view, File tree.
 ## When to use
 
 Use for folders and files or any nested list. Give folders a `children` array (empty when nothing is in them). Keys work
-like the Files panel; double-click or Enter opens a file.
+like the Files panel; double-click or Enter opens a file. It exports focus(), and dragFromOutside(x, y, ids),
+endOutsideDrag() and cancelOutsideDrag() for files dragged in from the system.
 
 ## Props
 
@@ -31,9 +32,17 @@ like the Files panel; double-click or Enter opens a file.
 - `dropRoot` (`boolean`, default `false`): A drop into the top folder: the whole list is outlined.
 - `iconFor` (`(node: N, open: boolean) => IconName | null`, default `(node) => (node.children ? "folder" : "file")`):
   Icon per row.
-- `decorate` (`(node: N) => TreeDecoration | null`, default `() => null`): A row's tone, strike, badge, cut, ignored,
-  root (a workspace folder's header), repo (accent icon) and tag (LFS).
+- `decorate` (`(node: N) => TreeDecoration | null`, default `() => null`): A row's tone, strike, badge (with badgeTitle)
+  or dot, cut, ignored, root (a workspace folder's header), repo (accent icon), tag (LFS), title and open.
 - `detail` (`Snippet<[N]>`): Dim content at the end of a row.
+- `customIcon` (`Snippet<[N, boolean]>`): Draws a row's icon instead of iconFor, such as a file type icon.
+- `empty` (`string`, default `""`): Shown when there are no rows; the empty tree still takes drops.
+- `canDrag` (`(node: N) => boolean`, default `() => true`): Whether a row can be dragged, such as not a deleted file.
+- `onclick` (`(node: N, event: MouseEvent) => void`): After a click selected the row, such as to open a file on one
+  click.
+- `onkeydown` (`(event: KeyboardEvent) => void`): Runs first; call preventDefault to keep a key from the tree, such as
+  Cmd+C.
+- `onbackgroundmenu` (`(event: MouseEvent) => void`): Right-click below the rows, for the folder's Menu.
 - `onopen` (`(node: N) => void`): A file was opened (double-click or Enter).
 - `onrename` (`(node: N, name: string) => void`): A rename was confirmed with Enter.
 - `ondrop` (`(ids: string[], target: N | null, mode: "move" | "copy") => void`): Rows were dropped onto a folder, or

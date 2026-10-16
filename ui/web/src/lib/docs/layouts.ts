@@ -17,7 +17,7 @@ export const layoutPartDocs: ComponentDoc[] = [
         data: true,
       }),
       prop("look", '"flat" | "rounded"', "Lines between groups, or rounded panels apart.", { default: '"flat"' }),
-      prop("focused", "string | null", "The focused group's id.", { default: "null" }),
+      prop("focused", "string | null", "The focused group's id; its section gets aria-current.", { default: "null" }),
       prop("group", "Snippet<[G, index]>", "Draws a group (its tabs and editor) and its index.", { required: true }),
       prop("splitter", "Snippet<[GridSplitter]>", "Draws a split's ResizeHandle (inPanel)."),
       prop("onfocus", "(id: string) => void", "A group got focus or a click."),
