@@ -71,7 +71,7 @@ There are about 87 tools. Some highlights:
 - **Files and search**: `read_file`, `open_file`, `get_editor_text`, `search_files`, `search_text`, `search_symbols`.
 - **File operations**: `create_file`, `create_folder`, `copy_paths`, and `rename_path`, `move_paths` and `trash_paths`, which work like the [Files panel](File-Operations.md): open tabs follow, a file with unsaved edits is refused and nothing is ever replaced. Rename, move and trash start off; trash only moves to the system Trash.
 - **Scripts and terminal**: `list_scripts`, `run_script` and `stop_run` (the Run tab), `list_terminals`, `new_terminal` and `send_terminal_text`. `run_script` and `send_terminal_text` can run any command, so they start off.
-- **Performance**: `get_memory_usage`, `sample_memory`, a live memory recording, `get_ui_performance`, `inspect_elements`, `scroll_view` and `take_screenshot`.
+- **Performance**: `get_memory_usage`, `sample_memory`, a live memory recording, `get_ui_performance`, `inspect_elements`, `inspect_layout`, `trace_scrolls`, `scroll_view` and `take_screenshot`.
 
 Your AI tool reads each tool's own description, so you can simply ask in plain words.
 

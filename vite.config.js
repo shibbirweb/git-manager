@@ -71,7 +71,7 @@ export default defineConfig(() => ({
   },
 
   test: {
-    include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "scripts/**/*.test.ts", "ui/**/*.test.ts"],
     // Vitest blanks CSS by default; the theme tests read app.css's tokens (?raw) and the file
     // icon tests compare the committed minimal.css.
     css: { include: [/src\/app\.css/, /static\/file-icons\/minimal\/minimal\.css/] },
@@ -96,6 +96,11 @@ export default defineConfig(() => ({
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
+    },
+    // SvelteKit serves only src/ and node_modules; the UI library's lazy chunks (the Markdown engine and rich
+    // editor, loaded with import()) are requested by their real path under ui/web.
+    fs: {
+      allow: ["ui/web/src"],
     },
   },
 }));

@@ -1,15 +1,34 @@
 import { describe, expect, it } from "vitest";
 import type { RecentEntry } from "./recentEntries";
-import { BADGE_COLORS, badgeColor, entryKey, entryPaths, entrySubtitle, filterEntries, moveSelection, projectInitials } from "./welcomeModel";
+import {
+  BADGE_COLORS,
+  badgeColor,
+  entryKey,
+  entryPaths,
+  entrySubtitle,
+  filterEntries,
+  moveSelection,
+  projectInitials,
+} from "./welcomeModel";
 
-const folder: RecentEntry = { kind: "folder", label: "design-system", hint: "", folderPath: "/Users/me/code/design-system" };
+const folder: RecentEntry = {
+  kind: "folder",
+  label: "design-system",
+  hint: "",
+  folderPath: "/Users/me/code/design-system",
+};
 const workspace: RecentEntry = {
   kind: "workspace",
   label: "acme, storefront",
   hint: "2 folders",
   folderPaths: ["/Users/me/code/acme", "/Users/me/code/storefront"],
 };
-const file: RecentEntry = { kind: "workspaceFile", label: "shop", hint: "workspace file", filePath: "/Users/me/shop.gitmanager-workspace" };
+const file: RecentEntry = {
+  kind: "workspaceFile",
+  label: "shop",
+  hint: "workspace file",
+  filePath: "/Users/me/shop.gitmanager-workspace",
+};
 
 describe("projectInitials", () => {
   it("takes the first letters of the first two words", () => {

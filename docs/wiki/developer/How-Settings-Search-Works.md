@@ -8,7 +8,7 @@ Settings has eleven sections and well over a hundred rows. Finding one setting m
 
 ## How it works
 
-There are three parts: an index of what the dialog shows, a word matcher, and a filter that hides the other rows and highlights the matches.
+There are three parts: an index of what the dialog shows, a word matcher, and the rows themselves, which ask whether they show and what to mark.
 
 ```mermaid
 flowchart TD
@@ -20,16 +20,16 @@ flowchart TD
   Sections --> Pick{"open section still listed?"}
   Pick -- no --> First["open the first listed section"]
   Pick -- yes --> Stay["keep it"]
-  Match --> Show["showSettingsMatches on the open section"]
-  Show --> Hide["visibleBlocks: data-search-hidden on the rest"]
-  Show --> Highlight["CSS.highlights 'settings-search'"]
+  Match --> View["sectionVisibility for the open section"]
+  View --> Rows["SettingsRow and SettingsGroup: shows(title)"]
+  View --> Marks["titleMatches: marks(title)"]
 ```
 
 ### The index
 
 `src/lib/views/settings/settingsSearch.ts` holds `SETTINGS_SEARCH_INDEX`: one entry per row and group title of each section, with:
 
-- `label`: the text exactly as the dialog shows it, so the highlighter can find it.
+- `label`: the title exactly as the row or group shows it, so the row can find its entry.
 - `keywords`: other words that find the row, such as synonyms and words from its hint.
 - `parent`: for a row that only shows while another setting is on (Margin column, Cursor width, the File toolbar switches), the row to point at while it is hidden.
 
@@ -41,25 +41,33 @@ Rows drawn from lists (`FILE_TOOLBAR_SWITCHES` and the lists in `settingsRows.ts
 
 The Keyboard Shortcuts section has no index entries. Its commands come from the command registry, so the dialog asks `shortcutRows` (the same filter that list uses) how many commands match. When some do, the section stays listed and `KeyboardShortcuts.svelte` gets the query through its `filter` prop.
 
-### Filtering and highlighting
+### Showing and marking
 
-`settingsHighlight.ts` finds the labels on screen (`.label > span:first-child`, `.group-title` and the About links), reads only their own text nodes (so a memory mark such as **+70 MB** is not part of the name), and builds a `Range` for each matched word start from `highlightSpans`. A label found only by its keywords is highlighted whole; a hidden sub-row highlights its parent instead. The ranges go into `CSS.highlights` under `settings-search`, styled with `::highlight(settings-search)`.
+`settingsVisibility.ts` turns the matched entries into what the open section shows. The index is in page order, and
+`SETTINGS_GROUP_TITLES` says which entries are group titles; every other entry is a row, or a sub-row when it names
+a `parent`. `visibleBlocks` (pure, in `settingsSearch.ts`) then decides:
 
-The rows that hold those labels are the matched blocks. `visibleBlocks` (pure, in `settingsSearch.ts`) walks the section's direct children in order and decides what stays:
-
-- a matched row, and the sub-rows (`.sub-row`) right under a matched row;
+- a matched row, and the sub-rows right under a matched row;
 - every row of a group whose title matched;
-- a group title and its hint while any row of the group stays;
-- any other block (the About header, the shortcut list) with the block before it, or always when it comes first.
+- a group title and its hint while any row of the group stays.
 
-The rest get a `data-search-hidden` attribute, which `.rows.searching` hides with `display: none`. The About links are filtered the same way inside their list. The rows are scrolled to the top for each new query or section. A `MutationObserver` runs it again when rows appear or disappear, for example when a switch shows its sub-row. When nothing matches anywhere, the rows are hidden and a short message says so.
+A found sub-row also shows and marks its parent, since the sub-row is hidden while its parent's switch is off. Each
+shown title gets its marks from `highlightSpans`; a title found only by its keywords is marked whole.
+
+`SettingsSearchView` (`settingsSearchView.svelte.ts`) holds the words and the open section and is given to the rows
+through Svelte context. `SettingsRow` (the library `SettingRow`) and `SettingsGroup` (a `SectionTitle`) ask it
+`shows(title)` and pass `marks(title)` as `titleMatches`, which the library draws in the warning tint. A row the
+index does not list follows its group's own match. The About links ask the same view. When nothing matches
+anywhere, a short message replaces the rows.
 
 ## Where the code lives
 
 | File | What it does |
 | --- | --- |
 | `src/lib/views/settings/settingsSearch.ts` | The index, `searchWords`, `textMatches`, `matchingEntries`, `highlightSpans`, `visibleBlocks` |
-| `src/lib/views/settings/settingsHighlight.ts` | Hides the blocks that do not match, builds the ranges and sets or clears the highlight |
+| `src/lib/views/settings/settingsVisibility.ts` | What a section shows and marks for the matched entries |
+| `src/lib/views/settings/settingsSearchView.svelte.ts` | The search state given to the rows through context |
+| `src/lib/views/settings/SettingsRow.svelte`, `SettingsGroup.svelte` | Rows and group titles that hide and mark themselves |
 | `src/lib/views/settings/settingsRows.ts` | Row lists shared by the dialog and the index |
 | `src/lib/views/SettingsDialog.svelte` | The search field, the filtered section list, Esc handling |
 | `src/lib/views/settings/KeyboardShortcuts.svelte` | The `filter` prop that fills its own search |
@@ -68,7 +76,10 @@ The rest get a `data-search-hidden` attribute, which `.rows.searching` hides wit
 
 **A written index, not one read from the page.** Only the open section is rendered, so the page alone cannot tell which other sections match. Rendering every section to read it would mount the GitHub form, the shortcut list and the theme lists just to search. A small index in a `.ts` file costs nothing, can carry extra words, and is tested against the dialog.
 
-**Hide with an attribute, highlight with the CSS Custom Highlight API.** Wrapping matches in `<mark>` or editing classes would change markup Svelte owns, and Svelte may rewrite a class it manages. A data attribute Svelte never sets and highlights that paint over existing text both go away with one call, so leaving the search restores the page exactly. Where the highlight API is missing, the rows are still filtered; only the color is lost.
+**Rows decide from the index, not from the page.** The first version read the labels off the page, hid blocks with a
+data attribute and painted matches with the CSS Custom Highlight API, which tied the search to the dialog's own
+classes. Since Settings is built from UI library components, each row asks the search view instead: the same rules
+work on every platform's library, and a row cannot drift from its entry because the test reads the titles.
 
 **Show only the matches.** Highlighting alone left the matches spread over a long page. Hiding the rest puts every match on screen at once, while group titles and parent rows keep the context.
 
@@ -80,13 +91,17 @@ The rest get a `data-search-hidden` attribute, which `.rows.searching` hides wit
 
 ## Tests
 
-- `src/lib/views/settings/settingsSearch.test.ts`: reads `SettingsDialog.svelte` and checks that every literal row label, group title and About link is in the index for its section, that the index lists nothing the dialog does not show, that every `parent` exists, and that labels are unique per section. It also covers `searchWords`, `textMatches`, `matchingEntries`, `highlightSpans` and `visibleBlocks` (groups, sub-rows, other blocks, no match).
+- `src/lib/views/settings/settingsSearch.test.ts`: reads `SettingsSectionView.svelte` and the section files it shows, and checks that every literal row title, group title and About link is in the index for its section, that the index lists nothing the dialog does not show, that every `parent` exists, and that labels are unique per section. It also covers `searchWords`, `textMatches`, `matchingEntries`, `highlightSpans` and `visibleBlocks` (groups, sub-rows, other blocks, no match).
 
-The hidden rows, the highlight color and the focus on open need a visual check in the app.
+- `src/lib/views/settings/settingsVisibility.test.ts`: a matched row and its group title, a matched group, a found
+  sub-row with its parent, a keyword match marked whole, and entries of other sections.
+
+The hidden rows, the mark color and the focus on open need a visual check in the app.
 
 ## Keeping this page in sync
 
-- A new row or group title in `SettingsDialog.svelte` needs an entry in `SETTINGS_SEARCH_INDEX`; the test fails until it has one. Give it a `parent` when it only shows under another setting.
-- A new label element (not `.label > span` or `.group-title`) must be added to `LABEL_SELECTOR` in `settingsHighlight.ts` and to the test's parser.
-- A new kind of block directly in `.rows` must get a kind in `blockOf` (`settingsHighlight.ts`), or it follows the block before it.
+- A new `SettingsRow` or `SettingsGroup` in a section file needs an entry in `SETTINGS_SEARCH_INDEX`, in page order;
+  the test fails until it has one. Give it a `parent` when it only shows under another setting, and add a new group
+  title to `SETTINGS_GROUP_TITLES`.
+- A new section file must be shown from `SettingsSectionView.svelte`, so the test reads it.
 - Update [Search in Settings](../usage/Settings-Search.md) when matching or the field changes. See [Docs and Screenshots](Docs-and-Screenshots.md).

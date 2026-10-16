@@ -1,72 +1,25 @@
 <!-- One row of the Text tab: a file heading its matches, or a matching line. -->
 <script lang="ts">
-  import Icon from "$lib/ui/Icon.svelte";
+  import HighlightText from "@git-manager/ui/components/HighlightText.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import { partsToRanges } from "@git-manager/ui/logic/highlight";
   import type { TextRow } from "./textSearchModel";
 
   let { row }: { row: TextRow } = $props();
+
+  const line = $derived(row.kind === "textFile" ? null : partsToRanges(row.parts));
 </script>
 
 {#if row.kind === "textFile"}
-  <Icon name="file" size={13} />
-  <span class="file">{row.name}</span>
-  <span class="folder">{row.folder}</span>
-  <span class="count">{row.count}</span>
-{:else}
-  <span class="number">{row.line}</span>
-  <span class="text">{#each row.parts as part, partIndex (partIndex)}{#if part.match}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}</span>
+  <Icon name="file" size="medium" />
+  <Text weight="semibold" truncate>{row.name}</Text>
+  <Stack grow><Text size="small" tone="faint" truncate>{row.folder}</Text></Stack>
+  <Text size="xsmall" tone="faint">{row.count}</Text>
+{:else if line}
+  <Stack width="xxsmall" align="end"><Text mono size="compact" tone="faint">{row.line}</Text></Stack>
+  <Stack grow>
+    <Text mono truncate><HighlightText text={line.text} ranges={line.ranges} variant="mark" /></Text>
+  </Stack>
 {/if}
-
-<style>
-  .file {
-    flex: none;
-    max-width: 55%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .folder {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre;
-    font-size: 12px;
-    color: var(--text-faint);
-  }
-
-  .count {
-    flex: none;
-    font-size: 11px;
-    color: var(--text-faint);
-  }
-
-  .number {
-    flex: none;
-    min-width: 38px;
-    padding-left: 12px;
-    text-align: right;
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    color: var(--editor-line-number);
-  }
-
-  .text {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre;
-    font-family: var(--font-mono);
-    font-size: var(--code-size);
-    color: var(--text);
-  }
-
-  mark {
-    background: var(--diff-inline);
-    color: inherit;
-    border-radius: 2px;
-  }
-</style>

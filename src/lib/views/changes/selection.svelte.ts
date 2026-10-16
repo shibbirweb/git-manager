@@ -32,7 +32,7 @@ const LINE_LABELS: Record<LineAction, string> = {
   discard: "Discard lines",
 };
 
-function linesText(count: number): string {
+export function linesText(count: number): string {
   return count === 1 ? "1 changed line" : `${count} changed lines`;
 }
 
@@ -123,7 +123,10 @@ class ChangesSelection {
     const origPath = selection.area === "staged" ? (file.origPath ?? null) : null;
     // The diff on screen is this file's: ask whether it changed instead of reading it again.
     const shown = this.diff;
-    const known = shown && shown.path === selection.path && this.diffKey === diffKey(selection, origPath) ? (shown.version ?? null) : null;
+    const known =
+      shown && shown.path === selection.path && this.diffKey === diffKey(selection, origPath)
+        ? (shown.version ?? null)
+        : null;
     try {
       const result = await api.getFileDiffIfChanged(repoRoot, selection.path, origPath, selection.area, known);
       if (token !== this.loadToken) {
@@ -145,8 +148,8 @@ class ChangesSelection {
     }
   }
 
-  /** Hunk staging from the Diff view writes the new side into the index. */
-  applyDiffChange(target: "original" | "modified", content: string): void {
+  /** Hunk staging from the Diff view writes the new side into the index; `label` names it in the busy state. */
+  applyDiffChange(target: "original" | "modified", content: string, label?: string): void {
     const selection = this.selected;
     const currentDiff = this.diff;
     if (!selection || !currentDiff) {
@@ -163,11 +166,11 @@ class ChangesSelection {
           : currentDiff.modifiedEol;
     const repoRoot = selection.repoRoot;
     const filePath = selection.path;
-    const label = target === "original" ? "Stage change" : "Unstage change";
+    const busyLabel = label ?? (target === "original" ? "Stage change" : "Unstage change");
     changesLayout.focusRepo(repoRoot);
     // Serialized so rapid clicks reach the index in order.
     this.stageQueue = this.stageQueue.then(() =>
-      repoStore.run(label, (repoPath) => api.stageContent(repoPath, filePath, content, eol), {
+      repoStore.run(busyLabel, (repoPath) => api.stageContent(repoPath, filePath, content, eol), {
         repoPath: repoRoot,
         refresh: "status",
       }),
@@ -178,7 +181,8 @@ class ChangesSelection {
    * Stage, Unstage or Discard Selected Lines from the Diff view. The backend builds and
    * applies the partial patch; Discard asks first and offers Undo for a while after.
    */
-  async applyLines(action: LineAction, lineSelection: LineSelection): Promise<void> {
+  /** `wholeChange`: a change's Revert button, so the confirm names the change rather than selected lines. */
+  async applyLines(action: LineAction, lineSelection: LineSelection, wholeChange = false): Promise<void> {
     const selection = this.selected;
     const currentDiff = this.diff;
     const file = selection ? findFile(this.sections(), selection) : null;
@@ -195,12 +199,23 @@ class ChangesSelection {
     }
     const count = selectionSize(lineSelection);
     if (action === "discard") {
-      const confirmed = await dialogs.confirm({
-        title: "Discard Selected Lines",
-        message: `Discard ${linesText(count)} in ${fileName}? The work tree goes back to the staged version of these lines.`,
-        confirmLabel: "Discard",
-        danger: true,
-      });
+      const confirmed = await dialogs.confirm(
+        wholeChange
+          ? {
+              title: "Revert Change",
+              message: `Revert this change in ${fileName}? Its lines go back to the staged version.`,
+              confirmLabel: "Revert",
+              danger: true,
+            }
+          : {
+              title: "Discard Selected Lines",
+              message:
+                `Discard ${linesText(count)} in ${fileName}? ` +
+                "The work tree goes back to the staged version of these lines.",
+              confirmLabel: "Discard",
+              danger: true,
+            },
+      );
       if (!confirmed) {
         return;
       }
@@ -208,7 +223,8 @@ class ChangesSelection {
     const origPath = selection.area === "staged" ? (file.origPath ?? null) : null;
     const knownVersion = currentDiff.version ?? null;
     changesLayout.focusRepo(repoRoot);
-    const work = (repoPath: string) => api.applySelectedLines(repoPath, filePath, origPath, action, lineSelection, knownVersion);
+    const work = (repoPath: string) =>
+      api.applySelectedLines(repoPath, filePath, origPath, action, lineSelection, knownVersion);
     // Serialized with hunk staging so quick actions reach the index in order.
     const done = this.stageQueue.then(() => repoStore.run(LINE_LABELS[action], work, { repoPath: repoRoot }));
     this.stageQueue = done;
@@ -228,7 +244,12 @@ class ChangesSelection {
   }
 
   /** A deleted file has no lines to pick: offer the whole file instead. */
-  private async applyWholeDeletion(action: LineAction, repoRoot: string, filePath: string, fileName: string): Promise<void> {
+  private async applyWholeDeletion(
+    action: LineAction,
+    repoRoot: string,
+    filePath: string,
+    fileName: string,
+  ): Promise<void> {
     const choices = {
       stage: { title: "Stage Deletion", question: "Stage the deletion of the whole file?", label: "Stage" },
       unstage: { title: "Unstage Deletion", question: "Unstage the deletion of the whole file?", label: "Unstage" },

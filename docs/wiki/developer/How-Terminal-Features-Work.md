@@ -30,7 +30,7 @@ Unicode versions and search decorations are xterm's proposed API, so the termina
 
 ### Find
 
-`TerminalFindBar.svelte` sits over the terminal's top right corner; `TerminalView` keeps the query, the toggles and the results. `find.ts` maps the toggles to xterm's names, builds the highlight colors from the `--warning` and `--term-background` tokens (the addon needs opaque `#rrggbb`), counts ("3 of 12", "1000+") and decides the keys. Typing calls `findPrevious` with `incremental`, so the first match is the newest output, and Enter keeps going up, like VS Code's terminal. `keys.ts` returns `"find"` for Cmd+F (Ctrl+Shift+F elsewhere) only while the setting is on, so with it off the key is left alone.
+`TerminalFindBar.svelte` (the library's `FloatingFindBar`) sits over the terminal's top right corner; `TerminalFind` (`terminalFind.svelte.ts`) keeps the query, the toggles and the results. `find.ts` maps the toggles to xterm's names, builds the highlight colors from the `--warning` and `--term-background` tokens (the addon needs opaque `#rrggbb`), counts ("3 of 12", "1000+") and decides the keys. Typing calls `findPrevious` with `incremental`, so the first match is the newest output, and Enter keeps going up, like VS Code's terminal. `keys.ts` returns `"find"` for Cmd+F (Ctrl+Shift+F elsewhere) only while the setting is on, so with it off the key is left alone.
 
 ### Clickable file paths
 
@@ -59,11 +59,11 @@ Each link starts without an underline. Hovering adds key listeners, and Cmd (Ctr
 
 Every `TerminalEntry` has a `group`. Panel terminals with the same group form a split; a new split goes right after its source in the list, so a group's members stay together. `splitPanes.ts` holds the rules: `terminalGroups`, `groupMembers`, `normalizeSizes`, `sizesAfterSplit` (halves the source pane), `sizesAfterClose` (the neighbor takes the room) and `resizePanes` (a divider moves width between two panes, never below `MIN_PANE_WIDTH`). Sizes are fractions, kept per group for the session in `groupSizes`.
 
-`TerminalPanel.svelte` renders one pane per member of the active terminal's group and registers it with `setPaneSlot`; `slotFor` sends a panel terminal to its pane, or to the view area while its group is hidden. `TerminalFrame` hides frames that are not shown, so an empty frame never covers a pane. Focus follows click: `focusin` on a view calls `focusPane`, which makes it the active terminal without stealing focus. `panelAfterLeave` hands over to a pane of the same group first.
+`TerminalPanel.svelte` draws the active terminal's group with the UI library's `PaneRow`, whose handles resize the split, and registers each pane's `ElementHost` with `setPaneSlot`; `slotFor` sends a panel terminal to its pane, or to the view area while its group is hidden. `TerminalFrame` hides frames that are not shown, so an empty frame never covers a pane. Focus follows click: `focusin` on a view calls `focusPane`, which makes it the active terminal without stealing focus. `panelAfterLeave` hands over to a pane of the same group first.
 
 ### Drops, rename and bell
 
-`TerminalHost` listens to `onDragDropEvent` only while a terminal exists and the setting is on. It finds the view under the point (`terminalKeyAt` reads `data-terminal-key`) and sends it a custom event; the view types `dropText` (POSIX single quotes, double quotes on Windows) with `paste`. The Files panel skips points over a terminal, so one drop is never handled twice. Rename in place sets the same session-only name as **Rename...**. `onBell` flashes a visible terminal or sets `bell` on the entry, shown as a dot until the terminal shows.
+`TerminalHost` listens to `onDragDropEvent` only while a terminal exists and the setting is on. It finds the view under the point (`terminalKeyAt` reads the screen's id, `terminalScreenId`) and sends it a custom event; the view types `dropText` (POSIX single quotes, double quotes on Windows) with `paste`. The Files panel skips points over a terminal, so one drop is never handled twice. Rename in place sets the same session-only name as **Rename...**. `onBell` flashes a visible terminal or sets `bell` on the entry, shown as a dot until the terminal shows.
 
 ## Where the code lives
 
@@ -74,7 +74,7 @@ Every `TerminalEntry` has a `group`. Panel terminals with the same group form a 
 | `src/lib/terminal/fileLinks.ts` | Candidates, resolving, OSC 7, cells, `FileExistenceCache` |
 | `src/lib/terminal/splitPanes.ts` | Groups and pane sizes |
 | `src/lib/terminal/dropPaths.ts` | Quoting and the drop events |
-| `src/lib/terminal/TerminalView.svelte`, `TerminalPanel.svelte`, `TerminalHost.svelte` | The glue |
+| `src/lib/terminal/TerminalView.svelte`, `terminalActions.ts`, `terminalLinks.ts`, `TerminalPanel.svelte`, `TerminalHost.svelte` | The glue: keys, clipboard, menu, file links |
 | `src-tauri/src/file_ops.rs` (`real_files`, `existing_files`), `commands/file_ops.rs` (`real_files`) | The existence check and real path |
 
 ## Design decisions

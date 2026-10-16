@@ -66,7 +66,7 @@ stateDiagram-v2
     HasForward --> Empty: clear on a new workspace
 ```
 
-Places are recorded by `FileView.svelte` (selection or text changes, and when a file opens), `ChangesView.svelte` (a click in Changes, `kind: "diff"`, line 0) and `editor/blame.ts` (blame clicks).
+Places are recorded by the file editor, `fileEditor.svelte.ts` (selection or text changes, and when a file opens), `ChangesView.svelte` (a click in Changes, `kind: "diff"`, line 0) and `editor/blame.ts` (blame clicks).
 
 The history is not a list of recent files: Recent Files in [Search Everywhere](How-Search-Everywhere-Works.md), Quick Open and the Cmd+E popup come from their own list, kept per workspace (see [How Recent Files Works](How-Recent-Files-Work.md)). Going back reorders the history and a restart empties it, which made it a poor source for that. A search result opens through `navigation.openFileAt(filePath, line, column)`: it sets a reveal request with a 0-based line and column and `focus: true`, then opens the file. `FileView` applies it, focuses the editor, and records the new place as usual.
 
@@ -108,8 +108,8 @@ The triggers are the arrow buttons in `Header.svelte`, Ctrl+- and Ctrl+Shift+- (
 | `src/lib/stores/navHistory.ts` | Pure history: `sameSpot`, `refine`, `record`, `travel`, `forget`, `isMissingFileError` |
 | `src/lib/stores/navigation.svelte.ts` | Reactive store: `openCommit`, `go`, reveal requests |
 | `src/lib/views/Header.svelte` | Back and Forward buttons |
-| `src/lib/views/Workspace.svelte` | Keys and mouse side buttons |
-| `src/lib/views/files/FileView.svelte` | Records file places, applies `takeReveal`, calls `forget` when its file is gone |
+| `src/lib/views/workspaceLife.svelte.ts` | Keys and mouse side buttons |
+| `src/lib/views/files/fileEditor.svelte.ts`, `watchFile.svelte.ts` | Records file places, applies `takeReveal`, calls `forget` when its file is gone |
 | `src/lib/views/ChangesView.svelte` | Records diff places |
 | `src/lib/views/changes/ChangesDiff.svelte` | Applies `takeDiffReveal` |
 | `src/lib/editor/blame.ts` | Blame clicks through `navigation.openCommit` |

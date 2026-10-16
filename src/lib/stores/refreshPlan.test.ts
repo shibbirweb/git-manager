@@ -28,7 +28,12 @@ function workspaceEvent(change: Partial<WorkspaceChangedEvent>): WorkspaceChange
 
 describe("repoRefresh", () => {
   it("reads the branches only for refs and config changes", () => {
-    for (const change of [{ index: true }, { workTree: true }, { workTree: true, structure: true }, { opState: true }]) {
+    for (const change of [
+      { index: true },
+      { workTree: true },
+      { workTree: true, structure: true },
+      { opState: true },
+    ]) {
       expect(repoRefresh(repoEvent(change))).toEqual({ status: true, refs: false });
     }
     expect(repoRefresh(repoEvent({ refs: true }))).toEqual({ status: true, refs: true });
@@ -40,7 +45,12 @@ describe("treeChanged", () => {
   it("is set by HEAD, index, entry and attributes changes, not by content edits", () => {
     expect(treeChanged(repoEvent({ workTree: true }))).toBe(false);
     expect(treeChanged(repoEvent({ config: true, opState: true }))).toBe(false);
-    for (const change of [{ refs: true }, { index: true }, { workTree: true, structure: true }, { workTree: true, attributes: true }]) {
+    for (const change of [
+      { refs: true },
+      { index: true },
+      { workTree: true, structure: true },
+      { workTree: true, attributes: true },
+    ]) {
       expect(treeChanged(repoEvent(change))).toBe(true);
     }
   });

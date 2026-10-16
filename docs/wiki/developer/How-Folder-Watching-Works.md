@@ -56,7 +56,7 @@ The watcher type is `Debouncer<RecommendedWatcher, NoCache>` (`state.rs`). The d
 | `src-tauri/src/state.rs` | `RepoWatcher` (with `NoCache`) and the `watchers` map |
 | `src-tauri/src/commands/workspace.rs` | `watch_workspace`, `unwatch_workspace`, `stop_watcher` |
 | `src/lib/stores/repo.svelte.ts` | `watchAll`, `refreshRepo`, `scheduleRescan`, `rescan`, `openFilePaths`, `openFileVersions` |
-| `src/lib/views/Workspace.svelte` | sends `openFilePaths` to `watch_open_files` when it changes |
+| `src/lib/views/workspaceLife.svelte.ts` | sends `openFilePaths` to `watch_open_files` when it changes |
 | `src/lib/editor/reloadChange.ts` | the smallest edit from the text on screen to the text on disk |
 
 ## Design decisions

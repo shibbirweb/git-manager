@@ -9,7 +9,14 @@ import { baseName, folderFor, type FolderRef, type PathMove, relativeTo } from "
 import { checkDrop } from "$lib/views/files/dragDrop";
 import { MAX_NAME_BYTES, nameBytes } from "$lib/views/files/fileNames";
 import { topLevel } from "$lib/views/files/selection";
-import { normalizeAbsolutePath, optionalBoolean, requiredPath, requiredString, ToolArgError, type ToolArgs } from "./args";
+import {
+  normalizeAbsolutePath,
+  optionalBoolean,
+  requiredPath,
+  requiredString,
+  ToolArgError,
+  type ToolArgs,
+} from "./args";
 import { FILE_TOOL_MAX_PATHS } from "./toolDefs";
 
 /** What the tools need from the app: the api wrappers, repoStore and the Files panel clipboard. */
@@ -162,7 +169,10 @@ export async function renamePath(deps: FileToolDeps, args: ToolArgs): Promise<St
 }
 
 /** The sources and target of copy_paths and move_paths, checked; nested sources go with their folder. */
-function sourcesAndTarget(deps: FileToolDeps, args: ToolArgs): { folders: FolderRef[]; sources: string[]; targetFolder: string } {
+function sourcesAndTarget(
+  deps: FileToolDeps,
+  args: ToolArgs,
+): { folders: FolderRef[]; sources: string[]; targetFolder: string } {
   const paths = requiredPaths(args, "paths");
   const targetFolder = requiredPath(args, "targetFolder");
   const folders = workspaceFolders(deps);
@@ -217,4 +227,3 @@ export async function trashPaths(deps: FileToolDeps, args: ToolArgs): Promise<St
   await deps.filesWritten(trashed);
   return { trashed };
 }
-

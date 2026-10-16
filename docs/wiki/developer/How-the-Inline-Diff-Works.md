@@ -13,7 +13,7 @@ Two columns halve the width of each version. In a narrow window, or with long li
 The layout is the `diffLayout` preference in `settings.json`: `"sideBySide"` (the default) or `"inline"`, read with `pickOneOf` against `DIFF_LAYOUT_CHOICES` in `settingsData.ts`, so any other value falls back to side by side. Two places set it with `settings.setPreference("diffLayout", ...)`, so they always agree:
 
 - **Diff layout** in Settings > Git, a segmented control like File toolbar, found by Settings search under words such as "unified" and "split".
-- Two buttons in a `role="group"` in the diff toolbar of `DiffView.svelte`, with the `split-view` and `split-rows` icons. They are disabled when the diff has no text to show (binary, too large, LFS or identical). The build effect reads the setting, so a click tears the old view down and builds the other one; the layout is part of the scroll key.
+- Two buttons in a `role="group"` in the diff toolbar (`DiffToolbar.svelte`), with the `split-view` and `split-rows` icons. They are disabled when the diff has no text to show (binary, too large, LFS or identical). The build effect reads the setting, so a click tears the old view down and builds the other one; the layout is part of the scroll key.
 
 ### The inline document
 
@@ -35,9 +35,10 @@ Hunks that do not fit the texts (`hunkRanges` returns null), or a payload withou
 
 `inlineDiffExtensions` adds to the read-only `baseExtensions` (built with `lineNumbers: false`):
 
-- line classes by kind of change (added green, removed grey, modified blue, the `--diff-*` tokens) and changed-word marks from `inlineWordMarks`, which diffs each modified block's old lines against its new lines,
+- line classes by each line's own kind (removed `--diff-removed` soft red, added `--diff-added` green) and changed-word marks from `inlineWordMarks` (`--diff-removed-word`, `--diff-added-word`), which diffs each modified block's old lines against its new lines,
 - two number gutters, old then new, that tint changed rows like the code,
 - a gutter with a Stage (+) or Unstage (-) button on the first line of each change,
+- a sign gutter right before the text: `lineSign` gives `-` for a removed line and `+` for an added one, in `--danger` red and `--success` green, like `git diff` and GitLens. Markers are shared per sign and kind,
 - folded unchanged runs from `collapsedRuns` (3 lines of margin, at least 4 folded), drawn by `inlineFolds` from `foldField.ts`, the same folds as the side by side layout. They are block widgets in a `StateField`, as block decorations must be. A run opens 10 lines at a time from either edge, fully when its label is clicked, and fully when the cursor lands in it, so a Find match or a reveal is never hidden.
 
 ### Mapping back to the two versions
@@ -55,19 +56,19 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 | File | What it does |
 | --- | --- |
 | `src/lib/diff/inlineDoc.ts` | The document, word marks, selection, `applyBlock`, folds, line mapping |
-| `src/lib/diff/inlineView.ts` | `inlineDiffExtensions`: colors, gutters, buttons, folds |
+| `src/lib/diff/inlineView.ts`, `inlineTheme.ts` | `inlineDiffExtensions`: colors, gutters, signs, buttons, folds; the look |
 | `src/lib/diff/foldField.ts`, `foldModel.ts` | The fold bars and their 10 line steps, shared with side by side |
-| `src/lib/diff/DiffView.svelte` | The toolbar buttons and building either layout |
+| `src/lib/diff/DiffToolbar.svelte`, `diffViews.ts` | The toolbar buttons and building either layout |
 | `src/lib/editor/blame.ts`, `blameModel.ts` | `loadBlame` for an inline source, `expandBlame`, `REMOVED_LINE` |
 | `src/lib/editor/setup.ts` | The `lineNumbers` option of `baseExtensions` |
 | `src/lib/stores/settingsData.ts`, `settings.svelte.ts` | The `diffLayout` preference and `DIFF_LAYOUT_CHOICES` |
-| `src/lib/views/SettingsDialog.svelte`, `settings/settingsSearch.ts` | The Diff layout row and its search words |
+| `src/lib/views/settings/GitSettings.svelte`, `settings/settingsSearch.ts` | The Diff layout row and its search words |
 
 ## Design decisions
 
 **Our own document, not CodeMirror's unified view.** `unifiedMergeView` from `@codemirror/merge` draws removed lines as widgets. Widgets have no line numbers, cannot be selected and are not searched, which is why the first version had all three limits. Putting both versions into the text fixes them at once and keeps one source of line facts for every feature.
 
-**The same colors as side by side.** Green, grey and blue by kind of change, so switching layouts does not change what a color means; the two number columns say which lines are old and which are new.
+**Red and green per line, like GitLens.** One column puts old and new lines next to each other, so each line shows its own side: soft red removed, green added, even inside a modified block. Side by side keeps the JetBrains colors (grey removed, blue modified), where the pane already says which side a line is on. Every color theme derives the red tints from its danger color.
 
 **Exact selections.** Side by side, a selection on one side also takes the facing lines of the other. Inline, both are on screen, so a selection takes only what it covers.
 
@@ -75,7 +76,7 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 
 ## Tests
 
-- `src/lib/diff/inlineDoc.test.ts`: document order and numbers, line mapping, new and unchanged files, exact selections, stage and unstage text, word marks only in modified blocks, ruler ticks, folds with margins, the fallback hunks.
+- `src/lib/diff/inlineDoc.test.ts`: document order and numbers, line mapping, new and unchanged files, exact selections, stage and unstage text, the - and + signs, word marks only in modified blocks, ruler ticks, folds with margins, the fallback hunks.
 - `src/lib/editor/blameModel.test.ts`: `expandBlame` blanks removed lines and records new lines for Back and Forward.
 - `src/lib/stores/settingsData.test.ts`: the `diffLayout` preference defaults to side by side and rejects unknown values.
 - `src/lib/views/settings/settingsSearch.test.ts`: the Diff layout row is in the dialog and its search index.
@@ -83,6 +84,6 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 
 ## Keeping this page in sync
 
-- Update this page when `inlineDoc.ts`, `inlineView.ts` or the inline parts of `DiffView.svelte` and `blame.ts` change.
+- Update this page when `inlineDoc.ts`, `inlineView.ts` or the inline parts of `diffViews.ts` and `blame.ts` change.
 - Update [Inline Diffs](../usage/Inline-Diffs.md) and retake `diff-inline.png` for visible changes.
 - Related: [How Diffs Work](How-Diffs-Work.md), [Settings Reference](Settings-Reference.md).

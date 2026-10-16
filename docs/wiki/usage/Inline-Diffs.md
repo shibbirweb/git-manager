@@ -2,9 +2,9 @@
 
 Every diff can show its two versions side by side, or inline in one column. Inline is handy in a narrow window, or when long lines get cut off in two columns.
 
-[TODO:diff-inline.png]
+![An inline diff: removed lines above the lines that replace them](../images/diff-inline.png)
 
-*An inline diff of cart.ts: the old and new line numbers on the left, each change's removed lines above the lines that replace them, and the layout buttons in the toolbar.*
+*An inline diff of cart.ts: the old and new line numbers on the left, a red - or green + before each changed line, each change's removed lines above the lines that replace them, and the layout buttons in the toolbar.*
 
 ## Switch the layout
 
@@ -17,8 +17,9 @@ The highlighted button is the layout in use, and both places change the same set
 
 ## Reading an inline diff
 
-- The colors are the same as side by side: added lines are green, removed lines are grey, and a changed block (old lines followed by their new lines) is blue.
-- Inside a changed block, the exact words that changed are highlighted, in the old lines and in the new ones.
+- Each line has its own color, like GitLens: removed lines are a soft red and added lines green, also inside a changed block (old lines followed by their new lines).
+- Right before the text, a red **-** marks a removed line and a green **+** an added line, like `git diff` and GitLens.
+- Inside a changed block, the exact words that changed are a stronger red in the old lines and a stronger green in the new ones.
 - Two columns of line numbers sit on the left: the old version's number, then the new version's. A removed line has only an old number, an added line only a new one.
 - The label above the diff names both versions, such as **Index** and **Working Tree**, with an arrow between them.
 
@@ -29,6 +30,8 @@ Everything else works as in the side by side layout: the Up and Down arrows (F7 
 ## Stage or unstage one change
 
 In a diff from **Changes**, the first line of each change has a small **+** button between the line numbers and the code, **Stage this change**. In a diff from **Staged**, the button is **-**, **Unstage this change**. They do the same as the **«** and **»** buttons of the side by side layout (see [Diffs](Diffs.md#stage-or-unstage-one-change)).
+
+In a diff from **Changes**, the curved arrow after the **+** is **Revert this change**. See [Revert a Change](Revert-a-Change.md).
 
 **Stage Lines**, **Unstage Lines** and **Discard Lines** take exactly the lines you select: select only the new lines to add them while keeping the old ones, select only removed lines to remove just those, or both. With no selection, they take the line the cursor is on.
 

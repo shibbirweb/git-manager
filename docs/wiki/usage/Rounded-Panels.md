@@ -4,7 +4,7 @@ Rounded panels give Git Manager the look of the JetBrains **Islands** themes. Th
 
 The setting is **off by default** and works with **every color theme**, not only Islands Light and Islands Dark.
 
-[TODO:rounded-panels.png]
+![The window with rounded panels in a dark theme](../images/rounded-panels.png)
 
 *Git Manager Dark with rounded panels: the Changes sidebar, the editor and the Files panel each sit in their own panel.*
 
@@ -22,7 +22,7 @@ With rounded panels on:
 - **The window frame:** the header at the top, the status bar at the bottom and the two narrow icon bars on the left and right take the window color and lose their dividing lines.
 - **The panels:** the left sidebar, the editor area, the terminal panel at the bottom and the Files panel on the right each get round corners and a 6 pixel gap around them.
 - **Split editors:** when you split the editor (Window > Split Right or Split Down), each group is its own panel.
-- **Editor tabs:** tabs become small rounded pills. The tab you are looking at is tinted with the theme's selection color and has a thin outline in the accent color. In the groups of a split editor that are not focused, the open tab is grey instead.
+- **Editor tabs:** tabs become small rounded pills. A thin line under the tabs separates them from the code, like PhpStorm. The tab you are looking at is tinted with the theme's selection color and has a thin outline in the accent color. In the groups of a split editor that are not focused, the open tab is grey instead.
 - **Resizing:** drag the gap between two panels to resize them, the same as you drag the line between them in the classic look. The gap lights up in the accent color while you drag.
 
 Nothing else changes: menus, dialogs, the merge tool window and the colors inside each panel stay the same.

@@ -3,7 +3,10 @@ import { recentEntries, recentMenuText, type RecentSources } from "./recentEntri
 
 const sources: RecentSources = {
   recentWorkspaceFiles: ["/Users/me/work/team.gitmanager-workspace", "/Users/me/old.code-workspace"],
-  recentWorkspaces: [["/Users/me/a", "/Users/me/b"], ["/w/1", "/w/2", "/w/3", "/w/4"]],
+  recentWorkspaces: [
+    ["/Users/me/a", "/Users/me/b"],
+    ["/w/1", "/w/2", "/w/3", "/w/4"],
+  ],
   recentRepos: ["/Users/me/git-merger", "/srv/site"],
 };
 
@@ -20,7 +23,8 @@ describe("recentEntries", () => {
   });
 
   it("leaves out what is open now", () => {
-    const labels = (open: Parameters<typeof recentEntries>[1]) => recentEntries(sources, open).map((entry) => entry.label);
+    const labels = (open: Parameters<typeof recentEntries>[1]) =>
+      recentEntries(sources, open).map((entry) => entry.label);
     expect(labels({ file: "/Users/me/old.code-workspace", folderRoots: ["/x"] })).not.toContain("old");
     expect(labels({ file: null, folderRoots: ["/Users/me/a", "/Users/me/b"] })).not.toContain("a, b");
     expect(labels({ file: null, folderRoots: ["/srv/site"] })).not.toContain("site");

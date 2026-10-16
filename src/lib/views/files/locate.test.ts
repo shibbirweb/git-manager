@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { centeredScrollTop, foldersToOpen } from "./locate";
+import { foldersToOpen } from "./locate";
 
 describe("foldersToOpen", () => {
   it("lists the workspace folder and every folder down to the file", () => {
@@ -22,21 +22,5 @@ describe("foldersToOpen", () => {
 
   it("handles a folder at the file system root", () => {
     expect(foldersToOpen("/", "/etc/hosts")).toEqual(["/", "/etc"]);
-  });
-});
-
-describe("centeredScrollTop", () => {
-  it("leaves a fully visible row alone", () => {
-    expect(centeredScrollTop(5, 24, 0, 240)).toBeNull();
-    expect(centeredScrollTop(9, 24, 0, 240)).toBeNull();
-  });
-
-  it("centers a row below or above the view", () => {
-    expect(centeredScrollTop(100, 24, 0, 240)).toBe(2400 - 108);
-    expect(centeredScrollTop(2, 24, 1000, 240)).toBe(0);
-  });
-
-  it("centers a row that is only partly visible", () => {
-    expect(centeredScrollTop(10, 24, 0, 250)).toBe(240 - 113);
   });
 });

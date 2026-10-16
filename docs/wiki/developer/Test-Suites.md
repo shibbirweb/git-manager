@@ -25,12 +25,11 @@ Files are `<name>.test.ts` next to the module they test. Folders are under `src/
 | `ignore/` | `gitignore` | escaped patterns for files and folders |
 | `mcp/` | `toolDefs`, `toolStates`, `args`, `connect`, `menuCommands`, `perfModel` | UI tool definitions, tool switches, argument checks, connect commands, menu tools, performance sampling |
 | `debug/` | `memoryEvents` | naming the scroll areas for the memory log |
-| `ui/` | `menuNav`, `pickList` | context menu keyboard navigation, the pick dialog's filter |
 | `update/` | `releases`, `update` | channels, the safe Markdown renderer, issue links, changelog parsing and semver |
 | `views/` | `workspaceShortcuts`, `recentEntries` | window shortcuts, Open Recent entries |
 | `views/changes/` | `sections`, `drafts`, `fileStatus`, `repoMenu`, `repoPickers`, `sync`, `commitOptions` | grouping and selection, drafts, row ids, the repository ... menu and pickers, Sync Changes, commit options |
 | `views/files/` | `tones`, `reveal`, `locate`, `mediaPreview`, `previewSource`, `selection`, `fileOps`, `fileNames`, `dragDrop` | status colors, revealing and locating a file, previews and their `gmpreview` URLs, multi-select, file operation menus and keys, names, drag and drop |
-| `views/git/` | `branchPopup`, `gitOptions`, `integrateOptions`, `rebaseModel`, `patchLines`, `github`, `lfs/lfsModel`, `submodules/submoduleModel`, `worktrees/worktreeModel` | Branches popup, dialog options, Merge and Rebase options, the interactive rebase list, patches, GitHub links, LFS, submodules, worktrees |
+| `views/git/` | `branchPopup`, `gitOptions`, `integrateOptions`, `rebaseModel`, `github`, `lfs/lfsModel`, `submodules/submoduleModel`, `worktrees/worktreeModel` | Branches popup, dialog options, Merge and Rebase options, the interactive rebase list, GitHub links, LFS, submodules, worktrees |
 | `views/github/` | `githubModel` | GitHub dialogs and results |
 | `scripts/` (repository root) | `versioning`, `wiki` | version and changelog tools, the wiki checks |
 

@@ -22,6 +22,9 @@ use crate::windows::{self, Bounds, SessionEntry, Shown, WindowOpen, WindowStart}
 /// The size and limits of tauri.conf.json's window, for windows made here.
 const DEFAULT_SIZE: (f64, f64) = (1400.0, 880.0);
 const MIN_SIZE: (f64, f64) = (960.0, 600.0);
+/// Where the window buttons go (macOS), the same as `trafficLightPosition` in tauri.conf.json.
+#[cfg(target_os = "macos")]
+const TRAFFIC_LIGHTS: (f64, f64) = (14.0, 23.5);
 const DEFAULT_TITLE: &str = "Git Manager";
 
 /// A logical (x, y) position or (width, height) size.
@@ -201,10 +204,30 @@ fn create_window(
         Some((x, y)) => builder.position(x, y),
         None => builder.center(),
     };
+    builder = mac_title_bar(builder);
     builder.build().map_err(|err| {
         app.state::<AppState>().window_book().remove(window_label);
         AppError::invalid(format!("Could not open a window: {err}"))
     })
+}
+
+/// Like the main window in tauri.conf.json: no system title strip on macOS, so the close, minimize and zoom buttons
+/// sit at the left of the app's own top bar, centered on its back arrow, like JetBrains IDEs.
+#[cfg(target_os = "macos")]
+fn mac_title_bar<'a, R: tauri::Runtime, M: tauri::Manager<R>>(
+    builder: WebviewWindowBuilder<'a, R, M>,
+) -> WebviewWindowBuilder<'a, R, M> {
+    builder
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true)
+        .traffic_light_position(tauri::LogicalPosition::new(TRAFFIC_LIGHTS.0, TRAFFIC_LIGHTS.1))
+}
+
+#[cfg(not(target_os = "macos"))]
+fn mac_title_bar<'a, R: tauri::Runtime, M: tauri::Manager<R>>(
+    builder: WebviewWindowBuilder<'a, R, M>,
+) -> WebviewWindowBuilder<'a, R, M> {
+    builder
 }
 
 fn focus_window(app: &AppHandle, window_label: &str) {

@@ -29,7 +29,7 @@ The sizes follow the JetBrains screen: a 240 px sidebar with 36 px items, 32 px 
 The pure helpers live in `welcomeModel.ts`:
 
 - `projectInitials(name)` takes the first letters of the first two words (split at spaces, dashes, underscores, dots and camelCase), or two letters of a single word.
-- `badgeColor(key)` hashes the entry's path to one of five colors, so a project keeps its color from run to run.
+- `badgeColor(key)` hashes the entry's path to one of five colors, so a project keeps its color from run to run. The open project glows in the same color; see [Project color and title bar](Project-Color-And-Title-Bar.md).
 - `entrySubtitle` writes the paths with the home folder as `~` (`shortPath`).
 - `filterEntries` keeps entries where every word of the query appears in the name or a path.
 - `moveSelection` moves the picked row with Up, Down, Home and End.
@@ -48,12 +48,14 @@ Customize calls the same settings methods as the Settings window (`setTheme`, `s
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/Welcome.svelte` | The sidebar, the three pages, the project rows and their menu |
+| `src/lib/views/Welcome.svelte` | The sidebar and the page switch |
+| `src/lib/views/welcome/WelcomeProjects.svelte` | Projects: the search, the project rows and their menu, the greeting |
+| `src/lib/views/welcome/WelcomeCustomize.svelte`, `WelcomeLearn.svelte` | The Customize and Learn pages |
 | `src/lib/views/welcomeModel.ts` | Initials, badge colors, subtitles, search and keyboard selection |
 | `src/lib/views/recentEntries.ts` | The recent list shared with the folder menu and Open Recent |
 | `src/lib/views/repoPicker.ts` | Opening a pick or a recent entry, in this window or a new one |
 | `src/lib/views/settings/ColorThemePicker.svelte` | The color theme list, shared with Settings |
-| `src/lib/ui/icons.ts` | The `book` and `keyboard` icons of Learn |
+| `ui/web/src/lib/icons.ts` | The `book` and `keyboard` icons of Learn |
 
 ## Design decisions
 
@@ -72,10 +74,16 @@ Customize calls the same settings methods as the Settings window (`setTheme`, `s
 - **Why it happened:** `align-items: center` on a `100vh` screen with `overflow: hidden` pushes a taller card past both edges.
 - **The fix and why we chose it:** the card centered with `margin: auto` and let its lists scroll. The JetBrains layout keeps the idea: the screen is the window's height, and only the project list and the Customize and Learn pages scroll.
 
+**The project badges had dark letters on dark tiles.**
+- **The issue:** in Islands Light the initials on the colored tiles were black and hard to read.
+- **Why it happened:** `Avatar` used `--accent-text`, which a theme picks for its accent color. A light accent gets black text, but the tiles are their own deep palette colors.
+- **The fix and why we chose it:** a new `--avatar-text` token. Each theme picks white or black, whichever reads better on the worst of its five tile colors (`themes/catalog.ts`); the default themes use white. One color per theme keeps the CSS simple, and a test checks it on every theme.
+
 ## Tests
 
 - `src/lib/views/welcomeModel.test.ts`: initials, stable badge colors, keys, paths and subtitles, search and the arrow keys.
 - `src/lib/views/recentEntries.test.ts`: the order of the recent list.
+- `src/lib/themes/catalog.test.ts`: the badge letters read on every theme's tile colors (at least 2.9:1; Rose Pine's pale green is the limit).
 
 The look of the pages and the badges in each theme need a visual check in the app.
 

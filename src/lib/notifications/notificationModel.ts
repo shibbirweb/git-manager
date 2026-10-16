@@ -20,6 +20,8 @@ export interface NotificationEntry {
   kind: NotificationKind;
   title: string;
   detail: string | null;
+  /** Where it came from, such as the repository a push ran in; null when there is one place. */
+  source: string | null;
   /** Milliseconds since the epoch. */
   time: number;
   /** Seen in the list; only unread errors and warnings count on the bell. */
@@ -49,11 +51,17 @@ export function addNotification(list: readonly NotificationEntry[], entry: Notif
 
 /** Lets go of buttons past their lifetime, so the list does not hold what they captured (an Undo's patch). */
 export function dropStaleActions(list: readonly NotificationEntry[], nowMs: number): NotificationEntry[] {
-  const stale = (entry: NotificationEntry) => entry.action !== null && nowMs - entry.time > actionLifetime(entry.action);
+  const stale = (entry: NotificationEntry) =>
+    entry.action !== null && nowMs - entry.time > actionLifetime(entry.action);
   if (!list.some(stale)) {
     return list as NotificationEntry[];
   }
   return list.map((entry) => (stale(entry) ? { ...entry, action: null } : entry));
+}
+
+/** Clears one message (its x in the list). */
+export function removeNotification(list: readonly NotificationEntry[], notificationId: number): NotificationEntry[] {
+  return list.filter((entry) => entry.id !== notificationId);
 }
 
 export function markAllRead(list: readonly NotificationEntry[]): NotificationEntry[] {
@@ -65,12 +73,19 @@ export function markAllRead(list: readonly NotificationEntry[]): NotificationEnt
 
 /** A used button is never offered again, so its closure is let go too. */
 export function markActionUsed(list: readonly NotificationEntry[], notificationId: number): NotificationEntry[] {
-  return list.map((entry) => (entry.id === notificationId && !entry.actionUsed ? { ...entry, actionUsed: true, action: null } : entry));
+  return list.map((entry) =>
+    entry.id === notificationId && !entry.actionUsed ? { ...entry, actionUsed: true, action: null } : entry,
+  );
 }
 
 /** Unread errors and warnings: the bell's count. */
 export function unreadAlerts(list: readonly NotificationEntry[]): number {
   return list.filter((entry) => !entry.read && (entry.kind === "error" || entry.kind === "warning")).length;
+}
+
+/** An unread error turns the bell's count red; warnings alone keep it amber. */
+export function hasUnreadError(list: readonly NotificationEntry[]): boolean {
+  return list.some((entry) => !entry.read && entry.kind === "error");
 }
 
 /** Whether the list still offers the entry's button. */
@@ -85,30 +100,15 @@ export function actionAvailable(entry: NotificationEntry, nowMs: number): boolea
   }
 }
 
-/** Do Not Disturb keeps everything but errors off screen; they are still recorded. */
-export function shouldPopUp(kind: NotificationKind, doNotDisturb: boolean): boolean {
+/**
+ * Do Not Disturb keeps everything but errors off screen; they are still recorded. Nothing pops up while the list is
+ * shown, since new messages appear there at once (as in the JetBrains IDEs).
+ */
+export function shouldPopUp(kind: NotificationKind, doNotDisturb: boolean, listShown = false): boolean {
+  if (listShown) {
+    return false;
+  }
   return !doNotDisturb || kind === "error";
-}
-
-/** The bell's badge: the count, capped so it stays narrow. */
-export function badgeText(count: number): string {
-  if (count <= 0) {
-    return "";
-  }
-  return count > 99 ? "99+" : String(count);
-}
-
-export function kindLabel(kind: NotificationKind): string {
-  switch (kind) {
-    case "error":
-      return "Error";
-    case "warning":
-      return "Warning";
-    case "success":
-      return "Done";
-    default:
-      return "Info";
-  }
 }
 
 /** The bell's tooltip. */

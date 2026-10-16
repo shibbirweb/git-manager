@@ -38,7 +38,7 @@ The filter only searches loaded commits; **Load more** next to the count searche
 
 *The selected commit: message, author, date, hash, parents, changed files and the diff.*
 
-Selecting a commit opens its details under the list. Drag the bars between the list, the details and the diff to resize them.
+Selecting a commit opens its details under the list. Drag the bars between the list, the details and the diff to resize them, and the bar above the changed files to give the message more or less height.
 
 On the left:
 
@@ -46,7 +46,7 @@ On the left:
 - **Author** and **Date**, and the **Committer** when someone else committed it, for example after a rebase.
 - **Hash**, with a button to copy it.
 - **Parent** (or **Parents** for a merge). Click one to jump to it; one not loaded yet is greyed out.
-- **1 changed file** (or more), each with its status letter (**M** modified, **A** added, **D** deleted, **R** renamed, **C** copied, **T** type changed). Use Up and Down to step through them.
+- **1 changed file** (or more), each with its status letter (**M** modified, **A** added, **D** deleted, **R** renamed, **C** copied, **T** type changed). Use Up and Down to step through them. A merge lists only the files changed on both sides; see [Merge Commits](Merge-Commits.md).
 
 On the right is the read-only diff of the selected file, **Parent** against the commit. It works like the [Diffs](Diffs.md) view, with **Collapse unchanged** and [Blame](Blame.md) of the file at that commit.
 

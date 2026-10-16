@@ -181,7 +181,9 @@ async function deleteBranch(repoRoot: string, branchName: string): Promise<void>
       danger: true,
     });
     if (force) {
-      await api.deleteBranch(repoRoot, branchName, true).catch((error) => toast.error("Could not delete the branch", errorMessage(error)));
+      await api
+        .deleteBranch(repoRoot, branchName, true)
+        .catch((error) => toast.error("Could not delete the branch", errorMessage(error)));
       toast.success(`Finished ${branchName}`, "Worktree removed and branch deleted");
     } else {
       toast.success("Worktree removed", `The branch ${branchName} stays`);

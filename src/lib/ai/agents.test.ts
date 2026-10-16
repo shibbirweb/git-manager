@@ -12,7 +12,13 @@ describe("the agent catalog", () => {
 
 describe("splitArguments", () => {
   it("splits on spaces and keeps quoted words together", () => {
-    expect(splitArguments(`--model opus  --name "my agent" 'it''s'`)).toEqual(["--model", "opus", "--name", "my agent", "its"]);
+    expect(splitArguments(`--model opus  --name "my agent" 'it''s'`)).toEqual([
+      "--model",
+      "opus",
+      "--name",
+      "my agent",
+      "its",
+    ]);
   });
 
   it("keeps escaped characters and empty quoted words", () => {
@@ -32,12 +38,18 @@ describe("agentArguments", () => {
 
   it("adds the full-autonomy flags only in full mode, before the extra arguments", () => {
     expect(agentArguments(claude, "normal", "--model opus")).toEqual(["--model", "opus"]);
-    expect(agentArguments(claude, "full", "--model opus")).toEqual(["--dangerously-skip-permissions", "--model", "opus"]);
+    expect(agentArguments(claude, "full", "--model opus")).toEqual([
+      "--dangerously-skip-permissions",
+      "--model",
+      "opus",
+    ]);
     expect(agentArguments(qwen, "full", "")).toEqual(["--approval-mode", "yolo"]);
   });
 
   it("does not repeat flags the extra arguments already have, and has none for agents without them", () => {
-    expect(agentArguments(claude, "full", "--dangerously-skip-permissions")).toEqual(["--dangerously-skip-permissions"]);
+    expect(agentArguments(claude, "full", "--dangerously-skip-permissions")).toEqual([
+      "--dangerously-skip-permissions",
+    ]);
     expect(agentArguments(opencode, "full", "")).toEqual([]);
   });
 });
@@ -52,10 +64,19 @@ describe("commandLine", () => {
 
 describe("promptArguments", () => {
   it("passes a first prompt the way each agent takes it", () => {
-    expect(promptArguments(agentById("claude")!, " Fix the login race ")).toEqual({ args: ["Fix the login race"], typed: null });
-    expect(promptArguments(agentById("gemini")!, "Fix it")).toEqual({ args: ["--prompt-interactive", "Fix it"], typed: null });
+    expect(promptArguments(agentById("claude")!, " Fix the login race ")).toEqual({
+      args: ["Fix the login race"],
+      typed: null,
+    });
+    expect(promptArguments(agentById("gemini")!, "Fix it")).toEqual({
+      args: ["--prompt-interactive", "Fix it"],
+      typed: null,
+    });
     expect(promptArguments(agentById("copilot")!, "Fix it")).toEqual({ args: ["-i", "Fix it"], typed: null });
-    expect(promptArguments(agentById("aider")!, "Fix it\n  then test")).toEqual({ args: [], typed: "Fix it then test" });
+    expect(promptArguments(agentById("aider")!, "Fix it\n  then test")).toEqual({
+      args: [],
+      typed: "Fix it then test",
+    });
   });
 
   it("adds nothing for a blank prompt, and every agent has a prompt mode", () => {

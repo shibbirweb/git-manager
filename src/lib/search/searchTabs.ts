@@ -2,7 +2,12 @@
 // each shortcut opens, Tab / Shift+Tab cycling and the keys that switch tabs while open.
 
 import type { CommandId } from "$lib/commands/registry";
-import { type ShortcutKey, type ShortcutKeys, type WorkspaceShortcut, workspaceShortcut } from "$lib/views/workspaceShortcuts";
+import {
+  type ShortcutKey,
+  type ShortcutKeys,
+  type WorkspaceShortcut,
+  workspaceShortcut,
+} from "$lib/views/workspaceShortcuts";
 
 export type SearchTab = "all" | "classes" | "files" | "symbols" | "text";
 

@@ -22,7 +22,12 @@ export interface TabSleepEntry {
  * starts counting now) and returns the keys of the tabs hidden for at least `delayMs`.
  * Tabs that were closed are forgotten.
  */
-export function tabsToSleep(entries: readonly TabSleepEntry[], lastShown: Map<string, number>, now: number, delayMs: number): string[] {
+export function tabsToSleep(
+  entries: readonly TabSleepEntry[],
+  lastShown: Map<string, number>,
+  now: number,
+  delayMs: number,
+): string[] {
   const open = new Set(entries.map((entry) => entry.key));
   for (const key of [...lastShown.keys()]) {
     if (!open.has(key)) {

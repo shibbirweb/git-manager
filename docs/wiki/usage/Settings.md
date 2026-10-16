@@ -8,9 +8,9 @@ Settings change how Git Manager looks and behaves, apply at once and are saved. 
 - Or press Cmd+,, or choose **Git Manager > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
 - Or click the gear on the [welcome screen](Welcome-Screen.md).
 
-Settings opens on **Appearance**. The **Spaces** item in the status bar opens **Editor**, **Default Shell...** in the terminal panel opens **Terminal**, and **Git Manager > About Git Manager** opens **About**.
+Settings opens on **Appearance**. The status bar's **Spaces** opens **Editor**, the terminal's **Default Shell...** opens **Terminal**, and **About Git Manager** opens **About**.
 
-The sections are on the left, with a [search field](Settings-Search.md) above them. Press Esc or click the x to close. Drag the title to move the dialog; double-click it to center it.
+The sections are on the left, with a [search field](Settings-Search.md) above them. Esc or the x closes it. Drag the title to move it; double-click it to center it.
 
 **Reset to Defaults** at the bottom left puts every setting in `settings.json` back to its default, after asking (**Reset Settings**). Panel choices and sizes live in `state.json` and are kept.
 
@@ -23,7 +23,8 @@ The sections are on the left, with a [search field](Settings-Search.md) above th
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Theme | **System** follows the system, or pick **Light** or **Dark**. Colors are picked in **Editor**. | System |
-| Rounded panels | Rounded panels with space between them, in any color theme. See [Rounded Panels](Rounded-Panels.md). | Off |
+| Rounded panels | Rounded panels with space between them. See [Rounded Panels](Rounded-Panels.md). | Off |
+| Project color in the top bar | A glow in the project's [Welcome](Welcome-Screen.md) color. | On |
 | File toolbar | **Top**, **Bottom** or **Hidden**, plus switches. See [Navigation Bar](Navigation-Bar.md#the-file-toolbar-top-bottom-or-hidden). | Top |
 | Interface font size | Size of menus, lists and buttons, 11 to 16 px in half steps. | 13 px |
 | File icons | **No icons**, **Minimal** or **Material Icons** in the file lists. See [File Icons](File-Icons.md). | No icons |
@@ -81,12 +82,13 @@ Type a font list and press Enter, or click a font name below it. **Reset** goes 
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Diff layout | Every diff **Side by side** or **Inline** ([Inline Diffs](Inline-Diffs.md)); the diff toolbar's buttons set it too. | Side by side |
+| Side by side in Changes, for commits | **3 columns**: the [Staging View](Staging-View.md), or a commit beside your working tree. | 2, 3 |
 | Ignore whitespace in the merge tool | Hides whitespace-only differences when a merge starts; the [Merge Tool](Merge-Tool.md) button sets it too. | Off |
 | Show all branches in the log | Includes every local and remote branch in the [Log](History-and-Log.md). | On |
 | Sign off commits | Adds a `Signed-off-by` line to every commit (`--signoff`). Also in [Commit Options](Commit-Options.md). | Off |
 | Commit box | **Single** or **Per repository** ([Commit Box Layout](Commit-Box-Layout.md)). | Single |
 | GPG sign commits | **Default** follows git's `commit.gpgSign`, **Sign** adds `-S`, **Do not sign** adds `--no-gpg-sign`. | Default |
-| Git Console | Lists the git commands the app runs in a **Git Console** tab next to Terminal; off, nothing is recorded ([Git Console](Git-Console.md)). | Off |
+| Git Console | Lists the git commands the app runs in a tab next to Terminal; off, nothing is recorded ([Git Console](Git-Console.md)). | Off |
 
 **Git > Update Project...** remembers merge or rebase (`updateMethod`, default merge); see [Git Dialogs](Git-Dialogs.md#update-project).
 
@@ -102,7 +104,7 @@ Type a font list and press Enter, or click a font name below it. **Reset** goes 
 | Confirm drag and drop | Asks before a drag in the Files panel moves files (see [File Operations](File-Operations.md)). | On |
 | Left sidebar | **Changes**, **Branches** or **Hidden** (also Option+Cmd+B and the activity bar). | Changes |
 
-The two header buttons left of the sun and the gear show or hide the **activity bars**, the icon strips at the window edges (also **View > Left Activity Bar** and **Right Activity Bar**). Drag a panel's edge to resize it; double-click the edge to reset it. All of this is saved in `state.json`, except **Confirm drag and drop**, which is in `settings.json`.
+Two header buttons show or hide the **activity bars**, the icon strips at the window edges (also in the **View** menu). Drag a panel's edge to resize it; double-click to reset. All this is saved in `state.json`, but **Confirm drag and drop** is in `settings.json`.
 
 ## Terminal, GitHub and Automation
 

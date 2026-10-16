@@ -173,7 +173,11 @@ export function occurrenceRanges(state: EditorState, cap = SELECT_CAP): Occurren
 }
 
 /** The first match at or after `anchor`, wrapping to the start: where typing jumps to. */
-export function firstMatchFrom(state: EditorState, query: SearchQuery, anchor: number): { from: number; to: number } | null {
+export function firstMatchFrom(
+  state: EditorState,
+  query: SearchQuery,
+  anchor: number,
+): { from: number; to: number } | null {
   if (!query.valid) {
     return null;
   }

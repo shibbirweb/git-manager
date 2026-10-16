@@ -22,7 +22,7 @@ sequenceDiagram
 
 On macOS the web view sees a key equivalent first and passes it to the menu only when the page leaves it unhandled. That gives three simple rules:
 
-- **A key the page handles calls `preventDefault`.** `onKeydown` in `Workspace.svelte` does that for every shortcut `workspaceShortcut` recognizes, and CodeMirror does it for its keymaps. The menu item with the same accelerator then never runs as well.
+- **A key the page handles calls `preventDefault`.** `onKeydown` in `workspaceLife.svelte.ts` does that for every shortcut `workspaceShortcut` recognizes, and CodeMirror does it for its keymaps. The menu item with the same accelerator then never runs as well.
 - **An accelerator only the menu knows still works everywhere.** Cmd+W, Option+Cmd+S and Cmd+= reach the menu from the editor, the terminal or a text field, because nothing in the page claims them.
 - **Both routes call the same function.** The View and Edit items call `runWorkspaceShortcut`, the Code items call `runEditorCommand`, File > Save calls `fileCommands.save`. So it does not matter which route fires.
 

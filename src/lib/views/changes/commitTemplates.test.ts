@@ -31,7 +31,9 @@ describe("commit templates", () => {
   it("fills in the placeholders and finds the caret", () => {
     const context = { branch: "feat/GM-12-search", userName: "Ann Lee", date: DATE };
     expect(expandTemplate("feat:[{ticket}] {cursor}", context)).toEqual({ text: "feat:[GM-12] ", cursor: 13 });
-    expect(expandTemplate("{branch} by {user} on {date}", context).text).toBe("feat/GM-12-search by Ann Lee on 2026-10-03");
+    expect(expandTemplate("{branch} by {user} on {date}", context).text).toBe(
+      "feat/GM-12-search by Ann Lee on 2026-10-03",
+    );
     expect(expandTemplate("a{cursor}b{cursor}c", context)).toEqual({ text: "abc", cursor: 1 });
     expect(expandTemplate("{unknown} {ticket", context)).toEqual({ text: "{unknown} {ticket", cursor: null });
     const detached = { branch: null, userName: null, date: DATE };
@@ -78,7 +80,10 @@ describe("commit templates", () => {
       text: "",
       comments: "Why is this change needed?\nTicket:",
     });
-    expect(splitGitTemplate("feat: \r\n\r\n# Explain\r\nBody line\n\n")).toEqual({ text: "feat: \n\nBody line", comments: "Explain" });
+    expect(splitGitTemplate("feat: \r\n\r\n# Explain\r\nBody line\n\n")).toEqual({
+      text: "feat: \n\nBody line",
+      comments: "Explain",
+    });
     expect(splitGitTemplate("; note\nsubject", ";")).toEqual({ text: "subject", comments: "note" });
   });
 

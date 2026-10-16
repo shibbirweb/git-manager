@@ -38,7 +38,12 @@ export interface BranchActionItem {
 
 export type BranchActionRow = BranchActionItem | "separator";
 
-function item(action: BranchAction, label: string, disabled: boolean, extra: Partial<BranchActionItem> = {}): BranchActionItem {
+function item(
+  action: BranchAction,
+  label: string,
+  disabled: boolean,
+  extra: Partial<BranchActionItem> = {},
+): BranchActionItem {
   return { action, label, disabled, ...extra };
 }
 
@@ -111,7 +116,10 @@ function matches(name: string, words: string[]): boolean {
 
 /** Branches whose name has every word of `query`; the current branch first. */
 export function filterBranches(refs: Refs | null, query: string): BranchList {
-  const words = query.toLowerCase().split(/\s+/).filter((word) => word !== "");
+  const words = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word !== "");
   const local = (refs?.local ?? []).filter((branch) => matches(branch.name, words));
   local.sort((a, b) => Number(b.isHead) - Number(a.isHead));
   const remote = (refs?.remote ?? []).filter((remoteBranch) => matches(remoteBranch.name, words));
@@ -131,4 +139,32 @@ export function trackingHint(branch: LocalBranch): string {
     parts.push(`${branch.behind} behind`);
   }
   return parts.join(", ");
+}
+
+/** One row of the popup's list: a Local or Remote heading, or a branch. */
+export type BranchListItem =
+  | { kind: "group"; label: "Local" | "Remote" }
+  | { kind: "local"; branch: LocalBranch }
+  | { kind: "remote"; remoteBranch: RemoteBranch };
+
+/** The list's rows: each group's heading before its first branch; a group with no branch has none. */
+export function branchListItems(list: BranchList): BranchListItem[] {
+  const items: BranchListItem[] = [];
+  if (list.local.length > 0) {
+    items.push({ kind: "group", label: "Local" });
+    items.push(...list.local.map((branch) => ({ kind: "local" as const, branch })));
+  }
+  if (list.remote.length > 0) {
+    items.push({ kind: "group", label: "Remote" });
+    items.push(...list.remote.map((remoteBranch) => ({ kind: "remote" as const, remoteBranch })));
+  }
+  return items;
+}
+
+/** A row's id in the list. */
+export function branchItemKey(item: BranchListItem): string {
+  if (item.kind === "group") {
+    return `group:${item.label}`;
+  }
+  return item.kind === "local" ? `local:${item.branch.name}` : `remote:${item.remoteBranch.name}`;
 }

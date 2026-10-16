@@ -48,7 +48,10 @@ export function parseBranchTabPath(tabPath: string): BranchTabRef | null {
   if (!kind || colon < 0) {
     return null;
   }
-  const parts = tabPath.slice(colon + 1).split("|").map(decode);
+  const parts = tabPath
+    .slice(colon + 1)
+    .split("|")
+    .map(decode);
   const [repoRoot, first, second] = parts;
   if (kind === "changes") {
     return repoRoot && parts.length === 1 ? { kind, repoRoot } : null;
@@ -82,7 +85,10 @@ export function branchTabTitle(ref: BranchTabRef): { name: string; title: string
   if (ref.kind === "changes") {
     return { name: `Changes: ${repoName}`, title: `Uncommitted changes in ${repoName}` };
   }
-  return { name: `${ref.revision} vs Working Tree`, title: `${ref.revision} compared with the working tree (${repoName})` };
+  return {
+    name: `${ref.revision} vs Working Tree`,
+    title: `${ref.revision} compared with the working tree (${repoName})`,
+  };
 }
 
 /** Branch tabs of repositories inside `folderRoot`, to close with the folder. */

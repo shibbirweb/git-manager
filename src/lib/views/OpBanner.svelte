@@ -1,6 +1,9 @@
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Notice from "@git-manager/ui/components/Notice.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { abortOperation, continueOperation, skipRebaseCommit } from "./git/operationActions";
 
   const op = $derived(repoStore.status?.op);
@@ -8,56 +11,27 @@
 </script>
 
 {#if op && op.kind !== "none"}
-  <div class="banner" class:has-conflicts={conflicts > 0}>
-    <Icon name={conflicts > 0 ? "alert" : "merge"} size={15} />
-    <span class="text">
-      <strong>{op.description}</strong>
-      {#if conflicts > 0}
-        <span class="dim">&middot; {conflicts} {conflicts === 1 ? "file has" : "files have"} conflicts</span>
-      {:else}
-        <span class="dim">&middot; all conflicts resolved</span>
-      {/if}
-    </span>
-    <div class="actions">
-      {#if conflicts > 0}
-        <button class="btn small primary" onclick={() => repoStore.openConflicts()}>Resolve Conflicts...</button>
-      {:else if op.kind !== "other"}
-        <button class="btn small primary" onclick={() => void continueOperation()}>Continue</button>
-      {/if}
-      {#if op.kind === "rebase"}
-        <button class="btn small" onclick={() => void skipRebaseCommit()}>Skip Commit</button>
-      {/if}
-      {#if op.kind !== "other"}
-        <button class="btn small" onclick={() => void abortOperation()}>Abort</button>
-      {/if}
-    </div>
-  </div>
+  <Notice variant="banner" tone={conflicts > 0 ? "danger" : "info"} icon={conflicts > 0 ? "alert" : "merge"}>
+    <Text weight="semibold">{op.description}</Text>
+    <Text tone="dim">
+      &middot; {conflicts > 0
+        ? `${conflicts} ${conflicts === 1 ? "file has" : "files have"} conflicts`
+        : "all conflicts resolved"}
+    </Text>
+    {#snippet action()}
+      <Stack direction="row" gap="sm">
+        {#if conflicts > 0}
+          <Button size="small" variant="primary" onclick={() => repoStore.openConflicts()}>Resolve Conflicts...</Button>
+        {:else if op.kind !== "other"}
+          <Button size="small" variant="primary" onclick={() => void continueOperation()}>Continue</Button>
+        {/if}
+        {#if op.kind === "rebase"}
+          <Button size="small" onclick={() => void skipRebaseCommit()}>Skip Commit</Button>
+        {/if}
+        {#if op.kind !== "other"}
+          <Button size="small" onclick={() => void abortOperation()}>Abort</Button>
+        {/if}
+      </Stack>
+    {/snippet}
+  </Notice>
 {/if}
-
-<style>
-  .banner {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 12px;
-    background: color-mix(in srgb, var(--accent) 12%, var(--panel));
-    border-bottom: 1px solid var(--border-strong);
-    color: var(--accent);
-  }
-
-  .banner.has-conflicts {
-    background: color-mix(in srgb, var(--danger) 10%, var(--panel));
-    color: var(--danger);
-  }
-
-  .text {
-    flex: 1;
-    min-width: 0;
-    color: var(--text);
-  }
-
-  .actions {
-    display: flex;
-    gap: 6px;
-  }
-</style>

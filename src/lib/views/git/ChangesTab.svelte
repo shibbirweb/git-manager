@@ -1,37 +1,26 @@
-<!-- The Changes tab (status bar > N changes): the uncommitted files of a repository, each
-     compared with HEAD, staged and unstaged together. Follows the live status, and stages,
-     unstages, discards and commits like the Changes sidebar. -->
+<!-- The Changes tab (status bar > N changes): a repository's uncommitted files, each compared with HEAD (staged and
+     unstaged together) or in the staging view. Follows the live status, and stages, unstages, discards and commits
+     like the Changes sidebar. -->
 <script lang="ts">
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import { DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
+  import { MIN_CHANGES_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
-  import { ignoreMenu } from "$lib/ignore/ignoreActions";
-  import { openShelveDialog } from "$lib/shelf/shelfActions.svelte";
-  import type { FileStatus, RevisionDiff } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
-  import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
-  import ResizeHandle from "$lib/ui/ResizeHandle.svelte";
-  import LayoutToggleIcon from "../LayoutToggleIcon.svelte";
-  import CommitBox from "../changes/CommitBox.svelte";
-  import CommitLayoutIcon from "../changes/CommitLayoutIcon.svelte";
-  import { splitPath, statusLetter, statusTitle } from "../changes/fileStatus";
-  import { copyText, discard, stage, unstage } from "../changes/mutations";
-  import {
-    type ChangesTabAction,
-    type ChangesTabFile,
-    bulkTargets,
-    changesListBounds,
-    changesTabFiles,
-    fileActions,
-    pickSelected,
-    stagedState,
-    stepSelection,
-  } from "./changesTab";
+  import type { RevisionDiff } from "$lib/types";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import ChangesTabList from "./ChangesTabList.svelte";
+  import { splitPath } from "../changes/fileStatus";
+  import { type ChangesTabFile, changesListBounds, changesTabFiles, pickSelected, stepSelection } from "./changesTab";
 
   interface Props {
     repoRoot: string;
@@ -59,19 +48,9 @@
   const listVisible = $derived(settings.changesListVisible);
   const list = $derived(changesListBounds(settings.changesListWidth, bodyWidth, MIN_CHANGES_LIST_WIDTH));
   const selectedIndex = $derived(selected ? files.findIndex((file) => file.path === selected.path) : -1);
-  const busy = $derived(repoStore.busy !== null);
-  const bulk = $derived(bulkTargets(files));
-  const conflictCount = $derived(files.filter((file) => file.status.conflicted).length);
   const repoName = $derived(repo?.name ?? splitPath(repoRoot).name);
   /** Settings > Git > Commit box: Per repository puts the box above the files, as in the sidebar. */
   const perRepo = $derived(settings.commitBoxLayout === "perRepo");
-
-  const actionButtons: Record<ChangesTabAction, { icon: IconName; title: string; danger?: boolean }> = {
-    resolve: { icon: "merge", title: "Resolve in merge tool" },
-    unstage: { icon: "minus", title: "Unstage" },
-    discard: { icon: "discard", title: "Discard changes", danger: true },
-    stage: { icon: "plus", title: "Stage" },
-  };
 
   // A new status object, or a file edited again with the same status, loads the diff again.
   $effect(() => {
@@ -129,64 +108,7 @@
     }
   }
 
-  function runAction(action: ChangesTabAction, file: FileStatus): void {
-    if (action === "resolve") {
-      void repoStore.openMerge(file.path, repoRoot);
-    } else if (action === "unstage") {
-      unstage(repoRoot, [file]);
-    } else if (action === "discard") {
-      void discard(repoRoot, [file], repoName);
-    } else {
-      stage(repoRoot, [file]);
-    }
-  }
-
-  function rowMenu(event: MouseEvent, file: ChangesTabFile): void {
-    event.preventDefault();
-    select(file);
-    const status = file.status;
-    const actions = fileActions(status);
-    let items: MenuItem[];
-    if (status.conflicted) {
-      items = [
-        { label: "Resolve in Merge Tool", action: () => void repoStore.openMerge(status.path, repoRoot) },
-        { label: "Show All Conflicts...", action: () => void repoStore.openConflicts(repoRoot) },
-      ];
-    } else {
-      items = [];
-      if (actions.includes("stage")) {
-        items.push({ label: "Stage", action: () => stage(repoRoot, [status]), disabled: busy });
-      }
-      if (actions.includes("unstage")) {
-        items.push({ label: "Unstage", action: () => unstage(repoRoot, [status]), disabled: busy });
-      }
-      if (actions.includes("discard")) {
-        items.push({
-          label: "Discard Changes...",
-          action: () => void discard(repoRoot, [status], repoName),
-          danger: true,
-          disabled: busy,
-        });
-      }
-      if (items.length > 0) {
-        items.push({ separator: true });
-      }
-      if (file.kind !== "deleted" && !file.submodule) {
-        items.push({ label: "Open File", action: () => openFile(file) });
-      }
-      if (!file.submodule) {
-        items.push({ label: "Shelve Changes...", disabled: busy, action: () => openShelveDialog(repoRoot, [status.path]) });
-      }
-      const ignoreItem = ignoreMenu(repoRoot, status.path, status.path.endsWith("/"));
-      if (ignoreItem) {
-        items.push(ignoreItem);
-      }
-    }
-    items.push({ separator: true }, { label: "Copy Path", action: () => copyText(status.path) });
-    contextMenu.open(event, items);
-  }
-
-  function onKeydown(event: KeyboardEvent): void {
+  function onkeydown(event: KeyboardEvent): void {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       select(stepSelection(files, selected?.path ?? null, event.key === "ArrowDown" ? 1 : -1));
@@ -209,436 +131,119 @@
   }
 </script>
 
-<div class="changes-tab">
-  <div class="toolbar">
-    <Icon name="git-compare" size={14} />
-    <span class="title truncate">Uncommitted changes in <strong>{repoName}</strong></span>
+{#snippet diffArea()}
+  <Stack gap="none" grow surface="editor">
+    {#if !selected}
+      <EmptyState titleTone="dim" title="Nothing to show: the working tree matches the last commit." />
+    {:else if selected.submodule}
+      <EmptyState titleTone="dim" title="{selected.path} is a submodule. Open it as a repository to see its changes." />
+    {:else if unborn}
+      <EmptyState titleTone="dim" title="No commits yet, so every file is new. Open a file to see it." />
+    {:else if diffError}
+      <EmptyState titleTone="dim" title={diffError} />
+    {:else if result}
+      {#key selected.path}
+        <GitDiffView
+          source={{
+            kind: "head",
+            repoRoot,
+            filePath: selected.path,
+            origPath: selected.origPath,
+            status: selected.status,
+          }}
+          diff={result.diff}
+          path={selected.path}
+          labels={{ left: "HEAD", right: "Working Tree" }}
+          {previewSides}
+          blame={{ repoRoot, filePath: selected.path, revision: null }}
+        />
+      {/key}
+    {:else}
+      <EmptyState titleTone="dim" title="Loading..." delayed />
+    {/if}
+  </Stack>
+{/snippet}
+
+<Stack gap="none" grow surface="panel">
+  <Toolbar label="Uncommitted changes" variant="tab">
+    <Icon name="git-compare" size="normal" />
+    <Text truncate>Uncommitted changes in <Text weight="semibold">{repoName}</Text></Text>
     {#if !listVisible && selected}
       <!-- With the list hidden, the toolbar says which file the diff shows. -->
-      <span class="current" title={selected.path}>
-        <span class="letter kind-{selected.kind ?? 'conflicted'}">{statusLetter(selected.kind)}</span>
-        <span class="truncate">{selected.path}</span>
-        <span class="dim count">{selectedIndex + 1} of {files.length}</span>
-      </span>
+      <Stack direction="row" align="center" gap="sm" shrink>
+        <StatusLetter kind={selected.kind} />
+        <Text truncate title={selected.path}>{selected.path}</Text>
+        <Text tone="dim" tabular>{selectedIndex + 1} of {files.length}</Text>
+      </Stack>
     {/if}
-    <span class="spacer"></span>
-    <button
-      type="button"
-      class="btn"
-      onclick={() => select(stepSelection(files, selected?.path ?? null, -1))}
-      disabled={selectedIndex <= 0}
-      title="Previous file"
-      aria-label="Previous file"
-    >
-      <Icon name="arrow-up" size={13} />
-    </button>
-    <button
-      type="button"
-      class="btn"
-      onclick={() => select(stepSelection(files, selected?.path ?? null, 1))}
-      disabled={selectedIndex < 0 || selectedIndex >= files.length - 1}
-      title="Next file"
-      aria-label="Next file"
-    >
-      <Icon name="arrow-down" size={13} />
-    </button>
-    <button
-      type="button"
-      class="btn"
-      onclick={() => settings.setPreference("commitBoxLayout", perRepo ? "single" : "perRepo")}
-      title={perRepo ? "Show One Commit Box" : "Show a Commit Box per Repository"}
-      aria-label="Commit box per repository"
-      aria-pressed={perRepo}
-    >
-      <CommitLayoutIcon {perRepo} size={14} />
-    </button>
-    <button
-      type="button"
-      class="btn"
-      onclick={() => settings.toggleChangesList()}
-      title={listVisible ? "Hide file list" : "Show file list"}
-      aria-label={listVisible ? "Hide file list" : "Show file list"}
-      aria-pressed={listVisible}
-    >
-      <LayoutToggleIcon side="left" visible={listVisible} size={14} />
-    </button>
-    <button type="button" class="btn" class:spinning={refreshing} onclick={() => void refresh()} title="Refresh">
-      <Icon name="refresh" size={13} />
-    </button>
-  </div>
+    {#snippet end()}
+      <Button
+        icon="arrow-up"
+        onclick={() => select(stepSelection(files, selected?.path ?? null, -1))}
+        disabled={selectedIndex <= 0}
+        title="Previous file"
+        aria-label="Previous file"
+      />
+      <Button
+        icon="arrow-down"
+        onclick={() => select(stepSelection(files, selected?.path ?? null, 1))}
+        disabled={selectedIndex < 0 || selectedIndex >= files.length - 1}
+        title="Next file"
+        aria-label="Next file"
+      />
+      <Button
+        layout={perRepo ? "commit-per-repo" : "commit-single"}
+        onclick={() => settings.setPreference("commitBoxLayout", perRepo ? "single" : "perRepo")}
+        title={perRepo ? "Show One Commit Box" : "Show a Commit Box per Repository"}
+        aria-label="Commit box per repository"
+        aria-pressed={perRepo}
+      />
+      <Button
+        layout="sidebar-left"
+        layoutActive={listVisible}
+        onclick={() => settings.toggleChangesList()}
+        title={listVisible ? "Hide file list" : "Show file list"}
+        aria-label={listVisible ? "Hide file list" : "Show file list"}
+        aria-pressed={listVisible}
+      />
+      <Button
+        icon="refresh"
+        spinning={refreshing}
+        onclick={() => void refresh()}
+        title="Refresh"
+        aria-label="Refresh"
+      />
+    {/snippet}
+  </Toolbar>
   {#if !repo}
-    <div class="placeholder dim">This repository is no longer open.</div>
+    <EmptyState titleTone="dim" title="This repository is no longer open." />
   {:else if !status}
-    <div class="placeholder dim">Loading...</div>
-  {:else}
-    <div class="body" bind:clientWidth={bodyWidth}>
-      {#if listVisible}
-        <div class="side" style="width: {list.width}px">
-          {#if perRepo}
-            <!-- Commit box per repository: above the files, like the sidebar. -->
-            <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} placement="top" />
-          {/if}
-          <div class="section-title">
-            <span class="truncate">Changed files <span class="dim">({files.length})</span></span>
-            <span class="bulk-actions">
-              {#if bulk.unstage.length > 0}
-                <button class="action" onclick={() => unstage(repoRoot, bulk.unstage)} disabled={busy} title="Unstage all">
-                  <Icon name="minus" size={13} />
-                </button>
-              {/if}
-              {#if bulk.discard.length > 0}
-                <button
-                  class="action danger"
-                  onclick={() => void discard(repoRoot, bulk.discard, repoName)}
-                  disabled={busy}
-                  title="Discard all"
-                >
-                  <Icon name="discard" size={13} />
-                </button>
-              {/if}
-              {#if bulk.stage.length > 0}
-                <button class="action" onclick={() => stage(repoRoot, bulk.stage)} disabled={busy} title="Stage all">
-                  <Icon name="plus" size={13} />
-                </button>
-              {/if}
-            </span>
-          </div>
-          <div
-            class="files"
-            role="listbox"
-            aria-label="Changed files"
-            aria-activedescendant={selected ? rowId(selected) : undefined}
-            tabindex="0"
-            onkeydown={onKeydown}
-          >
-            {#each files as file (file.path)}
-              {@const parts = splitPath(file.path)}
-              {@const staged = stagedState(file.status)}
-              <div
-                id={rowId(file)}
-                class="file"
-                class:selected={file.path === selected?.path}
-                role="option"
-                tabindex="-1"
-                aria-selected={file.path === selected?.path}
-                title={`${statusTitle(file.kind)}: ${file.origPath ? `${file.origPath} -> ${file.path}` : file.path}`}
-                onclick={() => select(file)}
-                ondblclick={() => openFile(file)}
-                oncontextmenu={(event) => rowMenu(event, file)}
-                onkeydown={(event) => {
-                  if (event.key === "Enter") {
-                    openFile(file);
-                  }
-                }}
-              >
-                <span class="letter kind-{file.kind ?? 'conflicted'}">{statusLetter(file.kind)}</span>
-                <span class="name truncate" class:deleted={file.kind === "deleted"}>{parts.name}</span>
-                <span class="dir truncate dim">{parts.directory}</span>
-                {#if staged}
-                  <span class="tag" title={staged === "staged" ? "All changes are staged" : "Some changes are staged"}>{staged}</span>
-                {/if}
-                <span class="actions">
-                  {#each fileActions(file.status) as action (action)}
-                    {@const button = actionButtons[action]}
-                    <button
-                      class="action"
-                      class:danger={button.danger}
-                      title={button.title}
-                      aria-label={button.title}
-                      disabled={busy && action !== "resolve"}
-                      onclick={(event) => {
-                        event.stopPropagation();
-                        runAction(action, file.status);
-                      }}
-                      ondblclick={(event) => event.stopPropagation()}
-                    >
-                      <Icon name={button.icon} size={13} />
-                    </button>
-                  {/each}
-                </span>
-              </div>
-            {:else}
-              <div class="empty dim">No uncommitted changes</div>
-            {/each}
-          </div>
-          <!-- The sidebar's commit box: the draft is kept per repository, so both show the same message. -->
-          {#if !perRepo}
-            <CommitBox {repo} stagedCount={bulk.unstage.length} {conflictCount} multiRepo={false} choices={[]} onpick={() => {}} />
-          {/if}
-        </div>
-        <ResizeHandle
-          label="Resize file list"
-          panel="left"
-          inPanel={true}
-          size={list.width}
-          min={MIN_CHANGES_LIST_WIDTH}
-          max={list.max}
-          defaultSize={DEFAULT_CHANGES_LIST_WIDTH}
-          onResize={(width) => (settings.changesListWidth = width)}
-          onCommit={() => settings.save()}
+    <EmptyState titleTone="dim" title="Loading..." delayed />
+  {:else if listVisible}
+    <SplitPane
+      bind:size={() => list.width, (width) => (settings.changesListWidth = width)}
+      bind:extent={bodyWidth}
+      preset="files"
+      max={list.max}
+      inPanel
+      label="Resize file list"
+      oncommit={() => settings.save()}
+    >
+      {#snippet first()}
+        <ChangesTabList
+          {repoRoot}
+          {repo}
+          {repoName}
+          {files}
+          {selected}
+          {onkeydown}
+          onselect={select}
+          onopen={openFile}
         />
-      {/if}
-      <div class="diff">
-        {#if !selected}
-          <div class="placeholder dim">Nothing to show: the working tree matches the last commit.</div>
-        {:else if selected.submodule}
-          <div class="placeholder dim">{selected.path} is a submodule. Open it as a repository to see its changes.</div>
-        {:else if unborn}
-          <div class="placeholder dim">No commits yet, so every file is new. Open a file to see it.</div>
-        {:else if diffError}
-          <div class="placeholder dim selectable">{diffError}</div>
-        {:else if result}
-          {#key selected.path}
-            <DiffView
-              diff={result.diff}
-              path={selected.path}
-              mode="readonly"
-              leftLabel="HEAD"
-              rightLabel="Working Tree"
-              workingFile={selected.kind === "deleted" ? null : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
-              {previewSides}
-            />
-          {/key}
-        {:else}
-          <div class="placeholder dim">Loading...</div>
-        {/if}
-      </div>
-    </div>
+      {/snippet}
+      {#snippet second()}{@render diffArea()}{/snippet}
+    </SplitPane>
+  {:else}
+    <Stack direction="row" gap="none" grow>{@render diffArea()}</Stack>
   {/if}
-</div>
-
-<style>
-  .changes-tab {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 10px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .title {
-    min-width: 0;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .current {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    padding-left: 8px;
-    border-left: 1px solid var(--border);
-    font-size: 12px;
-  }
-
-  .count {
-    flex: none;
-  }
-
-  .spinning :global(svg) {
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .body {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .side {
-    flex: none;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border-strong);
-  }
-
-  /* As tall as the diff's toolbar, so the lines under both meet. */
-  .section-title {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    height: 34px;
-    padding: 0 6px 0 10px;
-    border-bottom: 1px solid var(--border-strong);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-dim);
-  }
-
-  .bulk-actions {
-    flex: none;
-    display: flex;
-    gap: 1px;
-    margin-left: auto;
-  }
-
-  .actions {
-    flex: none;
-    display: none;
-    gap: 1px;
-  }
-
-  .file:hover .actions {
-    display: flex;
-  }
-
-  .action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-  }
-
-  .action:hover:not(:disabled) {
-    background: var(--border-strong);
-    color: var(--text);
-  }
-
-  .action.danger:hover:not(:disabled) {
-    color: var(--danger);
-  }
-
-  .action:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-  .tag {
-    flex: none;
-    padding: 0 5px;
-    border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    color: var(--text-dim);
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 14px;
-  }
-
-  .files {
-    flex: 1;
-    min-height: 0;
-    padding: 2px 0;
-    overflow-y: auto;
-    outline: none;
-  }
-
-  .file {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 24px;
-    padding: 0 6px 0 10px;
-    cursor: default;
-  }
-
-  .file:hover {
-    background: var(--hover);
-  }
-
-  .file.selected {
-    background: var(--selected-inactive);
-  }
-
-  .files:focus .file.selected {
-    background: var(--selected);
-  }
-
-  .letter {
-    flex: none;
-    width: 12px;
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  .kind-added {
-    color: var(--success);
-  }
-
-  .kind-modified,
-  .kind-typechange {
-    color: var(--accent);
-  }
-
-  .kind-deleted {
-    color: var(--danger);
-    opacity: 0.8;
-  }
-
-  .kind-renamed {
-    color: var(--tok-property);
-  }
-
-  .kind-untracked {
-    color: color-mix(in srgb, var(--success) 60%, var(--text-faint));
-  }
-
-  .kind-conflicted {
-    color: var(--danger);
-  }
-
-  .name {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
-  .name.deleted {
-    color: var(--text-dim);
-    text-decoration: line-through;
-    text-decoration-color: var(--text-faint);
-  }
-
-  .dir {
-    flex: 1;
-    min-width: 0;
-    font-size: 12px;
-  }
-
-  .empty {
-    padding: 10px;
-  }
-
-  .diff {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .placeholder {
-    padding: 24px;
-    text-align: center;
-  }
-</style>
+</Stack>

@@ -29,7 +29,7 @@ stateDiagram-v2
 
 A tab can also hold a commit, a terminal, a Git history or compare view, a shelved file, a branch comparison or a branch against the working tree. Each has a pseudo path that never starts with `/`, checked by `isPseudoTab` (`stores/pseudoTabs.ts`). See [How commit tabs work](How-Commit-Tabs-Work.md#other-tabs-that-are-not-files) and [How the terminal works](How-the-Terminal-Works.md).
 
-`EditorTabs.svelte` draws the strip: the Diff tab (while a change is selected), then the tabs. `Workspace.svelte` renders one `FileView` per file tab and hides the inactive ones ([unused ones sleep](How-Unloading-Hidden-Tabs-Works.md)).
+`EditorTabs.svelte` draws the strip: the Diff tab (while a change is selected), then the tabs. `EditorGroupContent.svelte` renders one `FileView` per file tab and hides the inactive ones ([unused ones sleep](How-Unloading-Hidden-Tabs-Works.md)).
 
 Right under the strip, each `FileView` draws one slim bar, like JetBrains: the breadcrumbs and badges, then icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch. How it collapses when narrow, and why it replaced two rows, is in [How the path bar works](How-the-Path-Bar-Works.md).
 
@@ -62,7 +62,7 @@ The editor is built from `baseExtensions` in `src/lib/editor/setup.ts` (the them
 - `changeMarkField`, `changeGutter` and `scrollMarkers` for the colored gutter bars and the overview ruler beside the scrollbar,
 - `blameExtension` for blame (see [How blame works](How-Blame-Works.md)).
 
-`changeMarks` in `src/lib/editor/lineDiff.ts` is a line-level Myers diff that reruns 200 ms after you stop typing; past `MAX_EDITS` (4000) it marks the whole range as one change. `markSource` lets conflict regions win over plain changes. **Previous** and **Next** (Shift+F7 and F7) use `sectionTarget` from `navigation.ts`, which wraps around.
+The backend's `line_change_marks` computes the marks 200 ms after you stop typing (`FileGitInfo`); `markSource` lets conflicts win over plain changes. A click on a bar reverts it ([How reverting a change works](How-Reverting-a-Change-Works.md)). **Previous** and **Next** (Shift+F7 and F7) use `sectionTarget` from `navigation.ts`, which wraps around.
 
 ### Saving and reverting
 
@@ -74,8 +74,10 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileView.svelte` | One editor tab: load, save, markers, navigation, the path bar |
-| `src/lib/views/EditorTabs.svelte` | The tab strip and its menu |
+| `src/lib/views/files/FileView.svelte` | One editor tab |
+| `src/lib/views/files/fileEditor.svelte.ts` | The CodeMirror editor |
+| `src/lib/views/files/fileSave.svelte.ts` | Save, auto save |
+| `src/lib/views/EditorTabs.svelte`, `editorTabMenu.ts` | The tab strip and its menu |
 | `src/lib/views/EmptyMain.svelte` | The empty editor area with the Navigation Bar; buttons reuse `openQuickOpen`, `openFileSearch`, `openNavigationBar` |
 | `src/lib/views/workspaceShortcuts.ts` | Which window shortcut a key means |
 | `src/lib/stores/tabs.ts` | Pure tab rules |

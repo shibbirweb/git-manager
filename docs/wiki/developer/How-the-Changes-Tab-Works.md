@@ -65,7 +65,8 @@ A new status object, or a new `repoStore.fileVersions[repoRoot]` (a file edited 
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/git/ChangesTab.svelte` | The tab: file list, row and header actions, menu, keyboard, diff loading |
+| `src/lib/views/git/ChangesTab.svelte` | Toolbar, keys, split, diff loading |
+| `src/lib/views/git/ChangesTabList.svelte` | File list, menu, commit box |
 | `src/lib/views/git/changesTab.ts` | `changeAgainstHead`, `changesTabFiles`, `fileActions`, `stagedState`, `bulkTargets`, `pickSelected`, `stepSelection`, `changesListBounds` |
 | `src/lib/views/changes/mutations.ts` | `stage`, `unstage`, `discard`, shared with the Changes sidebar |
 | `src/lib/views/changes/CommitBox.svelte` | The commit box, shared with the Changes sidebar |
@@ -98,6 +99,6 @@ A new status object, or a new `repoStore.fileVersions[repoRoot]` (a file edited 
 
 ## Keeping this page in sync
 
-- Update this page when `ChangesTab.svelte`, `changesTab.ts`, `mutations.ts`, `CommitBox.svelte` or `compare_with_revision` change.
+- Update this page when `ChangesTab.svelte`, `ChangesTabList.svelte`, `changesTab.ts`, `mutations.ts`, `CommitBox.svelte` or `compare_with_revision` change.
 - Update [Status Bar and Help](../usage/Status-Bar-and-Help.md) for new clicks or keys.
 - Related: [How the Status Bar Works](How-the-Status-Bar-Works.md), [How the Branches Popup Works](How-the-Branches-Popup-Works.md).

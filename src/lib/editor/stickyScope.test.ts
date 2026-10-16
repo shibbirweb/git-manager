@@ -46,9 +46,23 @@ describe("sticky scroll scopes", () => {
 
   it("decides with the line under the pinned ones", () => {
     const scopesAt = (lineNumber: number) => (lineNumber >= 3 && lineNumber <= 9 ? [{ startLine: 2, endLine: 9 }] : []);
-    expect(stickyLinesFor(5, scopesAt, (count) => 5 + count, () => "x")).toEqual([2]);
+    expect(
+      stickyLinesFor(
+        5,
+        scopesAt,
+        (count) => 5 + count,
+        () => "x",
+      ),
+    ).toEqual([2]);
     // The block ends under the pinned line, so nothing stays pinned.
-    expect(stickyLinesFor(9, scopesAt, (count) => 9 + count, () => "x")).toEqual([]);
+    expect(
+      stickyLinesFor(
+        9,
+        scopesAt,
+        (count) => 9 + count,
+        () => "x",
+      ),
+    ).toEqual([]);
   });
 
   it("finds scopes by indentation without a grammar", () => {
@@ -74,7 +88,17 @@ describe("sticky scroll scopes", () => {
   });
 
   it("uses the foldable nodes of the syntax tree", () => {
-    const doc = ["class A {", "  run(", "    value,", "  ) {", "    if (value) {", "      go();", "    }", "  }", "}"].join("\n");
+    const doc = [
+      "class A {",
+      "  run(",
+      "    value,",
+      "  ) {",
+      "    if (value) {",
+      "      go();",
+      "    }",
+      "  }",
+      "}",
+    ].join("\n");
     expect(stickyAt(doc, 6, [javascript()])).toEqual([1, 2, 5]);
   });
 

@@ -1,11 +1,22 @@
 <!-- The Pull dialog: the remote and branch to pull, and how: merge (the default),
      rebase or fast-forward only, with "No commit" for a merge. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { untrack } from "svelte";
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { PullMode } from "$lib/types";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { defaultRemote, PULL_MODES, pullCommand, splitRemoteRef } from "./gitOptions";
 
@@ -22,7 +33,10 @@
   const initial = untrack(() => {
     const names = refs?.remotes ?? repoStore.remotes.map((remote) => remote.name);
     const upstream = head?.upstream ? splitRemoteRef(head.upstream, names) : null;
-    return { remoteName: upstream?.remoteName ?? defaultRemote(names) ?? "", branchName: upstream?.remoteBranch ?? head?.branch ?? "" };
+    return {
+      remoteName: upstream?.remoteName ?? defaultRemote(names) ?? "",
+      branchName: upstream?.remoteBranch ?? head?.branch ?? "",
+    };
   });
 
   let remoteName = $state(initial.remoteName);
@@ -30,9 +44,17 @@
   let mode = $state<PullMode>("merge");
   let noCommit = $state(false);
 
-  const branches = $derived((refs?.remote ?? []).filter((remoteBranch) => remoteBranch.remote === remoteName).map((remoteBranch) => remoteBranch.branch));
-  const command = $derived(pullCommand({ remoteName: remoteName || null, branchName: branchName || null, mode, noCommit }));
-  const canPull = $derived(remoteName !== "" && branchName.trim() !== "" && head?.branch != null && repoStore.busy === null);
+  const branches = $derived(
+    (refs?.remote ?? [])
+      .filter((remoteBranch) => remoteBranch.remote === remoteName)
+      .map((remoteBranch) => remoteBranch.branch),
+  );
+  const command = $derived(
+    pullCommand({ remoteName: remoteName || null, branchName: branchName || null, mode, noCommit }),
+  );
+  const canPull = $derived(
+    remoteName !== "" && branchName.trim() !== "" && head?.branch != null && repoStore.busy === null,
+  );
 
   // A remote without the chosen branch: take its branch of the same name as HEAD, else its first one.
   $effect(() => {
@@ -56,103 +78,70 @@
     close();
     await repoStore.runOp(
       "Pull",
-      (repoPath) => api.pullWithOptions(repoPath, options.remoteName, options.branchName, options.mode, options.noCommit),
-      options.noCommit ? "Merged without committing: review and commit" : `Pulled ${options.remoteName}/${options.branchName}`,
+      (repoPath) =>
+        api.pullWithOptions(repoPath, options.remoteName, options.branchName, options.mode, options.noCommit),
+      options.noCommit
+        ? "Merged without committing: review and commit"
+        : `Pulled ${options.remoteName}/${options.branchName}`,
       repoRoot,
     );
   }
 </script>
 
-<GitDialogFrame title="Pull to {head?.branch ?? 'HEAD'}" width={520} onCancel={close} onSubmit={() => void submit()}>
+<Dialog
+  open
+  variant="form"
+  title="Pull to {head?.branch ?? 'HEAD'}"
+  width="normal"
+  onclose={close}
+  onsubmit={() => void submit()}
+>
   {#if !head?.branch}
-    <p class="error">HEAD is detached: check out a branch to pull into it.</p>
+    <Text size="small" tone="danger">HEAD is detached: check out a branch to pull into it.</Text>
   {:else if remoteNames.length === 0}
-    <p class="error">This repository has no remote. Add one with Git > Manage Remotes.</p>
+    <Text size="small" tone="danger">This repository has no remote. Add one with Git > Manage Remotes.</Text>
   {:else}
-    <div class="row">
-      <label class="field remote">
-        <span>Remote</span>
-        <select class="input" bind:value={remoteName} data-autofocus>
-          {#each remoteNames as name (name)}
-            <option value={name}>{name}</option>
-          {/each}
-        </select>
-      </label>
-      <label class="field branch">
-        <span>Branch</span>
-        {#if branches.length > 0}
-          <select class="input" bind:value={branchName}>
-            {#each branches as name (name)}
-              <option value={name}>{name}</option>
-            {/each}
-          </select>
-        {:else}
-          <input class="input mono" bind:value={branchName} spellcheck="false" autocomplete="off" placeholder="main" />
-        {/if}
-      </label>
-    </div>
+    <Stack direction="row" gap="md">
+      <Field label="Remote" look="compact">
+        <Select
+          label="Remote"
+          width="medium"
+          bind:value={remoteName}
+          options={remoteNames.map((name) => ({ value: name, label: name }))}
+        />
+      </Field>
+      <Stack grow>
+        <Field label="Branch" look="compact">
+          {#if branches.length > 0}
+            <Select
+              label="Branch"
+              width="fill"
+              bind:value={branchName}
+              options={branches.map((name) => ({ value: name, label: name }))}
+            />
+          {:else}
+            <Input mono width="fill" bind:value={branchName} spellcheck="false" autocomplete="off" placeholder="main" />
+          {/if}
+        </Field>
+      </Stack>
+    </Stack>
 
-    <fieldset class="modes">
-      <legend class="hint">Integrate the incoming changes with</legend>
-      {#each PULL_MODES as option (option.value)}
-        <label class="mode">
-          <input type="radio" name="pull-mode" value={option.value} bind:group={mode} />
-          <span class="mode-label">{option.label}</span>
-          <span class="hint">{option.description}</span>
-        </label>
-      {/each}
-    </fieldset>
-    <label class="check" class:disabled={mode !== "merge"}>
-      <input type="checkbox" bind:checked={noCommit} disabled={mode !== "merge"} />
-      No commit (--no-commit): stop before the merge commit
-    </label>
-    <div class="command selectable">{command}</div>
+    <Fieldset legend="Integrate the incoming changes with">
+      <RadioGroup name="pull-mode" label="Pull mode" layout="columns" bind:value={mode} options={PULL_MODES} />
+    </Fieldset>
+    <Checkbox
+      bind:checked={noCommit}
+      disabled={mode !== "merge"}
+      label="No commit (--no-commit): stop before the merge commit"
+    />
+    <CodeBlock variant="command" text={command} label="Command" />
   {/if}
 
-  {#snippet footer()}
-    <span class="hint">&#8984;Enter to pull</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={close}>Cancel</button>
-    <button type="button" class="btn primary" disabled={!canPull} onclick={() => void submit()}>Pull</button>
+  {#snippet footnote()}
+    <Text variant="hint" tone="faint">{localKeys("CmdOrCtrl+Enter")} to pull</Text>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .remote {
-    width: 160px;
-  }
-
-  .branch {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .modes {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    border: none;
-  }
-
-  .modes legend {
-    padding: 0;
-    margin-bottom: 4px;
-  }
-
-  .mode {
-    display: grid;
-    grid-template-columns: auto 130px 1fr;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .mode-label {
-    font-weight: 500;
-  }
-
-  .disabled {
-    opacity: 0.55;
-  }
-</style>
+  {#snippet actions()}
+    <Button onclick={close}>Cancel</Button>
+    <Button variant="primary" disabled={!canPull} onclick={() => void submit()}>Pull</Button>
+  {/snippet}
+</Dialog>

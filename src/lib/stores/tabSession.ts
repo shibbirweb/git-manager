@@ -131,7 +131,11 @@ export function sessionGroups(session: SavedTabSession): SavedTabGroup[] {
  * tabs drop out, the rest are put in layout order and numbered again, and a lone group is
  * saved without a layout.
  */
-export function sessionOf(groups: readonly SavedTabGroup[], layout: GroupLayout | null, focused: number): SavedTabSession {
+export function sessionOf(
+  groups: readonly SavedTabGroup[],
+  layout: GroupLayout | null,
+  focused: number,
+): SavedTabSession {
   const kept = groups.flatMap((group, index) => (group.tabs.length > 0 ? [index] : []));
   if (kept.length <= 1) {
     const only = groups[kept[0] ?? 0] ?? { tabs: [], active: null };
@@ -244,7 +248,12 @@ function savedGroup(
     if (!isFile(tab.path) || !isSessionTabPath(tab.path)) {
       continue;
     }
-    saved.push({ path: tab.path, preview: tab.preview, pinned: tab.pinned ?? false, position: positions.get(tab.path) ?? null });
+    saved.push({
+      path: tab.path,
+      preview: tab.preview,
+      pinned: tab.pinned ?? false,
+      position: positions.get(tab.path) ?? null,
+    });
   }
   return { tabs: saved, active: active !== null && saved.some((tab) => tab.path === active) ? active : null };
 }
@@ -301,7 +310,10 @@ export function sessionWithKept(
     .filter((tabPath) => !present.has(tabPath) && isSessionTabPath(tabPath))
     .map((tabPath) => ({ path: tabPath, preview: false, pinned: false, position: null }));
   const merged: SavedTabGroup = { tabs: [...first.tabs, ...added].slice(0, MAX_SAVED_TABS), active: first.active };
-  const groups = [merged, ...others].map((group) => ({ ...group, active: group.active ?? group.tabs[0]?.path ?? null }));
+  const groups = [merged, ...others].map((group) => ({
+    ...group,
+    active: group.active ?? group.tabs[0]?.path ?? null,
+  }));
   const result = sessionOf(groups, session?.layout ?? null, session?.focused ?? 0);
   return result.tabs.length > 0 ? result : null;
 }

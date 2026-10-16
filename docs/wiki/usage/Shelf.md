@@ -51,7 +51,7 @@ Right-click a shelved change and choose **Show Diff** to open its first file.
 
 ## Unshelve
 
-Right-click a shelved change and choose **Unshelve...**, or use the hover button. To bring back only some files, select them (Cmd-click adds files of the same change), right-click and choose **Unshelve Selected Files...** (with several files selected it reads, for example, **Unshelve 3 files...**). **Unshelve All...** in the same menu brings back the whole change.
+Right-click a shelved change and choose **Unshelve...**, or use the hover button. To bring back only some files, select them (Cmd-click adds a file, Shift-click a range; only files of the change you right-click count), right-click and choose **Unshelve Selected Files...** (with several files selected it reads, for example, **Unshelve 3 files...**). **Unshelve All...** in the same menu brings back the whole change.
 
 You then choose:
 

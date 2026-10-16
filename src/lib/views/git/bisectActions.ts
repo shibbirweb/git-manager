@@ -71,7 +71,11 @@ export async function startBisect(repoRoot: string | null = activeRoot()): Promi
 }
 
 /** Marks `commitId` (the checked out commit when null). */
-export async function markBisect(mark: BisectMark, commitId: string | null = null, repoRoot: string | null = activeRoot()): Promise<void> {
+export async function markBisect(
+  mark: BisectMark,
+  commitId: string | null = null,
+  repoRoot: string | null = activeRoot(),
+): Promise<void> {
   if (!repoRoot) {
     return;
   }
@@ -89,7 +93,8 @@ export async function markFromLog(repoRoot: string, commitId: string, mark: "goo
   }
   await repoStore.run(
     "Bisect",
-    (repoPath) => (mark === "bad" ? api.bisectStart(repoPath, commitId, []) : api.bisectStart(repoPath, null, [commitId])),
+    (repoPath) =>
+      mark === "bad" ? api.bisectStart(repoPath, commitId, []) : api.bisectStart(repoPath, null, [commitId]),
     {
       repoPath: repoRoot,
       success: mark === "bad" ? "Bisect started: now mark a good commit" : "Bisect started: now mark a bad commit",

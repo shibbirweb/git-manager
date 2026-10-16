@@ -2,10 +2,19 @@
      the full-autonomy flags, how it takes a first prompt and extra arguments, with a preview and Reset. A provider
      that renames a command or a flag needs only a change here (ai/agentConfig.ts). -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Card from "@git-manager/ui/components/Card.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Spacer from "@git-manager/ui/components/Spacer.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Tag from "@git-manager/ui/components/Tag.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
   import { type AgentOverride, defaultFields, PROMPT_STYLES, withField } from "./agentConfig";
   import { AGENTS, type AgentDefinition, agentArguments, commandLine, promptArguments } from "./agents";
   import { agentPrograms, configuredAgent } from "./sessions.svelte";
@@ -52,25 +61,28 @@
   function preview(agent: AgentDefinition, mode: "normal" | "full"): string {
     const configured = configuredAgent(agent);
     const first = promptArguments(configured, "<first prompt>");
-    const args = [...configured.baseArgs, ...agentArguments(configured, mode, settings.aiAgentArgs[agent.id] ?? ""), ...first.args];
+    const args = [
+      ...configured.baseArgs,
+      ...agentArguments(configured, mode, settings.aiAgentArgs[agent.id] ?? ""),
+      ...first.args,
+    ];
     return `${commandLine(configured.program, args)}${first.typed ? "   (then types the first prompt)" : ""}`;
   }
 </script>
 
-<div class="agents">
-  <div class="agents-head">
-    <span class="hint">
+<Stack gap="sm">
+  <Stack direction="row" align="center" justify="between" gap="lg">
+    <Text size="small" tone="dim">
       {#if agentPrograms.found === null}
         Looking for agents...
       {:else}
         {agentPrograms.installed().length} of {AGENTS.length} found on your PATH.
       {/if}
-    </span>
-    <button class="btn small" onclick={() => void agentPrograms.load(true)} disabled={agentPrograms.loading}>
-      <Icon name="refresh" size={12} />
+    </Text>
+    <Button size="small" icon="refresh" disabled={agentPrograms.loading} onclick={() => void agentPrograms.load(true)}>
       Look Again
-    </button>
-  </div>
+    </Button>
+  </Stack>
   {#each AGENTS as agent (agent.id)}
     {@const path = agentPrograms.found?.[agent.id] ?? null}
     {@const configured = configuredAgent(agent)}
@@ -78,232 +90,102 @@
     {@const defaults = defaultFields(agent)}
     {@const expanded = open === agent.id}
     {@const changed = configured.customized || (settings.aiAgentArgs[agent.id] ?? "") !== ""}
-    <div class="agent" class:expanded>
-      <button class="agent-head" aria-expanded={expanded} onclick={() => (open = expanded ? null : agent.id)}>
-        <Icon name={expanded ? "chevron-down" : "chevron-right"} size={12} />
-        <span class="name">{agent.label}</span>
+    <Card label={agent.label}>
+      <Row size="entry" {expanded} onclick={() => (open = expanded ? null : agent.id)}>
+        <Text weight="medium">{agent.label}</Text>
         {#if changed}
-          <span class="tag">changed</span>
+          <Tag tone="accent" size="small">changed</Tag>
         {/if}
+        <Spacer />
         {#if path}
-          <span class="found truncate" title={path}>{path}</span>
+          <Text size="xsmall" tone="dim" mono truncate title={path}>{path}</Text>
         {:else if agentPrograms.found !== null}
-          <span class="missing">Not found: {configured.program}</span>
+          <Text size="small" tone="dim">Not found: {configured.program}</Text>
         {/if}
-      </button>
+      </Row>
       {#if expanded}
-        <div class="fields">
-          <label class="field">
-            <span>Command</span>
-            <input
-              class="input mono"
-              type="text"
+        <Stack gap="mdPlus" paddingLeft="xxl" padding="lg">
+          <Field
+            label="Command"
+            hint="The program and any first arguments, or a full path. Empty uses {defaults.command}."
+          >
+            <Input
+              mono
+              width="fill"
               spellcheck="false"
               placeholder={defaults.command}
               value={override?.command ?? ""}
               onchange={(event) => setField(agent, "command", event.currentTarget.value)}
               aria-label="{agent.label} command"
             />
-            <span class="hint">The program and any first arguments, or a full path. Empty uses {defaults.command}.</span>
-          </label>
-          <label class="field">
-            <span>Full-autonomy flags</span>
-            <input
-              class="input mono"
-              type="text"
+          </Field>
+          <Field
+            label="Full-autonomy flags"
+            hint="Added when agents work with full autonomy (Agent permissions above)."
+          >
+            <Input
+              mono
+              width="fill"
               spellcheck="false"
               placeholder="none"
               value={override?.fullAutonomyArgs ?? defaults.fullAutonomyArgs}
               onchange={(event) => setField(agent, "fullAutonomyArgs", event.currentTarget.value)}
               aria-label="{agent.label} full-autonomy flags"
             />
-            <span class="hint">Added when agents work with full autonomy (Agent permissions above).</span>
-          </label>
-          <div class="field">
-            <span>First prompt</span>
-            <div class="row">
-              <select
-                class="input select"
+          </Field>
+          <Field label="First prompt" hint="How New Task hands the agent its first prompt.">
+            <Stack direction="row" gap="md">
+              <Select
+                options={[...PROMPT_STYLES]}
                 value={configured.prompt.kind}
-                onchange={(event) => setField(agent, "promptStyle", event.currentTarget.value)}
-                aria-label="{agent.label} first prompt"
-              >
-                {#each PROMPT_STYLES as style (style.value)}
-                  <option value={style.value}>{style.label}</option>
-                {/each}
-              </select>
+                label="{agent.label} first prompt"
+                onchange={(value) => setField(agent, "promptStyle", value)}
+              />
               {#if configured.prompt.kind === "flag"}
-                <input
-                  class="input mono flag"
-                  type="text"
-                  spellcheck="false"
-                  placeholder={defaults.promptFlag || "--prompt"}
-                  value={override?.promptFlag ?? defaults.promptFlag}
-                  onchange={(event) => setField(agent, "promptFlag", event.currentTarget.value)}
-                  aria-label="{agent.label} prompt flag"
-                />
+                <Stack grow>
+                  <Input
+                    mono
+                    width="fill"
+                    spellcheck="false"
+                    placeholder={defaults.promptFlag || "--prompt"}
+                    value={override?.promptFlag ?? defaults.promptFlag}
+                    onchange={(event) => setField(agent, "promptFlag", event.currentTarget.value)}
+                    aria-label="{agent.label} prompt flag"
+                  />
+                </Stack>
               {/if}
-            </div>
-            <span class="hint">How New Task hands the agent its first prompt.</span>
-          </div>
-          <label class="field">
-            <span>Extra arguments</span>
-            <input
-              class="input mono"
-              type="text"
+            </Stack>
+          </Field>
+          <Field label="Extra arguments">
+            <Input
+              mono
+              width="fill"
               spellcheck="false"
               placeholder="such as --model ..."
               value={settings.aiAgentArgs[agent.id] ?? ""}
               onchange={(event) => setArgs(agent.id, event.currentTarget.value)}
               aria-label="{agent.label} extra arguments"
             />
-          </label>
-          <div class="preview">
-            <div><span class="dim">Ask before acting:</span> <code>{preview(agent, "normal")}</code></div>
-            <div><span class="dim">Full autonomy:</span> <code>{preview(agent, "full")}</code></div>
-          </div>
-          <div class="actions">
+          </Field>
+          <Stack gap="xxs" padding="md" surface="alt" label="Command preview">
+            <Text size="xsmall" wrap="anywhere">
+              <Text tone="dim">Ask before acting:</Text>
+              <Text mono>{preview(agent, "normal")}</Text>
+            </Text>
+            <Text size="xsmall" wrap="anywhere">
+              <Text tone="dim">Full autonomy:</Text>
+              <Text mono>{preview(agent, "full")}</Text>
+            </Text>
+          </Stack>
+          <Stack direction="row" align="center" gap="md">
             {#if !path && agentPrograms.found !== null}
-              <button class="btn small" onclick={() => void openUrl(agent.homepage)}>Get {agent.label}</button>
+              <Button size="small" onclick={() => void openUrl(agent.homepage)}>Get {agent.label}</Button>
             {/if}
-            <span class="spacer"></span>
-            <button class="btn small" disabled={!changed} onclick={() => reset(agent)}>Reset to Default</button>
-          </div>
-        </div>
+            <Spacer />
+            <Button size="small" disabled={!changed} onclick={() => reset(agent)}>Reset to Default</Button>
+          </Stack>
+        </Stack>
       {/if}
-    </div>
+    </Card>
   {/each}
-</div>
-
-<style>
-  .agents {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .agents-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
-
-  .hint {
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .agent {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .agent.expanded {
-    border-color: var(--border-strong);
-  }
-
-  .agent-head {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    min-width: 0;
-    padding: 7px 10px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .name {
-    flex: none;
-    font-weight: 500;
-  }
-
-  .tag {
-    flex: none;
-    padding: 0 5px;
-    border-radius: 4px;
-    font-size: 10px;
-    line-height: 16px;
-    color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-
-  .found {
-    flex: 1;
-    min-width: 0;
-    font-size: 11px;
-    font-family: var(--font-mono);
-    color: var(--text-dim);
-    text-align: right;
-  }
-
-  .missing {
-    flex: 1;
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: right;
-  }
-
-  .fields {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 4px 12px 12px 28px;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .field > span:first-child {
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .mono {
-    font-family: var(--font-mono);
-    font-size: 12px;
-  }
-
-  .row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .flag {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .preview {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    background: var(--panel-alt);
-    font-size: 11px;
-    overflow-wrap: anywhere;
-  }
-
-  .preview code {
-    font-family: var(--font-mono);
-  }
-
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-</style>
+</Stack>

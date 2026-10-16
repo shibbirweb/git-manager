@@ -2,9 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { NodeInstall, NodeWanted } from "$lib/types";
 import { matchNodeSpec, nodeBadge, pickNode, SHELL_DEFAULT, specTest } from "./nodeVersion";
 
-const installs: NodeInstall[] = ["25.9.0", "24.15.0", "22.23.1", "22.9.0", "20.18.3", "20.18.0", "18.20.6", "18.20.4", "16.20.2"].map(
-  (version) => ({ version, binDir: `/nvm/v${version}/bin`, manager: "nvm" }),
-);
+const installs: NodeInstall[] = [
+  "25.9.0",
+  "24.15.0",
+  "22.23.1",
+  "22.9.0",
+  "20.18.3",
+  "20.18.0",
+  "18.20.6",
+  "18.20.4",
+  "16.20.2",
+].map((version) => ({ version, binDir: `/nvm/v${version}/bin`, manager: "nvm" }));
 
 function matched(spec: string): string | null {
   return matchNodeSpec(spec, installs)?.version ?? null;

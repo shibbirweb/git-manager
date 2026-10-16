@@ -42,6 +42,7 @@ import {
   type ComputerAwakeMode,
   type ConfigName,
   type DiffLayout,
+  type DiffPanes,
   type Json,
   type LeftPanel,
   type LoadErrors,
@@ -90,6 +91,7 @@ export {
   CARET_EXTRA_RANGE,
   COMMIT_BOX_LAYOUT_CHOICES,
   DIFF_LAYOUT_CHOICES,
+  DIFF_PANES_CHOICES,
   EDITOR_CURSOR_BLINKING_CHOICES,
   EDITOR_CURSOR_STYLE_CHOICES,
   EDITOR_CURSOR_WIDTH_RANGE,
@@ -125,6 +127,7 @@ export type {
   AutoSaveMode,
   CommitBoxLayout,
   DiffLayout,
+  DiffPanes,
   EditorCursorBlinking,
   EditorCursorStyle,
   LeftPanel,
@@ -155,6 +158,7 @@ class SettingsStore {
   uiFontSize = $state(initialPreferences.uiFontSize);
   fileIcons = $state<FileIconMode>(initialPreferences.fileIcons);
   roundedPanels = $state(initialPreferences.roundedPanels);
+  projectColorHeader = $state(initialPreferences.projectColorHeader);
   fileToolbar = $state<FileToolbarPlacement>(initialPreferences.fileToolbar);
   fileToolbarBreadcrumbs = $state(initialPreferences.fileToolbarBreadcrumbs);
   fileToolbarBadges = $state(initialPreferences.fileToolbarBadges);
@@ -214,6 +218,8 @@ class SettingsStore {
   updateChannel = $state<UpdateChannelSetting>(initialPreferences.updateChannel);
   ignoreWhitespace = $state(initialPreferences.ignoreWhitespace);
   diffLayout = $state<DiffLayout>(initialPreferences.diffLayout);
+  changesDiffPanes = $state<DiffPanes>(initialPreferences.changesDiffPanes);
+  mergeDiffPanes = $state<DiffPanes>(initialPreferences.mergeDiffPanes);
   logAllRefs = $state(initialPreferences.logAllRefs);
   autoFetch = $state(initialPreferences.autoFetch);
   autoFetchIntervalMinutes = $state(initialPreferences.autoFetchIntervalMinutes);
@@ -294,9 +300,11 @@ class SettingsStore {
   leftBarVisible = $state(initialState.leftBarVisible);
   rightBarVisible = $state(initialState.rightBarVisible);
   diffSplitRatio = $state(initialState.diffSplitRatio);
+  threePaneSplit = $state.raw(initialState.threePaneSplit);
   leftPanel = $state<LeftPanel>(initialState.leftPanel);
   sidebarWidth = $state(initialState.sidebarWidth);
   explorerWidth = $state(initialState.explorerWidth);
+  commitInfoHeight = $state(initialState.commitInfoHeight);
   terminalHeight = $state(initialState.terminalHeight);
   terminalListWidth = $state(initialState.terminalListWidth);
   changesListWidth = $state(initialState.changesListWidth);
@@ -363,7 +371,12 @@ class SettingsStore {
     this.listenToOtherWindows();
     this.applyAppearance();
     if (this.loadError || this.stateLoadError) {
-      const file = this.loadError && this.stateLoadError ? "settings.json and state.json" : this.loadError ? "settings.json" : "state.json";
+      const file =
+        this.loadError && this.stateLoadError
+          ? "settings.json and state.json"
+          : this.loadError
+            ? "settings.json"
+            : "state.json";
       toast.error(`${file} could not be read`, "It is left as it is. Open Settings to try again or reset it.");
     }
   }
@@ -409,6 +422,7 @@ class SettingsStore {
       uiFontSize: this.uiFontSize,
       fileIcons: this.fileIcons,
       roundedPanels: this.roundedPanels,
+      projectColorHeader: this.projectColorHeader,
       fileToolbar: this.fileToolbar,
       fileToolbarBreadcrumbs: this.fileToolbarBreadcrumbs,
       fileToolbarBadges: this.fileToolbarBadges,
@@ -468,6 +482,8 @@ class SettingsStore {
       updateChannel: this.updateChannel,
       ignoreWhitespace: this.ignoreWhitespace,
       diffLayout: this.diffLayout,
+      changesDiffPanes: this.changesDiffPanes,
+      mergeDiffPanes: this.mergeDiffPanes,
       logAllRefs: this.logAllRefs,
       autoFetch: this.autoFetch,
       autoFetchIntervalMinutes: this.autoFetchIntervalMinutes,
@@ -548,9 +564,11 @@ class SettingsStore {
       leftBarVisible: this.leftBarVisible,
       rightBarVisible: this.rightBarVisible,
       diffSplitRatio: this.diffSplitRatio,
+      threePaneSplit: this.threePaneSplit,
       leftPanel: this.leftPanel,
       sidebarWidth: this.sidebarWidth,
       explorerWidth: this.explorerWidth,
+      commitInfoHeight: this.commitInfoHeight,
       terminalHeight: this.terminalHeight,
       terminalListWidth: this.terminalListWidth,
       changesListWidth: this.changesListWidth,
@@ -571,7 +589,10 @@ class SettingsStore {
 
   /** A file's whole content as this window holds it now. */
   private fileJson(configName: ConfigName): JsonObject {
-    const value = configName === "state" ? stateToJson(this.uiState(), this.extraState) : { ...this.extraPreferences, ...this.preferences() };
+    const value =
+      configName === "state"
+        ? stateToJson(this.uiState(), this.extraState)
+        : { ...this.extraPreferences, ...this.preferences() };
     return cloneJson(value) as JsonObject;
   }
 
@@ -775,12 +796,13 @@ class SettingsStore {
   /** Share of the editor area the Markdown preview takes, clamped; saved with state.json. */
   setMarkdownPreviewRatio(ratio: number, persist: boolean): void {
     const [min, max] = MARKDOWN_PREVIEW_RATIO_RANGE;
-    this.markdownPreviewRatio = Number.isFinite(ratio) ? Math.min(max, Math.max(min, ratio)) : this.markdownPreviewRatio;
+    this.markdownPreviewRatio = Number.isFinite(ratio)
+      ? Math.min(max, Math.max(min, ratio))
+      : this.markdownPreviewRatio;
     if (persist) {
       this.save();
     }
   }
-
 
   /** Shows or hides the Changes tab's file list. */
   toggleChangesList(): void {
@@ -811,6 +833,11 @@ class SettingsStore {
   /** The right sidebar is open on the AI panel. */
   get aiPanelShown(): boolean {
     return this.explorerOpen && this.rightPanel === "ai";
+  }
+
+  /** The right sidebar is open on the Notifications panel. */
+  get notificationsPanelShown(): boolean {
+    return this.explorerOpen && this.rightPanel === "notifications";
   }
 
   /** Shows `panel` in the right sidebar, opening it. */
@@ -845,16 +872,16 @@ class SettingsStore {
     this.lastSessionFile = workspaceFile;
     this.sessionRecorded = true;
     if (workspaceFile) {
-      this.recentWorkspaceFiles = [workspaceFile, ...this.recentWorkspaceFiles.filter((file) => file !== workspaceFile)].slice(
-        0,
-        MAX_RECENT,
-      );
+      this.recentWorkspaceFiles = [
+        workspaceFile,
+        ...this.recentWorkspaceFiles.filter((file) => file !== workspaceFile),
+      ].slice(0, MAX_RECENT);
     } else if (folderRoots.length > 1) {
       const key = folderRoots.join("\n");
-      this.recentWorkspaces = [folderRoots, ...this.recentWorkspaces.filter((folders) => folders.join("\n") !== key)].slice(
-        0,
-        MAX_RECENT,
-      );
+      this.recentWorkspaces = [
+        folderRoots,
+        ...this.recentWorkspaces.filter((folders) => folders.join("\n") !== key),
+      ].slice(0, MAX_RECENT);
     }
     this.save();
   }
@@ -941,6 +968,8 @@ class SettingsStore {
     root.style.setProperty("--code-size", `${this.editorFontSize}px`);
     root.style.setProperty("--code-line-height", String(this.editorLineHeight));
     root.style.setProperty("--font-mono", this.editorFontFamily);
+    // The UI library's monospace text (hashes, paths, search results) uses the same font as the editor.
+    root.style.setProperty("--font-family-mono", this.editorFontFamily);
     root.style.setProperty("--code-weight", String(this.editorFontWeight));
     root.setAttribute("data-ligatures", this.fontLigatures ? "on" : "off");
     root.toggleAttribute("data-rounded-panels", this.roundedPanels);

@@ -13,7 +13,13 @@ describe("selectionInfo", () => {
     expect(info.lineCount).toBe(3);
     // CodeMirror keeps ranges in document order; the main one moves with them.
     expect(info.main).toBe(1);
-    expect(info.ranges[1]).toMatchObject({ anchor: { line: 2, column: 3 }, head: { line: 2, column: 8 }, from: 8, to: 13, text: "cond " });
+    expect(info.ranges[1]).toMatchObject({
+      anchor: { line: 2, column: 3 },
+      head: { line: 2, column: 8 },
+      from: 8,
+      to: 13,
+      text: "cond ",
+    });
     expect(info.ranges).toHaveLength(2);
   });
 });

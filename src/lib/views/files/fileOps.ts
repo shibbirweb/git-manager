@@ -4,7 +4,8 @@
 import type { MenuPlatform } from "$lib/menu/menuIds";
 import { parentOf } from "$lib/stores/workspacePaths";
 
-export type FileOp = "newFile" | "newFolder" | "cut" | "copy" | "paste" | "duplicate" | "rename" | "trash" | "copyPaths";
+export type FileOp =
+  "newFile" | "newFolder" | "cut" | "copy" | "paste" | "duplicate" | "rename" | "trash" | "copyPaths";
 
 /** A row the operations act on. */
 export interface FileOpTarget {

@@ -45,16 +45,28 @@ export function foldRanges(
 }
 
 /** The run still folded after showing lines at one edge, or null when it opens fully. */
-export function revealFold(range: FoldRange, edge: FoldEdge, step = FOLD_STEP, minSize = FOLD_MIN_SIZE): FoldRange | null {
+export function revealFold(
+  range: FoldRange,
+  edge: FoldEdge,
+  step = FOLD_STEP,
+  minSize = FOLD_MIN_SIZE,
+): FoldRange | null {
   // A step that would leave only a sliver folded opens the rest too.
   if (edge === "all" || range.last - range.first + 1 - step < minSize) {
     return null;
   }
-  return edge === "top" ? { first: range.first + step, last: range.last } : { first: range.first, last: range.last - step };
+  return edge === "top"
+    ? { first: range.first + step, last: range.last }
+    : { first: range.first, last: range.last - step };
 }
 
 /** The edges that show lines a step at a time: only edges next to visible code, and only when a step leaves a fold. */
-export function foldEdges(range: FoldRange, lineCount: number, step = FOLD_STEP, minSize = FOLD_MIN_SIZE): { top: boolean; bottom: boolean } {
+export function foldEdges(
+  range: FoldRange,
+  lineCount: number,
+  step = FOLD_STEP,
+  minSize = FOLD_MIN_SIZE,
+): { top: boolean; bottom: boolean } {
   if (range.last - range.first + 1 - step < minSize) {
     return { top: false, bottom: false };
   }

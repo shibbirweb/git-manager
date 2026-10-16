@@ -62,7 +62,10 @@ export const APP_COMMANDS: readonly CommandSpec[] = [
   appCommand("terminal.new", "New Terminal", "Terminal", "Ctrl+Shift+`"),
   appCommand("search.files", "Search Everywhere: Files", "Edit", "CmdOrCtrl+Shift+O"),
   { ...appCommand("commands.clearRecent", "Clear Recently Used", "Command Palette", null), needsWorkspace: false },
-  { ...appCommand("settings.keyboardShortcuts", "Open Keyboard Shortcuts", "Preferences", null), needsWorkspace: false },
+  {
+    ...appCommand("settings.keyboardShortcuts", "Open Keyboard Shortcuts", "Preferences", null),
+    needsWorkspace: false,
+  },
 ];
 
 /**
@@ -101,7 +104,10 @@ function categoryOf(menuText: string): string {
  * Every action item of `menus` as a command, in menu order, then `extras`. An item listed
  * twice (Settings in the app and File menus) keeps its first place.
  */
-export function buildCommandSpecs(menus: readonly TopMenu[], extras: readonly CommandSpec[] = APP_COMMANDS): CommandSpec[] {
+export function buildCommandSpecs(
+  menus: readonly TopMenu[],
+  extras: readonly CommandSpec[] = APP_COMMANDS,
+): CommandSpec[] {
   const specs: CommandSpec[] = [];
   const seen = new Set<CommandId>();
   const add = (action: MenuAction, text: string, accelerator: string | null, check: boolean, category: string) => {
@@ -128,7 +134,13 @@ export function buildCommandSpecs(menus: readonly TopMenu[], extras: readonly Co
       } else if (entry.kind === "submenu") {
         walk(entry.items, `${category} > ${entry.text}`);
       } else if (entry.kind === "recent") {
-        add(entry.clear.action, entry.clear.text, entry.clear.accelerator, entry.clear.check, `${category} > ${entry.text}`);
+        add(
+          entry.clear.action,
+          entry.clear.text,
+          entry.clear.accelerator,
+          entry.clear.check,
+          `${category} > ${entry.text}`,
+        );
       }
     }
   };
@@ -156,11 +168,17 @@ export function effectiveShortcut(spec: CommandSpec, overrides: ShortcutOverride
  * The accelerator each native menu item shows: its custom key when it has one (null: none),
  * else the menu's own. A key the menu leaves off on purpose (view.changes) stays off.
  */
-export function menuAccelerators(menus: readonly TopMenu[], overrides: ShortcutOverrides = {}): Map<MenuAction, string | null> {
+export function menuAccelerators(
+  menus: readonly TopMenu[],
+  overrides: ShortcutOverrides = {},
+): Map<MenuAction, string | null> {
   const accelerators = new Map<MenuAction, string | null>();
   for (const entry of actionEntries([...menus])) {
     if (!accelerators.has(entry.action)) {
-      accelerators.set(entry.action, Object.hasOwn(overrides, entry.action) ? (overrides[entry.action] ?? null) : entry.accelerator);
+      accelerators.set(
+        entry.action,
+        Object.hasOwn(overrides, entry.action) ? (overrides[entry.action] ?? null) : entry.accelerator,
+      );
     }
   }
   return accelerators;
@@ -319,7 +337,11 @@ function groupReason(commandId: CommandId, inputs: MenuInputs): string {
   if (!groups?.enabled) {
     return "Split editor is off in Settings";
   }
-  if (commandId === "window.closeGroup" || commandId === "window.focusNextGroup" || commandId === "window.focusPreviousGroup") {
+  if (
+    commandId === "window.closeGroup" ||
+    commandId === "window.focusNextGroup" ||
+    commandId === "window.focusPreviousGroup"
+  ) {
     return "The editor is not split";
   }
   if (commandId === "window.focusLeftGroup") {
@@ -380,7 +402,12 @@ const RECENT_BONUS = 8;
  * others alphabetically, disabled ones last. With one: every match, enabled first, best
  * score first, recently used ones lifted a little.
  */
-export function paletteList(views: readonly CommandView[], query: string, recent: readonly string[], platform: MenuPlatform): PaletteList {
+export function paletteList(
+  views: readonly CommandView[],
+  query: string,
+  recent: readonly string[],
+  platform: MenuPlatform,
+): PaletteList {
   const listed = views.filter((view) => view.spec.inPalette);
   const ranks = recentRanks(recent);
   const label = (view: CommandView) => commandLabel(view.spec.category, view.title);
@@ -407,7 +434,10 @@ export function paletteList(views: readonly CommandView[], query: string, recent
     matches.push({ view, score: match.score + bonus, indices: match.indices });
   }
   matches.sort(
-    (a, b) => Number(b.view.enabled) - Number(a.view.enabled) || b.score - a.score || label(a.view).localeCompare(label(b.view)),
+    (a, b) =>
+      Number(b.view.enabled) - Number(a.view.enabled) ||
+      b.score - a.score ||
+      label(a.view).localeCompare(label(b.view)),
   );
   return { recent: [], other: matches.map((match) => toItem(match.view, match.indices, platform)) };
 }

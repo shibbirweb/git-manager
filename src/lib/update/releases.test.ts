@@ -51,7 +51,12 @@ describe("downloadAsset", () => {
   it("picks the file for each platform", () => {
     expect(downloadAsset(assets, "macOS")?.browser_download_url).toBe("https://x/dmg");
     expect(downloadAsset(assets, "Windows")?.browser_download_url).toBe("https://x/exe");
-    expect(downloadAsset(assets.filter((asset) => !asset.name.endsWith(".exe")), "Windows")?.browser_download_url).toBe("https://x/msi");
+    expect(
+      downloadAsset(
+        assets.filter((asset) => !asset.name.endsWith(".exe")),
+        "Windows",
+      )?.browser_download_url,
+    ).toBe("https://x/msi");
   });
 
   it("has nothing for a platform without a build", () => {
@@ -69,7 +74,10 @@ describe("newerReleases", () => {
   });
 
   it("offers betas on the beta channel, newest first", () => {
-    expect(newerReleases("0.2.0", "beta", releases).map((release) => release.tag)).toEqual(["v0.3.0-beta.1", "v0.2.1-beta.1"]);
+    expect(newerReleases("0.2.0", "beta", releases).map((release) => release.tag)).toEqual([
+      "v0.3.0-beta.1",
+      "v0.2.1-beta.1",
+    ]);
   });
 
   it("offers nothing when up to date", () => {
@@ -105,7 +113,9 @@ describe("skipped versions", () => {
 
 describe("renderMarkdown", () => {
   it("renders headings, lists and inline formatting", () => {
-    const html = renderMarkdown("### Added\n\n- **Tabs** with `preview`\n  wrapped line\n- [Docs](https://example.com)\n\nA paragraph.");
+    const html = renderMarkdown(
+      "### Added\n\n- **Tabs** with `preview`\n  wrapped line\n- [Docs](https://example.com)\n\nA paragraph.",
+    );
     expect(html).toContain("<h4>Added</h4>");
     expect(html).toContain("<li><strong>Tabs</strong> with <code>preview</code> wrapped line</li>");
     expect(html).toContain('<a href="https://example.com" data-external>Docs</a>');

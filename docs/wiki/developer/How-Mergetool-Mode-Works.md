@@ -89,7 +89,7 @@ That last step is what makes quitting safe. The red close button goes through Ca
 | `src-tauri/src/git/conflicts.rs` | `load_files`, shared `build_document` |
 | `src/lib/App.svelte` | Picks `MergeToolApp` for the mergetool mode |
 | `src/lib/merge/MergeToolApp.svelte` | The standalone window: load, apply, cancel, the close request |
-| `src/lib/merge/MergeEditor.svelte` | The three-pane merge tool, shared with the full app |
+| `src/lib/merge/MergeEditor.svelte`, `mergeSession.svelte.ts` | The three-pane merge tool, shared with the full app |
 
 ## Design decisions
 

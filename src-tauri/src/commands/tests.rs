@@ -305,7 +305,7 @@ fn reset_and_checkout_commit() {
     assert_eq!(log.len(), 1);
     let details = block_on(history::get_commit_details(repo.path_string(), first.clone())).unwrap();
     assert_eq!(details.files.len(), 1);
-    let diff = block_on(history::get_commit_file_diff(repo.path_string(), first, "a.txt".to_string(), None)).unwrap();
+    let diff = block_on(history::get_commit_file_diff(repo.path_string(), first, "a.txt".to_string(), None, None)).unwrap();
     assert_eq!(diff.modified, "one\n");
 }
 

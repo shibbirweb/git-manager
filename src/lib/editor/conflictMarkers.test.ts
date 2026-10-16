@@ -23,13 +23,25 @@ const mergeStyle = [
   "after",
 ].join("\n");
 
-const diff3Style = ["x", "<<<<<<< ours", "mine", "||||||| base", "original", "=======", "yours", ">>>>>>> theirs", "y"].join("\n");
+const diff3Style = [
+  "x",
+  "<<<<<<< ours",
+  "mine",
+  "||||||| base",
+  "original",
+  "=======",
+  "yours",
+  ">>>>>>> theirs",
+  "y",
+].join("\n");
 
 function resolve(text: string, index: number, choice: "current" | "incoming" | "both"): string {
   const document = doc(text);
   const region = findConflictsInDoc(document)[index];
   const edit = resolveEdit(document, region, choice);
-  return ChangeSet.of(edit ? [edit] : [], document.length).apply(document).toString();
+  return ChangeSet.of(edit ? [edit] : [], document.length)
+    .apply(document)
+    .toString();
 }
 
 describe("findConflictsInDoc", () => {
@@ -97,7 +109,19 @@ describe("resolving", () => {
 });
 
 describe("updateConflicts", () => {
-  const pieces = ["text", "<<<<<<< HEAD", "<<<<", "<<<", "=======", "===", ">>>>>>> x", ">>>", "||||||| base", "\n", "a\nb"];
+  const pieces = [
+    "text",
+    "<<<<<<< HEAD",
+    "<<<<",
+    "<<<",
+    "=======",
+    "===",
+    ">>>>>>> x",
+    ">>>",
+    "||||||| base",
+    "\n",
+    "a\nb",
+  ];
 
   it("matches a full scan after random edits", () => {
     let seed = 3;

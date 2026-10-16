@@ -119,7 +119,9 @@ export function openTarget(state: GroupsState, tabPath: string, toSide = false):
 function withGroup(state: GroupsState, groupId: number, next: TabsState): GroupsState {
   return {
     ...state,
-    groups: state.groups.map((group) => (group.id === groupId ? { id: group.id, tabs: next.tabs, active: next.active } : group)),
+    groups: state.groups.map((group) =>
+      group.id === groupId ? { id: group.id, tabs: next.tabs, active: next.active } : group,
+    ),
   };
 }
 
@@ -127,12 +129,21 @@ function withGroup(state: GroupsState, groupId: number, next: TabsState): Groups
  * Adds group `groupId` when it is the next id and there is room, by splitting `anchorId`
  * (the focused group by default) in `direction`.
  */
-function ensureGroup(state: GroupsState, groupId: number, direction: SplitDirection, anchorId = state.focused): GroupsState {
+function ensureGroup(
+  state: GroupsState,
+  groupId: number,
+  direction: SplitDirection,
+  anchorId = state.focused,
+): GroupsState {
   if (groupById(state, groupId) || groupId !== state.nextId || state.groups.length >= MAX_GROUPS) {
     return state;
   }
   const anchor = groupById(state, anchorId) ?? focusedGroup(state);
-  const added = { ...state, groups: [...state.groups, { id: groupId, tabs: [], active: null }], nextId: state.nextId + 1 };
+  const added = {
+    ...state,
+    groups: [...state.groups, { id: groupId, tabs: [], active: null }],
+    nextId: state.nextId + 1,
+  };
   return withLayout(added, splitLayout(state.layout, anchor.id, groupId, direction));
 }
 
@@ -265,7 +276,10 @@ export function moveToOtherGroup(state: GroupsState, groupId: number, tabPath: s
   // The moved tab keeps its flags, unsaved edits included.
   return mapGroups(opened, (group) =>
     group.id === target
-      ? { ...group, tabs: group.tabs.map((candidate) => (candidate.path === tabPath ? { ...tab, preview: false } : candidate)) }
+      ? {
+          ...group,
+          tabs: group.tabs.map((candidate) => (candidate.path === tabPath ? { ...tab, preview: false } : candidate)),
+        }
       : group,
   );
 }
@@ -278,7 +292,10 @@ export function closeGroup(state: GroupsState, groupId: number): GroupsState {
   const groups = state.groups.filter((group) => group.id !== groupId);
   const layout = keepInLayout(state.layout, new Set(groups.map((group) => group.id))) ?? leafLayout(groups[0].id);
   const next = withLayout(state, layout);
-  return { ...next, focused: state.focused === groupId ? (otherGroup(state, groupId) ?? next.groups[0]).id : state.focused };
+  return {
+    ...next,
+    focused: state.focused === groupId ? (otherGroup(state, groupId) ?? next.groups[0]).id : state.focused,
+  };
 }
 
 /** A splitter was dragged: the split at `path` (see groupLayout.ts) gets `ratio`. */
@@ -366,10 +383,15 @@ export function sideOf(state: GroupsState, tabPath: string): number {
  * Restored groups as one state: group `index` gets id `index`, `layout` uses those ids
  * (side by side when it is missing or does not fit), and groups left without tabs close.
  */
-export function restoredGroups(saved: readonly TabsState[], layout: GroupLayout | null, focusedIndex: number): GroupsState {
+export function restoredGroups(
+  saved: readonly TabsState[],
+  layout: GroupLayout | null,
+  focusedIndex: number,
+): GroupsState {
   const all = (saved.length > 0 ? saved : [{ tabs: [], active: null }]).slice(0, MAX_GROUPS);
   const groups: EditorGroup[] = all.map((group, index) => ({ id: index, tabs: group.tabs, active: group.active }));
-  const fitting = layout && parseGroupLayout(layout, groups.length) ? layout : rowLayout(groups.map((group) => group.id));
+  const fitting =
+    layout && parseGroupLayout(layout, groups.length) ? layout : rowLayout(groups.map((group) => group.id));
   const state: GroupsState = withLayout({ groups, layout: fitting, focused: 0, nextId: groups.length }, fitting);
   const focused = groupById(state, focusedIndex) ? focusedIndex : state.groups[0].id;
   return dropEmptyGroups({ ...state, focused }, false);

@@ -1,5 +1,6 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
-import { dropText, shellQuote } from "./dropPaths";
+import { dropText, shellQuote, terminalKeyAt, terminalScreenId } from "./dropPaths";
 
 describe("shellQuote", () => {
   it("leaves plain paths as they are", () => {
@@ -27,5 +28,17 @@ describe("dropText", () => {
   it("types nothing for no usable paths", () => {
     expect(dropText([], "posix")).toBe("");
     expect(dropText(["", "/a\0b"], "posix")).toBe("");
+  });
+});
+
+describe("terminalKeyAt", () => {
+  it("finds the terminal screen around an element by its id", () => {
+    const screen = document.createElement("div");
+    screen.id = terminalScreenId(7);
+    const row = document.createElement("span");
+    screen.append(row);
+    expect(terminalKeyAt(row)).toBe(7);
+    expect(terminalKeyAt(document.createElement("div"))).toBeNull();
+    expect(terminalKeyAt(null)).toBeNull();
   });
 });

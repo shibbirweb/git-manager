@@ -170,7 +170,9 @@ describe("retargetTabs", () => {
 
   it("never touches commit tabs", () => {
     const commit = commitTabPath("/w", "abc123");
-    const next = retargetTabs({ tabs: [{ path: commit, preview: false, dirty: false }], active: commit }, [{ from: "/w", to: "/x" }]);
+    const next = retargetTabs({ tabs: [{ path: commit, preview: false, dirty: false }], active: commit }, [
+      { from: "/w", to: "/x" },
+    ]);
     expect(next.tabs[0].path).toBe(commit);
   });
 });
@@ -178,7 +180,10 @@ describe("retargetTabs", () => {
 describe("fileTabsUnder", () => {
   it("lists file tabs of the entries and inside folders, never pseudo tabs", () => {
     const commit = commitTabPath("/w/src", "abc123");
-    expect(fileTabsUnder(["/w/src/a.ts", "/w/srcx/b.ts", commit, "/w/c.ts"], ["/w/src", "/w/c.ts"])).toEqual(["/w/src/a.ts", "/w/c.ts"]);
+    expect(fileTabsUnder(["/w/src/a.ts", "/w/srcx/b.ts", commit, "/w/c.ts"], ["/w/src", "/w/c.ts"])).toEqual([
+      "/w/src/a.ts",
+      "/w/c.ts",
+    ]);
   });
 });
 
@@ -338,7 +343,10 @@ describe("replaceTabPath", () => {
       ],
       active: untitled,
     };
-    expect(replaceTabPath(state, untitled, "/w/a.ts")).toEqual({ tabs: [{ path: "/w/a.ts", preview: false, dirty: false }], active: "/w/a.ts" });
+    expect(replaceTabPath(state, untitled, "/w/a.ts")).toEqual({
+      tabs: [{ path: "/w/a.ts", preview: false, dirty: false }],
+      active: "/w/a.ts",
+    });
   });
 
   it("leaves a group without the tab alone", () => {
@@ -347,7 +355,10 @@ describe("replaceTabPath", () => {
   });
 
   it("labels Untitled tabs as pseudo tabs, never as files", () => {
-    const labels = tabLabels([{ path: untitled, preview: false, dirty: false }, { path: "/w/Untitled", preview: false, dirty: false }]);
+    const labels = tabLabels([
+      { path: untitled, preview: false, dirty: false },
+      { path: "/w/Untitled", preview: false, dirty: false },
+    ]);
     expect(labels.get(untitled)).toEqual({ name: "Untitled", hint: null });
     expect(labels.get("/w/Untitled")).toEqual({ name: "Untitled", hint: null });
     expect(fileTabsUnder([untitled, "/w/a.ts"], ["/w"])).toEqual(["/w/a.ts"]);

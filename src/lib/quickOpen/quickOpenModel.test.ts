@@ -5,17 +5,13 @@ import type { OutlineItem } from "$lib/types";
 import {
   commandRows,
   fileRows,
-  firstSelectableRow,
   helpRows,
-  isSelectableRow,
   lineRow,
   matchingRecent,
-  moveSelectableRow,
   outlineRows,
   parseGoToLine,
   parsePickQuery,
   parseQuickOpen,
-  type QuickRow,
   recentOrder,
 } from "./quickOpenModel";
 
@@ -68,7 +64,10 @@ describe("Go to Line", () => {
 
   it("describes where Enter goes, clamped to the document", () => {
     const caret = { line: 12, column: 4, lineCount: 340 };
-    expect(lineRow("", caret)).toEqual({ label: "Current line: 12, column 4. Type a line number between 1 and 340.", target: null });
+    expect(lineRow("", caret)).toEqual({
+      label: "Current line: 12, column 4. Type a line number between 1 and 340.",
+      target: null,
+    });
     expect(lineRow("120", caret)).toEqual({ label: "Go to line 120", target: { line: 120, column: 1 } });
     expect(lineRow("120:5", caret)).toEqual({ label: "Go to line 120, column 5", target: { line: 120, column: 5 } });
     expect(lineRow("9000", caret).target).toEqual({ line: 340, column: 1 });
@@ -136,7 +135,12 @@ describe("recent files", () => {
     const recent = pathRows(["/repo/src/cart.ts"], folders);
     const results = pathRows(["/repo/src/cart.ts", "/repo/src/cart.test.ts"], folders);
     const rows = fileRows(recent, results, true);
-    expect(rows.map((row) => row.key)).toEqual(["h:recent", "r:/repo/src/cart.ts", "h:files", "f:/repo/src/cart.test.ts"]);
+    expect(rows.map((row) => row.key)).toEqual([
+      "h:recent",
+      "r:/repo/src/cart.ts",
+      "h:files",
+      "f:/repo/src/cart.test.ts",
+    ]);
     expect(fileRows([], results, true).map((row) => row.kind)).toEqual(["file", "file"]);
     expect(fileRows(recent, results, false).map((row) => row.key)).toEqual(["h:recent", "r:/repo/src/cart.ts"]);
   });
@@ -160,18 +164,5 @@ describe("rows and selection", () => {
     const rows = commandRows([command("git.push")], [command("git.pull"), command("git.fetch", false)]);
     expect(rows.map((row) => row.key)).toEqual(["h:recent", "r:git.push", "h:other", "c:git.pull", "c:git.fetch"]);
     expect(commandRows([], [command("git.pull")]).map((row) => row.kind)).toEqual(["command"]);
-  });
-
-  it("skips headings and messages, wrapping single steps", () => {
-    const rows: QuickRow[] = commandRows([command("a")], [command("b"), command("c")]);
-    expect(firstSelectableRow(rows)).toBe(1);
-    expect(moveSelectableRow(rows, 1, 1)).toBe(3);
-    expect(moveSelectableRow(rows, 4, 1)).toBe(1);
-    expect(moveSelectableRow(rows, 1, -1)).toBe(4);
-    expect(moveSelectableRow(rows, 1, 10)).toBe(4);
-    const message: QuickRow[] = [{ kind: "message", key: "message", label: "Nothing" }];
-    expect(moveSelectableRow(message, 0, 1)).toBe(0);
-    expect(isSelectableRow({ kind: "line", key: "line", label: "x", target: null })).toBe(false);
-    expect(isSelectableRow({ kind: "line", key: "line", label: "x", target: { line: 1, column: 1 } })).toBe(true);
   });
 });

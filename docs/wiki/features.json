@@ -30,10 +30,13 @@
     { "page": "usage/Ignoring-Files.md", "summary": "Add files, folders or extensions to .gitignore from a right-click." },
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
     { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, with removed lines above the new ones." },
+    { "page": "usage/Staging-View.md", "summary": "HEAD, the index and the work tree in three panes; stage single changes." },
+    { "page": "usage/Revert-a-Change.md", "summary": "Throw away one change, or apply one from a commit, from any diff or the editor." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
     { "page": "usage/History-and-Log.md", "summary": "Browse the commit graph, read commits and undo or copy them." },
+    { "page": "usage/Merge-Commits.md", "summary": "See which files a merge combined, or its changes to each parent." },
     { "page": "usage/Branches-and-Tags.md", "summary": "Create, switch, merge, rebase, rename and delete branches, and browse tags." },
     { "page": "usage/Branches-Popup.md", "summary": "The JetBrains-style branch list: checkout, compare, update, push and merge any branch." },
     { "page": "usage/Remotes.md", "summary": "Fetch, pull and push, and what the ahead and behind numbers mean." },
@@ -63,6 +66,7 @@
     { "page": "usage/Settings-Files.md", "summary": "What is in ~/.gitmanager, editing settings.json by hand, and fixing a broken file." },
     { "page": "usage/Updates.md", "summary": "How Git Manager tells you about new versions, and the beta channel." },
     { "page": "usage/Status-Bar-and-Help.md", "summary": "The status bar, picking the active repository, and how to report a bug or ask for a feature." },
+    { "page": "usage/Notifications.md", "summary": "Messages about pushes, pulls and other events: pop-up balloons and the Notifications panel that keeps them." },
     { "page": "usage/Memory-Use.md", "summary": "The memory readout, its breakdown and GPU rows, and the debug memory log." },
     { "page": "usage/Clear-Cache.md", "summary": "Give back all the memory the window holds with one click; the folder and tabs come back." },
     { "page": "usage/MCP-and-CLI.md", "summary": "Let AI tools such as Claude Code, and scripts in a terminal, use Git Manager safely." },
@@ -86,17 +90,24 @@
     { "page": "developer/Terminal-Bugs-We-Fixed.md", "summary": "The terminal bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Frontend.md", "summary": "The shell, stores, Svelte 5 runes, the API bridge, keys, menus and colors." },
     { "page": "developer/How-the-Rich-Markdown-Editor-Works.md", "summary": "How the Rich Editor edits the page and patches each edit onto the file's own text, refusing files it cannot keep exactly." },
+    { "page": "developer/Rich-Markdown-Bugs-We-Fixed.md", "summary": "The Rich Editor bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Git-Menu-Links.md", "summary": "How Open Repository in Browser and the GitHub link items turn remote URLs into web pages." },
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Project-Color-And-Title-Bar.md", "summary": "The project's color glow and the macOS window buttons in the top bar." },
+    { "page": "developer/One-Diff-View.md", "summary": "How every place that shows a diff shares one view, its panes and its buttons." },
+    { "page": "developer/Diff-Bugs-We-Fixed.md", "summary": "The diff view bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Color-Theme-Bugs-We-Fixed.md", "summary": "The color theme bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/How-the-Connected-Diff-Works.md", "summary": "Side by side without padding: each side scrolls itself, bands join the changes." },
+    { "page": "developer/Rounded-Panels-Bugs-We-Fixed.md", "summary": "The rounded panels bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/MCP-and-CLI-Bugs-We-Fixed.md", "summary": "The MCP server and command line tool bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Repository-Actions-Bugs-We-Fixed.md", "summary": "The repository row and Changes title bar bugs we found, why they happened and how we fixed them." },
     { "page": "developer/How-the-Changes-Tab-Works.md", "summary": "The Changes tab opened from the status bar: every uncommitted file compared with the last commit." },
     { "page": "developer/CodeMirror-Patterns.md", "summary": "State fields, compartments, widgets, keymaps and update rules for every text pane." },
-    { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings: shapes, blinking, smooth movement and extra caret height." },
+    { "page": "developer/How-the-Cursor-Works.md", "summary": "The editor cursor settings and the rounded selection: shapes, blinking, smooth movement and extra caret height." },
     { "page": "developer/How-Editor-Features-Work.md", "summary": "Auto-close, completion, folding, indent guides, the margin line and the languages, each switchable and lazy." },
     { "page": "developer/How-the-Path-Bar-Works.md", "summary": "The slim bar above the code: breadcrumbs, badges and icon actions, and how it collapses when narrow." },
     { "page": "developer/Commands-and-Events.md", "summary": "Index of the backend commands, plus every event and channel." },
@@ -119,6 +130,10 @@
     { "page": "developer/Windows-Bugs-We-Fixed.md", "summary": "Bugs the Windows CI job found, why they happened and the fixes." },
     { "page": "developer/Windows-MCP-and-CLI.md", "summary": "The command line tool as a console program, the screenshot and quoting on Windows." },
     { "page": "developer/Docs-and-Screenshots.md", "summary": "How this wiki is built, how screenshots are taken, and keeping docs in sync." },
+    { "page": "developer/UI-Library.md", "summary": "The Svelte component library, its showcase and the design tokens shared by every platform." },
+    { "page": "developer/UI-Library-MCP.md", "summary": "The MCP server that answers AI agents' questions about components, tokens, icons and rules." },
+    { "page": "developer/UI-Library-Bugs.md", "summary": "Bugs fixed in the UI library: what you saw, why, and the fix." },
+    { "page": "developer/UI-Library-Migration.md", "summary": "How the app uses the library as a local package and moves onto it, screen by screen." },
     { "page": "developer/Contributing.md", "summary": "Code style, commits, pull requests and the docs checklist." }
   ],
   "features": [
@@ -312,6 +327,20 @@
       "screenshots": ["diff-inline.png"]
     },
     {
+      "id": "staging-view",
+      "title": "Staging view",
+      "usage": "usage/Staging-View.md",
+      "developer": "developer/How-the-Staging-View-Works.md",
+      "screenshots": ["diff-staging-view.png"]
+    },
+    {
+      "id": "revert-change",
+      "title": "Revert a change",
+      "usage": "usage/Revert-a-Change.md",
+      "developer": "developer/How-Reverting-a-Change-Works.md",
+      "screenshots": ["revert-change-diff.png", "revert-change-editor.png", "revert-change-commit.png"]
+    },
+    {
       "id": "conflicts",
       "title": "Resolving conflicts",
       "usage": "usage/Resolving-Conflicts.md",
@@ -338,6 +367,13 @@
       "usage": "usage/History-and-Log.md",
       "developer": "developer/How-the-Log-Works.md",
       "screenshots": ["log-graph.png", "commit-details.png", "log-context-menu.png"]
+    },
+    {
+      "id": "merge-commits",
+      "title": "Merge commits",
+      "usage": "usage/Merge-Commits.md",
+      "developer": "developer/How-Merge-Commits-Work.md",
+      "screenshots": ["merge-commit-files.png"]
     },
     {
       "id": "commit-tabs",
@@ -534,6 +570,13 @@
       "usage": "usage/Status-Bar-and-Help.md",
       "developer": "developer/How-the-Status-Bar-Works.md",
       "screenshots": ["status-bar.png", "help-menu.png", "settings-about.png"]
+    },
+    {
+      "id": "notifications",
+      "title": "Notifications",
+      "usage": "usage/Notifications.md",
+      "developer": "developer/How-Notifications-Work.md",
+      "screenshots": ["notification-toasts.png", "notifications-panel.png"]
     },
     {
       "id": "memory",

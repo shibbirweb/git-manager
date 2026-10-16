@@ -264,7 +264,9 @@ export function minimalCss(): string {
     ".file-type-icon{flex:none;display:block;background-color:var(--text-dim);" +
     "-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;" +
     "-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}";
-  const glyphRules = FILE_ICON_GLYPHS.map((glyph) => `.fi-g-${glyph}{-webkit-mask-image:url(${glyph}.svg);mask-image:url(${glyph}.svg)}`);
+  const glyphRules = FILE_ICON_GLYPHS.map(
+    (glyph) => `.fi-g-${glyph}{-webkit-mask-image:url(${glyph}.svg);mask-image:url(${glyph}.svg)}`,
+  );
   const tones = Object.entries(FILE_ICON_TONES).map(([tone, token]) => `.fi-t-${tone}{background-color:var(${token})}`);
   return `${[base, ...glyphRules, ...tones].join("\n")}\n`;
 }

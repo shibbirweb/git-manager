@@ -38,7 +38,13 @@ export interface MinimapLayout {
  * Lays the minimap out. A file that fits is drawn whole from the top; a longer one scrolls
  * with the editor so the top of the file is at the top and the end at the end.
  */
-export function minimapLayout({ lineCount, topLine, visibleLines, height, row = MINIMAP_ROW }: MinimapInput): MinimapLayout {
+export function minimapLayout({
+  lineCount,
+  topLine,
+  visibleLines,
+  height,
+  row = MINIMAP_ROW,
+}: MinimapInput): MinimapLayout {
   const lines = Math.max(1, lineCount);
   const documentHeight = lines * row;
   const maxTop = Math.max(0, lines - visibleLines);
@@ -62,7 +68,13 @@ export function lineAtMinimapY(layout: MinimapLayout, y: number, lineCount: numb
 }
 
 /** The top line a click puts on screen: the clicked line in the middle. */
-export function topLineForClick(layout: MinimapLayout, y: number, lineCount: number, visibleLines: number, row = MINIMAP_ROW): number {
+export function topLineForClick(
+  layout: MinimapLayout,
+  y: number,
+  lineCount: number,
+  visibleLines: number,
+  row = MINIMAP_ROW,
+): number {
   const line = lineAtMinimapY(layout, y, lineCount, row);
   return Math.min(Math.max(0, line - Math.floor(visibleLines / 2)), Math.max(0, lineCount - visibleLines));
 }
@@ -107,7 +119,13 @@ export interface MinimapRun {
  * Paint runs of a line that starts at `lineFrom`: each stretch of non-space characters with
  * one style, tabs expanded, cut at `maxColumns`. `styles` are sorted and may cover other lines.
  */
-export function lineRuns(text: string, lineFrom: number, styles: readonly StyledRange[], tabSize: number, maxColumns: number): MinimapRun[] {
+export function lineRuns(
+  text: string,
+  lineFrom: number,
+  styles: readonly StyledRange[],
+  tabSize: number,
+  maxColumns: number,
+): MinimapRun[] {
   const runs: MinimapRun[] = [];
   let column = 0;
   let styleIndex = 0;

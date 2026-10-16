@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { ProviderUsage } from "$lib/types";
-import { providerTitle, resetIn, tightestWindow, usageLevel, usageText, windowLines, windowShortName } from "./usageView";
+import {
+  providerTitle,
+  resetIn,
+  tightestWindow,
+  usageLevel,
+  usageText,
+  windowLines,
+  windowShortName,
+} from "./usageView";
 
 const NOW = 1_791_700_000_000;
 
@@ -32,7 +40,10 @@ describe("usageText", () => {
   });
 
   it("adds single models' weekly limits, such as Fable", () => {
-    const fable = { model: "Fable", window: { usedPercent: 99.4, windowMinutes: 10_080, resetsAt: NOW + 26 * 3_600_000 } };
+    const fable = {
+      model: "Fable",
+      window: { usedPercent: 99.4, windowMinutes: 10_080, resetsAt: NOW + 26 * 3_600_000 },
+    };
     const withFable = usage({ modelWeekly: [fable] });
     expect(usageText(withFable, NOW)).toBe("78% 3h 20m · 94% 2d 4h · 99% Fable 1d 2h");
     expect(tightestWindow(withFable)?.usedPercent).toBe(99.4);
@@ -40,7 +51,9 @@ describe("usageText", () => {
   });
 
   it("clamps odd numbers", () => {
-    expect(usageText(usage({ session: { usedPercent: 140, windowMinutes: 300, resetsAt: null }, weekly: null }), NOW)).toBe("100% 5h");
+    expect(
+      usageText(usage({ session: { usedPercent: 140, windowMinutes: 300, resetsAt: null }, weekly: null }), NOW),
+    ).toBe("100% 5h");
   });
 });
 
@@ -69,7 +82,10 @@ describe("resets", () => {
   });
 
   it("writes one line per window", () => {
-    expect(windowLines(usage(), NOW)).toEqual(["5-hour: 78% used, resets in 3h 20m", "Weekly: 94% used, resets in 2d 4h"]);
+    expect(windowLines(usage(), NOW)).toEqual([
+      "5-hour: 78% used, resets in 3h 20m",
+      "Weekly: 94% used, resets in 2d 4h",
+    ]);
     expect(windowLines(usage({ weekly: { usedPercent: 3, windowMinutes: 10_080, resetsAt: null } }), NOW)[1]).toBe(
       "Weekly: 3% used",
     );

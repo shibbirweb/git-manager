@@ -3,7 +3,11 @@ import type { LineHunk } from "$lib/types";
 import { changesFromHunks, hunkDiff, hunkRanges } from "./hunkDiff";
 
 /** Applies character changes to `a`, which must give `b`. */
-function apply(a: string, b: string, changes: readonly { fromA: number; toA: number; fromB: number; toB: number }[]): string {
+function apply(
+  a: string,
+  b: string,
+  changes: readonly { fromA: number; toA: number; fromB: number; toB: number }[],
+): string {
   let out = "";
   let position = 0;
   for (const change of changes) {

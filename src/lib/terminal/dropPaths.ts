@@ -17,13 +17,17 @@ export interface TerminalDragDetail {
   over: boolean;
 }
 
-/** Marks a terminal view's element; the Files panel skips drops over one, so a drop is handled once. */
-export const TERMINAL_KEY_ATTRIBUTE = "data-terminal-key";
+/** A terminal screen's element id carries its key; the Files panel skips drops over one, so a drop is handled once. */
+const SCREEN_ID_PREFIX = "terminal-screen-";
 
-/** The terminal key of the terminal view under a point's element, or null when the point is elsewhere. */
+export function terminalScreenId(terminalKey: number): string {
+  return `${SCREEN_ID_PREFIX}${terminalKey}`;
+}
+
+/** The terminal key of the terminal screen under a point's element, or null when the point is elsewhere. */
 export function terminalKeyAt(element: Element | null): number | null {
-  const view = element?.closest(`[${TERMINAL_KEY_ATTRIBUTE}]`) ?? null;
-  const value = Number(view?.getAttribute(TERMINAL_KEY_ATTRIBUTE) ?? "");
+  const view = element?.closest(`[id^="${SCREEN_ID_PREFIX}"]`) ?? null;
+  const value = Number(view?.id.slice(SCREEN_ID_PREFIX.length) ?? "");
   return view && Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 
@@ -44,6 +48,8 @@ export function shellQuote(filePath: string, style: QuoteStyle): string {
 
 /** What a drop types: each path quoted, separated and followed by a space, ready for more typing. */
 export function dropText(filePaths: string[], style: QuoteStyle): string {
-  const words = filePaths.filter((filePath) => filePath && !filePath.includes("\0")).map((filePath) => shellQuote(filePath, style));
+  const words = filePaths
+    .filter((filePath) => filePath && !filePath.includes("\0"))
+    .map((filePath) => shellQuote(filePath, style));
   return words.length > 0 ? `${words.join(" ")} ` : "";
 }

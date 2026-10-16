@@ -72,7 +72,10 @@ describe("skippedText", () => {
 
 describe("replaceSummary", () => {
   it("reports what was replaced", () => {
-    const done = outcome({ files: [file("a.ts", 8), file("b.ts", 2), file("c.ts", 1), file("d.ts", 1)], replacements: 12 });
+    const done = outcome({
+      files: [file("a.ts", 8), file("b.ts", 2), file("c.ts", 1), file("d.ts", 1)],
+      replacements: 12,
+    });
     expect(replaceSummary(done)).toEqual({ kind: "success", title: "Replaced 12 matches in 4 files", detail: "" });
   });
 
@@ -95,7 +98,9 @@ describe("replaceSummary", () => {
 describe("nothingToReplace", () => {
   it("explains an error or the skipped files", () => {
     expect(nothingToReplace(outcome({ error: "Invalid regular expression: x" }))).toBe("Invalid regular expression: x");
-    expect(nothingToReplace(outcome({ skipped: [skip("a.ts", "unsaved")] }))).toBe("Skipped 1 file with unsaved changes: a.ts.");
+    expect(nothingToReplace(outcome({ skipped: [skip("a.ts", "unsaved")] }))).toBe(
+      "Skipped 1 file with unsaved changes: a.ts.",
+    );
     expect(nothingToReplace(outcome())).toBe("");
   });
 });

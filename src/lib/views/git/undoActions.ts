@@ -8,7 +8,14 @@ import { dialogs } from "$lib/ui/dialog.svelte";
 import type { ToastAction } from "$lib/ui/toast.svelte";
 import { toast } from "$lib/ui/toast.svelte";
 import { commitDraft } from "../changes/commitDraft.svelte";
-import { type DeletedBranch, type HeadSnapshot, restoreStillValid, undoPlan, type UndoPlan, undoStillValid } from "./undoPlan";
+import {
+  type DeletedBranch,
+  type HeadSnapshot,
+  restoreStillValid,
+  undoPlan,
+  type UndoPlan,
+  undoStillValid,
+} from "./undoPlan";
 
 /** The latest branch deleted per repository in this session (the tip is gone from the reflog with it). */
 const deletedBranches = new Map<string, DeletedBranch>();
@@ -85,10 +92,14 @@ async function runPlan(repoRoot: string, plan: Exclude<UndoPlan, { kind: "none" 
   }
   // A soft undo of a commit offers its message again, like Undo Last Commit.
   const message = plan.mode === "soft" ? await api.getHeadMessage(repoRoot).catch(() => "") : "";
-  const used = await repoStore.run(plan.title, (repoPath) => api.moveHeadBack(repoPath, plan.headId, plan.commitId, plan.mode), {
-    repoPath: repoRoot,
-    success: (mode) => (mode === "mixed" ? `${plan.success}; local changes kept, files not updated` : plan.success),
-  });
+  const used = await repoStore.run(
+    plan.title,
+    (repoPath) => api.moveHeadBack(repoPath, plan.headId, plan.commitId, plan.mode),
+    {
+      repoPath: repoRoot,
+      success: (mode) => (mode === "mixed" ? `${plan.success}; local changes kept, files not updated` : plan.success),
+    },
+  );
   const draft = commitDraft.for(repoRoot);
   if (used === "soft" && message && draft.isBlank()) {
     draft.message = message.trimEnd();
@@ -99,7 +110,10 @@ async function runPlan(repoRoot: string, plan: Exclude<UndoPlan, { kind: "none" 
  * Git > Undo Last Action asks first. A toast's Undo button (`expected` set) only undoes the
  * action it belongs to, and asks only when the commit is already pushed.
  */
-export async function undoLastAction(repoRoot: string | null = repoStore.repo?.root ?? null, expected: readonly ReflogAction[] | null = null): Promise<void> {
+export async function undoLastAction(
+  repoRoot: string | null = repoStore.repo?.root ?? null,
+  expected: readonly ReflogAction[] | null = null,
+): Promise<void> {
   if (!repoRoot) {
     return;
   }

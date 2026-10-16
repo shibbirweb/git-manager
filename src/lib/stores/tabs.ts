@@ -34,7 +34,10 @@ export interface TabsState {
 export function openTab(state: TabsState, path: string, pin: boolean): TabsState {
   const existing = state.tabs.find((tab) => tab.path === path);
   if (existing) {
-    const tabs = pin && existing.preview ? state.tabs.map((tab) => (tab.path === path ? { ...tab, preview: false } : tab)) : state.tabs;
+    const tabs =
+      pin && existing.preview
+        ? state.tabs.map((tab) => (tab.path === path ? { ...tab, preview: false } : tab))
+        : state.tabs;
     return { tabs, active: path };
   }
   const opened: FileTab = { path, preview: !pin, dirty: false };
@@ -236,7 +239,9 @@ export function replaceTabPath(state: TabsState, fromPath: string, toPath: strin
     return state.active === fromPath ? { ...closed, active: toPath } : closed;
   }
   return {
-    tabs: state.tabs.map((tab) => (tab.path === fromPath ? { ...tab, path: toPath, preview: false, dirty: false } : tab)),
+    tabs: state.tabs.map((tab) =>
+      tab.path === fromPath ? { ...tab, path: toPath, preview: false, dirty: false } : tab,
+    ),
     active: state.active === fromPath ? toPath : state.active,
   };
 }

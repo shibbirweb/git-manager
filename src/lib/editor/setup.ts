@@ -4,19 +4,13 @@
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { EditorState, type Extension } from "@codemirror/state";
-import {
-  drawSelection,
-  EditorView,
-  highlightActiveLineGutter,
-  highlightSpecialChars,
-  keymap,
-  lineNumbers,
-} from "@codemirror/view";
+import { EditorView, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from "@codemirror/view";
+import { drawRoundedSelection } from "@git-manager/ui/editor/selection";
 import { settings } from "$lib/stores/settings.svelte";
 import { commandKeys } from "./commandKeys";
 import { codeKeymap } from "./editorCommands";
 import { findBar } from "./findPanel.svelte";
-import { codeHighlighters } from "./highlighter";
+import { codeHighlighters } from "@git-manager/ui/editor/highlighter";
 import { highlightActiveLineWhenEmpty } from "./activeLine";
 import { cursorOptions, editorCursor } from "./cursor";
 import { type EditorKind, featureOptions } from "./featurePlan";
@@ -99,11 +93,16 @@ export interface EditorOptions {
   lineNumbers?: boolean;
 }
 
-export function baseExtensions({ readOnly = false, kind, extensions = [], lineNumbers: numbered = true }: EditorOptions = {}): Extension[] {
+export function baseExtensions({
+  readOnly = false,
+  kind,
+  extensions = [],
+  lineNumbers: numbered = true,
+}: EditorOptions = {}): Extension[] {
   const common: Extension[] = [
     numbered ? lineNumbers() : [],
     highlightSpecialChars(),
-    drawSelection(),
+    drawRoundedSelection(),
     ...codeHighlighters.map((highlighter) => syntaxHighlighting(highlighter)),
     // Auto-close, completion, folding, guides, word highlight, margin line, sticky scroll,
     // minimap, bracket colors and matching... each switchable in Settings.

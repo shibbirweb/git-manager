@@ -39,8 +39,12 @@ describe("buildQuery", () => {
   it("is case-insensitive by default and honours Words", () => {
     const doc = "Cart cart carts";
     expect(countMatches(state(doc), buildQuery("cart", "", DEFAULT_FIND_OPTIONS)).total).toBe(3);
-    expect(countMatches(state(doc), buildQuery("cart", "", { ...DEFAULT_FIND_OPTIONS, matchCase: true })).total).toBe(2);
-    expect(countMatches(state(doc), buildQuery("cart", "", { ...DEFAULT_FIND_OPTIONS, wholeWords: true })).total).toBe(2);
+    expect(countMatches(state(doc), buildQuery("cart", "", { ...DEFAULT_FIND_OPTIONS, matchCase: true })).total).toBe(
+      2,
+    );
+    expect(countMatches(state(doc), buildQuery("cart", "", { ...DEFAULT_FIND_OPTIONS, wholeWords: true })).total).toBe(
+      2,
+    );
   });
 
   it("uses regex groups in the replacement", () => {

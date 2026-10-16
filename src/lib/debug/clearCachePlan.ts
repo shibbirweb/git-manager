@@ -19,7 +19,10 @@ function plural(count: number, noun: string): string {
 
 export function clearCachePlan(state: ClearCacheState): ClearCachePlan {
   if (state.dirtyFiles > 0) {
-    return { kind: "blocked", message: `Save or close the ${plural(state.dirtyFiles, "file")} with unsaved changes first.` };
+    return {
+      kind: "blocked",
+      message: `Save or close the ${plural(state.dirtyFiles, "file")} with unsaved changes first.`,
+    };
   }
   if (state.busy !== null) {
     return { kind: "blocked", message: `Wait until "${state.busy}" finishes.` };

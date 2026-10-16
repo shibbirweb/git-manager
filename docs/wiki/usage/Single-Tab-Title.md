@@ -2,7 +2,7 @@
 
 In single tab mode (**Tab limit** set to **Single tab**), you work on one file at a time, and a row with one lone tab in it looks a little empty. Git Manager shows that file's name in the middle of the strip instead, like a title above the code. With any other tab limit you always see normal tabs.
 
-[TODO:single-tab-title.png]
+![Single tab title](../images/single-tab-title.png)
 
 *One file open: its name sits in the middle of the strip, above the code.*
 

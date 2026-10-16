@@ -183,9 +183,13 @@ function viewMenu(platform: MenuPlatform): TopMenu {
     {
       kind: "submenu",
       text: "File Icons",
-      items: [check("view.fileIconsOff", "No Icons"), check("view.fileIconsMinimal", "Minimal"), check("view.fileIconsMaterial", "Material Icons")],
+      items: [
+        check("view.fileIconsOff", "No Icons"),
+        check("view.fileIconsMinimal", "Minimal"),
+        check("view.fileIconsMaterial", "Material Icons"),
+      ],
     },
-    item("view.notifications", "Notifications"),
+    check("view.notifications", "Notifications"),
     check("view.doNotDisturb", "Do Not Disturb"),
     item("view.clearCache", "Clear Cache"),
     separator,
@@ -483,7 +487,12 @@ export function menuSpec(platform: MenuPlatform, mode: MenuMode): TopMenu[] {
       role: null,
       items: [item("app.settings", "Settings...", "CmdOrCtrl+,"), separator, native("Quit", "Exit")],
     };
-    return [mac ? appMenu(mode) : settingsMenu, editMenu(platform, mode), windowMenu(platform, mode), helpMenu(platform, mode)];
+    return [
+      mac ? appMenu(mode) : settingsMenu,
+      editMenu(platform, mode),
+      windowMenu(platform, mode),
+      helpMenu(platform, mode),
+    ];
   }
   return [
     ...(mac ? [appMenu(mode)] : []),

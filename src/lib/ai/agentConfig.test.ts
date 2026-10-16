@@ -19,22 +19,38 @@ describe("effectiveAgent", () => {
 
   it("takes a changed command with its own first arguments", () => {
     const agent = effectiveAgent(claude, { command: "npx -y @anthropic-ai/claude-code" });
-    expect([agent.program, agent.baseArgs, agent.customized]).toEqual(["npx", ["-y", "@anthropic-ai/claude-code"], true]);
+    expect([agent.program, agent.baseArgs, agent.customized]).toEqual([
+      "npx",
+      ["-y", "@anthropic-ai/claude-code"],
+      true,
+    ]);
   });
 
   it("takes renamed full-autonomy flags, and none at all when the field is emptied", () => {
     const renamed = effectiveAgent(claude, { fullAutonomyArgs: "--permission-mode bypassPermissions" });
     expect(agentArguments(renamed, "full", "")).toEqual(["--permission-mode", "bypassPermissions"]);
-    expect(agentArguments(effectiveAgent(claude, { fullAutonomyArgs: "" }), "full", "--model opus")).toEqual(["--model", "opus"]);
+    expect(agentArguments(effectiveAgent(claude, { fullAutonomyArgs: "" }), "full", "--model opus")).toEqual([
+      "--model",
+      "opus",
+    ]);
   });
 
   it("changes how the first prompt goes", () => {
     const flagged = effectiveAgent(claude, { promptStyle: "flag", promptFlag: "--prompt" });
     expect(promptArguments(flagged, "Fix it")).toEqual({ args: ["--prompt", "Fix it"], typed: null });
-    expect(promptArguments(effectiveAgent(claude, { promptStyle: "typed" }), "Fix it")).toEqual({ args: [], typed: "Fix it" });
-    expect(promptArguments(effectiveAgent(claude, { promptStyle: "none" }), "Fix it")).toEqual({ args: [], typed: null });
+    expect(promptArguments(effectiveAgent(claude, { promptStyle: "typed" }), "Fix it")).toEqual({
+      args: [],
+      typed: "Fix it",
+    });
+    expect(promptArguments(effectiveAgent(claude, { promptStyle: "none" }), "Fix it")).toEqual({
+      args: [],
+      typed: null,
+    });
     // A flag style without a flag keeps the agent's own flag, or its own mode.
-    expect(effectiveAgent(gemini, { promptStyle: "flag", promptFlag: " " }).prompt).toEqual({ kind: "flag", flag: "--prompt-interactive" });
+    expect(effectiveAgent(gemini, { promptStyle: "flag", promptFlag: " " }).prompt).toEqual({
+      kind: "flag",
+      flag: "--prompt-interactive",
+    });
     expect(effectiveAgent(claude, { promptStyle: "flag" }).prompt).toEqual({ kind: "argument" });
   });
 

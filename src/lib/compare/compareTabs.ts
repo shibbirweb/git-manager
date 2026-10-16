@@ -87,6 +87,8 @@ export function compareTabTitle(ref: CompareTabRef): { name: string; title: stri
 export function compareTabsInFolder(tabPaths: string[], folderRoot: string): string[] {
   return tabPaths.filter((tabPath) => {
     const ref = parseCompareTabPath(tabPath);
-    return ref !== null && [ref.left, ref.right].some((side) => side.kind === "file" && isInside(folderRoot, side.filePath));
+    return (
+      ref !== null && [ref.left, ref.right].some((side) => side.kind === "file" && isInside(folderRoot, side.filePath))
+    );
   });
 }

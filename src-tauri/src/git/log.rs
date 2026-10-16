@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
-use git2::{Commit, DiffFindOptions, Delta, Oid, Repository, Sort};
+use git2::{Commit, Oid, Repository, Sort};
 use serde::Serialize;
 
-use super::repo::{path_text, short_id};
+pub use super::commit_files::{delta_status, ChangedFile};
+use super::commit_files::{changed_files, merged_files};
+use super::repo::short_id;
 use crate::error::AppResult;
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -39,14 +41,6 @@ pub struct CommitSummary {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChangedFile {
-    pub path: String,
-    pub orig_path: Option<String>,
-    pub status: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct CommitDetails {
     pub id: String,
     pub message: String,
@@ -56,7 +50,12 @@ pub struct CommitDetails {
     pub committer_name: String,
     pub committer_time: i64,
     pub parents: Vec<String>,
+    /// Changes against the first parent.
     pub files: Vec<ChangedFile>,
+    /// A merge's changes against its second and later parents; empty for other commits.
+    pub later_parent_files: Vec<Vec<ChangedFile>>,
+    /// A merge's files that differ from every parent: the ones the merge combined or resolved.
+    pub merged_files: Vec<ChangedFile>,
 }
 
 fn ref_labels(repo: &Repository) -> HashMap<Oid, Vec<RefLabel>> {
@@ -203,36 +202,17 @@ pub fn parse_cli_commit(header: &str) -> Option<CommitSummary> {
     })
 }
 
-pub fn delta_status(delta: Delta) -> &'static str {
-    match delta {
-        Delta::Added => "added",
-        Delta::Deleted => "deleted",
-        Delta::Renamed => "renamed",
-        Delta::Copied => "copied",
-        Delta::Typechange => "typechange",
-        _ => "modified",
-    }
-}
-
 pub fn details(repo: &Repository, commit_id: &str) -> AppResult<CommitDetails> {
     let commit = repo.find_commit(Oid::from_str(commit_id)?)?;
     let tree = commit.tree()?;
-    let parent_tree = commit.parent(0).ok().and_then(|parent| parent.tree().ok());
-    let mut diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), None)?;
-    diff.find_similar(Some(DiffFindOptions::new().renames(true)))?;
-
-    let mut files = Vec::new();
-    for delta in diff.deltas() {
-        let new_path = delta.new_file().path_bytes().map(path_text);
-        let old_path = delta.old_file().path_bytes().map(path_text);
-        let path = new_path.clone().or_else(|| old_path.clone()).unwrap_or_default();
-        let orig_path = if delta.status() == Delta::Renamed { old_path } else { None };
-        files.push(ChangedFile {
-            path,
-            orig_path,
-            status: delta_status(delta.status()).to_string(),
-        });
-    }
+    let parents: Vec<Commit> = commit.parents().collect();
+    let files = changed_files(repo, parents.first(), &tree)?;
+    let later_parent_files = parents
+        .iter()
+        .skip(1)
+        .map(|parent| changed_files(repo, Some(parent), &tree))
+        .collect::<AppResult<Vec<_>>>()?;
+    let merged_files = merged_files(&files, &later_parent_files);
 
     let author = commit.author();
     let committer = commit.committer();
@@ -246,5 +226,7 @@ pub fn details(repo: &Repository, commit_id: &str) -> AppResult<CommitDetails> {
         committer_time: committer.when().seconds(),
         parents: commit.parent_ids().map(|parent| parent.to_string()).collect(),
         files,
+        later_parent_files,
+        merged_files,
     })
 }

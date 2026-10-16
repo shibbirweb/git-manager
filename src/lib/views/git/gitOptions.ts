@@ -62,7 +62,11 @@ export function pushCommand(options: PushOptions): string {
     parts.push("-u");
   }
   parts.push(options.remoteName);
-  parts.push(options.localBranch === options.remoteBranch ? options.localBranch : `${options.localBranch}:${options.remoteBranch}`);
+  parts.push(
+    options.localBranch === options.remoteBranch
+      ? options.localBranch
+      : `${options.localBranch}:${options.remoteBranch}`,
+  );
   return parts.join(" ");
 }
 
@@ -145,7 +149,11 @@ export function isValidRefName(refName: string): boolean {
 }
 
 /** Git's rules for a remote name (a ref component), plus no duplicates. */
-export function validateRemoteName(remoteName: string, existing: string[], current: string | null = null): string | null {
+export function validateRemoteName(
+  remoteName: string,
+  existing: string[],
+  current: string | null = null,
+): string | null {
   const name = remoteName.trim();
   if (!name) {
     return "Enter a name";
@@ -251,7 +259,9 @@ export function updateProgressText(index: number, total: number, name: string): 
 
 /** The changes Rollback lists: tracked files with staged or unstaged changes, no conflicts, no untracked files. */
 export function rollbackCandidates(files: FileStatus[]): FileStatus[] {
-  return files.filter((file) => !file.conflicted && file.unstaged !== "untracked" && (file.staged !== null || file.unstaged !== null));
+  return files.filter(
+    (file) => !file.conflicted && file.unstaged !== "untracked" && (file.staged !== null || file.unstaged !== null),
+  );
 }
 
 /** Paths sent to the rollback: each file and, for a staged rename, its old path too. */

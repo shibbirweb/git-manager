@@ -2,7 +2,7 @@
 // selection over the selectable ones, and the window of rows the virtual list renders.
 
 import { countLabel, type CountWord } from "./countLabel";
-import { moveSelection, type SearchRow } from "./fileSearchModel";
+import type { SearchRow } from "./fileSearchModel";
 import type { SearchTab } from "./searchTabs";
 import type { SymbolRow } from "./symbolSearchModel";
 import type { TextResults, TextRow } from "./textSearchModel";
@@ -101,71 +101,4 @@ export function tabRows(tab: SearchTab, results: PopupResults): PopupRow[] {
 
 export function isSelectable(row: PopupRow): boolean {
   return row.kind !== "header" && row.kind !== "textFile";
-}
-
-export function firstSelectable(rows: PopupRow[]): number {
-  return Math.max(0, rows.findIndex(isSelectable));
-}
-
-/**
- * The row to select after a key, skipping headings: single steps wrap around,
- * page steps stop at the ends.
- */
-export function moveSelectable(rows: PopupRow[], selected: number, step: number): number {
-  const selectable: number[] = [];
-  rows.forEach((row, index) => {
-    if (isSelectable(row)) {
-      selectable.push(index);
-    }
-  });
-  if (selectable.length === 0) {
-    return 0;
-  }
-  let position = selectable.findIndex((index) => index >= selected);
-  if (position < 0) {
-    position = selectable.length - 1;
-  }
-  return selectable[moveSelection(position, selectable.length, step)];
-}
-
-/** Keeps the same row selected when rows refresh (e.g. while indexing or streaming), else the first. */
-export function keepSelectedKey(previous: PopupRow[], selected: number, next: PopupRow[]): number {
-  const key = previous[selected]?.key;
-  const index = key ? next.findIndex((row) => row.key === key) : -1;
-  return index >= 0 && isSelectable(next[index]) ? index : firstSelectable(next);
-}
-
-/** Rows a virtual list renders: what fits in the viewport plus `overscan` on each side. */
-export function visibleRange(
-  scrollTop: number,
-  viewportHeight: number,
-  rowHeight: number,
-  count: number,
-  overscan = 6,
-): { start: number; end: number } {
-  const first = Math.floor(Math.max(0, scrollTop) / rowHeight);
-  // Before the first layout the viewport is unknown: render one screenful.
-  const visible = Math.ceil((viewportHeight > 0 ? viewportHeight : rowHeight * 16) / rowHeight) + 1;
-  // A list that shrank under an old scroll position renders from its end.
-  const start = Math.min(count, Math.max(0, first - overscan));
-  const end = Math.min(count, first + visible + overscan);
-  return { start, end: Math.max(start, end) };
-}
-
-/**
- * The scroll position that shows row `index`, or `scrollTop` when it already shows.
- * Selecting the first selectable row scrolls to the top so its heading shows too.
- */
-export function scrollToShow(index: number, scrollTop: number, viewportHeight: number, rowHeight: number, firstIndex: number): number {
-  if (index <= firstIndex) {
-    return 0;
-  }
-  const top = index * rowHeight;
-  if (top < scrollTop) {
-    return top;
-  }
-  if (viewportHeight > 0 && top + rowHeight > scrollTop + viewportHeight) {
-    return top + rowHeight - viewportHeight;
-  }
-  return scrollTop;
 }

@@ -4,7 +4,9 @@ import {
   dayTitle,
   groupByDay,
   isSafetyCopy,
-  movedSelection,
+  versionHash,
+  versionKey,
+  versionRows,
   reloadRecords,
   sizeText,
   snapshotLabel,
@@ -83,7 +85,10 @@ describe("the version list", () => {
     expect(older).not.toBe("Today");
     expect(older).not.toBe("Yesterday");
 
-    const groups = groupByDay([snap(at(2026, 10, 3, 14)), snap(at(2026, 10, 3, 9)), snap(at(2026, 10, 2)), snap(at(2026, 9, 28))], now);
+    const groups = groupByDay(
+      [snap(at(2026, 10, 3, 14)), snap(at(2026, 10, 3, 9)), snap(at(2026, 10, 2)), snap(at(2026, 9, 28))],
+      now,
+    );
     expect(groups.map((group) => [group.title, group.snapshots.length])).toEqual([
       ["Today", 2],
       ["Yesterday", 1],
@@ -92,14 +97,13 @@ describe("the version list", () => {
     expect(groupByDay([], now)).toEqual([]);
   });
 
-  it("moves the selection with the arrow keys within bounds", () => {
-    expect(movedSelection(0, -1, "ArrowDown")).toBe(-1);
-    expect(movedSelection(3, 0, "ArrowDown")).toBe(1);
-    expect(movedSelection(3, 2, "ArrowDown")).toBe(2);
-    expect(movedSelection(3, 0, "ArrowUp")).toBe(0);
-    expect(movedSelection(3, -1, "ArrowUp")).toBe(0);
-    expect(movedSelection(3, 1, "End")).toBe(2);
-    expect(movedSelection(3, 2, "Home")).toBe(0);
-    expect(movedSelection(3, 1, "a")).toBe(1);
+  it("lists the versions under their day headings, keyed by hash", () => {
+    const now = at(2026, 10, 3, 15);
+    const first = snap(at(2026, 10, 3, 14));
+    const rows = versionRows([first, snap(at(2026, 10, 3, 9))], now);
+    expect(rows.map((row) => row.kind)).toEqual(["day", "version", "version"]);
+    expect(rows[0]).toMatchObject({ title: "Today" });
+    expect(rows[1].key).toBe(versionKey(first));
+    expect(versionHash(versionKey(first))).toBe(first.hash);
   });
 });

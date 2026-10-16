@@ -11,9 +11,15 @@ bun install                    # dependencies
 bun tauri dev                  # run the app (hot reload); add -- -- /path/to/folder to open a folder
 bun run check                  # svelte-check + TypeScript: must end with 0 errors and 0 warnings
 bun run test                   # Vitest (frontend unit tests)
+bun run format                 # Prettier: format src/, ui/ and scripts/ (format:check is what CI runs)
+bun run ui:migration           # what each app .svelte file still owns instead of the UI library (see below)
 cd src-tauri && cargo test --workspace     # Rust unit and git integration tests (app and cli/)
 cd src-tauri && cargo clippy --workspace --all-targets   # must report no warnings
 bun tauri build --bundles app  # release .app in src-tauri/target/release/bundle/macos
+bun run ui                     # UI library showcase at http://localhost:1430 (ui/web)
+bun run ui:tokens              # write every platform's design tokens from ui/design-tokens
+bun run ui:docs                # write ui/web/COMPONENTS.md and docs/components/*.md from the component docs
+bun run ui:parity              # check every library component against the app's own UI (light and dark)
 ```
 
 Demo data for manual testing:
@@ -31,6 +37,16 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - **Settings** persist in `~/.gitmanager/settings.json` (preferences) and `state.json` (recent folders, layout) via `src/lib/stores/settings.svelte.ts`. Validate every loaded value; never overwrite a settings.json that failed to parse.
 - **Paths**: file tabs, the Files panel, Back/Forward and breadcrumbs use **absolute paths**. Git operations use **repo-relative paths** with the repo root. Convert with `src/lib/stores/workspacePaths.ts` (`folderFor`, `locateAbsolute`, `relativeTo`, `joinPath`); never concatenate strings by hand. Absolute paths use `/` on Windows too (`C:/Users/me`): in Rust, real paths come from `paths::real` / `RealPath::real_path` (clippy forbids `canonicalize`) and every absolute path sent to the page goes through `paths::to_ui`; on the page, dialog and drop paths go through `fromNativePath`, and absolute checks use `isAbsolutePath`, never `startsWith("/")`.
 - **Merge tool**: pure logic in `src/lib/merge/model.ts` (tested), CodeMirror glue in `extensions.ts`, UI in `MergeEditor.svelte`. The Rust engine is `src-tauri/src/merge/engine.rs`, checked against `git merge-file`.
+- **UI library and design system**: `ui/web/` is the Svelte component library (components, tested logic, one
+  doc per component, the showcase); `ui/design-tokens/` holds colors, sizes and component measurements that
+  generate CSS, Swift (macOS), XAML (Windows) and GTK CSS (Linux) for future native apps. AI agents read
+  `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `git-manager-ui` MCP server
+  (`ui/mcp/`, registered in `.mcp.json`: list, search and get components, tokens, icons and rules). Tests keep
+  docs equal to each component's `$props()`, generated files fresh, and token colors equal to `src/app.css`.
+- **Editor engines live in the library**: the Markdown engine is `ui/web/src/lib/markdown/` with the
+  `MarkdownPreview` and `MarkdownEditor` components; the app keeps only glue (`src/lib/markdown/markdownContext.ts`,
+  `viewMode.ts`) and thin views that pass links, settings and keys as props and events. Library code never imports
+  `$lib`. CodeMirror (`CodeEditor`, `DiffView`, `MergeView`) moves the same way next.
 - **Memory is a feature**: lazy-load directories and languages, virtualize long lists, destroy CodeMirror views on unmount, no persistent backend caches, poll only while visible. Check `cargo build --release` size and the status bar memory readout after big changes.
 
 ## Code style (org rules, mandatory)
@@ -43,6 +59,13 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - Comments are sparse and explain why, matching the surrounding code.
 - Svelte 5 runes only (`$state`, `$derived`, `$effect`, `$props`), `onclick`-style attributes, no `export let`. Use `$state.raw` for large arrays and objects that are replaced, not mutated.
 - Colors come from the CSS tokens in `src/app.css` (light and dark); no hard-coded colors in components.
+- **New UI is a library component first.** Build it in `ui/web/` (component, doc, story, tokens in
+  `ui/design-tokens/`), then use it in the app, so every platform matches. Library components take no `class` or
+  `style`: everything is a prop; lay out with `Stack`, write words with `Text`; sizes come from token variables.
+  No prop takes a free number or free text for design (size, width, height, gap, padding, color): each is a named
+  preset from `ui/design-tokens`; numbers are only data (counts, values, positions). There is no margin prop.
+  Only reusable building blocks go in the library (primitives, and variants or props on them); compose
+  screen-specific pieces from them instead of adding compound components.
 - Keep UI text short and plain; confirm destructive actions (`dialogs.confirm({ danger: true })`).
 - Never type a shortcut into UI text (no "Cmd+P" in a label or tooltip): use `commandKeys(id)`, `withCommandKeys(title, id)` or `localKeys("CmdOrCtrl+...")` from `commands/commandRuntime.ts`, so Windows shows Ctrl and custom keys show up.
 
@@ -50,7 +73,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 
 - Put non-trivial logic in pure `.ts` modules next to their component and cover them with `*.test.ts` (Vitest). Examples: `merge/model.ts`, `editor/lineDiff.ts`, `stores/tabs.ts`, `stores/navHistory.ts`.
 - Rust tests use real temporary repositories via `src-tauri/src/test_support.rs` (isolated from the user's git config). Add tests with every backend change.
-- Before reporting work as done: `bun run check`, `bun run test`, `cargo test --workspace`, `cargo clippy --workspace --all-targets` all clean. Say plainly if something could not be verified (for example UI behavior that needs a visual check).
+- Before reporting work as done: `bun run format`, then `bun run check`, `bun run test`, `cargo test --workspace`, `cargo clippy --workspace --all-targets` all clean. Say plainly if something could not be verified (for example UI behavior that needs a visual check).
 
 ## Git and PRs
 

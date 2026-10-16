@@ -56,7 +56,7 @@ After loading, `normalizeEmptyListItems` runs (so an empty list item does not sp
 
 ### Toolbar, keys and clicks
 
-The toolbar's `onRichFormat(action)` runs a TipTap command (`RichMarkdownEditor.run`); Link (Cmd+K) sets or removes a link. Task boxes are TipTap's own checkboxes, styled like the preview's. A click on a link places the caret; Cmd+click follows it (`classifyLink`).
+The toolbar's `onRichFormat(action)` runs a TipTap command (`RichMarkdownEditor.run`); Link (Cmd+K) sets or removes a link. Task boxes are TipTap's checkboxes. A click on a link places the caret; Cmd+click follows it (`classifyLink`).
 
 ### Images and diagrams
 
@@ -69,10 +69,11 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 
 | File | What it does |
 | --- | --- |
-| `src/lib/markdown/richEditor.ts` | TipTap setup, load, save, actions, node views |
-| `src/lib/markdown/rich/` | The ported core (MIT, `LICENSE-ORCA`): schema, round trip, eligibility, reconcile, HTML placeholders |
-| `src/lib/markdown/richSync.ts` | Front matter split, `sourceEdit` |
-| `src/lib/views/files/RichMarkdownView.svelte` | Mounting, link prompt, clicks, keys, notices, task box styles |
+| `ui/web/src/lib/components/MarkdownEditor.svelte` | Loading, read-only, Cmd+click links |
+| `ui/web/src/lib/markdown/richEditor.ts`, `richNodeViews.ts` | TipTap, saving, actions, node views |
+| `ui/web/src/lib/markdown/rich/` | The ported core (MIT, `LICENSE-ORCA`): schema, round trip, eligibility, reconcile, HTML placeholders |
+| `ui/web/src/lib/markdown/richSync.ts` | Front matter split, `sourceEdit` |
+| `src/lib/views/files/RichMarkdownView.svelte` | Link prompt, links, keys |
 | `src/lib/views/files/FileView.svelte` | `applyRichEdit`, `richScroll`, mode switches |
 | `vite.config.js` | TipTap entry points in `optimizeDeps` |
 
@@ -90,9 +91,9 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 
 ## Tests
 
-- `src/lib/markdown/rich/*.test.ts`: the ported tests for the round trip, eligibility, reconcile, HTML placeholders, tables, lists and paragraphs.
-- `src/lib/markdown/richEditor.test.ts` (happy-dom): every page of `docs/wiki`, `README.md`, `CHANGELOG.md` and messy samples (mixed markers, `__bold__`, setext headings, padded tables, `~~~` fences, CRLF, front matter, HTML, emoji). Each loads and saves with no change, and one typed character changes only that character; reference links and footnotes are refused; a ticked task box changes only `[ ]`.
-- `src/lib/markdown/richSync.test.ts`: `sourceEdit` and `splitFrontMatter`.
+- `ui/web/src/lib/markdown/rich/*.test.ts`: the ported tests for the round trip, eligibility, reconcile, HTML placeholders, tables, lists and paragraphs.
+- `ui/web/src/lib/markdown/richEditor.test.ts` (happy-dom): every page of `docs/wiki`, `README.md`, `CHANGELOG.md` and messy samples (mixed markers, `__bold__`, setext headings, padded tables, `~~~` fences, CRLF, front matter, HTML, emoji). Each loads and saves with no change, and one typed character changes only that character; reference links and footnotes are refused; a ticked task box changes only `[ ]`.
+- `ui/web/src/lib/markdown/richSync.test.ts`: `sourceEdit` and `splitFrontMatter`.
 
 ## Keeping this page in sync
 
@@ -100,6 +101,8 @@ The editor on screen passes node views to the shared schema (`createRichMarkdown
 - Retake `markdown-rich-editor.png` when the look changes.
 
 ## Bugs we fixed
+
+Newer ones: [Rich Markdown Bugs](Rich-Markdown-Bugs-We-Fixed.md).
 
 **Editing an existing file did not work well.**
 - **The issue:** typing in Preview Only (now Rich Editor) on a file could reformat other text, turn the page read-only, or reload it after an edit.

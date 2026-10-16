@@ -49,12 +49,12 @@ flowchart LR
 
 ## How screenshots are taken
 
-Screenshots show the real app: a mocked backend drifts. So `scripts/screenshots.ts` drives a WebKit page (Playwright) that talks to the real Rust backend of a running `bun tauri dev`, through the dev-only IPC bridge explained in [Architecture](Architecture.md). The bridge relays commands, Channel messages and a few backend events, so terminal and search shots show real output.
+Screenshots show the real app, since a mocked backend drifts: `scripts/screenshots.ts` drives a WebKit page (Playwright) that talks to a running `bun tauri dev` through the dev-only IPC bridge ([Architecture](Architecture.md)). The bridge relays commands, Channel messages and a few backend events, so terminal and search shots show real output.
 
 What the script does, and why:
 
-- **It rebuilds the demo on every run.** It deletes `/tmp/gitmanager-docs` and runs `scripts/make-docs-demo.sh` there (repositories with history, a merge in progress, a submodule, Git LFS images and a plain folder). Dates are relative to today, so blame always reads "2 days ago" and paths never change.
-- **It keeps your own setup out.** The page answers some commands itself: settings, state (`update_config` too) and kept unsaved text live in memory, the launch mode points at the demo, and folder pickers return a fixed answer. Dialog, opener and window calls never reach the app, and GitHub's API gets canned releases.
+- **It rebuilds the demo on every run** in `/tmp/gitmanager-docs` with `scripts/make-docs-demo.sh` (history, a merge in progress, a submodule, Git LFS images, a plain folder). Dates are relative to today, so blame always reads "2 days ago".
+- **It keeps your own setup out.** The page answers some commands itself: settings, state and unsaved text live in memory, the launch mode points at the demo, folder pickers return a fixed answer. Dialog, opener and window calls never reach the app; GitHub gets canned releases.
 - **It refuses anything outside the demo.** Any other command with an absolute path argument outside the demo folder fails with a "blocked" error, so a shot can never touch a real repository.
 - **It retries once,** since a dev server reload can break one attempt.
 
@@ -124,6 +124,8 @@ Running the Wiki workflow by hand publishes to the live wiki for everyone, so do
 **Shots opened the welcome screen and patched your state.json.** The page relayed `window_startup` (the app window's folders, refused) and `update_config` to the app. It now answers both itself.
 
 **Mermaid shots timed out.** The mermaid frame started the bridge too and failed; now only the top window does.
+
+**Terminal shots timed out.** GPU drawing leaves xterm's text rows empty, so terminal scenarios turn `terminalGpuAcceleration` off; the DOM renderer looks the same.
 
 ## Writing style
 

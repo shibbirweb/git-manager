@@ -189,6 +189,8 @@ export function placeOrder(cart: Cart, address: Address): { total: number; addre
   return { total: cart.subtotal(), address };
 }
 EOF
+# Checkout looks products up too, so the merge below combines catalog.ts from both sides.
+perl -0pi -e 's/\];\n\nexport function allProducts/];\n\nexport function productById(id: string): Product | undefined {\n  return products.find((product) => product.id === id);\n}\n\nexport function allProducts/' "$repo/src/catalog.ts"
 commit_as "Priya Nair" 30 "Checkout: address form"
 cat >>"$repo/src/checkout.ts" <<'EOF'
 

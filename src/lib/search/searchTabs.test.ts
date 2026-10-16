@@ -2,12 +2,30 @@ import { describe, expect, it } from "vitest";
 import { buildCommandSpecs } from "$lib/commands/registry";
 import { menuSpec } from "$lib/menu/menuSpec";
 import type { ShortcutKey, ShortcutKeys } from "$lib/views/workspaceShortcuts";
-import { isReplaceKey, MAX_SELECTION_QUERY, openerForShortcut, openingTab, queryFromSelection, stepTab, tabForKey, usesSymbols } from "./searchTabs";
+import {
+  isReplaceKey,
+  MAX_SELECTION_QUERY,
+  openerForShortcut,
+  openingTab,
+  queryFromSelection,
+  stepTab,
+  tabForKey,
+  usesSymbols,
+} from "./searchTabs";
 
 const keys: ShortcutKeys = { specs: buildCommandSpecs(menuSpec("macos", "app")), platform: "macos", overrides: {} };
 
 function press(key: string, code: string, modifiers: Partial<ShortcutKey> = {}): ShortcutKey {
-  return { key, code, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false, defaultPrevented: false, ...modifiers };
+  return {
+    key,
+    code,
+    metaKey: false,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: false,
+    defaultPrevented: false,
+    ...modifiers,
+  };
 }
 
 describe("search tabs", () => {

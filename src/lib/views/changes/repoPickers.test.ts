@@ -47,7 +47,14 @@ describe("ref picks", () => {
       "v1.0",
     ]);
     expect(items.slice(0, 2).every((item) => item.pinned)).toBe(true);
-    expect(items.map((item) => item.group ?? null)).toEqual([null, null, "Branches", "Branches", "Remote Branches", "Tags"]);
+    expect(items.map((item) => item.group ?? null)).toEqual([
+      null,
+      null,
+      "Branches",
+      "Branches",
+      "Remote Branches",
+      "Tags",
+    ]);
     const current = items.find((item) => item.label === "main");
     expect(current?.disabled).toBe(true);
     expect(current?.description).toBe("current  origin/main  2222222");

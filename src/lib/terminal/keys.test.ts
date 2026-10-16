@@ -50,14 +50,16 @@ describe("terminalKeyAction on macOS", () => {
 
 describe("terminalKeyAction on Windows and Linux", () => {
   it("copies and pastes with Ctrl+Shift+C / V", () => {
-    expect(terminalKeyAction(press("C", "KeyC", { ctrlKey: true, shiftKey: true }), { isMac: false, hasSelection: true })).toBe(
-      "copy",
-    );
+    expect(
+      terminalKeyAction(press("C", "KeyC", { ctrlKey: true, shiftKey: true }), { isMac: false, hasSelection: true }),
+    ).toBe("copy");
     expect(terminalKeyAction(press("V", "KeyV", { ctrlKey: true, shiftKey: true }), linux)).toBe("paste");
   });
 
   it("sends Ctrl+C to the shell", () => {
-    expect(terminalKeyAction(press("c", "KeyC", { ctrlKey: true }), { isMac: false, hasSelection: true })).toBe("shell");
+    expect(terminalKeyAction(press("c", "KeyC", { ctrlKey: true }), { isMac: false, hasSelection: true })).toBe(
+      "shell",
+    );
   });
 
   it("still leaves Ctrl+` to the app", () => {
@@ -84,11 +86,13 @@ describe("terminalKeyAction for find and split", () => {
 
   it("splits with Cmd+\\ or Ctrl+Shift+5 in the panel only", () => {
     expect(terminalKeyAction(press("\\", "Backslash", { metaKey: true }), macFeatures)).toBe("split");
-    expect(terminalKeyAction(press("\\", "Backslash", { metaKey: true }), { ...macFeatures, canSplit: false })).toBe("app");
-    expect(terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), linuxFeatures)).toBe("split");
-    expect(terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), { ...linuxFeatures, canSplit: false })).toBe(
-      "shell",
+    expect(terminalKeyAction(press("\\", "Backslash", { metaKey: true }), { ...macFeatures, canSplit: false })).toBe(
+      "app",
     );
+    expect(terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), linuxFeatures)).toBe("split");
+    expect(
+      terminalKeyAction(press("%", "Digit5", { ctrlKey: true, shiftKey: true }), { ...linuxFeatures, canSplit: false }),
+    ).toBe("shell");
   });
 });
 
@@ -127,7 +131,11 @@ describe("the app's keys in a terminal", () => {
   });
 
   it("sends Ctrl+Shift+P to the app on Windows and Linux, and custom keys too", () => {
-    const appKeys = terminalAppKeys(linuxSpecs, { "git.push": "Ctrl+Shift+U", "view.terminal": "Ctrl+Shift+T" }, "linux");
+    const appKeys = terminalAppKeys(
+      linuxSpecs,
+      { "git.push": "Ctrl+Shift+U", "view.terminal": "Ctrl+Shift+T" },
+      "linux",
+    );
     const context = { ...linux, appKeys };
     expect(terminalKeyAction(press("P", "KeyP", { ctrlKey: true, shiftKey: true }), context)).toBe("app");
     expect(terminalKeyAction(press("U", "KeyU", { ctrlKey: true, shiftKey: true }), context)).toBe("app");
@@ -143,7 +151,9 @@ describe("the app's keys in a terminal", () => {
     const appKeys = terminalAppKeys(linuxSpecs, { "git.push": "CmdOrCtrl+Shift+A" }, "linux");
     // AZERTY: the key that types A sits where QWERTY has Q.
     expect(terminalKeyAction(press("A", "KeyQ", { ctrlKey: true, shiftKey: true }), { ...linux, appKeys })).toBe("app");
-    expect(terminalKeyAction(press("Q", "KeyA", { ctrlKey: true, shiftKey: true }), { ...linux, appKeys })).toBe("shell");
+    expect(terminalKeyAction(press("Q", "KeyA", { ctrlKey: true, shiftKey: true }), { ...linux, appKeys })).toBe(
+      "shell",
+    );
   });
 
   it("lets a custom Ctrl+Shift key reach the app on macOS", () => {

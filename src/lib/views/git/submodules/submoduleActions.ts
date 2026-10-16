@@ -20,7 +20,10 @@ async function afterChange(): Promise<void> {
   await repoStore.rediscover();
 }
 
-export async function initSubmodules(repoRoot: string | null = activeRoot(), submodulePaths: string[] = []): Promise<void> {
+export async function initSubmodules(
+  repoRoot: string | null = activeRoot(),
+  submodulePaths: string[] = [],
+): Promise<void> {
   if (!repoRoot) {
     return;
   }
@@ -80,7 +83,11 @@ export async function removeSubmodule(repoRoot: string, submodulePath: string): 
   }
   const absolute = joinPath(repoRoot, submodulePath);
   const open = findRepo(repoStore.repos, absolute);
-  if (open && repoStore.workspace?.folders.some((folder) => folder.root === open.root) && repoStore.workspace.folders.length > 1) {
+  if (
+    open &&
+    repoStore.workspace?.folders.some((folder) => folder.root === open.root) &&
+    repoStore.workspace.folders.length > 1
+  ) {
     await repoStore.removeFolder(open.root);
   }
   const done = await repoStore.run("Remove submodule", (repoPath) => api.removeSubmodule(repoPath, submodulePath), {
@@ -160,7 +167,12 @@ export function submoduleMenuItems(repoRoot: string, submodules: SubmoduleInfo[]
     { label: "Sync URLs", disabled: busy || none, action: () => void syncSubmodules(repoRoot) },
     { separator: true },
     { label: "Add Submodule...", disabled: busy, action: () => openAddSubmoduleDialog(repoRoot) },
-    { label: "Remove Submodule...", danger: true, disabled: busy || none, action: () => void removeSubmoduleFromMenu(repoRoot) },
+    {
+      label: "Remove Submodule...",
+      danger: true,
+      disabled: busy || none,
+      action: () => void removeSubmoduleFromMenu(repoRoot),
+    },
     { separator: true },
     initialized.length > 0
       ? {
@@ -179,7 +191,11 @@ export function submoduleEntryItems(repoRoot: string, submodulePath: string): Me
   const busy = repoStore.busy !== null;
   return [
     { label: "Open as Repository", action: () => void openSubmodule(repoRoot, submodulePath) },
-    { label: "Update Submodule", disabled: busy, action: () => void updateSubmodules(repoRoot, false, [submodulePath]) },
+    {
+      label: "Update Submodule",
+      disabled: busy,
+      action: () => void updateSubmodules(repoRoot, false, [submodulePath]),
+    },
     {
       label: "Update to Latest Remote",
       disabled: busy,

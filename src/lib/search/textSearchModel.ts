@@ -84,7 +84,12 @@ export function rangeParts(text: string, ranges: [number, number][]): TextPart[]
 }
 
 /** The results with `batch` added; `first` starts over (the first batch of a new search). */
-export function appendBatch(results: TextResults, batch: TextSearchBatch, folders: FolderRef[], first: boolean): TextResults {
+export function appendBatch(
+  results: TextResults,
+  batch: TextSearchBatch,
+  folders: FolderRef[],
+  first: boolean,
+): TextResults {
   const several = folders.length > 1;
   const rows: TextRow[] = first ? [] : results.rows.slice();
   // Each file comes once per search; a repeat would break the keyed list.

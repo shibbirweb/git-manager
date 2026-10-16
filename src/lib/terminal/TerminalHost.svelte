@@ -7,6 +7,7 @@
   on a terminal, while there is a terminal and the setting is on.
 -->
 <script lang="ts">
+  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
   import { getCurrentWebview, type DragDropEvent } from "@tauri-apps/api/webview";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { settings } from "$lib/stores/settings.svelte";
@@ -14,7 +15,7 @@
   import {
     TERMINAL_DRAG_EVENT,
     TERMINAL_DROP_EVENT,
-    TERMINAL_KEY_ATTRIBUTE,
+    terminalScreenId,
     type TerminalDragDetail,
     type TerminalDropDetail,
     terminalKeyAt,
@@ -26,7 +27,7 @@
   const listening = $derived(terminalStore.terminals.length > 0 && settings.terminalDropPaths);
 
   function viewOf(terminalKey: number): Element | null {
-    return document.querySelector(`[${TERMINAL_KEY_ATTRIBUTE}="${terminalKey}"]`);
+    return document.getElementById(terminalScreenId(terminalKey));
   }
 
   $effect(() => {
@@ -43,11 +44,15 @@
         return;
       }
       if (overKey !== null) {
-        viewOf(overKey)?.dispatchEvent(new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: false } }));
+        viewOf(overKey)?.dispatchEvent(
+          new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: false } }),
+        );
       }
       overKey = terminalKey;
       if (terminalKey !== null) {
-        viewOf(terminalKey)?.dispatchEvent(new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: true } }));
+        viewOf(terminalKey)?.dispatchEvent(
+          new CustomEvent<TerminalDragDetail>(TERMINAL_DRAG_EVENT, { detail: { over: true } }),
+        );
       }
     }
 
@@ -93,14 +98,8 @@
   });
 </script>
 
-<div class="terminal-host" aria-hidden="true">
+<ElementHost hidden>
   {#each terminalStore.terminals as terminal (terminal.key)}
     <TerminalFrame {terminal} />
   {/each}
-</div>
-
-<style>
-  .terminal-host {
-    display: none;
-  }
-</style>
+</ElementHost>

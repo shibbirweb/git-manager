@@ -4,9 +4,16 @@
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { settings } from "$lib/stores/settings.svelte";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
+  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
   import type { MergeDocument } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import MergeEditor from "./MergeEditor.svelte";
 
@@ -77,87 +84,38 @@
   }
 </script>
 
-<div class="mergetool">
-  <div class="title-bar">
-    <Icon name="merge" size={15} />
-    <span class="title">Merge Revisions for</span>
-    <span class="path mono truncate selectable">{doc?.path ?? ""}</span>
-  </div>
-  <div class="content">
+<Stack gap="none" height="window" surface="panel">
+  <!-- The window's top bar: on macOS the window's own buttons sit at its left and it moves the window. -->
+  <AppHeader windowControls={windowChrome.controlsInBar}>
+    {#snippet start()}
+      <Icon name="merge" size="regular" tone="dim" />
+      <Text weight="semibold">Merge Revisions for</Text>
+      <Text mono truncate selectable>{doc?.path ?? ""}</Text>
+    {/snippet}
+  </AppHeader>
+  <Stack gap="none" grow>
     {#if loadError}
-      <div class="notice">
-        <p>Could not load the files passed by git mergetool.</p>
-        <pre class="selectable">{loadError}</pre>
-        <button class="btn" onclick={cancel}>Quit</button>
-      </div>
+      <EmptyState title="Could not load the files passed by git mergetool.">
+        {#snippet action()}
+          <Stack gap="md" align="center">
+            <CodeBlock variant="detail" text={loadError ?? ""} label="Error" />
+            <Button onclick={cancel}>Quit</Button>
+          </Stack>
+        {/snippet}
+      </EmptyState>
     {:else if doc?.binary}
-      <div class="notice">
-        <p>Binary files cannot be merged here. Quit and resolve with <code>git checkout --ours/--theirs</code>.</p>
-        <button class="btn" onclick={cancel}>Quit</button>
-      </div>
+      <EmptyState
+        title="Binary files cannot be merged here."
+        hint="Quit and resolve with git checkout --ours or --theirs."
+      >
+        {#snippet action()}<Button onclick={cancel}>Quit</Button>{/snippet}
+      </EmptyState>
     {:else if doc}
       {#key version}
         <MergeEditor bind:this={editor} {doc} onApply={applyResult} onCancel={cancel} onReload={reload} />
       {/key}
     {:else}
-      <div class="notice dim">Loading...</div>
+      <EmptyState titleTone="dim" title="Loading..." delayed />
     {/if}
-  </div>
-</div>
-
-<style>
-  .mergetool {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background: var(--panel);
-  }
-
-  .title-bar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 14px;
-    border-bottom: 1px solid var(--border-strong);
-    color: var(--text-dim);
-  }
-
-  .title {
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .path {
-    min-width: 0;
-    color: var(--text);
-  }
-
-  .content {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .notice {
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    max-width: 520px;
-    text-align: center;
-  }
-
-  .notice p {
-    margin: 0;
-  }
-
-  .notice pre {
-    white-space: pre-wrap;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-</style>
+  </Stack>
+</Stack>

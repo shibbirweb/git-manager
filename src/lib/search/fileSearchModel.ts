@@ -84,7 +84,12 @@ export const RECENT_LIMIT = 50;
  * (most recent first), then the other open tabs. Terminal and commit tabs are
  * not files.
  */
-export function recentFiles(activePath: string | null, recentPaths: string[], tabPaths: string[], limit = RECENT_LIMIT): string[] {
+export function recentFiles(
+  activePath: string | null,
+  recentPaths: string[],
+  tabPaths: string[],
+  limit = RECENT_LIMIT,
+): string[] {
   const seen = new Set<string>();
   for (const path of [activePath, ...recentPaths, ...tabPaths]) {
     if (path && !isPseudoTab(path)) {
@@ -95,20 +100,6 @@ export function recentFiles(activePath: string | null, recentPaths: string[], ta
     }
   }
   return [...seen];
-}
-
-/**
- * The row to select after a key: single steps wrap around the ends, page steps
- * stop at them.
- */
-export function moveSelection(selected: number, count: number, step: number): number {
-  if (count === 0) {
-    return 0;
-  }
-  if (Math.abs(step) === 1) {
-    return (selected + step + count) % count;
-  }
-  return Math.max(0, Math.min(count - 1, selected + step));
 }
 
 /**

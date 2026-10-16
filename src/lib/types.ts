@@ -267,7 +267,12 @@ export interface CommitDetails {
   committerName: string;
   committerTime: number;
   parents: string[];
+  /** Changes against the first parent. */
   files: ChangedFile[];
+  /** A merge's changes against its second and later parents; empty for other commits. */
+  laterParentFiles: ChangedFile[][];
+  /** A merge's files that differ from every parent: the ones the merge combined or resolved. */
+  mergedFiles: ChangedFile[];
 }
 
 export interface StashEntry {
@@ -616,8 +621,7 @@ export interface FileContent {
  * repository (repo-relative path) at a revision: `HEAD`, `index`, a full commit id or `<id>^`.
  */
 export type PreviewSource =
-  | { kind: "worktree"; filePath: string }
-  | { kind: "revision"; repoRoot: string; revision: string; filePath: string };
+  { kind: "worktree"; filePath: string } | { kind: "revision"; repoRoot: string; revision: string; filePath: string };
 
 export interface PreviewStat {
   exists: boolean;

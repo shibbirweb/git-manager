@@ -12,7 +12,6 @@ import { focusedEditor, runEditorCommand, runTextEdit } from "$lib/editor/editor
 import { steppedFontSize } from "$lib/editor/wheelZoom";
 import { localHistory } from "$lib/localHistory/localHistory.svelte";
 import { mcpStore } from "$lib/mcp/mcpStore.svelte";
-import { notifications } from "$lib/notifications/notifications.svelte";
 import { helpDialogs } from "$lib/help/helpDialogs.svelte";
 import { fileSearch } from "$lib/search/fileSearchStore.svelte";
 import { openShelveDialog, showShelf } from "$lib/shelf/shelfActions.svelte";
@@ -56,6 +55,7 @@ import {
 import type { WorkspaceShortcut } from "$lib/views/workspaceShortcuts";
 import { closeThisWindow } from "$lib/windows/windowActions";
 import { type EditorAction, isEditorAction, type MenuAction } from "./menuIds";
+import { FOCUSED_GROUP, SHOWN_TAB_CONTENT, TAB_CONTENT } from "$lib/views/workspaceDom";
 
 type Handler = () => unknown;
 
@@ -113,7 +113,9 @@ function hasSelection(active: Element | null): boolean {
 
 async function saveAll(): Promise<void> {
   const dirty = repoStore.dirtyPaths;
-  const saved = await Promise.all(dirty.filter((tabPath) => !isUntitledTab(tabPath)).map((filePath) => fileCommands.save(filePath, { quiet: true })));
+  const saved = await Promise.all(
+    dirty.filter((tabPath) => !isUntitledTab(tabPath)).map((filePath) => fileCommands.save(filePath, { quiet: true })),
+  );
   // Each Untitled tab asks where to save, one dialog at a time.
   for (const tabPath of dirty.filter((candidate) => isUntitledTab(candidate))) {
     saved.push(await fileCommands.save(tabPath, { quiet: true }));
@@ -160,8 +162,10 @@ async function focusGroupAt(index: number): Promise<void> {
   }
   // The diff, the Log or another kind of tab: its first text editor, else nothing keeps the old group's focus.
   await tick();
-  const group = document.querySelector<HTMLElement>(".editor-group.focused");
-  const editor = group?.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-content, :scope > :not(.file-host) .cm-content");
+  const group = document.querySelector<HTMLElement>(FOCUSED_GROUP);
+  const editor = group?.querySelector<HTMLElement>(
+    `${SHOWN_TAB_CONTENT} .cm-content, :scope > :not(${TAB_CONTENT}) .cm-content`,
+  );
   if (editor) {
     editor.focus();
   } else if (document.activeElement instanceof HTMLElement && !group?.contains(document.activeElement)) {
@@ -284,8 +288,10 @@ const HANDLERS: Record<Exclude<MenuAction, EditorAction>, Handler> = {
   "view.fileIconsMinimal": app(() => settings.setPreference("fileIcons", "minimal")),
   "view.fileIconsMaterial": app(() => settings.setPreference("fileIcons", "material")),
   "view.detectIndentation": app(() => settings.setPreference("detectIndentation", !settings.detectIndentation)),
-  "view.notifications": app(() => notifications.toggle()),
-  "view.doNotDisturb": app(() => settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb)),
+  "view.notifications": workspace(() => settings.toggleRightPanel("notifications")),
+  "view.doNotDisturb": app(() =>
+    settings.setPreference("notificationsDoNotDisturb", !settings.notificationsDoNotDisturb),
+  ),
   "view.clearCache": app(() => void clearCache()),
   "view.markdownEditor": setMarkdownMode("editor"),
   "view.markdownSplit": setMarkdownMode("split"),

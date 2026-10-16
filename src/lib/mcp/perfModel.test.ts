@@ -3,7 +3,14 @@ import { FRAME_MS, frameStats, largest, nextScroll, scrollFrameCount, type Scrol
 
 describe("frameStats", () => {
   it("is empty without frames", () => {
-    expect(frameStats([])).toEqual({ frames: 0, avgFrameMs: 0, p95FrameMs: 0, maxFrameMs: 0, droppedFrames: 0, fps: 0 });
+    expect(frameStats([])).toEqual({
+      frames: 0,
+      avgFrameMs: 0,
+      p95FrameMs: 0,
+      maxFrameMs: 0,
+      droppedFrames: 0,
+      fps: 0,
+    });
   });
 
   it("counts no drops at a steady 60 Hz", () => {

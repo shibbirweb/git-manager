@@ -1,10 +1,10 @@
 // CodeMirror extensions for the 2-way diff: app-token styling for
-// @codemirror/merge and per-chunk line classes (added / deleted / modified).
+// @codemirror/merge and per-chunk line classes (added / deleted / modified), and the two-pane red and green.
 
 import { getChunks } from "@codemirror/merge";
 import { RangeSetBuilder } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import { icons, type IconName } from "$lib/ui/icons";
+import { icons, type IconName } from "@git-manager/ui/icons";
 
 const addedLine = Decoration.line({ class: "cm-diffAdded" });
 const deletedLine = Decoration.line({ class: "cm-diffDeleted" });
@@ -58,6 +58,10 @@ export const chunkKinds = ViewPlugin.fromClass(
   { decorations: (plugin) => plugin.decorations },
 );
 
+/** One period of a fold's wavy line, used as a mask so the line takes a theme color. */
+const WAVE =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6"><path d="M0 3 Q3 0 6 3 T12 3" fill="none" stroke="#000" stroke-width="1.2"/></svg>';
+
 export const diffTheme = EditorView.theme({
   "&.cm-merge-a .cm-content .cm-line.cm-changedLine, &.cm-merge-b .cm-content .cm-line.cm-changedLine": {
     backgroundColor: "var(--diff-modified)",
@@ -78,25 +82,45 @@ export const diffTheme = EditorView.theme({
   "&.cm-merge-a .cm-gutters .cm-changedLineGutter, &.cm-merge-b .cm-gutters .cm-changedLineGutter": {
     background: "var(--diff-modified-edge)",
   },
+  // A fold, like JetBrains IDEs: the code's scope in small dim text over a wavy line, no box.
   "&.cm-editor .cm-content .cm-diffFold": {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "2px 8px",
+    gap: "6px",
+    padding: "2px 8px 2px 4px",
     color: "var(--text-dim)",
-    background: "var(--panel-alt)",
-    borderTop: "1px solid var(--border)",
-    borderBottom: "1px solid var(--border)",
     fontFamily: "var(--font-ui)",
     fontSize: "11.5px",
+    whiteSpace: "nowrap",
     cursor: "pointer",
   },
   "&.cm-editor .cm-content .cm-diffFoldLabel": {
+    flex: "0 1 auto",
+    minWidth: "0",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    padding: "1px 6px",
+    border: "1px solid var(--border)",
+    borderRadius: "4px",
+    background: "var(--editor-bg)",
+  },
+  "&.cm-editor .cm-content .cm-diffFoldWave": {
     flex: "1",
-    padding: "1px 4px",
+    minWidth: "24px",
+    height: "6px",
+    background: "var(--border-strong)",
+    mask: `url("data:image/svg+xml,${encodeURIComponent(WAVE)}") repeat-x left center / 12px 6px`,
   },
   "&.cm-editor .cm-content .cm-diffFold:hover .cm-diffFoldLabel": {
     color: "var(--text)",
+    borderColor: "var(--border-strong)",
+  },
+  "&.cm-editor .cm-content .cm-diffFold:hover .cm-diffFoldWave": {
+    background: "var(--accent)",
+  },
+  // The 10-line steps show under the pointer only, so a fold stays one quiet line.
+  "&.cm-editor .cm-content .cm-diffFold:not(:hover) .cm-diffFoldStep": {
+    visibility: "hidden",
   },
   "&.cm-editor .cm-content .cm-diffFoldStep": {
     display: "inline-flex",
@@ -149,3 +173,55 @@ export function revertButton(title: string, iconName: IconName): HTMLElement {
   button.appendChild(iconSvg(iconName, 13));
   return button;
 }
+
+/**
+ * The two-pane diff's colors, like VS Code and GitLens: changed lines red on the old side and green on the new,
+ * with stronger tints on the changed words. The three-pane views keep the kind colors of `diffTheme`.
+ */
+export const sideColors = [
+  EditorView.editorAttributes.of({ class: "cm-sideColors" }),
+  EditorView.theme({
+    "&.cm-sideColors.cm-merge-a .cm-content .cm-line.cm-changedLine": {
+      backgroundColor: "var(--diff-removed)",
+    },
+    "&.cm-sideColors.cm-merge-b .cm-content .cm-line.cm-changedLine": {
+      backgroundColor: "var(--diff-added)",
+    },
+    "&.cm-sideColors.cm-merge-a .cm-content .cm-line .cm-changedText": {
+      background: "var(--diff-removed-word)",
+    },
+    "&.cm-sideColors.cm-merge-b .cm-content .cm-line .cm-changedText": {
+      background: "var(--diff-added-word)",
+    },
+    // A whole removed or added line already has its color; only modified lines mark their words.
+    "&.cm-sideColors.cm-merge-a .cm-content .cm-diffDeleted .cm-changedText": {
+      background: "none",
+    },
+    "&.cm-sideColors.cm-merge-b .cm-content .cm-diffAdded .cm-changedText": {
+      background: "none",
+    },
+    "&.cm-sideColors.cm-merge-a .cm-gutters .cm-changedLineGutter": {
+      background: "var(--danger)",
+    },
+    "&.cm-sideColors.cm-merge-b .cm-gutters .cm-changedLineGutter": {
+      background: "var(--diff-added-edge)",
+    },
+  }),
+];
+
+/**
+ * The three-pane diff's colors, like `sideColors`: a change is red where it is older and green where it is newer
+ * (the marks' tone from threeWay.ts). A merge commit's conflicts keep their color.
+ */
+export const toneColors = [
+  EditorView.editorAttributes.of({ class: "cm-toneColors" }),
+  EditorView.theme({
+    // .cm-line makes these win over the kind edges (.cm-mc-line.cm-mc-modified, .cm-mc-edge-modified).
+    "&.cm-toneColors .cm-line.cm-mc-old": { "--mc-edge": "var(--danger)" },
+    "&.cm-toneColors .cm-line.cm-mc-new": { "--mc-edge": "var(--diff-added-edge)" },
+    "&.cm-toneColors .cm-mc-line.cm-mc-old": { backgroundColor: "var(--diff-removed)" },
+    "&.cm-toneColors .cm-mc-line.cm-mc-new": { backgroundColor: "var(--diff-added)" },
+    "&.cm-toneColors .cm-mc-inline-old": { backgroundColor: "var(--diff-removed-word)" },
+    "&.cm-toneColors .cm-mc-inline-new": { backgroundColor: "var(--diff-added-word)" },
+  }),
+];

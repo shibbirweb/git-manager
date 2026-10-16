@@ -13,53 +13,53 @@ JetBrains IDEs show the same information in one line: the path, then a few icon 
 ```mermaid
 flowchart TD
   Tabs["EditorTabs.svelte: the tab strip"] --> Bar
-  subgraph Bar["file-bar (29 px, a size container)"]
+  subgraph Bar["File actions toolbar (29 px, measures its width)"]
     direction LR
     Crumbs["NavigationBar: folders and file"] --> Badges["badges: Unsaved, Modified, 2 conflicts"]
-    Badges --> Actions["File actions toolbar"]
+    Badges --> Actions["arrows, Blame, Copy path, view switch"]
   end
   Bar --> Conflict["conflict strip: only while the file has conflicts"]
   Conflict --> Format["MarkdownToolbar: only for Markdown files"]
   Format --> Code["CodeMirror editor"]
 ```
 
-`FileView.svelte` draws the bar as `.file-bar`, 28 px plus a 1 px border. It holds three parts:
+`FileBar.svelte` draws the bar with the UI library's `Toolbar` (variant `file`, toolbar **File actions**), 28 px plus a 1 px border. It holds three parts:
 
-- **The crumbs** (`NavigationBar.svelte`): the workspace folder, then each folder down to the file, built by `crumbsFor`. Repository roots get the `folder-git` icon and the file its type icon. The full absolute path is the tooltip. Each crumb is a button that opens the folder's popup; see [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
-- **Badges**: Unsaved, the git state (Modified, New file, Conflicted) and the number of conflict blocks. Each badge has a `title` with its text.
-- **The `File actions` toolbar** (`role="toolbar"`): previous and next section (Shift+F7 and F7) with the counter, a divider, **Blame** (an icon button with `aria-label="Blame"` and `aria-pressed`), **Copy relative path**, and for Markdown files the view switch, a `radiogroup` named **Markdown view** with Editor Only, Editor and Preview, and Rich Editor.
+- **The crumbs** (`NavigationBar.svelte`, drawn by the library's `Breadcrumbs`): the workspace folder, then each folder down to the file, built by `crumbsFor`. Repository roots get the `folder-git` icon and the file its type icon. The full absolute path is the tooltip. Each crumb is a button that opens the folder's popup; see [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
+- **Badges**: library `Pill`s for Unsaved, the git state (Modified, New file, Conflicted) and the number of conflict blocks. Each has a `title` with its text.
+- **Buttons**: previous and next section (Shift+F7 and F7) with the counter, a divider, **Blame** (a `ToggleButton` named Blame with `aria-pressed`), **Copy relative path**, and for Markdown files the view switch, a small `Segmented` (a `radiogroup` named **Markdown view**) with Editor Only, Editor and Preview, and Rich Editor.
 
 All buttons are 24 by 22 px, with a tooltip and an accessible name. The keyboard shortcuts did not change: F7 and Shift+F7 live in the editor keymap, and the view modes are also in **View > Markdown**.
 
-**Settings > Appearance > File toolbar** places the bar and switches its parts. `fileToolbarParts` in `views/files/fileToolbar.ts` (pure, tested) turns the placement, the seven `fileToolbar*` switches and the file (in a repository and editable, Markdown) into what to draw: Hidden or no part left drops the bar, the git buttons need a repository, and the Markdown formatting row follows its own switch whatever the placement. With **Bottom**, `.file-view.bar-bottom` gives the bar `order: 1`, so the same bar sits under the code. Dividers only show between parts that are on. See [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
+**Settings > Appearance > File toolbar** places the bar and switches its parts. `fileToolbarParts` in `views/files/fileToolbar.ts` (pure, tested) turns the placement, the seven `fileToolbar*` switches and the file (in a repository and editable, Markdown) into what to draw: Hidden or no part left drops the bar, the git buttons need a repository, and the Markdown formatting row follows its own switch whatever the placement. With **Bottom**, `FileView.svelte` draws the same bar after the code, with `placement="bottom"` so its line is on top. Dividers only show between parts that are on. See [How the Navigation Bar works](How-the-Navigation-Bar-Works.md).
 
 Below the bar come only rows that are tools, and only when they apply:
 
-- The **conflict strip** (`.conflict-bar`, toolbar **Conflict actions**) with Accept All Current, Accept All Incoming, Resolve in Merge Tool and Mark as Resolved. See [How conflict resolution works](How-Conflict-Resolution-Works.md).
+- The **conflict strip** (a `Toolbar` of variant `conflict`, named **Conflict actions**) with Accept All Current, Accept All Incoming, Resolve in Merge Tool and Mark as Resolved. See [How conflict resolution works](How-Conflict-Resolution-Works.md).
 - The **Markdown formatting row** (`MarkdownToolbar.svelte`, toolbar **Markdown**), 28 px high. See [How the Markdown editor works](How-the-Markdown-Editor-Works.md).
 - For images and PDFs, the zoom and Reveal row of `MediaPreview.svelte`, made just as low.
 
 ### Collapsing when narrow
 
-The bar never wraps and never overflows. `.file-bar` sets `container-type: inline-size`, so CSS container queries react to the editor's own width, not the window's:
+The bar never wraps and never overflows. The `Toolbar` is `responsive`: it measures its own width, the editor's, not the window's, and the parts inside step aside with `hideAt` and `dotAt`:
 
 | Bar width | What changes |
 | --- | --- |
-| 600 px or less | The counter (**2 of 5**) is hidden visually. Screen readers still read it. |
-| 480 px or less | Badges become 8 px colored dots; the text stays for screen readers and the tooltip. |
-| 320 px or less | The dividers between the buttons go. |
+| Under 600 px | The counter (**2 of 5**) is hidden visually (`hideAt="medium"`). Screen readers still read it. |
+| Under 480 px | Badges become 8 px colored dots (`dotAt="compact"`); the text stays for screen readers and the tooltip. |
+| Under 320 px | The dividers between the buttons go (`hideAt="narrow"`). |
 
-The breadcrumbs shorten all the time, as needed. The crumbs container (`.nav-bar`) may shrink, the badges and buttons may not. Inside it, each crumb gets a `flex-shrink` from `crumbShrink` in `NavigationBar.svelte`: 10 to the power of its distance from the file, so the outermost folder gives up its width first, then the next one. Each folder keeps room for an ellipsis (`min-width: 1.4em`, plus the icon when it has one), and the file name shrinks last. `.nav-bar` is aligned to its end, so whatever still does not fit is cut on the left, never the file name on the right.
+The breadcrumbs shorten all the time, as needed. The crumbs may shrink, the badges and buttons may not. Each crumb gets a `flex-shrink` from `crumbShrink` (`logic/crumbs.ts` in the UI library): 10 to the power of its distance from the file, so the outermost folder gives up its width first, then the next one. Each folder keeps room for an ellipsis (`min-width: 1.4em`, plus the icon when it has one), and the file name shrinks last. The crumbs are aligned to their end, so whatever still does not fit is cut on the left, never the file name on the right.
 
 ## Where the code lives
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileView.svelte` | The bar, the badges, the actions, the view switch, the conflict strip and the container queries |
-| `src/lib/navBar/NavigationBar.svelte` | The crumbs, `crumbShrink` and the folder popups |
+| `src/lib/views/files/FileBar.svelte` | The bar, the badges, the actions and the view switch |
+| `src/lib/navBar/NavigationBar.svelte` | The crumbs and the folder lists |
 | `src/lib/views/files/MarkdownToolbar.svelte` | The Markdown formatting row |
 | `src/lib/views/files/MediaPreview.svelte` | The image and PDF row |
-| `scripts/screenshots.ts` | `editor-conflict-toolbar` clips `.file-bar` and the Conflict actions toolbar; `markdown-toolbar` clips the formatting row, the view switch and the Heading menu |
+| `scripts/screenshots.ts` | `editor-conflict-toolbar` clips the File actions and Conflict actions toolbars; `markdown-toolbar` clips the formatting row, the view switch and the Heading menu |
 
 ## Design decisions
 
@@ -71,7 +71,7 @@ The breadcrumbs shorten all the time, as needed. The crumbs container (`.nav-bar
 
 **Collapse in a fixed order.** The counter is the least needed part (the change ticks beside the scrollbar show the same), so it goes first. Badges keep their color as dots. The file name and the buttons stay to the end, because they are what you came for.
 
-**Container queries, not window media queries.** The editor's width depends on the sidebars and the Files panel, so only the bar's own width tells what fits.
+**The bar's own width, not the window's.** The editor's width depends on the sidebars and the Files panel, so only the bar's own width tells what fits.
 
 ## Bugs we fixed
 
@@ -82,7 +82,7 @@ The breadcrumbs shorten all the time, as needed. The crumbs container (`.nav-bar
 
 ## Tests
 
-The bar is layout; `crumbShrink` is one line, the crumbs come from `navBarModel.ts`, and `fileToolbar.test.ts` covers which parts show. It needs a visual check in light and dark, and at narrow editor widths (drag the Files panel wider): the counter hides first, then the badges become dots, and the file name stays readable. See [Testing](Testing.md).
+The bar is layout; `crumbs.test.ts` covers `crumbShrink`, the crumbs come from `navBarModel.ts`, and `fileToolbar.test.ts` covers which parts show. It needs a visual check in light and dark, and at narrow editor widths (drag the Files panel wider): the counter hides first, then the badges become dots, and the file name stays readable. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

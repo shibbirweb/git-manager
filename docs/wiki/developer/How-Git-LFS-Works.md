@@ -98,7 +98,7 @@ stateDiagram-v2
 | `src/lib/views/git/lfs/lfsActions.ts` | Menu items and actions |
 | `src/lib/views/git/lfs/lfsModel.ts` | Sizes, diff text, pattern check, file set, `needsLfsInstall` |
 | `src/lib/diff/DiffView.svelte` | The "Stored in Git LFS" message |
-| `src/lib/views/changes/RepoSection.svelte`, `views/files/FileExplorer.svelte` | The LFS badges |
+| `src/lib/views/changes/RepoSection.svelte`, `views/files/explorerLook.ts` | The LFS badges |
 | `src/lib/menu/menuSpec.ts`, `menuActions.ts` | Git > LFS |
 
 ## Design decisions

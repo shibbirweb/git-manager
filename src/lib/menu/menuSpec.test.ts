@@ -52,7 +52,9 @@ describe("menuSpec", () => {
       expect(entries.some((entry) => entry.action === "file.openFolderNewWindow")).toBe(true);
     }
     // git mergetool runs one window.
-    expect(actionEntries(menuSpec("macos", "mergeTool")).some((entry) => entry.action === "file.newWindow")).toBe(false);
+    expect(actionEntries(menuSpec("macos", "mergeTool")).some((entry) => entry.action === "file.newWindow")).toBe(
+      false,
+    );
   });
 
   it("never closes the main window with Cmd+W", () => {
@@ -67,7 +69,10 @@ describe("menuSpec", () => {
   it("starts the File menu with New File on Cmd+N, and keeps it out of the merge tool", () => {
     const file = menuSpec("macos", "app").find((menu) => menu.text === "File");
     const first = file?.items[0];
-    expect(first?.kind === "action" ? [first.action, first.accelerator] : null).toEqual(["file.newFile", "CmdOrCtrl+N"]);
+    expect(first?.kind === "action" ? [first.action, first.accelerator] : null).toEqual([
+      "file.newFile",
+      "CmdOrCtrl+N",
+    ]);
     expect(actionEntries(menuSpec("macos", "mergeTool")).some((entry) => entry.action === "file.newFile")).toBe(false);
   });
 
@@ -95,13 +100,18 @@ describe("menuSpec", () => {
           .map((entry) => entry.accelerator)
           .filter((accelerator) => accelerator !== null)
           .map((accelerator) => resolved(accelerator, platform));
-        expect(keys.filter((key, index) => keys.indexOf(key) !== index), `${platform} ${mode}`).toEqual([]);
+        expect(
+          keys.filter((key, index) => keys.indexOf(key) !== index),
+          `${platform} ${mode}`,
+        ).toEqual([]);
       }
     }
   });
 
   it("keeps the app's editing keys", () => {
-    const accelerators = new Map(actionEntries(menuSpec("macos", "app")).map((entry) => [entry.action, entry.accelerator]));
+    const accelerators = new Map(
+      actionEntries(menuSpec("macos", "app")).map((entry) => [entry.action, entry.accelerator]),
+    );
     expect(accelerators.get("edit.undo")).toBe("CmdOrCtrl+Z");
     expect(accelerators.get("edit.findPrevious")).toBe("Shift+CmdOrCtrl+G");
     expect(accelerators.get("code.selectNextOccurrence")).toBe("CmdOrCtrl+D");
@@ -114,7 +124,9 @@ describe("menuSpec", () => {
   });
 
   it("leaves Ctrl+Z and Ctrl+A to the page outside macOS", () => {
-    const accelerators = new Map(actionEntries(menuSpec("linux", "app")).map((entry) => [entry.action, entry.accelerator]));
+    const accelerators = new Map(
+      actionEntries(menuSpec("linux", "app")).map((entry) => [entry.action, entry.accelerator]),
+    );
     expect(accelerators.get("edit.undo")).toBeNull();
     expect(accelerators.get("edit.selectAll")).toBeNull();
   });

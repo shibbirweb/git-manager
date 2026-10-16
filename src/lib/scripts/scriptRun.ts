@@ -13,7 +13,11 @@ export function withRunner(source: ScriptSource, runner: string | null): ScriptS
 }
 
 /** The Node version a package.json's scripts run with; null for other kinds. */
-export function nodePickFor(source: ScriptSource, nodeInstalls: NodeInstall[], nodeChoices: Record<string, string>): NodePick | null {
+export function nodePickFor(
+  source: ScriptSource,
+  nodeInstalls: NodeInstall[],
+  nodeChoices: Record<string, string>,
+): NodePick | null {
   if (source.kind !== "npm") {
     return null;
   }

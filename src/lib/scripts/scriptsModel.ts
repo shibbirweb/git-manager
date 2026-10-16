@@ -80,7 +80,11 @@ function matchesFilter(script: ProjectScript, words: string[]): boolean {
  * The visible rows: each file, then its scripts while it is expanded. A filter keeps
  * the scripts whose name or command contains every word and shows their files open.
  */
-export function scriptRows(sources: ScriptSource[], filter: string, isCollapsed: (filePath: string) => boolean): ScriptRow[] {
+export function scriptRows(
+  sources: ScriptSource[],
+  filter: string,
+  isCollapsed: (filePath: string) => boolean,
+): ScriptRow[] {
   const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
   const rows: ScriptRow[] = [];
   for (const source of sources) {

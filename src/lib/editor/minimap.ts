@@ -9,7 +9,7 @@ import { syntaxTree } from "@codemirror/language";
 import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { highlightTree } from "@lezer/highlight";
-import { codeHighlighters } from "./highlighter";
+import { codeHighlighters } from "@git-manager/ui/editor/highlighter";
 import {
   canvasShift,
   lineRuns,
@@ -82,7 +82,13 @@ const theme = EditorView.theme({
 /** Syntax styles of `from` to `to`, in order. */
 function styledRanges(state: EditorState, from: number, to: number): StyledRange[] {
   const ranges: StyledRange[] = [];
-  highlightTree(syntaxTree(state), codeHighlighters, (start, end, className) => ranges.push({ from: start, to: end, className }), from, to);
+  highlightTree(
+    syntaxTree(state),
+    codeHighlighters,
+    (start, end, className) => ranges.push({ from: start, to: end, className }),
+    from,
+    to,
+  );
   return ranges;
 }
 
@@ -121,7 +127,10 @@ const plugin = ViewPlugin.fromClass(
       view.scrollDOM.addEventListener("scroll", this.onScroll, { passive: true });
       // Theme switches change the token colors; forget them so the next paint reads them again.
       this.themeObserver = new MutationObserver(this.onThemeChange);
-      this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-color-theme", "style", "class"] });
+      this.themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme", "data-color-theme", "style", "class"],
+      });
       this.darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
       this.darkQuery.addEventListener("change", this.onThemeChange);
       this.schedule();
@@ -166,7 +175,15 @@ const plugin = ViewPlugin.fromClass(
         return;
       }
       const lineCount = this.view.state.doc.lines;
-      this.scrollToTopLine(topLineForDrag(this.drag.startTopLine, event.clientY - this.drag.startY, lineCount, this.last.visibleLines, this.last.height));
+      this.scrollToTopLine(
+        topLineForDrag(
+          this.drag.startTopLine,
+          event.clientY - this.drag.startY,
+          lineCount,
+          this.last.visibleLines,
+          this.last.height,
+        ),
+      );
     };
 
     onDragEnd = (): void => {
@@ -197,7 +214,11 @@ const plugin = ViewPlugin.fromClass(
     }
 
     schedule(): void {
-      this.view.requestMeasure({ key: this, read: (view) => this.measure(view), write: (measure) => this.paint(measure) });
+      this.view.requestMeasure({
+        key: this,
+        read: (view) => this.measure(view),
+        write: (measure) => this.paint(measure),
+      });
     }
 
     measure(view: EditorView): MinimapMeasure {
@@ -220,7 +241,12 @@ const plugin = ViewPlugin.fromClass(
     paint(measure: MinimapMeasure): void {
       this.last = measure;
       const { state } = this.view;
-      const layout = minimapLayout({ lineCount: state.doc.lines, topLine: measure.topLine, visibleLines: measure.visibleLines, height: measure.height });
+      const layout = minimapLayout({
+        lineCount: state.doc.lines,
+        topLine: measure.topLine,
+        visibleLines: measure.visibleLines,
+        height: measure.height,
+      });
       this.layout = layout;
       this.dom.style.top = `${measure.top}px`;
       this.dom.style.height = `${measure.height}px`;
@@ -296,7 +322,12 @@ const plugin = ViewPlugin.fromClass(
             fill = color;
             context.fillStyle = color;
           }
-          context.fillRect(LEFT_PAD + run.column * MINIMAP_CHAR, row * MINIMAP_ROW, run.length * MINIMAP_CHAR, MINIMAP_ROW - 0.5);
+          context.fillRect(
+            LEFT_PAD + run.column * MINIMAP_CHAR,
+            row * MINIMAP_ROW,
+            run.length * MINIMAP_CHAR,
+            MINIMAP_ROW - 0.5,
+          );
         }
         position += text.length + 1;
       }

@@ -3,7 +3,7 @@
 
 import { fuzzyMatch } from "$lib/commands/fuzzy";
 import type { PaletteItem } from "$lib/commands/registry";
-import { highlight, moveSelection, type SearchRow, type TextPart } from "$lib/search/fileSearchModel";
+import { highlight, type SearchRow, type TextPart } from "$lib/search/fileSearchModel";
 import { KIND_INFO, type KindInfo, type SymbolRow } from "$lib/search/symbolSearchModel";
 import type { OutlineItem, OutlineKind } from "$lib/types";
 
@@ -205,32 +205,6 @@ export type QuickRow =
   | { kind: "outline"; key: string; item: OutlineRow }
   | { kind: "line"; key: string; label: string; target: { line: number; column: number } | null }
   | { kind: "help"; key: string; prefix: string; label: string };
-
-export function isSelectableRow(row: QuickRow): boolean {
-  return row.kind !== "header" && row.kind !== "message" && !(row.kind === "line" && row.target === null);
-}
-
-export function firstSelectableRow(rows: readonly QuickRow[]): number {
-  return Math.max(0, rows.findIndex(isSelectableRow));
-}
-
-/** The row after a key, skipping headings: single steps wrap, page steps stop at the ends. */
-export function moveSelectableRow(rows: readonly QuickRow[], selected: number, step: number): number {
-  const selectable: number[] = [];
-  rows.forEach((row, index) => {
-    if (isSelectableRow(row)) {
-      selectable.push(index);
-    }
-  });
-  if (selectable.length === 0) {
-    return selected;
-  }
-  let position = selectable.findIndex((index) => index >= selected);
-  if (position < 0) {
-    position = selectable.length - 1;
-  }
-  return selectable[moveSelection(position, selectable.length, step)];
-}
 
 /** Rows of the "?" mode: every prefix and what it does. */
 export function helpRows(): QuickRow[] {

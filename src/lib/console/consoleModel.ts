@@ -1,16 +1,10 @@
-// The Git Console's list: merging entries from the backend and its events, the filter, the
-// text shown and copied, and the row layout the virtualized list uses. Pure, so it is tested.
+// The Git Console's list: merging entries from the backend and its events, the filter, and the
+// text shown and copied. Pure, so it is tested; the list itself is the UI library's List.
 
 import type { GitCommandEntry } from "$lib/types";
 
 /** As many as the backend keeps (git_console.rs). */
 export const MAX_CONSOLE_ENTRIES = 500;
-export const ROW_HEIGHT = 24;
-export const OUTPUT_LINE_HEIGHT = 17;
-/** An open entry shows at most this many output lines; the rest scrolls inside its box. */
-export const MAX_OUTPUT_LINES = 14;
-/** Vertical padding of the output box. */
-export const OUTPUT_PADDING = 10;
 
 export type EntryStatus = "running" | "success" | "failed";
 
@@ -22,7 +16,11 @@ export function statusOf(entry: GitCommandEntry): EntryStatus {
 }
 
 /** Adds or replaces `entry` (an event), keeping the list ordered by id and capped. */
-export function upsertEntry(entries: GitCommandEntry[], entry: GitCommandEntry, max = MAX_CONSOLE_ENTRIES): GitCommandEntry[] {
+export function upsertEntry(
+  entries: GitCommandEntry[],
+  entry: GitCommandEntry,
+  max = MAX_CONSOLE_ENTRIES,
+): GitCommandEntry[] {
   const last = entries[entries.length - 1];
   let next: GitCommandEntry[];
   if (!last || entry.id > last.id) {
@@ -137,70 +135,4 @@ export function outputBlocks(entry: GitCommandEntry): OutputBlock[] {
     blocks.push({ kind: "note", text: entry.running ? "Running..." : "No output" });
   }
   return blocks;
-}
-
-export function outputLineCount(entry: GitCommandEntry): number {
-  return outputBlocks(entry).reduce((count, block) => count + block.text.split("\n").length, 0);
-}
-
-/** Height of the output box of an open entry. */
-export function outputHeight(entry: GitCommandEntry): number {
-  return Math.min(outputLineCount(entry), MAX_OUTPUT_LINES) * OUTPUT_LINE_HEIGHT + OUTPUT_PADDING;
-}
-
-export function rowHeight(entry: GitCommandEntry, open: boolean): number {
-  return open ? ROW_HEIGHT + outputHeight(entry) : ROW_HEIGHT;
-}
-
-export interface ListLayout {
-  /** Top of each row. */
-  offsets: number[];
-  total: number;
-}
-
-export function listLayout(entries: GitCommandEntry[], openIds: ReadonlySet<number>): ListLayout {
-  const offsets: number[] = new Array(entries.length);
-  let top = 0;
-  for (let index = 0; index < entries.length; index++) {
-    offsets[index] = top;
-    top += rowHeight(entries[index], openIds.has(entries[index].id));
-  }
-  return { offsets, total: top };
-}
-
-/** The rows to render, `overscan` rows beyond each edge of the viewport. End is exclusive. */
-export function visibleRange(
-  layout: ListLayout,
-  scrollTop: number,
-  viewportHeight: number,
-  overscan = 8,
-): { start: number; end: number } {
-  const { offsets, total } = layout;
-  const count = offsets.length;
-  if (count === 0) {
-    return { start: 0, end: 0 };
-  }
-  // The last row whose top is at or above `y`.
-  const rowAt = (y: number): number => {
-    let low = 0;
-    let high = count - 1;
-    while (low < high) {
-      const middle = Math.ceil((low + high) / 2);
-      if (offsets[middle] <= y) {
-        low = middle;
-      } else {
-        high = middle - 1;
-      }
-    }
-    return low;
-  };
-  const top = Math.max(0, Math.min(scrollTop, total));
-  const first = rowAt(top);
-  const last = rowAt(top + Math.max(0, viewportHeight));
-  return { start: Math.max(0, first - overscan), end: Math.min(count, last + 1 + overscan) };
-}
-
-/** Scrolled to the end (within a few pixels), so new output keeps it there. */
-export function isAtBottom(scrollTop: number, clientHeight: number, scrollHeight: number): boolean {
-  return scrollHeight - (scrollTop + clientHeight) <= 4;
 }

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "git-manager-ui": {
+      "command": "bun",
+      "args": ["ui/mcp/server.ts"]
+    }
+  }
+}

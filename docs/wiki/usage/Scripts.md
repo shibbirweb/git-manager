@@ -40,7 +40,7 @@ To use another one, right-click the file row and choose **Run With**, then npm, 
 
 ## Run a script
 
-Double-click a script, select it and press **Enter**, or click the green play button in front of its name.
+Double-click a script, select it and press **Enter**, or hover it and click the green play button at the end of its row.
 
 The script runs in the **Run** tab of the bottom panel. Every script gets its own tab, named like "dev (pnpm)", so you can keep a dev server running while you run the tests.
 
@@ -92,7 +92,7 @@ Projects often need a certain Node version. Git Manager looks for it the way ver
 
 It picks the newest installed version that fits, from nvm, Herd, fnm, Volta, asdf, mise, nodenv, n and Homebrew.
 
-The version shows as a badge on the file row, like **node 18.20.6**. Hover it to see why that version was picked. If the project asks for a version you do not have, the badge says "missing" in the warning color, and running a script tells you it uses the shell's default node instead.
+The version shows as a badge on the file row, like **node 18.20.6**. Hover it to see why that version was picked. If the project asks for a version you do not have, the badge says "missing" next to a warning icon, and running a script tells you it uses the shell's default node instead.
 
 ![The Node Version menu](../images/scripts-node-version.png)
 

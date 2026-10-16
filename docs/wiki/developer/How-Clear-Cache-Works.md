@@ -57,14 +57,14 @@ A terminal's shell lives in the backend, but what it shows lives in the page, an
 | --- | --- |
 | `src/lib/debug/clearCachePlan.ts` | Blocked, confirm or go |
 | `src/lib/debug/clearCache.ts` | Asks, saves, closes terminals, calls the command |
-| `src/lib/views/StatusBar.svelte` | The button beside Memory |
+| `src/lib/views/MemoryStatus.svelte` | The button beside Memory |
 | `src/lib/menu/menuSpec.ts`, `menuActions.ts` | View > Clear Cache |
 | `src-tauri/src/memory.rs` | `web_content_pid`, `end_web_content`, `is_own_web_content` |
 | `src-tauri/src/commands/config.rs` | The `clear_cache` command |
 | `src-tauri/src/terminal_link.rs` | Links: output to the page or held, the stash, reattach, expiry |
 | `src-tauri/src/commands/terminal.rs` | `stash_terminals`, `terminal_unstash`, `terminal_reattach`, `terminal_close_all` |
 | `src/lib/terminal/terminalStash.ts` | What a terminal keeps across the restart, checked when read back |
-| `src/lib/terminal/terminalStore.svelte.ts`, `TerminalView.svelte` | Saving, rebuilding, the screen, reconnecting |
+| `src/lib/terminal/terminalStore.svelte.ts`, `terminalController.svelte.ts`, `terminalShell.svelte.ts` | Saving, rebuilding, the screen, reconnecting |
 
 ## Design decisions
 

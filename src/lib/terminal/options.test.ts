@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { defaultPreferences } from "$lib/stores/settingsData";
-import { applyChangedOptions, changesMetrics, SMOOTH_SCROLL_MS, terminalAddonPlan, terminalDisplayOptions } from "./options";
+import {
+  applyChangedOptions,
+  changesMetrics,
+  SMOOTH_SCROLL_MS,
+  terminalAddonPlan,
+  terminalDisplayOptions,
+} from "./options";
 
 describe("terminalDisplayOptions", () => {
   it("maps the defaults to xterm options", () => {
     const options = terminalDisplayOptions(defaultPreferences);
-    expect(options.fontFamily.startsWith("'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', 'Symbols Nerd Font Mono'")).toBe(true);
+    expect(
+      options.fontFamily.startsWith(
+        "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', 'Symbols Nerd Font Mono'",
+      ),
+    ).toBe(true);
     expect(options.fontFamily.endsWith(", monospace")).toBe(true);
     expect(options).toMatchObject({
       fontSize: 13,
@@ -82,7 +92,12 @@ describe("changesMetrics", () => {
 
 describe("terminalAddonPlan", () => {
   it("loads the default parts", () => {
-    expect(terminalAddonPlan(defaultPreferences)).toEqual({ webgl: true, unicode11: true, search: true, fileLinks: true });
+    expect(terminalAddonPlan(defaultPreferences)).toEqual({
+      webgl: true,
+      unicode11: true,
+      search: true,
+      fileLinks: true,
+    });
   });
 
   it("leaves out every part that is off", () => {

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { FileStatus, RepoInfo } from "$lib/types";
-import { defaultSubmodulePath, describeSubmoduleChange, findRepo, isSubmoduleEntry, validateSubmodulePath } from "./submoduleModel";
+import {
+  defaultSubmodulePath,
+  describeSubmoduleChange,
+  findRepo,
+  isSubmoduleEntry,
+  validateSubmodulePath,
+} from "./submoduleModel";
 
 function file(overrides: Partial<FileStatus>): FileStatus {
   return { path: "lib", origPath: null, staged: null, unstaged: "modified", conflicted: false, ...overrides };
@@ -11,13 +17,17 @@ describe("submoduleModel", () => {
     expect(describeSubmoduleChange({ newCommits: true, modifiedContent: true, untrackedContent: false })).toBe(
       "new commits, modified content",
     );
-    expect(describeSubmoduleChange({ newCommits: false, modifiedContent: false, untrackedContent: true })).toBe("untracked content");
+    expect(describeSubmoduleChange({ newCommits: false, modifiedContent: false, untrackedContent: true })).toBe(
+      "untracked content",
+    );
     expect(describeSubmoduleChange(null)).toBe("");
     expect(describeSubmoduleChange(undefined)).toBe("");
   });
 
   it("tells submodule entries from files", () => {
-    expect(isSubmoduleEntry(file({ submodule: { newCommits: true, modifiedContent: false, untrackedContent: false } }))).toBe(true);
+    expect(
+      isSubmoduleEntry(file({ submodule: { newCommits: true, modifiedContent: false, untrackedContent: false } })),
+    ).toBe(true);
     expect(isSubmoduleEntry(file({ submodule: null }))).toBe(false);
     expect(isSubmoduleEntry(file({}))).toBe(false);
   });

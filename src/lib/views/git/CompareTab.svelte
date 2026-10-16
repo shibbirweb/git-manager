@@ -4,11 +4,13 @@
   import { api, errorMessage } from "$lib/api";
   import { joinPath } from "$lib/stores/workspacePaths";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { revisionLabel } from "$lib/stores/gitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { RevisionDiff } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Notice from "@git-manager/ui/components/Notice.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
 
   interface Props {
     repoRoot: string;
@@ -66,57 +68,22 @@
   }
 </script>
 
-<div class="compare-tab">
+<Stack gap="none" grow surface="editor">
   {#if loadError}
-    <div class="placeholder">
-      <Icon name="alert" size={18} />
-      <div>Could not compare with {label}</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
+    <EmptyState icon="alert" title="Could not compare with {label}" hint={loadError} />
   {:else if result}
     {#if !result.existsInRevision}
-      <div class="note dim">{filePath} does not exist in {label}: everything shows as added.</div>
+      <Notice variant="banner">{filePath} does not exist in {label}: everything shows as added.</Notice>
     {/if}
-    <DiffView
+    <GitDiffView
+      source={{ kind: "revisions", repoRoot, filePath, origPath: null, from: result.commitId, to: null }}
       diff={result.diff}
       path={filePath}
-      mode="readonly"
-      {leftLabel}
-      rightLabel="Working Copy"
-      workingFile={{ filePath: joinPath(repoRoot, filePath), sameLines: true }}
+      labels={{ left: leftLabel, right: "Working Copy" }}
+      blame={{ repoRoot, filePath, revision: null }}
       {previewSides}
     />
   {:else}
-    <div class="placeholder dim">Loading...</div>
+    <EmptyState title="Loading..." delayed />
   {/if}
-</div>
-
-<style>
-  .compare-tab {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .note {
-    flex: none;
-    padding: 6px 12px;
-    border-bottom: 1px solid var(--border-strong);
-    background: var(--panel-alt);
-    font-size: 12px;
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px;
-    text-align: center;
-  }
-</style>
+</Stack>

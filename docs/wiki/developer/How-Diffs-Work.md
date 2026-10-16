@@ -1,12 +1,12 @@
 # How diffs work
 
-The diff view shows one file side by side: the old version on the left, the new one on the right. The Changes sidebar uses it to stage or unstage single hunks; the Log, commit tabs, the Git and branch compare tabs and the shelf use it read-only. The user side is in [Diffs](../usage/Diffs.md).
+The diff view shows one file side by side: the old version on the left, the new one on the right. The Changes sidebar uses it to stage, unstage or [revert](How-Reverting-a-Change-Works.md) single hunks; the Log, commit tabs, the Git and branch compare tabs and the shelf use it read-only. The user side is in [Diffs](../usage/Diffs.md).
 
 ## Why we need it
 
 Before you stage or commit, you want to see exactly what changed, and often only part of a file belongs in the next commit. Staging single hunks is what people miss most in simple git GUIs.
 
-The split of work is deliberate. Rust only loads the two texts of the selected file; the UI computes and draws the diff with `@codemirror/merge`. No patch text crosses the bridge and only the file on screen is kept in memory.
+Rust only loads the two texts of the selected file; the UI computes and draws the diff with `@codemirror/merge`. No patch text crosses the bridge, and only the file on screen stays in memory.
 
 ## How it works
 
@@ -33,35 +33,35 @@ flowchart LR
 
 ### The view
 
-`DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, and optionally `onChange`, a `blame` target, `revealLine` (Back and Forward), `workingFile` (Open File) and `previewSides` (binary images and PDFs). Its `build` function:
+`DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, and optionally `onChange`, `blame`, `revealLine`, `workingFile` (Open File) and `previewSides` (binary images and PDFs). It draws `DiffToolbar.svelte` and the UI library's `DiffFrame`, which hands over the body and find bar hosts; `DiffEditors.build` (`diffEditors.svelte.ts`, editors made in `diffViews.ts`):
 
-- loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`,
+- loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`, without padding and joined by bands ([How the connected diff works](How-the-Connected-Diff-Works.md)),
 - folds unchanged lines with `splitFolds` (`foldField.ts`, rules in `foldModel.ts`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
-- adds `chunkKinds` and `diffTheme` from `mergeExtensions.ts`, so pure additions, pure deletions and mixed chunks get their own `--diff-*` colors from `src/app.css`,
-- adds revert controls: `b-to-a` with a "Stage this change" button in unstaged mode, `a-to-b` with "Unstage this change" in staged mode, none when read-only,
+- adds `chunkKinds`, `diffTheme` and `sideColors` (`mergeExtensions.ts`): `--diff-removed` old side, `--diff-added` new side, like VS Code; `DiffFrame colors="oldToNew"` fades the bands,
+- puts a "Stage this change" (unstaged) or "Unstage this change" (staged) arrow on each band, none when read-only,
 - draws the overview ruler with `createStrip`, `layoutTicks` and `renderTicks` from `scrollMarkers.ts`, next to the merge view's scroll container,
 - binds F7 and Shift+F7 to `goToChunk` and restores the scroll position on a rebuild.
 
 **Open File** (`openWorkingFile`) checks `navigation.fileExists` for `workingFile`, then calls `navigation.openFileAt`, at the cursor or top visible line (`lineOnScreen`) when `sameLines` says the right side is the work tree.
 
-The effect's cleanup calls `teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)). With `previewSides`, a binary image or PDF shows both versions side by side ([How the Image and PDF Preview Works](How-the-Image-and-PDF-Preview-Works.md) lists every caller's sides).
+The effect's cleanup calls `DiffEditors.teardown`, which destroys the `MergeView`, so no editor outlives its diff. A Git LFS pointer (`diff.lfs`) shows the two sizes instead of text (see [How Git LFS works](How-Git-LFS-Works.md)). With `previewSides`, a binary image or PDF shows both versions side by side ([How the Image and PDF Preview Works](How-the-Image-and-PDF-Preview-Works.md) lists every caller's sides).
 
 ### Resizing the sides
 
-The split is `settings.diffSplitRatio` in `state.json` (default 0.5, kept between 0.15 and 0.85 by `clampDiffSplit` in `split.ts`). `DiffView` sets it as `--diff-left` and `--diff-right`, which the labels, the find bar hosts and both editors use as `flex-grow`, so the rows stay lined up.
+The split is `settings.diffSplitRatio` in `state.json` (default 0.5, kept between 0.15 and 0.85 by `clampDiffSplit` in `split.ts`). `DiffFrame` sets it as `--diff-left` and `--diff-right`, which the labels, the find bar hosts and both editors use as `flex-grow`, so the rows stay lined up.
 
 ```mermaid
 flowchart LR
-  Drag["pointer on .split-handle"] --> Ratio["splitFromPointer(x, left, width, gutter)"]
+  Drag["pointer on SplitHandle"] --> Ratio["pointerRatio(x, left, width, gutter)"]
   Ratio --> Setting["settings.diffSplitRatio"]
   Setting --> Vars["--diff-left, --diff-right"]
   Vars --> Rows["labels, find bars, editors"]
   Setting -->|"pointer up"| Save["settings.save() to state.json"]
 ```
 
-The handle is a `role="separator"` that `placeSplitHandle` puts at the first editor's right edge after each layout. `splitFromPointer` leaves out the change arrows column (`.cm-merge-revert`, 24 px, matched by a 24 px gap in the labels and find bar rows), so it keeps its width. Double-click sets 0.5; Left and Right move 2% (6% with Shift). The setting is saved when the drag ends.
+The handle is the library's `SplitHandle` with a `gutter`: the bands column (the `mergeView.gap` token, matched by a gap in the labels and find bar rows) belongs to neither side, so the handle sits at the first editor's right edge and `pointerRatio` leaves the column out. Double-click sets 0.5; Left and Right move 2% (10% with Shift). The setting is saved when the drag ends.
 
-Each side's find bar goes into a host above the diff (`panels({ topContainer })`), since both sides share one scroller. See [How find and replace works](How-Find-and-Replace-Works.md).
+Each side's find bar goes into a host above the diff (`panels({ topContainer })`), so it stays put while the text scrolls. See [How find and replace works](How-Find-and-Replace-Works.md).
 
 ### Staging one hunk
 
@@ -92,7 +92,9 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 | File | What it does |
 | --- | --- |
-| `src/lib/diff/DiffView.svelte` | The side by side view, hunk buttons, ruler, navigation |
+| `src/lib/diff/DiffView.svelte`, `DiffToolbar.svelte` | The view and its toolbar |
+| `src/lib/diff/diffEditors.svelte.ts`, `diffViews.ts` | Building the editors, ruler, navigation, selection |
+| `ui/web/src/lib/components/DiffFrame.svelte` | Labels, find bar hosts, body, split handle (UI library) |
 | `src/lib/diff/mergeExtensions.ts` | `chunkKinds`, `diffTheme`, `revertButton` |
 | `src/lib/diff/prefs.svelte.ts` | The Collapse unchanged preference |
 | `src/lib/diff/split.ts` | The split range, `clampDiffSplit`, `splitFromPointer` |
@@ -108,13 +110,13 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 **Stage by writing the whole new index text.** The alternative was to build a patch and run `git apply --cached`. Patches break on context mismatches, whitespace and line endings. Writing the exact text the user sees is simple and always correct.
 
-**Hash from stdin without `--path`.** Without a path, `git hash-object` applies no clean filters, so the stored bytes are exactly the computed index content.
+**Hash from stdin without `--path`,** so `git hash-object` applies no clean filters and stores exactly the computed text.
 
-**Queue hunk stages.** `applyDiffChange` chains each stage on `stageQueue`, so fast clicks reach the index in order instead of racing.
+**Queue hunk stages.** `applyDiffChange` chains stages on `stageQueue`, so fast clicks land in order.
 
-**Read-only, not non-editable.** The editors use `readOnly` but not `EditorView.editable.of(false)`, so find, copy and F7 still work.
+**Read-only, not non-editable,** so find, copy and F7 still work.
 
-**Let the UI compute the diff.** One diff engine draws what you see, and the hunk buttons come free with `@codemirror/merge`. Hunks from Rust would mean two engines that could disagree.
+**Let the UI compute the diff.** One engine draws what you see, and the hunk buttons come free with `@codemirror/merge`.
 
 **Our own folds.** The library's `collapseUnchanged` opens only whole runs; ours opens 10 lines at a time, on both sides.
 
@@ -122,16 +124,16 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 ## Bugs we fixed
 
-See [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md) (diffs not following edits), [How the editor works](How-the-Editor-Works.md) (the Diff tab that would not close) and [How changes and commits work](How-Changes-and-Commits-Work.md) (staged renames).
+See [Diff Bugs We Fixed](Diff-Bugs-We-Fixed.md), [Folder Watching Bugs We Fixed](Folder-Watching-Bugs-We-Fixed.md) (diffs not following edits), [How the editor works](How-the-Editor-Works.md) (the Diff tab that would not close) and [How changes and commits work](How-Changes-and-Commits-Work.md) (staged renames).
 
 ## Tests
 
 - `src-tauri/src/git/tests.rs`: `diff_working_file_staged_and_unstaged`, `diff_working_file_staged_in_unborn_repo` and `diff_commit_file_sides`.
 - `src-tauri/src/commands/tests.rs`: `stage_content_updates_index_for_tracked_file`, `stage_content_adds_new_file_and_keeps_executable_mode` and `get_status_and_file_diff_commands`.
-- `src/lib/diff/split.test.ts`: the range, and the pointer math that leaves out the buttons column.
-- `src/lib/diff/foldModel.test.ts`: fold placement and steps.
+- `src/lib/diff/split.test.ts`: the range; `splitRatio.test.ts` (UI library): the pointer math without the arrows column.
+- `src/lib/diff/foldModel.test.ts`, `foldField.test.ts`: folds and steps.
 
-Hunk buttons, the drag and Open File need a manual check in the app. See [Testing](Testing.md).
+Hunk buttons, the drag and Open File need a check in the app. See [Testing](Testing.md).
 
 ## Keeping this page in sync
 

@@ -77,9 +77,18 @@ describe("group layout", () => {
     const layout = grid();
     expect(parseGroupLayout(JSON.parse(JSON.stringify(layout)), 3)).toEqual(layout);
     expect(parseGroupLayout(layout, 2)).toBeNull();
-    expect(parseGroupLayout({ kind: "split", direction: "down", first: leafLayout(0), second: leafLayout(0) }, 1)).toBeNull();
-    expect(parseGroupLayout({ kind: "split", direction: "sideways", first: leafLayout(0), second: leafLayout(1) }, 2)).toBeNull();
-    expect(parseGroupLayout({ kind: "split", direction: "down", ratio: "wide", first: leafLayout(0), second: leafLayout(1) }, 2)).toEqual({
+    expect(
+      parseGroupLayout({ kind: "split", direction: "down", first: leafLayout(0), second: leafLayout(0) }, 1),
+    ).toBeNull();
+    expect(
+      parseGroupLayout({ kind: "split", direction: "sideways", first: leafLayout(0), second: leafLayout(1) }, 2),
+    ).toBeNull();
+    expect(
+      parseGroupLayout(
+        { kind: "split", direction: "down", ratio: "wide", first: leafLayout(0), second: leafLayout(1) },
+        2,
+      ),
+    ).toEqual({
       kind: "split",
       direction: "down",
       ratio: 0.5,

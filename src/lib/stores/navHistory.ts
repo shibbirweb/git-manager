@@ -152,7 +152,10 @@ export class NavigationHistory {
    * tried; a cancelled step leaves the history as it was. Returns the stop
    * shown, or null.
    */
-  async travel(direction: "back" | "forward", show: (target: NavLocation) => Promise<StopOutcome>): Promise<NavLocation | null> {
+  async travel(
+    direction: "back" | "forward",
+    show: (target: NavLocation) => Promise<StopOutcome>,
+  ): Promise<NavLocation | null> {
     for (;;) {
       const before = { back: this.back.slice(), forward: this.forward.slice(), current: this.current };
       // Move first so locations recorded while the stop opens refine it.

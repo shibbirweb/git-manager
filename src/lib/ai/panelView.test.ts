@@ -52,7 +52,9 @@ describe("groupRows", () => {
       ["Other folders", null],
     ]);
     const app = sections[0];
-    expect(app.cards.map((card) => [card.row.label, card.sessions.map((row) => row.session.terminalKey), card.state])).toEqual([
+    expect(
+      app.cards.map((card) => [card.row.label, card.sessions.map((row) => row.session.terminalKey), card.state]),
+    ).toEqual([
       ["main", [], null],
       ["fix/login", [1, 2], "waiting"],
     ]);
@@ -77,12 +79,7 @@ describe("filterRows", () => {
   });
 
   it("keeps a matching worktree with all its agents", () => {
-    expect(keys("FIX/LOGIN")).toEqual([
-      "project:/work/app",
-      "worktree:/work/app-login",
-      "session:1",
-      "session:2",
-    ]);
+    expect(keys("FIX/LOGIN")).toEqual(["project:/work/app", "worktree:/work/app-login", "session:1", "session:2"]);
   });
 
   it("keeps a matching project whole", () => {

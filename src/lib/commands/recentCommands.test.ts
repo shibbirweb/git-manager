@@ -20,7 +20,10 @@ describe("recent commands", () => {
   it("validates a saved list", () => {
     expect(pickRecentCommands(undefined)).toEqual([]);
     expect(pickRecentCommands("git.push")).toEqual([]);
-    expect(pickRecentCommands(["git.push", 3, "", null, "git.push", "x".repeat(101), "view.log"])).toEqual(["git.push", "view.log"]);
+    expect(pickRecentCommands(["git.push", 3, "", null, "git.push", "x".repeat(101), "view.log"])).toEqual([
+      "git.push",
+      "view.log",
+    ]);
     const long = Array.from({ length: 40 }, (_, index) => `command.${index}`);
     expect(pickRecentCommands(long)).toEqual(long.slice(0, MAX_RECENT_COMMANDS));
     // Ids this version does not know are kept for a later one.

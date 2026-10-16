@@ -27,13 +27,17 @@ describe("bisectBannerText", () => {
   it("asks for the missing marks", () => {
     expect(bisectBannerText(state({ bad: null, good: [] }))).toBe("Bisecting: mark a bad and a good commit");
     expect(bisectBannerText(state({ bad: null }))).toBe("Bisecting: mark a bad commit");
-    expect(bisectBannerText(state({ good: [], badTerm: "new", goodTerm: "old" }))).toBe("Bisecting: mark an old commit");
+    expect(bisectBannerText(state({ good: [], badTerm: "new", goodTerm: "old" }))).toBe(
+      "Bisecting: mark an old commit",
+    );
   });
 
   it("names the first bad commit", () => {
     const firstBad = { id: "b".repeat(40), shortId: "bbbbbbbb", summary: "Break the login" };
     expect(bisectBannerText(state({ firstBad }))).toBe("Found the first bad commit: bbbbbbbb Break the login");
-    expect(bisectBannerText(state({ firstBad: { ...firstBad, summary: "" }, badTerm: "new" }))).toBe("Found the first new commit: bbbbbbbb");
+    expect(bisectBannerText(state({ firstBad: { ...firstBad, summary: "" }, badTerm: "new" }))).toBe(
+      "Found the first new commit: bbbbbbbb",
+    );
   });
 });
 

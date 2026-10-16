@@ -22,7 +22,10 @@ class ShelfState {
 export const shelfState = new ShelfState();
 
 /** Shelve Changes...: `filePaths` start ticked; null ticks every changed file. */
-export function openShelveDialog(repoRoot: string | null = repoStore.repo?.root ?? null, filePaths: string[] | null = null): void {
+export function openShelveDialog(
+  repoRoot: string | null = repoStore.repo?.root ?? null,
+  filePaths: string[] | null = null,
+): void {
   if (!repoRoot || repoStore.busy !== null) {
     return;
   }
@@ -34,17 +37,30 @@ export function showShelf(): void {
   terminalStore.showTab("shelf");
 }
 
-export async function shelveFiles(repoRoot: string, name: string, filePaths: string[], keepInWorkingTree: boolean): Promise<boolean> {
-  const entry = await repoStore.run("Shelve", (repoPath) => api.shelveChanges(repoPath, name, filePaths, keepInWorkingTree), {
-    repoPath: repoRoot,
-    success: (shelved) => `Shelved ${fileCountLabel(shelved.files.length)}`,
-  });
+export async function shelveFiles(
+  repoRoot: string,
+  name: string,
+  filePaths: string[],
+  keepInWorkingTree: boolean,
+): Promise<boolean> {
+  const entry = await repoStore.run(
+    "Shelve",
+    (repoPath) => api.shelveChanges(repoPath, name, filePaths, keepInWorkingTree),
+    {
+      repoPath: repoRoot,
+      success: (shelved) => `Shelved ${fileCountLabel(shelved.files.length)}`,
+    },
+  );
   shelfState.changed();
   return entry !== undefined;
 }
 
 /** Unshelve...: all files, or `filePaths` of them; asks whether to keep them on the shelf. */
-export async function unshelveEntry(repoRoot: string, entry: ShelfEntry, filePaths: string[] | null = null): Promise<void> {
+export async function unshelveEntry(
+  repoRoot: string,
+  entry: ShelfEntry,
+  filePaths: string[] | null = null,
+): Promise<void> {
   const count = filePaths?.length ?? entry.files.length;
   const choice = await dialogs.choose<"remove" | "keep">({
     title: filePaths ? "Unshelve Selected Files" : "Unshelve Changes",

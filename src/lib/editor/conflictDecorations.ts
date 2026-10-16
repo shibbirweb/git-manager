@@ -83,7 +83,12 @@ class ActionsWidget extends WidgetType {
     separator();
     add("Accept Both Changes", "Keep both, current first", () => resolveConflictAt(view, this.index, "both"));
     separator();
-    add("Resolve in Merge Tool", "Open the 3-way merge tool for this file", () => this.actions.onOpenMergeTool(), "merge-tool");
+    add(
+      "Resolve in Merge Tool",
+      "Open the 3-way merge tool for this file",
+      () => this.actions.onOpenMergeTool(),
+      "merge-tool",
+    );
     if (this.total > 1) {
       const counter = document.createElement("span");
       counter.className = "cm-conflict-count";

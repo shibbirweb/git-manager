@@ -55,7 +55,8 @@ async function removeWorktree(repoRoot: string, worktree: WorktreeInfo): Promise
   );
   const dirty = await api.worktreeHasChanges(worktree.path).catch(() => false);
   const label = worktreeLabel(worktree);
-  const agentsNote = inside.length > 0 ? ` Its ${inside.length === 1 ? "agent tab is" : `${inside.length} agent tabs are`} closed.` : "";
+  const agentsNote =
+    inside.length > 0 ? ` Its ${inside.length === 1 ? "agent tab is" : `${inside.length} agent tabs are`} closed.` : "";
   const confirmed = await dialogs.confirm({
     title: dirty ? "Worktree Has Changes" : "Remove Worktree",
     message: dirty
@@ -104,7 +105,11 @@ export function rowMenu(row: PanelRow): MenuItem[] {
       return row.project.isRepo
         ? [
             { label: "New Task...", disabled: repoStore.busy !== null, action: () => newTask(row.project.root) },
-            { label: "New Worktree...", disabled: repoStore.busy !== null, action: () => newWorktree(row.project.root) },
+            {
+              label: "New Worktree...",
+              disabled: repoStore.busy !== null,
+              action: () => newWorktree(row.project.root),
+            },
             { separator: true },
             ...folderMenu(row.project.root, false),
           ]

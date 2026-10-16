@@ -32,7 +32,11 @@ const GENERIC_MONOSPACE = "monospace";
 
 /** A family name without quotes, lower case, for comparing entries. */
 function familyKey(family: string): string {
-  return family.trim().replace(/^(['"])(.*)\1$/, "$2").trim().toLowerCase();
+  return family
+    .trim()
+    .replace(/^(['"])(.*)\1$/, "$2")
+    .trim()
+    .toLowerCase();
 }
 
 function quoteFamily(family: string): string {

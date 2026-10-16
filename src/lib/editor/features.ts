@@ -305,7 +305,9 @@ function reconfigure(features: EditorFeature[]): void {
   const options = current;
   for (const view of views) {
     const kind = view.state.facet(kindFacet);
-    view.dispatch({ effects: features.map((feature) => compartments[feature].reconfigure(extensionFor(feature, kind, options))) });
+    view.dispatch({
+      effects: features.map((feature) => compartments[feature].reconfigure(extensionFor(feature, kind, options))),
+    });
   }
 }
 

@@ -19,11 +19,24 @@ import {
 } from "./gitOptions";
 
 function head(overrides: Partial<HeadInfo> = {}): HeadInfo {
-  return { branch: "main", shortId: "abc1234", unborn: false, upstream: "origin/main", ahead: 0, behind: 0, ...overrides };
+  return {
+    branch: "main",
+    shortId: "abc1234",
+    unborn: false,
+    upstream: "origin/main",
+    ahead: 0,
+    behind: 0,
+    ...overrides,
+  };
 }
 
 function status(overrides: Partial<HeadInfo> = {}, opKind: RepoStatus["op"]["kind"] = "none"): RepoStatus {
-  return { head: head(overrides), op: { kind: opKind, description: "", oursLabel: "", theirsLabel: "" }, bisect: null, files: [] };
+  return {
+    head: head(overrides),
+    op: { kind: opKind, description: "", oursLabel: "", theirsLabel: "" },
+    bisect: null,
+    files: [],
+  };
 }
 
 function file(path: string, overrides: Partial<FileStatus> = {}): FileStatus {
@@ -33,38 +46,60 @@ function file(path: string, overrides: Partial<FileStatus> = {}): FileStatus {
 describe("push target", () => {
   it("splits remote refs with slashes in the remote name", () => {
     expect(splitRemoteRef("origin/feature/x", ["origin"])).toEqual({ remoteName: "origin", remoteBranch: "feature/x" });
-    expect(splitRemoteRef("team/fork/main", ["team", "team/fork"])).toEqual({ remoteName: "team/fork", remoteBranch: "main" });
+    expect(splitRemoteRef("team/fork/main", ["team", "team/fork"])).toEqual({
+      remoteName: "team/fork",
+      remoteBranch: "main",
+    });
     expect(splitRemoteRef("gone/main", ["origin"])).toBeNull();
   });
 
   it("uses the upstream, else the same name on origin or the first remote", () => {
-    expect(defaultPushTarget(head({ upstream: "fork/topic" }), ["origin", "fork"])).toEqual({ remoteName: "fork", remoteBranch: "topic" });
+    expect(defaultPushTarget(head({ upstream: "fork/topic" }), ["origin", "fork"])).toEqual({
+      remoteName: "fork",
+      remoteBranch: "topic",
+    });
     expect(defaultPushTarget(head({ branch: "new", upstream: null }), ["upstream", "origin"])).toEqual({
       remoteName: "origin",
       remoteBranch: "new",
     });
-    expect(defaultPushTarget(head({ branch: "new", upstream: null }), ["upstream"])).toEqual({ remoteName: "upstream", remoteBranch: "new" });
+    expect(defaultPushTarget(head({ branch: "new", upstream: null }), ["upstream"])).toEqual({
+      remoteName: "upstream",
+      remoteBranch: "new",
+    });
     expect(defaultPushTarget(head({ upstream: null }), [])).toBeNull();
     expect(defaultPushTarget(head({ branch: null }), ["origin"])).toBeNull();
   });
 
   it("previews the push command", () => {
-    const base = { localBranch: "main", remoteName: "origin", remoteBranch: "main", forceWithLease: false, pushTags: false, setUpstream: false };
+    const base = {
+      localBranch: "main",
+      remoteName: "origin",
+      remoteBranch: "main",
+      forceWithLease: false,
+      pushTags: false,
+      setUpstream: false,
+    };
     expect(pushCommand(base)).toBe("git push origin main");
-    expect(pushCommand({ ...base, remoteBranch: "release", forceWithLease: true, pushTags: true, setUpstream: true })).toBe(
-      "git push --force-with-lease --tags -u origin main:release",
-    );
+    expect(
+      pushCommand({ ...base, remoteBranch: "release", forceWithLease: true, pushTags: true, setUpstream: true }),
+    ).toBe("git push --force-with-lease --tags -u origin main:release");
   });
 });
 
 describe("pull command", () => {
   it("maps each mode to its flag", () => {
-    expect(pullCommand({ remoteName: "origin", branchName: "main", mode: "merge", noCommit: false })).toBe("git pull --no-rebase origin main");
+    expect(pullCommand({ remoteName: "origin", branchName: "main", mode: "merge", noCommit: false })).toBe(
+      "git pull --no-rebase origin main",
+    );
     expect(pullCommand({ remoteName: "origin", branchName: "main", mode: "merge", noCommit: true })).toBe(
       "git pull --no-rebase --no-commit origin main",
     );
-    expect(pullCommand({ remoteName: "origin", branchName: null, mode: "rebase", noCommit: true })).toBe("git pull --rebase origin");
-    expect(pullCommand({ remoteName: null, branchName: "main", mode: "ffOnly", noCommit: false })).toBe("git pull --ff-only");
+    expect(pullCommand({ remoteName: "origin", branchName: null, mode: "rebase", noCommit: true })).toBe(
+      "git pull --rebase origin",
+    );
+    expect(pullCommand({ remoteName: null, branchName: "main", mode: "ffOnly", noCommit: false })).toBe(
+      "git pull --ff-only",
+    );
   });
 });
 
@@ -161,11 +196,22 @@ describe("rollback", () => {
   ];
 
   it("lists tracked changes only", () => {
-    expect(rollbackCandidates(files).map((entry) => entry.path)).toEqual(["modified.txt", "staged.txt", "new.txt", "moved.txt"]);
+    expect(rollbackCandidates(files).map((entry) => entry.path)).toEqual([
+      "modified.txt",
+      "staged.txt",
+      "new.txt",
+      "moved.txt",
+    ]);
   });
 
   it("sends both sides of a rename", () => {
-    expect(rollbackPaths(rollbackCandidates(files))).toEqual(["modified.txt", "staged.txt", "new.txt", "moved.txt", "old.txt"]);
+    expect(rollbackPaths(rollbackCandidates(files))).toEqual([
+      "modified.txt",
+      "staged.txt",
+      "new.txt",
+      "moved.txt",
+      "old.txt",
+    ]);
     expect(addedFiles(files).map((entry) => entry.path)).toEqual(["new.txt"]);
   });
 });

@@ -44,7 +44,12 @@ function tabKind(tabPath: string): "file" | "untitled" | "terminal" | "commit" |
   return isBranchTab(tabPath) ? "branch" : "file";
 }
 
-function changeCounts(status: RepoStatus | null): { staged: number; unstaged: number; untracked: number; conflicted: number } {
+function changeCounts(status: RepoStatus | null): {
+  staged: number;
+  unstaged: number;
+  untracked: number;
+  conflicted: number;
+} {
   const files = status?.files ?? [];
   return {
     staged: files.filter((file) => file.staged !== null).length,
@@ -140,7 +145,11 @@ export function appState(): Record<string, unknown> {
       ? {
           name: workspace.name,
           workspaceFile: workspace.file,
-          folders: workspace.folders.map((folder) => ({ root: folder.root, name: folder.name, repoRoots: folder.repoRoots })),
+          folders: workspace.folders.map((folder) => ({
+            root: folder.root,
+            name: folder.name,
+            repoRoots: folder.repoRoots,
+          })),
         }
       : null,
     repositories: repoStore.repos.map((info) => {
@@ -170,7 +179,12 @@ export function appState(): Record<string, unknown> {
           busy: repoStore.busy,
         }
       : null,
-    tabs: repoStore.tabs.map((tab) => ({ path: tab.path, kind: tabKind(tab.path), dirty: tab.dirty, preview: tab.preview })),
+    tabs: repoStore.tabs.map((tab) => ({
+      path: tab.path,
+      kind: tabKind(tab.path),
+      dirty: tab.dirty,
+      preview: tab.preview,
+    })),
     tabOnScreen,
     shownView,
     diffSelection: shownView === "diff" ? changesSelection.selected : null,
@@ -183,7 +197,8 @@ export function appState(): Record<string, unknown> {
     terminals: terminalStore.terminals.map(terminalInfo),
     theme: settings.theme,
     darkMode:
-      settings.theme === "dark" || (settings.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches),
+      settings.theme === "dark" ||
+      (settings.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches),
     dialog: openDialog(),
     markdownMode: fileState?.markdownMode ?? null,
   };

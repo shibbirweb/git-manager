@@ -109,7 +109,8 @@ function randomFiles(next: (below: number) => number, count: number): FileStatus
     const depth = 1 + next(4);
     const path = Array.from({ length: depth }, () => parts[next(parts.length)]).join("/");
     return file(next(15) === 0 ? `${path}/` : path, {
-      staged: kinds[next(kinds.length)] === "untracked" ? null : (kinds[next(kinds.length - 1)] as FileStatus["staged"]),
+      staged:
+        kinds[next(kinds.length)] === "untracked" ? null : (kinds[next(kinds.length - 1)] as FileStatus["staged"]),
       unstaged: kinds[next(kinds.length)] as FileStatus["unstaged"],
       conflicted: next(20) === 0,
       origPath: next(10) === 0 ? "old/name.ts" : null,
@@ -136,7 +137,11 @@ describe("workspaceTones", () => {
       const all = statuses.flatMap((status, index) =>
         status.files
           .filter((entry) => !entry.path.endsWith("/"))
-          .map((entry) => ({ ...entry, path: joinPath(roots[index], entry.path), origPath: entry.origPath ? joinPath(roots[index], entry.origPath) : null })),
+          .map((entry) => ({
+            ...entry,
+            path: joinPath(roots[index], entry.path),
+            origPath: entry.origPath ? joinPath(roots[index], entry.origPath) : null,
+          })),
       );
       const tones = tonesByPath(all);
       const marks = marksByPath(all);

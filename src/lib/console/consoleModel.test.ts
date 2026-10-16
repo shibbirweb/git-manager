@@ -3,21 +3,13 @@ import type { GitCommandEntry } from "$lib/types";
 import {
   commandText,
   formatDuration,
-  isAtBottom,
-  listLayout,
-  MAX_OUTPUT_LINES,
   matchesFilter,
   mergeEntries,
-  OUTPUT_LINE_HEIGHT,
-  OUTPUT_PADDING,
   outputBlocks,
   quoteArg,
   repoName,
-  ROW_HEIGHT,
-  rowHeight,
   statusOf,
   upsertEntry,
-  visibleRange,
 } from "./consoleModel";
 
 function entry(id: number, patch: Partial<GitCommandEntry> = {}): GitCommandEntry {
@@ -117,33 +109,5 @@ describe("output", () => {
     const blocks = outputBlocks(entry(1, { stdout: "a\nb\n", stderr: "warn\n", stdoutTruncated: true, error: "boom" }));
     expect(blocks.map((block) => block.kind)).toEqual(["stdout", "note", "stderr", "error"]);
     expect(blocks[0].text).toBe("a\nb");
-  });
-});
-
-describe("layout", () => {
-  it("gives closed rows one line and open rows their capped output", () => {
-    const small = entry(1, { stdout: "one\ntwo\n" });
-    const big = entry(2, { stdout: "x\n".repeat(100) });
-    expect(rowHeight(small, false)).toBe(ROW_HEIGHT);
-    expect(rowHeight(small, true)).toBe(ROW_HEIGHT + 2 * OUTPUT_LINE_HEIGHT + OUTPUT_PADDING);
-    expect(rowHeight(big, true)).toBe(ROW_HEIGHT + MAX_OUTPUT_LINES * OUTPUT_LINE_HEIGHT + OUTPUT_PADDING);
-
-    const layout = listLayout([small, big, entry(3)], new Set([2]));
-    expect(layout.offsets).toEqual([0, ROW_HEIGHT, ROW_HEIGHT + rowHeight(big, true)]);
-    expect(layout.total).toBe(layout.offsets[2] + ROW_HEIGHT);
-  });
-
-  it("finds the rows in view with overscan", () => {
-    const entries = Array.from({ length: 1000 }, (_, index) => entry(index + 1));
-    const layout = listLayout(entries, new Set());
-    expect(visibleRange(layout, 0, 240, 0)).toEqual({ start: 0, end: 11 });
-    expect(visibleRange(layout, 2400, 240, 5)).toEqual({ start: 95, end: 116 });
-    expect(visibleRange(layout, 1e9, 240, 0)).toEqual({ start: 999, end: 1000 });
-    expect(visibleRange(listLayout([], new Set()), 0, 240)).toEqual({ start: 0, end: 0 });
-  });
-
-  it("knows when the list is scrolled to the end", () => {
-    expect(isAtBottom(760, 240, 1000)).toBe(true);
-    expect(isAtBottom(700, 240, 1000)).toBe(false);
   });
 });

@@ -5,8 +5,8 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { type LeftPanel, settings } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import ActivityBar from "@git-manager/ui/components/ActivityBar.svelte";
+  import type { IconName } from "@git-manager/ui/icons";
   import { changesSelection } from "./changes/selection.svelte";
 
   interface Item {
@@ -28,145 +28,63 @@
       0,
     ),
   );
+
+  /** The tooltip: the name with its keys, and how to hide it while it is on. */
+  function tip(text: string, on: boolean): string {
+    return `${text}${on ? ", click to hide" : ""}`;
+  }
+
+  const bar = $derived([
+    ...items.map((item) => ({
+      id: item.panel,
+      icon: item.icon,
+      label: item.label,
+      active: settings.leftPanel === item.panel,
+      title: tip(withCommandKeys(item.label, item.commandId), settings.leftPanel === item.panel),
+      badge: item.panel === "changes" ? repoStore.totalChanges : undefined,
+      badgeTone: conflicts > 0 ? ("danger" as const) : ("accent" as const),
+    })),
+    "divider" as const,
+    // The Log opens in the main area rather than in the sidebar.
+    {
+      id: "log",
+      icon: "history" as const,
+      label: "Log",
+      active: changesSelection.logShown,
+      title: tip(withCommandKeys("Log: commit history and graph", "view.log"), changesSelection.logShown),
+    },
+    null,
+    // Scripts of package.json, composer.json, Makefiles and the like, run in a terminal.
+    {
+      id: "scripts",
+      icon: "play" as const,
+      label: "Scripts",
+      smallIcon: true,
+      active: settings.leftPanel === "scripts",
+      title:
+        settings.leftPanel === "scripts"
+          ? "Scripts, click to hide"
+          : "Scripts: run npm, Composer, Make and other project scripts",
+    },
+    // The terminal panel opens below the editor.
+    {
+      id: "terminal",
+      icon: "terminal" as const,
+      label: "Terminal",
+      active: terminalStore.panelOpen,
+      title: tip(withCommandKeys("Terminal", "view.terminal"), terminalStore.panelOpen),
+    },
+  ]);
+
+  function select(id: string): void {
+    if (id === "log") {
+      changesSelection.toggleLog();
+    } else if (id === "terminal") {
+      terminalStore.toggle();
+    } else {
+      settings.toggleLeftPanel(id as Exclude<LeftPanel, null>);
+    }
+  }
 </script>
 
-<nav class="activity" aria-label="Sidebar">
-  {#each items as item (item.panel)}
-    {@const active = settings.leftPanel === item.panel}
-    <button
-      class="item"
-      class:active
-      onclick={() => settings.toggleLeftPanel(item.panel)}
-      title="{withCommandKeys(item.label, item.commandId)}{active ? ', click to hide' : ''}"
-      aria-label={item.label}
-      aria-pressed={active}
-    >
-      <Icon name={item.icon} size={19} strokeWidth={1.8} />
-      {#if item.panel === "changes" && repoStore.totalChanges > 0}
-        <span class="badge" class:conflict={conflicts > 0}>{repoStore.totalChanges > 99 ? "99+" : repoStore.totalChanges}</span>
-      {/if}
-    </button>
-  {/each}
-  <div class="separator"></div>
-  <!-- The Log opens in the main area rather than in the sidebar. -->
-  <button
-    class="item"
-    class:active={changesSelection.logShown}
-    onclick={() => changesSelection.toggleLog()}
-    title="{withCommandKeys('Log: commit history and graph', 'view.log')}{changesSelection.logShown ? ', click to hide' : ''}"
-    aria-label="Log"
-    aria-pressed={changesSelection.logShown}
-  >
-    <Icon name="history" size={19} strokeWidth={1.8} />
-  </button>
-  <div class="spacer"></div>
-  <!-- Scripts of package.json, composer.json, Makefiles and the like, run in a terminal. -->
-  <button
-    class="item"
-    class:active={settings.leftPanel === "scripts"}
-    onclick={() => settings.toggleLeftPanel("scripts")}
-    title={settings.leftPanel === "scripts" ? "Scripts, click to hide" : "Scripts: run npm, Composer, Make and other project scripts"}
-    aria-label="Scripts"
-    aria-pressed={settings.leftPanel === "scripts"}
-  >
-    <Icon name="play" size={18} strokeWidth={1.8} />
-  </button>
-  <!-- The terminal panel opens below the editor. -->
-  <button
-    class="item"
-    class:active={terminalStore.panelOpen}
-    onclick={() => terminalStore.toggle()}
-    title="{withCommandKeys('Terminal', 'view.terminal')}{terminalStore.panelOpen ? ', click to hide' : ''}"
-    aria-label="Terminal"
-    aria-pressed={terminalStore.panelOpen}
-  >
-    <Icon name="terminal" size={19} strokeWidth={1.8} />
-  </button>
-</nav>
-
-<style>
-  .activity {
-    flex: none;
-    width: 44px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 6px 0;
-    background: var(--panel-alt);
-    border-right: 1px solid var(--border-strong);
-  }
-
-  /* Rounded panels: a stripe on the window frame, flush with the window edge. */
-  :global(html[data-rounded-panels]) .activity {
-    margin-left: calc(-1 * var(--panel-gap));
-    background: var(--frame);
-    border-right: none;
-  }
-
-  .item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-  }
-
-  .item:hover {
-    color: var(--text);
-    background: var(--hover);
-  }
-
-  .item.active {
-    color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-
-  .item.active::before {
-    content: "";
-    position: absolute;
-    left: -4px;
-    top: 8px;
-    bottom: 8px;
-    width: 2px;
-    border-radius: 2px;
-    background: var(--accent);
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .separator {
-    width: 22px;
-    height: 1px;
-    margin: 4px 0;
-    background: var(--border-strong);
-  }
-
-  .badge {
-    position: absolute;
-    right: 1px;
-    bottom: 3px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 8px;
-    background: var(--accent);
-    color: var(--accent-text);
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 16px;
-    text-align: center;
-  }
-
-  .badge.conflict {
-    background: var(--danger);
-  }
-</style>
+<ActivityBar label="Sidebar" items={bar} onselect={select} />

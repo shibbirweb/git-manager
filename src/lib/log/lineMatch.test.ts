@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { findLine } from "./lineMatch";
 
-const text = ["import a;", "", "function one() {", "  return 1;", "}", "", "function two() {", "  return 2;", "}"].join("\n");
+const text = ["import a;", "", "function one() {", "  return 1;", "}", "", "function two() {", "  return 2;", "}"].join(
+  "\n",
+);
 
 describe("findLine", () => {
   it("keeps the hint when there is no text to look for", () => {

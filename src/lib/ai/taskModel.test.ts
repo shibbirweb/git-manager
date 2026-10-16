@@ -19,7 +19,13 @@ describe("taskSlug", () => {
 
 describe("taskWorktrees", () => {
   it("names a race's worktrees after the task and skips taken names", () => {
-    const worktrees = taskWorktrees("/work/app", "fix-login", 3, new Set(["fix-login-2"]), new Set(["/work/app-fix-login-3"]));
+    const worktrees = taskWorktrees(
+      "/work/app",
+      "fix-login",
+      3,
+      new Set(["fix-login-2"]),
+      new Set(["/work/app-fix-login-3"]),
+    );
     expect(worktrees).toEqual([
       { branchName: "fix-login", folderPath: "/work/app-fix-login" },
       { branchName: "fix-login-4", folderPath: "/work/app-fix-login-4" },

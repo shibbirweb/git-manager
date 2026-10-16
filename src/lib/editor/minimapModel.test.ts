@@ -79,8 +79,12 @@ describe("minimap paint window", () => {
     expect(windowCovers(painted, layout)).toBe(true);
     expect(canvasShift(painted, layout)).toBeCloseTo(100 * MINIMAP_ROW + layout.offset);
     // A little scrolling stays inside; a long jump needs a new paint.
-    expect(windowCovers(painted, minimapLayout({ lineCount: 20_000, topLine: 10_100, visibleLines: 50, height: 600 }))).toBe(true);
-    expect(windowCovers(painted, minimapLayout({ lineCount: 20_000, topLine: 15_000, visibleLines: 50, height: 600 }))).toBe(false);
+    expect(
+      windowCovers(painted, minimapLayout({ lineCount: 20_000, topLine: 10_100, visibleLines: 50, height: 600 })),
+    ).toBe(true);
+    expect(
+      windowCovers(painted, minimapLayout({ lineCount: 20_000, topLine: 15_000, visibleLines: 50, height: 600 })),
+    ).toBe(false);
     expect(windowCovers(null, layout)).toBe(false);
   });
 

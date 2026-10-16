@@ -119,7 +119,11 @@ export function windowCommand(event: ShortcutKey, context: ShortcutContext, keys
 }
 
 /** The window shortcut a key press means, for the built-in window commands only. */
-export function workspaceShortcut(event: ShortcutKey, context: ShortcutContext, keys: ShortcutKeys): WorkspaceShortcut | null {
+export function workspaceShortcut(
+  event: ShortcutKey,
+  context: ShortcutContext,
+  keys: ShortcutKeys,
+): WorkspaceShortcut | null {
   const spec = windowCommand(event, context, keys);
   return spec ? (WINDOW_COMMANDS[spec.id] ?? null) : null;
 }

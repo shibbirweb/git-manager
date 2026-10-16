@@ -1,12 +1,19 @@
 <!-- Git Remotes: each remote with its fetch and push URLs; add, edit (name and
      URLs) and remove, with the names checked like git does. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import ListBox from "@git-manager/ui/components/ListBox.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { RemoteInfo } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { validateRemoteName, validateRemoteUrl } from "./gitOptions";
 
@@ -45,7 +52,12 @@
   async function startEdit(remote: RemoteInfo | null): Promise<void> {
     const fetchUrl = remote?.fetchUrl ?? "";
     const pushUrl = remote && remote.pushUrl && remote.pushUrl !== fetchUrl ? remote.pushUrl : "";
-    editing = { original: remote?.name ?? null, name: remote?.name ?? (names.includes("origin") ? "" : "origin"), fetchUrl, pushUrl };
+    editing = {
+      original: remote?.name ?? null,
+      name: remote?.name ?? (names.includes("origin") ? "" : "origin"),
+      fetchUrl,
+      pushUrl,
+    };
     // The form replaces the list; put the caret in its first field.
     await Promise.resolve();
     nameEl?.focus();
@@ -84,7 +96,9 @@
   async function remove(remote: RemoteInfo): Promise<void> {
     const confirmed = await dialogs.confirm({
       title: "Remove Remote",
-      message: `Remove the remote '${remote.name}'? Its remote-tracking branches go too; the repository on the server is not touched.`,
+      message:
+        `Remove the remote '${remote.name}'? Its remote-tracking branches go too; the repository on the server ` +
+        "is not touched.",
       confirmLabel: "Remove",
       danger: true,
     });
@@ -107,101 +121,80 @@
   }
 </script>
 
-<GitDialogFrame title="Git Remotes" width={620} onCancel={close} onSubmit={editing ? () => void save() : undefined}>
+<Dialog
+  open
+  variant="form"
+  title="Git Remotes"
+  width="large"
+  onclose={close}
+  onsubmit={editing ? () => void save() : undefined}
+>
   {#if editing}
-    <label class="field">
-      <span>Name</span>
-      <input class="input" bind:this={nameEl} bind:value={editing.name} spellcheck="false" autocomplete="off" placeholder="origin" />
-    </label>
-    {#if nameError && editing.name !== ""}
-      <div class="error">{nameError}</div>
-    {/if}
-    <label class="field">
-      <span>URL</span>
-      <input class="input mono" bind:value={editing.fetchUrl} spellcheck="false" autocomplete="off" placeholder="git@github.com:owner/repo.git" />
-    </label>
-    {#if fetchError && editing.fetchUrl !== ""}
-      <div class="error">{fetchError}</div>
-    {/if}
-    <label class="field">
-      <span>Push URL (optional: empty pushes to the URL above)</span>
-      <input class="input mono" bind:value={editing.pushUrl} spellcheck="false" autocomplete="off" />
-    </label>
-    {#if pushError}
-      <div class="error">{pushError}</div>
-    {/if}
+    <Field label="Name" look="compact" error={nameError && editing.name !== "" ? nameError : null}>
+      <Input
+        width="fill"
+        bind:element={nameEl}
+        bind:value={editing.name}
+        spellcheck="false"
+        autocomplete="off"
+        placeholder="origin"
+      />
+    </Field>
+    <Field label="URL" look="compact" error={fetchError && editing.fetchUrl !== "" ? fetchError : null}>
+      <Input
+        mono
+        width="fill"
+        bind:value={editing.fetchUrl}
+        spellcheck="false"
+        autocomplete="off"
+        placeholder="git@github.com:owner/repo.git"
+      />
+    </Field>
+    <Field label="Push URL (optional: empty pushes to the URL above)" look="compact" error={pushError || null}>
+      <Input mono width="fill" bind:value={editing.pushUrl} spellcheck="false" autocomplete="off" />
+    </Field>
   {:else if loadError}
-    <div class="error">{loadError}</div>
+    <Text size="small" tone="danger">{loadError}</Text>
   {:else if remotes.length === 0}
-    <p class="dim">This repository has no remotes.</p>
+    <Text tone="dim">This repository has no remotes.</Text>
   {:else}
-    <div class="remotes" role="list">
+    <ListBox label="Remotes">
       {#each remotes as remote (remote.name)}
-        <div class="remote" role="listitem">
-          <div class="info">
-            <div class="name">{remote.name}</div>
-            <div class="url mono selectable truncate" title={remote.fetchUrl ?? ""}>{remote.fetchUrl ?? "(no URL)"}</div>
+        <Row size="large" line actionsShown="always" label={remote.name}>
+          <Stack gap="xxs" grow>
+            <Text weight="semibold">{remote.name}</Text>
+            <Text mono size="compact" tone="dim" selectable truncate title={remote.fetchUrl ?? ""}>
+              {remote.fetchUrl ?? "(no URL)"}
+            </Text>
             {#if remote.pushUrl && remote.pushUrl !== remote.fetchUrl}
-              <div class="url mono selectable truncate" title={remote.pushUrl}><span class="hint">push</span> {remote.pushUrl}</div>
+              <Text mono size="compact" tone="dim" selectable truncate title={remote.pushUrl}>
+                <Text variant="hint">push</Text>
+                {remote.pushUrl}
+              </Text>
             {/if}
-          </div>
-          <button type="button" class="btn small" onclick={() => void startEdit(remote)}>Edit</button>
-          <button type="button" class="btn small danger" onclick={() => void remove(remote)}>Remove</button>
-        </div>
+          </Stack>
+          {#snippet actions()}
+            <Button size="small" onclick={() => void startEdit(remote)}>Edit</Button>
+            <Button size="small" variant="danger" onclick={() => void remove(remote)}>Remove</Button>
+          {/snippet}
+        </Row>
       {/each}
-    </div>
+    </ListBox>
   {/if}
 
-  {#snippet footer()}
-    {#if editing}
-      <span class="spacer"></span>
-      <button type="button" class="btn" onclick={() => (editing = null)}>Back</button>
-      <button type="button" class="btn primary" disabled={!canSave} onclick={() => void save()}>
-        {editing.original ? "Save" : "Add"}
-      </button>
-    {:else}
-      <button type="button" class="btn" onclick={() => void startEdit(null)} data-autofocus>Add Remote...</button>
-      <span class="spacer"></span>
-      <button type="button" class="btn primary" onclick={close}>Done</button>
+  {#snippet footnote()}
+    {#if !editing}
+      <Button onclick={() => void startEdit(null)} autofocus>Add Remote...</Button>
     {/if}
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .remotes {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--editor-bg);
-  }
-
-  .remote {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .remote:last-child {
-    border-bottom: none;
-  }
-
-  .info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .name {
-    font-weight: 600;
-  }
-
-  .url {
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-</style>
+  {#snippet actions()}
+    {#if editing}
+      <Button onclick={() => (editing = null)}>Back</Button>
+      <Button variant="primary" disabled={!canSave} onclick={() => void save()}>
+        {editing.original ? "Save" : "Add"}
+      </Button>
+    {:else}
+      <Button variant="primary" onclick={close}>Done</Button>
+    {/if}
+  {/snippet}
+</Dialog>

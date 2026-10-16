@@ -62,7 +62,7 @@ Values are computed on demand and never cached, so only the applied CSS variable
 
 Most of the app reads the variables directly, so it follows at once: panels, CodeMirror (its `tok-*` classes), diffs and the merge tool. Code that copies colors out of CSS listens with `watchTheme` (`watch.ts`, a `MutationObserver` on `data-theme`, `data-color-theme` and `data-contrast`):
 
-- The terminal (`TerminalView.svelte`) sets xterm's theme from `currentTerminalTheme()`.
+- The terminal (`terminalInstance.ts`) sets xterm's theme from `currentTerminalTheme()`.
 - The Markdown preview redraws its diagrams. `mermaid.ts` uses mermaid's own themes for the built-ins and the theme's variables for the others.
 
 ### The picker
@@ -75,7 +75,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 | --- | --- |
 | `src/lib/themes/themeIndex.ts` | Ids, names, kinds, defaults, modes, groups, picker keys |
 | `src/lib/themes/catalog.ts` | Palettes, `deriveColors`, `themeCss`, `themeSwatch` |
-| `src/lib/themes/color.ts` | Parsing, mixing, WCAG contrast, Lab distance |
+| `ui/web/src/lib/logic/color.ts` | Parsing, mixing, WCAG contrast, Lab distance |
 | `src/lib/themes/tokens.ts` | The 71 color tokens |
 | `src/lib/themes/apply.ts`, `watch.ts` | Putting a theme on the page; theme change watcher |
 | `src/lib/stores/settings.svelte.ts` | `lightColorTheme`, `darkColorTheme`, `colorMode`, `setColorTheme` |
@@ -96,8 +96,8 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 ## Known gaps
 
-- `src/lib/log/GraphCell.svelte` has eight hard-coded lane colors.
-- The Settings switch knob is a hard-coded white (`.switch` in `SettingsDialog.svelte`).
+- The log graph's eight lane colors are one set for every theme (`graphLane` in `ui/design-tokens/palette.json`).
+- The switch knob is hard-coded white (the library's `Switch.svelte`).
 - The rich Markdown editor does not redraw its diagrams on a theme change; `richEditor.ts` has no `watchTheme`.
 - At startup, `app.css` shows the built-in theme of the macOS appearance until `settings.init()` has read settings.json, and another theme waits for the catalog chunk, so the default colors can flash.
 
@@ -115,4 +115,4 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 ## Bugs we fixed
 
-**Tag and attribute colors never showed.** Tags in HTML, XML, Vue and JSX had the type color (Monokai tags were cyan). `classHighlighter` has no class for `tagName` or `attributeName` and uses their parents, `typeName` and `propertyName`, so the `.tok-tagName` and `.tok-attributeName` rules never matched. A second highlighter for just those two (`editor/highlighter.ts`) now runs everywhere code is highlighted; it only adds classes, so nothing else changed.
+See [Color Theme Bugs We Fixed](Color-Theme-Bugs-We-Fixed.md).

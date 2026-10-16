@@ -11,7 +11,7 @@ People coming from VS Code or a JetBrains IDE expect to manage files where they 
 ```mermaid
 sequenceDiagram
   participant User
-  participant Tree as FileExplorer.svelte
+  participant Tree as explorerOps.ts
   participant Store as repoStore
   participant Api as api.ts
   participant Rust as commands/file_ops.rs, file_ops.rs
@@ -31,7 +31,7 @@ Every operation follows the same steps:
 
 1. **Pick the targets.** `selectedEntries()` gives the visible selected rows, top down. `topLevel` (`selection.ts`) drops rows inside another selected folder, and `movableTargets` (`fileOps.ts`) drops workspace roots and deleted rows.
 2. **Guard unsaved edits.** Rename, move and trash call `repoStore.checkUnsaved(paths)`. It uses `fileTabsUnder` (`tabs.ts`) to find dirty tabs of those files or of files inside those folders, and shows "Save or revert cart.ts first".
-3. **Ask.** Names come from `dialogs.prompt` with `validate: nameProblem` (`fileNames.ts`). Rename passes `selection: renameSelection(name, isDir)`, which `DialogHost.svelte` applies with `setSelectionRange`. Trash asks with `dialogs.confirm({ danger: true })`; a drag and drop move asks while the `confirmDragAndDrop` setting is on. Before that question, `moveClash` (`dragDrop.ts`) refuses a move onto a taken name, using the folder's listing (or a fresh one for a closed folder).
+3. **Ask.** Names come from `dialogs.prompt` with `validate: nameProblem` (`fileNames.ts`). Rename passes `selection: renameSelection(name, isDir)`, which `DialogHost.svelte` applies with `setSelectionRange`. Trash asks with `dialogs.confirm({ danger: true })`; a drag and drop move asks while the `confirmDragAndDrop` setting is on. Before that question, the backend's dry run (`api.fileMoveClash`) refuses a move onto a taken name, checking the folder on disk.
 4. **Write.** The `fileCreate`, `fileRename`, `fileCopy`, `fileMove` and `fileTrash` wrappers in `api.ts` take absolute paths plus the workspace roots. The backend checks every path again; see [Commands: app and tools](Commands-App-and-Tools.md#files).
 5. **Follow up.** `applyMoves` re-points the tabs (`repoStore.retargetTabs`, which uses `retargetTabs` in `tabs.ts`), the clipboard, the expanded folders and the selection with `movedPath` (`workspacePaths.ts`). After a trash, `repoStore.closeTabsUnder` closes the tabs. `showEntries` opens the folders down to new entries and selects them. `afterWrite` reloads the touched folders at once and calls `repoStore.filesWritten`, so git status and the tree refresh without waiting for the watcher.
 
@@ -47,24 +47,23 @@ The clipboard (`fileClipboard.svelte.ts`) holds only a mode and paths. It outliv
 
 ```mermaid
 flowchart TD
-  Down["mousedown on a row"] --> Far{"moved 4 px?"}
+  Down["pointerdown on a row"] --> Far{"moved 4 px?"}
   Far -->|no| Click["normal click"]
-  Far -->|yes| Drag["drag: sources = selection or the row"]
+  Far -->|yes| Drag["Tree drag: the selection or the row"]
   Finder["Tauri onDragDropEvent from the Finder"] --> Point["dropPointToCss"]
-  Drag --> Hit["hitTest: elementFromPoint, data-path"]
-  Point --> Hit
-  Hit --> Target["dropFolder: a folder, a file's folder, or the single root"]
-  Target --> Check{"checkDrop"}
-  Check -->|ok| Show["highlight, hover-expand after 600 ms, auto-scroll"]
+  Point --> Outside["tree.dragFromOutside"]
+  Drag --> Target["treeDropTarget: a folder, a file's folder, or the top"]
+  Outside --> Target
+  Target --> Show["tint, open a hovered folder after 600 ms, auto-scroll"]
   Show --> Drop{"drop"}
-  Drop -->|row, Option| CopyIt["copyEntries"]
-  Drop -->|row| MoveIt["moveEntries, asks first"]
+  Drop -->|row, Option| CopyIt["ops.copy"]
+  Drop -->|row| MoveIt["ops.move, asks first"]
   Drop -->|Finder| CopyIt
 ```
 
-Rows drag with mouse events, not HTML5 drag and drop. Tauri's window takes native drags to report Finder files, and its macOS handler answers every native drag itself, so HTML5 drop events may never reach the page. Mouse events always do, and give us Option for copy, Escape to cancel and the pointer label for free. Window listeners are added on mousedown and removed when the drag ends; a `requestAnimationFrame` loop runs only while something is dragged over the list, for auto-scroll and the target.
+The UI library's `Tree` drags rows with pointer events, not HTML5 drag and drop. Tauri's window takes native drags to report Finder files, and its macOS handler answers every native drag itself, so HTML5 drop events may never reach the page. Pointer events always do, and give us Option for copy, Escape to cancel and the pointer label for free (`logic/treeDragger.svelte.ts`). Deleted rows and workspace folders cannot be dragged (`canDrag`), and `checkDrop` refuses a folder into itself before anything moves.
 
-Finder drops come from `getCurrentWebview().onDragDropEvent`, registered in `onMount` and removed on destroy. `dropPointToCss` turns the position into CSS pixels: wry reports macOS positions in points already, and other platforms in device pixels.
+Finder drops come from `getCurrentWebview().onDragDropEvent` (`explorerFinder.ts`), registered on mount and removed on destroy. `dropPointToCss` turns the position into CSS pixels (wry reports macOS positions in points already, other platforms in device pixels), and the Tree's `dragFromOutside` shows the same target, hover and scrolling as a row drag.
 
 ### AI agents and the CLI
 
@@ -74,11 +73,13 @@ The MCP UI tools `create_file`, `create_folder`, `rename_path`, `copy_paths`, `m
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/FileExplorer.svelte` | Clicks, keys, menus, dialogs, drag and drop, calling the backend |
+| `src/lib/views/files/FileExplorer.svelte` | Clicks, keys and the drop of a dragged row |
+| `src/lib/views/files/explorerOps.ts`, `explorerNames.ts` | The operations: dialogs and calling the backend |
+| `src/lib/views/files/explorerMenu.ts`, `explorerFinder.ts` | The menus; Finder drops |
 | `src/lib/views/files/selection.ts` | Multi-selection, `topLevel`, `rowAfterRemoval` |
 | `src/lib/views/files/fileOps.ts` | Menu groups, labels, `targetFolder`, `fileKeyOp` |
 | `src/lib/views/files/fileNames.ts` | `nameProblem`, `renameSelection` |
-| `src/lib/views/files/dragDrop.ts` | `dropFolder`, `checkDrop`, `autoScrollStep`, `dropPointToCss` |
+| `src/lib/views/files/dragDrop.ts` | `checkDrop`, `dropPointToCss` |
 | `src/lib/views/files/fileClipboard.svelte.ts` | The internal clipboard |
 | `src/lib/stores/tabs.ts`, `repo.svelte.ts` | `retargetTabs`, `fileTabsUnder`, `checkUnsaved`, `closeTabsUnder` |
 | `src/lib/stores/workspacePaths.ts` | `movedPath`, `pathsUnder` |

@@ -44,7 +44,11 @@ export function bracketCandidates(text: string, offset: number): BracketToken[] 
  * already open before the first one. A pair shares its color; a closing bracket with
  * nothing open gets level -1 so it can be drawn as an error.
  */
-export function colorBrackets(tokens: readonly BracketToken[], startDepth: number, levels = BRACKET_LEVELS): ColoredBracket[] {
+export function colorBrackets(
+  tokens: readonly BracketToken[],
+  startDepth: number,
+  levels = BRACKET_LEVELS,
+): ColoredBracket[] {
   let depth = Math.max(0, startDepth);
   const colored: ColoredBracket[] = [];
   for (const token of tokens) {

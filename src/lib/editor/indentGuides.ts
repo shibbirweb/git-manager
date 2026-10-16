@@ -63,7 +63,11 @@ export function guideLevels(
     return columns === null ? null : levelsFor(columns, unitColumns);
   };
   const nearest = (start: number, step: 1 | -1): number | null => {
-    for (let lineNumber = start, scanned = 0; lineNumber >= 1 && lineNumber <= lineCount && scanned < MAX_BLANK_SCAN; lineNumber += step, scanned++) {
+    for (
+      let lineNumber = start, scanned = 0;
+      lineNumber >= 1 && lineNumber <= lineCount && scanned < MAX_BLANK_SCAN;
+      lineNumber += step, scanned++
+    ) {
       const level = levelAt(lineNumber);
       if (level !== null) {
         return level;
@@ -158,7 +162,14 @@ function markers(view: EditorView): readonly RectangleMarker[] {
   const first = doc.lineAt(blocks[0].from).number;
   const last = doc.lineAt(blocks[blocks.length - 1].from).number;
   const unitColumns = getIndentUnit(view.state);
-  const levels = guideLevels((lineNumber) => doc.line(lineNumber).text, doc.lines, first, last, view.state.tabSize, unitColumns);
+  const levels = guideLevels(
+    (lineNumber) => doc.line(lineNumber).text,
+    doc.lines,
+    first,
+    last,
+    view.state.tabSize,
+    unitColumns,
+  );
   const rowHeight = view.defaultLineHeight;
   const guideBlocks = blocks.map((block) => ({
     top: block.top,
@@ -169,7 +180,8 @@ function markers(view: EditorView): readonly RectangleMarker[] {
   const { left, top } = textOrigin(view);
   const step = unitColumns * view.defaultCharacterWidth;
   return guideRuns(guideBlocks, rowHeight).map(
-    (run) => new RectangleMarker("cm-gm-indentGuide", left + run.level * step, top + run.top, null, run.bottom - run.top),
+    (run) =>
+      new RectangleMarker("cm-gm-indentGuide", left + run.level * step, top + run.top, null, run.bottom - run.top),
   );
 }
 

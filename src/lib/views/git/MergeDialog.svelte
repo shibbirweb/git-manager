@@ -1,14 +1,23 @@
 <!-- The Merge dialog: "Merge into BRANCH", the branch to merge, the merge options,
      the commit message when a merge commit can be made, and the command it runs. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import TextArea from "@git-manager/ui/components/TextArea.svelte";
   import { onMount, untrack } from "svelte";
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { MergeOptions, Refs } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { decodeRefPick, refPickItems } from "../changes/repoPickers";
   import { loadDetails } from "../changes/repoActions";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { validateRevision } from "./gitOptions";
   import {
@@ -85,81 +94,56 @@
   }
 </script>
 
-<GitDialogFrame title="Merge into {current}" width={540} onCancel={close} onSubmit={() => void submit()}>
+<Dialog open variant="form" title="Merge into {current}" width="medium" onclose={close} onsubmit={() => void submit()}>
   {#if operation}
-    <p class="error">Finish or abort the {status?.op.description ?? "operation"} in progress first.</p>
+    <Text size="small" tone="danger">
+      Finish or abort the {status?.op.description ?? "operation"} in progress first.
+    </Text>
   {/if}
-  <label class="field">
-    <span>Branch to merge</span>
-    <div class="row">
-      <input
-        class="input mono grow"
+  <Field label="Branch to merge" look="compact" error={branchError || null}>
+    <Stack direction="row" align="center" gap="md">
+      <Input
+        mono
+        width="fill"
         bind:value={branchName}
         placeholder="feature/my-change"
         spellcheck="false"
         autocomplete="off"
         aria-label="Branch to merge"
-        data-autofocus
+        autofocus
       />
-      <button type="button" class="btn" onclick={() => void chooseBranch()}>Choose...</button>
-    </div>
-  </label>
-  {#if branchError}
-    <div class="error">{branchError}</div>
-  {/if}
-  <div class="flags">
+      <Button onclick={() => void chooseBranch()}>Choose...</Button>
+    </Stack>
+  </Field>
+  <Stack gap="xs">
     {#each MERGE_FLAGS as entry (entry.flag)}
-      <label class="check flag">
-        <input type="checkbox" checked={options[entry.flag]} onchange={(event) => setFlag(entry.flag, event.currentTarget.checked)} />
-        <span class="mono">{entry.label}</span>
-        <span class="hint">{entry.description}</span>
-      </label>
+      <Checkbox checked={options[entry.flag]} onchange={(checked) => setFlag(entry.flag, checked)}>
+        <Stack element="span" direction="row" align="center" gap="xs">
+          <Stack element="span" width="medium"><Text mono>{entry.label}</Text></Stack>
+          <Text variant="hint" tone="faint">{entry.description}</Text>
+        </Stack>
+      </Checkbox>
     {/each}
-  </div>
+  </Stack>
   {#if mergeShowsMessage(options)}
-    <label class="field">
-      <span>Commit message (-m)</span>
-      <textarea
-        class="input message"
-        rows="3"
+    <Field label="Commit message (-m)" look="compact">
+      <TextArea
+        rows="normal"
+        resize="vertical"
         value={options.message ?? ""}
         oninput={(event) => (options = { ...options, message: event.currentTarget.value })}
         placeholder="Merge branch '{branchName.trim() || 'branch'}' into {current}"
         spellcheck="true"
-      ></textarea>
-    </label>
+      />
+    </Field>
   {/if}
-  <div class="command selectable">{command}</div>
+  <CodeBlock variant="command" text={command} label="Command" />
 
-  {#snippet footer()}
-    <span class="hint">&#8984;Enter to merge</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={close}>Cancel</button>
-    <button type="button" class="btn primary" disabled={!canMerge} onclick={() => void submit()}>Merge</button>
+  {#snippet footnote()}
+    <Text variant="hint" tone="faint">{localKeys("CmdOrCtrl+Enter")} to merge</Text>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .grow {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .flags {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .flag {
-    display: grid;
-    grid-template-columns: auto 100px 1fr;
-    align-items: center;
-  }
-
-  .message {
-    width: 100%;
-    resize: vertical;
-    line-height: 1.45;
-  }
-</style>
+  {#snippet actions()}
+    <Button onclick={close}>Cancel</Button>
+    <Button variant="primary" disabled={!canMerge} onclick={() => void submit()}>Merge</Button>
+  {/snippet}
+</Dialog>

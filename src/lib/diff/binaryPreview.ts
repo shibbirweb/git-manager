@@ -1,9 +1,9 @@
-// The side by side preview of a binary image or PDF in a diff: when it shows, what each side
-// says, and the shared zoom and scroll of the two images. The view is BinaryPreview.svelte.
+// The side by side preview of a binary image or PDF in a diff: when it shows and what each side says. The view is
+// BinaryPreview.svelte on the UI library's MediaCompare, which owns the shared zoom and scroll.
 
 import type { FileDiff, PreviewSource, PreviewStat } from "$lib/types";
 import { formatSize } from "$lib/views/git/lfs/lfsModel";
-import { fitZoom, previewOf, tooLargeText } from "$lib/views/files/mediaPreview";
+import { previewOf, tooLargeText } from "$lib/views/files/mediaPreview";
 
 /**
  * Where the two sides of a diff come from, for the preview. A null side does not exist, such
@@ -61,52 +61,20 @@ export function sideState(
   return { status: "ready", url: loaded.url, size: loaded.stat.size };
 }
 
-export interface NaturalSize {
-  width: number;
-  height: number;
+/** A side as the UI library's MediaCompare draws it: the file, or why there is none. */
+export interface CompareSide {
+  label: string;
+  kind: "image" | "pdf" | "none";
+  src?: string;
+  info?: string;
+  message?: string;
 }
 
-/** "640 x 480 px, 12 KB", or as much of it as is known. */
-export function sideInfo(natural: NaturalSize | null, size: number): string {
-  const parts: string[] = [];
-  if (natural) {
-    parts.push(`${natural.width} x ${natural.height} px`);
+export function compareSide(state: SideState, kind: "image" | "pdf" | null, label: string): CompareSide {
+  if (state.status === "ready" && kind !== null) {
+    return { label, kind, src: state.url, info: state.size > 0 ? formatSize(state.size) : "" };
   }
-  if (size > 0) {
-    parts.push(formatSize(size));
-  }
-  return parts.join(", ");
-}
-
-/**
- * Fit for both images at once: one zoom that fits each in its box, so the two stay at the
- * same scale and a bigger new version looks bigger.
- */
-export function sharedFit(naturals: (NaturalSize | null)[], boxWidth: number, boxHeight: number): number {
-  const fits = naturals
-    .filter((natural): natural is NaturalSize => natural !== null)
-    .map((natural) => fitZoom(natural.width, natural.height, boxWidth, boxHeight));
-  return fits.length > 0 ? Math.min(...fits) : 1;
-}
-
-export interface ScrollBox {
-  scrollLeft: number;
-  scrollTop: number;
-  scrollWidth: number;
-  scrollHeight: number;
-  clientWidth: number;
-  clientHeight: number;
-}
-
-function ratio(position: number, size: number, client: number): number {
-  const range = size - client;
-  return range > 0 ? Math.min(1, Math.max(0, position / range)) : 0;
-}
-
-/** The scroll position of `to` at the same place as `from`, in proportion to each range. */
-export function syncedScroll(from: ScrollBox, to: ScrollBox): { left: number; top: number } {
-  return {
-    left: Math.round(ratio(from.scrollLeft, from.scrollWidth, from.clientWidth) * Math.max(0, to.scrollWidth - to.clientWidth)),
-    top: Math.round(ratio(from.scrollTop, from.scrollHeight, from.clientHeight) * Math.max(0, to.scrollHeight - to.clientHeight)),
-  };
+  const message =
+    state.status === "loading" ? "Loading..." : state.status === "ready" ? "This file cannot be shown." : state.text;
+  return { label, kind: "none", message };
 }

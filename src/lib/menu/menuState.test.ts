@@ -64,14 +64,21 @@ function inputs(changes: Partial<MenuInputs>): MenuInputs {
 describe("menuState", () => {
   it("enables Save only for an edited file on screen", () => {
     expect(menuState(idle)["file.save"]?.enabled).toBe(false);
-    expect(menuState(inputs({ activeFile: { dirty: true, editable: true, markdownMode: null }, dirtyCount: 1 }))["file.save"]?.enabled).toBe(true);
+    expect(
+      menuState(inputs({ activeFile: { dirty: true, editable: true, markdownMode: null }, dirtyCount: 1 }))["file.save"]
+        ?.enabled,
+    ).toBe(true);
     expect(menuState(inputs({ activeFile: null, dirtyCount: 1, shownView: "log" }))["file.save"]?.enabled).toBe(false);
-    expect(menuState(inputs({ activeFile: null, dirtyCount: 1, shownView: "log" }))["file.saveAll"]?.enabled).toBe(true);
+    expect(menuState(inputs({ activeFile: null, dirtyCount: 1, shownView: "log" }))["file.saveAll"]?.enabled).toBe(
+      true,
+    );
   });
 
   it("enables Revert and Close Tab only when there is something to act on", () => {
     expect(menuState(idle)["file.revert"]?.enabled).toBe(true);
-    expect(menuState(inputs({ activeFile: { dirty: false, editable: false, markdownMode: null } }))["file.revert"]?.enabled).toBe(false);
+    expect(
+      menuState(inputs({ activeFile: { dirty: false, editable: false, markdownMode: null } }))["file.revert"]?.enabled,
+    ).toBe(false);
     expect(menuState(inputs({ shownView: "diff", activeFile: null }))["file.closeTab"]?.enabled).toBe(true);
     expect(menuState(inputs({ shownView: "log", activeFile: null }))["file.closeTab"]?.enabled).toBe(false);
   });
@@ -79,7 +86,9 @@ describe("menuState", () => {
   it("offers New File with a folder open, and no file actions for an Untitled tab", () => {
     expect(menuState(idle)["file.newFile"]?.enabled).toBe(true);
     expect(menuState(inputs({ workspace: null }))["file.newFile"]?.enabled).toBe(false);
-    const untitled = menuState(inputs({ activeFile: { dirty: true, editable: true, markdownMode: null, untitled: true } }));
+    const untitled = menuState(
+      inputs({ activeFile: { dirty: true, editable: true, markdownMode: null, untitled: true } }),
+    );
     expect(untitled["file.save"]?.enabled).toBe(true);
     expect(untitled["file.compareWith"]?.enabled).toBe(false);
     expect(untitled["file.compareWithClipboard"]?.enabled).toBe(false);
@@ -120,7 +129,9 @@ describe("menuState", () => {
   });
 
   it("ticks the theme and the visible panels", () => {
-    const state = menuState(inputs({ theme: "dark", explorerOpen: true, terminalOpen: true, leftPanel: "branches", shownView: "log" }));
+    const state = menuState(
+      inputs({ theme: "dark", explorerOpen: true, terminalOpen: true, leftPanel: "branches", shownView: "log" }),
+    );
     expect(state["view.themeDark"]?.checked).toBe(true);
     expect(state["view.themeSystem"]?.checked).toBe(false);
     expect(state["view.filesPanel"]?.checked).toBe(true);
@@ -133,17 +144,29 @@ describe("menuState", () => {
 
   it("ticks Word Wrap from the setting, with or without a folder", () => {
     expect(menuState(inputs({ wordWrap: true }))["view.wordWrap"]).toEqual({ enabled: true, checked: true });
-    expect(menuState(inputs({ wordWrap: false, workspace: null }))["view.wordWrap"]).toEqual({ enabled: true, checked: false });
+    expect(menuState(inputs({ wordWrap: false, workspace: null }))["view.wordWrap"]).toEqual({
+      enabled: true,
+      checked: false,
+    });
   });
 
   it("ticks Sticky Scroll and Minimap from their settings", () => {
-    expect(menuState(inputs({ stickyScroll: true, minimap: false }))["view.stickyScroll"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ stickyScroll: true, minimap: false }))["view.stickyScroll"]).toEqual({
+      enabled: true,
+      checked: true,
+    });
     expect(menuState(inputs({ minimap: true }))["view.minimap"]).toEqual({ enabled: true, checked: true });
     expect(menuState(inputs({}))["view.minimap"]?.checked).toBe(false);
-    expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMaterial"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMaterial"]).toEqual({
+      enabled: true,
+      checked: true,
+    });
     expect(menuState(inputs({ fileIcons: "material" }))["view.fileIconsMinimal"]?.checked).toBe(false);
     expect(menuState(inputs({}))["view.fileIconsOff"]?.checked).toBe(true);
-    expect(menuState(inputs({ detectIndentation: true }))["view.detectIndentation"]).toEqual({ enabled: true, checked: true });
+    expect(menuState(inputs({ detectIndentation: true }))["view.detectIndentation"]).toEqual({
+      enabled: true,
+      checked: true,
+    });
     expect(menuState(inputs({ detectIndentation: false }))["view.detectIndentation"]?.checked).toBe(false);
   });
 
@@ -192,7 +215,9 @@ describe("menuState", () => {
 
   it("offers Available MCP Tools in the main window, also without a workspace", () => {
     expect(menuState(idle)["help.mcpTools"]?.enabled).toBe(true);
-    expect(menuState(inputs({ workspace: null, repo: null, activeFile: null, shownView: "none" }))["help.mcpTools"]?.enabled).toBe(true);
+    expect(
+      menuState(inputs({ workspace: null, repo: null, activeFile: null, shownView: "none" }))["help.mcpTools"]?.enabled,
+    ).toBe(true);
     expect(menuState(inputs({ mode: "mergeTool" }))["help.mcpTools"]).toBeUndefined();
     const help = menuSpec("macos", "app").find((menu) => menu.role === "help");
     expect(help?.items.some((entry) => entry.kind === "action" && entry.action === "help.mcpTools")).toBe(true);
@@ -202,7 +227,10 @@ describe("menuState", () => {
     for (const mode of ["app", "mergeTool"] as const) {
       const actions = new Set(actionEntries(menuSpec("macos", mode)).map((entry) => entry.action));
       const stateful = Object.keys(menuState(inputs({ mode }))) as MenuAction[];
-      expect(stateful.filter((action) => !actions.has(action)), mode).toEqual([]);
+      expect(
+        stateful.filter((action) => !actions.has(action)),
+        mode,
+      ).toEqual([]);
     }
   });
 });
@@ -295,7 +323,9 @@ describe("Git menu", () => {
     expect(untracked["git.file.rollback"]?.enabled).toBe(false);
     const conflicted = gitMenuState(repo, { ...gitFile, conflicted: true }, false);
     expect(conflicted["git.file.commit"]?.enabled).toBe(false);
-    expect(gitMenuState(repo, { ...gitFile, hasEditor: false }, false)["git.file.historySelection"]?.enabled).toBe(false);
+    expect(gitMenuState(repo, { ...gitFile, hasEditor: false }, false)["git.file.historySelection"]?.enabled).toBe(
+      false,
+    );
   });
 
   it("shows GitHub for every repository, its links only with a github.com remote, and allows Clone without a repository", () => {
@@ -329,14 +359,17 @@ describe("Git menu", () => {
     // Another view on screen, no diff, or Git busy.
     expect(menuState(inputs({ shownView: "log", diffLines: "unstaged" }))["git.lines.stage"]?.enabled).toBe(false);
     expect(menuState(inputs({ shownView: "diff" }))["git.lines.stage"]?.enabled).toBe(false);
-    expect(menuState(inputs({ shownView: "diff", diffLines: "unstaged", repo: { ...repo, busy: true } }))["git.lines.stage"]?.enabled).toBe(
-      false,
-    );
+    expect(
+      menuState(inputs({ shownView: "diff", diffLines: "unstaged", repo: { ...repo, busy: true } }))["git.lines.stage"]
+        ?.enabled,
+    ).toBe(false);
   });
 
   it("tells the menu when an item appears or goes", () => {
     const shown = new Map<MenuAction, ItemState>([["git.skipCommit", { enabled: true }]]);
-    expect(changedState(shown, { "git.skipCommit": { enabled: true, visible: false } })).toEqual([["git.skipCommit", { visible: false }]]);
+    expect(changedState(shown, { "git.skipCommit": { enabled: true, visible: false } })).toEqual([
+      ["git.skipCommit", { visible: false }],
+    ]);
     expect(changedState(shown, { "git.skipCommit": { enabled: true, visible: true } })).toEqual([]);
   });
 });

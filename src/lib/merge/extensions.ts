@@ -55,21 +55,29 @@ export interface LineMark {
   type: ChangeType;
   /** Word-level changes, as offsets from the start of the range's first line. */
   inline?: TextSpan[] | null;
+  /** The older or newer side of its change, for the 3-pane diff's red and green; the merge tool leaves it out. */
+  tone?: "old" | "new" | null;
 }
 
-const inlineMark = Decoration.mark({ class: "cm-mc-inline" });
+const inlineMarks = {
+  none: Decoration.mark({ class: "cm-mc-inline" }),
+  old: Decoration.mark({ class: "cm-mc-inline cm-mc-inline-old" }),
+  new: Decoration.mark({ class: "cm-mc-inline cm-mc-inline-new" }),
+};
 
 function lineDecorations(doc: Text, marks: LineMark[]): DecorationSet {
   const decorations: Range<Decoration>[] = [];
   const lineCount = doc.lines;
   for (const mark of marks) {
     const { start, end } = mark.range;
+    const tone = mark.tone ? ` cm-mc-${mark.tone}` : "";
     if (start < end) {
       const last = Math.min(end, lineCount) - 1;
       for (let index = start; index <= last; index++) {
-        const edge = start === last ? "cm-mc-single" : index === start ? "cm-mc-first" : index === last ? "cm-mc-last" : "";
+        const edge =
+          start === last ? "cm-mc-single" : index === start ? "cm-mc-first" : index === last ? "cm-mc-last" : "";
         const line = doc.line(index + 1);
-        decorations.push(Decoration.line({ class: `cm-mc-line cm-mc-${mark.type} ${edge}` }).range(line.from));
+        decorations.push(Decoration.line({ class: `cm-mc-line cm-mc-${mark.type}${tone} ${edge}` }).range(line.from));
       }
       if (mark.inline && mark.inline.length > 0) {
         const blockFrom = doc.line(start + 1).from;
@@ -78,16 +86,16 @@ function lineDecorations(doc: Text, marks: LineMark[]): DecorationSet {
           const from = blockFrom + span.from;
           const to = Math.min(blockFrom + span.to, blockTo);
           if (from < to) {
-            decorations.push(inlineMark.range(from, to));
+            decorations.push(inlineMarks[mark.tone ?? "none"].range(from, to));
           }
         }
       }
     } else if (start < lineCount) {
       const line = doc.line(start + 1);
-      decorations.push(Decoration.line({ class: `cm-mc-gap-before cm-mc-edge-${mark.type}` }).range(line.from));
+      decorations.push(Decoration.line({ class: `cm-mc-gap-before cm-mc-edge-${mark.type}${tone}` }).range(line.from));
     } else {
       const line = doc.line(lineCount);
-      decorations.push(Decoration.line({ class: `cm-mc-gap-after cm-mc-edge-${mark.type}` }).range(line.from));
+      decorations.push(Decoration.line({ class: `cm-mc-gap-after cm-mc-edge-${mark.type}${tone}` }).range(line.from));
     }
   }
   return Decoration.set(decorations, true);
@@ -106,7 +114,11 @@ export function sideMarks(
 ): LineMark[] {
   return chunks
     .filter((chunk) => sideChanged(chunk, side) && !(side === "ours" ? chunk.oursDone : chunk.theirsDone))
-    .map((chunk) => ({ range: sideRange(chunk, side), type: changeType(chunk, side), inline: inlineFor?.(chunk) ?? null }));
+    .map((chunk) => ({
+      range: sideRange(chunk, side),
+      type: changeType(chunk, side),
+      inline: inlineFor?.(chunk) ?? null,
+    }));
 }
 
 const resultDecorations = EditorView.decorations.compute([chunkField, "doc"], (state) =>
@@ -144,7 +156,10 @@ const mergeTheme = EditorView.theme({
   ".cm-mc-gap-before": { boxShadow: "inset 0 2px 0 var(--mc-edge)" },
   ".cm-mc-gap-after": { boxShadow: "inset 0 -2px 0 var(--mc-edge)" },
   // Keep the active-line tint from hiding chunk colors.
-  ".cm-activeLine.cm-mc-line": { backgroundImage: "linear-gradient(var(--editor-active-line), var(--editor-active-line))", backgroundBlendMode: "multiply" },
+  ".cm-activeLine.cm-mc-line": {
+    backgroundImage: "linear-gradient(var(--editor-active-line), var(--editor-active-line))",
+    backgroundBlendMode: "multiply",
+  },
 });
 
 export function resultExtensions(initial: ChunkState[]): Extension[] {

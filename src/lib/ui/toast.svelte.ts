@@ -13,52 +13,81 @@ export interface ToastAction {
   valid?: () => boolean;
 }
 
+export interface ToastOptions {
+  /** How long it stays; the kind decides when omitted. */
+  timeoutMs?: number;
+  action?: ToastAction;
+  /** Where it came from, such as the repository, when the workspace has several. */
+  source?: string | null;
+}
+
 export interface Toast {
   id: number;
   kind: ToastKind;
   title: string;
   detail?: string;
   action?: ToastAction;
-  /** The same message in the notification history (the status bar bell). */
+  source?: string;
+  /** The same message in the notification history (the Notifications panel). */
   notificationId: number;
 }
+
+/** Balloons on screen at once; older ones close early but stay in the list. */
+export const MAX_TOASTS = 4;
+/** After the pointer leaves a toast it was holding open. */
+const AFTER_HOLD_MS = 2500;
 
 class ToastStore {
   items = $state<Toast[]>([]);
   private nextId = 1;
+  private timers = new Map<number, ReturnType<typeof setTimeout>>();
 
-  show(kind: ToastKind, title: string, detail?: string, timeoutMs?: number, action?: ToastAction): void {
+  show(kind: ToastKind, title: string, detail?: string, options: ToastOptions = {}): void {
     const trimmed = detail?.trim() || undefined;
+    const source = options.source || undefined;
+    const action = options.action;
     // Every message goes to the history; Do Not Disturb only keeps non-errors off screen.
-    const notificationId = notifications.record(kind, title, trimmed ?? null, action ?? null);
+    const notificationId = notifications.record(kind, title, trimmed ?? null, action ?? null, source ?? null);
     if (!notifications.popsUp(kind)) {
       return;
     }
     const id = this.nextId++;
-    this.items.push({ id, kind, title, detail: trimmed, action, notificationId });
-    const timeout = timeoutMs ?? (kind === "error" ? 9000 : kind === "warning" ? 6000 : 3500);
-    setTimeout(() => this.dismiss(id), timeout);
+    this.items.push({ id, kind, title, detail: trimmed, action, source, notificationId });
+    for (const old of this.items.slice(0, Math.max(0, this.items.length - MAX_TOASTS))) {
+      this.dismiss(old.id);
+    }
+    this.closeAfter(id, options.timeoutMs ?? (kind === "error" ? 9000 : kind === "warning" ? 6000 : 3500));
   }
 
-  info(title: string, detail?: string): void {
-    this.show("info", title, detail);
+  info(title: string, detail?: string, source?: string | null): void {
+    this.show("info", title, detail, { source });
   }
 
-  success(title: string, detail?: string): void {
-    this.show("success", title, detail);
+  success(title: string, detail?: string, source?: string | null): void {
+    this.show("success", title, detail, { source });
   }
 
-  warning(title: string, detail?: string): void {
-    this.show("warning", title, detail);
+  warning(title: string, detail?: string, source?: string | null): void {
+    this.show("warning", title, detail, { source });
   }
 
-  error(title: string, detail?: string): void {
-    this.show("error", title, detail);
+  error(title: string, detail?: string, source?: string | null): void {
+    this.show("error", title, detail, { source });
   }
 
   /** A success toast with a button, shown a little longer so there is time to click it. */
-  successWithAction(title: string, detail: string | undefined, action: ToastAction): void {
-    this.show("success", title, detail, 8000, action);
+  successWithAction(title: string, detail: string | undefined, action: ToastAction, source?: string | null): void {
+    this.show("success", title, detail, { timeoutMs: 8000, action, source });
+  }
+
+  /** The pointer is over a toast: it stays until the pointer leaves, then closes a little later. */
+  hold(id: number, held: boolean): void {
+    if (held) {
+      clearTimeout(this.timers.get(id));
+      this.timers.delete(id);
+    } else if (this.items.some((item) => item.id === id)) {
+      this.closeAfter(id, AFTER_HOLD_MS);
+    }
   }
 
   /** Runs a toast's button, then closes the toast. */
@@ -72,12 +101,24 @@ class ToastStore {
 
   /** Runs a button from the notification list, closing its toast if it is still up. */
   runNotificationAction(notificationId: number): void {
-    this.items = this.items.filter((toast) => toast.notificationId !== notificationId);
+    for (const item of this.items.filter((toast) => toast.notificationId === notificationId)) {
+      this.dismiss(item.id);
+    }
     notifications.runAction(notificationId);
   }
 
   dismiss(id: number): void {
+    clearTimeout(this.timers.get(id));
+    this.timers.delete(id);
     this.items = this.items.filter((toast) => toast.id !== id);
+  }
+
+  private closeAfter(id: number, timeoutMs: number): void {
+    clearTimeout(this.timers.get(id));
+    this.timers.set(
+      id,
+      setTimeout(() => this.dismiss(id), timeoutMs),
+    );
   }
 }
 

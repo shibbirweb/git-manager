@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { FILE_TOOLBAR_SWITCHES, SETTINGS_SECTIONS, type SettingsSection } from "$lib/stores/settingsData";
-import dialogSource from "../SettingsDialog.svelte?raw";
+import sectionViewSource from "./SettingsSectionView.svelte?raw";
 import { CARET_EXTRA_ROWS, EDITOR_FEATURE_ROWS, SAVE_CLEANUP_ROWS } from "./settingsRows";
-import { highlightSpans, matchingEntries, type SearchBlock, SETTINGS_SEARCH_INDEX, searchWords, textMatches, visibleBlocks } from "./settingsSearch";
+import {
+  highlightSpans,
+  matchingEntries,
+  type SearchBlock,
+  SETTINGS_SEARCH_INDEX,
+  searchWords,
+  textMatches,
+  visibleBlocks,
+} from "./settingsSearch";
 
 const LABELS: Record<SettingsSection, string> = {
   appearance: "Appearance",
@@ -22,24 +30,33 @@ const LABELS: Record<SettingsSection, string> = {
 /** A warning, not a setting. */
 const NOT_INDEXED = new Set(["~/.local/bin is not on your PATH"]);
 
-/** The literal row labels, group titles and About links of each section in SettingsDialog.svelte. */
+/** The section files' source, by component name: AppearanceSettings, ... */
+const SECTION_FILES = Object.fromEntries(
+  Object.entries(import.meta.glob<string>("./*.svelte", { query: "?raw", import: "default", eager: true })).map(
+    ([path, source]) => [path.replace(/^\.\/|\.svelte$/g, ""), source],
+  ),
+);
+
+/** The literal row titles, group titles and About links of each section, from the files it shows. */
 function dialogLabels(): Map<SettingsSection, Set<string>> {
-  const template = dialogSource.slice(dialogSource.indexOf('<div class="rows"'));
-  const parts = template.split(/\{(?:#if|:else if) section === "(\w+)"\}/);
+  const parts = sectionViewSource.split(/\{(?:#if|:else if) section === "(\w+)"\}/);
   const labels = new Map<SettingsSection, Set<string>>();
   for (let index = 1; index < parts.length; index += 2) {
-    const body = parts[index + 1];
-    const found = [
-      ...body.matchAll(/<div class="label">\s*<span>([^<{]+)/g),
-      ...body.matchAll(/<h4 class="group-title">([^<]+)<\/h4>/g),
-      ...body.matchAll(/<strong>([^<{]+)<\/strong>/g),
-    ].map((match) => match[1].trim());
+    const components = [...parts[index + 1].matchAll(/<(\w+Settings|KeyboardShortcuts)\b/g)].map((match) => match[1]);
+    const found = components.flatMap((name) => {
+      const body = SECTION_FILES[name] ?? "";
+      // About's links are a list of { title } objects.
+      const links = name === "AboutSettings" ? [...body.matchAll(/^\s+title: "([^"]+)",$/gm)] : [];
+      return [...body.matchAll(/<Settings(?:Row|Group)\s+title="([^"{]+)"/g), ...links].map((match) => match[1].trim());
+    });
     labels.set(parts[index] as SettingsSection, new Set(found.filter((label) => !NOT_INDEXED.has(label))));
   }
   return labels;
 }
 
-const LIST_LABELS = new Set([...FILE_TOOLBAR_SWITCHES, ...CARET_EXTRA_ROWS, ...EDITOR_FEATURE_ROWS, ...SAVE_CLEANUP_ROWS].map((row) => row.label));
+const LIST_LABELS = new Set(
+  [...FILE_TOOLBAR_SWITCHES, ...CARET_EXTRA_ROWS, ...EDITOR_FEATURE_ROWS, ...SAVE_CLEANUP_ROWS].map((row) => row.label),
+);
 
 describe("settings search index", () => {
   const fromDialog = dialogLabels();
@@ -50,7 +67,9 @@ describe("settings search index", () => {
 
   it("lists every row and group title the dialog shows", () => {
     for (const [section, labels] of fromDialog) {
-      const indexed = new Set(SETTINGS_SEARCH_INDEX.filter((entry) => entry.section === section).map((entry) => entry.label));
+      const indexed = new Set(
+        SETTINGS_SEARCH_INDEX.filter((entry) => entry.section === section).map((entry) => entry.label),
+      );
       for (const label of labels) {
         expect(indexed.has(label), `${section}: "${label}" is missing from settingsSearch.ts`).toBe(true);
       }
@@ -60,13 +79,15 @@ describe("settings search index", () => {
   it("lists nothing the dialog does not show", () => {
     for (const entry of SETTINGS_SEARCH_INDEX) {
       const known = fromDialog.get(entry.section)?.has(entry.label) || LIST_LABELS.has(entry.label);
-      expect(known, `${entry.section}: "${entry.label}" is not in SettingsDialog.svelte`).toBe(true);
+      expect(known, `${entry.section}: "${entry.label}" is not in its section's files`).toBe(true);
     }
   });
 
   it("points sub-rows at a row of the same section", () => {
     for (const entry of SETTINGS_SEARCH_INDEX.filter((item) => item.parent !== null)) {
-      const parentFound = SETTINGS_SEARCH_INDEX.some((item) => item.section === entry.section && item.label === entry.parent);
+      const parentFound = SETTINGS_SEARCH_INDEX.some(
+        (item) => item.section === entry.section && item.label === entry.parent,
+      );
       expect(parentFound, `${entry.section}: parent "${entry.parent}" of "${entry.label}"`).toBe(true);
     }
   });
@@ -99,7 +120,10 @@ describe("textMatches", () => {
 describe("matchingEntries", () => {
   it("finds rows by label in every section that has them", () => {
     const found = matchingEntries(searchWords("ligatures"), LABELS);
-    expect(found.map((entry) => `${entry.section}/${entry.label}`)).toEqual(["editor/Font ligatures", "terminal/Font ligatures"]);
+    expect(found.map((entry) => `${entry.section}/${entry.label}`)).toEqual([
+      "editor/Font ligatures",
+      "terminal/Font ligatures",
+    ]);
   });
 
   it("finds rows by their extra words", () => {

@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { FileStatus, ShelfEntry, ShelvedFile } from "$lib/types";
 import {
-  changeLetter,
-  clickSelection,
   defaultShelfName,
+  entryRowId,
   fileCountLabel,
+  fileRowId,
   formatShelfDate,
+  selectedPaths,
+  shelfRows,
   shelveCandidates,
   shelvedFileLabel,
-  statusLetter,
-  validSelection,
 } from "./shelfModel";
 
 function status(path: string, patch: Partial<FileStatus> = {}): FileStatus {
@@ -31,13 +31,8 @@ describe("shelf names and labels", () => {
   it("labels files and counts", () => {
     expect(shelvedFileLabel(shelved("new.txt", { oldPath: "old.txt", change: "renamed" }))).toBe("old.txt -> new.txt");
     expect(shelvedFileLabel(shelved("a.txt"))).toBe("a.txt");
-    expect(changeLetter("added")).toBe("A");
-    expect(changeLetter("renamed")).toBe("R");
     expect(fileCountLabel(1)).toBe("1 file");
     expect(fileCountLabel(3)).toBe("3 files");
-    expect(statusLetter(status("n", { unstaged: "untracked" }))).toBe("U");
-    expect(statusLetter(status("s", { staged: "added", unstaged: "modified" }))).toBe("A");
-    expect(statusLetter(status("d", { unstaged: "deleted" }))).toBe("D");
   });
 
   it("leaves conflicts, nested repositories and submodules out of Shelve Changes", () => {
@@ -51,22 +46,36 @@ describe("shelf names and labels", () => {
   });
 });
 
-describe("shelf selection", () => {
-  const first = { shelfId: "1-0", filePath: "a.txt" };
-  const second = { shelfId: "1-0", filePath: "b.txt" };
-  const other = { shelfId: "2-0", filePath: "c.txt" };
+describe("shelf rows and selection", () => {
+  const entry = (id: string, paths: string[]): ShelfEntry => ({
+    version: 1,
+    id,
+    name: id,
+    createdAt: 0,
+    branch: null,
+    headCommit: null,
+    files: paths.map((path) => shelved(path)),
+  });
+  const entries = [entry("1-0", ["a.txt", "b.txt"]), entry("2-0", ["c.txt"])];
 
-  it("selects one file, or toggles files of the same list", () => {
-    expect(clickSelection([first], second, false)).toEqual([second]);
-    expect(clickSelection([first], second, true)).toEqual([first, second]);
-    expect(clickSelection([first, second], first, true)).toEqual([second]);
-    expect(clickSelection([first, second], other, true)).toEqual([other]);
+  it("lists each change list with its files unless folded", () => {
+    expect(shelfRows(entries, new Set()).map((row) => row.id)).toEqual([
+      entryRowId("1-0"),
+      fileRowId("1-0", "a.txt"),
+      fileRowId("1-0", "b.txt"),
+      entryRowId("2-0"),
+      fileRowId("2-0", "c.txt"),
+    ]);
+    expect(shelfRows(entries, new Set(["1-0"])).map((row) => row.id)).toEqual([
+      entryRowId("1-0"),
+      entryRowId("2-0"),
+      fileRowId("2-0", "c.txt"),
+    ]);
   });
 
-  it("drops files that left the shelf", () => {
-    const entries: ShelfEntry[] = [
-      { version: 1, id: "1-0", name: "n", createdAt: 0, branch: null, headCommit: null, files: [shelved("a.txt")] },
-    ];
-    expect(validSelection([first, second, other], entries)).toEqual([first]);
+  it("takes the selected files of one list only", () => {
+    const selection = [fileRowId("1-0", "b.txt"), fileRowId("2-0", "c.txt"), entryRowId("1-0")];
+    expect(selectedPaths(selection, entries[0])).toEqual(["b.txt"]);
+    expect(selectedPaths([fileRowId("1-0", "gone.txt")], entries[0])).toEqual([]);
   });
 });

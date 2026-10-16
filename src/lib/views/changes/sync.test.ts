@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HeadInfo } from "$lib/types";
-import { rowSync, rowSyncBadge, rowSyncTooltip, syncDoneMessage, syncPlan, syncTooltip } from "./sync";
+import { rowSync, rowSyncBadge, rowSyncTooltip, syncPlan, syncTooltip } from "./sync";
 
 const head = (overrides: Partial<HeadInfo> = {}): HeadInfo => ({
   branch: "main",
@@ -25,7 +25,12 @@ describe("sync plan", () => {
   });
 
   it("counts what will be pulled and pushed", () => {
-    expect(syncPlan(head({ ahead: 1, behind: 2 }))).toEqual({ kind: "sync", pull: 2, push: 1, upstream: "origin/main" });
+    expect(syncPlan(head({ ahead: 1, behind: 2 }))).toEqual({
+      kind: "sync",
+      pull: 2,
+      push: 1,
+      upstream: "origin/main",
+    });
   });
 });
 
@@ -36,13 +41,6 @@ describe("sync text", () => {
     );
     expect(syncTooltip(syncPlan(head({ ahead: 1 })))).toBe("Push 1 commit to origin/main");
     expect(syncTooltip(syncPlan(head({ upstream: null })))).toBe("Push main to the remote and track it");
-  });
-
-  it("reports what happened", () => {
-    expect(syncDoneMessage(2, 1)).toBe("Pulled 2 commits and pushed 1");
-    expect(syncDoneMessage(1, 0)).toBe("Pulled 1 commit");
-    expect(syncDoneMessage(0, 3)).toBe("Pushed 3 commits");
-    expect(syncDoneMessage(0, 0)).toBe("Already in sync");
   });
 });
 

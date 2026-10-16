@@ -1,13 +1,24 @@
 <!-- The Push dialog: the commits the current branch would push, the target remote and
      branch, Force push (--force-with-lease) and Push tags. A branch without an upstream gets one. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
+  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import ListBox from "@git-manager/ui/components/ListBox.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { untrack } from "svelte";
+  import { localKeys } from "$lib/commands/commandRuntime";
   import { api, errorMessage } from "$lib/api";
   import { relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { OutgoingCommits } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { defaultPushTarget, isValidRefName, pushCommand } from "./gitOptions";
 
@@ -34,17 +45,32 @@
   const now = Date.now();
 
   function remoteNamesOf(targetRoot: string): string[] {
-    return targetRoot === repoStore.repo?.root && repoStore.refs ? repoStore.refs.remotes : repoStore.remotes.map((remote) => remote.name);
+    return targetRoot === repoStore.repo?.root && repoStore.refs
+      ? repoStore.refs.remotes
+      : repoStore.remotes.map((remote) => remote.name);
   }
 
   const setUpstream = $derived(!head?.upstream);
   const branchError = $derived(
-    remoteBranch.trim() === "" ? "Enter the remote branch" : isValidRefName(remoteBranch.trim()) ? null : "Not a valid branch name",
+    remoteBranch.trim() === ""
+      ? "Enter the remote branch"
+      : isValidRefName(remoteBranch.trim())
+        ? null
+        : "Not a valid branch name",
   );
-  const canPush = $derived(localBranch !== null && remoteName !== "" && branchError === null && repoStore.busy === null);
+  const canPush = $derived(
+    localBranch !== null && remoteName !== "" && branchError === null && repoStore.busy === null,
+  );
   const command = $derived(
     localBranch
-      ? pushCommand({ localBranch, remoteName: remoteName || "origin", remoteBranch: remoteBranch.trim(), forceWithLease, pushTags, setUpstream })
+      ? pushCommand({
+          localBranch,
+          remoteName: remoteName || "origin",
+          remoteBranch: remoteBranch.trim(),
+          forceWithLease,
+          pushTags,
+          setUpstream,
+        })
       : "",
   );
 
@@ -94,7 +120,9 @@
     if (forceWithLease) {
       const confirmed = await dialogs.confirm({
         title: "Force Push",
-        message: `Force push ${branch} to ${remoteName}/${targetBranch} with --force-with-lease? Commits on the remote that you do not have will be lost.`,
+        message:
+          `Force push ${branch} to ${remoteName}/${targetBranch} with --force-with-lease? Commits on the remote ` +
+          "that you do not have will be lost.",
         confirmLabel: "Force Push",
         danger: true,
       });
@@ -115,126 +143,82 @@
   }
 </script>
 
-<GitDialogFrame title="Push Commits" width={620} onCancel={close} onSubmit={() => void submit()}>
+<Dialog open variant="form" title="Push Commits" width="large" onclose={close} onsubmit={() => void submit()}>
   {#if !localBranch}
-    <p class="error">HEAD is detached: check out a branch to push it.</p>
+    <Text size="small" tone="danger">HEAD is detached: check out a branch to push it.</Text>
   {:else if remoteNames.length === 0}
-    <p class="error">This repository has no remote. Add one with Git > Manage Remotes.</p>
+    <Text size="small" tone="danger">This repository has no remote. Add one with Git > Manage Remotes.</Text>
   {:else}
-    <div class="target row">
-      <span class="mono local">{localBranch}</span>
-      <span class="dim">&rarr;</span>
-      <select class="input" bind:value={remoteName} aria-label="Remote">
-        {#each remoteNames as name (name)}
-          <option value={name}>{name}</option>
-        {/each}
-      </select>
-      <span class="dim">:</span>
-      <input class="input mono branch" bind:value={remoteBranch} aria-label="Remote branch" spellcheck="false" autocomplete="off" data-autofocus />
-      {#if setUpstream}
-        <span class="hint">new, sets upstream</span>
-      {/if}
-    </div>
-    {#if branchError && remoteBranch !== ""}
-      <div class="error">{branchError}</div>
-    {/if}
+    <Field look="compact" error={branchError && remoteBranch !== "" ? branchError : null}>
+      <Stack direction="row" align="center" gap="md" wrap>
+        <Text mono weight="semibold">{localBranch}</Text>
+        <Text tone="dim">&rarr;</Text>
+        <Select
+          label="Remote"
+          width="small"
+          bind:value={remoteName}
+          options={remoteNames.map((name) => ({ value: name, label: name }))}
+        />
+        <Text tone="dim">:</Text>
+        <Stack grow>
+          <Input
+            mono
+            width="fill"
+            bind:value={remoteBranch}
+            aria-label="Remote branch"
+            spellcheck="false"
+            autocomplete="off"
+            autofocus
+          />
+        </Stack>
+        {#if setUpstream}
+          <Text variant="hint" tone="faint">new, sets upstream</Text>
+        {/if}
+      </Stack>
+    </Field>
 
-    <div class="commits" aria-label="Commits to push">
+    <ListBox label="Commits to push" maxHeight="medium" minHeight="list">
       {#if loadError}
-        <div class="state error">{loadError}</div>
+        <Stack paddingX="mdPlus" paddingY="lgPlus"><Text size="small" tone="danger">{loadError}</Text></Stack>
       {:else if !outgoing}
-        <div class="state dim">{loading ? "Reading commits..." : ""}</div>
+        <Stack paddingX="mdPlus" paddingY="lgPlus"><Text tone="dim">{loading ? "Reading commits..." : ""}</Text></Stack>
       {:else if outgoing.commits.length === 0}
-        <div class="state dim">Nothing to push: {outgoing.base ?? "the remote"} has every commit.</div>
+        <Stack paddingX="mdPlus" paddingY="lgPlus">
+          <Text tone="dim">Nothing to push: {outgoing.base ?? "the remote"} has every commit.</Text>
+        </Stack>
       {:else}
         {#each outgoing.commits as commit (commit.id)}
-          <div class="commit" title={commit.summary}>
-            <span class="subject truncate">{commit.summary}</span>
-            <span class="author truncate dim">{commit.authorName}</span>
-            <span class="when dim">{relativeTime(commit.time, now)}</span>
-            <span class="hash mono dim">{commit.shortId}</span>
-          </div>
+          <Row size="history" line title={commit.summary}>
+            <Stack grow><Text truncate>{commit.summary}</Text></Stack>
+            <Stack width="large"><Text tone="dim" truncate>{commit.authorName}</Text></Stack>
+            <Stack width="small"><Text size="small" tone="dim">{relativeTime(commit.time, now)}</Text></Stack>
+            <Stack width="xsmall" align="end"><Text mono size="compact" tone="dim">{commit.shortId}</Text></Stack>
+          </Row>
         {/each}
       {/if}
-    </div>
+    </ListBox>
     {#if outgoing && outgoing.commits.length > 0}
-      <div class="hint">
+      <Text variant="hint" tone="faint">
         {outgoing.commits.length}{outgoing.truncated ? "+" : ""}
         {outgoing.commits.length === 1 ? "commit" : "commits"}
         {outgoing.base ? `not on ${outgoing.base}` : "on no remote yet"}
-      </div>
+      </Text>
     {/if}
 
-    <div class="options">
-      <label class="check"><input type="checkbox" bind:checked={forceWithLease} /> Force push (--force-with-lease)</label>
-      <label class="check"><input type="checkbox" bind:checked={pushTags} /> Push tags</label>
-    </div>
-    <div class="command selectable">{command}</div>
+    <Stack direction="row" gap="xl">
+      <Checkbox bind:checked={forceWithLease} label="Force push (--force-with-lease)" />
+      <Checkbox bind:checked={pushTags} label="Push tags" />
+    </Stack>
+    <CodeBlock variant="command" text={command} label="Command" />
   {/if}
 
-  {#snippet footer()}
-    <span class="hint">&#8984;Enter to push</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={close}>Cancel</button>
-    <button type="button" class="btn primary" class:danger-fill={forceWithLease} disabled={!canPush} onclick={() => void submit()}>
-      {forceWithLease ? "Force Push" : "Push"}
-    </button>
+  {#snippet footnote()}
+    <Text variant="hint" tone="faint">{localKeys("CmdOrCtrl+Enter")} to push</Text>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .target {
-    flex-wrap: wrap;
-  }
-
-  .local {
-    font-weight: 600;
-  }
-
-  .target select {
-    max-width: 160px;
-  }
-
-  .branch {
-    flex: 1;
-    min-width: 140px;
-  }
-
-  .commits {
-    display: flex;
-    flex-direction: column;
-    min-height: 120px;
-    max-height: 260px;
-    overflow-y: auto;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--editor-bg);
-  }
-
-  .commit {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 120px 80px 70px;
-    gap: 10px;
-    align-items: center;
-    padding: 4px 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .hash {
-    font-size: 11.5px;
-    text-align: right;
-  }
-
-  .when {
-    font-size: 12px;
-  }
-
-  .state {
-    padding: 14px 10px;
-  }
-
-  .options {
-    display: flex;
-    gap: 18px;
-  }
-</style>
+  {#snippet actions()}
+    <Button onclick={close}>Cancel</Button>
+    <Button variant={forceWithLease ? "danger-primary" : "primary"} disabled={!canPush} onclick={() => void submit()}>
+      {forceWithLease ? "Force Push" : "Push"}
+    </Button>
+  {/snippet}
+</Dialog>

@@ -1,6 +1,13 @@
 import { EditorSelection, EditorState, type TransactionSpec } from "@codemirror/state";
 import { describe, expect, it } from "vitest";
-import { duplicateSelection, joinLines, lineTargetPosition, parseLineTarget, sortLines, toggleCase } from "./textCommands";
+import {
+  duplicateSelection,
+  joinLines,
+  lineTargetPosition,
+  parseLineTarget,
+  sortLines,
+  toggleCase,
+} from "./textCommands";
 
 /** A state from text where "|" marks carets and "[...]" selections (anchor at "[", head at "]"). */
 function stateOf(marked: string, readOnly = false): EditorState {

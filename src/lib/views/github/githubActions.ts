@@ -11,6 +11,7 @@ import { pickGitHubRemote } from "../git/github";
 import { githubAccount } from "./githubAccount.svelte";
 import { openGitHubDialog } from "./githubDialogs";
 import { forkCompareUrl, gistFileName, syncForkBranch, syncForkTitle } from "./githubModel";
+import { SHOWN_TAB_CONTENT } from "$lib/views/workspaceDom";
 
 /** True when signed in; otherwise opens the sign-in dialog, which runs `retry` once signed in. */
 async function requireAccount(actionLabel: string, retry: () => void): Promise<boolean> {
@@ -112,7 +113,7 @@ export async function syncFork(): Promise<void> {
 
 /** The CodeMirror view of the file editor on screen. */
 function activeEditorView(): EditorView | null {
-  const element = document.querySelector<HTMLElement>(".file-host:not(.hidden) .cm-editor");
+  const element = document.querySelector<HTMLElement>(`${SHOWN_TAB_CONTENT} .cm-editor`);
   return element ? EditorView.findFromDOM(element) : null;
 }
 

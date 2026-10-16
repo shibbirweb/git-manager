@@ -1,12 +1,20 @@
+<!-- The window's top bar on the UI library's AppHeader: Back and Forward, the folder, repository and branch pickers,
+     the busy work, and the layout, theme and settings buttons. -->
 <script lang="ts">
+  import AppHeader from "@git-manager/ui/components/AppHeader.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Divider from "@git-manager/ui/components/Divider.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { api } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
-  import LayoutToggleIcon from "./LayoutToggleIcon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { recentEntries, shortPath } from "./recentEntries";
+  import { windowChrome } from "$lib/stores/windowChrome.svelte";
   import {
     openNewWindow,
     openRecent,
@@ -21,9 +29,7 @@
   import { navigation } from "$lib/stores/navigation.svelte";
 
   const head = $derived(repoStore.status?.head);
-  const branchLabel = $derived(
-    head?.branch ?? (head?.shortId ? `HEAD detached at ${head.shortId}` : "No branch"),
-  );
+  const branchLabel = $derived(head?.branch ?? (head?.shortId ? `HEAD detached at ${head.shortId}` : "No branch"));
   const busy = $derived(repoStore.busy !== null || repoStore.repo === null);
   // A separate repository picker only helps when the folder is not simply one repository.
   const showRepoPicker = $derived(
@@ -38,12 +44,20 @@
   function workspaceMenu(event: MouseEvent): void {
     const openRoots = repoStore.workspace?.folders.map((folder) => folder.root) ?? [];
     const recent = recentEntries(settings, { file: repoStore.workspace?.file ?? null, folderRoots: openRoots });
-    const items: MenuItem[] = recent.map((entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecent(entry) }));
+    const items: MenuItem[] = recent.map((entry) => ({
+      label: entry.label,
+      hint: entry.hint,
+      action: () => void openRecent(entry),
+    }));
     if (items.length > 0) {
       items.push(
         {
           label: "Open Recent in New Window",
-          submenu: recent.map((entry) => ({ label: entry.label, hint: entry.hint, action: () => void openRecentInNewWindow(entry) })),
+          submenu: recent.map((entry) => ({
+            label: entry.label,
+            hint: entry.hint,
+            action: () => void openRecentInNewWindow(entry),
+          })),
         },
         { separator: true },
       );
@@ -63,7 +77,11 @@
     if (openRoots.length > 1) {
       items.push({ separator: true });
       for (const folder of repoStore.workspace?.folders ?? []) {
-        items.push({ label: `Remove "${folder.name}" from Workspace`, hint: shortPath(folder.root), action: () => void repoStore.removeFolder(folder.root) });
+        items.push({
+          label: `Remove "${folder.name}" from Workspace`,
+          hint: shortPath(folder.root),
+          action: () => void repoStore.removeFolder(folder.root),
+        });
       }
     }
     items.push(
@@ -83,7 +101,10 @@
       const isActive = repo.root === repoStore.repo?.root;
       return {
         label: `${isActive ? "\u2713 " : "   "}${repo.name}`,
-        hint: [repo.relativePath && repo.relativePath !== repo.name ? repo.relativePath : "", count > 0 ? `${count}` : ""]
+        hint: [
+          repo.relativePath && repo.relativePath !== repo.name ? repo.relativePath : "",
+          count > 0 ? `${count}` : "",
+        ]
           .filter(Boolean)
           .join("  "),
         action: () => void repoStore.setActiveRepo(repo.root),
@@ -122,246 +143,114 @@
   }
 </script>
 
-<header class="header">
-  <div class="left">
-    <!-- Back / Forward through file locations. -->
-    <div class="history" role="group" aria-label="Navigation history">
-      <button
-        class="icon-btn history-btn"
-        onclick={() => void navigation.goBack()}
+{#snippet syncCount(count: number, icon: "arrow-up" | "arrow-down", title: string)}
+  <Stack direction="row" align="center" gap="none" element="span">
+    <Text size="small" tone="dim" {title}>{count}</Text>
+    <Icon name={icon} size="small" tone="dim" />
+  </Stack>
+{/snippet}
+
+<AppHeader
+  look={settings.roundedPanels ? "rounded" : "flat"}
+  tint={windowChrome.tint}
+  windowControls={windowChrome.controlsInBar}
+  busy={repoStore.busy ? repoStore.progress || `${repoStore.busy}...` : ""}
+  busyTitle={repoStore.progress || undefined}
+>
+  {#snippet start()}
+    <Stack direction="row" gap="xxs" role="group" label="Navigation history">
+      <IconButton
+        icon="arrow-left"
+        iconSize="regular"
+        size="header"
+        label="Go back"
+        title={withCommandKeys("Go Back", "nav.goBack")}
         disabled={!navigation.canGoBack}
-        title="Go Back (Ctrl+-)"
-        aria-label="Go back"
-      >
-        <Icon name="arrow-left" size={15} />
-      </button>
-      <button
-        class="icon-btn history-btn"
-        onclick={() => void navigation.goForward()}
+        onclick={() => void navigation.goBack()}
+      />
+      <IconButton
+        icon="arrow-right"
+        iconSize="regular"
+        size="header"
+        label="Go forward"
+        title={withCommandKeys("Go Forward", "nav.goForward")}
         disabled={!navigation.canGoForward}
-        title="Go Forward (Ctrl+Shift+-)"
-        aria-label="Go forward"
-      >
-        <Icon name="arrow-right" size={15} />
-      </button>
-    </div>
-    <div class="divider"></div>
-    <button class="pill" onclick={workspaceMenu} title={(repoStore.workspace?.folders ?? []).map((folder) => folder.root).join("\n")}>
-      <Icon name="folder" size={14} />
-      <span class="strong truncate">{repoStore.workspace?.name}</span>
-      <Icon name="chevron-down" size={12} />
-    </button>
+        onclick={() => void navigation.goForward()}
+      />
+    </Stack>
+    <Divider direction="vertical" />
+    <Button
+      variant="ghost"
+      icon="folder"
+      trailingIcon="chevron-down"
+      aria-haspopup="menu"
+      title={(repoStore.workspace?.folders ?? []).map((folder) => folder.root).join("\n")}
+      onclick={workspaceMenu}
+    >
+      <Text weight="semibold" truncate>{repoStore.workspace?.name}</Text>
+    </Button>
     {#if showRepoPicker}
-      <span class="sep">/</span>
-      <button class="pill" onclick={repoPickerMenu} title="Active repository: {repoStore.repo?.root ?? 'none'}">
-        <Icon name="folder-git" size={14} />
-        <span class="truncate">{repoStore.repo?.name ?? "Select repository"}</span>
-        <span class="repo-count dim">{repoStore.repos.length}</span>
-        <Icon name="chevron-down" size={12} />
-      </button>
+      <Text tone="faint">/</Text>
+      <Button
+        variant="ghost"
+        icon="folder-git"
+        trailingIcon="chevron-down"
+        aria-haspopup="menu"
+        count={repoStore.repos.length}
+        title="Active repository: {repoStore.repo?.root ?? 'none'}"
+        onclick={repoPickerMenu}
+      >
+        <Text truncate>{repoStore.repo?.name ?? "Select repository"}</Text>
+      </Button>
     {/if}
     {#if repoStore.repo}
-    <button class="pill" onclick={branchMenu} title="Branch: {branchLabel}. Click to switch branches">
-      <Icon name="branch" size={14} />
-      <span class="truncate branch-name">{branchLabel}</span>
-      {#if head && (head.ahead > 0 || head.behind > 0)}
-        <span class="counts dim">
-          {#if head.ahead > 0}<span title="Commits to push">{head.ahead}<Icon name="arrow-up" size={11} /></span>{/if}
-          {#if head.behind > 0}<span title="Commits to pull">{head.behind}<Icon name="arrow-down" size={11} /></span>{/if}
-        </span>
-      {/if}
-      <Icon name="chevron-down" size={12} />
-    </button>
+      <Button
+        variant="ghost"
+        icon="branch"
+        trailingIcon="chevron-down"
+        aria-haspopup="menu"
+        title="Branch: {branchLabel}. Click to switch branches"
+        onclick={branchMenu}
+      >
+        <Text truncate>{branchLabel}</Text>
+        {#if head && head.ahead > 0}
+          {@render syncCount(head.ahead, "arrow-up", "Commits to push")}
+        {/if}
+        {#if head && head.behind > 0}
+          {@render syncCount(head.behind, "arrow-down", "Commits to pull")}
+        {/if}
+      </Button>
     {:else}
-      <span class="dim no-repo">No git repository</span>
+      <Text size="small" tone="dim">No git repository</Text>
     {/if}
-  </div>
-
-
-  <div class="right">
-    {#if repoStore.busy}
-      <div class="busy" title={repoStore.progress}>
-        <span class="spinner"></span>
-        <span class="truncate">{repoStore.progress || `${repoStore.busy}...`}</span>
-      </div>
-    {/if}
-    <!-- Fetch, Pull, Push and Stash are in the Git menu. -->
-    <!-- Layout controls: the filled side shows which edge bar is visible. -->
-    <button
-      class="icon-btn"
-      onclick={() => settings.toggleActivityBar("left")}
+  {/snippet}
+  {#snippet end()}
+    <Button
+      variant="ghost"
+      layout="sidebar-left"
+      layoutActive={settings.leftBarVisible}
       title="{settings.leftBarVisible ? 'Hide' : 'Show'} Left Activity Bar"
       aria-label="Toggle left activity bar"
       aria-pressed={settings.leftBarVisible}
-    >
-      <LayoutToggleIcon side="left" visible={settings.leftBarVisible} />
-    </button>
-    <button
-      class="icon-btn"
-      onclick={() => settings.toggleActivityBar("right")}
+      onclick={() => settings.toggleActivityBar("left")}
+    />
+    <Button
+      variant="ghost"
+      layout="sidebar-right"
+      layoutActive={settings.rightBarVisible}
       title="{settings.rightBarVisible ? 'Hide' : 'Show'} Right Activity Bar"
       aria-label="Toggle right activity bar"
       aria-pressed={settings.rightBarVisible}
-    >
-      <LayoutToggleIcon side="right" visible={settings.rightBarVisible} />
-    </button>
-    <div class="divider"></div>
-    <button class="icon-btn" onclick={toggleTheme} title="Toggle light/dark theme">
-      <Icon name="sun" size={15} />
-    </button>
-    <button class="icon-btn" onclick={() => settings.openDialog()} title={withCommandKeys("Settings", "app.settings")} aria-label="Settings">
-      <Icon name="settings" size={15} />
-    </button>
-  </div>
-</header>
-
-<style>
-  .header {
-    display: grid;
-    /* The left side shrinks (names truncate) so it never runs into the actions. */
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    height: 42px;
-    padding: 0 8px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  /* Rounded panels: the header is part of the window frame. */
-  :global(html[data-rounded-panels]) .header {
-    background: var(--frame);
-    border-bottom: none;
-  }
-
-  .left,
-  .right {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 0;
-  }
-
-  .left {
-    overflow: hidden;
-  }
-
-  .left > :global(*) {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
-  .history,
-  .left > .divider,
-  .left > .sep {
-    flex: none;
-  }
-
-  .right {
-    justify-content: flex-end;
-  }
-
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 28px;
-    max-width: 280px;
-    min-width: 0;
-    padding: 0 8px;
-    border: none;
-    border-radius: var(--radius);
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .pill:hover {
-    background: var(--hover);
-  }
-
-  .strong {
-    font-weight: 600;
-  }
-
-  .sep {
-    color: var(--text-faint);
-  }
-
-  .repo-count {
-    font-size: 11px;
-  }
-
-  .no-repo {
-    padding: 0 8px;
-    font-size: 12px;
-  }
-
-  .branch-name {
-    min-width: 0;
-  }
-
-  .counts {
-    display: inline-flex;
-    gap: 4px;
-    font-size: 11.5px;
-  }
-
-  .counts span {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .history {
-    display: flex;
-    gap: 2px;
-  }
-
-  .history-btn {
-    height: 26px;
-    min-width: 26px;
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-  .busy {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    max-width: 280px;
-    margin-right: 6px;
-    color: var(--text-dim);
-    font-size: 12px;
-  }
-
-  .spinner {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .divider {
-    width: 1px;
-    height: 18px;
-    margin: 0 4px;
-    background: var(--border-strong);
-  }
-</style>
+      onclick={() => settings.toggleActivityBar("right")}
+    />
+    <Divider direction="vertical" />
+    <IconButton icon="sun" iconSize="regular" label="Toggle light/dark theme" onclick={toggleTheme} />
+    <IconButton
+      icon="settings"
+      iconSize="regular"
+      label="Settings"
+      title={withCommandKeys("Settings", "app.settings")}
+      onclick={() => settings.openDialog()}
+    />
+  {/snippet}
+</AppHeader>

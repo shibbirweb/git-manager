@@ -10,7 +10,7 @@ The Branches sidebar shows only the active repository and acts through right-cli
 
 ### Opening and listing
 
-`openBranchPicker(repoRoot)` in `views/changes/repoActions.ts` calls `gitDialogs.open({ kind: "branches", repoRoot })`. `GitDialogHost.svelte` renders `BranchesPopup.svelte` inside `GitDialogFrame`, the frame every Git dialog uses (title, Esc, footer). The popup loads refs with `loadDetails`, which reuses `repoStore.refs` for the active repository and calls `getRefs` for any other. For the active repository an effect keeps the list fresh after an action.
+`openBranchPicker(repoRoot)` in `views/changes/repoActions.ts` calls `gitDialogs.open({ kind: "branches", repoRoot })`. `GitDialogHost.svelte` renders `BranchesPopup.svelte`, which sits in the UI library's `Dialog`, the frame every Git dialog uses (title, Esc, footer). The list is the library's `List` driven by the filter field (`fieldKeys="drive"`): the field keeps the focus while Up and Down move the highlight, Enter opens the highlighted branch, and `branchListItems` adds the Local and Remote headings, which the list skips. The popup loads refs with `loadDetails`, which reuses `repoStore.refs` for the active repository and calls `getRefs` for any other. For the active repository an effect keeps the list fresh after an action.
 
 `filterBranches(refs, query)` in `branchPopup.ts` keeps branches whose name contains every word of the query and puts the current branch first. `trackingHint` gives the row hint, such as "origin/main, 1 ahead".
 

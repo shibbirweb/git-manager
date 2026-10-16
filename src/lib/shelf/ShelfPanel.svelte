@@ -3,10 +3,19 @@
   Double click (or Enter) on a file shows its diff; the right-click menus unshelve, rename and delete.
 -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ShelfEntry, ShelvedFile } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import {
     deleteEntry,
@@ -17,15 +26,14 @@
     unshelveEntry,
   } from "./shelfActions.svelte";
   import {
-    changeLetter,
-    clickSelection,
     fileCountLabel,
-    fileKey,
+    fileRowId,
     formatShelfDate,
+    selectedPaths,
+    shelfRows,
     shelveCandidates,
     shelvedFileLabel,
-    type ShelfFileKey,
-    validSelection,
+    type ShelfRow,
   } from "./shelfModel";
 
   const repoRoot = $derived(repoStore.repo?.root ?? null);
@@ -37,10 +45,11 @@
   let loadError = $state<string | null>(null);
   let loaded = $state(false);
   let collapsed = $state.raw<Set<string>>(new Set());
-  let selection = $state.raw<ShelfFileKey[]>([]);
+  let selection = $state.raw<string[]>([]);
+  let current = $state<string | null>(null);
   let loadToken = 0;
 
-  const selectedKeys = $derived(new Set(selection.map(fileKey)));
+  const rows = $derived(shelfRows(entries, collapsed));
 
   $effect(() => {
     void shelfState.version;
@@ -58,7 +67,6 @@
       const next = await api.listShelf(targetRoot);
       if (token === loadToken) {
         entries = next ?? [];
-        selection = validSelection(selection, entries);
         loadError = null;
         loaded = true;
       }
@@ -70,23 +78,14 @@
     }
   }
 
-  function toggle(shelfId: string): void {
+  function setCollapsed(shelfId: string, folded: boolean): void {
     const next = new Set(collapsed);
-    if (next.has(shelfId)) {
-      next.delete(shelfId);
-    } else {
+    if (folded) {
       next.add(shelfId);
+    } else {
+      next.delete(shelfId);
     }
     collapsed = next;
-  }
-
-  function selectFile(event: MouseEvent, entry: ShelfEntry, file: ShelvedFile): void {
-    const key = { shelfId: entry.id, filePath: file.path };
-    selection = clickSelection(selection, key, event.metaKey || event.ctrlKey);
-  }
-
-  function selectedPaths(entry: ShelfEntry): string[] {
-    return selection.filter((key) => key.shelfId === entry.id).map((key) => key.filePath);
   }
 
   function entryMenu(event: MouseEvent, entry: ShelfEntry): void {
@@ -114,10 +113,11 @@
       return;
     }
     const root = repoRoot;
-    if (!selectedKeys.has(fileKey({ shelfId: entry.id, filePath: file.path }))) {
-      selection = [{ shelfId: entry.id, filePath: file.path }];
+    const id = fileRowId(entry.id, file.path);
+    if (!selection.includes(id)) {
+      selection = [id];
     }
-    const paths = selectedPaths(entry);
+    const paths = selectedPaths(selection, entry);
     const items: MenuItem[] = [
       { label: "Show Diff", action: () => showShelvedDiff(root, entry.id, file.path) },
       { separator: true },
@@ -131,10 +131,14 @@
     contextMenu.open(event, items);
   }
 
-  function fileKeydown(event: KeyboardEvent, entry: ShelfEntry, file: ShelvedFile): void {
-    if (event.key === "Enter" && repoRoot) {
-      event.preventDefault();
-      showShelvedDiff(repoRoot, entry.id, file.path);
+  // Enter opens a file's diff or folds a change list; a click already folds it, so a double-click does not.
+  function activate(row: ShelfRow, event?: unknown): void {
+    if (row.kind === "file") {
+      if (repoRoot) {
+        showShelvedDiff(repoRoot, row.entry.id, row.file.path);
+      }
+    } else if (!(event instanceof MouseEvent)) {
+      setCollapsed(row.entry.id, !collapsed.has(row.entry.id));
     }
   }
 
@@ -146,271 +150,111 @@
     const slash = filePath.lastIndexOf("/");
     return slash > 0 ? filePath.slice(0, slash) : "";
   }
+
+  function entryTitle(entry: ShelfEntry): string {
+    return `${entry.name}${entry.branch ? `\nFrom ${entry.branch}` : ""}\n${formatShelfDate(entry.createdAt)}`;
+  }
 </script>
 
-<div class="shelf">
-  <div class="toolbar">
-    <span class="repo truncate dim" title={repoRoot ?? ""}>{repoName}</span>
-    <div class="spacer"></div>
-    <button
-      class="btn small"
-      onclick={() => openShelveDialog(repoRoot)}
-      disabled={!repoRoot || busy || changeCount === 0}
-      title={changeCount === 0 ? "There are no changes to shelve" : "Shelve Changes..."}
-    >
-      Shelve Changes...
-    </button>
-    <button class="icon-btn small" onclick={() => void load(repoRoot)} disabled={!repoRoot} title="Refresh" aria-label="Refresh">
-      <Icon name="refresh" size={14} />
-    </button>
-  </div>
-
+<Stack gap="none" grow surface="editor">
+  <Toolbar variant="panel" label="Shelf">
+    <Text size="small" tone="dim" truncate title={repoRoot ?? ""}>{repoName}</Text>
+    {#snippet end()}
+      <Button
+        size="small"
+        disabled={!repoRoot || busy || changeCount === 0}
+        title={changeCount === 0 ? "There are no changes to shelve" : "Shelve Changes..."}
+        onclick={() => openShelveDialog(repoRoot)}
+      >
+        Shelve Changes...
+      </Button>
+      <IconButton
+        icon="refresh"
+        iconSize="normal"
+        size="compact"
+        tone="dim"
+        label="Refresh"
+        disabled={!repoRoot}
+        onclick={() => void load(repoRoot)}
+      />
+    {/snippet}
+  </Toolbar>
   {#if !repoRoot}
-    <div class="placeholder dim">Open a repository to see its shelf.</div>
+    <EmptyState title="Open a repository to see its shelf." titleTone="dim" />
   {:else if loadError}
-    <div class="placeholder dim">Could not read the shelf: {loadError}</div>
+    <EmptyState title="Could not read the shelf: {loadError}" titleTone="dim" />
   {:else if loaded && entries.length === 0}
-    <div class="placeholder dim">
-      No shelved changes. Shelve Changes puts changes aside without committing them.
-    </div>
+    <EmptyState
+      title="No shelved changes. Shelve Changes puts changes aside without committing them."
+      titleTone="dim"
+    />
   {:else}
-    <ul class="list" role="tree" aria-label="Shelved changes">
-      {#each entries as entry (entry.id)}
-        {@const open = !collapsed.has(entry.id)}
-        <li role="treeitem" aria-expanded={open} aria-selected="false">
-          <button
-            class="entry"
-            onclick={() => toggle(entry.id)}
-            oncontextmenu={(event) => entryMenu(event, entry)}
-            title="{entry.name}{entry.branch ? `\nFrom ${entry.branch}` : ''}\n{formatShelfDate(entry.createdAt)}"
+    <List
+      items={rows}
+      itemKey={(row) => row.id}
+      label="Shelved changes"
+      role="tree"
+      height="fill"
+      multiple
+      bind:selection
+      bind:selected={current}
+      level={(row) => (row.kind === "file" ? 1 : 0)}
+      expanded={(row) => (row.kind === "entry" ? !collapsed.has(row.entry.id) : null)}
+      ontoggle={(row, open) => setCollapsed(row.entry.id, !open)}
+      onactivate={activate}
+      oncontextmenu={(event, row) =>
+        row.kind === "file" ? fileMenu(event, row.entry, row.file) : entryMenu(event, row.entry)}
+    >
+      {#snippet row(row, state)}
+        {#if row.kind === "entry"}
+          {@const entry = row.entry}
+          <Row
+            selected={state.selected}
+            expanded={!collapsed.has(entry.id)}
+            title={entryTitle(entry)}
+            onclick={() => setCollapsed(entry.id, !collapsed.has(entry.id))}
           >
-            <Icon name={open ? "chevron-down" : "chevron-right"} size={12} />
-            <Icon name="stash" size={14} />
-            <span class="name truncate">{entry.name}</span>
-            <span class="meta dim">{fileCountLabel(entry.files.length)}</span>
-            <span class="meta dim">{formatShelfDate(entry.createdAt)}</span>
-          </button>
-          <span class="entry-actions">
-            <button
-              class="icon-btn tiny"
-              disabled={busy}
-              onclick={() => repoRoot && void unshelveEntry(repoRoot, entry)}
-              title="Unshelve..."
-              aria-label="Unshelve {entry.name}"
-            >
-              <Icon name="arrow-up" size={13} />
-            </button>
-            <button
-              class="icon-btn tiny danger"
-              disabled={busy}
-              onclick={() => repoRoot && void deleteEntry(repoRoot, entry)}
-              title="Delete..."
-              aria-label="Delete {entry.name}"
-            >
-              <Icon name="trash" size={13} />
-            </button>
-          </span>
-          {#if open}
-            <ul role="group">
-              {#each entry.files as file (file.path)}
-                {@const selected = selectedKeys.has(fileKey({ shelfId: entry.id, filePath: file.path }))}
-                <li role="treeitem" aria-selected={selected}>
-                  <button
-                    class="file"
-                    class:selected
-                    onclick={(event) => selectFile(event, entry, file)}
-                    ondblclick={() => repoRoot && showShelvedDiff(repoRoot, entry.id, file.path)}
-                    onkeydown={(event) => fileKeydown(event, entry, file)}
-                    oncontextmenu={(event) => fileMenu(event, entry, file)}
-                    title="{shelvedFileLabel(file)}{file.binary ? ' (binary)' : ''}"
-                  >
-                    <span class="letter mono {file.change}">{changeLetter(file.change)}</span>
-                    <span class="file-name truncate">{fileName(file.path)}</span>
-                    <span class="folder truncate dim">{folderOf(file.path)}</span>
-                  </button>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        </li>
-      {/each}
-    </ul>
+            <Icon name="stash" size="normal" />
+            <Text truncate>{entry.name}</Text>
+            <Text size="small" tone="dim">{fileCountLabel(entry.files.length)}</Text>
+            <Text size="small" tone="dim">{formatShelfDate(entry.createdAt)}</Text>
+            {#snippet actions()}
+              <IconButton
+                icon="arrow-up"
+                iconSize="medium"
+                size="inline"
+                tone="dim"
+                label="Unshelve {entry.name}"
+                title="Unshelve..."
+                disabled={busy}
+                onclick={() => repoRoot && void unshelveEntry(repoRoot, entry)}
+              />
+              <IconButton
+                icon="trash"
+                iconSize="medium"
+                size="inline"
+                tone="dim-danger"
+                label="Delete {entry.name}"
+                title="Delete..."
+                disabled={busy}
+                onclick={() => repoRoot && void deleteEntry(repoRoot, entry)}
+              />
+            {/snippet}
+          </Row>
+        {:else}
+          {@const file = row.file}
+          <Row
+            selected={state.selected}
+            depth={1}
+            expanded="leaf"
+            title="{shelvedFileLabel(file)}{file.binary ? ' (binary)' : ''}"
+          >
+            <StatusLetter kind={file.change} />
+            <Text truncate>{fileName(file.path)}</Text>
+            <Text size="small" tone="dim" truncate giveWay>{folderOf(file.path)}</Text>
+          </Row>
+        {/if}
+      {/snippet}
+    </List>
   {/if}
-</div>
-
-<style>
-  .shelf {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    background: var(--editor-bg);
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    height: 32px;
-    padding: 0 8px 0 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .repo {
-    min-width: 0;
-    font-size: 12px;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .icon-btn.small {
-    height: 24px;
-    min-width: 24px;
-    color: var(--text-dim);
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .list,
-  .list ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 4px 0;
-  }
-
-  .list > li {
-    position: relative;
-  }
-
-  .entry,
-  .file {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    height: 24px;
-    padding: 0 10px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    cursor: default;
-    white-space: nowrap;
-  }
-
-  .entry :global(svg) {
-    flex: none;
-    color: var(--text-dim);
-  }
-
-  .entry {
-    padding-right: 64px;
-  }
-
-  .entry:hover,
-  .file:hover {
-    background: var(--hover);
-  }
-
-  .entry:focus-visible,
-  .file:focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: -1px;
-  }
-
-  .file {
-    padding-left: 44px;
-  }
-
-  .file.selected {
-    background: var(--selected);
-  }
-
-  .name {
-    flex: 0 1 auto;
-    min-width: 0;
-    font-weight: 500;
-  }
-
-  .meta {
-    flex: none;
-    font-size: 11.5px;
-  }
-
-  .entry-actions {
-    position: absolute;
-    top: 0;
-    right: 8px;
-    height: 24px;
-    display: none;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .list > li:hover > .entry-actions,
-  .entry-actions:focus-within {
-    display: flex;
-  }
-
-  .icon-btn.tiny {
-    height: 20px;
-    min-width: 20px;
-    color: var(--text-dim);
-  }
-
-  .icon-btn.tiny.danger:hover:not(:disabled) {
-    color: var(--danger);
-  }
-
-  .letter {
-    flex: none;
-    width: 12px;
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-
-  .letter.added {
-    color: var(--success);
-  }
-
-  .letter.deleted {
-    color: var(--text-faint);
-  }
-
-  .letter.modified,
-  .letter.renamed,
-  .letter.copied {
-    color: var(--accent);
-  }
-
-  .file-name {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
-  .folder {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 11.5px;
-  }
-</style>
+</Stack>

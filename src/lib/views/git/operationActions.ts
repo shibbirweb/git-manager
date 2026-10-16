@@ -2,11 +2,21 @@
 // shared by the conflict banner (OpBanner.svelte) and the Git menu.
 
 import { api } from "$lib/api";
+import { operationReport, outputSummary } from "$lib/notifications/gitReport";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { dialogs } from "$lib/ui/dialog.svelte";
 
 export async function continueOperation(): Promise<void> {
-  await repoStore.runOp("Continue", (repoPath) => api.continueOperation(repoPath), "Operation completed");
+  const status = repoStore.status;
+  const done = operationReport("Finished", status?.op ?? null, status?.head ?? null);
+  await repoStore.runOp(
+    "Continue",
+    (repoPath) => api.continueOperation(repoPath),
+    (outcome) => ({
+      ...done,
+      detail: [done.detail, outputSummary(outcome.output)].filter(Boolean).join("\n") || null,
+    }),
+  );
 }
 
 export async function abortOperation(): Promise<void> {
@@ -18,7 +28,12 @@ export async function abortOperation(): Promise<void> {
     danger: true,
   });
   if (ok) {
-    await repoStore.runOp("Abort", (repoPath) => api.abortOperation(repoPath), "Aborted");
+    const aborted = operationReport("Aborted", op ?? null, repoStore.status?.head ?? null);
+    await repoStore.runOp(
+      "Abort",
+      (repoPath) => api.abortOperation(repoPath),
+      () => aborted,
+    );
   }
 }
 

@@ -36,7 +36,8 @@ export function terminalDrawingSummary({ drawings, gpuSetting, ligatures }: Term
   if (gpu === 0) {
     return fallback === 1 ? "No, the GPU failed, normal drawing" : `No, the GPU failed in ${fallback} terminals`;
   }
-  const used = gpu === drawings.length ? `Yes, in ${terminals(gpu)}` : `Yes, in ${gpu} of ${terminals(drawings.length)}`;
+  const used =
+    gpu === drawings.length ? `Yes, in ${terminals(gpu)}` : `Yes, in ${gpu} of ${terminals(drawings.length)}`;
   return fallback > 0 ? `${used} (${fallback} fell back)` : used;
 }
 

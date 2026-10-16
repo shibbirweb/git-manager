@@ -64,7 +64,9 @@ export function crumbsFor(
   if (targetPath === null || folderFor([folder], targetPath) === null) {
     return crumbs;
   }
-  const parts = relativeTo(folder.root, targetPath).split("/").filter((part) => part !== "");
+  const parts = relativeTo(folder.root, targetPath)
+    .split("/")
+    .filter((part) => part !== "");
   parts.forEach((part, index) => {
     const path = joinPath(folder.root, parts.slice(0, index + 1).join("/"));
     const isFile = index === parts.length - 1 && !targetIsDir;

@@ -3,6 +3,7 @@
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
 
+import { readThreeSplit, type ThreeSplit } from "@git-manager/ui/logic/threeSplit";
 import type { AgentOverride } from "$lib/ai/agentConfig";
 import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
@@ -23,7 +24,7 @@ export type ThemeSetting = "system" | "light" | "dark";
 export type LeftPanel = "changes" | "branches" | "scripts" | null;
 
 /** What the right sidebar shows while it is open: the file tree or the AI agents. */
-export type RightPanel = "files" | "ai";
+export type RightPanel = "files" | "ai" | "notifications";
 
 /** How a diff shows its two versions: in two columns, or in one with removed lines above added ones. */
 export type DiffLayout = "sideBySide" | "inline";
@@ -32,6 +33,14 @@ export const DIFF_LAYOUT_CHOICES: { value: DiffLayout; label: string }[] = [
   { value: "inline", label: "Inline" },
 ];
 const DIFF_LAYOUTS = DIFF_LAYOUT_CHOICES.map((choice) => choice.value);
+
+/** How many panes a side by side diff uses where a third version exists (the index, or a merge's second parent). */
+export type DiffPanes = "two" | "three";
+export const DIFF_PANES_CHOICES: { value: DiffPanes; label: string }[] = [
+  { value: "two", label: "2 columns" },
+  { value: "three", label: "3 columns" },
+];
+const DIFF_PANES = DIFF_PANES_CHOICES.map((choice) => choice.value);
 
 /** Where the Changes view puts its commit box: one at the bottom (JetBrains), or one per repository (VS Code). */
 export type CommitBoxLayout = "single" | "perRepo";
@@ -59,7 +68,11 @@ export type FileIconMode = "off" | "minimal" | "material";
 export const FILE_ICON_CHOICES: { value: FileIconMode; label: string; hint: string }[] = [
   { value: "off", label: "No icons", hint: "One plain icon for every file. Uses no extra memory." },
   { value: "minimal", label: "Minimal", hint: "Simple colored shapes for common file types." },
-  { value: "material", label: "Material Icons", hint: "Colored icons for over 1,000 file types, from Material Icon Theme." },
+  {
+    value: "material",
+    label: "Material Icons",
+    hint: "Colored icons for over 1,000 file types, from Material Icon Theme.",
+  },
 ];
 
 const FILE_ICON_MODES = FILE_ICON_CHOICES.map((choice) => choice.value);
@@ -86,12 +99,32 @@ export type FileToolbarSwitchKey =
   | "fileToolbarMarkdownFormat";
 
 export const FILE_TOOLBAR_SWITCHES: { key: FileToolbarSwitchKey; label: string; hint: string }[] = [
-  { key: "fileToolbarBreadcrumbs", label: "Breadcrumbs", hint: "The folders and file as a Navigation Bar. Off, Jump to Navigation Bar shows it over the editor." },
+  {
+    key: "fileToolbarBreadcrumbs",
+    label: "Breadcrumbs",
+    hint: "The folders and file as a Navigation Bar. Off, Jump to Navigation Bar shows it over the editor.",
+  },
   { key: "fileToolbarBadges", label: "Badges", hint: "Unsaved, Modified, New file and the number of conflicts." },
-  { key: "fileToolbarChanges", label: "Change arrows", hint: "Previous and next change with the counter. F7 and Shift+F7 work either way." },
-  { key: "fileToolbarBlame", label: "Blame", hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame." },
-  { key: "fileToolbarCopyPath", label: "Copy relative path", hint: "Copies the file's path inside the workspace folder." },
-  { key: "fileToolbarMarkdownView", label: "Markdown view switch", hint: "Editor, Editor and Preview, Rich Editor. Also in View > Markdown." },
+  {
+    key: "fileToolbarChanges",
+    label: "Change arrows",
+    hint: "Previous and next change with the counter. F7 and Shift+F7 work either way.",
+  },
+  {
+    key: "fileToolbarBlame",
+    label: "Blame",
+    hint: "The button that shows who changed each line. Also Git > Current File > Annotate with Git Blame.",
+  },
+  {
+    key: "fileToolbarCopyPath",
+    label: "Copy relative path",
+    hint: "Copies the file's path inside the workspace folder.",
+  },
+  {
+    key: "fileToolbarMarkdownView",
+    label: "Markdown view switch",
+    hint: "Editor, Editor and Preview, Rich Editor. Also in View > Markdown.",
+  },
   {
     key: "fileToolbarMarkdownFormat",
     label: "Markdown formatting row",
@@ -190,6 +223,8 @@ export const TERMINAL_LETTER_SPACING_RANGE = [0, 5] as const;
 export const TERMINAL_SCROLLBACK_RANGE = [1000, 100000] as const;
 
 export const DEFAULT_PANEL_WIDTH = 260;
+/** The commit details' default height, the UI library's bottom panel default (double-click goes back to it). */
+export const DEFAULT_COMMIT_INFO_HEIGHT = 260;
 /** Height of the terminal panel below the editor. */
 export const DEFAULT_TERMINAL_HEIGHT = 260;
 export const MIN_TERMINAL_HEIGHT = 80;
@@ -202,7 +237,8 @@ export const MIN_CHANGES_LIST_WIDTH = 160;
 export const MAX_RECENT = 12;
 
 /** JetBrains Mono when it is installed, else VS Code's default editor font on macOS, else Windows' own code fonts. */
-export const DEFAULT_EDITOR_FONT = "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace";
+export const DEFAULT_EDITOR_FONT =
+  "'JetBrains Mono', Menlo, Monaco, 'Cascadia Mono', Consolas, 'Courier New', monospace";
 /** Earlier defaults, read as today's so a saved copy of one does not count as a custom font. */
 const OLD_DEFAULT_EDITOR_FONTS = ["'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace"];
 
@@ -227,7 +263,10 @@ export const MONOSPACE_FONTS = [
  * value, drops repeated families and makes sure a generic monospace fallback comes last.
  */
 export function normalizeFontFamily(value: string): string {
-  const cleaned = value.replace(/[;{}<>\\]/g, "").trim().slice(0, 200);
+  const cleaned = value
+    .replace(/[;{}<>\\]/g, "")
+    .trim()
+    .slice(0, 200);
   if (!cleaned) {
     return DEFAULT_EDITOR_FONT;
   }
@@ -261,6 +300,8 @@ export interface Preferences {
   fileIcons: FileIconMode;
   /** Sidebars, editor groups and the bottom panel as rounded panels with space between them. Any color theme. */
   roundedPanels: boolean;
+  /** A glow in the project's Welcome page color at the left of the window's top bar, like JetBrains IDEs. */
+  projectColorHeader: boolean;
   /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
   fileToolbar: FileToolbarPlacement;
   fileToolbarBreadcrumbs: boolean;
@@ -363,6 +404,10 @@ export interface Preferences {
   ignoreWhitespace: boolean;
   /** Every diff side by side or inline; Settings > Git and the diff toolbar both set it. */
   diffLayout: DiffLayout;
+  /** The Changes diff: HEAD and the work tree, or HEAD, the index and the work tree. */
+  changesDiffPanes: DiffPanes;
+  /** A merge commit's file changed on both sides: one parent against the result, or both parents around it. */
+  mergeDiffPanes: DiffPanes;
   logAllRefs: boolean;
   /** Fetch every remote in the background while the window is in use. */
   autoFetch: boolean;
@@ -502,6 +547,7 @@ export const defaultPreferences: Preferences = {
   uiFontSize: 13,
   fileIcons: "off",
   roundedPanels: false,
+  projectColorHeader: true,
   fileToolbar: "top",
   fileToolbarBreadcrumbs: true,
   fileToolbarBadges: true,
@@ -561,6 +607,8 @@ export const defaultPreferences: Preferences = {
   updateChannel: "auto",
   ignoreWhitespace: false,
   diffLayout: "sideBySide",
+  changesDiffPanes: "two",
+  mergeDiffPanes: "three",
   logAllRefs: true,
   autoFetch: true,
   autoFetchIntervalMinutes: DEFAULT_AUTO_FETCH_MINUTES,
@@ -676,9 +724,13 @@ export interface UiState {
   rightBarVisible: boolean;
   /** The left side's share of a side-by-side diff (see src/lib/diff/split.ts). */
   diffSplitRatio: number;
+  /** The panes' widths in a three-pane diff (see ui/web/src/lib/logic/threeSplit.ts). */
+  threePaneSplit: ThreeSplit;
   leftPanel: LeftPanel;
   sidebarWidth: number;
   explorerWidth: number;
+  /** Height of a commit's message and details above its changed files (History panel, commit tabs). */
+  commitInfoHeight: number;
   /** Height of the terminal panel. */
   terminalHeight: number;
   /** Width of the terminal list beside the panel. */
@@ -861,9 +913,11 @@ const STATE_KEYS = [
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
+  "threePaneSplit",
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
+  "commitInfoHeight",
   "terminalHeight",
   "terminalListWidth",
   "changesListWidth",
@@ -887,6 +941,7 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     uiFontSize: pickNumber(data.uiFontSize, defaultPreferences.uiFontSize, ...FONT_SIZE_RANGE.ui),
     fileIcons: pickOneOf(data.fileIcons, FILE_ICON_MODES, defaultPreferences.fileIcons),
     roundedPanels: pickBoolean(data.roundedPanels, defaultPreferences.roundedPanels),
+    projectColorHeader: pickBoolean(data.projectColorHeader, defaultPreferences.projectColorHeader),
     fileToolbar: pickOneOf(data.fileToolbar, FILE_TOOLBAR_PLACEMENTS, defaultPreferences.fileToolbar),
     fileToolbarBreadcrumbs: pickBoolean(data.fileToolbarBreadcrumbs, defaultPreferences.fileToolbarBreadcrumbs),
     fileToolbarBadges: pickBoolean(data.fileToolbarBadges, defaultPreferences.fileToolbarBadges),
@@ -894,7 +949,10 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     fileToolbarBlame: pickBoolean(data.fileToolbarBlame, defaultPreferences.fileToolbarBlame),
     fileToolbarCopyPath: pickBoolean(data.fileToolbarCopyPath, defaultPreferences.fileToolbarCopyPath),
     fileToolbarMarkdownView: pickBoolean(data.fileToolbarMarkdownView, defaultPreferences.fileToolbarMarkdownView),
-    fileToolbarMarkdownFormat: pickBoolean(data.fileToolbarMarkdownFormat, defaultPreferences.fileToolbarMarkdownFormat),
+    fileToolbarMarkdownFormat: pickBoolean(
+      data.fileToolbarMarkdownFormat,
+      defaultPreferences.fileToolbarMarkdownFormat,
+    ),
     editorFontSize: pickNumber(data.editorFontSize, defaultPreferences.editorFontSize, ...FONT_SIZE_RANGE.editor),
     editorLineHeight: roundTo(
       pickNumber(data.editorLineHeight, defaultPreferences.editorLineHeight, ...EDITOR_LINE_HEIGHT_RANGE),
@@ -910,16 +968,34 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     ),
     fontLigatures: pickBoolean(data.fontLigatures, defaultPreferences.fontLigatures),
     syntaxHighlighting: pickBoolean(data.syntaxHighlighting, defaultPreferences.syntaxHighlighting),
-    tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize) ? (data.tabSize as number) : defaultPreferences.tabSize,
+    tabSize: (TAB_SIZES as readonly unknown[]).includes(data.tabSize)
+      ? (data.tabSize as number)
+      : defaultPreferences.tabSize,
     detectIndentation: pickBoolean(data.detectIndentation, defaultPreferences.detectIndentation),
     wordWrap: pickBoolean(data.wordWrap, defaultPreferences.wordWrap),
     renderWhitespace: pickOneOf(data.renderWhitespace, RENDER_WHITESPACE_VALUES, defaultPreferences.renderWhitespace),
     editorCursorStyle: pickOneOf(data.editorCursorStyle, EDITOR_CURSOR_STYLES, defaultPreferences.editorCursorStyle),
-    editorCursorWidth: pickInteger(data.editorCursorWidth, defaultPreferences.editorCursorWidth, ...EDITOR_CURSOR_WIDTH_RANGE),
-    editorCursorBlinking: pickOneOf(data.editorCursorBlinking, EDITOR_CURSOR_BLINKINGS, defaultPreferences.editorCursorBlinking),
+    editorCursorWidth: pickInteger(
+      data.editorCursorWidth,
+      defaultPreferences.editorCursorWidth,
+      ...EDITOR_CURSOR_WIDTH_RANGE,
+    ),
+    editorCursorBlinking: pickOneOf(
+      data.editorCursorBlinking,
+      EDITOR_CURSOR_BLINKINGS,
+      defaultPreferences.editorCursorBlinking,
+    ),
     editorCursorSmoothCaret: pickBoolean(data.editorCursorSmoothCaret, defaultPreferences.editorCursorSmoothCaret),
-    editorCaretExtraTop: pickInteger(data.editorCaretExtraTop, defaultPreferences.editorCaretExtraTop, ...CARET_EXTRA_RANGE),
-    editorCaretExtraBottom: pickInteger(data.editorCaretExtraBottom, defaultPreferences.editorCaretExtraBottom, ...CARET_EXTRA_RANGE),
+    editorCaretExtraTop: pickInteger(
+      data.editorCaretExtraTop,
+      defaultPreferences.editorCaretExtraTop,
+      ...CARET_EXTRA_RANGE,
+    ),
+    editorCaretExtraBottom: pickInteger(
+      data.editorCaretExtraBottom,
+      defaultPreferences.editorCaretExtraBottom,
+      ...CARET_EXTRA_RANGE,
+    ),
     editorAutoCloseBrackets: pickBoolean(data.editorAutoCloseBrackets, defaultPreferences.editorAutoCloseBrackets),
     editorCompletion: pickBoolean(data.editorCompletion, defaultPreferences.editorCompletion),
     editorCompletionOnTyping: pickBoolean(data.editorCompletionOnTyping, defaultPreferences.editorCompletionOnTyping),
@@ -938,7 +1014,10 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     reopenWindows: pickBoolean(data.reopenWindows, defaultPreferences.reopenWindows),
     tabLimit: pickTabLimit(data.tabLimit),
     unloadHiddenTabs: pickBoolean(data.unloadHiddenTabs, defaultPreferences.unloadHiddenTabs),
-    unloadHiddenTabsMinutes: pickUnloadTabMinutes(data.unloadHiddenTabsMinutes, defaultPreferences.unloadHiddenTabsMinutes),
+    unloadHiddenTabsMinutes: pickUnloadTabMinutes(
+      data.unloadHiddenTabsMinutes,
+      defaultPreferences.unloadHiddenTabsMinutes,
+    ),
     splitEditor: pickBoolean(data.splitEditor, defaultPreferences.splitEditor),
     wrapTabs: pickBoolean(data.wrapTabs, defaultPreferences.wrapTabs),
     singleTabTitle: pickBoolean(data.singleTabTitle, defaultPreferences.singleTabTitle),
@@ -952,9 +1031,12 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     blameGutter: pickBoolean(data.blameGutter, defaultPreferences.blameGutter),
     mouseWheelZoom: pickBoolean(data.mouseWheelZoom, defaultPreferences.mouseWheelZoom),
     checkForUpdates: pickBoolean(data.checkForUpdates, defaultPreferences.checkForUpdates),
-    updateChannel: channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
+    updateChannel:
+      channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
     ignoreWhitespace: pickBoolean(data.ignoreWhitespace, defaultPreferences.ignoreWhitespace),
     diffLayout: pickOneOf(data.diffLayout, DIFF_LAYOUTS, defaultPreferences.diffLayout),
+    changesDiffPanes: pickOneOf(data.changesDiffPanes, DIFF_PANES, defaultPreferences.changesDiffPanes),
+    mergeDiffPanes: pickOneOf(data.mergeDiffPanes, DIFF_PANES, defaultPreferences.mergeDiffPanes),
     logAllRefs: pickBoolean(data.logAllRefs, defaultPreferences.logAllRefs),
     autoFetch: pickBoolean(data.autoFetch, defaultPreferences.autoFetch),
     autoFetchIntervalMinutes: pickInteger(
@@ -972,18 +1054,38 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     gitConsole: pickBoolean(data.gitConsole, defaultPreferences.gitConsole),
     terminalShell: pickShell(data.terminalShell),
     terminalFontFamily: normalizeTerminalFontFamily(data.terminalFontFamily),
-    terminalFontSize: pickNumber(data.terminalFontSize, defaultPreferences.terminalFontSize, ...FONT_SIZE_RANGE.terminal),
-    terminalLineHeight: pickTenths(data.terminalLineHeight, defaultPreferences.terminalLineHeight, ...TERMINAL_LINE_HEIGHT_RANGE),
+    terminalFontSize: pickNumber(
+      data.terminalFontSize,
+      defaultPreferences.terminalFontSize,
+      ...FONT_SIZE_RANGE.terminal,
+    ),
+    terminalLineHeight: pickTenths(
+      data.terminalLineHeight,
+      defaultPreferences.terminalLineHeight,
+      ...TERMINAL_LINE_HEIGHT_RANGE,
+    ),
     terminalLetterSpacing: pickInteger(
       data.terminalLetterSpacing,
       defaultPreferences.terminalLetterSpacing,
       ...TERMINAL_LETTER_SPACING_RANGE,
     ),
-    terminalFontWeight: pickOneOf(data.terminalFontWeight, TERMINAL_FONT_WEIGHTS, defaultPreferences.terminalFontWeight),
-    terminalFontWeightBold: pickOneOf(data.terminalFontWeightBold, TERMINAL_FONT_WEIGHTS, defaultPreferences.terminalFontWeightBold),
+    terminalFontWeight: pickOneOf(
+      data.terminalFontWeight,
+      TERMINAL_FONT_WEIGHTS,
+      defaultPreferences.terminalFontWeight,
+    ),
+    terminalFontWeightBold: pickOneOf(
+      data.terminalFontWeightBold,
+      TERMINAL_FONT_WEIGHTS,
+      defaultPreferences.terminalFontWeightBold,
+    ),
     terminalLigatures: pickBoolean(data.terminalLigatures, defaultPreferences.terminalLigatures),
     terminalNerdFontIcons: pickBoolean(data.terminalNerdFontIcons, defaultPreferences.terminalNerdFontIcons),
-    terminalCursorStyle: pickOneOf(data.terminalCursorStyle, TERMINAL_CURSOR_STYLES, defaultPreferences.terminalCursorStyle),
+    terminalCursorStyle: pickOneOf(
+      data.terminalCursorStyle,
+      TERMINAL_CURSOR_STYLES,
+      defaultPreferences.terminalCursorStyle,
+    ),
     terminalCursorBlink: pickBoolean(data.terminalCursorBlink, defaultPreferences.terminalCursorBlink),
     terminalScrollback: clampTerminalScrollback(data.terminalScrollback),
     terminalCopyOnSelect: pickBoolean(data.terminalCopyOnSelect, defaultPreferences.terminalCopyOnSelect),
@@ -1006,9 +1108,12 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
     aiAgentArgs: pickAgentArgs(data.aiAgentArgs),
     aiUsagePosition: pickOneOf(data.aiUsagePosition, AI_USAGE_POSITIONS, defaultPreferences.aiUsagePosition),
     computerAwakeMode: pickOneOf(data.computerAwakeMode, COMPUTER_AWAKE_MODES, defaultPreferences.computerAwakeMode),
-    aiUsageHidden: AI_USAGE_PROVIDERS.map((provider) => provider.id).filter((id) => pickStrings(data.aiUsageHidden).includes(id)),
+    aiUsageHidden: AI_USAGE_PROVIDERS.map((provider) => provider.id).filter((id) =>
+      pickStrings(data.aiUsageHidden).includes(id),
+    ),
     aiAgentCommands: pickAgentCommands(data.aiAgentCommands),
-    aiDefaultAgent: typeof data.aiDefaultAgent === "string" && AI_AGENT_ID.test(data.aiDefaultAgent) ? data.aiDefaultAgent : "",
+    aiDefaultAgent:
+      typeof data.aiDefaultAgent === "string" && AI_AGENT_ID.test(data.aiDefaultAgent) ? data.aiDefaultAgent : "",
     aiWorktreeLinks: Array.isArray(data.aiWorktreeLinks)
       ? pickStrings(data.aiWorktreeLinks)
           .map((name) => name.trim())
@@ -1016,12 +1121,31 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
           .slice(0, 20)
       : defaultPreferences.aiWorktreeLinks,
     memoryLogEnabled: pickBoolean(data.memoryLogEnabled, defaultPreferences.memoryLogEnabled),
-    memoryLogIntervalMs: pickInteger(data.memoryLogIntervalMs, defaultPreferences.memoryLogIntervalMs, ...MEMORY_LOG_INTERVAL_RANGE),
-    memoryLogThresholdMb: pickNumber(data.memoryLogThresholdMb, defaultPreferences.memoryLogThresholdMb, ...MEMORY_LOG_THRESHOLD_RANGE),
+    memoryLogIntervalMs: pickInteger(
+      data.memoryLogIntervalMs,
+      defaultPreferences.memoryLogIntervalMs,
+      ...MEMORY_LOG_INTERVAL_RANGE,
+    ),
+    memoryLogThresholdMb: pickNumber(
+      data.memoryLogThresholdMb,
+      defaultPreferences.memoryLogThresholdMb,
+      ...MEMORY_LOG_THRESHOLD_RANGE,
+    ),
     localHistoryEnabled: pickBoolean(data.localHistoryEnabled, defaultPreferences.localHistoryEnabled),
-    localHistoryDays: pickInteger(data.localHistoryDays, defaultPreferences.localHistoryDays, ...LOCAL_HISTORY_DAYS_RANGE),
-    localHistorySizeMb: pickInteger(data.localHistorySizeMb, defaultPreferences.localHistorySizeMb, ...LOCAL_HISTORY_SIZE_MB_RANGE),
-    notificationsDoNotDisturb: pickBoolean(data.notificationsDoNotDisturb, defaultPreferences.notificationsDoNotDisturb),
+    localHistoryDays: pickInteger(
+      data.localHistoryDays,
+      defaultPreferences.localHistoryDays,
+      ...LOCAL_HISTORY_DAYS_RANGE,
+    ),
+    localHistorySizeMb: pickInteger(
+      data.localHistorySizeMb,
+      defaultPreferences.localHistorySizeMb,
+      ...LOCAL_HISTORY_SIZE_MB_RANGE,
+    ),
+    notificationsDoNotDisturb: pickBoolean(
+      data.notificationsDoNotDisturb,
+      defaultPreferences.notificationsDoNotDisturb,
+    ),
   };
   const known = new Set(Object.keys(defaultPreferences));
   // Legacy browser storage mixed state into the same object; keep only real extras.
@@ -1060,7 +1184,9 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
     lastRunVersion: pickString(data.lastRunVersion),
     skippedVersion: pickString(data.skippedVersion),
     activeRepos: Object.fromEntries(
-      Object.entries(asObject(data.activeRepos)).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      Object.entries(asObject(data.activeRepos)).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string",
+      ),
     ),
     activeRepoAuto: pickBoolean(data.activeRepoAuto, true),
     scriptNodeVersions: Object.fromEntries(
@@ -1069,18 +1195,24 @@ export function parseState(value: unknown): { state: UiState; extra: Json } {
         .slice(-MAX_SCRIPT_NODE_VERSIONS),
     ),
     explorerOpen: pickBoolean(data.explorerOpen, true),
-    rightPanel: data.rightPanel === "ai" ? "ai" : "files",
+    rightPanel: data.rightPanel === "ai" || data.rightPanel === "notifications" ? data.rightPanel : "files",
     leftBarVisible: pickBoolean(data.leftBarVisible, true),
     rightBarVisible: pickBoolean(data.rightBarVisible, true),
     diffSplitRatio: pickNumber(data.diffSplitRatio, 0.5, 0.15, 0.85),
+    threePaneSplit: readThreeSplit(data.threePaneSplit),
     leftPanel: panel === "changes" || panel === "branches" || panel === "scripts" || panel === null ? panel : "changes",
     sidebarWidth: pickNumber(data.sidebarWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
     explorerWidth: pickNumber(data.explorerWidth, DEFAULT_PANEL_WIDTH, 120, 2000),
+    commitInfoHeight: pickNumber(data.commitInfoHeight, DEFAULT_COMMIT_INFO_HEIGHT, 80, 2000),
     terminalHeight: pickNumber(data.terminalHeight, DEFAULT_TERMINAL_HEIGHT, MIN_TERMINAL_HEIGHT, 2000),
     terminalListWidth: pickNumber(data.terminalListWidth, DEFAULT_TERMINAL_LIST_WIDTH, MIN_TERMINAL_LIST_WIDTH, 1200),
     changesListWidth: pickNumber(data.changesListWidth, DEFAULT_CHANGES_LIST_WIDTH, MIN_CHANGES_LIST_WIDTH, 2000),
     changesListVisible: pickBoolean(data.changesListVisible, true),
-    markdownPreviewRatio: pickNumber(data.markdownPreviewRatio, DEFAULT_MARKDOWN_PREVIEW_RATIO, ...MARKDOWN_PREVIEW_RATIO_RANGE),
+    markdownPreviewRatio: pickNumber(
+      data.markdownPreviewRatio,
+      DEFAULT_MARKDOWN_PREVIEW_RATIO,
+      ...MARKDOWN_PREVIEW_RATIO_RANGE,
+    ),
     recentCommands: pickRecentCommands(data.recentCommands),
     commitMessages: parseMessageHistory(data.commitMessages),
     openTabs: parseTabSessions(data.openTabs),
@@ -1105,9 +1237,11 @@ export const WINDOW_STATE_KEYS = [
   "leftBarVisible",
   "rightBarVisible",
   "diffSplitRatio",
+  "threePaneSplit",
   "leftPanel",
   "sidebarWidth",
   "explorerWidth",
+  "commitInfoHeight",
   "terminalHeight",
   "terminalListWidth",
   "markdownPreviewRatio",
@@ -1131,9 +1265,11 @@ export function stateToJson(state: UiState, extra: Json): Json {
     leftBarVisible: state.leftBarVisible,
     rightBarVisible: state.rightBarVisible,
     diffSplitRatio: state.diffSplitRatio,
+    threePaneSplit: [...state.threePaneSplit],
     leftPanel: state.leftPanel,
     sidebarWidth: state.sidebarWidth,
     explorerWidth: state.explorerWidth,
+    commitInfoHeight: state.commitInfoHeight,
     terminalHeight: state.terminalHeight,
     terminalListWidth: state.terminalListWidth,
     changesListWidth: state.changesListWidth,

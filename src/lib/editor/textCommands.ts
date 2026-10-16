@@ -119,7 +119,8 @@ export function toggleCase(state: EditorState): TransactionSpec | null {
 function lineSpan(state: EditorState, range: SelectionRange): { first: number; last: number } {
   const first = state.doc.lineAt(range.from).number;
   const endLine = state.doc.lineAt(range.to);
-  const last = !range.empty && range.to === endLine.from && endLine.number > first ? endLine.number - 1 : endLine.number;
+  const last =
+    !range.empty && range.to === endLine.from && endLine.number > first ? endLine.number - 1 : endLine.number;
   return { first, last };
 }
 

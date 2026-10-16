@@ -49,7 +49,11 @@ export function mergeRanges(ranges: readonly [number, number][]): [number, numbe
 }
 
 /** The changed lines `spans` (lines of `side`) pick in the hunks. */
-export function selectedChangeLines(hunks: readonly LineHunk[], side: DiffSide, spans: readonly LineSpan[]): LineSelection {
+export function selectedChangeLines(
+  hunks: readonly LineHunk[],
+  side: DiffSide,
+  spans: readonly LineSpan[],
+): LineSelection {
   const oldLines: [number, number][] = [];
   const newLines: [number, number][] = [];
   for (const [oldStart, oldEnd, newStart, newEnd] of hunks) {

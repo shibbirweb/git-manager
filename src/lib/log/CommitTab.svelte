@@ -1,5 +1,6 @@
 <!-- A commit in its own editor tab: the same details as the Log pane, with the whole editor area for the diff. -->
 <script lang="ts">
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import { parseCommitTabPath } from "$lib/stores/commitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import CommitDetails from "./CommitDetails.svelte";
@@ -28,17 +29,14 @@
   }
 </script>
 
-<div class="commit-tab">
+<Stack direction="row" grow role="region" label="Commit">
   {#if ref}
-    <CommitDetails repoPath={ref.repoRoot} commitId={ref.commitId} loadedShortId={shortId} onSelectCommit={openParent} {preferredFile} />
+    <CommitDetails
+      repoPath={ref.repoRoot}
+      commitId={ref.commitId}
+      loadedShortId={shortId}
+      onSelectCommit={openParent}
+      {preferredFile}
+    />
   {/if}
-</div>
-
-<style>
-  .commit-tab {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    min-width: 0;
-  }
-</style>
+</Stack>

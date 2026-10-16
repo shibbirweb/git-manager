@@ -54,7 +54,7 @@ sequenceDiagram
 | `src-tauri/src/git/cli.rs`, `git/cancel.rs` | `apply` for commands the user starts |
 | `src/lib/askpass/askpassPrompt.ts` | Reading prompts, remembering the password |
 | `src/lib/askpass/askpass.svelte.ts` | The queue of questions |
-| `src/lib/askpass/AskpassDialog.svelte` | The dialog, mounted once in `App.svelte` |
+| `src/lib/askpass/AskpassDialog.svelte` | The dialog, mounted once in `App.svelte`: the UI library's `Dialog` with `urgent`, so it shows over any other dialog and window shortcuts never act behind it |
 
 ## Design decisions
 

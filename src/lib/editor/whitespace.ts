@@ -38,7 +38,8 @@ export function whitespaceRuns(text: string, mode: RenderWhitespace): Whitespace
     while (index < text.length && text[index] === " ") {
       index++;
     }
-    const singleBetweenWords = index - from === 1 && from > 0 && index < text.length && !isBlank(text[from - 1]) && !isBlank(text[index]);
+    const singleBetweenWords =
+      index - from === 1 && from > 0 && index < text.length && !isBlank(text[from - 1]) && !isBlank(text[index]);
     if (mode === "boundary" && singleBetweenWords) {
       continue;
     }

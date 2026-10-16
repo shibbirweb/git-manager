@@ -25,7 +25,7 @@ flowchart LR
 
 - **Picking the preview.** `previewOf` in `views/files/mediaPreview.ts` maps the extension to a kind (`image` or `pdf`) and a media type. Then `FileView.load` does not read the file as text; it only bumps `previewToken`.
 - **Loading.** `MediaPreview.svelte` is imported with `{#await import(...)}`, so its code is a separate chunk loaded the first time. It mounts only while `isActive` is true, so a background tab holds nothing. It calls `openPreview({ kind: "worktree", filePath }, previewToken)`, shows the size from the stat, and sets the URL on an `<img>` or `<iframe>`.
-- **Images.** `fitZoom` shrinks big images to the canvas and keeps small ones at 100%; `nextZoom` walks `ZOOM_STEPS` from wherever the zoom is (a fitted 62% steps to 75% or 50%). Ctrl or Cmd with the wheel zooms, which covers a trackpad pinch too.
+- **Images.** The view is the UI library's `MediaView`. Its `fitZoom` (`logic/zoom.ts`) shrinks big images to the canvas and keeps small ones at 100%; `nextZoom` walks `ZOOM_STEPS` from wherever the zoom is (a fitted 62% steps to 75% or 50%). Ctrl or Cmd with the wheel zooms, which covers a trackpad pinch too.
 - **PDFs.** An `<iframe>` shows the URL and WebKit's own PDF viewer draws it. No PDF library is bundled.
 - **Reloading.** FileView's status effect calls `load(true)` when the file may have changed; that bumps `previewToken`, which becomes the URL's `v=` number, so WebKit loads the file again.
 
@@ -45,44 +45,45 @@ flowchart LR
 
 The shelf keeps a binary file only as a patch, and its new blob is usually not in the repository, so the scheme cannot address it: it keeps the "Binary file" message.
 
-`sideState` turns each side's source and stat into loading, ready, absent or error. An absent old side says "Not in" and the side's label (for example "Not in HEAD"); an absent new side says "Deleted". Each side's head shows its label and `sideInfo`: the pixel size and the file size.
+`sideState` turns each side's source and stat into loading, ready, absent or error. An absent old side says "Not in" and the side's label (for example "Not in HEAD"); an absent new side says "Deleted". `compareSide` hands each side to the library's `MediaCompare`; its head shows the label, pixel size and file size.
 
-The two images share one zoom. Fit uses `sharedFit`, the smallest fit of both, so they stay at one scale and a bigger new logo looks bigger. Scrolling one side scrolls the other to the same place in proportion (`syncedScroll`); an `echo` flag skips the scroll event that syncing causes. PDFs get two frames with their own viewers.
+The two images share one zoom. `MediaCompare` owns the zoom: Fit uses `sharedFit` (`ui/web/src/lib/logic/zoom.ts`), the smallest fit of both, so they stay at one scale and a bigger new logo looks bigger. Scrolling one side scrolls the other to the same place in proportion (`syncedScroll`); an `echo` flag skips the scroll event that syncing causes. PDFs get two frames with their own viewers.
 
 Callers whose sides can change on disk pass a `version` (ChangesDiff bumps it on every status change of the repository, the compare tabs on every load). The preview loads again when the sources or the version change, compared as a string key.
 
 ### Freeing
 
-DiffView mounts the preview inside a host bound to its width. A hidden tab is `display: none`, its width drops to 0, and the preview unmounts. Both viewers set their frames to `about:blank` on destroy, so WebKit drops the PDF document, and remove each image's `src`. The decoded pictures go with the elements.
+DiffView mounts the preview inside a host bound to its width. A hidden tab is `display: none`, its width drops to 0, and the preview unmounts. The library's `releaseMedia` action sets every frame to `about:blank` on destroy, so WebKit drops the PDF document, and removes each image's `src`. The decoded pictures go with the elements.
 
 ## Where the code lives
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/files/mediaPreview.ts` | `previewOf`, `ZOOM_STEPS`, `nextZoom`, `fitZoom`, `zoomLabel`, `tooLargeText` |
-| `src/lib/views/files/MediaPreview.svelte` | The file tab viewer: zoom bar, size, freeing |
+| `src/lib/views/files/mediaPreview.ts` | `previewOf`, `tooLargeText` |
+| `src/lib/views/files/MediaPreview.svelte` | The file tab viewer on the library's `MediaView` (zoom bar, size, freeing) |
 | `src/lib/views/files/FileView.svelte` | Chooses the preview, mounts it only while active, `previewToken` |
-| `src/lib/diff/binaryPreview.ts` | `PreviewSides`, `showsBinaryPreview`, `sideState`, `sideInfo`, `sharedFit`, `syncedScroll` |
-| `src/lib/diff/BinaryPreview.svelte` | The two sides of a diff |
-| `src/lib/diff/DiffView.svelte` | `previewSides`, the on-screen host |
+| `src/lib/diff/binaryPreview.ts` | `PreviewSides`, `showsBinaryPreview`, `sideState`, `compareSide` |
+| `src/lib/diff/BinaryPreview.svelte` | The two sides of a diff, on the library's `MediaCompare` |
+| `ui/web/src/lib/logic/zoom.ts`, `releaseMedia.ts` | Shared fit, synced scroll, the info line, freeing on unmount |
+| `src/lib/diff/DiffView.svelte` | `previewSides`; a Stack's `onshown` keeps the preview only while on screen |
 | `src/lib/views/files/previewScheme.ts` | `openPreview` |
 
 ## Design decisions
 
-**WebKit's PDF viewer, not pdf.js.** pdf.js would add megabytes of code and a worker, and keep rendering state in the page. The built-in viewer costs nothing until a PDF opens. It is checked on macOS. WebView2 on Windows has its own viewer, but WebKitGTK on Linux may show nothing; Reveal in File Explorer or Open Containing Folder stays as the way out.
+**WebKit's PDF viewer, not pdf.js.** pdf.js would add megabytes of code and a worker; the built-in viewer costs nothing until a PDF opens. It is checked on macOS. WebView2 on Windows has its own viewer, but WebKitGTK on Linux may show nothing; Reveal in File Explorer or Open Containing Folder stays as the way out.
 
-**Unmount on hide, not only on close.** Reading a file again when you come back is cheap; keeping a few decoded 20-megapixel photos in background tabs is not.
+**Unmount on hide, not only on close.** Reading a file again is cheap; keeping decoded 20-megapixel photos in background tabs is not.
 
 **SVG stays in the editor.** It is text that people edit, so its diff is a text diff.
 
 **One scale for both sides.** Fitting each image on its own would make a 128 px and a 256 px logo look the same size, which hides the change.
 
-**A code chunk cannot be unloaded.** Browsers keep an imported module for the life of the page, so the modules are small and hold no data; the pictures and documents are what gets freed.
+**A code chunk cannot be unloaded.** Browsers keep an imported module for the life of the page, so the modules hold no data; the pictures and documents are what gets freed.
 
 ## Tests
 
-- `src/lib/views/files/mediaPreview.test.ts`: which files get a preview, the zoom steps, fitting, the label and the too big message.
-- `src/lib/diff/binaryPreview.test.ts`: when the preview shows, absent sides, side states, the info line, the shared fit and synced scroll.
+- `src/lib/views/files/mediaPreview.test.ts`: which files get a preview and the too big message.
+- `src/lib/diff/binaryPreview.test.ts`: when the preview shows, absent sides, side states and `compareSide` (the library tests the fit, scroll and freeing).
 - The scheme's own tests are listed in [How the Preview Scheme Works](How-the-Preview-Scheme-Works.md).
 
 How the viewers look and that memory goes down after closing a tab need a check in the app, with the status bar's memory readout ([How Memory Is Measured](How-Memory-Is-Measured.md)).

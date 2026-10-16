@@ -8,3 +8,10 @@ node_modules
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Build output of the SwiftUI experiment, ignored here too: its own swiftui/.gitignore lives only on the
+# feat/GM-31-swiftui-skeleton branch, so on other branches the leftover folders would show as untracked.
+/swiftui/.build
+/swiftui/.swiftpm
+/swiftui/build
+/swiftui/bridge/target

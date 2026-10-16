@@ -1,5 +1,6 @@
-// The notification history behind the status bar bell (NotificationBell.svelte). The toast
-// store records every message here; nothing is saved, so the list starts empty each launch.
+// The notification history behind the Notifications panel (NotificationsPanel.svelte, opened from the bell in the
+// right activity bar or the status bar). The toast store records every message here; nothing is saved, so the list
+// starts empty each launch.
 
 import {
   actionAvailable,
@@ -7,6 +8,7 @@ import {
   dropStaleActions,
   markActionUsed,
   markAllRead,
+  removeNotification,
   type NotificationAction,
   type NotificationEntry,
   type NotificationKind,
@@ -16,15 +18,23 @@ import {
 
 class NotificationStore {
   items = $state.raw<NotificationEntry[]>([]);
-  /** The bell's popup is open. */
+  /** The Notifications panel is shown (editorSettingsSync keeps it in step with the right sidebar). */
   open = $state(false);
   /** Mirrors the Do Not Disturb setting (App.svelte keeps it in step). */
   doNotDisturb = $state(false);
   unread = $derived(unreadAlerts(this.items));
+  /** Unread when the panel opened, or arrived while it is shown: the panel marks these with a dot. */
+  fresh = $state.raw<ReadonlySet<number>>(new Set());
   private nextId = 1;
 
   /** Records a message; returns its id. */
-  record(kind: NotificationKind, title: string, detail: string | null, action: NotificationAction | null): number {
+  record(
+    kind: NotificationKind,
+    title: string,
+    detail: string | null,
+    action: NotificationAction | null,
+    source: string | null = null,
+  ): number {
     const id = this.nextId++;
     const now = Date.now();
     const entry: NotificationEntry = {
@@ -32,6 +42,7 @@ class NotificationStore {
       kind,
       title,
       detail,
+      source,
       time: now,
       // A message that arrives while the list is open is seen at once.
       read: this.open,
@@ -39,12 +50,15 @@ class NotificationStore {
       actionUsed: false,
     };
     this.items = addNotification(dropStaleActions(this.items, now), entry);
+    if (this.open) {
+      this.fresh = new Set([...this.fresh, id]);
+    }
     return id;
   }
 
   /** Whether a message of `kind` shows as a toast now. */
   popsUp(kind: NotificationKind): boolean {
-    return shouldPopUp(kind, this.doNotDisturb);
+    return shouldPopUp(kind, this.doNotDisturb, this.open);
   }
 
   actionAvailable(entry: NotificationEntry): boolean {
@@ -65,19 +79,26 @@ class NotificationStore {
     this.items = markActionUsed(this.items, notificationId);
   }
 
-  toggle(): void {
-    this.setOpen(!this.open);
-  }
-
   setOpen(open: boolean): void {
+    if (open === this.open) {
+      return;
+    }
     this.open = open;
     if (open) {
+      this.fresh = new Set(this.items.filter((entry) => !entry.read).map((entry) => entry.id));
       this.items = markAllRead(this.items);
+    } else {
+      this.fresh = new Set();
     }
+  }
+
+  remove(notificationId: number): void {
+    this.items = removeNotification(this.items, notificationId);
   }
 
   clear(): void {
     this.items = [];
+    this.fresh = new Set();
   }
 }
 

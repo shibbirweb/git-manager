@@ -188,7 +188,10 @@ describe("editor groups", () => {
   it("marks unsaved edits in every group", () => {
     const state = openInGroup(split(), 1, "/a.ts", true);
     const dirty = setDirtyEverywhere(state, "/a.ts", true);
-    expect(dirty.groups.map((group) => group.tabs.find((entry) => entry.path === "/a.ts")?.dirty)).toEqual([true, true]);
+    expect(dirty.groups.map((group) => group.tabs.find((entry) => entry.path === "/a.ts")?.dirty)).toEqual([
+      true,
+      true,
+    ]);
     expect(setDirtyEverywhere(dirty, "/a.ts", true)).toBe(dirty);
   });
 
@@ -246,7 +249,13 @@ describe("editor groups", () => {
     ];
     const state = restoredGroups(
       groups,
-      { kind: "split", direction: "down", ratio: 0.25, first: { kind: "group", groupId: 0 }, second: { kind: "group", groupId: 1 } },
+      {
+        kind: "split",
+        direction: "down",
+        ratio: 0.25,
+        first: { kind: "group", groupId: 0 },
+        second: { kind: "group", groupId: 1 },
+      },
       0,
     );
     expect(groupRects(state.layout).get(1)).toEqual({ x: 0, y: 0.25, width: 1, height: 0.75 });

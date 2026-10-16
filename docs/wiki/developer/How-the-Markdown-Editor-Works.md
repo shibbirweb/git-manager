@@ -15,10 +15,11 @@ flowchart TD
   FV["FileView (Markdown tab)"] --> TB["MarkdownToolbar"]
   FV --> CM["CodeMirror text editor<br/>(the real file)"]
   FV -->|"split, tab on screen"| MP["MarkdownPreview.svelte"]
+  MP --> LP["library MarkdownPreview"]
   FV -->|"preview, tab on screen"| RV["RichMarkdownView.svelte"]
   TB -->|"text modes: format.ts"| CM
   TB -->|"preview mode: onRichFormat"| RV
-  MP --> DOM["previewDom.ts"]
+  LP --> DOM["previewDom.ts"]
   DOM --> R["render.ts (markdown-it)"]
   DOM --> S["sanitize.ts (DOMPurify)"]
   DOM --> M["mermaid.ts"]
@@ -30,7 +31,7 @@ The text editor always exists, hidden in the Rich Editor, so save, undo, dirty s
 
 ### The toolbar and keys
 
-`MarkdownToolbar.svelte` runs pure commands from `markdown/format.ts` (`toggleInline`, `toggleLink`, `setHeading`, `toggleLinePrefix`, `toggleCodeBlock`, `insertTable`). Each returns one `TransactionSpec`: one undo step, every cursor. In Preview mode the buttons call `onRichFormat` instead. The view switch sits in FileView's path bar. A Markdown editor adds Cmd+B (bold), Cmd+I (italic, in place of Select Parent Syntax) and Cmd+K (link).
+`MarkdownToolbar.svelte` runs pure commands from `markdown/format.ts` and `formatLines.ts` (`toggleInline`, `toggleLink`, `setHeading`, `toggleLinePrefix`, `toggleCodeBlock`, `insertTable`). Each returns one `TransactionSpec`: one undo step, every cursor. In Preview mode the buttons call `onRichFormat` instead. The view switch sits in FileView's path bar. A Markdown editor adds Cmd+B (bold), Cmd+I (italic, in place of Select Parent Syntax) and Cmd+K (link).
 
 ### The preview pipeline
 
@@ -76,7 +77,7 @@ Memory follows the screen, not the file length:
 - **Hidden tabs free their preview.** `FileView` mounts `MarkdownPreview` or `RichMarkdownView` only while `isActive`, and keeps the place (`onLeave`, `initialLine`, `richScroll`).
 - **Diagrams and images draw near the screen only.** `nearScreen.ts` has a `NearScreen` class: each preview or rich editor makes one, with one `IntersectionObserver` and a margin of one screen. Far diagrams are freed by `releaseDiagram`, which keeps their height; unused image data URLs are dropped.
 - **The mermaid cache is capped** at 24 entries and 2,000,000 characters and goes with the diagram frame.
-- **Off-screen blocks are not painted:** `content-visibility: auto` in `body.css` and `RichMarkdownView`.
+- **Off-screen blocks are not painted:** `content-visibility: auto` in the library's `markdown.css` and `markdown-rich.css`.
 
 Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 SVGs and 8,562 elements.
 
@@ -85,12 +86,14 @@ Headless Chrome, 40 diagrams: 1 to 2 SVGs and 442 to 644 elements instead of 40 
 | File | What it does |
 | --- | --- |
 | `src/lib/views/files/FileView.svelte` | Mode and its switch, split size, mounting, keys |
-| `src/lib/views/files/MarkdownToolbar.svelte`, `MarkdownPreview.svelte` | Toolbar; preview timing, scroll sync, clicks |
-| `src/lib/markdown/format.ts` | Text formatting commands |
-| `src/lib/markdown/render.ts`, `engine.ts`, `previewDom.ts`, `sanitize.ts` | Rendering, the lazy chunk, segment updates, DOMPurify |
-| `src/lib/markdown/mermaid.ts`, `nearScreen.ts` | Diagrams (through a hidden frame), near-screen drawing |
-| `src/lib/markdown/links.ts`, `slug.ts`, `highlight.ts` | Links and images, heading ids, code colors |
-| `src/lib/markdown/scrollSync.ts`, `editorScroll.ts`, `body.css` | Scroll sync, shared page styles |
+| `src/lib/views/files/MarkdownToolbar.svelte`, `MarkdownPreview.svelte` | Toolbar; the app's preview side |
+| `ui/web/src/lib/components/MarkdownPreview.svelte` | Render timing, scroll sync, clicks |
+| `ui/web/src/lib/markdown/format.ts`, `formatLines.ts` | Formatting commands |
+| `ui/web/src/lib/markdown/render.ts`, `engine.ts`, `previewDom.ts`, `previewImages.ts`, `sanitize.ts` | Rendering, the lazy chunk, segment updates, DOMPurify |
+| `ui/web/src/lib/markdown/mermaid.ts`, `nearScreen.ts` | Diagrams (through a hidden frame), near-screen drawing |
+| `ui/web/src/lib/markdown/links.ts`, `slug.ts`, `highlight.ts` | Links and images, heading ids, code colors |
+| `ui/web/src/lib/markdown/scrollSync.ts`, `editorScroll.ts`, `previewScrollSync.ts` | Scroll sync (the page styles are the UI library's `markdown.css`) |
+| `src/lib/markdown/markdownContext.ts` | Dark page, links, images, diagram frame |
 | `src-tauri/src/commands/files.rs`, `images.rs` | `read_image_data_url`, local images as data URLs |
 
 ## Design decisions

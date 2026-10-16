@@ -2,7 +2,7 @@
 
 Recent Files is a small popup that lists the files you worked on last, newest first. It works like **Recent Files** in JetBrains IDEs such as PhpStorm: press Cmd+E, then Enter, and you are back in the file you had open before this one.
 
-[TODO:recent-files.png]
+![Recent Files with the last files opened](../images/recent-files.png)
 
 ## Open it
 

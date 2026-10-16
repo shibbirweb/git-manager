@@ -5,18 +5,12 @@
 <script lang="ts">
   import { localKeys } from "$lib/commands/commandRuntime";
   import type { EditorState, TransactionSpec } from "@codemirror/state";
-  import {
-    insertTable,
-    setHeading,
-    toggleCodeBlock,
-    toggleInline,
-    toggleLinePrefix,
-    toggleLink,
-  } from "$lib/markdown/format";
-  import type { RichAction } from "$lib/markdown/richEditor";
+  import { toggleInline, toggleLink } from "@git-manager/ui/markdown/format";
+  import { insertTable, setHeading, toggleCodeBlock, toggleLinePrefix } from "@git-manager/ui/markdown/formatLines";
+  import type { RichAction } from "@git-manager/ui/markdown/richEditor";
   import type { MarkdownViewMode } from "$lib/stores/settings.svelte";
-  import Icon from "$lib/ui/Icon.svelte";
-  import type { IconName } from "$lib/ui/icons";
+  import FormatToolbar from "@git-manager/ui/components/FormatToolbar.svelte";
+  import type { IconName } from "@git-manager/ui/icons";
   import { contextMenu } from "$lib/ui/menu.svelte";
 
   type FormatCommand = (state: EditorState) => TransactionSpec;
@@ -44,21 +38,68 @@
   }
 
   const inlineButtons: FormatButton[] = [
-    { icon: "bold", label: `Bold (${localKeys("CmdOrCtrl+B")})`, command: (state) => toggleInline(state, "bold"), richAction: "bold" },
-    { icon: "italic", label: `Italic (${localKeys("CmdOrCtrl+I")})`, command: (state) => toggleInline(state, "italic"), richAction: "italic" },
-    { icon: "strikethrough", label: "Strikethrough", command: (state) => toggleInline(state, "strikethrough"), richAction: "strikethrough" },
+    {
+      icon: "bold",
+      label: `Bold (${localKeys("CmdOrCtrl+B")})`,
+      command: (state) => toggleInline(state, "bold"),
+      richAction: "bold",
+    },
+    {
+      icon: "italic",
+      label: `Italic (${localKeys("CmdOrCtrl+I")})`,
+      command: (state) => toggleInline(state, "italic"),
+      richAction: "italic",
+    },
+    {
+      icon: "strikethrough",
+      label: "Strikethrough",
+      command: (state) => toggleInline(state, "strikethrough"),
+      richAction: "strikethrough",
+    },
     { icon: "code", label: "Inline code", command: (state) => toggleInline(state, "code"), richAction: "code" },
     { icon: "link", label: `Link (${localKeys("CmdOrCtrl+K")})`, command: toggleLink, richAction: null },
   ];
 
   const blockButtons: FormatButton[] = [
-    { icon: "list", label: "Bulleted list", command: (state) => toggleLinePrefix(state, "bullet"), richAction: "bullet" },
-    { icon: "list-ordered", label: "Numbered list", command: (state) => toggleLinePrefix(state, "ordered"), richAction: "ordered" },
-    { icon: "list-checks", label: "Task list", command: (state) => toggleLinePrefix(state, "task"), richAction: "task" },
+    {
+      icon: "list",
+      label: "Bulleted list",
+      command: (state) => toggleLinePrefix(state, "bullet"),
+      richAction: "bullet",
+    },
+    {
+      icon: "list-ordered",
+      label: "Numbered list",
+      command: (state) => toggleLinePrefix(state, "ordered"),
+      richAction: "ordered",
+    },
+    {
+      icon: "list-checks",
+      label: "Task list",
+      command: (state) => toggleLinePrefix(state, "task"),
+      richAction: "task",
+    },
     { icon: "quote", label: "Quote", command: (state) => toggleLinePrefix(state, "quote"), richAction: "quote" },
     { icon: "code-block", label: "Code block", command: toggleCodeBlock, richAction: "codeBlock" },
     { icon: "table", label: "Table", command: (state) => insertTable(state), richAction: "table" },
   ];
+
+  // Inline tools, Heading with its menu, a divider, then the block tools.
+  const items = [
+    ...inlineButtons.map((button) => ({ id: button.icon, icon: button.icon, label: button.label })),
+    { id: "heading", icon: "heading" as const, label: "Heading", menu: true },
+    null,
+    ...blockButtons.map((button) => ({ id: button.icon, icon: button.icon, label: button.label })),
+  ];
+
+  function act(id: string, element: HTMLElement): void {
+    const button = [...inlineButtons, ...blockButtons].find((entry) => entry.icon === id);
+    if (button) {
+      press(button);
+    } else if (id === "heading") {
+      openHeadings(element);
+    }
+  }
 
   function press(button: FormatButton): void {
     if (!rich) {
@@ -70,12 +111,10 @@
     }
   }
 
-  /** The editor keeps its focus and selection while a button is clicked. */
-  function keepFocus(event: MouseEvent): void {
-    event.preventDefault();
-  }
-
-  function openHeadings(event: MouseEvent): void {
+  /** The heading levels in a menu under the Heading tool. */
+  function openHeadings(element: HTMLElement): void {
+    const rect = element.getBoundingClientRect();
+    const event = new MouseEvent("contextmenu", { clientX: rect.left, clientY: rect.bottom });
     const headings: RichAction[] = ["heading1", "heading2", "heading3"];
     const levels = [1, 2, 3].map((level) => ({
       label: `Heading ${level}`,
@@ -84,81 +123,12 @@
     contextMenu.open(event, [
       ...levels,
       { separator: true },
-      { label: "Normal text", action: () => (rich ? onRichFormat("paragraph") : onFormat((state) => setHeading(state, 0))) },
+      {
+        label: "Normal text",
+        action: () => (rich ? onRichFormat("paragraph") : onFormat((state) => setHeading(state, 0))),
+      },
     ]);
   }
 </script>
 
-<div class="markdown-toolbar" role="toolbar" aria-label="Markdown">
-  <div class="format">
-    {#each inlineButtons as button (button.icon)}
-      <button class="tool" onmousedown={keepFocus} onclick={() => press(button)} title={button.label} aria-label={button.label}>
-        <Icon name={button.icon} size={14} />
-      </button>
-    {/each}
-    <button class="tool heading" onmousedown={keepFocus} onclick={openHeadings} title="Heading" aria-label="Heading" aria-haspopup="menu">
-      <Icon name="heading" size={14} />
-      <Icon name="chevron-down" size={10} />
-    </button>
-    <span class="divider" aria-hidden="true"></span>
-    {#each blockButtons as button (button.icon)}
-      <button class="tool" onmousedown={keepFocus} onclick={() => press(button)} title={button.label} aria-label={button.label}>
-        <Icon name={button.icon} size={14} />
-      </button>
-    {/each}
-  </div>
-</div>
-
-<style>
-  .markdown-toolbar {
-    flex: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 2px 12px;
-    min-height: 28px;
-    padding: 2px 10px 2px 6px;
-    border-bottom: 1px solid var(--border);
-    background: var(--panel);
-  }
-
-  .format {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1px;
-    min-width: 0;
-  }
-
-  .tool {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-    height: 22px;
-    min-width: 24px;
-    padding: 0 5px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-  }
-
-  .tool:hover:not(:disabled) {
-    background: var(--hover);
-    color: var(--text);
-  }
-
-  .tool:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
-  .divider {
-    width: 1px;
-    height: 14px;
-    margin: 0 4px;
-    background: var(--border-strong);
-  }
-</style>
+<FormatToolbar label="Markdown" {items} onaction={act} />

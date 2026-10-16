@@ -34,7 +34,11 @@ export interface FileToolbarParts {
   markdownFormat: boolean;
 }
 
-export function fileToolbarParts(placement: FileToolbarPlacement, switches: FileToolbarSwitches, file: FileToolbarFile): FileToolbarParts {
+export function fileToolbarParts(
+  placement: FileToolbarPlacement,
+  switches: FileToolbarSwitches,
+  file: FileToolbarFile,
+): FileToolbarParts {
   const placed = placement !== "none";
   const parts = {
     breadcrumbs: placed && switches.breadcrumbs,

@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { PathMove } from "$lib/stores/workspacePaths";
 import { ToolArgError } from "./args";
-import { copyPaths, createFile, createFolder, type FileToolDeps, movePaths, renamePath, requiredPaths, trashPaths, unsavedProblem } from "./fileTools";
+import {
+  copyPaths,
+  createFile,
+  createFolder,
+  type FileToolDeps,
+  movePaths,
+  renamePath,
+  requiredPaths,
+  trashPaths,
+  unsavedProblem,
+} from "./fileTools";
 import { FILE_TOOL_MAX_PATHS } from "./toolDefs";
 
 const ROOT = "/work/shop";
@@ -17,7 +27,8 @@ function fakeDeps(options: { dirty?: string[]; folders?: string[] } = {}) {
   const forgotten: string[][] = [];
   const opened: string[] = [];
   const deps: FileToolDeps = {
-    folders: () => (options.folders ?? [ROOT, OTHER]).map((root) => ({ root, name: root.slice(root.lastIndexOf("/") + 1) })),
+    folders: () =>
+      (options.folders ?? [ROOT, OTHER]).map((root) => ({ root, name: root.slice(root.lastIndexOf("/") + 1) })),
     dirtyPaths: () => options.dirty ?? [],
     fileCreate: async (workspaceRoots, parentDir, name, isDir) => {
       calls.push(`create ${workspaceRoots.join(",")} ${parentDir} ${name} ${isDir}`);
@@ -33,7 +44,10 @@ function fakeDeps(options: { dirty?: string[]; folders?: string[] } = {}) {
     },
     fileMove: async (_workspaceRoots, sourcePaths, targetDir) => {
       calls.push(`move ${sourcePaths.join(",")} ${targetDir}`);
-      return sourcePaths.map((sourcePath) => ({ from: sourcePath, to: `${targetDir}/${sourcePath.slice(sourcePath.lastIndexOf("/") + 1)}` }));
+      return sourcePaths.map((sourcePath) => ({
+        from: sourcePath,
+        to: `${targetDir}/${sourcePath.slice(sourcePath.lastIndexOf("/") + 1)}`,
+      }));
     },
     fileTrash: async (_workspaceRoots, entryPaths) => {
       calls.push(`trash ${entryPaths.join(",")}`);
@@ -95,7 +109,10 @@ describe("create_file and create_folder", () => {
 
   it("leaves the file closed with open false", async () => {
     const fake = fakeDeps();
-    expect(await createFile(fake.deps, { filePath: `${OTHER}/a.md`, open: false })).toEqual({ filePath: `${OTHER}/a.md`, opened: false });
+    expect(await createFile(fake.deps, { filePath: `${OTHER}/a.md`, open: false })).toEqual({
+      filePath: `${OTHER}/a.md`,
+      opened: false,
+    });
     expect(fake.opened).toEqual([]);
   });
 
@@ -107,9 +124,13 @@ describe("create_file and create_folder", () => {
 
   it("refuses paths outside the workspace, the folders themselves and no workspace", async () => {
     const fake = fakeDeps();
-    await expect(createFile(fake.deps, { filePath: "/etc/x" })).rejects.toThrow("Not inside an open workspace folder: /etc/x");
+    await expect(createFile(fake.deps, { filePath: "/etc/x" })).rejects.toThrow(
+      "Not inside an open workspace folder: /etc/x",
+    );
     await expect(createFolder(fake.deps, { folderPath: ROOT })).rejects.toThrow("is a workspace folder");
-    await expect(createFile(fakeDeps({ folders: [] }).deps, { filePath: `${ROOT}/x` })).rejects.toThrow("No folder is open");
+    await expect(createFile(fakeDeps({ folders: [] }).deps, { filePath: `${ROOT}/x` })).rejects.toThrow(
+      "No folder is open",
+    );
     await expect(createFile(fake.deps, { filePath: "relative.ts" })).rejects.toThrow(ToolArgError);
     expect(fake.calls).toEqual([]);
   });
@@ -128,24 +149,35 @@ describe("rename_path", () => {
 
   it("does nothing for the same name", async () => {
     const fake = fakeDeps();
-    expect(await renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "a.ts" })).toEqual({ from: `${ROOT}/a.ts`, to: `${ROOT}/a.ts` });
+    expect(await renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "a.ts" })).toEqual({
+      from: `${ROOT}/a.ts`,
+      to: `${ROOT}/a.ts`,
+    });
     expect(fake.calls).toEqual([]);
   });
 
   it("refuses unsaved edits, workspace folders and outside paths", async () => {
     const dirty = fakeDeps({ dirty: [`${ROOT}/src/cart.ts`] });
-    await expect(renamePath(dirty.deps, { entryPath: `${ROOT}/src`, newName: "source" })).rejects.toThrow("Save or revert cart.ts first");
+    await expect(renamePath(dirty.deps, { entryPath: `${ROOT}/src`, newName: "source" })).rejects.toThrow(
+      "Save or revert cart.ts first",
+    );
     expect(dirty.calls).toEqual([]);
     const fake = fakeDeps();
-    await expect(renamePath(fake.deps, { entryPath: ROOT, newName: "x" })).rejects.toThrow("shop is a workspace folder and cannot be renamed");
-    await expect(renamePath(fake.deps, { entryPath: "/tmp/a", newName: "b" })).rejects.toThrow("Not inside an open workspace folder");
+    await expect(renamePath(fake.deps, { entryPath: ROOT, newName: "x" })).rejects.toThrow(
+      "shop is a workspace folder and cannot be renamed",
+    );
+    await expect(renamePath(fake.deps, { entryPath: "/tmp/a", newName: "b" })).rejects.toThrow(
+      "Not inside an open workspace folder",
+    );
     await expect(renamePath(fake.deps, { entryPath: `${ROOT}/a` })).rejects.toThrow('"newName" is required');
   });
 
   it("counts the bytes of a name, as the file system does", async () => {
     const fake = fakeDeps();
     // 128 characters, 256 bytes: short enough by characters, too long on disk.
-    await expect(renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "é".repeat(128) })).rejects.toThrow("at most 255 bytes");
+    await expect(renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "é".repeat(128) })).rejects.toThrow(
+      "at most 255 bytes",
+    );
     expect(fake.calls).toEqual([]);
     await renamePath(fake.deps, { entryPath: `${ROOT}/a.ts`, newName: "é".repeat(127) });
     expect(fake.calls).toHaveLength(1);
@@ -155,7 +187,10 @@ describe("rename_path", () => {
 describe("copy_paths", () => {
   it("copies the top-level sources and refreshes", async () => {
     const fake = fakeDeps();
-    const result = await copyPaths(fake.deps, { paths: [`${ROOT}/src`, `${ROOT}/src/a.ts`, `${OTHER}/b.md`], targetFolder: `${ROOT}/lib` });
+    const result = await copyPaths(fake.deps, {
+      paths: [`${ROOT}/src`, `${ROOT}/src/a.ts`, `${OTHER}/b.md`],
+      targetFolder: `${ROOT}/lib`,
+    });
     expect(result).toEqual({ created: [`${ROOT}/lib/src`, `${ROOT}/lib/b.md`] });
     expect(fake.calls).toEqual([`copy ${ROOT}/src,${OTHER}/b.md ${ROOT}/lib`]);
     expect(fake.written).toEqual([[`${ROOT}/lib/src`, `${ROOT}/lib/b.md`]]);
@@ -164,14 +199,22 @@ describe("copy_paths", () => {
 
   it("copies even with unsaved edits, since the original stays", async () => {
     const fake = fakeDeps({ dirty: [`${ROOT}/a.ts`] });
-    expect(await copyPaths(fake.deps, { paths: [`${ROOT}/a.ts`], targetFolder: ROOT })).toEqual({ created: [`${ROOT}/a.ts`] });
+    expect(await copyPaths(fake.deps, { paths: [`${ROOT}/a.ts`], targetFolder: ROOT })).toEqual({
+      created: [`${ROOT}/a.ts`],
+    });
   });
 
   it("refuses a folder into itself and outside paths", async () => {
     const fake = fakeDeps();
-    await expect(copyPaths(fake.deps, { paths: [`${ROOT}/src`], targetFolder: `${ROOT}/src/lib` })).rejects.toThrow("cannot be copied into itself");
-    await expect(copyPaths(fake.deps, { paths: ["/tmp/a"], targetFolder: ROOT })).rejects.toThrow("Not inside an open workspace folder: /tmp/a");
-    await expect(copyPaths(fake.deps, { paths: [`${ROOT}/a`], targetFolder: "/tmp" })).rejects.toThrow("Not inside an open workspace folder: /tmp");
+    await expect(copyPaths(fake.deps, { paths: [`${ROOT}/src`], targetFolder: `${ROOT}/src/lib` })).rejects.toThrow(
+      "cannot be copied into itself",
+    );
+    await expect(copyPaths(fake.deps, { paths: ["/tmp/a"], targetFolder: ROOT })).rejects.toThrow(
+      "Not inside an open workspace folder: /tmp/a",
+    );
+    await expect(copyPaths(fake.deps, { paths: [`${ROOT}/a`], targetFolder: "/tmp" })).rejects.toThrow(
+      "Not inside an open workspace folder: /tmp",
+    );
     expect(fake.calls).toEqual([]);
   });
 });
@@ -201,10 +244,16 @@ describe("move_paths", () => {
 
   it("refuses unsaved edits, workspace folders and a folder into itself", async () => {
     const dirty = fakeDeps({ dirty: [`${ROOT}/src/a.ts`, `${ROOT}/src/b.ts`] });
-    await expect(movePaths(dirty.deps, { paths: [`${ROOT}/src`], targetFolder: `${ROOT}/lib` })).rejects.toThrow("Save or revert 2 files first");
+    await expect(movePaths(dirty.deps, { paths: [`${ROOT}/src`], targetFolder: `${ROOT}/lib` })).rejects.toThrow(
+      "Save or revert 2 files first",
+    );
     const fake = fakeDeps();
-    await expect(movePaths(fake.deps, { paths: [OTHER], targetFolder: ROOT })).rejects.toThrow("docs is a workspace folder and cannot be moved");
-    await expect(movePaths(fake.deps, { paths: [`${ROOT}/src`], targetFolder: `${ROOT}/src/x` })).rejects.toThrow("cannot move into itself");
+    await expect(movePaths(fake.deps, { paths: [OTHER], targetFolder: ROOT })).rejects.toThrow(
+      "docs is a workspace folder and cannot be moved",
+    );
+    await expect(movePaths(fake.deps, { paths: [`${ROOT}/src`], targetFolder: `${ROOT}/src/x` })).rejects.toThrow(
+      "cannot move into itself",
+    );
     expect([...dirty.calls, ...fake.calls]).toEqual([]);
   });
 });
@@ -225,8 +274,12 @@ describe("trash_paths", () => {
     const dirty = fakeDeps({ dirty: [`${ROOT}/src/cart.ts`] });
     await expect(trashPaths(dirty.deps, { paths: [`${ROOT}/src`] })).rejects.toThrow("Save or revert cart.ts first");
     const fake = fakeDeps();
-    await expect(trashPaths(fake.deps, { paths: [ROOT] })).rejects.toThrow("shop is a workspace folder and cannot be moved to the Trash");
-    await expect(trashPaths(fake.deps, { paths: ["/Users/me/.ssh"] })).rejects.toThrow("Not inside an open workspace folder");
+    await expect(trashPaths(fake.deps, { paths: [ROOT] })).rejects.toThrow(
+      "shop is a workspace folder and cannot be moved to the Trash",
+    );
+    await expect(trashPaths(fake.deps, { paths: ["/Users/me/.ssh"] })).rejects.toThrow(
+      "Not inside an open workspace folder",
+    );
     expect([...dirty.calls, ...fake.calls]).toEqual([]);
     expect(fake.closedUnder).toEqual([]);
   });

@@ -4,16 +4,7 @@
 
 import type { AiPermissionMode } from "$lib/stores/settingsData";
 
-export type AgentId =
-  | "claude"
-  | "codex"
-  | "gemini"
-  | "opencode"
-  | "cursor"
-  | "copilot"
-  | "aider"
-  | "amp"
-  | "qwen";
+export type AgentId = "claude" | "codex" | "gemini" | "opencode" | "cursor" | "copilot" | "aider" | "amp" | "qwen";
 
 export interface AgentDefinition {
   id: AgentId;
@@ -171,7 +162,10 @@ export function agentArguments(
  * A first prompt for the agent: the arguments that carry it, or the text to type once it runs. Typed text is one
  * line, since a newline would send it early.
  */
-export function promptArguments(agent: Pick<AgentDefinition, "prompt">, prompt: string): { args: string[]; typed: string | null } {
+export function promptArguments(
+  agent: Pick<AgentDefinition, "prompt">,
+  prompt: string,
+): { args: string[]; typed: string | null } {
   const text = prompt.trim();
   if (text === "" || agent.prompt.kind === "none") {
     return { args: [], typed: null };

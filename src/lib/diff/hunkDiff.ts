@@ -17,7 +17,11 @@ function lineStarts(text: string): number[] {
 }
 
 /** Character ranges of each hunk, or null when the hunks do not fit the texts. */
-export function hunkRanges(a: string, b: string, hunks: readonly LineHunk[]): [number, number, number, number][] | null {
+export function hunkRanges(
+  a: string,
+  b: string,
+  hunks: readonly LineHunk[],
+): [number, number, number, number][] | null {
   const startsA = lineStarts(a);
   const startsB = lineStarts(b);
   const ranges: [number, number, number, number][] = [];
@@ -80,7 +84,11 @@ export function changesFromHunks(a: string, b: string, hunks: readonly LineHunk[
  * they were computed for; anything else (ranges re-diffed after a chunk is staged, hunks that
  * do not fit) falls back to CodeMirror's own diff.
  */
-export function hunkDiff(original: string, modified: string, hunks: readonly LineHunk[]): (a: string, b: string) => readonly Change[] {
+export function hunkDiff(
+  original: string,
+  modified: string,
+  hunks: readonly LineHunk[],
+): (a: string, b: string) => readonly Change[] {
   return (a, b) => {
     if (a.length === original.length && b.length === modified.length && a === original && b === modified) {
       const changes = changesFromHunks(a, b, hunks);

@@ -27,12 +27,18 @@ describe("statusFromTitle", () => {
     expect(statusFromTitle(title)).toBe(status);
   });
 
-  it.each(["", "   ", "~/codex/ready", "reworking the parser", "timestamp ready", "zsh", "/work/opencode-blinker", "OC |"])(
-    "%j says nothing",
-    (title) => {
-      expect(statusFromTitle(title)).toBeNull();
-    },
-  );
+  it.each([
+    "",
+    "   ",
+    "~/codex/ready",
+    "reworking the parser",
+    "timestamp ready",
+    "zsh",
+    "/work/opencode-blinker",
+    "OC |",
+  ])("%j says nothing", (title) => {
+    expect(statusFromTitle(title)).toBeNull();
+  });
 });
 
 describe("cleanTitle", () => {
@@ -53,9 +59,12 @@ describe("isStatusOnlyTitle", () => {
     },
   );
 
-  it.each(["\u2810 Fixing the login race", "Update the tax rates", "claude: review the parser"])("%j says the task", (title) => {
-    expect(isStatusOnlyTitle(title)).toBe(false);
-  });
+  it.each(["\u2810 Fixing the login race", "Update the tax rates", "claude: review the parser"])(
+    "%j says the task",
+    (title) => {
+      expect(isStatusOnlyTitle(title)).toBe(false);
+    },
+  );
 });
 
 describe("nextState", () => {
@@ -86,13 +95,8 @@ describe("needsAttention", () => {
 
 describe("stateLabel", () => {
   it("names every state", () => {
-    expect(["starting", "working", "waiting", "ready", "done", "exited"].map((state) => stateLabel(state as never))).toEqual([
-      "Starting",
-      "Working",
-      "Needs you",
-      "Ready",
-      "Done",
-      "Exited",
-    ]);
+    expect(
+      ["starting", "working", "waiting", "ready", "done", "exited"].map((state) => stateLabel(state as never)),
+    ).toEqual(["Starting", "Working", "Needs you", "Ready", "Done", "Exited"]);
   });
 });

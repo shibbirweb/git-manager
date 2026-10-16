@@ -1,7 +1,7 @@
 // The Shelf's pure parts: the default name of shelved changes, which changed files can be
 // shelved, labels, and the selection of shelved files. Tested without the stores.
 
-import type { FileStatus, ShelfEntry, ShelvedChange, ShelvedFile } from "$lib/types";
+import type { FileStatus, ShelfEntry, ShelvedFile } from "$lib/types";
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
@@ -24,37 +24,6 @@ export function shelveCandidates(files: FileStatus[]): FileStatus[] {
   return (files ?? []).filter((file) => !file.conflicted && !file.path.endsWith("/") && !file.submodule);
 }
 
-export function statusLetter(file: FileStatus): string {
-  if (file.unstaged === "untracked" && !file.staged) {
-    return "U";
-  }
-  switch (file.staged ?? file.unstaged) {
-    case "added":
-      return "A";
-    case "deleted":
-      return "D";
-    case "renamed":
-      return "R";
-    case "typechange":
-      return "T";
-    default:
-      return "M";
-  }
-}
-
-const CHANGE_LETTERS: Record<ShelvedChange, string> = {
-  added: "A",
-  modified: "M",
-  deleted: "D",
-  renamed: "R",
-  copied: "C",
-  typechange: "T",
-};
-
-export function changeLetter(change: ShelvedChange): string {
-  return CHANGE_LETTERS[change] ?? "M";
-}
-
 /** "old.txt -> new.txt" for a rename or copy, else the path. */
 export function shelvedFileLabel(file: ShelvedFile): string {
   return file.oldPath && file.oldPath !== file.path ? `${file.oldPath} -> ${file.path}` : file.path;
@@ -64,32 +33,30 @@ export function fileCountLabel(count: number): string {
   return count === 1 ? "1 file" : `${count} files`;
 }
 
-/** A selected file of a change list. */
-export interface ShelfFileKey {
-  shelfId: string;
-  filePath: string;
+/** A row of the Shelf's tree: a change list, or one of its files while the list is open. */
+export type ShelfRow =
+  { kind: "entry"; id: string; entry: ShelfEntry } | { kind: "file"; id: string; entry: ShelfEntry; file: ShelvedFile };
+
+export function entryRowId(shelfId: string): string {
+  return `entry\n${shelfId}`;
 }
 
-export function fileKey(key: ShelfFileKey): string {
-  return `${key.shelfId}\n${key.filePath}`;
+export function fileRowId(shelfId: string, filePath: string): string {
+  return `file\n${shelfId}\n${filePath}`;
 }
 
-/**
- * Click selects one file; Cmd/Ctrl+click adds or removes it, within the same change list
- * (Unshelve Selected Files applies to one list at a time).
- */
-export function clickSelection(current: ShelfFileKey[], clicked: ShelfFileKey, toggle: boolean): ShelfFileKey[] {
-  if (!toggle) {
-    return [clicked];
-  }
-  const sameList = current.filter((key) => key.shelfId === clicked.shelfId);
-  const present = sameList.some((key) => key.filePath === clicked.filePath);
-  return present ? sameList.filter((key) => key.filePath !== clicked.filePath) : [...sameList, clicked];
+/** Every change list, each followed by its files unless it is folded. */
+export function shelfRows(entries: ShelfEntry[], collapsed: ReadonlySet<string>): ShelfRow[] {
+  return entries.flatMap((entry): ShelfRow[] => [
+    { kind: "entry", id: entryRowId(entry.id), entry },
+    ...(collapsed.has(entry.id)
+      ? []
+      : entry.files.map((file): ShelfRow => ({ kind: "file", id: fileRowId(entry.id, file.path), entry, file }))),
+  ]);
 }
 
-/** The selected files that still exist on the shelf. */
-export function validSelection(selection: ShelfFileKey[], entries: ShelfEntry[]): ShelfFileKey[] {
-  return selection.filter((key) =>
-    entries.some((entry) => entry.id === key.shelfId && entry.files.some((file) => file.path === key.filePath)),
-  );
+/** The selected files of one change list (Unshelve Selected Files works on one list at a time). */
+export function selectedPaths(selection: readonly string[], entry: ShelfEntry): string[] {
+  const chosen = new Set(selection);
+  return entry.files.filter((file) => chosen.has(fileRowId(entry.id, file.path))).map((file) => file.path);
 }

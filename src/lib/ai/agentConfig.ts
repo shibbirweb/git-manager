@@ -33,7 +33,9 @@ export interface EffectiveAgent extends AgentDefinition {
 
 /** Arguments as one line, quoting words with spaces: how the settings fields show them. */
 export function joinArguments(args: readonly string[]): string {
-  return args.map((word) => (word === "" || /[\s"'\\]/.test(word) ? `"${word.replace(/(["\\])/g, "\\$1")}"` : word)).join(" ");
+  return args
+    .map((word) => (word === "" || /[\s"'\\]/.test(word) ? `"${word.replace(/(["\\])/g, "\\$1")}"` : word))
+    .join(" ");
 }
 
 function nonBlank(text: string | undefined): string | null {

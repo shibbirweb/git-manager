@@ -92,7 +92,11 @@ describe("afterFetch", () => {
     const failed = afterFetch(undefined, result({ outcome: "failed", errorKind: "auth", message: "fatal: no" }), 5);
     expect(failed).toEqual({ lastAttempt: 5, failures: 1, lastError: { kind: "auth", message: "fatal: no" } });
     expect(afterFetch(failed, result({ outcome: "failed", errorKind: null }), 6).failures).toBe(2);
-    expect(afterFetch(failed, result({ outcome: "upToDate" }), 7)).toEqual({ lastAttempt: 7, failures: 0, lastError: null });
+    expect(afterFetch(failed, result({ outcome: "upToDate" }), 7)).toEqual({
+      lastAttempt: 7,
+      failures: 0,
+      lastError: null,
+    });
     expect(afterFetch(failed, result({ outcome: "skipped", skipReason: "noRemotes" }), 8).failures).toBe(0);
   });
 });
@@ -104,7 +108,12 @@ describe("autoFetchHint", () => {
 
   it("names the problem and when the next try is", () => {
     const now = 0;
-    const auth = { repoName: "app", kind: "auth" as const, message: "fatal: Authentication failed", retryAt: 20 * MINUTE };
+    const auth = {
+      repoName: "app",
+      kind: "auth" as const,
+      message: "fatal: Authentication failed",
+      retryAt: 20 * MINUTE,
+    };
     expect(autoFetchHint([auth], now)).toEqual({
       text: "Fetch needs sign-in",
       title: "app: fatal: Authentication failed\nNext try in 20 minutes. Click to try again now.",

@@ -1,11 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { HEAD_REVISION, INDEX_REVISION, parentRevision, previewUrl, sameSource, schemeBase, sourceName } from "./previewSource";
+import {
+  HEAD_REVISION,
+  INDEX_REVISION,
+  parentRevision,
+  previewUrl,
+  sameSource,
+  schemeBase,
+  sourceName,
+} from "./previewSource";
 
 const MAC_BASE = "gmpreview://localhost/";
 
 describe("schemeBase", () => {
   it("takes Tauri's form of the scheme, with a trailing slash", () => {
-    const tauri = (filePath: string, protocol: string): string => `${protocol}://localhost/${encodeURIComponent(filePath)}`;
+    const tauri = (filePath: string, protocol: string): string =>
+      `${protocol}://localhost/${encodeURIComponent(filePath)}`;
     expect(schemeBase(tauri)).toBe(MAC_BASE);
     const windows = (filePath: string, protocol: string): string => `http://${protocol}.localhost/${filePath}`;
     expect(schemeBase(windows)).toBe("http://gmpreview.localhost/");
@@ -27,10 +36,17 @@ describe("previewUrl", () => {
   it("encodes the repository, the revision and the path of a revision each on its own", () => {
     const url = previewUrl(
       "http://gmpreview.localhost/",
-      { kind: "revision", repoRoot: "C:\\work\\shop", revision: parentRevision("a".repeat(40)), filePath: "assets/logo.png" },
+      {
+        kind: "revision",
+        repoRoot: "C:\\work\\shop",
+        revision: parentRevision("a".repeat(40)),
+        filePath: "assets/logo.png",
+      },
       0,
     );
-    expect(url).toBe(`http://gmpreview.localhost/revision/C%3A%5Cwork%5Cshop/${"a".repeat(40)}%5E/assets%2Flogo.png?v=0`);
+    expect(url).toBe(
+      `http://gmpreview.localhost/revision/C%3A%5Cwork%5Cshop/${"a".repeat(40)}%5E/assets%2Flogo.png?v=0`,
+    );
     const parts = new URL(url).pathname.split("/").slice(2).map(decodeURIComponent);
     expect(parts).toEqual(["C:\\work\\shop", `${"a".repeat(40)}^`, "assets/logo.png"]);
   });

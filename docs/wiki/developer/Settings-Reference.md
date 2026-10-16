@@ -12,6 +12,7 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | --- | --- | --- | --- |
 | `theme` | `"system"` | `system`, `light`, `dark` | `applyAppearance`, `colorMode` |
 | `roundedPanels` | false | boolean | `data-rounded-panels` |
+| `projectColorHeader` | true | boolean | `views/Header.svelte`: `AppHeader`'s `tint` |
 | `fileToolbar` | `"top"` | `top`, `bottom`, `none` | `FileView`, `EmptyMain`, `navBar/` |
 | `fileToolbarBreadcrumbs`, `fileToolbarBadges`, `fileToolbarChanges`, `fileToolbarBlame`, `fileToolbarCopyPath`, `fileToolbarMarkdownView`, `fileToolbarMarkdownFormat` | true | boolean | `views/files/fileToolbar.ts` |
 | `uiFontSize` | 13 | 11 to 16 | `--ui-size` |
@@ -85,13 +86,13 @@ Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite 
 | `terminalCursorStyle` | `"block"` | `block`, `bar`, `underline` | `terminal/options.ts` |
 | `terminalCursorBlink` | true | boolean | `terminal/options.ts` |
 | `terminalScrollback` | 5000 | 1000 to 100000, whole (`clampTerminalScrollback`) | `terminal/options.ts` |
-| `terminalCopyOnSelect` | false | boolean | `TerminalView.svelte` |
+| `terminalCopyOnSelect` | false | boolean | `terminalActions.ts` (`CopyOnSelect`) |
 | `terminalFind` | true | boolean | `terminalAddonPlan`, `keys.ts` (Cmd+F) |
 | `terminalFileLinks` | true | boolean | `terminalAddonPlan`, `TerminalView.svelte` |
 | `terminalGpuAcceleration` | true | boolean | `terminalAddonPlan`, `addons.ts` |
 | `terminalUnicode11` | true | boolean | `terminalAddonPlan`, `addons.ts` |
 | `terminalOptionAsMeta` | false | boolean | `terminal/options.ts` (`macOptionIsMeta`) |
-| `terminalVisualBell` | true | boolean | `TerminalView.svelte` |
+| `terminalVisualBell` | true | boolean | `terminalController.svelte.ts` |
 | `terminalSmoothScrolling` | false | boolean | `terminal/options.ts` (`smoothScrollDuration` 125 ms) |
 | `terminalDropPaths` | true | boolean | `TerminalHost.svelte` |
 
@@ -115,7 +116,7 @@ The MCP server and the memory log are driven only by the main window, never by a
 
 | Key | Default | Accepted | Used by |
 | --- | --- | --- | --- |
-| `confirmDragAndDrop` | true | boolean | `views/files/FileExplorer.svelte` (`moveEntries`) |
+| `confirmDragAndDrop` | true | boolean | `views/files/explorerOps.ts` (`move`) |
 
 The other Layout choices are in `state.json`, below.
 
@@ -142,11 +143,13 @@ The other Layout choices are in `state.json`, below.
 | `leftBarVisible`, `rightBarVisible` | true | boolean | `Workspace.svelte`, `Header.svelte`, View menu |
 | `leftPanel` | `"changes"` | `changes`, `branches`, `scripts` or null | left sidebar |
 | `sidebarWidth`, `explorerWidth` | 260 | 120 to 2000 | side panels |
+| `commitInfoHeight` | 260 | 80 to 2000 | `log/CommitDetails.svelte`: the message and details above the changed files |
 | `terminalHeight` | 260 | 80 to 2000 | terminal panel |
 | `terminalListWidth` | 180 | 120 to 1200 | terminal list |
 | `changesListWidth` | 320 | 160 to 2000 | Changes tab file list |
 | `changesListVisible` | true | true or false | Changes tab file list shown |
 | `diffSplitRatio` | 0.5 | 0.15 to 0.85 | `diff/DiffView.svelte` |
+| `threePaneSplit` | [1/3, 2/3] | each pane 0.15 or more | `diff/ThreePaneDiff.svelte`, `merge/MergeEditor.svelte` |
 | `markdownPreviewRatio` | 0.5 | 0.15 to 0.85 | `FileView.svelte` |
 
 `stateToJson` writes these keys and keeps any others it found. Unknown keys of either file are kept, so a newer version's keys survive an older app.

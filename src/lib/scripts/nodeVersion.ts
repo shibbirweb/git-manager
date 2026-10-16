@@ -98,14 +98,30 @@ function comparator(token: string): Test | null {
       return (version) => high === null || compare(version, high) < 0;
     case "^": {
       // The first non-zero part may not change: ^18.2 is >=18.2.0 <19.0.0, ^0.4 is <0.5.0.
-      const index = numbers.length === 0 ? -1 : Math.max(0, Math.min(numbers.findIndex((part) => part !== 0), numbers.length - 1));
+      const index =
+        numbers.length === 0
+          ? -1
+          : Math.max(
+              0,
+              Math.min(
+                numbers.findIndex((part) => part !== 0),
+                numbers.length - 1,
+              ),
+            );
       const upper: Version | null =
-        index < 0 ? null : index === 0 ? [low[0] + 1, 0, 0] : index === 1 ? [low[0], low[1] + 1, 0] : [low[0], low[1], low[2] + 1];
+        index < 0
+          ? null
+          : index === 0
+            ? [low[0] + 1, 0, 0]
+            : index === 1
+              ? [low[0], low[1] + 1, 0]
+              : [low[0], low[1], low[2] + 1];
       return (version) => compare(version, low) >= 0 && (upper === null || compare(version, upper) < 0);
     }
     default: {
       // ~18.2.3 is >=18.2.3 <18.3.0; ~18 is any 18.
-      const upper: Version | null = numbers.length === 0 ? null : numbers.length === 1 ? [low[0] + 1, 0, 0] : [low[0], low[1] + 1, 0];
+      const upper: Version | null =
+        numbers.length === 0 ? null : numbers.length === 1 ? [low[0] + 1, 0, 0] : [low[0], low[1] + 1, 0];
       return (version) => compare(version, low) >= 0 && (upper === null || compare(version, upper) < 0);
     }
   }
@@ -114,7 +130,12 @@ function comparator(token: string): Test | null {
 /** One `||` part of a range: comparators that must all hold; "18 - 20" is a span. */
 function comparatorSet(text: string): Test | null {
   const span = /^(\S+)\s+-\s+(\S+)$/.exec(text.trim());
-  const tokens = span ? [`>=${span[1]}`, `<=${span[2]}`] : text.trim().replace(/(>=|<=|>|<|=|\^|~>?)\s+/g, "$1").split(/\s+/);
+  const tokens = span
+    ? [`>=${span[1]}`, `<=${span[2]}`]
+    : text
+        .trim()
+        .replace(/(>=|<=|>|<|=|\^|~>?)\s+/g, "$1")
+        .split(/\s+/);
   const tests: Test[] = [];
   for (const token of tokens.filter(Boolean)) {
     const test = comparator(token);

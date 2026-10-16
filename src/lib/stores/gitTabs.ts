@@ -116,7 +116,10 @@ export function gitTabTitle(ref: GitTabRef): { name: string; title: string } {
     return { name: `Shelved: ${name}`, title: `${ref.filePath} in shelved changes (${repoName})` };
   }
   const revision = revisionLabel(ref.revision);
-  return { name: `${name} vs ${revision}`, title: `${ref.filePath} at ${revision} compared with the working copy (${repoName})` };
+  return {
+    name: `${name} vs ${revision}`,
+    title: `${ref.filePath} at ${revision} compared with the working copy (${repoName})`,
+  };
 }
 
 /** Git tabs of repositories inside `folderRoot`, to close with the folder. */

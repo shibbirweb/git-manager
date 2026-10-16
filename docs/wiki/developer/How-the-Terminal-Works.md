@@ -65,7 +65,7 @@ flowchart LR
 
 **Keys.** `terminalKeyAction` in `keys.ts` sends each key to the shell, the app, or the view's own copy, paste, clear and select all. Ctrl+` and Ctrl+Shift+` always reach the app (`event.code === "Backquote"`). App keys return false without `preventDefault`, so `workspaceShortcuts.ts` runs them.
 
-**The list.** With several terminals, `TerminalPanel.svelte` shows a list beside the view, as wide as `terminalListWidth` in `state.json` (default 180 px, at least 120). `maxListWidth` in `terminals.ts` caps it so the terminal keeps `MIN_TERMINAL_VIEW_WIDTH` (240 px) in a narrow panel; the saved width stays as dragged.
+**The list.** With several terminals, `TerminalList.svelte` shows a list beside the view (the second pane of the UI library's `SplitPane`), as wide as `terminalListWidth` in `state.json` (default 180 px, at least 120). `maxListWidth` in `terminals.ts` caps it so the terminal keeps `MIN_TERMINAL_VIEW_WIDTH` (240 px) in a narrow panel; the saved width stays as dragged.
 
 **Settings.** `terminalDisplayOptions` in `options.ts` maps preferences to xterm options and `applyChangedOptions` writes only the changed ones, because each write redraws. `buildTerminalFontFamily` in `fonts.ts` adds the Nerd Font fallbacks, and `theme.ts` reads the `--term-*` tokens again on a theme change. Every key is in [How Settings Work](How-Settings-Work.md).
 
@@ -76,8 +76,10 @@ flowchart LR
 | `src-tauri/src/terminal.rs` | Shells, `spawn_pty`, `PtyProcess`, `TerminalRegistry` |
 | `src-tauri/src/commands/terminal.rs` | The `terminal_*` commands and the exit event |
 | `src/lib/terminal/terminalStore.svelte.ts` | Entries, panel state, moves, exits |
-| `src/lib/terminal/TerminalView.svelte` | xterm, spawn, input, resize, menus |
-| `src/lib/terminal/TerminalHost.svelte`, `TerminalFrame.svelte`, `TerminalSlot.svelte`, `TerminalPanel.svelte` | Placing the views, the panel |
+| `src/lib/terminal/TerminalView.svelte` | The view on the UI library's `TerminalScreen`, and the effects that follow settings and visibility |
+| `src/lib/terminal/terminalController.svelte.ts`, `terminalInstance.ts` | Opening xterm, fitting, Retry, the bell, drops, the menu |
+| `src/lib/terminal/terminalShell.svelte.ts` | Spawning, reconnecting, output with acks, input, resize, the startup status |
+| `src/lib/terminal/TerminalHost.svelte`, `TerminalFrame.svelte`, `TerminalSlot.svelte`, `TerminalPanel.svelte`, `TerminalList.svelte` | Placing the views, the panel and its list |
 | `src/lib/terminal/terminals.ts`, `terminalTabs.ts`, `keys.ts`, `options.ts`, `fonts.ts`, `theme.ts` | Pure helpers |
 
 ## Design decisions

@@ -77,7 +77,8 @@ In `FileView.svelte`, a file with markers or one git lists as conflicted gets a 
 | `src/lib/merge/ConflictsDialog.svelte` | The file list, Accept Yours or Theirs, Merge, and Continue once all are resolved |
 | `src/lib/editor/conflictMarkers.ts` | Pure marker parser and resolution edits |
 | `src/lib/editor/conflictDecorations.ts` | CodeMirror field, decorations, action widgets, `barWidth` |
-| `src/lib/views/files/FileView.svelte` | Accept All, Resolve in Merge Tool, Mark as Resolved |
+| `src/lib/views/files/FileView.svelte` | The conflict strip: Accept All, Resolve in Merge Tool, Mark as Resolved |
+| `src/lib/views/files/fileMenus.ts`, `fileSave.svelte.ts` | Resolve in Merge Tool asks about unsaved edits; Mark as Resolved writes and stages |
 
 ## Design decisions
 

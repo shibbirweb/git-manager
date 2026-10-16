@@ -165,9 +165,13 @@ function pending(): number {
   const level = suggestLevel(subjects);
   console.log(`Unreleased       ${subjects.length} commits`);
   if (isBeta(current)) {
-    console.log(`\nThe next beta would be ${nextVersion(current, "beta")}; finishing it makes ${nextVersion(current, "release")}.`);
+    console.log(
+      `\nThe next beta would be ${nextVersion(current, "beta")}; finishing it makes ${nextVersion(current, "release")}.`,
+    );
   } else {
-    console.log(`\nA ${level} release would be ${nextVersion(current, level)}, or ${nextVersion(current, "beta", level)} as a beta.`);
+    console.log(
+      `\nA ${level} release would be ${nextVersion(current, level)}, or ${nextVersion(current, "beta", level)} as a beta.`,
+    );
   }
   console.log('Run the "Beta release" workflow on develop to cut it; it bumps the version for you.');
   return 0;
@@ -236,7 +240,9 @@ function bump(requested: string | undefined): number {
     writeFileSync(CHANGELOG, dateChangelog(read(CHANGELOG), target, today), "utf8");
     console.log(`CHANGELOG.md          [Unreleased] -> [${target}] - ${today}`);
   }
-  console.log(`\nCommit it as \`chore:[${TICKET_KEY}-${ticket()}] release ${target}\` and merge it into develop by pull request.`);
+  console.log(
+    `\nCommit it as \`chore:[${TICKET_KEY}-${ticket()}] release ${target}\` and merge it into develop by pull request.`,
+  );
   return 0;
 }
 
@@ -264,7 +270,9 @@ const commands: Record<string, () => number> = {
 
 const run = command ? commands[command] : undefined;
 if (!run) {
-  console.error("Usage: bun scripts/version.ts <show | check | set x.y.z | notes [x.y.z] | pending | bump <level> | untried | next-ticket>");
+  console.error(
+    "Usage: bun scripts/version.ts <show | check | set x.y.z | notes [x.y.z] | pending | bump <level> | untried | next-ticket>",
+  );
   process.exit(2);
 }
 process.exit(run());

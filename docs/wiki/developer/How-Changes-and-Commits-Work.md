@@ -77,7 +77,8 @@ Arrow keys move across all expanded sections, Space or Enter stages or unstages 
 | `src/lib/views/changes/RepoActions.svelte` | The repository buttons, see [How Repository Actions Work](How-Repository-Actions-Work.md) |
 | `src/lib/views/changes/FileRow.svelte` | One file row |
 | `src/lib/views/changes/CleanRepoList.svelte` | Repositories with no changes |
-| `src/lib/views/changes/CommitBox.svelte` | Message, Amend, target picker, Commit and its arrow, Sync Changes |
+| `src/lib/views/changes/CommitBox.svelte` | Amend, target picker, Commit and its arrow, Sync Changes |
+| `src/lib/views/changes/CommitMessageField.svelte` | The message: history, templates, `commit.template`, subject note |
 | `src/lib/views/changes/sections.ts` | Pure grouping, rows, selection and labels |
 | `src/lib/views/changes/selection.svelte.ts`, `layout.svelte.ts` | Selected change; collapse state and commit target |
 | `src/lib/views/changes/mutations.ts` | Stage, unstage, discard |

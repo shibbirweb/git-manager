@@ -1,11 +1,11 @@
 <!--
-  The page that draws Mermaid diagrams, loaded in a hidden frame by src/lib/markdown/mermaid.ts.
+  The page that draws Mermaid diagrams, loaded in a hidden frame by the UI library's markdown/mermaid.ts.
   The mermaid library is imported here and nowhere else, so removing the frame when the last
   document with diagrams closes takes the whole library out of memory.
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { drawDiagram, type FrameRequest, type FrameResponse } from "$lib/markdown/mermaidFrame";
+  import { drawDiagram, type FrameRequest, type FrameResponse } from "@git-manager/ui/markdown/mermaidFrame";
 
   onMount(() => {
     const parentWindow = window.parent;

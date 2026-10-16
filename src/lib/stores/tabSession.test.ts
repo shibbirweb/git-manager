@@ -64,7 +64,14 @@ describe("parseTabSession", () => {
 
   it("drops bad and repeated tabs, and an active tab that is not listed", () => {
     const parsed = parseTabSession({
-      tabs: [{ path: "/w/a.ts", preview: "yes" }, { path: "/w/a.ts" }, { path: "rel.ts" }, null, 7, { path: "/w/c.ts", pinned: true }],
+      tabs: [
+        { path: "/w/a.ts", preview: "yes" },
+        { path: "/w/a.ts" },
+        { path: "rel.ts" },
+        null,
+        7,
+        { path: "/w/c.ts", pinned: true },
+      ],
       active: "/w/missing.ts",
     });
     expect(parsed).toEqual({
@@ -91,13 +98,17 @@ describe("parseTabSession", () => {
 
 describe("parseTabSessions", () => {
   it("keeps valid sessions by workspace id and drops the rest", () => {
-    expect(parseTabSessions({ "/w": session, "/x": { tabs: [] }, "": session, "/y": "nope" })).toEqual({ "/w": session });
+    expect(parseTabSessions({ "/w": session, "/x": { tabs: [] }, "": session, "/y": "nope" })).toEqual({
+      "/w": session,
+    });
     expect(parseTabSessions(["/w"])).toEqual({});
     expect(parseTabSessions(undefined)).toEqual({});
   });
 
   it("keeps the newest MAX_TAB_SESSIONS workspaces", () => {
-    const many = Object.fromEntries(Array.from({ length: MAX_TAB_SESSIONS + 5 }, (_, index) => [`/w${index}`, session]));
+    const many = Object.fromEntries(
+      Array.from({ length: MAX_TAB_SESSIONS + 5 }, (_, index) => [`/w${index}`, session]),
+    );
     const parsed = parseTabSessions(many);
     expect(Object.keys(parsed)).toHaveLength(MAX_TAB_SESSIONS);
     expect(Object.keys(parsed)[0]).toBe("/w5");
@@ -167,9 +178,9 @@ describe("restorableTabs", () => {
     expect(restored.tabs.map((tab) => tab.path)).toEqual(["/w/a.ts"]);
     // The active tab is gone, so the first one left is shown.
     expect(restored.active).toBe("/w/a.ts");
-    expect(restorableTabs(session, [true, true], (filePath) => filePath !== "/w/a.ts").tabs.map((tab) => tab.path)).toEqual([
-      "/w/b.ts",
-    ]);
+    expect(
+      restorableTabs(session, [true, true], (filePath) => filePath !== "/w/a.ts").tabs.map((tab) => tab.path),
+    ).toEqual(["/w/b.ts"]);
   });
 
   it("restores nothing when the existence check failed", () => {
@@ -211,7 +222,12 @@ describe("split editor sessions", () => {
   });
 
   it("reads the right group of older versions", () => {
-    expect(parseTabSession({ ...session, right, rightFocused: true })).toEqual({ ...session, groups: [right], layout: sideBySide, focused: 1 });
+    expect(parseTabSession({ ...session, right, rightFocused: true })).toEqual({
+      ...session,
+      groups: [right],
+      layout: sideBySide,
+      focused: 1,
+    });
     expect(parseTabSession({ ...session, right: "nonsense", rightFocused: "yes" })).toEqual(session);
     expect(parseTabSession({ tabs: [], right })).toEqual(right);
   });
@@ -252,7 +268,13 @@ describe("Untitled tabs in a session", () => {
     });
     expect(parsed?.tabs.map((tab) => tab.path)).toEqual([untitled, "/w/a.ts"]);
     expect(parsed?.active).toBe(untitled);
-    const saved = tabSessionOf([{ tabs: [{ path: untitled, preview: false }], active: untitled }], null, 0, () => true, new Map());
+    const saved = tabSessionOf(
+      [{ tabs: [{ path: untitled, preview: false }], active: untitled }],
+      null,
+      0,
+      () => true,
+      new Map(),
+    );
     expect(saved.tabs.map((tab) => tab.path)).toEqual([untitled]);
   });
 });
@@ -269,7 +291,10 @@ describe("sessionWithKept", () => {
 
   it("restores only the kept tabs when Reopen tabs on start is off", () => {
     const merged = sessionWithKept(session, [untitled], false);
-    expect(merged).toEqual({ tabs: [{ path: untitled, preview: false, pinned: false, position: null }], active: untitled });
+    expect(merged).toEqual({
+      tabs: [{ path: untitled, preview: false, pinned: false, position: null }],
+      active: untitled,
+    });
     expect(sessionWithKept(session, [], false)).toBeNull();
   });
 
@@ -277,7 +302,13 @@ describe("sessionWithKept", () => {
     expect(sessionWithKept(null, [], true)).toBeNull();
     expect(sessionWithKept(null, ["/w/c.ts"], true)?.tabs.map((tab) => tab.path)).toEqual(["/w/c.ts"]);
     const right = { tabs: [{ path: "/w/r.ts", preview: false, pinned: false, position: null }], active: "/w/r.ts" };
-    const layout: GroupLayout = { kind: "split", direction: "down", ratio: 0.5, first: { kind: "group", groupId: 0 }, second: { kind: "group", groupId: 1 } };
+    const layout: GroupLayout = {
+      kind: "split",
+      direction: "down",
+      ratio: 0.5,
+      first: { kind: "group", groupId: 0 },
+      second: { kind: "group", groupId: 1 },
+    };
     const split: SavedTabSession = { ...session, groups: [right], layout, focused: 1 };
     const merged = sessionWithKept(split, [untitled], true);
     expect(merged?.groups?.map((group) => group.tabs.map((tab) => tab.path))).toEqual([["/w/r.ts"]]);

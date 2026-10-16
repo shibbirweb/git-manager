@@ -79,7 +79,7 @@ Every text pane is a CodeMirror 6 view, set up in `src/lib/editor/setup.ts`; `la
 
 ## Dialogs, toasts and menus
 
-- `dialogs.confirm`, `dialogs.prompt`, `dialogs.choose` and `dialogs.pick` (a filterable list, `ui/pickList.ts`) in `ui/dialog.svelte.ts` return promises. Destructive actions always ask first with `danger: true`. The Git menu's bigger dialogs (Push, Pull, Reset HEAD, Clone...) go through `views/git/gitDialogs.svelte.ts`, one at a time.
+- `dialogs.confirm`, `dialogs.prompt`, `dialogs.choose` and `dialogs.pick` (a filterable list) in `ui/dialog.svelte.ts` return promises; `DialogHost.svelte` draws them with the UI library's `Dialog`. Destructive actions always ask first with `danger: true`. The Git menu's bigger dialogs (Push, Pull, Reset HEAD, Clone...) go through `views/git/gitDialogs.svelte.ts`, one at a time.
 - `toast.info`, `toast.success` and `toast.error` (`ui/toast.svelte.ts`) show short notes; errors stay longer.
 - `contextMenu.open(event, items)` (`ui/menu.svelte.ts`) shows the custom right-click menu.
 

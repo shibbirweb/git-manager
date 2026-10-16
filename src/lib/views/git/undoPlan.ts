@@ -74,7 +74,16 @@ function moveHead(
 }
 
 /** Actions Undo can take back, for the toasts that offer an Undo button. */
-export const UNDOABLE_ACTIONS: readonly ReflogAction[] = ["commit", "amend", "merge", "pull", "reset", "checkout", "cherryPick", "revert"];
+export const UNDOABLE_ACTIONS: readonly ReflogAction[] = [
+  "commit",
+  "amend",
+  "merge",
+  "pull",
+  "reset",
+  "checkout",
+  "cherryPick",
+  "revert",
+];
 
 export function undoPlan(inputs: UndoInputs): UndoPlan {
   if (inputs.op !== "none") {

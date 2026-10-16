@@ -104,7 +104,15 @@ import type { CompareSide, FileCompare } from "./types";
 import type { LineAction, LineSelection, LinesOutcome } from "./types";
 import type { BranchComparison, CommitOptions, MergeOptions, RebaseOptions, WorktreeComparison } from "./types";
 import type { Identity, IdentityScope, RecentMessage } from "./types";
-import type { McpActivity, McpOpenFolderRequest, McpStatus, McpToolInfo, McpUiRequest, McpUiResult, McpUiToolDef } from "./types";
+import type {
+  McpActivity,
+  McpOpenFolderRequest,
+  McpStatus,
+  McpToolInfo,
+  McpUiRequest,
+  McpUiResult,
+  McpUiToolDef,
+} from "./types";
 import type { ConfigChangedEvent, WindowOpened } from "./types";
 import type { UnsavedMeta, UnsavedText } from "./types";
 
@@ -125,8 +133,7 @@ export const api = {
 
   // Workspace (a folder holding any number of repositories)
   openWorkspace: (folderPath: string) => invoke<WorkspaceInfo>("open_workspace", { folderPath }),
-  discoverRepositories: (workspaceRoot: string) =>
-    invoke<RepoInfo[]>("discover_repositories", { workspaceRoot }),
+  discoverRepositories: (workspaceRoot: string) => invoke<RepoInfo[]>("discover_repositories", { workspaceRoot }),
   initRepository: (folderPath: string) => invoke<RepoInfo>("init_repository", { folderPath }),
   watchWorkspace: (workspaceRoot: string, repoRoots: string[]) =>
     invoke<void>("watch_workspace", { workspaceRoot, repoRoots }),
@@ -144,8 +151,13 @@ export const api = {
   getFileDiff: (repoPath: string, filePath: string, origPath: string | null, area: DiffArea) =>
     invoke<FileDiff>("get_file_diff", { repoPath, filePath, origPath, area, knownVersion: null }),
   /** Null when the diff still has `knownVersion` (a FileDiff's `version`): nothing is read or sent. */
-  getFileDiffIfChanged: (repoPath: string, filePath: string, origPath: string | null, area: DiffArea, knownVersion: string | null) =>
-    invoke<FileDiff | null>("get_file_diff", { repoPath, filePath, origPath, area, knownVersion }),
+  getFileDiffIfChanged: (
+    repoPath: string,
+    filePath: string,
+    origPath: string | null,
+    area: DiffArea,
+    knownVersion: string | null,
+  ) => invoke<FileDiff | null>("get_file_diff", { repoPath, filePath, origPath, area, knownVersion }),
   stageFiles: (repoPath: string, filePaths: string[]) => invoke<void>("stage_files", { repoPath, filePaths }),
   unstageFiles: (repoPath: string, filePaths: string[]) => invoke<void>("unstage_files", { repoPath, filePaths }),
   discardFiles: (repoPath: string, trackedPaths: string[], untrackedPaths: string[]) =>
@@ -164,8 +176,34 @@ export const api = {
     selection: LineSelection,
     knownVersion: string | null,
   ) => invoke<LinesOutcome>("apply_selected_lines", { repoPath, filePath, origPath, action, selection, knownVersion }),
-  /** Undo of Discard Selected Lines: applies the discarded patch to the work tree again. */
-  restoreDiscardedLines: (repoPath: string, patch: string) => invoke<void>("restore_discarded_lines", { repoPath, patch }),
+  /**
+   * Revert (`reverse`) or apply the selected lines of the change from `oldRevision` (null: no file, a root commit)
+   * to `newRevision` (null: the work tree) in the work tree file only. The outcome's patch undoes it.
+   */
+  applyRevisionLines: (
+    repoPath: string,
+    filePath: string,
+    origPath: string | null,
+    oldRevision: string | null,
+    newRevision: string | null,
+    selection: LineSelection,
+    reverse: boolean,
+  ) =>
+    invoke<LinesOutcome>("apply_revision_lines", {
+      repoPath,
+      filePath,
+      origPath,
+      oldRevision,
+      newRevision,
+      selection,
+      reverse,
+    }),
+  /**
+   * Undo of Discard Selected Lines or a reverted change: applies the taken back patch to the work tree again;
+   * `reverse` takes an applied change back out instead.
+   */
+  restoreDiscardedLines: (repoPath: string, patch: string, reverse = false) =>
+    invoke<void>("restore_discarded_lines", { repoPath, patch, reverse }),
   /** Resolves to the file's new version (see FileContent.version). */
   writeWorktreeFile: (repoPath: string, filePath: string, content: string, eol: Eol) =>
     invoke<string>("write_worktree_file", { repoPath, filePath, content, eol }),
@@ -179,8 +217,13 @@ export const api = {
   undoLastCommit: (repoPath: string) => invoke<string>("undo_last_commit", { repoPath }),
   getHeadMessage: (repoPath: string) => invoke<string>("get_head_message", { repoPath }),
   /** Commits only `filePaths` (`git commit --only`), staging them first; other staged changes stay staged. */
-  commitFiles: (repoPath: string, filePaths: string[], message: string, amend: boolean, options: CommitOptions | null = null) =>
-    invoke<GitOutput>("commit_files", { repoPath, filePaths, message, amend, options }),
+  commitFiles: (
+    repoPath: string,
+    filePaths: string[],
+    message: string,
+    amend: boolean,
+    options: CommitOptions | null = null,
+  ) => invoke<GitOutput>("commit_files", { repoPath, filePaths, message, amend, options }),
   /** Global and repository user.name and user.email; `complete` says git would commit with them. */
   getIdentity: (repoPath: string | null) => invoke<Identity>("get_identity", { repoPath }),
   /** `git config --global` or `--local`; an empty name or email unsets it. */
@@ -247,14 +290,16 @@ export const api = {
   mergeWithOptions: (repoPath: string, branchName: string, options: MergeOptions) =>
     invoke<OpOutcome>("merge_with_options", { repoPath, branchName, options }),
   /** The Rebase dialog (not interactive). */
-  rebaseWithOptions: (repoPath: string, options: RebaseOptions) => invoke<OpOutcome>("rebase_with_options", { repoPath, options }),
+  rebaseWithOptions: (repoPath: string, options: RebaseOptions) =>
+    invoke<OpOutcome>("rebase_with_options", { repoPath, options }),
   /** Fetches and fast-forwards a branch that is not checked out from its upstream (`git fetch <remote> <upstream>:<branch>`). */
   updateBranch: (repoPath: string, branchName: string) => invoke<OpOutcome>("update_branch", { repoPath, branchName }),
   /** Pushes a local branch to its upstream, or publishes it to the default remote and tracks it. */
   pushBranch: (repoPath: string, branchName: string) => invoke<OpOutcome>("push_branch", { repoPath, branchName }),
   setBranchUpstream: (repoPath: string, branchName: string, upstream: string) =>
     invoke<void>("set_branch_upstream", { repoPath, branchName, upstream }),
-  unsetBranchUpstream: (repoPath: string, branchName: string) => invoke<void>("unset_branch_upstream", { repoPath, branchName }),
+  unsetBranchUpstream: (repoPath: string, branchName: string) =>
+    invoke<void>("unset_branch_upstream", { repoPath, branchName }),
   /** Commits only `branchName` has, commits only `baseName` has, and the files that differ. */
   compareBranches: (repoPath: string, branchName: string, baseName: string) =>
     invoke<BranchComparison>("compare_branches", { repoPath, branchName, baseName }),
@@ -262,8 +307,13 @@ export const api = {
   compareWithWorktree: (repoPath: string, revision: string) =>
     invoke<WorktreeComparison>("compare_with_worktree", { repoPath, revision }),
   /** One file between two revisions: `fromRevision` left, `toRevision` right. */
-  revisionsFileDiff: (repoPath: string, fromRevision: string, toRevision: string, filePath: string, origPath: string | null) =>
-    invoke<FileDiff>("revisions_file_diff", { repoPath, fromRevision, toRevision, filePath, origPath }),
+  revisionsFileDiff: (
+    repoPath: string,
+    fromRevision: string,
+    toRevision: string,
+    filePath: string,
+    origPath: string | null,
+  ) => invoke<FileDiff>("revisions_file_diff", { repoPath, fromRevision, toRevision, filePath, origPath }),
 
   // Remote
   /** Every remote, pruning deleted branches. */
@@ -276,11 +326,21 @@ export const api = {
   push: (repoPath: string, force: boolean) => invoke<OpOutcome>("push", { repoPath, force }),
   pushTags: (repoPath: string) => invoke<OpOutcome>("push_tags", { repoPath }),
   /** The Pull dialog: `remoteName` and `branchName` null pull the upstream; `noCommit` only applies to a merge. */
-  pullWithOptions: (repoPath: string, remoteName: string | null, branchName: string | null, mode: PullMode, noCommit: boolean) =>
-    invoke<OpOutcome>("pull_with_options", { repoPath, remoteName, branchName, mode, noCommit }),
+  pullWithOptions: (
+    repoPath: string,
+    remoteName: string | null,
+    branchName: string | null,
+    mode: PullMode,
+    noCommit: boolean,
+  ) => invoke<OpOutcome>("pull_with_options", { repoPath, remoteName, branchName, mode, noCommit }),
   /** The Push dialog: pushes the current branch to `remoteName`/`remoteBranch`, setting the upstream when it has none. */
-  pushWithOptions: (repoPath: string, remoteName: string, remoteBranch: string, forceWithLease: boolean, pushTags: boolean) =>
-    invoke<OpOutcome>("push_with_options", { repoPath, remoteName, remoteBranch, forceWithLease, pushTags }),
+  pushWithOptions: (
+    repoPath: string,
+    remoteName: string,
+    remoteBranch: string,
+    forceWithLease: boolean,
+    pushTags: boolean,
+  ) => invoke<OpOutcome>("push_with_options", { repoPath, remoteName, remoteBranch, forceWithLease, pushTags }),
   /** Commits of HEAD that are not on `remoteName`/`remoteBranch`, or on no remote when that branch does not exist. */
   outgoingCommits: (repoPath: string, remoteName: string, remoteBranch: string) =>
     invoke<OutgoingCommits>("outgoing_commits", { repoPath, remoteName, remoteBranch }),
@@ -292,8 +352,13 @@ export const api = {
     invoke<void>("edit_remote", { repoPath, remoteName, newName, fetchUrl, pushUrl }),
   removeRemote: (repoPath: string, remoteName: string) => invoke<void>("remove_remote", { repoPath, remoteName }),
   /** `git clone --progress` into `parentDir`/`folderName` (missing or empty); progress lines arrive on `progress`. Resolves with the clone's path. */
-  cloneRepository: (url: string, parentDir: string, folderName: string, progress: Channel<string>, cancelId: string | null = null) =>
-    invoke<string>("clone_repository", { url, parentDir, folderName, progress, cancelId }),
+  cloneRepository: (
+    url: string,
+    parentDir: string,
+    folderName: string,
+    progress: Channel<string>,
+    cancelId: string | null = null,
+  ) => invoke<string>("clone_repository", { url, parentDir, folderName, progress, cancelId }),
   /** Stops the command started with `cancelId`; with a clone it fails with "Clone cancelled". False when none runs. */
   cancelGitCommand: (cancelId: string) => invoke<boolean>("cancel_git_command", { cancelId }),
 
@@ -317,14 +382,22 @@ export const api = {
 
   // History
   getLog: (repoPath: string, offset: number, limit: number, allRefs: boolean) =>
-    invoke<LogPage>("get_log", { repoPath, offset, limit, allRefs, knownTips: null }).then((page) => page.commits ?? []),
+    invoke<LogPage>("get_log", { repoPath, offset, limit, allRefs, knownTips: null }).then(
+      (page) => page.commits ?? [],
+    ),
   /** A page of history, or `commits: null` without walking while the branch tips still match `knownTips`. */
   getLogPage: (repoPath: string, offset: number, limit: number, allRefs: boolean, knownTips: string | null) =>
     invoke<LogPage>("get_log", { repoPath, offset, limit, allRefs, knownTips }),
   getCommitDetails: (repoPath: string, commitId: string) =>
     invoke<CommitDetails>("get_commit_details", { repoPath, commitId }),
-  getCommitFileDiff: (repoPath: string, commitId: string, filePath: string, origPath: string | null) =>
-    invoke<FileDiff>("get_commit_file_diff", { repoPath, commitId, filePath, origPath }),
+  /** A file of a commit against one of its parents: 0 is the first. */
+  getCommitFileDiff: (
+    repoPath: string,
+    commitId: string,
+    filePath: string,
+    origPath: string | null,
+    parentIndex: number,
+  ) => invoke<FileDiff>("get_commit_file_diff", { repoPath, commitId, filePath, origPath, parentIndex }),
   /** Blames the file at `revision`, or as it is on disk when null. */
   blameFile: (repoPath: string, filePath: string, revision: string | null) =>
     invoke<BlameInfo>("blame_file", { repoPath, filePath, revision }),
@@ -346,7 +419,8 @@ export const api = {
   /** The commits an interactive rebase from `fromCommit` (included) to HEAD rewrites. */
   rebasePlan: (repoPath: string, fromCommit: string) => invoke<RebasePlan>("rebase_plan", { repoPath, fromCommit }),
   /** The commits of `upstream`..HEAD for an interactive rebase onto `upstream`. */
-  rebasePlanOnto: (repoPath: string, upstream: string) => invoke<RebasePlan>("rebase_plan_onto", { repoPath, upstream }),
+  rebasePlanOnto: (repoPath: string, upstream: string) =>
+    invoke<RebasePlan>("rebase_plan_onto", { repoPath, upstream }),
   /** `git rebase -i` with the given todo, oldest first; `base` null rebases from the root. */
   interactiveRebase: (repoPath: string, base: string | null, entries: RebaseEntry[], autostash: boolean) =>
     invoke<OpOutcome>("interactive_rebase", { repoPath, base, entries, autostash }),
@@ -381,7 +455,8 @@ export const api = {
     invoke<void>("remove_worktree", { repoPath, worktreePath, force }),
   lockWorktree: (repoPath: string, worktreePath: string, reason: string | null) =>
     invoke<void>("lock_worktree", { repoPath, worktreePath, reason }),
-  unlockWorktree: (repoPath: string, worktreePath: string) => invoke<void>("unlock_worktree", { repoPath, worktreePath }),
+  unlockWorktree: (repoPath: string, worktreePath: string) =>
+    invoke<void>("unlock_worktree", { repoPath, worktreePath }),
   /** `git worktree prune --verbose`; resolves with git's report. */
   pruneWorktrees: (repoPath: string) => invoke<string>("prune_worktrees", { repoPath }),
   worktreeHasChanges: (worktreePath: string) => invoke<boolean>("worktree_has_changes", { worktreePath }),
@@ -398,7 +473,8 @@ export const api = {
   addSubmodule: (repoPath: string, url: string, submodulePath: string, branchName: string | null) =>
     invoke<string>("add_submodule", { repoPath, url, submodulePath, branchName }),
   /** Deinit, `git rm` and its cloned repository under .git/modules. */
-  removeSubmodule: (repoPath: string, submodulePath: string) => invoke<void>("remove_submodule", { repoPath, submodulePath }),
+  removeSubmodule: (repoPath: string, submodulePath: string) =>
+    invoke<void>("remove_submodule", { repoPath, submodulePath }),
 
   // Git LFS
   /** `checkInstall` runs `git lfs version` again unless git-lfs is already known to be installed. */
@@ -430,8 +506,12 @@ export const api = {
    * Lists folders of one workspace folder (`dirPaths` relative to it, "" for itself) in one call. A folder whose
    * stamp in `known` still matches answers `unchanged` without its entries.
    */
-  listDirectories: (rootPath: string, dirPaths: string[], repoRoots: string[], known: Record<string, string> | null = null) =>
-    invoke<FolderListing[]>("list_directories", { rootPath, dirPaths, repoRoots, known }),
+  listDirectories: (
+    rootPath: string,
+    dirPaths: string[],
+    repoRoots: string[],
+    known: Record<string, string> | null = null,
+  ) => invoke<FolderListing[]>("list_directories", { rootPath, dirPaths, repoRoots, known }),
   /** With the `knownVersion` of the text already shown, an unchanged file answers `unchanged` without its text. */
   readWorktreeFile: (repoPath: string, filePath: string, knownVersion: string | null = null) =>
     invoke<FileContent>("read_worktree_file", { repoPath, filePath, knownVersion }),
@@ -467,9 +547,11 @@ export const api = {
    */
   fileMoveClash: (workspaceRoots: string[], sourcePaths: string[], targetDir: string) =>
     invoke<string | null>("file_move", { workspaceRoots, sourcePaths, targetDir, dryRun: true }),
-  fileTrash: (workspaceRoots: string[], entryPaths: string[]) => invoke<void>("file_trash", { workspaceRoots, entryPaths }),
+  fileTrash: (workspaceRoots: string[], entryPaths: string[]) =>
+    invoke<void>("file_trash", { workspaceRoots, entryPaths }),
   /** Which absolute paths are files inside the workspace folders (the terminal's clickable paths); never fails. */
-  filesExist: (workspaceRoots: string[], filePaths: string[]) => invoke<boolean[]>("files_exist", { workspaceRoots, filePaths }),
+  filesExist: (workspaceRoots: string[], filePaths: string[]) =>
+    invoke<boolean[]>("files_exist", { workspaceRoots, filePaths }),
   /** Each path's real file path (the name as stored on disk) when it is a file inside the workspace, else null. */
   realFiles: (workspaceRoots: string[], filePaths: string[]) =>
     invoke<(string | null)[]>("real_files", { workspaceRoots, filePaths }),
@@ -590,7 +672,8 @@ export const api = {
   // Add to .gitignore / .git/info/exclude; `filePaths` are the files the patterns were made for.
   addToIgnore: (repoPath: string, patterns: string[], target: IgnoreTarget, filePaths: string[]) =>
     invoke<IgnoreOutcome>("add_to_ignore", { repoPath, patterns, target, filePaths }),
-  ensureIgnoreFile: (repoPath: string, target: IgnoreTarget) => invoke<string>("ensure_ignore_file", { repoPath, target }),
+  ensureIgnoreFile: (repoPath: string, target: IgnoreTarget) =>
+    invoke<string>("ensure_ignore_file", { repoPath, target }),
   untrackFiles: (repoPath: string, filePaths: string[]) => invoke<void>("untrack_files", { repoPath, filePaths }),
 
   // GitHub account (src-tauri/src/github). The token goes in once and never comes back.

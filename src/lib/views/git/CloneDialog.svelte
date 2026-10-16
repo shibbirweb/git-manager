@@ -1,6 +1,13 @@
 <!-- Clone: the repository URL, the parent folder and the new folder's name (from the URL
      until edited). Streams git's progress; when done, opens the clone or adds it to the workspace. -->
 <script lang="ts">
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Field from "@git-manager/ui/components/Field.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { Channel } from "@tauri-apps/api/core";
   import { homeDir } from "@tauri-apps/api/path";
   import { open } from "@tauri-apps/plugin-dialog";
@@ -10,7 +17,6 @@
   import { fromNativePath, joinPath, parentOf } from "$lib/stores/workspacePaths";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
   import { gitDialogs } from "./gitDialogs.svelte";
   import { CLONE_CANCELLED, cloneFolderName, validateFolderName, validateRemoteUrl } from "./gitOptions";
 
@@ -31,7 +37,9 @@
   const urlError = $derived(validateRemoteUrl(url));
   const folderError = $derived(validateFolderName(folderName));
   const canClone = $derived(!cloning && urlError === null && folderError === null && parentDir.trim() !== "");
-  const targetPath = $derived(parentDir.trim() && folderName.trim() ? joinPath(parentDir.trim().replace(/\/+$/, ""), folderName.trim()) : "");
+  const targetPath = $derived(
+    parentDir.trim() && folderName.trim() ? joinPath(parentDir.trim().replace(/\/+$/, ""), folderName.trim()) : "",
+  );
 
   onMount(() => {
     // Next to the open folder, else in the home folder.
@@ -56,7 +64,12 @@
   }
 
   async function browse(): Promise<void> {
-    const chosen = await open({ directory: true, multiple: false, title: "Clone Into", defaultPath: parentDir || undefined });
+    const chosen = await open({
+      directory: true,
+      multiple: false,
+      title: "Clone Into",
+      defaultPath: parentDir || undefined,
+    });
     if (typeof chosen === "string" && chosen) {
       parentDir = fromNativePath(chosen);
     }
@@ -125,8 +138,14 @@
       title: `Cloned ${name}`,
       message: clonedPath,
       options: [
-        { value: "open", label: "Open in This Window", description: hasWorkspace ? "Replaces the open folder" : undefined },
-        ...(hasWorkspace ? [{ value: "add" as const, label: "Add to Workspace", description: "Keeps the open folders" }] : []),
+        {
+          value: "open",
+          label: "Open in This Window",
+          description: hasWorkspace ? "Replaces the open folder" : undefined,
+        },
+        ...(hasWorkspace
+          ? [{ value: "add" as const, label: "Add to Workspace", description: "Keeps the open folders" }]
+          : []),
         { value: "later", label: "Not Now" },
       ],
     });
@@ -140,89 +159,77 @@
   }
 </script>
 
-<GitDialogFrame title="Clone Repository" width={580} closable={!cloning} onCancel={close} onSubmit={() => void submit()}>
-  <label class="field">
-    <span>Repository URL</span>
-    <input
-      class="input mono"
+<Dialog
+  open
+  variant="form"
+  title="Clone Repository"
+  width="medium"
+  dismissible={!cloning}
+  onclose={close}
+  onsubmit={() => void submit()}
+>
+  <Field label="Repository URL" look="compact" error={urlError && url !== "" ? urlError : null}>
+    <Input
+      mono
+      width="fill"
       bind:value={url}
       oninput={onUrlInput}
       disabled={cloning}
       spellcheck="false"
       autocomplete="off"
       placeholder="https://github.com/owner/repo.git or git@github.com:owner/repo.git"
-      data-autofocus
+      autofocus
     />
-  </label>
-  {#if urlError && url !== ""}
-    <div class="error">{urlError}</div>
-  {/if}
-  <label class="field">
-    <span>Clone into folder</span>
-    <div class="row">
-      <input
-        class="input parent"
+  </Field>
+  <Field label="Clone into folder" look="compact">
+    <Stack direction="row" align="center" gap="md">
+      <Input
+        width="fill"
         bind:value={parentDir}
         disabled={cloning}
         spellcheck="false"
         autocomplete="off"
         aria-label="Clone into folder"
       />
-      <button type="button" class="btn" onclick={() => void browse()} disabled={cloning}>Browse...</button>
-    </div>
-  </label>
-  <label class="field">
-    <span>Folder name</span>
-    <input
-      class="input"
+      <Button onclick={() => void browse()} disabled={cloning}>Browse...</Button>
+    </Stack>
+  </Field>
+  <Field label="Folder name" look="compact" error={folderError && folderName !== "" ? folderError : null}>
+    <Input
+      width="fill"
       bind:value={folderName}
       oninput={() => (folderEdited = folderName.trim() !== "")}
       disabled={cloning}
       spellcheck="false"
       autocomplete="off"
     />
-  </label>
-  {#if folderError && folderName !== ""}
-    <div class="error">{folderError}</div>
-  {:else if targetPath}
-    <div class="hint selectable">{targetPath}</div>
+  </Field>
+  {#if !(folderError && folderName !== "") && targetPath}
+    <Text variant="hint" tone="faint" selectable>{targetPath}</Text>
   {/if}
   {#if cloning}
-    <div class="progress row" role="status">
-      <span class="spinner" aria-hidden="true"></span>
-      <span class="truncate mono">{progressLine}</span>
-    </div>
+    <Stack direction="row" align="center" gap="md" role="status">
+      <Spinner size="small" label="Cloning" />
+      <Text size="small" tone="dim" mono truncate>{progressLine}</Text>
+    </Stack>
   {/if}
   {#if cloneNotice}
-    <div class="hint" role="status">{cloneNotice}</div>
+    <Stack role="status"><Text variant="hint" tone="faint">{cloneNotice}</Text></Stack>
   {/if}
   {#if cloneError}
-    <div class="error selectable">{cloneError}</div>
+    <Text size="small" tone="danger" selectable>{cloneError}</Text>
   {/if}
 
-  {#snippet footer()}
+  {#snippet actions()}
     {#if cloning}
-      <button type="button" class="btn" onclick={() => void cancelClone()} disabled={cancelling}>
+      <Button onclick={() => void cancelClone()} disabled={cancelling}>
         {cancelling ? "Cancelling..." : "Cancel"}
-      </button>
+      </Button>
     {:else}
-      <button type="button" class="btn" onclick={close}>Cancel</button>
+      <Button onclick={close}>Cancel</Button>
     {/if}
-    <button type="button" class="btn primary" disabled={!canClone} onclick={() => void submit()}>
+    <Button variant="primary" disabled={!canClone} onclick={() => void submit()}>
       {cloning ? "Cloning..." : "Clone"}
-    </button>
+    </Button>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .parent {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .progress {
-    font-size: 12px;
-    color: var(--text-dim);
-    min-width: 0;
-  }
-</style>
+</Dialog>

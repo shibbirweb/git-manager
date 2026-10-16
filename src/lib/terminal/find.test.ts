@@ -61,7 +61,9 @@ describe("findCounterText", () => {
     expect(findCounterText("main", { resultIndex: -1, resultCount: 0 }, null)).toBe("No results");
     expect(findCounterText("main", { resultIndex: 2, resultCount: 12 }, null)).toBe("3 of 12");
     expect(findCounterText("main", { resultIndex: -1, resultCount: 4 }, null)).toBe("4 found");
-    expect(findCounterText("a", { resultIndex: 0, resultCount: FIND_HIGHLIGHT_LIMIT }, null)).toBe(`1 of ${FIND_HIGHLIGHT_LIMIT}+`);
+    expect(findCounterText("a", { resultIndex: 0, resultCount: FIND_HIGHLIGHT_LIMIT }, null)).toBe(
+      `1 of ${FIND_HIGHLIGHT_LIMIT}+`,
+    );
     expect(findCounterText("a(", null, "Invalid regular expression")).toBe("Invalid regular expression");
   });
 });

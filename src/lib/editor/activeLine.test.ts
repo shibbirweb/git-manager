@@ -11,11 +11,15 @@ function state(selection: EditorSelection): EditorState {
 describe("activeLineStarts", () => {
   it("highlights the cursor's line while nothing is selected", () => {
     expect(activeLineStarts(state(EditorSelection.single(14)))).toEqual([11]);
-    expect(activeLineStarts(state(EditorSelection.create([EditorSelection.cursor(2), EditorSelection.cursor(25)])))).toEqual([0, 23]);
+    expect(
+      activeLineStarts(state(EditorSelection.create([EditorSelection.cursor(2), EditorSelection.cursor(25)]))),
+    ).toEqual([0, 23]);
   });
 
   it("highlights nothing while text is selected, so the selection shows", () => {
     expect(activeLineStarts(state(EditorSelection.single(12, 17)))).toEqual([]);
-    expect(activeLineStarts(state(EditorSelection.create([EditorSelection.cursor(2), EditorSelection.range(12, 17)])))).toEqual([]);
+    expect(
+      activeLineStarts(state(EditorSelection.create([EditorSelection.cursor(2), EditorSelection.range(12, 17)]))),
+    ).toEqual([]);
   });
 });

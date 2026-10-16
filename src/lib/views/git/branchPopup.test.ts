@@ -4,6 +4,8 @@ import {
   type BranchActionItem,
   type BranchActionRow,
   type BranchPopupContext,
+  branchItemKey,
+  branchListItems,
   filterBranches,
   localBranchActions,
   remoteBranchActions,
@@ -77,7 +79,11 @@ describe("branches popup", () => {
     expect(find(blocked, "Checkout")?.disabled).toBe(true);
     expect(find(blocked, "Compare with 'main'")?.disabled).toBe(false);
     const detached = remoteBranchActions(remote, { ...context, current: null });
-    expect(labels(detached)).toEqual(["Checkout", "New Branch from 'origin/feature'...", "Show Diff with Working Tree"]);
+    expect(labels(detached)).toEqual([
+      "Checkout",
+      "New Branch from 'origin/feature'...",
+      "Show Diff with Working Tree",
+    ]);
   });
 
   it("filters by every word and lists the current branch first", () => {
@@ -87,11 +93,33 @@ describe("branches popup", () => {
       tags: [],
       remotes: ["origin"],
     };
-    expect(filterBranches(refs, "").local.map((branch) => branch.name)).toEqual(["main", "feature/login", "feature/logout"]);
+    expect(filterBranches(refs, "").local.map((branch) => branch.name)).toEqual([
+      "main",
+      "feature/login",
+      "feature/logout",
+    ]);
     const found = filterBranches(refs, "feat LOGIN");
     expect(found.local.map((branch) => branch.name)).toEqual(["feature/login"]);
     expect(found.remote).toEqual([]);
     expect(filterBranches(null, "x")).toEqual({ local: [], remote: [] });
     expect(trackingHint(local("a", { upstream: "origin/a", ahead: 2, behind: 1 }))).toBe("origin/a, 2 ahead, 1 behind");
+  });
+});
+
+describe("branch list items", () => {
+  it("heads each group before its first branch and leaves out empty groups", () => {
+    const items = branchListItems({ local: [local("main"), local("feature")], remote: [remote] });
+    expect(items.map(branchItemKey)).toEqual([
+      "group:Local",
+      "local:main",
+      "local:feature",
+      "group:Remote",
+      "remote:origin/feature",
+    ]);
+    expect(branchListItems({ local: [], remote: [remote] }).map(branchItemKey)).toEqual([
+      "group:Remote",
+      "remote:origin/feature",
+    ]);
+    expect(branchListItems({ local: [], remote: [] })).toEqual([]);
   });
 });

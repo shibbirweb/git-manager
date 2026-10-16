@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::files::stat_version;
 use super::lfs::{self, LfsPointer};
 use super::repo::{bytes_to_text, resolve_commit, workdir};
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult};
 use crate::merge::line_diff::{text_hunks, LineHunk};
 use crate::merge::model::{into_lf, Eol};
 
@@ -309,11 +309,20 @@ pub fn from_bytes(path: &str, original: Option<Vec<u8>>, modified: Option<Vec<u8
     build(path, side(original), side(modified))
 }
 
-/// Diff of one file in a commit against its first parent.
-pub fn commit_file(repo: &Repository, commit_id: &str, path: &str, orig_path: Option<&str>) -> AppResult<FileDiff> {
+/// Diff of one file in a commit against one of its parents (0 is the first; a root commit has none).
+pub fn commit_file(
+    repo: &Repository,
+    commit_id: &str,
+    path: &str,
+    orig_path: Option<&str>,
+    parent_index: usize,
+) -> AppResult<FileDiff> {
     let commit = repo.find_commit(Oid::from_str(commit_id)?)?;
     let tree = commit.tree()?;
-    let parent_tree = commit.parent(0).ok().and_then(|parent| parent.tree().ok());
+    if parent_index > 0 && parent_index >= commit.parent_count() {
+        return Err(AppError::invalid(format!("The commit has no parent {}", parent_index + 1)));
+    }
+    let parent_tree = commit.parent(parent_index).ok().and_then(|parent| parent.tree().ok());
     let original = tree_side(repo, parent_tree.as_ref(), orig_path.unwrap_or(path))?;
     let modified = tree_side(repo, Some(&tree), path)?;
     Ok(build(path, original, modified))

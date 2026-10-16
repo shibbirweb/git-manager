@@ -83,7 +83,8 @@ Terminal loads the shell list when first shown; Automation refreshes the server 
 | `src-tauri/src/config.rs`, `commands/config.rs` | Allowed files, `load_in`, atomic `save_in`; the commands |
 | `src/lib/stores/settings.svelte.ts` | The store: load errors, debounced save, migration, `openDialog`, appearance |
 | `src/lib/stores/settingsData.ts` | Pure validation, JSON shape, what may be saved, session steps |
-| `src/lib/views/SettingsDialog.svelte` | The dialog and its sections, Reset, Try Again, the state.json banner |
+| `src/lib/views/SettingsDialog.svelte` | The dialog, Reset, Try Again, state.json banner |
+| `src/lib/views/settings/SettingsSectionView.svelte`, `*Settings.svelte` | One file per section |
 | `src/lib/views/settings/ColorThemePicker.svelte` | The color theme lists |
 | `src/lib/views/settings/settingsSearch.ts` | [Search in Settings](How-Settings-Search-Works.md) |
 | `src/lib/App.svelte` | Effects that pass settings to the backend |

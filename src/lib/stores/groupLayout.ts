@@ -47,11 +47,18 @@ export function clampSplitRatio(ratio: number): number {
 
 /** The groups left to right and top to bottom: first side before second at every split. */
 export function layoutGroupIds(layout: GroupLayout): number[] {
-  return layout.kind === "group" ? [layout.groupId] : [...layoutGroupIds(layout.first), ...layoutGroupIds(layout.second)];
+  return layout.kind === "group"
+    ? [layout.groupId]
+    : [...layoutGroupIds(layout.first), ...layoutGroupIds(layout.second)];
 }
 
 /** `groupId`'s area split in two: the group keeps the first side and `newGroupId` takes the second. */
-export function splitLayout(layout: GroupLayout, groupId: number, newGroupId: number, direction: SplitDirection): GroupLayout {
+export function splitLayout(
+  layout: GroupLayout,
+  groupId: number,
+  newGroupId: number,
+  direction: SplitDirection,
+): GroupLayout {
   if (layout.kind === "group") {
     return layout.groupId === groupId
       ? { kind: "split", direction, ratio: DEFAULT_SPLIT_RATIO, first: layout, second: leafLayout(newGroupId) }
@@ -155,7 +162,13 @@ export function rowLayout(groupIds: readonly number[]): GroupLayout {
     return leafLayout(first ?? 0);
   }
   // Each split gives the first group its fair share, so all end up the same width.
-  return { kind: "split", direction: "right", ratio: 1 / groupIds.length, first: leafLayout(first), second: rowLayout(rest) };
+  return {
+    kind: "split",
+    direction: "right",
+    ratio: 1 / groupIds.length,
+    first: leafLayout(first),
+    second: rowLayout(rest),
+  };
 }
 
 /**
@@ -171,7 +184,13 @@ export function parseGroupLayout(value: unknown, count: number): GroupLayout | n
     const data = node as Record<string, unknown>;
     if (data.kind === "group") {
       const groupId = data.groupId;
-      if (typeof groupId !== "number" || !Number.isInteger(groupId) || groupId < 0 || groupId >= count || seen.has(groupId)) {
+      if (
+        typeof groupId !== "number" ||
+        !Number.isInteger(groupId) ||
+        groupId < 0 ||
+        groupId >= count ||
+        seen.has(groupId)
+      ) {
         return null;
       }
       seen.add(groupId);

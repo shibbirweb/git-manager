@@ -25,7 +25,9 @@ export function windowLongName(windowMinutes: number): string {
   if (windowMinutes === 10_080) {
     return "Weekly";
   }
-  return windowMinutes % 60 === 0 && windowMinutes < 1440 ? `${windowMinutes / 60}-hour` : `${windowShortName(windowMinutes)}`;
+  return windowMinutes % 60 === 0 && windowMinutes < 1440
+    ? `${windowMinutes / 60}-hour`
+    : `${windowShortName(windowMinutes)}`;
 }
 
 function rounded(usedPercent: number): number {
@@ -36,8 +38,16 @@ function rounded(usedPercent: number): number {
 export function namedWindows(usage: ProviderUsage): { short: string; long: string; window: UsageWindow }[] {
   const plain = [usage.session, usage.weekly]
     .filter((window): window is UsageWindow => window !== null)
-    .map((window) => ({ short: windowShortName(window.windowMinutes), long: windowLongName(window.windowMinutes), window }));
-  const models = (usage.modelWeekly ?? []).map(({ model, window }) => ({ short: model, long: `${model} weekly`, window }));
+    .map((window) => ({
+      short: windowShortName(window.windowMinutes),
+      long: windowLongName(window.windowMinutes),
+      window,
+    }));
+  const models = (usage.modelWeekly ?? []).map(({ model, window }) => ({
+    short: model,
+    long: `${model} weekly`,
+    window,
+  }));
   return [...plain, ...models];
 }
 
@@ -59,7 +69,10 @@ export function usageText(usage: ProviderUsage, now: number): string {
 /** The fullest window, which decides the bar and its color. */
 export function tightestWindow(usage: ProviderUsage): UsageWindow | null {
   const windows = namedWindows(usage).map(({ window }) => window);
-  return windows.reduce<UsageWindow | null>((tightest, window) => (!tightest || window.usedPercent > tightest.usedPercent ? window : tightest), null);
+  return windows.reduce<UsageWindow | null>(
+    (tightest, window) => (!tightest || window.usedPercent > tightest.usedPercent ? window : tightest),
+    null,
+  );
 }
 
 /** The time left until a reset: "45m", "3h 20m", "2d 4h"; "0m" once it is due. */

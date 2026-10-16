@@ -1,43 +1,27 @@
-<!-- Bottom status bar: repository state on the left, app memory on the right. -->
+<!-- Bottom status bar: repository state on the left, the editor's caret, jobs and app memory on the right. -->
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { openBranchPicker, syncFromRow } from "./changes/repoActions";
-  import { rowSync, rowSyncBadge, rowSyncTooltip } from "./changes/sync";
-  import { gpuRenderers } from "$lib/terminal/gpuRenderers.svelte";
-  import { terminalDrawingSummary, type WebglInfo, webglLabel } from "$lib/terminal/gpuStatus";
-  import { probeWebgl } from "$lib/ui/webglProbe";
-  import { api } from "$lib/api";
-  import { branchTabPath } from "$lib/stores/branchTabs";
-  import { loadingChangesText } from "$lib/stores/openingProgress";
-  import { autoFetch } from "$lib/stores/autoFetch.svelte";
-  import { repoStore } from "$lib/stores/repo.svelte";
-  import { settings } from "$lib/stores/settings.svelte";
-  import { clearCache } from "$lib/debug/clearCache";
-  import type { MemoryUsage } from "$lib/types";
-  import { editorStatus } from "$lib/stores/editorStatus.svelte";
-  import { formatBytes } from "$lib/ui/formatBytes";
-  import Icon from "$lib/ui/Icon.svelte";
-  import NotificationBell from "$lib/notifications/NotificationBell.svelte";
-  import { contextMenu } from "$lib/ui/menu.svelte";
-  import { changesSelection } from "./changes/selection.svelte";
-  import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
-  import { updates } from "$lib/update/updates.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import LibraryStatusBar from "@git-manager/ui/components/StatusBar.svelte";
+  import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
   import AiUsage from "$lib/ai/AiUsage.svelte";
   import KeepAwake from "$lib/ai/KeepAwake.svelte";
-  import TerminalMemory from "$lib/terminal/TerminalMemory.svelte";
-  import { platformName } from "$lib/update/releases";
-
-  const POLL_MS = 5000;
-
-  let memory = $state.raw<MemoryUsage | null>(null);
-  /** Clear Cache and the WebKit wording are macOS only; Windows counts WebView2 like Task Manager. */
-  const onMac = platformName(navigator.userAgent) === "macOS";
-  let detailsOpen = $state(false);
-  let memoryEl = $state<HTMLDivElement | null>(null);
+  import NotificationBell from "$lib/notifications/NotificationBell.svelte";
+  import { autoFetch } from "$lib/stores/autoFetch.svelte";
+  import { branchTabPath } from "$lib/stores/branchTabs";
+  import { editorStatus } from "$lib/stores/editorStatus.svelte";
+  import { loadingChangesText } from "$lib/stores/openingProgress";
+  import { repoStore } from "$lib/stores/repo.svelte";
+  import { settings } from "$lib/stores/settings.svelte";
+  import { contextMenu } from "$lib/ui/menu.svelte";
+  import { updates } from "$lib/update/updates.svelte";
+  import { openBranchPicker, syncFromRow } from "./changes/repoActions";
+  import { changesSelection } from "./changes/selection.svelte";
+  import { rowSync, rowSyncBadge, rowSyncTooltip } from "./changes/sync";
+  import MemoryStatus from "./MemoryStatus.svelte";
+  import { currentScreenRepo, openRepoPicker } from "./repoSelection.svelte";
 
   // The left side describes the active repository. With Auto (the
   // default) that follows the open tab, and a file outside every repository says so.
-  const shownView = $derived(changesSelection.shownView);
   const screen = $derived(currentScreenRepo());
   const contextRepo = $derived.by(() => {
     if (settings.activeRepoAuto && screen.kind === "repo") {
@@ -61,8 +45,18 @@
   /** A file tab is on screen and outside every repository. */
   const fileWithoutRepo = $derived(settings.activeRepoAuto && screen.kind === "outside");
   const fileInfo = $derived(
-    shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath ? editorStatus.info : null,
+    changesSelection.shownView === "file" && editorStatus.info && editorStatus.info.filePath === repoStore.openFilePath
+      ? editorStatus.info
+      : null,
   );
+  const caret = $derived.by(() => {
+    if (!fileInfo) {
+      return "";
+    }
+    const lines = fileInfo.selectedLines > 1 ? `, ${fileInfo.selectedLines} lines` : "";
+    const selected = fileInfo.selected > 0 ? ` (${fileInfo.selected} selected${lines})` : "";
+    return `Ln ${fileInfo.line}, Col ${fileInfo.column}${selected}`;
+  });
 
   async function runSync(repoRoot: string): Promise<void> {
     syncing = true;
@@ -73,42 +67,6 @@
     }
   }
 
-  async function showConflicts(): Promise<void> {
-    await repoStore.openConflicts(contextRepo?.root);
-  }
-
-  async function poll(): Promise<void> {
-    try {
-      memory = await api.memoryUsage();
-    } catch {
-      memory = null;
-    }
-  }
-
-  onMount(() => {
-    void poll();
-    let timer: ReturnType<typeof setInterval> | undefined;
-    const start = () => {
-      clearInterval(timer);
-      timer = setInterval(() => void poll(), POLL_MS);
-    };
-    // Measuring costs a little CPU; skip it while the window is hidden.
-    const onVisibility = () => {
-      if (document.hidden) {
-        clearInterval(timer);
-      } else {
-        void poll();
-        start();
-      }
-    };
-    start();
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  });
-
   /** Bug report or feature request, opened above the button. */
   function openFeedbackMenu(event: MouseEvent): void {
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
@@ -117,439 +75,136 @@
       { label: "Request a Feature", hint: "GitHub issue", action: () => void updates.requestFeature() },
     ]);
   }
-
-  /** Checked each time the popup opens; the test context is released at once. */
-  let webgl = $state<WebglInfo | null>(null);
-  const terminalDrawing = $derived(
-    terminalDrawingSummary({
-      drawings: [...gpuRenderers.drawings.values()],
-      gpuSetting: settings.terminalGpuAcceleration,
-      ligatures: settings.terminalLigatures,
-    }),
-  );
-
-  function toggleDetails(): void {
-    detailsOpen = !detailsOpen;
-    if (detailsOpen) {
-      void poll();
-      webgl = probeWebgl();
-    }
-  }
 </script>
 
-<svelte:window
-  onmousedown={(event) => {
-    if (detailsOpen && memoryEl && !memoryEl.contains(event.target as Node)) {
-      detailsOpen = false;
-    }
-  }}
-  onkeydown={(event) => {
-    if (event.key === "Escape" && detailsOpen) {
-      detailsOpen = false;
-    }
-  }}
-/>
-
-<footer class="status-bar">
-  <div class="left">
+<LibraryStatusBar look={settings.roundedPanels ? "rounded" : "flat"}>
+  {#snippet start()}
     {#if contextRepo}
-      <button
-        class="item"
+      {@const repoRoot = contextRepo.root}
+      <StatusItem
+        icon="folder-git"
+        text={contextRepo.name}
+        title="Repository {repoRoot}{settings.activeRepoAuto ? ' (Auto)' : ''}. Click to select a repository."
         onclick={() => void openRepoPicker()}
-        title="Repository {contextRepo.root}{settings.activeRepoAuto ? ' (Auto)' : ''}. Click to select a repository."
-      >
-        <Icon name="folder-git" size={12} />
-        <span>{contextRepo.name}</span>
-      </button>
+      />
       {#if branch}
-        <button
-          class="item branch"
-          onclick={() => openBranchPicker(contextRepo.root)}
+        <StatusItem
+          icon="branch"
+          text={branch}
+          limit="branch"
           title="Branch {branch} of {contextRepo.name}. Click to check out another branch."
-        >
-          <Icon name="branch" size={12} />
-          <span class="branch-name">{branch}</span>
-        </button>
+          onclick={() => openBranchPicker(repoRoot)}
+        />
       {/if}
       {#if sync.kind !== "hidden"}
-        <button
-          class="item"
-          class:spinning={syncing}
-          onclick={() => void runSync(contextRepo.root)}
+        <StatusItem
+          icon={sync.kind === "publish" ? "cloud-upload" : "sync"}
+          text={syncBadge ?? ""}
+          spin={syncing}
           disabled={repoStore.busy !== null || (op?.kind ?? "none") !== "none"}
           title={rowSyncTooltip(sync)}
-          aria-label={sync.kind === "publish" ? "Publish Branch" : "Synchronize Changes"}
-        >
-          <Icon name={sync.kind === "publish" ? "cloud-upload" : "sync"} size={12} />
-          {#if syncBadge}
-            <span>{syncBadge}</span>
-          {/if}
-        </button>
+          label={sync.kind === "publish" ? "Publish Branch" : "Synchronize Changes"}
+          onclick={() => void runSync(repoRoot)}
+        />
       {/if}
       {#if changes > 0}
-        <button
-          class="item"
-          onclick={() => repoStore.openPseudoTab(branchTabPath({ kind: "changes", repoRoot: contextRepo.root }))}
+        <StatusItem
+          icon="git-compare"
+          text="{changes} {changes === 1 ? 'change' : 'changes'}"
           title="Changed files in {contextRepo.name}. Click to see them in a tab."
-        >
-          <Icon name="git-compare" size={12} />
-          <span>{changes} {changes === 1 ? "change" : "changes"}</span>
-        </button>
+          onclick={() => repoStore.openPseudoTab(branchTabPath({ kind: "changes", repoRoot }))}
+        />
       {/if}
       {#if conflicts > 0}
-        <button class="item conflict" onclick={() => void showConflicts()} title="Resolve conflicts in {contextRepo.name}">
-          <Icon name="alert" size={12} />
-          <span>{conflicts} {conflicts === 1 ? "conflict" : "conflicts"}</span>
-        </button>
+        <StatusItem
+          icon="alert"
+          tone="danger"
+          text="{conflicts} {conflicts === 1 ? 'conflict' : 'conflicts'}"
+          title="Resolve conflicts in {contextRepo.name}"
+          onclick={() => void repoStore.openConflicts(repoRoot)}
+        />
       {/if}
       {#if op && op.kind !== "none"}
-        <span class="item static op">{op.description}</span>
+        <StatusItem text={op.description} limit="operation" />
       {/if}
     {:else if fileWithoutRepo}
       {#if repoStore.repos.length > 0}
-        <button class="item" onclick={() => void openRepoPicker()} title="This file is not inside a git repository. Click to select a repository.">
-          <Icon name="folder" size={12} /> No repository
-        </button>
+        <StatusItem
+          icon="folder"
+          text="No repository"
+          title="This file is not inside a git repository. Click to select a repository."
+          onclick={() => void openRepoPicker()}
+        />
       {:else}
-        <span class="item static" title="This file is not inside a git repository"><Icon name="folder" size={12} /> No repository</span>
+        <StatusItem icon="folder" text="No repository" title="This file is not inside a git repository" />
       {/if}
     {:else if repoStore.workspace}
-      <span class="item static"><Icon name="folder" size={12} /> {repoStore.workspace.name}</span>
+      <StatusItem icon="folder" text={repoStore.workspace.name} />
     {/if}
     {#if settings.aiUsagePosition === "left"}
       <AiUsage side="left" />
     {/if}
-  </div>
-
-  <div class="right">
+  {/snippet}
+  {#snippet end()}
     {#if fileInfo}
-      <span class="item static" title="Cursor position">
-        Ln {fileInfo.line}, Col {fileInfo.column}
-        {#if fileInfo.selected > 0}
-          ({fileInfo.selected} selected{fileInfo.selectedLines > 1 ? `, ${fileInfo.selectedLines} lines` : ""})
-        {/if}
-      </span>
-      <button
-        class="item"
+      <StatusItem text={caret} title="Cursor position" />
+      <StatusItem
+        text="{fileInfo.indentTabs ? 'Tab Size' : 'Spaces'}: {fileInfo.tabSize}"
+        title={fileInfo.indentDetected
+          ? "Indentation detected from the file (Settings > Editor)"
+          : "Indentation (change in Settings > Editor)"}
         onclick={() => settings.openDialog("editor")}
-        title={fileInfo.indentDetected ? "Indentation detected from the file (Settings > Editor)" : "Indentation (change in Settings > Editor)"}
-      >
-        {fileInfo.indentTabs ? "Tab Size" : "Spaces"}: {fileInfo.tabSize}
-      </button>
-      <span class="item static" title="Line endings">{fileInfo.eol === "crlf" ? "CRLF" : "LF"}</span>
-      <span class="item static" title="Language">{fileInfo.language}</span>
-      <span class="gap"></span>
+      />
+      <StatusItem text={fileInfo.eol === "crlf" ? "CRLF" : "LF"} title="Line endings" />
+      <StatusItem text={fileInfo.language} title="Language" />
     {/if}
     {#if autoFetch.hint}
-      <button class="item fetch-hint" onclick={() => autoFetch.retryNow()} title={autoFetch.hint.title}>
-        <Icon name="cloud" size={12} />
-        <span>{autoFetch.hint.text}</span>
-      </button>
+      <StatusItem
+        icon="cloud"
+        tone="warning"
+        text={autoFetch.hint.text}
+        title={autoFetch.hint.title}
+        onclick={() => autoFetch.retryNow()}
+      />
     {/if}
     {#if updates.available}
-      <button class="item update" onclick={() => (updates.dialogOpen = true)} title="See what's new and download">
-        <Icon name="arrow-down" size={12} />
-        <span>Update available: {updates.available.version}{updates.available.prerelease ? " (beta)" : ""}</span>
-      </button>
+      <StatusItem
+        icon="arrow-down"
+        tone="accent"
+        text="Update available: {updates.available.version}{updates.available.prerelease ? ' (beta)' : ''}"
+        title="See what's new and download"
+        onclick={() => (updates.dialogOpen = true)}
+      />
     {/if}
     {#if repoStore.busy}
-      <span class="item static busy"><span class="spinner"></span>{repoStore.busy}...</span>
+      <StatusItem text="{repoStore.busy}...">
+        {#snippet leading()}<Spinner size="small" label={repoStore.busy ?? "Working"} />{/snippet}
+      </StatusItem>
     {:else if repoStore.loadingChanges}
-      <span class="item static busy" title="Reading the changes of each repository; you can already work">
-        <span class="spinner"></span>{loadingChangesText(repoStore.loadingChanges.done, repoStore.loadingChanges.total)}
-      </span>
+      <StatusItem
+        text={loadingChangesText(repoStore.loadingChanges.done, repoStore.loadingChanges.total)}
+        title="Reading the changes of each repository; you can already work"
+      >
+        {#snippet leading()}<Spinner size="small" label="Reading changes" />{/snippet}
+      </StatusItem>
     {/if}
     {#if settings.aiUsagePosition === "right"}
       <AiUsage side="right" />
     {/if}
     <KeepAwake />
     <NotificationBell />
-    <button class="item icon-only" onclick={() => void updates.openRepository()} title="Star Git Manager on GitHub" aria-label="Star on GitHub">
-      <Icon name="star" size={12} />
-    </button>
-    <button class="item icon-only" onclick={openFeedbackMenu} title="Report a bug or request a feature" aria-label="Report an issue">
-      <Icon name="bug" size={12} />
-    </button>
-    {#if memory && memory.totalBytes > 0}
-      <div class="memory" bind:this={memoryEl}>
-        <button
-          class="item"
-          class:open={detailsOpen}
-          onclick={toggleDetails}
-          title="Memory used by Git Manager and its web view processes. Click for details."
-          aria-label="Memory {formatBytes(memory.totalBytes)}"
-        >
-          <Icon name="memory" size={13} />
-          <span>{formatBytes(memory.totalBytes)}</span>
-        </button>
-        {#if onMac}
-          <button
-            class="item icon-only"
-            onclick={() => void clearCache()}
-            title="Clear Cache: restart this window's interface to give back all the memory it holds. The screen blinks once; your folder and tabs come back."
-            aria-label="Clear Cache"
-          >
-            <Icon name="brush" size={12} />
-          </button>
-        {/if}
-        {#if detailsOpen}
-          <div class="details" role="dialog" aria-label="Memory usage">
-            <div class="details-head">
-              <span>Memory</span>
-              <strong>{formatBytes(memory.totalBytes)}</strong>
-            </div>
-            {#each memory.processes as process (process.pid)}
-              <div class="process" title="{process.name} (pid {process.pid})">
-                <div class="process-row">
-                  <span>{process.label}</span>
-                  <span class="mono">{formatBytes(process.bytes)}</span>
-                </div>
-                <div class="bar">
-                  <div class="fill" style="width: {Math.max(2, (process.bytes / memory.totalBytes) * 100)}%"></div>
-                </div>
-              </div>
-            {/each}
-            <TerminalMemory onShow={() => (detailsOpen = false)} />
-            <div class="gpu" aria-label="GPU acceleration">
-              <div class="gpu-title">GPU acceleration</div>
-              <div class="process-row">
-                <span>Terminals use the GPU</span>
-                <span class="gpu-value" title={terminalDrawing}>{terminalDrawing}</span>
-              </div>
-              <div class="process-row">
-                <span>WebGL support</span>
-                <span class="gpu-value" title={webglLabel(webgl)}>{webglLabel(webgl)}</span>
-              </div>
-              <p class="gpu-note">
-                The window always draws with the GPU through {onMac ? "macOS" : "WebView2"} (the Graphics process above).
-                Only terminals add WebGL drawing, set in Settings, Terminal.
-              </p>
-            </div>
-            <p class="note">
-              {#if onMac}
-                Physical memory of the whole app, all windows together, as Activity Monitor shows it. The UI runs in macOS
-                WebKit helper processes, one web content process per window, which are counted too.
-              {:else}
-                Memory of the whole app, all windows together, as Task Manager shows it (private working set). The UI runs
-                in Microsoft Edge WebView2 processes, which are counted too.
-              {/if}
-              {#if memory.approximate}
-                Started from a terminal, so helpers are matched by start time.
-              {/if}
-            </p>
-          </div>
-        {/if}
-      </div>
-    {/if}
-  </div>
-</footer>
-
-<style>
-  .status-bar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    height: 24px;
-    padding: 0 6px;
-    border-top: 1px solid var(--border-strong);
-    background: var(--panel-alt);
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  /* Rounded panels: the status bar is part of the window frame. */
-  :global(html[data-rounded-panels]) .status-bar {
-    border-top: none;
-    background: var(--frame);
-  }
-
-  .left,
-  .right {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .left {
-    overflow: hidden;
-  }
-
-  .item {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 20px;
-    padding: 0 7px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: inherit;
-    font-size: 12px;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  button.item:hover:not(:disabled),
-  .item.open {
-    background: var(--hover);
-    color: var(--text);
-  }
-
-  .item.static,
-  button.item:disabled {
-    cursor: default;
-  }
-
-  button.item:disabled:not(.spinning) {
-    opacity: 0.6;
-  }
-
-  /* A long branch name shrinks first and never pushes the other items away. */
-  .item.branch {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
-  .branch-name {
-    min-width: 0;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .spinning :global(svg) {
-    animation: spin 0.8s linear infinite;
-  }
-
-  .item.icon-only {
-    padding: 0 5px;
-  }
-
-  .item.update {
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .item.fetch-hint {
-    color: var(--warning);
-  }
-
-  .item.conflict {
-    color: var(--danger);
-  }
-
-  .item.op {
-    max-width: 320px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .gap {
-    width: 6px;
-  }
-
-  .spinner {
-    width: 10px;
-    height: 10px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .memory {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .details {
-    position: absolute;
-    right: 0;
-    bottom: 26px;
-    z-index: 600;
-    width: 300px;
-    padding: 12px 14px;
-    background: var(--panel);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    color: var(--text);
-  }
-
-  .details-head {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-
-  .gpu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border);
-  }
-
-  .gpu-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-  }
-
-  .gpu-note {
-    margin: 0;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
-  .gpu-value {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-dim);
-  }
-
-  .process {
-    margin-bottom: 9px;
-  }
-
-  .process-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-  }
-
-  .bar {
-    height: 4px;
-    margin-top: 4px;
-    border-radius: 2px;
-    background: var(--hover);
-    overflow: hidden;
-  }
-
-  .fill {
-    height: 100%;
-    border-radius: 2px;
-    background: var(--accent);
-  }
-
-  .note {
-    margin: 10px 0 0;
-    font-size: 11px;
-    line-height: 1.45;
-    color: var(--text-dim);
-  }
-</style>
+    <StatusItem
+      icon="star"
+      label="Star on GitHub"
+      title="Star Git Manager on GitHub"
+      onclick={() => void updates.openRepository()}
+    />
+    <StatusItem
+      icon="bug"
+      label="Report an issue"
+      title="Report a bug or request a feature"
+      onclick={openFeedbackMenu}
+    />
+    <MemoryStatus />
+  {/snippet}
+</LibraryStatusBar>

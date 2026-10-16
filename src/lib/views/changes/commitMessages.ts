@@ -38,7 +38,11 @@ export function rememberMessage(
 }
 
 /** Saved and committed messages together, newest first, each message once (its newest time). */
-export function mergeHistory(saved: HistoryEntry[], fromLog: HistoryEntry[], cap: number = MAX_MESSAGE_HISTORY): HistoryEntry[] {
+export function mergeHistory(
+  saved: HistoryEntry[],
+  fromLog: HistoryEntry[],
+  cap: number = MAX_MESSAGE_HISTORY,
+): HistoryEntry[] {
   const newest = new Map<string, number>();
   for (const entry of [...saved, ...fromLog]) {
     const text = cleanMessage(entry.message);
@@ -70,7 +74,12 @@ export function pruneRepos(history: MessageHistory, max: number = MAX_HISTORY_RE
 }
 
 /** `history` with `message` remembered for `repoRoot`; the same object when nothing changed. */
-export function rememberInHistory(history: MessageHistory, repoRoot: string, message: string, time: number): MessageHistory {
+export function rememberInHistory(
+  history: MessageHistory,
+  repoRoot: string,
+  message: string,
+  time: number,
+): MessageHistory {
   const current = history[repoRoot] ?? [];
   const next = rememberMessage(current, message, time);
   if (next === current) {

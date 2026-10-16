@@ -6,10 +6,13 @@
   import { onDestroy, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { FileCompare } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
+  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Notice from "@git-manager/ui/components/Notice.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import { compareStore, type SideInput } from "./compareStore.svelte";
   import { type CompareSideRef, parseCompareTabPath, sideLabels } from "./compareTabs";
 
@@ -158,64 +161,31 @@
   }
 </script>
 
-<div class="compare-files" bind:this={root}>
-  {#if !ref}
-    <div class="placeholder dim">This compare tab cannot be read.</div>
-  {:else if clipGone}
-    <div class="placeholder dim">The clipboard text of this tab is gone. Close the tab and compare again.</div>
-  {:else if loadError}
-    <div class="placeholder">
-      <Icon name="alert" size={18} />
-      <div>Could not compare the files</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
-  {:else if result}
-    {#if missingNote}
-      <div class="note dim">{missingNote}</div>
+<ElementHost fill="grow" stretch onready={(element) => void (root = element)}>
+  <Stack gap="none" surface="editor">
+    {#if !ref}
+      <EmptyState title="This compare tab cannot be read." />
+    {:else if clipGone}
+      <EmptyState title="The clipboard text of this tab is gone. Close the tab and compare again." />
+    {:else if loadError}
+      <EmptyState icon="alert" title="Could not compare the files" hint={loadError} />
+    {:else if result}
+      {#if missingNote}
+        <Notice variant="banner">{missingNote}</Notice>
+      {/if}
+      {#if binaryNote}
+        <Notice variant="banner">{binaryNote}</Notice>
+      {/if}
+      <GitDiffView
+        source={{ kind: "plain" }}
+        diff={result.diff}
+        path={result.diff.path}
+        labels={{ left: leftLabel, right: rightLabel }}
+        workingFile={rightFile && !result.rightMissing ? { filePath: rightFile, sameLines: true } : null}
+        {previewSides}
+      />
+    {:else}
+      <EmptyState title="Loading..." delayed />
     {/if}
-    {#if binaryNote}
-      <div class="note dim">{binaryNote}</div>
-    {/if}
-    <DiffView
-      diff={result.diff}
-      path={result.diff.path}
-      mode="readonly"
-      {leftLabel}
-      {rightLabel}
-      workingFile={rightFile && !result.rightMissing ? { filePath: rightFile, sameLines: true } : null}
-      {previewSides}
-    />
-  {:else}
-    <div class="placeholder dim">Loading...</div>
-  {/if}
-</div>
-
-<style>
-  .compare-files {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--editor-bg);
-  }
-
-  .note {
-    flex: none;
-    padding: 6px 12px;
-    border-bottom: 1px solid var(--border-strong);
-    background: var(--panel-alt);
-    font-size: 12px;
-  }
-
-  .placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px;
-    text-align: center;
-  }
-</style>
+  </Stack>
+</ElementHost>

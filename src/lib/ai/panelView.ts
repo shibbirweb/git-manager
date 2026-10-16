@@ -82,7 +82,10 @@ function matches(words: readonly string[], ...texts: string[]): boolean {
  * is left of them.
  */
 export function filterRows(rows: readonly PanelRow[], query: string): PanelRow[] {
-  const words = query.toLowerCase().split(/\s+/).filter((word) => word !== "");
+  const words = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word !== "");
   if (words.length === 0) {
     return [...rows];
   }

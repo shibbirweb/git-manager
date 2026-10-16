@@ -1,0 +1,205 @@
+// A file editor's git marks: changed lines against HEAD in the gutter and ruler, and blame. Each runs only when
+// what it was made for changed (the text, or HEAD), so a refresh of an unchanged tab costs one small call.
+import type { EditorState, Text } from "@codemirror/state";
+import type { EditorView } from "@codemirror/view";
+import { api } from "$lib/api";
+import { loadBlame } from "$lib/editor/blame";
+import { conflictField } from "$lib/editor/conflictDecorations";
+import { type ChangeMark, diffLines } from "$lib/editor/lineDiff";
+import { changeAtLine, revertEdit } from "$lib/editor/revertLines";
+import { changeMarkField, type MarkSource, setChangeMarks } from "$lib/editor/scrollMarkers";
+import type { RepoLocation } from "$lib/stores/workspacePaths";
+import type { Eol, HeadFile, HeadVersion, RepoStatus } from "$lib/types";
+import { dialogs } from "$lib/ui/dialog.svelte";
+import { toast } from "$lib/ui/toast.svelte";
+
+export interface GitInfoHost {
+  filePath: string;
+  view: () => EditorView | null;
+  location: () => RepoLocation | null;
+  repoStatus: () => RepoStatus | null;
+  /** The file's line endings, for blaming unsaved text. */
+  eol: () => Eol | null;
+}
+
+export class FileGitInfo {
+  /** HEAD as last seen, and the text and HEAD the change marks and blame were made for. */
+  #head: HeadVersion | null = null;
+  #marksFor: { doc: Text; blobId: string | null } | null = null;
+  #blameFor: { doc: Text; commitId: string | null } | null = null;
+  #timer: ReturnType<typeof setTimeout> | undefined;
+
+  constructor(private readonly host: GitInfoHost) {}
+
+  /** The path HEAD has the file under: the old one for a staged rename. */
+  #headPath(repoPath: string): string | null {
+    return this.host.repoStatus()?.files.find((entry) => entry.path === repoPath)?.origPath ?? null;
+  }
+
+  /** Brings the change marks and blame up to date with the text and HEAD. */
+  async refresh(): Promise<void> {
+    const owner = this.host.location();
+    const shown = this.host.view();
+    if (!owner || !shown) {
+      void this.updateMarks();
+      return;
+    }
+    let head: HeadVersion;
+    try {
+      head = await api.headFileVersion(owner.repo.root, owner.repoPath, this.#headPath(owner.repoPath));
+    } catch {
+      return;
+    }
+    if (this.host.view() !== shown) {
+      return;
+    }
+    this.#head = head;
+    const doc = shown.state.doc;
+    if (this.#marksFor?.doc !== doc || this.#marksFor.blobId !== head.blobId) {
+      void this.updateMarks();
+    }
+    if (this.#blameFor?.doc !== doc || this.#blameFor.commitId !== head.commitId) {
+      this.refreshBlame();
+    }
+  }
+
+  /** Blames the text on screen; unsaved edits show as uncommitted. */
+  refreshBlame(): void {
+    const owner = this.host.location();
+    const view = this.host.view();
+    const eol = this.host.eol();
+    if (!view || eol === null || !owner) {
+      return;
+    }
+    const filePath = this.host.filePath;
+    this.#blameFor = { doc: view.state.doc, commitId: this.#head?.commitId ?? null };
+    void loadBlame(
+      view,
+      { repoRoot: owner.repo.root, filePath: owner.repoPath, revision: null, origin: (line) => ({ filePath, line }) },
+      eol,
+    );
+  }
+
+  /** Changed lines against HEAD, computed by the backend; results for text edited since are dropped. */
+  async updateMarks(): Promise<void> {
+    const owner = this.host.location();
+    const shown = this.host.view();
+    if (!shown) {
+      return;
+    }
+    const doc = shown.state.doc;
+    if (!owner) {
+      this.#marksFor = null;
+      if (shown.state.field(changeMarkField).length > 0) {
+        shown.dispatch({ effects: setChangeMarks.of([]) });
+      }
+      return;
+    }
+    const blobId = this.#head?.blobId ?? null;
+    if (this.#marksFor?.doc === doc && this.#marksFor.blobId === blobId) {
+      return;
+    }
+    this.#marksFor = { doc, blobId };
+    let marks: ChangeMark[] = [];
+    try {
+      const result = await api.lineChangeMarks(
+        owner.repo.root,
+        owner.repoPath,
+        this.#headPath(owner.repoPath),
+        doc.toString(),
+      );
+      marks = result.marks;
+      if (this.host.view() === shown && shown.state.doc === doc) {
+        this.#marksFor = { doc, blobId: result.head.blobId };
+      }
+    } catch {
+      // No marks, e.g. while the repository is being changed; the next refresh tries again.
+      this.#marksFor = null;
+    }
+    // A newer edit schedules its own run.
+    if (this.host.view() !== shown || shown.state.doc !== doc) {
+      return;
+    }
+    shown.dispatch({ effects: setChangeMarks.of(marks) });
+  }
+
+  /**
+   * A click on a change bar: after a confirm, the change on `line` goes back to HEAD's lines as one edit
+   * (undo brings it back). The change is found again in the text as it is then, so edits made meanwhile count.
+   */
+  async revertChange(line: number): Promise<void> {
+    const owner = this.host.location();
+    const view = this.host.view();
+    if (!owner || !view || view.state.readOnly) {
+      return;
+    }
+    const fileName = owner.repoPath.split("/").pop() ?? owner.repoPath;
+    const confirmed = await dialogs.confirm({
+      title: "Revert Change",
+      message: `Revert the change at line ${line + 1} in ${fileName}? Its lines go back to the last commit.`,
+      confirmLabel: "Revert",
+      danger: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    let head: HeadFile;
+    try {
+      head = await api.readHeadFile(owner.repo.root, owner.repoPath, this.#headPath(owner.repoPath));
+    } catch (error) {
+      toast.error("Could not read the last commit", String(error));
+      return;
+    }
+    if (head.binary || head.tooLarge || this.host.view() !== view) {
+      return;
+    }
+    const doc = view.state.doc;
+    const headLines = head.content.split("\n");
+    const hunk = changeAtLine(diffLines(headLines, doc.toString().split("\n")), line, doc.lines);
+    if (!hunk) {
+      toast.info("Nothing to revert", `Line ${line + 1} has no change since the last commit.`);
+      return;
+    }
+    const edit = revertEdit(doc, hunk, headLines);
+    view.dispatch({
+      changes: edit,
+      selection: { anchor: edit.from },
+      scrollIntoView: true,
+      userEvent: "input.revert",
+    });
+  }
+
+  /** After a pause in typing. */
+  scheduleMarks(): void {
+    clearTimeout(this.#timer);
+    this.#timer = setTimeout(() => void this.updateMarks(), 200);
+  }
+
+  dispose(): void {
+    clearTimeout(this.#timer);
+  }
+}
+
+/** The marks the gutter and ruler draw: conflict regions win over plain changes. Memoized per editor. */
+export function conflictAwareMarks(): MarkSource {
+  let memo: { changes: readonly ChangeMark[]; conflicts: unknown; result: ChangeMark[] } | null = null;
+  return (state: EditorState) => {
+    const changes = state.field(changeMarkField, false) ?? [];
+    const conflicts = state.field(conflictField, false) ?? [];
+    if (memo && memo.changes === changes && memo.conflicts === conflicts) {
+      return memo.result;
+    }
+    const conflictMarks: ChangeMark[] = conflicts.map((region) => ({
+      from: region.start,
+      to: region.end + 1,
+      kind: "conflict",
+    }));
+    const outside = changes.filter(
+      (mark) =>
+        !conflictMarks.some((conflict) => mark.from < conflict.to && Math.max(mark.to, mark.from + 1) > conflict.from),
+    );
+    const result = [...outside, ...conflictMarks].sort((a, b) => a.from - b.from);
+    memo = { changes, conflicts, result };
+    return result;
+  };
+}

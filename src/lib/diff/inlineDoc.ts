@@ -180,6 +180,14 @@ export function inlineChangeMarks(doc: InlineDoc): ChangeMark[] {
   });
 }
 
+/** The mark git prints before a line of a patch: "-" removed, "+" added, "" unchanged. */
+export function lineSign(line: InlineLine | undefined): "-" | "+" | "" {
+  if (line?.kind === "deleted") {
+    return "-";
+  }
+  return line?.kind === "added" ? "+" : "";
+}
+
 /** The new text's line for a document line; a removed line counts as the line after it. */
 export function newLineAt(doc: InlineDoc, docLine: number): number {
   for (let index = Math.max(0, docLine); index < doc.lines.length; index++) {

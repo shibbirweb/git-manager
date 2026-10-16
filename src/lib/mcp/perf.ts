@@ -2,11 +2,12 @@
 // scroll_view walk. Nothing runs until an agent calls a tool; the long task observer starts on
 // the first get_ui_performance call and reports what it saw since the previous one.
 
-import { mermaidLoaded } from "$lib/markdown/mermaid";
+import { mermaidLoaded } from "@git-manager/ui/markdown/mermaid";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 import { FRAME_MS, frameStats, type FrameStats, largest, nextScroll, type ScrollWalk } from "./perfModel";
 import type { ScrollTarget } from "./toolDefs";
+import { SHOWN_TAB_CONTENT } from "$lib/views/workspaceDom";
 
 /** The main areas of the window, counted on their own. */
 const AREAS: Record<string, string> = {
@@ -45,7 +46,9 @@ class LongTaskWatcher {
   private since = 0;
 
   get supported(): boolean {
-    return typeof PerformanceObserver !== "undefined" && (PerformanceObserver.supportedEntryTypes ?? []).includes("longtask");
+    return (
+      typeof PerformanceObserver !== "undefined" && (PerformanceObserver.supportedEntryTypes ?? []).includes("longtask")
+    );
   }
 
   /** What was seen since the last call; the first call starts watching. */
@@ -128,7 +131,9 @@ export async function uiPerformance(sampleMs: number): Promise<Record<string, un
     markdownDiagrams: document.querySelectorAll(".md-mermaid svg").length,
     // The hidden frame that holds the mermaid library; false once no document with diagrams is open.
     mermaidLoaded: mermaidLoaded(),
-    markdownDiagramErrors: [...document.querySelectorAll(".md-mermaid-error")].slice(0, 3).map((element) => element.textContent ?? ""),
+    markdownDiagramErrors: [...document.querySelectorAll(".md-mermaid-error")]
+      .slice(0, 3)
+      .map((element) => element.textContent ?? ""),
     longTasks: tasks,
     frames: frames ? { sampleMs, ...frames } : null,
     windowVisible: document.visibilityState === "visible",
@@ -137,7 +142,7 @@ export async function uiPerformance(sampleMs: number): Promise<Record<string, un
 
 /** Where each target's scrollable areas are. */
 const SCROLL_SELECTORS: Record<Exclude<ScrollTarget, "auto">, string> = {
-  editor: ".file-host:not(.hidden) .cm-scroller",
+  editor: `${SHOWN_TAB_CONTENT} .cm-scroller`,
   "markdown-preview": ".markdown-preview",
   "rich-markdown": ".rich-markdown",
   log: ".log-view .scroller",

@@ -2,16 +2,24 @@
      local and remote branches. A branch opens its submenu (Checkout, Compare, Merge, Update,
      Push...) on click, Enter or Right; Up and Down move through the list. -->
 <script lang="ts">
-  import { onMount, tick } from "svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Dialog from "@git-manager/ui/components/Dialog.svelte";
+  import Divider from "@git-manager/ui/components/Divider.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import { onMount } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { Refs } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { checkoutTo, loadDetails } from "../changes/repoActions";
   import { newBranchFrom, repoTarget } from "../sidebar/actions";
-  import { filterBranches, trackingHint } from "./branchPopup";
-  import { branchMenuItems, type PopupBranch } from "./branchPopupActions";
-  import GitDialogFrame from "./GitDialogFrame.svelte";
+  import { branchItemKey, branchListItems, type BranchListItem, filterBranches, trackingHint } from "./branchPopup";
+  import { branchMenuItems } from "./branchPopupActions";
   import { gitDialogs } from "./gitDialogs.svelte";
 
   interface Props {
@@ -22,16 +30,12 @@
 
   let refs = $state.raw<Refs | null>(null);
   let query = $state("");
-  let highlighted = $state(0);
-  let listEl = $state<HTMLDivElement | null>(null);
+  let selectedKey = $state<string | null>(null);
+  let filterEl = $state<HTMLInputElement | null>(null);
 
   const status = $derived(repoStore.statuses[repoRoot] ?? null);
   const repoName = $derived(repoStore.repos.find((repo) => repo.root === repoRoot)?.name ?? "repository");
-  const list = $derived(filterBranches(refs, query));
-  const rows = $derived<PopupBranch[]>([
-    ...list.local.map((branch) => ({ kind: "local" as const, branch })),
-    ...list.remote.map((remoteBranch) => ({ kind: "remote" as const, remoteBranch })),
-  ]);
+  const items = $derived(branchListItems(filterBranches(refs, query)));
   const context = $derived({
     current: status?.head.branch ?? null,
     busy: repoStore.busy !== null,
@@ -52,11 +56,6 @@
     }
   });
 
-  $effect(() => {
-    void query;
-    highlighted = 0;
-  });
-
   function close(): void {
     gitDialogs.close();
   }
@@ -65,38 +64,25 @@
     return repoTarget(repoRoot, refs);
   }
 
-  function rowKey(row: PopupBranch): string {
-    return row.kind === "local" ? `local:${row.branch.name}` : `remote:${row.remoteBranch.name}`;
-  }
-
-  function openSubmenu(index: number, keyboard: boolean): void {
-    const row = rows[index];
-    const element = listEl?.querySelector<HTMLElement>(`[data-index="${index}"]`);
-    if (!row || !element) {
+  /** Opens a branch's submenu beside its row: the clicked one, else the highlighted one. */
+  function openSubmenu(item: BranchListItem | undefined, keyboard: boolean, rowEl?: Element | null): void {
+    const element = rowEl ?? document.querySelector('[aria-label="Branches"] [aria-selected="true"]');
+    if (!item || item.kind === "group" || !element) {
       return;
     }
-    highlighted = index;
+    selectedKey = branchItemKey(item);
     const rect = element.getBoundingClientRect();
     const anchor = new MouseEvent("contextmenu", { clientX: rect.right - 4, clientY: rect.top });
-    contextMenu.open(anchor, branchMenuItems(row, context, target(), repoRoot), { keyboard });
-  }
-
-  async function moveHighlight(step: number): Promise<void> {
-    if (rows.length === 0) {
-      return;
-    }
-    highlighted = Math.max(0, Math.min(rows.length - 1, highlighted + step));
-    await tick();
-    listEl?.querySelector<HTMLElement>(`[data-index="${highlighted}"]`)?.scrollIntoView({ block: "nearest" });
+    contextMenu.open(anchor, branchMenuItems(item, context, target(), repoRoot), { keyboard });
   }
 
   function onFilterKeydown(event: KeyboardEvent): void {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (event.key === "ArrowRight" && query === "") {
       event.preventDefault();
-      void moveHighlight(event.key === "ArrowDown" ? 1 : -1);
-    } else if (event.key === "Enter" || (event.key === "ArrowRight" && query === "")) {
-      event.preventDefault();
-      openSubmenu(highlighted, true);
+      openSubmenu(
+        items.find((item) => branchItemKey(item) === selectedKey),
+        true,
+      );
     }
   }
 
@@ -111,142 +97,72 @@
   }
 </script>
 
-<GitDialogFrame title="Branches ({repoName})" width={480} onCancel={close}>
-  <input
-    class="input filter"
+<Dialog open variant="form" title="Branches ({repoName})" width="small" onclose={close}>
+  <Input
+    width="fill"
+    bind:element={filterEl}
     bind:value={query}
     onkeydown={onFilterKeydown}
     placeholder="Filter branches"
     spellcheck="false"
     autocomplete="off"
     aria-label="Filter branches"
-    data-autofocus
+    autofocus
   />
-  <div class="actions-list">
-    <button type="button" class="action" onclick={newBranch} disabled={context.busy || (status?.head.unborn ?? false)}>
-      <Icon name="plus" size={13} /> New Branch...
-    </button>
-    <button type="button" class="action" onclick={checkoutRevision} disabled={context.busy || context.operation}>
-      <Icon name="tag" size={13} /> Checkout Tag or Revision...
-    </button>
-  </div>
-  <div class="branches" bind:this={listEl} role="listbox" aria-label="Branches">
-    {#if refs === null}
-      <div class="hint empty">Loading...</div>
-    {:else if rows.length === 0}
-      <div class="hint empty">No branches match</div>
-    {/if}
-    {#each rows as row, index (rowKey(row))}
-      {#if index === 0 && row.kind === "local"}
-        <div class="group">Local</div>
-      {:else if row.kind === "remote" && (index === 0 || rows[index - 1].kind === "local")}
-        <div class="group">Remote</div>
+  <Stack gap="none">
+    <Row onclick={newBranch} disabled={context.busy || (status?.head.unborn ?? false)}>
+      <Icon name="plus" size="medium" /><Text>New Branch...</Text>
+    </Row>
+    <Row onclick={checkoutRevision} disabled={context.busy || context.operation}>
+      <Icon name="tag" size="medium" /><Text>Checkout Tag or Revision...</Text>
+    </Row>
+  </Stack>
+  <Divider />
+  <List
+    {items}
+    itemKey={branchItemKey}
+    label="Branches"
+    height="large"
+    bind:selected={selectedKey}
+    skip={(item) => item.kind === "group"}
+    field={filterEl}
+    fieldKeys="drive"
+    onactivate={(item) => openSubmenu(item, true)}
+  >
+    {#snippet row(item, state)}
+      {#if item.kind === "group"}
+        <SectionTitle variant="picker" title={item.label} />
+      {:else}
+        <Row
+          selected={state.selected}
+          onhover={() => (selectedKey = branchItemKey(item))}
+          onclick={(event) => openSubmenu(item, false, event.currentTarget as Element)}
+        >
+          {#if item.kind === "local"}
+            <Icon name={item.branch.isHead ? "check" : "branch"} size="medium" />
+            <Stack grow>
+              <Text truncate weight={item.branch.isHead ? "semibold" : undefined}>{item.branch.name}</Text>
+            </Stack>
+            <Text variant="hint" tone="faint" truncate>{trackingHint(item.branch)}</Text>
+          {:else}
+            <Icon name="branch" size="medium" />
+            <Stack grow><Text truncate>{item.remoteBranch.name}</Text></Stack>
+          {/if}
+          <Icon name="chevron-right" size="compact" />
+        </Row>
       {/if}
-      <div
-        class="branch"
-        class:highlighted={index === highlighted}
-        data-index={index}
-        role="option"
-        tabindex="-1"
-        aria-selected={index === highlighted}
-        onclick={() => openSubmenu(index, false)}
-        onmouseenter={() => (highlighted = index)}
-        onkeydown={(event) => {
-          if (event.key === "Enter") {
-            openSubmenu(index, true);
-          }
-        }}
-      >
-        <Icon name={row.kind === "local" && row.branch.isHead ? "check" : "branch"} size={13} />
-        {#if row.kind === "local"}
-          <span class="name truncate" class:current={row.branch.isHead}>{row.branch.name}</span>
-          <span class="hint truncate">{trackingHint(row.branch)}</span>
-        {:else}
-          <span class="name truncate">{row.remoteBranch.name}</span>
-          <span class="hint"></span>
-        {/if}
-        <Icon name="chevron-right" size={12} />
-      </div>
-    {/each}
-  </div>
+    {/snippet}
+    {#snippet empty()}
+      <Stack padding="md">
+        <Text variant="hint" tone="faint">{refs === null ? "Loading..." : "No branches match"}</Text>
+      </Stack>
+    {/snippet}
+  </List>
 
-  {#snippet footer()}
-    <span class="hint">Enter or Right opens the branch's actions</span>
-    <span class="spacer"></span>
-    <button type="button" class="btn" onclick={close}>Close</button>
+  {#snippet footnote()}
+    <Text variant="hint" tone="faint">Enter or Right opens the branch's actions</Text>
   {/snippet}
-</GitDialogFrame>
-
-<style>
-  .filter {
-    width: 100%;
-  }
-
-  .actions-list {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .action {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    border: none;
-    border-radius: var(--radius);
-    background: none;
-    color: var(--text);
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .action:hover:not(:disabled) {
-    background: var(--hover);
-  }
-
-  .action:disabled {
-    color: var(--text-faint);
-    cursor: default;
-  }
-
-  .branches {
-    max-height: 46vh;
-    overflow-y: auto;
-    border-top: 1px solid var(--border);
-    padding-top: 4px;
-  }
-
-  .group {
-    padding: 6px 8px 2px;
-    color: var(--text-faint);
-    font-size: 11.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  .branch {
-    display: grid;
-    grid-template-columns: 16px minmax(0, 1fr) minmax(0, auto) 14px;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    border-radius: var(--radius);
-    cursor: pointer;
-  }
-
-  .branch.highlighted {
-    background: var(--selected);
-  }
-
-  .name.current {
-    font-weight: 600;
-  }
-
-  .branch .hint {
-    max-width: 200px;
-  }
-
-  .empty {
-    padding: 8px;
-  }
-</style>
+  {#snippet actions()}
+    <Button onclick={close}>Close</Button>
+  {/snippet}
+</Dialog>

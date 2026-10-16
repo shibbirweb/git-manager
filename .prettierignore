@@ -1,0 +1,22 @@
+# Build output and generated files: written by tools, never by hand.
+node_modules
+build
+.svelte-kit
+src-tauri
+swiftui
+bun.lock
+ui/design-tokens/generated
+ui/web/src/lib/styles/components*.css
+ui/web/src/lib/styles/componentTokens*.ts
+ui/web/src/lib/styles/scales.css
+ui/web/src/lib/styles/typography.css
+ui/web/src/lib/styles/tokens.ts
+ui/web/COMPONENTS.md
+ui/web/docs
+ui/web/.parity
+docs
+CHANGELOG.md
+*.md
+static
+# Hand-compacted token files: one group per line keeps each within 300 lines.
+ui/design-tokens/*.json

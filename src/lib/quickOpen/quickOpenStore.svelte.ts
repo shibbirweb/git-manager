@@ -8,6 +8,7 @@ import { focusedEditor } from "$lib/editor/editorCommands";
 import { isPseudoTab } from "$lib/stores/pseudoTabs";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { changesSelection } from "$lib/views/changes/selection.svelte";
+import { FOCUSED_GROUP, SHOWN_TAB_CONTENT, TAB_CONTENT } from "$lib/views/workspaceDom";
 
 export interface EditorTarget {
   view: EditorView;
@@ -30,15 +31,15 @@ function editorTarget(): EditorTarget | null {
   const filePath = shownFilePath();
   const focused = focusedEditor();
   if (focused) {
-    const host = focused.view.dom.closest(".file-host");
-    const inShownFile = host !== null && !host.classList.contains("hidden");
+    const host = focused.view.dom.closest(TAB_CONTENT);
+    const inShownFile = host !== null && !host.hasAttribute("hidden");
     return { view: focused.view, filePath: inShownFile ? filePath : null, focused: true, inText: focused.inText };
   }
   if (!filePath || typeof document === "undefined") {
     return null;
   }
   // The focused editor group's tab on screen (with the editor split, every group shows one).
-  const root = document.querySelector<HTMLElement>(".editor-group.focused .file-host:not(.hidden) .cm-editor");
+  const root = document.querySelector<HTMLElement>(`${FOCUSED_GROUP} ${SHOWN_TAB_CONTENT} .cm-editor`);
   const view = root ? EditorView.findFromDOM(root) : null;
   return view ? { view, filePath, focused: false, inText: true } : null;
 }

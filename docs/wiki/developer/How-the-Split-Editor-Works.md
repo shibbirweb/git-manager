@@ -33,13 +33,13 @@ Every change goes through pure functions that keep the two in step (`withLayout`
 
 ### Drawing the groups
 
-`Workspace.svelte` does not nest the groups in the tree. It draws them as one flat keyed list and places each one absolutely with the rectangle `groupRects` computes (fractions of the editor area).
+`Workspace.svelte` does not nest the groups in the tree. It hands them to the UI library's `SplitGrid` as one flat keyed list, which places each one absolutely with the rectangle `groupRects` computes (fractions of the editor area); `EditorGroupContent.svelte` draws a group.
 
 ```mermaid
 flowchart LR
   Layout["repoStore.groupLayout"] --> Rects["groupRects: id to x, y, width, height"]
   Layout --> Bars["layoutSplitters: one bar per split"]
-  Rects --> Sections["section.editor-group, position absolute"]
+  Rects --> Sections["SplitGrid section per group, position absolute"]
   Bars --> Handles["ResizeHandle at ratio of the split's area"]
   Handles -->|"drag"| Ratio["repoStore.setGroupRatio(path, ratio)"]
   Ratio --> Layout
@@ -49,7 +49,7 @@ Edges that touch another group give up `--group-gap-half`, which is half the pan
 
 ### Menus
 
-The Window menu has Split Right (Cmd+\\), Split Down, Move Tab to Next Group, Focus First and Second Group (Cmd+1, Cmd+2), Focus Next and Previous Group and Close Group (`menuSpec.ts`, `menuActions.ts`, `menuState.ts`, reasons in `commands/registry.ts`). The tab menu in `EditorTabs.svelte` has Split Right and Split Down for file tabs. Its move item names the other group by `groupDirection` while there are two groups ("Move to Bottom Group") and says Move to Next Group with more.
+The Window menu has Split Right (Cmd+\\), Split Down, Move Tab to Next Group, Focus First and Second Group (Cmd+1, Cmd+2), Focus Next and Previous Group and Close Group (`menuSpec.ts`, `menuActions.ts`, `menuState.ts`, reasons in `commands/registry.ts`). The tab menu (`editorTabMenu.ts`) has Split Right and Split Down for file tabs. Its move item names the other group by `groupDirection` while there are two groups ("Move to Bottom Group") and says Move to Next Group with more.
 
 ### Saving the layout
 
@@ -63,7 +63,7 @@ The Window menu has Split Right (Cmd+\\), Split Down, Move Tab to Next Group, Fo
 | `src/lib/stores/editorGroups.ts` | Groups and layout together: open, split, move, close, merge, restore |
 | `src/lib/stores/repo.svelte.ts` | `split`, `setGroupRatio`, `moveTargetFor`, saving and restoring the session |
 | `src/lib/stores/tabSession.ts` | The saved form and `sessionOf` |
-| `src/lib/views/Workspace.svelte` | Placing groups and splitter bars |
+| `src/lib/views/Workspace.svelte`, `EditorGroupContent.svelte`, `SplitGrid` (UI library) | Placing groups and splitter bars, a group's content |
 | `src/lib/views/EditorTabs.svelte` | The tab menu's split and move items |
 | `src/lib/views/workspaceActions.ts` | `splitEditor`, `moveEditorTab` (the keyboard follows the tab) |
 

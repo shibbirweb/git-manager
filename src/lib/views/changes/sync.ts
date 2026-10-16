@@ -41,17 +41,6 @@ export function syncTooltip(plan: SyncPlan): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** The toast after a sync: "Pulled 2 commits and pushed 1". */
-export function syncDoneMessage(pulled: number, pushed: number): string {
-  if (pulled > 0 && pushed > 0) {
-    return `Pulled ${commits(pulled)} and pushed ${pushed}`;
-  }
-  if (pulled > 0) {
-    return `Pulled ${commits(pulled)}`;
-  }
-  return pushed > 0 ? `Pushed ${commits(pushed)}` : "Already in sync";
-}
-
 /**
  * The Sync button of a repository row: hidden without a branch, Publish Branch
  * without an upstream, else Sync Changes, shown even when in step (a click then

@@ -69,7 +69,11 @@ describe("nameProblem", () => {
 describe("the shared rule table", () => {
   it("checks names as the backend does", () => {
     for (const nameCase of cases.names) {
-      const problem = nameProblem(caseName(nameCase), { nested: nameCase.nested, taken: new Set(), folderLabel: "src" });
+      const problem = nameProblem(caseName(nameCase), {
+        nested: nameCase.nested,
+        taken: new Set(),
+        folderLabel: "src",
+      });
       expect(matchesCode(problem, nameCase.code), `${JSON.stringify(nameCase)}: ${problem}`).toBe(true);
     }
   });
@@ -83,7 +87,8 @@ describe("the shared rule table", () => {
         current: "current" in takenCase ? takenCase.current : undefined,
         ignoreCase: takenCase.ignoreCase,
       });
-      const expected = takenCase.code === "taken" && "takenName" in takenCase ? `${takenCase.takenName} already exists in src` : null;
+      const expected =
+        takenCase.code === "taken" && "takenName" in takenCase ? `${takenCase.takenName} already exists in src` : null;
       expect(problem, JSON.stringify(takenCase)).toBe(expected);
     }
   });

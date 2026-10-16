@@ -4,6 +4,8 @@
   closes. With Remember unsaved changes the text is kept across restarts (unsavedText.svelte.ts).
 -->
 <script lang="ts">
+  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
   import { EditorState } from "@codemirror/state";
   import { EditorView, keymap } from "@codemirror/view";
   import { save as saveDialog } from "@tauri-apps/plugin-dialog";
@@ -46,7 +48,9 @@
       line: line.number,
       column: selection.head - line.from + 1,
       selected: selection.to - selection.from,
-      selectedLines: selection.empty ? 0 : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
+      selectedLines: selection.empty
+        ? 0
+        : state.doc.lineAt(selection.to).number - state.doc.lineAt(selection.from).number + 1,
       eol: "lf",
       tabSize: state.tabSize,
       indentTabs: editorIndent(state).useTabs,
@@ -234,26 +238,6 @@
   }
 </script>
 
-<div class="untitled-view">
-  <div class="editor" bind:this={host}></div>
-</div>
-
-<style>
-  .untitled-view {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-    background: var(--editor-bg);
-  }
-
-  .editor {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .editor :global(.cm-editor) {
-    height: 100%;
-  }
-</style>
+<Stack gap="none" grow surface="editor">
+  <ElementHost fill="grow" clip stretch onready={(element) => void (host = element)} />
+</Stack>

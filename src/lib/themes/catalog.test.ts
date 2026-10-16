@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import appCss from "../../app.css?raw";
 import { catalogThemeIds, themeColors, themeCss, themeSwatch } from "./catalog";
-import { colorDistance, composite, contrastRatio, parseColor } from "./color";
+import { colorDistance, composite, contrastRatio, mix, parseColor } from "@git-manager/ui/logic/color";
 import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, isHighContrast, THEME_INDEX } from "./themeIndex";
 import { COLOR_TOKENS, type ThemeColors } from "./tokens";
 
@@ -19,7 +19,8 @@ function cssBlock(selector: string): Record<string, string> {
 
 /** app.css values with var() references resolved, like the browser's computed style. */
 function resolved(values: Record<string, string>): Record<string, string> {
-  const read = (value: string): string => value.replace(/var\((--[a-z0-9-]+)\)/g, (_, token: string) => read(values[token] ?? ""));
+  const read = (value: string): string =>
+    value.replace(/var\((--[a-z0-9-]+)\)/g, (_, token: string) => read(values[token] ?? ""));
   return Object.fromEntries(Object.entries(values).map(([token, value]) => [token, read(value)]));
 }
 
@@ -44,12 +45,16 @@ describe("catalog", () => {
   });
 
   it("covers every color token app.css defines", () => {
-    const appTokens = Object.keys(root).filter((token) => !/^--(font-|ui-size|code-size|radius|panel-gap|panel-radius)/.test(token));
+    const appTokens = Object.keys(root).filter(
+      (token) => !/^--(font-|ui-size|code-size|radius|panel-gap|panel-radius)/.test(token),
+    );
     expect([...COLOR_TOKENS].sort()).toEqual(appTokens.sort());
   });
 
   it("matches the built-in light and dark sets in app.css", () => {
-    expect(colorsOf(DEFAULT_LIGHT_THEME)).toEqual(Object.fromEntries(COLOR_TOKENS.map((token) => [token, resolved(root)[token]])));
+    expect(colorsOf(DEFAULT_LIGHT_THEME)).toEqual(
+      Object.fromEntries(COLOR_TOKENS.map((token) => [token, resolved(root)[token]])),
+    );
     const dark = resolved({ ...root, ...darkBlock });
     expect(colorsOf(DEFAULT_DARK_THEME)).toEqual(Object.fromEntries(COLOR_TOKENS.map((token) => [token, dark[token]])));
   });
@@ -130,7 +135,16 @@ describe.each(THEME_INDEX.map((theme) => [theme.name, theme] as const))("%s", (_
   });
 
   it("has diff tints that stand out and keep text readable", () => {
-    for (const token of ["--diff-added", "--diff-deleted", "--diff-modified", "--diff-conflict"] as const) {
+    const tints = [
+      "--diff-added",
+      "--diff-deleted",
+      "--diff-modified",
+      "--diff-conflict",
+      "--diff-removed",
+      "--diff-removed-word",
+      "--diff-added-word",
+    ] as const;
+    for (const token of tints) {
       expect(colorDistance(colors[token], editorBg, editorBg), token).toBeGreaterThanOrEqual(5);
       expect(contrastRatio(text, composite(colors[token], editorBg)), token).toBeGreaterThanOrEqual(4.5);
     }
@@ -139,5 +153,22 @@ describe.each(THEME_INDEX.map((theme) => [theme.name, theme] as const))("%s", (_
 
   it("has readable button text", () => {
     expect(contrastRatio(colors["--accent-text"], colors["--accent"])).toBeGreaterThanOrEqual(3);
+    // Black scores a little higher on mid blues, but white is the readable choice once it reaches 3:1.
+    if (contrastRatio("#ffffff", colors["--accent"]) >= 3) {
+      expect(colors["--accent-text"]).toBe("#ffffff");
+    }
+  });
+});
+
+describe("project tiles", () => {
+  it("keep their letters readable on every theme's palette colors (Avatar.svelte)", () => {
+    for (const themeId of catalogThemeIds()) {
+      const colors = themeColors(themeId) as ThemeColors;
+      for (const name of ["blue", "green", "magenta", "cyan", "red"]) {
+        const deep = mix(colors[`--term-${name}` as keyof ThemeColors], colors["--term-black"], 0.28);
+        // 3:1 is the bar for large bold text; Rose Pine's pale green tile tops out at 2.95 with either color.
+        expect(contrastRatio(colors["--avatar-text"], deep), `${themeId} ${name}`).toBeGreaterThanOrEqual(2.9);
+      }
+    }
   });
 });

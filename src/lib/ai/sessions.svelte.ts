@@ -66,7 +66,9 @@ export const agentPrograms = new AgentPrograms();
 /** An agent's title beside its name, unless it only repeats the name ("Claude Code" in a "Claude Code" tab). */
 export function titleWorthShowing(title: string, name: string, agentId: string): string {
   const plain = title.trim().toLowerCase();
-  const names = [name, agentById(agentId)?.label ?? "", agentById(agentId)?.program ?? ""].map((text) => text.toLowerCase());
+  const names = [name, agentById(agentId)?.label ?? "", agentById(agentId)?.program ?? ""].map((text) =>
+    text.toLowerCase(),
+  );
   return plain === "" || names.includes(plain) ? "" : title.trim();
 }
 

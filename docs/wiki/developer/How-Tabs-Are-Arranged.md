@@ -40,13 +40,14 @@ Many paths change a strip: Split editor turned off merges the groups, Reopen Clo
 
 ### Dragging
 
-`EditorTabs.svelte` drags with pointer events, like the Files panel, so it works however the window handles native drag and drop. The pure parts live in `src/lib/views/tabDrag.ts`.
+`EditorTabs.svelte` draws the UI library's `TabStrip`, which drags with pointer events, like the Files panel, so it works however the window handles native drag and drop. The pure parts live in the library's `logic/tabDrag.ts`.
 
 ```mermaid
 sequenceDiagram
   participant U as User
-  participant S as EditorTabs.svelte
+  participant S as TabStrip
   participant D as tabDrag.ts
+  participant E as EditorTabs.svelte
   participant R as repoStore
   U->>S: pointerdown on a tab
   U->>S: pointermove past 4 px
@@ -54,28 +55,27 @@ sequenceDiagram
   loop each move
     S->>D: dropGap(boxes, pointer, wrapped)
     D-->>S: gap
-    S->>S: shownTabs = moveTab(tabs, gap)
+    S->>S: show the order a drop would make
   end
   U->>S: pointerup
-  S->>R: moveTab(groupId, tab, gap)
-  S->>R: activateTab(groupId, tab)
+  S->>E: onreorder(from, to)
+  E->>R: moveTab(groupId, tab, gap)
+  E->>R: activateTab(groupId, tab)
 ```
 
-- **The preview order.** While dragging, the strip renders `shownTabs`, the order the drop would make, instead of the stored tabs. `animate:flip` slides the other tabs to their new places. Nothing is stored until the drop, so Escape just throws the drag away.
+- **The preview order.** While dragging, the strip shows the order the drop would make, and `slide.ts` slides the other tabs to their new places. Nothing is stored until the drop, so Escape just throws the drag away.
 - **Boxes from the start.** `dropGap` measures against the tab boxes saved when the drag started, not the sliding ones. Measuring the moving tabs would make the target jump back and forth while they animate.
 - **Content coordinates.** The boxes and the pointer both add the strip's `scrollLeft`, so the gap stays right while the strip scrolls near its ends (`edgeScrollStep`, run each frame while dragging).
-- **The lifted tab.** An effect sets the dragged tab's CSS `translate` so it stays under the pointer. It uses `offsetLeft` and `offsetTop`, which ignore the translate, and `translate` is a separate property from the `transform` that `flip` animates, so the two do not fight. In one row the tab only moves sideways and stays inside the strip.
-- **The click after a drop.** The browser still sends a click after the pointerup, so a capture listener swallows that one click.
-
-The window listeners exist only while a press or a drag does, and are removed on unmount.
+- **The lifted tab.** An effect sets the dragged tab's CSS `translate` so it stays under the pointer. In one row the tab only moves sideways and stays inside the strip.
+- **The Diff tab is `fixed`.** It is not one of the group's tabs, so it never starts a drag, and `EditorTabs` takes it out of the indexes before calling `moveTab`.
 
 ### Pinned tabs in the strip
 
-A pinned tab gets the `pinned` class. Its close button becomes an unpin button with the `pin` icon, always visible. A dot still shows unsaved changes, and hovering shows the pin again.
+A pinned tab's close button becomes an unpin button with the `pin` icon, always visible (`onunpin`). A dot still shows unsaved changes, and hovering shows the pin again.
 
 ### Wrapping
 
-`settings.wrapTabs` adds the `wrap` class to the strip. It turns on `flex-wrap`, lets the height grow from 34 px, and gives each tab its own 34 px height and a bottom line. The mouse wheel no longer scrolls the strip, and `dropGap` picks the row nearest the pointer before looking at `x`.
+`settings.wrapTabs` sets the strip's `wrap` layout. It turns on `flex-wrap`, lets the height grow from 34 px, and gives each tab its own 34 px height and a bottom line. The mouse wheel no longer scrolls the strip, and `dropGap` picks the row nearest the pointer before looking at `x`.
 
 ## Where the code lives
 
@@ -83,10 +83,11 @@ A pinned tab gets the `pinned` class. Its close button becomes an unpin button w
 | --- | --- |
 | `src/lib/stores/tabs.ts` | `pinnedFirst`, `moveTab`, `setTabPinned`, `openTab`, `unpinnedPaths` |
 | `src/lib/stores/repo.svelte.ts` | `moveTab`, `closeAllTabs`, `applyGroups` and the session restore |
-| `src/lib/views/tabDrag.ts` | `dropGap` and `edgeScrollStep` |
-| `src/lib/views/EditorTabs.svelte` | the drag, the preview order, the pin button and the wrap styles |
+| `ui/web/src/lib/logic/tabDrag.ts`, `slide.ts` | `dropGap`, `edgeScrollStep`, the sliding tabs |
+| `ui/web/src/lib/components/TabStrip.svelte`, `EditorTab.svelte` | the drag, the pin button and the wrap layout |
+| `src/lib/views/EditorTabs.svelte` | the group's tabs for the strip, and the drop |
 | `src/lib/stores/settingsData.ts` | the `wrapTabs` preference (off by default) |
-| `src/lib/views/SettingsDialog.svelte` | the Wrap tabs switch in Settings > Editor |
+| `src/lib/views/settings/EditorFeatureSettings.svelte` | the Wrap tabs switch in Settings > Editor |
 
 ## Design decisions
 
@@ -107,7 +108,7 @@ A pinned tab gets the `pinned` class. Its close button becomes an unpin button w
 ## Tests
 
 - `src/lib/stores/tabs.test.ts`: `pinned tabs` (pinning moves, new tabs after pinned ones, `pinnedFirst`, bulk closes) and `moveTab` (gaps, no-op drops, an unpinned tab stops after the pinned ones, a pinned tab stays among them, flags kept).
-- `src/lib/views/tabDrag.test.ts`: `dropGap` in one row and in wrapped rows, and `edgeScrollStep`.
+- `ui/web/src/lib/logic/tabDrag.test.ts`: `dropGap` in one row and in wrapped rows, and `edgeScrollStep`.
 - `src/lib/stores/settingsData.test.ts`: the `wrapTabs` default and validation.
 
 The drag animation, the lifted tab and the wrapped rows need a visual check in the app.

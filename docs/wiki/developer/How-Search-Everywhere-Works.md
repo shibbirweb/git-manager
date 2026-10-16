@@ -10,13 +10,13 @@ Workspaces hold many repositories and tens of thousands of files. Clicking throu
 
 ### The popup
 
-`Workspace.svelte` feeds every key to `DoubleShift` (`search/doubleShift.ts`) in the capture phase, so double Shift is seen even when the editor or the terminal handles the key; two clean taps within 350 ms count. The tab keys (`workspaceShortcut`) and the Edit menu items go through `openFileSearch` in `views/workspaceActions.ts`, which does nothing while a dialog or the merge tool is up (the key is dropped, not queued).
+`workspaceLife.svelte.ts` feeds every key to `DoubleShift` (`search/doubleShift.ts`) in the capture phase, so double Shift is seen even when the editor or the terminal handles the key; two clean taps within 350 ms count. The tab keys (`workspaceShortcut`) and the Edit menu items go through `openFileSearch` in `views/workspaceActions.ts`, which does nothing while a dialog or the merge tool is up (the key is dropped, not queued).
 
 Every tab starts with the focused editor's selection. `editorSelection` reads it from the CodeMirror state (`focusedEditor`, `sliceDoc`), not from the page, so decorations such as whitespace dots never leak in. `queryFromSelection` drops blank, multi-line and over-200-character selections. The popup selects the seeded text, so typing replaces it.
 
 `fileSearch` (`fileSearchStore.svelte.ts`) says whether the popup shows and which tab it opens on (`openingTab`). `FileSearch.svelte` is mounted only while open, so its state starts fresh every time.
 
-`tabRows` in `popupRows.ts` builds each tab's rows: the All tab's sections of `SECTION_LIMIT` (6) with a "N more" row, Recent Files for an empty query, and the Text tab's file and line rows. Every row is 26 px high, so `visibleRange` virtualizes the list without measuring, and `keepSelectedKey` keeps the selection while results grow.
+`tabRows` in `popupRows.ts` builds each tab's rows: the All tab's sections of `SECTION_LIMIT` (6) with a "N more" row, Recent Files for an empty query, and the Text tab's file and line rows. A virtual library `List` driven by the field draws them and keeps the highlight while results grow.
 
 Recent Files (`recentFiles`) is the active tab, then the [Recent Files](How-Recent-Files-Work.md) list, then the open tabs. A chosen row opens through `navigation.openFileAt`, which places the cursor and focuses the editor.
 
@@ -75,11 +75,12 @@ The MCP tools (see [How MCP and the CLI work](How-MCP-and-CLI-Work.md)) use `bui
 
 | File | What it does |
 | --- | --- |
-| `src/lib/search/FileSearch.svelte` | The popup: tabs, field, virtual list, Replace row |
+| `src/lib/search/FileSearch.svelte`, `SearchResults.svelte` | The popup (library CommandPalette), its List, Replace row |
+| `src/lib/search/searchQueries.svelte.ts`, `searchTexts.ts` | Queries; status texts |
 | `src/lib/search/searchTabs.ts` | Tabs, their keys, `openingTab`, `stepTab`, `queryFromSelection` |
 | `src/lib/search/doubleShift.ts` | Double Shift detection |
 | `src/lib/search/fileSearchModel.ts` | File rows, highlighting, Recent Files, `splitLocation` |
-| `src/lib/search/popupRows.ts` | Rows per tab, selection, virtual window |
+| `src/lib/search/popupRows.ts` | Rows per tab |
 | `src/lib/search/symbolSearchModel.ts`, `textSearchModel.ts` | Symbol and text rows |
 | `src/lib/views/workspaceActions.ts` | `openFileSearch` |
 | `src-tauri/src/commands/search.rs` | The `file_search_*`, `symbol_search_*`, `text_search*` and `replace_in_files*` commands |
@@ -107,7 +108,7 @@ The MCP tools (see [How MCP and the CLI work](How-MCP-and-CLI-Work.md)) use `bui
 - `src-tauri/src/file_search.rs` (module tests): skip rules, the cap, ranking, folder segments, `:LINE:COL`, partial indexes, superseded queries and the session lifecycle.
 - `src-tauri/src/symbols/tests.rs` and `extract_tests.rs`: skipped files, positions, ranking, scopes, compact storage, rebuilds and each language's scanner.
 - `src-tauri/src/text_search/tests.rs`: options, ranges, skips, caps, batches, cancelling and the newest id.
-- Vitest: `countLabel.test.ts`, `doubleShift.test.ts`, `searchTabs.test.ts`, `fileSearchModel.test.ts`, `popupRows.test.ts`, `symbolSearchModel.test.ts` and `textSearchModel.test.ts` in `src/lib/search/`.
+- Vitest: `countLabel.test.ts`, `doubleShift.test.ts`, `searchTabs.test.ts`, `fileSearchModel.test.ts`, `popupRows.test.ts`, `searchTexts.test.ts`, `symbolSearchModel.test.ts` and `textSearchModel.test.ts` in `src/lib/search/`.
 
 ## Keeping this page in sync
 

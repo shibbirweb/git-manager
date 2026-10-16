@@ -105,9 +105,16 @@ function keyText(key: string, mac: boolean): string {
 export function formatKeys(accelerator: string, platform: MenuPlatform): string {
   const { modifiers, key } = splitKeys(accelerator, platform);
   if (platform === "macos") {
-    return MAC_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => MAC_SYMBOLS[modifier]).join("") + keyText(key, true);
+    return (
+      MAC_ORDER.filter((modifier) => modifiers.has(modifier))
+        .map((modifier) => MAC_SYMBOLS[modifier])
+        .join("") + keyText(key, true)
+    );
   }
-  return [...OTHER_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => OTHER_NAMES[modifier]), keyText(key, false)].join("+");
+  return [
+    ...OTHER_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => OTHER_NAMES[modifier]),
+    keyText(key, false),
+  ].join("+");
 }
 
 const MAC_WORDS: Record<string, string> = { ctrl: "Ctrl", alt: "Option", shift: "Shift", cmd: "Cmd" };
@@ -121,7 +128,10 @@ export function formatKeyWords(accelerator: string, platform: MenuPlatform): str
     return formatKeys(accelerator, platform);
   }
   const { modifiers, key } = splitKeys(accelerator, platform);
-  return [...MAC_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => MAC_WORDS[modifier]), keyText(key, false)].join("+");
+  return [
+    ...MAC_ORDER.filter((modifier) => modifiers.has(modifier)).map((modifier) => MAC_WORDS[modifier]),
+    keyText(key, false),
+  ].join("+");
 }
 
 /** Custom keys by command id (registry.ts's ShortcutOverrides): an accelerator, or null for none. */
@@ -135,9 +145,16 @@ export function menuShortcuts(platform: MenuPlatform, customKeys: CustomKeys = {
     const walk = (entries: MenuEntry[], path: string[]) => {
       for (const entry of entries) {
         const accelerator =
-          entry.kind === "action" ? (Object.hasOwn(customKeys, entry.action) ? (customKeys[entry.action] ?? null) : entry.accelerator) : null;
+          entry.kind === "action"
+            ? Object.hasOwn(customKeys, entry.action)
+              ? (customKeys[entry.action] ?? null)
+              : entry.accelerator
+            : null;
         if (entry.kind === "action" && accelerator) {
-          rows.push({ label: [...path, entry.text.replace(/\.\.\.$/, "")].join(" > "), keys: [formatKeys(accelerator, platform)] });
+          rows.push({
+            label: [...path, entry.text.replace(/\.\.\.$/, "")].join(" > "),
+            keys: [formatKeys(accelerator, platform)],
+          });
         } else if (entry.kind === "submenu") {
           walk(entry.items, [...path, entry.text]);
         }
@@ -174,7 +191,11 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
         // As Window > Next Tab / Previous Tab has them: Ctrl+PageDown / PageUp do nothing on macOS.
         { label: "Next Tab", keys: commandKeys("window.nextTab", mac ? "Cmd+Shift+]" : "Ctrl+PageDown") },
         { label: "Previous Tab", keys: commandKeys("window.previousTab", mac ? "Cmd+Shift+[" : "Ctrl+PageUp") },
-        { label: "Show Changes", keys: commandKeys("view.changes", "CmdOrCtrl+Shift+G"), context: "Outside a text editor" },
+        {
+          label: "Show Changes",
+          keys: commandKeys("view.changes", "CmdOrCtrl+Shift+G"),
+          context: "Outside a text editor",
+        },
       ],
     },
     {
@@ -186,16 +207,32 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
         { label: "Go to a symbol in the file", keys: ["@"], context: "Typed first in Quick Open" },
         { label: "Go to a symbol in the workspace", keys: ["#"], context: "Typed first in Quick Open" },
         { label: "List the prefixes", keys: ["?"], context: "Typed first in Quick Open" },
-        { label: "Open to the side", keys: keys("CmdOrCtrl+Enter"), context: "On a file in Quick Open, with the split editor on" },
+        {
+          label: "Open to the side",
+          keys: keys("CmdOrCtrl+Enter"),
+          context: "On a file in Quick Open, with the split editor on",
+        },
       ],
     },
     {
       // RecentFiles.svelte: Edit > Recent Files (Cmd+E) opens it.
       title: "Recent Files",
       rows: [
-        { label: "Show edited files only", keys: commandKeys("edit.recentFiles", "CmdOrCtrl+E"), context: "Pressed again in Recent Files" },
-        { label: "Open to the side", keys: keys("CmdOrCtrl+Enter"), context: "In Recent Files, with the split editor on" },
-        { label: "Remove from the list", keys: mac ? keys("Delete", "Cmd+Backspace") : keys("Delete"), context: "In Recent Files" },
+        {
+          label: "Show edited files only",
+          keys: commandKeys("edit.recentFiles", "CmdOrCtrl+E"),
+          context: "Pressed again in Recent Files",
+        },
+        {
+          label: "Open to the side",
+          keys: keys("CmdOrCtrl+Enter"),
+          context: "In Recent Files, with the split editor on",
+        },
+        {
+          label: "Remove from the list",
+          keys: mac ? keys("Delete", "Cmd+Backspace") : keys("Delete"),
+          context: "In Recent Files",
+        },
       ],
     },
     {
@@ -205,7 +242,11 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
         { label: "Pick an entry", keys: keys("Up", "Down"), context: "In a Navigation Bar popup; type to filter" },
         { label: "Go into a folder", keys: keys("Right", "Enter"), context: "In a Navigation Bar popup" },
         { label: "Go to the folder above", keys: keys("Left"), context: "In a Navigation Bar popup" },
-        { label: "Open to the side", keys: keys("CmdOrCtrl+Enter"), context: "On a file in a Navigation Bar popup, with the split editor on" },
+        {
+          label: "Open to the side",
+          keys: keys("CmdOrCtrl+Enter"),
+          context: "On a file in a Navigation Bar popup, with the split editor on",
+        },
         { label: "Clear the filter, then close", keys: keys("Escape"), context: "In a Navigation Bar popup" },
       ],
     },
@@ -217,7 +258,11 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
         { label: "Code completion", keys: keys("Ctrl+Space"), context: "In the file editor" },
         { label: "Undo / Redo", keys: keys("CmdOrCtrl+Z", "Shift+CmdOrCtrl+Z") },
         { label: "Save", keys: keys("CmdOrCtrl+S") },
-        { label: "Change the font size", keys: [mac ? "⌘ + scroll" : "Ctrl + scroll"], context: "When turned on in Settings > Editor" },
+        {
+          label: "Change the font size",
+          keys: [mac ? "⌘ + scroll" : "Ctrl + scroll"],
+          context: "When turned on in Settings > Editor",
+        },
       ],
     },
     {
@@ -233,11 +278,23 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
       // FileExplorer.svelte, with the keys from fileOps.ts (fileKeyOp).
       title: "Files panel",
       rows: [
-        { label: "Cut / Copy / Paste files", keys: keys("CmdOrCtrl+X", "CmdOrCtrl+C", "CmdOrCtrl+V"), context: "In the Files panel" },
+        {
+          label: "Cut / Copy / Paste files",
+          keys: keys("CmdOrCtrl+X", "CmdOrCtrl+C", "CmdOrCtrl+V"),
+          context: "In the Files panel",
+        },
         { label: "Duplicate", keys: keys("CmdOrCtrl+D"), context: "In the Files panel" },
         { label: "Rename", keys: keys("F2", "Shift+F6"), context: "In the Files panel" },
-        { label: "Move to Trash", keys: mac ? keys("Cmd+Backspace", "Delete") : keys("Delete"), context: "In the Files panel" },
-        { label: "Select more rows", keys: [mac ? "⌘ click" : "Ctrl+click", mac ? "⇧ click" : "Shift+click", ...keys("Shift+Up", "Shift+Down")], context: "In the Files panel" },
+        {
+          label: "Move to Trash",
+          keys: mac ? keys("Cmd+Backspace", "Delete") : keys("Delete"),
+          context: "In the Files panel",
+        },
+        {
+          label: "Select more rows",
+          keys: [mac ? "⌘ click" : "Ctrl+click", mac ? "⇧ click" : "Shift+click", ...keys("Shift+Up", "Shift+Down")],
+          context: "In the Files panel",
+        },
         { label: "Copy instead of move", keys: [mac ? "⌥ drag" : "Alt+drag"], context: "Dragging in the Files panel" },
       ],
     },
@@ -246,7 +303,11 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
       title: "Commit box",
       rows: [
         { label: "Commit", keys: keys("CmdOrCtrl+Enter"), context: "In the commit message" },
-        { label: "Message history", keys: [...(mac ? keys("Cmd+E") : keys("Ctrl+E")), ...keys("Up")], context: "In the commit message; Up when it is empty" },
+        {
+          label: "Message history",
+          keys: [...(mac ? keys("Cmd+E") : keys("Ctrl+E")), ...keys("Up")],
+          context: "In the commit message; Up when it is empty",
+        },
       ],
     },
     {
@@ -261,10 +322,18 @@ function extraShortcuts(platform: MenuPlatform, customKeys: CustomKeys): Shortcu
       rows: [
         { label: "Show or hide the terminal", keys: commandKeys("view.terminal", "Ctrl+`") },
         { label: "New terminal", keys: commandKeys("terminal.new", "Ctrl+Shift+`") },
-        { label: "Copy / Paste", keys: mac ? keys("Cmd+C", "Cmd+V") : keys("Ctrl+Shift+C", "Ctrl+Shift+V"), context: "In a terminal" },
+        {
+          label: "Copy / Paste",
+          keys: mac ? keys("Cmd+C", "Cmd+V") : keys("Ctrl+Shift+C", "Ctrl+Shift+V"),
+          context: "In a terminal",
+        },
         { label: "Stop the running command", keys: keys("Ctrl+C"), context: "In a terminal or the Run tab" },
         { label: "Find in the terminal", keys: mac ? keys("Cmd+F") : keys("Ctrl+Shift+F"), context: "In a terminal" },
-        { label: "Split the terminal", keys: mac ? keys("Cmd+\\") : keys("Ctrl+Shift+5"), context: "In a panel terminal" },
+        {
+          label: "Split the terminal",
+          keys: mac ? keys("Cmd+\\") : keys("Ctrl+Shift+5"),
+          context: "In a panel terminal",
+        },
         { label: "Open a file path or link", keys: [mac ? "⌘ click" : "Ctrl+click"], context: "In a terminal" },
       ],
     },

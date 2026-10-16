@@ -7,6 +7,7 @@
 
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { api, errorMessage, onGitProgress, onOpenFilesChanged, onRepoChanged, onWorkspaceChanged } from "$lib/api";
+import { type OpReport, outputSummary } from "$lib/notifications/gitReport";
 import type { OpOutcome, Refs, RemoteInfo, RepoInfo, RepoStatus, StashEntry } from "$lib/types";
 import { dialogs } from "$lib/ui/dialog.svelte";
 import { toast, type ToastAction } from "$lib/ui/toast.svelte";
@@ -124,7 +125,10 @@ function workspaceName(folders: WorkspaceFolder[]): string {
   if (folders.length <= 1) {
     return folders[0]?.name ?? "";
   }
-  const names = folders.slice(0, 2).map((folder) => folder.name).join(", ");
+  const names = folders
+    .slice(0, 2)
+    .map((folder) => folder.name)
+    .join(", ");
   return folders.length > 2 ? `${names} +${folders.length - 2}` : names;
 }
 
@@ -170,7 +174,9 @@ function isFileTab(tabPath: string): boolean {
 
 /** The name a question about unsaved changes uses for a tab. */
 function tabName(tab: FileTab): string {
-  return isUntitledTab(tab.path) ? untitledTitle(fileCommands.text(tab.path) ?? "") : tab.path.slice(tab.path.lastIndexOf("/") + 1);
+  return isUntitledTab(tab.path)
+    ? untitledTitle(fileCommands.text(tab.path) ?? "")
+    : tab.path.slice(tab.path.lastIndexOf("/") + 1);
 }
 
 /** Key of a dormant tab: the same file can sleep in each editor group. */
@@ -182,15 +188,20 @@ function dormantKey(groupId: number, tabPath: string): string {
 const RESCAN_DELAY_MS = 1000;
 
 interface RunOptions<T> {
-  /** Toast shown on success; a function receives the result. */
-  success?: string | ((result: T) => string | null);
+  /** Toast shown on success; a function receives the result and may write the whole report. */
+  success?: string | ((result: T) => string | OpReport | null);
   /** Refresh the repository afterwards (default true); "status" when the work only touches the index or files. */
   refresh?: boolean | "status";
   /** Repository to run in; defaults to the active one. */
   repoPath?: string;
   /** A button in the success toast, such as Undo; null for none. */
   action?: (result: T) => ToastAction | null;
+  /** The error toast's title; defaults to "<label> failed". */
+  failure?: string;
 }
+
+/** What runOp says when the work went through: a fixed title, or a report built from git's output. */
+export type OpSuccess = string | ((outcome: OpOutcome) => OpReport);
 
 class RepoStore {
   workspace = $state<OpenWorkspace | null>(null);
@@ -336,7 +347,11 @@ class RepoStore {
    * Opens several folders as one workspace, replacing the current one. Never throws: every
    * failure is a toast naming the folder, so a failed start cannot fall back to the welcome screen silently.
    */
-  async openFolders(folderPaths: string[], workspaceFile: string | null = null, options: OpenOptions = {}): Promise<boolean> {
+  async openFolders(
+    folderPaths: string[],
+    workspaceFile: string | null = null,
+    options: OpenOptions = {},
+  ): Promise<boolean> {
     try {
       return await this.replaceWorkspace(folderPaths, workspaceFile, options);
     } catch (error) {
@@ -347,7 +362,11 @@ class RepoStore {
     }
   }
 
-  private async replaceWorkspace(folderPaths: string[], workspaceFile: string | null, options: OpenOptions): Promise<boolean> {
+  private async replaceWorkspace(
+    folderPaths: string[],
+    workspaceFile: string | null,
+    options: OpenOptions,
+  ): Promise<boolean> {
     // Already open in another window: that window comes to the front instead (false: not opened here).
     if (options.focusExisting ?? true) {
       const owner = await api.windowFocusOwner(folderPaths, workspaceFile).catch(() => null);
@@ -364,7 +383,10 @@ class RepoStore {
     try {
       for (const folderPath of folderPaths) {
         if (folderPaths.length > 1) {
-          this.opening = { title: openingTitle(folderPaths), step: `Looking for repositories in ${baseName(folderPath)}...` };
+          this.opening = {
+            title: openingTitle(folderPaths),
+            step: `Looking for repositories in ${baseName(folderPath)}...`,
+          };
         }
         try {
           infos.push(await api.openWorkspace(folderPath));
@@ -436,7 +458,9 @@ class RepoStore {
         this.watcherEventAt = this.stamp();
         // Files no tab shows any more are dropped here, so the record stays small.
         const open = new Set(this.openFilePaths);
-        const next = Object.fromEntries(Object.entries(this.openFileVersions).filter(([filePath]) => open.has(filePath)));
+        const next = Object.fromEntries(
+          Object.entries(this.openFileVersions).filter(([filePath]) => open.has(filePath)),
+        );
         for (const filePath of event.filePaths) {
           next[filePath] = (next[filePath] ?? 0) + 1;
         }
@@ -472,7 +496,10 @@ class RepoStore {
       toast.info(`${added.name} is already in the workspace`);
       return;
     }
-    const folders = [...this.workspace.folders, { root: added.root, name: added.name, repoRoots: added.repos.map((repo) => repo.root) }];
+    const folders = [
+      ...this.workspace.folders,
+      { root: added.root, name: added.name, repoRoots: added.repos.map((repo) => repo.root) },
+    ];
     this.workspace = describeWorkspace(folders, this.workspace.file);
     this.workspaceIdChanged();
     this.repos = unionRepos([this.repos, added.repos]);
@@ -954,26 +981,33 @@ class RepoStore {
   }
 
   /** Runs a mutation with busy state, error toast and a refresh afterwards. */
-  async run<T>(label: string, work: (repoPath: string) => Promise<T>, options: RunOptions<T> = {}): Promise<T | undefined> {
+  async run<T>(
+    label: string,
+    work: (repoPath: string) => Promise<T>,
+    options: RunOptions<T> = {},
+  ): Promise<T | undefined> {
     const repoPath = options.repoPath ?? this.repo?.root;
     if (!repoPath) {
       return undefined;
     }
     this.busy = label;
     this.progress = "";
+    const source = this.notificationSource(repoPath);
     // A toast with a button waits for the refresh, so its button sees the state after the work.
-    let withAction: { message: string; result: T } | null = null;
+    let withAction: { message: OpReport; result: T } | null = null;
     try {
       const result = await work(repoPath);
-      const message = typeof options.success === "function" ? options.success(result) : options.success;
+      const said = typeof options.success === "function" ? options.success(result) : options.success;
+      const message: OpReport | null =
+        typeof said === "string" ? { title: said, detail: null, kind: "success" } : (said ?? null);
       if (message && options.action) {
         withAction = { message, result };
       } else if (message) {
-        toast.success(message);
+        toast.show(message.kind, message.title, message.detail ?? undefined, { source });
       }
       return result;
     } catch (error) {
-      toast.error(`${label} failed`, errorMessage(error));
+      toast.error(options.failure ?? `${label} failed`, errorMessage(error), source);
       return undefined;
     } finally {
       this.busy = null;
@@ -987,35 +1021,48 @@ class RepoStore {
       if (withAction) {
         const action = options.action?.(withAction.result) ?? null;
         if (action) {
-          toast.successWithAction(withAction.message, undefined, action);
+          toast.successWithAction(withAction.message.title, withAction.message.detail ?? undefined, action, source);
         } else {
-          toast.success(withAction.message);
+          toast.success(withAction.message.title, withAction.message.detail ?? undefined, source);
         }
       }
     }
   }
 
-  /** Like `run`, for operations that may stop on conflicts. */
+  /**
+   * Like `run`, for operations that may stop on conflicts. A fixed success title gets git's summary (refs moved,
+   * files changed) as its detail; a function writes the whole report.
+   */
   async runOp(
     label: string,
     work: (repoPath: string) => Promise<OpOutcome>,
-    successMessage?: string,
+    successMessage?: OpSuccess,
     repoPath?: string,
+    failure?: string,
   ): Promise<OpOutcome | undefined> {
-    const outcome = await this.run(label, work, { repoPath });
+    const outcome = await this.run(label, work, { repoPath, failure });
     if (!outcome) {
       return undefined;
     }
+    const source = this.notificationSource(repoPath ?? this.repo?.root ?? "");
     if (outcome.conflicts) {
-      toast.info(`${label} stopped with conflicts`, "Resolve them to continue.");
+      toast.info(`${label} stopped with conflicts`, "Resolve them to continue.", source);
       if (repoPath) {
         await this.setActiveRepo(repoPath);
       }
       this.conflictsOpen = true;
+    } else if (typeof successMessage === "function") {
+      const report = successMessage(outcome);
+      toast.show(report.kind, report.title, report.detail ?? undefined, { source });
     } else if (successMessage) {
-      toast.success(successMessage);
+      toast.success(successMessage, outputSummary(outcome.output) ?? undefined, source);
     }
     return outcome;
+  }
+
+  /** The repository's name on a notification, so a list of pushes and pulls says where each one ran. */
+  notificationSource(repoPath: string): string | null {
+    return this.repos.find((repo) => repo.root === repoPath)?.name ?? null;
   }
 
   /** Absolute paths of the file tabs with unsaved edits. */
@@ -1030,7 +1077,9 @@ class RepoStore {
    */
   async filesWritten(filePaths: string[]): Promise<void> {
     const repoRoots = new Set(
-      filePaths.map((filePath) => locateAbsolute(this.repos, filePath)?.repo.root ?? null).filter((root) => root !== null),
+      filePaths
+        .map((filePath) => locateAbsolute(this.repos, filePath)?.repo.root ?? null)
+        .filter((root) => root !== null),
     );
     await this.afterWatcher([...repoRoots], true);
   }
@@ -1044,7 +1093,12 @@ class RepoStore {
   private async afterWatcher(repoRoots: string[], fileViews: boolean): Promise<void> {
     const writtenAt = this.stamp();
     await new Promise((resolve) => setTimeout(resolve, WATCHER_FALLBACK_MS));
-    const plan = writeFallback(writtenAt, repoRoots, (repoRoot) => this.statusReadAt.get(repoRoot) ?? 0, this.watcherEventAt);
+    const plan = writeFallback(
+      writtenAt,
+      repoRoots,
+      (repoRoot) => this.statusReadAt.get(repoRoot) ?? 0,
+      this.watcherEventAt,
+    );
     if (fileViews && plan.files) {
       this.filesChanged();
     }
@@ -1212,14 +1266,20 @@ class RepoStore {
    * whole editor area. `filePath` (repo-relative) picks the file to show; an
    * open tab for the same commit is reused and switched to that file.
    */
-  openCommitTab(repoRoot: string, commitId: string, options: { summary?: string | null; filePath?: string | null } = {}): void {
+  openCommitTab(
+    repoRoot: string,
+    commitId: string,
+    options: { summary?: string | null; filePath?: string | null } = {},
+  ): void {
     const tabPath = commitTabPath(repoRoot, commitId);
     const previous = this.commitTabs[tabPath];
     this.commitTabs = {
       ...this.commitTabs,
       [tabPath]: {
         summary: options.summary ?? previous?.summary ?? null,
-        focus: options.filePath ? { path: options.filePath, token: (previous?.focus?.token ?? 0) + 1 } : (previous?.focus ?? null),
+        focus: options.filePath
+          ? { path: options.filePath, token: (previous?.focus?.token ?? 0) + 1 }
+          : (previous?.focus ?? null),
       },
     };
     this.openIn(this.targetGroupFor(tabPath), tabPath, true, false);
@@ -1330,7 +1390,9 @@ class RepoStore {
 
   /** Makes a preview tab a normal tab, in one group or in every group. */
   pinFile(filePath: string, groupId: number | null = null): void {
-    const next = mapGroups(this.groupsState, (group) => (groupId === null || group.id === groupId ? pinTab(group, filePath) : group));
+    const next = mapGroups(this.groupsState, (group) =>
+      groupId === null || group.id === groupId ? pinTab(group, filePath) : group,
+    );
     if (next !== this.groupsState) {
       this.applyGroups(next);
     }
@@ -1597,7 +1659,11 @@ class RepoStore {
     const entries: TabSleepEntry[] = this.groupsState.groups.flatMap((group) =>
       group.tabs.map((tab) => {
         const key = dormantKey(group.id, tab.path);
-        return { key, shown: tab.path === group.active, eligible: isFileTab(tab.path) && !tab.dirty && !this.dormantTabs.has(key) };
+        return {
+          key,
+          shown: tab.path === group.active,
+          eligible: isFileTab(tab.path) && !tab.dirty && !this.dormantTabs.has(key),
+        };
       }),
     );
     const keys = tabsToSleep(entries, this.tabShownAt, now, delayMs);
@@ -1619,7 +1685,11 @@ class RepoStore {
     const previous = this.tabPositions.get(filePath) ?? null;
     const position: TabPosition = { line, column, topLine: topLine ?? previous?.topLine ?? Math.max(0, line - 5) };
     if (this.tabs.some((tab) => tab.path === filePath)) {
-      if (previous?.line !== position.line || previous.column !== position.column || previous.topLine !== position.topLine) {
+      if (
+        previous?.line !== position.line ||
+        previous.column !== position.column ||
+        previous.topLine !== position.topLine
+      ) {
         this.tabPositions.set(filePath, position);
         this.scheduleTabsSave();
       }
@@ -1707,8 +1777,14 @@ class RepoStore {
       return;
     }
     // An Untitled tab is there while its text is.
-    const exists = paths.map((tabPath, index) => (isUntitledTab(tabPath) ? keptPaths.has(tabPath) : onDisk[index] === true));
-    const restored = restorableTabs(session, exists, (tabPath) => isUntitledTab(tabPath) || folderFor(workspace.folders, tabPath) !== null);
+    const exists = paths.map((tabPath, index) =>
+      isUntitledTab(tabPath) ? keptPaths.has(tabPath) : onDisk[index] === true,
+    );
+    const restored = restorableTabs(
+      session,
+      exists,
+      (tabPath) => isUntitledTab(tabPath) || folderFor(workspace.folders, tabPath) !== null,
+    );
     if (restored.tabs.length === 0) {
       return;
     }
@@ -1723,7 +1799,14 @@ class RepoStore {
       }
     }
     const tabsOf = (group: SavedTabGroup): TabsState => ({
-      tabs: pinnedFirst(group.tabs.map((tab) => ({ path: tab.path, preview: tab.preview, dirty: keptPaths.has(tab.path), pinned: tab.pinned }))),
+      tabs: pinnedFirst(
+        group.tabs.map((tab) => ({
+          path: tab.path,
+          preview: tab.preview,
+          dirty: keptPaths.has(tab.path),
+          pinned: tab.pinned,
+        })),
+      ),
       active: group.active,
     });
     let state = restoredGroups(savedGroups.map(tabsOf), restored.layout ?? null, restored.focused ?? 0);
@@ -1742,7 +1825,9 @@ class RepoStore {
     // Tabs with kept text load now, so they show their unsaved changes and Save All reaches them.
     this.dormantTabs = new Set(
       state.groups.flatMap((group) =>
-        group.tabs.filter((tab) => tab.path !== group.active && !keptPaths.has(tab.path)).map((tab) => dormantKey(group.id, tab.path)),
+        group.tabs
+          .filter((tab) => tab.path !== group.active && !keptPaths.has(tab.path))
+          .map((tab) => dormantKey(group.id, tab.path)),
       ),
     );
     this.viewState = "file";
@@ -1809,7 +1894,8 @@ class RepoStore {
     }
     const existing = new Set(filePaths.filter((_filePath, index) => exists[index] === true));
     const open = new Set(this.tabs.map((tab) => tab.path));
-    const inWorkspace = (tabPath: string) => workspace.folders.some((folder) => tabsInFolder([tabPath], folder.root).length > 0);
+    const inWorkspace = (tabPath: string) =>
+      workspace.folders.some((folder) => tabsInFolder([tabPath], folder.root).length > 0);
     const { tab, stack } = popClosedTab(
       this.closedTabs,
       (entry) => !open.has(entry.path) && (isFileTab(entry.path) ? existing.has(entry.path) : inWorkspace(entry.path)),
@@ -1826,7 +1912,12 @@ class RepoStore {
     // Back in the group it closed in while that group is still there, else in the focused one.
     const group = this.groupsState.groups[tab.side ?? 0] ?? focusedGroup(this.groupsState);
     // Reopening is deliberate, so the tab comes back kept open even if it was a preview.
-    const reopened = reopenAt(group.tabs, tab, (entry) => ({ path: entry.path, preview: false, dirty: false, pinned: entry.pinned }));
+    const reopened = reopenAt(group.tabs, tab, (entry) => ({
+      path: entry.path,
+      preview: false,
+      dirty: false,
+      pinned: entry.pinned,
+    }));
     const next = { ...updateGroup(this.groupsState, group.id, reopened), focused: group.id };
     this.applyGroups(this.withTabLimit(next, { groupId: group.id, tabPath: tab.path }));
     this.showGroup(group.id);

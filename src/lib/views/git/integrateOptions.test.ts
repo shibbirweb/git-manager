@@ -38,13 +38,17 @@ describe("merge options", () => {
     expect(mergeShowsMessage(squash)).toBe(false);
     expect(mergeRequest(squash).message).toBeNull();
     expect(mergeCommand("feature", squash)).toBe("git merge --squash --no-edit feature");
-    expect(mergeCommand("f", { ...DEFAULT_MERGE_OPTIONS, message: 'say "hi" $x' })).toBe('git merge -m "say \\"hi\\" \\$x" f');
+    expect(mergeCommand("f", { ...DEFAULT_MERGE_OPTIONS, message: 'say "hi" $x' })).toBe(
+      'git merge -m "say \\"hi\\" \\$x" f',
+    );
   });
 
   it("says what happened", () => {
     expect(mergeDoneMessage("feature", "main", DEFAULT_MERGE_OPTIONS)).toBe("Merged feature into main");
     expect(mergeDoneMessage("feature", "main", { ...DEFAULT_MERGE_OPTIONS, squash: true })).toContain("staged");
-    expect(mergeDoneMessage("feature", "main", { ...DEFAULT_MERGE_OPTIONS, noCommit: true })).toContain("without committing");
+    expect(mergeDoneMessage("feature", "main", { ...DEFAULT_MERGE_OPTIONS, noCommit: true })).toContain(
+      "without committing",
+    );
   });
 });
 
@@ -70,7 +74,11 @@ describe("rebase options", () => {
   });
 
   it("keeps --interactive apart from the options it does not take", () => {
-    const interactive = toggleRebaseFlag({ ...DEFAULT_REBASE_OPTIONS, rebaseMerges: true, root: true }, "interactive", true);
+    const interactive = toggleRebaseFlag(
+      { ...DEFAULT_REBASE_OPTIONS, rebaseMerges: true, root: true },
+      "interactive",
+      true,
+    );
     expect(interactive).toMatchObject({ interactive: true, rebaseMerges: false, root: false });
     expect(rebaseFlagDisabled(interactive, "updateRefs")).toBe(true);
     expect(rebaseFlagDisabled(interactive, "interactive")).toBe(false);

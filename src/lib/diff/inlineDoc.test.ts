@@ -9,6 +9,7 @@ import {
   inlineChangeMarks,
   inlineSelection,
   inlineWordMarks,
+  lineSign,
   newLineAt,
 } from "./inlineDoc";
 
@@ -25,7 +26,21 @@ describe("buildInlineDoc", () => {
 
   it("puts each change's removed lines above its added lines", () => {
     expect(doc.text.split("\n")).toEqual(["one", "two", "TWO", "three", "four", "", "", "five"]);
-    expect(doc.lines.map((line) => line.kind)).toEqual(["context", "deleted", "added", "context", "deleted", "deleted", "added", "added"]);
+    expect(doc.lines.map((line) => line.kind)).toEqual([
+      "context",
+      "deleted",
+      "added",
+      "context",
+      "deleted",
+      "deleted",
+      "added",
+      "added",
+    ]);
+  });
+
+  it("marks removed lines with - and added lines with +, like git, inside a modified change too", () => {
+    expect(doc.lines.map(lineSign)).toEqual(["", "-", "+", "", "-", "-", "+", "+"]);
+    expect(lineSign(undefined)).toBe("");
   });
 
   it("numbers every line on both sides", () => {
@@ -104,7 +119,9 @@ describe("inline marks", () => {
       { from: 1, to: 3, kind: "modified" },
       { from: 4, to: 8, kind: "modified" },
     ]);
-    expect(inlineChangeMarks(buildInlineDoc("a\nb\n", "a\n", [[1, 2, 1, 1]]))).toEqual([{ from: 1, to: 2, kind: "deleted" }]);
+    expect(inlineChangeMarks(buildInlineDoc("a\nb\n", "a\n", [[1, 2, 1, 1]]))).toEqual([
+      { from: 1, to: 2, kind: "deleted" },
+    ]);
   });
 });
 

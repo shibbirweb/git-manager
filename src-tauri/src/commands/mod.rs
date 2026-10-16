@@ -17,6 +17,7 @@ pub mod ignore;
 pub mod integrate;
 pub mod lfs;
 pub mod lines;
+pub mod revision_lines;
 pub mod local_history;
 pub mod mcp;
 pub mod merge;

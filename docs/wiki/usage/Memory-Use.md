@@ -24,7 +24,7 @@ Click a row to bring that terminal to the front. Point at a row to see how many 
 
 Most settings cost almost nothing. The few that use clearly more memory when they are on have a small orange mark beside their name in Settings, such as **+70 MB**. Point at the mark to see when the memory is used and what it grows with.
 
-[TODO:settings-memory-flags.png]
+![GPU acceleration with its memory mark](../images/settings-memory-flags.png)
 
 *The memory mark beside GPU acceleration in Settings, Terminal.*
 

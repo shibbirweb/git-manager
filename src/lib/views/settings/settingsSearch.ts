@@ -20,6 +20,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   appearance: [
     ["Theme", "light dark system mode macos appearance"],
     ["Rounded panels", "islands corners gap radius layout"],
+    ["Project color in the top bar", "header title bar tint gradient glow welcome tile"],
     ["File toolbar", "path bar breadcrumbs navigation top bottom hidden"],
     ...FILE_TOOLBAR_SWITCHES.map((part): EntrySpec => [part.label, `file toolbar ${part.hint}`, "File toolbar"]),
     ["Interface font size", "ui text zoom menus lists buttons"],
@@ -75,6 +76,8 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   ],
   merge: [
     ["Diff layout", "side by side inline unified split one column compare view"],
+    ["Side by side in Changes", "three 3 two 2 columns panes staged index staging", "Diff layout"],
+    ["Side by side for commits", "three 3 two 2 columns panes parents merge result working tree", "Diff layout"],
     ["Ignore whitespace in the merge tool", "conflicts spaces"],
     ["Show all branches in the log", "history graph remotes"],
     ["Auto fetch", "background fetch remotes"],
@@ -175,13 +178,14 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
   ],
 };
 
-export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = Object.entries(SECTION_ENTRIES).flatMap(([section, specs]) =>
-  specs.map(([label, keywords, parent]) => ({
-    section: section as SettingsSection,
-    label,
-    keywords: keywords ?? "",
-    parent: parent ?? null,
-  })),
+export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = Object.entries(SECTION_ENTRIES).flatMap(
+  ([section, specs]) =>
+    specs.map(([label, keywords, parent]) => ({
+      section: section as SettingsSection,
+      label,
+      keywords: keywords ?? "",
+      parent: parent ?? null,
+    })),
 );
 
 const WORD = /[\p{L}\p{N}]+/gu;
@@ -209,7 +213,9 @@ export function matchingEntries(
   if (words.length === 0) {
     return [];
   }
-  return index.filter((entry) => textMatches(`${entry.label} ${entry.keywords} ${sectionLabels[entry.section]}`, words));
+  return index.filter((entry) =>
+    textMatches(`${entry.label} ${entry.keywords} ${sectionLabels[entry.section]}`, words),
+  );
 }
 
 /**
@@ -223,7 +229,10 @@ export function highlightSpans(text: string, words: readonly string[]): [number,
   }
   const lower = text.toLowerCase();
   for (const match of lower.matchAll(WORD)) {
-    const longest = words.reduce((best, word) => (word.length > best && match[0].startsWith(word) ? word.length : best), 0);
+    const longest = words.reduce(
+      (best, word) => (word.length > best && match[0].startsWith(word) ? word.length : best),
+      0,
+    );
     if (longest > 0) {
       const start = match.index ?? 0;
       spans.push([start, start + longest]);

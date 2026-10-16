@@ -1,0 +1,59 @@
+{
+  "name": "@git-manager/ui",
+  "version": "0.1.0",
+  "description": "Git Manager's Svelte component library: components, design tokens, icons and tested logic",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.svelte"
+  ],
+  "exports": {
+    "./components/*.svelte": {
+      "svelte": "./src/lib/components/*.svelte",
+      "default": "./src/lib/components/*.svelte"
+    },
+    "./logic/*": "./src/lib/logic/*.ts",
+    "./editor/*": "./src/lib/editor/*.ts",
+    "./markdown/*": "./src/lib/markdown/*.ts",
+    "./styles/*.css": "./src/lib/styles/*.css",
+    "./icons": "./src/lib/icons.ts",
+    "./toasts": "./src/lib/toasts.svelte.ts",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-html": "^6.4.12",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/merge": "^6.12.2",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
+    "@lezer/highlight": "^1.2.5",
+    "@sanity/diff-match-patch": "3.2.1",
+    "@tiptap/core": "3.31.3",
+    "@tiptap/extension-code": "3.31.3",
+    "@tiptap/extension-code-block": "3.31.3",
+    "@tiptap/extension-image": "3.31.3",
+    "@tiptap/extension-link": "3.31.3",
+    "@tiptap/extension-list": "3.31.3",
+    "@tiptap/extension-paragraph": "3.31.3",
+    "@tiptap/extension-table": "3.31.3",
+    "@tiptap/extension-task-item": "3.31.3",
+    "@tiptap/extension-task-list": "3.31.3",
+    "@tiptap/extensions": "3.31.3",
+    "@tiptap/markdown": "3.31.3",
+    "@tiptap/pm": "3.31.3",
+    "@tiptap/starter-kit": "3.31.3",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "diff": "8.0.4",
+    "dompurify": "^3.4.16",
+    "markdown-it": "^15.0.2",
+    "marked": "17.0.1",
+    "mermaid": "^12.0.0",
+    "svelte": "^5.56.3"
+  }
+}

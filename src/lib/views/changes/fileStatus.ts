@@ -1,5 +1,6 @@
 import type { ChangeKind, DiffArea, FileStatus } from "$lib/types";
-import type { IconName } from "$lib/ui/icons";
+import type { IconName } from "@git-manager/ui/icons";
+import type { FileKind } from "@git-manager/ui/logic/fileStatus";
 
 export type GroupId = "conflicts" | "staged" | "unstaged";
 
@@ -93,4 +94,26 @@ export function discardPaths(files: FileStatus[]): { trackedPaths: string[]; unt
     }
   }
   return { trackedPaths, untrackedPaths };
+}
+
+/** The change a changed file shows in one row: untracked is new; else the staged change, then the unstaged one. */
+export function rowKind(file: FileStatus): FileKind {
+  if (file.unstaged === "untracked" && !file.staged) {
+    return "untracked";
+  }
+  const change = file.staged ?? file.unstaged;
+  return change === "added" || change === "deleted" || change === "renamed" || change === "typechange"
+    ? change
+    : "modified";
+}
+
+/** Where a changed file sits: new, staged, or both staged and unstaged; empty when only unstaged. */
+export function stagingNote(file: FileStatus): string {
+  if (file.unstaged === "untracked" && !file.staged) {
+    return "new";
+  }
+  if (file.staged && file.unstaged) {
+    return "staged and unstaged";
+  }
+  return file.staged ? "staged" : "";
 }

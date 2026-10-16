@@ -140,7 +140,10 @@ export function accountInitials(account: Pick<GitHubAccount, "login" | "name"> |
   if (!account) {
     return "";
   }
-  const words = (account.name ?? "").trim().split(/\s+/).filter((word) => word !== "");
+  const words = (account.name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word !== "");
   if (words.length >= 2) {
     return (words[0][0] + words[words.length - 1][0]).toUpperCase();
   }

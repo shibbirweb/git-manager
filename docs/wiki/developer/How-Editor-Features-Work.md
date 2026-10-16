@@ -20,7 +20,7 @@ flowchart LR
   C -->|"off"| E["empty: nothing in the editor"]
 ```
 
-- **Kinds.** An editor is a `file` editor, a `diff` side or a `merge` pane. `baseExtensions` takes a `kind`; editable panes default to `file` and read-only ones to `diff`, and `MergeEditor.svelte` passes `merge`. `FEATURE_KINDS` in `featurePlan.ts` says where each feature applies.
+- **Kinds.** An editor is a `file` editor, a `diff` side or a `merge` pane. `baseExtensions` takes a `kind`; editable panes default to `file` and read-only ones to `diff`, and the merge tool (`mergeSession.svelte.ts`) passes `merge`. `FEATURE_KINDS` in `featurePlan.ts` says where each feature applies.
 - **Live changes.** A registry plugin remembers every open editor and a facet stores its kind, like `cursor.ts` and `whitespace.ts`. The effect in `App.svelte` calls `setEditorFeatures` with the new options. `changedFeatures` compares them with the last ones, so turning off fold arrows reconfigures only that compartment and the completion state of the others stays.
 - **Lazy code.** Auto-close and completion come from `@codemirror/autocomplete`, about 38 KB. Nothing imports it statically. The first time an editor needs one of the two, `loadAutocomplete` imports it, and once it arrives both compartments are reconfigured in every open editor. Until then the compartments are empty. The other features use code that the editor already loads, so they only need the compartment.
 
@@ -51,7 +51,7 @@ sequenceDiagram
 
 - **Completion.** The language packages bring their own sources (JavaScript keywords and local names, CSS properties, HTML tags) through language data. A word source adds the words of the file through `completeAnyWord`, which scans near the cursor and caches per document. Words have no type, so a word that is also a keyword is listed once. In Markdown and plain text the word source only answers Ctrl+Space (`wordsWhileTyping`). Our keymap is CodeMirror's minus Option+backtick and Option+I, which type characters on a Mac, plus Tab to accept. The popup is themed with tokens and letter badges like JetBrains.
 - **Indent guides.** `guideLevels` counts the indent levels of the lines on screen; a blank line takes them from the code around it, like VS Code. `guideRuns` joins touching lines into one run per level, and each run is one `RectangleMarker` in a layer above the text. A wrapped line gets guides on its first row only, because CodeMirror starts the later rows at column 0.
-- **Margin line.** One marker at `column * defaultCharacterWidth` from the start of the text. `layerGeometry.ts` finds that start for both layers.
+- **Margin line.** One marker at `column * defaultCharacterWidth` from the start of the text, as tall as the drawn lines (`rulerSpan`), not the whole document. `layerGeometry.ts` finds that start for both layers.
 - **Word highlight off** keeps plain `highlightSelectionMatches()`, so a selection still marks its other matches, as before.
 - **Column selection.** Option+drag selects a rectangle. Option+Shift+click keeps adding a cursor through `clickAddsSelectionRange`, because the rectangle filter skips Shift.
 
@@ -69,7 +69,7 @@ sequenceDiagram
 | `src/lib/editor/ruler.ts`, `layerGeometry.ts` | The margin line and the text origin |
 | `src/lib/editor/languages.ts` | Names, grammars and lazy imports |
 | `src/lib/stores/settingsData.ts` | The nine keys and `pickRulerColumn` |
-| `src/lib/views/SettingsDialog.svelte` | The Editing features group |
+| `src/lib/views/settings/EditorFeatureSettings.svelte` | The Editing features group |
 
 ## Design decisions
 

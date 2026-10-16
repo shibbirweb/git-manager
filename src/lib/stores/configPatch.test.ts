@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { applyPatch, diffJson, isEmptyPatch, type JsonObject, parsePatch, rebaseIncoming, withoutKeys } from "./configPatch";
+import {
+  applyPatch,
+  diffJson,
+  isEmptyPatch,
+  type JsonObject,
+  parsePatch,
+  rebaseIncoming,
+  withoutKeys,
+} from "./configPatch";
 
 describe("diffJson", () => {
   it("is empty when nothing changed", () => {
@@ -83,7 +91,13 @@ describe("rebaseIncoming", () => {
 describe("withoutKeys and parsePatch", () => {
   it("leaves out changes under the given top-level keys", () => {
     const patch = withoutKeys(
-      { set: [{ path: ["sidebarWidth"], value: 300 }, { path: ["openTabs", "a"], value: 1 }], remove: [["leftPanel"], ["recentFolders"]] },
+      {
+        set: [
+          { path: ["sidebarWidth"], value: 300 },
+          { path: ["openTabs", "a"], value: 1 },
+        ],
+        remove: [["leftPanel"], ["recentFolders"]],
+      },
       ["sidebarWidth", "leftPanel"],
     );
     expect(patch).toEqual({ set: [{ path: ["openTabs", "a"], value: 1 }], remove: [["recentFolders"]] });
@@ -93,9 +107,21 @@ describe("withoutKeys and parsePatch", () => {
     expect(parsePatch(null)).toEqual({ set: [], remove: [] });
     expect(
       parsePatch({
-        set: [{ path: ["a"], value: 1 }, { path: "a", value: 1 }, { path: ["b"] }, { path: [3], value: 1 }, { path: ["c"], value: null }],
+        set: [
+          { path: ["a"], value: 1 },
+          { path: "a", value: 1 },
+          { path: ["b"] },
+          { path: [3], value: 1 },
+          { path: ["c"], value: null },
+        ],
         remove: [["x"], "y", [1]],
       }),
-    ).toEqual({ set: [{ path: ["a"], value: 1 }, { path: ["c"], value: null }], remove: [["x"]] });
+    ).toEqual({
+      set: [
+        { path: ["a"], value: 1 },
+        { path: ["c"], value: null },
+      ],
+      remove: [["x"]],
+    });
   });
 });

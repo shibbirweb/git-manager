@@ -8,6 +8,12 @@
   import type { Identity, IdentityScope } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import Button from "@git-manager/ui/components/Button.svelte";
+  import Input from "@git-manager/ui/components/Input.svelte";
+  import Select from "@git-manager/ui/components/Select.svelte";
+  import Spacer from "@git-manager/ui/components/Spacer.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
   import { identityLabel, validateIdentityEmail, validateIdentityName } from "../changes/identity";
 
   let globalIdentity = $state<Identity | null>(null);
@@ -28,13 +34,16 @@
   const localEmailError = $derived(validateIdentityEmail(localEmail, false));
   const globalChanged = $derived(
     globalIdentity !== null &&
-      (globalName.trim() !== (globalIdentity.global.name ?? "") || globalEmail.trim() !== (globalIdentity.global.email ?? "")),
+      (globalName.trim() !== (globalIdentity.global.name ?? "") ||
+        globalEmail.trim() !== (globalIdentity.global.email ?? "")),
   );
   const localChanged = $derived(
     repoIdentity !== null &&
       (localName.trim() !== (repoIdentity.local.name ?? "") || localEmail.trim() !== (repoIdentity.local.email ?? "")),
   );
-  const hasLocal = $derived(repoIdentity !== null && (repoIdentity.local.name !== null || repoIdentity.local.email !== null));
+  const hasLocal = $derived(
+    repoIdentity !== null && (repoIdentity.local.name !== null || repoIdentity.local.email !== null),
+  );
   const effective = $derived.by(() => {
     if (!repoIdentity) {
       return null;
@@ -161,162 +170,99 @@
   }
 </script>
 
-<div class="identity">
+{#snippet field(label: string, placeholder: string, value: string, onvalue: (next: string) => void)}
+  <Stack grow>
+    <Input
+      width="fill"
+      {value}
+      {placeholder}
+      aria-label={label}
+      autocomplete="off"
+      spellcheck="false"
+      oninput={(event) => onvalue(event.currentTarget.value)}
+    />
+  </Stack>
+{/snippet}
+
+<Stack gap="lg">
   {#if loadError}
-    <div class="error">{loadError}</div>
+    <Text size="small" tone="danger">{loadError}</Text>
   {/if}
 
-  <div class="block">
-    <div class="block-head">
-      <span class="block-title">Global</span>
+  <Stack gap="sm" label="Global identity">
+    <Stack direction="row" align="center" gap="md">
+      <Text size="small" weight="semibold">Global</Text>
       {#if globalIdentity?.globalFile}
-        <span class="file mono truncate" title={globalIdentity.globalFile}>{globalIdentity.globalFile}</span>
+        <Text size="small" tone="faint" mono truncate title={globalIdentity.globalFile}
+          >{globalIdentity.globalFile}</Text
+        >
       {/if}
-    </div>
-    <div class="fields">
-      <input class="input" bind:value={globalName} placeholder="Name" aria-label="Global name" autocomplete="off" spellcheck="false" />
-      <input class="input" bind:value={globalEmail} placeholder="Email" aria-label="Global email" autocomplete="off" spellcheck="false" />
-      <button class="btn small" onclick={() => void saveGlobal()} disabled={!globalChanged || saving !== null || !!globalNameError || !!globalEmailError}>
+    </Stack>
+    <Stack direction="row" gap="sm">
+      {@render field("Global name", "Name", globalName, (next) => (globalName = next))}
+      {@render field("Global email", "Email", globalEmail, (next) => (globalEmail = next))}
+      <Button
+        onclick={() => void saveGlobal()}
+        disabled={!globalChanged || saving !== null || !!globalNameError || !!globalEmailError}
+      >
         Save
-      </button>
-    </div>
+      </Button>
+    </Stack>
     {#if globalNameError || globalEmailError}
-      <div class="error">{globalNameError ?? globalEmailError}</div>
+      <Text size="small" tone="danger">{globalNameError ?? globalEmailError}</Text>
     {/if}
-  </div>
+  </Stack>
 
   {#if repoRoot !== null}
-    <div class="block">
-      <div class="block-head">
-        <span class="block-title">Repository</span>
+    <Stack gap="sm" label="Repository identity">
+      <Stack direction="row" align="center" gap="md">
+        <Text size="small" weight="semibold">Repository</Text>
         {#if repos.length > 1}
-          <select class="input repo-select" bind:value={repoRoot} aria-label="Repository">
-            {#each repos as repo (repo.root)}
-              <option value={repo.root}>{repo.name}</option>
-            {/each}
-          </select>
+          <Select
+            size="small"
+            label="Repository"
+            options={repos.map((repo) => ({ value: repo.root, label: repo.name }))}
+            value={repoRoot}
+            onchange={(root) => (repoRoot = root)}
+          />
         {:else}
-          <span class="repo-name truncate" title={repoRoot}>{repoName(repoRoot)}</span>
+          <Text size="small" tone="faint" truncate title={repoRoot}>{repoName(repoRoot)}</Text>
         {/if}
-      </div>
-      <div class="fields">
-        <input
-          class="input"
-          bind:value={localName}
-          placeholder={repoIdentity?.global.name ? `${repoIdentity.global.name} (global)` : "Name"}
-          aria-label="Repository name"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <input
-          class="input"
-          bind:value={localEmail}
-          placeholder={repoIdentity?.global.email ? `${repoIdentity.global.email} (global)` : "Email"}
-          aria-label="Repository email"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="btn small" onclick={() => void saveLocal()} disabled={!localChanged || saving !== null || !!localNameError || !!localEmailError}>
+      </Stack>
+      <Stack direction="row" gap="sm">
+        {@render field(
+          "Repository name",
+          repoIdentity?.global.name ? `${repoIdentity.global.name} (global)` : "Name",
+          localName,
+          (next) => (localName = next),
+        )}
+        {@render field(
+          "Repository email",
+          repoIdentity?.global.email ? `${repoIdentity.global.email} (global)` : "Email",
+          localEmail,
+          (next) => (localEmail = next),
+        )}
+        <Button
+          onclick={() => void saveLocal()}
+          disabled={!localChanged || saving !== null || !!localNameError || !!localEmailError}
+        >
           Save
-        </button>
-      </div>
+        </Button>
+      </Stack>
       {#if localNameError || localEmailError}
-        <div class="error">{localNameError ?? localEmailError}</div>
+        <Text size="small" tone="danger">{localNameError ?? localEmailError}</Text>
       {/if}
-      <div class="status">
+      <Stack direction="row" align="center" gap="md">
         {#if repoIdentity && !repoIdentity.complete}
-          <span class="warning">git has no name and email here yet</span>
+          <Text size="small" tone="warning">git has no name and email here yet</Text>
         {:else if effective}
-          <span class="hint truncate">Commits use {effective}</span>
+          <Text size="small" tone="dim" truncate>Commits use {effective}</Text>
         {/if}
-        <span class="spacer"></span>
+        <Spacer />
         {#if hasLocal}
-          <button class="btn small" onclick={() => void useGlobal()} disabled={saving !== null}>Use Global</button>
+          <Button size="small" onclick={() => void useGlobal()} disabled={saving !== null}>Use Global</Button>
         {/if}
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   {/if}
-</div>
-
-<style>
-  .identity {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .block {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .block-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-  }
-
-  .block-title {
-    flex: none;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .file,
-  .repo-name {
-    min-width: 0;
-    font-size: 11.5px;
-    color: var(--text-faint);
-  }
-
-  .repo-select {
-    height: 24px;
-    max-width: 240px;
-    padding: 0 4px;
-  }
-
-  .fields {
-    display: flex;
-    gap: 6px;
-  }
-
-  .fields .input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .fields .btn {
-    flex: none;
-    height: 28px;
-  }
-
-  .status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 24px;
-    min-width: 0;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .hint {
-    min-width: 0;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .warning {
-    font-size: 12px;
-    color: var(--warning);
-  }
-
-  .error {
-    font-size: 12px;
-    color: var(--danger);
-  }
-</style>
+</Stack>

@@ -1,6 +1,16 @@
 <!-- Show History: the commits that changed one file (`git log --follow`, renames followed),
      newest first and paged, with the selected commit's details and that file's diff below. -->
 <script lang="ts">
+  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
+  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import IconButton from "@git-manager/ui/components/IconButton.svelte";
+  import List from "@git-manager/ui/components/List.svelte";
+  import Row from "@git-manager/ui/components/Row.svelte";
+  import Spinner from "@git-manager/ui/components/Spinner.svelte";
+  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
+  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Text from "@git-manager/ui/components/Text.svelte";
+  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import CommitDetails from "$lib/log/CommitDetails.svelte";
@@ -8,7 +18,6 @@
   import { gitTabPath } from "$lib/stores/gitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { FileHistoryEntry } from "$lib/types";
-  import Icon from "$lib/ui/Icon.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
 
@@ -26,13 +35,15 @@
   let loading = $state(false);
   let loadError = $state<string | null>(null);
   let selectedId = $state<string | null>(null);
-  let listEl = $state<HTMLDivElement | null>(null);
+  let listHeight = $state(260);
   let token = 0;
   const now = Date.now();
 
   const selected = $derived(entries.find((entry) => entry.commit.id === selectedId) ?? null);
   // CommitDetails mounts again per commit, so one token is enough.
-  const preferredFile = $derived(selected ? { commitId: selected.commit.id, path: selected.path, line: null, token: 1 } : null);
+  const preferredFile = $derived(
+    selected ? { commitId: selected.commit.id, path: selected.path, line: null, token: 1 } : null,
+  );
 
   $effect(() => {
     void repoRoot;
@@ -87,35 +98,6 @@
     }
   }
 
-  function onScroll(event: Event): void {
-    const element = event.currentTarget as HTMLElement;
-    if (element.scrollTop + element.clientHeight > element.scrollHeight - 200) {
-      void loadMore();
-    }
-  }
-
-  function select(index: number): void {
-    const entry = entries[Math.max(0, Math.min(entries.length - 1, index))];
-    if (!entry) {
-      return;
-    }
-    selectedId = entry.commit.id;
-    requestAnimationFrame(() => {
-      listEl?.querySelector(`[data-commit="${entry.commit.id}"]`)?.scrollIntoView({ block: "nearest" });
-    });
-  }
-
-  function onKeydown(event: KeyboardEvent): void {
-    const index = entries.findIndex((entry) => entry.commit.id === selectedId);
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-      select(index + (event.key === "ArrowDown" ? 1 : -1));
-    } else if (event.key === "Enter" && selected) {
-      event.preventDefault();
-      openCommit(selected);
-    }
-  }
-
   function loadedShortId(commitId: string): string | null {
     return entries.find((entry) => entry.commit.id === commitId)?.commit.shortId ?? null;
   }
@@ -145,197 +127,99 @@
     }
   }
 
-  function openMenu(event: MouseEvent, entry: FileHistoryEntry): void {
-    selectedId = entry.commit.id;
-    contextMenu.open(event, [
-      { label: "Open Commit in Tab", hint: "Enter", action: () => openCommit(entry) },
-      { label: "Compare with Working Copy", action: () => compareWithWorkingCopy(entry) },
-      { label: "Show in Log", action: () => void repoStore.showCommit(repoRoot, entry.commit.id, entry.path) },
-      { separator: true },
-      { label: "Copy Revision Hash", action: () => void copyHash(entry) },
-    ]);
+  function openMenu(event: MouseEvent, entry: FileHistoryEntry, fromKeys: boolean): void {
+    contextMenu.open(
+      event,
+      [
+        { label: "Open Commit in Tab", hint: "Enter", action: () => openCommit(entry) },
+        { label: "Compare with Working Copy", action: () => compareWithWorkingCopy(entry) },
+        { label: "Show in Log", action: () => void repoStore.showCommit(repoRoot, entry.commit.id, entry.path) },
+        { separator: true },
+        { label: "Copy Revision Hash", action: () => void copyHash(entry) },
+      ],
+      { keyboard: fromKeys },
+    );
   }
 </script>
 
-<div class="history-tab">
-  <div class="toolbar">
-    <Icon name="history" size={14} />
-    <span class="title truncate">History of <span class="mono">{filePath}</span></span>
-    <span class="spacer"></span>
-    {#if loading}
-      <span class="spinner" aria-hidden="true"></span>
-    {/if}
-    <span class="count dim">{entries.length}{hasMore ? "+" : ""} {entries.length === 1 ? "commit" : "commits"}</span>
-    <button class="icon-btn" onclick={() => void reload()} disabled={loading} title="Refresh">
-      <Icon name="refresh" size={14} />
-    </button>
-  </div>
-  {#if loadError}
-    <div class="placeholder">
-      <div>Could not read the history</div>
-      <div class="dim selectable">{loadError}</div>
-    </div>
-  {:else}
-    <div class="list" bind:this={listEl} role="listbox" tabindex="0" aria-label="Commits" onscroll={onScroll} onkeydown={onKeydown}>
-      {#each entries as entry (entry.commit.id)}
-        <div
-          class="entry"
-          class:selected={entry.commit.id === selectedId}
-          data-commit={entry.commit.id}
-          role="option"
-          aria-selected={entry.commit.id === selectedId}
-          tabindex="-1"
-          onmousedown={() => (selectedId = entry.commit.id)}
-          ondblclick={() => openCommit(entry)}
-          oncontextmenu={(event) => openMenu(event, entry)}
-        >
-          <span class="hash mono">{entry.commit.shortId}</span>
-          <span class="subject truncate" title={entry.commit.summary}>{entry.commit.summary}</span>
-          {#if entry.path !== filePath}
-            <span class="renamed truncate" title="The file was {entry.path} in this commit">{entry.path}</span>
-          {/if}
-          <span class="author truncate dim">{entry.commit.authorName}</span>
-          <span class="when dim" title={fullDate(entry.commit.time)}>{relativeTime(entry.commit.time, now)}</span>
-        </div>
-      {:else}
-        {#if !loading}
-          <div class="placeholder dim">No commits touch this file yet.</div>
-        {/if}
-      {/each}
-    </div>
-    <div class="details">
-      {#if selected}
-        {#key selected.commit.id}
-          <CommitDetails
-            repoPath={repoRoot}
-            commitId={selected.commit.id}
-            {loadedShortId}
-            {onSelectCommit}
-            {preferredFile}
-            onOpenInTab={(path) => repoStore.openCommitTab(repoRoot, selected.commit.id, { summary: selected.commit.summary, filePath: path })}
-          />
-        {/key}
+<Stack gap="none" grow surface="panel">
+  <Toolbar variant="panel" label="File history">
+    <Icon name="history" size="normal" />
+    <Text truncate title={filePath}>History of <Text mono>{filePath}</Text></Text>
+    {#snippet end()}
+      {#if loading}
+        <Spinner size="small" />
       {/if}
-    </div>
+      <Text size="small" tone="dim" tabular>
+        {entries.length}{hasMore ? "+" : ""}
+        {entries.length === 1 ? "commit" : "commits"}
+      </Text>
+      <IconButton
+        icon="refresh"
+        iconSize="normal"
+        size="compact"
+        tone="dim"
+        label="Refresh"
+        disabled={loading}
+        onclick={() => void reload()}
+      />
+    {/snippet}
+  </Toolbar>
+  {#if loadError}
+    <EmptyState title="Could not read the history" hint={loadError} />
+  {:else}
+    <SplitPane direction="column" preset="list" bind:size={listHeight} label="Resize the commit list" inPanel>
+      {#snippet first()}
+        <List
+          items={entries}
+          itemKey={(entry) => entry.commit.id}
+          label="Commits"
+          height="fill"
+          bind:selected={selectedId}
+          onnearend={() => void loadMore()}
+          onactivate={openCommit}
+          oncontextmenu={(event, entry, fromKeys) => openMenu(event, entry, fromKeys ?? false)}
+        >
+          {#snippet row(entry, state)}
+            <Row selected={state.selected}>
+              <Stack width="xsmall"><Text size="small" tone="dim" mono>{entry.commit.shortId}</Text></Stack>
+              <Stack grow><Text truncate title={entry.commit.summary}>{entry.commit.summary}</Text></Stack>
+              {#if entry.path !== filePath}
+                <Text size="small" tone="warning" truncate giveWay title="The file was {entry.path} in this commit">
+                  {entry.path}
+                </Text>
+              {/if}
+              <Stack width="large"><Text size="small" tone="dim" truncate>{entry.commit.authorName}</Text></Stack>
+              <Text size="small" tone="dim" title={fullDate(entry.commit.time)}>
+                {relativeTime(entry.commit.time, now)}
+              </Text>
+            </Row>
+          {/snippet}
+          {#snippet empty()}
+            {#if !loading}
+              <EmptyState variant="panel" title="No commits touch this file yet." titleTone="dim" />
+            {/if}
+          {/snippet}
+        </List>
+      {/snippet}
+      {#snippet second()}
+        {#if selected}
+          {#key selected.commit.id}
+            <CommitDetails
+              repoPath={repoRoot}
+              commitId={selected.commit.id}
+              {loadedShortId}
+              {onSelectCommit}
+              {preferredFile}
+              onOpenInTab={(path) =>
+                repoStore.openCommitTab(repoRoot, selected.commit.id, {
+                  summary: selected.commit.summary,
+                  filePath: path,
+                })}
+            />
+          {/key}
+        {/if}
+      {/snippet}
+    </SplitPane>
   {/if}
-</div>
-
-<style>
-  .history-tab {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-  }
-
-  .toolbar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 10px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .title {
-    min-width: 0;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .count {
-    font-size: 12px;
-  }
-
-  .list {
-    flex: 0 0 38%;
-    min-height: 80px;
-    overflow-y: auto;
-    outline: none;
-    border-bottom: 1px solid var(--border-strong);
-  }
-
-  .entry {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 26px;
-    padding: 0 10px;
-    cursor: default;
-  }
-
-  .entry:hover {
-    background: var(--hover);
-  }
-
-  .entry.selected {
-    background: var(--selected-inactive);
-  }
-
-  .list:focus .entry.selected {
-    background: var(--selected);
-  }
-
-  .hash {
-    flex: none;
-    width: 70px;
-    font-size: 11.5px;
-    color: var(--text-dim);
-  }
-
-  .subject {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .renamed {
-    flex: 0 1 auto;
-    max-width: 30%;
-    color: var(--warning);
-    font-size: 12px;
-  }
-
-  .author {
-    flex: none;
-    width: 140px;
-  }
-
-  .when {
-    flex: none;
-    width: 90px;
-    text-align: right;
-    font-size: 12px;
-  }
-
-  .details {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-
-  .placeholder {
-    padding: 24px;
-    text-align: center;
-  }
-
-  .spinner {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
+</Stack>

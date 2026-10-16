@@ -94,8 +94,8 @@ Version order comes from `compareVersions` in `version.ts`, which follows semver
 | `src/lib/update/version.ts` | `parseVersion`, `compareVersions`, `isNewer` |
 | `src/lib/update/changelog.ts` | `parseChangelog`, `entryFor`, `releasedEntries` |
 | `src/lib/update/markdown.ts` | Safe Markdown renderer |
-| `src/lib/update/UpdateDialog.svelte` | Update available dialog |
-| `src/lib/update/WhatsNewDialog.svelte` | What's New from the bundled changelog |
+| `src/lib/update/UpdateDialog.svelte` | Update available dialog (library `Dialog`, panel variant) |
+| `src/lib/update/WhatsNewDialog.svelte` | What's New from the bundled changelog (library `Dialog`) |
 | `src/lib/update/ReleaseNotes.svelte` | Renders notes, opens links in the browser |
 | `src-tauri/tauri.conf.json` | CSP that allows `https://api.github.com` |
 | `src-tauri/capabilities/default.json` | `opener:allow-open-url` and `opener:allow-default-urls` |

@@ -10,7 +10,7 @@ Memory is a feature of this app (see [Architecture](Architecture.md)), so we sho
 
 ## How it works
 
-Everything is in `StatusBar.svelte`, which reads existing stores and one Tauri command.
+`StatusBar.svelte` lays out the UI library's `StatusBar` and `StatusItem`s from existing stores; the memory item and its popover are `MemoryStatus.svelte`, the one part that calls a Tauri command.
 
 ```mermaid
 flowchart LR
@@ -67,7 +67,7 @@ flowchart LR
     F -->|"screen is a repository<br/>and differs"| SA["repoStore.setActiveRepo"]
 ```
 
-`followOpenTab()` runs one `$effect`, set up by `Workspace.svelte`. While Auto is on and the screen shows a repository, it makes that repository active. It does not track the active repository itself, so picking one another way (the header menu, Set as Active Repository) holds until the tab changes. It waits while the merge tool or the Conflicts dialog is open, since `setActiveRepo` would close them.
+`followOpenTab()` runs one `$effect`, set up by `runWorkspace()` (`views/workspaceLife.svelte.ts`). While Auto is on and the screen shows a repository, it makes that repository active. It does not track the active repository itself, so picking one another way (the header menu, Set as Active Repository) holds until the tab changes. It waits while the merge tool or the Conflicts dialog is open, since `setActiveRepo` would close them.
 
 The left side reads the same answer: with Auto it describes the screen's repository (or says **No repository** for `outside`), without Auto it always describes `repoStore.repo`. Branch, ahead and behind, the changes count, conflicts and the operation come from `repoStore.statuses[contextRepo.root]`, with no extra git call. Clicking the branch opens the Branches popup for that repository. The branch name is capped at 200 px with an ellipsis, and its button may shrink, so a long name never pushes the other items out of the bar. Clicking changes opens the Changes tab for that repository (see [How the Changes Tab Works](How-the-Changes-Tab-Works.md)), and clicking conflicts opens that repository's Conflicts dialog. Spaces opens Settings on the Editor section (`settings.openDialog("editor")`).
 
@@ -101,7 +101,8 @@ The star button calls `updates.openRepository()`. The bug button opens a small m
 
 | File | What it does |
 | --- | --- |
-| `src/lib/views/StatusBar.svelte` | The bar: context repository, file details, update item, links, memory popover |
+| `src/lib/views/StatusBar.svelte` | The bar: context repository, file details, update item, links |
+| `src/lib/views/MemoryStatus.svelte` | The memory item, its popover and Clear Cache |
 | `src/lib/views/changes/sync.ts` | `rowSync`, the badge and tooltip of the Sync item (shared with Changes) |
 | `src/lib/views/repoSelection.ts` | `screenRepo` and `repoPickItems` (pure) |
 | `src/lib/views/repoSelection.svelte.ts` | `currentScreenRepo`, the Auto effect `followOpenTab` and `openRepoPicker` |
@@ -138,7 +139,7 @@ The status bar and Help bugs and their fixes are in [Status Bar Bugs We Fixed](S
 
 ## Keeping this page in sync
 
-- Update this page when `StatusBar.svelte`, `repoSelection.ts` or the issue link helpers change.
+- Update this page when `StatusBar.svelte`, `MemoryStatus.svelte`, `repoSelection.ts` or the issue link helpers change.
 - Update [Status Bar and Help](../usage/Status-Bar-and-Help.md) for new items or clicks.
 - Retake `status-bar.png`, `help-menu.png` and `settings-about.png` when they change (the shortcuts window shot, `menus-shortcuts-window.png`, belongs to [Menus](../usage/Menus.md)).
 - Record bug fixes in [Status Bar Bugs We Fixed](Status-Bar-Bugs-We-Fixed.md).

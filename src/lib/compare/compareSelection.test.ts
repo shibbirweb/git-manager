@@ -23,7 +23,11 @@ describe("compare menu plan", () => {
   });
 
   it("offers nothing for folders or more than two files", () => {
-    expect(compareMenuPlan([{ path: "/w/src", isDir: true }], null)).toEqual({ select: null, withSelected: null, pair: null });
+    expect(compareMenuPlan([{ path: "/w/src", isDir: true }], null)).toEqual({
+      select: null,
+      withSelected: null,
+      pair: null,
+    });
     expect(compareMenuPlan([file("/w/a"), { path: "/w/src", isDir: true }], null).pair).toBeNull();
     expect(compareMenuPlan([file("/w/a"), file("/w/b"), file("/w/c")], null).pair).toBeNull();
     expect(compareMenuPlan([], null).select).toBeNull();

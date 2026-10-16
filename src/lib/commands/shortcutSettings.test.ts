@@ -44,7 +44,9 @@ const noFilter = { query: "", keys: null, changedOnly: false };
 
 describe("pickKeybindings", () => {
   it("keeps known commands with keys that parse, and removed keys", () => {
-    expect(pickKeybindings({ "git.push": "CmdOrCtrl+Shift+U", "view.sidebar": null, "nav.goBack": " Ctrl+[ " })).toEqual({
+    expect(
+      pickKeybindings({ "git.push": "CmdOrCtrl+Shift+U", "view.sidebar": null, "nav.goBack": " Ctrl+[ " }),
+    ).toEqual({
       "git.push": "CmdOrCtrl+Shift+U",
       "view.sidebar": null,
       "nav.goBack": "Ctrl+[",
@@ -100,11 +102,15 @@ describe("reserved and unusable keys", () => {
   });
 
   it("refuses keys a menu accelerator cannot write", () => {
-    expect(shortcutProblem({ ctrl: true, alt: false, shift: false, meta: false, code: "Numpad1" }, "windows")).toMatch(/cannot be used/);
+    expect(shortcutProblem({ ctrl: true, alt: false, shift: false, meta: false, code: "Numpad1" }, "windows")).toMatch(
+      /cannot be used/,
+    );
   });
 
   it("writes the keys in use the way the native menu reads them", () => {
-    expect(usableOverrides({ "code.duplicate": "Mod-Shift-d", "git.push": "Cmd+Shift+U", "git.pull": "Option+P" }, "macos")).toEqual({
+    expect(
+      usableOverrides({ "code.duplicate": "Mod-Shift-d", "git.push": "Cmd+Shift+U", "git.pull": "Option+P" }, "macos"),
+    ).toEqual({
       "code.duplicate": "CmdOrCtrl+Shift+D",
       "git.push": "CmdOrCtrl+Shift+U",
       "git.pull": "Alt+P",
@@ -113,7 +119,9 @@ describe("reserved and unusable keys", () => {
   });
 
   it("leaves hand-edited reserved and bare keys out of the keys in use", () => {
-    expect(usableOverrides({ "git.push": "Cmd+Q", "git.pull": "K", "git.fetch": "F5", "git.merge": null }, "macos")).toEqual({
+    expect(
+      usableOverrides({ "git.push": "Cmd+Q", "git.pull": "K", "git.fetch": "F5", "git.merge": null }, "macos"),
+    ).toEqual({
       "git.fetch": "F5",
       "git.merge": null,
     });
@@ -127,7 +135,9 @@ describe("recordKeys", () => {
     expect(recorded?.text).toBe("⇧⌘K");
     expect(recorded?.problem).toBeNull();
     expect(recordKeys(press("q", "KeyQ", { metaKey: true }), "macos")?.problem).toMatch(/quit/);
-    expect(recordKeys(press("p", "KeyP", { ctrlKey: true, shiftKey: true }), "windows")?.accelerator).toBe("CmdOrCtrl+Shift+P");
+    expect(recordKeys(press("p", "KeyP", { ctrlKey: true, shiftKey: true }), "windows")?.accelerator).toBe(
+      "CmdOrCtrl+Shift+P",
+    );
   });
 
   it("waits while only modifiers are down", () => {
@@ -161,11 +171,15 @@ describe("changing a shortcut", () => {
 
 describe("conflicts", () => {
   it("finds the other commands with the same keys", () => {
-    expect(commandsWithKeys(specs, {}, "macos", "Cmd+Shift+P").map((other) => other.id)).toEqual(["view.commandPalette"]);
+    expect(commandsWithKeys(specs, {}, "macos", "Cmd+Shift+P").map((other) => other.id)).toEqual([
+      "view.commandPalette",
+    ]);
     expect(commandsWithKeys(specs, {}, "macos", "CmdOrCtrl+Shift+P", "view.commandPalette")).toEqual([]);
     expect(commandsWithKeys(specs, { "view.filesPanel": null }, "macos", "CmdOrCtrl+B")).toEqual([]);
     // An editor key and a window key get in each other's way too.
-    expect(commandsWithKeys(specs, {}, "macos", "CmdOrCtrl+D").map((other) => other.id)).toEqual(["code.selectNextOccurrence"]);
+    expect(commandsWithKeys(specs, {}, "macos", "CmdOrCtrl+D").map((other) => other.id)).toEqual([
+      "code.selectNextOccurrence",
+    ]);
   });
 
   it("reports a changed key that matches another command, on both sides", () => {
@@ -208,7 +222,10 @@ describe("shortcutRows", () => {
   });
 
   it("shows only changed commands, with the default they replace", () => {
-    const rows = shortcutRows(specs, { "view.filesPanel": "F2", "git.push": null }, "macos", { ...noFilter, changedOnly: true });
+    const rows = shortcutRows(specs, { "view.filesPanel": "F2", "git.push": null }, "macos", {
+      ...noFilter,
+      changedOnly: true,
+    });
     expect(rows.map((row) => row.spec.id)).toEqual(["view.filesPanel", "git.push"]);
     expect(rows[0].keysText).toBe("F2");
     expect(rows[0].defaultText).toBe("⌘B");

@@ -80,7 +80,11 @@ describe("menuCommands", () => {
 describe("menuCommands with custom keyboard shortcuts", () => {
   it("reports the keys the menu shows now", () => {
     const spec = menuSpec("macos", "app");
-    const commands = menuCommands(spec, menuState(inputs), menuAccelerators(spec, { "git.push": "F5", "file.save": null }));
+    const commands = menuCommands(
+      spec,
+      menuState(inputs),
+      menuAccelerators(spec, { "git.push": "F5", "file.save": null }),
+    );
     const byAction = new Map(commands.map((command) => [command.action, command]));
     expect(byAction.get("git.push")?.accelerator).toBe("F5");
     expect(byAction.get("file.save")?.accelerator).toBeNull();

@@ -26,6 +26,7 @@
   --accent: #3574f0;
   --accent-hover: #2d66d9;
   --accent-text: #ffffff;
+  --avatar-text: #ffffff;
   --hover: #eceef2;
   --selected: #d4e2ff;
   --selected-inactive: #e4e6eb;
@@ -39,7 +40,7 @@
   --editor-gutter: #ffffff;
   --editor-line-number: #aeb3c2;
   --editor-active-line: #f5f8fe;
-  --editor-selection: #a6d2ff;
+  --editor-selection: #c1c3c9;
   /* These follow other tokens unless a color theme (src/lib/themes) sets them. */
   --editor-cursor: var(--text);
 
@@ -77,6 +78,9 @@
   --diff-conflict: rgba(229, 87, 101, 0.15);
   --diff-conflict-edge: #e06c78;
   --diff-inline: rgba(53, 116, 240, 0.28);
+  --diff-removed: rgba(229, 83, 75, 0.13);
+  --diff-removed-word: rgba(229, 83, 75, 0.3);
+  --diff-added-word: rgba(76, 175, 80, 0.34);
 
   --tok-keyword: #0033b3;
   --tok-string: #067d17;
@@ -151,6 +155,9 @@
     --diff-conflict: rgba(229, 87, 101, 0.2);
     --diff-conflict-edge: #b8505b;
     --diff-inline: rgba(80, 140, 255, 0.35);
+    --diff-removed: rgba(232, 92, 85, 0.18);
+    --diff-removed-word: rgba(232, 92, 85, 0.36);
+    --diff-added-word: rgba(84, 170, 84, 0.4);
 
     --tok-keyword: #cf8e6d;
     --tok-string: #6aab73;
@@ -225,6 +232,9 @@
   --diff-conflict: rgba(229, 87, 101, 0.2);
   --diff-conflict-edge: #b8505b;
   --diff-inline: rgba(80, 140, 255, 0.35);
+  --diff-removed: rgba(232, 92, 85, 0.18);
+  --diff-removed-word: rgba(232, 92, 85, 0.36);
+  --diff-added-word: rgba(84, 170, 84, 0.4);
 
   --tok-keyword: #cf8e6d;
   --tok-string: #6aab73;
@@ -277,112 +287,6 @@ button {
   color: inherit;
 }
 
-/* Shared control styles. */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  background: var(--panel);
-  color: var(--text);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btn:hover:not(:disabled) {
-  background: var(--hover);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
-}
-
-.btn.primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-
-.btn.danger {
-  color: var(--danger);
-}
-
-.btn.small {
-  height: 24px;
-  padding: 0 8px;
-  font-size: 12px;
-}
-
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  height: 28px;
-  min-width: 28px;
-  padding: 0 6px;
-  border: none;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-}
-
-.icon-btn:hover:not(:disabled) {
-  background: var(--hover);
-}
-
-.icon-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.input {
-  height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  background: var(--panel);
-  color: var(--text);
-  font: inherit;
-  outline: none;
-}
-
-.input:focus,
-textarea.input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
-}
-
-textarea.input {
-  height: auto;
-  padding: 6px 8px;
-  resize: none;
-  font-family: var(--font-ui);
-}
-
-.dim {
-  color: var(--text-dim);
-}
-
-.mono {
-  font-family: var(--font-mono);
-}
-
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Thin scrollbars everywhere. */
 ::-webkit-scrollbar {
   width: 10px;
@@ -404,13 +308,17 @@ textarea.input {
 .cm-content,
 .code-ligatures {
   font-variant-ligatures: none;
-  font-feature-settings: "liga" 0, "calt" 0;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
 }
 
 :root[data-ligatures="on"] .cm-content,
 :root[data-ligatures="on"] .code-ligatures {
   font-variant-ligatures: contextual;
-  font-feature-settings: "liga" 1, "calt" 1;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
 }
 
 /* Change overview ruler beside editor scrollbars (see editor/scrollMarkers.ts). */
