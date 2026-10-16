@@ -1,6 +1,7 @@
 <!-- The frame of a 3-way merge: the three panes' titles, the three panes that MergeView (or the app's merge tool)
      fills with editors, and the connector columns between them. It draws no editor: `onready` hands over the pane
-     elements and the box the ribbons are measured from, and the ribbons come back as props. -->
+     elements and the box the ribbons are measured from, and the ribbons come back as props. Without `onapply` and
+     `onignore` the connectors draw ribbons alone, for a read-only 3-pane diff such as a merge commit's. -->
 <script module lang="ts">
   export interface MergeFrameParts {
     left: HTMLDivElement;
@@ -24,6 +25,7 @@
     rightRibbons?: ConnectorRibbon[];
     onapply?: (index: number, side: "left" | "right") => void;
     onignore?: (index: number, side: "left" | "right") => void;
+    applyTitles?: { left: string; right: string } | null;
     onready?: (parts: MergeFrameParts) => void | (() => void);
   }
 
@@ -36,6 +38,7 @@
     rightRibbons = [],
     onapply,
     onignore,
+    applyTitles = null,
     onready,
   }: Props = $props();
 
@@ -68,15 +71,17 @@
     <MergeConnector
       ribbons={leftRibbons}
       side="left"
-      onapply={(index) => onapply?.(index, "left")}
-      onignore={(index) => onignore?.(index, "left")}
+      onapply={onapply ? (index) => onapply(index, "left") : undefined}
+      applyTitle={applyTitles?.left ?? null}
+      onignore={onignore ? (index) => onignore(index, "left") : undefined}
     />
     <div class="pane result-pane" bind:this={result}></div>
     <MergeConnector
       ribbons={rightRibbons}
       side="right"
-      onapply={(index) => onapply?.(index, "right")}
-      onignore={(index) => onignore?.(index, "right")}
+      onapply={onapply ? (index) => onapply(index, "right") : undefined}
+      applyTitle={applyTitles?.right ?? null}
+      onignore={onignore ? (index) => onignore(index, "right") : undefined}
     />
     <div class="pane" bind:this={right}></div>
   </div>

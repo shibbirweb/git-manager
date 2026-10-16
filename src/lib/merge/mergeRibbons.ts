@@ -5,13 +5,13 @@ import type { EditorView } from "@codemirror/view";
 import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
 import { changeType, type ChunkState, sideChanged, type SideName, sideRange } from "./model";
 
-interface Span {
+export interface Span {
   top: number;
   bottom: number;
 }
 
 /** Lines [start, end) of an editor; an empty range is the gap before line `start`. */
-function span(view: EditorView, start: number, end: number, originTop: number): Span {
+export function span(view: EditorView, start: number, end: number, originTop: number): Span {
   const text = view.state.doc;
   const lineCount = text.lines;
   let top: number;
@@ -30,12 +30,12 @@ function span(view: EditorView, start: number, end: number, originTop: number): 
   return { top: top + offset, bottom: bottom + offset };
 }
 
-function visibleLines(view: EditorView): [number, number] {
+export function visibleLines(view: EditorView): [number, number] {
   const text = view.state.doc;
   return [text.lineAt(view.viewport.from).number - 1, text.lineAt(view.viewport.to).number];
 }
 
-function overlaps(start: number, end: number, visible: [number, number]): boolean {
+export function overlaps(start: number, end: number, visible: [number, number]): boolean {
   return end >= visible[0] && start <= visible[1];
 }
 

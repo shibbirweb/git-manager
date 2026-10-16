@@ -35,10 +35,10 @@ flowchart LR
 
 `DiffView.svelte` takes `diff`, `path`, `mode` (`unstaged`, `staged` or `readonly`), two labels, and optionally `onChange`, `blame`, `revealLine`, `workingFile` (Open File) and `previewSides` (binary images and PDFs). It draws `DiffToolbar.svelte` and the UI library's `DiffFrame`, which hands over the body and find bar hosts; `DiffEditors.build` (`diffEditors.svelte.ts`, editors made in `diffViews.ts`):
 
-- loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`,
+- loads the language with `languageFor` and creates a `MergeView` with two read-only editors from `baseExtensions`, without padding and joined by bands ([How the connected diff works](How-the-Connected-Diff-Works.md)),
 - folds unchanged lines with `splitFolds` (`foldField.ts`, rules in `foldModel.ts`) when `diffPrefs.collapseUnchanged` is on (saved in local storage),
 - adds `chunkKinds` and `diffTheme` from `mergeExtensions.ts`, so pure additions, pure deletions and mixed chunks get their own `--diff-*` colors from `src/app.css`,
-- adds revert controls: `b-to-a` with a "Stage this change" button in unstaged mode, `a-to-b` with "Unstage this change" in staged mode, none when read-only,
+- puts a "Stage this change" (unstaged) or "Unstage this change" (staged) arrow on each band, none when read-only,
 - draws the overview ruler with `createStrip`, `layoutTicks` and `renderTicks` from `scrollMarkers.ts`, next to the merge view's scroll container,
 - binds F7 and Shift+F7 to `goToChunk` and restores the scroll position on a rebuild.
 
@@ -59,9 +59,9 @@ flowchart LR
   Setting -->|"pointer up"| Save["settings.save() to state.json"]
 ```
 
-The handle is the library's `SplitHandle` with a `gutter`: the change arrows column (`.cm-merge-revert`, the `diffFrame.controls` token, 24 px, matched by a gap in the labels and find bar rows) belongs to neither side, so the handle sits at the first editor's right edge and `pointerRatio` leaves the column out. Double-click sets 0.5; Left and Right move 2% (10% with Shift). The setting is saved when the drag ends.
+The handle is the library's `SplitHandle` with a `gutter`: the bands column (the `mergeView.gap` token, matched by a gap in the labels and find bar rows) belongs to neither side, so the handle sits at the first editor's right edge and `pointerRatio` leaves the column out. Double-click sets 0.5; Left and Right move 2% (10% with Shift). The setting is saved when the drag ends.
 
-Each side's find bar goes into a host above the diff (`panels({ topContainer })`), since both sides share one scroller. See [How find and replace works](How-Find-and-Replace-Works.md).
+Each side's find bar goes into a host above the diff (`panels({ topContainer })`), so it stays put while the text scrolls. See [How find and replace works](How-Find-and-Replace-Works.md).
 
 ### Staging one hunk
 

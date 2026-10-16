@@ -7,6 +7,7 @@ import { type Chunk, getChunks, mergeViewSiblings } from "@codemirror/merge";
 import { type EditorState, type Extension, Facet, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
 import { type FoldEdge, type FoldRange, FOLD_STEP, foldEdges, foldRanges, revealFold } from "./foldModel";
+import { scopeLabelAt } from "./foldScope";
 import { iconSvg } from "./mergeExtensions";
 
 /** Every fold field of an editor, so the folds on screen can be read (tests). */
@@ -23,8 +24,8 @@ export function foldedLines(state: EditorState): FoldRange[] {
   return ranges;
 }
 
-/** Opens the fold around `pos`, a step at one edge or fully. */
-const foldStep = StateEffect.define<{ pos: number; edge: FoldEdge }>({
+/** Opens the fold around `pos`, a step at one edge or fully (the 3-pane diff mirrors it to its other panes). */
+export const foldStep = StateEffect.define<{ pos: number; edge: FoldEdge }>({
   map: (value, change) => ({ pos: change.mapPos(value.pos), edge: value.edge }),
 });
 
@@ -68,17 +69,27 @@ function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "botto
   return button;
 }
 
+/**
+ * A fold names the code after it, like JetBrains IDEs ("Api > DistrictController > store()"), over a wavy line;
+ * code outside any declaration shows the count. `labelLine` is the line the name is read at.
+ */
 class FoldWidget extends WidgetType {
   constructor(
     readonly count: number,
     readonly top: boolean,
     readonly bottom: boolean,
+    readonly labelLine: number,
   ) {
     super();
   }
 
   eq(other: FoldWidget): boolean {
-    return other.count === this.count && other.top === this.top && other.bottom === this.bottom;
+    return (
+      other.count === this.count &&
+      other.top === this.top &&
+      other.bottom === this.bottom &&
+      other.labelLine === this.labelLine
+    );
   }
 
   toDOM(view: EditorView): HTMLElement {
@@ -89,9 +100,11 @@ class FoldWidget extends WidgetType {
     }
     const label = document.createElement("span");
     label.className = "cm-diffFoldLabel";
-    label.title = "Show all";
-    label.textContent = `${this.count} unchanged lines`;
-    element.appendChild(label);
+    label.textContent = scopeLabelAt(view.state, this.labelLine) ?? `${this.count} unchanged lines`;
+    element.title = `${this.count} unchanged lines, click to show them`;
+    const wave = document.createElement("span");
+    wave.className = "cm-diffFoldWave";
+    element.append(label, wave);
     if (this.bottom) {
       element.appendChild(edgeButton(view, element, "bottom"));
     }
@@ -108,8 +121,9 @@ class FoldWidget extends WidgetType {
 
 function foldDecoration(state: EditorState, range: FoldRange) {
   const edges = foldEdges(range, state.doc.lines);
+  const labelLine = Math.min(range.last + 1, state.doc.lines);
   return Decoration.replace({
-    widget: new FoldWidget(range.last - range.first + 1, edges.top, edges.bottom),
+    widget: new FoldWidget(range.last - range.first + 1, edges.top, edges.bottom, labelLine),
     block: true,
   }).range(state.doc.line(range.first).from, state.doc.line(range.last).to);
 }

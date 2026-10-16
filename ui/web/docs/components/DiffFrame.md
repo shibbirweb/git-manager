@@ -18,7 +18,11 @@ a find bar container per side; labels, find bars and editors share `ratio`. Diff
 - `layout` (`"split" | "inline"`, default `"split"`): Side by side, or one column with one label and one find bar.
 - `label` (`string`, required): Accessible name.
 - `sideLabels` (`{ original: string; modified: string } | null`, default `null`): Names over the two sides.
-- `controls` (`boolean`, default `false`): A column for the change arrows between the sides.
+- `ribbons` (`ConnectorRibbon[] | null`, default `null`): Side by side: a band per change joining its lines on both
+  sides, measured from the body's top; each side then scrolls itself.
+- `applySide` (`"left" | "right"`, default `"left"`): Which side's change the arrow on a band applies.
+- `onapply` (`(index: number) => void`): Shows an arrow on each band, such as Stage this change.
+- `applyTitle` (`string | null`, default `null`): The arrow's tooltip.
 - `ruler` (`boolean`, default `false`): Room for a change overview ruler at the right of one editor.
 - `ratio` (`number`, default `0.5`, bindable): The split between the sides; drag the handle to change it.
 - `oncommitratio` (`(ratio: number) => void`): A drag or a key ended: save the ratio.
@@ -32,7 +36,7 @@ a find bar container per side; labels, find bars and editors share `ratio`. Diff
 ## Example: The Changes diff
 
 ```svelte
-<DiffFrame label="cart.ts" sideLabels={names} controls ruler bind:ratio onready={build} />
+<DiffFrame label="cart.ts" sideLabels={names} {ribbons} {onapply} ruler bind:ratio onready={build} />
 ```
 
 ## Replaces in the app

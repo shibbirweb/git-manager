@@ -6,7 +6,7 @@ import { type ChunkState, invertAnchors, mapLine, sideToResultAnchors } from "./
 export type Pane = "ours" | "result" | "theirs";
 
 /** The line (with a fraction) at the vertical center of an editor. */
-function lineAtCenter(view: EditorView): number {
+export function lineAtCenter(view: EditorView): number {
   const scroller = view.scrollDOM;
   const scrollRect = scroller.getBoundingClientRect();
   const docOffset = view.documentTop - scrollRect.top + scroller.scrollTop;
@@ -17,7 +17,7 @@ function lineAtCenter(view: EditorView): number {
   return index + fraction;
 }
 
-function scrollToLine(view: EditorView, position: number): void {
+export function scrollToLine(view: EditorView, position: number): void {
   const text = view.state.doc;
   const index = Math.max(0, Math.min(text.lines - 1, Math.floor(position)));
   const fraction = Math.max(0, Math.min(1, position - index));

@@ -31,6 +31,12 @@ On the page, `src/lib/log/commitFiles.ts` turns the details into rows. `commitFi
 
 `CommitFileList.svelte` draws the caption (with **Show parents** or **Show both sides**), the list and the empty state with **Show changes to parents**.
 
+### The 3-pane diff
+
+A file of the `merged` view also loads its diff against parent 2 (`CommitLoader.loadDiff`, with that parent's own rename source from `laterParentFiles`). When both diffs are text and `diffPrefs.threePanes` is on (the toolbars' **Three panes** button, saved with the other diff preferences), `CommitDetails` shows `ThreePaneDiff.svelte` instead of `DiffView`: the library's `MergeFrame` with three read-only editors built by `ThreeWayEditors` (`diff/threeWayEditors.svelte.ts`).
+
+The pure parts are in `diff/threeWay.ts`. Each parent's backend hunks against the result become `ThreeWayChange`s; a change whose result lines touch the other parent's changes is a `conflict`. `resultMarks` merges both parents' result ranges for the middle pane, `parentMarks` adds the changed words, and `parentAnchors` maps each parent's lines to the result's. The result is the hub for scrolling: a scrolled pane's center line is mapped to the result, then to the other parent, with the merge tool's `mapLine`, `lineAtCenter` and `scrollToLine`. The bands come from the merge tool's `span`, and `MergeFrame` draws them without buttons when it gets no `onapply`.
+
 ## Where the code lives
 
 | File | What it does |
@@ -41,6 +47,7 @@ On the page, `src/lib/log/commitFiles.ts` turns the details into rows. `commitFi
 | `src/lib/log/commitFiles.ts` | Rows, keys, selection and captions |
 | `src/lib/log/commitLoader.svelte.ts` | Selection, view and the diff against the chosen parent |
 | `src/lib/log/CommitFileList.svelte` | The list, its caption and empty state |
+| `src/lib/diff/threeWay.ts`, `threeWayEditors.svelte.ts`, `ThreePaneDiff.svelte` | The 3-pane diff |
 
 ## Design decisions
 
@@ -53,8 +60,9 @@ On the page, `src/lib/log/commitFiles.ts` turns the details into rows. `commitFi
 
 - `src-tauri/src/git/commit_files_tests.rs`: a merge where both sides changed one file, a resolved conflict, a merge that took each file from one side (no merged files), normal and root commits, and `commit_file` against parent 1, parent 2 and a missing parent.
 - `src/lib/log/commitFiles.test.ts`: rows in both views, keys per parent, picking the selection, labels and captions.
+- `src/lib/diff/threeWay.test.ts`: change types, conflicts where both parents changed the same lines, merged result marks, changed words and anchors.
 
 ## Keeping this page in sync
 
 - A change to how `CommitDetails` lists files updates `commitFiles.ts` and both test files.
-- Retake `merge-commit-files.png` when the merge view looks different.
+- Retake `merge-commit-files.png` when the merge view looks different. The docs demo's merge combines `src/catalog.ts` from both branches (`scripts/make-docs-demo.sh`), so the shot shows three panes.

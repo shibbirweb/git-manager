@@ -74,7 +74,13 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("sideLabels", "{ original: string; modified: string } | null", "Names over the two sides.", {
         default: "null",
       }),
-      prop("controls", "boolean", "A column for the change arrows between the sides.", { default: "false" }),
+      prop("ribbons", "ConnectorRibbon[] | null", "Side by side: a band per change joining its lines on both " +
+        "sides, measured from the body's top; each side then scrolls itself.", { default: "null", data: true }),
+      prop("applySide", '"left" | "right"', "Which side's change the arrow on a band applies.", {
+        default: '"left"',
+      }),
+      prop("onapply", "(index: number) => void", "Shows an arrow on each band, such as Stage this change."),
+      prop("applyTitle", "string | null", "The arrow's tooltip.", { default: "null" }),
       prop("ruler", "boolean", "Room for a change overview ruler at the right of one editor.", { default: "false" }),
       prop("ratio", "number", "The split between the sides; drag the handle to change it.", {
         default: "0.5",
@@ -89,7 +95,7 @@ export const surfaceDocs: ComponentDoc[] = [
     examples: [
       {
         title: "The Changes diff",
-        code: '<DiffFrame label="cart.ts" sideLabels={names} controls ruler bind:ratio onready={build} />',
+        code: '<DiffFrame label="cart.ts" sideLabels={names} {ribbons} {onapply} ruler bind:ratio onready={build} />',
       },
     ],
     logic: ["splitRatio.ts"],
@@ -118,8 +124,10 @@ export const surfaceDocs: ComponentDoc[] = [
         default: "[]",
         data: true,
       }),
-      prop("onapply", '(index: number, side: "left" | "right") => void', "A chunk's Apply button."),
-      prop("onignore", '(index: number, side: "left" | "right") => void', "A chunk's Ignore button."),
+      prop("onapply", '(index: number, side: "left" | "right") => void', "A chunk's Apply button; left out, none."),
+      prop("onignore", '(index: number, side: "left" | "right") => void', "A chunk's Ignore button; left out, none."),
+      prop("applyTitles", "{ left: string; right: string } | null", "The Apply buttons' tooltips per side, such as " +
+        "Unstage this change and Stage this change.", { default: "null" }),
       prop("onready", "(parts: MergeFrameParts) => void | (() => void)", "The panes, once shown."),
     ],
     rules: ["Never draw UI in the panes: they hold only the editors the app builds."],
@@ -166,9 +174,9 @@ export const surfaceDocs: ComponentDoc[] = [
   {
     name: "MergeConnector",
     group: "Editor",
-    summary: "The column between two merge panes: a ribbon per chunk and its apply and ignore buttons.",
-    usage: "MergeFrame draws this between its panes; use it alone only for a custom merge layout. Its buttons stay " +
-      "inside the column while any of the chunk shows.",
+    summary: "The column between two merge or diff panes: a ribbon per chunk and its apply and ignore buttons.",
+    usage: "MergeFrame and DiffFrame draw this between their panes; use it alone only for a custom layout. Its " +
+      "buttons stay inside the column while any of the chunk shows, and each shows only with its handler.",
     aliases: ["Ribbon", "Connector"],
     props: [
       prop("ribbons", "ConnectorRibbon[] ({ index; kind; aTop; aBottom; bTop; bBottom })",
@@ -176,6 +184,9 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("side", '"left" | "right"', "Which pane the buttons apply from.", { required: true }),
       prop("onapply", "(index: number) => void", "Apply a chunk."),
       prop("onignore", "(index: number) => void", "Ignore a chunk."),
+      prop("applyTitle", "string | null", "The apply button's tooltip, such as Stage this change.", {
+        default: "null",
+      }),
     ],
     examples: [{ title: "Between panes", code: '<MergeConnector side="left" {ribbons} onapply={apply} />' }],
     logic: ["mergeGeometry.ts"],

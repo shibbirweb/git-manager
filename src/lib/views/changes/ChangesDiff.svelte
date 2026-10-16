@@ -2,6 +2,8 @@
 <script lang="ts">
   import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
+  import { diffPrefs } from "$lib/diff/prefs.svelte";
+  import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -12,6 +14,7 @@
   import { HEAD_REVISION, INDEX_REVISION } from "$lib/views/files/previewSource";
   import { buildSections, displayPath, findFile, findSection, splitSections } from "./sections";
   import { changesSelection } from "./selection.svelte";
+  import { StagingDiffs, stagingViewFits } from "./stagingDiffs.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { untrack } from "svelte";
 
@@ -40,6 +43,23 @@
   const selectedSection = $derived(selected ? findSection(sections, selected.repoRoot) : null);
   const diffMode = $derived(selected?.area === "staged" ? "staged" : "unstaged");
   const panelHidden = $derived(settings.leftPanel !== "changes");
+
+  // The staging view: HEAD | the index | the work tree, for a plain modified file, while it is turned on.
+  const staging = new StagingDiffs();
+  const stagingFits = $derived(selected ? stagingViewFits(findFile(sections, selected)) : false);
+  const stagingOn = $derived(Boolean(selected) && stagingFits && diffPrefs.stagingThreePanes);
+  const stagingKey = $derived(selected ? `${selected.repoRoot}\u0000${selected.path}` : null);
+  $effect(() => {
+    const current = selected;
+    if (!current || !stagingOn) {
+      untrack(() => staging.clear());
+      return;
+    }
+    // A new status (after staging a change) reloads both diffs.
+    void repoStore.statuses[current.repoRoot];
+    void repoStore.fileVersions[current.repoRoot];
+    untrack(() => void staging.load(current.repoRoot, current.path));
+  });
 
   /** Bumped when the repository's status changes, so a binary preview loads its files again. */
   let previewVersion = $state(0);
@@ -79,6 +99,28 @@
     <EmptyState titleTone="dim" title="This folder has no git repository yet." />
   {:else if !anyLoaded}
     <Spacer />
+  {:else if selected && stagingOn && staging.staged && staging.workTree && staging.key === stagingKey}
+    {#key stagingKey}
+      <ThreePaneDiff
+        left={staging.staged}
+        right={staging.workTree}
+        path={displayPath(selectedSection?.repo ?? null, selected.path, multiRepo)}
+        labels={{ left: "HEAD", result: "Index (staged)", right: "Working Tree" }}
+        label="Staging view of {selected.path.split('/').pop()}"
+        options={{ rightNewer: true, conflicts: false }}
+        applyTitles={{ left: "Unstage this change", right: "Stage this change" }}
+        onapply={(middle, side) =>
+          changesSelection.applyDiffChange(
+            selected.area === "staged" ? "modified" : "original",
+            middle,
+            side === "right" ? "Stage change" : "Unstage change",
+          )}
+        onlayout={(layout) => {
+          settings.setPreference("diffLayout", layout);
+          diffPrefs.setStagingThreePanes(false);
+        }}
+      />
+    {/key}
   {:else if selected && changesSelection.diff}
     <DiffView
       diff={changesSelection.diff}
@@ -103,6 +145,7 @@
       revealLine={reveal}
       workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
       {previewSides}
+      onThreePanes={stagingFits ? () => diffPrefs.setStagingThreePanes(true) : null}
     />
   {:else if selected && changesSelection.diffError}
     <EmptyState titleTone="danger" strong title="Could not load the diff" hint={changesSelection.diffError} />

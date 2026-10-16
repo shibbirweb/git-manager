@@ -1,6 +1,7 @@
-<!-- The column between two merge panes: a ribbon per chunk joining its lines on both sides, and the chunk's
+<!-- The column between two merge or diff panes: a ribbon per chunk joining its lines on both sides, and the chunk's
      buttons (apply its side's change, or ignore it) at its top, kept inside the column while any of the chunk shows.
-     MergeView measures; this draws. -->
+     Each button shows only with its handler, so a read-only diff draws ribbons alone. The app measures; this
+     draws. -->
 <script lang="ts">
   import type { ChunkKind } from "../logic/mergeGeometry";
   import { ribbonPath } from "../logic/mergeGeometry";
@@ -23,9 +24,10 @@
     side: "left" | "right";
     onapply?: (index: number) => void;
     onignore?: (index: number) => void;
+    applyTitle?: string | null;
   }
 
-  let { ribbons, side, onapply, onignore }: Props = $props();
+  let { ribbons, side, onapply, onignore, applyTitle = null }: Props = $props();
 
   const width = componentTokens.mergeView.gap;
   const { buttonHeight, buttonInset } = componentTokens.mergeView;
@@ -49,27 +51,33 @@
       />
     {/each}
   </svg>
-  {#each ribbons as ribbon (ribbon.index)}
-    <!-- Apply sits next to its own pane: first on the left, last on the right. -->
-    <div class="buttons {side}" style:top="{buttonTop(side === 'left' ? ribbon.aTop : ribbon.bTop)}px">
-      {#if side === "right"}{@render ignoreButton(ribbon.index)}{/if}
-      <button
-        class="chunk-btn apply {ribbon.kind}"
-        type="button"
-        title="{ribbon.append ? 'Append' : 'Apply'} {side} change"
-        onclick={() => onapply?.(ribbon.index)}
-      >
-        <Icon name={side === "left" ? "chevrons-right" : "chevrons-left"} size="compact" stroke="bold" />
-      </button>
-      {#if side === "left"}{@render ignoreButton(ribbon.index)}{/if}
-    </div>
-  {/each}
+  {#if onapply || onignore}
+    {#each ribbons as ribbon (ribbon.index)}
+      <!-- Apply sits next to its own pane: first on the left, last on the right. -->
+      <div class="buttons {side}" style:top="{buttonTop(side === 'left' ? ribbon.aTop : ribbon.bTop)}px">
+        {#if side === "right"}{@render ignoreButton(ribbon.index)}{/if}
+        {#if onapply}
+          <button
+            class="chunk-btn apply {ribbon.kind}"
+            type="button"
+            title={applyTitle ?? `${ribbon.append ? "Append" : "Apply"} ${side} change`}
+            onclick={() => onapply(ribbon.index)}
+          >
+            <Icon name={side === "left" ? "chevrons-right" : "chevrons-left"} size="compact" stroke="bold" />
+          </button>
+        {/if}
+        {#if side === "left"}{@render ignoreButton(ribbon.index)}{/if}
+      </div>
+    {/each}
+  {/if}
 </div>
 
 {#snippet ignoreButton(index: number)}
-  <button class="chunk-btn ignore" type="button" title="Ignore {side} change" onclick={() => onignore?.(index)}>
-    <Icon name="x" size="small" stroke="bold" />
-  </button>
+  {#if onignore}
+    <button class="chunk-btn ignore" type="button" title="Ignore {side} change" onclick={() => onignore(index)}>
+      <Icon name="x" size="small" stroke="bold" />
+    </button>
+  {/if}
 {/snippet}
 
 <style>

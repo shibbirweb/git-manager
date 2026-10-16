@@ -51,6 +51,8 @@
      * lines the selection picks. Without it the diff offers no line actions.
      */
     onLines?: ((action: LineAction, selection: LineSelection) => void) | null;
+    /** Offers the 3-pane layout in the toolbar (a merge commit's file, or the Changes diff's staging view). */
+    onThreePanes?: (() => void) | null;
   }
 
   let {
@@ -65,6 +67,7 @@
     workingFile = null,
     previewSides = null,
     onLines = null,
+    onThreePanes = null,
   }: Props = $props();
 
   const editors = new DiffEditors(() => revealLine);
@@ -172,6 +175,7 @@
     {path}
     onopenfile={() => void openWorkingFile()}
     onlines={runLines}
+    onthreepanes={onThreePanes}
   />
   {#if !textual}
     {#if binaryPreview && previewSides}
@@ -198,7 +202,10 @@
       layout={inline ? "inline" : "split"}
       label="Diff of {fileName}"
       sideLabels={{ original: leftLabel, modified: rightLabel }}
-      controls={mode !== "readonly" && !inline}
+      ribbons={inline ? null : editors.ribbons}
+      applySide={mode === "unstaged" ? "right" : "left"}
+      onapply={mode === "readonly" || inline ? undefined : (index) => editors.copyChange(index)}
+      applyTitle={mode === "unstaged" ? "Stage this change" : "Unstage this change"}
       ruler
       bind:ratio={() => clampDiffSplit(settings.diffSplitRatio), (ratio) => (settings.diffSplitRatio = ratio)}
       oncommitratio={() => settings.save()}

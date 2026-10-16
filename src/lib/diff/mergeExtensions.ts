@@ -58,6 +58,10 @@ export const chunkKinds = ViewPlugin.fromClass(
   { decorations: (plugin) => plugin.decorations },
 );
 
+/** One period of a fold's wavy line, used as a mask so the line takes a theme color. */
+const WAVE =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6"><path d="M0 3 Q3 0 6 3 T12 3" fill="none" stroke="#000" stroke-width="1.2"/></svg>';
+
 export const diffTheme = EditorView.theme({
   "&.cm-merge-a .cm-content .cm-line.cm-changedLine, &.cm-merge-b .cm-content .cm-line.cm-changedLine": {
     backgroundColor: "var(--diff-modified)",
@@ -78,25 +82,45 @@ export const diffTheme = EditorView.theme({
   "&.cm-merge-a .cm-gutters .cm-changedLineGutter, &.cm-merge-b .cm-gutters .cm-changedLineGutter": {
     background: "var(--diff-modified-edge)",
   },
+  // A fold, like JetBrains IDEs: the code's scope in small dim text over a wavy line, no box.
   "&.cm-editor .cm-content .cm-diffFold": {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "2px 8px",
+    gap: "6px",
+    padding: "2px 8px 2px 4px",
     color: "var(--text-dim)",
-    background: "var(--panel-alt)",
-    borderTop: "1px solid var(--border)",
-    borderBottom: "1px solid var(--border)",
     fontFamily: "var(--font-ui)",
     fontSize: "11.5px",
+    whiteSpace: "nowrap",
     cursor: "pointer",
   },
   "&.cm-editor .cm-content .cm-diffFoldLabel": {
+    flex: "0 1 auto",
+    minWidth: "0",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    padding: "1px 6px",
+    border: "1px solid var(--border)",
+    borderRadius: "4px",
+    background: "var(--editor-bg)",
+  },
+  "&.cm-editor .cm-content .cm-diffFoldWave": {
     flex: "1",
-    padding: "1px 4px",
+    minWidth: "24px",
+    height: "6px",
+    background: "var(--border-strong)",
+    mask: `url("data:image/svg+xml,${encodeURIComponent(WAVE)}") repeat-x left center / 12px 6px`,
   },
   "&.cm-editor .cm-content .cm-diffFold:hover .cm-diffFoldLabel": {
     color: "var(--text)",
+    borderColor: "var(--border-strong)",
+  },
+  "&.cm-editor .cm-content .cm-diffFold:hover .cm-diffFoldWave": {
+    background: "var(--accent)",
+  },
+  // The 10-line steps show under the pointer only, so a fold stays one quiet line.
+  "&.cm-editor .cm-content .cm-diffFold:not(:hover) .cm-diffFoldStep": {
+    visibility: "hidden",
   },
   "&.cm-editor .cm-content .cm-diffFoldStep": {
     display: "inline-flex",

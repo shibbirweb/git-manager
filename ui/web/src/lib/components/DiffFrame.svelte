@@ -1,10 +1,11 @@
 <!-- The frame of a diff whose editors the caller builds: the sides' names, a find bar slot over each side (shown
      only while a bar is open, so it never scrolls away with the text), the body the editors go into and the handle
-     between the sides. Labels, find bars and editors share `ratio`, so they stay lined up. `controls` keeps a
-     column for the change arrows between the sides; `ruler` leaves room for a change overview at the right. -->
+     between the sides. Labels, find bars and editors share `ratio`, so they stay lined up. With `ribbons` (side by
+     side), each side scrolls itself and a MergeConnector between them joins every change's lines, with the apply
+     arrow on it when `onapply` is set; `ruler` leaves room for a change overview at the right. -->
 <script module lang="ts">
   export interface DiffFrameParts {
-    /** Where the editors go: a MergeView or one EditorView. */
+    /** Where the editors go: a MergeView or one EditorView. The connector's ribbons are measured from its top. */
     body: HTMLDivElement;
     /** Containers for each side's search panel (CodeMirror `panels({ topContainer })`). */
     findOriginal: HTMLDivElement;
@@ -15,13 +16,17 @@
 <script lang="ts">
   import { componentTokens } from "../styles/tokens";
   import Icon from "./Icon.svelte";
+  import MergeConnector, { type ConnectorRibbon } from "./MergeConnector.svelte";
   import SplitHandle from "./SplitHandle.svelte";
 
   interface Props {
     layout?: "split" | "inline";
     label: string;
     sideLabels?: { original: string; modified: string } | null;
-    controls?: boolean;
+    ribbons?: ConnectorRibbon[] | null;
+    applySide?: "left" | "right";
+    onapply?: (index: number) => void;
+    applyTitle?: string | null;
     ruler?: boolean;
     ratio?: number;
     oncommitratio?: (ratio: number) => void;
@@ -33,7 +38,10 @@
     layout = "split",
     label,
     sideLabels = null,
-    controls = false,
+    ribbons = null,
+    applySide = "left",
+    onapply,
+    applyTitle = null,
     ruler = false,
     ratio = $bindable(0.5),
     oncommitratio,
@@ -44,7 +52,11 @@
   let body = $state<HTMLDivElement | null>(null);
   let findOriginal = $state<HTMLDivElement | null>(null);
   let findModified = $state<HTMLDivElement | null>(null);
-  const gutter = $derived(controls ? componentTokens.diffFrame.controls : 0);
+  const connected = $derived(layout === "split" && ribbons !== null);
+  // The editors stop short of the ruler, so the gap's place leaves it out too.
+  const gutter = $derived(
+    connected ? componentTokens.mergeView.gap + (ruler ? componentTokens.diffFrame.ruler : 0) : 0,
+  );
 
   // The parts stay the same across layouts, so switching layout never hands out new elements.
   $effect(() => {
@@ -56,7 +68,7 @@
 
 <div class="frame" role="region" aria-label={label} style:--diff-left={ratio} style:--diff-right={1 - ratio}>
   {#if sideLabels}
-    <div class="labels" class:controls>
+    <div class="labels" class:connected>
       {#if layout === "inline"}
         <span class="label joined" title="{sideLabels.original} to {sideLabels.modified}">
           <span class="name">{sideLabels.original}</span>
@@ -70,13 +82,18 @@
       {/if}
     </div>
   {/if}
-  <div class="find-bars" class:controls class:inline={layout === "inline"}>
+  <div class="find-bars" class:connected class:inline={layout === "inline"}>
     <div class="find-host" bind:this={findOriginal}></div>
     <span class="gap"></span>
     <div class="find-host" bind:this={findModified}></div>
   </div>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="body" class:ruler bind:this={body} {oncontextmenu}>
+  <div class="body" class:ruler class:connected bind:this={body} {oncontextmenu}>
+    {#if connected && ribbons}
+      <div class="connector" style:left="calc((100% - {gutter}px) * {ratio})">
+        <MergeConnector {ribbons} side={applySide} {onapply} {applyTitle} />
+      </div>
+    {/if}
     {#if layout === "split"}
       <SplitHandle bind:ratio {gutter} label="Resize the two sides of the diff" oncommit={oncommitratio} />
     {/if}
@@ -132,12 +149,12 @@
     background: var(--border-strong);
   }
 
-  .controls .gap {
-    width: var(--diff-frame-controls);
+  .connected .gap {
+    width: var(--merge-view-gap);
     background: transparent;
   }
 
-  .labels.controls .gap {
+  .labels.connected .gap {
     border-left: 1px solid var(--border-strong);
     border-right: 1px solid var(--border-strong);
   }
@@ -215,29 +232,44 @@
     border-left: 1px solid var(--border-strong);
   }
 
-  .body :global(.cm-merge-revert) {
-    width: var(--diff-frame-controls);
-    background: var(--panel-alt);
+  /* Connected: each side scrolls itself (the app keeps them in step), with the connector in the gap. */
+  .connected :global(.cm-mergeView) {
+    overflow: hidden;
+  }
+
+  .connected :global(.cm-mergeViewEditors) {
+    height: 100%;
+    gap: var(--merge-view-gap);
+  }
+
+  .connected :global(.cm-mergeViewEditor) {
+    min-width: 0;
+  }
+
+  .connected :global(.cm-mergeView .cm-editor),
+  .connected :global(.cm-mergeView .cm-editor .cm-scroller) {
+    height: 100% !important;
+  }
+
+  .connected :global(.cm-mergeView .cm-editor .cm-scroller) {
+    overflow-y: auto !important;
+  }
+
+  .connected :global(.cm-mergeViewEditor + .cm-mergeViewEditor) {
+    border-left: none;
+  }
+
+  .connector {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
     border-left: 1px solid var(--border-strong);
     border-right: 1px solid var(--border-strong);
   }
 
-  .body :global(.cm-merge-revert .diff-revert) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: var(--diff-frame-revert-height);
-    padding: 0;
-    border-radius: var(--diff-frame-revert-radius);
-    color: var(--accent);
-  }
-
-  .body :global(.cm-merge-revert .diff-revert:hover) {
-    background: var(--hover);
-    color: var(--accent-hover);
-  }
-
-  .body :global(.cm-merge-revert .diff-revert svg) {
-    pointer-events: none;
+  .ruler .connector ~ :global(.cm-mergeView) {
+    right: var(--diff-frame-ruler);
   }
 </style>

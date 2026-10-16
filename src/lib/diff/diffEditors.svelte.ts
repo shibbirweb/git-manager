@@ -1,19 +1,22 @@
-// The editors of a diff: a MergeView side by side, or one EditorView inline (inlineDoc.ts), built into the body of
-// the library's DiffFrame. Keeps the change count and position, the selection's changed lines and the overview
-// ruler; DiffView.svelte draws the toolbar around it.
+// The editors of a diff: a MergeView side by side (its sides linked by SplitLink), or one EditorView inline
+// (inlineDoc.ts), built into the body of the library's DiffFrame. Keeps the change count and position, the
+// selection's changed lines, the connector's bands and the overview ruler; DiffView.svelte draws the toolbar.
 import type { MergeView } from "@codemirror/merge";
 import type { Extension } from "@codemirror/state";
 import { EditorView, keymap, panels } from "@codemirror/view";
 import type { DiffFrameParts } from "@git-manager/ui/components/DiffFrame.svelte";
+import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
 import { type BlameTarget, blameExtension, loadBlame } from "$lib/editor/blame";
 import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/scrollMarkers";
 import { baseExtensions, editorLanguage } from "$lib/editor/setup";
 import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
 import type { FileDiff, LineHunk, LineSelection } from "$lib/types";
-import { diffMarks, inlineEditor, splitEditors } from "./diffViews";
-import { docLineOf, inlineChangeMarks, type InlineDoc, inlineSelection, newLineAt } from "./inlineDoc";
-import { type DiffSide, rangeLines, selectedChangeLines, selectionSize } from "./lineSelection";
+import { newLineOnScreen, revealNewLine, rulerMarks, selectedLines } from "./diffPositions";
+import { inlineEditor, splitEditors } from "./diffViews";
+import type { InlineDoc } from "./inlineDoc";
+import { type DiffSide, selectionSize } from "./lineSelection";
 import { chunkKinds, diffTheme } from "./mergeExtensions";
+import { SplitLink } from "./splitLink";
 
 export type DiffMode = "unstaged" | "staged" | "readonly";
 
@@ -36,8 +39,13 @@ export class DiffEditors {
   current = $state(-1);
   /** Changed lines the selection picks, for the line action buttons. */
   selectedLines = $state(0);
+  /** The connector's bands side by side; null inline. */
+  ribbons = $state.raw<ConnectorRibbon[] | null>(null);
 
   #view: MergeView | null = null;
+  #link: SplitLink | null = null;
+  /** The arrow on a band stages (copies the right side over the left) rather than unstages. */
+  #copyToA = false;
   #inlineView: EditorView | null = null;
   #inlineDoc: InlineDoc | null = null;
   /** The backend's hunks of the texts on screen; null once a chunk control changed a side. */
@@ -76,28 +84,19 @@ export class DiffEditors {
       return false;
     }
     this.#revealedToken = reveal.token;
-    const doc = editor.state.doc;
-    const line = this.#inlineDoc ? docLineOf(this.#inlineDoc, reveal.line) : reveal.line;
-    const position = doc.line(Math.max(1, Math.min(line + 1, doc.lines))).from;
-    editor.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
+    revealNewLine(editor, reveal.line, this.#inlineDoc);
     return true;
   }
 
   /** The new text's line to open the file at: the cursor line when it is on screen, else the top line. */
   lineOnScreen(editor: EditorView): number {
-    const head = editor.state.selection.main.head;
-    let line: number;
-    if (editor.hasFocus || editor.visibleRanges.some((range) => head >= range.from && head <= range.to)) {
-      line = editor.state.doc.lineAt(head).number - 1;
-    } else {
-      line = editor.state.doc.lineAt(editor.lineBlockAtHeight(editor.scrollDOM.scrollTop).from).number - 1;
-    }
-    return this.#inlineDoc ? newLineAt(this.#inlineDoc, line) : line;
+    return newLineOnScreen(editor, this.#inlineDoc);
   }
 
   teardown(scrollKey: string): void {
     this.#token++;
-    const scroller = this.#view?.dom ?? this.#inlineView?.scrollDOM;
+    // The right side (or the inline editor) keeps the place; the left one follows it.
+    const scroller = this.newEditor()?.scrollDOM;
     if (!scroller) {
       return;
     }
@@ -110,6 +109,9 @@ export class DiffEditors {
     this.#observer = null;
     this.#strip?.remove();
     this.#strip = null;
+    this.#link?.dispose();
+    this.#link = null;
+    this.ribbons = null;
     this.#view?.destroy();
     this.#view = null;
     this.#inlineView?.destroy();
@@ -153,7 +155,7 @@ export class DiffEditors {
         }
       });
     const geometry = EditorView.updateListener.of((update) => {
-      if (update.docChanged || update.geometryChanged || update.heightChanged) {
+      if (update.docChanged || update.geometryChanged || update.heightChanged || update.viewportChanged) {
         this.scheduleStrip();
       }
     });
@@ -187,6 +189,9 @@ export class DiffEditors {
     } else {
       this.#view = splitEditors(request, sideExtensions, blameExtensions);
       editor = this.#view.b;
+      this.#link = new SplitLink(this.#view, parts.body, (ribbons) => (this.ribbons = ribbons));
+      this.#copyToA = mode === "unstaged";
+      this.ribbons = [];
     }
     this.#viewHunks = fileDiff.hunks ?? null;
     this.#activeSide = "new";
@@ -208,31 +213,28 @@ export class DiffEditors {
   /** Back to where the same diff was, else to the asked line, else to the first change. */
   #restoreScroll(editor: EditorView, scrollKey: string): void {
     const restore = this.#lastScroll?.key === scrollKey ? this.#lastScroll.top : null;
-    const scroller = this.#view?.dom ?? editor.scrollDOM;
     requestAnimationFrame(() => {
-      if (this.newEditor() !== editor || this.applyReveal(editor)) {
-        return;
+      if (this.newEditor() === editor && !this.applyReveal(editor)) {
+        if (restore !== null) {
+          editor.scrollDOM.scrollTop = restore;
+        } else if (this.changeCount() > 0) {
+          this.current = 0;
+          this.#revealChange(0);
+        }
       }
-      if (restore !== null) {
-        scroller.scrollTop = restore;
-      } else if (this.changeCount() > 0) {
-        this.current = 0;
-        this.#revealChange(0);
-      }
+      this.#link?.align();
     });
   }
 
+  /** The ruler's ticks, and the connector's bands with them (the same geometry moves both). */
   scheduleStrip(): void {
+    this.#link?.schedule();
     cancelAnimationFrame(this.#stripFrame);
     this.#stripFrame = requestAnimationFrame(() => {
       const editor = this.newEditor();
       const strip = this.#strip;
       if (editor && strip) {
-        const marks = this.#view
-          ? diffMarks(editor, this.#view.chunks)
-          : this.#inlineDoc
-            ? inlineChangeMarks(this.#inlineDoc)
-            : [];
+        const marks = rulerMarks(editor, this.#view?.chunks ?? null, this.#inlineDoc);
         renderTicks(strip, layoutTicks(editor, marks, strip.clientHeight));
       }
     });
@@ -247,14 +249,7 @@ export class DiffEditors {
   currentSelection(): LineSelection {
     const side = this.#activeSide;
     const editor = side === "old" ? this.oldEditor() : this.newEditor();
-    const hunks = this.#viewHunks;
-    if (!editor || !hunks) {
-      return { oldLines: [], newLines: [] };
-    }
-    const { doc, selection } = editor.state;
-    const spans = selection.ranges.map((range) => rangeLines(doc, range.from, range.to));
-    // Inline, removed and added lines are both in the text: a selection picks exactly its lines.
-    return this.#inlineDoc ? inlineSelection(this.#inlineDoc, spans) : selectedChangeLines(hunks, side, spans);
+    return selectedLines(editor, this.#viewHunks, side, this.#inlineDoc);
   }
 
   scheduleSelectionCount(): void {
@@ -282,6 +277,11 @@ export class DiffEditors {
       return;
     }
     editor.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
+  }
+
+  /** The arrow on band `index`: stage or unstage that change. */
+  copyChange(index: number): void {
+    this.#link?.copy(index, this.#copyToA);
   }
 
   goToChunk(direction: 1 | -1): boolean {

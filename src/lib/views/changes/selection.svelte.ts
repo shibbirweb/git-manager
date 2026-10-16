@@ -148,8 +148,8 @@ class ChangesSelection {
     }
   }
 
-  /** Hunk staging from the Diff view writes the new side into the index. */
-  applyDiffChange(target: "original" | "modified", content: string): void {
+  /** Hunk staging from the Diff view writes the new side into the index; `label` names it in the busy state. */
+  applyDiffChange(target: "original" | "modified", content: string, label?: string): void {
     const selection = this.selected;
     const currentDiff = this.diff;
     if (!selection || !currentDiff) {
@@ -166,11 +166,11 @@ class ChangesSelection {
           : currentDiff.modifiedEol;
     const repoRoot = selection.repoRoot;
     const filePath = selection.path;
-    const label = target === "original" ? "Stage change" : "Unstage change";
+    const busyLabel = label ?? (target === "original" ? "Stage change" : "Unstage change");
     changesLayout.focusRepo(repoRoot);
     // Serialized so rapid clicks reach the index in order.
     this.stageQueue = this.stageQueue.then(() =>
-      repoStore.run(label, (repoPath) => api.stageContent(repoPath, filePath, content, eol), {
+      repoStore.run(busyLabel, (repoPath) => api.stageContent(repoPath, filePath, content, eol), {
         repoPath: repoRoot,
         refresh: "status",
       }),

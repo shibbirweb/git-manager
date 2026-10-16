@@ -30,6 +30,7 @@
     { "page": "usage/Ignoring-Files.md", "summary": "Add files, folders or extensions to .gitignore from a right-click." },
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
     { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, with removed lines above the new ones." },
+    { "page": "usage/Staging-View.md", "summary": "HEAD, the index and the work tree in three panes; stage single changes." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
@@ -92,6 +93,7 @@
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Diff-Bugs-We-Fixed.md", "summary": "The diff view bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/How-the-Connected-Diff-Works.md", "summary": "Side by side without padding: each side scrolls itself, bands join the changes." },
     { "page": "developer/Rounded-Panels-Bugs-We-Fixed.md", "summary": "The rounded panels bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Status-Bar-Bugs-We-Fixed.md", "summary": "The status bar and Help link bugs we found, why they happened and how we fixed them." },
@@ -317,6 +319,13 @@
       "usage": "usage/Inline-Diffs.md",
       "developer": "developer/How-the-Inline-Diff-Works.md",
       "screenshots": ["diff-inline.png"]
+    },
+    {
+      "id": "staging-view",
+      "title": "Staging view",
+      "usage": "usage/Staging-View.md",
+      "developer": "developer/How-the-Staging-View-Works.md",
+      "screenshots": ["diff-staging-view.png"]
     },
     {
       "id": "conflicts",

@@ -1421,7 +1421,7 @@ define("diff-view", async (shot) => {
   await shot.page.locator("[aria-label='Diff'] .cm-mergeView, [aria-label='Diff'] .cm-merge-a").first().waitFor();
   await shot.settle(500);
   // Hovering a changed block shows its stage button more clearly.
-  await shot.page.locator("[aria-label='Diff'] .diff-revert").first().hover();
+  await shot.page.locator("[aria-label='Diff'] [title='Stage this change']").first().hover();
   await shot.save();
 });
 
@@ -1540,8 +1540,9 @@ define(
     await shot.showLog();
     await commitRow(shot, "Merge branch 'feature/checkout'").click();
     const log = shot.page.getByRole("region", { name: "Log", exact: true });
-    await log.getByText("No files changed on both sides").waitFor();
-    await shot.settle(500);
+    const diff = log.getByRole("region", { name: "Diff of catalog.ts against both parents" });
+    await diff.locator(".cm-editor").nth(2).waitFor();
+    await shot.settle(700);
     await shot.page.mouse.move(640, 790);
     await shot.save();
   },
@@ -1746,15 +1747,31 @@ define("diff-hunk-staging", async (shot) => {
     .getByRole("region", { name: "Changes" })
     .getByText("cart.ts")
     .click();
-  await shot.page.locator("[aria-label='Diff'] .diff-revert").first().waitFor();
+  await shot.page.locator("[aria-label='Diff'] [title='Stage this change']").first().waitFor();
   await shot.settle(500);
-  const stage = shot.page.locator("[aria-label='Diff'] .diff-revert").first();
+  const stage = shot.page.locator("[aria-label='Diff'] [title='Stage this change']").first();
   await stage.hover();
   await shot.settle();
   const view = shot.page.getByRole("region", { name: "Diff", exact: true }).first();
   const across = await shot.clipAround([view], 0);
   const down = await shot.clipAround([view.locator(".toolbar"), stage], { bottom: 150 });
   await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+});
+
+define("diff-staging-view", async (shot) => {
+  await collapseRepo(shot, "payments-api");
+  await shot.page.getByRole("button", { name: "Hide files" }).click();
+  await shot.page
+    .getByRole("group", { name: "storefront", exact: true })
+    .getByRole("region", { name: "Changes" })
+    .getByText("cart.ts")
+    .click();
+  await shot.page.getByRole("button", { name: "Three panes" }).click();
+  const view = shot.page.getByRole("region", { name: "Staging view of cart.ts" });
+  await view.locator(".cm-editor").nth(2).waitFor();
+  await shot.settle(700);
+  await shot.page.mouse.move(640, 790);
+  await shot.save();
 });
 
 define("empty-main", async (shot) => {

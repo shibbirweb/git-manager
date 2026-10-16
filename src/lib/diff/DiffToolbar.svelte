@@ -26,9 +26,22 @@
     path: string;
     onopenfile: () => void;
     onlines: (action: LineAction) => void;
+    /** Offers the 3-pane layout (a merge commit's file, or the Changes diff's staging view). */
+    onthreepanes?: (() => void) | null;
   }
 
-  let { editors, textDiff, inline, showBlame, showOpenFile, lineMode, path, onopenfile, onlines }: Props = $props();
+  let {
+    editors,
+    textDiff,
+    inline,
+    showBlame,
+    showOpenFile,
+    lineMode,
+    path,
+    onopenfile,
+    onlines,
+    onthreepanes = null,
+  }: Props = $props();
 
   const fileName = $derived(path.split("/").pop() ?? path);
   const directory = $derived(path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
@@ -69,6 +82,14 @@
   {/if}
   <Divider direction="vertical" />
   <Stack direction="row" gap="none" role="group" label="Diff layout">
+    {#if onthreepanes}
+      <ToggleButton
+        icon="split-three"
+        label="Three panes"
+        title={lineMode ? "Three panes: HEAD, the index and the work tree" : "Three panes: both parents and the merge"}
+        bind:pressed={() => false, (on) => on && onthreepanes?.()}
+      />
+    {/if}
     <ToggleButton
       icon="split-view"
       label="Side by side"

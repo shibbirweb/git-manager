@@ -1,10 +1,10 @@
 # Diffs
 
-A diff shows two versions of a file side by side, with the differences highlighted. Use it to check your work before you commit, and to stage only some of the changes in a file.
+A diff shows two versions of a file side by side, with the differences highlighted. A colored band between the sides joins each change's lines, so you see where a block came from and where it went. Each side scrolls on its own, and the other follows to keep matching lines level. Use it to check your work before you commit, and to stage only some of the changes in a file.
 
 ![Side-by-side diff](../images/diff-view.png)
 
-*A side-by-side diff of cart.ts: the toolbar, the Index and Working Tree labels, folded unchanged lines and the per-change stage buttons.*
+*A side-by-side diff of cart.ts: the toolbar, the Index and Working Tree labels, folded unchanged lines and a band with a stage button for each change.*
 
 ## Open a diff
 
@@ -59,15 +59,15 @@ Click into one side and press Cmd+F. That side's find bar opens above the diff, 
 
 ## Collapse unchanged lines
 
-**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a bar such as **23 unchanged lines**. Its up and down **10 lines** buttons show 10 more lines at the top or bottom of the run, and a click on the rest of the bar shows all of it. Turn the button off to see the whole file. Git Manager remembers your choice for every diff.
+**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a wavy line named after the code below it, such as **Cart > remove()** (or **23 unchanged lines** outside a class or function). Hover it for **10 lines** buttons that show more at either end; a click elsewhere shows it all. Turn the button off to see the whole file. Git Manager remembers your choice for every diff.
 
 ## Stage or unstage one change
 
-You do not have to stage a whole file. Each change (a "hunk", one block of changed lines) has its own button in the gap between the two sides.
+You do not have to stage a whole file. Each change (a "hunk", one block of changed lines) has its own button on its band.
 
 ![Staging one change](../images/diff-hunk-staging.png)
 
-*The diff toolbar at 1 of 2, and the first change with its « button between the sides.*
+*The diff toolbar at 1 of 2, and the first change with its « button on its band.*
 
 - In a diff from **Changes**, the button is **«** with the tooltip **Stage this change**. It copies that one change into the index.
 - In a diff from **Staged**, the button is **»**, **Unstage this change**. It takes that one change out of the index again.
@@ -104,6 +104,7 @@ Diffs and the merge tool never wrap long lines, so both sides stay aligned. Scro
 ## Related
 
 - [Inline Diffs](Inline-Diffs.md)
+- [Staging View](Staging-View.md)
 - [Changes and Commits](Changes-and-Commits.md)
 - [Editor and Tabs](Editor-and-Tabs.md)
 - [History and Log](History-and-Log.md)

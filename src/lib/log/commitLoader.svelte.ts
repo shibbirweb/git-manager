@@ -5,7 +5,16 @@ import { api, errorMessage } from "$lib/api";
 import type { PreviewSides } from "$lib/diff/binaryPreview";
 import type { CommitDetails, FileDiff } from "$lib/types";
 import { parentRevision } from "$lib/views/files/previewSource";
-import { type CommitFileRow, commitFileRows, fileRowAt, type MergeView, parentLabel, pickFileRow } from "./commitFiles";
+import {
+  type CommitFileRow,
+  commitFileRows,
+  fileRowAt,
+  isMerge,
+  type MergeView,
+  parentFiles,
+  parentLabel,
+  pickFileRow,
+} from "./commitFiles";
 
 type FileRow = Extract<CommitFileRow, { kind: "file" }>;
 
@@ -16,6 +25,8 @@ export interface ShownDiff {
   /** "Parent", or "Parent 2" for a merge's second parent. */
   parentLabel: string;
   diff: FileDiff;
+  /** A file changed on both sides of a merge: the second parent against the result, for the 3-pane diff. */
+  secondParent: FileDiff | null;
   /** Where a binary image or PDF comes from: the parent (none for a root commit) and the commit. */
   previewSides: PreviewSides;
 }
@@ -85,8 +96,17 @@ export class CommitLoader {
     const token = ++this.#diffToken;
     this.diffLoading = true;
     this.diffError = null;
+    // A file changed on both sides of a merge also loads parent 2's side, with that parent's own rename source.
+    const details = this.details;
+    const bothSides = details !== null && isMerge(details) && this.mergeView === "merged";
+    const secondOrigPath = bothSides
+      ? (parentFiles(details, 1).find((other) => other.path === file.path)?.origPath ?? null)
+      : null;
     try {
-      const result = await api.getCommitFileDiff(repoPath, commitId, file.path, file.origPath ?? null, parentIndex);
+      const [result, secondParent] = await Promise.all([
+        api.getCommitFileDiff(repoPath, commitId, file.path, file.origPath ?? null, parentIndex),
+        bothSides ? api.getCommitFileDiff(repoPath, commitId, file.path, secondOrigPath, 1) : null,
+      ]);
       if (token !== this.#diffToken) {
         return;
       }
@@ -102,11 +122,12 @@ export class CommitLoader {
           }
         : null;
       this.shown = {
-        key: `${commitId}:${row.key}`,
+        key: `${commitId}:${row.key}:${secondParent ? "3" : "2"}`,
         path: file.path,
         label: commitId.slice(0, 8),
         parentLabel: parentLabel(this.details, parentIndex),
         diff: result,
+        secondParent,
         previewSides: {
           original: parent,
           modified: { kind: "revision", repoRoot: repoPath, revision: commitFullId, filePath: file.path },

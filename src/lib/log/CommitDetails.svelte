@@ -3,6 +3,10 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import { errorMessage } from "$lib/api";
   import DiffView from "$lib/diff/DiffView.svelte";
+  import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
+  import { settings } from "$lib/stores/settings.svelte";
+  import { diffPrefs } from "$lib/diff/prefs.svelte";
+  import type { FileDiff } from "$lib/types";
   import Button from "@git-manager/ui/components/Button.svelte";
   import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
   import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
@@ -53,6 +57,16 @@
   let width = $state(0);
 
   const current = $derived(details && details.id === commitId ? details : null);
+  /** Text on every side: a file changed on both sides of a merge shows parent 1, the result and parent 2. */
+  const textual = (diff: FileDiff) => !diff.binary && !diff.tooLarge && !diff.lfs;
+  /** The 3-pane layout fits this file; the toolbar switches between it and the usual diff (diffPrefs.threePanes). */
+  const threeWayFits = $derived(Boolean(shown?.secondParent && textual(shown.diff) && textual(shown.secondParent)));
+  const threeWay = $derived(threeWayFits && diffPrefs.threePanes ? shown : null);
+  const threeWayLabels = $derived({
+    left: `Parent 1: ${(details?.parents[0] ?? "").slice(0, 8)}`,
+    result: commitId.slice(0, 8),
+    right: `Parent 2: ${(details?.parents[1] ?? "").slice(0, 8)}`,
+  });
   const selectedRow = $derived(current ? loader.selectedRow : null);
   /** The line of the diff on screen to scroll to, from `preferredFile`. */
   const revealLine = $derived.by(() => {
@@ -220,12 +234,27 @@
   {#snippet second()}
     {#if diffError}
       <EmptyState icon="alert" title="Could not load diff: {diffError}" titleTone="dim" />
+    {:else if threeWay?.secondParent}
+      {#key threeWay.key}
+        <ThreePaneDiff
+          left={threeWay.diff}
+          right={threeWay.secondParent}
+          path={threeWay.path}
+          labels={threeWayLabels}
+          label="Diff of {threeWay.path.split('/').pop()} against both parents"
+          onlayout={(layout) => {
+            settings.setPreference("diffLayout", layout);
+            diffPrefs.setThreePanes(false);
+          }}
+        />
+      {/key}
     {:else if shown}
       {#key shown.key}
         <DiffView
           diff={shown.diff}
           path={shown.path}
           mode="readonly"
+          onThreePanes={threeWayFits ? () => diffPrefs.setThreePanes(true) : null}
           leftLabel={shown.parentLabel}
           rightLabel={shown.label}
           blame={shown.diff.modified === ""

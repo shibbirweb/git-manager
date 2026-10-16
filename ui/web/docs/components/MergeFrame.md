@@ -21,8 +21,10 @@ the three panes and the box the ribbons are measured from. MergeView is built on
 - `height` (`"fill" | "small" | "medium" | "large"`, default `"fill"`): Fill the parent, or 160, 240 or 360 px.
 - `leftRibbons` (`ConnectorRibbon[]`, default `[]`): The left connector's ribbons, from the left pane to the result.
 - `rightRibbons` (`ConnectorRibbon[]`, default `[]`): The right connector's ribbons, from the result to the right pane.
-- `onapply` (`(index: number, side: "left" | "right") => void`): A chunk's Apply button.
-- `onignore` (`(index: number, side: "left" | "right") => void`): A chunk's Ignore button.
+- `onapply` (`(index: number, side: "left" | "right") => void`): A chunk's Apply button; left out, none.
+- `onignore` (`(index: number, side: "left" | "right") => void`): A chunk's Ignore button; left out, none.
+- `applyTitles` (`{ left: string; right: string } | null`, default `null`): The Apply buttons' tooltips per side, such
+  as Unstage this change and Stage this change.
 - `onready` (`(parts: MergeFrameParts) => void | (() => void)`): The panes, once shown.
 
 ## Rules

@@ -1,5 +1,5 @@
 // The editors of a diff, built into a DiffFrame's body: one EditorView for the inline layout (inlineDoc.ts) or a
-// MergeView side by side with the stage or unstage arrows between the sides.
+// MergeView side by side without padding, whose sides SplitLink keeps in step and joins with bands.
 import type { Chunk } from "@codemirror/merge";
 import { MergeView } from "@codemirror/merge";
 import type { Extension } from "@codemirror/state";
@@ -11,7 +11,7 @@ import { hunkDiff, hunkRanges, SCAN_LIMIT } from "./hunkDiff";
 import { applyBlock, buildInlineDoc, fallbackHunks, type InlineDoc } from "./inlineDoc";
 import { inlineDiffExtensions } from "./inlineView";
 import type { DiffSide } from "./lineSelection";
-import { revertButton } from "./mergeExtensions";
+import { unpadded } from "./splitLink";
 
 /** A side's extensions: with `changes`, its revert listener; its find bar goes into `findHost`. */
 export type SideExtensions = (
@@ -60,13 +60,14 @@ export function splitEditors(
   blameExtensions: Extension,
 ): MergeView {
   const { diff: fileDiff, mode, parts } = request;
+  // The stage and unstage arrows are on the connector's bands (SplitLink.copy), not MergeView's revert column.
   // The backend's line hunks, refined to characters inside each one; without them (an older payload) CodeMirror
   // diffs the whole texts itself.
   const diffConfig = fileDiff.hunks
     ? { scanLimit: SCAN_LIMIT, override: hunkDiff(fileDiff.original, fileDiff.modified, fileDiff.hunks) }
     : { scanLimit: SCAN_LIMIT };
   const folds = request.collapse ? splitFolds() : [];
-  return new MergeView({
+  const view = new MergeView({
     a: { doc: fileDiff.original, extensions: [sideExtensions(mode === "unstaged", parts.findOriginal, "old"), folds] },
     b: {
       doc: fileDiff.modified,
@@ -76,12 +77,8 @@ export function splitEditors(
     diffConfig,
     gutter: true,
     highlightChanges: true,
-    revertControls: mode === "unstaged" ? "b-to-a" : mode === "staged" ? "a-to-b" : undefined,
-    renderRevertControl:
-      mode === "unstaged"
-        ? () => revertButton("Stage this change", "chevrons-left")
-        : () => revertButton("Unstage this change", "chevrons-right"),
   });
+  return unpadded(view);
 }
 
 /** Change marks in the new text's line numbers, for the overview ruler. */

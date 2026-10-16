@@ -2,9 +2,9 @@
 
 A merge commit joins two branches, so it has two parents: the branch you merged into (parent 1) and the branch you merged (parent 2). The [Log](History-and-Log.md) shows a merge the way JetBrains IDEs do, so you can see which files the merge had to put together.
 
-[TODO:merge-commit-files.png]
+![A merge commit in the Log](../images/merge-commit-files.png)
 
-*A merge commit with no files changed on both sides, and the link to see its changes to each parent.*
+*A merge commit's file changed on both sides, in three panes: parent 1, the merge result and parent 2.*
 
 ## Changed on both sides
 
@@ -12,7 +12,9 @@ Select a merge in the Log. Under its details, **Changed on both sides** lists on
 
 Files that came whole from one branch are not listed, since the merge did nothing to them. If no file changed on both sides, the list says **No files changed on both sides** and offers **Show changes to parents**.
 
-Click a file to see its diff against **Parent 1**: what the other branch and the resolution brought in.
+Click a file to see it in three panes, like PhpStorm: **Parent 1** on the left, the merge result in the middle and **Parent 2** on the right. Colored bands join each parent's changes to the result's lines: green where the result has lines a parent lacks, grey where a parent had lines the result dropped, and blue where lines changed. Lines both parents changed are red, a conflict the merge resolved. The toolbar counts them, such as **2 changes, 1 conflict**, and its arrows (or F7 and Shift+F7) step through them. Scroll any pane and the others follow, so matching lines stay level. **Collapse unchanged** folds the lines that match both parents in all three panes at once.
+
+The layout buttons in the toolbar switch between **Three panes**, **Side by side** and **Inline**. The last two show the usual diff against **Parent 1**, with a **Three panes** button to come back. Git Manager remembers your choice. A binary file, or one too large to diff, always shows the diff against **Parent 1**.
 
 ## Changes to parents
 
