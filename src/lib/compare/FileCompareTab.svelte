@@ -6,7 +6,7 @@
   import { onDestroy, untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { FileCompare } from "$lib/types";
   import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
@@ -176,12 +176,11 @@
       {#if binaryNote}
         <Notice variant="banner">{binaryNote}</Notice>
       {/if}
-      <DiffView
+      <GitDiffView
+        source={{ kind: "plain" }}
         diff={result.diff}
         path={result.diff.path}
-        mode="readonly"
-        {leftLabel}
-        {rightLabel}
+        labels={{ left: leftLabel, right: rightLabel }}
         workingFile={rightFile && !result.rightMissing ? { filePath: rightFile, sameLines: true } : null}
         {previewSides}
       />

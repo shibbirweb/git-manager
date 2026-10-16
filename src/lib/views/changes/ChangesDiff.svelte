@@ -1,11 +1,8 @@
 <!-- Main-area view showing the diff of the change selected in the Changes sidebar. -->
 <script lang="ts">
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import type { BlameTarget } from "$lib/editor/blame";
-  import { setDiffLayout, showsThreeColumns, showThreeColumns } from "$lib/diff/diffPanes";
-  import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
-  import { STAGING_PANES_TITLE } from "$lib/diff/diffToolbar";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
@@ -16,7 +13,6 @@
   import { HEAD_REVISION, INDEX_REVISION } from "$lib/views/files/previewSource";
   import { buildSections, displayPath, findFile, findSection, splitSections } from "./sections";
   import { changesSelection } from "./selection.svelte";
-  import { StagingDiffs, stagingViewFits } from "./stagingDiffs.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { untrack } from "svelte";
 
@@ -45,24 +41,6 @@
   const selectedSection = $derived(selected ? findSection(sections, selected.repoRoot) : null);
   const diffMode = $derived(selected?.area === "staged" ? "staged" : "unstaged");
   const panelHidden = $derived(settings.leftPanel !== "changes");
-
-  // The staging view: HEAD | the index | the work tree, for a plain modified file, when side by side uses 3 columns.
-  const staging = new StagingDiffs();
-  const stagingFits = $derived(selected ? stagingViewFits(findFile(sections, selected)) : false);
-  const threeColumns = $derived(showsThreeColumns("changesDiffPanes"));
-  const stagingOn = $derived(Boolean(selected) && stagingFits && threeColumns);
-  const stagingKey = $derived(selected ? `${selected.repoRoot}\u0000${selected.path}` : null);
-  $effect(() => {
-    const current = selected;
-    if (!current || !stagingOn) {
-      untrack(() => staging.clear());
-      return;
-    }
-    // A new status (after staging a change) reloads both diffs.
-    void repoStore.statuses[current.repoRoot];
-    void repoStore.fileVersions[current.repoRoot];
-    untrack(() => void staging.load(current.repoRoot, current.path));
-  });
 
   /** Blame of the work tree text; a clicked line goes back to this diff. */
   const blameTarget = $derived.by((): BlameTarget | null => {
@@ -117,42 +95,26 @@
     <EmptyState titleTone="dim" title="This folder has no git repository yet." />
   {:else if !anyLoaded}
     <Spacer />
-  {:else if selected && stagingOn && staging.staged && staging.workTree && staging.key === stagingKey}
-    {#key stagingKey}
-      <ThreePaneDiff
-        left={staging.staged}
-        right={staging.workTree}
-        path={displayPath(selectedSection?.repo ?? null, selected.path, multiRepo)}
-        labels={{ left: "HEAD", result: "Index (staged)", right: "Working Tree" }}
-        label="Staging view of {selected.path.split('/').pop()}"
-        options={{ rightNewer: true, conflicts: false }}
-        applyTitles={{ left: "Unstage this change", right: "Stage this change" }}
-        onapply={(middle, side) =>
-          changesSelection.applyDiffChange(
-            selected.area === "staged" ? "modified" : "original",
-            middle,
-            side === "right" ? "Stage change" : "Unstage change",
-          )}
-        onlayout={(layout) => setDiffLayout("changesDiffPanes", layout)}
-        workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: true }}
-        blame={blameTarget ? { target: blameTarget, pane: "right" } : null}
-      />
-    {/key}
   {:else if selected && changesSelection.diff}
-    <DiffView
+    <GitDiffView
+      source={{
+        kind: "changes",
+        repoRoot: selected.repoRoot,
+        filePath: selected.path,
+        area: selected.area === "staged" ? "staged" : "unstaged",
+        status: findFile(sections, selected),
+      }}
       diff={changesSelection.diff}
       path={displayPath(selectedSection?.repo ?? null, selected.path, multiRepo)}
-      mode={diffMode}
-      leftLabel={diffMode === "staged" ? "HEAD" : "Index"}
-      rightLabel={diffMode === "staged" ? "Index (staged)" : "Working Tree"}
+      labels={diffMode === "staged"
+        ? { left: "HEAD", right: "Index (staged)" }
+        : { left: "Index", right: "Working Tree" }}
       onChange={(target, content) => changesSelection.applyDiffChange(target, content)}
       onLines={(action, lineSelection, wholeChange) =>
         void changesSelection.applyLines(action, lineSelection, wholeChange)}
       blame={blameTarget}
       revealLine={reveal}
-      workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
       {previewSides}
-      threePanes={stagingFits ? { title: STAGING_PANES_TITLE, open: () => showThreeColumns("changesDiffPanes") } : null}
     />
   {:else if selected && changesSelection.diffError}
     <EmptyState titleTone="danger" strong title="Could not load the diff" hint={changesSelection.diffError} />

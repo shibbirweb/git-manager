@@ -3,7 +3,7 @@
 <script lang="ts">
   import { api, errorMessage } from "$lib/api";
   import { joinPath } from "$lib/stores/workspacePaths";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import type { ShelfFileDiff } from "$lib/types";
   import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
   import Notice from "@git-manager/ui/components/Notice.svelte";
@@ -57,12 +57,11 @@
     {:else if result.file.oldPath && result.file.oldPath !== result.file.path}
       <Notice variant="banner">{shelvedFileLabel(result.file)}</Notice>
     {/if}
-    <DiffView
+    <GitDiffView
+      source={{ kind: "plain" }}
       diff={result.diff}
       path={filePath}
-      mode="readonly"
-      leftLabel="Base"
-      rightLabel="Shelved"
+      labels={{ left: "Base", right: "Shelved" }}
       workingFile={{ filePath: joinPath(repoRoot, filePath), sameLines: false }}
     />
   {:else}

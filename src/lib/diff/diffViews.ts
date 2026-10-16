@@ -9,7 +9,7 @@ import type { DiffBuild } from "./diffEditors.svelte";
 import { splitFolds } from "./foldField";
 import { hunkDiff, hunkRanges, SCAN_LIMIT } from "./hunkDiff";
 import { applyBlock, buildInlineDoc, fallbackHunks, type InlineDoc } from "./inlineDoc";
-import { inlineDiffExtensions } from "./inlineView";
+import { type InlineControl, inlineDiffExtensions } from "./inlineView";
 import { hunkSelection } from "./revertChange";
 import type { DiffSide } from "./lineSelection";
 import { unpadded } from "./splitLink";
@@ -22,6 +22,17 @@ export type SideExtensions = (
   numbered?: boolean,
 ) => Extension[];
 
+/** Each change's button inline: Stage or Unstage, or Apply in a read-only diff that can apply its changes. */
+function inlineControl(mode: DiffBuild["mode"], applies: boolean): InlineControl | null {
+  if (mode === "unstaged") {
+    return "stage";
+  }
+  if (mode === "staged") {
+    return "unstage";
+  }
+  return applies ? "apply" : null;
+}
+
 export function inlineEditor(
   request: DiffBuild,
   sideExtensions: SideExtensions,
@@ -32,7 +43,7 @@ export function inlineEditor(
   const fits = fileDiff.hunks && hunkRanges(fileDiff.original, fileDiff.modified, fileDiff.hunks) !== null;
   const hunks = fits && fileDiff.hunks ? fileDiff.hunks : fallbackHunks(fileDiff.original, fileDiff.modified);
   const doc = buildInlineDoc(fileDiff.original, fileDiff.modified, hunks);
-  const control = mode === "unstaged" ? "stage" : mode === "staged" ? "unstage" : null;
+  const control = inlineControl(mode, Boolean(request.onApply));
   const editor = new EditorView({
     doc: doc.text,
     parent: request.parts.body,
@@ -44,7 +55,9 @@ export function inlineEditor(
         collapse: request.collapse,
         control,
         onControl: (block) => {
-          if (control) {
+          if (control === "apply") {
+            request.onApply?.(hunkSelection(block.hunk));
+          } else if (control) {
             const next = applyBlock(fileDiff.original, fileDiff.modified, block, control);
             request.onChange?.(next.target, next.text);
           }

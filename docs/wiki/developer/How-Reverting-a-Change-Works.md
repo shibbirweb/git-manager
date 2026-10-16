@@ -32,9 +32,9 @@ Inline, `inlineView.ts` adds a second button after Stage in the control gutter. 
 
 Both end in `onLines("discard", lines, true)`, the Discard Selected Lines path in `changesSelection.applyLines`. The backend checks the diff's `version`, so a file that changed since the diff was shown is refused, and the Undo in the toast applies the saved patch again. `wholeChange` only changes the confirm's words to Revert Change. Revert is offered only in unstaged mode: a staged diff has Unstage, which already moves a change back.
 
-### In the Changes tab
+### In the Changes tab, a commit and a compare
 
-The tab's diff is read-only and compares HEAD with the work tree, so `DiffView` takes an `onRevert` there instead of line actions: the same buttons, side by side and inline (the inline gutter then holds Revert alone). `revertToHead` (`views/git/tabEdits.ts`) confirms and calls `applySelectedLines` with the `revertToHead` action: the backend builds the patch from HEAD's blob (the renamed path for a rename) to the work tree file and applies it in reverse to the work tree only, after a local history snapshot. The index is not touched, and the Undo toast applies the returned patch again.
+These diffs are read-only, so `DiffView` takes `onRevert` (and `onApply` for a commit or a branch compare) instead of line actions: the same buttons side by side, and inline Apply then Revert in the control gutter. [One diff view](One-Diff-View.md) explains how `GitDiffView` picks the revisions; `changeWorkTree` (`diff/diffActions.ts`) confirms a Revert and calls `apply_revision_lines`, which patches the work tree file only, after a local history snapshot, and returns the patch for Undo.
 
 ### In the editor
 
@@ -55,7 +55,7 @@ The tab's diff is read-only and compares HEAD with the work tree, so `DiffView` 
 | `src/lib/diff/inlineView.ts` | The inline Revert button after Stage |
 | `src/lib/diff/DiffView.svelte`, `diffEditors.svelte.ts` | Wiring the buttons to `onLines` |
 | `src/lib/views/changes/selection.svelte.ts` | `applyLines`, the confirm and the Undo toast |
-| `src/lib/views/git/tabEdits.ts`, `src-tauri/src/commands/lines.rs` | The Changes tab's `revertToHead`, and the `RevertToHead` action |
+| `src/lib/diff/diffActions.ts`, `src-tauri/src/commands/revision_lines.rs` | Revert and Apply between two revisions, or a revision and the work tree |
 | `src/lib/editor/scrollMarkers.ts` | `changeGutter` and its bar click |
 | `src/lib/editor/revertLines.ts` | `changeAtLine` and `revertEdit` |
 | `src/lib/views/files/fileGitInfo.ts` | `revertChange` for the editor |
@@ -74,7 +74,7 @@ The tab's diff is read-only and compares HEAD with the work tree, so `DiffView` 
 
 - `src/lib/diff/revertChange.test.ts`: a chunk's and a hunk's lines, empty sides, a last line without a break.
 - `src/lib/editor/revertLines.test.ts`: the change on a clicked line, and reverting changed, added and deleted lines at the start, middle and end.
-- The backend path is covered by the `apply_selected_lines` tests in `src-tauri/src/commands/lines.rs`, with `RevertToHead`: only the picked change goes back, Undo restores it, and a staged version stays in the index.
+- The backend paths are covered by the `apply_selected_lines` tests in `commands/lines.rs` and the `apply_revision_lines` tests in `commands/revision_lines.rs`: only the picked change goes back or comes in, Undo reverses it, and a staged version stays in the index.
 
 The buttons, the hand pointer and the confirms need a check in the app. See [Testing](Testing.md).
 
@@ -83,7 +83,12 @@ The buttons, the hand pointer and the confirms need a check in the app. See [Tes
 **The Changes tab had no Revert button.**
 - **The issue:** the Changes tab (status bar > **N changes**) showed changes with no way to revert one, side by side or inline.
 - **Why it happened:** Revert came from Discard Selected Lines, which works on the index against the work tree, and the tab compares with HEAD in a read-only diff.
-- **The fix and why we chose it:** a `RevertToHead` action reverts against HEAD in the backend, with the same checks, local history snapshot and Undo patch as Discard, and `DiffView`'s `onRevert` shows the usual buttons in a read-only diff.
+- **The fix and why we chose it:** a backend action reverts against HEAD, with the same checks, local history snapshot and Undo patch as Discard, and `DiffView`'s `onRevert` shows the usual buttons in a read-only diff. It became `apply_revision_lines` when commits got Revert and Apply.
+
+**Commit diffs had no Revert, Apply or three columns.**
+- **The issue:** the History panel and commit tabs showed a commit's diff with no buttons, and only merge commits could show three columns, while the Changes diff had both.
+- **Why it happened:** every place chose its own panes and buttons around `DiffView` and `ThreePaneDiff`, so features added in one place never reached the others.
+- **The fix and why we chose it:** one `GitDiffView` for every place (see [One diff view](One-Diff-View.md)), with a `DiffSource` that decides the panes and buttons, so a new button reaches every diff at once.
 
 ## Keeping this page in sync
 

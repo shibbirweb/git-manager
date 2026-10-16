@@ -165,21 +165,45 @@ export const api = {
   stageContent: (repoPath: string, filePath: string, content: string, eol: Eol) =>
     invoke<void>("stage_content", { repoPath, filePath, content, eol }),
   /**
-   * Stages, unstages or discards only the selected lines of a file's diff, or (`revertToHead`, the Changes tab)
-   * puts HEAD's version of them back in the work tree. `knownVersion` is the
+   * Stages, unstages or discards only the selected lines of a file's diff. `knownVersion` is the
    * diff's `version`: a file that changed since then is refused instead of patched at the wrong lines.
    */
   applySelectedLines: (
     repoPath: string,
     filePath: string,
     origPath: string | null,
-    action: LineAction | "revertToHead",
+    action: LineAction,
     selection: LineSelection,
     knownVersion: string | null,
   ) => invoke<LinesOutcome>("apply_selected_lines", { repoPath, filePath, origPath, action, selection, knownVersion }),
-  /** Undo of Discard Selected Lines: applies the discarded patch to the work tree again. */
-  restoreDiscardedLines: (repoPath: string, patch: string) =>
-    invoke<void>("restore_discarded_lines", { repoPath, patch }),
+  /**
+   * Revert (`reverse`) or apply the selected lines of the change from `oldRevision` (null: no file, a root commit)
+   * to `newRevision` (null: the work tree) in the work tree file only. The outcome's patch undoes it.
+   */
+  applyRevisionLines: (
+    repoPath: string,
+    filePath: string,
+    origPath: string | null,
+    oldRevision: string | null,
+    newRevision: string | null,
+    selection: LineSelection,
+    reverse: boolean,
+  ) =>
+    invoke<LinesOutcome>("apply_revision_lines", {
+      repoPath,
+      filePath,
+      origPath,
+      oldRevision,
+      newRevision,
+      selection,
+      reverse,
+    }),
+  /**
+   * Undo of Discard Selected Lines or a reverted change: applies the taken back patch to the work tree again;
+   * `reverse` takes an applied change back out instead.
+   */
+  restoreDiscardedLines: (repoPath: string, patch: string, reverse = false) =>
+    invoke<void>("restore_discarded_lines", { repoPath, patch, reverse }),
   /** Resolves to the file's new version (see FileContent.version). */
   writeWorktreeFile: (repoPath: string, filePath: string, content: string, eol: Eol) =>
     invoke<string>("write_worktree_file", { repoPath, filePath, content, eol }),

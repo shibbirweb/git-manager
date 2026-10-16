@@ -25,6 +25,9 @@ export interface ShownDiff {
   /** "Parent", or "Parent 2" for a merge's second parent. */
   parentLabel: string;
   diff: FileDiff;
+  /** The parent the diff is against (null for a root commit), and the file's name there when it was renamed. */
+  parentId: string | null;
+  origPath: string | null;
   /** A file changed on both sides of a merge: the second parent against the result, for the 3-pane diff. */
   secondParent: FileDiff | null;
   /** Where a binary image or PDF comes from: the parent (none for a root commit) and the commit. */
@@ -127,6 +130,8 @@ export class CommitLoader {
         label: commitId.slice(0, 8),
         parentLabel: parentLabel(this.details, parentIndex),
         diff: result,
+        parentId,
+        origPath: file.origPath ?? null,
         secondParent,
         previewSides: {
           original: parent,

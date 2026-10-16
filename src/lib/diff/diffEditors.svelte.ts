@@ -35,6 +35,8 @@ export interface DiffBuild {
   onChange?: (target: "original" | "modified", content: string) => void;
   /** The inline layout's Revert button on each change, called with the change's lines; left out, none. */
   onRevert?: ((selection: LineSelection) => void) | null;
+  /** The inline layout's Apply button on each change of a read-only diff (a commit's change into the work tree). */
+  onApply?: ((selection: LineSelection) => void) | null;
 }
 
 export class DiffEditors {

@@ -107,6 +107,7 @@ pub fn run() {
             commands::status::stage_content,
             commands::lines::apply_selected_lines,
             commands::lines::restore_discarded_lines,
+            commands::revision_lines::apply_revision_lines,
             commands::status::write_worktree_file,
             commands::status::commit,
             commands::status::commit_all,

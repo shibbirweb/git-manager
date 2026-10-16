@@ -8,7 +8,7 @@
   import Stack from "@git-manager/ui/components/Stack.svelte";
   import { setBlameDisplay } from "$lib/editor/blame";
   import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
-  import type { FileDiff } from "$lib/types";
+  import type { FileDiff, LineSelection } from "$lib/types";
   import DiffToolbar from "./DiffToolbar.svelte";
   import { openWorkingFile } from "./openWorkingFile";
   import { diffPrefs } from "./prefs.svelte";
@@ -35,6 +35,15 @@
     workingFile?: { filePath: string; sameLines: boolean } | null;
     /** Who wrote each line of one pane: the work tree in the staging view, the merge result for a merge commit. */
     blame?: ThreeWayBlame | null;
+    /**
+     * Revert and Apply on one side's bands instead of `onapply`: a commit's change (its side pane old, the middle
+     * new) taken out of or into the work tree, called with the change's lines.
+     */
+    lineActions?: {
+      side: ParentSide;
+      onrevert: (selection: LineSelection) => void;
+      onapply: (selection: LineSelection) => void;
+    } | null;
   }
 
   let {
@@ -49,8 +58,10 @@
     onlayout,
     workingFile = null,
     blame = null,
+    lineActions = null,
   }: Props = $props();
 
+  const APPLY_TO_WORK_TREE = "Apply this change to the working tree";
   const editors = new ThreeWayEditors();
   /** The middle pane's place when new texts rebuild the panes (after staging a change). */
   let keptScroll: number | null = null;
@@ -72,9 +83,21 @@
   }
 
   function apply(index: number, side: ParentSide): void {
-    const middle = editors.taken(side, index);
-    if (middle !== null) {
-      onapply?.(middle, side);
+    const change = editors.change(side, index);
+    if (!change) {
+      return;
+    }
+    if (lineActions) {
+      lineActions.onapply(change.lines);
+    } else {
+      onapply?.(change.taken, side);
+    }
+  }
+
+  function revert(index: number, side: ParentSide): void {
+    const change = editors.change(side, index);
+    if (change) {
+      lineActions?.onrevert(change.lines);
     }
   }
 </script>
@@ -103,8 +126,11 @@
           {labels}
           leftRibbons={editors.leftRibbons}
           rightRibbons={editors.rightRibbons}
-          onapply={onapply ? apply : undefined}
-          {applyTitles}
+          onapply={onapply || lineActions ? apply : undefined}
+          onrevert={lineActions ? revert : undefined}
+          applyTitles={lineActions ? { left: APPLY_TO_WORK_TREE, right: APPLY_TO_WORK_TREE } : applyTitles}
+          revertTitle="Revert this change in the working tree"
+          actionSides={lineActions ? [lineActions.side] : ["left", "right"]}
           colors={{ left: "oldToNew", right: options.rightNewer ? "oldToNew" : "newToOld" }}
           bind:split={() => settings.threePaneSplit, (split) => (settings.threePaneSplit = split)}
           oncommitsplit={() => settings.save()}

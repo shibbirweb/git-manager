@@ -5,10 +5,7 @@
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
-  import { setDiffLayout, showsThreeColumns, showThreeColumns } from "$lib/diff/diffPanes";
-  import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
-  import { STAGING_PANES_TITLE } from "$lib/diff/diffToolbar";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { MIN_CHANGES_LIST_WIDTH, settings } from "$lib/stores/settings.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
@@ -23,8 +20,6 @@
   import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import ChangesTabList from "./ChangesTabList.svelte";
   import { splitPath } from "../changes/fileStatus";
-  import { StagingDiffs, stagingViewFits } from "../changes/stagingDiffs.svelte";
-  import { revertToHead, writeIndex } from "./tabEdits";
   import { type ChangesTabFile, changesListBounds, changesTabFiles, pickSelected, stepSelection } from "./changesTab";
 
   interface Props {
@@ -87,29 +82,6 @@
     }
   }
 
-  // The staging view of a plain modified file, on the same Three panes setting as the Changes diff.
-  const staging = new StagingDiffs();
-  const stagingFits = $derived(selected ? stagingViewFits(selected.status) : false);
-  const stagingOn = $derived(stagingFits && showsThreeColumns("changesDiffPanes"));
-  const stagingKey = $derived(selected ? `${repoRoot}\u0000${selected.path}` : null);
-  $effect(() => {
-    const file = selected;
-    if (!file || !stagingOn) {
-      untrack(() => staging.clear());
-      return;
-    }
-    // A new status (after staging a change) reloads both diffs.
-    void status;
-    void repoStore.fileVersions[repoRoot];
-    untrack(() => void staging.load(repoRoot, file.path));
-  });
-
-  function applyToIndex(content: string, side: "left" | "right"): void {
-    if (selected && staging.staged) {
-      writeIndex(repoRoot, selected.path, content, staging.staged, side === "right");
-    }
-  }
-
   const previewSides = $derived.by((): PreviewSides | null => {
     if (!result || !selected) {
       return null;
@@ -169,39 +141,21 @@
       <EmptyState titleTone="dim" title="No commits yet, so every file is new. Open a file to see it." />
     {:else if diffError}
       <EmptyState titleTone="dim" title={diffError} />
-    {:else if stagingOn && staging.staged && staging.workTree && staging.key === stagingKey}
-      {#key stagingKey}
-        <ThreePaneDiff
-          left={staging.staged}
-          right={staging.workTree}
-          path={selected.path}
-          labels={{ left: "HEAD", result: "Index (staged)", right: "Working Tree" }}
-          label="Staging view of {selected.path.split('/').pop()}"
-          options={{ rightNewer: true, conflicts: false }}
-          applyTitles={{ left: "Unstage this change", right: "Stage this change" }}
-          onapply={applyToIndex}
-          onlayout={(layout) => setDiffLayout("changesDiffPanes", layout)}
-          workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: true }}
-          blame={{ target: { repoRoot, filePath: selected.path, revision: null }, pane: "right" }}
-        />
-      {/key}
     {:else if result}
       {#key selected.path}
-        <DiffView
+        <GitDiffView
+          source={{
+            kind: "head",
+            repoRoot,
+            filePath: selected.path,
+            origPath: selected.origPath,
+            status: selected.status,
+          }}
           diff={result.diff}
           path={selected.path}
-          mode="readonly"
-          leftLabel="HEAD"
-          rightLabel="Working Tree"
-          workingFile={selected.kind === "deleted"
-            ? null
-            : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
+          labels={{ left: "HEAD", right: "Working Tree" }}
           {previewSides}
-          blame={selected.kind === "deleted" ? null : { repoRoot, filePath: selected.path, revision: null }}
-          onRevert={selected.kind === "deleted" ? null : (lines) => void revertToHead(repoRoot, selected, lines)}
-          threePanes={stagingFits
-            ? { title: STAGING_PANES_TITLE, open: () => showThreeColumns("changesDiffPanes") }
-            : null}
+          blame={{ repoRoot, filePath: selected.path, revision: null }}
         />
       {/key}
     {:else}

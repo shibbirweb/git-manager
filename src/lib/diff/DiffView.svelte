@@ -56,6 +56,8 @@
     threePanes?: { title: string; open: () => void } | null;
     /** A Revert button on each change of a read-only diff, such as the Changes tab against HEAD. */
     onRevert?: ((selection: LineSelection) => void) | null;
+    /** An Apply button on each change of a read-only diff: a commit's change into the work tree. */
+    onApply?: ((selection: LineSelection) => void) | null;
   }
 
   let {
@@ -72,7 +74,14 @@
     onLines = null,
     threePanes = null,
     onRevert = null,
+    onApply = null,
   }: Props = $props();
+
+  const APPLY_TITLES: Record<DiffMode, string> = {
+    unstaged: "Stage this change",
+    staged: "Unstage this change",
+    readonly: "Apply this change to the working tree",
+  };
 
   const editors = new DiffEditors(() => revealLine);
   let parts = $state<DiffFrameParts | null>(null);
@@ -127,10 +136,11 @@
     const layout = settings.diffLayout;
     const scrollKey = `${mode}:${collapse}:${layout}:${path}`;
     // Blame and the change callback are read when built, as before, without rebuilding when they change.
-    const { blameTarget, changed, reverting } = untrack(() => ({
+    const { blameTarget, changed, reverting, applying } = untrack(() => ({
       blameTarget: blame,
       changed: onChange,
       reverting: revert,
+      applying: mode === "readonly" ? onApply : null,
     }));
     void editors.build({
       parts: target,
@@ -143,6 +153,7 @@
       blame: blameTarget,
       onChange: changed,
       onRevert: reverting,
+      onApply: applying,
     });
     return () => editors.teardown(scrollKey);
   });
@@ -165,6 +176,23 @@
       revert?.(selection);
     }
   }
+
+  function applySelection(selection: LineSelection | null): void {
+    if (selection && selectionSize(selection) > 0) {
+      onApply?.(selection);
+    }
+  }
+
+  /** The band's arrow: stage or unstage in the Changes diff, Apply in a read-only diff that offers it. */
+  const bandApply = $derived.by(() => {
+    if (inline) {
+      return undefined;
+    }
+    if (mode !== "readonly") {
+      return (index: number) => editors.copyChange(index);
+    }
+    return onApply ? (index: number) => applySelection(editors.changeLines(index)) : undefined;
+  });
 
   /** Opens the real file in an editor tab, at the same line when the right side is the work tree. */
   function openFile(): void {
@@ -221,8 +249,8 @@
       sideLabels={{ original: leftLabel, modified: rightLabel }}
       ribbons={inline ? null : editors.ribbons}
       applySide={mode === "unstaged" ? "right" : "left"}
-      onapply={mode === "readonly" || inline ? undefined : (index) => editors.copyChange(index)}
-      applyTitle={mode === "unstaged" ? "Stage this change" : "Unstage this change"}
+      onapply={bandApply}
+      applyTitle={APPLY_TITLES[mode]}
       onrevert={revert && !inline ? (index) => revertSelection(editors.changeLines(index)) : undefined}
       revertTitle="Revert this change"
       colors="oldToNew"

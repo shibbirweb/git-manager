@@ -30,7 +30,11 @@
     rightRibbons?: ConnectorRibbon[];
     onapply?: (index: number, side: "left" | "right") => void;
     onignore?: (index: number, side: "left" | "right") => void;
+    onrevert?: (index: number, side: "left" | "right") => void;
     applyTitles?: { left: string; right: string } | null;
+    revertTitle?: string | null;
+    /** The connectors whose chunks get buttons; the others draw ribbons alone. */
+    actionSides?: ("left" | "right")[];
     colors?: { left: ConnectorColors; right: ConnectorColors };
     split?: ThreeSplit;
     oncommitsplit?: (split: ThreeSplit) => void;
@@ -46,7 +50,10 @@
     rightRibbons = [],
     onapply,
     onignore,
+    onrevert,
     applyTitles = null,
+    revertTitle = null,
+    actionSides = ["left", "right"],
     colors = { left: "kinds", right: "kinds" },
     split = $bindable(EVEN_THREE_SPLIT),
     oncommitsplit,
@@ -59,6 +66,7 @@
   let right = $state<HTMLDivElement | null>(null);
   let panes = $state<HTMLDivElement | null>(null);
   const gap = componentTokens.mergeView.gap;
+  const acts = (side: "left" | "right") => actionSides.includes(side);
 
   $effect(() => {
     if (left && result && right && panes && onready) {
@@ -92,18 +100,22 @@
     <MergeConnector
       ribbons={leftRibbons}
       side="left"
-      onapply={onapply ? (index) => onapply(index, "left") : undefined}
+      onapply={onapply && acts("left") ? (index) => onapply(index, "left") : undefined}
       applyTitle={applyTitles?.left ?? null}
-      onignore={onignore ? (index) => onignore(index, "left") : undefined}
+      onignore={onignore && acts("left") ? (index) => onignore(index, "left") : undefined}
+      onrevert={onrevert && acts("left") ? (index) => onrevert(index, "left") : undefined}
+      {revertTitle}
       colors={colors.left}
     />
     <div class="pane result-pane" bind:this={result}></div>
     <MergeConnector
       ribbons={rightRibbons}
       side="right"
-      onapply={onapply ? (index) => onapply(index, "right") : undefined}
+      onapply={onapply && acts("right") ? (index) => onapply(index, "right") : undefined}
       applyTitle={applyTitles?.right ?? null}
-      onignore={onignore ? (index) => onignore(index, "right") : undefined}
+      onignore={onignore && acts("right") ? (index) => onignore(index, "right") : undefined}
+      onrevert={onrevert && acts("right") ? (index) => onrevert(index, "right") : undefined}
+      {revertTitle}
       colors={colors.right}
     />
     <div class="pane right-pane" bind:this={right}></div>

@@ -14,3 +14,4 @@ export function changeCounter(changeCount: number, current: number, summary: str
 /** The Three panes button's tooltip in the Changes diffs and for a merge commit's file. */
 export const STAGING_PANES_TITLE = "Three panes: HEAD, the index and the work tree";
 export const MERGE_PANES_TITLE = "Three panes: both parents and the merge";
+export const WORK_TREE_PANES_TITLE = "Three panes: the older version, the newer one and your working tree";

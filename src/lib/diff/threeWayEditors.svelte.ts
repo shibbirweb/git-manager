@@ -10,7 +10,7 @@ import { baseExtensions, editorLanguage } from "$lib/editor/setup";
 import { type LineMark, setSideMarks, sideExtensions } from "$lib/merge/extensions";
 import { lineAtCenter, scrollToLine } from "$lib/merge/mergeScroll";
 import { type Anchor, invertAnchors, mapLine } from "$lib/merge/model";
-import type { FileDiff, LineRange } from "$lib/types";
+import type { FileDiff, LineRange, LineSelection } from "$lib/types";
 import { newLineOnScreen } from "./diffPositions";
 import { foldStep, inlineFolds } from "./foldField";
 import type { FoldEdge } from "./foldModel";
@@ -19,6 +19,7 @@ import { bands } from "./threeWayBands";
 import { paneBlame, startBlame, type ThreeWayBlame, type ThreeWayPane as Pane } from "./threeWayBlame";
 import { diffTheme, toneColors } from "./mergeExtensions";
 import {
+  changeSelection,
   changeSummary,
   parentAnchors,
   parentFold,
@@ -264,19 +265,20 @@ export class ThreeWayEditors {
     return true;
   }
 
-  /** The middle text with change `index` of `side` taken into it: staging or unstaging that change. */
-  taken(side: ParentSide, index: number): string | null {
+  /** Change `index` of `side`: the middle with it taken in (stage, unstage) and its lines (Revert, Apply). */
+  change(side: ParentSide, index: number): { taken: string; lines: LineSelection } | null {
     const change = this.#changes[side][index];
-    return change ? takeChange(this.#texts.result, this.#texts[side], change) : null;
+    const texts = this.#texts;
+    return change ? { taken: takeChange(texts.result, texts[side], change), lines: changeSelection(change) } : null;
   }
 
-  /** The middle pane's scroll position, kept across a rebuild. */
   /** The 0-based line of `pane` at its cursor, or at its top when the cursor is out of sight (for Open File). */
   lineOnScreen(pane: Pane): number | null {
     const view = this.#views?.[pane];
     return view ? newLineOnScreen(view, null) : null;
   }
 
+  /** The middle pane's scroll position, kept across a rebuild. */
   scrollTop(): number | null {
     return this.#views?.result.scrollDOM.scrollTop ?? null;
   }

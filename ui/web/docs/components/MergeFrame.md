@@ -23,8 +23,12 @@ the three panes and the box the ribbons are measured from. MergeView is built on
 - `rightRibbons` (`ConnectorRibbon[]`, default `[]`): The right connector's ribbons, from the result to the right pane.
 - `onapply` (`(index: number, side: "left" | "right") => void`): A chunk's Apply button; left out, none.
 - `onignore` (`(index: number, side: "left" | "right") => void`): A chunk's Ignore button; left out, none.
+- `onrevert` (`(index: number, side: "left" | "right") => void`): A chunk's Revert button; left out, none.
 - `applyTitles` (`{ left: string; right: string } | null`, default `null`): The Apply buttons' tooltips per side, such
   as Unstage this change and Stage this change.
+- `revertTitle` (`string | null`, default `null`): The Revert buttons' tooltip.
+- `actionSides` (`("left" | "right")[]`, default `["left", "right"]`): The connectors whose chunks get buttons; the
+  others draw ribbons alone, such as a commit's change against the work tree.
 - `colors` (`{ left: ConnectorColors; right: ConnectorColors }`, default `{ left: "kinds", right: "kinds" }`): Each
   connector's ribbon colors.
 - `split` (`ThreeSplit ([number, number])`, default `[1 / 3, 2 / 3]`, bindable): Where the left pane ends and the right

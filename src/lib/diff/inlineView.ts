@@ -15,12 +15,14 @@ import { revertButton } from "./mergeExtensions";
 export interface InlineViewOptions {
   doc: InlineDoc;
   collapse: boolean;
-  /** The button on each change: Stage (unstaged diff), Unstage (staged diff), or none. */
-  control: "stage" | "unstage" | null;
+  /** The button on each change: Stage (unstaged diff), Unstage (staged diff), Apply (a commit's), or none. */
+  control: InlineControl | null;
   onControl: (block: InlineBlock) => void;
   /** The Revert button on each change: after Stage, or alone in a read-only diff (never in a staged one). */
   onRevert: ((block: InlineBlock) => void) | null;
 }
+
+export type InlineControl = "stage" | "unstage" | "apply";
 
 /** A changed line's color: removed lines red and added lines green, also inside a modified change. */
 type LineTint = "removed" | "added";
@@ -151,10 +153,16 @@ function controlButton(title: string, iconName: IconName, run: () => void): HTML
   return button;
 }
 
+const CONTROL_BUTTONS: Record<InlineControl, [string, IconName]> = {
+  stage: ["Stage this change", "plus"],
+  unstage: ["Unstage this change", "minus"],
+  apply: ["Apply this change to the working tree", "chevrons-right"],
+};
+
 class ControlMarker extends GutterMarker {
   constructor(
     readonly block: InlineBlock,
-    readonly control: "stage" | "unstage" | null,
+    readonly control: InlineControl | null,
     readonly run: (block: InlineBlock) => void,
     readonly revert: ((block: InlineBlock) => void) | null,
   ) {
@@ -169,11 +177,8 @@ class ControlMarker extends GutterMarker {
     const box = document.createElement("span");
     box.className = "diff-controls";
     if (this.control) {
-      box.appendChild(
-        this.control === "stage"
-          ? controlButton("Stage this change", "plus", () => this.run(this.block))
-          : controlButton("Unstage this change", "minus", () => this.run(this.block)),
-      );
+      const [title, iconName] = CONTROL_BUTTONS[this.control];
+      box.appendChild(controlButton(title, iconName, () => this.run(this.block)));
     }
     const revert = this.revert;
     if (revert) {
@@ -205,7 +210,7 @@ class SpacerMarker extends GutterMarker {
 /** The buttons on each change's first line: Stage or Unstage, then Revert; a read-only diff may have Revert alone. */
 function controlGutter(
   doc: InlineDoc,
-  control: "stage" | "unstage" | null,
+  control: InlineControl | null,
   run: (block: InlineBlock) => void,
   revert: ((block: InlineBlock) => void) | null,
 ): Extension {

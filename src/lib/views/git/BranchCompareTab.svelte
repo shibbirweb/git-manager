@@ -16,7 +16,7 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { relativeTime } from "$lib/log/format";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { BranchComparison, ChangedFile, CommitSummary, FileDiff } from "$lib/types";
@@ -185,13 +185,19 @@
             <EmptyState title={diffError} titleTone="dim" />
           {:else if diff && selected}
             {#key `${shown.baseId}:${shown.branchId}:${selected.path}`}
-              <DiffView
+              <GitDiffView
+                source={{
+                  kind: "revisions",
+                  repoRoot,
+                  filePath: selected.path,
+                  origPath: selected.origPath,
+                  from: shown.baseId,
+                  to: shown.branchId,
+                }}
                 {diff}
                 path={selected.path}
-                mode="readonly"
-                leftLabel={baseName}
-                rightLabel={branchName}
-                workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: false }}
+                labels={{ left: baseName, right: branchName }}
+                blame={{ repoRoot, filePath: selected.path, revision: shown.branchId }}
                 {previewSides}
               />
             {/key}

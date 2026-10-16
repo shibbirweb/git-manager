@@ -4,7 +4,7 @@
   import { api, errorMessage } from "$lib/api";
   import { joinPath } from "$lib/stores/workspacePaths";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { revisionLabel } from "$lib/stores/gitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { RevisionDiff } from "$lib/types";
@@ -75,13 +75,12 @@
     {#if !result.existsInRevision}
       <Notice variant="banner">{filePath} does not exist in {label}: everything shows as added.</Notice>
     {/if}
-    <DiffView
+    <GitDiffView
+      source={{ kind: "revisions", repoRoot, filePath, origPath: null, from: result.commitId, to: null }}
       diff={result.diff}
       path={filePath}
-      mode="readonly"
-      {leftLabel}
-      rightLabel="Working Copy"
-      workingFile={{ filePath: joinPath(repoRoot, filePath), sameLines: true }}
+      labels={{ left: leftLabel, right: "Working Copy" }}
+      blame={{ repoRoot, filePath, revision: null }}
       {previewSides}
     />
   {:else}

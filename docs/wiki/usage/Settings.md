@@ -81,7 +81,7 @@ Type a font list and press Enter, or click a font name below it. **Reset** goes 
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Diff layout | Every diff **Side by side** or **Inline** ([Inline Diffs](Inline-Diffs.md)); the diff toolbar's buttons set it too. | Side by side |
-| Side by side in Changes, for merge commits | **3 columns** add the index ([Staging View](Staging-View.md)) or the second parent. | 2, 3 |
+| Side by side in Changes, for commits | **3 columns**: the [Staging View](Staging-View.md), or a commit beside your working tree. | 2, 3 |
 | Ignore whitespace in the merge tool | Hides whitespace-only differences when a merge starts; the [Merge Tool](Merge-Tool.md) button sets it too. | Off |
 | Show all branches in the log | Includes every local and remote branch in the [Log](History-and-Log.md). | On |
 | Sign off commits | Adds a `Signed-off-by` line to every commit (`--signoff`). Also in [Commit Options](Commit-Options.md). | Off |

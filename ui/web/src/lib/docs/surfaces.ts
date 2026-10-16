@@ -131,8 +131,12 @@ export const surfaceDocs: ComponentDoc[] = [
       }),
       prop("onapply", '(index: number, side: "left" | "right") => void', "A chunk's Apply button; left out, none."),
       prop("onignore", '(index: number, side: "left" | "right") => void', "A chunk's Ignore button; left out, none."),
+      prop("onrevert", '(index: number, side: "left" | "right") => void', "A chunk's Revert button; left out, none."),
       prop("applyTitles", "{ left: string; right: string } | null", "The Apply buttons' tooltips per side, such as " +
         "Unstage this change and Stage this change.", { default: "null" }),
+      prop("revertTitle", "string | null", "The Revert buttons' tooltip.", { default: "null" }),
+      prop("actionSides", '("left" | "right")[]', "The connectors whose chunks get buttons; the others draw " +
+        "ribbons alone, such as a commit's change against the work tree.", { default: '["left", "right"]' }),
       prop("colors", "{ left: ConnectorColors; right: ConnectorColors }", "Each connector's ribbon colors.", {
         default: '{ left: "kinds", right: "kinds" }',
       }),

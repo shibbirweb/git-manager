@@ -83,13 +83,13 @@
     onchange={(panes) => set("changesDiffPanes", panes)}
   />
 </SettingsRow>
-<SettingsRow title="Side by side for merge commits" nested>
+<SettingsRow title="Side by side for commits" nested>
   {#snippet hintContent()}
-    For a file changed on both sides of a merge: 2 columns show one parent and the result, 3 columns show parent 1, the
-    result and parent 2.
+    2 columns show the parent and the commit. 3 columns add your working tree, so you can revert or apply a change
+    there; a file changed on both sides of a merge shows parent 1, the result and parent 2.
   {/snippet}
   <Segmented
-    label="Side by side for merge commits"
+    label="Side by side for commits"
     options={DIFF_PANES_CHOICES}
     value={settings.mergeDiffPanes}
     onchange={(panes) => set("mergeDiffPanes", panes)}

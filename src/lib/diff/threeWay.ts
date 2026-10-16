@@ -8,7 +8,7 @@ import type { LineMark } from "$lib/merge/extensions";
 import { changedSpans } from "$lib/merge/inline";
 import { type Anchor, type ChangeType, invertAnchors, mapLine } from "$lib/merge/model";
 import { type FoldRange, foldRanges } from "./foldModel";
-import type { LineHunk, LineRange } from "$lib/types";
+import type { LineHunk, LineRange, LineSelection } from "$lib/types";
 
 export type ParentSide = "left" | "right";
 
@@ -84,6 +84,15 @@ export function takeChange(middle: string, side: string, change: ThreeWayChange)
   const sideLines = side.split("\n");
   const taken = sideLines.slice(change.parent.start, change.parent.end);
   return [...middleLines.slice(0, change.result.start), ...taken, ...middleLines.slice(change.result.end)].join("\n");
+}
+
+/** A side's change as lines picked from its diff: the side pane is the old side, the middle the new one. */
+export function changeSelection(change: ThreeWayChange): LineSelection {
+  const { parent, result } = change;
+  return {
+    oldLines: parent.end > parent.start ? [[parent.start, parent.end]] : [],
+    newLines: result.end > result.start ? [[result.start, result.end]] : [],
+  };
 }
 
 export type Tone = "old" | "new";

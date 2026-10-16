@@ -26,9 +26,6 @@ pub enum LineAction {
     Unstage,
     /// Unstaged diff: the selected lines in the work tree go back to the index version.
     Discard,
-    /// HEAD to work tree diff (the Changes tab): the selected lines in the work tree go back to HEAD's version.
-    /// The index is left alone, and the diff on screen has no version to check.
-    RevertToHead,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -48,12 +45,12 @@ const GITLINK_MODE: u32 = 0o160000;
 /// Like the diff view: larger files show no text diff, so no lines can be picked.
 const MAX_BYTES: usize = 4 * 1024 * 1024;
 
-struct Blob {
-    mode: u32,
-    bytes: Vec<u8>,
+pub(super) struct Blob {
+    pub(super) mode: u32,
+    pub(super) bytes: Vec<u8>,
 }
 
-fn object_blob(repo: &Repository, mode: u32, oid: git2::Oid) -> AppResult<Blob> {
+pub(super) fn object_blob(repo: &Repository, mode: u32, oid: git2::Oid) -> AppResult<Blob> {
     if mode == GITLINK_MODE {
         return Ok(Blob { mode, bytes: Vec::new() });
     }
@@ -95,7 +92,7 @@ fn file_mode(_meta: &std::fs::Metadata) -> u32 {
     REGULAR_MODE
 }
 
-fn worktree_blob(repo: &Repository, file_path: &str) -> AppResult<Option<Blob>> {
+pub(super) fn worktree_blob(repo: &Repository, file_path: &str) -> AppResult<Option<Blob>> {
     let full = workdir(repo)?.join(file_path);
     let Ok(meta) = std::fs::symlink_metadata(&full) else {
         return Ok(None);
@@ -118,12 +115,12 @@ fn worktree_blob(repo: &Repository, file_path: &str) -> AppResult<Option<Blob>> 
     }))
 }
 
-fn whole_file(reason: &str) -> AppError {
+pub(super) fn whole_file(reason: &str) -> AppError {
     AppError::invalid(format!("{reason} Use the whole file instead."))
 }
 
 /// The side as text, or why its lines cannot be picked.
-fn text_of(blob: Blob) -> AppResult<String> {
+pub(super) fn text_of(blob: Blob) -> AppResult<String> {
     match blob.mode {
         SYMLINK_MODE => return Err(whole_file("This is a symbolic link.")),
         GITLINK_MODE => return Err(whole_file("This is a submodule.")),
@@ -138,14 +135,14 @@ fn text_of(blob: Blob) -> AppResult<String> {
     bytes_to_text(blob.bytes).ok_or_else(|| whole_file("This is a binary file."))
 }
 
-fn in_conflict(repo: &Repository, file_path: &str) -> AppResult<bool> {
+pub(super) fn in_conflict(repo: &Repository, file_path: &str) -> AppResult<bool> {
     let index = repo.index()?;
     Ok((1..=3).any(|stage| index.get_path(Path::new(file_path), stage).is_some()))
 }
 
 /// `git apply <args> --check` first, then the same for real: a patch that does not fit
 /// changes nothing.
-fn apply_checked(root: &Path, args: &[&str], patch: &str) -> AppResult<()> {
+pub(super) fn apply_checked(root: &Path, args: &[&str], patch: &str) -> AppResult<()> {
     // Explicit, so apply.whitespace=error never refuses a line the user wrote.
     let mut check = args.to_vec();
     check.extend(["--check", "--whitespace=nowarn", "-"]);
@@ -180,11 +177,11 @@ pub fn run_apply_lines(
     }
     let area = match action {
         LineAction::Unstage => DiffArea::Staged,
-        LineAction::Stage | LineAction::Discard | LineAction::RevertToHead => DiffArea::Unstaged,
+        LineAction::Stage | LineAction::Discard => DiffArea::Unstaged,
     };
-    let takes_back = matches!(action, LineAction::Discard | LineAction::RevertToHead);
+    let takes_back = action == LineAction::Discard;
     // The selection names lines of the diff on screen; refuse it for any other version.
-    if let Some(known) = known_version.filter(|_| action != LineAction::RevertToHead) {
+    if let Some(known) = known_version {
         if working_file_version(&repo, file_path, orig_path, area)? != known {
             return Err(AppError::invalid("The file changed after the diff was shown. Check the diff and try again."));
         }
@@ -192,7 +189,6 @@ pub fn run_apply_lines(
     let (old, new) = match action {
         LineAction::Stage | LineAction::Discard => (index_blob(&repo, file_path)?, worktree_blob(&repo, file_path)?),
         LineAction::Unstage => (head_blob(&repo, orig_path.unwrap_or(file_path))?, index_blob(&repo, file_path)?),
-        LineAction::RevertToHead => (head_blob(&repo, orig_path.unwrap_or(file_path))?, worktree_blob(&repo, file_path)?),
     };
     drop(repo);
     let Some(new) = new else {
@@ -226,7 +222,7 @@ pub fn run_apply_lines(
             };
             (unified_patch(file_path, before, &new_text, new_mode), &["apply", "--cached", "--reverse"])
         }
-        LineAction::Discard | LineAction::RevertToHead => (
+        LineAction::Discard => (
             unified_patch(file_path, Some(&partial.text), &new_text, new_mode),
             &["apply", "--reverse"],
         ),
@@ -241,12 +237,14 @@ pub fn run_apply_lines(
     })
 }
 
-/// Undo of Discard Selected Lines: applies the discarded patch to the work tree again.
-pub fn run_restore_lines(repo_path: &str, patch: &str) -> AppResult<()> {
+/// Undo of Discard Selected Lines (and of a reverted change): applies the taken back patch to the work tree again.
+/// `reverse` undoes an applied change instead, by taking its patch back out.
+pub fn run_restore_lines(repo_path: &str, patch: &str, reverse: bool) -> AppResult<()> {
     if patch.trim().is_empty() {
         return Err(AppError::invalid("There is nothing to restore."));
     }
-    apply_checked(Path::new(repo_path), &["apply"], patch).map_err(|_| {
+    let args: &[&str] = if reverse { &["apply", "--reverse"] } else { &["apply"] };
+    apply_checked(Path::new(repo_path), args, patch).map_err(|_| {
         AppError::invalid("The lines cannot be restored: the file changed after they were discarded.")
     })
 }
@@ -274,8 +272,8 @@ pub async fn apply_selected_lines(
 }
 
 #[tauri::command]
-pub async fn restore_discarded_lines(repo_path: String, patch: String) -> AppResult<()> {
-    blocking(move || run_restore_lines(&repo_path, &patch)).await
+pub async fn restore_discarded_lines(repo_path: String, patch: String, reverse: Option<bool>) -> AppResult<()> {
+    blocking(move || run_restore_lines(&repo_path, &patch, reverse.unwrap_or_default())).await
 }
 
 #[cfg(test)]
@@ -353,36 +351,11 @@ mod tests {
         assert_eq!(repo.git(&["diff", "--cached", "--name-only"]).trim(), "", "nothing is staged");
 
         let patch = outcome.patch.unwrap();
-        run_restore_lines(&repo.path_string(), &patch).unwrap();
+        run_restore_lines(&repo.path_string(), &patch, false).unwrap();
         assert_eq!(repo.read_text("f.txt"), before);
         // A second undo no longer fits and changes nothing.
-        assert!(run_restore_lines(&repo.path_string(), &patch).is_err());
+        assert!(run_restore_lines(&repo.path_string(), &patch, false).is_err());
         assert_eq!(repo.read_text("f.txt"), before);
-    }
-
-    #[test]
-    fn revert_to_head_puts_head_lines_back_in_the_work_tree_and_undo_restores_them() {
-        let repo = TestRepo::new();
-        repo.write("f.txt", "a\nb\nc\nd\n");
-        repo.commit_all("base");
-        repo.write("f.txt", "a\nB\nc\nD\n");
-        let outcome = apply(&repo, "f.txt", LineAction::RevertToHead, &lines(&[[1, 2]], &[[1, 2]])).unwrap();
-        assert_eq!(outcome.lines, 2);
-        assert_eq!(repo.read_text("f.txt"), "a\nb\nc\nD\n", "only the picked change goes back");
-        run_restore_lines(&repo.path_string(), &outcome.patch.unwrap()).unwrap();
-        assert_eq!(repo.read_text("f.txt"), "a\nB\nc\nD\n");
-    }
-
-    #[test]
-    fn revert_to_head_reverts_staged_lines_in_the_work_tree_and_leaves_the_index() {
-        let repo = TestRepo::new();
-        repo.write("f.txt", "a\nb\nc\n");
-        repo.commit_all("base");
-        repo.write("f.txt", "a\nB\nc\n");
-        repo.git(&["add", "f.txt"]);
-        apply(&repo, "f.txt", LineAction::RevertToHead, &lines(&[[1, 2]], &[[1, 2]])).unwrap();
-        assert_eq!(repo.read_text("f.txt"), "a\nb\nc\n");
-        assert_eq!(repo.git(&["show", ":f.txt"]), "a\nB\nc\n", "the staged version stays");
     }
 
     #[test]

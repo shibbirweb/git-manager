@@ -1778,6 +1778,22 @@ define("revert-change-diff", async (shot) => {
 });
 
 define(
+  "revert-change-commit",
+  async (shot) => {
+    await shot.showLog();
+    await commitRow(shot, "Cart: discount codes and totals").click();
+    const log = shot.page.getByRole("region", { name: "Log", exact: true });
+    const revert = log.locator("[aria-label='Diff'] [title='Revert this change']").first();
+    await revert.waitFor();
+    await shot.settle(500);
+    await revert.hover();
+    await shot.settle();
+    await shot.save(log.getByRole("region", { name: "Diff", exact: true }).first());
+  },
+  logScenario,
+);
+
+define(
   "revert-change-editor",
   async (shot) => {
     await shot.openFile(cartTs());

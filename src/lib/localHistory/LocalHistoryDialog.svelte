@@ -3,7 +3,7 @@
      files that are gone from disk but still have versions. Loaded only while open. -->
 <script lang="ts">
   import { api, errorMessage } from "$lib/api";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { fullDate, relativeTime } from "$lib/log/format";
   import { fileCommands } from "$lib/stores/fileCommands.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -233,12 +233,11 @@
     {#if diffError}
       <EmptyState icon="alert" title={diffError} titleTone="dim" />
     {:else if diff && filePath}
-      <DiffView
+      <GitDiffView
+        source={{ kind: "plain" }}
         {diff}
         path={filePath}
-        mode="readonly"
-        {leftLabel}
-        {rightLabel}
+        labels={{ left: leftLabel, right: rightLabel }}
         workingFile={exists ? { filePath, sameLines: true } : null}
       />
     {:else}

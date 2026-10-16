@@ -5,7 +5,7 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import { api, errorMessage } from "$lib/api";
   import type { PreviewSides } from "$lib/diff/binaryPreview";
-  import DiffView from "$lib/diff/DiffView.svelte";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ChangedFile, RevisionDiff, WorktreeComparison } from "$lib/types";
   import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
@@ -139,13 +139,19 @@
           <EmptyState titleTone="dim" title={diffError} />
         {:else if result && selected}
           {#key `${comparison.commitId}:${selected.path}`}
-            <DiffView
+            <GitDiffView
+              source={{
+                kind: "revisions",
+                repoRoot,
+                filePath: selected.path,
+                origPath: selected.origPath,
+                from: result.commitId,
+                to: null,
+              }}
               diff={result.diff}
               path={selected.path}
-              mode="readonly"
-              leftLabel={revision}
-              rightLabel="Working Tree"
-              workingFile={{ filePath: joinPath(repoRoot, selected.path), sameLines: true }}
+              labels={{ left: revision, right: "Working Tree" }}
+              blame={{ repoRoot, filePath: selected.path, revision: null }}
               {previewSides}
             />
           {/key}

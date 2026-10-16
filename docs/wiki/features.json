@@ -31,7 +31,7 @@
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
     { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, with removed lines above the new ones." },
     { "page": "usage/Staging-View.md", "summary": "HEAD, the index and the work tree in three panes; stage single changes." },
-    { "page": "usage/Revert-a-Change.md", "summary": "Throw away one change, from the Changes diff or a change bar in the editor." },
+    { "page": "usage/Revert-a-Change.md", "summary": "Throw away one change, or apply one from a commit, from any diff or the editor." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
@@ -95,6 +95,7 @@
     { "page": "developer/Menu-Keys-and-Routing.md", "summary": "How one key press runs either a page handler or a menu item, never both." },
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/One-Diff-View.md", "summary": "How every place that shows a diff shares one view, its panes and its buttons." },
     { "page": "developer/Diff-Bugs-We-Fixed.md", "summary": "The diff view bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Color-Theme-Bugs-We-Fixed.md", "summary": "The color theme bugs we found, why they happened and how we fixed them." },
     { "page": "developer/How-the-Connected-Diff-Works.md", "summary": "Side by side without padding: each side scrolls itself, bands join the changes." },
@@ -336,7 +337,7 @@
       "title": "Revert a change",
       "usage": "usage/Revert-a-Change.md",
       "developer": "developer/How-Reverting-a-Change-Works.md",
-      "screenshots": ["revert-change-diff.png", "revert-change-editor.png"]
+      "screenshots": ["revert-change-diff.png", "revert-change-editor.png", "revert-change-commit.png"]
     },
     {
       "id": "conflicts",

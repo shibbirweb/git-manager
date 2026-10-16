@@ -1,13 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import { joinPath } from "$lib/stores/workspacePaths";
   import { errorMessage } from "$lib/api";
-  import DiffView from "$lib/diff/DiffView.svelte";
-  import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
-  import { MERGE_PANES_TITLE } from "$lib/diff/diffToolbar";
-  import { settings } from "$lib/stores/settings.svelte";
-  import { setDiffLayout, showsThreeColumns, showThreeColumns } from "$lib/diff/diffPanes";
-  import type { FileDiff } from "$lib/types";
+  import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import Button from "@git-manager/ui/components/Button.svelte";
   import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
   import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
@@ -58,17 +52,6 @@
   let width = $state(0);
 
   const current = $derived(details && details.id === commitId ? details : null);
-  /** Text on every side: a file changed on both sides of a merge shows parent 1, the result and parent 2. */
-  const textual = (diff: FileDiff) => !diff.binary && !diff.tooLarge && !diff.lfs;
-  /** The 3-pane layout fits this file; the toolbar switches between it and the usual diff (Settings > Git). */
-  const threeWayFits = $derived(Boolean(shown?.secondParent && textual(shown.diff) && textual(shown.secondParent)));
-  const threeColumns = $derived(showsThreeColumns("mergeDiffPanes"));
-  const threeWay = $derived(threeWayFits && threeColumns ? shown : null);
-  const threeWayLabels = $derived({
-    left: `Parent 1: ${(details?.parents[0] ?? "").slice(0, 8)}`,
-    result: commitId.slice(0, 8),
-    right: `Parent 2: ${(details?.parents[1] ?? "").slice(0, 8)}`,
-  });
   const selectedRow = $derived(current ? loader.selectedRow : null);
   /** The line of the diff on screen to scroll to, from `preferredFile`. */
   const revealLine = $derived.by(() => {
@@ -236,46 +219,22 @@
   {#snippet second()}
     {#if diffError}
       <EmptyState icon="alert" title="Could not load diff: {diffError}" titleTone="dim" />
-    {:else if threeWay?.secondParent}
-      {#key threeWay.key}
-        <ThreePaneDiff
-          left={threeWay.diff}
-          right={threeWay.secondParent}
-          path={threeWay.path}
-          labels={threeWayLabels}
-          label="Diff of {threeWay.path.split('/').pop()} against both parents"
-          onlayout={(layout) => setDiffLayout("mergeDiffPanes", layout)}
-          workingFile={{ filePath: joinPath(repoPath, threeWay.path), sameLines: false }}
-          blame={threeWay.diff.modified === ""
-            ? null
-            : {
-                pane: "result",
-                target: {
-                  repoRoot: repoPath,
-                  filePath: threeWay.path,
-                  revision: commitId,
-                  origin: (line) => ({
-                    kind: "log",
-                    repoRoot: repoPath,
-                    commitId,
-                    filePath: threeWay?.path ?? null,
-                    line,
-                  }),
-                },
-              }}
-        />
-      {/key}
     {:else if shown}
       {#key shown.key}
-        <DiffView
+        <GitDiffView
+          source={{
+            kind: "commit",
+            repoRoot: repoPath,
+            commitId: details?.id ?? commitId,
+            filePath: shown.path,
+            origPath: shown.origPath,
+            parentId: shown.parentId,
+            secondParent: shown.secondParent,
+            parents: details?.parents ?? [],
+          }}
           diff={shown.diff}
           path={shown.path}
-          mode="readonly"
-          threePanes={threeWayFits
-            ? { title: MERGE_PANES_TITLE, open: () => showThreeColumns("mergeDiffPanes") }
-            : null}
-          leftLabel={shown.parentLabel}
-          rightLabel={shown.label}
+          labels={{ left: shown.parentLabel, right: shown.label }}
           blame={shown.diff.modified === ""
             ? null
             : {
@@ -285,7 +244,6 @@
                 origin: (line) => ({ kind: "log", repoRoot: repoPath, commitId, filePath: shown?.path ?? null, line }),
               }}
           {revealLine}
-          workingFile={{ filePath: joinPath(repoPath, shown.path), sameLines: false }}
           previewSides={shown.previewSides}
         />
       {/key}
