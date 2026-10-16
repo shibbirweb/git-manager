@@ -54,6 +54,8 @@
     onLines?: ((action: LineAction, selection: LineSelection, wholeChange?: boolean) => void) | null;
     /** Offers the 3-pane layout in the toolbar (a merge commit's file, or the Changes diff's staging view). */
     threePanes?: { title: string; open: () => void } | null;
+    /** A Revert button on each change of a read-only diff, such as the Changes tab against HEAD. */
+    onRevert?: ((selection: LineSelection) => void) | null;
   }
 
   let {
@@ -69,6 +71,7 @@
     previewSides = null,
     onLines = null,
     threePanes = null,
+    onRevert = null,
   }: Props = $props();
 
   const editors = new DiffEditors(() => revealLine);
@@ -85,8 +88,8 @@
   const fileName = $derived(path.split("/").pop() ?? path);
   /** Which line actions the diff offers: Stage and Discard (unstaged), Unstage (staged), or none. */
   const lineMode = $derived(onLines && textual && !identical && mode !== "readonly" ? mode : null);
-  /** Each unstaged change has a Revert button: its work tree lines go back to the staged version. */
-  const reverts = $derived(lineMode === "unstaged");
+  /** Each unstaged change has a Revert button (its work tree lines go back to the staged version), or the caller's. */
+  const revert = $derived(onRevert ?? (lineMode === "unstaged" ? revertChange : null));
 
   // A reveal for the diff that is already on screen.
   $effect(() => {
@@ -124,10 +127,10 @@
     const layout = settings.diffLayout;
     const scrollKey = `${mode}:${collapse}:${layout}:${path}`;
     // Blame and the change callback are read when built, as before, without rebuilding when they change.
-    const { blameTarget, changed, revert } = untrack(() => ({
+    const { blameTarget, changed, reverting } = untrack(() => ({
       blameTarget: blame,
       changed: onChange,
-      revert: reverts ? revertChange : null,
+      reverting: revert,
     }));
     void editors.build({
       parts: target,
@@ -139,7 +142,7 @@
       scrollKey,
       blame: blameTarget,
       onChange: changed,
-      onRevert: revert,
+      onRevert: reverting,
     });
     return () => editors.teardown(scrollKey);
   });
@@ -153,9 +156,13 @@
     onLines?.(action, selection);
   }
 
-  function revertChange(selection: LineSelection | null): void {
+  function revertChange(selection: LineSelection): void {
+    onLines?.("discard", selection, true);
+  }
+
+  function revertSelection(selection: LineSelection | null): void {
     if (selection && selectionSize(selection) > 0) {
-      onLines?.("discard", selection, true);
+      revert?.(selection);
     }
   }
 
@@ -216,7 +223,7 @@
       applySide={mode === "unstaged" ? "right" : "left"}
       onapply={mode === "readonly" || inline ? undefined : (index) => editors.copyChange(index)}
       applyTitle={mode === "unstaged" ? "Stage this change" : "Unstage this change"}
-      onrevert={reverts && !inline ? (index) => revertChange(editors.changeLines(index)) : undefined}
+      onrevert={revert && !inline ? (index) => revertSelection(editors.changeLines(index)) : undefined}
       revertTitle="Revert this change"
       colors="oldToNew"
       ruler

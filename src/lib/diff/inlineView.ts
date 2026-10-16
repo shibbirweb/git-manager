@@ -18,7 +18,7 @@ export interface InlineViewOptions {
   /** The button on each change: Stage (unstaged diff), Unstage (staged diff), or none. */
   control: "stage" | "unstage" | null;
   onControl: (block: InlineBlock) => void;
-  /** The Revert button on each change, after Stage; null for none. */
+  /** The Revert button on each change: after Stage, or alone in a read-only diff (never in a staged one). */
   onRevert: ((block: InlineBlock) => void) | null;
 }
 
@@ -154,7 +154,7 @@ function controlButton(title: string, iconName: IconName, run: () => void): HTML
 class ControlMarker extends GutterMarker {
   constructor(
     readonly block: InlineBlock,
-    readonly control: "stage" | "unstage",
+    readonly control: "stage" | "unstage" | null,
     readonly run: (block: InlineBlock) => void,
     readonly revert: ((block: InlineBlock) => void) | null,
   ) {
@@ -168,11 +168,13 @@ class ControlMarker extends GutterMarker {
   toDOM(): Node {
     const box = document.createElement("span");
     box.className = "diff-controls";
-    box.appendChild(
-      this.control === "stage"
-        ? controlButton("Stage this change", "plus", () => this.run(this.block))
-        : controlButton("Unstage this change", "minus", () => this.run(this.block)),
-    );
+    if (this.control) {
+      box.appendChild(
+        this.control === "stage"
+          ? controlButton("Stage this change", "plus", () => this.run(this.block))
+          : controlButton("Unstage this change", "minus", () => this.run(this.block)),
+      );
+    }
     const revert = this.revert;
     if (revert) {
       const button = controlButton("Revert this change", "discard", () => revert(this.block));
@@ -200,9 +202,10 @@ class SpacerMarker extends GutterMarker {
   }
 }
 
+/** The buttons on each change's first line: Stage or Unstage, then Revert; a read-only diff may have Revert alone. */
 function controlGutter(
   doc: InlineDoc,
-  control: "stage" | "unstage",
+  control: "stage" | "unstage" | null,
   run: (block: InlineBlock) => void,
   revert: ((block: InlineBlock) => void) | null,
 ): Extension {
@@ -211,7 +214,7 @@ function controlGutter(
     class: "cm-inlineControls",
     lineMarker: (view, line) => byLine.get(view.state.doc.lineAt(line.from).number - 1) ?? null,
     lineMarkerChange: () => false,
-    initialSpacer: () => new SpacerMarker(revert ? 2 : 1),
+    initialSpacer: () => new SpacerMarker((control ? 1 : 0) + (revert ? 1 : 0)),
   });
 }
 
@@ -230,7 +233,7 @@ export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
     decorations,
     numberGutter("old", doc, kinds),
     numberGutter("new", doc, kinds),
-    control ? controlGutter(doc, control, onControl, control === "stage" ? onRevert : null) : [],
+    control || onRevert ? controlGutter(doc, control, onControl, control === "unstage" ? null : onRevert) : [],
     signGutter(doc, kinds),
     collapse
       ? inlineFolds(collapsedRuns(doc, FOLD_MARGIN, FOLD_MIN_SIZE).map(([from, to]) => ({ first: from + 1, last: to })))

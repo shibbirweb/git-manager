@@ -32,7 +32,7 @@ const LINE_LABELS: Record<LineAction, string> = {
   discard: "Discard lines",
 };
 
-function linesText(count: number): string {
+export function linesText(count: number): string {
   return count === 1 ? "1 changed line" : `${count} changed lines`;
 }
 

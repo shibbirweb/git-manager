@@ -19,7 +19,7 @@ In the inline layout, the same two buttons sit on the first line of each change:
 
 Revert always asks first. When you confirm, the file on disk changes and the diff reloads. A message says how many lines were discarded, with an **Undo** button that puts your lines back.
 
-Revert is only offered for **Changes** (the working tree against the index). A diff from **Staged** has **Unstage this change** instead, and diffs of commits are read-only.
+Revert is offered for **Changes** (the working tree against the index) and in the Changes tab that **N changes** in the status bar opens (the working tree against the last commit). A diff from **Staged** has **Unstage this change** instead, and diffs of commits are read-only.
 
 If the file changed after the diff was shown, for example in another editor, nothing is reverted: a message asks you to check the diff and try again, so you never lose lines you have not seen.
 
@@ -46,7 +46,7 @@ Conflict blocks have their own bar and are not reverted this way; use the confli
 The two places compare with different versions, the same ones their colors show:
 
 - The Changes diff compares the working tree with the index, so Revert brings back the **staged** lines. If you never staged the file, that is the last commit.
-- The editor compares your text with the **last commit** (HEAD), so Revert brings back the committed lines, even when a newer version is staged.
+- The editor and the Changes tab compare with the **last commit** (HEAD), so Revert brings back the committed lines, even when a newer version is staged. The staged version stays staged.
 
 ## Related
 

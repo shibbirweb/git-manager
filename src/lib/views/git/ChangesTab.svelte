@@ -23,7 +23,8 @@
   import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
   import ChangesTabList from "./ChangesTabList.svelte";
   import { splitPath } from "../changes/fileStatus";
-  import { indexEol, StagingDiffs, stagingViewFits } from "../changes/stagingDiffs.svelte";
+  import { StagingDiffs, stagingViewFits } from "../changes/stagingDiffs.svelte";
+  import { revertToHead, writeIndex } from "./tabEdits";
   import { type ChangesTabFile, changesListBounds, changesTabFiles, pickSelected, stepSelection } from "./changesTab";
 
   interface Props {
@@ -103,16 +104,10 @@
     untrack(() => void staging.load(repoRoot, file.path));
   });
 
-  let stageQueue: Promise<unknown> = Promise.resolve();
-  /** Writes the index pane's new text; serialized so rapid clicks reach the index in order. */
   function applyToIndex(content: string, side: "left" | "right"): void {
-    const [filePath, staged] = [selected?.path, staging.staged];
-    if (!filePath || !staged) {
-      return;
+    if (selected && staging.staged) {
+      writeIndex(repoRoot, selected.path, content, staging.staged, side === "right");
     }
-    const label = side === "right" ? "Stage change" : "Unstage change";
-    const write = (repoPath: string) => api.stageContent(repoPath, filePath, content, indexEol(staged));
-    stageQueue = stageQueue.then(() => repoStore.run(label, write, { repoPath: repoRoot, refresh: "status" }));
   }
 
   const previewSides = $derived.by((): PreviewSides | null => {
@@ -203,6 +198,7 @@
             : { filePath: joinPath(repoRoot, selected.path), sameLines: true }}
           {previewSides}
           blame={selected.kind === "deleted" ? null : { repoRoot, filePath: selected.path, revision: null }}
+          onRevert={selected.kind === "deleted" ? null : (lines) => void revertToHead(repoRoot, selected, lines)}
           threePanes={stagingFits
             ? { title: STAGING_PANES_TITLE, open: () => showThreeColumns("changesDiffPanes") }
             : null}

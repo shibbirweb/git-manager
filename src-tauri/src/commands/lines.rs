@@ -26,6 +26,9 @@ pub enum LineAction {
     Unstage,
     /// Unstaged diff: the selected lines in the work tree go back to the index version.
     Discard,
+    /// HEAD to work tree diff (the Changes tab): the selected lines in the work tree go back to HEAD's version.
+    /// The index is left alone, and the diff on screen has no version to check.
+    RevertToHead,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -177,10 +180,11 @@ pub fn run_apply_lines(
     }
     let area = match action {
         LineAction::Unstage => DiffArea::Staged,
-        LineAction::Stage | LineAction::Discard => DiffArea::Unstaged,
+        LineAction::Stage | LineAction::Discard | LineAction::RevertToHead => DiffArea::Unstaged,
     };
+    let takes_back = matches!(action, LineAction::Discard | LineAction::RevertToHead);
     // The selection names lines of the diff on screen; refuse it for any other version.
-    if let Some(known) = known_version {
+    if let Some(known) = known_version.filter(|_| action != LineAction::RevertToHead) {
         if working_file_version(&repo, file_path, orig_path, area)? != known {
             return Err(AppError::invalid("The file changed after the diff was shown. Check the diff and try again."));
         }
@@ -188,6 +192,7 @@ pub fn run_apply_lines(
     let (old, new) = match action {
         LineAction::Stage | LineAction::Discard => (index_blob(&repo, file_path)?, worktree_blob(&repo, file_path)?),
         LineAction::Unstage => (head_blob(&repo, orig_path.unwrap_or(file_path))?, index_blob(&repo, file_path)?),
+        LineAction::RevertToHead => (head_blob(&repo, orig_path.unwrap_or(file_path))?, worktree_blob(&repo, file_path)?),
     };
     drop(repo);
     let Some(new) = new else {
@@ -221,18 +226,18 @@ pub fn run_apply_lines(
             };
             (unified_patch(file_path, before, &new_text, new_mode), &["apply", "--cached", "--reverse"])
         }
-        LineAction::Discard => (
+        LineAction::Discard | LineAction::RevertToHead => (
             unified_patch(file_path, Some(&partial.text), &new_text, new_mode),
             &["apply", "--reverse"],
         ),
     };
-    if action == LineAction::Discard {
+    if takes_back {
         local_history::snapshot_before(&[root.join(file_path)], Label::BeforeDiscard);
     }
     apply_checked(root, args, &patch)?;
     Ok(LinesOutcome {
         lines: partial.changed_lines,
-        patch: (action == LineAction::Discard).then_some(patch),
+        patch: takes_back.then_some(patch),
     })
 }
 
@@ -353,6 +358,31 @@ mod tests {
         // A second undo no longer fits and changes nothing.
         assert!(run_restore_lines(&repo.path_string(), &patch).is_err());
         assert_eq!(repo.read_text("f.txt"), before);
+    }
+
+    #[test]
+    fn revert_to_head_puts_head_lines_back_in_the_work_tree_and_undo_restores_them() {
+        let repo = TestRepo::new();
+        repo.write("f.txt", "a\nb\nc\nd\n");
+        repo.commit_all("base");
+        repo.write("f.txt", "a\nB\nc\nD\n");
+        let outcome = apply(&repo, "f.txt", LineAction::RevertToHead, &lines(&[[1, 2]], &[[1, 2]])).unwrap();
+        assert_eq!(outcome.lines, 2);
+        assert_eq!(repo.read_text("f.txt"), "a\nb\nc\nD\n", "only the picked change goes back");
+        run_restore_lines(&repo.path_string(), &outcome.patch.unwrap()).unwrap();
+        assert_eq!(repo.read_text("f.txt"), "a\nB\nc\nD\n");
+    }
+
+    #[test]
+    fn revert_to_head_reverts_staged_lines_in_the_work_tree_and_leaves_the_index() {
+        let repo = TestRepo::new();
+        repo.write("f.txt", "a\nb\nc\n");
+        repo.commit_all("base");
+        repo.write("f.txt", "a\nB\nc\n");
+        repo.git(&["add", "f.txt"]);
+        apply(&repo, "f.txt", LineAction::RevertToHead, &lines(&[[1, 2]], &[[1, 2]])).unwrap();
+        assert_eq!(repo.read_text("f.txt"), "a\nb\nc\n");
+        assert_eq!(repo.git(&["show", ":f.txt"]), "a\nB\nc\n", "the staged version stays");
     }
 
     #[test]

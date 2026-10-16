@@ -32,6 +32,10 @@ Inline, `inlineView.ts` adds a second button after Stage in the control gutter. 
 
 Both end in `onLines("discard", lines, true)`, the Discard Selected Lines path in `changesSelection.applyLines`. The backend checks the diff's `version`, so a file that changed since the diff was shown is refused, and the Undo in the toast applies the saved patch again. `wholeChange` only changes the confirm's words to Revert Change. Revert is offered only in unstaged mode: a staged diff has Unstage, which already moves a change back.
 
+### In the Changes tab
+
+The tab's diff is read-only and compares HEAD with the work tree, so `DiffView` takes an `onRevert` there instead of line actions: the same buttons, side by side and inline (the inline gutter then holds Revert alone). `revertToHead` (`views/git/tabEdits.ts`) confirms and calls `applySelectedLines` with the `revertToHead` action: the backend builds the patch from HEAD's blob (the renamed path for a rename) to the work tree file and applies it in reverse to the work tree only, after a local history snapshot. The index is not touched, and the Undo toast applies the returned patch again.
+
 ### In the editor
 
 `changeGutter` takes an optional `onBarClick`. Its `mousedown` handler looks up the gutter's own markers on the clicked line, so a click beside an unchanged line or on a conflict's bar does nothing. `FileGitInfo.revertChange` then:
@@ -51,6 +55,7 @@ Both end in `onLines("discard", lines, true)`, the Discard Selected Lines path i
 | `src/lib/diff/inlineView.ts` | The inline Revert button after Stage |
 | `src/lib/diff/DiffView.svelte`, `diffEditors.svelte.ts` | Wiring the buttons to `onLines` |
 | `src/lib/views/changes/selection.svelte.ts` | `applyLines`, the confirm and the Undo toast |
+| `src/lib/views/git/tabEdits.ts`, `src-tauri/src/commands/lines.rs` | The Changes tab's `revertToHead`, and the `RevertToHead` action |
 | `src/lib/editor/scrollMarkers.ts` | `changeGutter` and its bar click |
 | `src/lib/editor/revertLines.ts` | `changeAtLine` and `revertEdit` |
 | `src/lib/views/files/fileGitInfo.ts` | `revertChange` for the editor |
@@ -69,9 +74,16 @@ Both end in `onLines("discard", lines, true)`, the Discard Selected Lines path i
 
 - `src/lib/diff/revertChange.test.ts`: a chunk's and a hunk's lines, empty sides, a last line without a break.
 - `src/lib/editor/revertLines.test.ts`: the change on a clicked line, and reverting changed, added and deleted lines at the start, middle and end.
-- The backend path is covered by the `apply_selected_lines` tests in `src-tauri/src/commands/lines.rs`.
+- The backend path is covered by the `apply_selected_lines` tests in `src-tauri/src/commands/lines.rs`, with `RevertToHead`: only the picked change goes back, Undo restores it, and a staged version stays in the index.
 
 The buttons, the hand pointer and the confirms need a check in the app. See [Testing](Testing.md).
+
+## Bugs we fixed
+
+**The Changes tab had no Revert button.**
+- **The issue:** the Changes tab (status bar > **N changes**) showed changes with no way to revert one, side by side or inline.
+- **Why it happened:** Revert came from Discard Selected Lines, which works on the index against the work tree, and the tab compares with HEAD in a read-only diff.
+- **The fix and why we chose it:** a `RevertToHead` action reverts against HEAD in the backend, with the same checks, local history snapshot and Undo patch as Discard, and `DiffView`'s `onRevert` shows the usual buttons in a read-only diff.
 
 ## Keeping this page in sync
 

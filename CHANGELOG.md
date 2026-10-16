@@ -191,6 +191,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The Changes tab (status bar > N changes) has the **Revert this change** button too, side by side and inline: the change goes back to the last commit, and the staged version stays staged.
 - The Changes tab (status bar > N changes) offers the **Three panes** staging view too, like the Changes diff: HEAD, the index and the working tree, with stage and unstage buttons.
 - Light color themes (Islands Light, One Light, Solarized Light and others) show white text on blue and red buttons
   and badges, instead of black text that was hard to read.

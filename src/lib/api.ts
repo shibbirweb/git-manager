@@ -165,14 +165,15 @@ export const api = {
   stageContent: (repoPath: string, filePath: string, content: string, eol: Eol) =>
     invoke<void>("stage_content", { repoPath, filePath, content, eol }),
   /**
-   * Stages, unstages or discards only the selected lines of a file's diff. `knownVersion` is the
+   * Stages, unstages or discards only the selected lines of a file's diff, or (`revertToHead`, the Changes tab)
+   * puts HEAD's version of them back in the work tree. `knownVersion` is the
    * diff's `version`: a file that changed since then is refused instead of patched at the wrong lines.
    */
   applySelectedLines: (
     repoPath: string,
     filePath: string,
     origPath: string | null,
-    action: LineAction,
+    action: LineAction | "revertToHead",
     selection: LineSelection,
     knownVersion: string | null,
   ) => invoke<LinesOutcome>("apply_selected_lines", { repoPath, filePath, origPath, action, selection, knownVersion }),
