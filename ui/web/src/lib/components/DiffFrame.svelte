@@ -218,9 +218,10 @@
     overflow-y: auto;
   }
 
-  /* One editor (inline) scrolls itself; with a ruler it stops short of it. */
+  /* One editor (inline) scrolls itself; with a ruler it stops short of it, so the ruler never covers its
+     scrollbar. CodeMirror's base theme forces position: relative, which ignores `right`. */
   .body > :global(.cm-editor) {
-    position: absolute;
+    position: absolute !important;
     inset: 0;
   }
 

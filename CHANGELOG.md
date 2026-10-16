@@ -181,6 +181,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- The inline diff shows its scrollbar again; the change overview at the right covered it.
 - Opening a Markdown file in the Rich Editor no longer slides the whole window up under the title bar (macOS).
 - Collapse unchanged works in the side by side diff again; it folded nothing there (the inline diff was fine).
 - The Match Case, Words and Regex tooltips in find bars said Option on Windows; they now say Alt there.
