@@ -144,6 +144,10 @@ describe.each(THEME_INDEX.map((theme) => [theme.name, theme] as const))("%s", (_
 
   it("has readable button text", () => {
     expect(contrastRatio(colors["--accent-text"], colors["--accent"])).toBeGreaterThanOrEqual(3);
+    // Black scores a little higher on mid blues, but white is the readable choice once it reaches 3:1.
+    if (contrastRatio("#ffffff", colors["--accent"]) >= 3) {
+      expect(colors["--accent-text"]).toBe("#ffffff");
+    }
   });
 });
 

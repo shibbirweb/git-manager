@@ -95,6 +95,7 @@
     { "page": "developer/Frontend-Modules.md", "summary": "The feature folders in src/lib, their stores, and what loads only on first use." },
     { "page": "developer/Blame-Bugs-We-Fixed.md", "summary": "The blame bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Diff-Bugs-We-Fixed.md", "summary": "The diff view bugs we found, why they happened and how we fixed them." },
+    { "page": "developer/Color-Theme-Bugs-We-Fixed.md", "summary": "The color theme bugs we found, why they happened and how we fixed them." },
     { "page": "developer/How-the-Connected-Diff-Works.md", "summary": "Side by side without padding: each side scrolls itself, bands join the changes." },
     { "page": "developer/Rounded-Panels-Bugs-We-Fixed.md", "summary": "The rounded panels bugs we found, why they happened and how we fixed them." },
     { "page": "developer/Update-Bugs-We-Fixed.md", "summary": "The update check and link bugs we found, why they happened and how we fixed them." },

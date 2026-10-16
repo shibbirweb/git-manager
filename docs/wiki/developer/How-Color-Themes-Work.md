@@ -115,4 +115,4 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 ## Bugs we fixed
 
-**Tag and attribute colors never showed.** Tags in HTML, XML, Vue and JSX had the type color (Monokai tags were cyan). `classHighlighter` has no class for `tagName` or `attributeName` and uses their parents, `typeName` and `propertyName`, so the `.tok-tagName` and `.tok-attributeName` rules never matched. A second highlighter for just those two (`editor/highlighter.ts`) now runs everywhere code is highlighted; it only adds classes, so nothing else changed.
+See [Color Theme Bugs We Fixed](Color-Theme-Bugs-We-Fixed.md).

@@ -2131,9 +2131,6 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const legible = (color: string, minimum: number) =>
     ensureContrast(ensureContrast(ensureContrast(color, panel, minimum), bg, minimum), frame, minimum);
   const accent = legible(spec.accent, high ? 4.5 : 3);
-  const accentText = ["#ffffff", dark ? editorBg : "#000000"].reduce((best, candidate) =>
-    contrastRatio(candidate, accent) > contrastRatio(best, accent) ? candidate : best,
-  );
   // Project tiles (Avatar.svelte) shade red, green, blue, magenta and cyan towards the terminal black, which is light in
   // some light themes: their letters take whichever of white and black reads better on the worst of the five.
   const tiles = [1, 2, 4, 5, 6].map((index) => mix(spec.ansi[index], spec.ansi[0], 0.28));
@@ -2142,6 +2139,11 @@ function deriveColors(kind: ThemeKind, spec: ThemeSpec): ThemeColors {
   const success = legible(ui.success ?? (dark ? brightGreen : green), high ? 4.5 : 3);
   const danger = legible(ui.danger ?? (dark ? brightRed : red), high ? 4.5 : 3);
   const warning = legible(ui.warning ?? (dark ? brightYellow : yellow), high ? 4.5 : 3);
+  // Mid blues score a little higher with black than with white, yet white reads better on them and is what the source
+  // apps use, so button text is white whenever it reaches 3:1 on the accent.
+  const darkText = dark ? editorBg : "#000000";
+  const whiteOnAccent = contrastRatio("#ffffff", accent);
+  const accentText = whiteOnAccent >= 3 || whiteOnAccent >= contrastRatio(darkText, accent) ? "#ffffff" : darkText;
   const info = ui.info ?? (dark ? brightBlue : blue);
   const textDim = legible(mix(text, panel, 0.35), textMinimum);
   const selection = composite(spec.selection, editorBg);
