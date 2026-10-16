@@ -2,7 +2,8 @@
      only while a bar is open, so it never scrolls away with the text), the body the editors go into and the handle
      between the sides. Labels, find bars and editors share `ratio`, so they stay lined up. With `ribbons` (side by
      side), each side scrolls itself and a MergeConnector between them joins every change's lines, with the apply
-     arrow on it when `onapply` is set; `ruler` leaves room for a change overview at the right. -->
+     arrow on it when `onapply` is set and a revert button when `onrevert` is; `ruler` leaves room for a change
+     overview at the right. -->
 <script module lang="ts">
   export interface DiffFrameParts {
     /** Where the editors go: a MergeView or one EditorView. The connector's ribbons are measured from its top. */
@@ -27,6 +28,8 @@
     applySide?: "left" | "right";
     onapply?: (index: number) => void;
     applyTitle?: string | null;
+    onrevert?: (index: number) => void;
+    revertTitle?: string | null;
     ruler?: boolean;
     ratio?: number;
     oncommitratio?: (ratio: number) => void;
@@ -42,6 +45,8 @@
     applySide = "left",
     onapply,
     applyTitle = null,
+    onrevert,
+    revertTitle = null,
     ruler = false,
     ratio = $bindable(0.5),
     oncommitratio,
@@ -91,7 +96,7 @@
   <div class="body" class:ruler class:connected bind:this={body} {oncontextmenu}>
     {#if connected && ribbons}
       <div class="connector" style:left="calc((100% - {gutter}px) * {ratio})">
-        <MergeConnector {ribbons} side={applySide} {onapply} {applyTitle} />
+        <MergeConnector {ribbons} side={applySide} {onapply} {applyTitle} {onrevert} {revertTitle} />
       </div>
     {/if}
     {#if layout === "split"}

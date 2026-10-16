@@ -81,6 +81,8 @@ export const surfaceDocs: ComponentDoc[] = [
       }),
       prop("onapply", "(index: number) => void", "Shows an arrow on each band, such as Stage this change."),
       prop("applyTitle", "string | null", "The arrow's tooltip.", { default: "null" }),
+      prop("onrevert", "(index: number) => void", "Shows a revert button on each band, such as Revert this change."),
+      prop("revertTitle", "string | null", "The revert button's tooltip.", { default: "null" }),
       prop("ruler", "boolean", "Room for a change overview ruler at the right of one editor.", { default: "false" }),
       prop("ratio", "number", "The split between the sides; drag the handle to change it.", {
         default: "0.5",
@@ -174,7 +176,7 @@ export const surfaceDocs: ComponentDoc[] = [
   {
     name: "MergeConnector",
     group: "Editor",
-    summary: "The column between two merge or diff panes: a ribbon per chunk and its apply and ignore buttons.",
+    summary: "The column between two merge or diff panes: a ribbon per chunk and its apply, ignore and revert buttons.",
     usage: "MergeFrame and DiffFrame draw this between their panes; use it alone only for a custom layout. Its " +
       "buttons stay inside the column while any of the chunk shows, and each shows only with its handler.",
     aliases: ["Ribbon", "Connector"],
@@ -184,7 +186,11 @@ export const surfaceDocs: ComponentDoc[] = [
       prop("side", '"left" | "right"', "Which pane the buttons apply from.", { required: true }),
       prop("onapply", "(index: number) => void", "Apply a chunk."),
       prop("onignore", "(index: number) => void", "Ignore a chunk."),
+      prop("onrevert", "(index: number) => void", "Revert a chunk in the buttons' own pane."),
       prop("applyTitle", "string | null", "The apply button's tooltip, such as Stage this change.", {
+        default: "null",
+      }),
+      prop("revertTitle", "string | null", "The revert button's tooltip, such as Revert this change.", {
         default: "null",
       }),
     ],

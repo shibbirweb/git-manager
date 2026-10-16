@@ -62,7 +62,7 @@ The editor is built from `baseExtensions` in `src/lib/editor/setup.ts` (the them
 - `changeMarkField`, `changeGutter` and `scrollMarkers` for the colored gutter bars and the overview ruler beside the scrollbar,
 - `blameExtension` for blame (see [How blame works](How-Blame-Works.md)).
 
-`changeMarks` in `src/lib/editor/lineDiff.ts` is a line-level Myers diff that reruns 200 ms after you stop typing; past `MAX_EDITS` (4000) it marks the whole range as one change. `markSource` lets conflict regions win over plain changes. **Previous** and **Next** (Shift+F7 and F7) use `sectionTarget` from `navigation.ts`, which wraps around.
+The backend's `line_change_marks` computes the marks 200 ms after you stop typing (`FileGitInfo`); `markSource` lets conflicts win over plain changes. A click on a bar reverts it ([How reverting a change works](How-Reverting-a-Change-Works.md)). **Previous** and **Next** (Shift+F7 and F7) use `sectionTarget` from `navigation.ts`, which wraps around.
 
 ### Saving and reverting
 

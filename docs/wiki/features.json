@@ -31,6 +31,7 @@
     { "page": "usage/Diffs.md", "summary": "Compare a file with its last commit side by side and stage single hunks." },
     { "page": "usage/Inline-Diffs.md", "summary": "Show a diff in one column, with removed lines above the new ones." },
     { "page": "usage/Staging-View.md", "summary": "HEAD, the index and the work tree in three panes; stage single changes." },
+    { "page": "usage/Revert-a-Change.md", "summary": "Throw away one change, from the Changes diff or a change bar in the editor." },
     { "page": "usage/Resolving-Conflicts.md", "summary": "What to do when a merge, rebase or cherry-pick stops on conflicts." },
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
@@ -327,6 +328,13 @@
       "usage": "usage/Staging-View.md",
       "developer": "developer/How-the-Staging-View-Works.md",
       "screenshots": ["diff-staging-view.png"]
+    },
+    {
+      "id": "revert-change",
+      "title": "Revert a change",
+      "usage": "usage/Revert-a-Change.md",
+      "developer": "developer/How-Reverting-a-Change-Works.md",
+      "screenshots": ["revert-change-diff.png", "revert-change-editor.png"]
     },
     {
       "id": "conflicts",

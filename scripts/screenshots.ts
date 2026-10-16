@@ -1758,6 +1758,38 @@ define("diff-hunk-staging", async (shot) => {
   await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
 });
 
+define("revert-change-diff", async (shot) => {
+  await collapseRepo(shot, "payments-api");
+  await shot.page.getByRole("button", { name: "Hide files" }).click();
+  await shot.page
+    .getByRole("group", { name: "storefront", exact: true })
+    .getByRole("region", { name: "Changes" })
+    .getByText("cart.ts")
+    .click();
+  const revert = shot.page.locator("[aria-label='Diff'] [title='Revert this change']").first();
+  await revert.waitFor();
+  await shot.settle(500);
+  await revert.hover();
+  await shot.settle();
+  const view = shot.page.getByRole("region", { name: "Diff", exact: true }).first();
+  const across = await shot.clipAround([view], 0);
+  const down = await shot.clipAround([view.locator(".toolbar"), revert], { bottom: 150 });
+  await shot.save({ x: across.x, width: across.width, y: down.y, height: down.height });
+});
+
+define(
+  "revert-change-editor",
+  async (shot) => {
+    await shot.openFile(cartTs());
+    const bar = shot.page.locator("main.main .cm-change-clickable .cm-change-bar").first();
+    await bar.waitFor();
+    await bar.hover();
+    await shot.settle();
+    await shot.save(shot.page.locator("main.main"));
+  },
+  () => ({ settings: { currentLineBlame: false } }),
+);
+
 define("diff-staging-view", async (shot) => {
   await collapseRepo(shot, "payments-api");
   await shot.page.getByRole("button", { name: "Hide files" }).click();

@@ -1,12 +1,13 @@
 // CodeMirror glue for the inline diff (the document and its logic live in inlineDoc.ts): line
 // colors by kind of change, changed words, the old and new number columns, a Stage or Unstage
-// button per change, and folded runs of unchanged lines.
+// button per change (with Revert next to Stage), and folded runs of unchanged lines.
 
 import { type EditorState, type Extension, type Range, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, GutterMarker, gutter } from "@codemirror/view";
 import { inlineFolds } from "./foldField";
 import { FOLD_MARGIN, FOLD_MIN_SIZE } from "./foldModel";
 import { collapsedRuns, type InlineBlock, type InlineDoc, inlineWordMarks } from "./inlineDoc";
+import type { IconName } from "@git-manager/ui/icons";
 import { revertButton } from "./mergeExtensions";
 
 export interface InlineViewOptions {
@@ -15,6 +16,8 @@ export interface InlineViewOptions {
   /** The button on each change: Stage (unstaged diff), Unstage (staged diff), or none. */
   control: "stage" | "unstage" | null;
   onControl: (block: InlineBlock) => void;
+  /** The Revert button on each change, after Stage; null for none. */
+  onRevert: ((block: InlineBlock) => void) | null;
 }
 
 type BlockKind = "added" | "deleted" | "modified";
@@ -97,49 +100,78 @@ function numberGutter(side: "old" | "new", doc: InlineDoc, kinds: readonly (Bloc
   });
 }
 
+/** A gutter button that runs on mousedown, like the side by side buttons, so the click never moves the cursor. */
+function controlButton(title: string, iconName: IconName, run: () => void): HTMLElement {
+  const button = revertButton(title, iconName);
+  button.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    run();
+  });
+  return button;
+}
+
 class ControlMarker extends GutterMarker {
   constructor(
     readonly block: InlineBlock,
     readonly control: "stage" | "unstage",
     readonly run: (block: InlineBlock) => void,
+    readonly revert: ((block: InlineBlock) => void) | null,
   ) {
     super();
   }
 
   eq(other: ControlMarker): boolean {
-    return other.block === this.block && other.control === this.control;
+    return other.block === this.block && other.control === this.control && other.revert === this.revert;
   }
 
   toDOM(): Node {
-    const button =
+    const box = document.createElement("span");
+    box.className = "diff-controls";
+    box.appendChild(
       this.control === "stage"
-        ? revertButton("Stage this change", "plus")
-        : revertButton("Unstage this change", "minus");
-    // Mousedown, like the side by side buttons, so the click never moves the cursor first.
-    button.addEventListener("mousedown", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      this.run(this.block);
-    });
-    return button;
+        ? controlButton("Stage this change", "plus", () => this.run(this.block))
+        : controlButton("Unstage this change", "minus", () => this.run(this.block)),
+    );
+    const revert = this.revert;
+    if (revert) {
+      const button = controlButton("Revert this change", "discard", () => revert(this.block));
+      button.classList.add("diff-revert-change");
+      box.appendChild(button);
+    }
+    return box;
   }
 }
 
 class SpacerMarker extends GutterMarker {
+  constructor(readonly count: number) {
+    super();
+  }
+
   toDOM(): Node {
-    const spacer = document.createElement("span");
-    spacer.className = "diff-revert-spacer";
-    return spacer;
+    const box = document.createElement("span");
+    box.className = "diff-controls";
+    for (let index = 0; index < this.count; index++) {
+      const spacer = document.createElement("span");
+      spacer.className = "diff-revert-spacer";
+      box.appendChild(spacer);
+    }
+    return box;
   }
 }
 
-function controlGutter(doc: InlineDoc, control: "stage" | "unstage", run: (block: InlineBlock) => void): Extension {
-  const byLine = new Map(doc.blocks.map((block) => [block.from, new ControlMarker(block, control, run)]));
+function controlGutter(
+  doc: InlineDoc,
+  control: "stage" | "unstage",
+  run: (block: InlineBlock) => void,
+  revert: ((block: InlineBlock) => void) | null,
+): Extension {
+  const byLine = new Map(doc.blocks.map((block) => [block.from, new ControlMarker(block, control, run, revert)]));
   return gutter({
     class: "cm-inlineControls",
     lineMarker: (view, line) => byLine.get(view.state.doc.lineAt(line.from).number - 1) ?? null,
     lineMarkerChange: () => false,
-    initialSpacer: () => new SpacerMarker(),
+    initialSpacer: () => new SpacerMarker(revert ? 2 : 1),
   });
 }
 
@@ -175,6 +207,10 @@ const inlineTheme = EditorView.theme({
     alignItems: "center",
     padding: "0 2px",
   },
+  ".cm-inlineControls .diff-controls": {
+    display: "inline-flex",
+    gap: "2px",
+  },
   ".cm-inlineControls .diff-revert, .cm-inlineControls .diff-revert-spacer": {
     display: "inline-flex",
     alignItems: "center",
@@ -194,6 +230,12 @@ const inlineTheme = EditorView.theme({
     background: "var(--hover)",
     color: "var(--accent-hover)",
   },
+  ".cm-inlineControls .diff-revert.diff-revert-change": {
+    color: "var(--text-dim)",
+  },
+  ".cm-inlineControls .diff-revert.diff-revert-change:hover": {
+    color: "var(--danger)",
+  },
   ".cm-inlineControls .diff-revert svg": {
     pointerEvents: "none",
   },
@@ -201,7 +243,7 @@ const inlineTheme = EditorView.theme({
 
 /** Everything the inline diff's editor needs on top of the read-only base. */
 export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
-  const { doc, collapse, control, onControl } = options;
+  const { doc, collapse, control, onControl, onRevert } = options;
   const kinds = lineKinds(doc);
   const decorations = StateField.define<DecorationSet>({
     create: (state) => changeDecorations(state, doc, kinds),
@@ -214,7 +256,7 @@ export function inlineDiffExtensions(options: InlineViewOptions): Extension[] {
     decorations,
     numberGutter("old", doc, kinds),
     numberGutter("new", doc, kinds),
-    control ? controlGutter(doc, control, onControl) : [],
+    control ? controlGutter(doc, control, onControl, control === "stage" ? onRevert : null) : [],
     collapse
       ? inlineFolds(collapsedRuns(doc, FOLD_MARGIN, FOLD_MIN_SIZE).map(([from, to]) => ({ first: from + 1, last: to })))
       : [],

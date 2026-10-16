@@ -1,6 +1,6 @@
 # MergeConnector
 
-The column between two merge or diff panes: a ribbon per chunk and its apply and ignore buttons.
+The column between two merge or diff panes: a ribbon per chunk and its apply, ignore and revert buttons.
 
 ```ts
 import MergeConnector from "@git-manager/ui/components/MergeConnector.svelte";
@@ -20,7 +20,9 @@ the column while any of the chunk shows, and each shows only with its handler.
 - `side` (`"left" | "right"`, required): Which pane the buttons apply from.
 - `onapply` (`(index: number) => void`): Apply a chunk.
 - `onignore` (`(index: number) => void`): Ignore a chunk.
+- `onrevert` (`(index: number) => void`): Revert a chunk in the buttons' own pane.
 - `applyTitle` (`string | null`, default `null`): The apply button's tooltip, such as Stage this change.
+- `revertTitle` (`string | null`, default `null`): The revert button's tooltip, such as Revert this change.
 
 ## Example: Between panes
 

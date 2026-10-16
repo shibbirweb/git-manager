@@ -191,6 +191,7 @@ const gutterTheme = EditorView.theme({
     borderLeft: "5px solid var(--danger)",
   },
   ".cm-change-bar-deleted.at-end": { top: "auto", bottom: "-4px" },
+  ".cm-change-clickable .cm-change-bar:not(.cm-change-bar-conflict)": { cursor: "pointer" },
 });
 
 /** Gutter markers for `marks` (0-based line ranges) in `doc`. */
@@ -250,8 +251,44 @@ export function gutterMarkerSource(source: MarkSource): {
   return { field, markers };
 }
 
-/** Colored bars beside the line numbers for each changed line. */
-export function changeGutter(source: MarkSource = fieldSource): Extension {
+/** The bar on the line starting at `position`, null for none. */
+function barAt(set: RangeSet<GutterMarker>, position: number): ChangeGutterMarker | null {
+  let found: ChangeGutterMarker | null = null;
+  set.between(position, position, (from, _to, marker) => {
+    if (from === position && marker instanceof ChangeGutterMarker) {
+      found = marker;
+      return false;
+    }
+  });
+  return found;
+}
+
+/**
+ * Colored bars beside the line numbers for each changed line. With `onBarClick`, a click on a change's bar
+ * (not a conflict's) calls it with the clicked 0-based line.
+ */
+export function changeGutter(source: MarkSource = fieldSource, onBarClick?: (line: number) => void): Extension {
   const { field, markers } = gutterMarkerSource(source);
-  return [field, gutter({ class: "cm-change-gutter", markers: (view) => markers(view.state) }), gutterTheme];
+  const clicks: Record<string, (view: EditorView, line: { from: number }, event: Event) => boolean> = onBarClick
+    ? {
+        mousedown: (view: EditorView, line: { from: number }, event: Event) => {
+          const bar = barAt(markers(view.state), line.from);
+          if (!bar || bar.kind === "conflict" || (event as MouseEvent).button !== 0) {
+            return false;
+          }
+          event.preventDefault();
+          onBarClick(view.state.doc.lineAt(line.from).number - 1);
+          return true;
+        },
+      }
+    : {};
+  return [
+    field,
+    gutter({
+      class: onBarClick ? "cm-change-gutter cm-change-clickable" : "cm-change-gutter",
+      markers: (view) => markers(view.state),
+      domEventHandlers: clicks,
+    }),
+    gutterTheme,
+  ];
 }

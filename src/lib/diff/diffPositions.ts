@@ -1,6 +1,6 @@
 // Lines and selections of the diff editors, for both layouts: the inline layout's text holds removed and added
 // lines, so its lines map to the new text through the InlineDoc.
-import type { Chunk } from "@codemirror/merge";
+import type { Chunk, MergeView } from "@codemirror/merge";
 import { EditorView } from "@codemirror/view";
 import type { ChangeMark } from "$lib/editor/lineDiff";
 import type { LineHunk, LineSelection } from "$lib/types";
@@ -13,6 +13,30 @@ export function revealNewLine(editor: EditorView, line: number, inlineDoc: Inlin
   const doc = editor.state.doc;
   const shown = inlineDoc ? docLineOf(inlineDoc, line) : line;
   const position = doc.line(Math.max(1, Math.min(shown + 1, doc.lines))).from;
+  editor.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
+}
+
+/** Puts the cursor on change `index` (on both sides, side by side) and scrolls it to the middle. */
+export function revealChange(
+  editor: EditorView | null,
+  view: MergeView | null,
+  inlineDoc: InlineDoc | null,
+  index: number,
+): void {
+  let position: number | null = null;
+  if (view) {
+    const chunk = view.chunks[index];
+    if (chunk) {
+      view.a.dispatch({ selection: { anchor: Math.min(chunk.fromA, view.a.state.doc.length) } });
+      position = Math.min(chunk.fromB, view.b.state.doc.length);
+    }
+  } else if (editor && inlineDoc?.blocks[index]) {
+    const doc = editor.state.doc;
+    position = doc.line(Math.min(inlineDoc.blocks[index].from + 1, doc.lines)).from;
+  }
+  if (!editor || position === null) {
+    return;
+  }
   editor.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
 }
 

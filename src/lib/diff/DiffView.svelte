@@ -48,9 +48,10 @@
     previewSides?: PreviewSides | null;
     /**
      * Stage, Unstage or Discard Selected Lines (the Changes diff): called with the changed
-     * lines the selection picks. Without it the diff offers no line actions.
+     * lines the selection picks. Without it the diff offers no line actions. A change's Revert
+     * button (unstaged only) calls it with discard, the change's lines and `wholeChange`.
      */
-    onLines?: ((action: LineAction, selection: LineSelection) => void) | null;
+    onLines?: ((action: LineAction, selection: LineSelection, wholeChange?: boolean) => void) | null;
     /** Offers the 3-pane layout in the toolbar (a merge commit's file, or the Changes diff's staging view). */
     onThreePanes?: (() => void) | null;
   }
@@ -84,6 +85,8 @@
   const fileName = $derived(path.split("/").pop() ?? path);
   /** Which line actions the diff offers: Stage and Discard (unstaged), Unstage (staged), or none. */
   const lineMode = $derived(onLines && textual && !identical && mode !== "readonly" ? mode : null);
+  /** Each unstaged change has a Revert button: its work tree lines go back to the staged version. */
+  const reverts = $derived(lineMode === "unstaged");
 
   // A reveal for the diff that is already on screen.
   $effect(() => {
@@ -121,7 +124,11 @@
     const layout = settings.diffLayout;
     const scrollKey = `${mode}:${collapse}:${layout}:${path}`;
     // Blame and the change callback are read when built, as before, without rebuilding when they change.
-    const { blameTarget, changed } = untrack(() => ({ blameTarget: blame, changed: onChange }));
+    const { blameTarget, changed, revert } = untrack(() => ({
+      blameTarget: blame,
+      changed: onChange,
+      revert: reverts ? revertChange : null,
+    }));
     void editors.build({
       parts: target,
       diff,
@@ -132,6 +139,7 @@
       scrollKey,
       blame: blameTarget,
       onChange: changed,
+      onRevert: revert,
     });
     return () => editors.teardown(scrollKey);
   });
@@ -143,6 +151,12 @@
       return;
     }
     onLines?.(action, selection);
+  }
+
+  function revertChange(selection: LineSelection | null): void {
+    if (selection && selectionSize(selection) > 0) {
+      onLines?.("discard", selection, true);
+    }
   }
 
   /** Opens the real file in an editor tab, at the same line when the right side is the work tree. */
@@ -198,6 +212,8 @@
       applySide={mode === "unstaged" ? "right" : "left"}
       onapply={mode === "readonly" || inline ? undefined : (index) => editors.copyChange(index)}
       applyTitle={mode === "unstaged" ? "Stage this change" : "Unstage this change"}
+      onrevert={reverts && !inline ? (index) => revertChange(editors.changeLines(index)) : undefined}
+      revertTitle="Revert this change"
       ruler
       bind:ratio={() => clampDiffSplit(settings.diffSplitRatio), (ratio) => (settings.diffSplitRatio = ratio)}
       oncommitratio={() => settings.save()}

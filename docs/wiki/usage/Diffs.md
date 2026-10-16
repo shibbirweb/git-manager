@@ -69,12 +69,12 @@ You do not have to stage a whole file. Each change (a "hunk", one block of chang
 
 *The diff toolbar at 1 of 2, and the first change with its « button on its band.*
 
-- In a diff from **Changes**, the button is **«** with the tooltip **Stage this change**. It copies that one change into the index.
-- In a diff from **Staged**, the button is **»**, **Unstage this change**. It takes that one change out of the index again.
+- In a diff from **Changes**, **«** (**Stage this change**) copies that one change into the index. The curved arrow next to it reverts the change ([Revert a Change](Revert-a-Change.md)).
+- In a diff from **Staged**, **»** (**Unstage this change**) takes that one change out of the index.
 
 Example: in `src/cart.ts` you fixed a bug and also added a debug log. Stage only the fix, commit it, and keep the log for later.
 
-After each click the lists in Changes update, so the file may appear in both Staged and Changes until every part is staged.
+The file may then appear in both Staged and Changes until every part is staged.
 
 ## Blame in a diff
 

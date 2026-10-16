@@ -181,7 +181,8 @@ class ChangesSelection {
    * Stage, Unstage or Discard Selected Lines from the Diff view. The backend builds and
    * applies the partial patch; Discard asks first and offers Undo for a while after.
    */
-  async applyLines(action: LineAction, lineSelection: LineSelection): Promise<void> {
+  /** `wholeChange`: a change's Revert button, so the confirm names the change rather than selected lines. */
+  async applyLines(action: LineAction, lineSelection: LineSelection, wholeChange = false): Promise<void> {
     const selection = this.selected;
     const currentDiff = this.diff;
     const file = selection ? findFile(this.sections(), selection) : null;
@@ -198,12 +199,23 @@ class ChangesSelection {
     }
     const count = selectionSize(lineSelection);
     if (action === "discard") {
-      const confirmed = await dialogs.confirm({
-        title: "Discard Selected Lines",
-        message: `Discard ${linesText(count)} in ${fileName}? The work tree goes back to the staged version of these lines.`,
-        confirmLabel: "Discard",
-        danger: true,
-      });
+      const confirmed = await dialogs.confirm(
+        wholeChange
+          ? {
+              title: "Revert Change",
+              message: `Revert this change in ${fileName}? Its lines go back to the staged version.`,
+              confirmLabel: "Revert",
+              danger: true,
+            }
+          : {
+              title: "Discard Selected Lines",
+              message:
+                `Discard ${linesText(count)} in ${fileName}? ` +
+                "The work tree goes back to the staged version of these lines.",
+              confirmLabel: "Discard",
+              danger: true,
+            },
+      );
       if (!confirmed) {
         return;
       }

@@ -128,7 +128,8 @@
       leftLabel={diffMode === "staged" ? "HEAD" : "Index"}
       rightLabel={diffMode === "staged" ? "Index (staged)" : "Working Tree"}
       onChange={(target, content) => changesSelection.applyDiffChange(target, content)}
-      onLines={(action, lineSelection) => void changesSelection.applyLines(action, lineSelection)}
+      onLines={(action, lineSelection, wholeChange) =>
+        void changesSelection.applyLines(action, lineSelection, wholeChange)}
       blame={{
         repoRoot: selected.repoRoot,
         filePath: selected.path,

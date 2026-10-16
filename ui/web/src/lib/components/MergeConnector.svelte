@@ -1,7 +1,7 @@
 <!-- The column between two merge or diff panes: a ribbon per chunk joining its lines on both sides, and the chunk's
-     buttons (apply its side's change, or ignore it) at its top, kept inside the column while any of the chunk shows.
-     Each button shows only with its handler, so a read-only diff draws ribbons alone. The app measures; this
-     draws. -->
+     buttons (apply its side's change, ignore it, or revert it in its own pane) at its top, kept inside the column
+     while any of the chunk shows. Each button shows only with its handler, so a read-only diff draws ribbons alone.
+     The app measures; this draws. -->
 <script lang="ts">
   import type { ChunkKind } from "../logic/mergeGeometry";
   import { ribbonPath } from "../logic/mergeGeometry";
@@ -24,10 +24,12 @@
     side: "left" | "right";
     onapply?: (index: number) => void;
     onignore?: (index: number) => void;
+    onrevert?: (index: number) => void;
     applyTitle?: string | null;
+    revertTitle?: string | null;
   }
 
-  let { ribbons, side, onapply, onignore, applyTitle = null }: Props = $props();
+  let { ribbons, side, onapply, onignore, onrevert, applyTitle = null, revertTitle = null }: Props = $props();
 
   const width = componentTokens.mergeView.gap;
   const { buttonHeight, buttonInset } = componentTokens.mergeView;
@@ -51,11 +53,11 @@
       />
     {/each}
   </svg>
-  {#if onapply || onignore}
+  {#if onapply || onignore || onrevert}
     {#each ribbons as ribbon (ribbon.index)}
       <!-- Apply sits next to its own pane: first on the left, last on the right. -->
       <div class="buttons {side}" style:top="{buttonTop(side === 'left' ? ribbon.aTop : ribbon.bTop)}px">
-        {#if side === "right"}{@render ignoreButton(ribbon.index)}{/if}
+        {#if side === "right"}{@render ignoreButton(ribbon.index)}{@render revertButton(ribbon.index)}{/if}
         {#if onapply}
           <button
             class="chunk-btn apply {ribbon.kind}"
@@ -66,7 +68,7 @@
             <Icon name={side === "left" ? "chevrons-right" : "chevrons-left"} size="compact" stroke="bold" />
           </button>
         {/if}
-        {#if side === "left"}{@render ignoreButton(ribbon.index)}{/if}
+        {#if side === "left"}{@render revertButton(ribbon.index)}{@render ignoreButton(ribbon.index)}{/if}
       </div>
     {/each}
   {/if}
@@ -76,6 +78,19 @@
   {#if onignore}
     <button class="chunk-btn ignore" type="button" title="Ignore {side} change" onclick={() => onignore(index)}>
       <Icon name="x" size="small" stroke="bold" />
+    </button>
+  {/if}
+{/snippet}
+
+{#snippet revertButton(index: number)}
+  {#if onrevert}
+    <button
+      class="chunk-btn revert"
+      type="button"
+      title={revertTitle ?? `Revert ${side} change`}
+      onclick={() => onrevert(index)}
+    >
+      <Icon name="discard" size="small" stroke="bold" />
     </button>
   {/if}
 {/snippet}
@@ -168,7 +183,8 @@
     color: var(--diff-conflict-edge);
   }
 
-  .chunk-btn.ignore:hover {
+  .chunk-btn.ignore:hover,
+  .chunk-btn.revert:hover {
     color: var(--danger);
   }
 </style>

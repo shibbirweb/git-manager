@@ -11,11 +11,12 @@ import { createStrip, jumpToLine, layoutTicks, renderTicks } from "$lib/editor/s
 import { baseExtensions, editorLanguage } from "$lib/editor/setup";
 import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
 import type { FileDiff, LineHunk, LineSelection } from "$lib/types";
-import { newLineOnScreen, revealNewLine, rulerMarks, selectedLines } from "./diffPositions";
+import { newLineOnScreen, revealChange, revealNewLine, rulerMarks, selectedLines } from "./diffPositions";
 import { inlineEditor, splitEditors } from "./diffViews";
 import type { InlineDoc } from "./inlineDoc";
 import { type DiffSide, selectionSize } from "./lineSelection";
 import { chunkKinds, diffTheme } from "./mergeExtensions";
+import { chunkSelection } from "./revertChange";
 import { SplitLink } from "./splitLink";
 
 export type DiffMode = "unstaged" | "staged" | "readonly";
@@ -32,6 +33,8 @@ export interface DiffBuild {
   scrollKey: string;
   /** Called with the full new text of the side a chunk control changed. */
   onChange?: (target: "original" | "modified", content: string) => void;
+  /** The inline layout's Revert button on each change, called with the change's lines; left out, none. */
+  onRevert?: ((selection: LineSelection) => void) | null;
 }
 
 export class DiffEditors {
@@ -260,23 +263,14 @@ export class DiffEditors {
   }
 
   #revealChange(index: number): void {
-    const editor = this.newEditor();
+    revealChange(this.newEditor(), this.#view, this.#inlineDoc, index);
+  }
+
+  /** The lines of the side by side change `index`, for its Revert button. */
+  changeLines(index: number): LineSelection | null {
     const view = this.#view;
-    let position: number | null = null;
-    if (view) {
-      const chunk = view.chunks[index];
-      if (chunk) {
-        view.a.dispatch({ selection: { anchor: Math.min(chunk.fromA, view.a.state.doc.length) } });
-        position = Math.min(chunk.fromB, view.b.state.doc.length);
-      }
-    } else if (editor && this.#inlineDoc?.blocks[index]) {
-      const doc = editor.state.doc;
-      position = doc.line(Math.min(this.#inlineDoc.blocks[index].from + 1, doc.lines)).from;
-    }
-    if (!editor || position === null) {
-      return;
-    }
-    editor.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: "center" }) });
+    const chunk = view?.chunks[index];
+    return view && chunk ? chunkSelection(chunk, view.a.state.doc, view.b.state.doc) : null;
   }
 
   /** The arrow on band `index`: stage or unstage that change. */

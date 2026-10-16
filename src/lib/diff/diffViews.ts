@@ -10,6 +10,7 @@ import { splitFolds } from "./foldField";
 import { hunkDiff, hunkRanges, SCAN_LIMIT } from "./hunkDiff";
 import { applyBlock, buildInlineDoc, fallbackHunks, type InlineDoc } from "./inlineDoc";
 import { inlineDiffExtensions } from "./inlineView";
+import { hunkSelection } from "./revertChange";
 import type { DiffSide } from "./lineSelection";
 import { unpadded } from "./splitLink";
 
@@ -48,6 +49,7 @@ export function inlineEditor(
             request.onChange?.(next.target, next.text);
           }
         },
+        onRevert: request.onRevert ? (block) => request.onRevert?.(hunkSelection(block.hunk)) : null,
       }),
     ],
   });

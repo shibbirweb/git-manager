@@ -1,6 +1,6 @@
 # How diffs work
 
-The diff view shows one file side by side: the old version on the left, the new one on the right. The Changes sidebar uses it to stage or unstage single hunks; the Log, commit tabs, the Git and branch compare tabs and the shelf use it read-only. The user side is in [Diffs](../usage/Diffs.md).
+The diff view shows one file side by side: the old version on the left, the new one on the right. The Changes sidebar uses it to stage, unstage or [revert](How-Reverting-a-Change-Works.md) single hunks; the Log, commit tabs, the Git and branch compare tabs and the shelf use it read-only. The user side is in [Diffs](../usage/Diffs.md).
 
 ## Why we need it
 

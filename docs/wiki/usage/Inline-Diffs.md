@@ -30,6 +30,8 @@ Everything else works as in the side by side layout: the Up and Down arrows (F7 
 
 In a diff from **Changes**, the first line of each change has a small **+** button between the line numbers and the code, **Stage this change**. In a diff from **Staged**, the button is **-**, **Unstage this change**. They do the same as the **«** and **»** buttons of the side by side layout (see [Diffs](Diffs.md#stage-or-unstage-one-change)).
 
+In a diff from **Changes**, the curved arrow after the **+** is **Revert this change**. See [Revert a Change](Revert-a-Change.md).
+
 **Stage Lines**, **Unstage Lines** and **Discard Lines** take exactly the lines you select: select only the new lines to add them while keeping the old ones, select only removed lines to remove just those, or both. With no selection, they take the line the cursor is on.
 
 ## Related

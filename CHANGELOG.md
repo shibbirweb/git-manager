@@ -13,6 +13,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Added
 
+- Revert one change, like PhpStorm and GitLens: in the Changes diff each change has a **Revert this change** button next to Stage (side by side and inline), which puts the staged version of its lines back in the working tree, with Undo. In the file editor, click a change bar beside the line numbers to put the last commit's lines back (an ordinary edit you can undo). Both ask first.
 - Two debugging tools for the MCP server and `git-manager cli`: `inspect_layout` lists what is scrolled and what reaches past the window, and `trace_scrolls` records every scroll with the code that made it.
 - Staging view, like PhpStorm: the **Three panes** button in the Changes diff shows a modified file as HEAD, the index and the working tree side by side, with bands for what is staged and what is not. The arrows on the bands stage or unstage single changes. Side by side and Inline go back to the usual diff; the choice is remembered. Settings > Git picks 2 or 3 columns for the Changes diff and for merge commits.
 - Terminal memory: the memory details in the status bar list each terminal, AI agent and Run script of the window with its memory (the shell and everything it started, such as Claude Code or a dev server), biggest first, with their sum. Click a row to show that terminal.

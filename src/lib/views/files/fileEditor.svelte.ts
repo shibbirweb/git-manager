@@ -211,7 +211,7 @@ export class FileEditor {
           conflictMarkers({ onOpenMergeTool: this.ctx.openMergeTool }),
           changeMarkField,
           blameExtension({ inline: settings.currentLineBlame, gutter: settings.blameGutter }),
-          changeGutter(this.markSource),
+          changeGutter(this.markSource, (line) => void this.git.revertChange(line)),
           scrollMarkers(this.markSource),
           this.saver.extension(),
         ],

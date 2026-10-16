@@ -27,3 +27,17 @@
     <CodeView source={lines} copy={false} />
   </Stack>
 </Card>
+<Card label="Stage and revert">
+  <Stack direction="row" align="stretch">
+    <CodeView source={lines} copy={false} />
+    <MergeConnector
+      side="right"
+      {ribbons}
+      applyTitle="Stage this change"
+      revertTitle="Revert this change"
+      onapply={(index) => (last = `Stage chunk ${index + 1}`)}
+      onrevert={(index) => (last = `Revert chunk ${index + 1}`)}
+    />
+    <CodeView source={lines} copy={false} />
+  </Stack>
+</Card>

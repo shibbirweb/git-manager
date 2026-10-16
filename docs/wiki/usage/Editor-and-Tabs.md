@@ -101,8 +101,8 @@ Saving is in the **File** menu:
 
 While you edit, Git Manager compares the text with the last commit:
 
-- A thin colored bar next to the line numbers marks added and modified lines. A small mark shows where lines were deleted.
-- The strip beside the scrollbar has a tick for every change and conflict, placed along the whole file. Click a tick to jump there. Hover it to see the kind of change and the line.
+- A thin colored bar next to the line numbers marks added and modified lines, a small mark deleted ones. Click a bar to [revert its change](Revert-a-Change.md).
+- The strip beside the scrollbar has a tick for every change and conflict. Click a tick to jump there. Hover it to see the kind of change and the line.
 - Conflict blocks are marked in their own color and win over plain changes.
 
 F7 and Shift+F7 (or the arrows in the path bar) move between these changes and conflicts.
