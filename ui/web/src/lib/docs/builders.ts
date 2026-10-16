@@ -35,6 +35,8 @@ export const builderDocs: ComponentDoc[] = [
       prop("mark", "boolean", "An accent stripe on its left edge, such as the active repository's header.", {
         default: "false",
       }),
+      prop("cursor", '"default" | "pointer"', "The hand cursor, for rows that open something like a link (the " +
+        "Welcome screen's projects).", { default: '"default"' }),
       prop("title", "string", "Tooltip, such as the full path."),
       prop("label", "string", "Accessible name, when the content alone does not say it."),
       prop("id", "string", "Its element id, so a list that keeps the focus elsewhere can point at it or scroll " +

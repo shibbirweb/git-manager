@@ -49,12 +49,12 @@
       <Text tone="dim" size="small">src/lib</Text>
     </Row>
   {/if}
-  <Text variant="sectionLabel">entry and large</Text>
+  <Text variant="sectionLabel">entry and large (the hand cursor)</Text>
   <Row size="entry" align="baseline" onclick={() => (pressed += 1)}>
     <Text mono size="compact" tabular>10:42</Text>
     <Text tone="warning" truncate>Before discard</Text>
   </Row>
-  <Row size="large" onclick={() => (pressed += 1)}>
+  <Row size="large" cursor="pointer" onclick={() => (pressed += 1)}>
     <Icon name="book" size="xlarge" />
     <Stack grow gap="xxs">
       <Text weight="semibold">Documentation</Text>

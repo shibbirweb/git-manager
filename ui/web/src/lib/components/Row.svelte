@@ -20,6 +20,8 @@
     line?: boolean;
     /** An accent stripe on its left edge, such as the active repository's header. */
     mark?: boolean;
+    /** The hand cursor, for rows that open something like a link (the Welcome screen's projects). */
+    cursor?: "default" | "pointer";
     title?: string;
     label?: string;
     /** Its element id, so a list that keeps the focus elsewhere can point at it or scroll to it. */
@@ -44,6 +46,7 @@
     actionsShown = "hover",
     line = false,
     mark = false,
+    cursor = "default",
     title,
     label,
     id,
@@ -82,6 +85,7 @@
 <div
   class="row {size}"
   class:interactive={inList || onclick !== undefined}
+  class:pointer={cursor === "pointer" && !disabled}
   class:selected
   class:disabled
   class:baseline={align === "baseline"}
@@ -201,6 +205,10 @@
 
   .interactive:hover {
     background: var(--hover);
+  }
+
+  .pointer {
+    cursor: pointer;
   }
 
   .row.selected,

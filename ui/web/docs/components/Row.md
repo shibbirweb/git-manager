@@ -28,6 +28,8 @@ keyboard and selection; alone, a Row with `onclick` is a button.
 - `actionsShown` (`"hover" | "always"`, default `"hover"`): Show `actions` only on hover and focus, or always.
 - `line` (`boolean`, default `false`): A line under the row, for rows in a ListBox (the last one has none).
 - `mark` (`boolean`, default `false`): An accent stripe on its left edge, such as the active repository's header.
+- `cursor` (`"default" | "pointer"`, default `"default"`): The hand cursor, for rows that open something like a link
+  (the Welcome screen's projects).
 - `title` (`string`): Tooltip, such as the full path.
 - `label` (`string`): Accessible name, when the content alone does not say it.
 - `id` (`string`): Its element id, so a list that keeps the focus elsewhere can point at it or scroll to it.

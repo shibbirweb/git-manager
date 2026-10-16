@@ -141,6 +141,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- The Welcome screen's recent projects show the hand cursor, like links.
 - With Rounded panels, a thin line separates the editor tabs from the code, like PhpStorm (it was invisible in dark themes).
 - Selected text looks like PhpStorm: soft rounded corners, and a soft gray in the Light and Islands Light themes instead of bright blue.
 - Folded unchanged lines in diffs look like PhpStorm's: a wavy line named after the code below it, such as **Cart > remove()** or **\\App\\Http\\Controllers\\Api > DistrictController > store()**, instead of a gray bar. The **10 lines** buttons show on hover. Merge commits' three panes fold too, all at once.

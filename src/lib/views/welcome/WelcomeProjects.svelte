@@ -195,6 +195,7 @@
         <Stack element="li">
           <Row
             size="large"
+            cursor="pointer"
             id={rowId(index)}
             selected={index === selected}
             actionsShown={index === selected ? "always" : "hover"}
