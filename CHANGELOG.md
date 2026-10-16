@@ -139,6 +139,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Merge commits in the Log list only the files changed on both sides, like PhpStorm: the files the merge combined or had conflicts in, the same as `git diff-tree -c --name-only`. **Show parents** lists the merge's changes to each parent instead, and each diff says which parent it compares with (**Parent 1** or **Parent 2**). A merge that took every file from one side says **No files changed on both sides**.
 - The Git dialogs (Push, Pull, Merge, Rebase, Reset, Rollback, Shelve, Clone, Remotes, Branches, New Worktree, New Task, Interactive Rebase and the GitHub dialogs) are built from the app's shared component library. Their widths snap to five standard sizes, and Shelve and Rollback list each file with its name, folder and change, like the Changes panel.
 - The rest of the window is built from the same component library: panels, tabs, the header, the status bar, menus, the terminal and the remaining dialogs. Reflog, File History, Line History and Compare with Current have a split you can drag between the list and the details, run tabs look like editor tabs, the Scripts play button sits at the end of a row on hover, and Shift-click selects a range of files in the Shelf.
 - Markdown Preview Only is now called Rich Editor, with an eye-and-pencil icon, in the path bar, View > Markdown and Settings > Editor > Markdown preview, since you can type in it.

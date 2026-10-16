@@ -482,24 +482,24 @@ fn diff_commit_file_sides() {
     let commit = repo.commit_all("second");
     let git_repo = repo.open();
 
-    let modified = diff::commit_file(&git_repo, &commit, "a.txt", None).unwrap();
+    let modified = diff::commit_file(&git_repo, &commit, "a.txt", None, 0).unwrap();
     assert_eq!((modified.original.as_str(), modified.modified.as_str()), ("one\n", "two\n"));
     assert_eq!((modified.original_eol, modified.modified_eol), (Eol::Lf, Eol::Crlf));
     assert!(!modified.binary && !modified.too_large);
 
-    let added = diff::commit_file(&git_repo, &commit, "new.txt", None).unwrap();
+    let added = diff::commit_file(&git_repo, &commit, "new.txt", None, 0).unwrap();
     assert_eq!((added.original.as_str(), added.modified.as_str()), ("", "new\n"));
 
-    let moved = diff::commit_file(&git_repo, &commit, "moved.txt", Some("old.txt")).unwrap();
+    let moved = diff::commit_file(&git_repo, &commit, "moved.txt", Some("old.txt"), 0).unwrap();
     assert_eq!(moved.original, moved.modified);
     assert!(moved.original.starts_with("renamed content line"));
 
-    let binary = diff::commit_file(&git_repo, &commit, "image.bin", None).unwrap();
+    let binary = diff::commit_file(&git_repo, &commit, "image.bin", None, 0).unwrap();
     assert!(binary.binary);
     assert!(binary.original.is_empty() && binary.modified.is_empty());
 
     let first = repo.rev_parse("HEAD~1");
-    let root_file = diff::commit_file(&git_repo, &first, "a.txt", None).unwrap();
+    let root_file = diff::commit_file(&git_repo, &first, "a.txt", None, 0).unwrap();
     assert_eq!((root_file.original.as_str(), root_file.modified.as_str()), ("", "one\n"));
 }
 

@@ -49,7 +49,7 @@ A few details keep it fast:
 - **Reloads keep your place.** When `repoStore.historyVersion` changes, the Log refetches as many commits as it had (up to 3000) and keeps the selection.
 - **Stale answers are dropped** through a `generation` number captured by every load.
 
-The filter searches loaded commits only (hash prefix, summary, author), and the graph collapses to one lane while filtering. Automatic paging pauses while filtering; a Load more button searches deeper. `CommitDetails.svelte` calls `getCommitDetails` (files changed against the first parent, with renames) and `getCommitFileDiff`.
+The filter searches loaded commits only (hash prefix, summary, author), and the graph collapses to one lane while filtering. Automatic paging pauses while filtering; a Load more button searches deeper. `CommitDetails.svelte` calls `getCommitDetails` (files per parent; see [How merge commits work](How-Merge-Commits-Work.md)) and `getCommitFileDiff`.
 
 ### Jumping to a commit from elsewhere
 

@@ -1535,6 +1535,20 @@ define(
 );
 
 define(
+  "merge-commit-files",
+  async (shot) => {
+    await shot.showLog();
+    await commitRow(shot, "Merge branch 'feature/checkout'").click();
+    const log = shot.page.getByRole("region", { name: "Log", exact: true });
+    await log.getByText("No files changed on both sides").waitFor();
+    await shot.settle(500);
+    await shot.page.mouse.move(640, 790);
+    await shot.save();
+  },
+  logScenario,
+);
+
+define(
   "commit-tab",
   async (shot) => {
     await shot.showLog();

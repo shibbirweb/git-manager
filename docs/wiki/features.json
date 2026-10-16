@@ -34,6 +34,7 @@
     { "page": "usage/Merge-Tool.md", "summary": "The three pane merge tool: take changes from either side and check the result." },
     { "page": "usage/Blame.md", "summary": "See who changed a line, when and why, and jump to that commit." },
     { "page": "usage/History-and-Log.md", "summary": "Browse the commit graph, read commits and undo or copy them." },
+    { "page": "usage/Merge-Commits.md", "summary": "See which files a merge combined, or its changes to each parent." },
     { "page": "usage/Branches-and-Tags.md", "summary": "Create, switch, merge, rebase, rename and delete branches, and browse tags." },
     { "page": "usage/Branches-Popup.md", "summary": "The JetBrains-style branch list: checkout, compare, update, push and merge any branch." },
     { "page": "usage/Remotes.md", "summary": "Fetch, pull and push, and what the ahead and behind numbers mean." },
@@ -344,6 +345,13 @@
       "usage": "usage/History-and-Log.md",
       "developer": "developer/How-the-Log-Works.md",
       "screenshots": ["log-graph.png", "commit-details.png", "log-context-menu.png"]
+    },
+    {
+      "id": "merge-commits",
+      "title": "Merge commits",
+      "usage": "usage/Merge-Commits.md",
+      "developer": "developer/How-Merge-Commits-Work.md",
+      "screenshots": ["merge-commit-files.png"]
     },
     {
       "id": "commit-tabs",

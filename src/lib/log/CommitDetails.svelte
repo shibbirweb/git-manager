@@ -3,23 +3,18 @@
   import { joinPath } from "$lib/stores/workspacePaths";
   import { errorMessage } from "$lib/api";
   import DiffView from "$lib/diff/DiffView.svelte";
-  import type { ChangedFile } from "$lib/types";
-  import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import Button from "@git-manager/ui/components/Button.svelte";
   import DescriptionList from "@git-manager/ui/components/DescriptionList.svelte";
   import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
   import IconButton from "@git-manager/ui/components/IconButton.svelte";
   import Link from "@git-manager/ui/components/Link.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
   import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
   import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusLetter from "@git-manager/ui/components/StatusLetter.svelte";
   import Text from "@git-manager/ui/components/Text.svelte";
   import { toast } from "$lib/ui/toast.svelte";
+  import CommitFileList from "./CommitFileList.svelte";
   import { CommitLoader } from "./commitLoader.svelte";
-  import { fileDir, fileName, fullDate } from "./format";
+  import { fullDate } from "./format";
   import { findLine } from "./lineMatch";
 
   interface Props {
@@ -58,10 +53,7 @@
   let width = $state(0);
 
   const current = $derived(details && details.id === commitId ? details : null);
-  const files = $derived(details?.files ?? []);
-  const selectedFile = $derived(
-    current ? ((current.files ?? []).find((file) => file.path === loader.selectedPath) ?? null) : null,
-  );
+  const selectedRow = $derived(current ? loader.selectedRow : null);
   /** The line of the diff on screen to scroll to, from `preferredFile`. */
   const revealLine = $derived.by(() => {
     const preferred = preferredFile;
@@ -69,7 +61,7 @@
     if (!preferred || !diff || preferred.commitId !== commitId || preferred.line === null) {
       return null;
     }
-    if (preferred.path !== diff.path && preferred.path !== selectedFile?.origPath) {
+    if (preferred.path !== diff.path && preferred.path !== selectedRow?.file.origPath) {
       return null;
     }
     return { line: findLine(diff.diff.modified, preferred.line, preferred.lineText ?? null), token: preferred.token };
@@ -100,23 +92,20 @@
     if (!preferred || !loaded || preferred.commitId !== loaded.id) {
       return;
     }
-    const match = loaded.files.find((file) => file.path === preferred.path || file.origPath === preferred.path);
-    if (match && match.path !== untrack(() => loader.selectedPath)) {
-      loader.selectedPath = match.path;
-    }
+    untrack(() => loader.selectPath(preferred.path));
   });
 
   $effect(() => {
     const ready = current !== null;
-    const file = selectedFile;
+    const row = selectedRow;
     if (!ready) {
       return;
     }
-    if (!file) {
+    if (!row) {
       loader.clearDiff();
       return;
     }
-    void loader.loadDiff(repoPath, commitId, file);
+    void loader.loadDiff(repoPath, commitId, row);
   });
 
   async function copyHash(): Promise<void> {
@@ -146,11 +135,6 @@
     }
     return items;
   });
-
-  function fileTitle(file: ChangedFile): string {
-    const path = file.origPath ? `${file.origPath} -> ${file.path}` : file.path;
-    return `${path}${onOpenInTab ? "\nDouble-click to open in a tab" : ""}`;
-  }
 
   const OPEN_TAB_TITLE =
     "Open this commit in an editor tab, with the diff in the whole editor area (or double-click the commit or a file)";
@@ -199,7 +183,12 @@
           <Text weight="semibold" selectable wrap="anywhere">{body.subject || "(no message)"}</Text>
         </Stack>
         {#if onOpenInTab}
-          <Button size="small" icon="commit" title={OPEN_TAB_TITLE} onclick={() => onOpenInTab?.(loader.selectedPath)}>
+          <Button
+            size="small"
+            icon="commit"
+            title={OPEN_TAB_TITLE}
+            onclick={() => onOpenInTab?.(selectedRow?.file.path ?? null)}
+          >
             Open in Tab
           </Button>
         {/if}
@@ -209,31 +198,14 @@
       {/if}
       <DescriptionList label="Commit" items={facts} value={fact} />
     </Stack>
-    <SectionTitle variant="caption" title={files.length === 1 ? "1 changed file" : `${files.length} changed files`} />
-    <List
-      items={files}
-      itemKey={(file) => file.path}
-      label="Changed files"
-      height="fill"
-      bind:selected={loader.selectedPath}
-      onactivate={(file) => onOpenInTab?.(file.path)}
-    >
-      {#snippet row(file, state)}
-        <Row selected={state.selected} title={fileTitle(file)} ondblclick={() => onOpenInTab?.(file.path)}>
-          <StatusLetter kind={file.status} />
-          <FileTypeIcon fileName={file.path} plain={false} />
-          <Text truncate strike={file.status === "deleted"} tone={file.status === "deleted" ? "dim" : undefined}>
-            {fileName(file.path)}
-          </Text>
-          <Text size="small" tone="dim" truncate>
-            {file.origPath ? `from ${fileName(file.origPath)} ` : ""}{fileDir(file.path)}
-          </Text>
-        </Row>
-      {/snippet}
-      {#snippet empty()}
-        <EmptyState variant="panel" title="No file changes" titleTone="dim" />
-      {/snippet}
-    </List>
+    <CommitFileList
+      {details}
+      rows={loader.rows}
+      view={loader.mergeView}
+      bind:selected={loader.selectedKey}
+      onview={(view) => loader.setMergeView(view)}
+      onopen={onOpenInTab}
+    />
   {/if}
 {/snippet}
 
@@ -254,7 +226,7 @@
           diff={shown.diff}
           path={shown.path}
           mode="readonly"
-          leftLabel="Parent"
+          leftLabel={shown.parentLabel}
           rightLabel={shown.label}
           blame={shown.diff.modified === ""
             ? null

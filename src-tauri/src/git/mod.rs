@@ -2,6 +2,7 @@ pub mod bisect;
 pub mod blame;
 pub mod cancel;
 pub mod cli;
+pub mod commit_files;
 pub mod compare;
 pub mod conflicts;
 pub mod diff;
@@ -23,5 +24,7 @@ pub mod workspace;
 pub mod worktree;
 pub mod worktree_prepare;
 
+#[cfg(test)]
+mod commit_files_tests;
 #[cfg(test)]
 mod tests;

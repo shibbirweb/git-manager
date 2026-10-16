@@ -267,7 +267,12 @@ export interface CommitDetails {
   committerName: string;
   committerTime: number;
   parents: string[];
+  /** Changes against the first parent. */
   files: ChangedFile[];
+  /** A merge's changes against its second and later parents; empty for other commits. */
+  laterParentFiles: ChangedFile[][];
+  /** A merge's files that differ from every parent: the ones the merge combined or resolved. */
+  mergedFiles: ChangedFile[];
 }
 
 export interface StashEntry {

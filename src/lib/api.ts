@@ -365,8 +365,14 @@ export const api = {
     invoke<LogPage>("get_log", { repoPath, offset, limit, allRefs, knownTips }),
   getCommitDetails: (repoPath: string, commitId: string) =>
     invoke<CommitDetails>("get_commit_details", { repoPath, commitId }),
-  getCommitFileDiff: (repoPath: string, commitId: string, filePath: string, origPath: string | null) =>
-    invoke<FileDiff>("get_commit_file_diff", { repoPath, commitId, filePath, origPath }),
+  /** A file of a commit against one of its parents: 0 is the first. */
+  getCommitFileDiff: (
+    repoPath: string,
+    commitId: string,
+    filePath: string,
+    origPath: string | null,
+    parentIndex: number,
+  ) => invoke<FileDiff>("get_commit_file_diff", { repoPath, commitId, filePath, origPath, parentIndex }),
   /** Blames the file at `revision`, or as it is on disk when null. */
   blameFile: (repoPath: string, filePath: string, revision: string | null) =>
     invoke<BlameInfo>("blame_file", { repoPath, filePath, revision }),

@@ -56,10 +56,11 @@ pub async fn get_commit_file_diff(
     commit_id: String,
     file_path: String,
     orig_path: Option<String>,
+    parent_index: Option<usize>,
 ) -> AppResult<FileDiff> {
     blocking(move || {
         let repo = git_repo::open(&repo_path)?;
-        diff::commit_file(&repo, &commit_id, &file_path, orig_path.as_deref())
+        diff::commit_file(&repo, &commit_id, &file_path, orig_path.as_deref(), parent_index.unwrap_or_default())
     })
     .await
 }
