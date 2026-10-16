@@ -1,11 +1,11 @@
-// Settings that open editors and other parts follow live, without a rebuild: the cursor, whitespace, word wrap,
-// syntax highlighting, indentation, editor features, file icons, custom keys, Unload hidden tabs and Do Not
-// Disturb. Called once from App.svelte while it initializes, so the effects live as long as the window.
+// Settings that open editors and other parts follow live, without a rebuild: the cursor, the font, whitespace,
+// word wrap, syntax highlighting, indentation, editor features, file icons, custom keys, Unload hidden tabs and Do
+// Not Disturb. Called once from App.svelte while it initializes, so the effects live as long as the window.
 import { untrack } from "svelte";
 import { runCommand, windowKeys } from "$lib/commands/commandRuntime";
 import { editorKeyPlan } from "$lib/commands/editorKeyPlan";
 import { setCommandKeys } from "$lib/editor/commandKeys";
-import { cursorOptions, setEditorCursor } from "$lib/editor/cursor";
+import { cursorOptions, remeasureEditors, setEditorCursor } from "$lib/editor/cursor";
 import { featureOptions } from "$lib/editor/featurePlan";
 import { setEditorFeatures } from "$lib/editor/features";
 import { setIndentation } from "$lib/editor/indentation";
@@ -32,6 +32,18 @@ export function followEditorSettings(): void {
   // And the cursor settings.
   $effect(() => {
     setEditorCursor(cursorOptions(settings));
+  });
+
+  // And the editor font: without a new measure, the selection, guides and inline blame stay where the old lines were.
+  $effect(() => {
+    void [
+      settings.editorFontSize,
+      settings.editorLineHeight,
+      settings.editorFontFamily,
+      settings.editorFontWeight,
+      settings.fontLigatures,
+    ];
+    remeasureEditors();
   });
 
   // And Unload hidden tabs: file tabs out of sight for a while give their editors back.

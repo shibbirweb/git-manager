@@ -51,7 +51,7 @@ sequenceDiagram
 
 - **Completion.** The language packages bring their own sources (JavaScript keywords and local names, CSS properties, HTML tags) through language data. A word source adds the words of the file through `completeAnyWord`, which scans near the cursor and caches per document. Words have no type, so a word that is also a keyword is listed once. In Markdown and plain text the word source only answers Ctrl+Space (`wordsWhileTyping`). Our keymap is CodeMirror's minus Option+backtick and Option+I, which type characters on a Mac, plus Tab to accept. The popup is themed with tokens and letter badges like JetBrains.
 - **Indent guides.** `guideLevels` counts the indent levels of the lines on screen; a blank line takes them from the code around it, like VS Code. `guideRuns` joins touching lines into one run per level, and each run is one `RectangleMarker` in a layer above the text. A wrapped line gets guides on its first row only, because CodeMirror starts the later rows at column 0.
-- **Margin line.** One marker at `column * defaultCharacterWidth` from the start of the text. `layerGeometry.ts` finds that start for both layers.
+- **Margin line.** One marker at `column * defaultCharacterWidth` from the start of the text, as tall as the drawn lines (`rulerSpan`), not the whole document. `layerGeometry.ts` finds that start for both layers.
 - **Word highlight off** keeps plain `highlightSelectionMatches()`, so a selection still marks its other matches, as before.
 - **Column selection.** Option+drag selects a rectangle. Option+Shift+click keeps adding a cursor through `clickAddsSelectionRange`, because the rectangle filter skips Shift.
 

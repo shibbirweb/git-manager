@@ -10,7 +10,7 @@ People come from VS Code, JetBrains and Sublime Text with strong habits about th
 
 CodeMirror's `drawSelection` draws each cursor as a `.cm-cursor` element inside the `.cm-cursorLayer`, positioned and sized inline by CodeMirror, and blinks the whole layer with its `cm-blink` animation. `cursor.ts` styles those elements instead of drawing its own.
 
-The selection is drawn like PhpStorm's: soft corners on the outside of the shape. CodeMirror draws a selection as up to three boxes (the first line, the full lines between, the last line). `drawRoundedSelection` in the UI library keeps `drawSelection` for the cursors, hides its boxes and draws the same boxes in its own layer, each with a class for every corner that sits on the outside. A corner is square when the box above or below carries on past it, so the joins have no notches. The radius is the `codeEditor.selectionRadius` design token, and the color is still the theme's `--editor-selection` (a soft gray in Light and Islands Light, like PhpStorm).
+The selection is drawn like PhpStorm's: soft corners on the outside of the shape. CodeMirror draws a selection as up to three boxes (the first line, the full lines between, the last line). `drawRoundedSelection` in the UI library keeps `drawSelection` for the cursors but swaps its selection layer for one of its own (same `cm-selectionLayer` class, so each editor still has one), which draws the same boxes, each with a class for every corner that sits on the outside. A corner is square when the box above or below carries on past it, so the joins have no notches. The radius is the `codeEditor.selectionRadius` design token, and the color is still the theme's `--editor-selection` (a soft gray in Light and Islands Light, like PhpStorm).
 
 ```mermaid
 flowchart LR
@@ -24,7 +24,7 @@ flowchart LR
 
 - **Shape.** Line styles use `border-left` (the width, or 1 px for Line thin) with a negative half-width margin so the line sits in the gap between characters. Block, Block outline and the underlines are one character wide, from `--gm-char-width`. A block is filled with the cursor color at 55%, so the character under it stays readable in every theme; Block outline uses an inset `outline` so the size does not change.
 - **Extra height.** CodeMirror sets the element's height inline. Padding on top and bottom, with `box-sizing: content-box`, makes the element taller than that height, and a negative top margin moves it up by the extra top. The border, fill or outline covers the padding.
-- **Blinking.** The theme turns the layer's animation off (`animation: none !important`, which beats CodeMirror's inline animation name) and animates each cursor with keyframes named after the mode. Blink is `steps(1)` over 1.2 s, CodeMirror's rate; Smooth, Phase and Expand use VS Code's frames over 0.6 s, alternating. Solid adds no animation.
+- **Blinking.** The theme turns the layer's animation off (`animation: none !important`, which beats CodeMirror's inline animation name) and animates each cursor with keyframes named after the mode. Blink is `steps(1)` over 1.2 s, CodeMirror's rate, and turns `visibility` off and on rather than `opacity`, which would give the cursor a GPU layer of its own; Smooth, Phase and Expand use VS Code's frames over 0.6 s, alternating. Solid adds no animation.
 - **Restart on move.** VS Code keeps the cursor visible while you type. Each mode has two identical keyframe copies, `-a` and `-b`. `cursorTracker` flips `data-gm-blink` on the scroller after every selection or document change, so the other copy starts from its first, visible frame.
 - **Character width.** `cursorTracker` writes `view.defaultCharacterWidth` to `--gm-char-width` on the scroller when the editor is created and when its geometry changes, for example after a font size change.
 - **Smooth caret.** A short `left` and `top` transition. CodeMirror reuses the cursor element when only its position changes, so the transition plays.
@@ -70,4 +70,7 @@ How the cursor looks needs a visual check in the app.
 
 ## Bugs we fixed
 
-None yet.
+**The selection and the inline blame floated after a font size change.**
+- **The issue:** with text selected, Zoom In or Zoom Out (or a font setting) moved the text, but the selection and the inline blame stayed where the old lines were, above or below their line.
+- **Why it happened:** font settings are CSS variables on the page. CodeMirror measures line heights only after its own updates or when the editor box resizes, and a new font size changes neither, so every layer kept the old positions until the next scroll.
+- **The fix and why we chose it:** `remeasureEditors` (in `cursor.ts`, which already keeps the set of open editors) asks each one to measure again, from an effect in `editorSettingsSync.svelte.ts` that follows the font size, line spacing, font, weight and ligatures. One measure per editor per change, instead of watching every editor's size all the time.

@@ -65,6 +65,8 @@ describe("cursorThemeSpec", () => {
     const spec = cursorThemeSpec(base);
     expect(spec["&.cm-focused > .cm-scroller > .cm-cursorLayer"]).toEqual({ animation: "none !important" });
     expect(spec["@keyframes gm-cursor-blink-a"]).toEqual(spec["@keyframes gm-cursor-blink-b"]);
+    // Visibility, not opacity: an opacity animation makes the cursor a GPU layer.
+    expect(spec["@keyframes gm-cursor-blink-a"]["50%"]).toEqual({ visibility: "hidden" });
     expect(spec[`& .cm-scroller[data-gm-blink="a"] ${CURSOR}`].animation).toBe(
       `gm-cursor-blink-a ${BLINK_MS}ms steps(1) infinite`,
     );

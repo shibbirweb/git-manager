@@ -90,8 +90,9 @@ const BLINKS: Record<
   Exclude<EditorCursorBlinking, "solid">,
   { frames: Record<string, Declarations>; timing: string }
 > = {
+  // On and off with visibility: an opacity animation would make the cursor a GPU layer of its own.
   blink: {
-    frames: { "0%": {}, "50%": { opacity: "0" }, "100%": {} },
+    frames: { "0%": {}, "50%": { visibility: "hidden" }, "100%": {} },
     timing: `${BLINK_MS}ms steps(1) infinite`,
   },
   smooth: {
@@ -198,6 +199,13 @@ const registry = ViewPlugin.define((view) => {
 /** The cursor extension for a new editor. */
 export function editorCursor(options: CursorOptions): Extension {
   return [registry, cursorTracker, compartment.of(themeFor(options))];
+}
+
+/** Makes every open editor measure again: CodeMirror does not notice a font change made through CSS variables. */
+export function remeasureEditors(): void {
+  for (const view of views) {
+    view.requestMeasure();
+  }
 }
 
 /** Applies new cursor options to every open editor. */

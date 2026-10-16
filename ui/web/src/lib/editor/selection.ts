@@ -55,9 +55,14 @@ export function outerCorners(boxes: readonly SelectionBox[]): Corner[][] {
   });
 }
 
+// drawSelection's parts: its config, the cursor layer, the selection layer, the theme that hides the browser's
+// selection and the facet saying it is hidden. Ours takes the selection layer's place (and its class), so an editor
+// still has one selection layer; selection.test.ts checks the order still holds after a CodeMirror update.
+const SELECTION_LAYER = 2;
+
 const roundedLayer = layer({
   above: false,
-  class: "cm-roundedSelectionLayer",
+  class: "cm-selectionLayer",
   markers(view) {
     return view.state.selection.ranges.flatMap((range) => {
       if (range.empty) {
@@ -85,15 +90,14 @@ const roundedLayer = layer({
 const radius = "var(--code-editor-selection-radius, 3px)";
 
 const roundedTheme = EditorView.baseTheme({
-  // drawSelection still draws the cursors and hides the browser's selection; its own boxes give way to ours.
-  ".cm-selectionLayer": { display: "none" },
-  ".cm-roundedSelectionLayer .cm-round-tl": { borderTopLeftRadius: radius },
-  ".cm-roundedSelectionLayer .cm-round-tr": { borderTopRightRadius: radius },
-  ".cm-roundedSelectionLayer .cm-round-bl": { borderBottomLeftRadius: radius },
-  ".cm-roundedSelectionLayer .cm-round-br": { borderBottomRightRadius: radius },
+  ".cm-selectionLayer .cm-round-tl": { borderTopLeftRadius: radius },
+  ".cm-selectionLayer .cm-round-tr": { borderTopRightRadius: radius },
+  ".cm-selectionLayer .cm-round-bl": { borderBottomLeftRadius: radius },
+  ".cm-selectionLayer .cm-round-br": { borderBottomRightRadius: radius },
 });
 
 /** drawSelection with rounded outer corners; the color still comes from the theme's .cm-selectionBackground. */
 export function drawRoundedSelection(): Extension {
-  return [drawSelection(), roundedLayer, roundedTheme];
+  const parts = drawSelection() as readonly Extension[];
+  return [...parts.filter((_, index) => index !== SELECTION_LAYER), roundedLayer, roundedTheme];
 }

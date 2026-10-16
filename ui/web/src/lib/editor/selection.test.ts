@@ -1,5 +1,8 @@
+// @vitest-environment happy-dom
+import { EditorSelection, EditorState } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import { describe, expect, it } from "vitest";
-import { outerCorners, type SelectionBox } from "./selection";
+import { drawRoundedSelection, outerCorners, type SelectionBox } from "./selection";
 
 const box = (left: number, top: number, width: number, height = 20): SelectionBox => ({ left, top, width, height });
 
@@ -44,5 +47,22 @@ describe("outerCorners", () => {
       ["tl", "tr"],
       ["bl", "br"],
     ]);
+  });
+});
+
+describe("drawRoundedSelection", () => {
+  it("gives an editor one cursor layer and one selection layer (ours, in place of CodeMirror's)", () => {
+    const view = new EditorView({
+      parent: document.body,
+      state: EditorState.create({
+        doc: "one two\nthree",
+        selection: EditorSelection.range(0, 3),
+        extensions: [drawRoundedSelection()],
+      }),
+    });
+    expect(view.dom.querySelectorAll(".cm-cursorLayer")).toHaveLength(1);
+    expect(view.dom.querySelectorAll(".cm-selectionLayer")).toHaveLength(1);
+    expect(view.dom.querySelectorAll(".cm-layer")).toHaveLength(2);
+    view.destroy();
   });
 });
