@@ -33,6 +33,14 @@ export const DIFF_LAYOUT_CHOICES: { value: DiffLayout; label: string }[] = [
 ];
 const DIFF_LAYOUTS = DIFF_LAYOUT_CHOICES.map((choice) => choice.value);
 
+/** How many panes a side by side diff uses where a third version exists (the index, or a merge's second parent). */
+export type DiffPanes = "two" | "three";
+export const DIFF_PANES_CHOICES: { value: DiffPanes; label: string }[] = [
+  { value: "two", label: "2 columns" },
+  { value: "three", label: "3 columns" },
+];
+const DIFF_PANES = DIFF_PANES_CHOICES.map((choice) => choice.value);
+
 /** Where the Changes view puts its commit box: one at the bottom (JetBrains), or one per repository (VS Code). */
 export type CommitBoxLayout = "single" | "perRepo";
 export const COMMIT_BOX_LAYOUT_CHOICES: { value: CommitBoxLayout; label: string }[] = [
@@ -391,6 +399,10 @@ export interface Preferences {
   ignoreWhitespace: boolean;
   /** Every diff side by side or inline; Settings > Git and the diff toolbar both set it. */
   diffLayout: DiffLayout;
+  /** The Changes diff: HEAD and the work tree, or HEAD, the index and the work tree. */
+  changesDiffPanes: DiffPanes;
+  /** A merge commit's file changed on both sides: one parent against the result, or both parents around it. */
+  mergeDiffPanes: DiffPanes;
   logAllRefs: boolean;
   /** Fetch every remote in the background while the window is in use. */
   autoFetch: boolean;
@@ -589,6 +601,8 @@ export const defaultPreferences: Preferences = {
   updateChannel: "auto",
   ignoreWhitespace: false,
   diffLayout: "sideBySide",
+  changesDiffPanes: "two",
+  mergeDiffPanes: "three",
   logAllRefs: true,
   autoFetch: true,
   autoFetchIntervalMinutes: DEFAULT_AUTO_FETCH_MINUTES,
@@ -1008,6 +1022,8 @@ export function parsePreferences(value: unknown): { preferences: Preferences; ex
       channel === "stable" || channel === "beta" || channel === "auto" ? channel : defaultPreferences.updateChannel,
     ignoreWhitespace: pickBoolean(data.ignoreWhitespace, defaultPreferences.ignoreWhitespace),
     diffLayout: pickOneOf(data.diffLayout, DIFF_LAYOUTS, defaultPreferences.diffLayout),
+    changesDiffPanes: pickOneOf(data.changesDiffPanes, DIFF_PANES, defaultPreferences.changesDiffPanes),
+    mergeDiffPanes: pickOneOf(data.mergeDiffPanes, DIFF_PANES, defaultPreferences.mergeDiffPanes),
     logAllRefs: pickBoolean(data.logAllRefs, defaultPreferences.logAllRefs),
     autoFetch: pickBoolean(data.autoFetch, defaultPreferences.autoFetch),
     autoFetchIntervalMinutes: pickInteger(

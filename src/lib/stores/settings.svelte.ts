@@ -42,6 +42,7 @@ import {
   type ComputerAwakeMode,
   type ConfigName,
   type DiffLayout,
+  type DiffPanes,
   type Json,
   type LeftPanel,
   type LoadErrors,
@@ -90,6 +91,7 @@ export {
   CARET_EXTRA_RANGE,
   COMMIT_BOX_LAYOUT_CHOICES,
   DIFF_LAYOUT_CHOICES,
+  DIFF_PANES_CHOICES,
   EDITOR_CURSOR_BLINKING_CHOICES,
   EDITOR_CURSOR_STYLE_CHOICES,
   EDITOR_CURSOR_WIDTH_RANGE,
@@ -125,6 +127,7 @@ export type {
   AutoSaveMode,
   CommitBoxLayout,
   DiffLayout,
+  DiffPanes,
   EditorCursorBlinking,
   EditorCursorStyle,
   LeftPanel,
@@ -214,6 +217,8 @@ class SettingsStore {
   updateChannel = $state<UpdateChannelSetting>(initialPreferences.updateChannel);
   ignoreWhitespace = $state(initialPreferences.ignoreWhitespace);
   diffLayout = $state<DiffLayout>(initialPreferences.diffLayout);
+  changesDiffPanes = $state<DiffPanes>(initialPreferences.changesDiffPanes);
+  mergeDiffPanes = $state<DiffPanes>(initialPreferences.mergeDiffPanes);
   logAllRefs = $state(initialPreferences.logAllRefs);
   autoFetch = $state(initialPreferences.autoFetch);
   autoFetchIntervalMinutes = $state(initialPreferences.autoFetchIntervalMinutes);
@@ -473,6 +478,8 @@ class SettingsStore {
       updateChannel: this.updateChannel,
       ignoreWhitespace: this.ignoreWhitespace,
       diffLayout: this.diffLayout,
+      changesDiffPanes: this.changesDiffPanes,
+      mergeDiffPanes: this.mergeDiffPanes,
       logAllRefs: this.logAllRefs,
       autoFetch: this.autoFetch,
       autoFetchIntervalMinutes: this.autoFetchIntervalMinutes,

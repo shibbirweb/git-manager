@@ -8,7 +8,7 @@ The two-pane diff shows either the staged or the unstaged half of a file, so a f
 
 ## How it works
 
-`ChangesDiff.svelte` shows `ThreePaneDiff.svelte` when `diffPrefs.stagingThreePanes` is on and `stagingViewFits` says the file is a plain modified file (not new, deleted, renamed, untracked or conflicted). `StagingDiffs` (`views/changes/stagingDiffs.svelte.ts`) loads both diffs:
+`ChangesDiff.svelte` shows `ThreePaneDiff.svelte` when Diff layout is side by side, `settings.changesDiffPanes` is `"three"` and `stagingViewFits` says the file is a plain modified file (not new, deleted, renamed, untracked or conflicted). `StagingDiffs` (`views/changes/stagingDiffs.svelte.ts`) loads both diffs:
 
 ```mermaid
 flowchart LR
@@ -37,6 +37,7 @@ The layout buttons come from `DiffToolbar`'s `onthreepanes` (two panes to three)
 ## Design decisions
 
 - **Off by default.** The two-pane diff stays the Changes default; the choice is remembered once made.
+- **A setting, not browser storage.** The pane counts are preferences in `settings.json` (`changesDiffPanes`, `mergeDiffPanes`), so Settings > Git can show them and they move with the settings file. Three columns show only while Diff layout is side by side; the toolbar's Side by side button means 2 columns (`diff/diffPanes.ts`). The old `localStorage` flags are not read back, so a changed choice starts at the default once.
 - **Plain modified files only.** A new or deleted file has an empty side, and a rename has two paths; the two-pane diff shows them better.
 
 ## Tests

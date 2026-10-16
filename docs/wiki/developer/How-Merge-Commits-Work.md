@@ -33,7 +33,7 @@ On the page, `src/lib/log/commitFiles.ts` turns the details into rows. `commitFi
 
 ### The 3-pane diff
 
-A file of the `merged` view also loads its diff against parent 2 (`CommitLoader.loadDiff`, with that parent's own rename source from `laterParentFiles`). When both diffs are text and `diffPrefs.threePanes` is on (the toolbars' **Three panes** button, saved with the other diff preferences), `CommitDetails` shows `ThreePaneDiff.svelte` instead of `DiffView`: the library's `MergeFrame` with three read-only editors built by `ThreeWayEditors` (`diff/threeWayEditors.svelte.ts`).
+A file of the `merged` view also loads its diff against parent 2 (`CommitLoader.loadDiff`, with that parent's own rename source from `laterParentFiles`). When both diffs are text Diff layout is side by side and `settings.mergeDiffPanes` is `"three"` (Settings > Git, or the toolbars' **Three panes** button through `diff/diffPanes.ts`), `CommitDetails` shows `ThreePaneDiff.svelte` instead of `DiffView`: the library's `MergeFrame` with three read-only editors built by `ThreeWayEditors` (`diff/threeWayEditors.svelte.ts`).
 
 The pure parts are in `diff/threeWay.ts`. Each parent's backend hunks against the result become `ThreeWayChange`s; a change whose result lines touch the other parent's changes is a `conflict`. `resultMarks` merges both parents' result ranges for the middle pane, `parentMarks` adds the changed words, and `parentAnchors` maps each parent's lines to the result's. The result is the hub for scrolling: a scrolled pane's center line is mapped to the result, then to the other parent, with the merge tool's `mapLine`, `lineAtCenter` and `scrollToLine`. The bands come from the merge tool's `span`, and `MergeFrame` draws them without buttons when it gets no `onapply`.
 

@@ -237,6 +237,11 @@ describe("parsePreferences", () => {
     expect(parsePreferences({}).preferences.diffLayout).toBe("sideBySide");
     expect(parsePreferences({ diffLayout: "inline" }).preferences.diffLayout).toBe("inline");
     expect(parsePreferences({ diffLayout: "unified" }).preferences.diffLayout).toBe("sideBySide");
+    expect(parsePreferences({}).preferences.changesDiffPanes).toBe("two");
+    expect(parsePreferences({}).preferences.mergeDiffPanes).toBe("three");
+    expect(parsePreferences({ changesDiffPanes: "three" }).preferences.changesDiffPanes).toBe("three");
+    expect(parsePreferences({ mergeDiffPanes: 3 }).preferences.mergeDiffPanes).toBe("three");
+    expect(parsePreferences({ mergeDiffPanes: "two" }).preferences.mergeDiffPanes).toBe("two");
   });
 
   it("validates the commit box layout", () => {

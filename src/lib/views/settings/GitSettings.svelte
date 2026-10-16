@@ -7,6 +7,7 @@
     COMMIT_BOX_LAYOUT_CHOICES,
     defaultPreferences,
     DIFF_LAYOUT_CHOICES,
+    DIFF_PANES_CHOICES,
     settings,
   } from "$lib/stores/settings.svelte";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
@@ -60,14 +61,38 @@
 
 <SettingsRow title="Diff layout">
   {#snippet hintContent()}
-    Show every diff side by side, or inline in one column with removed lines above the lines that replace them. The two
-    buttons in the diff toolbar change this setting too.
+    Show every diff side by side, or inline in one column with removed lines above the lines that replace them. The
+    layout buttons in the diff toolbar change these settings too.
   {/snippet}
   <Segmented
     label="Diff layout"
     options={DIFF_LAYOUT_CHOICES}
     value={settings.diffLayout}
     onchange={(layout) => set("diffLayout", layout)}
+  />
+</SettingsRow>
+<SettingsRow title="Side by side in Changes" nested>
+  {#snippet hintContent()}
+    2 columns show HEAD and your file. 3 columns put the staged version between them, so you can stage or unstage
+    changes from either side.
+  {/snippet}
+  <Segmented
+    label="Side by side in Changes"
+    options={DIFF_PANES_CHOICES}
+    value={settings.changesDiffPanes}
+    onchange={(panes) => set("changesDiffPanes", panes)}
+  />
+</SettingsRow>
+<SettingsRow title="Side by side for merge commits" nested>
+  {#snippet hintContent()}
+    For a file changed on both sides of a merge: 2 columns show one parent and the result, 3 columns show parent 1, the
+    result and parent 2.
+  {/snippet}
+  <Segmented
+    label="Side by side for merge commits"
+    options={DIFF_PANES_CHOICES}
+    value={settings.mergeDiffPanes}
+    onchange={(panes) => set("mergeDiffPanes", panes)}
   />
 </SettingsRow>
 <SettingsRow title="Ignore whitespace in the merge tool" toggle>

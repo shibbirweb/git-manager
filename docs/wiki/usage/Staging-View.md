@@ -8,7 +8,7 @@ The staging view shows a changed file in three panes, like PhpStorm: **HEAD** (t
 
 ## Turn it on
 
-Open a file from [Changes](Changes-and-Commits.md), then click the **Three panes** button among the layout buttons of the diff toolbar. Click **Side by side** or **Inline** to go back to the usual two-pane diff. Git Manager remembers your choice for the next file.
+Open a file from [Changes](Changes-and-Commits.md), then click the **Three panes** button among the layout buttons of the diff toolbar. Click **Side by side** or **Inline** to go back to the usual two-pane diff. Git Manager remembers your choice for the next file. You can also pick it in Settings > Git: **Side by side in Changes** is **2 columns** or **3 columns**.
 
 The staging view is offered for files that are modified, in the index, the working tree or both. New, deleted, renamed, conflicted and binary files keep the two-pane diff.
 

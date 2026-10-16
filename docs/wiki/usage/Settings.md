@@ -81,12 +81,13 @@ Type a font list and press Enter, or click a font name below it. **Reset** goes 
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Diff layout | Every diff **Side by side** or **Inline** ([Inline Diffs](Inline-Diffs.md)); the diff toolbar's buttons set it too. | Side by side |
+| Side by side in Changes, for merge commits | **3 columns** add the index ([Staging View](Staging-View.md)) or the second parent. | 2, 3 |
 | Ignore whitespace in the merge tool | Hides whitespace-only differences when a merge starts; the [Merge Tool](Merge-Tool.md) button sets it too. | Off |
 | Show all branches in the log | Includes every local and remote branch in the [Log](History-and-Log.md). | On |
 | Sign off commits | Adds a `Signed-off-by` line to every commit (`--signoff`). Also in [Commit Options](Commit-Options.md). | Off |
 | Commit box | **Single** or **Per repository** ([Commit Box Layout](Commit-Box-Layout.md)). | Single |
 | GPG sign commits | **Default** follows git's `commit.gpgSign`, **Sign** adds `-S`, **Do not sign** adds `--no-gpg-sign`. | Default |
-| Git Console | Lists the git commands the app runs in a **Git Console** tab next to Terminal; off, nothing is recorded ([Git Console](Git-Console.md)). | Off |
+| Git Console | Lists the git commands the app runs in a tab next to Terminal; off, nothing is recorded ([Git Console](Git-Console.md)). | Off |
 
 **Git > Update Project...** remembers merge or rebase (`updateMethod`, default merge); see [Git Dialogs](Git-Dialogs.md#update-project).
 
@@ -102,7 +103,7 @@ Type a font list and press Enter, or click a font name below it. **Reset** goes 
 | Confirm drag and drop | Asks before a drag in the Files panel moves files (see [File Operations](File-Operations.md)). | On |
 | Left sidebar | **Changes**, **Branches** or **Hidden** (also Option+Cmd+B and the activity bar). | Changes |
 
-The two header buttons left of the sun and the gear show or hide the **activity bars**, the icon strips at the window edges (also **View > Left Activity Bar** and **Right Activity Bar**). Drag a panel's edge to resize it; double-click the edge to reset it. All of this is saved in `state.json`, except **Confirm drag and drop**, which is in `settings.json`.
+Two header buttons show or hide the **activity bars**, the icon strips at the window edges (also in the **View** menu). Drag a panel's edge to resize it; double-click to reset. All this is saved in `state.json`, but **Confirm drag and drop** is in `settings.json`.
 
 ## Terminal, GitHub and Automation
 

@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { PreviewSides } from "$lib/diff/binaryPreview";
   import DiffView from "$lib/diff/DiffView.svelte";
-  import { diffPrefs } from "$lib/diff/prefs.svelte";
+  import { setDiffLayout, showThreeColumns } from "$lib/diff/diffPanes";
   import ThreePaneDiff from "$lib/diff/ThreePaneDiff.svelte";
   import { joinPath } from "$lib/stores/workspacePaths";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -44,10 +44,11 @@
   const diffMode = $derived(selected?.area === "staged" ? "staged" : "unstaged");
   const panelHidden = $derived(settings.leftPanel !== "changes");
 
-  // The staging view: HEAD | the index | the work tree, for a plain modified file, while it is turned on.
+  // The staging view: HEAD | the index | the work tree, for a plain modified file, when side by side uses 3 columns.
   const staging = new StagingDiffs();
   const stagingFits = $derived(selected ? stagingViewFits(findFile(sections, selected)) : false);
-  const stagingOn = $derived(Boolean(selected) && stagingFits && diffPrefs.stagingThreePanes);
+  const threeColumns = $derived(settings.diffLayout === "sideBySide" && settings.changesDiffPanes === "three");
+  const stagingOn = $derived(Boolean(selected) && stagingFits && threeColumns);
   const stagingKey = $derived(selected ? `${selected.repoRoot}\u0000${selected.path}` : null);
   $effect(() => {
     const current = selected;
@@ -115,10 +116,7 @@
             middle,
             side === "right" ? "Stage change" : "Unstage change",
           )}
-        onlayout={(layout) => {
-          settings.setPreference("diffLayout", layout);
-          diffPrefs.setStagingThreePanes(false);
-        }}
+        onlayout={(layout) => setDiffLayout("changesDiffPanes", layout)}
         workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: true }}
       />
     {/key}
@@ -146,7 +144,7 @@
       revealLine={reveal}
       workingFile={{ filePath: joinPath(selected.repoRoot, selected.path), sameLines: diffMode !== "staged" }}
       {previewSides}
-      onThreePanes={stagingFits ? () => diffPrefs.setStagingThreePanes(true) : null}
+      onThreePanes={stagingFits ? () => showThreeColumns("changesDiffPanes") : null}
     />
   {:else if selected && changesSelection.diffError}
     <EmptyState titleTone="danger" strong title="Could not load the diff" hint={changesSelection.diffError} />
