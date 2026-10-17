@@ -1,5 +1,5 @@
 //! The GitHub CLI as a token source: `gh auth token` is asked each time a token is needed,
-//! so Git Manager never stores it. Behind a trait so the tests need no `gh`.
+//! so Nibtree never stores it. Behind a trait so the tests need no `gh`.
 
 use std::io::Read;
 use std::path::PathBuf;

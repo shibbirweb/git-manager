@@ -1,6 +1,6 @@
 # GitHub
 
-Git Manager can sign in to your GitHub account to do three things git alone cannot: create a repository on GitHub for a project (**Share Project on GitHub**), update your fork from the project you forked (**Sync Fork**), and share a file or a selection as a gist (**Create Gist**). All three are in **Git > GitHub**.
+Nibtree can sign in to your GitHub account to do three things git alone cannot: create a repository on GitHub for a project (**Share Project on GitHub**), update your fork from the project you forked (**Sync Fork**), and share a file or a selection as a gist (**Create Gist**). All three are in **Git > GitHub**.
 
 Pushing and pulling do not use this account. They keep using git's own sign-in, exactly as in a terminal.
 
@@ -18,9 +18,9 @@ Open **Settings** (Cmd+,) and choose **GitHub**. There are two ways to sign in.
 2. Create the token on GitHub and copy it.
 3. Paste it into **Sign in with a token** and click **Sign In** (or press Enter).
 
-Git Manager checks the token with GitHub, then keeps it only in the system keychain: the Keychain on a Mac, Credential Manager on Windows. The field is cleared at once and the token is never shown again.
+Nibtree checks the token with GitHub, then keeps it only in the system keychain: the Keychain on a Mac, Credential Manager on Windows. The field is cleared at once and the token is never shown again.
 
-**With the GitHub CLI.** If you use GitHub's `gh` command line tool, click **Use GitHub CLI**. Git Manager then asks `gh` for its login each time it needs it, and stores nothing. The button only shows when `gh` is installed; when `gh` is not signed in, it says to run `gh auth login` first.
+**With the GitHub CLI.** If you use GitHub's `gh` command line tool, click **Use GitHub CLI**. Nibtree then asks `gh` for its login each time it needs it, and stores nothing. The button only shows when `gh` is installed; when `gh` is not signed in, it says to run `gh auth login` first.
 
 Once signed in, the section shows your initials, your login, your name, the host and where the sign-in comes from ("token in the keychain" or "through the GitHub CLI").
 
@@ -44,7 +44,7 @@ Use this for a project that is not on GitHub yet. It is disabled when a remote (
 4. **Remote** is `origin`, or `github` when `origin` is taken. **Description** is optional.
 5. Click **Share**.
 
-Git Manager creates the repository under your account, adds it as the remote and pushes the current branch, set to track it. A **Shared on GitHub** dialog then offers **Copy Link** and **Open on GitHub**.
+Nibtree creates the repository under your account, adds it as the remote and pushes the current branch, set to track it. A **Shared on GitHub** dialog then offers **Copy Link** and **Open on GitHub**.
 
 If the repository has no commits yet, the dialog asks for an **Initial commit message**, and every file that is not ignored is committed first. You need a branch checked out (not a detached HEAD).
 
@@ -54,7 +54,7 @@ If pushing fails, you see **Created on GitHub, Not Pushed**: the repository exis
 
 A fork is your own copy of someone else's repository on GitHub. When the original moves on, **Git > GitHub > Sync Fork** asks GitHub to bring those changes into your fork, like GitHub's own Sync fork button.
 
-It syncs your current branch when it tracks a branch of the same name on the fork, and otherwise the fork's default branch. You confirm first. Afterwards Git Manager fetches, so you can pull the changes into your local branch when you are ready. The result says whether it was a fast-forward (the branch just moved forward, no merge commit needed), a merge commit, or already up to date.
+It syncs your current branch when it tracks a branch of the same name on the fork, and otherwise the fork's default branch. You confirm first. Afterwards Nibtree fetches, so you can pull the changes into your local branch when you are ready. The result says whether it was a fast-forward (the branch just moved forward, no merge commit needed), a merge commit, or already up to date.
 
 If the branch conflicts with the original, GitHub cannot sync it. The **Fork has conflicts** dialog offers **Open Pull Request**, which opens a pull request on GitHub where you can merge and resolve the conflicts.
 
@@ -76,7 +76,7 @@ The **Gist Created** dialog has **Copy Link** and **Open Gist**.
 
 ## Privacy
 
-- The token is kept only in the system keychain (Keychain on a Mac, Credential Manager on Windows), never in a settings file, the Git Console or an error message. `~/.gitmanager/github.json` holds only your login, name, host, the sign-in source and missing scopes.
+- The token is kept only in the system keychain (Keychain on a Mac, Credential Manager on Windows), never in a settings file, the Git Console or an error message. `~/.nibtree/github.json` holds only your login, name, host, the sign-in source and missing scopes.
 - With the GitHub CLI, nothing is stored.
 - A development build may ask for Keychain access; choose **Always Allow**.
 

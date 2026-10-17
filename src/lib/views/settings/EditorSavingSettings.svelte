@@ -146,7 +146,7 @@
       onchange={(sizeMb) => set("localHistorySizeMb", Number(sizeMb))}
     />
   </SettingsRow>
-  <SettingsRow title="Stored" hint={usageText(historyUsage) || "In ~/.gitmanager/local-history."} nested>
+  <SettingsRow title="Stored" hint={usageText(historyUsage) || "In ~/.nibtree/local-history."} nested>
     <Button
       size="small"
       variant="danger"

@@ -75,7 +75,7 @@ export function groupPath(group: string): string {
 export function indexMarkdown(docs: ComponentDoc[]): string {
   const groups = [...new Set(docs.map((doc) => doc.group))];
   const lines = [
-    "# Git Manager UI components",
+    "# Nibtree UI components",
     "",
     ...wrap(
       "Generated from `ui/web/src/lib/docs/` by `bun run ui:docs`; do not edit by hand. Every component takes its " +

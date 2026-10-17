@@ -45,7 +45,7 @@ Svelte changes reload instantly, so you can add a temporary `console.log`, look,
 
 ## The Rust side
 
-The terminal running `bun tauri dev` shows Rust compile errors and any panic, with the file and line. The backend has no general log: errors travel to the UI as `AppError`. Two switches record more: the Git Console (Settings, Git) keeps the git commands the app ran, and the memory log (Settings, Automation) writes memory changes to `~/.gitmanager/logs/memory.log` (cut at 5 MB, the previous one kept as `memory.log.1`). While you debug, a temporary `eprintln!("{repo_path}")` prints to that terminal. Remove it before you commit.
+The terminal running `bun tauri dev` shows Rust compile errors and any panic, with the file and line. The backend has no general log: errors travel to the UI as `AppError`. Two switches record more: the Git Console (Settings, Git) keeps the git commands the app ran, and the memory log (Settings, Automation) writes memory changes to `~/.nibtree/logs/memory.log` (cut at 5 MB, the previous one kept as `memory.log.1`). While you debug, a temporary `eprintln!("{repo_path}")` prints to that terminal. Remove it before you commit.
 
 - **Backtraces:** start with `RUST_BACKTRACE=1 bun tauri dev`.
 - **Panics in dev** inside `commands::blocking` come back as an `invalid` error, "Background task failed", instead of killing the app.
@@ -53,7 +53,7 @@ The terminal running `bun tauri dev` shows Rust compile errors and any panic, wi
 
 ## Ask the running app
 
-With the MCP server or the command line tool on (Settings, Automation), an agent or a script can look at the real window and measure it: `get_app_state` for what is on screen, `inspect_elements` for computed styles and sizes, `take_screenshot`, and `get_memory_usage`, the memory recorder, `get_ui_performance` and `scroll_view` for memory and frames. For example, `git-manager cli call get_app_state` prints the open tabs and panels. Recipes and two worked examples are in [Debugging with MCP](Debugging-with-MCP.md).
+With the MCP server or the command line tool on (Settings, Automation), an agent or a script can look at the real window and measure it: `get_app_state` for what is on screen, `inspect_elements` for computed styles and sizes, `take_screenshot`, and `get_memory_usage`, the memory recorder, `get_ui_performance` and `scroll_view` for memory and frames. For example, `nibtree cli call get_app_state` prints the open tabs and panels. Recipes and two worked examples are in [Debugging with MCP](Debugging-with-MCP.md).
 
 ## Reproduce it
 
@@ -77,7 +77,7 @@ GM_IPC_BRIDGE=1 bun tauri dev
 # keep the app window open, then visit http://127.0.0.1:1420/?ipc-bridge in a browser
 ```
 
-Be careful: every command the page sends runs in the app for real, with your own `~/.gitmanager` settings unless `scripts/screenshots.ts` overrides them. Open only demo repositories, and stop the app when you are done. Only `terminal-exited` and `git-command` reach the page; other backend events such as `repo-changed` do not, so reload it after changes on disk. How the bridge works is in [Architecture](Architecture.md).
+Be careful: every command the page sends runs in the app for real, with your own `~/.nibtree` settings unless `scripts/screenshots.ts` overrides them. Open only demo repositories, and stop the app when you are done. Only `terminal-exited` and `git-command` reach the page; other backend events such as `repo-changed` do not, so reload it after changes on disk. How the bridge works is in [Architecture](Architecture.md).
 
 ## Common dead ends
 
@@ -93,7 +93,7 @@ Be careful: every command the page sends runs in the app for real, with your own
 
 **The UI does not refresh after a change.** The watcher drops paths the repository ignores and noise inside `.git` (`objects/`, `logs/`, `lfs/`, `*.lock`). Check that the file is not ignored and that it belongs to the repository you expect: with nested repositories, the deepest one wins.
 
-**Settings do not stick.** If `~/.gitmanager/settings.json` has invalid JSON, the app uses defaults, shows the error in Settings and never overwrites the file. Fix the JSON by hand.
+**Settings do not stick.** If `~/.nibtree/settings.json` has invalid JSON, the app uses defaults, shows the error in Settings and never overwrites the file. Fix the JSON by hand.
 
 ## Lessons learned
 

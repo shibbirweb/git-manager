@@ -55,7 +55,7 @@ When you stage or unstage the selected file, the selection follows it to its new
 
 ## Discard changes
 
-Discarding throws your edits away and puts the file back as it was in the index. For an untracked file it deletes the file. Git Manager always asks first, and says how many files will be lost. This cannot be undone.
+Discarding throws your edits away and puts the file back as it was in the index. For an untracked file it deletes the file. Nibtree always asks first, and says how many files will be lost. This cannot be undone.
 
 ## Right-click menus
 

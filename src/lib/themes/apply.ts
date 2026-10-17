@@ -1,4 +1,4 @@
-// Puts a color theme on the document. The built-in Git Manager themes are the
+// Puts a color theme on the document. The built-in Nibtree themes are the
 // sets in the UI library's styles/colors.css and need nothing else; any other theme is one generated
 // <style> element with that theme's variables. The <html> attributes change
 // only after the new variables are in place, so watchers (the UI library's logic/themeWatch.ts)

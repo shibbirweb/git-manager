@@ -1,6 +1,6 @@
 # One diff view for every place
 
-Git Manager shows a file's diff in many places: the Changes diff and the Changes tab, a commit in the History panel or its own tab, a branch compare, Compare with Revision, the diff of a revision against the working tree, a shelf, Compare Files and local history. They all go through one component, `GitDiffView`, so they share the same toolbar, layouts, three-pane option and buttons.
+Nibtree shows a file's diff in many places: the Changes diff and the Changes tab, a commit in the History panel or its own tab, a branch compare, Compare with Revision, the diff of a revision against the working tree, a shelf, Compare Files and local history. They all go through one component, `GitDiffView`, so they share the same toolbar, layouts, three-pane option and buttons.
 
 ## Why we need it
 

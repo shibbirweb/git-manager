@@ -36,7 +36,7 @@
   <Dialog
     open
     variant="panel"
-    title="Git Manager {newest.version} is available"
+    title="Nibtree {newest.version} is available"
     {subtitle}
     icon="arrow-down"
     onclose={close}

@@ -1418,57 +1418,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "git-manager"
-version = "0.1.0-beta.10"
-dependencies = [
- "base64 0.22.1",
- "dunce",
- "flate2",
- "getrandom 0.3.4",
- "git-manager-cli",
- "git2",
- "grep-matcher",
- "grep-regex",
- "grep-searcher",
- "httparse",
- "ignore",
- "imara-diff",
- "keyring",
- "libc",
- "memchr",
- "notify-debouncer-full",
- "nucleo-matcher",
- "objc2",
- "portable-pty",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
- "tempfile",
- "thiserror 2.0.21",
- "trash",
- "ureq",
- "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "git-manager-cli"
-version = "0.0.0"
-dependencies = [
- "base64 0.22.1",
- "dunce",
- "libc",
- "serde",
- "serde_json",
- "tempfile",
- "ureq",
- "windows-sys 0.61.2",
-]
-
-[[package]]
 name = "git2"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2506,6 +2455,57 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
+
+[[package]]
+name = "nibtree"
+version = "0.1.0-beta.10"
+dependencies = [
+ "base64 0.22.1",
+ "dunce",
+ "flate2",
+ "getrandom 0.3.4",
+ "git2",
+ "grep-matcher",
+ "grep-regex",
+ "grep-searcher",
+ "httparse",
+ "ignore",
+ "imara-diff",
+ "keyring",
+ "libc",
+ "memchr",
+ "nibtree-cli",
+ "notify-debouncer-full",
+ "nucleo-matcher",
+ "objc2",
+ "portable-pty",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+ "tempfile",
+ "thiserror 2.0.21",
+ "trash",
+ "ureq",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "nibtree-cli"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "dunce",
+ "libc",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "ureq",
+ "windows-sys 0.61.2",
+]
 
 [[package]]
 name = "nix"

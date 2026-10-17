@@ -71,7 +71,7 @@ jobs:
           fi
           # --latest so GitHub's "latest release", which the README links to, is this one straight away.
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$SHA" --latest \
-            --title "Git Manager $TAG" --notes-file "$RUNNER_TEMP/notes.md"
+            --title "Nibtree $TAG" --notes-file "$RUNNER_TEMP/notes.md"
           {
             echo "### Published $TAG"
             echo ''

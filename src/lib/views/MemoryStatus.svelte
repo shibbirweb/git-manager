@@ -92,7 +92,7 @@
         icon="memory"
         text={formatBytes(total)}
         label="Memory {formatBytes(total)}"
-        title="Memory used by Git Manager and its web view processes. Click for details."
+        title="Memory used by Nibtree and its web view processes. Click for details."
         open={shown}
         onclick={show}
       />

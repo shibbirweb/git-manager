@@ -1,6 +1,6 @@
 # Keyboard Shortcuts
 
-Every shortcut in Git Manager, grouped by where it works. Keys are written as on a Mac keyboard: Cmd (Command), Shift, Option and Ctrl (Control). This page has the window, menu, search, terminal and mouse shortcuts. The keys of the text editor, the find bar, the merge tool and the lists are on [Editor and List Shortcuts](Keyboard-Shortcuts-Editor.md).
+Every shortcut in Nibtree, grouped by where it works. Keys are written as on a Mac keyboard: Cmd (Command), Shift, Option and Ctrl (Control). This page has the window, menu, search, terminal and mouse shortcuts. The keys of the text editor, the find bar, the merge tool and the lists are on [Editor and List Shortcuts](Keyboard-Shortcuts-Editor.md).
 
 ## The shortcuts window
 
@@ -28,8 +28,8 @@ Window shortcuts do nothing while a dialog or the merge tool is open: the key is
 
 | Keys | Menu item |
 | --- | --- |
-| Cmd+, | Git Manager > Settings... |
-| Cmd+H, Option+Cmd+H, Cmd+Q | Hide Git Manager, Hide Others, Quit Git Manager |
+| Cmd+, | Nibtree > Settings... |
+| Cmd+H, Option+Cmd+H, Cmd+Q | Hide Nibtree, Hide Others, Quit Nibtree |
 | Cmd+N | File > New File |
 | Cmd+S | File > Save |
 | Option+Cmd+S | File > Save All |

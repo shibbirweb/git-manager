@@ -1,6 +1,6 @@
 # How color themes work
 
-Git Manager has 41 color themes: the built-in Git Manager Light and Dark, 12 more light, 22 more dark and 5 high contrast themes. The user picks one for light mode and one for dark mode. For the user side, see [Color Themes](../usage/Color-Themes.md).
+Nibtree has 41 color themes: the built-in Nibtree Light and Dark, 12 more light, 22 more dark and 5 high contrast themes. The user picks one for light mode and one for dark mode. For the user side, see [Color Themes](../usage/Color-Themes.md).
 
 ## Why we need it
 

@@ -28,7 +28,7 @@ While a file is shown in the editor:
 
 - **Ln 42, Col 7**: the cursor position. With a selection it adds, for example, "(18 selected, 2 lines)".
 - **Spaces: 4** (or **Tab Size: 4** for a file indented with tabs): the indentation, detected from the file unless Detect indentation is off. Click it to open Settings on the **Editor** section.
-- **LF** or **CRLF**: the file's line endings. Git Manager keeps them as they are when saving.
+- **LF** or **CRLF**: the file's line endings. Nibtree keeps them as they are when saving.
 - The language, such as **TypeScript**.
 
 Always on the right:
@@ -38,11 +38,11 @@ Always on the right:
 - **Reading changes 2 of 5** with a spinner, right after a folder opens, while the changes of each repository load. You can already work. See [Workspaces](Workspaces.md).
 - A star: opens the project on GitHub, where you can star it.
 - A bug icon: the feedback menu (below).
-- **Memory**, a memory stick icon with a size such as **597 MB**: how much memory Git Manager uses right now. See [Memory Use](Memory-Use.md).
+- **Memory**, a memory stick icon with a size such as **597 MB**: how much memory Nibtree uses right now. See [Memory Use](Memory-Use.md).
 
 ## Memory use
 
-The memory item on the right (the memory stick icon and a size) shows how much memory Git Manager uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
+The memory item on the right (the memory stick icon and a size) shows how much memory Nibtree uses right now. Click it for a breakdown. The details, the GPU rows and the memory log are in [Memory Use](Memory-Use.md).
 
 ## The Help menu
 
@@ -52,7 +52,7 @@ The memory item on the right (the memory stick icon and a size) shows how much m
 
 The **Help** menu in the menu bar has:
 
-- **Git Manager Help**: this wiki, in your browser.
+- **Nibtree Help**: this wiki, in your browser.
 - **Keyboard Shortcuts**: a window inside the app with every shortcut, grouped by menu, and a filter box. **Open Online Version** opens [Keyboard Shortcuts](Keyboard-Shortcuts.md).
 - **What's New** and **Release Notes** (see [Updates](Updates.md)).
 - **Available MCP Tools...**: which tools AI agents may use (see [MCP Server and Command Line Tool](MCP-and-CLI.md)).
@@ -66,7 +66,7 @@ The **Help** menu in the menu bar has:
 
 Click the bug icon at the right of the status bar:
 
-- **Report a Bug** opens a new GitHub issue with a bug form. Your Git Manager version and your system with its version (for example macOS 15.4.1 or Windows 11 build 26200.8037) are filled in for you.
+- **Report a Bug** opens a new GitHub issue with a bug form. Your Nibtree version and your system with its version (for example macOS 15.4.1 or Windows 11 build 26200.8037) are filled in for you.
 - **Request a Feature** opens a new GitHub issue with the feature form.
 
 Both open in your browser. You need a GitHub account to send them.
@@ -81,7 +81,7 @@ A good bug report says what you did, what you expected and what happened. A scre
 
 **Settings, About** shows your version and update channel, and has the same links in one place:
 
-- **Star on GitHub**: like Git Manager? A star helps other people find it.
+- **Star on GitHub**: like Nibtree? A star helps other people find it.
 - **Report a Bug** and **Request a Feature**, as above.
 - **Release Notes**: what changed in this version.
 

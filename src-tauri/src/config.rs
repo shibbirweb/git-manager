@@ -1,4 +1,4 @@
-//! User configuration in `~/.gitmanager/`:
+//! User configuration in `~/.nibtree/`:
 //! `settings.json` holds preferences, `state.json` holds UI state such as
 //! recent folders and panel sizes. The folder is created on first save.
 //!
@@ -15,13 +15,13 @@ use serde_json::{Map, Value};
 
 use crate::error::{AppError, AppResult};
 
-pub use git_manager_cli::home::DIR_NAME;
+pub use nibtree_cli::home::DIR_NAME;
 
 /// Config files the frontend may read and write, by logical name.
 const FILES: [(&str, &str); 2] = [("settings", "settings.json"), ("state", "state.json")];
 
 pub fn home_dir() -> AppResult<PathBuf> {
-    git_manager_cli::home::home_dir().map_err(AppError::invalid)
+    nibtree_cli::home::home_dir().map_err(AppError::invalid)
 }
 
 pub fn config_dir_in(home: &Path) -> PathBuf {

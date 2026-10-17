@@ -1,40 +1,40 @@
 # Git Mergetool
 
-You can use Git Manager's three pane [Merge Tool](Merge-Tool.md) from the Terminal too. After a one-time setup, `git mergetool` opens each conflicted file in a Git Manager window, and closes it again when you are done.
+You can use Nibtree's three pane [Merge Tool](Merge-Tool.md) from the Terminal too. After a one-time setup, `git mergetool` opens each conflicted file in a Nibtree window, and closes it again when you are done.
 
 This is handy if you do most of your git work on the command line but like a visual tool for conflicts.
 
 ## Set it up
 
-Run these lines once in the Terminal. They assume Git Manager is in your Applications folder.
+Run these lines once in the Terminal. They assume Nibtree is in your Applications folder.
 
 ```sh
-APP="/Applications/Git Manager.app/Contents/MacOS/git-manager"
-git config --global mergetool.gitmanager.cmd "\"$APP\" merge \"\$BASE\" \"\$LOCAL\" \"\$REMOTE\" \"\$MERGED\""
-git config --global mergetool.gitmanager.trustExitCode true
-git config --global merge.tool gitmanager
+APP="/Applications/Nibtree.app/Contents/MacOS/nibtree"
+git config --global mergetool.nibtree.cmd "\"$APP\" merge \"\$BASE\" \"\$LOCAL\" \"\$REMOTE\" \"\$MERGED\""
+git config --global mergetool.nibtree.trustExitCode true
+git config --global merge.tool nibtree
 ```
 
 What each line does:
 
 1. `APP=...` stores the path to the program inside the app, just to keep the next line short.
-2. `mergetool.gitmanager.cmd` tells git how to start Git Manager. The word `merge` switches the app into merge tool mode, followed by the four files git prepares: the common ancestor (`BASE`), your version (`LOCAL`), the other version (`REMOTE`) and the file to write the result to (`MERGED`).
-3. `trustExitCode true` lets git read from Git Manager whether you finished the file or gave up.
-4. `merge.tool gitmanager` makes it the tool `git mergetool` uses by default.
+2. `mergetool.nibtree.cmd` tells git how to start Nibtree. The word `merge` switches the app into merge tool mode, followed by the four files git prepares: the common ancestor (`BASE`), your version (`LOCAL`), the other version (`REMOTE`) and the file to write the result to (`MERGED`).
+3. `trustExitCode true` lets git read from Nibtree whether you finished the file or gave up.
+4. `merge.tool nibtree` makes it the tool `git mergetool` uses by default.
 
 Leave out `--global` to set it up for one repository only. If the app lives somewhere else, change the `APP` path.
 
 On Windows, run the same lines in Git Bash (it comes with Git for Windows), with this `APP` line instead:
 
 ```sh
-APP="$(cygpath -m "$LOCALAPPDATA")/Git Manager/git-manager.exe"
+APP="$(cygpath -m "$LOCALAPPDATA")/Nibtree/nibtree.exe"
 ```
 
 ## Use it
 
 1. Run a merge, rebase or pull that stops on conflicts.
 2. Run `git mergetool`.
-3. For each conflicted file, a Git Manager window opens.
+3. For each conflicted file, a Nibtree window opens.
 
 ![Merge tool started by git mergetool](../images/mergetool-mode.png)
 
@@ -46,8 +46,8 @@ Turning **Ignore whitespace** on or off here also saves it as your default (the 
 
 When you are done with the file:
 
-- **Apply** (or Cmd+Enter, from any pane) writes the result to the file and closes the window. Git Manager tells git it succeeded, so git marks the file as resolved and moves on to the next one. If changes are still unresolved, or the result still has conflict markers (`<<<<<<<`), you are asked first (**Save Anyway**).
-- **Cancel** (or Esc), or closing the window, leaves the file untouched. Git Manager tells git it did not finish, so the file stays unresolved. If you changed anything, you are asked (**Discard Changes**) before it is thrown away. Quitting with Cmd+Q also leaves the file unresolved, but without asking.
+- **Apply** (or Cmd+Enter, from any pane) writes the result to the file and closes the window. Nibtree tells git it succeeded, so git marks the file as resolved and moves on to the next one. If changes are still unresolved, or the result still has conflict markers (`<<<<<<<`), you are asked first (**Save Anyway**).
+- **Cancel** (or Esc), or closing the window, leaves the file untouched. Nibtree tells git it did not finish, so the file stays unresolved. If you changed anything, you are asked (**Discard Changes**) before it is thrown away. Quitting with Cmd+Q also leaves the file unresolved, but without asking.
 
 **Accept Left** and **Accept Right** also work: they resolve the whole file with one side and close the window.
 
@@ -58,9 +58,9 @@ After the last file, finish the operation in the Terminal as usual, for example 
 - Git keeps a backup of each conflicted file with a `.orig` ending. If you do not want those, run `git config --global mergetool.keepBackup false`.
 - Binary files (such as images) cannot be merged as text. The window says so and offers **Quit**; resolve those with `git checkout --ours` or `git checkout --theirs` instead.
 - If the files git passed cannot be read, the window says **Could not load the files passed by git mergetool** with the reason, and offers **Quit**.
-- The merge window does not check for updates or show What's New, and it never starts the MCP server. Its menu bar is short: Git Manager (with Settings...), Edit, Window and Help.
+- The merge window does not check for updates or show What's New, and it never starts the MCP server. Its menu bar is short: Nibtree (with Settings...), Edit, Window and Help.
 - If git passes an empty or missing ancestor (for example when both sides added the same file), the merge starts from an empty result.
-- Opening the full app is separate: starting Git Manager with a folder or a workspace file instead of `merge` opens it normally, for example `"$APP" ~/code/acme`.
+- Opening the full app is separate: starting Nibtree with a folder or a workspace file instead of `merge` opens it normally, for example `"$APP" ~/code/acme`.
 
 ## Related
 

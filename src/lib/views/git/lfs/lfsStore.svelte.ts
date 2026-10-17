@@ -13,7 +13,7 @@ import { updates } from "$lib/update/updates.svelte";
 import { needsLfsInstall } from "./lfsModel";
 
 export const LFS_URL = "https://git-lfs.com";
-const NOTICE_KEY = "git-manager.lfs.installNoticeShown";
+const NOTICE_KEY = "nibtree.lfs.installNoticeShown";
 
 function noticeShown(): boolean {
   try {

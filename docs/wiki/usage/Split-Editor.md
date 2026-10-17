@@ -32,13 +32,13 @@ To open a file straight into another group, use **Open to the Side** in the File
 
 Drag the line between two groups to share the room differently. Double-click the line to give both sides the same size again. Each side always keeps a little room.
 
-A group closes when its last tab closes, and the group next to it in the split takes its room. **Window > Close Group** and **Close Group** in the tab menu close a group with all its tabs. If one of them has unsaved changes that no other group shows, Git Manager asks first.
+A group closes when its last tab closes, and the group next to it in the split takes its room. **Window > Close Group** and **Close Group** in the tab menu close a group with all its tabs. If one of them has unsaved changes that no other group shows, Nibtree asks first.
 
 The first group, top left, also shows the **Diff** tab and the Log, so it stays open while one of those is on screen.
 
 ## Your layout comes back
 
-With **Reopen tabs on start** on (Settings > Editor), Git Manager remembers each folder's groups: which tabs each one has, where they sit and how big they are. The next time you open the folder, the same grid comes back. A group whose files are all gone is left out.
+With **Reopen tabs on start** on (Settings > Editor), Nibtree remembers each folder's groups: which tabs each one has, where they sit and how big they are. The next time you open the folder, the same grid comes back. A group whose files are all gone is left out.
 
 ## Turn it off
 

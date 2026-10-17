@@ -2,7 +2,7 @@
 
 Git LFS (Large File Storage) is an add-on for git that keeps big files, like images, videos or design files, out of the repository's history. Git stores only a small **pointer file** (a few lines of text with the file's id and size), and the real content lives on the LFS server. When you check out a branch, LFS downloads the content and puts the real file in its place.
 
-Git Manager works with LFS through the `git-lfs` tool, the same one you use in a terminal. Install it from [git-lfs.com](https://git-lfs.com) (or with Homebrew: `brew install git-lfs`).
+Nibtree works with LFS through the `git-lfs` tool, the same one you use in a terminal. Install it from [git-lfs.com](https://git-lfs.com) (or with Homebrew: `brew install git-lfs`).
 
 ## See which files use LFS
 
@@ -13,7 +13,7 @@ Files stored in LFS have a small **LFS** tag:
 
 ![An LFS file in the Changes sidebar and its diff](../images/lfs-diff.png)
 
-Git Manager reads the list of LFS files once each time a repository's status refreshes, and only for repositories on screen, so it stays quick.
+Nibtree reads the list of LFS files once each time a repository's status refreshes, and only for repositories on screen, so it stays quick.
 
 ## Diffs of LFS files
 
@@ -27,7 +27,7 @@ See [Diffs](Diffs.md) for diffs in general.
 
 ## When git-lfs is not installed
 
-If a repository uses LFS but `git-lfs` is missing, its large files are only pointer files on your disk. Git Manager tells you once, with a **Git LFS Is Not Installed** notice. Choose **Get Git LFS** to open the download page, or **Not Now**. It does not ask again.
+If a repository uses LFS but `git-lfs` is missing, its large files are only pointer files on your disk. Nibtree tells you once, with a **Git LFS Is Not Installed** notice. Choose **Get Git LFS** to open the download page, or **Not Now**. It does not ask again.
 
 ![The Git LFS Is Not Installed notice](../images/lfs-not-installed.png)
 

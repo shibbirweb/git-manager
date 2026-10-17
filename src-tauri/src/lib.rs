@@ -4,6 +4,7 @@ mod askpass;
 mod child_process;
 mod commands;
 mod config;
+mod legacy_config;
 mod error;
 mod file_ops;
 mod file_search;
@@ -52,12 +53,16 @@ pub fn run() {
         std::process::exit(code);
     }
     let args: Vec<String> = std::env::args().skip(1).collect();
-    // `git-manager cli ...` is the command line tool: no window, just its exit code.
+    // `nibtree cli ...` is the command line tool: no window, just its exit code.
     if args.first().map(String::as_str) == Some("cli") {
         std::process::exit(mcp::cli::run(&args[1..]));
     }
     let launch = LaunchMode::from_args(&args);
     git::repo::configure_libgit2();
+    // Before anything reads settings: carry ~/.gitmanager over from the Git Manager days.
+    if let Ok(home) = config::home_dir() {
+        legacy_config::move_legacy_dir_in(&home);
+    }
 
     let builder = tauri::Builder::default();
     // Registered first, as the plugin asks. Never for the merge tool: `git mergetool` starts it next to

@@ -20,7 +20,7 @@
   import { copyToClipboard, numberChoices, onMac, set } from "./settingsShared";
 
   const mcpStatus = $derived(mcpStore.status);
-  const commandPrefix = $derived(mcpStatus ? cliPrefix(mcpStatus) : "git-manager cli");
+  const commandPrefix = $derived(mcpStatus ? cliPrefix(mcpStatus) : "nibtree cli");
   /** Where Install puts the command, as the hint names it: ~/.local/bin, or WindowsApps on Windows. */
   const cliFolderLabel = onMac ? "~/.local/bin" : "WindowsApps (on your PATH)";
 
@@ -48,8 +48,8 @@
   <SettingsRow
     title="Command line tool"
     toggle
-    hint={"Lets scripts and AI agents in a terminal use the same tools, for example `git-manager cli " +
-      "tools` or `git-manager cli call git_status repoPath=...`. Git Manager must be running."}
+    hint={"Lets scripts and AI agents in a terminal use the same tools, for example `nibtree cli " +
+      "tools` or `nibtree cli call git_status repoPath=...`. Nibtree must be running."}
   >
     <Switch label="Command line tool" checked={settings.cliEnabled} onchange={(on) => set("cliEnabled", on)} />
   </SettingsRow>
@@ -59,7 +59,7 @@
         <Text size="small" tone="dim" selectable>
           {mcpStatus.cliInstalledPath
             ? `Installed at ${mcpStatus.cliInstalledPath}.`
-            : `Adds git-manager to ${cliFolderLabel}, so you can type it in any folder.`}
+            : `Adds nibtree to ${cliFolderLabel}, so you can type it in any folder.`}
         </Text>
       {/snippet}
       {#if mcpStatus.cliInstalledPath}
@@ -74,7 +74,7 @@
       <SettingsRow
         title="~/.local/bin is not on your PATH"
         stacked
-        hint={"Add this line to `~/.zshrc`, then open a new terminal, to type `git-manager` anywhere."}
+        hint={"Add this line to `~/.zshrc`, then open a new terminal, to type `nibtree` anywhere."}
       >
         {@render command(LOCAL_BIN_PATH_LINE)}
       </SettingsRow>
@@ -84,7 +84,7 @@
         stacked
         hint={"Windows keeps it there for every user unless it was removed. Add it back under Edit " +
           "environment variables for your account (Path), then open a new terminal, to type " +
-          "`git-manager` anywhere."}
+          "`nibtree` anywhere."}
       >
         {@render command(mcpStatus.cliFolder ?? "")}
       </SettingsRow>

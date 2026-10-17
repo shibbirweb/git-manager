@@ -1,5 +1,5 @@
 //! Shelve Changes, Unshelve and the Shelf: changes saved as a patch in
-//! `.git/gitmanager-shelf/` (see shelf/store.rs) and reverted from the work tree.
+//! `.git/nibtree-shelf/` (see shelf/store.rs) and reverted from the work tree.
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};

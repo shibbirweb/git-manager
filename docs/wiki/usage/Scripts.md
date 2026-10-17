@@ -12,7 +12,7 @@ Click the **play** button in the left activity bar, just above the Terminal butt
 
 ## What it lists
 
-Git Manager looks through every workspace folder for these files:
+Nibtree looks through every workspace folder for these files:
 
 | File | Scripts it lists | Runs them with |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ The list is read again each time the panel opens. Click **Refresh** in the panel
 
 ### Which package manager
 
-For a `package.json`, the name on the right of the row is the package manager that runs its scripts. Git Manager picks:
+For a `package.json`, the name on the right of the row is the package manager that runs its scripts. Nibtree picks:
 
 1. The `packageManager` field of the `package.json`, for example `"pnpm@9.1.0"`.
 2. Otherwise the nearest lockfile, in the package's folder or a parent folder up to the workspace folder: `bun.lock` or `bun.lockb`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json` or `npm-shrinkwrap.json`.
@@ -64,7 +64,7 @@ If the program is not installed, the Run tab says so with the reason and a **Ret
 
 ### Scripts run without a shell
 
-A script runs as its own program, not typed into a terminal, so it works the same whatever your shell is. Git Manager still finds your tools. It asks your shell once for its environment: the settings a new Terminal window starts with. That includes `PATH`, the list of folders where programs are looked up, as your `.zshrc` sets it up for nvm, Homebrew, pnpm or Composer. On Windows, scripts get the environment Windows gives Git Manager, and tools such as `npm` and `pnpm`, which are `.cmd` files there, start through Command Prompt. Opening the panel or clicking **Refresh** reads it again, so a tool you just installed is found.
+A script runs as its own program, not typed into a terminal, so it works the same whatever your shell is. Nibtree still finds your tools. It asks your shell once for its environment: the settings a new Terminal window starts with. That includes `PATH`, the list of folders where programs are looked up, as your `.zshrc` sets it up for nvm, Homebrew, pnpm or Composer. On Windows, scripts get the environment Windows gives Nibtree, and tools such as `npm` and `pnpm`, which are `.cmd` files there, start through Command Prompt. Opening the panel or clicking **Refresh** reads it again, so a tool you just installed is found.
 
 ## Right-click menus
 
@@ -84,7 +84,7 @@ On a file:
 
 ## Node version
 
-Projects often need a certain Node version. Git Manager looks for it the way version managers do, nearest folder first, from the package's folder up to the workspace folder:
+Projects often need a certain Node version. Nibtree looks for it the way version managers do, nearest folder first, from the package's folder up to the workspace folder:
 
 1. `.nvmrc`, `.node-version` or `.tool-versions` (the `nodejs` or `node` line).
 2. Otherwise `volta.node` in the `package.json`.

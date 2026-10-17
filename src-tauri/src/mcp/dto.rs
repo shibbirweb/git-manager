@@ -17,9 +17,9 @@ pub struct McpStatus {
     pub token: Option<String>,
     pub error: Option<String>,
     /// The program that runs the tool followed by " cli", for display: the running binary, or on
-    /// Windows the console program next to it (`git-manager-cli.exe`).
+    /// Windows the console program next to it (`nibtree-cli.exe`).
     pub cli_command: String,
-    /// `~/.local/bin/git-manager` (Windows: `...\WindowsApps\git-manager.cmd`) when it is ours.
+    /// `~/.local/bin/nibtree` (Windows: `...\WindowsApps\nibtree.cmd`) when it is ours.
     pub cli_installed_path: Option<String>,
     /// The folder Install puts the command in: `~/.local/bin`, or WindowsApps on Windows.
     pub cli_folder: String,

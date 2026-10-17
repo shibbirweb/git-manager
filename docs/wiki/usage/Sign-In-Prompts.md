@@ -1,6 +1,6 @@
 # Sign-In Prompts
 
-Some remotes (the servers you push to and pull from) want you to sign in. In a terminal, git asks for a **username** and **password** right there. Git Manager has no terminal for git, so it shows a dialog instead and passes your answer to git.
+Some remotes (the servers you push to and pull from) want you to sign in. In a terminal, git asks for a **username** and **password** right there. Nibtree has no terminal for git, so it shows a dialog instead and passes your answer to git.
 
 ![The sign-in dialog with a username and a token](../images/askpass-sign-in.png)
 
@@ -19,13 +19,13 @@ The dialog appears when a command you start needs an answer:
 
 ## Signing in
 
-For a username and password, the dialog asks for both at once: **Sign in to github.com**, with **Username** and **Password**. Click **Sign In** or press Enter. Git asks for the two one after the other, and Git Manager answers both from this one dialog.
+For a username and password, the dialog asks for both at once: **Sign in to github.com**, with **Username** and **Password**. Click **Sign In** or press Enter. Git asks for the two one after the other, and Nibtree answers both from this one dialog.
 
 - **GitHub, GitLab and Bitbucket** do not take your account password here. Use a personal access token (or an app password on Bitbucket) as the password. The dialog reminds you.
 - The eye button shows what you typed, to check it.
 - **Cancel** (or Esc) stops: the command fails with git's own message, as it did before.
 
-Git Manager does not store what you type. Git hands it to your **credential helper**, a small program that remembers logins, when one is set. On macOS that is usually the keychain (`osxkeychain`), so you sign in once and git asks no more. If you are asked every time, set a helper in a terminal:
+Nibtree does not store what you type. Git hands it to your **credential helper**, a small program that remembers logins, when one is set. On macOS that is usually the keychain (`osxkeychain`), so you sign in once and git asks no more. If you are asked every time, set a helper in a terminal:
 
 ```sh
 git config --global credential.helper osxkeychain

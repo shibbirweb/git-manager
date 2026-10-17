@@ -9,7 +9,7 @@ class GitHubAccountStore {
   /** Whether `gh` is installed and signed in; null until asked. */
   cli = $state<GhCliStatus | null>(null);
 
-  /** Re-reads ~/.gitmanager/github.json (cheap: no network, no keychain). */
+  /** Re-reads ~/.nibtree/github.json (cheap: no network, no keychain). */
   async load(): Promise<GitHubAccount | null> {
     try {
       this.account = (await api.githubAccount()) ?? null;

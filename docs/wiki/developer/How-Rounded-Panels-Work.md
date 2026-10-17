@@ -44,7 +44,7 @@ flowchart LR
 
 The window behind the panels uses the color token `--frame`. Every theme must set it, and it must stand apart from both `--panel` and `--editor-bg`, or the gaps would be invisible. The editor is a panel too: in rounded mode its tab strip takes the editor color.
 
-- The built-in themes set it in `colors.json` (`colors.css`): `#ebecf0` for Git Manager Light, `#131416` for Git Manager Dark.
+- The built-in themes set it in `colors.json` (`colors.css`): `#ebecf0` for Nibtree Light, `#131416` for Nibtree Dark.
 - Catalog themes get it from `frameColor()` in the UI library's `themes/derive.ts`: the theme's `--bg` when its CIELAB distance from both the panel and the editor color is at least 5 (`FRAME_DISTANCE`), else the darker of the two darkened (dark themes) or the panel greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel and GitHub Dark, whose editor is almost black, end up there.
 - `legible()` in `deriveColors` now also checks the frame, so dim text and status colors stay readable on the header and status bar.
 

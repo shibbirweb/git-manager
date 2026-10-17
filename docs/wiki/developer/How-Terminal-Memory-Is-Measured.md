@@ -44,7 +44,7 @@ sequenceDiagram
 
 ## Design decisions
 
-**Not part of the app's total.** The status bar number stays what Activity Monitor shows for Git Manager. Terminal programs are separate processes the user started, so they get their own sum, and the section says so.
+**Not part of the app's total.** The status bar number stays what Activity Monitor shows for Nibtree. Terminal programs are separate processes the user started, so they get their own sum, and the section says so.
 
 **Measured only while the details are open.** The section polls every 5 seconds while it is on screen and stops when it closes, so nothing runs in the background. One process list per reading serves every terminal.
 

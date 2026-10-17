@@ -14,7 +14,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "get_memory_usage",
         title: "Memory usage",
-        description: "Memory used right now by Git Manager and its WebKit helper processes (UI, graphics, networking), as Activity Monitor counts it; the status bar shows the same number.",
+        description: "Memory used right now by Nibtree and its WebKit helper processes (UI, graphics, networking), as Activity Monitor counts it; the status bar shows the same number.",
         category: PERFORMANCE,
         read_only: true,
         destructive: false,
@@ -34,7 +34,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "take_screenshot",
         title: "Screenshot",
-        description: "A PNG screenshot of the Git Manager window focused last, even when other windows cover it. macOS only; macOS asks for Screen Recording permission the first time.",
+        description: "A PNG screenshot of the Nibtree window focused last, even when other windows cover it. macOS only; macOS asks for Screen Recording permission the first time.",
         category: PERFORMANCE,
         read_only: true,
         destructive: false,
@@ -152,8 +152,8 @@ fn take_screenshot(ctx: &ToolCtx, _args: &Args) -> ToolResult {
         None => host.screenshot_png()?,
     };
     let caption = match png_size(&png) {
-        Some((width, height)) => format!("Screenshot of the Git Manager window, {width}x{height} pixels."),
-        None => "Screenshot of the Git Manager window.".to_string(),
+        Some((width, height)) => format!("Screenshot of the Nibtree window, {width}x{height} pixels."),
+        None => "Screenshot of the Nibtree window.".to_string(),
     };
     Ok(ToolOutput::Image {
         png_base64: base64::engine::general_purpose::STANDARD.encode(png),
@@ -172,7 +172,7 @@ mod tests {
             processes: vec![ProcessMemory {
                 pid: 7,
                 name: "app".to_string(),
-                label: "Git Manager (app)".to_string(),
+                label: "Nibtree (app)".to_string(),
                 bytes,
             }],
             approximate: false,
@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn summaries_give_min_max_and_average() {
         let summary = summarize(&[sample(10), sample(30), sample(20)]);
-        let app = &summary["processes"]["Git Manager (app) (7)"];
+        let app = &summary["processes"]["Nibtree (app) (7)"];
         assert_eq!(app["minBytes"], 10);
         assert_eq!(app["maxBytes"], 30);
         assert_eq!(app["avgBytes"], 20);

@@ -41,7 +41,7 @@ You can also bring changes back without the sidebar:
 - A repository's **...** > **Stash** submenu in Changes has **Apply Latest Stash** and **Pop Latest Stash** for `stash@{0}`, and **Apply Stash...**, **Pop Stash...** and **Drop Stash...** with a list to pick from.
 - **Drop All Stashes** in the same submenu deletes every stash of that repository, after asking. This cannot be undone.
 
-If the stashed changes clash with changes in your files, git stops with conflicts (a conflict is a spot where both versions changed the same lines). Git Manager opens the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md). After a pop that stopped on conflicts, git keeps the stash, so nothing is lost; drop it yourself once you are done.
+If the stashed changes clash with changes in your files, git stops with conflicts (a conflict is a spot where both versions changed the same lines). Nibtree opens the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md). After a pop that stopped on conflicts, git keeps the stash, so nothing is lost; drop it yourself once you are done.
 
 ## Example
 

@@ -778,8 +778,8 @@ describe("sessionSteps", () => {
   const base = { lastSession: [], lastSessionFile: null, sessionRecorded: true, recentRepos: ["/recent"] };
 
   it("reopens the workspace file first, then its folders", () => {
-    expect(sessionSteps({ ...base, lastSessionFile: "/w.gitmanager-workspace", lastSession: ["/a", "/b"] })).toEqual([
-      { kind: "workspaceFile", filePath: "/w.gitmanager-workspace" },
+    expect(sessionSteps({ ...base, lastSessionFile: "/w.nibtree-workspace", lastSession: ["/a", "/b"] })).toEqual([
+      { kind: "workspaceFile", filePath: "/w.nibtree-workspace" },
       { kind: "folders", folderPaths: ["/a", "/b"] },
     ]);
   });
@@ -808,7 +808,7 @@ describe("changedPreferenceKeys", () => {
 });
 
 describe("color theme preferences", () => {
-  it("default to the built-in Git Manager themes", () => {
+  it("default to the built-in Nibtree themes", () => {
     const { preferences } = parsePreferences({});
     expect(preferences.lightColorTheme).toBe("gm-light");
     expect(preferences.darkColorTheme).toBe("gm-dark");

@@ -1,6 +1,6 @@
 # How GitHub Works
 
-Git Manager signs in to GitHub with a personal access token kept in the system keychain, or with the GitHub CLI's login, and uses the REST API for three actions: Share Project on GitHub, Sync Fork and Create Gist. For the user side, see [GitHub](../usage/GitHub.md).
+Nibtree signs in to GitHub with a personal access token kept in the system keychain, or with the GitHub CLI's login, and uses the REST API for three actions: Share Project on GitHub, Sync Fork and Create Gist. For the user side, see [GitHub](../usage/GitHub.md).
 
 ## Why we need it
 
@@ -44,7 +44,7 @@ classDiagram
     GitHub --> GitHubClient : REST calls
 ```
 
-`commands.rs` builds the real one (`with_github`): `UreqTransport`, `KeychainStore`, `SystemGh` and `~/.gitmanager`, host `github.com`.
+`commands.rs` builds the real one (`with_github`): `UreqTransport`, `KeychainStore`, `SystemGh` and `~/.nibtree`, host `github.com`.
 
 ### Signing in
 
@@ -65,14 +65,14 @@ sequenceDiagram
     RS-->>Form: GitHubAccount (no token)
 ```
 
-- **Token.** `secrets.rs` stores it with the `keyring` crate: service `io.github.shibbirweb.gitmanager.github`, account = the host. An old `com.shibbir.gitmanager.github` token moves over when read (`MovingStore`). macOS uses the Keychain, Windows the Credential Manager; other platforms refuse rather than use a file. If saving `github.json` fails, the token is removed again.
+- **Token.** `secrets.rs` stores it with the `keyring` crate: service `io.github.shibbirweb.nibtree.github`, account = the host. macOS uses the Keychain, Windows the Credential Manager; other platforms refuse rather than use a file. If saving `github.json` fails, the token is removed again.
 - **GitHub CLI.** `gh.rs` finds `gh` in the Homebrew and system folders first (GUI apps start with a short `PATH`), then on `PATH`, and runs `gh auth token --hostname github.com` with `GH_PROMPT_DISABLED=1` and a 15 second timeout. It is asked each time a token is needed and never stored. This runs outside `git/cli.rs`, so it never reaches the Git Console.
-- **Who is signed in.** `account.rs` keeps `~/.gitmanager/github.json` with `host`, `login`, `name`, `source` (`token` or `ghCli`) and `missingScopes`. `github_account` reads only this file: no keychain read and no network, so opening Settings is free. A missing or unreadable file means signed out.
+- **Who is signed in.** `account.rs` keeps `~/.nibtree/github.json` with `host`, `login`, `name`, `source` (`token` or `ghCli`) and `missingScopes`. `github_account` reads only this file: no keychain read and no network, so opening Settings is free. A missing or unreadable file means signed out.
 - **Scopes.** Classic tokens report `x-oauth-scopes`; `missing_scopes` lists `repo` and `gist` when absent. Fine-grained tokens report none, so nothing is flagged.
 
 ### HTTP
 
-`http.rs` wraps a blocking `ureq` agent on the system TLS stack (`native-tls`, platform root certificates), with a 10 second connect and 60 second overall timeout, at most 5 redirects, and the Authorization header kept only on same-host redirects. Error statuses are returned, not thrown, so `client.rs` can read GitHub's message. `HttpRequest` has no `Debug`, because its headers carry the token. Every call sends `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28` and a `GitManager/<version>` user agent.
+`http.rs` wraps a blocking `ureq` agent on the system TLS stack (`native-tls`, platform root certificates), with a 10 second connect and 60 second overall timeout, at most 5 redirects, and the Authorization header kept only on same-host redirects. Error statuses are returned, not thrown, so `client.rs` can read GitHub's message. `HttpRequest` has no `Debug`, because its headers carry the token. Every call sends `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28` and a `Nibtree/<version>` user agent.
 
 `api_error` turns failures into plain sentences: 401 asks to sign in again, 403 or 429 with rate limit headers says when to try again, other 403s mention the scopes, 404 says the token may not see the repository, 422 shows GitHub's detail, 5xx says GitHub is having trouble, and no response says "Could not reach GitHub".
 
@@ -121,7 +121,6 @@ Create Gist reads the active editor's selection, or the whole document, from Cod
 ## Tests
 
 - `src-tauri/src/github/tests.rs`: every sign-in path (the token only in the keychain, rejected or malformed tokens never stored, offline, the CLI storing nothing), sign out, signed-out calls making no request, Enterprise API roots, Share (including an existing remote refused before anything is created and the first commit of an empty repository), name rules, every Sync Fork outcome, gists, readable API errors, malformed bodies, and the real `UreqTransport` against a local server.
-- `secrets.rs`: moving an old token.
 - `src/lib/views/github/githubModel.test.ts`: names, remotes, gist names, the sync branch, titles, the compare URL, initials and the scope warning.
 
 ## Keeping this page in sync

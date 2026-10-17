@@ -195,7 +195,7 @@
   }
 
   async function start(): Promise<void> {
-    // Recent folders and preferences come from ~/.gitmanager.
+    // Recent folders and preferences come from ~/.nibtree.
     await settings.init();
     settingsLoaded = true;
     // One window checks for updates and shows What's New, not every window at once.

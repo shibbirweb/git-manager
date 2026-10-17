@@ -149,7 +149,7 @@ class UpdateStore {
         if (this.newer.length > 0) {
           this.dialogOpen = true;
         } else {
-          toast.success("Git Manager is up to date", `Version ${this.current} on the ${this.channel} channel.`);
+          toast.success("Nibtree is up to date", `Version ${this.current} on the ${this.channel} channel.`);
         }
       }
     } catch (error) {

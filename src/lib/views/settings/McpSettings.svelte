@@ -77,9 +77,9 @@
 <SettingsGroup title="MCP server">
   <SettingsRow title="MCP server" toggle>
     {#snippet hintContent()}
-      MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor use Git Manager: read what it shows, run
-      its features and measure its performance. Off by default. When on, it only listens on this Mac and every request
-      needs the secret token below.
+      MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor use Nibtree: read what it shows, run its
+      features and measure its performance. Off by default. When on, it only listens on this Mac and every request needs
+      the secret token below.
     {/snippet}
     <Switch label="MCP server" checked={settings.mcpEnabled} onchange={(on) => set("mcpEnabled", on)} />
   </SettingsRow>

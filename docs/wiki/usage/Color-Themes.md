@@ -1,8 +1,8 @@
 # Color Themes
 
-A color theme sets every color in Git Manager: panels, text, the editor and its syntax colors, diffs, the merge tool and the terminal. You pick one theme for light mode and one for dark mode, so the app keeps looking the way you like when macOS switches between day and night.
+A color theme sets every color in Nibtree: panels, text, the editor and its syntax colors, diffs, the merge tool and the terminal. You pick one theme for light mode and one for dark mode, so the app keeps looking the way you like when macOS switches between day and night.
 
-There are 41 themes, including the two built-in ones, **Git Manager Light** and **Git Manager Dark**, which are the defaults.
+There are 41 themes, including the two built-in ones, **Nibtree Light** and **Nibtree Dark**, which are the defaults.
 
 ![The Light theme and Dark theme pickers](../images/color-theme-pickers.png)
 
@@ -33,26 +33,26 @@ The same three choices are in the menu bar under **View > Appearance**, and the 
 
 Light themes:
 
-- Git Manager Light, GitHub Light, One Light, Solarized Light, Quiet Light, Ayu Light, Catppuccin Latte, Gruvbox Light, Tokyo Night Day, Rosé Pine Dawn, IntelliJ Light, Islands Light, VS Code Light+.
+- Nibtree Light, GitHub Light, One Light, Solarized Light, Quiet Light, Ayu Light, Catppuccin Latte, Gruvbox Light, Tokyo Night Day, Rosé Pine Dawn, Classic Light, Islet Light, Light+.
 
 Dark themes:
 
-- Git Manager Dark, Darcula, Islands Dark, VS Code Dark+, One Dark Pro, Dracula, Monokai, Monokai Pro, Monokai Charcoal, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
+- Nibtree Dark, Dusk, Islet Dark, Dark+, One Dark Pro, Dracula, Monokai, Monokai Pro, Monokai Charcoal, Nord, Solarized Dark, GitHub Dark, GitHub Dark Dimmed, Gruvbox Dark, Tokyo Night, Catppuccin Mocha, Catppuccin Macchiato, Ayu Dark, Ayu Mirage, Material Palenight, Night Owl, Cobalt2, Rosé Pine, Kanagawa.
 
 High contrast themes have their own group at the end of each list:
 
 - In the Dark theme list: High Contrast Dark, GitHub Dark High Contrast, Amber High Contrast.
 - In the Light theme list: High Contrast Light, GitHub Light High Contrast.
 
-![Git Manager in the Dracula theme](../images/color-theme-dracula.png)
+![Nibtree in the Dracula theme](../images/color-theme-dracula.png)
 
 *Dracula, a dark theme, with a file open and the Changes sidebar.*
 
-![Git Manager in the Solarized Light theme](../images/color-theme-solarized-light.png)
+![Nibtree in the Solarized Light theme](../images/color-theme-solarized-light.png)
 
 *Solarized Light, a light theme.*
 
-![Git Manager in the High Contrast Dark theme](../images/color-theme-high-contrast.png)
+![Nibtree in the High Contrast Dark theme](../images/color-theme-high-contrast.png)
 
 *High Contrast Dark: stronger text, borders and diff colors.*
 
@@ -66,7 +66,7 @@ High contrast themes have their own group at the end of each list:
 
 Islands Light and Islands Dark bring the colors of the JetBrains themes. For their rounded, spaced-out panels, turn on **Rounded panels** in Settings > Appearance; it works with every theme. See [Rounded Panels](Rounded-Panels.md).
 
-Every theme is checked for readable text. Text on the editor and on panels has a contrast of at least 4.5 to 1 (7 to 1 in high contrast themes), selected text stays readable, and diff colors stand out from the background. Where a theme's own colors would fail, Git Manager adjusts them a little.
+Every theme is checked for readable text. Text on the editor and on panels has a contrast of at least 4.5 to 1 (7 to 1 in high contrast themes), selected text stays readable, and diff colors stand out from the background. Where a theme's own colors would fail, Nibtree adjusts them a little.
 
 ## Known gaps
 
@@ -79,7 +79,7 @@ The themes are new, and a few things do not follow them yet:
 
 ## Saved where
 
-The two choices are saved in `~/.gitmanager/settings.json` as `lightColorTheme` and `darkColorTheme`, for example `"darkColorTheme": "dracula"`. An unknown name, or a dark theme in the light list, falls back to the default. See [Settings Files](Settings-Files.md).
+The two choices are saved in `~/.nibtree/settings.json` as `lightColorTheme` and `darkColorTheme`, for example `"darkColorTheme": "dracula"`. An unknown name, or a dark theme in the light list, falls back to the default. See [Settings Files](Settings-Files.md).
 
 ## Related
 

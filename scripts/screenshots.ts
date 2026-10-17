@@ -10,7 +10,7 @@
  * workspace, and OS dialogs, the opener and window commands never reach the app. Any other command
  * with an absolute path outside the demo folder is refused.
  *
- * Every run rebuilds the demo in /tmp/gitmanager-docs with scripts/make-docs-demo.sh, so paths in the
+ * Every run rebuilds the demo in /tmp/nibtree-docs with scripts/make-docs-demo.sh, so paths in the
  * UI are stable and nothing from an earlier run leaks into the next.
  *
  * Prerequisites:
@@ -32,7 +32,7 @@ import { previewOf } from "../src/lib/views/files/mediaPreview";
 
 const PROJECT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = join(PROJECT, "docs/wiki/images");
-const DEMO_DIR = "/tmp/gitmanager-docs";
+const DEMO_DIR = "/tmp/nibtree-docs";
 const DEV_SERVER = "http://127.0.0.1:1420";
 const VIEWPORT = { width: 1280, height: 800 };
 const SCALE = 2;
@@ -119,7 +119,7 @@ interface PageConfig {
   terminalMemory: number[];
 }
 
-/** A made-up token: the real one lives in ~/.gitmanager/mcp.json. */
+/** A made-up token: the real one lives in ~/.nibtree/mcp.json. */
 const FAKE_MCP_TOKEN = "3f9c2a7e1b4d8f6a0c5e9b2d7a4f1c8e6b3d0a9f5c2e7b4a1d8f6c3e0b9a5d2f";
 
 function mcpOffStatus(): Record<string, unknown> {
@@ -131,7 +131,7 @@ function mcpOffStatus(): Record<string, unknown> {
     url: "http://127.0.0.1:48731/mcp",
     token: FAKE_MCP_TOKEN,
     error: null,
-    cliCommand: "/Applications/Git Manager.app/Contents/MacOS/git-manager cli",
+    cliCommand: "/Applications/Nibtree.app/Contents/MacOS/nibtree cli",
     cliInstalledPath: null,
     cliOnPath: true,
   };
@@ -273,12 +273,12 @@ function installOverrides(config: PageConfig): void {
   const blocked = (cmd: string) => () => {
     throw { kind: "blocked", message: `screenshots.ts does not run ${cmd}` };
   };
-  // Exact folder or below it: a bare prefix would also let a sibling like /tmp/gitmanager-docs-x through.
+  // Exact folder or below it: a bare prefix would also let a sibling like /tmp/nibtree-docs-x through.
   const inside = (value: string) =>
     value === config.allowedRoot || value.startsWith(`${config.allowedRoot.replace(/\/+$/, "")}/`);
   const unsaved = new Map<string, { tabPath: string; workspaceId: string; savedAt: number; text: string }>();
   let mcpStatus = { ...config.mcp };
-  let memoryLog = { enabled: false, path: "/Users/you/.gitmanager/logs/memory.log", intervalMs: 500, thresholdMb: 5 };
+  let memoryLog = { enabled: false, path: "/Users/you/.nibtree/logs/memory.log", intervalMs: 500, thresholdMb: 5 };
   const overrides: Record<string, Handler> = {
     load_config: (args) => {
       const { configName } = args as { configName: string };
@@ -331,7 +331,7 @@ function installOverrides(config: PageConfig): void {
       store[configName] = root;
       return null;
     },
-    config_dir: () => "/Users/you/.gitmanager",
+    config_dir: () => "/Users/you/.nibtree",
     get_launch_mode: () => config.launch,
     save_mergetool: () => null,
     cancel_mergetool: () => null,
@@ -353,7 +353,7 @@ function installOverrides(config: PageConfig): void {
       );
       return measured.map((row, index) => ({ ...row, bytes: config.terminalMemory[index] ?? row.bytes }));
     },
-    // GitHub: never the real keychain, gh or ~/.gitmanager/github.json.
+    // GitHub: never the real keychain, gh or ~/.nibtree/github.json.
     github_account: () => structuredClone(config.github.account),
     github_cli_status: () => structuredClone(config.github.cli),
     github_sign_in_with_token: blocked("github_sign_in_with_token"),
@@ -363,7 +363,7 @@ function installOverrides(config: PageConfig): void {
     github_repository: blocked("github_repository"),
     github_sync_fork: blocked("github_sync_fork"),
     github_create_gist: blocked("github_create_gist"),
-    // MCP: the real server would open a port and write ~/.gitmanager/mcp.json.
+    // MCP: the real server would open a port and write ~/.nibtree/mcp.json.
     mcp_configure: (args) => {
       const { enabled, cliEnabled } = args as { enabled: boolean; cliEnabled: boolean };
       mcpStatus = { ...mcpStatus, enabled, cliEnabled, running: enabled || cliEnabled };
@@ -383,7 +383,7 @@ function installOverrides(config: PageConfig): void {
     mcp_regenerate_token: () => structuredClone(mcpStatus),
     cli_install: blocked("cli_install"),
     cli_uninstall: blocked("cli_uninstall"),
-    // The memory log would write into ~/.gitmanager/logs.
+    // The memory log would write into ~/.nibtree/logs.
     memory_log_configure: (args) => {
       const { enabled, intervalMs, thresholdMb } = args as {
         enabled: boolean;
@@ -403,7 +403,7 @@ function installOverrides(config: PageConfig): void {
     window_focus_owner: () => null,
     window_open: blocked("window_open"),
     window_close: blocked("window_close"),
-    // Remember unsaved changes would write into ~/.gitmanager/unsaved: kept in the page instead.
+    // Remember unsaved changes would write into ~/.nibtree/unsaved: kept in the page instead.
     unsaved_write: (args) => {
       const bytes = args as Uint8Array;
       const split = bytes.indexOf(10);
@@ -639,16 +639,16 @@ function previewResponse(url: string): { status: number; body?: Buffer; contentT
 function githubReleases(): unknown[] {
   const release = (version: string, prerelease: boolean, daysAgo: number, body: string) => ({
     tag_name: `v${version}`,
-    name: `Git Manager ${version}`,
+    name: `Nibtree ${version}`,
     body,
-    html_url: `https://github.com/shibbirweb/git-manager/releases/tag/v${version}`,
+    html_url: `https://github.com/shibbirweb/nibtree/releases/tag/v${version}`,
     published_at: new Date(Date.now() - daysAgo * 86400000).toISOString(),
     prerelease,
     draft: false,
     assets: [
       {
         name: `Git.Manager_${version}_aarch64.dmg`,
-        browser_download_url: `https://github.com/shibbirweb/git-manager/releases/download/v${version}/Git.Manager_${version}_aarch64.dmg`,
+        browser_download_url: `https://github.com/shibbirweb/nibtree/releases/download/v${version}/Git.Manager_${version}_aarch64.dmg`,
       },
     ],
   });
@@ -916,7 +916,7 @@ function appPid(): number | null {
   const apps = listing
     .split("\n")
     .map((line) => /^\s*(\d+)\s+(\S+)\s+(.*)$/.exec(line))
-    .filter((match): match is RegExpExecArray => match !== null && /target\/debug\/git-manager$/.test(match[3]))
+    .filter((match): match is RegExpExecArray => match !== null && /target\/debug\/nibtree$/.test(match[3]))
     .map((match) => ({ pid: Number(match[1]), elapsed: elapsedSeconds(match[2]) }))
     .sort((left, right) => left.elapsed - right.elapsed);
   return apps[0]?.pid ?? null;
@@ -1716,7 +1716,7 @@ define(
     await shot.page.mouse.move(5, 790);
     await shot.save(dialog);
   },
-  () => ({ stateLoadError: "/Users/you/.gitmanager/state.json is not valid JSON: expected value at line 1 column 1" }),
+  () => ({ stateLoadError: "/Users/you/.nibtree/state.json is not valid JSON: expected value at line 1 column 1" }),
 );
 
 define(
@@ -2655,7 +2655,7 @@ define(
 
 // media-preview-pdf.png is taken by hand: Playwright's WebKit has no PDF viewer, so this page would
 // show an empty frame. Open notes/lorem-ipsum.pdf of the demo in the real app window and capture it
-// (git-manager cli screenshot, or Cmd+Shift+4 then Space), then crop to the document. See
+// (nibtree cli screenshot, or Cmd+Shift+4 then Space), then crop to the document. See
 // docs/wiki/developer/How-the-Image-and-PDF-Preview-Works.md.
 
 define(
@@ -3547,7 +3547,7 @@ define("shelf-panel", async (shot) => {
     await shot.settle();
     await shot.save(bottomPanel(shot));
   } finally {
-    rmSync(join(storefront, ".git/gitmanager-shelf"), { recursive: true, force: true });
+    rmSync(join(storefront, ".git/nibtree-shelf"), { recursive: true, force: true });
   }
 });
 
@@ -3925,7 +3925,7 @@ define(
     launch: { mode: "app", repoPath: mediaSite },
     state: { activeRepos: {}, explorerOpen: false },
     lfsStatus: lfsInstalled,
-    localStorage: { "git-manager.lfs.installNoticeShown": "1" },
+    localStorage: { "nibtree.lfs.installNoticeShown": "1" },
   }),
 );
 
@@ -3959,7 +3959,7 @@ function mcpRunning(): Scenario {
         at: now - 20000,
         durationMs: 1,
         ok: false,
-        error: "This tool is turned off in Git Manager (Help > Available MCP Tools).",
+        error: "This tool is turned off in Nibtree (Help > Available MCP Tools).",
         client: "mcp",
       },
     ],
@@ -4063,7 +4063,7 @@ async function main(): Promise<void> {
         if (/No app window answered|did not answer through the bridge/.test(message)) {
           // macOS pauses a web view whose window is hidden, so every later shot would fail too.
           console.error(
-            "\nThe app window stopped answering. Keep the Git Manager window visible (not minimized or covered) while shots run.",
+            "\nThe app window stopped answering. Keep the Nibtree window visible (not minimized or covered) while shots run.",
           );
           break;
         }

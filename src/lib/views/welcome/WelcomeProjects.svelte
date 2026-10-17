@@ -148,7 +148,7 @@
 {#if empty}
   <Stack grow align="center" justify="center" gap="lg" padding="xxxl">
     <Logo size="large" />
-    <Text element="h1" variant="display">Welcome to Git Manager</Text>
+    <Text element="h1" variant="display">Welcome to Nibtree</Text>
     <Stack align="center" gap="xxs">
       <Text tone="dim">Open a folder with one repository, many repositories, or none yet.</Text>
       <Text tone="dim">Or clone one from a server.</Text>

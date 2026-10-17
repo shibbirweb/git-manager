@@ -45,7 +45,7 @@ Press Esc or click outside to close the panel.
 ### What is remembered
 
 - **Sign-off** and **GPG sign** are saved settings and apply to every commit in every repository. They are also in **Settings > Git**, as **Sign off commits** and **GPG sign commits**.
-- **Author** and **Skip hooks** belong to one repository and last until you quit Git Manager. Then they reset, so you never commit under another name by accident days later.
+- **Author** and **Skip hooks** belong to one repository and last until you quit Nibtree. Then they reset, so you never commit under another name by accident days later.
 
 A badge on the gear counts the options that change the commit, and the gear turns the accent color. Its tooltip lists them, for example **Commit Options: --signoff --no-verify**.
 

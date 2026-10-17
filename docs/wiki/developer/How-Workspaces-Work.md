@@ -51,7 +51,7 @@ Once the repositories are known the workspace is on screen, and `loadAllChanges`
 
 ### Workspace files and the session
 
-Workspace files (`.gitmanager-workspace` and VS Code `.code-workspace`) and which folders reopen at start are in [How workspace files work](How-Workspace-Files-Work.md).
+Workspace files (`.nibtree-workspace` and VS Code `.code-workspace`) and which folders reopen at start are in [How workspace files work](How-Workspace-Files-Work.md).
 
 ### Showing or hiding the activity bars
 

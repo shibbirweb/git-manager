@@ -1,10 +1,10 @@
-//! Where Git Manager keeps its files (`~/.gitmanager`), shared by the app and this tool so both
+//! Where Nibtree keeps its files (`~/.nibtree`), shared by the app and this tool so both
 //! always look in the same folder.
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-pub const DIR_NAME: &str = ".gitmanager";
+pub const DIR_NAME: &str = ".nibtree";
 
 pub fn home_dir() -> Result<PathBuf, String> {
     home_from(cfg!(windows), |name| std::env::var_os(name)).ok_or_else(|| "Could not find your home folder".to_string())

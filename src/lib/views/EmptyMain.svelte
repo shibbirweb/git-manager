@@ -78,7 +78,7 @@
   {/if}
   <Stack grow align="center" justify="center" gap="mdPlus" padding="xl" label="Start">
     <Logo size="soft" />
-    <Text variant="title">{repoStore.workspace?.name ?? "Git Manager"}</Text>
+    <Text variant="title">{repoStore.workspace?.name ?? "Nibtree"}</Text>
     <Stack gap="xs">
       {#each actions as action (action.label)}
         <Row size="entry" disabled={action.disabled} onclick={action.run}>

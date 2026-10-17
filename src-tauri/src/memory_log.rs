@@ -1,6 +1,6 @@
 //! The debug memory log (Settings > Automation): while it is on, a thread reads the memory of
 //! the app and its WebKit processes every interval and writes a line to
-//! ~/.gitmanager/logs/memory.log whenever the total changed by the threshold or more, plus a line
+//! ~/.nibtree/logs/memory.log whenever the total changed by the threshold or more, plus a line
 //! for every UI event the window reports (tab, view, scroll start and stop). Off: no thread.
 
 use std::fs::{File, OpenOptions};

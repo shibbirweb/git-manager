@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { recentEntries, recentMenuText, type RecentSources } from "./recentEntries";
 
 const sources: RecentSources = {
-  recentWorkspaceFiles: ["/Users/me/work/team.gitmanager-workspace", "/Users/me/old.code-workspace"],
+  recentWorkspaceFiles: ["/Users/me/work/team.nibtree-workspace", "/Users/me/old.code-workspace"],
   recentWorkspaces: [
     ["/Users/me/a", "/Users/me/b"],
     ["/w/1", "/w/2", "/w/3", "/w/4"],

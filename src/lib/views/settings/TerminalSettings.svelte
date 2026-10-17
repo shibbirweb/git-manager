@@ -97,7 +97,7 @@
     }),
   );
   const SAMPLE = [
-    { parts: [{ text: " ~/git-manager   main", dim: true }, { text: " ❯ git log --oneline" }] },
+    { parts: [{ text: " ~/nibtree   main", dim: true }, { text: " ❯ git log --oneline" }] },
     { parts: [{ text: "a1b2c3d", bold: true }, { text: " fix: a => b != c === d -> e" }] },
     { text: "0O 1lI { } [ ] | && ||" },
   ];

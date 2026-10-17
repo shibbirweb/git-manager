@@ -1,8 +1,8 @@
 //! The command line tool: a client of the running app's MCP server. It finds the server through
-//! `~/.gitmanager/mcp.json` and talks only to 127.0.0.1.
+//! `~/.nibtree/mcp.json` and talks only to 127.0.0.1.
 //!
-//! On macOS and Linux the app runs it as `git-manager cli ...`. On Windows the app is a GUI
-//! program with no console, so the installer also ships `git-manager-cli.exe`, a console program
+//! On macOS and Linux the app runs it as `nibtree cli ...`. On Windows the app is a GUI
+//! program with no console, so the installer also ships `nibtree-cli.exe`, a console program
 //! built from this crate (src/main.rs), which runs `cli ...` itself and starts the app otherwise.
 
 pub mod home;
@@ -18,7 +18,7 @@ use serde_json::{json, Map, Value};
 use server_file as token;
 
 /// The header that tells the server a request comes from this tool, not an AI harness.
-pub const CLIENT_HEADER: &str = "x-git-manager-client";
+pub const CLIENT_HEADER: &str = "x-nibtree-client";
 /// The MCP protocol version this tool asks for (the newest the server speaks; a test in the app checks it).
 pub const PROTOCOL_VERSION: &str = "2025-06-18";
 
@@ -27,12 +27,12 @@ pub const EXIT_TOOL_ERROR: i32 = 1;
 pub const EXIT_UNAVAILABLE: i32 = 2;
 
 const MAX_RESPONSE_BYTES: u64 = 64 * 1024 * 1024;
-const NOT_RUNNING: &str = "Git Manager is not running, or its MCP server and command line tool are both off.";
+const NOT_RUNNING: &str = "Nibtree is not running, or its MCP server and command line tool are both off.";
 
-const HELP: &str = "Use Git Manager from the command line. The app must be running with the command line tool
+const HELP: &str = "Use Nibtree from the command line. The app must be running with the command line tool
 turned on in Settings.
 
-Usage: git-manager cli <command> [options]
+Usage: nibtree cli <command> [options]
 
 Commands:
   status                 Is the app running, its server address and which switches are on
@@ -46,59 +46,59 @@ Commands:
   memory [--interval <ms>] [--duration <s>] [--json]
                          Live memory: one line per sample until Ctrl+C (or --duration)
 
-Run git-manager cli <command> --help for details. Exit codes: 0 ok, 1 the tool reported an
+Run nibtree cli <command> --help for details. Exit codes: 0 ok, 1 the tool reported an
 error, 2 the app cannot be reached, is switched off, or the command was used wrongly.";
 
-const STATUS_HELP: &str = "Usage: git-manager cli status
+const STATUS_HELP: &str = "Usage: nibtree cli status
 
-Shows whether Git Manager is running, the server address and which switches are on.";
+Shows whether Nibtree is running, the server address and which switches are on.";
 
-const TOOLS_HELP: &str = "Usage: git-manager cli tools [--json] [--all]
+const TOOLS_HELP: &str = "Usage: nibtree cli tools [--json] [--all]
 
 Lists the tools you can call: name, category and what it does.
   --json  Print the full tool list as JSON
-  --all   Also list the tools turned off in Git Manager (marked \"off\")";
+  --all   Also list the tools turned off in Nibtree (marked \"off\")";
 
-const DESCRIBE_HELP: &str = "Usage: git-manager cli describe <tool>
+const DESCRIBE_HELP: &str = "Usage: nibtree cli describe <tool>
 
 Shows a tool's description, whether it changes anything, and its arguments (JSON Schema).";
 
-const CALL_HELP: &str = "Usage: git-manager cli call <tool> [key=value ...] [--args '<json>' | --args-file <file>] [--json] [--out <file>]
+const CALL_HELP: &str = "Usage: nibtree cli call <tool> [key=value ...] [--args '<json>' | --args-file <file>] [--json] [--out <file>]
 
 Runs a tool. Each key=value is one argument; the value is read as JSON when it is valid JSON
 (numbers, true, false, [\"a\",\"b\"], {...}) and as text otherwise. --args gives the arguments as
 one JSON object; key=value pairs win over it.
   --args-file <file>  Reads that JSON object from a file, or from stdin with -. Use it where the
                       shell mangles quotes, like Windows PowerShell 5.1:
-                      '{\"limit\": 5}' | git-manager cli call git_log --args-file -
+                      '{\"limit\": 5}' | nibtree cli call git_log --args-file -
   --json              Print the structured result as JSON
   --out <file>        Where to save an image result (default: a temporary file, whose path is printed)
 
-Example: git-manager cli call git_log repoPath=\"$PWD\" limit=5";
+Example: nibtree cli call git_log repoPath=\"$PWD\" limit=5";
 
-const CLONE_HELP: &str = "Usage: git-manager cli clone <url> [folder] [--into <dir>] [--open window|workspace]
+const CLONE_HELP: &str = "Usage: nibtree cli clone <url> [folder] [--into <dir>] [--open window|workspace]
 
-Clones a repository into a new folder through Git Manager, like Git > Clone, with your git
+Clones a repository into a new folder through Nibtree, like Git > Clone, with your git
 credentials and settings. It runs the clone_repository tool, which starts turned off: turn it
 on in Help > Available MCP Tools.
   folder             Name of the new folder (default: the URL's last part without .git)
   --into <dir>       The folder to clone into (default: the current folder)
-  --open window      Open the clone in the Git Manager window, in place of its folders
+  --open window      Open the clone in the Nibtree window, in place of its folders
   --open workspace   Add the clone to the folders open in the window
 
-Example: git-manager cli clone https://github.com/owner/repo.git --open window";
+Example: nibtree cli clone https://github.com/owner/repo.git --open window";
 
 /// A clone may download for a long time; other calls keep the shorter limit.
 const CLONE_TIMEOUT: Duration = Duration::from_secs(60 * 60);
 
-const SCREENSHOT_HELP: &str = "Usage: git-manager cli screenshot <file.png>
+const SCREENSHOT_HELP: &str = "Usage: nibtree cli screenshot <file.png>
 
-Saves a PNG screenshot of the Git Manager window (macOS asks for Screen Recording permission
+Saves a PNG screenshot of the Nibtree window (macOS asks for Screen Recording permission
 the first time).";
 
-const MEMORY_HELP: &str = "Usage: git-manager cli memory [--interval <ms>] [--duration <s>] [--json]
+const MEMORY_HELP: &str = "Usage: nibtree cli memory [--interval <ms>] [--duration <s>] [--json]
 
-Prints Git Manager's memory live, one line per sample: the total and each process (the app,
+Prints Nibtree's memory live, one line per sample: the total and each process (the app,
 the web content that draws the UI, graphics and networking), like Activity Monitor counts it.
 Stops with Ctrl+C, or after --duration seconds with the minimum, average and peak.
   --interval <ms>  Time between samples (default 500, at least 100)
@@ -172,7 +172,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             }
             match rest {
                 [tool_name] if !tool_name.starts_with('-') => Ok(Command::Describe { tool_name: tool_name.clone() }),
-                _ => Err("Usage: git-manager cli describe <tool>".to_string()),
+                _ => Err("Usage: nibtree cli describe <tool>".to_string()),
             }
         }
         "call" => {
@@ -193,7 +193,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             }
             match rest {
                 [file_path] if !file_path.starts_with('-') => Ok(Command::Screenshot { file_path: PathBuf::from(file_path) }),
-                _ => Err("Usage: git-manager cli screenshot <file.png>".to_string()),
+                _ => Err("Usage: nibtree cli screenshot <file.png>".to_string()),
             }
         }
         "memory" => {
@@ -227,7 +227,7 @@ fn parse_clone(rest: &[String]) -> Result<Command, String> {
     match positional.as_slice() {
         [url] => Ok(Command::Clone { url: (*url).clone(), folder_name: None, into, open }),
         [url, folder_name] => Ok(Command::Clone { url: (*url).clone(), folder_name: Some((*folder_name).clone()), into, open }),
-        _ => Err("Usage: git-manager cli clone <url> [folder] [--into <dir>] [--open window|workspace]".to_string()),
+        _ => Err("Usage: nibtree cli clone <url> [folder] [--into <dir>] [--open window|workspace]".to_string()),
     }
 }
 
@@ -342,7 +342,7 @@ fn watch_memory(client: &Client, interval_ms: u64, duration_s: Option<u64>, json
 
 fn parse_call(rest: &[String]) -> Result<Command, String> {
     let Some((tool_name, rest)) = rest.split_first().filter(|(tool_name, _)| !tool_name.starts_with('-')) else {
-        return Err("Name the tool to call: git-manager cli call <tool> [key=value ...]".to_string());
+        return Err("Name the tool to call: nibtree cli call <tool> [key=value ...]".to_string());
     };
     let mut base = Map::new();
     let mut pairs = Map::new();
@@ -481,21 +481,21 @@ impl Client {
             .header("Accept", "application/json, text/event-stream")
             .header(CLIENT_HEADER, "cli")
             .send(body.as_str());
-        let mut response = sent.map_err(|err| format!("Could not reach Git Manager at {} ({err}). Is it running?", self.url))?;
+        let mut response = sent.map_err(|err| format!("Could not reach Nibtree at {} ({err}). Is it running?", self.url))?;
         let status = response.status().as_u16();
         let text = response
             .body_mut()
             .with_config()
             .limit(MAX_RESPONSE_BYTES)
             .read_to_string()
-            .map_err(|err| format!("Could not read Git Manager's answer: {err}"))?;
+            .map_err(|err| format!("Could not read Nibtree's answer: {err}"))?;
         let reply: Value = serde_json::from_str(&text).unwrap_or(Value::Null);
         if status != 200 {
             let message = reply["error"]
                 .as_str()
                 .or_else(|| reply["error"]["message"].as_str())
                 .map(str::to_string)
-                .unwrap_or_else(|| format!("Git Manager answered with HTTP {status}"));
+                .unwrap_or_else(|| format!("Nibtree answered with HTTP {status}"));
             return Err(message);
         }
         if let Some(message) = reply["error"]["message"].as_str() {
@@ -510,13 +510,13 @@ impl Client {
             json!({
                 "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {},
-                "clientInfo": { "name": "git-manager-cli", "version": env!("CARGO_PKG_VERSION") },
+                "clientInfo": { "name": "nibtree-cli", "version": env!("CARGO_PKG_VERSION") },
             }),
         )
     }
 
     pub fn list_tools(&self, include_disabled: bool) -> Result<Vec<Value>, String> {
-        let result = self.request("tools/list", json!({ "_meta": { "gitManager/includeDisabled": include_disabled } }))?;
+        let result = self.request("tools/list", json!({ "_meta": { "nibtree/includeDisabled": include_disabled } }))?;
         Ok(result["tools"].as_array().cloned().unwrap_or_default())
     }
 
@@ -540,8 +540,8 @@ fn print_tools(out: &mut dyn Write, tools: &[Value], json_output: bool) -> std::
     let width = tools.iter().filter_map(|tool| tool["name"].as_str()).map(str::len).max().unwrap_or(0);
     for tool in tools {
         let name = tool["name"].as_str().unwrap_or_default();
-        let category = tool["_meta"]["gitManager/category"].as_str().unwrap_or_default();
-        let off = tool["_meta"]["gitManager/enabled"].as_bool() == Some(false);
+        let category = tool["_meta"]["nibtree/category"].as_str().unwrap_or_default();
+        let off = tool["_meta"]["nibtree/enabled"].as_bool() == Some(false);
         let description = first_sentence(tool["description"].as_str().unwrap_or_default());
         let mark = if off { " (off)" } else { "" };
         writeln!(out, "{name:<width$}  {category:<11}  {description}{mark}")?;
@@ -558,9 +558,9 @@ fn print_description(out: &mut dyn Write, tool: &Value) -> std::io::Result<()> {
     } else {
         "changes things"
     };
-    let state = if tool["_meta"]["gitManager/enabled"].as_bool() == Some(false) { "off" } else { "on" };
+    let state = if tool["_meta"]["nibtree/enabled"].as_bool() == Some(false) { "off" } else { "on" };
     writeln!(out, "{} ({})", tool["name"].as_str().unwrap_or_default(), tool["title"].as_str().unwrap_or_default())?;
-    writeln!(out, "Category: {}. It {changes}. Turned {state}.", tool["_meta"]["gitManager/category"].as_str().unwrap_or_default())?;
+    writeln!(out, "Category: {}. It {changes}. Turned {state}.", tool["_meta"]["nibtree/category"].as_str().unwrap_or_default())?;
     writeln!(out)?;
     writeln!(out, "{}", tool["description"].as_str().unwrap_or_default())?;
     writeln!(out)?;
@@ -573,7 +573,7 @@ fn temp_image_path() -> PathBuf {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|elapsed| elapsed.as_millis())
         .unwrap_or(0);
-    std::env::temp_dir().join(format!("git-manager-{stamp}.png"))
+    std::env::temp_dir().join(format!("nibtree-{stamp}.png"))
 }
 
 /// Prints a tools/call result; image blocks go to `image_out` (or a temporary file).
@@ -652,14 +652,14 @@ fn execute(command: Command, config_dir: &Path, out: &mut dyn Write, err: &mut d
         return match client.initialize() {
             Ok(result) => {
                 let on_off = |key: &str| if result["_meta"][key].as_bool() == Some(true) { "on" } else { "off" };
-                writeln!(out, "Git Manager {} is running.", result["serverInfo"]["version"].as_str().unwrap_or_default())?;
+                writeln!(out, "Nibtree {} is running.", result["serverInfo"]["version"].as_str().unwrap_or_default())?;
                 writeln!(out, "Server: {}", client.url())?;
-                writeln!(out, "MCP server: {}", on_off("gitManager/mcpEnabled"))?;
-                writeln!(out, "Command line tool: {}", on_off("gitManager/cliEnabled"))?;
+                writeln!(out, "MCP server: {}", on_off("nibtree/mcpEnabled"))?;
+                writeln!(out, "Command line tool: {}", on_off("nibtree/cliEnabled"))?;
                 Ok(EXIT_OK)
             }
             Err(message) => {
-                writeln!(out, "Git Manager is running at {}, but: {message}", client.url())?;
+                writeln!(out, "Nibtree is running at {}, but: {message}", client.url())?;
                 Ok(EXIT_UNAVAILABLE)
             }
         };
@@ -681,7 +681,7 @@ fn execute(command: Command, config_dir: &Path, out: &mut dyn Write, err: &mut d
             };
             return match tools.iter().find(|tool| tool["name"] == tool_name.as_str()) {
                 Some(tool) => print_description(out, tool).map(|_| EXIT_OK),
-                None => writeln!(err, "No tool named {tool_name}. See git-manager cli tools --all.").map(|_| EXIT_UNAVAILABLE),
+                None => writeln!(err, "No tool named {tool_name}. See nibtree cli tools --all.").map(|_| EXIT_UNAVAILABLE),
             };
         }
         Command::Call { tool_name, arguments, json, out: image_out } => (tool_name, arguments, json, image_out),
@@ -713,8 +713,8 @@ pub fn run_with(args: &[String], config_dir: &Path, out: &mut dyn Write, err: &m
 }
 
 /// The app's file names next to the console program: Tauri names the Windows app after the
-/// Cargo binary, and after the product name in some setups.
-const APP_EXE_NAMES: [&str; 3] = ["git-manager.exe", "Git Manager.exe", "git-manager"];
+/// Cargo binary, and after the product name in some setups (the same name on case-insensitive disks).
+const APP_EXE_NAMES: [&str; 3] = ["nibtree.exe", "Nibtree.exe", "nibtree"];
 
 /// The app's program in the folder of `exe` (the installer puts both there).
 pub fn app_next_to(exe: &Path) -> Option<PathBuf> {
@@ -729,19 +729,19 @@ pub fn console_main(args: &[String]) -> i32 {
         return run(&args[1..]);
     }
     let Some(app) = std::env::current_exe().ok().and_then(|exe| app_next_to(&exe)) else {
-        eprintln!("Could not find Git Manager next to this program. Reinstall Git Manager.");
+        eprintln!("Could not find Nibtree next to this program. Reinstall Nibtree.");
         return EXIT_UNAVAILABLE;
     };
     match std::process::Command::new(&app).args(args).spawn() {
         Ok(_) => EXIT_OK,
         Err(err) => {
-            eprintln!("Could not start Git Manager: {err}");
+            eprintln!("Could not start Nibtree: {err}");
             EXIT_UNAVAILABLE
         }
     }
 }
 
-/// `git-manager cli ...` from main: no window, the process exits with the code.
+/// `nibtree cli ...` from main: no window, the process exits with the code.
 pub fn run(args: &[String]) -> i32 {
     let config_dir = match home::home_dir() {
         Ok(home) => home::config_dir_in(&home),
@@ -761,12 +761,13 @@ mod tests {
     #[test]
     fn the_app_is_found_next_to_the_console_program() {
         let dir = tempfile::TempDir::new().unwrap();
-        let console = dir.path().join("git-manager-cli.exe");
+        let console = dir.path().join("nibtree-cli.exe");
         assert_eq!(app_next_to(&console), None);
-        std::fs::write(dir.path().join("Git Manager.exe"), "").unwrap();
-        assert_eq!(app_next_to(&console), Some(dir.path().join("Git Manager.exe")));
-        std::fs::write(dir.path().join("git-manager.exe"), "").unwrap();
-        assert_eq!(app_next_to(&console), Some(dir.path().join("git-manager.exe")));
+        std::fs::write(dir.path().join("nibtree"), "").unwrap();
+        assert_eq!(app_next_to(&console), Some(dir.path().join("nibtree")));
+        // The Cargo binary's name wins over the others.
+        std::fs::write(dir.path().join("nibtree.exe"), "").unwrap();
+        assert_eq!(app_next_to(&console), Some(dir.path().join("nibtree.exe")));
     }
 
     #[test]
@@ -793,6 +794,6 @@ mod tests {
         let (mut out, mut err) = (Vec::new(), Vec::new());
         let args = vec!["no-such-command".to_string()];
         assert_eq!(run_with(&args, Path::new("/nonexistent"), &mut out, &mut err), EXIT_UNAVAILABLE);
-        assert!(String::from_utf8(err).unwrap().contains("Usage: git-manager cli"));
+        assert!(String::from_utf8(err).unwrap().contains("Usage: nibtree cli"));
     }
 }

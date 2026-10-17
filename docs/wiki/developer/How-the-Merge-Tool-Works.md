@@ -4,7 +4,7 @@ The merge tool is the JetBrains-style three pane view (Yours, Result, Theirs) wi
 
 ## Why we need it
 
-Conflict markers are hard to read. The JetBrains merge dialog shows both sides next to the result and takes changes with one click; building that, light on memory, was the original goal of Git Manager. Rust computes the chunks once, and pure, tested TypeScript tracks what you did with them.
+Conflict markers are hard to read. A merge dialog shows both sides next to the result and takes changes with one click; building that, light on memory, was the original goal of Nibtree. Rust computes the chunks once, and pure, tested TypeScript tracks what you did with them.
 
 ## How it works
 

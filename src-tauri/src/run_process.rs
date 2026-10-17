@@ -19,7 +19,7 @@ use crate::terminal::{ShellProfile, SpawnOptions, TerminalInfo, TerminalRegistry
 #[cfg(unix)]
 const CAPTURE_TIMEOUT: Duration = Duration::from_secs(10);
 #[cfg(unix)]
-const ENV_MARKER: &str = "__GIT_MANAGER_ENV__";
+const ENV_MARKER: &str = "__NIBTREE_ENV__";
 
 /// Variables of the capturing shell itself, not of the user's setup.
 const SKIPPED_VARIABLES: &[&str] = &["_", "PWD", "OLDPWD", "SHLVL", "PS1", "PS2", "TERM", "TERM_PROGRAM", "TERM_PROGRAM_VERSION"];

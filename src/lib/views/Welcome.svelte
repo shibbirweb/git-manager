@@ -57,7 +57,7 @@
         <Stack direction="row" align="center" gap="lg" paddingX="mdPlus">
           <Logo />
           <Stack gap="xxs">
-            <Text variant="heading">Git Manager</Text>
+            <Text variant="heading">Nibtree</Text>
             {#if updates.current}
               <Text size="small" tone="dim">{updates.current}</Text>
             {/if}

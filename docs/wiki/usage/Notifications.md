@@ -1,6 +1,6 @@
 # Notifications
 
-Git Manager tells you when something happens: a push went through, a pull failed, a fetch found new commits, a stash was saved. Each message pops up for a moment in the bottom right corner, like the balloons in PhpStorm. Every message is also kept in the Notifications panel, so you can read it later even if you missed it.
+Nibtree tells you when something happens: a push went through, a pull failed, a fetch found new commits, a stash was saved. Each message pops up for a moment in the bottom right corner, as a balloon. Every message is also kept in the Notifications panel, so you can read it later even if you missed it.
 
 ## Pop-up messages
 
@@ -54,7 +54,7 @@ The panel lists every message of this session, newest first:
 
 While the panel is open, messages go straight into the list and no balloons pop up, because you can already see them.
 
-The list starts empty each time you open Git Manager. It keeps up to 200 messages.
+The list starts empty each time you open Nibtree. It keeps up to 200 messages.
 
 ## The count on the bell
 

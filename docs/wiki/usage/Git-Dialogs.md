@@ -131,7 +131,7 @@ Paste the **Repository URL**. **Clone into folder** starts next to the open fold
 
 While it clones you see git's progress. **Cancel** stops git and removes the folder it was creating. When the clone is done, choose **Open in This Window**, **Add to Workspace** (only when a folder is open) or **Not Now**.
 
-Scripts and AI tools can clone too, with `git-manager cli clone` or the `clone_repository` tool. See [MCP Server and Command Line Tool](MCP-and-CLI.md).
+Scripts and AI tools can clone too, with `nibtree cli clone` or the `clone_repository` tool. See [MCP Server and Command Line Tool](MCP-and-CLI.md).
 
 ## Related
 

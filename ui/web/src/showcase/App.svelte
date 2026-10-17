@@ -54,7 +54,7 @@
 
 <div class="shell">
   <nav class="sidebar" aria-label="Components">
-    <div class="brand">Git Manager UI</div>
+    <div class="brand">Nibtree UI</div>
     <input class="filter" placeholder="Filter components" bind:value={filter} aria-label="Filter components" />
     <div class="list">
       <div class="group">Foundations</div>

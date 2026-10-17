@@ -17,7 +17,7 @@ const payload = [
   { tag_name: "v0.3.0-beta.1", prerelease: true, body: "beta notes", html_url: "https://x/b1", assets: [] },
   {
     tag_name: "v0.2.0",
-    name: "Git Manager v0.2.0",
+    name: "Nibtree v0.2.0",
     body: "### Added\n- Things",
     html_url: "https://x/020",
     prerelease: false,
@@ -34,7 +34,7 @@ describe("parseReleases", () => {
     const releases = parseReleases(payload, "macOS");
     expect(releases.map((release) => release.tag)).toEqual(["v0.3.0-beta.1", "v0.2.0", "v0.1.1", "v0.2.1-beta.1"]);
     expect(releases[1].downloadUrl).toBe("https://x/020.dmg");
-    expect(releases[1].name).toBe("Git Manager v0.2.0");
+    expect(releases[1].name).toBe("Nibtree v0.2.0");
     expect(releases[2].name).toBe("v0.1.1");
     expect(parseReleases({ message: "rate limited" }, "macOS")).toEqual([]);
   });
@@ -134,7 +134,7 @@ describe("renderMarkdown", () => {
 describe("issue links", () => {
   it("pre-fills the bug form with version and platform", () => {
     const url = new URL(bugReportUrl("0.2.0-beta.1", "macOS 14.5"));
-    expect(url.pathname).toBe("/shibbirweb/git-manager/issues/new");
+    expect(url.pathname).toBe("/shibbirweb/nibtree/issues/new");
     expect(url.searchParams.get("template")).toBe("bug_report.yml");
     expect(url.searchParams.get("version")).toBe("0.2.0-beta.1");
     expect(url.searchParams.get("platform")).toBe("macOS 14.5");

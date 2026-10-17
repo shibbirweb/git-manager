@@ -1,6 +1,6 @@
 # MCP Server and Command Line Tool
 
-Git Manager can let AI tools such as Claude Code, Cursor or VS Code use the app. They can read your repositories, run git actions, open files, drive the window and measure its memory. It does this with **MCP** (Model Context Protocol), an open standard that AI tools use to call "tools" in other programs. The same tools also work from a terminal with the **command line tool**, `git-manager cli`.
+Nibtree can let AI tools such as Claude Code, Cursor or VS Code use the app. They can read your repositories, run git actions, open files, drive the window and measure its memory. It does this with **MCP** (Model Context Protocol), an open standard that AI tools use to call "tools" in other programs. The same tools also work from a terminal with the **command line tool**, `nibtree cli`.
 
 Both are off by default. While both are off, nothing listens and nothing extra runs.
 
@@ -23,10 +23,10 @@ Both are off by default. While both are off, nothing listens and nothing extra r
 Under **Connect Claude Code**, click **Copy** and run the command once in a terminal. It looks like this, with your real token:
 
 ```sh
-claude mcp add --transport http git-manager http://127.0.0.1:48731/mcp --header "Authorization: Bearer <token>"
+claude mcp add --transport http nibtree http://127.0.0.1:48731/mcp --header "Authorization: Bearer <token>"
 ```
 
-Then start Claude Code and ask, for example, "What changed in my repository?" or "Open the file with the cart logic in Git Manager". Git Manager must be running with a folder open.
+Then start Claude Code and ask, for example, "What changed in my repository?" or "Open the file with the cart logic in Nibtree". Nibtree must be running with a folder open.
 
 ## Connect other tools
 
@@ -35,7 +35,7 @@ Most other MCP clients (Cursor, VS Code, Windsurf and more) read a JSON config. 
 ```json
 {
   "mcpServers": {
-    "git-manager": {
+    "nibtree": {
       "type": "http",
       "url": "http://127.0.0.1:48731/mcp",
       "headers": { "Authorization": "Bearer <token>" }
@@ -56,7 +56,7 @@ Open **Help > Available MCP Tools...** (or the button next to the Status line). 
 - **can change files**: for example staging or committing.
 - **destructive**: it can lose work or run commands, such as discarding changes, pushing, resetting a branch, writing, renaming, moving or trashing files, running scripts or typing in a terminal. These start **off**.
 
-`clone_repository` starts off too, though it is not destructive: it is the one tool that writes outside the folders open in Git Manager.
+`clone_repository` starts off too, though it is not destructive: it is the one tool that writes outside the folders open in Nibtree.
 
 Type in **Filter tools** to find one. **Turn All On** and **Turn All Off** work on the tools shown, or on one category. **Turn All On** asks first when it would turn on destructive tools. **Restore Defaults** puts the tools shown back to how they start, destructive tools and `clone_repository` off and every other tool on, after asking you. A single switch turns its tool on right away. The header says how many tools are on, for example "74 of 86 tools on".
 
@@ -81,20 +81,20 @@ Your AI tool reads each tool's own description, so you can simply ask in plain w
 
 *The Command line tool section with Install in ~/.local/bin and example commands.*
 
-Turn on **Command line tool** in Settings, Automation. Then click **Install in ~/.local/bin** (**Install** on Windows) so you can type `git-manager` anywhere. On a Mac, if that folder is not on your PATH, Settings shows a line for `~/.zshrc`; on Windows it goes into `WindowsApps`, which is on your PATH. **Remove** takes it away.
+Turn on **Command line tool** in Settings, Automation. Then click **Install in ~/.local/bin** (**Install** on Windows) so you can type `nibtree` anywhere. On a Mac, if that folder is not on your PATH, Settings shows a line for `~/.zshrc`; on Windows it goes into `WindowsApps`, which is on your PATH. **Remove** takes it away.
 
 ```sh
-git-manager cli status                     # is the app running, which switches are on
-git-manager cli tools                      # the tools that are on (--all lists every tool)
-git-manager cli describe git_log           # what a tool does and its arguments
-git-manager cli call git_log repoPath="$PWD" limit=5
-git-manager cli call copy_paths paths='["/Users/me/shop/src/cart.ts"]' targetFolder=/Users/me/shop/lib
-git-manager cli clone https://github.com/owner/repo.git --open window
-git-manager cli screenshot ~/Desktop/gm.png
-git-manager cli memory --duration 10       # live memory, then the minimum, average and peak
+nibtree cli status                     # is the app running, which switches are on
+nibtree cli tools                      # the tools that are on (--all lists every tool)
+nibtree cli describe git_log           # what a tool does and its arguments
+nibtree cli call git_log repoPath="$PWD" limit=5
+nibtree cli call copy_paths paths='["/Users/me/shop/src/cart.ts"]' targetFolder=/Users/me/shop/lib
+nibtree cli clone https://github.com/owner/repo.git --open window
+nibtree cli screenshot ~/Desktop/gm.png
+nibtree cli memory --duration 10       # live memory, then the minimum, average and peak
 ```
 
-`clone` works like `git clone`: it clones into the folder you are in (or `--into <folder>`), names the new folder after the URL unless you give a name, and `--open window` or `--open workspace` shows it in Git Manager. Turn on `clone_repository` in Available MCP Tools first.
+`clone` works like `git clone`: it clones into the folder you are in (or `--into <folder>`), names the new folder after the URL unless you give a name, and `--open window` or `--open workspace` shows it in Nibtree. Turn on `clone_repository` in Available MCP Tools first.
 
 Arguments go as `name=value`. A list is written as JSON in single quotes, like `paths='["/a.ts","/b.ts"]'` above. If your shell mangles quotes, pass a JSON file with `--args-file args.json`, or pipe it in with `--args-file -`. Add `--json` for JSON output. The tool switches in Available MCP Tools apply here too.
 
@@ -104,14 +104,14 @@ The exit code is the number a command hands back to the shell or script that ran
 - **1**: the tool reported an error.
 - **2**: the app cannot be reached or is switched off, or the command was used wrongly.
 
-On Windows, `git-manager` runs `git-manager-cli.exe`, a console program next to the app. Windows PowerShell 5.1 breaks JSON in `--args`, so pipe it in: `'{"limit": 5}' | git-manager cli call git_log --args-file -`.
+On Windows, `nibtree` runs `nibtree-cli.exe`, a console program next to the app. Windows PowerShell 5.1 breaks JSON in `--args`, so pipe it in: `'{"limit": 5}' | nibtree cli call git_log --args-file -`.
 
 ## Is it safe?
 
 - The server only listens on this Mac (127.0.0.1), never on the network.
-- Every request needs the secret token. It is kept in `~/.gitmanager/mcp.json`, readable only by you.
+- Every request needs the secret token. It is kept in `~/.nibtree/mcp.json`, readable only by you.
 - Web pages cannot use it: requests from a browser are refused.
-- Tools only reach the folders open in Git Manager right now. Anything else is refused. The one exception is `clone_repository`, which starts off and only makes a new folder.
+- Tools only reach the folders open in Nibtree right now. Anything else is refused. The one exception is `clone_repository`, which starts off and only makes a new folder.
 - Destructive tools are off until you turn them on.
 - Each switch has its own job. With only the command line tool on, an MCP client cannot get in. With only the MCP server on, the command line tool cannot get in.
 

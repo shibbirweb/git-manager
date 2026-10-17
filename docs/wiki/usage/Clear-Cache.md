@@ -1,6 +1,6 @@
 # Clear Cache
 
-Git Manager draws its window with WebKit, the engine behind Safari. When you close files, the app lets go of everything they used, but WebKit often keeps that memory for itself instead of giving it back to macOS. After a busy session, for example many Markdown files with diagrams, the memory readout in the status bar can stay hundreds of MB above where it started even with every tab closed.
+Nibtree draws its window with WebKit, the engine behind Safari. When you close files, the app lets go of everything they used, but WebKit often keeps that memory for itself instead of giving it back to macOS. After a busy session, for example many Markdown files with diagrams, the memory readout in the status bar can stay hundreds of MB above where it started even with every tab closed.
 
 **Clear Cache** gives all of it back. It restarts the window's interface in a fresh WebKit process, so the window starts again as light as when you opened the project.
 

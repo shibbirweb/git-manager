@@ -55,5 +55,5 @@ export function startStep(start: WindowStart, launchPath: string | null): StartS
 /** The title of a window, which macOS lists in the Window menu: the workspace name, else the app's. */
 export function windowTitle(workspaceName: string | null): string {
   const name = workspaceName?.trim() ?? "";
-  return name || "Git Manager";
+  return name || "Nibtree";
 }

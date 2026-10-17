@@ -45,7 +45,7 @@ sequenceDiagram
 flowchart TD
   Start["interactive_rebase(base, entries, autostash)"] --> Checks["no operation, a branch,<br/>clean tree or autostash"]
   Checks --> Validate["validate_entries:<br/>same commits as the branch now"]
-  Validate --> Todo["write .git/gitmanager-rebase/todo"]
+  Validate --> Todo["write .git/nibtree-rebase/todo"]
   Todo --> Git["GIT_SEQUENCE_EDITOR='cp todo'<br/>git rebase -i [--autostash] [--rebase-merges] base"]
   Git --> Outcome["OpOutcome: done, stopped or conflicts"]
   Outcome --> Clean["cleanup_rebase_files once no rebase runs"]
@@ -55,11 +55,11 @@ flowchart TD
 
 ```text
 pick 1a2b3c4
-exec git commit --amend --allow-empty --cleanup=verbatim -F '/path/to/repo/.git/gitmanager-rebase/message-1.txt'
+exec git commit --amend --allow-empty --cleanup=verbatim -F '/path/to/repo/.git/nibtree-rebase/message-1.txt'
 pick 5d6e7f8
 fixup 9a0b1c2
 fixup 3c4d5e6
-exec git commit --amend --allow-empty --cleanup=verbatim -F '/path/to/repo/.git/gitmanager-rebase/message-2.txt'
+exec git commit --amend --allow-empty --cleanup=verbatim -F '/path/to/repo/.git/nibtree-rebase/message-2.txt'
 drop 7f8a9b0
 ```
 

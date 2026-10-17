@@ -46,7 +46,7 @@ Shelved changes and files in [Git LFS](Git-LFS.md) keep their usual message: the
 
 ## Memory
 
-A preview only holds the file while its tab is on screen. When you switch to another tab or close it, the picture or document is let go, and Git Manager reads the file again when you come back. So a folder full of big photos or manuals does not fill your memory. The part of the app that shows previews is small and loads the first time you open one.
+A preview only holds the file while its tab is on screen. When you switch to another tab or close it, the picture or document is let go, and Nibtree reads the file again when you come back. So a folder full of big photos or manuals does not fill your memory. The part of the app that shows previews is small and loads the first time you open one.
 
 The app hands the file straight to the viewer, so it is never copied into the page. A big PDF is read in pieces as you scroll, where the viewer asks for that.
 

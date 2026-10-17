@@ -22,7 +22,7 @@ export interface Request {
 const TOOLS = [
   {
     name: "list_components",
-    description: "List the Git Manager UI components with their group and one-line summary.",
+    description: "List the Nibtree UI components with their group and one-line summary.",
     inputSchema: { type: "object", properties: { group: { type: "string", description: "e.g. Forms" } } },
   },
   {
@@ -93,7 +93,7 @@ export function handle(request: Request): Record<string, unknown> | null {
         protocolVersion: String(params.protocolVersion ?? "2025-06-18"),
         capabilities: { tools: {}, resources: {} },
         serverInfo: { name: "git-manager-ui", version: "1.0.0" },
-        instructions: "Git Manager's UI library and design system. " + RULES.join(" "),
+        instructions: "Nibtree's UI library and design system. " + RULES.join(" "),
       });
     case "ping":
       return reply({});

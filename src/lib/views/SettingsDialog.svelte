@@ -1,4 +1,4 @@
-<!-- Settings dialog. Every change is applied immediately and saved to ~/.gitmanager/settings.json. Each section is
+<!-- Settings dialog. Every change is applied immediately and saved to ~/.nibtree/settings.json. Each section is
      its own file under settings/; this one holds the frame, the section list, the search and the load errors. -->
 <script lang="ts">
   import { untrack } from "svelte";

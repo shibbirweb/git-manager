@@ -19,7 +19,7 @@ function resolved(accelerator: string, platform: MenuPlatform): string {
 
 describe("menuSpec", () => {
   it("lays out the macOS menu bar", () => {
-    expect(titles("macos", "app")).toEqual(["Git Manager", "File", "Edit", "View", "Code", "Git", "Window", "Help"]);
+    expect(titles("macos", "app")).toEqual(["Nibtree", "File", "Edit", "View", "Code", "Git", "Window", "Help"]);
   });
 
   it("puts the app menu items in File and Help elsewhere", () => {
@@ -33,7 +33,7 @@ describe("menuSpec", () => {
   });
 
   it("gives the mergetool window a reduced menu", () => {
-    expect(titles("macos", "mergeTool")).toEqual(["Git Manager", "Edit", "Window", "Help"]);
+    expect(titles("macos", "mergeTool")).toEqual(["Nibtree", "Edit", "Window", "Help"]);
     const actions = actionEntries(menuSpec("macos", "mergeTool")).map((entry) => entry.action);
     expect(actions).not.toContain("edit.findInFiles");
     expect(actions).not.toContain("app.checkForUpdates");

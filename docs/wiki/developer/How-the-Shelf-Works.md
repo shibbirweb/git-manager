@@ -10,7 +10,7 @@ Git's stash (see [How Stashes Work](How-Stashes-Work.md)) is all or nothing in o
 
 ### Storage
 
-`shelf/store.rs` keeps every shelved change list in `<common git dir>/gitmanager-shelf/`:
+`shelf/store.rs` keeps every shelved change list in `<common git dir>/nibtree-shelf/`:
 
 - `<id>.patch`: one `git diff --binary` patch, one section per file;
 - `<id>.json`: `{ version, id, name, createdAt, branch, headCommit, files }`, each file with `path`, `oldPath`, `change`, `binary` and `oldId` (the blob it started from), in patch order.
@@ -24,7 +24,7 @@ sequenceDiagram
     participant UI as ShelveDialog
     participant CMD as commands/shelf.rs
     participant Git as git CLI
-    participant Disk as gitmanager-shelf
+    participant Disk as nibtree-shelf
     UI->>CMD: shelve_changes(repo, name, files, keep)
     CMD->>CMD: select: split tracked and untracked, refuse conflicts
     CMD->>Git: add --intent-to-add (scratch index, new files only)

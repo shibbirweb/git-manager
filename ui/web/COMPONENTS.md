@@ -1,4 +1,4 @@
-# Git Manager UI components
+# Nibtree UI components
 
 Generated from `ui/web/src/lib/docs/` by `bun run ui:docs`; do not edit by hand. Every component takes its colors from
 the theme tokens and its sizes from `ui/design-tokens/`, and none takes a class or style: everything is a prop. Lay out

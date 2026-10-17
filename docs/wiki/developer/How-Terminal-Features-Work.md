@@ -4,7 +4,7 @@ Split terminals, find, clickable file paths, dropped files, rename, the visual b
 
 ## Why we need it
 
-People coming from VS Code expect to split a terminal, search its output with Cmd+F and Cmd+click `src/app.ts:12:5` in a compiler error. Memory is a feature in Git Manager, so every optional part has a switch, loads only when it is on, and frees its memory when it is turned off or the terminal closes.
+People expect to split a terminal, search its output with Cmd+F and Cmd+click `src/app.ts:12:5` in a compiler error. Memory is a feature in Nibtree, so every optional part has a switch, loads only when it is on, and frees its memory when it is turned off or the terminal closes.
 
 ## How it works
 

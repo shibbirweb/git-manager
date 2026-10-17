@@ -1,6 +1,6 @@
 # How Submodules Work
 
-Git Manager shows a submodule twice: as its own repository in the workspace, and as one entry in its parent's changes. Submodule commands run in the parent through the git CLI. For the user side, see [Submodules](../usage/Submodules.md).
+Nibtree shows a submodule twice: as its own repository in the workspace, and as one entry in its parent's changes. Submodule commands run in the parent through the git CLI. For the user side, see [Submodules](../usage/Submodules.md).
 
 ## Why we need it
 

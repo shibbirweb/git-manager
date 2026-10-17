@@ -1,8 +1,8 @@
 # Developer Guide
 
-Welcome! This page gets you from an empty folder to a running Git Manager, and then points you to the page you need next.
+Welcome! This page gets you from an empty folder to a running Nibtree, and then points you to the page you need next.
 
-Git Manager is a native macOS Git client. The backend is Rust on [Tauri 2](https://v2.tauri.app) in `src-tauri/`. The UI is Svelte 5 and TypeScript in `src/`, and every text pane is a CodeMirror 6 editor. The app uses the web view that macOS already ships, so it starts fast and stays small.
+Nibtree is a native macOS Git client. The backend is Rust on [Tauri 2](https://v2.tauri.app) in `src-tauri/`. The UI is Svelte 5 and TypeScript in `src/`, and every text pane is a CodeMirror 6 editor. The app uses the web view that macOS already ships, so it starts fast and stays small.
 
 ## What you need
 
@@ -19,8 +19,8 @@ The system Node on the main development machine is v16, and Vite 8 needs a much 
 ## First run
 
 ```sh
-git clone https://github.com/shibbirweb/git-manager.git
-cd git-manager
+git clone https://github.com/shibbirweb/nibtree.git
+cd nibtree
 bun install                    # dependencies (commit bun.lock if it changes)
 bun tauri dev                  # run the app with hot reload
 bun tauri dev -- -- /path/to/folder   # open a folder straight away

@@ -1,6 +1,6 @@
 # Platforms and Signing
 
-Git Manager ships for macOS today, as one universal app for Apple Silicon and Intel. This page explains how that app is built, how to turn on code signing and notarization, what is macOS only in the code, and what has to change to support Windows and Linux.
+Nibtree ships for macOS today, as one universal app for Apple Silicon and Intel. This page explains how that app is built, how to turn on code signing and notarization, what is macOS only in the code, and what has to change to support Windows and Linux.
 
 ## The universal macOS build
 
@@ -13,7 +13,7 @@ rustup target add aarch64-apple-darwin x86_64-apple-darwin
 bun tauri build --target universal-apple-darwin
 ```
 
-For everyday testing, `bun tauri build --bundles app` is faster: it builds only for your own Mac. Every pull request also gets the universal `.dmg` from `macos-app.yml`, which checks that the binary holds both architectures and that `git-manager cli status` answers, and keeps the `.dmg` under the run's Artifacts for 14 days.
+For everyday testing, `bun tauri build --bundles app` is faster: it builds only for your own Mac. Every pull request also gets the universal `.dmg` from `macos-app.yml`, which checks that the binary holds both architectures and that `nibtree cli status` answers, and keeps the `.dmg` under the run's Artifacts for 14 days.
 
 ## Signing and notarization
 

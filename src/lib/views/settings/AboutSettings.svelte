@@ -13,7 +13,7 @@
     {
       icon: "star",
       title: "Star on GitHub",
-      description: "Like Git Manager? A star helps other people find it.",
+      description: "Like Nibtree? A star helps other people find it.",
       open: () => void updates.openRepository(),
     },
     {
@@ -41,7 +41,7 @@
   <Stack direction="row" gap="lg" align="center">
     <Logo size="medium" />
     <Stack gap="xxs">
-      <Text variant="title">Git Manager</Text>
+      <Text variant="title">Nibtree</Text>
       <Text tone="dim">Version {updates.current ?? "unknown"} &middot; {updates.channel} channel</Text>
     </Stack>
   </Stack>

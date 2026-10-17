@@ -26,10 +26,10 @@ const IDLE_TIMEOUT: Duration = Duration::from_secs(60);
 const BODY_TIMEOUT: Duration = Duration::from_secs(30);
 /// How long a refused request may keep sending its body before the connection closes.
 const LINGER: Duration = Duration::from_secs(1);
-/// Requests from `git-manager cli` carry this header with the value "cli".
-pub use git_manager_cli::CLIENT_HEADER;
-pub const CLI_OFF: &str = "The command line tool is turned off in Git Manager settings";
-pub const MCP_OFF: &str = "The MCP server is turned off in Git Manager settings";
+/// Requests from `nibtree cli` carry this header with the value "cli".
+pub use nibtree_cli::CLIENT_HEADER;
+pub const CLI_OFF: &str = "The command line tool is turned off in Nibtree settings";
+pub const MCP_OFF: &str = "The MCP server is turned off in Nibtree settings";
 
 pub struct Running {
     pub port: u16,

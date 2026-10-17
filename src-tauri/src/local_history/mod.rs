@@ -1,7 +1,7 @@
 //! Local History: a copy of a file's text on every save
 //! from the app, when an open file changes outside it, and before Discard, Rollback and Revert.
 //! Only on after the frontend switches it on (`configure`), so tests and the merge tool window
-//! never write to `~/.gitmanager`.
+//! never write to `~/.nibtree`.
 //!
 //! Writes are serialized by one lock and run off the main thread. Pruning (plan.rs) runs in the
 //! background at start and again after enough new bytes or time; one file's own count and age

@@ -72,10 +72,10 @@ A move asks first ("Move cart.ts into src/lib?"). When the folder already has a 
 
 ## AI agents and the CLI
 
-AI tools connected through the [MCP server](MCP-and-CLI.md), and the `git-manager cli` command, can do the same with `create_file`, `create_folder`, `copy_paths`, `rename_path`, `move_paths` and `trash_paths`. They follow the same rules as the panel: only your workspace folders, no replaced files, tabs follow along and files with unsaved edits are refused. Rename, move and trash start off; turn them on in **Help > Available MCP Tools...**. For example:
+AI tools connected through the [MCP server](MCP-and-CLI.md), and the `nibtree cli` command, can do the same with `create_file`, `create_folder`, `copy_paths`, `rename_path`, `move_paths` and `trash_paths`. They follow the same rules as the panel: only your workspace folders, no replaced files, tabs follow along and files with unsaved edits are refused. Rename, move and trash start off; turn them on in **Help > Available MCP Tools...**. For example:
 
 ```sh
-git-manager cli call rename_path entryPath=/Users/me/shop/src/cart.ts newName=basket.ts
+nibtree cli call rename_path entryPath=/Users/me/shop/src/cart.ts newName=basket.ts
 ```
 
 ## Good to know

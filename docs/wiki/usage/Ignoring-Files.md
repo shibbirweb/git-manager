@@ -1,6 +1,6 @@
 # Ignoring Files
 
-Some files never belong in a commit: build output, logs, editor settings, secrets in a `.env` file. You can tell git to ignore them, and they stop showing up as changes. Git Manager does this from a right-click, the way JetBrains IDEs do.
+Some files never belong in a commit: build output, logs, editor settings, secrets in a `.env` file. You can tell git to ignore them, and they stop showing up as changes. Nibtree does this from a right-click.
 
 A few words first. A **`.gitignore`** file lists patterns of files git should ignore. It lives in the repository and is committed, so everyone on the team shares it. **`.git/info/exclude`** works the same way, but it stays on your computer and is never committed: use it for things only you have, such as your own scratch files. An **untracked** file is one git does not know yet.
 
@@ -36,7 +36,7 @@ To keep the pattern out of the shared file, open **Add to .gitignore > Add to .g
 
 ## Files git already tracks
 
-Ignoring only works for files git does not track yet. A file that is already committed stays tracked, even when a pattern matches it. So after adding a pattern, Git Manager checks for tracked files it now matches. When it finds some, it asks **Remove from Git?**:
+Ignoring only works for files git does not track yet. A file that is already committed stays tracked, even when a pattern matches it. So after adding a pattern, Nibtree checks for tracked files it now matches. When it finds some, it asks **Remove from Git?**:
 
 - **Remove from Git** runs `git rm --cached` on them. The files stay on your disk, but git stops tracking them. The removal shows up as a staged deletion in Changes, and you commit it like any other change.
 - Cancel leaves them tracked. The pattern is still added and applies to new files.

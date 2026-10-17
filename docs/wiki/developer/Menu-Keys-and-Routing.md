@@ -1,6 +1,6 @@
 # Menu Keys and Routing
 
-Most keys in Git Manager exist twice: as a handler in the page (the editor's keymaps, the window shortcuts) and as an accelerator on a native menu item. This page explains how one key press ends up running exactly one of them. The menu bar itself is in [How the menus work](How-the-Menus-Work.md).
+Most keys in Nibtree exist twice: as a handler in the page (the editor's keymaps, the window shortcuts) and as an accelerator on a native menu item. This page explains how one key press ends up running exactly one of them. The menu bar itself is in [How the menus work](How-the-Menus-Work.md).
 
 ## The page first, the menu second
 

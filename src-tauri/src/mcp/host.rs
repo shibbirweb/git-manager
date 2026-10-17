@@ -119,7 +119,7 @@ mod screenshot {
                 let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
                 let reason = if stderr.is_empty() { "no image was made".to_string() } else { stderr };
                 Err(format!(
-                    "The screenshot failed ({reason}). Allow Git Manager in System Settings > Privacy & Security > Screen Recording."
+                    "The screenshot failed ({reason}). Allow Nibtree in System Settings > Privacy & Security > Screen Recording."
                 ))
             }
         }

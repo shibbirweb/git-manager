@@ -23,13 +23,13 @@ The file operations take absolute paths and return them in the same form. Each p
 
 | Command | Wrapper | Returns | Kind | What it does |
 | --- | --- | --- | --- | --- |
-| `load_config` | `loadConfig(configName)` | `unknown` | file | `settings` or `state` from `~/.gitmanager`; null when missing |
+| `load_config` | `loadConfig(configName)` | `unknown` | file | `settings` or `state` from `~/.nibtree`; null when missing |
 | `save_config` | `saveConfig(configName, value)` | `void` | file | atomic write of the same |
-| `config_dir` | `configDir()` | `string` | app | the `~/.gitmanager` path |
+| `config_dir` | `configDir()` | `string` | app | the `~/.nibtree` path |
 | `memory_usage` | `memoryUsage()` | `MemoryUsage` | app | memory of the app and its web view helpers |
 | `clear_cache` | `clearCache(stash)` | `void` | app | Clear Cache: keeps the terminals in `stash` running, then restarts the window's web content process ([How Clear Cache Works](How-Clear-Cache-Works.md)) |
 | `os_info` | `osInfo()` | `OsInfo` | app | OS name and version for bug reports (`sw_vers`, os-release, `ver`) |
-| `memory_log_configure` | `memoryLogConfigure(enabled, intervalMs, thresholdMb)` | `MemoryLogStatus` | app | starts or stops the debug memory log in `~/.gitmanager/logs/memory.log` |
+| `memory_log_configure` | `memoryLogConfigure(enabled, intervalMs, thresholdMb)` | `MemoryLogStatus` | app | starts or stops the debug memory log in `~/.nibtree/logs/memory.log` |
 | `memory_log_event` | `memoryLogEvent(label)` | `void` | app | a UI event (tab, view, scroll start or stop) for the next log line |
 
 `OsInfo` is `{ name: string, version: string | null }`.
@@ -98,7 +98,7 @@ Both switches off: nothing listens and no thread runs. See [How MCP and CLI Work
 | `mcp_register_ui_tools` | `mcpRegisterUiTools(tools)` | `void` | app | the tools the window runs, sent once at start |
 | `mcp_set_workspace` | `mcpSetWorkspace(folderPaths)` | `void` | app | the folders tools and the `gmpreview` scheme may touch: the workspace folders open now |
 | `mcp_ui_respond` | `mcpUiRespond(requestId, result)` | `void` | app | the window's answer to an `mcp-ui-request`; a late answer is dropped |
-| `mcp_regenerate_token` | `mcpRegenerateToken()` | `McpStatus` | file | a new secret token in `~/.gitmanager/mcp.json` |
+| `mcp_regenerate_token` | `mcpRegenerateToken()` | `McpStatus` | file | a new secret token in `~/.nibtree/mcp.json` |
 | `mcp_activity` | `mcpActivity()` | `McpActivity[]` | app | the last 50 calls, newest last |
-| `cli_install` | `cliInstall()` | `McpStatus` | file | links `~/.local/bin/git-manager` to this binary (not on Windows yet) |
+| `cli_install` | `cliInstall()` | `McpStatus` | file | links `~/.local/bin/nibtree` to this binary (not on Windows yet) |
 | `cli_uninstall` | `cliUninstall()` | `McpStatus` | file | removes that link, only when it is ours |

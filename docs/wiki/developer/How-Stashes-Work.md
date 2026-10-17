@@ -1,6 +1,6 @@
 # How stashes work
 
-A stash puts your uncommitted work aside so you can switch branches or pull, and brings it back later. In Git Manager you stash from the Git menu (Uncommitted Changes) or a repository row's **...** > **Stash** in Changes, and apply, pop or drop from the Branches panel, those menus, or the Git menu's Unstash Changes. For the user side, see [Stashes](../usage/Stashes.md).
+A stash puts your uncommitted work aside so you can switch branches or pull, and brings it back later. In Nibtree you stash from the Git menu (Uncommitted Changes) or a repository row's **...** > **Stash** in Changes, and apply, pop or drop from the Branches panel, those menus, or the Git menu's Unstash Changes. For the user side, see [Stashes](../usage/Stashes.md).
 
 ## Why we need it
 

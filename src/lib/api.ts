@@ -488,7 +488,7 @@ export const api = {
   lfsPrune: (repoPath: string) => invoke<string>("lfs_prune", { repoPath }),
   lfsInstall: (repoPath: string) => invoke<string>("lfs_install", { repoPath }),
 
-  // User config in ~/.gitmanager
+  // User config in ~/.nibtree
   loadConfig: (configName: "settings" | "state") => invoke<unknown>("load_config", { configName }),
   /** Replaces a whole file: only to reset one that could not be read. Saves go through `updateConfig`. */
   saveConfig: (configName: "settings" | "state", value: unknown) => invoke<void>("save_config", { configName, value }),
@@ -613,12 +613,12 @@ export const api = {
   // Scripts tool window: package.json, composer.json, Makefile, deno.json and justfile scripts.
   listProjectScripts: (folderPaths: string[]) => invoke<ScriptSource[]>("list_project_scripts", { folderPaths }),
   listNodeVersions: () => invoke<NodeInstall[]>("list_node_versions"),
-  // Debug memory log: memory readings and UI events in ~/.gitmanager/logs/memory.log.
+  // Debug memory log: memory readings and UI events in ~/.nibtree/logs/memory.log.
   memoryLogConfigure: (enabled: boolean, intervalMs: number, thresholdMb: number) =>
     invoke<MemoryLogStatus>("memory_log_configure", { enabled, intervalMs, thresholdMb }),
   memoryLogEvent: (label: string) => invoke<void>("memory_log_event", { label }),
 
-  // Local History (~/.gitmanager/local-history): versions of files kept on save, outside changes and discards.
+  // Local History (~/.nibtree/local-history): versions of files kept on save, outside changes and discards.
   localHistoryConfigure: (enabled: boolean, maxDays: number, maxSizeMb: number) =>
     invoke<void>("local_history_configure", { enabled, maxDays, maxSizeMb }),
   /** Keeps these versions, in order, in one call. */
@@ -633,7 +633,7 @@ export const api = {
   localHistoryDeleted: (folderPaths: string[]) => invoke<DeletedLocalFile[]>("local_history_deleted", { folderPaths }),
   localHistoryUsage: () => invoke<LocalHistoryUsage>("local_history_usage"),
   localHistoryClear: () => invoke<void>("local_history_clear"),
-  // Remember unsaved changes: the text of Untitled tabs and of files with unsaved edits, in ~/.gitmanager/unsaved.
+  // Remember unsaved changes: the text of Untitled tabs and of files with unsaved edits, in ~/.nibtree/unsaved.
   unsavedWrite: (tabPath: string, workspaceId: string, text: string) =>
     invoke<void>("unsaved_write", rawBody({ tabPath, workspaceId }, text)),
   unsavedRead: (tabPath: string) => invoke<UnsavedText | null>("unsaved_read", { tabPath }),
@@ -657,7 +657,7 @@ export const api = {
     output: Channel<TerminalOutputMessage>,
   ) => invoke<TerminalInfo>("run_script", { ...options, output }),
 
-  // Shelf (.git/gitmanager-shelf). `filePaths` null unshelves every file.
+  // Shelf (.git/nibtree-shelf). `filePaths` null unshelves every file.
   shelveChanges: (repoPath: string, name: string, filePaths: string[], keepInWorkingTree: boolean) =>
     invoke<ShelfEntry>("shelve_changes", { repoPath, name, filePaths, keepInWorkingTree }),
   listShelf: (repoPath: string) => invoke<ShelfEntry[]>("list_shelf", { repoPath }),
@@ -677,7 +677,7 @@ export const api = {
   untrackFiles: (repoPath: string, filePaths: string[]) => invoke<void>("untrack_files", { repoPath, filePaths }),
 
   // GitHub account (src-tauri/src/github). The token goes in once and never comes back.
-  /** The signed-in account from ~/.gitmanager/github.json; no network, no keychain. */
+  /** The signed-in account from ~/.nibtree/github.json; no network, no keychain. */
   githubAccount: () => invoke<GitHubAccount | null>("github_account"),
   githubCliStatus: () => invoke<GhCliStatus>("github_cli_status"),
   /** Verifies the token with GitHub, then keeps it only in the system keychain. */
@@ -706,7 +706,7 @@ export const api = {
   mcpRegenerateToken: () => invoke<McpStatus>("mcp_regenerate_token"),
   /** The last 50 calls, newest last. */
   mcpActivity: () => invoke<McpActivity[]>("mcp_activity"),
-  /** Links `git-manager` in ~/.local/bin, or writes `git-manager.cmd` into WindowsApps on Windows. */
+  /** Links `nibtree` in ~/.local/bin, or writes `nibtree.cmd` into WindowsApps on Windows. */
   cliInstall: () => invoke<McpStatus>("cli_install"),
   cliUninstall: () => invoke<McpStatus>("cli_uninstall"),
 

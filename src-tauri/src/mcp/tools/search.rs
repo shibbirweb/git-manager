@@ -64,7 +64,7 @@ fn roots(ctx: &ToolCtx, args: &Args) -> Result<Vec<String>, String> {
     }
     let folders = ctx.folder_strings();
     if folders.is_empty() {
-        return Err("No folder is open in Git Manager".to_string());
+        return Err("No folder is open in Nibtree".to_string());
     }
     Ok(folders)
 }

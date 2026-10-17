@@ -1,7 +1,7 @@
 {
   "name": "@git-manager/ui",
   "version": "0.1.0",
-  "description": "Git Manager's Svelte component library: components, design tokens, icons and tested logic",
+  "description": "Nibtree's Svelte component library: components, design tokens, icons and tested logic",
   "private": true,
   "type": "module",
   "license": "MIT",

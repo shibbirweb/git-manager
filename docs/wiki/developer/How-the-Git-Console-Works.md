@@ -4,7 +4,7 @@ The Git Console lists the git commands the app ran, with their arguments, durati
 
 ## Why we need it
 
-Git Manager runs every write through the git CLI (see [Architecture](Architecture.md)). When a push or rebase does something unexpected, a toast shows only the error. The console shows the whole command and git's output, so it can be repeated in a terminal or pasted into a bug report.
+Nibtree runs every write through the git CLI (see [Architecture](Architecture.md)). When a push or rebase does something unexpected, a toast shows only the error. The console shows the whole command and git's output, so it can be repeated in a terminal or pasted into a bug report.
 
 ## How it works
 

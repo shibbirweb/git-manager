@@ -9,7 +9,7 @@ public struct GMThemeInfo: Sendable {
 public enum GMTheme {
     /** Every theme in picker order. */
     public static let all: [GMThemeInfo] = [
-        GMThemeInfo(id: "gm-light", name: "Git Manager Light", kind: "light"),
+        GMThemeInfo(id: "gm-light", name: "Nibtree Light", kind: "light"),
         GMThemeInfo(id: "github-light", name: "GitHub Light", kind: "light"),
         GMThemeInfo(id: "one-light", name: "One Light", kind: "light"),
         GMThemeInfo(id: "solarized-light", name: "Solarized Light", kind: "light"),
@@ -22,7 +22,7 @@ public enum GMTheme {
         GMThemeInfo(id: "intellij-light", name: "IntelliJ Light", kind: "light"),
         GMThemeInfo(id: "islands-light", name: "Islands Light", kind: "light"),
         GMThemeInfo(id: "vscode-light-plus", name: "VS Code Light+", kind: "light"),
-        GMThemeInfo(id: "gm-dark", name: "Git Manager Dark", kind: "dark"),
+        GMThemeInfo(id: "gm-dark", name: "Nibtree Dark", kind: "dark"),
         GMThemeInfo(id: "darcula", name: "Darcula", kind: "dark"),
         GMThemeInfo(id: "islands-dark", name: "Islands Dark", kind: "dark"),
         GMThemeInfo(id: "vscode-dark-plus", name: "VS Code Dark+", kind: "dark"),

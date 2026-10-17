@@ -1,14 +1,14 @@
 # Settings
 
-Settings change how Git Manager looks and behaves, apply at once and are saved. A mark such as **+70 MB** means a setting uses more memory when on ([Memory Use](Memory-Use.md#settings-that-use-more-memory)).
+Settings change how Nibtree looks and behaves, apply at once and are saved. A mark such as **+70 MB** means a setting uses more memory when on ([Memory Use](Memory-Use.md#settings-that-use-more-memory)).
 
 ## Open Settings
 
 - Click the gear at the top right of the header (**Settings (Cmd+,)**).
-- Or press Cmd+,, or choose **Git Manager > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
+- Or press Cmd+,, or choose **Nibtree > Settings...** in the menu bar (**File > Settings...** on Windows and Linux).
 - Or click the gear on the [welcome screen](Welcome-Screen.md).
 
-Settings opens on **Appearance**. The status bar's **Spaces** opens **Editor**, the terminal's **Default Shell...** opens **Terminal**, and **About Git Manager** opens **About**.
+Settings opens on **Appearance**. The status bar's **Spaces** opens **Editor**, the terminal's **Default Shell...** opens **Terminal**, and **About Nibtree** opens **About**.
 
 The sections are on the left, with a [search field](Settings-Search.md) above them. Esc or the x closes it. Drag the title to move it; double-click it to center it.
 
@@ -33,7 +33,7 @@ The theme is also in **View > Appearance**. The sun button in the header (**Togg
 
 ![Dark theme](../images/dark-theme.png)
 
-*Git Manager in the dark theme.*
+*Nibtree in the dark theme.*
 
 ## Editor
 
@@ -115,7 +115,7 @@ Two header buttons show or hide the **activity bars**, the icon strips at the wi
 - **Terminal**: the shell, font, cursor, scrollback and copy on selection.
 - **AI**: agent permissions and arguments ([AI Agents](AI-Agents.md#settings)).
 - **GitHub**: sign in to GitHub for Share Project, Sync Fork and Create Gist.
-- **Automation**: the MCP server, the `git-manager cli` tool and the memory log.
+- **Automation**: the MCP server, the `nibtree cli` tool and the memory log.
 
 Every option is described in [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md).
 

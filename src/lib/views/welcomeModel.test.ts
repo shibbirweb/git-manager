@@ -27,14 +27,14 @@ const file: RecentEntry = {
   kind: "workspaceFile",
   label: "shop",
   hint: "workspace file",
-  filePath: "/Users/me/shop.gitmanager-workspace",
+  filePath: "/Users/me/shop.nibtree-workspace",
 };
 
 describe("projectInitials", () => {
   it("takes the first letters of the first two words", () => {
     expect(projectInitials("design-system")).toBe("DS");
     expect(projectInitials("payments_api v2")).toBe("PA");
-    expect(projectInitials("gitManager")).toBe("GM");
+    expect(projectInitials("nibTree")).toBe("NT");
     expect(projectInitials("acme, storefront")).toBe("AS");
   });
 
@@ -59,9 +59,9 @@ describe("entries", () => {
   it("names each entry by its paths", () => {
     expect(entryKey(folder)).toBe("/Users/me/code/design-system");
     expect(entryKey(workspace)).toBe("/Users/me/code/acme\n/Users/me/code/storefront");
-    expect(entryPaths(file)).toEqual(["/Users/me/shop.gitmanager-workspace"]);
+    expect(entryPaths(file)).toEqual(["/Users/me/shop.nibtree-workspace"]);
     expect(entrySubtitle(workspace)).toBe("~/code/acme, ~/code/storefront");
-    expect(entrySubtitle(file)).toBe("~/shop.gitmanager-workspace");
+    expect(entrySubtitle(file)).toBe("~/shop.nibtree-workspace");
   });
 
   it("filters by every word of the search, in names and paths", () => {

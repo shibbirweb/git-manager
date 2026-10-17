@@ -1,11 +1,11 @@
-//! The MCP (Model Context Protocol) server: lets AI harnesses and the `git-manager cli`
+//! The MCP (Model Context Protocol) server: lets AI harnesses and the `nibtree cli`
 //! command line tool use the app's features over HTTP on 127.0.0.1. Off by default; while
 //! both switches are off nothing listens and no thread runs.
 
 mod activity;
 mod bridge;
 /// The command line tool lives in its own crate (src-tauri/cli); `mcp::cli` keeps its old path.
-pub use git_manager_cli as cli;
+pub use nibtree_cli as cli;
 pub mod dto;
 mod host;
 mod http;
@@ -191,7 +191,7 @@ struct ServerSlot {
 struct Inner {
     shared: Arc<Shared>,
     server: Mutex<ServerSlot>,
-    /// None: `~/.gitmanager`. Tests use a temporary folder.
+    /// None: `~/.nibtree`. Tests use a temporary folder.
     config_dir: Option<PathBuf>,
 }
 
@@ -496,7 +496,7 @@ mod window_tests {
         let config = TestDir::new();
         let first = TestDir::new();
         let second = TestDir::new();
-        let mcp = Mcp::for_test(config.path.join(".gitmanager"), Duration::from_secs(1));
+        let mcp = Mcp::for_test(config.path.join(".nibtree"), Duration::from_secs(1));
         mcp.set_windows(
             vec![
                 McpWindow {

@@ -39,7 +39,7 @@ The commands are `terminal_shells`, `terminal_spawn`, `terminal_write`, `termina
 
 **Shells.** `shell_profiles` reads `/etc/shells`, keeps executable files, removes duplicates by real path and puts the login shell (`$SHELL`, else the passwd entry, for apps opened from Finder) first. zsh, bash and fish start with `-l`, so `PATH` matches Terminal.app. Windows shells are in [Platforms and Signing](Platforms-and-Signing.md).
 
-**Environment.** The app's environment plus `TERM=xterm-256color`, `COLORTERM=truecolor`, `TERM_PROGRAM=GitManager`, `TERM_PROGRAM_VERSION` (the app version), and `LANG=en_US.UTF-8` when `LANG` is empty (apps opened from Finder have none).
+**Environment.** The app's environment plus `TERM=xterm-256color`, `COLORTERM=truecolor`, `TERM_PROGRAM=Nibtree`, `TERM_PROGRAM_VERSION` (the app version), and `LANG=en_US.UTF-8` when `LANG` is empty (apps opened from Finder have none).
 
 **Killing.** SIGHUP to the shell's process group and the foreground job's group, then SIGKILL after 2 s. At app exit, `shutdown` hangs up every shell, waits up to 300 ms and kills the rest.
 

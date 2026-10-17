@@ -31,7 +31,7 @@ function isLineOnlyHtml(line: string): boolean {
   return /^<\/?[A-Za-z][\w.:-]*(?:\s[^<>]*?)?\/?>$/.test(trimmed);
 }
 
-// Git Manager: CommonMark's HTML block that starts with a block-level tag (type 6) runs to the next blank line,
+// Nibtree: CommonMark's HTML block that starts with a block-level tag (type 6) runs to the next blank line,
 // indented lines included; marked reads it that way. Line by line, a 4-space indented `<td>` line of such a block
 // was read as indented code, so a README's HTML table lost its markup and the file could not be rich-edited.
 const BLOCK_HTML_TAGS = new Set(
@@ -88,7 +88,7 @@ export function encodeRawMarkdownHtmlForRichEditor(content: string, codec: RichM
         fencePrefix.lastIndex = fenceProbe;
         fenceMatch = fencePrefix.exec(normalizedContent);
       }
-      // Git Manager: the lookahead runs past blank lines, so the fence it found may start on a later line; it counts
+      // Nibtree: the lookahead runs past blank lines, so the fence it found may start on a later line; it counts
       // only on its own line. Orca toggled it already on the blank line before, which a tilde fence did not survive
       // (backtick fences were saved by the inline code scan), so HTML after a `~~~` block was never kept.
       const fenceOnThisLine = fenceMatch && !normalizedContent.slice(index, fenceProbe).includes("\n");

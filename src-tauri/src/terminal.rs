@@ -240,7 +240,7 @@ fn terminal_env(lang_is_set: bool) -> Vec<(&'static str, &'static str)> {
     let mut env = vec![
         ("TERM", "xterm-256color"),
         ("COLORTERM", "truecolor"),
-        ("TERM_PROGRAM", "GitManager"),
+        ("TERM_PROGRAM", "Nibtree"),
         ("TERM_PROGRAM_VERSION", env!("CARGO_PKG_VERSION")),
     ];
     // Apps started from Finder get no LANG, and shells then mangle non-ASCII text.
@@ -765,7 +765,7 @@ mod tests {
         assert!(has_lang(&terminal_env(false)));
         assert!(!has_lang(&terminal_env(true)));
         assert!(terminal_env(true).contains(&("TERM", "xterm-256color")));
-        assert!(terminal_env(true).contains(&("TERM_PROGRAM", "GitManager")));
+        assert!(terminal_env(true).contains(&("TERM_PROGRAM", "Nibtree")));
     }
 
     #[test]
@@ -936,7 +936,7 @@ mod tests {
             )
             .unwrap();
             assert_eq!(exit_receiver.recv_timeout(WAIT).unwrap(), Some(0));
-            assert!(text(&collected).contains("[xterm-256color|truecolor|GitManager]"));
+            assert!(text(&collected).contains("[xterm-256color|truecolor|Nibtree]"));
         }
 
         #[test]

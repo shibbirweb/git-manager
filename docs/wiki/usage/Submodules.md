@@ -6,7 +6,7 @@ Because the parent records a commit, not files, working with submodules has its 
 
 ## Where submodules show up
 
-**As their own repositories.** Once a submodule is checked out, Git Manager finds it like any nested repository. It appears in the Changes sidebar with a **submodule** tag next to its name, and you commit, branch and push in it as usual. See [Workspaces](Workspaces.md).
+**As their own repositories.** Once a submodule is checked out, Nibtree finds it like any nested repository. It appears in the Changes sidebar with a **submodule** tag next to its name, and you commit, branch and push in it as usual. See [Workspaces](Workspaces.md).
 
 **As one entry in the parent.** In the parent's changes, a submodule is a single row tagged **submodule**, like `git status` shows it. The row says what changed:
 
@@ -24,7 +24,7 @@ A submodule entry has only a **Stage** button: staging it records the submodule'
 
 Opening the entry's diff shows "Subproject commit" and a commit id on each side, like `git diff`.
 
-Git Manager respects a submodule's `ignore` setting (in `.gitmodules` or your repository config), just like `git status`.
+Nibtree respects a submodule's `ignore` setting (in `.gitmodules` or your repository config), just like `git status`.
 
 ## The Submodules menus
 
@@ -67,7 +67,7 @@ Git clones it and stages `.gitmodules` and the new submodule. A note reminds you
 
 ## Remove a submodule
 
-Choose **Git > Submodules > Remove Submodule...** and confirm. Git Manager deinitializes the submodule (git stops treating it as checked out). It deletes its folder and its cloned repository inside `.git/modules`, where git keeps submodule copies, and stages the removal. Commit to finish. Unpushed work inside the submodule is lost, which is why it asks first.
+Choose **Git > Submodules > Remove Submodule...** and confirm. Nibtree deinitializes the submodule (git stops treating it as checked out). It deletes its folder and its cloned repository inside `.git/modules`, where git keeps submodule copies, and stages the removal. Commit to finish. Unpushed work inside the submodule is lost, which is why it asks first.
 
 ## Example
 

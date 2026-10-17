@@ -79,7 +79,7 @@ fn wait_for(store: &Store, file_path: &str, count: usize) -> Vec<Snapshot> {
 
 #[test]
 fn saves_discards_and_rollbacks_keep_versions_while_history_is_on() {
-    // The only test that switches the global store on, in a temporary folder (never ~/.gitmanager).
+    // The only test that switches the global store on, in a temporary folder (never ~/.nibtree).
     let home = tempfile::TempDir::new().unwrap();
     let store = Store::new(home.path().join("local-history"));
     configure(Some(home.path().join("local-history")), Limits::default());

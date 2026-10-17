@@ -1,6 +1,6 @@
 # Welcome Screen
 
-The welcome screen is what Git Manager shows when no folder is open: at the first start, after **Close Folder**, and in a new window. It looks like the welcome screen of JetBrains IDEs: a sidebar on the left with **Projects**, **Customize** and **Learn**, and your recent projects on the right.
+The welcome screen is what Nibtree shows when no folder is open: at the first start, after **Close Folder**, and in a new window. It has a sidebar on the left with **Projects**, **Customize** and **Learn**, and your recent projects on the right.
 
 ![Welcome screen](../images/welcome.png)
 
@@ -30,11 +30,11 @@ The buttons next to the search field start something new:
 
 ### Before you open anything
 
-At the first start there are no recent projects yet. The page then says **Welcome to Git Manager** and shows three large buttons: **Open**, **Clone Repository** and **Open Workspace**.
+At the first start there are no recent projects yet. The page then says **Welcome to Nibtree** and shows three large buttons: **Open**, **Clone Repository** and **Open Workspace**.
 
 ## Customize
 
-**Customize** has the settings people change first, so you can make Git Manager yours before opening a folder:
+**Customize** has the settings people change first, so you can make Nibtree yours before opening a folder:
 
 - **Theme**: System, Light or Dark. System follows the macOS appearance.
 - **Color theme** for the mode in use, with a swatch for each theme.

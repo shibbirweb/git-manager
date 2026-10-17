@@ -1,6 +1,6 @@
 # Updates
 
-Git Manager checks GitHub now and then for a newer version and tells you when one is out. It never downloads or installs anything on its own: you decide when to update.
+Nibtree checks GitHub now and then for a newer version and tells you when one is out. It never downloads or installs anything on its own: you decide when to update.
 
 ## How it works
 
@@ -14,9 +14,9 @@ If you are offline, or GitHub does not answer, the automatic check fails quietly
 
 ![Update available](../images/update-dialog.png)
 
-*Git Manager 0.1.0 is available: the notes of the two releases since 0.1.0-beta.1, and the buttons.*
+*Nibtree 0.1.0 is available: the notes of the two releases since 0.1.0-beta.1, and the buttons.*
 
-The window's title names the new version, such as **Git Manager 0.1.0 is available**. Below it you see the version you have and the notes of every release since yours, newest first, each with its date. Beta releases carry a **Beta** tag. Its buttons:
+The window's title names the new version, such as **Nibtree 0.1.0 is available**. Below it you see the version you have and the notes of every release since yours, newest first, each with its date. Beta releases carry a **Beta** tag. Its buttons:
 
 - **Download** opens the new installer in your browser: the `.dmg` on a Mac, the `-setup.exe` on Windows (or the release page if there is none).
 - **Later** closes the window. The status bar keeps showing the update.
@@ -35,7 +35,7 @@ After **Skip This Version**, the status bar and the automatic checks stay quiet 
 
 **Stop Skipping** undoes the skip, and the status bar shows the update again.
 
-To install on a Mac, open the downloaded `.dmg` and drag Git Manager into Applications, replacing the old copy. On Windows, quit Git Manager and run the downloaded `-setup.exe`; it replaces the old version. Your settings are kept, since they live in `~/.gitmanager` (`C:\Users\<you>\.gitmanager` on Windows, see [Settings](Settings.md)).
+To install on a Mac, open the downloaded `.dmg` and drag Nibtree into Applications, replacing the old copy. On Windows, quit Nibtree and run the downloaded `-setup.exe`; it replaces the old version. Your settings are kept, since they live in `~/.nibtree` (`C:\Users\<you>\.nibtree` on Windows, see [Settings](Settings.md)).
 
 ## Settings, Updates
 
@@ -43,7 +43,7 @@ To install on a Mac, open the downloaded `.dmg` and drag Git Manager into Applic
 
 *The version, the automatic check and the update channel.*
 
-- **Version** shows the version you run and when it last checked: "Not checked yet", "Checking...", "Checked 5 min ago: up to date" or "Last check failed" with the reason. **Check Now** (or **Git Manager > Check for Updates...** in the menu bar) checks right away. If there is a newer version, the update window opens (for a version you skipped, it says so and offers **Stop Skipping**); otherwise a note says **Git Manager is up to date**. If the newest version is one you skipped, the Version line says **(skipped)** after it.
+- **Version** shows the version you run and when it last checked: "Not checked yet", "Checking...", "Checked 5 min ago: up to date" or "Last check failed" with the reason. **Check Now** (or **Nibtree > Check for Updates...** in the menu bar) checks right away. If there is a newer version, the update window opens (for a version you skipped, it says so and offers **Stop Skipping**); otherwise a note says **Nibtree is up to date**. If the newest version is one you skipped, the Version line says **(skipped)** after it.
 - **Check for updates automatically** (on by default) turns the regular check on or off. **Check Now** still works when it is off.
 - **Update channel** picks which releases you hear about (see below). The default is **Automatic**. Changing it checks again at once, quietly.
 - **Release notes**: **What's New** shows the notes for your version, **All Releases** opens the list on GitHub.
@@ -75,7 +75,7 @@ A stable install is never moved to a beta unless you choose **Beta** yourself. W
 
 *What changed in the version you just installed.*
 
-After you update, **What's New in Git Manager** and the version opens once, the first time the new version starts, and lists what changed. The notes are built into the app, so this works offline. A beta build says "A beta build: these changes are still being tested."
+After you update, **What's New in Nibtree** and the version opens once, the first time the new version starts, and lists what changed. The notes are built into the app, so this works offline. A beta build says "A beta build: these changes are still being tested."
 
 - **Earlier versions** unfolds the notes of older releases.
 - **All releases on GitHub** opens the full list.

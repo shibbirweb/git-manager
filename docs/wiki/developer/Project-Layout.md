@@ -82,7 +82,7 @@ Pure logic lives in plain `.ts` files next to the component that uses it, with a
 src-tauri/
 ├── Cargo.toml              the version (source of truth), dependencies, release profile, workspace
 ├── Cargo.lock              locked Rust dependencies (always committed)
-├── cli/                    git-manager-cli: the command line tool, and Windows' console program
+├── cli/                    nibtree-cli: the command line tool, and Windows' console program
 ├── tauri.conf.json         window, CSP, bundle settings (no version of its own)
 ├── tauri.windows.conf.json the Windows installer (NSIS)
 ├── tauri.windows-release.conf.json   adds the console program to Windows release builds
@@ -91,8 +91,8 @@ src-tauri/
 ├── .gitignore              keeps target/ and gen/schemas out of git
 ├── icons/                  app icons
 └── src/
-    ├── main.rs             calls git_manager_lib::run()
-    ├── lib.rs              plugins, AppState, the registered commands, `git-manager cli`
+    ├── main.rs             calls nibtree_lib::run()
+    ├── lib.rs              plugins, AppState, the registered commands, `nibtree cli`
     ├── state.rs            AppState and LaunchMode (app or mergetool)
     ├── error.rs            AppError, serialized as { kind, message }
     ├── commands/           Tauri commands by area: workspace, repo, status, merge, branch,
@@ -128,13 +128,13 @@ src-tauri/
     ├── shelf/              shelved changes as patches in the git folder
     ├── github/             GitHub account, REST client, keychain, gh CLI
     ├── mcp/                MCP server, its tools and the UI bridge (mcp::cli is the cli/ crate)
-    ├── memory_log.rs       debug memory log in ~/.gitmanager/logs
+    ├── memory_log.rs       debug memory log in ~/.nibtree/logs
     ├── images.rs           local images for the Markdown preview as data URLs
     ├── media.rs            image and PDF types and size limits for the previews
     ├── preview_scheme.rs   the gmpreview URL scheme that streams previews to the web view
     ├── watcher.rs          debounced file watching, repo-changed and workspace-changed
-    ├── config.rs           ~/.gitmanager/settings.json and state.json, atomic writes
-    ├── workspace_file.rs   .gitmanager-workspace and .code-workspace files
+    ├── config.rs           ~/.nibtree/settings.json and state.json, atomic writes
+    ├── workspace_file.rs   .nibtree-workspace and .code-workspace files
     ├── memory.rs           memory readout for the status bar (macOS)
     ├── terminal_memory.rs  each terminal's memory: its shell and what it started
     └── test_support.rs     temporary repositories with an isolated git config

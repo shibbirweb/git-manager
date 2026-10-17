@@ -1,6 +1,6 @@
 # CodeMirror Patterns
 
-Every text pane in Git Manager is a CodeMirror 6 view: the file editor, both sides of every diff, the three merge tool panes and the Markdown source. They share their setup in `src/lib/editor/setup.ts`, where `languageFor(path)` loads a grammar with a dynamic `import()` only when a file needs it. This page collects the patterns that keep those views fast, correct and cheap. Read it before you add an extension. The editor feature itself is in [How the Editor Works](How-the-Editor-Works.md), and the rest of the UI in [Frontend](Frontend.md).
+Every text pane in Nibtree is a CodeMirror 6 view: the file editor, both sides of every diff, the three merge tool panes and the Markdown source. They share their setup in `src/lib/editor/setup.ts`, where `languageFor(path)` loads a grammar with a dynamic `import()` only when a file needs it. This page collects the patterns that keep those views fast, correct and cheap. Read it before you add an extension. The editor feature itself is in [How the Editor Works](How-the-Editor-Works.md), and the rest of the UI in [Frontend](Frontend.md).
 
 ```mermaid
 flowchart LR

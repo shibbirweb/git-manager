@@ -1,28 +1,28 @@
 # Getting Started
 
-Git Manager is a small, fast Git app for macOS and Windows. It shows what changed in your projects, lets you commit, switch branches and sync with a server, and has a friendly three pane tool for fixing merge conflicts.
+Nibtree is a small, fast Git app for macOS and Windows. It shows what changed in your projects, lets you commit, switch branches and sync with a server, and has a friendly three pane tool for fixing merge conflicts.
 
 ## Install
 
-Open the [Releases page](https://github.com/shibbirweb/git-manager/releases) on GitHub and look under the newest release.
+Open the [Releases page](https://github.com/shibbirweb/nibtree/releases) on GitHub and look under the newest release.
 
 ### On a Mac
 
 1. Download the `.dmg` file. It works on both Apple Silicon and Intel Macs.
-2. Open the `.dmg` and drag **Git Manager** into your **Applications** folder.
+2. Open the `.dmg` and drag **Nibtree** into your **Applications** folder.
 3. The first time only: builds are not signed by Apple yet, so macOS warns about an "unidentified developer". Right-click (or Control-click) the app in Applications and choose **Open**, then **Open** again in the warning. After that it opens normally. If macOS still refuses, see [Troubleshooting](Troubleshooting.md).
 
 ### On Windows
 
 1. Download the file that ends in `-setup.exe`. It is for 64-bit Windows 10 and 11.
-2. Run it. It installs Git Manager for your account only, so it needs no administrator rights, and adds it to the Start menu.
+2. Run it. It installs Nibtree for your account only, so it needs no administrator rights, and adds it to the Start menu.
 3. The first time only: the installer is not signed yet, so Windows SmartScreen says "Windows protected your PC". Click **More info**, then **Run anyway**.
 
-Git Manager draws its window with Microsoft Edge WebView2, which Windows 10 and 11 already have. If it is missing, the installer downloads it.
+Nibtree draws its window with Microsoft Edge WebView2, which Windows 10 and 11 already have. If it is missing, the installer downloads it.
 
 ### Git itself
 
-Git Manager uses the `git` already installed on your computer for every change it makes, so your hooks, passwords and signing keys work the same as in a terminal. If you have never used git on this computer, install it first: on a Mac with `xcode-select --install`, on Windows with [Git for Windows](https://git-scm.com/download/win).
+Nibtree uses the `git` already installed on your computer for every change it makes, so your hooks, passwords and signing keys work the same as in a terminal. If you have never used git on this computer, install it first: on a Mac with `xcode-select --install`, on Windows with [Git for Windows](https://git-scm.com/download/win).
 
 ## First launch
 
@@ -48,7 +48,7 @@ Next time you start the app, it reopens the folders you had open when you quit. 
 
 From top to bottom and left to right:
 
-- **Menu bar** (at the top of the screen on a Mac, inside the window on Windows). Git Manager, File, Edit, View, Code, Git, Window and Help. The **Git** menu holds commit, push, pull, fetch, merge, rebase, stash and the other git actions. See [Menus](Menus.md) and [Git Menu](Git-Menu.md). Fetch, pull, push and stash are also on each repository row in Changes (see [Repository Actions](Repository-Actions.md)).
+- **Menu bar** (at the top of the screen on a Mac, inside the window on Windows). Nibtree, File, Edit, View, Code, Git, Window and Help. The **Git** menu holds commit, push, pull, fetch, merge, rebase, stash and the other git actions. See [Menus](Menus.md) and [Git Menu](Git-Menu.md). Fetch, pull, push and stash are also on each repository row in Changes (see [Repository Actions](Repository-Actions.md)).
 - **Header** (the top bar of the window).
   - On the left: Back and Forward arrows, then the workspace name (click it for the folder menu).
   - Then the active repository and the number of repositories found. It shows when the workspace holds more than one repository, or when the repository is not the folder itself.
@@ -70,7 +70,7 @@ The two layout buttons next to the theme toggle hide or show the activity bars (
 ## Your first commit
 
 1. Open a folder that is a git repository.
-2. Edit a file, in Git Manager or any other editor. The change shows up in **Changes** on its own within a moment.
+2. Edit a file, in Nibtree or any other editor. The change shows up in **Changes** on its own within a moment.
 3. Click the file to see its diff, then hover it and click the **+** to **stage** it (staging means "put this in the next commit").
 4. Type a message in the commit box and click **Commit**, or press Cmd+Enter.
 5. Click **Sync Changes** under the commit box (**Publish Branch** for a branch the server does not have yet), or choose **Git > Push...**, to send it to the server (see [Remotes](Remotes.md)).
@@ -82,7 +82,7 @@ The two layout buttons next to the theme toggle hide or show the activity bars (
 - [Branches and Tags](Branches-and-Tags.md) and [Remotes](Remotes.md): work with others.
 - [Resolving Conflicts](Resolving-Conflicts.md): what to do when a merge stops.
 - [Keyboard Shortcuts](Keyboard-Shortcuts.md): every shortcut, also in Help > Keyboard Shortcuts.
-- [MCP Server and Command Line Tool](MCP-and-CLI.md): let AI tools and scripts use Git Manager.
+- [MCP Server and Command Line Tool](MCP-and-CLI.md): let AI tools and scripts use Nibtree.
 
 ## Related
 

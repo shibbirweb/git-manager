@@ -51,8 +51,8 @@ jobs:
       - name: Check the built app
         timeout-minutes: 5
         run: |
-          app="src-tauri/target/universal-apple-darwin/release/bundle/macos/Git Manager.app"
-          binary="$app/Contents/MacOS/git-manager"
+          app="src-tauri/target/universal-apple-darwin/release/bundle/macos/Nibtree.app"
+          binary="$app/Contents/MacOS/nibtree"
           archs="$(lipo -archs "$binary")"
           echo "Architectures: $archs"
           if [[ "$archs" != *arm64* || "$archs" != *x86_64* ]]; then
@@ -65,14 +65,14 @@ jobs:
           set -e
           echo "$output"
           if [ "$code" != "2" ] || ! echo "$output" | grep -q "not running"; then
-            echo "::error::git-manager cli status answered $code instead of 2 and \"not running\""
+            echo "::error::nibtree cli status answered $code instead of 2 and \"not running\""
             exit 1
           fi
 
       - name: Keep the app
         uses: actions/upload-artifact@v4
         with:
-          name: git-manager-macos-app
+          name: nibtree-macos-app
           path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           retention-days: 14
           if-no-files-found: error

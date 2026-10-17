@@ -1,13 +1,13 @@
 # Workspaces
 
-A workspace is the set of folders you have open, like a multi-root workspace in VS Code. It can hold one repository, many repositories, or none, and Git Manager shows all of them together.
+A workspace is the set of folders you have open (a multi-root workspace). It can hold one repository, many repositories, or none, and Nibtree shows all of them together.
 
 ## Open a folder
 
 1. On the [welcome screen](Welcome-Screen.md) click **Open** (or use the folder menu in the header, see below).
 2. Pick any folder.
 
-Git Manager then looks for repositories (folders that git tracks) inside it:
+Nibtree then looks for repositories (folders that git tracks) inside it:
 
 - The folder itself, or a repository that contains it.
 - Repositories further down, also ones nested inside other repositories, up to six levels deep.
@@ -17,7 +17,7 @@ Git Manager then looks for repositories (folders that git tracks) inside it:
 
 ![Opening a folder](../images/workspace-opening.png)
 
-*The progress card while Git Manager looks for repositories in a big folder.*
+*The progress card while Nibtree looks for repositories in a big folder.*
 
 If looking for repositories takes more than a blink, a card says **Opening** and the folder name, with the step, such as **Looking for repositories...**. After a few seconds it adds "Big folders take a moment. Folders such as node_modules are skipped."
 
@@ -80,7 +80,7 @@ You can switch it in several places:
 - In the **Files panel**, right-click a repository folder and choose **Set as Active Repository**.
 - In the **status bar**, click the repository name to open **Select a Repository**. Its **Auto** entry (on by default) makes the active repository follow the open tab, so opening a file of another repository makes that one active. Picking a repository there turns Auto off. See [Status Bar and Help](Status-Bar-and-Help.md).
 
-Git Manager remembers the active repository for each workspace. Opening the conflicts of another repository, from Changes or the status bar, makes that one active too.
+Nibtree remembers the active repository for each workspace. Opening the conflicts of another repository, from Changes or the status bar, makes that one active too.
 
 ## A folder without git
 
@@ -98,7 +98,7 @@ A workspace file saves a set of folders so you can reopen them in one click.
 
 1. Open the folders you want.
 2. In the folder menu choose **Save Workspace to File...**.
-3. Pick a name and place. It starts next to your first folder, and the file ends in `.gitmanager-workspace`.
+3. Pick a name and place. It starts next to your first folder, and the file ends in `.nibtree-workspace`.
 
 From then on the workspace is named after the file.
 

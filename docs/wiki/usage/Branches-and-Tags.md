@@ -13,7 +13,7 @@ The title bar of the sidebar has **Refresh**, and an **X** that hides the sideba
 
 *Local and remote branches, tags, stashes and worktrees of the active repository.*
 
-The sidebar shows the **active repository** in five sections: **Local**, **Remote**, **Tags**, **Stashes** (see [Stashes](Stashes.md)) and **Worktrees** (see [Worktrees](Worktrees.md)). Each section and folder shows how many items it holds. Click a section or folder to fold it. **Tags** starts folded, and Git Manager remembers what you folded.
+The sidebar shows the **active repository** in five sections: **Local**, **Remote**, **Tags**, **Stashes** (see [Stashes](Stashes.md)) and **Worktrees** (see [Worktrees](Worktrees.md)). Each section and folder shows how many items it holds. Click a section or folder to fold it. **Tags** starts folded, and Nibtree remembers what you folded.
 
 - Branch names with slashes are grouped into folders. `fix/tax-rates` sits in a **fix** folder.
 - Remote branches are grouped per remote, such as **origin**.
@@ -59,14 +59,14 @@ On a local branch:
 
 Merge, Rebase and Delete are greyed out for the branch you are on. Merge and Rebase here run right away with git's defaults; for options such as `--no-ff` or `--squash`, use **Git > Merge...** or **Git > Rebase...** (see [Git Dialogs](Git-Dialogs.md#merge)). On a remote branch you get **Checkout**, **New Branch from...**, **Merge** and **Rebase**. On a tag: **Checkout**, **New Branch from...** and **Merge**.
 
-Merge and Rebase are greyed out while a merge, rebase, cherry-pick or revert is still in progress, and every action waits while another operation runs. If either stops on conflicts, Git Manager opens the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
+Merge and Rebase are greyed out while a merge, rebase, cherry-pick or revert is still in progress, and every action waits while another operation runs. If either stops on conflicts, Nibtree opens the Conflicts dialog. See [Resolving Conflicts](Resolving-Conflicts.md).
 
 ## Delete a branch
 
 1. Right-click the branch and choose **Delete** (or select it and press Delete).
 2. Confirm.
 
-You cannot delete the branch you are on. If the branch has commits that are not merged into its upstream or your current branch, git refuses at first, and Git Manager asks again (**Branch Not Fully Merged**) with **Force Delete**. Only say yes if you are sure you no longer need those commits.
+You cannot delete the branch you are on. If the branch has commits that are not merged into its upstream or your current branch, git refuses at first, and Nibtree asks again (**Branch Not Fully Merged**) with **Force Delete**. Only say yes if you are sure you no longer need those commits.
 
 This deletes only your local branch, not the one on the server.
 

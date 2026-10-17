@@ -1,6 +1,6 @@
 # How conflict resolution works
 
-When a merge, rebase, cherry-pick or revert stops on conflicts, Git Manager shows a banner, a Conflicts dialog and inline editor actions, and lets you continue or abort. The merge tool has its own page, [How the merge tool works](How-the-Merge-Tool-Works.md). The user side is in [Resolving Conflicts](../usage/Resolving-Conflicts.md).
+When a merge, rebase, cherry-pick or revert stops on conflicts, Nibtree shows a banner, a Conflicts dialog and inline editor actions, and lets you continue or abort. The merge tool has its own page, [How the merge tool works](How-the-Merge-Tool-Works.md). The user side is in [Resolving Conflicts](../usage/Resolving-Conflicts.md).
 
 ## Why we need it
 

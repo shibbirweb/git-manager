@@ -101,7 +101,8 @@ export interface OpenWorkspace {
 }
 
 /** Recognized workspace file suffixes; the first is the one we save. */
-export const WORKSPACE_FILE_SUFFIXES = [".gitmanager-workspace", ".code-workspace"];
+/** Its own, the ones saved while the app was called Git Manager, and VS Code's. */
+export const WORKSPACE_FILE_SUFFIXES = [".nibtree-workspace", ".gitmanager-workspace", ".code-workspace"];
 
 export interface OpenOptions {
   /**
@@ -557,7 +558,7 @@ class RepoStore {
     this.filesChanged();
   }
 
-  /** Opens a `.gitmanager-workspace` or `.code-workspace` file. */
+  /** Opens a `.nibtree-workspace` or `.code-workspace` file. */
   async openWorkspaceFile(filePath: string, options: OpenOptions = {}): Promise<boolean> {
     let saved;
     try {

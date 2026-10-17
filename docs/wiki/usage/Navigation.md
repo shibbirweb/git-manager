@@ -1,6 +1,6 @@
 # Navigation
 
-Back and Forward work like in a web browser: they take you to where you were before. Git Manager remembers places in files, diffs and commits, so after a detour you can jump straight back to the line you were reading.
+Back and Forward work like in a web browser: they take you to where you were before. Nibtree remembers places in files, diffs and commits, so after a detour you can jump straight back to the line you were reading.
 
 ![Back and Forward buttons](../images/back-forward.png)
 
@@ -18,7 +18,7 @@ The arrows are greyed out when there is nowhere to go. The keys do nothing while
 
 ## What is remembered
 
-Git Manager adds a stop to the history when you:
+Nibtree adds a stop to the history when you:
 
 - Open a file in the editor, or move the cursor far in it (ten lines or more). Small moves update the current stop instead of adding new ones, so the history stays useful.
 - Open a file, class, symbol or text match from [Search Everywhere](Search-Everywhere.md). The place you came from is a stop too, so Back returns there.

@@ -1,6 +1,6 @@
 # UI Library
 
-Git Manager has its own UI library and design system in `ui/`. The Svelte components in `ui/web/` copy the app's look exactly, and the design tokens in `ui/design-tokens/` describe colors, sizes and each component's measurements once, for every platform.
+Nibtree has its own UI library and design system in `ui/`. The Svelte components in `ui/web/` copy the app's look exactly, and the design tokens in `ui/design-tokens/` describe colors, sizes and each component's measurements once, for every platform.
 
 ## Why we need it
 

@@ -1,12 +1,12 @@
 # Rounded Panels
 
-Rounded panels give Git Manager the look of the JetBrains **Islands** themes. The sidebar, each editor, the bottom panel and the Files panel become separate panels with round corners. A small gap shows the window color between them, so each part of the window stands on its own.
+Rounded panels give Nibtree a calm, spaced-out look. The sidebar, each editor, the bottom panel and the Files panel become separate panels with round corners. A small gap shows the window color between them, so each part of the window stands on its own.
 
 The setting is **off by default** and works with **every color theme**, not only Islands Light and Islands Dark.
 
 ![The window with rounded panels in a dark theme](../images/rounded-panels.png)
 
-*Git Manager Dark with rounded panels: the Changes sidebar, the editor and the Files panel each sit in their own panel.*
+*Nibtree Dark with rounded panels: the Changes sidebar, the editor and the Files panel each sit in their own panel.*
 
 ## Turn it on or off
 
@@ -29,7 +29,7 @@ Nothing else changes: menus, dialogs, the merge tool window and the colors insid
 
 ## With any color theme
 
-Rounded panels need the window frame to look different from the panels and from the editor, or the gaps would be invisible. Many themes, such as One Dark Pro, Dracula or Darcula, use one color for both. For those, Git Manager picks a frame color for you: a little darker than the panels and the editor in dark themes, and a little greyer in light themes. Text on the frame always stays readable. Git Manager Dark uses a frame darker than its editor, so the editor and its tabs show as a rounded panel just as they do in Git Manager Light.
+Rounded panels need the window frame to look different from the panels and from the editor, or the gaps would be invisible. Many themes, such as One Dark Pro, Dracula or Dusk, use one color for both. For those, Nibtree picks a frame color for you: a little darker than the panels and the editor in dark themes, and a little greyer in light themes. Text on the frame always stays readable. Nibtree Dark uses a frame darker than its editor, so the editor and its tabs show as a rounded panel just as they do in Nibtree Light.
 
 The **Islands Light** and **Islands Dark** themes use the frame colors of the JetBrains themes, so with rounded panels on they look very close to the real thing. See [Color Themes](Color-Themes.md).
 
@@ -39,7 +39,7 @@ The **Islands Light** and **Islands Dark** themes use the frame colors of the Je
 
 ## Saved where
 
-The choice is saved in `~/.gitmanager/settings.json` as `roundedPanels`, for example `"roundedPanels": true`. Anything other than `true` or `false` counts as off. See [Settings Files](Settings-Files.md).
+The choice is saved in `~/.nibtree/settings.json` as `roundedPanels`, for example `"roundedPanels": true`. Anything other than `true` or `false` counts as off. See [Settings Files](Settings-Files.md).
 
 ## Related
 

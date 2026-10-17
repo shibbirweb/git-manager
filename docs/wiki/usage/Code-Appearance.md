@@ -22,7 +22,7 @@ The weight needs a font that has it. JetBrains Mono, SF Mono and most variable f
 
 **Syntax highlighting** colors code by its language: keywords, strings, comments and so on. It is on by default and works in editors, diffs, the merge tool and the code blocks of the Markdown preview.
 
-Turn it off to see every file as plain text and save memory. Off, Git Manager loads no language grammar and keeps no syntax tree (the structure of the code it builds to color it), which saves about 35 MB. Turned off while the app runs, the trees go at once and the rest after a restart. Some features need that structure and stop while it is off: fold arrows and bracket pair colors. Sticky scroll then follows the indentation, and Toggle Comment (Cmd+/) still works. Open editors change at once.
+Turn it off to see every file as plain text and save memory. Off, Nibtree loads no language grammar and keeps no syntax tree (the structure of the code it builds to color it), which saves about 35 MB. Turned off while the app runs, the trees go at once and the rest after a restart. Some features need that structure and stop while it is off: fold arrows and bracket pair colors. Sticky scroll then follows the indentation, and Toggle Comment (Cmd+/) still works. Open editors change at once.
 
 ## Render whitespace
 

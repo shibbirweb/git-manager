@@ -1,10 +1,10 @@
 [package]
-name = "git-manager"
+name = "nibtree"
 version = "0.1.0-beta.10"
 description = "Native Git GUI with a JetBrains-style 3-way merge tool"
 authors = ["MD. Shibbir Ahmed"]
-homepage = "https://github.com/shibbirweb/git-manager"
-repository = "https://github.com/shibbirweb/git-manager"
+homepage = "https://github.com/shibbirweb/nibtree"
+repository = "https://github.com/shibbirweb/nibtree"
 license = "MIT"
 edition = "2021"
 
@@ -14,14 +14,14 @@ members = ["cli"]
 
 [lib]
 # The `_lib` suffix keeps the lib name distinct from the bin name (cargo#8519).
-name = "git_manager_lib"
+name = "nibtree_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-git-manager-cli = { path = "cli" }
+nibtree-cli = { path = "cli" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }

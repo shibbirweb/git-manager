@@ -1,6 +1,6 @@
 # Testing
 
-Git Manager changes people's repositories, so its tests use real git, not mocks. This page explains the two test suites, the helpers behind them, and what you must run before a change counts as done. The full list of test files is on [Test Suites](Test-Suites.md).
+Nibtree changes people's repositories, so its tests use real git, not mocks. This page explains the two test suites, the helpers behind them, and what you must run before a change counts as done. The full list of test files is on [Test Suites](Test-Suites.md).
 
 ```mermaid
 flowchart TB
@@ -55,7 +55,7 @@ The git processes come from `cli::command`, the same builder the app uses. The t
 ### Nothing talks to the outside world
 
 - **GitHub.** The network, the keychain and the `gh` CLI sit behind traits in `src-tauri/src/github/`, so `github/tests.rs` runs every path against fakes. The one real-transport test uses a local listener.
-- **MCP.** `mcp/tests.rs` starts the real server on an ephemeral port on `127.0.0.1` and calls it over HTTP, also through the `git-manager cli` client, against temporary repositories.
+- **MCP.** `mcp/tests.rs` starts the real server on an ephemeral port on `127.0.0.1` and calls it over HTTP, also through the `nibtree cli` client, against temporary repositories.
 - **Terminals.** `terminal.rs` starts real shells in pseudo terminals and checks that closing hangs up and then kills them.
 
 ### The demo script is tested too

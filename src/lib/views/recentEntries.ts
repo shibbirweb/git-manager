@@ -27,7 +27,7 @@ export function folderName(folderPath: string): string {
 }
 
 function workspaceFileLabel(filePath: string): string {
-  return filePath.slice(filePath.lastIndexOf("/") + 1).replace(/\.(gitmanager|code)-workspace$/, "");
+  return filePath.slice(filePath.lastIndexOf("/") + 1).replace(/\.(nibtree|gitmanager|code)-workspace$/, "");
 }
 
 /** Recent workspace files, then multi-folder workspaces, then single folders. */

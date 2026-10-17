@@ -1,5 +1,5 @@
 //! Remember unsaved changes (unsaved.rs): the editor keeps the text of Untitled tabs and of
-//! files with unsaved edits in `~/.gitmanager/unsaved/`, reads it back when a workspace opens,
+//! files with unsaved edits in `~/.nibtree/unsaved/`, reads it back when a workspace opens,
 //! and forgets it once the text is saved, reverted or discarded.
 
 use serde::Deserialize;

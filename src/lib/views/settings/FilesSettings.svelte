@@ -18,11 +18,11 @@
 <SettingsRow
   title="Settings folder"
   stacked
-  hint={"Git Manager keeps its files here. You can edit `settings.json` by hand; `state.json` remembers " +
+  hint={"Nibtree keeps its files here. You can edit `settings.json` by hand; `state.json` remembers " +
     "recent folders and panel sizes."}
 >
   <Stack direction="row" gap="md" align="center">
-    <CodeBlock variant="value" text={settings.configDir ?? "~/.gitmanager"} />
+    <CodeBlock variant="value" text={settings.configDir ?? "~/.nibtree"} />
     {#if settings.configDir}
       <Button size="small" onclick={() => void copyToClipboard(`${settings.configDir}/settings.json`)}>
         Copy settings.json Path

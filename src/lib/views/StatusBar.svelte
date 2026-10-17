@@ -196,7 +196,7 @@
     <StatusItem
       icon="star"
       label="Star on GitHub"
-      title="Star Git Manager on GitHub"
+      title="Star Nibtree on GitHub"
       onclick={() => void updates.openRepository()}
     />
     <StatusItem

@@ -4,7 +4,7 @@ This chapter explains how the three levels of file icons are loaded, matched and
 
 ## Why we need it
 
-PhpStorm and VS Code show an icon for each file type, and the user asked for the same in the Files panel and the file lists. Memory is a feature of Git Manager (see [Architecture](Architecture.md)), so the icons had to cost nothing when they are off, and only one set may be in memory at a time. That is why the setting has three levels instead of a switch: **No icons**, **Minimal** (simple shapes colored by theme tokens) and **Material Icons** (the colored icons of Material Icon Theme).
+Code editors show an icon for each file type, and the user asked for the same in the Files panel and the file lists. Memory is a feature of Nibtree (see [Architecture](Architecture.md)), so the icons had to cost nothing when they are off, and only one set may be in memory at a time. That is why the setting has three levels instead of a switch: **No icons**, **Minimal** (simple shapes colored by theme tokens) and **Material Icons** (the colored icons of Material Icon Theme).
 
 ## How it works
 
@@ -96,7 +96,7 @@ The CSP in `tauri.conf.json` has `'self'` in `connect-src` so the app may fetch 
 - `minimalSource.test.ts`: the committed `minimal/` folder matches the source, every map value is a known glyph and tone, and every tone is a token in `colors.css`.
 - `settingsData.test.ts` and `menuState.test.ts`: the setting and the View menu ticks.
 
-The memory of each level was measured in the real app with `git-manager cli memory` and `run_menu_command` on a repository with 2,400 changed files, three rounds of No icons, Minimal and Material Icons: Minimal added 2 to 10 MB of web content memory and Material Icons 10 to 15 MB more. Most of it is the extra row element per file in the Changes list and the decoded pictures. See [How Memory Is Measured](How-Memory-Is-Measured.md).
+The memory of each level was measured in the real app with `nibtree cli memory` and `run_menu_command` on a repository with 2,400 changed files, three rounds of No icons, Minimal and Material Icons: Minimal added 2 to 10 MB of web content memory and Material Icons 10 to 15 MB more. Most of it is the extra row element per file in the Changes list and the decoded pictures. See [How Memory Is Measured](How-Memory-Is-Measured.md).
 
 ## Keeping in sync
 

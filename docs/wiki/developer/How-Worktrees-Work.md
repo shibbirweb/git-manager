@@ -1,6 +1,6 @@
 # How Worktrees Work
 
-Git Manager lists, creates, locks, removes and prunes linked worktrees (`git worktree`), and opens any worktree folder as a repository. For the user side, see [Worktrees](../usage/Worktrees.md).
+Nibtree lists, creates, locks, removes and prunes linked worktrees (`git worktree`), and opens any worktree folder as a repository. For the user side, see [Worktrees](../usage/Worktrees.md).
 
 ## Why we need it
 

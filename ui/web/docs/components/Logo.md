@@ -16,7 +16,7 @@ Use in the Welcome page's brand (normal) and greeting and in About (large).
 
 - `size` (`"normal" | "medium" | "large" | "soft"`, default `"normal"`): 40, 48 (About) or 72 px, or a 56 px tinted
   tile.
-- `label` (`string`, default `"Git Manager"`): Read by screen readers.
+- `label` (`string`, default `"Nibtree"`): Read by screen readers.
 
 ## Example: Greeting
 

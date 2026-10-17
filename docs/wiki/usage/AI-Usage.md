@@ -26,8 +26,8 @@ If an agent shows **signed out**, start it once in a terminal so it signs in aga
 
 ## Where the numbers come from
 
-- **Claude Code**: Git Manager asks Anthropic, with the sign-in Claude Code itself keeps in your macOS Keychain. The first time, macOS asks whether Git Manager may use "Claude Code-credentials"; choose **Always Allow** so it does not ask again. The sign-in is read only to ask for the numbers: it is never saved by Git Manager and never sent anywhere but `api.anthropic.com`. If you say no, Git Manager does not ask again until you click **Refresh**.
-- **Codex**: Git Manager reads the limits Codex writes into its own session files in `~/.codex`. Nothing is sent anywhere.
+- **Claude Code**: Nibtree asks Anthropic, with the sign-in Claude Code itself keeps in your macOS Keychain. The first time, macOS asks whether Nibtree may use "Claude Code-credentials"; choose **Always Allow** so it does not ask again. The sign-in is read only to ask for the numbers: it is never saved by Nibtree and never sent anywhere but `api.anthropic.com`. If you say no, Nibtree does not ask again until you click **Refresh**.
+- **Codex**: Nibtree reads the limits Codex writes into its own session files in `~/.codex`. Nothing is sent anywhere.
 
 The numbers are read every 5 minutes while the window is open, a little after an agent finishes, and when you click Refresh. Only agents set up on this Mac are shown (their `~/.claude` or `~/.codex` folder exists).
 

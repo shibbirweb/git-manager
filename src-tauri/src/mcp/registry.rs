@@ -87,10 +87,10 @@ pub fn listed(info: &McpToolInfo) -> Value {
             "destructiveHint": info.destructive,
         },
         "_meta": {
-            "gitManager/category": info.category,
-            "gitManager/kind": info.kind,
-            "gitManager/enabled": info.enabled,
-            "gitManager/defaultEnabled": info.default_enabled,
+            "nibtree/category": info.category,
+            "nibtree/kind": info.kind,
+            "nibtree/enabled": info.enabled,
+            "nibtree/defaultEnabled": info.default_enabled,
         },
     })
 }

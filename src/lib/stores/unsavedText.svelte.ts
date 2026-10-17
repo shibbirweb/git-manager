@@ -1,5 +1,5 @@
-// Remember unsaved changes (Settings > Editor), like Sublime Text's hot exit: the text of
-// Untitled tabs and of files with unsaved edits is written to ~/.gitmanager/unsaved (unsaved.rs)
+// Remember unsaved changes (Settings > Editor), a hot exit: the text of
+// Untitled tabs and of files with unsaved edits is written to ~/.nibtree/unsaved (unsaved.rs)
 // a moment after each edit, so closing the window or quitting keeps it, and the tabs come back
 // with it when the workspace opens again. Saving, reverting or discarding forgets it.
 //

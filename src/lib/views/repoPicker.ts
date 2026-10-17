@@ -32,7 +32,7 @@ export async function pickAndOpenWorkspaceFile(): Promise<void> {
     multiple: false,
     directory: false,
     title: "Open Workspace from File",
-    filters: [{ name: "Workspace", extensions: ["gitmanager-workspace", "code-workspace"] }],
+    filters: [{ name: "Workspace", extensions: ["nibtree-workspace", "gitmanager-workspace", "code-workspace"] }],
   });
   if (typeof selected === "string" && selected) {
     await repoStore.openWorkspaceFile(fromNativePath(selected));
@@ -48,11 +48,11 @@ export async function pickAndSaveWorkspace(): Promise<void> {
   const first = workspace.folders[0]?.root ?? "";
   const parent = first.slice(0, Math.max(1, first.lastIndexOf("/")));
   const defaultPath =
-    workspace.file ?? `${parent}/${workspace.name.replace(/[^\w.-]+/g, "-") || "workspace"}.gitmanager-workspace`;
+    workspace.file ?? `${parent}/${workspace.name.replace(/[^\w.-]+/g, "-") || "workspace"}.nibtree-workspace`;
   const target = await save({
     title: "Save Workspace As",
     defaultPath,
-    filters: [{ name: "Git Manager Workspace", extensions: ["gitmanager-workspace"] }],
+    filters: [{ name: "Nibtree Workspace", extensions: ["nibtree-workspace"] }],
   });
   if (target) {
     await repoStore.saveWorkspaceAs(fromNativePath(target));

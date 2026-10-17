@@ -34,7 +34,7 @@
 <Dialog
   open
   variant="panel"
-  title="What's New in Git Manager {updates.current ?? ''}"
+  title="What's New in Nibtree {updates.current ?? ''}"
   subtitle={isBetaBuild
     ? "A beta build: these changes are still being tested."
     : "Here is what changed in this version."}

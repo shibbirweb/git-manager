@@ -32,7 +32,7 @@ pub enum LaunchMode {
 }
 
 impl LaunchMode {
-    /// `git-manager merge BASE LOCAL REMOTE MERGED` or `git-manager [repo-path]`.
+    /// `nibtree merge BASE LOCAL REMOTE MERGED` or `nibtree [repo-path]`.
     pub fn from_args(args: &[String]) -> LaunchMode {
         // Finder can append a legacy process serial number argument.
         let args: Vec<&String> = args.iter().filter(|arg| !arg.starts_with("-psn_")).collect();

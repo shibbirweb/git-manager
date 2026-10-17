@@ -1,10 +1,10 @@
 # Architecture
 
-This page shows how the pieces of Git Manager fit together. Most rules in this project come from the choices on this page.
+This page shows how the pieces of Nibtree fit together. Most rules in this project come from the choices on this page.
 
 ## The big picture
 
-Git Manager has two halves that talk over Tauri's IPC.
+Nibtree has two halves that talk over Tauri's IPC.
 
 - **The UI** is a Svelte 5 single page app in the macOS web view (WKWebView), not a bundled browser.
 - **The backend** is Rust. It exposes Tauri commands, reads repositories with git2 (libgit2), writes through the git command line, runs the 3-way merge engine and watches folders. It also runs terminals, search indexes, script runs, the GitHub client and the optional MCP server (see [Backend Services](Backend-Services.md)).
@@ -40,9 +40,9 @@ flowchart LR
   Writes --> Git["Your git binary<br/>hooks, credentials, signing"]
   Git --> Repo
   Repo -. "file events" .-> Watcher
-  Config --> Home[("~/.gitmanager<br/>settings.json, state.json")]
+  Config --> Home[("~/.nibtree<br/>settings.json, state.json")]
   Services --> GitHub["GitHub API<br/>and the keychain"]
-  Clients["AI tools and git-manager cli"] -. "MCP on 127.0.0.1, off by default" .-> Services
+  Clients["AI tools and nibtree cli"] -. "MCP on 127.0.0.1, off by default" .-> Services
   Api -->|"update check"| Releases["GitHub releases API"]
 ```
 
@@ -142,7 +142,7 @@ Windows paths: [Windows Support](Windows-Support.md#paths).
 - **Untrusted Markdown.** The preview sanitizes HTML with DOMPurify and blocks remote images; local images come from `read_image_data_url`, only from the document's workspace folder.
 - **Narrow file access.** `load_config` and `save_config` accept only the names `settings` and `state`. Worktree reads and writes go through `safe_join`.
 - **Secrets.** The GitHub token lives only in the system keychain, and git output in the Git Console is masked before it is stored.
-- **The MCP server** is off by default, listens only on `127.0.0.1`, needs the bearer token in `~/.gitmanager/mcp.json`, rejects requests with an `Origin` header (web pages) and only reaches the open workspace folders. See [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
+- **The MCP server** is off by default, listens only on `127.0.0.1`, needs the bearer token in `~/.nibtree/mcp.json`, rejects requests with an `Origin` header (web pages) and only reaches the open workspace folders. See [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
 - **Dev tools stay dev only.** The IPC bridge below exists only in dev builds and only relays with `GM_IPC_BRIDGE=1`.
 
 ## The dev-only IPC bridge

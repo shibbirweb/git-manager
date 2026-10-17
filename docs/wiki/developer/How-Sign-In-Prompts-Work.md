@@ -13,7 +13,7 @@ Git and ssh both support an **askpass** program: when they need an answer and ha
 ```mermaid
 sequenceDiagram
   participant G as git or ssh
-  participant C as git-manager (askpass client)
+  participant C as nibtree (askpass client)
   participant S as App: askpass.rs server
   participant W as Window: AskpassDialog
   G->>C: run with prompt "Username for 'https://github.com': "

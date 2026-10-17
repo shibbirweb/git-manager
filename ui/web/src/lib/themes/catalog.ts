@@ -1,4 +1,4 @@
-// Color themes as token values: the built-in Git Manager Light and Dark sets (colors.json, styles/colors.css)
+// Color themes as token values: the built-in Nibtree Light and Dark sets (colors.json, styles/colors.css)
 // and every other theme derived from its published colors (palettes.ts, derive.ts). Imported lazily (Settings >
 // Editor, or when a non-default theme is active) so the defaults cost nothing. Values are computed on demand and
 // never cached, so only the applied CSS variables stay around.

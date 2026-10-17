@@ -1,4 +1,4 @@
-// Pure parts of the settings store: validating what ~/.gitmanager/settings.json
+// Pure parts of the settings store: validating what ~/.nibtree/settings.json
 // and state.json hold, turning it back into JSON, deciding which files may be
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
@@ -472,7 +472,7 @@ export interface Preferences {
   confirmDragAndDrop: boolean;
   /** The MCP server for AI tools. Off, nothing listens. */
   mcpEnabled: boolean;
-  /** The `git-manager cli` command line tool; it talks to the same local server. */
+  /** The `nibtree cli` command line tool; it talks to the same local server. */
   cliEnabled: boolean;
   /** Port of the local server on 127.0.0.1. */
   mcpPort: number;
@@ -480,13 +480,13 @@ export interface Preferences {
   mcpTools: Record<string, boolean>;
   /** Custom keyboard shortcuts: command id to a menu accelerator, or null for no key. */
   keybindings: ShortcutOverrides;
-  /** Debug memory log: memory readings and UI events written to ~/.gitmanager/logs/memory.log. */
+  /** Debug memory log: memory readings and UI events written to ~/.nibtree/logs/memory.log. */
   memoryLogEnabled: boolean;
   /** How often the memory log reads memory. */
   memoryLogIntervalMs: number;
   /** A reading is written when the total changed by at least this much. */
   memoryLogThresholdMb: number;
-  /** Local History: a copy of a file on every save, outside change and discard (~/.gitmanager/local-history). */
+  /** Local History: a copy of a file on every save, outside change and discard (~/.nibtree/local-history). */
   localHistoryEnabled: boolean;
   /** Versions older than this many days are removed. */
   localHistoryDays: number;

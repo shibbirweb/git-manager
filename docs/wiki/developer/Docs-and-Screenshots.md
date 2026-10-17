@@ -53,7 +53,7 @@ Screenshots show the real app, since a mocked backend drifts: `scripts/screensho
 
 What the script does, and why:
 
-- **It rebuilds the demo on every run** in `/tmp/gitmanager-docs` with `scripts/make-docs-demo.sh` (history, a merge in progress, a submodule, Git LFS images, a plain folder). Dates are relative to today, so blame always reads "2 days ago".
+- **It rebuilds the demo on every run** in `/tmp/nibtree-docs` with `scripts/make-docs-demo.sh` (history, a merge in progress, a submodule, Git LFS images, a plain folder). Dates are relative to today, so blame always reads "2 days ago".
 - **It keeps your own setup out.** The page answers some commands itself: settings, state and unsaved text live in memory, the launch mode points at the demo, folder pickers return a fixed answer. Dialog, opener and window calls never reach the app; GitHub gets canned releases.
 - **It refuses anything outside the demo.** Any other command with an absolute path argument outside the demo folder fails with a "blocked" error, so a shot can never touch a real repository.
 - **It retries once,** since a dev server reload can break one attempt.
@@ -134,6 +134,6 @@ Running the Wiki workflow by hand publishes to the live wiki for everyone, so do
 - Relative links only, like `Architecture.md` or `../usage/Getting-Started.md`.
 - Diagrams in `mermaid` blocks: flowchart, sequenceDiagram, stateDiagram-v2, classDiagram or gitGraph. Quote labels with punctuation.
 - Never the em-dash character. Use a colon, a comma or a hyphen.
-- Never point the bridge at a real repository or at your own `~/.gitmanager`.
+- Never point the bridge at a real repository or at your own `~/.nibtree`.
 
 The pull request template repeats the docs checklist. See [Contributing](Contributing.md).

@@ -25,7 +25,7 @@ const MIN_SIZE: (f64, f64) = (960.0, 600.0);
 /// Where the window buttons go (macOS), the same as `trafficLightPosition` in tauri.conf.json.
 #[cfg(target_os = "macos")]
 const TRAFFIC_LIGHTS: (f64, f64) = (14.0, 23.5);
-const DEFAULT_TITLE: &str = "Git Manager";
+const DEFAULT_TITLE: &str = "Nibtree";
 
 /// A logical (x, y) position or (width, height) size.
 type Pair = (f64, f64);

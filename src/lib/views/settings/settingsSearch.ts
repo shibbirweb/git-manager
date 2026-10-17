@@ -149,7 +149,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Secret token", "mcp password key", "MCP server"],
     ["Connect Claude Code", "mcp ai agent", "MCP server"],
     ["Other MCP clients", "mcp json config", "MCP server"],
-    ["Command line tool", "cli terminal scripts git-manager"],
+    ["Command line tool", "cli terminal scripts nibtree"],
     ["Install", "cli command line tool", "Command line tool"],
     ["The folder is not on your PATH", "cli command line tool windows environment variables", "Command line tool"],
     ["Examples", "cli command line tool", "Command line tool"],
@@ -167,7 +167,7 @@ const SECTION_ENTRIES: Record<SettingsSection, EntrySpec[]> = {
     ["Skipped version", "update"],
   ],
   files: [
-    ["Settings folder", "settings.json state.json config gitmanager path"],
+    ["Settings folder", "settings.json state.json config nibtree path"],
     ["Changed from defaults", "modified settings"],
   ],
   about: [

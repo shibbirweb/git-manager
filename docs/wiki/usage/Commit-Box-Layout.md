@@ -1,6 +1,6 @@
 # Commit Box Layout
 
-The commit box is where you write a commit message and click **Commit**. Git Manager can place it in two ways, and you can switch at any time:
+The commit box is where you write a commit message and click **Commit**. Nibtree can place it in two ways, and you can switch at any time:
 
 - **Single** (the default), like JetBrains IDEs: one commit box at the bottom of **Changes**. With several repositories, **Commit to** picks the repository the commit goes to.
 - **Per repository**, like VS Code: every repository in **Changes** has its own commit box at the top of its section, right under its name.

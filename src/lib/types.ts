@@ -22,7 +22,7 @@ export interface RepoInfo {
   worktree?: boolean;
 }
 
-/** A saved `.gitmanager-workspace` (or `.code-workspace`) file. */
+/** A saved `.nibtree-workspace` (or `.code-workspace`) file. */
 export interface WorkspaceFile {
   name: string;
   folders: string[];
@@ -1041,7 +1041,7 @@ export interface ShelvedFile {
   oldId: string | null;
 }
 
-/** One shelved change list, stored in .git/gitmanager-shelf/<id>.json next to <id>.patch. */
+/** One shelved change list, stored in .git/nibtree-shelf/<id>.json next to <id>.patch. */
 export interface ShelfEntry {
   version: number;
   id: string;
@@ -1133,7 +1133,7 @@ export interface WorktreeComparison {
 
 export type McpToolCategory = "Workspace" | "Git" | "Files" | "Search" | "Scripts" | "Terminal" | "App" | "Performance";
 
-/** Who made a call: an AI harness over MCP, or `git-manager cli`. */
+/** Who made a call: an AI harness over MCP, or `nibtree cli`. */
 export type McpClient = "mcp" | "cli";
 
 export interface McpStatus {
@@ -1146,9 +1146,9 @@ export interface McpStatus {
   /** Only returned so Settings can show and copy it. */
   token: string | null;
   error: string | null;
-  /** The program that runs the tool plus " cli": the app binary, or `git-manager-cli.exe` on Windows. */
+  /** The program that runs the tool plus " cli": the app binary, or `nibtree-cli.exe` on Windows. */
   cliCommand: string;
-  /** Where `git-manager` is linked (`git-manager.cmd` on Windows), or null when it is not installed. */
+  /** Where `nibtree` is linked (`nibtree.cmd` on Windows), or null when it is not installed. */
   cliInstalledPath: string | null;
   /** Where Install puts the command: ~/.local/bin, or WindowsApps on Windows. */
   cliFolder: string;

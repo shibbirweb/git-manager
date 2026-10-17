@@ -1,6 +1,6 @@
 # Versioning and Changelog
 
-Git Manager has one version number and one changelog. Both are moved by tools, not by hand, so they can never disagree. This page explains where they live, every command of `scripts/version.ts`, and the rules for writing the changelog.
+Nibtree has one version number and one changelog. Both are moved by tools, not by hand, so they can never disagree. This page explains where they live, every command of `scripts/version.ts`, and the rules for writing the changelog.
 
 ## One version, three files
 
@@ -114,7 +114,7 @@ flowchart LR
 
 ## Lessons learned
 
-**`Cargo.lock` is rewritten as text.** The first `set` ran `cargo update --package git-manager --offline` after editing `Cargo.toml`. That meant the release runners needed Rust just to change a number. Now `setCargoLockVersion` replaces only the version line of our own crate's entry in `Cargo.lock`. That entry has no checksum, so nothing else needs to change, and CI's `--locked` builds would catch a broken lockfile at once.
+**`Cargo.lock` is rewritten as text.** The first `set` ran `cargo update --package nibtree --offline` after editing `Cargo.toml`. That meant the release runners needed Rust just to change a number. Now `setCargoLockVersion` replaces only the version line of our own crate's entry in `Cargo.lock`. That entry has no checksum, so nothing else needs to change, and CI's `--locked` builds would catch a broken lockfile at once.
 
 **Dating the changelog twice would duplicate a section.** If `bump release` ran again for a version that was already dated, it would add a second `## [x.y.z]` heading and the notes would be split or repeated. So `bump` refuses when the changelog already has a section for the target version: that version looks released already.
 

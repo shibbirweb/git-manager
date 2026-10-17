@@ -1,6 +1,6 @@
 # How Folder Watching Works
 
-Git Manager notices changes on its own: an edit in another editor, a commit in the terminal, a new repository after `git clone`. One file watcher per workspace folder sorts every file event into "this repository changed" or "the folder changed". The rest of the workspace is in [How workspaces work](How-Workspaces-Work.md).
+Nibtree notices changes on its own: an edit in another editor, a commit in the terminal, a new repository after `git clone`. One file watcher per workspace folder sorts every file event into "this repository changed" or "the folder changed". The rest of the workspace is in [How workspaces work](How-Workspaces-Work.md).
 
 ## Why we need it
 

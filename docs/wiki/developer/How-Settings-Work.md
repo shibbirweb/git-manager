@@ -1,6 +1,6 @@
 # How settings work
 
-Settings live in `~/.gitmanager/`, much like VS Code's own folder: one file for preferences, one for app state. For the user side, see [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md). Every key with its default and range is in [Settings Reference](Settings-Reference.md).
+Settings live in `~/.nibtree/`: one file for preferences, one for app state. For the user side, see [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md). Every key with its default and range is in [Settings Reference](Settings-Reference.md).
 
 ## Why we need it
 
@@ -72,7 +72,7 @@ Others are read where they are used, such as `terminal/options.ts`.
 
 ### The dialog
 
-`SettingsDialog.svelte` lists the sections of `SETTINGS_SECTIONS`: Appearance, Editor, Git (id `merge`), Layout, Terminal, GitHub, Automation, Updates, Settings Files and About. `settings.openDialog(section)` picks the start: Editor from the status bar's Spaces item, Terminal from Default Shell..., Automation from the MCP tools dialog, About from Git Manager > About, any section from the MCP tool `open_settings`.
+`SettingsDialog.svelte` lists the sections of `SETTINGS_SECTIONS`: Appearance, Editor, Git (id `merge`), Layout, Terminal, GitHub, Automation, Updates, Settings Files and About. `settings.openDialog(section)` picks the start: Editor from the status bar's Spaces item, Terminal from Default Shell..., Automation from the MCP tools dialog, About from Nibtree > About, any section from the MCP tool `open_settings`.
 
 Terminal loads the shell list when first shown; Automation refreshes the server status. Changed from defaults lists `changedPreferenceKeys()`, which compares records such as `mcpTools` by content.
 

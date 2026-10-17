@@ -1,7 +1,7 @@
 // The file tabs of each workspace, kept in state.json so they come back after a restart
 // (Settings > Editor > Reopen tabs on start). Only paths, flags and positions are kept:
 // a restored tab loads its file the first time it is shown. Untitled tabs are kept too; their
-// text lives in ~/.gitmanager/unsaved (unsavedText.svelte.ts). Pure, so the validation of a
+// text lives in ~/.nibtree/unsaved (unsavedText.svelte.ts). Pure, so the validation of a
 // hand-edited state.json can be tested.
 
 import {

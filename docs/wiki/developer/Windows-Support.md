@@ -17,7 +17,7 @@ On macOS and Linux, a cancellable git command (Clone, Fetch and others with a Ca
 
 ## One copy at a time
 
-On macOS, opening the app again brings the running copy forward. Windows starts a new process for every launch, and two copies would share `state.json` and the MCP port. So on Windows, `lib.rs` registers `tauri-plugin-single-instance` first. A second start hands its arguments to the running app and exits. `commands::window::on_second_launch` then opens the folder or workspace file it names (`windows::open_for_arguments`, resolved against the folder it was started in), or focuses the window that shows it already. With nothing to open, the last focused window comes forward. The merge tool never registers the plugin, because `git mergetool` starts it next to the running app on purpose, and `git-manager cli` exits before the app is built.
+On macOS, opening the app again brings the running copy forward. Windows starts a new process for every launch, and two copies would share `state.json` and the MCP port. So on Windows, `lib.rs` registers `tauri-plugin-single-instance` first. A second start hands its arguments to the running app and exits. `commands::window::on_second_launch` then opens the folder or workspace file it names (`windows::open_for_arguments`, resolved against the folder it was started in), or focuses the window that shows it already. With nothing to open, the last focused window comes forward. The merge tool never registers the plugin, because `git mergetool` starts it next to the running app on purpose, and `nibtree cli` exits before the app is built.
 
 The command line tool and the MCP screenshot on Windows are on [Windows MCP and CLI](Windows-MCP-and-CLI.md).
 

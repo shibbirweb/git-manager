@@ -1,6 +1,6 @@
 # File Icons
 
-Git Manager can show an icon for each file's type, like PhpStorm and VS Code do. A PHP file gets the PHP logo, a Dockerfile gets the Docker whale, and a lock file gets a lock. Icons are **off by default**, because every icon set uses some memory.
+Nibtree can show an icon for each file's type. A PHP file gets the PHP logo, a Dockerfile gets the Docker whale, and a lock file gets a lock. Icons are **off by default**, because every icon set uses some memory.
 
 [TODO:file-icons.png]
 
@@ -24,7 +24,7 @@ The level applies at once. You do not need to restart.
 
 ## How an icon is picked
 
-Git Manager looks at the file name first, then at the end of the name (the extension):
+Nibtree looks at the file name first, then at the end of the name (the extension):
 
 - Some names have their own icon, such as `package.json`, `Dockerfile`, `README.md` and `.gitignore`.
 - Otherwise the longest matching extension wins: `cart.spec.ts` gets the test icon before the TypeScript icon.
@@ -35,7 +35,7 @@ With **Material Icons**, a few icons have a light version that is used with a li
 
 ## Memory
 
-Memory matters in Git Manager, so each level loads only its own icons:
+Memory matters in Nibtree, so each level loads only its own icons:
 
 - With **No icons**, no icon set is loaded at all.
 - With **Minimal**, only the Minimal set is loaded.

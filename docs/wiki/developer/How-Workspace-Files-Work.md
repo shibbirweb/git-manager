@@ -1,6 +1,6 @@
 # How Workspace Files Work
 
-A workspace file saves a set of folders, so the user can reopen them in one click. Git Manager writes `.gitmanager-workspace` files and also reads and updates VS Code `.code-workspace` files. This page also covers which folders reopen when the app starts. The rest of the workspace is in [How workspaces work](How-Workspaces-Work.md), and the user side in [Workspaces](../usage/Workspaces.md).
+A workspace file saves a set of folders, so the user can reopen them in one click. Nibtree writes `.nibtree-workspace` files and also reads and updates VS Code `.code-workspace` files. This page also covers which folders reopen when the app starts. The rest of the workspace is in [How workspaces work](How-Workspaces-Work.md), and the user side in [Workspaces](../usage/Workspaces.md).
 
 ## Why we need it
 

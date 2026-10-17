@@ -4,7 +4,7 @@ This chapter covers what happens inside a CodeMirror editor once a file is open:
 
 ## Why we need it
 
-People move between Git Manager and their IDE all day. If Cmd+/ comments a line there, it must comment a line here too, and the menu bar should list the commands so they can be found. Most users come from JetBrains or VS Code, so the keys follow JetBrains where the two differ, and VS Code where JetBrains has no answer.
+People move between Nibtree and their IDE all day. If Cmd+/ comments a line there, it must comment a line here too, and the menu bar should list the commands so they can be found. The keys follow the conventions most code editors share, and the macOS ones where they differ.
 
 ## How it works
 

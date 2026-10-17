@@ -1,6 +1,6 @@
 # Terminal
 
-Git Manager has a terminal built in, like VS Code. Run git commands, a dev server or your tests without leaving the window. Each terminal runs a real shell (the program that reads your commands, such as zsh or PowerShell), with your usual prompt, colors and aliases.
+Nibtree has a terminal built in. Run git commands, a dev server or your tests without leaving the window. Each terminal runs a real shell (the program that reads your commands, such as zsh or PowerShell), with your usual prompt, colors and aliases.
 
 This page covers the panel and its terminals. Split terminals, find, clickable file paths, dropping files and the keys are on [Terminal Features](Terminal-Features.md).
 
@@ -67,15 +67,15 @@ Closing a terminal tab (with x, Close Others, Close All and so on) kills that te
 
 - If the shell ends cleanly, with exit code 0 (for example after you type `exit`), the terminal closes.
 - If it ends with an error, the terminal stays open with a dim line such as "[Process exited with code 1]", so you can read what happened.
-- **Kill Terminal closes at once, without asking.** Git Manager cannot tell whether something important still runs in the shell, so it does what you asked, like VS Code.
+- **Kill Terminal closes at once, without asking.** Nibtree cannot tell whether something important still runs in the shell, so it does what you asked.
 
 If a shell cannot start, the terminal shows the error and a **Retry** button.
 
-Closing the folder or quitting Git Manager stops every terminal, so no shells are left behind.
+Closing the folder or quitting Nibtree stops every terminal, so no shells are left behind.
 
 ## Shells and settings
 
-New terminals use your login shell (the one Terminal.app uses) unless you pick another **Default shell** in Settings, Terminal. Git Manager finds the shells listed in `/etc/shells`.
+New terminals use your login shell (the one Terminal.app uses) unless you pick another **Default shell** in Settings, Terminal. Nibtree finds the shells listed in `/etc/shells`.
 
 ![Settings, Terminal section](../images/terminal-settings.png)
 

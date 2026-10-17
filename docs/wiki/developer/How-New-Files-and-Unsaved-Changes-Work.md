@@ -46,7 +46,7 @@ sequenceDiagram
 
 ### The store on disk
 
-`src-tauri/src/unsaved.rs` keeps one file per tab in `~/.gitmanager/unsaved/`, named by the SHA-1 of the tab path (`git2::Oid::hash_object`, as Local History does). Each file is the raw body as it arrived, with `savedAt` added: a JSON line, a newline, the text. `list` reads only the first line of each file. Writes go through a temporary file and a rename. Paths must be absolute or `untitled:<id>`; texts over 16 MB or not UTF-8 are refused.
+`src-tauri/src/unsaved.rs` keeps one file per tab in `~/.nibtree/unsaved/`, named by the SHA-1 of the tab path (`git2::Oid::hash_object`, as Local History does). Each file is the raw body as it arrived, with `savedAt` added: a JSON line, a newline, the text. `list` reads only the first line of each file. Writes go through a temporary file and a rename. Paths must be absolute or `untitled:<id>`; texts over 16 MB or not UTF-8 are refused.
 
 ## Where the code lives
 
@@ -94,4 +94,4 @@ None yet.
 
 - Update this page and the user page when the save flow, the restore rules or the store format change.
 - Retake `new-file-untitled.png` when the tab strip changes, and `settings-remember-unsaved.png` when the Saving rows change.
-- `scripts/screenshots.ts` answers the `unsaved_*` commands in the page, so screenshots never write to your own `~/.gitmanager/unsaved`; keep that in step with new commands.
+- `scripts/screenshots.ts` answers the `unsaved_*` commands in the page, so screenshots never write to your own `~/.nibtree/unsaved`; keep that in step with new commands.

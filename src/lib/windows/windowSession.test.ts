@@ -54,7 +54,7 @@ describe("startStep", () => {
 describe("windowTitle", () => {
   it("names the window after its workspace", () => {
     expect(windowTitle("git-merger")).toBe("git-merger");
-    expect(windowTitle("  ")).toBe("Git Manager");
-    expect(windowTitle(null)).toBe("Git Manager");
+    expect(windowTitle("  ")).toBe("Nibtree");
+    expect(windowTitle(null)).toBe("Nibtree");
   });
 });
