@@ -24,6 +24,11 @@
 @define-color gm_editor_line_number #4b5059;
 @define-color gm_editor_active_line #26282e;
 @define-color gm_editor_selection #214283;
+@define-color gm_editor_cursor #dfe1e5;
+@define-color gm_term_background #1e1f22;
+@define-color gm_term_foreground #dfe1e5;
+@define-color gm_term_cursor #dfe1e5;
+@define-color gm_term_selection #214283;
 @define-color gm_term_black #000000;
 @define-color gm_term_red #cd3131;
 @define-color gm_term_green #0dbc79;

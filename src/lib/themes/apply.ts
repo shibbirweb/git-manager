@@ -1,5 +1,5 @@
 // Puts a color theme on the document. The built-in Git Manager themes are the
-// sets in src/app.css and need nothing else; any other theme is one generated
+// sets in the UI library's styles/colors.css and need nothing else; any other theme is one generated
 // <style> element with that theme's variables. The <html> attributes change
 // only after the new variables are in place, so watchers (the UI library's logic/themeWatch.ts)
 // that copy colors out of CSS read the new ones.
@@ -27,7 +27,7 @@ export function themeAttributes(mode: ColorMode, themeId: string): ThemeAttribut
   return { theme: mode, colorTheme, contrast: info && isHighContrast(info.kind) ? "high" : null };
 }
 
-/** Whether a theme needs the catalog; the defaults come from app.css. */
+/** Whether a theme needs the catalog; the defaults come from colors.css. */
 export function needsCatalog(mode: ColorMode, themeId: string): boolean {
   return pickThemeId(themeId, mode) !== defaultThemeFor(mode);
 }

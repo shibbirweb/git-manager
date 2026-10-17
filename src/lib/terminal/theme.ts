@@ -1,4 +1,4 @@
-// Terminal colors come from the CSS tokens in src/app.css, so the terminal
+// Terminal colors come from the CSS color tokens (the UI library's colors.css), so the terminal
 // follows the light and dark themes like the editors do. xterm needs concrete
 // color strings, so the tokens are read from the computed style and read again
 // whenever the theme changes.

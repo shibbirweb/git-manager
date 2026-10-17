@@ -74,6 +74,16 @@ public enum GMColor {
         gmLight: GMRGBA(245, 248, 254, 1), dark: GMRGBA(38, 40, 46, 1))
     public static let editorSelection = Color(
         gmLight: GMRGBA(193, 195, 201, 1), dark: GMRGBA(33, 66, 131, 1))
+    public static let editorCursor = Color(
+        gmLight: GMRGBA(30, 31, 34, 1), dark: GMRGBA(223, 225, 229, 1))
+    public static let termBackground = Color(
+        gmLight: GMRGBA(255, 255, 255, 1), dark: GMRGBA(30, 31, 34, 1))
+    public static let termForeground = Color(
+        gmLight: GMRGBA(30, 31, 34, 1), dark: GMRGBA(223, 225, 229, 1))
+    public static let termCursor = Color(
+        gmLight: GMRGBA(30, 31, 34, 1), dark: GMRGBA(223, 225, 229, 1))
+    public static let termSelection = Color(
+        gmLight: GMRGBA(193, 195, 201, 1), dark: GMRGBA(33, 66, 131, 1))
     public static let termBlack = Color(
         gmLight: GMRGBA(0, 0, 0, 1), dark: GMRGBA(0, 0, 0, 1))
     public static let termRed = Color(

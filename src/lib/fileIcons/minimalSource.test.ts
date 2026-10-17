@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import appCss from "../../app.css?raw";
+import colorsCss from "../../../ui/web/src/lib/styles/colors.css?raw";
 import committedCss from "../../../static/file-icons/minimal/minimal.css?raw";
 import committedMap from "../../../static/file-icons/minimal/map.json";
 import { FILE_ICON_GLYPHS, FILE_ICON_TONES, minimalCss, minimalFiles, minimalMap } from "./minimalSource";
@@ -21,7 +21,7 @@ describe("minimalSource", () => {
     }
   });
 
-  it("has a rule per glyph and tone, colored only with tokens app.css defines", () => {
+  it("has a rule per glyph and tone, colored only with tokens the UI library's colors.css defines", () => {
     const css = minimalCss();
     for (const glyph of FILE_ICON_GLYPHS) {
       expect(css).toContain(`.fi-g-${glyph}{-webkit-mask-image:url(${glyph}.svg)`);
@@ -29,7 +29,7 @@ describe("minimalSource", () => {
     }
     for (const [tone, token] of Object.entries(FILE_ICON_TONES)) {
       expect(css).toContain(`.fi-t-${tone}{background-color:var(${token})}`);
-      expect(appCss).toContain(`${token}:`);
+      expect(colorsCss).toContain(`${token}:`);
     }
   });
 });

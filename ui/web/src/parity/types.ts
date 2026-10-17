@@ -23,8 +23,8 @@ export interface ParityPair {
 export interface ParityCase {
   id: string;
   /**
-   * App .svelte files whose <style> styles the reference markup (src/app.css and the library's base.css and
-   * code.css always apply).
+   * App .svelte files whose <style> styles the reference markup (the library's tokens.css, base.css and code.css
+   * always apply).
    */
   sources: string[];
   /** The app's markup, as the app renders it. */

@@ -9,6 +9,7 @@ ui/design-tokens/generated
 ui/web/src/lib/styles/components*.css
 ui/web/src/lib/styles/componentTokens*.ts
 ui/web/src/lib/styles/scales.css
+ui/web/src/lib/styles/colors.css
 ui/web/src/lib/styles/typography.css
 ui/web/src/lib/styles/tokens.ts
 ui/web/COMPONENTS.md

@@ -50,7 +50,7 @@ flowchart LR
 
 `FileTypeIcon.svelte` takes a file name or path and a `plain` flag:
 
-- **Minimal**: one empty `<span class="file-type-icon fi-g-code fi-t-blue">`. `minimal.css` sets the glyph SVG as a CSS mask and the color as `background-color: var(--term-blue)`. The colors are tokens from `src/app.css`, so the icons follow every color theme. A long list holds no SVG nodes, and the web view decodes each glyph once.
+- **Minimal**: one empty `<span class="file-type-icon fi-g-code fi-t-blue">`. `minimal.css` sets the glyph SVG as a CSS mask and the color as `background-color: var(--term-blue)`. The colors are tokens from the UI library's `styles/colors.css`, so the icons follow every color theme. A long list holds no SVG nodes, and the web view decodes each glyph once.
 - **Material Icons**: one `<img src="/file-icons/material/php.svg">`. The web view loads a picture the first time a row shows it and shares it between all rows of that type.
 - **No icons**: the Files panel (`plain`) shows the old plain `file` icon; the Changes list and commit file lists show nothing, as before.
 
@@ -93,7 +93,7 @@ The CSP in `tauri.conf.json` has `'self'` in `connect-src` so the app may fetch 
 ## Tests
 
 - `iconMatch.test.ts`: name before extension, the longest extension, light variants, fallbacks, prototype keys, damaged maps, the common Material and Minimal types, and that every Material icon in the map has its SVG.
-- `minimalSource.test.ts`: the committed `minimal/` folder matches the source, every map value is a known glyph and tone, and every tone is a token in `app.css`.
+- `minimalSource.test.ts`: the committed `minimal/` folder matches the source, every map value is a known glyph and tone, and every tone is a token in `colors.css`.
 - `settingsData.test.ts` and `menuState.test.ts`: the setting and the View menu ticks.
 
 The memory of each level was measured in the real app with `git-manager cli memory` and `run_menu_command` on a repository with 2,400 changed files, three rounds of No icons, Minimal and Material Icons: Minimal added 2 to 10 MB of web content memory and Material Icons 10 to 15 MB more. Most of it is the extra row element per file in the Changes list and the decoded pictures. See [How Memory Is Measured](How-Memory-Is-Measured.md).

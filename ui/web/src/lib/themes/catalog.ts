@@ -1,4 +1,4 @@
-// Color themes as token values: the built-in Git Manager Light and Dark sets (colors.json, equal to src/app.css)
+// Color themes as token values: the built-in Git Manager Light and Dark sets (colors.json, styles/colors.css)
 // and every other theme derived from its published colors (palettes.ts, derive.ts). Imported lazily (Settings >
 // Editor, or when a non-default theme is active) so the defaults cost nothing. Values are computed on demand and
 // never cached, so only the applied CSS variables stay around.
@@ -9,23 +9,10 @@ import { deriveColors, SHADOW_DARK, SHADOW_LIGHT } from "./derive";
 import { themeSpec } from "./palettes";
 import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, modeOfKind, THEME_INDEX, themeInfo } from "./themeIndex";
 
-/** Tokens app.css sets as another token (var(--text)...), so colors.json leaves them out. */
-const ALIASES: Partial<Record<ColorToken, ColorToken>> = {
-  "--editor-cursor": "--text",
-  "--term-background": "--editor-bg",
-  "--term-foreground": "--text",
-  "--term-cursor": "--text",
-  "--term-selection": "--editor-selection",
-};
-
-/** The built-in light or dark set: colors.json's values, the aliases resolved and the popup shadow. */
+/** The built-in light or dark set: colors.json's values (styles/colors.css) and the popup shadow. */
 function builtInColors(mode: "light" | "dark"): ThemeColors {
   const source = colorsJson as Record<string, unknown>;
   const read = (token: ColorToken): string => {
-    const alias = ALIASES[token];
-    if (alias) {
-      return read(alias);
-    }
     if (token === "--shadow") {
       return mode === "dark" ? SHADOW_DARK : SHADOW_LIGHT;
     }
@@ -57,7 +44,7 @@ export function catalogThemeIds(): string[] {
 
 /**
  * The CSS rule for a theme, scoped to data-color-theme so it can only apply
- * together with the attribute. `html:root` outranks app.css's `:root[data-theme]`.
+ * together with the attribute. `html:root` outranks colors.css's `:root[data-theme]`.
  */
 export function themeCss(themeId: string): string | null {
   const info = themeInfo(themeId);

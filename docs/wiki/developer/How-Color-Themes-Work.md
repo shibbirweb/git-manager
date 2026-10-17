@@ -8,9 +8,9 @@ People spend hours a day in an editor, and they care a lot about its colors. Mos
 
 ## How it works
 
-Every color in the app is a CSS variable from `src/app.css`, such as `--panel`, `--text`, `--editor-bg`, `--diff-added`, `--tok-keyword` and `--term-red`. `src/lib/themes/tokens.ts` lists all 73 of them in `COLOR_TOKENS`. A theme is one value for each token.
+Every color in the app is a CSS variable from the UI library's `styles/colors.css`, such as `--panel`, `--text`, `--editor-bg`, `--diff-added`, `--tok-keyword` and `--term-red`. `src/lib/themes/tokens.ts` lists all 73 of them in `COLOR_TOKENS`. A theme is one value for each token.
 
-- The **built-in themes** are the sets in `app.css`: `:root` for light, and the dark set twice, under `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` and `:root[data-theme="dark"]`. They need no JavaScript.
+- The **built-in themes** are the sets in `colors.css`, generated from `ui/design-tokens/colors.json`: `:root` for light, and the dark set twice, under `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` and `:root[data-theme="dark"]`. They need no JavaScript.
 - **Every other theme** is one generated `<style id="gm-color-theme">` element with the rule `html:root[data-color-theme="<id>"] { ... }`. `html:root` outranks `:root[data-theme]`, and the attribute scope means the rule only applies together with its attribute.
 
 ```mermaid
@@ -82,7 +82,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 | `src/lib/themes/apply.ts`, `watch.ts` | Putting a theme on the page; theme change watcher |
 | `src/lib/stores/settings.svelte.ts` | `lightColorTheme`, `darkColorTheme`, `colorMode`, `setColorTheme` |
 | `src/lib/views/settings/ColorThemePicker.svelte` | The pickers in Settings > Editor |
-| `src/app.css` | The built-in themes |
+| `ui/web/src/lib/styles/colors.css` | The built-in themes (generated) |
 
 ## Design decisions
 
@@ -92,7 +92,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 **One source for every platform.** The token generator runs the same `deriveColors` and writes each theme's colors into Swift, so the native app needs no copy of the math.
 
-**The defaults cost nothing.** The built-in themes live in `app.css`, so the catalog chunk loads only for another theme or when Settings > Editor shows.
+**The defaults cost nothing.** The built-in themes live in `colors.css`, so the catalog chunk loads only for another theme or when Settings > Editor shows.
 
 **Colors come from the theme's own files.** Islands Light and Dark use JetBrains' `ManyIslandsLight.theme.json`, `ManyIslandsDark.theme.json` and their editor schemes in intellij-community (selection and console colors inherited from the parent schemes). VS Code Light+ and Dark+ use `light_plus.json` and `dark_plus.json` in microsoft/vscode plus VS Code's built-in workbench defaults. Islands' rounded panels are a layout setting: see [How Rounded Panels Work](How-Rounded-Panels-Work.md). Its `--frame` token is derived here by `frameColor()`.
 
@@ -103,16 +103,16 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 - The log graph's eight lane colors are one set for every theme (`graphLane` in `ui/design-tokens/palette.json`).
 - The switch knob is hard-coded white (the library's `Switch.svelte`).
 - The rich Markdown editor does not redraw its diagrams on a theme change; `richEditor.ts` has no `watchTheme`.
-- At startup, `app.css` shows the built-in theme of the macOS appearance until `settings.init()` has read settings.json, and another theme waits for the catalog chunk, so the default colors can flash.
+- At startup, `colors.css` shows the built-in theme of the macOS appearance until `settings.init()` has read settings.json, and another theme waits for the catalog chunk, so the default colors can flash.
 
 ## Tests
 
-- `ui/web/src/lib/themes/catalog.test.ts`: every listed theme has a palette and every token. `src/lib/themes/appCss.test.ts`: the built-ins match `app.css` exactly, and its two dark blocks match each other. For every theme: text at 4.5:1 (7:1 for high contrast) on the editor, panels and background, a visible selection that text stays readable on, diff tints that stand out and keep text readable, a `--frame` that stands apart from the panels, and button text at 3:1.
+- `ui/web/src/lib/themes/catalog.test.ts`: every listed theme has a palette and every token. `colorsCss.test.ts`: the built-ins match `colors.css` exactly. For every theme: text at 4.5:1 (7:1 for high contrast) on the editor, panels and background, a visible selection that text stays readable on, diff tints that stand out and keep text readable, a `--frame` that stands apart from the panels, and button text at 3:1.
 - `themeIndex.test.ts` (counts, unique ids, modes, `pickThemeId`, groups, `pickerMove`), `apply.test.ts` and `color.test.ts`.
 
 ## Keeping this page in sync
 
-- A new color token goes in `app.css` (all three blocks), `tokens.ts` and `deriveColors`; the tests fail until it does.
+- A new color token goes in `colors.json`, `colorTokens.ts` and `deriveColors`; the tests fail until it does.
 - A new theme goes in `THEME_INDEX` and `SPECS`, then in the list on [Color Themes](../usage/Color-Themes.md).
 - Retake `color-theme-pickers.png`, `color-theme-dracula.png`, `color-theme-solarized-light.png` and `color-theme-high-contrast.png` when the look changes.
 - Settings keys are listed in [Settings Reference](Settings-Reference.md).

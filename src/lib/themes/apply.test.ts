@@ -19,7 +19,7 @@ describe("themeAttributes", () => {
 });
 
 describe("needsCatalog", () => {
-  it("is false only for the built-in themes, which live in app.css", () => {
+  it("is false only for the built-in themes, which live in colors.css", () => {
     expect(needsCatalog("light", DEFAULT_LIGHT_THEME)).toBe(false);
     expect(needsCatalog("dark", DEFAULT_DARK_THEME)).toBe(false);
     expect(needsCatalog("dark", "unknown")).toBe(false);

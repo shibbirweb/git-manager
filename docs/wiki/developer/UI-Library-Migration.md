@@ -17,7 +17,7 @@ import Button from "@git-manager/ui/components/Button.svelte";
 import { icons } from "@git-manager/ui/icons";
 ```
 
-The package exports its components, logic, editor helpers, token CSS, icons and toasts. CodeMirror, xterm.js, markdown-it and Svelte are peer dependencies, so the app and the library share one copy of each. `src/routes/+layout.svelte` loads `@git-manager/ui/styles/tokens.css` next to `app.css`. The icon set lives in the package; the app has no copy.
+The package exports its components, logic, editor helpers, token CSS, icons and toasts. CodeMirror, xterm.js, markdown-it and Svelte are peer dependencies, so the app and the library share one copy of each. `src/routes/+layout.svelte` loads `@git-manager/ui/styles/tokens.css`, `base.css` and `code.css`; the app has no CSS file of its own. The icon set lives in the package; the app has no copy.
 
 ### Progress is a number that reaches zero
 

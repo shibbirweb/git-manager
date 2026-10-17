@@ -42,7 +42,8 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
   generate CSS, Swift (macOS), XAML (Windows) and GTK CSS (Linux) for future native apps. AI agents read
   `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `git-manager-ui` MCP server
   (`ui/mcp/`, registered in `.mcp.json`: list, search and get components, tokens, icons and rules). Tests keep
-  docs equal to each component's `$props()`, generated files fresh, and token colors equal to `src/app.css`.
+  docs equal to each component's `$props()`, generated files fresh, and the generated `colors.css` equal to the
+  theme catalog's built-in themes.
 - **Editor engines live in the library**: the Markdown engine is `ui/web/src/lib/markdown/` with the
   `MarkdownPreview` and `MarkdownEditor` components; the app keeps only glue (`src/lib/markdown/markdownContext.ts`,
   `viewMode.ts`) and thin views that pass links, settings and keys as props and events. Library code never imports
@@ -58,7 +59,8 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - **Never use the em-dash character** anywhere: code, comments, UI text, commits, docs. Use a colon, comma or hyphen.
 - Comments are sparse and explain why, matching the surrounding code.
 - Svelte 5 runes only (`$state`, `$derived`, `$effect`, `$props`), `onclick`-style attributes, no `export let`. Use `$state.raw` for large arrays and objects that are replaced, not mutated.
-- Colors come from the CSS tokens in `src/app.css` (light and dark); no hard-coded colors in components.
+- Colors come from the CSS tokens in the UI library's `styles/colors.css` (generated from
+  `ui/design-tokens/colors.json`, light and dark); no hard-coded colors in components. The app has no CSS file.
 - **New UI is a library component first.** Build it in `ui/web/` (component, doc, story, tokens in
   `ui/design-tokens/`), then use it in the app, so every platform matches. Library components take no `class` or
   `style`: everything is a prop; lay out with `Stack`, write words with `Text`; sizes come from token variables.

@@ -74,7 +74,7 @@ It skips itself when git is not installed. The random generator is seeded, so a 
 
 ## Vitest suites
 
-Run them with `bun run test`, one file with `bun run test src/lib/stores/tabs.test.ts`, or `bun run test:watch` to rerun on every save. Vitest picks up `src/**/*.test.ts` and `scripts/**/*.test.ts` (see `vite.config.js`). Vitest blanks CSS by default, but `vite.config.js` keeps `src/app.css`, so the theme tests can read its real tokens (`?raw`) and check the contrast of every color theme.
+Run them with `bun run test`, one file with `bun run test src/lib/stores/tabs.test.ts`, or `bun run test:watch` to rerun on every save. Vitest picks up `src/**/*.test.ts` and `scripts/**/*.test.ts` (see `vite.config.js`). Vitest blanks CSS by default, but `vite.config.js` keeps the UI library's `styles/colors.css`, so the theme tests can read its real tokens (`?raw`) and check the contrast of every color theme.
 
 The suites test pure modules only: the merge model, editor helpers, stores, the menu definition, terminal and search models, the Markdown renderer, themes, MCP tool definitions and the view models of every dialog. Each folder's files are listed on [Test Suites](Test-Suites.md).
 

@@ -22,7 +22,7 @@ Layout is not a matter of taste: Prettier (`.prettierrc.json`, with the Svelte p
 - **Never use the em-dash character**, anywhere: code, comments, UI text, commits, docs. Use a colon, a comma or a hyphen. It keeps text consistent and easy to type, and the wiki check rejects it.
 - **Comments are sparse and explain why.** The code already says what it does.
 - **Svelte 5 runes only** (`$state`, `$derived`, `$effect`, `$props`), `onclick`-style attributes and no `export let`. Use `$state.raw` for big arrays and objects that are replaced. See [Frontend](Frontend.md).
-- **Colors come from the CSS tokens** in `src/app.css`, so light and dark themes both keep working.
+- **Colors come from the CSS tokens** in the UI library's `styles/colors.css`, so light and dark themes both keep working.
 - **UI text is short and plain.** Destructive actions ask first with `dialogs.confirm({ danger: true })`.
 - **Put tricky logic in a pure `.ts` module with a test.** See [Testing](Testing.md).
 - **Keep platform-specific code behind `cfg` or runtime checks.** Windows and Linux builds are planned.

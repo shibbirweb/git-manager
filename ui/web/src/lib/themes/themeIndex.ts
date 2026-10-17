@@ -14,7 +14,7 @@ export interface ThemeInfo {
   kind: ThemeKind;
 }
 
-/** The built-in sets (colors.json, src/app.css); they apply without loading the catalog. */
+/** The built-in sets (colors.json, styles/colors.css); they apply without loading the catalog. */
 export const DEFAULT_LIGHT_THEME = "gm-light";
 export const DEFAULT_DARK_THEME = "gm-dark";
 
