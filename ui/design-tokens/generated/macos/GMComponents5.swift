@@ -32,3 +32,92 @@ public enum GMRowTokens {
     public static let markWidth: CGFloat = 3
     public static let markInset: CGFloat = 5
 }
+
+public enum GMEditorFoldTokens {
+    public static let gutterWidth: CGFloat = 14
+    public static let icon: CGFloat = 10
+    public static let placeholderPaddingX: CGFloat = 4
+    public static let placeholderMarginX: CGFloat = 2
+    public static let placeholderRadius: CGFloat = 3
+}
+
+public enum GMEditorCompletionTokens {
+    public static let radius: CGFloat = 6
+    public static let minWidth: CGFloat = 240
+    public static let listPaddingY: CGFloat = 3
+    public static let itemPaddingY: CGFloat = 1
+    public static let itemPaddingLeft: CGFloat = 6
+    public static let itemPaddingRight: CGFloat = 10
+}
+
+public enum GMChangeGutterTokens {
+    public static let width: CGFloat = 5
+    public static let bar: CGFloat = 3
+    public static let deletedHalf: CGFloat = 4
+    public static let deletedDepth: CGFloat = 5
+}
+
+public enum GMScrollMarkersTokens {
+    public static let width: CGFloat = 12
+    public static let markInset: CGFloat = 2
+    public static let conflictInset: CGFloat = 1
+    public static let markRadius: CGFloat = 1
+}
+
+public enum GMMinimapTokens {
+    public static let width: CGFloat = 72
+}
+
+public enum GMBlameTokens {
+    public static let gutterWidth: CGFloat = 236
+    public static let cellPaddingLeft: CGFloat = 7
+    public static let cellPaddingRight: CGFloat = 8
+    public static let heatBar: CGFloat = 3
+}
+
+public enum GMConflictActionsTokens {
+    public static let gapY: CGFloat = 2
+    public static let gapX: CGFloat = 6
+    public static let paddingTop: CGFloat = 3
+    public static let paddingBottom: CGFloat = 2
+    public static let paddingLeft: CGFloat = 6
+    public static let fontSize: CGFloat = 11.5
+    public static let actionPaddingX: CGFloat = 2
+    public static let countGap: CGFloat = 4
+    public static let countPaddingLeft: CGFloat = 2
+    public static let countPaddingRight: CGFloat = 12
+    public static let labelGap: CGFloat = 10
+    public static let labelFontSize: CGFloat = 11
+    public static let minWidth: CGFloat = 160
+}
+
+public enum GMInlineDiffTokens {
+    public static let numberPaddingLeft: CGFloat = 8
+    public static let numberPaddingRight: CGFloat = 6
+    public static let numberMinWidth: CGFloat = 28
+    public static let signPaddingX: CGFloat = 4
+    public static let controlsPaddingX: CGFloat = 2
+    public static let controlsGap: CGFloat = 2
+    public static let revertWidth: CGFloat = 18
+    public static let revertHeight: CGFloat = 16
+    public static let revertRadius: CGFloat = 4
+    public static let changeRadius: CGFloat = 2
+}
+
+public enum GMDiffFoldTokens {
+    public static let gap: CGFloat = 6
+    public static let paddingY: CGFloat = 2
+    public static let paddingLeft: CGFloat = 4
+    public static let paddingRight: CGFloat = 8
+    public static let fontSize: CGFloat = 11.5
+    public static let labelPaddingY: CGFloat = 1
+    public static let labelPaddingX: CGFloat = 6
+    public static let labelRadius: CGFloat = 4
+    public static let waveMinWidth: CGFloat = 24
+    public static let waveHeight: CGFloat = 6
+    public static let waveTile: CGFloat = 12
+    public static let stepGap: CGFloat = 3
+    public static let stepPaddingY: CGFloat = 1
+    public static let stepPaddingX: CGFloat = 6
+    public static let stepRadius: CGFloat = 4
+}

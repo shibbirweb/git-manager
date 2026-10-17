@@ -134,6 +134,8 @@
   --merge-view-button-width: 18px;
   --merge-view-button-height: 17px;
   --merge-view-button-inset: 2px;
+  --merge-view-gap-edge: 2px;
+  --merge-view-inline-radius: var(--radius-tiny);
   --format-toolbar-min-height: 28px;
   --format-toolbar-padding-y: 2px;
   --format-toolbar-padding-left: 6px;

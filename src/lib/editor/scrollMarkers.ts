@@ -105,7 +105,7 @@ export function createStrip(onJump: (line: number) => void): HTMLDivElement {
 
 // Strip and tick styles live in app.css so the diff view can reuse them outside an editor.
 const stripTheme = EditorView.theme({
-  "&.cm-with-scroll-markers .cm-scroller": { marginRight: "12px" },
+  "&.cm-with-scroll-markers .cm-scroller": { marginRight: "var(--scroll-markers-width)" },
 });
 
 /** Overview ruler for an editor that scrolls itself. */
@@ -174,9 +174,9 @@ const gutterMarkers = {
 };
 
 const gutterTheme = EditorView.theme({
-  ".cm-change-gutter": { width: "5px" },
+  ".cm-change-gutter": { width: "var(--change-gutter-width)" },
   ".cm-change-gutter .cm-gutterElement": { position: "relative", padding: "0" },
-  ".cm-change-bar": { position: "absolute", left: "0", width: "3px", top: "0", bottom: "0" },
+  ".cm-change-bar": { position: "absolute", left: "0", width: "var(--change-gutter-bar)", top: "0", bottom: "0" },
   ".cm-change-bar-added": { background: "var(--diff-added-edge)" },
   ".cm-change-bar-modified": { background: "var(--diff-modified-edge)" },
   ".cm-change-bar-conflict": { background: "var(--danger)" },
@@ -185,12 +185,12 @@ const gutterTheme = EditorView.theme({
     bottom: "auto",
     height: "0",
     width: "0",
-    top: "-4px",
-    borderTop: "4px solid transparent",
-    borderBottom: "4px solid transparent",
-    borderLeft: "5px solid var(--danger)",
+    top: "calc(-1 * var(--change-gutter-deleted-half))",
+    borderTop: "var(--change-gutter-deleted-half) solid transparent",
+    borderBottom: "var(--change-gutter-deleted-half) solid transparent",
+    borderLeft: "var(--change-gutter-deleted-depth) solid var(--danger)",
   },
-  ".cm-change-bar-deleted.at-end": { top: "auto", bottom: "-4px" },
+  ".cm-change-bar-deleted.at-end": { top: "auto", bottom: "calc(-1 * var(--change-gutter-deleted-half))" },
   ".cm-change-clickable .cm-change-bar:not(.cm-change-bar-conflict)": { cursor: "pointer" },
 });
 

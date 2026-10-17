@@ -100,13 +100,13 @@ const foldTheme = EditorView.baseTheme({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "14px",
+    width: "var(--editor-fold-gutter-width)",
     cursor: "pointer",
   },
   // Open blocks show their arrow while the pointer is over the gutter, folded ones always.
   ".cm-gm-fold": {
-    width: "10px",
-    height: "10px",
+    width: "var(--editor-fold-icon)",
+    height: "var(--editor-fold-icon)",
     backgroundColor: "var(--text-faint)",
     mask: chevron,
   },
@@ -127,9 +127,9 @@ const foldTheme = EditorView.baseTheme({
     backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
     border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
     color: "var(--text-dim)",
-    borderRadius: "3px",
-    padding: "0 4px",
-    margin: "0 2px",
+    borderRadius: "var(--editor-fold-placeholder-radius)",
+    padding: "0 var(--editor-fold-placeholder-padding-x)",
+    margin: "0 var(--editor-fold-placeholder-margin-x)",
   },
 });
 
@@ -170,7 +170,7 @@ const completionTheme = EditorView.baseTheme({
     backgroundColor: "var(--panel)",
     color: "var(--text)",
     border: "1px solid var(--border-strong)",
-    borderRadius: "6px",
+    borderRadius: "var(--editor-completion-radius)",
     boxShadow: "var(--shadow)",
     overflow: "hidden",
   },
@@ -178,11 +178,13 @@ const completionTheme = EditorView.baseTheme({
     fontFamily: "var(--font-mono)",
     fontSize: "var(--code-size)",
     maxHeight: "16em",
-    minWidth: "240px",
-    padding: "3px 0",
+    minWidth: "var(--editor-completion-min-width)",
+    padding: "var(--editor-completion-list-padding-y) 0",
   },
   ".cm-tooltip.cm-tooltip-autocomplete > ul > li": {
-    padding: "1px 10px 1px 6px",
+    padding:
+      "var(--editor-completion-item-padding-y) var(--editor-completion-item-padding-right) " +
+      "var(--editor-completion-item-padding-y) var(--editor-completion-item-padding-left)",
     lineHeight: "1.6",
   },
   ".cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected]": {
@@ -219,7 +221,7 @@ const completionTheme = EditorView.baseTheme({
     backgroundColor: "var(--panel)",
     color: "var(--text)",
     border: "1px solid var(--border-strong)",
-    borderRadius: "6px",
+    borderRadius: "var(--editor-completion-radius)",
     boxShadow: "var(--shadow)",
   },
 });

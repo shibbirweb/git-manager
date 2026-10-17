@@ -152,9 +152,9 @@ const mergeTheme = EditorView.theme({
   ".cm-mc-edge-added": { "--mc-edge": "var(--diff-added-edge)" },
   ".cm-mc-edge-deleted": { "--mc-edge": "var(--diff-deleted-edge)" },
   ".cm-mc-edge-conflict": { "--mc-edge": "var(--diff-conflict-edge)" },
-  ".cm-mc-inline": { backgroundColor: "var(--diff-inline)", borderRadius: "2px" },
-  ".cm-mc-gap-before": { boxShadow: "inset 0 2px 0 var(--mc-edge)" },
-  ".cm-mc-gap-after": { boxShadow: "inset 0 -2px 0 var(--mc-edge)" },
+  ".cm-mc-inline": { backgroundColor: "var(--diff-inline)", borderRadius: "var(--merge-view-inline-radius)" },
+  ".cm-mc-gap-before": { boxShadow: "inset 0 var(--merge-view-gap-edge) 0 var(--mc-edge)" },
+  ".cm-mc-gap-after": { boxShadow: "inset 0 calc(-1 * var(--merge-view-gap-edge)) 0 var(--mc-edge)" },
   // Keep the active-line tint from hiding chunk colors.
   ".cm-activeLine.cm-mc-line": {
     backgroundImage: "linear-gradient(var(--editor-active-line), var(--editor-active-line))",

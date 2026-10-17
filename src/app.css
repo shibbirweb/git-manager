@@ -327,7 +327,7 @@ button {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 12px;
+  width: var(--scroll-markers-width);
   z-index: 5;
   background: var(--panel-alt);
   border-left: 1px solid var(--border-strong);
@@ -335,9 +335,9 @@ button {
 
 .cm-scroll-mark {
   position: absolute;
-  left: 2px;
-  right: 2px;
-  border-radius: 1px;
+  left: var(--scroll-markers-mark-inset);
+  right: var(--scroll-markers-mark-inset);
+  border-radius: var(--scroll-markers-mark-radius);
   cursor: pointer;
 }
 
@@ -360,8 +360,8 @@ button {
 }
 
 .cm-scroll-mark-conflict {
-  left: 1px;
-  right: 1px;
+  left: var(--scroll-markers-conflict-inset);
+  right: var(--scroll-markers-conflict-inset);
 }
 
 /* Syntax colors for @lezer/highlight classHighlighter. */

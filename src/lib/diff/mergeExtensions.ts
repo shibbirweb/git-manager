@@ -5,6 +5,7 @@ import { getChunks } from "@codemirror/merge";
 import { RangeSetBuilder } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { icons, type IconName } from "@git-manager/ui/icons";
+import { scales } from "@git-manager/ui/tokens";
 
 const addedLine = Decoration.line({ class: "cm-diffAdded" });
 const deletedLine = Decoration.line({ class: "cm-diffDeleted" });
@@ -74,7 +75,7 @@ export const diffTheme = EditorView.theme({
   },
   "&.cm-merge-a .cm-content .cm-line .cm-changedText, &.cm-merge-b .cm-content .cm-line .cm-changedText": {
     background: "var(--diff-inline)",
-    borderRadius: "2px",
+    borderRadius: "var(--inline-diff-change-radius)",
   },
   "&.cm-merge-a .cm-content .cm-diffDeleted .cm-changedText, &.cm-merge-b .cm-content .cm-diffAdded .cm-changedText": {
     background: "none",
@@ -86,11 +87,13 @@ export const diffTheme = EditorView.theme({
   "&.cm-editor .cm-content .cm-diffFold": {
     display: "flex",
     alignItems: "center",
-    gap: "6px",
-    padding: "2px 8px 2px 4px",
+    gap: "var(--diff-fold-gap)",
+    padding:
+      "var(--diff-fold-padding-y) var(--diff-fold-padding-right) var(--diff-fold-padding-y) " +
+      "var(--diff-fold-padding-left)",
     color: "var(--text-dim)",
     fontFamily: "var(--font-ui)",
-    fontSize: "11.5px",
+    fontSize: "var(--diff-fold-font-size)",
     whiteSpace: "nowrap",
     cursor: "pointer",
   },
@@ -99,17 +102,19 @@ export const diffTheme = EditorView.theme({
     minWidth: "0",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    padding: "1px 6px",
+    padding: "var(--diff-fold-label-padding-y) var(--diff-fold-label-padding-x)",
     border: "1px solid var(--border)",
-    borderRadius: "4px",
+    borderRadius: "var(--diff-fold-label-radius)",
     background: "var(--editor-bg)",
   },
   "&.cm-editor .cm-content .cm-diffFoldWave": {
     flex: "1",
-    minWidth: "24px",
-    height: "6px",
+    minWidth: "var(--diff-fold-wave-min-width)",
+    height: "var(--diff-fold-wave-height)",
     background: "var(--border-strong)",
-    mask: `url("data:image/svg+xml,${encodeURIComponent(WAVE)}") repeat-x left center / 12px 6px`,
+    mask:
+      `url("data:image/svg+xml,${encodeURIComponent(WAVE)}") repeat-x left center / ` +
+      "var(--diff-fold-wave-tile) var(--diff-fold-wave-height)",
   },
   "&.cm-editor .cm-content .cm-diffFold:hover .cm-diffFoldLabel": {
     color: "var(--text)",
@@ -125,10 +130,10 @@ export const diffTheme = EditorView.theme({
   "&.cm-editor .cm-content .cm-diffFoldStep": {
     display: "inline-flex",
     alignItems: "center",
-    gap: "3px",
-    padding: "1px 6px",
+    gap: "var(--diff-fold-step-gap)",
+    padding: "var(--diff-fold-step-padding-y) var(--diff-fold-step-padding-x)",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "var(--diff-fold-step-radius)",
     background: "transparent",
     color: "var(--accent)",
     font: "inherit",
@@ -170,7 +175,7 @@ export function revertButton(title: string, iconName: IconName): HTMLElement {
   button.className = "diff-revert";
   button.title = title;
   button.setAttribute("aria-label", title);
-  button.appendChild(iconSvg(iconName, 13));
+  button.appendChild(iconSvg(iconName, scales.iconSize.medium));
   return button;
 }
 

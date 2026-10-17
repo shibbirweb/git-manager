@@ -9,6 +9,7 @@ import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { highlightTree } from "@lezer/highlight";
 import { codeHighlighters } from "@git-manager/ui/editor/highlighter";
+import { componentTokens } from "@git-manager/ui/tokens";
 import {
   headingScopes,
   indentScopes,
@@ -17,6 +18,9 @@ import {
   type Scope,
   stickyLinesFor,
 } from "./stickyScope";
+
+/** The line number gutter's right padding (codeEditor.gutterPaddingRight), so sticky numbers line up. */
+const GUTTER_PADDING_RIGHT = componentTokens.codeEditor.gutterPaddingRight;
 
 /** Longest stretch of a pinned line that is drawn; the rest is off screen anyway. */
 const MAX_DRAWN_CHARS = 400;
@@ -318,7 +322,8 @@ const plugin = ViewPlugin.fromClass(
         number.style.width = `${measure.gutterWidth}px`;
         number.style.height = `${measure.rowHeight}px`;
         // Line up with the line number gutter, which may have other gutters after it.
-        number.style.paddingRight = `${Math.max(0, measure.gutterWidth - measure.numberRight + 10)}px`;
+        const numberPadding = measure.gutterWidth - measure.numberRight + GUTTER_PADDING_RIGHT;
+        number.style.paddingRight = `${Math.max(0, numberPadding)}px`;
         number.textContent = measure.numberRight > 0 ? String(lineNumber) : "";
         row.appendChild(number);
       }
