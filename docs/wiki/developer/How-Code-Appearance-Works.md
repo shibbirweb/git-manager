@@ -32,7 +32,7 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 
 **The current line.** `activeLine.ts` replaces CodeMirror's `highlightActiveLine` with `highlightActiveLineWhenEmpty`: the cursor lines get `cm-activeLine` only while every selection range is empty. Read-only panes have no current line highlight. Why this matters is in the bug below.
 
-**Zoom and ligatures.** Ctrl or Cmd plus the mouse wheel zooms, only over a `.cm-editor`: `App.svelte` listens and asks a `WheelZoom` (`src/lib/editor/wheelZoom.ts`) for the next size. View > Zoom In and Zoom Out call `steppedFontSize` from the same module through `menuActions.ts`. Font ligatures are a `data-ligatures` root attribute set by `applyAppearance` and styled in `src/app.css`.
+**Zoom and ligatures.** Ctrl or Cmd plus the mouse wheel zooms, only over a `.cm-editor`: `App.svelte` listens and asks a `WheelZoom` (`src/lib/editor/wheelZoom.ts`) for the next size. View > Zoom In and Zoom Out call `steppedFontSize` from the same module through `menuActions.ts`. Font ligatures are a `data-ligatures` root attribute set by `applyAppearance` and styled in the UI library's `styles/code.css`.
 
 ## Where the code lives
 

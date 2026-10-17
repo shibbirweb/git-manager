@@ -34,5 +34,6 @@
     "largePaddingY": 10, "largePaddingX": 12, "largeGap": 14, "largeRadius": 8, "sectionHeight": 28,
     "sectionPaddingX": 5, "sectionGap": 4, "groupHeight": "{size.treeRow}", "groupPaddingLeft": 24,
     "groupPaddingRight": 6, "groupGap": 6, "markWidth": 3, "markInset": 5
-  }
+  },
+  "scrollbar": {"size": 10, "thumbRadius": 10, "thumbInset": 2}
 }

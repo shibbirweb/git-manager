@@ -1,5 +1,5 @@
 // Syntax highlighting for fenced code in the Markdown preview, with the editor's
-// own Lezer grammars and the shared `tok-*` classes (colored by app.css in
+// own Lezer grammars and the shared `tok-*` classes (colored by styles/code.css in
 // light and dark), so no second highlighting library is loaded.
 
 import type { Language } from "@codemirror/language";

@@ -253,6 +253,9 @@
     <x:Double x:Key="GmRowGroupGap">6</x:Double>
     <x:Double x:Key="GmRowMarkWidth">3</x:Double>
     <x:Double x:Key="GmRowMarkInset">5</x:Double>
+    <x:Double x:Key="GmScrollbarSize">10</x:Double>
+    <x:Double x:Key="GmScrollbarThumbRadius">10</x:Double>
+    <x:Double x:Key="GmScrollbarThumbInset">2</x:Double>
     <x:Double x:Key="GmEditorFoldGutterWidth">14</x:Double>
     <x:Double x:Key="GmEditorFoldIcon">10</x:Double>
     <x:Double x:Key="GmEditorFoldPlaceholderPaddingX">4</x:Double>

@@ -246,6 +246,9 @@
   --row-group-gap: 6px;
   --row-mark-width: 3px;
   --row-mark-inset: 5px;
+  --scrollbar-size: 10px;
+  --scrollbar-thumb-radius: 10px;
+  --scrollbar-thumb-inset: 2px;
   --editor-fold-gutter-width: 14px;
   --editor-fold-icon: 10px;
   --editor-fold-placeholder-padding-x: 4px;

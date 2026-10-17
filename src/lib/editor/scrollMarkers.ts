@@ -103,7 +103,7 @@ export function createStrip(onJump: (line: number) => void): HTMLDivElement {
   return strip;
 }
 
-// Strip and tick styles live in app.css so the diff view can reuse them outside an editor.
+// Strip and tick styles live in the library's styles/code.css so the diff view can reuse them outside an editor.
 const stripTheme = EditorView.theme({
   "&.cm-with-scroll-markers .cm-scroller": { marginRight: "var(--scroll-markers-width)" },
 });

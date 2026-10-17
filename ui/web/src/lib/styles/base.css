@@ -1,0 +1,53 @@
+/* The page every library screen sits on: box sizing, the document's font and colors, what text can be selected,
+   buttons that take their parent's font, and thin scrollbars. Import once, before the components. Colors and
+   sizes are tokens (tokens.css, and the color set the app or showcase loads). */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--ui-size);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* Text, MarkdownView and RichEditorHost mark selectable text with this class. */
+input,
+textarea,
+.cm-content,
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Thin scrollbars everywhere. */
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-dim) 35%, transparent);
+  border-radius: var(--scrollbar-thumb-radius);
+  border: var(--scrollbar-thumb-inset) solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

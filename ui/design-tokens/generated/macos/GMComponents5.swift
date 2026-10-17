@@ -33,6 +33,12 @@ public enum GMRowTokens {
     public static let markInset: CGFloat = 5
 }
 
+public enum GMScrollbarTokens {
+    public static let size: CGFloat = 10
+    public static let thumbRadius: CGFloat = 10
+    public static let thumbInset: CGFloat = 2
+}
+
 public enum GMEditorFoldTokens {
     public static let gutterWidth: CGFloat = 14
     public static let icon: CGFloat = 10

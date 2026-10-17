@@ -29,7 +29,7 @@ This is a map of the repository. It lists the folders and files you will touch m
 
 ```text
 src/
-├── app.css                 CSS tokens for the Git Manager light and dark themes, global styles
+├── app.css                 CSS tokens for the Git Manager light and dark themes
 ├── app.html                the HTML shell
 ├── hooks.client.ts         starts the dev IPC bridge in dev builds only
 ├── routes/                 +layout.ts (ssr = false), +layout.svelte, +page.svelte
@@ -60,7 +60,7 @@ src/
     ├── scripts/            Scripts tool window and Node version matching
     ├── search/             Search Everywhere popup: files, classes, symbols, text, Replace in Files
     ├── markdown/           Markdown preview, sanitizing, mermaid, rich editor (lazy)
-    ├── themes/             color themes: index, lazy catalog, apply, watch, contrast math
+    ├── themes/             applying and watching color themes (the themes are in the UI library)
     ├── console/            Git Console list (lazy, only while its setting is on)
     ├── shelf/              Shelf panel, Shelve dialog, shelved diff tab
     ├── ignore/             Add to .gitignore patterns and submenu
@@ -247,4 +247,4 @@ These appear after an install or a build and are never committed. You can delete
 - **A new menu item?** In `src/lib/menu/menuSpec.ts`, with its action in `menuActions.ts`. See [How the Menus Work](How-the-Menus-Work.md).
 - **A new setting?** In `src/lib/stores/settings.svelte.ts`, validated on load by `parsePreferences` in `settingsData.ts`. See [How Settings Work](How-Settings-Work.md).
 - **Tricky logic for a component?** In a pure `.ts` file beside it, with a test. See [Testing](Testing.md).
-- **A new color?** As a token in `src/app.css` (light and dark) in `ui/design-tokens/colors.json` and in the UI library's `themes/colorTokens.ts`, with a derived value for the other themes in `themes/derive.ts`. See [How Color Themes Work](How-Color-Themes-Work.md).
+- **A new color?** As a token in `src/app.css` (light and dark), in `ui/design-tokens/colors.json` and in the UI library's `themes/colorTokens.ts`, with a derived value for the other themes in `themes/derive.ts`. See [How Color Themes Work](How-Color-Themes-Work.md).

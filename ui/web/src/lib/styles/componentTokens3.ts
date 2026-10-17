@@ -136,6 +136,7 @@ export const componentTokens3 = {
     markWidth: 3,
     markInset: 5,
   },
+  scrollbar: { size: 10, thumbRadius: 10, thumbInset: 2 },
   editorFold: { gutterWidth: 14, icon: 10, placeholderPaddingX: 4, placeholderMarginX: 2, placeholderRadius: 3 },
   editorCompletion: {
     radius: 6,
