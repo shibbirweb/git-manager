@@ -14,7 +14,7 @@ import { parseRecentFiles, type RecentFile } from "./recentFiles";
 import { parseTabSessions, type SavedTabSession } from "./tabSession";
 import type { ShortcutOverrides } from "../commands/registry";
 import { pickKeybindings } from "../commands/shortcutSettings";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "../themes/themeIndex";
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "@git-manager/ui/themes/themeIndex";
 import { type MessageHistory, parseMessageHistory } from "../views/changes/commitMessages";
 import { type CommitTemplate, parseCommitTemplates } from "../views/changes/commitTemplates";
 
@@ -291,7 +291,7 @@ export function normalizeFontFamily(value: string): string {
 
 export interface Preferences {
   theme: ThemeSetting;
-  /** Color theme id (themes/themeIndex.ts) used while the appearance is light. */
+  /** Color theme id (the UI library's themes/themeIndex.ts) used while the appearance is light. */
   lightColorTheme: string;
   /** Color theme id used while the appearance is dark. */
   darkColorTheme: string;

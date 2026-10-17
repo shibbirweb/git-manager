@@ -3,7 +3,7 @@
 import type { LinkContext } from "@git-manager/ui/markdown/links";
 import { configureDiagrams } from "@git-manager/ui/markdown/mermaid";
 import { repoStore } from "$lib/stores/repo.svelte";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "$lib/themes/themeIndex";
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "@git-manager/ui/themes/themeIndex";
 import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
 import { markdownImageUrl } from "$lib/views/files/previewScheme";
 

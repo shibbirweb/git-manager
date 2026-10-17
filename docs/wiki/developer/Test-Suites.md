@@ -19,7 +19,7 @@ Files are `<name>.test.ts` next to the module they test. Folders are under `src/
 | `scripts/` | `scriptsModel`, `scriptRun`, `nodeVersion` | the Scripts tree, the run command, Node version ranges and LTS names |
 | `search/` | `doubleShift`, `searchTabs`, `popupRows`, `fileSearchModel`, `symbolSearchModel`, `textSearchModel`, `replaceModel` | double Shift, the popup tabs and rows, result models, Replace in Files |
 | `markdown/` | `render`, `format`, `links`, `highlight`, `scrollSync`, `richSync`, `slug`, `viewMode` | rendering, toolbar formatting, links and images, code highlight, scroll sync, rich editor write back, heading ids, view modes |
-| `themes/` | `catalog`, `color`, `themeIndex`, `apply` | every theme's tokens and WCAG contrast, color math, the theme list, applying a theme |
+| `themes/` | `apply`, `appCss` (`catalog`, `themeIndex` and `color` are in the UI library) | every theme's tokens and WCAG contrast, color math, the theme list, applying a theme |
 | `console/` | `consoleModel` | merging Git Console entries, the filter and the rows |
 | `shelf/` | `shelfModel` | the Shelf list |
 | `ignore/` | `gitignore` | escaped patterns for files and folders |

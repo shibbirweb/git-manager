@@ -45,7 +45,7 @@ flowchart LR
 The window behind the panels uses the color token `--frame`. Every theme must set it, and it must stand apart from both `--panel` and `--editor-bg`, or the gaps would be invisible. The editor is a panel too: in rounded mode its tab strip takes the editor color.
 
 - The built-in themes set it in `app.css`: `#ebecf0` for Git Manager Light, `#131416` for Git Manager Dark.
-- Catalog themes get it from `frameColor()` in `themes/catalog.ts`: the theme's `--bg` when its CIELAB distance from both the panel and the editor color is at least 5 (`FRAME_DISTANCE`), else the darker of the two darkened (dark themes) or the panel greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel and GitHub Dark, whose editor is almost black, end up there.
+- Catalog themes get it from `frameColor()` in the UI library's `themes/derive.ts`: the theme's `--bg` when its CIELAB distance from both the panel and the editor color is at least 5 (`FRAME_DISTANCE`), else the darker of the two darkened (dark themes) or the panel greyed toward the text (light themes), and as a last resort moved further toward the text. High contrast dark themes with a black panel and GitHub Dark, whose editor is almost black, end up there.
 - `legible()` in `deriveColors` now also checks the frame, so dim text and status colors stay readable on the header and status bar.
 
 ### Tabs
@@ -60,7 +60,7 @@ With rounded panels on, `EditorTabs.svelte` gives the library's `TabStrip` the `
 | `src/lib/stores/settings.svelte.ts` | the store field and `data-rounded-panels` in `applyAppearance()` |
 | `src/lib/views/settings/AppearanceSettings.svelte` | the Appearance switch |
 | `src/app.css` | `--panel-gap`, `--panel-radius` and the built-in `--frame` |
-| `src/lib/themes/tokens.ts`, `catalog.ts` | `--frame` as a color token, `frameColor()` |
+| `ui/web/src/lib/themes/colorTokens.ts`, `derive.ts` | `--frame` as a color token, `frameColor()` |
 | `src/lib/views/Workspace.svelte`, `AppShell` and `SplitGrid` (UI library) | gaps, padding, frame, rounded panels |
 | `src/lib/ui/ResizeHandle.svelte` | handles that fill the gaps |
 | `src/lib/views/Header.svelte`, `StatusBar.svelte`, `ActivityBar.svelte`, `RightActivityBar.svelte` | frame color, no dividers (the library's `AppHeader` and `StatusBar` take `look="rounded"`) |

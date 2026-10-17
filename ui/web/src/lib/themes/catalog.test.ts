@@ -1,37 +1,15 @@
 import { describe, expect, it } from "vitest";
-import appCss from "../../app.css?raw";
 import { catalogThemeIds, themeColors, themeCss, themeSwatch } from "./catalog";
-import { colorDistance, composite, contrastRatio, mix, parseColor } from "@git-manager/ui/logic/color";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, isHighContrast, THEME_INDEX } from "./themeIndex";
-import { COLOR_TOKENS, type ThemeColors } from "./tokens";
-
-/** `--name: value;` pairs of the first rule with `selector`. */
-function cssBlock(selector: string): Record<string, string> {
-  const start = appCss.indexOf(`${selector} {`);
-  expect(start, selector).toBeGreaterThanOrEqual(0);
-  const body = appCss.slice(start + selector.length + 2, appCss.indexOf("}", start));
-  const values: Record<string, string> = {};
-  for (const match of body.matchAll(/(--[a-z0-9-]+):\s*([^;]+);/g)) {
-    values[match[1]] = match[2].trim();
-  }
-  return values;
-}
-
-/** app.css values with var() references resolved, like the browser's computed style. */
-function resolved(values: Record<string, string>): Record<string, string> {
-  const read = (value: string): string =>
-    value.replace(/var\((--[a-z0-9-]+)\)/g, (_, token: string) => read(values[token] ?? ""));
-  return Object.fromEntries(Object.entries(values).map(([token, value]) => [token, read(value)]));
-}
+import { colorDistance, composite, contrastRatio, mix, parseColor } from "../logic/color";
+import { isHighContrast, THEME_INDEX } from "./themeIndex";
+import { COLOR_TOKENS, type ThemeColors } from "./colorTokens";
+import { paletteIds } from "./palettes";
 
 function colorsOf(themeId: string): ThemeColors {
   const colors = themeColors(themeId);
   expect(colors, themeId).not.toBeNull();
   return colors as ThemeColors;
 }
-
-const root = cssBlock(":root");
-const darkBlock = cssBlock(':root[data-theme="dark"]');
 
 describe("catalog", () => {
   it("has a palette for every listed theme", () => {
@@ -44,23 +22,9 @@ describe("catalog", () => {
     expect(themeSwatch("no-such-theme")).toBeNull();
   });
 
-  it("covers every color token app.css defines", () => {
-    const appTokens = Object.keys(root).filter(
-      (token) => !/^--(font-|ui-size|code-size|radius|panel-gap|panel-radius)/.test(token),
-    );
-    expect([...COLOR_TOKENS].sort()).toEqual(appTokens.sort());
-  });
-
-  it("matches the built-in light and dark sets in app.css", () => {
-    expect(colorsOf(DEFAULT_LIGHT_THEME)).toEqual(
-      Object.fromEntries(COLOR_TOKENS.map((token) => [token, resolved(root)[token]])),
-    );
-    const dark = resolved({ ...root, ...darkBlock });
-    expect(colorsOf(DEFAULT_DARK_THEME)).toEqual(Object.fromEntries(COLOR_TOKENS.map((token) => [token, dark[token]])));
-  });
-
-  it("keeps app.css's system dark set equal to its explicit dark set", () => {
-    expect(cssBlock(':root:not([data-theme="light"])')).toEqual(darkBlock);
+  it("lists every palette file entry in the index", () => {
+    const listed = new Set(THEME_INDEX.map((theme) => theme.id));
+    expect(paletteIds().filter((themeId) => !listed.has(themeId))).toEqual([]);
   });
 
   it("writes one scoped rule with every token and the color scheme", () => {

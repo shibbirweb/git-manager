@@ -5,6 +5,7 @@ import { colorsCss, componentBlocksCss, componentsSheet, scalesCss, tokensCss, t
 import { colorsGtk, metricsGtk, typographyGtk } from "./gtk";
 import { designTokens, type Tokens } from "./model";
 import { colorsSwift, componentBlocksSwift, metricsSwift, SWIFT_HEADER, typographySwift } from "./swift";
+import { themeFilesSwift } from "./themes";
 import { tokensTs } from "./ts";
 import { colorsXaml, componentBlocksXaml, metricsXaml, typographyXaml, XAML_OPEN } from "./xaml";
 
@@ -43,6 +44,7 @@ export function tokenOutputs(tokens: Tokens = designTokens): Output[] {
     { path: "design-tokens/generated/macos/GMMetrics.swift", content: metricsSwift(tokens) },
     { path: "design-tokens/generated/macos/GMTypography.swift", content: typographySwift(tokens) },
     ...components.swift.map((file) => ({ path: `design-tokens/generated/macos/${file.name}`, content: file.content })),
+    ...themeFilesSwift().map((file) => ({ path: `design-tokens/generated/macos/${file.name}`, content: file.content })),
     { path: "design-tokens/generated/windows/Colors.xaml", content: colorsXaml(tokens) },
     { path: "design-tokens/generated/windows/Metrics.xaml", content: metricsXaml(tokens) },
     { path: "design-tokens/generated/windows/Typography.xaml", content: typographyXaml(tokens) },
