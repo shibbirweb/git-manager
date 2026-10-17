@@ -123,10 +123,6 @@ export const diffTheme = EditorView.theme({
   "&.cm-editor .cm-content .cm-diffFold:hover .cm-diffFoldWave": {
     background: "var(--accent)",
   },
-  // The 10-line steps show under the pointer only, so a fold stays one quiet line.
-  "&.cm-editor .cm-content .cm-diffFold:not(:hover) .cm-diffFoldStep": {
-    visibility: "hidden",
-  },
   "&.cm-editor .cm-content .cm-diffFoldStep": {
     display: "inline-flex",
     alignItems: "center",

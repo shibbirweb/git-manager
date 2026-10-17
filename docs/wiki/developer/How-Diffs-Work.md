@@ -118,7 +118,7 @@ In the Log, `CommitDetails.svelte` loads `getCommitFileDiff` and shows the view 
 
 **Let the UI compute the diff.** One engine draws what you see, and the hunk buttons come free with `@codemirror/merge`.
 
-**Our own folds.** The library's `collapseUnchanged` opens only whole runs; ours opens 10 lines at a time, on both sides.
+**Our own folds.** The library's `collapseUnchanged` opens only whole runs; ours opens 10 lines at a time on both sides, buttons always at the left.
 
 **One split for every diff.** The ratio is layout state, like panel widths, so it lives in `state.json` and every diff shares it.
 

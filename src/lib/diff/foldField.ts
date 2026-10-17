@@ -62,7 +62,7 @@ function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "botto
   button.title = title;
   button.setAttribute("aria-label", title);
   button.appendChild(iconSvg(edge === "top" ? "chevron-up" : "chevron-down", scales.iconSize.compact));
-  button.appendChild(document.createTextNode(`${FOLD_STEP} lines`));
+  button.appendChild(document.createTextNode(`Show ${FOLD_STEP} more lines`));
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     stepFold(view, view.posAtDOM(element), edge);
@@ -96,8 +96,12 @@ class FoldWidget extends WidgetType {
   toDOM(view: EditorView): HTMLElement {
     const element = document.createElement("div");
     element.className = "cm-diffFold";
+    // The 10-line steps lead the row, always shown, so they sit at the left in every pane and layout.
     if (this.top) {
       element.appendChild(edgeButton(view, element, "top"));
+    }
+    if (this.bottom) {
+      element.appendChild(edgeButton(view, element, "bottom"));
     }
     const label = document.createElement("span");
     label.className = "cm-diffFoldLabel";
@@ -106,9 +110,6 @@ class FoldWidget extends WidgetType {
     const wave = document.createElement("span");
     wave.className = "cm-diffFoldWave";
     element.append(label, wave);
-    if (this.bottom) {
-      element.appendChild(edgeButton(view, element, "bottom"));
-    }
     element.addEventListener("click", () => {
       stepFold(view, view.posAtDOM(element), "all");
     });
