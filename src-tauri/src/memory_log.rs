@@ -229,6 +229,18 @@ mod tests {
         assert_eq!(line, "1970-01-01T00:00:00.000Z total 400.0 MB (+50.0) | Web content 300.0");
     }
 
+    /// The log's tail once it ends with `last`, or as it is after 10 seconds.
+    fn wait_for_tail(config_dir: &Path, last: &str) -> String {
+        let deadline = std::time::Instant::now() + Duration::from_secs(10);
+        loop {
+            let text = read_tail(config_dir, 100);
+            if text.ends_with(last) || std::time::Instant::now() > deadline {
+                return text;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+
     #[test]
     fn logs_changes_and_events_then_stops() {
         let temp = tempfile::tempdir().unwrap();
@@ -238,8 +250,9 @@ mod tests {
         log.event("tab README.md");
         std::thread::sleep(Duration::from_millis(450));
         log.configure(temp.path(), false, 100, 0.0);
-        std::thread::sleep(Duration::from_millis(250));
-        let text = read_tail(temp.path(), 100);
+        // The thread writes its last line after the reading it is taking, which a busy machine (CI on Windows)
+        // can take well over a fixed wait to finish.
+        let text = wait_for_tail(temp.path(), "event memory log stopped");
         assert!(text.contains("memory log started"), "{text}");
         assert!(text.contains("event tab README.md"), "{text}");
         assert!(text.lines().filter(|line| line.contains(" total ")).count() >= 2, "{text}");
