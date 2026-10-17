@@ -4,7 +4,14 @@
 import { type Chunk, getChunks } from "@codemirror/merge";
 import { type EditorState, type Extension, type RangeSet, StateField, type Text } from "@codemirror/state";
 import { type GutterMarker, gutterLineClass } from "@codemirror/view";
-import { chunkGutterClasses, type GutterChunk } from "./mergeGutters";
+import { mergeGutterTheme, noVerticalScrollbar, toneGutterColors } from "./mergeGutterTheme";
+import {
+  type ChunkActions,
+  chunkActionGutter,
+  chunkGutterClasses,
+  type GutterChunk,
+  sideLineNumbers,
+} from "./mergeGutters";
 
 export type SplitSide = "a" | "b";
 
@@ -35,4 +42,19 @@ export function splitGutterColors(side: SplitSide): Extension {
     },
     provide: (field) => gutterLineClass.from(field),
   });
+}
+
+/**
+ * One side of a side by side diff with its change buttons: the old side's numbers on its right edge and the new
+ * side's on its left, so both face the connector; each change red or green through the numbers; `actions` puts the
+ * band's buttons (stage, unstage, apply, revert) beside this side's numbers. Only the new side keeps a scrollbar.
+ */
+export function splitPaneGutters(side: SplitSide, actions: ChunkActions | null): Extension {
+  const gutterSide = side === "a" ? "after" : "before";
+  const buttons = actions ? chunkActionGutter(gutterSide, actions, (state) => splitChunks(state, side)) : [];
+  const look = [mergeGutterTheme, toneGutterColors(false)];
+  // The old side's buttons sit between its text and its numbers, the new side's between its numbers and its text.
+  return side === "a"
+    ? [splitGutterColors(side), buttons, sideLineNumbers("after"), noVerticalScrollbar, look]
+    : [splitGutterColors(side), sideLineNumbers("before"), buttons, look];
 }

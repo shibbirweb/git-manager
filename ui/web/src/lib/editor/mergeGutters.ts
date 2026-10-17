@@ -10,8 +10,8 @@ import {
   type Text,
 } from "@codemirror/state";
 import { GutterMarker, gutter, gutterLineClass, lineNumbers } from "@codemirror/view";
-import { icons, type IconName } from "../icons";
-import { scales } from "../styles/tokens";
+import type { IconName } from "../icons";
+import { svgIcon } from "./svgIcon";
 
 export type GutterSide = "before" | "after";
 
@@ -95,24 +95,6 @@ export function chunkGutterClasses(doc: Text, chunks: GutterChunk[]): RangeSet<G
     }
   }
   return builder.finish();
-}
-
-function svgIcon(name: IconName): SVGSVGElement {
-  const namespace = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(namespace, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", String(scales.iconStroke.bold));
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
-  svg.setAttribute("aria-hidden", "true");
-  for (const path of icons[name]) {
-    const element = document.createElementNS(namespace, "path");
-    element.setAttribute("d", path);
-    svg.append(element);
-  }
-  return svg;
 }
 
 class ActionsMarker extends GutterMarker {

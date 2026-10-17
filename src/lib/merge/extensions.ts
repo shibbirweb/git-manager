@@ -5,7 +5,8 @@ import { invertedEffects } from "@codemirror/commands";
 import { Prec, StateEffect, StateField, type Extension, type Range, type Text } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, gutterLineClass, keymap } from "@codemirror/view";
 import { chunkGutterClasses, type GutterChunk, paneGutters, setGutterChunks } from "@nibtree/ui/editor/mergeGutters";
-import { mergeGutterTheme } from "@nibtree/ui/editor/mergeGutterTheme";
+import { mergeGutterTheme, noVerticalScrollbar } from "@nibtree/ui/editor/mergeGutterTheme";
+import { mergeTheme } from "@nibtree/ui/editor/theme";
 import type { LineRange } from "$lib/types";
 import { scrollMarkers } from "$lib/editor/scrollMarkers";
 import type { TextSpan } from "./inline";
@@ -167,28 +168,6 @@ const sideMarkField = StateField.define<{ lines: DecorationSet; gutters: ReturnT
   ],
 });
 
-const mergeTheme = EditorView.theme({
-  ".cm-mc-line.cm-mc-modified": { backgroundColor: "var(--diff-modified)", "--mc-edge": "var(--diff-modified-edge)" },
-  ".cm-mc-line.cm-mc-added": { backgroundColor: "var(--diff-added)", "--mc-edge": "var(--diff-added-edge)" },
-  ".cm-mc-line.cm-mc-deleted": { backgroundColor: "var(--diff-deleted)", "--mc-edge": "var(--diff-deleted-edge)" },
-  ".cm-mc-line.cm-mc-conflict": { backgroundColor: "var(--diff-conflict)", "--mc-edge": "var(--diff-conflict-edge)" },
-  ".cm-mc-first": { boxShadow: "inset 0 1px 0 var(--mc-edge)" },
-  ".cm-mc-last": { boxShadow: "inset 0 -1px 0 var(--mc-edge)" },
-  ".cm-mc-single": { boxShadow: "inset 0 1px 0 var(--mc-edge), inset 0 -1px 0 var(--mc-edge)" },
-  ".cm-mc-edge-modified": { "--mc-edge": "var(--diff-modified-edge)" },
-  ".cm-mc-edge-added": { "--mc-edge": "var(--diff-added-edge)" },
-  ".cm-mc-edge-deleted": { "--mc-edge": "var(--diff-deleted-edge)" },
-  ".cm-mc-edge-conflict": { "--mc-edge": "var(--diff-conflict-edge)" },
-  ".cm-mc-inline": { backgroundColor: "var(--diff-inline)", borderRadius: "var(--merge-view-inline-radius)" },
-  ".cm-mc-gap-before": { boxShadow: "inset 0 var(--merge-view-gap-edge) 0 var(--mc-edge)" },
-  ".cm-mc-gap-after": { boxShadow: "inset 0 calc(-1 * var(--merge-view-gap-edge)) 0 var(--mc-edge)" },
-  // Keep the active-line tint from hiding chunk colors.
-  ".cm-activeLine.cm-mc-line": {
-    backgroundImage: "linear-gradient(var(--editor-active-line), var(--editor-active-line))",
-    backgroundBlendMode: "multiply",
-  },
-});
-
 export function resultExtensions(initial: ChunkState[]): Extension[] {
   return [chunkField.init(() => initial), chunkHistory, resultDecorations, resultGutters, mergeTheme, mergeGutterTheme];
 }
@@ -225,9 +204,6 @@ export function sideGutters(side: SideName, target: ChunkActionTarget): Extensio
     ? [gutters, scrollMarkers(undefined, "start"), noVerticalScrollbar]
     : [gutters, scrollMarkers(undefined, "end")];
 }
-
-/** No vertical scrollbar: the panes scroll together and the right pane's bar, at the window edge, is enough. */
-export const noVerticalScrollbar = EditorView.theme({ "& .cm-scroller::-webkit-scrollbar:vertical": { width: "0" } });
 
 /** The side marks and their gutter buttons for a side editor. */
 export function sideMarkEffects(marks: LineMark[]) {

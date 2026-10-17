@@ -6,6 +6,7 @@ import { EditorSelection, EditorState, type Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view";
 import type { MergeFrameParts } from "@nibtree/ui/components/MergeFrame.svelte";
 import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
+import { noVerticalScrollbar } from "@nibtree/ui/editor/mergeGutterTheme";
 import { baseExtensions } from "$lib/editor/setup";
 import type { ChangeMark } from "$lib/editor/lineDiff";
 import { changeMarkField, type MarkSource, scrollMarkers, setChangeMarks } from "$lib/editor/scrollMarkers";
@@ -13,7 +14,6 @@ import type { MergeDocument } from "$lib/types";
 import {
   applyKeymap,
   chunkField,
-  noVerticalScrollbar,
   type LineMark,
   resultExtensions,
   resultMarks,

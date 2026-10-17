@@ -12,7 +12,7 @@ import { applyBlock, buildInlineDoc, fallbackHunks, type InlineDoc } from "./inl
 import { type InlineControl, inlineDiffExtensions } from "./inlineView";
 import { hunkSelection } from "./revertChange";
 import type { DiffSide } from "./lineSelection";
-import { splitGutters } from "./splitGutters";
+import { splitPaneGutters } from "@nibtree/ui/editor/splitGutters";
 import { unpadded } from "./splitLink";
 
 /** A side's extensions: with `changes`, its revert listener; its find bar goes into `findHost`. */
@@ -89,7 +89,7 @@ export function splitEditors(
       doc: fileDiff.original,
       extensions: [
         sideExtensions(mode === "unstaged", parts.findOriginal, "old", false),
-        splitGutters("a", actions("left")),
+        splitPaneGutters("a", actions("left")),
         folds,
       ],
     },
@@ -97,14 +97,14 @@ export function splitEditors(
       doc: fileDiff.modified,
       extensions: [
         sideExtensions(mode === "staged", parts.findModified, "new", false),
-        splitGutters("b", actions("right")),
+        splitPaneGutters("b", actions("right")),
         blameExtensions,
         folds,
       ],
     },
     parent: parts.body,
     diffConfig,
-    // Each change is colored through the line numbers (splitGutters), so no separate change bar.
+    // Each change is colored through the line numbers (splitPaneGutters), so no separate change bar.
     gutter: false,
     highlightChanges: true,
   });

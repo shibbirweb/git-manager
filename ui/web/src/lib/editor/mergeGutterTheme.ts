@@ -1,4 +1,5 @@
 // The look of merge gutters (mergeGutters.ts): chunk rows in their change's color with its edges, and the buttons.
+import type { Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
 /** The colors of chunk rows in the gutters and the look of the chunk buttons. */
@@ -61,3 +62,26 @@ export const mergeGutterTheme = EditorView.theme({
   ".cm-mc-btn-apply.cm-mc-conflict": { color: "var(--diff-conflict-edge)" },
   ".cm-mc-btn-ignore:hover, .cm-mc-btn-revert:hover": { color: "var(--danger)" },
 });
+
+/**
+ * Red and green number rows for a diff that colors by side (the old side red, the new green) instead of by kind.
+ * `edges` draws each change's top and bottom lines, as the 3-pane diff's text does; the side by side diff has none.
+ * A gap (lines only on the other side) keeps its edge line in its side's color.
+ */
+export function toneGutterColors(edges: boolean): Extension {
+  return EditorView.theme({
+    "&.cm-editor .cm-gutters .cm-gutterElement.cm-mc-old": { "--mc-edge": "var(--danger)" },
+    "&.cm-editor .cm-gutters .cm-gutterElement.cm-mc-new": { "--mc-edge": "var(--diff-added-edge)" },
+    "&.cm-editor .cm-gutters .cm-gutterElement.cm-mc-gutter.cm-mc-old": {
+      backgroundColor: "var(--diff-removed)",
+      ...(edges ? {} : { "--mc-edge": "transparent" }),
+    },
+    "&.cm-editor .cm-gutters .cm-gutterElement.cm-mc-gutter.cm-mc-new": {
+      backgroundColor: "var(--diff-added)",
+      ...(edges ? {} : { "--mc-edge": "transparent" }),
+    },
+  });
+}
+
+/** No vertical scrollbar, for panes that scroll with another one that keeps it. */
+export const noVerticalScrollbar = EditorView.theme({ "& .cm-scroller::-webkit-scrollbar:vertical": { width: "0" } });

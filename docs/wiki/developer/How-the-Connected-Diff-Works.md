@@ -36,7 +36,7 @@ The arrow on a band is **Stage this change** (Changes) or **Unstage this change*
 
 ## Fold labels
 
-A fold names the code after it: `FoldWidget` (`foldField.ts`) reads `scopeLabelAt(state, line)` (`foldScope.ts`) for the line below the fold. That uses sticky scroll's `scopeSource` (the syntax tree, markdown headings or indentation) for the enclosing blocks, takes each block's first line (or the line before a lone `{`), and `foldLabel.ts` turns them into names: `class Cart` is `Cart`, `public function store(` is `store()`, and blocks such as `if` drop out. A PHP `namespace` or Java `package` line leads the label. With no named block the bar shows the count. The wavy line is a CSS mask, so it takes the theme's `--border-strong`. The 3-pane merge diff folds the same runs in all panes and mirrors each step (`foldStep`) to the others.
+A fold names the code after it: the library's `FoldRowWidget` (`editor/foldRow.ts`, drawn for `foldField.ts`) reads `scopeLabelAt(state, line)` (`foldScope.ts`) for the line below the fold. That uses sticky scroll's `scopeSource` (the syntax tree, markdown headings or indentation) for the enclosing blocks, takes each block's first line (or the line before a lone `{`), and `foldLabel.ts` turns them into names: `class Cart` is `Cart`, `public function store(` is `store()`, and blocks such as `if` drop out. A PHP `namespace` or Java `package` line leads the label. With no named block the bar shows the count. The wavy line is a CSS mask, so it takes the theme's `--border-strong`. The 3-pane merge diff folds the same runs in all panes and mirrors each step (`foldStep`) to the others.
 
 ## Where the code lives
 
@@ -48,13 +48,13 @@ A fold names the code after it: `FoldWidget` (`foldField.ts`) reads `scopeLabelA
 | `src/lib/diff/foldLabel.ts`, `foldScope.ts` | Fold labels |
 | `ui/web/src/lib/components/DiffFrame.svelte` | `ribbons`, `applySide`, `onapply`, `applyTitle`; one scroller per side |
 | `ui/web/src/lib/components/MergeConnector.svelte` | The bands and their optional buttons |
-| `src/lib/diff/splitGutters.ts`, `ui/web/src/lib/editor/splitGutters.ts` | Colored number rows, numbers facing the middle, the change buttons |
+| `ui/web/src/lib/editor/splitGutters.ts` (`splitPaneGutters`) | Colored number rows, numbers facing the middle, the change buttons |
 
 ## Design decisions
 
 - **Keep MergeView.** Writing our own two-editor diff would mean rebuilding highlights, the gutter and the chunk updates on edits. Turning off one private method is a small, contained dependency; a `@codemirror/merge` update that renames `measure` brings the padding back but breaks nothing else.
 - **Center line sync.** Mapping the center keeps the change you look at level on both sides, even inside a long added block.
-- **Buttons beside the line numbers.** A change's stage, unstage, apply and revert buttons sit in its side's gutter on its first line (`splitGutters.ts`, built on the library's `editor/mergeGutters.ts` and `editor/splitGutters.ts`), next to the numbers but never over them. The old side's numbers move to its right edge (`sideLineNumbers("after")`) and each change's color runs through the numbers (`splitGutterColors`, from `getChunks`), so a band reads as one shape from text to text. With no buttons on it, the connector is narrow, and only the new side keeps a vertical scrollbar. The merge tool and the three-pane diffs draw the same way.
+- **Buttons beside the line numbers.** A change's stage, unstage, apply and revert buttons sit in its side's gutter on its first line (the library's `splitPaneGutters` in `editor/splitGutters.ts`, built on `editor/mergeGutters.ts`), next to the numbers but never over them. The old side's numbers move to its right edge (`sideLineNumbers("after")`) and each change's color runs through the numbers (`splitGutterColors`, from `getChunks`), so a band reads as one shape from text to text. With no buttons on it, the connector is narrow, and only the new side keeps a vertical scrollbar. The merge tool and the three-pane diffs draw the same way.
 
 ## Tests
 

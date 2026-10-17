@@ -12,7 +12,7 @@
   import { mergeGutterTheme } from "../editor/mergeGutterTheme";
   import { sideLineNumbers } from "../editor/mergeGutters";
   import { splitGutterColors } from "../editor/splitGutters";
-  import { diffTheme, editorTheme } from "../editor/theme";
+  import { diffTheme, editorTheme, unifiedDiffTheme } from "../editor/theme";
   import { presetVar, type ViewHeight } from "../logic/presets";
   import DiffFrame from "./DiffFrame.svelte";
 
@@ -79,7 +79,12 @@
       const view = new EditorView({
         parent: target,
         doc: modified,
-        extensions: [...common, lineNumbers(), unifiedMergeView({ original, mergeControls: false, gutter: true })],
+        extensions: [
+          ...common,
+          unifiedDiffTheme,
+          lineNumbers(),
+          unifiedMergeView({ original, mergeControls: false, gutter: true }),
+        ],
       });
       teardown = () => view.destroy();
     }

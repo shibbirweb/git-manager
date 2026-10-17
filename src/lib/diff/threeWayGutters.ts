@@ -3,9 +3,10 @@
 // scrollbar (the panes scroll together). The middle has its numbers on the left and its ruler over its lines' ends.
 import type { Extension } from "@codemirror/state";
 import { lineNumbers } from "@codemirror/view";
+import { noVerticalScrollbar, toneGutterColors } from "@nibtree/ui/editor/mergeGutterTheme";
 import { type ChunkActions, paneGutters, setGutterChunks } from "@nibtree/ui/editor/mergeGutters";
 import { scrollMarkers, setChangeMarks } from "$lib/editor/scrollMarkers";
-import { gutterChunks, type LineMark, noVerticalScrollbar, setSideMarks } from "$lib/merge/extensions";
+import { gutterChunks, type LineMark, setSideMarks } from "$lib/merge/extensions";
 import { type ParentSide, rulerMarks } from "./threeWay";
 
 type Pane = ParentSide | "result";
@@ -15,13 +16,14 @@ export type PaneActions = Partial<Record<ParentSide, ChunkActions>>;
 
 export function paneChrome(name: Pane, actions: PaneActions): Extension {
   if (name === "result") {
-    return [lineNumbers(), scrollMarkers(undefined, "onText"), noVerticalScrollbar];
+    return [lineNumbers(), scrollMarkers(undefined, "onText"), noVerticalScrollbar, toneGutterColors(true)];
   }
   const left = name === "left";
   return [
     paneGutters(left ? "after" : "before", actions[name] ?? null, false),
     scrollMarkers(undefined, left ? "start" : "end"),
     left ? noVerticalScrollbar : [],
+    toneGutterColors(true),
   ];
 }
 
