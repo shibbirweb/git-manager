@@ -23,18 +23,18 @@ The tool opens over the main window, titled **Merge Revisions for** and the file
 
 During a rebase the labels read **Upstream (...)** and **Your commit (...)** instead. See [Resolving Conflicts](Resolving-Conflicts.md).
 
-Colored ribbons connect each change on a side with its place in the result:
+Each change is colored across its whole row, line numbers included, and a ribbon carries the color across to its place in the result:
 
 - Blue: a changed block.
 - Green: added lines.
 - Grey: removed lines.
 - Red: a conflict, where both sides changed the same lines.
 
-Inside a change, the exact words that differ are highlighted. The three panes scroll together, so matching lines stay next to each other. To make a pane wider, drag the edge of a column of ribbons; double-click it to make the panes equal again.
+Inside a change, the exact words that differ are highlighted. Each side's line numbers face the result: the left pane has them on its right edge. The three panes scroll together, so matching lines stay next to each other, and one scrollbar at the window's right edge moves them all. To make a pane wider, drag the edge of a column of ribbons; double-click it to make the panes equal again.
 
 ## Take changes, one at a time
 
-Each ribbon has two small buttons in the gap next to its side:
+Each change has two small buttons on its first line, beside its line numbers (never on top of them):
 
 - **»** (on the left, **Apply left change**) or **«** (on the right, **Apply right change**) applies that change to the result.
 - **x** (**Ignore left change** or **Ignore right change**) marks that change done without applying it.

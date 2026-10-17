@@ -1,6 +1,6 @@
 # How the merge tool works
 
-The merge tool is three pane view (Yours, Result, Theirs) with connectors and apply and ignore buttons per change. The user side is in [Merge Tool](../usage/Merge-Tool.md).
+The merge tool is a three pane view (Yours, Result, Theirs) with connectors between the panes and apply and ignore buttons beside each change's line numbers. The user side is in [Merge Tool](../usage/Merge-Tool.md).
 
 ## Why we need it
 
@@ -79,7 +79,7 @@ stateDiagram-v2
 
 `dispatchAction` sends the text edit with `setChunks` and `isolateHistory.of("full")`, so each click is one undo step, and `chunkHistory` (`invertedEffects`) makes undo restore text and chunk state together.
 
-`draw` builds SVG ribbons for the visible chunks, with the buttons as HTML overlays. The panes use `baseExtensions`, so each has the find bar and the whitespace setting; opening a find bar moves the text, so `onSideGeometry` redraws on geometry changes. Scrolling one pane scrolls the others through `mapLine`, a piecewise linear mapping between chunk edges. `changedSpans` in `inline.ts` adds word highlights. F7 and Shift+F7 use `findUnresolved`.
+`draw` builds SVG ribbons for the visible chunks. The library's `editor/mergeGutters.ts` draws the rest of each band: `chunkGutterClasses` colors a chunk's gutter rows, and `paneGutters` puts a side's numbers next to the result with a button column beside them (`sideGutters` wires Apply and Ignore). Yours keeps its ruler at its outer edge, the result draws its ruler over its lines' ends, and only Theirs keeps a vertical scrollbar, so a band runs unbroken from pane to pane. The panes use `baseExtensions`, so each has the find bar and the whitespace setting; opening a find bar moves the text, so `onSideGeometry` redraws on geometry changes. Scrolling one pane scrolls the others through `mapLine`, a piecewise linear mapping between chunk edges. `changedSpans` in `inline.ts` adds word highlights. F7 and Shift+F7 use `findUnresolved`.
 
 Cmd+Enter saves from any pane (a high-priority keymap from `applyKeymap`). Escape, Cancel and the title-bar close button all run `cancel`, which asks first when there is undo history. Ignore whitespace recomputes the chunks, after a confirm. `save` warns about unresolved changes and leftover markers, then `saveResolution` writes and stages the file. The same editor runs as `git mergetool`, see [How mergetool mode works](How-Mergetool-Mode-Works.md).
 
@@ -97,6 +97,7 @@ Cmd+Enter saves from any pane (a high-priority keymap from `applyKeymap`). Escap
 | `src/lib/merge/MergeEditor.svelte` | Toolbar, `MergeFrame`, footer, save and cancel |
 | `src/lib/merge/mergeSession.svelte.ts` | The three editors, chunk actions, undo, navigation |
 | `src/lib/merge/mergeRibbons.ts`, `mergeScroll.ts` | Connector ribbons, synced scrolling |
+| `ui/web/src/lib/editor/mergeGutters.ts` | Gutter colors, numbers on either side, the chunk buttons |
 | `src/lib/merge/MergeView.svelte` | The overlay, reload and file-level fallbacks |
 
 ## Design decisions
@@ -104,6 +105,8 @@ Cmd+Enter saves from any pane (a high-priority keymap from `applyKeymap`). Escap
 **Our own engine, checked against git.** `git merge-file` gives marker text, not chunk ranges for a UI, so a property test compares our clean merges with it.
 
 **Chunk state inside the editor.** In a StateField, undo never leaves text and buttons out of step.
+
+**Buttons beside the numbers, not over them.** They get their own gutter column, so every line number stays readable, and the gaps between panes only carry the ribbons. The 3-pane diff and the library's MergeView draw the same way.
 
 **One overlay, not a second window.** Every window starts another web view process, which costs memory.
 
@@ -118,6 +121,7 @@ See [Merge Tool Bugs We Fixed](Merge-Tool-Bugs-We-Fixed.md).
 - `src/lib/merge/model.test.ts`: `replaceLines` with random edits, chunk actions, `mapChunks` and scroll mapping.
 - `src/lib/merge/inline.test.ts`: word spans.
 - `src/lib/merge/extensions.test.ts`: `applyKeymap` beats the default Cmd+Enter, also in the search bar.
+- `ui/web/src/lib/editor/mergeGutters.test.ts`: gutter row colors, edges, gaps and tones.
 
 Change the engine only with a new engine test; keep UI rules in `model.ts` with a Vitest case. Connectors and scrolling need a visual check. See [Testing](Testing.md).
 

@@ -106,10 +106,15 @@ export function createStrip(onJump: (line: number) => void): HTMLDivElement {
 // Strip and tick styles live in the library's styles/code.css so the diff view can reuse them outside an editor.
 const stripTheme = EditorView.theme({
   "&.cm-with-scroll-markers .cm-scroller": { marginRight: "var(--scroll-markers-width)" },
+  "&.cm-scroll-markers-at-start .cm-scroller": { marginRight: "0", marginLeft: "var(--scroll-markers-width)" },
+  "&.cm-scroll-markers-on-text .cm-scroller": { marginRight: "0" },
 });
 
+/** `end` beside the scrollbar, `start` at the left edge, `onText` over the lines' ends (merge colors run under). */
+export type StripPlace = "end" | "start" | "onText";
+
 /** Overview ruler for an editor that scrolls itself. */
-export function scrollMarkers(source: MarkSource = fieldSource): Extension {
+export function scrollMarkers(source: MarkSource = fieldSource, place: StripPlace = "end"): Extension {
   const plugin = ViewPlugin.fromClass(
     class {
       strip: HTMLDivElement;
@@ -143,7 +148,8 @@ export function scrollMarkers(source: MarkSource = fieldSource): Extension {
       }
     },
   );
-  return [plugin, stripTheme, EditorView.editorAttributes.of({ class: "cm-with-scroll-markers" })];
+  const placeClass = { end: "", start: " cm-scroll-markers-at-start", onText: " cm-scroll-markers-on-text" }[place];
+  return [plugin, stripTheme, EditorView.editorAttributes.of({ class: `cm-with-scroll-markers${placeClass}` })];
 }
 
 class ChangeGutterMarker extends GutterMarker {

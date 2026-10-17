@@ -205,6 +205,17 @@ export const sideColors = [
     "&.cm-sideColors.cm-merge-b .cm-content .cm-diffAdded .cm-changedText": {
       background: "none",
     },
+    // Number rows take their side's color with no edge lines, like the text; a removed or added gap keeps its edge.
+    "&.cm-sideColors .cm-gutterElement.cm-mc-old": { "--mc-edge": "var(--danger)" },
+    "&.cm-sideColors .cm-gutterElement.cm-mc-new": { "--mc-edge": "var(--diff-added-edge)" },
+    "&.cm-sideColors .cm-gutterElement.cm-mc-gutter.cm-mc-old": {
+      backgroundColor: "var(--diff-removed)",
+      "--mc-edge": "transparent",
+    },
+    "&.cm-sideColors .cm-gutterElement.cm-mc-gutter.cm-mc-new": {
+      backgroundColor: "var(--diff-added)",
+      "--mc-edge": "transparent",
+    },
     "&.cm-sideColors.cm-merge-a .cm-gutters .cm-changedLineGutter": {
       background: "var(--danger)",
     },
@@ -226,6 +237,14 @@ export const toneColors = [
     "&.cm-toneColors .cm-line.cm-mc-new": { "--mc-edge": "var(--diff-added-edge)" },
     "&.cm-toneColors .cm-mc-line.cm-mc-old": { backgroundColor: "var(--diff-removed)" },
     "&.cm-toneColors .cm-mc-line.cm-mc-new": { backgroundColor: "var(--diff-added)" },
+    "&.cm-toneColors .cm-gutterElement.cm-mc-gutter.cm-mc-old": {
+      backgroundColor: "var(--diff-removed)",
+      "--mc-edge": "var(--danger)",
+    },
+    "&.cm-toneColors .cm-gutterElement.cm-mc-gutter.cm-mc-new": {
+      backgroundColor: "var(--diff-added)",
+      "--mc-edge": "var(--diff-added-edge)",
+    },
     "&.cm-toneColors .cm-mc-inline-old": { backgroundColor: "var(--diff-removed-word)" },
     "&.cm-toneColors .cm-mc-inline-new": { backgroundColor: "var(--diff-added-word)" },
   }),

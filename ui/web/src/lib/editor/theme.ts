@@ -48,6 +48,10 @@ export const diffTheme = EditorView.theme({
   "&.cm-merge-a .cm-content .cm-diffDeleted .cm-changedText, &.cm-merge-b .cm-content .cm-diffAdded .cm-changedText": {
     background: "none",
   },
+  // A side by side diff's number rows take the change's color with no edge lines, like its text.
+  "&.cm-merge-a .cm-gutters .cm-gutterElement.cm-mc-gutter, &.cm-merge-b .cm-gutters .cm-gutterElement.cm-mc-gutter": {
+    "--mc-edge": "transparent",
+  },
   "&.cm-merge-a .cm-gutters .cm-changedLineGutter, &.cm-merge-b .cm-gutters .cm-changedLineGutter": {
     background: "var(--diff-modified-edge)",
   },

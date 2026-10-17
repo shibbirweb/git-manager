@@ -48,17 +48,19 @@ A fold names the code after it: `FoldWidget` (`foldField.ts`) reads `scopeLabelA
 | `src/lib/diff/foldLabel.ts`, `foldScope.ts` | Fold labels |
 | `ui/web/src/lib/components/DiffFrame.svelte` | `ribbons`, `applySide`, `onapply`, `applyTitle`; one scroller per side |
 | `ui/web/src/lib/components/MergeConnector.svelte` | The bands and their optional buttons |
+| `src/lib/diff/splitGutters.ts`, `ui/web/src/lib/editor/splitGutters.ts` | Colored number rows, numbers facing the middle, the change buttons |
 
 ## Design decisions
 
 - **Keep MergeView.** Writing our own two-editor diff would mean rebuilding highlights, the gutter and the chunk updates on edits. Turning off one private method is a small, contained dependency; a `@codemirror/merge` update that renames `measure` brings the padding back but breaks nothing else.
 - **Center line sync.** Mapping the center keeps the change you look at level on both sides, even inside a long added block.
-- **Arrows on the bands.** The stage button belongs to the change it moves, so the old arrows column is gone.
+- **Buttons beside the line numbers.** A change's stage, unstage, apply and revert buttons sit in its side's gutter on its first line (`splitGutters.ts`, built on the library's `editor/mergeGutters.ts` and `editor/splitGutters.ts`), next to the numbers but never over them. The old side's numbers move to its right edge (`sideLineNumbers("after")`) and each change's color runs through the numbers (`splitGutterColors`, from `getChunks`), so a band reads as one shape from text to text. With no buttons on it, the connector is narrow, and only the new side keeps a vertical scrollbar. The merge tool and the three-pane diffs draw the same way.
 
 ## Tests
 
 - `src/lib/diff/foldLabel.test.ts`: names of classes, functions, methods and headings, skipped control blocks, namespaces.
 - `src/lib/diff/splitChunks.test.ts`: changed, added and removed lines, changes at the end of the text, anchors, and staging and unstaging edits checked against the other side's text.
+- `ui/web/src/lib/editor/splitGutters.test.ts`: each side's rows of a changed, added or removed block.
 - The look and the scrolling need a visual check: `diff-view`, `diff-hunk-staging`, `commit-tab` and `color-theme-high-contrast` in `scripts/screenshots.ts`.
 
 ## Keeping this page in sync

@@ -147,6 +147,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- Every diff and the merge tool (side by side diffs, the staging view, merge commits, a commit next to your working tree) color each change through its line numbers, so it runs as one band from pane to pane. Each side's line numbers face the middle, the Apply, Ignore and Revert buttons sit beside them without covering any number, and the gaps between panes are narrower. The panes scroll together with one scrollbar at the right edge.
 - Git Manager is now **Nibtree**: the app (`Nibtree.app`), its identifier (`io.github.shibbirweb.nibtree`), the command line tool (`nibtree`), the settings folder (`~/.nibtree`, moved from `~/.gitmanager` on first start), saved workspaces (`.nibtree-workspace`; old `.gitmanager-workspace` files still open) and the repository (`shibbirweb/nibtree`). Install the command again from Settings, set up `git mergetool` again with the new lines, and sign in to GitHub again.
 - Six color themes have new names, with the same colors: Classic Light, Islet Light, Islet Dark, Dusk, Light+ and Dark+. A saved choice of one of them falls back to the default theme once; pick it again in Settings > Editor.
 - Three-pane diffs (the staging view and merge commits) use the same colors too: a change is soft red on its older side and green on its newer side, and the bands fade between them.

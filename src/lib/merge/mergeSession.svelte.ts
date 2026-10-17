@@ -13,12 +13,14 @@ import type { MergeDocument } from "$lib/types";
 import {
   applyKeymap,
   chunkField,
+  noVerticalScrollbar,
   type LineMark,
   resultExtensions,
   resultMarks,
   setChunks,
-  setSideMarks,
   sideExtensions,
+  sideGutters,
+  sideMarkEffects,
   sideMarks,
 } from "./extensions";
 import { InlineSpans } from "./inlineSpans";
@@ -84,7 +86,7 @@ export class MergeSession {
         this.scheduleDraw();
       }
     });
-    const sideView = (text: string, parent: HTMLElement) =>
+    const sideView = (text: string, parent: HTMLElement, side: SideName) =>
       new EditorView({
         parent,
         state: EditorState.create({
@@ -92,17 +94,17 @@ export class MergeSession {
           extensions: [
             applyKeys,
             onSideGeometry,
-            baseExtensions({ readOnly: true, kind: "merge" }),
+            baseExtensions({ readOnly: true, kind: "merge", lineNumbers: false }),
             language,
             sideExtensions(),
+            sideGutters(side, this),
             changeMarkField,
-            scrollMarkers(),
             EditorView.editable.of(false),
           ],
         }),
       });
-    const ours = sideView(this.doc.ours, parts.left);
-    const theirs = sideView(this.doc.theirs, parts.right);
+    const ours = sideView(this.doc.ours, parts.left, "ours");
+    const theirs = sideView(this.doc.theirs, parts.right, "theirs");
     this.#spans.sides = { ours: ours.state.doc, theirs: theirs.state.doc };
     const result = new EditorView({
       parent: parts.result,
@@ -113,7 +115,8 @@ export class MergeSession {
           baseExtensions({ readOnly: false, kind: "merge" }),
           language,
           resultExtensions(initialChunks(this.doc.chunks)),
-          scrollMarkers(this.#resultMarkSource),
+          scrollMarkers(this.#resultMarkSource, "onText"),
+          noVerticalScrollbar,
           EditorView.updateListener.of((update) => {
             if (update.docChanged || update.transactions.some((tr) => tr.effects.some((e) => e.is(setChunks)))) {
               this.#sync();
@@ -164,7 +167,7 @@ export class MergeSession {
       this.#lastMarkSignature = signature;
       for (const side of ["ours", "theirs"] as const) {
         const marks = sideMarks(chunks, side, (chunk) => this.#spans.of(chunk, side));
-        this.views[side].dispatch({ effects: [setSideMarks.of(marks), setChangeMarks.of(toChangeMarks(marks))] });
+        this.views[side].dispatch({ effects: [...sideMarkEffects(marks), setChangeMarks.of(toChangeMarks(marks))] });
       }
     }
     this.scheduleDraw();

@@ -24,6 +24,7 @@ public enum GMCodeEditorTokens {
 
 public enum GMMergeViewTokens {
     public static let gap: CGFloat = 52
+    public static let ribbonGap: CGFloat = 32
     public static let labelPaddingX: CGFloat = 12
     public static let labelPaddingY: CGFloat = 5
     public static let buttonWidth: CGFloat = 18
@@ -31,6 +32,11 @@ public enum GMMergeViewTokens {
     public static let buttonInset: CGFloat = 2
     public static let gapEdge: CGFloat = 2
     public static let inlineRadius: CGFloat = 2
+    public static let actionsWidth: CGFloat = 36
+    public static let actionsPaddingX: CGFloat = 2
+    public static let actionsGap: CGFloat = 0
+    public static let actionSize: CGFloat = 18
+    public static let actionIcon: CGFloat = 13
 }
 
 public enum GMFormatToolbarTokens {
@@ -265,15 +271,4 @@ public enum GMAppHeaderTokens {
     public static let busyMaxWidth: CGFloat = 280
     public static let tintWidth: CGFloat = 520
     public static let controlsInset: CGFloat = 80
-}
-
-public enum GMLogoTokens {
-    public static let size: CGFloat = 40
-    public static let radius: CGFloat = 10
-    public static let largeSize: CGFloat = 72
-    public static let largeRadius: CGFloat = 18
-    public static let softSize: CGFloat = 56
-    public static let softRadius: CGFloat = 14
-    public static let mediumSize: CGFloat = 48
-    public static let mediumRadius: CGFloat = 12
 }

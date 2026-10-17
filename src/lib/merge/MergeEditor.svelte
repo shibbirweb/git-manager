@@ -212,8 +212,6 @@
     {fileName}
     leftRibbons={session.leftRibbons}
     rightRibbons={session.rightRibbons}
-    onapply={(chunkId, side) => session.apply(chunkId, side === "left" ? "ours" : "theirs")}
-    onignore={(chunkId, side) => session.ignore(chunkId, side === "left" ? "ours" : "theirs")}
     bind:split={() => settings.threePaneSplit, (split) => (settings.threePaneSplit = split)}
     oncommitsplit={() => settings.save()}
     onready={build}
