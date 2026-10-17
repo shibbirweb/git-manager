@@ -19,7 +19,7 @@ export default defineConfig({
   server: {
     port: 1430,
     strictPort: true,
-    // The colors (src/app.css) live in the app.
+    // The design token files (ui/design-tokens) sit outside ui/web.
     fs: { allow: [repoRoot] },
   },
 });

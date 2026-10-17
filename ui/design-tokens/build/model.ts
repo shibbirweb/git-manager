@@ -3,6 +3,7 @@
 import colorsJson from "../colors.json";
 import componentsJson from "../components.json";
 import moreComponentsJson from "../components-2.json";
+import editorJson from "../editor.json";
 import paletteJson from "../palette.json";
 import tokensJson from "../tokens.json";
 import typographyJson from "../typography.json";
@@ -154,8 +155,13 @@ export function buildTokens(
   };
 }
 
-/** components.json and components-2.json together (one file would pass 300 lines). */
-export const componentsSource = { ...componentsJson, ...moreComponentsJson, $comment: componentsJson.$comment };
+/** components.json, components-2.json and editor.json together (one file would pass 300 lines). */
+export const componentsSource = {
+  ...componentsJson,
+  ...moreComponentsJson,
+  ...editorJson,
+  $comment: componentsJson.$comment,
+};
 
 export const designTokens: Tokens = buildTokens(
   colorsJson,

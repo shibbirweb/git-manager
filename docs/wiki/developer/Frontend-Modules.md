@@ -20,7 +20,7 @@ flowchart LR
   App -->|"first Markdown preview"| Md["markdown/engine.ts<br/>markdown-it, DOMPurify"]
   Md -->|"a mermaid block"| Mermaid["hidden frame: mermaid-frame page<br/>removed after the last diagram document closes"]
   App -->|"Rich Editor view"| Rich["markdown/richEditor.ts<br/>TipTap"]
-  App -->|"non-default theme"| Catalog["themes/catalog.ts"]
+  App -->|"non-default theme"| Catalog["ui themes/catalog.ts"]
   App -->|"Scripts panel opens"| Scripts["scripts/ScriptsPanel.svelte"]
   App -->|"Git Console tab, setting on"| Console["console/GitConsoleView.svelte"]
   App -->|"Help windows"| Help["help/ShortcutsDialog.svelte<br/>mcp/McpToolsDialog.svelte"]
@@ -42,7 +42,7 @@ flowchart LR
 | `search/` | the Search Everywhere popup with its tabs, double Shift detection, file, symbol and text result models, and Replace in Files (`replaceModel.ts`) | [How Search Everywhere Works](How-Search-Everywhere-Works.md), [How Find and Replace Works](How-Find-and-Replace-Works.md) |
 | `editor/` | CodeMirror setup plus the find bar, Edit and Code menu commands, Render whitespace, the current-line highlight and selection info | [How the Editor Works](How-the-Editor-Works.md) |
 | `markdown/` | rendering, sanitizing, scroll sync, mermaid, the rich editor (Milkdown) and its block-by-block write back (`richSync.ts`), drawing only near the screen (`nearScreen.ts`) | [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md) |
-| `themes/` | the theme list (`themeIndex.ts`), lazy palettes (`catalog.ts`), color math with contrast checks, applying and watching themes | [How Color Themes Work](How-Color-Themes-Work.md) |
+| `themes/` | applying and watching themes; the theme list, palettes and color math are in the UI library (`ui/web/src/lib/themes/`) | [How Color Themes Work](How-Color-Themes-Work.md) |
 | `console/` | the Git Console list model and its virtualized view | [How the Git Console Works](How-the-Git-Console-Works.md) |
 | `shelf/` | the Shelf panel, Shelve dialog, shelved diff tab and actions | [How the Shelf Works](How-the-Shelf-Works.md) |
 | `ignore/` | Add to .gitignore: escaped patterns for a file or folder and the submenu | [How Changes and Commits Work](How-Changes-and-Commits-Work.md) |

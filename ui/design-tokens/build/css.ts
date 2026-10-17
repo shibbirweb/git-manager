@@ -1,5 +1,5 @@
-// CSS for the Svelte library: sizes and component variables (tokens.css), and the colors (colors.css) that will
-// replace the hand-written block in src/app.css once the app is generated from the tokens.
+// CSS for the Svelte library: the built-in colors (colors.css), sizes and component variables, all imported by
+// tokens.css.
 import { kebabName, type Mode, type Reference, type Tokens } from "./model";
 
 /** The scales that belong to typography.css rather than scales.css. */
@@ -50,7 +50,8 @@ export function componentValue(value: number | Reference, part = ""): string {
 
 /** tokens.css: the entry point the library and the app import; it pulls in every generated sheet. */
 export function tokensCss(componentSheets: string[]): string {
-  const sheets = ["scales.css", "typography.css", ...componentSheets].map((sheet) => `@import "./${sheet}";`);
+  const names = ["colors.css", "scales.css", "typography.css", ...componentSheets];
+  const sheets = names.map((sheet) => `@import "./${sheet}";`);
   return [HEADER, ...sheets, ""].join("\n");
 }
 
@@ -118,8 +119,13 @@ export function componentsCss(tokens: Tokens): string {
   return componentsSheet(componentBlocksCss(tokens));
 }
 
+/** One mode's colors, the popup shadow as --shadow (color themes set their own) and the browser's color scheme. */
 function colorBlock(tokens: Tokens, mode: Mode, indent: string): string[] {
-  return Object.entries(tokens.colors).map(([name, color]) => `${indent}--${name}: ${color[mode]};`);
+  return [
+    ...Object.entries(tokens.colors).map(([name, color]) => `${indent}--${name}: ${color[mode]};`),
+    `${indent}--shadow: ${tokens.shadows.popup?.[mode] ?? "none"};`,
+    `${indent}color-scheme: ${mode};`,
+  ];
 }
 
 export function colorsCss(tokens: Tokens): string {

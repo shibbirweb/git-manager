@@ -1,5 +1,5 @@
-// The color tokens every theme sets, in src/app.css order. Fonts, sizes and
-// the corner radius are not colors and stay in app.css.
+// The color tokens every theme sets, in colors.json order (plus --shadow). Fonts, sizes and
+// the corner radius are not colors: they are in base.css and the size tokens.
 
 export const COLOR_TOKENS = [
   "--bg",

@@ -1,0 +1,34 @@
+{
+  "$comment": [
+    "The code editor's measurements (CodeMirror on the web, the native text views elsewhere), read together with",
+    "components.json: folds, completion, the change gutter, the scroll markers, the minimap, blame, conflict",
+    "actions, the inline diff and diff folds. The same rules apply: \"{group.name}\" refers to a token, numbers",
+    "are points. Sizes in em (completion badges, whitespace marks) follow the code font and stay in the editor."
+  ],
+  "editorFold": {
+    "gutterWidth": 14, "icon": 10, "placeholderPaddingX": 4, "placeholderMarginX": 2, "placeholderRadius": 3
+  },
+  "editorCompletion": {
+    "radius": "{radius.control}", "minWidth": 240, "listPaddingY": 3, "itemPaddingY": 1, "itemPaddingLeft": 6,
+    "itemPaddingRight": 10
+  },
+  "changeGutter": {"width": 5, "bar": 3, "deletedHalf": 4, "deletedDepth": 5},
+  "scrollMarkers": {"width": 12, "markInset": 2, "conflictInset": 1, "markRadius": 1},
+  "minimap": {"width": 72},
+  "blame": {"gutterWidth": 236, "cellPaddingLeft": 7, "cellPaddingRight": 8, "heatBar": 3},
+  "conflictActions": {
+    "gapY": 2, "gapX": 6, "paddingTop": 3, "paddingBottom": 2, "paddingLeft": 6, "fontSize": "{fontSize.compact}",
+    "actionPaddingX": 2, "countGap": 4, "countPaddingLeft": 2, "countPaddingRight": 12, "labelGap": 10,
+    "labelFontSize": "{fontSize.xsmall}", "minWidth": 160
+  },
+  "inlineDiff": {
+    "numberPaddingLeft": 8, "numberPaddingRight": 6, "numberMinWidth": 28, "signPaddingX": 4, "controlsPaddingX": 2,
+    "controlsGap": 2, "revertWidth": 18, "revertHeight": 16, "revertRadius": "{radius.small}",
+    "changeRadius": "{radius.tiny}"
+  },
+  "diffFold": {
+    "gap": 6, "paddingY": 2, "paddingLeft": 4, "paddingRight": 8, "fontSize": "{fontSize.compact}", "labelPaddingY": 1,
+    "labelPaddingX": 6, "labelRadius": "{radius.small}", "waveMinWidth": 24, "waveHeight": 6, "waveTile": 12,
+    "stepGap": 3, "stepPaddingY": 1, "stepPaddingX": 6, "stepRadius": "{radius.small}"
+  }
+}

@@ -147,6 +147,7 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Changed
 
+- The app's identifier is now `io.github.shibbirweb.gitmanager` (it was `com.shibbir.gitmanager`), a name based on the project's own web address. macOS and Windows see it as a new app once: any permission you gave Git Manager in the system settings must be given again, and a few view choices the window keeps (diff view options, collapsed sidebar groups, the dismissed Git LFS notice) start fresh. Your settings in `~/.gitmanager` stay. A GitHub token saved in the keychain moves over the first time it is needed; macOS may ask once to allow that.
 - Three-pane diffs (the staging view and merge commits) use the VS Code colors too: a change is soft red on its older side and green on its newer side, and the bands fade between them.
 - Side by side diffs use VS Code and GitLens colors: changed lines soft red on the old side and green on the new, changed words in a stronger red or green, and bands that fade from red to green.
 - Every diff has the same toolbar: three panes now offer **Blame** (the working tree in the staging view, the merge result for a merge commit) and match the two-pane bar.

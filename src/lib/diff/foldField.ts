@@ -6,6 +6,7 @@
 import { type Chunk, getChunks, mergeViewSiblings } from "@codemirror/merge";
 import { type EditorState, type Extension, Facet, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
+import { scales } from "@git-manager/ui/tokens";
 import { type FoldEdge, type FoldRange, FOLD_STEP, foldEdges, foldRanges, revealFold } from "./foldModel";
 import { scopeLabelAt } from "./foldScope";
 import { iconSvg } from "./mergeExtensions";
@@ -60,7 +61,7 @@ function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "botto
   button.className = "cm-diffFoldStep";
   button.title = title;
   button.setAttribute("aria-label", title);
-  button.appendChild(iconSvg(edge === "top" ? "chevron-up" : "chevron-down", 12));
+  button.appendChild(iconSvg(edge === "top" ? "chevron-up" : "chevron-down", scales.iconSize.compact));
   button.appendChild(document.createTextNode(`${FOLD_STEP} lines`));
   button.addEventListener("click", (event) => {
     event.stopPropagation();

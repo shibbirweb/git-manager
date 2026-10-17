@@ -43,19 +43,21 @@ interface MinimapMeasure {
 }
 
 const theme = EditorView.theme({
-  "&.cm-with-minimap .cm-scroller": { marginRight: `${MINIMAP_WIDTH}px` },
-  "&.cm-with-minimap.cm-with-scroll-markers .cm-scroller": { marginRight: `${MINIMAP_WIDTH + 12}px` },
+  "&.cm-with-minimap .cm-scroller": { marginRight: "var(--minimap-width)" },
+  "&.cm-with-minimap.cm-with-scroll-markers .cm-scroller": {
+    marginRight: "calc(var(--minimap-width) + var(--scroll-markers-width))",
+  },
   ".cm-gm-minimap": {
     position: "absolute",
     right: "0",
-    width: `${MINIMAP_WIDTH}px`,
+    width: "var(--minimap-width)",
     zIndex: "4",
     overflow: "hidden",
     backgroundColor: "var(--editor-bg)",
     borderLeft: "1px solid color-mix(in srgb, var(--border-strong) 60%, transparent)",
     boxSizing: "border-box",
   },
-  "&.cm-with-scroll-markers .cm-gm-minimap": { right: "12px" },
+  "&.cm-with-scroll-markers .cm-gm-minimap": { right: "var(--scroll-markers-width)" },
   ".cm-gm-minimap canvas": {
     position: "absolute",
     left: "0",

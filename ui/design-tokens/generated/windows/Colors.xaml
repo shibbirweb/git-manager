@@ -29,6 +29,11 @@
             <Color x:Key="GmEditorLineNumber">#FFAEB3C2</Color>
             <Color x:Key="GmEditorActiveLine">#FFF5F8FE</Color>
             <Color x:Key="GmEditorSelection">#FFC1C3C9</Color>
+            <Color x:Key="GmEditorCursor">#FF1E1F22</Color>
+            <Color x:Key="GmTermBackground">#FFFFFFFF</Color>
+            <Color x:Key="GmTermForeground">#FF1E1F22</Color>
+            <Color x:Key="GmTermCursor">#FF1E1F22</Color>
+            <Color x:Key="GmTermSelection">#FFC1C3C9</Color>
             <Color x:Key="GmTermBlack">#FF000000</Color>
             <Color x:Key="GmTermRed">#FFCD3131</Color>
             <Color x:Key="GmTermGreen">#FF00BC00</Color>
@@ -106,6 +111,11 @@
             <Color x:Key="GmEditorLineNumber">#FF4B5059</Color>
             <Color x:Key="GmEditorActiveLine">#FF26282E</Color>
             <Color x:Key="GmEditorSelection">#FF214283</Color>
+            <Color x:Key="GmEditorCursor">#FFDFE1E5</Color>
+            <Color x:Key="GmTermBackground">#FF1E1F22</Color>
+            <Color x:Key="GmTermForeground">#FFDFE1E5</Color>
+            <Color x:Key="GmTermCursor">#FFDFE1E5</Color>
+            <Color x:Key="GmTermSelection">#FF214283</Color>
             <Color x:Key="GmTermBlack">#FF000000</Color>
             <Color x:Key="GmTermRed">#FFCD3131</Color>
             <Color x:Key="GmTermGreen">#FF0DBC79</Color>

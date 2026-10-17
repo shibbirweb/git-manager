@@ -20,7 +20,7 @@ flowchart LR
 
 **Line spacing.** `settings.editorLineHeight` (default 1.25, from 1.0 to 2.5) is validated by `pickNumber` and rounded in `settingsData.ts`. `applyAppearance` writes it to `--code-line-height` on the root element, and `editorTheme` reads it for `.cm-scroller`. Every editor, diff side and merge pane uses `editorTheme`, and Markdown code blocks read the same variable, so one CSS variable changes them all without rebuilding a view.
 
-**Font weight.** `settings.editorFontWeight` (default 400, from 100 to 900) is validated by `pickNumber` and rounded to a step of 100, and `fontWeightName` gives the style name the slider shows (300 is Light). It works like line spacing: `applyAppearance` writes `--code-weight`, and `editorTheme` (`.cm-scroller`), the sticky scroll header and Markdown code blocks read it. `.tok-heading` and `.tok-strong` in `src/app.css` use `calc(var(--code-weight) + 200)`, so bold text stays bolder than the code around it at every weight.
+**Font weight.** `settings.editorFontWeight` (default 400, from 100 to 900) is validated by `pickNumber` and rounded to a step of 100, and `fontWeightName` gives the style name the slider shows (300 is Light). It works like line spacing: `applyAppearance` writes `--code-weight`, and `editorTheme` (`.cm-scroller`), the sticky scroll header and Markdown code blocks read it. `.tok-heading` and `.tok-strong` in the UI library's `styles/code.css` use `calc(var(--code-weight) + 200)`, so bold text stays bolder than the code around it at every weight.
 
 **Syntax highlighting.** Every editor, diff side and merge pane gets its language from `editorLanguage(filePath)` in `languages.ts`: a `Compartment` holding either the grammar (`languageFor`, a dynamic import) or, with `syntaxHighlighting` off, only `EditorState.languageData` with the file's `commentTokens`, so Toggle Comment still works without a parser. A facet in the compartment remembers the file and which of the two it holds. `setSyntaxHighlighting`, called from an effect in `App.svelte`, swaps the compartment in every registered view; an editor built while the setting changed catches up from its registry plugin. Dropping the grammar drops the language state field and its syntax tree. The Markdown preview's `CodeHighlighter` has `setEnabled`, which clears its parsers and cached HTML and renders again.
 
@@ -32,7 +32,7 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 
 **The current line.** `activeLine.ts` replaces CodeMirror's `highlightActiveLine` with `highlightActiveLineWhenEmpty`: the cursor lines get `cm-activeLine` only while every selection range is empty. Read-only panes have no current line highlight. Why this matters is in the bug below.
 
-**Zoom and ligatures.** Ctrl or Cmd plus the mouse wheel zooms, only over a `.cm-editor`: `App.svelte` listens and asks a `WheelZoom` (`src/lib/editor/wheelZoom.ts`) for the next size. View > Zoom In and Zoom Out call `steppedFontSize` from the same module through `menuActions.ts`. Font ligatures are a `data-ligatures` root attribute set by `applyAppearance` and styled in `src/app.css`.
+**Zoom and ligatures.** Ctrl or Cmd plus the mouse wheel zooms, only over a `.cm-editor`: `App.svelte` listens and asks a `WheelZoom` (`src/lib/editor/wheelZoom.ts`) for the next size. View > Zoom In and Zoom Out call `steppedFontSize` from the same module through `menuActions.ts`. Font ligatures are a `data-ligatures` root attribute set by `applyAppearance` and styled in the UI library's `styles/code.css`.
 
 ## Where the code lives
 

@@ -4,6 +4,7 @@
 
 import { type Extension, type Range, StateField, type Text } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from "@codemirror/view";
+import { componentTokens } from "@git-manager/ui/tokens";
 import {
   type ConflictChoice,
   type ConflictRegion,
@@ -190,7 +191,8 @@ const barWidth = ViewPlugin.fromClass(
           return view.scrollDOM.clientWidth - contentLeft;
         },
         write: (width, view) => {
-          view.dom.style.setProperty("--cm-conflict-bar-width", `${Math.max(Math.floor(width), 160)}px`);
+          const barWidth = Math.max(Math.floor(width), componentTokens.conflictActions.minWidth);
+          view.dom.style.setProperty("--cm-conflict-bar-width", `${barWidth}px`);
         },
       });
     }
@@ -205,14 +207,16 @@ const conflictTheme = EditorView.theme({
     boxSizing: "border-box",
     maxWidth: "var(--cm-conflict-bar-width, none)",
     alignItems: "center",
-    gap: "2px 6px",
-    padding: "3px 0 2px 6px",
+    gap: "var(--conflict-actions-gap-y) var(--conflict-actions-gap-x)",
+    padding:
+      "var(--conflict-actions-padding-top) 0 var(--conflict-actions-padding-bottom) " +
+      "var(--conflict-actions-padding-left)",
     fontFamily: "var(--font-ui)",
-    fontSize: "11.5px",
+    fontSize: "var(--conflict-actions-font-size)",
     color: "var(--text-dim)",
   },
   ".cm-conflict-action": {
-    padding: "0 2px",
+    padding: "0 var(--conflict-actions-action-padding-x)",
     whiteSpace: "nowrap",
     border: "none",
     background: "transparent",
@@ -232,16 +236,16 @@ const conflictTheme = EditorView.theme({
     color: "var(--text-faint)",
   },
   ".cm-conflict-count": {
-    marginLeft: "4px",
-    padding: "0 12px 0 2px",
+    marginLeft: "var(--conflict-actions-count-gap)",
+    padding: "0 var(--conflict-actions-count-padding-right) 0 var(--conflict-actions-count-padding-left)",
     color: "var(--text-dim)",
     whiteSpace: "nowrap",
     fontVariantNumeric: "tabular-nums",
   },
   ".cm-conflict-label": {
-    marginLeft: "10px",
+    marginLeft: "var(--conflict-actions-label-gap)",
     fontFamily: "var(--font-ui)",
-    fontSize: "11px",
+    fontSize: "var(--conflict-actions-label-font-size)",
     color: "var(--text-dim)",
   },
   ".cm-conflict-marker": {

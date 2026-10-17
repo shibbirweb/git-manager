@@ -2,8 +2,8 @@
      Selection follows the arrow keys and applies and saves at once, like a radio group. -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { ThemeSwatch as Swatch } from "$lib/themes/catalog";
-  import { type ColorMode, type ThemeInfo, themeGroups } from "$lib/themes/themeIndex";
+  import type { ThemeSwatch as Swatch } from "@git-manager/ui/themes/catalog";
+  import { type ColorMode, type ThemeInfo, themeGroups } from "@git-manager/ui/themes/themeIndex";
   import OptionList from "@git-manager/ui/components/OptionList.svelte";
   import Pill from "@git-manager/ui/components/Pill.svelte";
   import Stack from "@git-manager/ui/components/Stack.svelte";
@@ -32,7 +32,7 @@
 
   onMount(() => {
     let cancelled = false;
-    void import("$lib/themes/catalog")
+    void import("@git-manager/ui/themes/catalog")
       .then((catalog) => {
         if (cancelled) {
           return;

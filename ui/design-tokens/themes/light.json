@@ -1,0 +1,189 @@
+{
+  "$comment": [
+    "Light color themes: each lists its published editor, syntax and terminal colors (ansi: black, red,",
+    "green, yellow, blue, magenta, cyan, white, then the bright ones, or a set in ansi.json), and \"ui\" the UI",
+    "colors it publishes. Every other shade is derived (ui/web/src/lib/themes/derive.ts). Names and kinds are in",
+    "index.json."
+  ],
+  "github-light": {
+    "background": "#ffffff", "foreground": "#1f2328", "accent": "#0969da", "selection": "rgba(9, 105, 218, 0.22)",
+    "ansi": [
+      "#24292f", "#cf222e", "#116329", "#4d2d00", "#0969da", "#8250df", "#1b7c83", "#6e7781", "#57606a", "#a40e26",
+      "#1a7f37", "#633c01", "#218bff", "#a475f9", "#3192aa", "#8c959f"
+    ],
+    "syntax": {
+      "keyword": "#cf222e", "string": "#0a3069", "number": "#0550ae", "comment": "#6e7781", "type": "#953800",
+      "function": "#8250df", "property": "#0550ae", "meta": "#953800", "tag": "#116329", "attr": "#0550ae",
+      "invalid": "#82071e"
+    },
+    "ui": {
+      "bg": "#f6f8fa", "panelAlt": "#f6f8fa", "border": "#d8dee4", "borderStrong": "#d0d7de", "lineNumber": "#8c959f",
+      "activeLine": "#f6f8fa", "success": "#1a7f37", "warning": "#9a6700"
+    }
+  },
+  "one-light": {
+    "$note": "Atom's #e5e5e6 is too faint to see; a little of its blue keeps the look.",
+    "background": "#fafafa", "foreground": "#383a42", "accent": "#526fff", "selection": "#d5dcf2",
+    "ansi": [
+      "#383a42", "#e45649", "#50a14f", "#c18401", "#4078f2", "#a626a4", "#0184bc", "#a0a1a7", "#4f525e", "#e06c75",
+      "#98c379", "#e5c07b", "#61afef", "#c678dd", "#56b6c2", "#ffffff"
+    ],
+    "syntax": {
+      "keyword": "#a626a4", "string": "#50a14f", "number": "#986801", "comment": "#a0a1a7", "type": "#c18401",
+      "function": "#4078f2", "property": "#e45649", "meta": "#0184bc", "tag": "#e45649", "attr": "#986801",
+      "invalid": "#ca1243"
+    },
+    "ui": {"bg": "#eaeaeb", "panelAlt": "#f0f0f1", "lineNumber": "#9d9d9f", "activeLine": "#f2f2f2"}
+  },
+  "solarized-light": {
+    "$note": "Between base01 and base02: base00 is below 4.5:1 on base3, and selected text needs more.",
+    "background": "#fdf6e3", "foreground": "#4a5f66", "accent": "#268bd2", "selection": "#e0d9c3",
+    "ansi": [
+      "#073642", "#dc322f", "#859900", "#b58900", "#268bd2", "#d33682", "#2aa198", "#eee8d5", "#002b36", "#cb4b16",
+      "#586e75", "#657b83", "#839496", "#6c71c4", "#93a1a1", "#fdf6e3"
+    ],
+    "syntax": {
+      "keyword": "#859900", "string": "#2aa198", "number": "#d33682", "comment": "#93a1a1", "type": "#b58900",
+      "function": "#268bd2", "property": "#268bd2", "meta": "#cb4b16", "tag": "#268bd2", "attr": "#93a1a1",
+      "invalid": "#dc322f"
+    },
+    "ui": {"bg": "#eee8d5", "panel": "#fdf6e3", "panelAlt": "#f5efdc", "lineNumber": "#93a1a1", "activeLine": "#eee8d5"}
+  },
+  "quiet-light": {
+    "background": "#f5f5f5", "foreground": "#333333", "accent": "#705697", "selection": "#c9d0d9",
+    "ansi": "vscodeLight",
+    "syntax": {
+      "keyword": "#4b69c6", "string": "#448c27", "number": "#ab6526", "comment": "#aaaaaa", "type": "#7a3e9d",
+      "function": "#aa3731", "property": "#7a3e9d", "meta": "#b2a900", "tag": "#4b69c6", "attr": "#8190a0",
+      "invalid": "#660000"
+    },
+    "ui": {"bg": "#ededf5", "panel": "#f5f5f5", "panelAlt": "#f2f2f2", "lineNumber": "#6d705b", "activeLine": "#e4f6d4"}
+  },
+  "ayu-light": {
+    "$note": "A little stronger than ayu's 0.15 so the selection is clearly visible.",
+    "background": "#fcfcfc", "foreground": "#5c6166", "accent": "#ff9940", "selection": "rgba(3, 91, 214, 0.18)",
+    "ansi": [
+      "#000000", "#ea6c6d", "#6cbf43", "#eca944", "#3199e1", "#9e75c7", "#46ba94", "#bababa", "#686868", "#f07171",
+      "#86b300", "#f2ae49", "#399ee6", "#a37acc", "#4cbf99", "#d1d1d1"
+    ],
+    "syntax": {
+      "keyword": "#fa8d3e", "string": "#86b300", "number": "#a37acc", "comment": "#adaeb1", "type": "#399ee6",
+      "function": "#f2ae49", "property": "#f07171", "meta": "#e6ba7e", "tag": "#55b4d4", "attr": "#f2ae49",
+      "invalid": "#e65050"
+    },
+    "ui": {"bg": "#f8f9fa", "panel": "#fcfcfc", "panelAlt": "#f3f4f5", "lineNumber": "#a8adb3", "activeLine": "#f0f1f2"}
+  },
+  "catppuccin-latte": {
+    "background": "#eff1f5", "foreground": "#4c4f69", "accent": "#8839ef", "selection": "rgba(124, 127, 147, 0.3)",
+    "ansi": [
+      "#5c5f77", "#d20f39", "#40a02b", "#df8e1d", "#1e66f5", "#ea76cb", "#179299", "#acb0be", "#6c6f85", "#d20f39",
+      "#40a02b", "#df8e1d", "#1e66f5", "#ea76cb", "#179299", "#bcc0cc"
+    ],
+    "syntax": {
+      "keyword": "#8839ef", "string": "#40a02b", "number": "#fe640b", "comment": "#7c7f93", "type": "#df8e1d",
+      "function": "#1e66f5", "property": "#7287fd", "meta": "#fe640b", "tag": "#1e66f5", "attr": "#df8e1d",
+      "invalid": "#d20f39"
+    },
+    "ui": {
+      "bg": "#dce0e8", "panel": "#eff1f5", "panelAlt": "#e6e9ef", "border": "#dce0e8", "borderStrong": "#ccd0da",
+      "lineNumber": "#8c8fa1", "activeLine": "#e6e9ef"
+    }
+  },
+  "gruvbox-light": {
+    "background": "#fbf1c7", "foreground": "#3c3836", "accent": "#076678", "selection": "#d5c4a1",
+    "ansi": [
+      "#fbf1c7", "#cc241d", "#98971a", "#d79921", "#458588", "#b16286", "#689d6a", "#7c6f64", "#928374", "#9d0006",
+      "#79740e", "#b57614", "#076678", "#8f3f71", "#427b58", "#3c3836"
+    ],
+    "syntax": {
+      "keyword": "#9d0006", "string": "#79740e", "number": "#8f3f71", "comment": "#928374", "type": "#b57614",
+      "function": "#427b58", "property": "#076678", "meta": "#af3a03", "tag": "#076678", "attr": "#79740e",
+      "invalid": "#9d0006"
+    },
+    "ui": {
+      "bg": "#ebdbb2", "panel": "#fbf1c7", "panelAlt": "#f2e5bc", "border": "#ebdbb2", "borderStrong": "#d5c4a1",
+      "lineNumber": "#a89984", "activeLine": "#f2e5bc", "success": "#79740e", "danger": "#9d0006", "warning": "#b57614"
+    }
+  },
+  "tokyo-night-day": {
+    "$note": "Darker than #3760bf, and a deeper selection, so selected text stays readable.",
+    "background": "#e1e2e7", "foreground": "#2b4ca0", "accent": "#2e7de9", "selection": "#c0c5d9",
+    "ansi": [
+      "#e9e9ed", "#f52a65", "#587539", "#8c6c3e", "#2e7de9", "#9854f1", "#007197", "#6172b0", "#a1a6c5", "#f52a65",
+      "#587539", "#8c6c3e", "#2e7de9", "#9854f1", "#007197", "#3760bf"
+    ],
+    "syntax": {
+      "keyword": "#9854f1", "string": "#587539", "number": "#b15c00", "comment": "#848cb5", "type": "#188092",
+      "function": "#2e7de9", "property": "#118c74", "meta": "#006a83", "tag": "#f52a65", "attr": "#8c6c3e",
+      "invalid": "#c64343"
+    },
+    "ui": {
+      "bg": "#d0d5e3", "panel": "#e1e2e7", "panelAlt": "#d6d8df", "border": "#c4c8da", "borderStrong": "#b4b8cc",
+      "lineNumber": "#848cb5", "activeLine": "#d6d8df", "danger": "#c64343"
+    }
+  },
+  "rose-pine-dawn": {
+    "background": "#faf4ed", "foreground": "#575279", "accent": "#907aa9", "selection": "#d8d3d4",
+    "ansi": [
+      "#f2e9e1", "#b4637a", "#286983", "#ea9d34", "#56949f", "#907aa9", "#d7827e", "#575279", "#9893a5", "#b4637a",
+      "#286983", "#ea9d34", "#56949f", "#907aa9", "#d7827e", "#575279"
+    ],
+    "syntax": {
+      "keyword": "#286983", "string": "#ea9d34", "number": "#d7827e", "comment": "#9893a5", "type": "#56949f",
+      "function": "#d7827e", "property": "#907aa9", "meta": "#797593", "tag": "#56949f", "attr": "#907aa9",
+      "invalid": "#b4637a"
+    },
+    "ui": {
+      "bg": "#f2e9e1", "panel": "#fffaf3", "panelAlt": "#f4ede8", "border": "#f2e9e1", "borderStrong": "#dfdad9",
+      "lineNumber": "#9893a5", "activeLine": "#f4ede8", "success": "#286983", "info": "#907aa9"
+    }
+  },
+  "intellij-light": {
+    "background": "#ffffff", "foreground": "#080808", "accent": "#2675bf", "selection": "#a6d2ff",
+    "ansi": "jetbrainsLight",
+    "syntax": {
+      "keyword": "#0033b3", "string": "#067d17", "number": "#1750eb", "comment": "#8c8c8c", "type": "#000000",
+      "function": "#00627a", "property": "#871094", "meta": "#9e880d", "tag": "#0033b3", "attr": "#174ad4",
+      "invalid": "#f50000"
+    },
+    "ui": {
+      "bg": "#f2f2f2", "panel": "#f2f2f2", "panelAlt": "#e8e8e8", "border": "#d1d1d1", "borderStrong": "#c4c4c4",
+      "lineNumber": "#adadad", "activeLine": "#fcfaed", "success": "#067d17"
+    }
+  },
+  "islands-light": {
+    "$note": [
+      "Islands Light: white islands on a grey window. Colors from ManyIslandsLight.theme.json and its \"Light\" ",
+      "editor scheme; the selection is the gray PhpStorm shows."
+    ],
+    "background": "#ffffff", "foreground": "#000000", "accent": "#3871e1", "selection": "#c1c3c9",
+    "ansi": "jetbrainsLight",
+    "syntax": {
+      "keyword": "#0033b3", "string": "#067d17", "number": "#1750eb", "comment": "#8c8c8c", "type": "#000000",
+      "function": "#00627a", "property": "#871094", "meta": "#9e880d", "tag": "#0033b3", "attr": "#174ad4",
+      "invalid": "#f50000"
+    },
+    "ui": {
+      "bg": "#e9eaee", "panel": "#ffffff", "panelAlt": "#f7f8f9", "border": "#e9eaee", "borderStrong": "#dddfe4",
+      "lineNumber": "#aeb3c2", "activeLine": "#f5f8fe", "success": "#338555", "danger": "#c54e58", "warning": "#a56906",
+      "info": "#2f5eb9"
+    }
+  },
+  "vscode-light-plus": {
+    "$note": [
+      "Light+ and Dark+: tokens and UI colors from the themes' published defaults. Meta is the pink of ",
+      "keyword.control, which Light+ and Dark+ give preprocessor directives."
+    ],
+    "background": "#ffffff", "foreground": "#000000", "accent": "#007acc", "selection": "#add6ff",
+    "ansi": "vscodeLight",
+    "syntax": {
+      "keyword": "#0000ff", "string": "#a31515", "number": "#098658", "comment": "#008000", "type": "#267f99",
+      "function": "#795e26", "property": "#001080", "meta": "#af00db", "tag": "#800000", "attr": "#e50000",
+      "invalid": "#cd3131"
+    },
+    "ui": {
+      "bg": "#dddddd", "panel": "#f3f3f3", "panelAlt": "#ececec", "border": "#e7e7e7", "lineNumber": "#237893",
+      "activeLine": "#eeeeee", "success": "#587c0c", "danger": "#e51400", "warning": "#bf8803", "info": "#2090d3"
+    }
+  }
+}

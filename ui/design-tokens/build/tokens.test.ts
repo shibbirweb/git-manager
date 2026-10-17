@@ -7,34 +7,34 @@ import { buildTokens, camelName, designTokens, kebabName, parseReference, resolv
 import { tokenOutputs } from "./outputs";
 
 const uiRoot = join(__dirname, "../..");
-const appCss = readFileSync(join(uiRoot, "../src/app.css"), "utf8");
+const colorsCssFile = readFileSync(join(uiRoot, "web/src/lib/styles/colors.css"), "utf8");
 
-/** The custom properties of the CSS block that starts with `selector {`. */
-function blockTokens(selector: string): Record<string, string> {
-  const start = appCss.indexOf(`${selector} {`);
-  const end = appCss.indexOf("\n}", start);
+/** The custom properties and color-scheme of the CSS block that starts with `selector {`. */
+function blockTokens(css: string, selector: string): Record<string, string> {
+  const start = css.indexOf(`${selector} {`);
+  expect(start, selector).toBeGreaterThanOrEqual(0);
+  const end = css.indexOf("}", start);
   const found: Record<string, string> = {};
-  for (const match of appCss.slice(start, end).matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) {
-    found[match[1]] = match[2].trim();
+  for (const match of css.slice(start, end).matchAll(/(--[a-z0-9-]+|color-scheme):\s*([^;]+);/g)) {
+    found[match[1].replace(/^--/, "")] = match[2].trim();
   }
   return found;
 }
 
 describe("the token files", () => {
-  it("have the colors of src/app.css, light and dark", () => {
-    const light = blockTokens(":root");
-    const dark = { ...light, ...blockTokens(":root[data-theme=\"dark\"]") };
-    for (const [name, color] of Object.entries(designTokens.colors)) {
-      expect([name, color.light]).toEqual([name, light[name]]);
-      expect([name, color.dark]).toEqual([name, dark[name]]);
+  it("write every color, the popup shadow and the color scheme into each block of styles/colors.css", () => {
+    const blocks = {
+      light: blockTokens(colorsCssFile, ":root"),
+      dark: blockTokens(colorsCssFile, ':root[data-theme="dark"]'),
+    } as const;
+    for (const mode of ["light", "dark"] as const) {
+      for (const [name, color] of Object.entries(designTokens.colors)) {
+        expect([mode, name, blocks[mode][name]]).toEqual([mode, name, color[mode]]);
+      }
+      expect(blocks[mode].shadow).toBe(designTokens.shadows.popup[mode]);
+      expect(blocks[mode]["color-scheme"]).toBe(mode);
     }
-    const plainColors = Object.entries(light).filter(([, value]) => /^(#[0-9a-f]{6}|rgba?\()/i.test(value));
-    expect(Object.keys(designTokens.colors).sort()).toEqual(plainColors.map(([name]) => name).sort());
-  });
-
-  it("have the popup shadow of src/app.css", () => {
-    expect(designTokens.shadows.popup.light).toBe(blockTokens(":root").shadow);
-    expect(designTokens.shadows.popup.dark).toBe(blockTokens(":root[data-theme=\"dark\"]").shadow);
+    expect(blockTokens(colorsCssFile, ':root:not([data-theme="light"])')).toEqual(blocks.dark);
   });
 
   it("are written out: every generated file is up to date (bun run ui:tokens)", () => {

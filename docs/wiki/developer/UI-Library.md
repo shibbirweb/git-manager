@@ -22,7 +22,7 @@ flowchart LR
   C --> S
 ```
 
-- **Tokens.** `colors.json` holds the built-in Light and Dark colors (equal to `src/app.css` for now). `typography.json` holds the font families, sizes, weights, line heights, letter spacing and named text styles (body, label, hint, caption, sectionLabel, title, heading, code...). `tokens.json` holds size, radius, space, motion, the breakpoints (panel and window widths) and the grid. `components.json` and `components-2.json` hold each component's measurements, such as `"button": {"height": "{size.control}"}`. A string in braces refers to another token.
+- **Tokens.** `colors.json` holds the built-in Light and Dark colors (written to `styles/colors.css`). `typography.json` holds the font families, sizes, weights, line heights, letter spacing and named text styles (body, label, hint, caption, sectionLabel, title, heading, code...). `tokens.json` holds size, radius, space, motion, the breakpoints (panel and window widths) and the grid. `components.json` and `components-2.json` hold each component's measurements, such as `"button": {"height": "{size.control}"}`. `editor.json` holds the code editor's sizes (CSS variables, or `@git-manager/ui/tokens` in script). `themes/` holds the color themes. A string in braces refers to another token.
 - **Generators.** `design-tokens/build/` turns the files into CSS variables (`--button-height`), a TypeScript object for code that measures in script, Swift (`GMColor.bg`, `GMButtonTokens.height`), XAML resource dictionaries and GTK 4 CSS. Swift output type-checks with `swiftc`.
 - **Components.** `ui/web/src/lib/components/` has one component per file. Each takes sizes from tokens and colors from the theme, and no `class` or `style`: tone, size and layout are props. `Stack` lays things out with spacing steps and `Text` writes words in a tone and size, so screens need no CSS of their own. A list is a `List` (keys, selection, a filter field that drives it) of `Row`s; `Spacer` pushes the rest of a row to its end. A `responsive` Toolbar hides less needed words when narrow.
 - **Named sizes.** Design props are never free numbers or text. Sizes, widths, heights and spacing are named presets from `tokens.json` (`logic/presets.ts`), so every platform has the same few choices. Numbers are only for data, such as a count or a size the user dragged.
@@ -47,7 +47,7 @@ flowchart LR
 
 ## Tests
 
-- `design-tokens/build/tokens.test.ts`: colors and the popup shadow equal `src/app.css` in light and dark, every generated file is up to date and within the line limits, references resolve, and colors and shadows parse.
+- `design-tokens/build/tokens.test.ts`: `colors.css` has every color, the popup shadow and the color scheme in each block, every generated file is up to date and within the line limits, references resolve, and colors and shadows parse.
 - `web/src/lib/docs/docs.test.ts`: every component has one doc and one story, each doc lists exactly the props in the component's `$props()` with the same defaults, bindables and required ones, no component takes a class or style, no literal colors, stories have no CSS, and the generated Markdown is fresh and within 120 columns.
 - `web/src/lib/logic/*.test.ts`: the pure logic.
 - `ui/lines.test.ts`: every file in `ui/` stays within 120 columns and 300 lines.
@@ -58,7 +58,7 @@ The app imports the library as the local package `@git-manager/ui`; how it moves
 
 ## Parity with the app
 
-`bun run ui:parity` proves each component looks exactly like the app's own UI. Each case in `ui/web/src/parity/cases/` holds the app's markup, styled by the CSS read at test time from the app's real `.svelte` files and `app.css`. Svelte's scoping weight is kept, so rules compete as they do in the app. Next to it sits the library component in the same state. Elements that a child component draws, such as an icon, are marked so the app's scoped rules skip them, as Svelte's scoping does. A browser compares 36 computed properties (stroke width included) of each pair at rest, on hover and on focus, pseudo-elements included, in light and dark. Any difference fails. Known app bugs, where the library is right, are listed with their reason instead, such as the dialog's red confirm button turning blue on hover. Side-by-side screenshots land in `ui/web/.parity/`, which is not committed.
+`bun run ui:parity` proves each component looks exactly like the app's own UI. Each case in `ui/web/src/parity/cases/` holds the app's markup, styled by the CSS read at test time from the app's real `.svelte` files and the library's styles. Svelte's scoping weight is kept, so rules compete as they do in the app. Next to it sits the library component in the same state. Elements that a child component draws, such as an icon, are marked so the app's scoped rules skip them, as Svelte's scoping does. A browser compares 36 computed properties (stroke width included) of each pair at rest, on hover and on focus, pseudo-elements included, in light and dark. Any difference fails. Known app bugs, where the library is right, are listed with their reason instead, such as the dialog's red confirm button turning blue on hover. Side-by-side screenshots land in `ui/web/.parity/`, which is not committed.
 
 ## Where the code lives
 

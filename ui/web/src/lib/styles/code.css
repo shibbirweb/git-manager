@@ -1,0 +1,138 @@
+/* Code everywhere (editors, diffs, the Markdown preview, sticky scroll): programming ligatures, the change
+   overview ruler and the syntax colors, all from tokens. Import once with base.css. */
+
+/* Programming ligatures in code, toggled in Settings > Editor. */
+.cm-content {
+  font-variant-ligatures: none;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
+}
+
+:root[data-ligatures="on"] .cm-content {
+  font-variant-ligatures: contextual;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
+}
+
+/* Change overview ruler beside editor scrollbars (the app's editor/scrollMarkers.ts draws the marks). */
+.cm-scroll-markers {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--scroll-markers-width);
+  z-index: 5;
+  background: var(--panel-alt);
+  border-left: 1px solid var(--border-strong);
+}
+
+.cm-scroll-mark {
+  position: absolute;
+  left: var(--scroll-markers-mark-inset);
+  right: var(--scroll-markers-mark-inset);
+  border-radius: var(--scroll-markers-mark-radius);
+  cursor: pointer;
+}
+
+.cm-scroll-mark:hover {
+  left: 0;
+  right: 0;
+}
+
+.cm-scroll-mark-added {
+  background: var(--diff-added-edge);
+}
+
+.cm-scroll-mark-modified {
+  background: var(--diff-modified-edge);
+}
+
+.cm-scroll-mark-deleted,
+.cm-scroll-mark-conflict {
+  background: var(--danger);
+}
+
+.cm-scroll-mark-conflict {
+  left: var(--scroll-markers-conflict-inset);
+  right: var(--scroll-markers-conflict-inset);
+}
+
+/* Syntax colors for the classes editor/highlighter.ts gives code (classHighlighter and markupHighlighter); the
+   tag and attribute rules come last so they win. */
+.tok-keyword {
+  color: var(--tok-keyword);
+}
+
+.tok-bool,
+.tok-atom {
+  color: var(--tok-constant);
+}
+
+.tok-operator {
+  color: var(--tok-operator);
+}
+
+.tok-string,
+.tok-string2,
+.tok-literal {
+  color: var(--tok-string);
+}
+
+.tok-number {
+  color: var(--tok-number);
+}
+
+.tok-comment {
+  color: var(--tok-comment);
+  font-style: italic;
+}
+
+.tok-typeName,
+.tok-className,
+.tok-namespace {
+  color: var(--tok-type);
+}
+
+.tok-variableName.tok-definition,
+.tok-function,
+.tok-macroName {
+  color: var(--tok-function);
+}
+
+.tok-propertyName,
+.tok-labelName {
+  color: var(--tok-property);
+}
+
+.tok-meta {
+  color: var(--tok-meta);
+}
+
+.tok-tagName {
+  color: var(--tok-tag);
+}
+
+.tok-attributeName {
+  color: var(--tok-attr);
+}
+
+.tok-heading,
+.tok-strong {
+  /* Stays heavier than the code font weight set in Settings > Editor. */
+  font-weight: calc(var(--code-weight, 400) + 200);
+}
+
+.tok-emphasis {
+  font-style: italic;
+}
+
+.tok-link,
+.tok-url {
+  text-decoration: underline;
+}
+
+.tok-invalid {
+  color: var(--tok-invalid);
+}

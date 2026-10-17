@@ -366,7 +366,7 @@ const blameTheme = EditorView.theme({
     textDecoration: "underline",
   },
   ".cm-blame-gutter": {
-    width: "236px",
+    width: "var(--blame-gutter-width)",
     borderRight: "1px solid var(--border)",
   },
   ".cm-blame-gutter .cm-gutterElement": {
@@ -374,14 +374,14 @@ const blameTheme = EditorView.theme({
   },
   ".cm-blame-cell": {
     height: "100%",
-    padding: "0 8px 0 7px",
+    padding: "0 var(--blame-cell-padding-right) 0 var(--blame-cell-padding-left)",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
     fontFamily: "var(--font-ui)",
     fontSize: "0.88em",
     color: "var(--text-dim)",
-    borderLeft: "3px solid color-mix(in srgb, var(--accent) var(--blame-heat), transparent)",
+    borderLeft: "var(--blame-heat-bar) solid color-mix(in srgb, var(--accent) var(--blame-heat), transparent)",
     cursor: "pointer",
   },
   ".cm-blame-cell.first": {

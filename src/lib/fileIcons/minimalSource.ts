@@ -26,7 +26,7 @@ export const FILE_ICON_GLYPHS = [
 
 export type FileIconGlyph = (typeof FILE_ICON_GLYPHS)[number];
 
-/** Each tone is a color token from src/app.css, so the icons follow the theme. */
+/** Each tone is a color token (the UI library's colors.css), so the icons follow the theme. */
 export const FILE_ICON_TONES = {
   gray: "--text-dim",
   blue: "--term-blue",

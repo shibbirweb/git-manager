@@ -16,8 +16,10 @@
     },
     "./logic/*": "./src/lib/logic/*.ts",
     "./editor/*": "./src/lib/editor/*.ts",
+    "./themes/*": "./src/lib/themes/*.ts",
     "./markdown/*": "./src/lib/markdown/*.ts",
     "./styles/*.css": "./src/lib/styles/*.css",
+    "./tokens": "./src/lib/styles/tokens.ts",
     "./icons": "./src/lib/icons.ts",
     "./toasts": "./src/lib/toasts.svelte.ts",
     "./package.json": "./package.json"

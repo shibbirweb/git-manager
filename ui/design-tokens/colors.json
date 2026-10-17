@@ -1,8 +1,8 @@
 {
   "$comment": [
-    "Colors of the built-in Git Manager Light and Dark themes, one token per line. They must equal",
-    "src/app.css (tokens.test.ts) until app.css is generated from here. Color themes override them at run",
-    "time."
+    "Colors of the built-in Git Manager Light and Dark themes, one token per line. The web loads them from",
+    "the generated styles/colors.css (with the popup shadow as --shadow and color-scheme); color themes",
+    "override them at run time."
   ],
   "bg": {"light": "#f7f8fa", "dark": "#1e1f22"},
   "frame": {"light": "#ebecf0", "dark": "#131416"},
@@ -29,6 +29,11 @@
   "editor-line-number": {"light": "#aeb3c2", "dark": "#4b5059"},
   "editor-active-line": {"light": "#f5f8fe", "dark": "#26282e"},
   "editor-selection": {"light": "#c1c3c9", "dark": "#214283"},
+  "editor-cursor": {"light": "#1e1f22", "dark": "#dfe1e5"},
+  "term-background": {"light": "#ffffff", "dark": "#1e1f22"},
+  "term-foreground": {"light": "#1e1f22", "dark": "#dfe1e5"},
+  "term-cursor": {"light": "#1e1f22", "dark": "#dfe1e5"},
+  "term-selection": {"light": "#c1c3c9", "dark": "#214283"},
   "term-black": {"light": "#000000", "dark": "#000000"},
   "term-red": {"light": "#cd3131", "dark": "#cd3131"},
   "term-green": {"light": "#00bc00", "dark": "#0dbc79"},

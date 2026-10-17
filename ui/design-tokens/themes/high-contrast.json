@@ -1,0 +1,90 @@
+{
+  "$comment": [
+    "High contrast color themes: each lists its published editor, syntax and terminal colors (ansi: black, red,",
+    "green, yellow, blue, magenta, cyan, white, then the bright ones, or a set in ansi.json), and \"ui\" the UI",
+    "colors it publishes. Every other shade is derived (ui/web/src/lib/themes/derive.ts). Names and kinds are in",
+    "index.json."
+  ],
+  "high-contrast-dark": {
+    "background": "#000000", "foreground": "#ffffff", "accent": "#f38518", "selection": "#264f78",
+    "ansi": [
+      "#000000", "#cd0000", "#00cd00", "#cdcd00", "#0000ee", "#cd00cd", "#00cdcd", "#e5e5e5", "#7f7f7f", "#ff0000",
+      "#00ff00", "#ffff00", "#5c5cff", "#ff00ff", "#00ffff", "#ffffff"
+    ],
+    "syntax": {
+      "keyword": "#569cd6", "string": "#ce9178", "number": "#b5cea8", "comment": "#7ca668", "type": "#4ec9b0",
+      "function": "#dcdcaa", "property": "#9cdcfe", "meta": "#d7ba7d", "tag": "#569cd6", "attr": "#9cdcfe",
+      "invalid": "#f44747"
+    },
+    "ui": {
+      "bg": "#000000", "panel": "#000000", "panelAlt": "#000000", "border": "#6fc3df", "borderStrong": "#6fc3df",
+      "lineNumber": "#ffffff", "activeLine": "#1a1a1a", "info": "#3794ff", "success": "#89d185", "danger": "#f48771",
+      "warning": "#cca700"
+    }
+  },
+  "github-dark-high-contrast": {
+    "background": "#0a0c10", "foreground": "#f0f3f6", "accent": "#409eff", "selection": "#1e4273",
+    "ansi": [
+      "#7a828e", "#ff9492", "#26cd4d", "#f0b72f", "#71b7ff", "#cb9eff", "#39c5cf", "#d9dee3", "#9ea7b3", "#ffb1af",
+      "#4ae168", "#f7c843", "#91cbff", "#dbb7ff", "#56d4dd", "#ffffff"
+    ],
+    "syntax": {
+      "keyword": "#ff9492", "string": "#addcff", "number": "#91cbff", "comment": "#bdc4cc", "type": "#ffb757",
+      "function": "#dbb7ff", "property": "#91cbff", "meta": "#ffb757", "tag": "#72f088", "attr": "#91cbff",
+      "invalid": "#ffb1af"
+    },
+    "ui": {
+      "bg": "#010409", "panel": "#010409", "panelAlt": "#0a0c10", "border": "#7a828e", "borderStrong": "#7a828e",
+      "lineNumber": "#9ea7b3", "activeLine": "#151a21", "info": "#409eff"
+    }
+  },
+  "amber-high-contrast": {
+    "background": "#000000", "foreground": "#ffb000", "accent": "#ffcc00", "selection": "#5c3d00",
+    "ansi": [
+      "#000000", "#ff6a3d", "#d4e157", "#ffcc00", "#ffd27a", "#ffa94d", "#ffe0a3", "#ffb000", "#8a6000", "#ff8a65",
+      "#e6ee9c", "#ffe066", "#ffe0a3", "#ffc077", "#fff0cc", "#ffd27a"
+    ],
+    "syntax": {
+      "keyword": "#ffd257", "string": "#ffe0a3", "number": "#ffcf70", "comment": "#c98a00", "type": "#ffc94d",
+      "function": "#fff0cc", "property": "#ffbe3d", "meta": "#e6a200", "tag": "#ffd257", "attr": "#ffbe3d",
+      "invalid": "#ff6a3d"
+    },
+    "ui": {
+      "bg": "#000000", "panel": "#0a0700", "panelAlt": "#050300", "border": "#b37b00", "borderStrong": "#b37b00",
+      "lineNumber": "#c98a00", "activeLine": "#1f1500", "info": "#ffd27a", "success": "#d4e157", "danger": "#ff6a3d",
+      "warning": "#ffe066"
+    }
+  },
+  "high-contrast-light": {
+    "background": "#ffffff", "foreground": "#292929", "accent": "#0f4a85", "selection": "#c8dcf0",
+    "ansi": [
+      "#292929", "#b5200d", "#136c13", "#6c5b00", "#0f4a85", "#8b008b", "#0f6e7a", "#555555", "#444444", "#a1260d",
+      "#0e5a0e", "#5a4b00", "#0451a5", "#7a0f85", "#0f5d66", "#222222"
+    ],
+    "syntax": {
+      "keyword": "#0f4a85", "string": "#a31515", "number": "#096d48", "comment": "#515151", "type": "#185e73",
+      "function": "#5e2cbc", "property": "#001080", "meta": "#795e26", "tag": "#0f4a85", "attr": "#264f78",
+      "invalid": "#b5200d"
+    },
+    "ui": {
+      "bg": "#ffffff", "panel": "#ffffff", "panelAlt": "#ffffff", "border": "#0f4a85", "borderStrong": "#0f4a85",
+      "lineNumber": "#292929", "activeLine": "#eef3f8", "danger": "#b5200d", "success": "#136c13", "warning": "#895503"
+    }
+  },
+  "github-light-high-contrast": {
+    "background": "#ffffff", "foreground": "#0e1116", "accent": "#0349b4", "selection": "#c6d8f4",
+    "ansi": [
+      "#0e1116", "#a0111f", "#024c1a", "#3f2200", "#0349b4", "#622cbc", "#1b7c83", "#66707b", "#4b535d", "#86061d",
+      "#055d20", "#4e2c00", "#1168e3", "#844ae7", "#3192aa", "#88929d"
+    ],
+    "syntax": {
+      "keyword": "#a0111f", "string": "#032563", "number": "#023b95", "comment": "#4b535d", "type": "#702c00",
+      "function": "#622cbc", "property": "#023b95", "meta": "#702c00", "tag": "#024c1a", "attr": "#023b95",
+      "invalid": "#6e011a"
+    },
+    "ui": {
+      "bg": "#ffffff", "panel": "#ffffff", "panelAlt": "#e7ecf0", "border": "#20252c", "borderStrong": "#20252c",
+      "lineNumber": "#4b535d", "activeLine": "#f0f3f6", "success": "#055d20", "warning": "#744500"
+    }
+  }
+}

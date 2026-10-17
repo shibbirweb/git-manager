@@ -49,7 +49,16 @@ export const componentTokens2 = {
   reorderList: { rowPaddingY: 4, rowPaddingLeft: 6, rowPaddingRight: 10, gap: 8, dropLine: 2 },
   shortcutRecorder: { width: 150, minHeight: 26, paddingX: 6 },
   codeEditor: { gutterPaddingLeft: 12, gutterPaddingRight: 10, gutterMinWidth: 40, selectionRadius: 3 },
-  mergeView: { gap: 52, labelPaddingX: 12, labelPaddingY: 5, buttonWidth: 18, buttonHeight: 17, buttonInset: 2 },
+  mergeView: {
+    gap: 52,
+    labelPaddingX: 12,
+    labelPaddingY: 5,
+    buttonWidth: 18,
+    buttonHeight: 17,
+    buttonInset: 2,
+    gapEdge: 2,
+    inlineRadius: 2,
+  },
   formatToolbar: {
     minHeight: 28,
     paddingY: 2,
@@ -264,15 +273,5 @@ export const componentTokens2 = {
     footPaddingTop: 12,
     footPaddingBottom: 16,
     footGap: 8,
-  },
-  dialogHead: {
-    gap: 12,
-    bottom: 14,
-    iconSize: 32,
-    iconRadius: 8,
-    contentPaddingTop: 14,
-    contentPaddingRight: 12,
-    contentPaddingBottom: 8,
-    contentPaddingLeft: 22,
   },
 } as const;

@@ -146,7 +146,7 @@
   "shortcutRecorder": {"width": 150, "minHeight": 26, "paddingX": 6},
   "codeEditor": {"gutterPaddingLeft": 12, "gutterPaddingRight": 10, "gutterMinWidth": 40, "selectionRadius": 3},
   "mergeView": {"gap": 52, "labelPaddingX": 12, "labelPaddingY": 5, "buttonWidth": 18, "buttonHeight": 17,
-    "buttonInset": 2},
+    "buttonInset": 2, "gapEdge": 2, "inlineRadius": "{radius.tiny}"},
   "formatToolbar": {
     "minHeight": 28, "paddingY": 2, "paddingLeft": 6, "paddingRight": 10, "groupGap": 12, "toolHeight": 22,
     "toolMinWidth": 24, "toolPaddingX": 5, "dividerHeight": 14

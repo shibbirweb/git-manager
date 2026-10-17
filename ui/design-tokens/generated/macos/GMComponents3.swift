@@ -29,6 +29,8 @@ public enum GMMergeViewTokens {
     public static let buttonWidth: CGFloat = 18
     public static let buttonHeight: CGFloat = 17
     public static let buttonInset: CGFloat = 2
+    public static let gapEdge: CGFloat = 2
+    public static let inlineRadius: CGFloat = 2
 }
 
 public enum GMFormatToolbarTokens {

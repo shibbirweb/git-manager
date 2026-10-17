@@ -5,7 +5,7 @@ use super::account::GitHubAccount;
 use super::client::{user_agent, CreatedGist, RepositoryInfo, SyncForkOutcome};
 use super::gh::SystemGh;
 use super::http::UreqTransport;
-use super::secrets::KeychainStore;
+use super::secrets::app_secrets;
 use super::service::{default_host, GhCliStatus, GistRequest, GitHub, ShareRequest, SharedRepository};
 use crate::commands::blocking;
 use crate::config;
@@ -14,9 +14,10 @@ use crate::error::AppResult;
 /// Runs `work` with the real network, keychain, gh and ~/.gitmanager.
 fn with_github<T>(work: impl FnOnce(&GitHub) -> AppResult<T>) -> AppResult<T> {
     let transport = UreqTransport::new(&user_agent());
+    let secrets = app_secrets();
     let github = GitHub {
         transport: &transport,
-        secrets: &KeychainStore,
+        secrets: &secrets,
         gh: &SystemGh,
         config_dir: config::config_dir_in(&config::home_dir()?),
         host: default_host(),
