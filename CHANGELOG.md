@@ -196,6 +196,8 @@ GitHub release notes, and the app shows it as "What's New".
 
 ### Fixed
 
+- With **Rounded panels** on, the merge, rebase and bisect banners are rounded panels with a gap around them, like the panels below, instead of a bar across the whole window.
+- On macOS the window buttons no longer cover the title of the merge tool ("Merge Revisions for"): its top bar leaves room for them, and you can drag the window by it.
 - Three panes (the staging view, merge commits and the merge tool) can be resized: drag the edge of a column of bands, double-click for equal widths. The widths are remembered.
 - The Changes tab (status bar > N changes) has the **Revert this change** button too, side by side and inline: the change goes back to the last commit, and the staged version stays staged.
 - The Changes tab (status bar > N changes) offers the **Three panes** staging view too, like the Changes diff: HEAD, the index and the working tree, with stage and unstage buttons.
