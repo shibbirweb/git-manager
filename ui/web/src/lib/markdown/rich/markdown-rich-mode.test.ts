@@ -126,7 +126,7 @@ describe("getMarkdownRichModeUnsupportedMessage", () => {
     });
   });
 
-  // Git Manager: details blocks are preserved raw HTML (Orca edits them), so a large file with one passes the
+  // Nibtree: details blocks are preserved raw HTML (Orca edits them), so a large file with one passes the
   // bounded passthrough check without the full round trip.
   it("allows large files whose details blocks pass through as raw html", () => {
     const content = `${"a".repeat(50_001)}\n\n<details>\n<summary>Toggle</summary>\n\nBody\n\n</details>\n`;

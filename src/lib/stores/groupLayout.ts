@@ -1,4 +1,4 @@
-// How the editor groups are arranged (Window > Split Right / Split Down), like JetBrains: a
+// How the editor groups are arranged (Window > Split Right / Split Down): a
 // binary tree whose leaves are groups and whose splits divide their area side by side
 // ("right") or stacked ("down"). The page draws every group in one flat list, placed by
 // `groupRects`, so a group keeps its editors mounted however the tree changes. Pure.

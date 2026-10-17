@@ -1,7 +1,7 @@
 <!-- A file's type icon (Settings > Appearance > File icons); with No Icons, the plain file icon or nothing. -->
 <script lang="ts">
-  import FileIcon from "@git-manager/ui/components/FileIcon.svelte";
-  import type { IconSize } from "@git-manager/ui/logic/presets";
+  import FileIcon from "@nibtree/ui/components/FileIcon.svelte";
+  import type { IconSize } from "@nibtree/ui/logic/presets";
   import { fileIcons } from "./fileIcons.svelte";
 
   interface Props {

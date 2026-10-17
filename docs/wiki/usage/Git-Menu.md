@@ -1,6 +1,6 @@
 # Git Menu
 
-The **Git** menu in the menu bar holds every git command, laid out like the Git menu of JetBrains IDEs. Most items act on the **active repository**: the one picked in the header and selected in Changes. The **Current File** submenu acts on the file open in the editor.
+The **Git** menu in the menu bar holds every git command. Most items act on the **active repository**: the one picked in the header and selected in Changes. The **Current File** submenu acts on the file open in the editor.
 
 Items are grey when they cannot run now, for example Push without a remote. The dialogs are explained in [Git Dialogs](Git-Dialogs.md), and the menu bar as a whole in [Menus](Menus.md).
 

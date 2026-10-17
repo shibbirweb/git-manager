@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ChangeKind, FileStatus } from "$lib/types";
-  import LibraryFileRow from "@git-manager/ui/components/FileRow.svelte";
+  import LibraryFileRow from "@nibtree/ui/components/FileRow.svelte";
   import { fileIcons } from "$lib/fileIcons/fileIcons.svelte";
   import { splitPath, statusTitle, type RowAction } from "./fileStatus";
 

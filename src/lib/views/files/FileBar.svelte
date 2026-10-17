@@ -2,14 +2,14 @@
      the change arrows, Blame, Copy Path and the Markdown view switch at the end. As the editor gets narrow the
      counter goes first, then the pills become dots, then the dividers. Save and Revert live in the File menu. -->
 <script lang="ts">
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Pill from "@git-manager/ui/components/Pill.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Pill from "@nibtree/ui/components/Pill.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import ToggleButton from "@nibtree/ui/components/ToggleButton.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { localKeys } from "$lib/commands/commandRuntime";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { type MarkdownViewMode, settings } from "$lib/stores/settings.svelte";

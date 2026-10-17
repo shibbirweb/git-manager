@@ -1,17 +1,17 @@
 <!-- Git > Show Reflog: where HEAD (or a branch) pointed before, newest first, paged and
      virtualized, with the selected entry's commit below and actions to go back to it. -->
 <script lang="ts">
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import CommitDetails from "$lib/log/CommitDetails.svelte";

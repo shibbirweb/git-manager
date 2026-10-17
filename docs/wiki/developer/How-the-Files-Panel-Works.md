@@ -4,7 +4,7 @@ The Files panel is the tree on the right: every workspace folder, each file colo
 
 ## Why we need it
 
-People want to browse and open files in the app, like VS Code's explorer, and see what git did to each file with VS Code's U, A, M, D, R, T and C letters. A workspace can be huge (think `node_modules`), so the panel loads one level at a time, renders only visible rows and frees collapsed folders.
+People want to browse and open files in the app, and see what git did to each file with the usual U, A, M, D, R, T and C letters. A workspace can be huge (think `node_modules`), so the panel loads one level at a time, renders only visible rows and frees collapsed folders.
 
 ## How it works
 
@@ -62,7 +62,7 @@ A single click calls `repoStore.openFile(path)`, which opens a preview tab. A do
 - Open, Open Preview and Resolve Conflict (`repoStore.openMerge`) on files; Expand, Set as Active Repository, Initialize Repository Here and Add or Remove Folder on folders.
 - New File, Cut, Copy, Paste, Rename, Move to Trash and the rest from `fileOpGroups`, plus drag and drop. See [How file operations work](How-File-Operations-Work.md).
 - **Add to .gitignore** from `ignoreMenu` (`src/lib/ignore/ignoreActions.ts`), for anything inside a repository except its root.
-- **Reveal in Finder** calls the opener plugin's `revealItemInDir`. `revealLabel` in `reveal.ts` names it per platform, like VS Code: Reveal in File Explorer on Windows, Open Containing Folder on Linux.
+- **Reveal in Finder** calls the opener plugin's `revealItemInDir`. `revealLabel` in `reveal.ts` names it per platform: Reveal in File Explorer on Windows, Open Containing Folder on Linux.
 - **Open in Integrated Terminal** calls `terminalStore.create({ folderPath })` with `terminalFolderFor`: the folder itself, or a file's parent folder.
 - Copy Path and Copy Relative Path.
 
@@ -104,7 +104,7 @@ The panel is shown by `settings.explorerOpen`. The Files icon in `RightActivityB
 
 **Select the opened file only on request.** Following every tab change would open and load many folders, against collapse freeing memory.
 
-**Open the terminal in a folder, never on a file.** A shell cannot start in a file, so a file opens its parent folder, as in VS Code.
+**Open the terminal in a folder, never on a file.** A shell cannot start in a file, so a file opens its parent folder.
 
 ## Bugs we fixed
 
@@ -124,7 +124,7 @@ The nested repository that showed as an untracked folder is in [How Workspaces W
 
 - `src-tauri/src/commands/tests.rs`: `list_directory_sorts_folders_first_and_marks_ignored_entries`, `list_directory_rejects_paths_outside_the_work_tree` and `list_directory_uses_the_deepest_repository_for_ignores`.
 - `src-tauri/src/git/files.rs`: `cut_off_listings_keep_the_first_entries_in_sorted_order`, `a_folder_past_the_limit_still_lists_its_folders_first`, `linked_folders_count_as_folders`.
-- `src/lib/views/files/tones.test.ts`: folder tones, VS Code letters, staged new files and deleted files per folder.
+- `src/lib/views/files/tones.test.ts`: folder tones, status letters, staged new files and deleted files per folder.
 - `src/lib/views/files/reveal.test.ts`: the Reveal label per platform and the terminal folder of a file or folder.
 - `src/lib/views/files/locate.test.ts`: the folders to open for a file, and when and where the list scrolls.
 

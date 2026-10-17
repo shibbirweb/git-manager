@@ -26,9 +26,9 @@ The status bar shows the mode and a dot: a filled dot while the computer is held
 
 - **Mac laptops**: closing the lid still puts the Mac to sleep. Keep the lid open for long runs.
 - **Windows**: what closing the lid does follows the computer's power settings.
-- **Linux**: Git Manager asks `systemd-inhibit` to stop idle sleep.
+- **Linux**: Nibtree asks `systemd-inhibit` to stop idle sleep.
 - Several windows share it: the computer stays awake while any of them asks.
-- If Git Manager quits or crashes, the computer goes back to normal at once.
+- If Nibtree quits or crashes, the computer goes back to normal at once.
 
 ## Related
 

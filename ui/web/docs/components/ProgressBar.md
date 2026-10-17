@@ -3,7 +3,7 @@
 A thin bar for a share of a whole, like each process's memory in the status bar details.
 
 ```ts
-import ProgressBar from "@git-manager/ui/components/ProgressBar.svelte";
+import ProgressBar from "@nibtree/ui/components/ProgressBar.svelte";
 ```
 
 Group: Feedback. Also known as: Progress.

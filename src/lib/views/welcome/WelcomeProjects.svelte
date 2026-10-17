@@ -7,17 +7,17 @@
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import { platformName } from "$lib/update/releases";
-  import Avatar from "@git-manager/ui/components/Avatar.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Logo from "@git-manager/ui/components/Logo.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Tile from "@git-manager/ui/components/Tile.svelte";
+  import Avatar from "@nibtree/ui/components/Avatar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Logo from "@nibtree/ui/components/Logo.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Tile from "@nibtree/ui/components/Tile.svelte";
   import { revealLabel } from "../files/reveal";
   import { openCloneDialog } from "../git/gitMenuActions";
   import { type RecentEntry, recentEntries } from "../recentEntries";
@@ -148,7 +148,7 @@
 {#if empty}
   <Stack grow align="center" justify="center" gap="lg" padding="xxxl">
     <Logo size="large" />
-    <Text element="h1" variant="display">Welcome to Git Manager</Text>
+    <Text element="h1" variant="display">Welcome to Nibtree</Text>
     <Stack align="center" gap="xxs">
       <Text tone="dim">Open a folder with one repository, many repositories, or none yet.</Text>
       <Text tone="dim">Or clone one from a server.</Text>

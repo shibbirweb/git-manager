@@ -1,6 +1,6 @@
 # How navigation works
 
-Back and Forward take you through places you have been (a file line, a change's diff, a commit in the Log), like VS Code's Go Back and Go Forward. The user side is in [Navigation](../usage/Navigation.md).
+Back and Forward take you through places you have been (a file line, a change's diff, a commit in the Log). The user side is in [Navigation](../usage/Navigation.md).
 
 ## Why we need it
 

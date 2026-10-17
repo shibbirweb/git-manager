@@ -1,7 +1,7 @@
 // The connectors' bands of the 3-pane diff: each side's changes on screen, from its lines in one pane to its lines in
 // the next, in pixels from the panes' box (the merge tool's span).
 import type { EditorView } from "@codemirror/view";
-import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
+import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
 import { overlaps, span, visibleLines } from "$lib/merge/mergeRibbons";
 import type { LineRange } from "$lib/types";
 import type { ThreeWayChange } from "./threeWay";

@@ -9,8 +9,8 @@
   import { fileSearch } from "$lib/search/fileSearchStore.svelte";
   import { navigation } from "$lib/stores/navigation.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
-  import Breadcrumbs from "@git-manager/ui/components/Breadcrumbs.svelte";
-  import CrumbPopup from "@git-manager/ui/components/CrumbPopup.svelte";
+  import Breadcrumbs from "@nibtree/ui/components/Breadcrumbs.svelte";
+  import CrumbPopup from "@nibtree/ui/components/CrumbPopup.svelte";
   import { workspaceChanges } from "$lib/views/files/explorerLook";
   import {
     crumbsFor,

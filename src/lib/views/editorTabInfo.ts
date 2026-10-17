@@ -1,7 +1,7 @@
 // What an editor tab shows: its name, icon and tooltip for each kind of tab (file, Untitled, terminal, commit, git
 // view, branch and file comparison), as the UI library's TabStrip takes them.
-import type { EditorTabData } from "@git-manager/ui/components/EditorTab.svelte";
-import type { IconName } from "@git-manager/ui/icons";
+import type { EditorTabData } from "@nibtree/ui/components/EditorTab.svelte";
+import type { IconName } from "@nibtree/ui/icons";
 import { compareTabTooltip } from "$lib/compare/compareStore.svelte";
 import { isCompareTab } from "$lib/compare/compareTabs";
 import { branchTabTitle, parseBranchTabPath } from "$lib/stores/branchTabs";

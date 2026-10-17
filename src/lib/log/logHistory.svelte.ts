@@ -4,7 +4,7 @@ import { api, errorMessage } from "$lib/api";
 import { GraphBuilder, type GraphRow } from "$lib/log/graph";
 import type { CommitSummary } from "$lib/types";
 import { toast } from "$lib/ui/toast.svelte";
-import { LANE_COLOR_COUNT } from "@git-manager/ui/logic/graphModel";
+import { LANE_COLOR_COUNT } from "@nibtree/ui/logic/graphModel";
 
 export const PAGE_SIZE = 300;
 /** On reload, refetch up to this many commits so the scroll position survives. */

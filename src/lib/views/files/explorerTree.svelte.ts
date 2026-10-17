@@ -1,8 +1,8 @@
 // The Files panel's tree (FileExplorer.svelte): the work tree loaded one folder at a time, which folders are open,
 // the selection, and the nodes the UI library's Tree draws. Every path is absolute, so several workspace folders
 // never collide. Collapsing a folder drops what was loaded below it, so memory stays flat.
-import type { TreeNode } from "@git-manager/ui/logic/treeModel";
-import { treeRows } from "@git-manager/ui/logic/treeModel";
+import type { TreeNode } from "@nibtree/ui/logic/treeModel";
+import { treeRows } from "@nibtree/ui/logic/treeModel";
 import { api, errorMessage } from "$lib/api";
 import { repoStore } from "$lib/stores/repo.svelte";
 import {

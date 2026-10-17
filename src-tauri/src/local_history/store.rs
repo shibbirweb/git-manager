@@ -1,4 +1,4 @@
-//! Where Local History lives: `~/.gitmanager/local-history/`.
+//! Where Local History lives: `~/.nibtree/local-history/`.
 //!
 //! - `objects/<2 hex>/<38 hex>`: one file text, zlib-compressed, named by its git blob id
 //!   (SHA-1 of the content), so the same text is stored once whatever file and time it has.

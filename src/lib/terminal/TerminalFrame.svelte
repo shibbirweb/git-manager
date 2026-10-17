@@ -5,7 +5,7 @@
   Only the frame moves, so Svelte's own bookkeeping of the list stays intact.
 -->
 <script lang="ts">
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
   import { onMount, untrack } from "svelte";
   import { changesSelection } from "$lib/views/changes/selection.svelte";
   import { terminalStore, type TerminalEntry } from "./terminalStore.svelte";

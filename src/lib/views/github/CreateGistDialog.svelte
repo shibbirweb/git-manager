@@ -1,14 +1,14 @@
 <!-- Create Gist: the file on screen (or its selection) as a secret or public gist, with a
      preview of exactly what is uploaded. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { api, errorMessage } from "$lib/api";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { closeGitHubDialog, openGitHubDialog } from "./githubDialogs";

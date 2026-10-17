@@ -25,7 +25,7 @@ function shell(id: string, name: string, isDefault = false): ShellProfile {
 const shells = [shell("/bin/zsh", "zsh", true), shell("/bin/bash", "bash"), shell("/opt/homebrew/bin/fish", "fish")];
 
 describe("uniqueTerminalName", () => {
-  it("numbers repeated shells like VS Code", () => {
+  it("numbers repeated shells", () => {
     expect(uniqueTerminalName("zsh", [])).toBe("zsh");
     expect(uniqueTerminalName("zsh", ["zsh"])).toBe("zsh (2)");
     expect(uniqueTerminalName("zsh", ["zsh", "zsh (2)"])).toBe("zsh (3)");

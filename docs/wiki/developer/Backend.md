@@ -106,7 +106,7 @@ It runs as `run`, `run_with_stdin`, `run_raw` (no error on a non-zero exit), `ru
 
 ## Config files: `config.rs`
 
-`load_config` and `save_config` read and write `~/.gitmanager/settings.json` and `state.json`, and no other names. A missing file loads as `None`; invalid JSON is an error, not a silent reset (see [How Settings Work](How-Settings-Work.md)). Writes go through a temporary file. `github.json`, `mcp.json` and `logs/memory.log` belong to their features.
+`load_config` and `save_config` read and write `~/.nibtree/settings.json` and `state.json`, and no other names. A missing file loads as `None`; invalid JSON is an error, not a silent reset (see [How Settings Work](How-Settings-Work.md)). Writes go through a temporary file. `github.json`, `mcp.json` and `logs/memory.log` belong to their features.
 
 `workspace_file.rs` reads and writes workspace files, `memory.rs` reports memory like Activity Monitor (see [How the Status Bar Works](How-the-Status-Bar-Works.md)), and `test_support.rs` builds temporary repositories for the tests.
 

@@ -76,7 +76,7 @@ pub fn open_for_arguments(args: &[String], cwd: &Path) -> Option<WindowOpen> {
     let arg = args.first().filter(|arg| !arg.starts_with('-') && arg.as_str() != "merge")?;
     let path = cwd.join(arg);
     let shown = crate::paths::real(&path).map(crate::paths::to_ui).unwrap_or_else(|_| crate::paths::to_ui(&path));
-    let is_workspace_file = [".gitmanager-workspace", ".code-workspace"].iter().any(|suffix| shown.ends_with(suffix));
+    let is_workspace_file = crate::workspace_file::WORKSPACE_SUFFIXES.iter().any(|suffix| shown.ends_with(suffix));
     Some(if is_workspace_file {
         WindowOpen {
             folder_paths: Vec::new(),
@@ -266,7 +266,7 @@ impl WindowBook {
         self.focus_order.push(label.to_string());
     }
 
-    /// The window focused last (Git Manager is usually not the active app while an agent
+    /// The window focused last (Nibtree is usually not the active app while an agent
     /// calls it, so "focused now" would be nobody); the first window when none was focused yet.
     pub fn focused(&self) -> Option<String> {
         self.focus_order
@@ -545,7 +545,7 @@ mod tests {
             }
         );
         // A reload reopens what it showed, also an empty welcome screen.
-        book.set_shown("window-2", shown(&[], None), "Git Manager");
+        book.set_shown("window-2", shown(&[], None), "Nibtree");
         assert_eq!(
             book.start("window-2"),
             WindowStart::Open {

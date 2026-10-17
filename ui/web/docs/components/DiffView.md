@@ -3,7 +3,7 @@
 Two versions of a text compared, side by side or inline, in the app's diff colors.
 
 ```ts
-import DiffView from "@git-manager/ui/components/DiffView.svelte";
+import DiffView from "@nibtree/ui/components/DiffView.svelte";
 ```
 
 Group: Editor. Also known as: Diff, Compare.

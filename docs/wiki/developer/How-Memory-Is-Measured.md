@@ -1,6 +1,6 @@
 # How Memory Is Measured
 
-Memory is a feature of Git Manager (see [Architecture](Architecture.md)), so the app measures itself in three ways: the readout in the status bar, a debug memory log in a file, and a live recording that AI tools and the command line tool can start. All three use the same function, `memory::usage()`. The user side is in [Memory Use](../usage/Memory-Use.md).
+Memory is a feature of Nibtree (see [Architecture](Architecture.md)), so the app measures itself in three ways: the readout in the status bar, a debug memory log in a file, and a live recording that AI tools and the command line tool can start. All three use the same function, `memory::usage()`. The user side is in [Memory Use](../usage/Memory-Use.md).
 
 ## Why we need it
 
@@ -26,7 +26,7 @@ sequenceDiagram
     end
 ```
 
-`memory.rs` calls `responsibility_get_pid_responsible_for_pid` for our own process, then keeps every `com.apple.WebKit*` process with the same responsible process, and sums `phys_footprint` from `proc_pid_rusage`. That is Activity Monitor's "Memory" column. Each process gets a label: Git Manager (app), Web content (UI), Graphics and Networking.
+`memory.rs` calls `responsibility_get_pid_responsible_for_pid` for our own process, then keeps every `com.apple.WebKit*` process with the same responsible process, and sums `phys_footprint` from `proc_pid_rusage`. That is Activity Monitor's "Memory" column. Each process gets a label: Nibtree (app), Web content (UI), Graphics and Networking.
 
 When the app is started from a terminal (as `bun tauri dev` does), macOS makes the **terminal** the responsible process, so its other WebKit helpers would match too. Then `approximate` is set and a helper must also have started after our process (`proc_start_abstime`). The popover says so. Polling stops on `visibilitychange` while the window is hidden. On other platforms `usage()` returns zero and the item is hidden.
 
@@ -56,11 +56,11 @@ flowchart LR
   R -->|"yes"| Rot["keep it as memory.log.1,<br/>start a new file"]
 ```
 
-`memory_log.rs` runs one thread while the log is on and none while it is off. A reading line is `2026-10-02T04:20:31.512Z total 400.0 MB (+50.0) | Web content 300.0 | ...` in UTC; an event line is `<time> event <label>`. The window reports events through `src/lib/debug/memoryEvents.ts`: `viewLabel` describes the view, tab, Markdown mode, sidebar and bottom panel when they change, and `watchScrolling` reports "scroll start in markdown preview" and "scroll stop in ... (N events)" after 400 ms without scrolling (`SCROLL_STOP_MS`). The file is `~/.gitmanager/logs/memory.log`; the MCP tool `read_memory_log` returns its last lines.
+`memory_log.rs` runs one thread while the log is on and none while it is off. A reading line is `2026-10-02T04:20:31.512Z total 400.0 MB (+50.0) | Web content 300.0 | ...` in UTC; an event line is `<time> event <label>`. The window reports events through `src/lib/debug/memoryEvents.ts`: `viewLabel` describes the view, tab, Markdown mode, sidebar and bottom panel when they change, and `watchScrolling` reports "scroll start in markdown preview" and "scroll stop in ... (N events)" after 400 ms without scrolling (`SCROLL_STOP_MS`). The file is `~/.nibtree/logs/memory.log`; the MCP tool `read_memory_log` returns its last lines.
 
 ## The live recorder
 
-`start_memory_recording`, `read_memory_recording`, `mark_memory_recording` and `stop_memory_recording` (in `src-tauri/src/mcp/tools/recorder.rs`) keep one recording in memory: samples every 250 ms by default, at most 7,200 samples and 200 marks, stopped after `maxSeconds` (600 by default) or when the MCP server stops. `git-manager cli memory` prints live readings from `get_memory_usage` instead. See [How MCP and the CLI work](How-MCP-and-CLI-Work.md) and [Debugging with MCP](Debugging-with-MCP.md).
+`start_memory_recording`, `read_memory_recording`, `mark_memory_recording` and `stop_memory_recording` (in `src-tauri/src/mcp/tools/recorder.rs`) keep one recording in memory: samples every 250 ms by default, at most 7,200 samples and 200 marks, stopped after `maxSeconds` (600 by default) or when the MCP server stops. `nibtree cli memory` prints live readings from `get_memory_usage` instead. See [How MCP and the CLI work](How-MCP-and-CLI-Work.md) and [Debugging with MCP](Debugging-with-MCP.md).
 
 ## Where the code lives
 

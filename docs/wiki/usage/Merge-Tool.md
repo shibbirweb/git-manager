@@ -1,6 +1,6 @@
 # Merge Tool
 
-The merge tool fixes a conflicted file line by line. It shows your version, the other version and the result side by side, so you can pick exactly which changes to keep. If you have used the JetBrains merge window, it will feel familiar.
+The merge tool fixes a conflicted file line by line. It shows your version, the other version and the result side by side, so you can pick exactly which changes to keep.
 
 ![The merge tool](../images/merge-tool.png)
 

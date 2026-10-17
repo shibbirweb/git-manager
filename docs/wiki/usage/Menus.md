@@ -1,15 +1,15 @@
 # Menus
 
-Git Manager has a real menu bar, like every other desktop app. Every command lives in it, with its keyboard shortcut next to it.
+Nibtree has a real menu bar, like every other desktop app. Every command lives in it, with its keyboard shortcut next to it.
 
-On macOS the menus are at the top of the screen: **Git Manager**, **File**, **Edit**, **View**, **Code**, **Git**, **Window** and **Help**. On Windows (and the planned Linux build) the menu bar is in the window and has no Git Manager menu: **Settings...** and **Exit** sit at the end of File, and **Check for Updates...** and **About Git Manager** at the end of Help.
+On macOS the menus are at the top of the screen: **Nibtree**, **File**, **Edit**, **View**, **Code**, **Git**, **Window** and **Help**. On Windows (and the planned Linux build) the menu bar is in the window and has no Nibtree menu: **Settings...** and **Exit** sit at the end of File, and **Check for Updates...** and **About Nibtree** at the end of Help.
 
-## Git Manager
+## Nibtree
 
-- **About Git Manager** opens Settings on the About page.
+- **About Nibtree** opens Settings on the About page.
 - **Check for Updates...** looks for a new version now. See [Updates](Updates.md).
 - **Settings...** (Cmd+,) opens [Settings](Settings.md).
-- Then the usual Mac items: Services, Hide Git Manager (Cmd+H), Hide Others, Show All and Quit Git Manager (Cmd+Q).
+- Then the usual Mac items: Services, Hide Nibtree (Cmd+H), Hide Others, Show All and Quit Nibtree (Cmd+Q).
 
 ## File
 
@@ -49,7 +49,7 @@ These items act on the editor that has the keyboard: comments, duplicate, delete
 
 ## Git
 
-The Git menu has everything git: commit, push, pull, merge, rebase, patches, the current file's history and more, in the style of JetBrains IDEs. It has its own page: [Git Menu](Git-Menu.md).
+The Git menu has everything git: commit, push, pull, merge, rebase, patches, the current file's history and more. It has its own page: [Git Menu](Git-Menu.md).
 
 ## Window
 
@@ -57,7 +57,7 @@ The Git menu has everything git: commit, push, pull, merge, rebase, patches, the
 
 ## Help
 
-- **Git Manager Help** opens this wiki.
+- **Nibtree Help** opens this wiki.
 - **Keyboard Shortcuts** opens a window with every shortcut, grouped by menu. Type in its filter to find a key or an action. **Open Online Version** opens [Keyboard Shortcuts](Keyboard-Shortcuts.md) in the browser.
 - **What's New** and **Release Notes** show what changed.
 - **Available MCP Tools...** lists what AI tools may do in the app. See [MCP and CLI](MCP-and-CLI.md).
@@ -75,7 +75,7 @@ The menus follow what you are doing:
 - Some names change. **Close Folder** becomes **Close Workspace**, **Push...** becomes **Push (2 ahead)...** and **Pull...** becomes **Pull (1 behind)...**. Ahead means commits you have that the remote does not; behind means the other way round.
 - Some items appear only when they apply, like **Continue Merge** and **Abort Merge** during a merge.
 
-While a dialog in the app asks you something, most menu items do nothing. Typing items such as Undo, Cut, Copy, Paste and Select All still work in the dialog's fields, and so do the Help links (Git Manager Help, Release Notes, Report a Bug..., Request a Feature... and Star on GitHub).
+While a dialog in the app asks you something, most menu items do nothing. Typing items such as Undo, Cut, Copy, Paste and Select All still work in the dialog's fields, and so do the Help links (Nibtree Help, Release Notes, Report a Bug..., Request a Feature... and Star on GitHub).
 
 ## When a key means two things
 
@@ -87,7 +87,7 @@ The Git menu keys (Cmd+K, Cmd+T, Cmd+9 and Option+Cmd+A) are Mac only, because C
 
 ## The mergetool window
 
-When git starts Git Manager as its merge tool (see [Git Mergetool](Git-Mergetool.md)), the window has a smaller menu bar. On macOS it is the Git Manager menu with **Settings...**, **Edit**, **Window** and **Help**; on Windows and Linux a **File** menu with **Settings...** and **Exit** takes the place of the Git Manager menu. There, Window has **Close Window** (Cmd+W), which asks before it drops an unsaved merge result.
+When git starts Nibtree as its merge tool (see [Git Mergetool](Git-Mergetool.md)), the window has a smaller menu bar. On macOS it is the Nibtree menu with **Settings...**, **Edit**, **Window** and **Help**; on Windows and Linux a **File** menu with **Settings...** and **Exit** takes the place of the Nibtree menu. There, Window has **Close Window** (Cmd+W), which asks before it drops an unsaved merge result.
 
 ## Related
 

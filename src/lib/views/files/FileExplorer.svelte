@@ -1,13 +1,13 @@
 <!-- Right sidebar: the work tree, loaded one folder at a time (explorerTree.svelte.ts), drawn by the UI library's
      Tree. File operations are in explorerOps.ts, the menus in explorerMenu.ts, Finder drops in explorerFinder.ts. -->
 <script lang="ts">
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Tree from "@git-manager/ui/components/Tree.svelte";
-  import type { TreeDecoration } from "@git-manager/ui/logic/treeModel";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Tree from "@nibtree/ui/components/Tree.svelte";
+  import type { TreeDecoration } from "@nibtree/ui/logic/treeModel";
   import { onMount } from "svelte";
   import FileTypeIcon from "$lib/fileIcons/FileTypeIcon.svelte";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";

@@ -3,7 +3,7 @@
 The column between two merge or diff panes: a ribbon per chunk and its apply, ignore and revert buttons.
 
 ```ts
-import MergeConnector from "@git-manager/ui/components/MergeConnector.svelte";
+import MergeConnector from "@nibtree/ui/components/MergeConnector.svelte";
 ```
 
 Group: Editor. Also known as: Ribbon, Connector.

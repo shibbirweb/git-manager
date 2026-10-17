@@ -8,8 +8,8 @@ import { foldNodeProp, language, StreamLanguage, syntaxTree } from "@codemirror/
 import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { highlightTree } from "@lezer/highlight";
-import { codeHighlighters } from "@git-manager/ui/editor/highlighter";
-import { componentTokens } from "@git-manager/ui/tokens";
+import { codeHighlighters } from "@nibtree/ui/editor/highlighter";
+import { componentTokens } from "@nibtree/ui/tokens";
 import {
   headingScopes,
   indentScopes,

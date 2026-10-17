@@ -3,12 +3,12 @@
   Stop on the left, and the session's output (moved in here by TerminalHost) in the middle.
 -->
 <script lang="ts">
-  import type { EditorTabData } from "@git-manager/ui/components/EditorTab.svelte";
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import TabStrip from "@git-manager/ui/components/TabStrip.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import type { EditorTabData } from "@nibtree/ui/components/EditorTab.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import TabStrip from "@nibtree/ui/components/TabStrip.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { untrack } from "svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { type TerminalEntry, terminalStore } from "./terminalStore.svelte";

@@ -1,6 +1,6 @@
 import type { ChangeKind, DiffArea, FileStatus } from "$lib/types";
-import type { IconName } from "@git-manager/ui/icons";
-import type { FileKind } from "@git-manager/ui/logic/fileStatus";
+import type { IconName } from "@nibtree/ui/icons";
+import type { FileKind } from "@nibtree/ui/logic/fileStatus";
 
 export type GroupId = "conflicts" | "staged" | "unstaged";
 

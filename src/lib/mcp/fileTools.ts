@@ -43,7 +43,7 @@ type Structured = Record<string, unknown>;
 function workspaceFolders(deps: FileToolDeps): FolderRef[] {
   const folders = deps.folders();
   if (folders.length === 0) {
-    throw new ToolArgError("No folder is open in Git Manager");
+    throw new ToolArgError("No folder is open in Nibtree");
   }
   return folders;
 }

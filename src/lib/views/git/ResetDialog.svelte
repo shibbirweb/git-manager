@@ -1,14 +1,14 @@
 <!-- The Reset HEAD dialog: the revision to reset the current branch to (HEAD, a commit
      id or a branch) and the mode, each with its one-line explanation. Hard asks first. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Fieldset from "@nibtree/ui/components/Fieldset.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import RadioGroup from "@nibtree/ui/components/RadioGroup.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { untrack } from "svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { api, errorMessage } from "$lib/api";

@@ -1,9 +1,9 @@
 // What the Markdown preview and the rich editor both need from the app: whether the page is dark (diagrams), how
 // links resolve from a document, and which images may load (only from inside the workspace).
-import type { LinkContext } from "@git-manager/ui/markdown/links";
-import { configureDiagrams } from "@git-manager/ui/markdown/mermaid";
+import type { LinkContext } from "@nibtree/ui/markdown/links";
+import { configureDiagrams } from "@nibtree/ui/markdown/mermaid";
 import { repoStore } from "$lib/stores/repo.svelte";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "@git-manager/ui/themes/themeIndex";
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from "@nibtree/ui/themes/themeIndex";
 import { folderFor, locateAbsolute } from "$lib/stores/workspacePaths";
 import { markdownImageUrl } from "$lib/views/files/previewScheme";
 

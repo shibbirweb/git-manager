@@ -3,7 +3,7 @@
 The vertical icon bar beside a side panel; the open panel is tinted with an accent line.
 
 ```ts
-import ActivityBar from "@git-manager/ui/components/ActivityBar.svelte";
+import ActivityBar from "@nibtree/ui/components/ActivityBar.svelte";
 ```
 
 Group: Layout. Also known as: Sidebar.

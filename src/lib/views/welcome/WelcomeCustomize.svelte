@@ -1,13 +1,13 @@
 <!-- Welcome > Customize: the theme, the color theme, font sizes and rounded panels, without opening Settings. -->
 <script lang="ts">
   import { FONT_SIZE_RANGE, settings, type ThemeSetting } from "$lib/stores/settings.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import SettingRow from "@git-manager/ui/components/SettingRow.svelte";
-  import Slider from "@git-manager/ui/components/Slider.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import SettingRow from "@nibtree/ui/components/SettingRow.svelte";
+  import Slider from "@nibtree/ui/components/Slider.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import ColorThemePicker from "../settings/ColorThemePicker.svelte";
 
   const THEMES: { value: ThemeSetting; label: string }[] = [

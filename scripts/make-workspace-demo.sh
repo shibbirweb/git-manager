@@ -92,6 +92,6 @@ Created workspace $target (the folder itself is not a git repository):
   docs                   no git: right-click it in the Files panel and choose
                          "Initialize Repository Here"
 
-Open the folder in Git Manager and switch repositories from the header, the
+Open the folder in Nibtree and switch repositories from the header, the
 Changes view groups, or the Files panel.
 EOF

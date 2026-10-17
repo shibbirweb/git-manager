@@ -1,6 +1,6 @@
-//! Unsaved text kept across restarts (Settings > Editor > Remember unsaved changes), like
-//! Sublime Text's hot exit: the text of an Untitled tab (File > New File) or of a file with
-//! unsaved edits stays in `~/.gitmanager/unsaved/` until it is saved, reverted or discarded.
+//! Unsaved text kept across restarts (Settings > Editor > Remember unsaved changes), a
+//! hot exit: the text of an Untitled tab (File > New File) or of a file with
+//! unsaved edits stays in `~/.nibtree/unsaved/` until it is saved, reverted or discarded.
 //!
 //! One file per tab, `<40 hex>.txt`, named by the hash of the tab path: a line of JSON with
 //! the tab path, the workspace and the time, a newline, then the text as the editor holds it

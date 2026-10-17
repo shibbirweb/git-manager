@@ -2,7 +2,7 @@
 import SwiftUI
 
 extension GMTheme {
-    static func vscodeLightPlus() -> [String: GMRGBA] {
+    static func lightPlus() -> [String: GMRGBA] {
         [
             "bg": GMRGBA(221, 221, 221, 1), "frame": GMRGBA(221, 221, 221, 1), "panel": GMRGBA(243, 243, 243, 1),
             "panelAlt": GMRGBA(236, 236, 236, 1), "border": GMRGBA(231, 231, 231, 1),
@@ -86,7 +86,7 @@ extension GMTheme {
 }
 
 extension GMTheme {
-    static func darcula() -> [String: GMRGBA] {
+    static func dusk() -> [String: GMRGBA] {
         [
             "bg": GMRGBA(43, 43, 43, 1), "frame": GMRGBA(28, 28, 28, 1), "panel": GMRGBA(60, 63, 65, 1),
             "panelAlt": GMRGBA(49, 51, 53, 1), "border": GMRGBA(50, 50, 50, 1), "borderStrong": GMRGBA(81, 81, 81, 1),
@@ -128,7 +128,7 @@ extension GMTheme {
 }
 
 extension GMTheme {
-    static func islandsDark() -> [String: GMRGBA] {
+    static func isletDark() -> [String: GMRGBA] {
         [
             "bg": GMRGBA(38, 40, 44, 1), "frame": GMRGBA(38, 40, 44, 1), "panel": GMRGBA(25, 26, 28, 1),
             "panelAlt": GMRGBA(33, 35, 38, 1), "border": GMRGBA(38, 40, 44, 1), "borderStrong": GMRGBA(51, 53, 59, 1),
@@ -170,7 +170,7 @@ extension GMTheme {
 }
 
 extension GMTheme {
-    static func vscodeDarkPlus() -> [String: GMRGBA] {
+    static func darkPlus() -> [String: GMRGBA] {
         [
             "bg": GMRGBA(60, 60, 60, 1), "frame": GMRGBA(60, 60, 60, 1), "panel": GMRGBA(37, 37, 38, 1),
             "panelAlt": GMRGBA(45, 45, 45, 1), "border": GMRGBA(30, 30, 30, 1), "borderStrong": GMRGBA(68, 68, 68, 1),

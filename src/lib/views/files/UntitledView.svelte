@@ -4,8 +4,8 @@
   closes. With Remember unsaved changes the text is kept across restarts (unsavedText.svelte.ts).
 -->
 <script lang="ts">
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { EditorState } from "@codemirror/state";
   import { EditorView, keymap } from "@codemirror/view";
   import { save as saveDialog } from "@tauri-apps/plugin-dialog";

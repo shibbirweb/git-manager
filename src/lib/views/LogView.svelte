@@ -1,16 +1,16 @@
 <!-- The Log: a filter bar, the commit table and the selected commit's details under it. The history loads in
      log/logHistory.svelte.ts, the rows draw in log/LogTable.svelte and the right-click menu is log/commitMenu.ts. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import Spinner from "@git-manager/ui/components/Spinner.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import Spinner from "@nibtree/ui/components/Spinner.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import ToggleButton from "@nibtree/ui/components/ToggleButton.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import CommitDetails from "$lib/log/CommitDetails.svelte";

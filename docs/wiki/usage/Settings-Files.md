@@ -1,11 +1,11 @@
 # Settings Files
 
-Like VS Code keeps its files in `~/.vscode`, Git Manager keeps its own in a folder in your home folder. This page explains what is in it, how to edit `settings.json` by hand and what happens when a file is broken. The options themselves are explained in [Settings](Settings.md).
+Nibtree keeps its files in a folder in your home folder. This page explains what is in it, how to edit `settings.json` by hand and what happens when a file is broken. The options themselves are explained in [Settings](Settings.md).
 
 ## The folder
 
 ```
-~/.gitmanager/
+~/.nibtree/
   settings.json   your preferences, safe to edit by hand
   state.json      recent folders, the last session, panel sizes and layout
   mcp.json        the MCP secret token, and the port while the server runs
@@ -13,7 +13,7 @@ Like VS Code keeps its files in `~/.vscode`, Git Manager keeps its own in a fold
   unsaved/        unsaved text kept until it is saved (Remember unsaved changes)
 ```
 
-On Windows the folder is `C:\Users\<you>\.gitmanager`. It is created the first time a setting is saved. **Settings > Settings Files** shows the **Settings folder** path, a **Copy settings.json Path** button and **Changed from defaults**: each setting you changed, such as `tabSize: 2`, or **Nothing yet**.
+On Windows the folder is `C:\Users\<you>\.nibtree`. It is created the first time a setting is saved. **Settings > Settings Files** shows the **Settings folder** path, a **Copy settings.json Path** button and **Changed from defaults**: each setting you changed, such as `tabSize: 2`, or **Nothing yet**.
 
 Your GitHub token is not in this folder: it is kept in the system keychain. See [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md).
 
@@ -48,7 +48,7 @@ For example:
 }
 ```
 
-Git Manager checks every value when it loads:
+Nibtree checks every value when it loads:
 
 - A value it does not understand falls back to the default.
 - Numbers are kept within their range: a font size of 40 becomes the largest allowed size.
@@ -70,7 +70,7 @@ The exact ranges and defaults are in [Settings Reference](../developer/Settings-
 
 ## When a file is broken
 
-If `settings.json` is not valid JSON (a missing comma, say), Git Manager uses the defaults, shows **settings.json could not be read** at the top of Settings, and does not overwrite your file. Fix the file, then click **Try Again**.
+If `settings.json` is not valid JSON (a missing comma, say), Nibtree uses the defaults, shows **settings.json could not be read** at the top of Settings, and does not overwrite your file. Fix the file, then click **Try Again**.
 
 The same goes for `state.json`. Recent folders, the last session and panel sizes then start empty, and the file is left alone. You see **state.json could not be read** in three places:
 

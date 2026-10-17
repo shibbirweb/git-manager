@@ -30,7 +30,7 @@
     applyTitle?: string | null;
     onrevert?: (index: number) => void;
     revertTitle?: string | null;
-    /** The ribbons: by kind of change, or red to green from the old side to the new (VS Code, GitLens). */
+    /** The ribbons: by kind of change, or red to green from the old side to the new. */
     colors?: ConnectorColors;
     ruler?: boolean;
     ratio?: number;

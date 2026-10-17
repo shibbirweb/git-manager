@@ -10,15 +10,15 @@ use super::tools::{self, Args, ToolCtx, ToolOutput, ToolResult};
 use super::Shared;
 
 pub const PROTOCOL_VERSIONS: [&str; 3] = ["2025-06-18", "2025-03-26", "2024-11-05"];
-pub const SERVER_NAME: &str = "git-manager";
-pub const TURNED_OFF: &str = "This tool is turned off in Git Manager (Help > Available MCP Tools).";
+pub const SERVER_NAME: &str = "nibtree";
+pub const TURNED_OFF: &str = "This tool is turned off in Nibtree (Help > Available MCP Tools).";
 
 const PARSE_ERROR: i64 = -32700;
 const INVALID_REQUEST: i64 = -32600;
 const METHOD_NOT_FOUND: i64 = -32601;
 const INVALID_PARAMS: i64 = -32602;
 
-const INSTRUCTIONS: &str = "Git Manager is the desktop Git client the user has open. These tools read and change the git repositories and files in the workspace folders open in the app, search them, drive the app's UI and report its memory use. Call list_workspace first to learn the windows and repository paths; every path must be absolute and inside a workspace folder open in one of the app's windows. UI tools act on the window holding their path argument, else on the window focused last.";
+const INSTRUCTIONS: &str = "Nibtree is the desktop Git client the user has open. These tools read and change the git repositories and files in the workspace folders open in the app, search them, drive the app's UI and report its memory use. Call list_workspace first to learn the windows and repository paths; every path must be absolute and inside a workspace folder open in one of the app's windows. UI tools act on the window holding their path argument, else on the window focused last.";
 
 /// HTTP status and body (None: 202 Accepted with no body).
 pub type Reply = (u16, Option<Value>);
@@ -99,15 +99,15 @@ fn initialize(shared: &Shared, params: &Value) -> Value {
     json!({
         "protocolVersion": version,
         "capabilities": { "tools": { "listChanged": false } },
-        "serverInfo": { "name": SERVER_NAME, "title": "Git Manager", "version": env!("CARGO_PKG_VERSION") },
+        "serverInfo": { "name": SERVER_NAME, "title": "Nibtree", "version": env!("CARGO_PKG_VERSION") },
         "instructions": INSTRUCTIONS,
-        "_meta": { "gitManager/mcpEnabled": switches.mcp, "gitManager/cliEnabled": switches.cli },
+        "_meta": { "nibtree/mcpEnabled": switches.mcp, "nibtree/cliEnabled": switches.cli },
     })
 }
 
-/// Enabled tools only; `_meta: { "gitManager/includeDisabled": true }` lists every tool.
+/// Enabled tools only; `_meta: { "nibtree/includeDisabled": true }` lists every tool.
 fn list_tools(shared: &Shared, params: &Value) -> Value {
-    let include_disabled = params["_meta"]["gitManager/includeDisabled"].as_bool().unwrap_or(false);
+    let include_disabled = params["_meta"]["nibtree/includeDisabled"].as_bool().unwrap_or(false);
     let tools: Vec<Value> = registry::infos(shared)
         .iter()
         .filter(|info| info.enabled || include_disabled)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds a throwaway repository stopped in a merge (or, with --rebase, a
-# rebase) with one example of every conflict type Git Manager handles.
+# rebase) with one example of every conflict type Nibtree handles.
 #
 # Usage: scripts/make-conflict-repo.sh <target-dir> [--rebase]
 
@@ -348,7 +348,7 @@ Stopped in a $mode with conflicts ($sides):
 
 $(g status --short)
 
-Things to try in Git Manager:
+Things to try in Nibtree:
   src/app.ts         3 clean changes per side, one identical change (greeting) and
                      2 real conflicts (VERSION, total()). Apply the clean chunks, then
                      resolve the two conflicts by hand or by picking a side.

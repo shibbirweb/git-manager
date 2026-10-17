@@ -1,10 +1,10 @@
 // What Settings > Automation shows for connecting tools: the Claude Code command, a JSON
-// config for other harnesses and example `git-manager cli` commands.
+// config for other harnesses and example `nibtree cli` commands.
 
 import { shellQuote } from "$lib/scripts/scriptsModel";
 import type { McpStatus } from "$lib/types";
 
-export const MCP_SERVER_NAME = "git-manager";
+export const MCP_SERVER_NAME = "nibtree";
 
 /** The line that puts ~/.local/bin on PATH, for ~/.zshrc. */
 export const LOCAL_BIN_PATH_LINE = 'export PATH="$HOME/.local/bin:$PATH"';
@@ -42,7 +42,7 @@ function programText(programPath: string, windows: boolean): string {
 }
 
 /**
- * How to start the command line tool: `git-manager cli` once it is installed, else the full
+ * How to start the command line tool: `nibtree cli` once it is installed, else the full
  * program path (quoted for the shell, since the app may live in a folder with spaces).
  */
 export function cliPrefix(
@@ -50,13 +50,13 @@ export function cliPrefix(
   windows = onWindows(),
 ): string {
   if (status.cliInstalledPath && status.cliOnPath) {
-    return "git-manager cli";
+    return "nibtree cli";
   }
   if (status.cliInstalledPath) {
     return `${programText(status.cliInstalledPath, windows)} cli`;
   }
   const binary = status.cliCommand.replace(/\s+cli$/, "");
-  return binary ? `${programText(binary, windows)} cli` : "git-manager cli";
+  return binary ? `${programText(binary, windows)} cli` : "nibtree cli";
 }
 
 export function cliExamples(prefix: string, windows = onWindows()): { command: string; hint: string }[] {

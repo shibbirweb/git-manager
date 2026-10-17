@@ -24,7 +24,7 @@ Click **Add Agent to Race** to add up to five agents. Each one gets its own work
 
 ## Ready to run
 
-A new worktree is a clean checkout: files git ignores, such as `.env` or downloaded packages, are not in it. With **Get it ready to run** checked (the default), Git Manager:
+A new worktree is a clean checkout: files git ignores, such as `.env` or downloaded packages, are not in it. With **Get it ready to run** checked (the default), Nibtree:
 
 - copies the files and folders listed in a `.worktreeinclude` file at the top of your repository, one path per line (lines starting with `#` are notes; patterns such as `*.env` are not supported);
 - links the folders set in **Settings > AI > Link into new worktrees** (`node_modules` by default), so packages are not installed again.
@@ -40,13 +40,13 @@ config/local.json
 
 ## Finish a task
 
-Right-click a worktree's card (or use its **...** button) and choose **Finish Task...**. Git Manager asks first, then:
+Right-click a worktree's card (or use its **...** button) and choose **Finish Task...**. Nibtree asks first, then:
 
 1. closes the agents working in it,
 2. removes the worktree's folder,
 3. deletes its branch.
 
-If the worktree has uncommitted changes, the question says they will be lost. If the branch has commits that are not merged anywhere, Git Manager asks again before deleting it; choose **Keep Branch** to keep it. **Remove Worktree...** removes only the folder and keeps the branch.
+If the worktree has uncommitted changes, the question says they will be lost. If the branch has commits that are not merged anywhere, Nibtree asks again before deleting it; choose **Keep Branch** to keep it. **Remove Worktree...** removes only the folder and keeps the branch.
 
 ## Related
 

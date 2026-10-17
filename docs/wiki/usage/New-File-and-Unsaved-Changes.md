@@ -1,8 +1,8 @@
 # New File and Unsaved Changes
 
-Sometimes you just want to jot something down: a note, a command to try, a piece of text to compare. **File > New File** (Cmd+N) opens an empty tab for that, like Sublime Text. You decide later whether it becomes a file.
+Sometimes you just want to jot something down: a note, a command to try, a piece of text to compare. **File > New File** (Cmd+N) opens an empty tab for that. You decide later whether it becomes a file.
 
-Git Manager also keeps your unsaved work when you close the window or quit. The text of new tabs and the unsaved edits in your files come back the next time you open the folder, until you save them.
+Nibtree also keeps your unsaved work when you close the window or quit. The text of new tabs and the unsaved edits in your files come back the next time you open the folder, until you save them.
 
 ![An Untitled tab named after its first line, next to two file tabs](../images/new-file-untitled.png)
 
@@ -58,7 +58,7 @@ Turn off **Settings > Editor > Saving > Remember unsaved changes** to get the ol
 
 ## Where the text is kept
 
-Each kept text is one file in `~/.gitmanager/unsaved/`. See [Settings Files](Settings-Files.md). Saving, reverting or discarding a tab removes its file. Text bigger than 16 MB is not kept, and you see a warning once.
+Each kept text is one file in `~/.nibtree/unsaved/`. See [Settings Files](Settings-Files.md). Saving, reverting or discarding a tab removes its file. Text bigger than 16 MB is not kept, and you see a warning once.
 
 ## Related
 

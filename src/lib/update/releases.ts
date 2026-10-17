@@ -4,7 +4,7 @@
 import type { OsInfo } from "$lib/types";
 import { compareVersions, isNewer, parseVersion } from "./version";
 
-export const REPOSITORY = "shibbirweb/git-manager";
+export const REPOSITORY = "shibbirweb/nibtree";
 export const REPOSITORY_URL = `https://github.com/${REPOSITORY}`;
 export const RELEASES_URL = `${REPOSITORY_URL}/releases`;
 export const WIKI_URL = `${REPOSITORY_URL}/wiki`;

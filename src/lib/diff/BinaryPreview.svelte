@@ -5,7 +5,7 @@
   WebKit frees what they held.
 -->
 <script lang="ts">
-  import MediaCompare from "@git-manager/ui/components/MediaCompare.svelte";
+  import MediaCompare from "@nibtree/ui/components/MediaCompare.svelte";
   import { onDestroy, untrack } from "svelte";
   import { errorMessage } from "$lib/api";
   import { previewOf } from "$lib/views/files/mediaPreview";

@@ -2,13 +2,13 @@
      access token (sent once to Rust, which verifies it and keeps it in the keychain) or the
      GitHub CLI's own login. Used by Settings > GitHub and the sign-in dialog. -->
 <script lang="ts">
-  import Avatar from "@git-manager/ui/components/Avatar.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Avatar from "@nibtree/ui/components/Avatar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { errorMessage } from "$lib/api";
   import type { GitHubAccount } from "$lib/types";

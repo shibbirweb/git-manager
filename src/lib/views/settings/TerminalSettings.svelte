@@ -14,16 +14,16 @@
   import { buildTerminalFontFamily, TERMINAL_FONT_PICKS } from "$lib/terminal/fonts";
   import { terminalStore } from "$lib/terminal/terminalStore.svelte";
   import { platformName } from "$lib/update/releases";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Chip from "@git-manager/ui/components/Chip.svelte";
-  import FontSample from "@git-manager/ui/components/FontSample.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Slider from "@git-manager/ui/components/Slider.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Chip from "@nibtree/ui/components/Chip.svelte";
+  import FontSample from "@nibtree/ui/components/FontSample.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Slider from "@nibtree/ui/components/Slider.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import SettingsGroup from "./SettingsGroup.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { set } from "./settingsShared";
@@ -97,7 +97,7 @@
     }),
   );
   const SAMPLE = [
-    { parts: [{ text: " ~/git-manager   main", dim: true }, { text: " ❯ git log --oneline" }] },
+    { parts: [{ text: " ~/nibtree   main", dim: true }, { text: " ❯ git log --oneline" }] },
     { parts: [{ text: "a1b2c3d", bold: true }, { text: " fix: a => b != c === d -> e" }] },
     { text: "0O 1lI { } [ ] | && ||" },
   ];

@@ -8,14 +8,14 @@
   import GitDiffView from "$lib/diff/GitDiffView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { ChangedFile, RevisionDiff, WorktreeComparison } from "$lib/types";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Pane from "@git-manager/ui/components/Pane.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Pane from "@nibtree/ui/components/Pane.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import BranchFileList from "./BranchFileList.svelte";
 
   interface Props {

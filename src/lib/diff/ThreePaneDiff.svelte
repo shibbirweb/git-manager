@@ -1,11 +1,11 @@
-<!-- A file in three read-only panes, like JetBrains IDEs: a merge commit's parent 1, merge result and parent 2, or the
+<!-- A file in three read-only panes: a merge commit's parent 1, merge result and parent 2, or the
      staging view's HEAD, index and work tree, with bands joining each side's changes to the middle. With `onapply`
      the bands carry arrows that take a change into the middle (stage or unstage); with `workingFile`, Open File
      opens the real file; with `blame`, Blame shows who wrote each line of one pane. The panes' widths are saved.
      threeWayEditors.svelte.ts builds the editors, and the toolbar is the same DiffToolbar as every other diff. -->
 <script lang="ts">
-  import MergeFrame from "@git-manager/ui/components/MergeFrame.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import MergeFrame from "@nibtree/ui/components/MergeFrame.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import { setBlameDisplay } from "$lib/editor/blame";
   import { type DiffLayout, settings } from "$lib/stores/settings.svelte";
   import type { FileDiff, LineSelection } from "$lib/types";

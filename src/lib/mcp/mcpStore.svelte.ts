@@ -106,11 +106,11 @@ class McpStore {
   }
 
   installCli(): Promise<void> {
-    return this.change(() => api.cliInstall(), "Installed the git-manager command");
+    return this.change(() => api.cliInstall(), "Installed the nibtree command");
   }
 
   uninstallCli(): Promise<void> {
-    return this.change(() => api.cliUninstall(), "Removed the git-manager command");
+    return this.change(() => api.cliUninstall(), "Removed the nibtree command");
   }
 
   private async change(work: () => Promise<McpStatus>, success: string): Promise<void> {

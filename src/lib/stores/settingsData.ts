@@ -1,9 +1,9 @@
-// Pure parts of the settings store: validating what ~/.gitmanager/settings.json
+// Pure parts of the settings store: validating what ~/.nibtree/settings.json
 // and state.json hold, turning it back into JSON, deciding which files may be
 // written and which session to restore on start. Kept free of Svelte and Tauri
 // so it can be tested directly.
 
-import { readThreeSplit, type ThreeSplit } from "@git-manager/ui/logic/threeSplit";
+import { readThreeSplit, type ThreeSplit } from "@nibtree/ui/logic/threeSplit";
 import type { AgentOverride } from "$lib/ai/agentConfig";
 import { pickRecentCommands } from "../commands/recentCommands";
 import { AUTO_SAVE_DELAY_RANGE, DEFAULT_AUTO_SAVE_DELAY } from "../editor/autoSave";
@@ -14,7 +14,7 @@ import { parseRecentFiles, type RecentFile } from "./recentFiles";
 import { parseTabSessions, type SavedTabSession } from "./tabSession";
 import type { ShortcutOverrides } from "../commands/registry";
 import { pickKeybindings } from "../commands/shortcutSettings";
-import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "@git-manager/ui/themes/themeIndex";
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, pickThemeId } from "@nibtree/ui/themes/themeIndex";
 import { type MessageHistory, parseMessageHistory } from "../views/changes/commitMessages";
 import { type CommitTemplate, parseCommitTemplates } from "../views/changes/commitTemplates";
 
@@ -42,7 +42,7 @@ export const DIFF_PANES_CHOICES: { value: DiffPanes; label: string }[] = [
 ];
 const DIFF_PANES = DIFF_PANES_CHOICES.map((choice) => choice.value);
 
-/** Where the Changes view puts its commit box: one at the bottom (JetBrains), or one per repository (VS Code). */
+/** Where the Changes view puts its commit box: one at the bottom, or one per repository. */
 export type CommitBoxLayout = "single" | "perRepo";
 export const COMMIT_BOX_LAYOUT_CHOICES: { value: CommitBoxLayout; label: string }[] = [
   { value: "single", label: "Single" },
@@ -300,7 +300,7 @@ export interface Preferences {
   fileIcons: FileIconMode;
   /** Sidebars, editor groups and the bottom panel as rounded panels with space between them. Any color theme. */
   roundedPanels: boolean;
-  /** A glow in the project's Welcome page color at the left of the window's top bar, like JetBrains IDEs. */
+  /** A glow in the project's Welcome page color at the left of the window's top bar. */
   projectColorHeader: boolean;
   /** The file toolbar above the code, under it, or hidden (Cmd+Up then shows the Navigation Bar floating). */
   fileToolbar: FileToolbarPlacement;
@@ -333,9 +333,9 @@ export interface Preferences {
   editorCursorBlinking: EditorCursorBlinking;
   /** Glide the cursor to its new place instead of jumping. */
   editorCursorSmoothCaret: boolean;
-  /** Pixels the cursor reaches above the text (Sublime Text's caret_extra_top). */
+  /** Pixels the cursor reaches above the text. */
   editorCaretExtraTop: number;
-  /** Pixels the cursor reaches below the text (Sublime Text's caret_extra_bottom). */
+  /** Pixels the cursor reaches below the text. */
   editorCaretExtraBottom: number;
   /** Type the closing bracket or quote with the opening one. */
   editorAutoCloseBrackets: boolean;
@@ -472,7 +472,7 @@ export interface Preferences {
   confirmDragAndDrop: boolean;
   /** The MCP server for AI tools. Off, nothing listens. */
   mcpEnabled: boolean;
-  /** The `git-manager cli` command line tool; it talks to the same local server. */
+  /** The `nibtree cli` command line tool; it talks to the same local server. */
   cliEnabled: boolean;
   /** Port of the local server on 127.0.0.1. */
   mcpPort: number;
@@ -480,13 +480,13 @@ export interface Preferences {
   mcpTools: Record<string, boolean>;
   /** Custom keyboard shortcuts: command id to a menu accelerator, or null for no key. */
   keybindings: ShortcutOverrides;
-  /** Debug memory log: memory readings and UI events written to ~/.gitmanager/logs/memory.log. */
+  /** Debug memory log: memory readings and UI events written to ~/.nibtree/logs/memory.log. */
   memoryLogEnabled: boolean;
   /** How often the memory log reads memory. */
   memoryLogIntervalMs: number;
   /** A reading is written when the total changed by at least this much. */
   memoryLogThresholdMb: number;
-  /** Local History: a copy of a file on every save, outside change and discard (~/.gitmanager/local-history). */
+  /** Local History: a copy of a file on every save, outside change and discard (~/.nibtree/local-history). */
   localHistoryEnabled: boolean;
   /** Versions older than this many days are removed. */
   localHistoryDays: number;

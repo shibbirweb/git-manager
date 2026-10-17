@@ -32,7 +32,7 @@ describe("tonesByPath", () => {
 });
 
 describe("marksByPath", () => {
-  it("uses VS Code style letters", () => {
+  it("uses letters", () => {
     const marks = marksByPath([
       file("untracked.ts", { unstaged: "untracked" }),
       file("added.ts", { staged: "added", unstaged: null }),

@@ -1,9 +1,9 @@
 // The Navigation Bar as the UI library draws it: crumbs for Breadcrumbs (the file with its type icon,
 // repositories in the accent color) and a folder's rows as CrumbPopup entries in their git colors, with one entry
 // that searches the whole workspace when nothing matches.
-import type { FileIconView } from "@git-manager/ui/components/FileIcon.svelte";
-import type { IconName } from "@git-manager/ui/icons";
-import { partsToRanges } from "@git-manager/ui/logic/highlight";
+import type { FileIconView } from "@nibtree/ui/components/FileIcon.svelte";
+import type { IconName } from "@nibtree/ui/icons";
+import { partsToRanges } from "@nibtree/ui/logic/highlight";
 import type { FileTone } from "$lib/views/files/tones";
 import type { NavCrumb, NavRow } from "./navBarModel";
 import { FOCUSED_GROUP } from "$lib/views/workspaceDom";

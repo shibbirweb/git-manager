@@ -1,6 +1,6 @@
 # Recent Files
 
-Recent Files is a small popup that lists the files you worked on last, newest first. It works like **Recent Files** in JetBrains IDEs such as PhpStorm: press Cmd+E, then Enter, and you are back in the file you had open before this one.
+Recent Files is a small popup that lists the files you worked on last, newest first. Press Cmd+E, then Enter, and you are back in the file you had open before this one.
 
 ![Recent Files with the last files opened](../images/recent-files.png)
 
@@ -31,7 +31,7 @@ This is the quickest way to move between the two files you are working on.
 
 ## Edited files only
 
-Press **Cmd+E again** while the popup is open, or click **Edited only** at the top, to see only the files you changed in Git Manager. The title changes to **Recently Edited Files**. Press it once more to see every file again.
+Press **Cmd+E again** while the popup is open, or click **Edited only** at the top, to see only the files you changed in Nibtree. The title changes to **Recently Edited Files**. Press it once more to see every file again.
 
 A file counts as edited as soon as you type in it, even before you save.
 
@@ -39,7 +39,7 @@ A file counts as edited as soon as you type in it, even before you save.
 
 Select a file and press **Delete** (on a Mac keyboard without a Delete key, Cmd+Backspace while the filter is empty), or click the **x** at the end of its row. This only takes it off the list; the file itself is not touched.
 
-If a file was deleted or moved outside Git Manager, choosing it shows a short note, and it is taken off the list for you.
+If a file was deleted or moved outside Nibtree, choosing it shows a short note, and it is taken off the list for you.
 
 ## What gets on the list
 
@@ -47,7 +47,7 @@ If a file was deleted or moved outside Git Manager, choosing it shows a short no
 - Terminal, commit and Git tabs are not files, so they never join it.
 - The list holds the last 50 files.
 
-Each workspace has its own list, and it is kept when you quit, so it is still there the next time you open the same folder or workspace. It is stored in `~/.gitmanager/state.json`. See [Settings](Settings.md).
+Each workspace has its own list, and it is kept when you quit, so it is still there the next time you open the same folder or workspace. It is stored in `~/.nibtree/state.json`. See [Settings](Settings.md).
 
 The same list feeds the **Recent Files** section of [Search Everywhere](Search-Everywhere.md) and the **Recently opened** section of Quick Open (Cmd+P), so all three agree.
 
@@ -57,7 +57,7 @@ Recent Files is on by default. To turn it off, open **Settings > Editor** and sw
 
 While it is off:
 
-- Git Manager does not keep the list. That saves very little: the mark beside the setting says **about +1 MB**, which is within what we can measure. The popup itself uses about 17 MB more only while it is open, and gives it back when it closes.
+- Nibtree does not keep the list. That saves very little: the mark beside the setting says **about +1 MB**, which is within what we can measure. The popup itself uses about 17 MB more only while it is open, and gives it back when it closes.
 - Cmd+E shows a short note that Recent Files is off, with an **Open Settings** button that takes you to the setting.
 - Quick Open and Search Everywhere show only the file on screen and your open tabs as recent files.
 
@@ -65,7 +65,7 @@ The lists already saved are kept. Turn the setting on again and each workspace g
 
 ## In the commit message
 
-While you type a commit message, Cmd+E opens your earlier commit messages instead, as in JetBrains IDEs. You can turn that off with **Settings > Git > Message history**; then Cmd+E opens Recent Files there too. See [Changes and Commits](Changes-and-Commits.md).
+While you type a commit message, Cmd+E opens your earlier commit messages instead. You can turn that off with **Settings > Git > Message history**; then Cmd+E opens Recent Files there too. See [Changes and Commits](Changes-and-Commits.md).
 
 ## Related
 

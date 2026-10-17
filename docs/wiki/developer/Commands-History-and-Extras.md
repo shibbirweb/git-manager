@@ -65,7 +65,7 @@ The token goes in once and never comes back to the UI. See [How GitHub Works](Ho
 
 | Command | Wrapper | Returns | Kind | What it does |
 | --- | --- | --- | --- | --- |
-| `github_account` | `githubAccount()` | `GitHubAccount \| null` | file | the signed-in account from `~/.gitmanager/github.json`; no network, no keychain |
+| `github_account` | `githubAccount()` | `GitHubAccount \| null` | file | the signed-in account from `~/.nibtree/github.json`; no network, no keychain |
 | `github_cli_status` | `githubCliStatus()` | `GhCliStatus` | app | whether the `gh` CLI is installed and signed in |
 | `github_sign_in_with_token` | `githubSignInWithToken(token)` | `GitHubAccount` | net | verifies the token with `GET /user`, then keeps it only in the system keychain |
 | `github_sign_in_with_cli` | `githubSignInWithCli()` | `GitHubAccount` | net | uses `gh auth token` on demand; stores only the login |

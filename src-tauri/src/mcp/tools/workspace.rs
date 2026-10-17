@@ -7,7 +7,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "list_workspace",
         title: "List workspace",
-        description: "Lists the windows of Git Manager with their folders, and the git repositories found in each folder (nested ones too). Start here to learn which repoPath and folder paths the other tools accept. UI tools act on the window holding their path argument, else on the window focused last (marked focused).",
+        description: "Lists the windows of Nibtree with their folders, and the git repositories found in each folder (nested ones too). Start here to learn which repoPath and folder paths the other tools accept. UI tools act on the window holding their path argument, else on the window focused last (marked focused).",
         category: WORKSPACE,
         read_only: true,
         destructive: false,
@@ -17,7 +17,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "get_app_info",
         title: "App info",
-        description: "Git Manager's version, the operating system and whether the Git Console is recording commands.",
+        description: "Nibtree's version, the operating system and whether the Git Console is recording commands.",
         category: WORKSPACE,
         read_only: true,
         destructive: false,
@@ -48,14 +48,14 @@ fn list_workspace(ctx: &ToolCtx, _args: &Args) -> ToolResult {
             })
         })
         .collect();
-    let note = folders.is_empty().then_some("No folder is open in Git Manager. Open one in the app first.");
+    let note = folders.is_empty().then_some("No folder is open in Nibtree. Open one in the app first.");
     json_out(json!({ "folders": folders, "windows": windows, "note": note }))
 }
 
 fn get_app_info(_ctx: &ToolCtx, _args: &Args) -> ToolResult {
     let os = wait(crate::commands::config::os_info())?;
     json_out(json!({
-        "name": "Git Manager",
+        "name": "Nibtree",
         "version": env!("CARGO_PKG_VERSION"),
         "os": os,
         "arch": std::env::consts::ARCH,

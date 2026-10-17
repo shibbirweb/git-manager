@@ -4,7 +4,7 @@ Split terminals, find, clickable file paths, dropped files, rename, the visual b
 
 ## Why we need it
 
-People coming from VS Code expect to split a terminal, search its output with Cmd+F and Cmd+click `src/app.ts:12:5` in a compiler error. Memory is a feature in Git Manager, so every optional part has a switch, loads only when it is on, and frees its memory when it is turned off or the terminal closes.
+People expect to split a terminal, search its output with Cmd+F and Cmd+click `src/app.ts:12:5` in a compiler error. Memory is a feature in Nibtree, so every optional part has a switch, loads only when it is on, and frees its memory when it is turned off or the terminal closes.
 
 ## How it works
 
@@ -26,11 +26,11 @@ flowchart LR
 - **Unicode 11** (`@xterm/addon-unicode11`): registers its width table once per terminal and switches `term.unicode.activeVersion` between `"11"` and `"6"`. xterm cannot unregister a version, so off keeps the small table until the terminal closes.
 - **Search** (`@xterm/addon-search`): waits until the find bar first opens; turning Find off closes the bar and disposes the addon with its highlights.
 
-Unicode versions and search decorations are xterm's proposed API, so the terminal is created with `allowProposedApi: true`, as VS Code does. Option as Meta and smooth scrolling are plain options (`macOptionIsMeta`, `smoothScrollDuration`) written by `applyChangedOptions`.
+Unicode versions and search decorations are xterm's proposed API, so the terminal is created with `allowProposedApi: true`. Option as Meta and smooth scrolling are plain options (`macOptionIsMeta`, `smoothScrollDuration`) written by `applyChangedOptions`.
 
 ### Find
 
-`TerminalFindBar.svelte` (the library's `FloatingFindBar`) sits over the terminal's top right corner; `TerminalFind` (`terminalFind.svelte.ts`) keeps the query, the toggles and the results. `find.ts` maps the toggles to xterm's names, builds the highlight colors from the `--warning` and `--term-background` tokens (the addon needs opaque `#rrggbb`), counts ("3 of 12", "1000+") and decides the keys. Typing calls `findPrevious` with `incremental`, so the first match is the newest output, and Enter keeps going up, like VS Code's terminal. `keys.ts` returns `"find"` for Cmd+F (Ctrl+Shift+F elsewhere) only while the setting is on, so with it off the key is left alone.
+`TerminalFindBar.svelte` (the library's `FloatingFindBar`) sits over the terminal's top right corner; `TerminalFind` (`terminalFind.svelte.ts`) keeps the query, the toggles and the results. `find.ts` maps the toggles to xterm's names, builds the highlight colors from the `--warning` and `--term-background` tokens (the addon needs opaque `#rrggbb`), counts ("3 of 12", "1000+") and decides the keys. Typing calls `findPrevious` with `incremental`, so the first match is the newest output, and Enter keeps going up. `keys.ts` returns `"find"` for Cmd+F (Ctrl+Shift+F elsewhere) only while the setting is on, so with it off the key is left alone.
 
 ### Clickable file paths
 
@@ -53,7 +53,7 @@ sequenceDiagram
 
 xterm asks the link provider only for the line under the pointer, so there is no scanning of the whole buffer. `findPathCandidates` finds `path`, `path:line`, `path:line:col` and `path(line,col)`, skips URLs (the web links addon has them) and adds git's `a/` and `b/` paths without the prefix. Relative paths resolve against the folder the shell last reported with OSC 7 (`parseOsc7`), else the start folder. Only paths inside an open workspace folder are checked, with `real_files` in `file_ops.rs` (canonical path inside a root, not in `.git`, a regular file, at most 64 per call, never an error). Its real path answer keeps other letter case to one tab ([Windows paths](Windows-Support.md#paths)). The cache keeps answers only for what is on screen: `onScroll` clears it. `lineCells` maps string offsets to cells, because wide characters take two cells.
 
-Each link starts without an underline. Hovering adds key listeners, and Cmd (Ctrl) down or up flips `decorations.underline` and `pointerCursor`, which xterm tracks, so the underline shows only with the modifier, like VS Code. Activating calls `navigation.openFileAt`.
+Each link starts without an underline. Hovering adds key listeners, and Cmd (Ctrl) down or up flips `decorations.underline` and `pointerCursor`, which xterm tracks, so the underline shows only with the modifier. Activating calls `navigation.openFileAt`.
 
 ### Split terminals
 
@@ -83,9 +83,9 @@ Every `TerminalEntry` has a `group`. Panel terminals with the same group form a 
 
 **One backend call per hovered line**, not a watcher or a file list: hovering is rare and cheap, and the answers go on scroll.
 
-**Splits in groups, not a tree.** VS Code splits side by side in a row, which covers the common case; a row per group keeps the rules small and testable.
+**Splits in groups, not a tree.** Splitting side by side in a row covers the common case; a row per group keeps the rules small and testable.
 
-**Enter goes up in find**, like VS Code's terminal, since the newest output is at the bottom.
+**Enter goes up in find**, since the newest output is at the bottom.
 
 ## Tests
 

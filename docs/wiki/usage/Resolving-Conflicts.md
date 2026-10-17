@@ -6,7 +6,7 @@ A conflict happens when two branches changed the same lines, and git cannot tell
 
 Any of these can stop on conflicts: merging a branch, rebasing (also an [interactive rebase](Interactive-Rebase.md)), cherry-picking or reverting a commit, pulling (also through Sync Changes or Update Project), applying or popping a stash, and applying a patch or a shelf.
 
-When that happens, Git Manager shows a note ("Merge stopped with conflicts. Resolve them to continue.") and opens the **Conflicts** dialog for you. You can also find conflicts from:
+When that happens, Nibtree shows a note ("Merge stopped with conflicts. Resolve them to continue.") and opens the **Conflicts** dialog for you. You can also find conflicts from:
 
 - The red badge on the Changes icon.
 - The **Conflicts** group in [Changes](Changes-and-Commits.md).
@@ -68,7 +68,7 @@ Cmd-click or Shift-click selects several files, so you can accept one side for m
 
 When the list is empty the dialog says **All conflicts are resolved.** and offers **Continue Merge** (or Continue Rebase, Cherry-Pick or Revert).
 
-**A note on rebase.** During a rebase git swaps the sides: "yours" is the branch you are rebasing onto, and "theirs" is your own commit being replayed. Git Manager labels them **Upstream (...)** and **Your commit (...)** so you do not have to remember that.
+**A note on rebase.** During a rebase git swaps the sides: "yours" is the branch you are rebasing onto, and "theirs" is your own commit being replayed. Nibtree labels them **Upstream (...)** and **Your commit (...)** so you do not have to remember that.
 
 ## Fix conflicts in the editor
 

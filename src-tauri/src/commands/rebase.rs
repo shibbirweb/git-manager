@@ -16,7 +16,7 @@ use crate::git::repo::{self as git_repo, resolve_commit, short_id};
 
 /// Message files and the todo live in the git dir: later `exec` lines read
 /// them after an Edit stop or a conflict, so they must outlive this call.
-const REBASE_DIR: &str = "gitmanager-rebase";
+const REBASE_DIR: &str = "nibtree-rebase";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -437,7 +437,7 @@ mod tests {
     }
 
     fn no_rebase_files(repo: &TestRepo) -> bool {
-        !repo.file(".git/gitmanager-rebase").exists()
+        !repo.file(".git/nibtree-rebase").exists()
     }
 
     #[test]

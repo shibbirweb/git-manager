@@ -1,4 +1,4 @@
-// Git Manager: HTML after a fenced code block is still kept as raw HTML, for both fence characters. The encoder's
+// Nibtree: HTML after a fenced code block is still kept as raw HTML, for both fence characters. The encoder's
 // fence lookahead runs past blank lines; a fence counts only on its own line.
 
 import { describe, expect, it } from "vitest";

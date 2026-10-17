@@ -1,20 +1,20 @@
 <!-- The merge tool over the whole window, opened from a conflicted file: loads the conflict, offers whole-file
      choices for binary and deleted files, and otherwise shows MergeEditor. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
-  import WindowLayer from "@git-manager/ui/components/WindowLayer.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
+  import WindowLayer from "@nibtree/ui/components/WindowLayer.svelte";
   import { onMount } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import type { MergeDocument, Side } from "$lib/types";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
   import MergeEditor from "./MergeEditor.svelte";
 
   let { repoPath, conflictPath }: { repoPath: string; conflictPath: string } = $props();

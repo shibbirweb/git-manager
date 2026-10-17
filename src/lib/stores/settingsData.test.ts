@@ -54,13 +54,13 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ aiUsagePosition: "top" }).preferences.aiUsagePosition).toBe("right");
   });
 
-  it("renders whitespace in selections unless another VS Code mode was picked", () => {
+  it("renders whitespace in selections unless another mode was picked", () => {
     expect(parsePreferences({}).preferences.renderWhitespace).toBe("selection");
     expect(parsePreferences({ renderWhitespace: "trailing" }).preferences.renderWhitespace).toBe("trailing");
     expect(parsePreferences({ renderWhitespace: "dots" }).preferences.renderWhitespace).toBe("selection");
   });
 
-  it("starts with VS Code's cursor and keeps hand-edited cursor values in range", () => {
+  it("starts with the default cursor and keeps hand-edited cursor values in range", () => {
     const parsed = parsePreferences({}).preferences;
     expect([
       parsed.editorCursorStyle,
@@ -436,7 +436,7 @@ describe("parsePreferences", () => {
     expect(parsePreferences({ terminalFontSize: 12.5 }).preferences.terminalFontSize).toBe(12.5);
   });
 
-  it("defaults the terminal display settings like VS Code", () => {
+  it("defaults the terminal display settings", () => {
     const { preferences } = parsePreferences({});
     expect(preferences.terminalFontFamily).toBe("");
     expect(preferences.terminalLineHeight).toBe(1.2);
@@ -778,8 +778,8 @@ describe("sessionSteps", () => {
   const base = { lastSession: [], lastSessionFile: null, sessionRecorded: true, recentRepos: ["/recent"] };
 
   it("reopens the workspace file first, then its folders", () => {
-    expect(sessionSteps({ ...base, lastSessionFile: "/w.gitmanager-workspace", lastSession: ["/a", "/b"] })).toEqual([
-      { kind: "workspaceFile", filePath: "/w.gitmanager-workspace" },
+    expect(sessionSteps({ ...base, lastSessionFile: "/w.nibtree-workspace", lastSession: ["/a", "/b"] })).toEqual([
+      { kind: "workspaceFile", filePath: "/w.nibtree-workspace" },
       { kind: "folders", folderPaths: ["/a", "/b"] },
     ]);
   });
@@ -808,7 +808,7 @@ describe("changedPreferenceKeys", () => {
 });
 
 describe("color theme preferences", () => {
-  it("default to the built-in Git Manager themes", () => {
+  it("default to the built-in Nibtree themes", () => {
     const { preferences } = parsePreferences({});
     expect(preferences.lightColorTheme).toBe("gm-light");
     expect(preferences.darkColorTheme).toBe("gm-dark");

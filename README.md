@@ -1,10 +1,10 @@
-# Git Manager
+# Nibtree
 
 A native desktop Git client with a 3-way merge tool, multi-folder workspaces, tabs, blame and history, and a place to run and watch AI coding agents side by side. Built with Rust (Tauri 2) and a small Svelte 5 UI running in the system web view, so it starts fast and stays light on memory.
 
-![Git Manager: Changes, the editor with blame, and the Files panel](docs/wiki/images/window-overview.png)
+![Nibtree: Changes, the editor with blame, and the Files panel](docs/wiki/images/window-overview.png)
 
-**[Download the latest release](https://github.com/shibbirweb/git-manager/releases)** (macOS for Apple Silicon and Intel, Windows 10 and 11) · **[User guide and developer docs](https://github.com/shibbirweb/git-manager/wiki)** · **[Report a bug or request a feature](https://github.com/shibbirweb/git-manager/issues/new/choose)**
+**[Download the latest release](https://github.com/shibbirweb/nibtree/releases)** (macOS for Apple Silicon and Intel, Windows 10 and 11) · **[User guide and developer docs](https://github.com/shibbirweb/nibtree/wiki)** · **[Report a bug or request a feature](https://github.com/shibbirweb/nibtree/issues/new/choose)**
 
 ## Screenshots
 
@@ -31,14 +31,14 @@ A native desktop Git client with a 3-way merge tool, multi-folder workspaces, ta
   </tr>
 </table>
 
-Every feature has its own page with screenshots in the [wiki](https://github.com/shibbirweb/git-manager/wiki).
+Every feature has its own page with screenshots in the [wiki](https://github.com/shibbirweb/nibtree/wiki).
 
 ## Features
 
-- **Workspaces**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.gitmanager-workspace` file, or open a `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own, and a progress card shows while a big folder opens.
+- **Workspaces**: open any folder, whether it is one repository, many (nested ones included) or no git at all (initialize one from the app). Add more folders to the same window, save the set to a `.nibtree-workspace` file, or open a `.code-workspace` file. Repositories you clone or create inside an open folder show up on their own, and a progress card shows while a big folder opens.
 - **3-way merge tool**: Yours | Result | Theirs panes with connectors, per-change apply and ignore buttons, "apply both" for conflicts, one-click *Apply non-conflicting*, word-level highlights, synchronized scrolling, F7 navigation, full undo and an ignore-whitespace mode.
 - **Conflicts made easy**: a Conflicts dialog to take Yours or Theirs for whole files (binary and deleted files too), inline *Accept Current / Incoming / Both* actions in the editor, and Continue, Abort or Skip for merge, rebase, cherry-pick and revert.
-- **Native menu bar** with the Git Manager app menu (macOS), File, Edit, View, Code, Git, Window and Help menus, and **Help > Keyboard Shortcuts**, an in-app list of every shortcut.
+- **Native menu bar** with the Nibtree app menu (macOS), File, Edit, View, Code, Git, Window and Help menus, and **Help > Keyboard Shortcuts**, an in-app list of every shortcut.
 - **Git menu**: Commit, Push and Pull dialogs, Update Project, Merge and Rebase dialogs with their options, **Interactive Rebase**, Reset HEAD, Branches, tags, patches, Manage Remotes, Clone, and Current File history, blame and compare views.
 - **Changes**: staged and unstaged files grouped by repository, each with a branch picker, **Sync Changes** (or **Publish Branch** for a new branch) and a **...** menu of its own actions. Side-by-side diffs (resizable), stage or unstage whole files or single hunks, discard, commit, amend, Commit & Push, Commit & Sync and Commit (Amend), commit options (sign off, author, GPG, skip hooks) and Add to .gitignore.
 - **Shelf, worktrees, submodules and Git LFS** from the Git menu, plus a **Git Console** that shows every git command the app runs (off by default).
@@ -55,20 +55,20 @@ Every feature has its own page with screenshots in the [wiki](https://github.com
 - **Branches, tags, remotes and stashes**: checkout, create, rename, delete, merge and rebase from the sidebar or the Branches popup; fetch, pull and push with live progress; stash, apply, pop, drop and clear.
 - **Back and Forward** across files, diffs and commits, like a browser.
 - **37 color themes**, one for light and one for dark mode, following the system by default.
-- **Settings** saved in `~/.gitmanager`, header buttons that show or hide the left and right activity bars, a status bar with the app's memory use (plus an optional memory log for debugging), and update checks with a stable and a beta channel.
+- **Settings** saved in `~/.nibtree`, header buttons that show or hide the left and right activity bars, a status bar with the app's memory use (plus an optional memory log for debugging), and update checks with a stable and a beta channel.
 - **MCP server and command line tool** (off by default, local only) so AI tools such as Claude Code can use the app.
 - **Works as `git mergetool`** (see below).
 
 ## Platforms
 
-Git Manager runs on macOS and Windows with the same features; Linux is planned. Each platform is built and tested on every pull request. Where they differ:
+Nibtree runs on macOS and Windows with the same features; Linux is planned. Each platform is built and tested on every pull request. Where they differ:
 
 | | macOS | Windows | Linux |
 | --- | --- | --- | --- |
 | Download | Universal `.dmg` (Apple Silicon and Intel) | `-setup.exe` for 64-bit Windows 10 and 11, installs for your account without admin rights | Planned |
 | First launch | Not signed yet: right-click the app, Open | Not signed yet: SmartScreen, More info, Run anyway | |
 | Web view | WebKit (WKWebView) | Microsoft Edge WebView2 (the installer adds it if missing) | |
-| Menu bar | Top of the screen, with a Git Manager menu | Inside the window; Settings and Exit in File, About in Help | |
+| Menu bar | Top of the screen, with a Nibtree menu | Inside the window; Settings and Exit in File, About in Help | |
 | Shortcuts | Cmd and Option | Ctrl and Alt; Navigation Bar is Alt+Home, tabs switch with Ctrl+PageDown and Ctrl+PageUp | |
 | Git menu keys (Commit, Update Project, Show Log) | Cmd+K, Cmd+T, Cmd+9 | None: Ctrl+K and Ctrl+T belong to the shell | |
 | Terminal shells | Your login shell and those in `/etc/shells` | PowerShell 7, Windows PowerShell, Command Prompt and Git Bash | |
@@ -77,15 +77,15 @@ Git Manager runs on macOS and Windows with the same features; Linux is planned. 
 | Git sign-in | Your git setup (macOS keychain, SSH agent) | Your git setup (Git Credential Manager, SSH agent) | |
 | GitHub token | Keychain | Credential Manager | |
 | Deleted files | Trash | Recycle Bin | |
-| Settings folder | `~/.gitmanager` | `C:\Users\<you>\.gitmanager` | |
-| Command line tool | `git-manager` in the app, linked into `~/.local/bin` | `git-manager-cli.exe` next to the app, `git-manager.cmd` in WindowsApps | |
+| Settings folder | `~/.nibtree` | `C:\Users\<you>\.nibtree` | |
+| Command line tool | `nibtree` in the app, linked into `~/.local/bin` | `nibtree-cli.exe` next to the app, `nibtree.cmd` in WindowsApps | |
 | Memory readout | Activity Monitor's Memory (physical footprint) | Task Manager's Memory (private working set) | |
 | Clear Cache | Yes | Not yet (macOS only for now) | |
 | Option as Meta in the terminal, Enter Full Screen | Yes | No | |
 | PDF preview | Safari's built-in viewer | Microsoft Edge's built-in viewer | |
 | Opening the app again | Brings the running app forward | Hands its folder to the running app | |
 
-The user guide covers each difference where it matters ([Getting Started](https://github.com/shibbirweb/git-manager/wiki/Getting-Started) has the install steps); how the code handles them is in [Windows Support](https://github.com/shibbirweb/git-manager/wiki/Windows-Support).
+The user guide covers each difference where it matters ([Getting Started](https://github.com/shibbirweb/nibtree/wiki/Getting-Started) has the install steps); how the code handles them is in [Windows Support](https://github.com/shibbirweb/nibtree/wiki/Windows-Support).
 
 ## How it works
 
@@ -126,7 +126,7 @@ platform shares; see `ui/web/COMPONENTS.md`.
 Open a repository from the welcome screen, or pass it on the command line:
 
 ```sh
-src-tauri/target/release/git-manager /path/to/repo
+src-tauri/target/release/nibtree /path/to/repo
 ```
 
 To try the merge tool on a throwaway repository full of conflicts:
@@ -143,7 +143,7 @@ scripts/make-workspace-demo.sh /tmp/workspace-demo
 
 ## Documentation
 
-The [wiki](https://github.com/shibbirweb/git-manager/wiki) has a user guide with screenshots of every feature and developer docs with a chapter per feature (why it exists, how it works, the bugs we fixed). Its source is `docs/wiki/`: edit it there, never in the wiki. CI checks it with `bun scripts/build-wiki.ts --check`, and `.github/workflows/wiki.yml` publishes it when `master` changes. Screenshots are regenerated with `bun scripts/screenshots.ts` (see `docs/wiki/developer/Docs-and-Screenshots.md`).
+The [wiki](https://github.com/shibbirweb/nibtree/wiki) has a user guide with screenshots of every feature and developer docs with a chapter per feature (why it exists, how it works, the bugs we fixed). Its source is `docs/wiki/`: edit it there, never in the wiki. CI checks it with `bun scripts/build-wiki.ts --check`, and `.github/workflows/wiki.yml` publishes it when `master` changes. Screenshots are regenerated with `bun scripts/screenshots.ts` (see `docs/wiki/developer/Docs-and-Screenshots.md`).
 
 ## Continuous integration and releases
 
@@ -152,27 +152,27 @@ The [wiki](https://github.com/shibbirweb/git-manager/wiki) has a user guide with
 - **Versions and notes**: the version lives in `src-tauri/Cargo.toml` and only the release workflows move it. Release notes come from `CHANGELOG.md`, so write each change under `## [Unreleased]` in the same pull request.
 - **Releases** are automated: the "Beta release" and "Stable release" workflows open a release pull request; once it is merged (and, for a stable release, the `develop` to `master` pull request too), the GitHub release is published and the macOS app is built. Builds are unsigned unless the `APPLE_*` secrets are set.
 
-The [Releases and CI](https://github.com/shibbirweb/git-manager/wiki/Releases-and-CI) page has the full flow, every workflow and the one-time repository setup; [Updates](https://github.com/shibbirweb/git-manager/wiki/Updates) explains the stable and beta channels.
+The [Releases and CI](https://github.com/shibbirweb/nibtree/wiki/Releases-and-CI) page has the full flow, every workflow and the one-time repository setup; [Updates](https://github.com/shibbirweb/nibtree/wiki/Updates) explains the stable and beta channels.
 
 ## Using it as `git mergetool`
 
 After building, point git at the binary inside the app bundle:
 
 ```sh
-APP="/Applications/Git Manager.app/Contents/MacOS/git-manager"
-git config --global mergetool.gitmanager.cmd "\"$APP\" merge \"\$BASE\" \"\$LOCAL\" \"\$REMOTE\" \"\$MERGED\""
-git config --global mergetool.gitmanager.trustExitCode true
-git config --global merge.tool gitmanager
+APP="/Applications/Nibtree.app/Contents/MacOS/nibtree"
+git config --global mergetool.nibtree.cmd "\"$APP\" merge \"\$BASE\" \"\$LOCAL\" \"\$REMOTE\" \"\$MERGED\""
+git config --global mergetool.nibtree.trustExitCode true
+git config --global merge.tool nibtree
 ```
 
 Then `git mergetool` opens each conflicted file. **Apply** (or Cmd+Enter) writes the result and exits with status 0, so git marks the file resolved. **Cancel**, Esc or closing the window asks first if you changed the result, then exits with status 1 and the file stays unresolved. Cmd+Q quits with status 1 without asking.
 
 ## Settings
 
-Open **Settings** with the gear button in the header, **Git Manager > Settings...** or **Cmd+,**. Its sections are Appearance, Editor, Git, Layout, Terminal, AI, Keyboard Shortcuts, GitHub, Automation, Updates, Settings Files and About. Changes apply immediately and are saved in a folder in your home directory:
+Open **Settings** with the gear button in the header, **Nibtree > Settings...** or **Cmd+,**. Its sections are Appearance, Editor, Git, Layout, Terminal, AI, Keyboard Shortcuts, GitHub, Automation, Updates, Settings Files and About. Changes apply immediately and are saved in a folder in your home directory:
 
 ```
-~/.gitmanager/
+~/.nibtree/
   settings.json   preferences (theme and color themes, fonts, editor, Git, terminal, AI, automation); safe to edit by hand
   state.json      recent folders, active repository per folder, panel layout and sizes
   github.json     the signed-in GitHub login (the token itself stays in the system keychain)
@@ -180,7 +180,7 @@ Open **Settings** with the gear button in the header, **Git Manager > Settings..
   logs/memory.log the debug memory log, only while it is on
 ```
 
-The folder is created the first time a setting is saved. If `settings.json` or `state.json` contains invalid JSON, the app uses defaults for that file only, shows the error in Settings, and never overwrites it: fix it and click **Try Again**, or **Reset** it. The [Settings page](https://github.com/shibbirweb/git-manager/wiki/Settings) lists every setting.
+The folder is created the first time a setting is saved. If `settings.json` or `state.json` contains invalid JSON, the app uses defaults for that file only, shows the error in Settings, and never overwrites it: fix it and click **Try Again**, or **Reset** it. The [Settings page](https://github.com/shibbirweb/nibtree/wiki/Settings) lists every setting.
 
 ## Keyboard shortcuts
 
@@ -208,7 +208,7 @@ In the merge tool:
 | Cmd+Enter | Apply (save the result and mark resolved), from any pane |
 | Esc | Cancel (asks first if you changed the result) |
 
-Every shortcut is on the [Keyboard Shortcuts page](https://github.com/shibbirweb/git-manager/wiki/Keyboard-Shortcuts).
+Every shortcut is on the [Keyboard Shortcuts page](https://github.com/shibbirweb/nibtree/wiki/Keyboard-Shortcuts).
 
 ## Project layout
 
@@ -244,7 +244,7 @@ docs/wiki/               the wiki: user guide, developer docs and screenshots
 scripts/                 versioning, wiki build, screenshots and demo repositories
 ```
 
-The [Project Layout page](https://github.com/shibbirweb/git-manager/wiki/Project-Layout) explains every folder.
+The [Project Layout page](https://github.com/shibbirweb/nibtree/wiki/Project-Layout) explains every folder.
 
 ## License
 

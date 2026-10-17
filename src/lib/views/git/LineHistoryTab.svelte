@@ -1,17 +1,17 @@
 <!-- Show History for Selection: the commits that changed some lines of a file
      (`git log -L`), newest first, with each commit's diff of those lines. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import PatchView from "@git-manager/ui/components/PatchView.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import PatchView from "@nibtree/ui/components/PatchView.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { api, errorMessage } from "$lib/api";
   import { fullDate, relativeTime } from "$lib/log/format";

@@ -3,7 +3,7 @@
 One status bar item: an icon and short text; a button when it has `onclick`.
 
 ```ts
-import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
+import StatusItem from "@nibtree/ui/components/StatusItem.svelte";
 ```
 
 Group: Layout.

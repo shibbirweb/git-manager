@@ -138,7 +138,7 @@ fn exclude_link(repo: &Repository, name: &str) -> std::io::Result<()> {
         std::fs::create_dir_all(parent)?;
     }
     let separator = if current.is_empty() || current.ends_with('\n') { "" } else { "\n" };
-    std::fs::write(&file, format!("{current}{separator}# Linked into worktrees by Git Manager\n{pattern}\n"))
+    std::fs::write(&file, format!("{current}{separator}# Linked into worktrees by Nibtree\n{pattern}\n"))
 }
 
 fn copy_path(source: &Path, destination: &Path) -> std::io::Result<()> {

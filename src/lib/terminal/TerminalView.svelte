@@ -5,9 +5,9 @@
   requests.
 -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CornerCard from "@git-manager/ui/components/CornerCard.svelte";
-  import TerminalScreen from "@git-manager/ui/components/TerminalScreen.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CornerCard from "@nibtree/ui/components/CornerCard.svelte";
+  import TerminalScreen from "@nibtree/ui/components/TerminalScreen.svelte";
   import { untrack } from "svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { terminalScreenId } from "./dropPaths";

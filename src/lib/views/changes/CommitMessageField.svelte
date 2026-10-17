@@ -8,10 +8,10 @@
   import { settings } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TextArea from "@git-manager/ui/components/TextArea.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TextArea from "@nibtree/ui/components/TextArea.svelte";
   import { type CommitDraft, commitDraft } from "./commitDraft.svelte";
   import { historyMenuItems, templateMenuItems } from "./commitMessageMenus";
   import { MAX_MESSAGE_HISTORY, mergeHistory } from "./commitMessages";

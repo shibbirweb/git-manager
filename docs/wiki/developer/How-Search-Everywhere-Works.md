@@ -1,10 +1,10 @@
 # How Search Everywhere works
 
-Search Everywhere is the JetBrains-style popup with five tabs: All, Classes, Files, Symbols and Text. Three in-memory indexes in Rust answer it: a file list, a symbol index and a text search over the same files. The user side is in [Search Everywhere](../usage/Search-Everywhere.md). Replace in Files, which shares the Text tab, is in [How find and replace works](How-Find-and-Replace-Works.md).
+Search Everywhere is popup with five tabs: All, Classes, Files, Symbols and Text. Three in-memory indexes in Rust answer it: a file list, a symbol index and a text search over the same files. The user side is in [Search Everywhere](../usage/Search-Everywhere.md). Replace in Files, which shares the Text tab, is in [How find and replace works](How-Find-and-Replace-Works.md).
 
 ## Why we need it
 
-Workspaces hold many repositories and tens of thousands of files. Clicking through the Files panel does not scale, and people coming from JetBrains reach for double Shift and Cmd+O without thinking. The popup has to answer on the first key, even while a large folder is still being read, and it must cost no memory when nobody uses it.
+Workspaces hold many repositories and tens of thousands of files. Clicking through the Files panel does not scale, and people reach for double Shift and Cmd+O without thinking. The popup has to answer on the first key, even while a large folder is still being read, and it must cost no memory when nobody uses it.
 
 ## How it works
 

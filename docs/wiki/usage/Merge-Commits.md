@@ -1,6 +1,6 @@
 # Merge Commits
 
-A merge commit joins two branches, so it has two parents: the branch you merged into (parent 1) and the branch you merged (parent 2). The [Log](History-and-Log.md) shows a merge the way JetBrains IDEs do, so you can see which files the merge had to put together.
+A merge commit joins two branches, so it has two parents: the branch you merged into (parent 1) and the branch you merged (parent 2). The [Log](History-and-Log.md) shows a merge so you can see which files the merge had to put together.
 
 ![A merge commit in the Log](../images/merge-commit-files.png)
 
@@ -12,9 +12,9 @@ Select a merge in the Log. Under its details, **Changed on both sides** lists on
 
 Files that came whole from one branch are not listed, since the merge did nothing to them. If no file changed on both sides, the list says **No files changed on both sides** and offers **Show changes to parents**.
 
-Click a file to see it in three panes, like PhpStorm: **Parent 1** on the left, the merge result in the middle and **Parent 2** on the right. Colored bands join each parent's changes to the result's lines. Like VS Code, a change is red in the parent (the older side) and green in the result (the newer side). Lines both parents changed are red, a conflict the merge resolved. The toolbar counts them, such as **2 changes, 1 conflict**, and its arrows (or F7 and Shift+F7) step through them. Scroll any pane and the others follow, so matching lines stay level. **Collapse unchanged** folds the lines that match both parents in all three panes at once.
+Click a file to see it in three panes: **Parent 1** on the left, the merge result in the middle and **Parent 2** on the right. Colored bands join each parent's changes to the result's lines. A change is red in the parent (the older side) and green in the result (the newer side). Lines both parents changed are red, a conflict the merge resolved. The toolbar counts them, such as **2 changes, 1 conflict**, and its arrows (or F7 and Shift+F7) step through them. Scroll any pane and the others follow, so matching lines stay level. **Collapse unchanged** folds the lines that match both parents in all three panes at once.
 
-The layout buttons in the toolbar switch between **Three panes**, **Side by side** and **Inline**. The last two show the usual diff against **Parent 1**, with a **Three panes** button to come back. Git Manager remembers your choice, and **Side by side for commits** in Settings > Git (**2 columns** or **3 columns**) sets it too. **Blame** shows who wrote each line of the merge result, and **Open File** opens the file as it is in your working tree. A binary file, or one too large to diff, always shows the diff against **Parent 1**.
+The layout buttons in the toolbar switch between **Three panes**, **Side by side** and **Inline**. The last two show the usual diff against **Parent 1**, with a **Three panes** button to come back. Nibtree remembers your choice, and **Side by side for commits** in Settings > Git (**2 columns** or **3 columns**) sets it too. **Blame** shows who wrote each line of the merge result, and **Open File** opens the file as it is in your working tree. A binary file, or one too large to diff, always shows the diff against **Parent 1**.
 
 ## Changes to parents
 
@@ -27,7 +27,7 @@ A file can be in both groups. Its diff is labelled **Parent 1** or **Parent 2**,
 
 ## Why a file might be listed without a conflict
 
-Git does not record conflicts in the history. When both branches change the same file in different places, git merges it on its own, and the file still differs from both parents. So the list shows every file the merge combined, a superset of the files that had a conflict. This is the same list as `git diff-tree -c --name-only <merge>`, and as PhpStorm's view of a merge.
+Git does not record conflicts in the history. When both branches change the same file in different places, git merges it on its own, and the file still differs from both parents. So the list shows every file the merge combined, a superset of the files that had a conflict. This is the same list as `git diff-tree -c --name-only <merge>`.
 
 ## Related
 

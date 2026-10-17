@@ -3,7 +3,7 @@
 The app's logo: the merge mark on an accent tile.
 
 ```ts
-import Logo from "@git-manager/ui/components/Logo.svelte";
+import Logo from "@nibtree/ui/components/Logo.svelte";
 ```
 
 Group: Feedback. Also known as: Brand, App icon.
@@ -16,7 +16,7 @@ Use in the Welcome page's brand (normal) and greeting and in About (large).
 
 - `size` (`"normal" | "medium" | "large" | "soft"`, default `"normal"`): 40, 48 (About) or 72 px, or a 56 px tinted
   tile.
-- `label` (`string`, default `"Git Manager"`): Read by screen readers.
+- `label` (`string`, default `"Nibtree"`): Read by screen readers.
 
 ## Example: Greeting
 

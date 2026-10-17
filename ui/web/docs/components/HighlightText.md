@@ -3,7 +3,7 @@
 Text with its matched characters shown, in bold accent or with a tinted background.
 
 ```ts
-import HighlightText from "@git-manager/ui/components/HighlightText.svelte";
+import HighlightText from "@nibtree/ui/components/HighlightText.svelte";
 ```
 
 Group: Editor. Also known as: Highlight, Mark.

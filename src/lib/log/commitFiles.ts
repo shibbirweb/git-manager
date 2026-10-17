@@ -1,4 +1,4 @@
-// The changed files list of a commit. A merge shows, like JetBrains IDEs, only the files that differ from every
+// The changed files list of a commit. A merge shows, only the files that differ from every
 // parent (the ones the merge combined or resolved), or its changes against each parent under a heading per parent.
 import type { ChangedFile, CommitDetails } from "$lib/types";
 

@@ -1,6 +1,6 @@
 # How mergetool mode works
 
-Git Manager can be the merge tool that `git mergetool` opens for each conflicted file. In this mode its window shows only the three-pane merge tool, writes the result and tells git through its exit code whether the file is resolved. For the user side, see [Git Mergetool](../usage/Git-Mergetool.md).
+Nibtree can be the merge tool that `git mergetool` opens for each conflicted file. In this mode its window shows only the three-pane merge tool, writes the result and tells git through its exit code whether the file is resolved. For the user side, see [Git Mergetool](../usage/Git-Mergetool.md).
 
 ## Why we need it
 
@@ -11,9 +11,9 @@ Many people resolve conflicts from the terminal, or from another tool that calls
 Git runs the command from the user's config:
 
 ```sh
-git config --global merge.tool gitmanager
-git config --global mergetool.gitmanager.cmd "\"$APP\" merge \"\$BASE\" \"\$LOCAL\" \"\$REMOTE\" \"\$MERGED\""
-git config --global mergetool.gitmanager.trustExitCode true
+git config --global merge.tool nibtree
+git config --global mergetool.nibtree.cmd "\"$APP\" merge \"\$BASE\" \"\$LOCAL\" \"\$REMOTE\" \"\$MERGED\""
+git config --global mergetool.nibtree.trustExitCode true
 ```
 
 ```mermaid
@@ -22,7 +22,7 @@ sequenceDiagram
     participant RS as Rust main
     participant UI as MergeToolApp
     participant CMD as commands/merge.rs
-    G->>RS: git-manager merge BASE LOCAL REMOTE MERGED
+    G->>RS: nibtree merge BASE LOCAL REMOTE MERGED
     RS->>RS: LaunchMode::from_args gives MergeTool
     UI->>CMD: getLaunchMode()
     CMD-->>UI: mode mergeTool
@@ -49,9 +49,9 @@ flowchart TD
     E -->|"no"| G["LaunchMode::App with no path"]
 ```
 
-`merge` with fewer than four paths is not mergetool mode, so a typo opens the normal app instead of a broken merge window. (`git-manager cli ...` is caught even earlier, in `lib.rs`, and never opens a window; see [How MCP and CLI Work](How-MCP-and-CLI-Work.md).) `AppState` stores the mode and a `mergetool_exit_code` (`AtomicI32`) that starts at **1**.
+`merge` with fewer than four paths is not mergetool mode, so a typo opens the normal app instead of a broken merge window. (`nibtree cli ...` is caught even earlier, in `lib.rs`, and never opens a window; see [How MCP and CLI Work](How-MCP-and-CLI-Work.md).) `AppState` stores the mode and a `mergetool_exit_code` (`AtomicI32`) that starts at **1**.
 
-On the frontend, `App.svelte` calls `api.getLaunchMode()` after `settings.init()`. For `mode: "mergeTool"` it renders `MergeToolApp.svelte` and nothing else: no workspace, no watcher, no sidebars. The settings still load; the update store sees the mergetool mode and schedules no update check and shows no What's New. `appMenu.install("mergeTool")` builds a short menu bar from `menuSpec` (on macOS: Git Manager with Settings, Edit, Window and Help), and the MCP server, memory log and other main window services start only when the mode is `app`, so a mergetool window never competes for the MCP port.
+On the frontend, `App.svelte` calls `api.getLaunchMode()` after `settings.init()`. For `mode: "mergeTool"` it renders `MergeToolApp.svelte` and nothing else: no workspace, no watcher, no sidebars. The settings still load; the update store sees the mergetool mode and schedules no update check and shows no What's New. `appMenu.install("mergeTool")` builds a short menu bar from `menuSpec` (on macOS: Nibtree with Settings, Edit, Window and Help), and the MCP server, memory log and other main window services start only when the mode is `app`, so a mergetool window never competes for the MCP port.
 
 ### Loading the files
 
@@ -113,7 +113,7 @@ That last step is what makes quitting safe. The red close button goes through Ca
 - **Why it happened:** `updates.init()` ran the same way in both launch modes.
 - **The fix and why we chose it:** `updates.init()` asks `isMergetoolLaunch()` and skips the check, and leaves `lastRunVersion` alone so the next normal start still shows What's New. The full app still checks on its next start; see [How Updates Work](How-Updates-Work.md).
 
-One change to know about: when the app was renamed from Git Merger to Git Manager, the tool name in the README became `gitmanager` and the binary `git-manager`, so an old `gitmerger` config must be set up again with the new lines.
+Renames to know about: from Git Merger to Git Manager the tool name became `gitmanager` (binary `git-manager`), and from Git Manager to Nibtree it became `nibtree` (binary `nibtree`, in `Nibtree.app`). An old `gitmerger` or `gitmanager` config must be set up again with the new lines.
 
 ## Tests
 

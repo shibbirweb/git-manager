@@ -3,7 +3,7 @@
 Rows the user orders by dragging, like Interactive Rebase's commits.
 
 ```ts
-import ReorderList from "@git-manager/ui/components/ReorderList.svelte";
+import ReorderList from "@nibtree/ui/components/ReorderList.svelte";
 ```
 
 Group: Navigation. Also known as: Sortable, Drag list.

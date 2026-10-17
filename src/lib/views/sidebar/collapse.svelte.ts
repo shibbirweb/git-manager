@@ -4,7 +4,7 @@
 
 import { SvelteMap, SvelteSet } from "svelte/reactivity";
 
-const STORAGE_KEY = "git-manager.sidebar.collapsed";
+const STORAGE_KEY = "nibtree.sidebar.collapsed";
 const COLLAPSED_BY_DEFAULT = new Set(["section:tags"]);
 
 function load(): [string, boolean][] {

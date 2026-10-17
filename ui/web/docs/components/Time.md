@@ -3,7 +3,7 @@
 A moment relative to now, kept current: 5 min ago, 5m, or in 3h 20m, with the full date as tooltip.
 
 ```ts
-import Time from "@git-manager/ui/components/Time.svelte";
+import Time from "@nibtree/ui/components/Time.svelte";
 ```
 
 Group: Layout. Also known as: Relative time, Timestamp, Time ago, Countdown.

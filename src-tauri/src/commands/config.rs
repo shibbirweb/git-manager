@@ -6,7 +6,7 @@ use super::blocking;
 use crate::config;
 use crate::error::AppResult;
 
-/// Reads `~/.gitmanager/<config_name>.json`; None when it does not exist yet.
+/// Reads `~/.nibtree/<config_name>.json`; None when it does not exist yet.
 #[tauri::command]
 pub async fn load_config(config_name: String) -> AppResult<Option<Value>> {
     blocking(move || config::load_in(&config::config_dir_in(&config::home_dir()?), &config_name)).await

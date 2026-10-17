@@ -5,20 +5,20 @@
   import { settings } from "$lib/stores/settings.svelte";
   import type { McpToolInfo } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import ListBox from "@git-manager/ui/components/ListBox.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import SettingRow from "@git-manager/ui/components/SettingRow.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import ListBox from "@nibtree/ui/components/ListBox.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import SettingRow from "@nibtree/ui/components/SettingRow.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { mcpStore } from "./mcpStore.svelte";
   import {
     changedTools,

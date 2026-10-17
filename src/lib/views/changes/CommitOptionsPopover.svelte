@@ -3,14 +3,14 @@
      stay with the repository until the app quits. -->
 <script lang="ts">
   import type { GpgSign } from "$lib/types";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Fieldset from "@git-manager/ui/components/Fieldset.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Popover from "@git-manager/ui/components/Popover.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Fieldset from "@nibtree/ui/components/Fieldset.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Popover from "@nibtree/ui/components/Popover.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { changedOptionCount, commitOptionsTooltip, GPG_SIGN_CHOICES, validateAuthor } from "./commitOptions";
   import { commitOptions } from "./commitOptions.svelte";
 

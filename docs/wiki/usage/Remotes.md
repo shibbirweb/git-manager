@@ -1,6 +1,6 @@
 # Remotes
 
-A remote is a copy of your repository on a server, such as GitHub. It is usually called `origin`. Fetch, pull and push keep your copy and the remote up to date with each other, and Git Manager shows how far apart they are.
+A remote is a copy of your repository on a server, such as GitHub. It is usually called `origin`. Fetch, pull and push keep your copy and the remote up to date with each other, and Nibtree shows how far apart they are.
 
 ## A few words first
 
@@ -61,7 +61,7 @@ Example: in the `storefront` repository you committed once and have not pushed. 
 
 ## Push a new branch
 
-The first time you push a branch that has no upstream yet, Git Manager pushes it to `origin` (or the first remote, if there is no `origin`) and sets it as the upstream. The Sync button shows **Publish Branch** (a cloud with an up arrow) for such a branch, and the ... menu adds **Branch > Publish Branch**. After that, Pull and Push just work for that branch.
+The first time you push a branch that has no upstream yet, Nibtree pushes it to `origin` (or the first remote, if there is no `origin`) and sets it as the upstream. The Sync button shows **Publish Branch** (a cloud with an up arrow) for such a branch, and the ... menu adds **Branch > Publish Branch**. After that, Pull and Push just work for that branch.
 
 Push needs a branch. If you checked out a commit or tag directly (a "detached HEAD"), you get **Cannot push a detached HEAD**: create a branch first. A repository without any remote says **This repository has no remote to push to**.
 
@@ -74,17 +74,17 @@ Sometimes you rewrote commits you already pushed, for example after a rebase or 
 
 The Push dialog (**Git > Push...**) also has a force push option. See [Git Dialogs](Git-Dialogs.md#push).
 
-Git Manager uses `--force-with-lease`, the safer kind of force push: it refuses if someone else pushed to the branch since your last fetch, so you do not throw away their work by accident.
+Nibtree uses `--force-with-lease`, the safer kind of force push: it refuses if someone else pushed to the branch since your last fetch, so you do not throw away their work by accident.
 
 ## When a pull stops
 
-A pull can stop on conflicts when you and someone else changed the same lines. A note says **Pull stopped with conflicts**, and Git Manager opens the Conflicts dialog so you can fix them. See [Resolving Conflicts](Resolving-Conflicts.md).
+A pull can stop on conflicts when you and someone else changed the same lines. A note says **Pull stopped with conflicts**, and Nibtree opens the Conflicts dialog so you can fix them. See [Resolving Conflicts](Resolving-Conflicts.md).
 
 Whether a plain pull merges or rebases follows your git settings (for example `pull.rebase`), exactly like `git pull` in the Terminal. **Pull (Rebase)** always rebases, and the [Pull dialog](Git-Dialogs.md#pull) lets you choose each time.
 
 ## Signing in
 
-Git Manager runs your own `git`, so it uses the same sign-in as a terminal: the macOS keychain or, on Windows, Git Credential Manager for HTTPS, or your SSH keys and agent. It never shows a password prompt. If a push or pull fails with an authentication error, see [Troubleshooting](Troubleshooting.md).
+Nibtree runs your own `git`, so it uses the same sign-in as a terminal: the macOS keychain or, on Windows, Git Credential Manager for HTTPS, or your SSH keys and agent. It never shows a password prompt. If a push or pull fails with an authentication error, see [Troubleshooting](Troubleshooting.md).
 
 ## Related
 

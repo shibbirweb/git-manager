@@ -4,7 +4,7 @@ This chapter explains how the Recent Files popup (Cmd+E) keeps its list, saves i
 
 ## Why we need it
 
-JetBrains users press Cmd+E all day to jump between the files they work on, and the user asked for the same popup. Before it, Quick Open and Search Everywhere built their "recent" sections from the Back and Forward history. That history is a list of places, not of files: going back reorders it, and it is empty after a restart. A real most recently used list fixes both and gives the three popups one source.
+People press Cmd+E all day to jump between the files they work on, and the user asked for the same popup. Before it, Quick Open and Search Everywhere built their "recent" sections from the Back and Forward history. That history is a list of places, not of files: going back reorders it, and it is empty after a restart. A real most recently used list fixes both and gives the three popups one source.
 
 ## How it works
 
@@ -12,7 +12,7 @@ JetBrains users press Cmd+E all day to jump between the files they work on, and 
 
 The list is an array of `RecentFile` (`filePath`, `edited`), newest first. The rules live in the pure module `src/lib/stores/recentFiles.ts`:
 
-- `touchRecent` moves a file to the top, or adds it there, keeping its `edited` flag. Pseudo tabs (terminal, commit, Git and compare tabs) are ignored. The list is capped at `MAX_RECENT_FILES` (50), JetBrains' default.
+- `touchRecent` moves a file to the top, or adds it there, keeping its `edited` flag. Pseudo tabs (terminal, commit, Git and compare tabs) are ignored. The list is capped at `MAX_RECENT_FILES` (50).
 - `markEdited` sets `edited` without moving the file.
 - `removeRecent` drops a file.
 - Each returns the same array when nothing changed, so the store can skip a save.
@@ -43,7 +43,7 @@ Each change calls `settings.rememberRecentFiles(workspaceId, files)`, which stor
 
 `RecentFiles.svelte` is loaded with a dynamic import the first time it opens, and unmounted when it closes. The pure part is `recentFilesModel.ts`:
 
-- `recentFileRows(files, folders, query, editedOnly)` turns paths into rows with `pathRows` (so files outside the workspace drop out and multi-folder workspaces lead with the folder name), then filters with `matchRecentRow` from Quick Open's model. Unlike Quick Open, the rows keep their recent order instead of sorting by score, like JetBrains' speed search.
+- `recentFileRows(files, folders, query, editedOnly)` turns paths into rows with `pathRows` (so files outside the workspace drop out and multi-folder workspaces lead with the folder name), then filters with `matchRecentRow` from Quick Open's model. Unlike Quick Open, the rows keep their recent order instead of sorting by score.
 - `initialRecentSelection` picks row 1 when row 0 is the file on screen and there is no query, so Cmd+E, Enter goes to the previous file.
 
 The component adds the git tones of `views/files/tones.ts` (shared with the Files panel), the unsaved dot from `repoStore.isDirty`, and the keys: arrows and Ctrl+N/P, Enter and Cmd+Enter (to the side), Esc, the Recent Files shortcut again to toggle edited only, and Delete (Cmd+Backspace on a Mac with an empty filter) to remove a row.
@@ -78,7 +78,7 @@ With it off, `openRecentFiles` in `workspaceActions.ts` shows an info toast with
 
 **A list of files, not of places.** Back and Forward stay a history of places ([How Navigation Works](How-Navigation-Works.md)). Recent Files only cares which files, in which order, which is simpler to keep and to save.
 
-**Saved per workspace.** JetBrains keeps recent files per project. Keying by workspace id matches the saved tabs, and 50 paths per workspace is a few kilobytes at most.
+**Saved per workspace.** Recent files belong to a project. Keying by workspace id matches the saved tabs, and 50 paths per workspace is a few kilobytes at most.
 
 **Recent order while filtering.** The list is short and you usually want a file you just saw, so the order you know beats a fuzzy score.
 

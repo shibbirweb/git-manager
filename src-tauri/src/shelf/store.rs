@@ -1,4 +1,4 @@
-//! Where the shelf lives: `<git dir>/gitmanager-shelf/`, so it stays with the repository,
+//! Where the shelf lives: `<git dir>/nibtree-shelf/`, so it stays with the repository,
 //! is never committed and is not shared. Each shelved change list is `<id>.patch` (a
 //! `git diff --binary` patch, one section per file) and `<id>.json` (name, date, branch and
 //! the files in patch order).
@@ -11,7 +11,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{AppError, AppResult};
 
-pub const SHELF_DIR: &str = "gitmanager-shelf";
+pub const SHELF_DIR: &str = "nibtree-shelf";
+/// Where shelves lived while the app was called Git Manager; moved on first use.
+const LEGACY_SHELF_DIR: &str = "gitmanager-shelf";
 const FORMAT_VERSION: u32 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -122,9 +124,13 @@ pub struct Shelf {
 impl Shelf {
     /// The shelf of a repository, in its common git dir so linked worktrees share it.
     pub fn of(repo: &Repository) -> Shelf {
-        Shelf {
-            dir: repo.commondir().join(SHELF_DIR),
+        let dir = repo.commondir().join(SHELF_DIR);
+        let legacy = repo.commondir().join(LEGACY_SHELF_DIR);
+        if !dir.exists() && legacy.is_dir() {
+            // A failed move leaves the old shelves where they were.
+            let _ = std::fs::rename(&legacy, &dir);
         }
+        Shelf { dir }
     }
 
     #[cfg(test)]
@@ -225,6 +231,18 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> AppResult<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shelves_from_the_git_manager_days_move_on_first_use() {
+        let folder = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(folder.path()).unwrap();
+        let legacy = repo.commondir().join(LEGACY_SHELF_DIR);
+        std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::write(legacy.join("a.json"), "{}").unwrap();
+        let shelf = Shelf::of(&repo);
+        assert!(!legacy.exists());
+        assert!(shelf.dir().join("a.json").exists());
+    }
 
     #[test]
     fn ids_are_checked_before_touching_files() {

@@ -4,7 +4,7 @@ This chapter explains Untitled tabs (File > New File, Cmd+N) and Remember unsave
 
 ## Why we need it
 
-Editors like Sublime Text let you type into a new tab without picking a file first, and never lose that text or unsaved edits when you quit. Before this, every tab was a file, and closing the window asked you to throw unsaved edits away (Cmd+Q did not even ask). People use the editor as a scratch pad, so both gaps hurt.
+Many editors let you type into a new tab without picking a file first, and never lose that text or unsaved edits when you quit. Before this, every tab was a file, and closing the window asked you to throw unsaved edits away (Cmd+Q did not even ask). People use the editor as a scratch pad, so both gaps hurt.
 
 ## How it works
 
@@ -46,7 +46,7 @@ sequenceDiagram
 
 ### The store on disk
 
-`src-tauri/src/unsaved.rs` keeps one file per tab in `~/.gitmanager/unsaved/`, named by the SHA-1 of the tab path (`git2::Oid::hash_object`, as Local History does). Each file is the raw body as it arrived, with `savedAt` added: a JSON line, a newline, the text. `list` reads only the first line of each file. Writes go through a temporary file and a rename. Paths must be absolute or `untitled:<id>`; texts over 16 MB or not UTF-8 are refused.
+`src-tauri/src/unsaved.rs` keeps one file per tab in `~/.nibtree/unsaved/`, named by the SHA-1 of the tab path (`git2::Oid::hash_object`, as Local History does). Each file is the raw body as it arrived, with `savedAt` added: a JSON line, a newline, the text. `list` reads only the first line of each file. Writes go through a temporary file and a rename. Paths must be absolute or `untitled:<id>`; texts over 16 MB or not UTF-8 are refused.
 
 ## Where the code lives
 
@@ -73,7 +73,7 @@ sequenceDiagram
 
 **Files on disk, not state.json.** Texts can be large, and `state.json` is rewritten often and shared between windows. One file per tab means a write touches only that tab.
 
-**Closing a tab by hand still asks.** That is a clear choice to drop the text; keeping it silently would surprise people, and Sublime Text asks too.
+**Closing a tab by hand still asks.** That is a clear choice to drop the text; keeping it silently would surprise people.
 
 **Restore by folder for files, by workspace for Untitled tabs.** A file's edits belong to the file, so they come back in any workspace holding it. Untitled text has no other home than the workspace it was typed in.
 
@@ -94,4 +94,4 @@ None yet.
 
 - Update this page and the user page when the save flow, the restore rules or the store format change.
 - Retake `new-file-untitled.png` when the tab strip changes, and `settings-remember-unsaved.png` when the Saving rows change.
-- `scripts/screenshots.ts` answers the `unsaved_*` commands in the page, so screenshots never write to your own `~/.gitmanager/unsaved`; keep that in step with new commands.
+- `scripts/screenshots.ts` answers the `unsaved_*` commands in the page, so screenshots never write to your own `~/.nibtree/unsaved`; keep that in step with new commands.

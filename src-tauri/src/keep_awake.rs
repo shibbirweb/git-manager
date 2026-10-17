@@ -113,7 +113,7 @@ fn start_guard() -> Result<Guard, String> {
     std::process::Command::new("systemd-inhibit")
         .args([
             "--what=idle:sleep",
-            "--who=Git Manager",
+            "--who=Nibtree",
             "--why=Keep computer awake",
             "--mode=block",
             "sleep",

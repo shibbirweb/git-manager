@@ -26,7 +26,7 @@ To see both versions in one column instead, click **Inline** in the toolbar. See
 
 ## Reading the diff
 
-- Like VS Code and GitLens, old lines are soft red on the left and new lines green on the right, and the changed words are stronger.
+- Old lines are soft red on the left and new lines green on the right, and the changed words are stronger.
 - The strip next to the scrollbar has a tick for every change. Click a tick to jump there.
 
 ## Move between changes
@@ -60,7 +60,7 @@ Click into one side and press Cmd+F. That side's find bar opens above the diff, 
 
 ## Collapse unchanged lines
 
-**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a wavy line named after the code below it, such as **Cart > remove()** (or **23 unchanged lines** outside a class or function). Hover it for **10 lines** buttons that show more at either end; a click elsewhere shows it all. Turn the button off to see the whole file. Git Manager remembers your choice for every diff.
+**Collapse unchanged** (on by default) folds long runs of lines that are the same on both sides, keeping three lines of context around each change. A folded run shows as a wavy line named after the code below it, such as **Cart > remove()** (or **23 unchanged lines** outside a class or function). Hover it for **10 lines** buttons that show more at either end; a click elsewhere shows it all. Turn the button off to see the whole file. Nibtree remembers your choice for every diff.
 
 ## Stage or unstage one change
 

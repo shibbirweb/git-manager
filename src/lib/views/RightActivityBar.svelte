@@ -1,7 +1,7 @@
 <!-- Activity bar on the right edge, mirroring the left one: shows the Files, the AI or (from the bell at the bottom)
      the Notifications panel in the right sidebar. -->
 <script lang="ts">
-  import ActivityBar from "@git-manager/ui/components/ActivityBar.svelte";
+  import ActivityBar from "@nibtree/ui/components/ActivityBar.svelte";
   import { withCommandKeys } from "$lib/commands/commandRuntime";
   import { bellTitle, hasUnreadError } from "$lib/notifications/notificationModel";
   import { notifications } from "$lib/notifications/notifications.svelte";

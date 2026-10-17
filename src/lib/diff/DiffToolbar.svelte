@@ -2,13 +2,13 @@
      unchanged, Blame, Open File, the line actions of the Changes diff, and the file's name at the end. One bar for all
      of them, so a fix or a new button reaches every diff; each view says what it offers. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import ToggleButton from "@nibtree/ui/components/ToggleButton.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { localKeys } from "$lib/commands/commandRuntime";
   import { settings } from "$lib/stores/settings.svelte";
   import type { LineAction } from "$lib/types";

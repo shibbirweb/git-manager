@@ -3,7 +3,7 @@
 A big start action: its icon on a rounded tile and its name under it.
 
 ```ts
-import Tile from "@git-manager/ui/components/Tile.svelte";
+import Tile from "@nibtree/ui/components/Tile.svelte";
 ```
 
 Group: Actions. Also known as: Start action, Big button.

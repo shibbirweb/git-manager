@@ -3,7 +3,7 @@
 A main action joined to a menu of related actions, like Commit with Commit and Push.
 
 ```ts
-import SplitButton from "@git-manager/ui/components/SplitButton.svelte";
+import SplitButton from "@nibtree/ui/components/SplitButton.svelte";
 ```
 
 Group: Actions. Also known as: Button group.

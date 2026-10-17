@@ -60,14 +60,14 @@ pub fn mcp_activity(state: State<'_, AppState>) -> Vec<McpActivity> {
     state.mcp.activity()
 }
 
-/// Links `~/.local/bin/git-manager` to this binary.
+/// Links `~/.local/bin/nibtree` to this binary.
 #[tauri::command]
 pub async fn cli_install(state: State<'_, AppState>) -> AppResult<McpStatus> {
     let mcp = state.mcp.clone();
     blocking(move || mcp.install_cli()).await
 }
 
-/// Removes `~/.local/bin/git-manager`, only when it is our link.
+/// Removes `~/.local/bin/nibtree`, only when it is our link.
 #[tauri::command]
 pub async fn cli_uninstall(state: State<'_, AppState>) -> AppResult<McpStatus> {
     let mcp = state.mcp.clone();

@@ -4,7 +4,7 @@ New File, New Folder, Cut, Copy, Paste, Duplicate, Rename, Move to Trash and dra
 
 ## Why we need it
 
-People coming from VS Code or a JetBrains IDE expect to manage files where they browse them. Without it they switch to the Finder or a terminal for every rename, and the app then has to guess what happened to their open tabs.
+People expect to manage files where they browse them. Without it they switch to the Finder or a terminal for every rename, and the app then has to guess what happened to their open tabs.
 
 ## How it works
 
@@ -41,7 +41,7 @@ Every operation follows the same steps:
 
 `fileOpGroups` decides the menu: everything for one row, New File, New Folder and Paste for a workspace root, Cut, Copy, Paste, Move to Trash and Copy Paths for several rows. `fileKeyOp` maps key presses to the same operations, with Cmd on macOS and Ctrl elsewhere. The tree's `onKeydown` calls `preventDefault`, so the native Edit menu's Cut, Copy and Paste do not run too (see [Menu keys and routing](Menu-Keys-and-Routing.md)).
 
-The clipboard (`fileClipboard.svelte.ts`) holds only a mode and paths. It outlives the panel being hidden, like VS Code's, and follows moves and trashes.
+The clipboard (`fileClipboard.svelte.ts`) holds only a mode and paths. It outlives the panel being hidden, and follows moves and trashes.
 
 ### Drag and drop
 
@@ -92,7 +92,7 @@ The MCP UI tools `create_file`, `create_folder`, `rename_path`, `copy_paths`, `m
 
 **Refuse unsaved edits instead of moving them.** Saving first could write to the old path or overwrite the other side; asking to save or revert is honest and simple.
 
-**Never overwrite.** A taken name stops the operation before anything moves; a copy gets VS Code's copy name.
+**Never overwrite.** A taken name stops the operation before anything moves; a copy gets a "copy" name.
 
 **Roots stay put.** Workspace folders are what the workspace is made of, so they only take new files and pastes.
 

@@ -2,7 +2,7 @@
 // in the result's, in pixels from the top of MergeFrame's panes. Chunks off screen are left out, so a long file
 // draws only what shows.
 import type { EditorView } from "@codemirror/view";
-import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
+import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
 import { changeType, type ChunkState, sideChanged, type SideName, sideRange } from "./model";
 
 export interface Span {

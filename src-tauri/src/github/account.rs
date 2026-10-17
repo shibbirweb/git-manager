@@ -1,4 +1,4 @@
-//! Who is signed in: `~/.gitmanager/github.json` keeps the login and where the token
+//! Who is signed in: `~/.nibtree/github.json` keeps the login and where the token
 //! comes from (never the token itself), so the UI knows the account without a keychain
 //! read or a network call.
 
@@ -37,7 +37,7 @@ pub struct GitHubAccount {
     #[serde(default)]
     pub name: Option<String>,
     pub source: AccountSource,
-    /// Scopes Git Manager needs that a classic token lacks; empty when unknown (fine-grained tokens).
+    /// Scopes Nibtree needs that a classic token lacks; empty when unknown (fine-grained tokens).
     #[serde(default)]
     pub missing_scopes: Vec<String>,
 }

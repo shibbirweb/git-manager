@@ -1,6 +1,6 @@
 {
   "$comment": [
-    "Colors of the built-in Git Manager Light and Dark themes, one token per line. The web loads them from",
+    "Colors of the built-in Nibtree Light and Dark themes, one token per line. The web loads them from",
     "the generated styles/colors.css (with the popup shadow as --shadow and color-scheme); color themes",
     "override them at run time."
   ],

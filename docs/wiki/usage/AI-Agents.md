@@ -28,7 +28,7 @@ If your workspace opened a worktree as a folder of its own, it is still listed o
 - Click **New Agent** at the top of the panel, or choose **View > New AI Agent...**, to start one in the active repository.
 - Right-click a project or worktree and choose **Start Agent**.
 
-The menu lists the agents installed on your Mac: Claude Code, Codex, Gemini CLI, OpenCode, Cursor CLI, GitHub Copilot CLI, Aider, Amp and Qwen Code. Git Manager looks for them where your terminal does, on your login shell's PATH. **Blank Terminal** opens a plain terminal in the same folder. If you install an agent while the app runs, click **Refresh** in the panel.
+The menu lists the agents installed on your Mac: Claude Code, Codex, Gemini CLI, OpenCode, Cursor CLI, GitHub Copilot CLI, Aider, Amp and Qwen Code. Nibtree looks for them where your terminal does, on your login shell's PATH. **Blank Terminal** opens a plain terminal in the same folder. If you install an agent while the app runs, click **Refresh** in the panel.
 
 The agent opens in a new editor tab, like a terminal tab. Above its output, a dimmed line shows the command that started it. Type to it as you would in a terminal.
 
@@ -66,10 +66,10 @@ Click an agent row to show its tab. Right-click it for **Restart Agent**, **Stop
 
 *The first agent you start asks how agents should work.*
 
-The first time you start an agent, Git Manager asks how agents should work:
+The first time you start an agent, Nibtree asks how agents should work:
 
 - **Ask before acting**: the agent asks you before it edits files or runs commands.
-- **Full autonomy**: the agent acts without asking. Git Manager adds the agent's own flag for this, for example `--dangerously-skip-permissions` for Claude Code. This is safest in a worktree of its own.
+- **Full autonomy**: the agent acts without asking. Nibtree adds the agent's own flag for this, for example `--dangerously-skip-permissions` for Claude Code. This is safest in a worktree of its own.
 
 Your answer is remembered. Change it any time in **Settings > AI**.
 
@@ -103,7 +103,7 @@ The gray box shows the command each permission mode runs. **Reset to Default** u
 
 ## Good to know
 
-- Agents run with your own account and settings, exactly as in a terminal. Git Manager never sends anything to them by itself.
+- Agents run with your own account and settings, exactly as in a terminal. Nibtree never sends anything to them by itself.
 - Agent tabs are not reopened after you quit the app; your worktrees stay.
 - [Clear Cache](Clear-Cache.md) keeps agents running, like terminals.
 - Closing an agent's tab stops the agent. Removing a worktree from the panel (right-click, **Remove Worktree...**) closes the agents in it first.
@@ -112,4 +112,4 @@ The gray box shows the command each permission mode runs. **Reset to Default** u
 
 - [Worktrees](Worktrees.md)
 - [Terminal](Terminal.md)
-- [MCP and CLI](MCP-and-CLI.md): AI tools can also drive Git Manager itself.
+- [MCP and CLI](MCP-and-CLI.md): AI tools can also drive Nibtree itself.

@@ -1,16 +1,16 @@
 # How the Cursor Works
 
-The editors' cursor can change its shape, width, blinking and height, like VS Code's cursor settings plus Sublime Text's `caret_extra_top` and `caret_extra_bottom`. The user side is in [Editing Code](../usage/Code-Appearance.md#the-cursor).
+The editors' cursor can change its shape, width, blinking and height (how far it reaches above and below the line). The user side is in [Editing Code](../usage/Code-Appearance.md#the-cursor).
 
 ## Why we need it
 
-People come from VS Code, JetBrains and Sublime Text with strong habits about the cursor. A thin line is easy to lose on a big screen; a block or a taller caret is easier to find. The settings cost nothing while unchanged: they are a small theme in one compartment.
+People have strong habits about the cursor. A thin line is easy to lose on a big screen; a block or a taller caret is easier to find. The settings cost nothing while unchanged: they are a small theme in one compartment.
 
 ## How it works
 
 CodeMirror's `drawSelection` draws each cursor as a `.cm-cursor` element inside the `.cm-cursorLayer`, positioned and sized inline by CodeMirror, and blinks the whole layer with its `cm-blink` animation. `cursor.ts` styles those elements instead of drawing its own.
 
-The selection is drawn like PhpStorm's: soft corners on the outside of the shape. CodeMirror draws a selection as up to three boxes (the first line, the full lines between, the last line). `drawRoundedSelection` in the UI library keeps `drawSelection` for the cursors but swaps its selection layer for one of its own (same `cm-selectionLayer` class, so each editor still has one), which draws the same boxes, each with a class for every corner that sits on the outside. A corner is square when the box above or below carries on past it, so the joins have no notches. The radius is the `codeEditor.selectionRadius` design token, and the color is still the theme's `--editor-selection` (a soft gray in Light and Islands Light, like PhpStorm).
+The selection is drawn: soft corners on the outside of the shape. CodeMirror draws a selection as up to three boxes (the first line, the full lines between, the last line). `drawRoundedSelection` in the UI library keeps `drawSelection` for the cursors but swaps its selection layer for one of its own (same `cm-selectionLayer` class, so each editor still has one), which draws the same boxes, each with a class for every corner that sits on the outside. A corner is square when the box above or below carries on past it, so the joins have no notches. The radius is the `codeEditor.selectionRadius` design token, and the color is still the theme's `--editor-selection` (a soft gray in Light and Islet Light).
 
 ```mermaid
 flowchart LR
@@ -24,8 +24,8 @@ flowchart LR
 
 - **Shape.** Line styles use `border-left` (the width, or 1 px for Line thin) with a negative half-width margin so the line sits in the gap between characters. Block, Block outline and the underlines are one character wide, from `--gm-char-width`. A block is filled with the cursor color at 55%, so the character under it stays readable in every theme; Block outline uses an inset `outline` so the size does not change.
 - **Extra height.** CodeMirror sets the element's height inline. Padding on top and bottom, with `box-sizing: content-box`, makes the element taller than that height, and a negative top margin moves it up by the extra top. The border, fill or outline covers the padding.
-- **Blinking.** The theme turns the layer's animation off (`animation: none !important`, which beats CodeMirror's inline animation name) and animates each cursor with keyframes named after the mode. Blink is `steps(1)` over 1.2 s, CodeMirror's rate, and turns `visibility` off and on rather than `opacity`, which would give the cursor a GPU layer of its own; Smooth, Phase and Expand use VS Code's frames over 0.6 s, alternating. Solid adds no animation.
-- **Restart on move.** VS Code keeps the cursor visible while you type. Each mode has two identical keyframe copies, `-a` and `-b`. `cursorTracker` flips `data-gm-blink` on the scroller after every selection or document change, so the other copy starts from its first, visible frame.
+- **Blinking.** The theme turns the layer's animation off (`animation: none !important`, which beats CodeMirror's inline animation name) and animates each cursor with keyframes named after the mode. Blink is `steps(1)` over 1.2 s, CodeMirror's rate, and turns `visibility` off and on rather than `opacity`, which would give the cursor a GPU layer of its own; Smooth, Phase and Expand use eased frames over 0.6 s, alternating. Solid adds no animation.
+- **Restart on move.** The cursor stays visible while you type. Each mode has two identical keyframe copies, `-a` and `-b`. `cursorTracker` flips `data-gm-blink` on the scroller after every selection or document change, so the other copy starts from its first, visible frame.
 - **Character width.** `cursorTracker` writes `view.defaultCharacterWidth` to `--gm-char-width` on the scroller when the editor is created and when its geometry changes, for example after a font size change.
 - **Smooth caret.** A short `left` and `top` transition. CodeMirror reuses the cursor element when only its position changes, so the transition plays.
 - **Live changes.** `editorCursor` adds a registry plugin and a compartment, like `whitespace.ts`. The effect in `App.svelte` calls `setEditorCursor`, which reconfigures the compartment in every open editor.
@@ -53,7 +53,7 @@ flowchart LR
 
 **Cache one theme per set of options.** Each `EditorView.theme` adds style rules to the page. Dragging a slider back and forth reuses the cached themes instead of adding new rules each time.
 
-**VS Code's default of 2 px.** The old fixed cursor was about 1.2 px. Line thin keeps a thin cursor for anyone who prefers it.
+**A default of 2 px.** The old fixed cursor was about 1.2 px. Line thin keeps a thin cursor for anyone who prefers it.
 
 ## Tests
 

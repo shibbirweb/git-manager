@@ -48,9 +48,9 @@ jobs:
       # The same two steps as build-windows in release.yml.
       - name: Build the command line program
         run: |
-          cargo build --release --locked -p git-manager-cli --manifest-path src-tauri/Cargo.toml
+          cargo build --release --locked -p nibtree-cli --manifest-path src-tauri/Cargo.toml
           mkdir -p src-tauri/binaries
-          cp src-tauri/target/release/git-manager-cli.exe src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe
+          cp src-tauri/target/release/nibtree-cli.exe src-tauri/binaries/nibtree-cli-x86_64-pc-windows-msvc.exe
 
       - name: Build the installer
         run: bun run tauri build --config src-tauri/tauri.windows-release.conf.json
@@ -67,9 +67,9 @@ jobs:
           installer="$(find src-tauri/target/release/bundle/nsis -name '*-setup.exe' | head -n 1)"
           echo "Installer: $installer"
           "$installer" /S
-          console="$(find "$(cygpath "$LOCALAPPDATA")" -name git-manager-cli.exe 2>/dev/null | head -n 1)"
+          console="$(find "$(cygpath "$LOCALAPPDATA")" -name nibtree-cli.exe 2>/dev/null | head -n 1)"
           if [ -z "$console" ]; then
-            echo "::error::git-manager-cli.exe was not installed next to the app"
+            echo "::error::nibtree-cli.exe was not installed next to the app"
             exit 1
           fi
           echo "Installed: $console"
@@ -80,14 +80,14 @@ jobs:
           set -e
           echo "$output"
           if [ "$code" != "2" ] || ! echo "$output" | grep -q "not running"; then
-            echo "::error::git-manager-cli cli status answered $code instead of 2 and \"not running\""
+            echo "::error::nibtree-cli cli status answered $code instead of 2 and \"not running\""
             exit 1
           fi
 
       - name: Keep the installer
         uses: actions/upload-artifact@v4
         with:
-          name: git-manager-windows-installer
+          name: nibtree-windows-installer
           path: src-tauri/target/release/bundle/nsis/*-setup.exe
           retention-days: 14
           if-no-files-found: error

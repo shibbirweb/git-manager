@@ -2,11 +2,11 @@
      window with its shell and what it started. Measured only while the details are open; a click shows the
      terminal. -->
 <script lang="ts">
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { api } from "$lib/api";
   import type { TerminalMemory } from "$lib/types";

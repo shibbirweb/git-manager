@@ -1,4 +1,4 @@
-//! `~/.gitmanager/mcp.json`: the bearer token, plus the port and process id while the server
+//! `~/.nibtree/mcp.json`: the bearer token, plus the port and process id while the server
 //! runs. The app writes it (its `mcp::token`); this tool reads it to find the server.
 
 use std::path::{Path, PathBuf};

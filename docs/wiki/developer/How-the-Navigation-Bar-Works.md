@@ -1,10 +1,10 @@
 # How the Navigation Bar works
 
-This chapter explains how the path above the code became a JetBrains-style Navigation Bar: crumbs with a popup per folder, keyboard moves through them, and a search in each list. The user side is in [Navigation Bar](../usage/Navigation-Bar.md).
+This chapter explains how the path above the code became a Navigation Bar: crumbs with a popup per folder, keyboard moves through them, and a search in each list. The user side is in [Navigation Bar](../usage/Navigation-Bar.md).
 
 ## Why we need it
 
-The path bar used to show the crumbs as plain text, so opening a neighbor file meant the mouse and the Files panel. JetBrains users move around a project with Cmd+Up and the arrow keys, and the user asked for the same.
+The path bar used to show the crumbs as plain text, so opening a neighbor file meant the mouse and the Files panel. People move around a project with Cmd+Up and the arrow keys, and the user asked for the same.
 
 ## How it works
 
@@ -41,7 +41,7 @@ The `fileToolbar` setting (**Settings > Appearance > File toolbar**: `"top"`, `"
 | Bottom | The same as Top, but `FileView` draws its whole bar (`FileBar.svelte`) under the code, and the welcome screen's strip goes to its foot | The claimed one; on the Log or a diff, the floating bar |
 | Hidden, or the Breadcrumbs switch off | None | The floating bar |
 
-The floating bar points at `navTarget()`: the file on screen in the focused group, else the active repository. `floatingAnchor()` puts it at the top left of `.editor-group.focused`, as JetBrains does with a hidden bar. `place()` opens a popup upward when there is under 200 px below the crumb, as in a bar under the code.
+The floating bar points at `navTarget()`: the file on screen in the focused group, else the active repository. `floatingAnchor()` puts it at the top left of `.editor-group.focused` when the bar is hidden. `place()` opens a popup upward when there is under 200 px below the crumb, as in a bar under the code.
 
 ### The trail
 
@@ -64,7 +64,7 @@ The list is the library's `CrumbPopup`, anchored to its crumb: it moves to `<bod
 
 ### The key
 
-`edit.navigationBar` is an Edit menu item with `Cmd+Up` on macOS and `Alt+Home` elsewhere, and a window command (`WINDOW_COMMANDS`), so it also works from the Files panel and the macOS terminal. Three details make it behave like JetBrains:
+`edit.navigationBar` is an Edit menu item with `Cmd+Up` on macOS and `Alt+Home` elsewhere, and a window command (`WINDOW_COMMANDS`), so it also works from the Files panel and the macOS terminal. Three details make it behave:
 
 - **In the editor**, CodeMirror binds Cmd+Up to "start of file" and handles it first. `IN_EDITOR` in `commands/editorKeyPlan.ts` puts the command's key (default or custom) in front of the editor keymap, unless an editor command was moved onto that key.
 - **In a text field**, `textFieldKeeps` in `workspaceShortcuts.ts` leaves the key alone, so the commit message box keeps moving its caret. xterm's hidden text area does not count as a text field.
@@ -90,15 +90,15 @@ The list is the library's `CrumbPopup`, anchored to its crumb: it moves to `<bod
 
 ## Design decisions
 
-**Lists open right away.** In JetBrains, Cmd+Up selects the last crumb and Down opens its list. Here the jump opens the file's folder at once, so typing a name works with one key less.
+**Lists open right away.** Cmd+Up selects the last crumb and Down opens its list. Here the jump opens the file's folder at once, so typing a name works with one key less.
 
 **A file crumb lists its folder**, with the file selected: a file has no contents of its own.
 
-**Three placements, like JetBrains.** JetBrains editors offer breadcrumbs at the top, at the bottom, or hidden. Bottom moves the whole bar, so the file's tools stay next to its path. A hidden bar still answers the key, so the keyboard flow never depends on the layout.
+**Three placements.** Breadcrumbs can sit at the top, at the bottom, or hidden. Bottom moves the whole bar, so the file's tools stay next to its path. A hidden bar still answers the key, so the keyboard flow never depends on the layout.
 
 **Read on every open, no cache.** A listing is one small backend call. Reading fresh means new files show up without watching, and nothing stays in memory after the bar closes.
 
-**Cmd+Up in the editor.** JetBrains takes Cmd+Up in its editor too, and the user asked for the same feature. Cmd+Home still goes to the start of the file, and the key can be changed in Settings > Keyboard Shortcuts.
+**Cmd+Up in the editor.** Cmd+Up works in the editor too, and the user asked for the same feature. Cmd+Home still goes to the start of the file, and the key can be changed in Settings > Keyboard Shortcuts.
 
 ## Tests
 

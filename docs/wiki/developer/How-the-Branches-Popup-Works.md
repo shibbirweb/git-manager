@@ -1,10 +1,10 @@
 # How the Branches popup works
 
-The Branches popup is JetBrains' branch list: a filter, New Branch, Checkout Tag or Revision, then local and remote branches, each with a submenu of actions. It opens from a repository's branch button in Changes and from **Git > Branches...**. Two of its actions open editor tabs: Compare with the current branch, and Show Diff with Working Tree. The user side is in [Branches Popup](../usage/Branches-Popup.md).
+The Branches popup is a branch list: a filter, New Branch, Checkout Tag or Revision, then local and remote branches, each with a submenu of actions. It opens from a repository's branch button in Changes and from **Git > Branches...**. Two of its actions open editor tabs: Compare with the current branch, and Show Diff with Working Tree. The user side is in [Branches Popup](../usage/Branches-Popup.md).
 
 ## Why we need it
 
-The Branches sidebar shows only the active repository and acts through right-click menus. People coming from JetBrains expect one keyboard-friendly list per repository, with actions the sidebar never had: update a branch you are not on, push it, change what it tracks, compare it with yours. Opening it from each repository row also means no switch of the active repository, which would reload branches and history.
+The Branches sidebar shows only the active repository and acts through right-click menus. People expect one keyboard-friendly list per repository, with actions the sidebar never had: update a branch you are not on, push it, change what it tracks, compare it with yours. Opening it from each repository row also means no switch of the active repository, which would reload branches and history.
 
 ## How it works
 
@@ -16,7 +16,7 @@ The Branches sidebar shows only the active repository and acts through right-cli
 
 ### The submenu
 
-`localBranchActions(branch, context)` and `remoteBranchActions(remoteBranch, context)` are pure: they return the rows (labels with the branch names filled in, `disabled`, `danger`, `hint`) from a `BranchPopupContext` of the current branch, busy, operation in progress and whether remotes exist. `branchMenuItems` in `branchPopupActions.ts` maps each `BranchAction` to code and closes the popup first, as JetBrains does. The submenu itself is a `contextMenu` anchored at the row's right edge, so it gets the menu's keyboard handling for free.
+`localBranchActions(branch, context)` and `remoteBranchActions(remoteBranch, context)` are pure: they return the rows (labels with the branch names filled in, `disabled`, `danger`, `hint`) from a `BranchPopupContext` of the current branch, busy, operation in progress and whether remotes exist. `branchMenuItems` in `branchPopupActions.ts` maps each `BranchAction` to code and closes the popup first. The submenu itself is a `contextMenu` anchored at the row's right edge, so it gets the menu's keyboard handling for free.
 
 ```mermaid
 flowchart TD

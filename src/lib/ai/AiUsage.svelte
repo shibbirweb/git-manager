@@ -2,15 +2,15 @@
      "78% 5h · 94% wk", warning from 80%. Click for the details: each window's bar and reset, Refresh and the
      settings. Logic in usageView.ts. -->
 <script lang="ts">
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Mark from "@git-manager/ui/components/Mark.svelte";
-  import Meter from "@git-manager/ui/components/Meter.svelte";
-  import Popover from "@git-manager/ui/components/Popover.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusItem from "@git-manager/ui/components/StatusItem.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Mark from "@nibtree/ui/components/Mark.svelte";
+  import Meter from "@nibtree/ui/components/Meter.svelte";
+  import Popover from "@nibtree/ui/components/Popover.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import StatusItem from "@nibtree/ui/components/StatusItem.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { AI_USAGE_PROVIDERS } from "$lib/stores/settingsData";
   import type { ProviderUsage } from "$lib/types";

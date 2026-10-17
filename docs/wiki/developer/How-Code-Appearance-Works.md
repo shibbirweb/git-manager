@@ -51,9 +51,9 @@ The mode sits in a `Compartment`. A tiny ViewPlugin registers every live view in
 
 ## Design decisions
 
-**Font weight in steps of 100.** Fonts name their weights in hundreds (Light, Regular, Medium), so the slider shows a name instead of a bare number, like the font picker of JetBrains IDEs. Weights in between only work with variable fonts, so they would look the same as a step for most fonts.
+**Font weight in steps of 100.** Fonts name their weights in hundreds (Light, Regular, Medium), so the slider shows a name instead of a bare number. Weights in between only work with variable fonts, so they would look the same as a step for most fonts.
 
-**Selection by default.** Drawing every space is noisy, and drawing none hides trailing spaces. VS Code's default, dots only inside the selection, shows them exactly when you look.
+**Selection by default.** Drawing every space is noisy, and drawing none hides trailing spaces. The default, dots only inside the selection, shows them exactly when you look.
 
 **Detect only on open.** Indentation is read when an editor opens and when a setting changes, not while you type, so the indent unit never jumps under the cursor. Steps into a deeper level count, steps back out do not, because closing several blocks at once makes a step of many levels.
 

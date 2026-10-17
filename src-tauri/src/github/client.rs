@@ -1,4 +1,4 @@
-//! The GitHub REST calls Git Manager makes, and how their errors read. The host is a
+//! The GitHub REST calls Nibtree makes, and how their errors read. The host is a
 //! parameter (api.github.com, or https://HOST/api/v3 for GitHub Enterprise later).
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -280,7 +280,7 @@ impl<'a> GitHubClient<'a> {
 }
 
 pub fn user_agent() -> String {
-    format!("GitManager/{}", env!("CARGO_PKG_VERSION"))
+    format!("Nibtree/{}", env!("CARGO_PKG_VERSION"))
 }
 
 fn parse<T: for<'de> Deserialize<'de>>(response: &HttpResponse) -> AppResult<T> {

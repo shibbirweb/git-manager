@@ -1,6 +1,6 @@
 # Welcome Screen
 
-The welcome screen is what Git Manager shows when no folder is open: at the first start, after **Close Folder**, and in a new window. It looks like the welcome screen of JetBrains IDEs: a sidebar on the left with **Projects**, **Customize** and **Learn**, and your recent projects on the right.
+The welcome screen is what Nibtree shows when no folder is open: at the first start, after **Close Folder**, and in a new window. It has a sidebar on the left with **Projects**, **Customize** and **Learn**, and your recent projects on the right.
 
 ![Welcome screen](../images/welcome.png)
 
@@ -8,7 +8,7 @@ The welcome screen is what Git Manager shows when no folder is open: at the firs
 
 ## Projects
 
-**Projects** lists the workspaces and folders you opened before: workspaces first, each kind with the most recent at the top. A workspace is a set of folders you had open together, or a workspace file ([Workspaces](Workspaces.md)). Each project has a colored badge with two letters of its name, so you can spot it at a glance. Once the project is open, the same color glows softly from the window's top left corner, like in PhpStorm, so you can tell windows apart (best with [Rounded Panels](Rounded-Panels.md)). Turn it off with **Project color in the top bar** in Settings > Appearance. Below the name you see where it is, with your home folder written as `~`.
+**Projects** lists the workspaces and folders you opened before: workspaces first, each kind with the most recent at the top. A workspace is a set of folders you had open together, or a workspace file ([Workspaces](Workspaces.md)). Each project has a colored badge with two letters of its name, so you can spot it at a glance. Once the project is open, the same color glows softly from the window's top left corner, so you can tell windows apart (best with [Rounded Panels](Rounded-Panels.md)). Turn it off with **Project color in the top bar** in Settings > Appearance. Below the name you see where it is, with your home folder written as `~`.
 
 - **Click** a project to open it. **Cmd+click** opens it in a new window.
 - **Type** in **Search projects** to filter the list. Every word you type must appear in the name or the path.
@@ -30,11 +30,11 @@ The buttons next to the search field start something new:
 
 ### Before you open anything
 
-At the first start there are no recent projects yet. The page then says **Welcome to Git Manager** and shows three large buttons: **Open**, **Clone Repository** and **Open Workspace**.
+At the first start there are no recent projects yet. The page then says **Welcome to Nibtree** and shows three large buttons: **Open**, **Clone Repository** and **Open Workspace**.
 
 ## Customize
 
-**Customize** has the settings people change first, so you can make Git Manager yours before opening a folder:
+**Customize** has the settings people change first, so you can make Nibtree yours before opening a folder:
 
 - **Theme**: System, Light or Dark. System follows the macOS appearance.
 - **Color theme** for the mode in use, with a swatch for each theme.

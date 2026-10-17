@@ -1,6 +1,6 @@
 # Split Editor
 
-The split editor shows several files at once, like the editor splits in JetBrains IDEs. Each part of the split is an **editor group**: its own row of tabs with its own file on screen. Split a group to the right or down, and split the new parts again, to build a grid such as one tall file on the left and two files stacked on the right.
+The split editor shows several files at once. Each part of the split is an **editor group**: its own row of tabs with its own file on screen. Split a group to the right or down, and split the new parts again, to build a grid such as one tall file on the left and two files stacked on the right.
 
 ![Three editor groups](../images/split-editor-grid.png)
 
@@ -32,13 +32,13 @@ To open a file straight into another group, use **Open to the Side** in the File
 
 Drag the line between two groups to share the room differently. Double-click the line to give both sides the same size again. Each side always keeps a little room.
 
-A group closes when its last tab closes, and the group next to it in the split takes its room. **Window > Close Group** and **Close Group** in the tab menu close a group with all its tabs. If one of them has unsaved changes that no other group shows, Git Manager asks first.
+A group closes when its last tab closes, and the group next to it in the split takes its room. **Window > Close Group** and **Close Group** in the tab menu close a group with all its tabs. If one of them has unsaved changes that no other group shows, Nibtree asks first.
 
 The first group, top left, also shows the **Diff** tab and the Log, so it stays open while one of those is on screen.
 
 ## Your layout comes back
 
-With **Reopen tabs on start** on (Settings > Editor), Git Manager remembers each folder's groups: which tabs each one has, where they sit and how big they are. The next time you open the folder, the same grid comes back. A group whose files are all gone is left out.
+With **Reopen tabs on start** on (Settings > Editor), Nibtree remembers each folder's groups: which tabs each one has, where they sit and how big they are. The next time you open the folder, the same grid comes back. A group whose files are all gone is left out.
 
 ## Turn it off
 

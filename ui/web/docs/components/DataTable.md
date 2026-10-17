@@ -3,7 +3,7 @@
 A table of many rows with a header, like the log: named column widths, a lead column, selection.
 
 ```ts
-import DataTable from "@git-manager/ui/components/DataTable.svelte";
+import DataTable from "@nibtree/ui/components/DataTable.svelte";
 ```
 
 Group: Navigation. Also known as: Table, Data table, Grid.

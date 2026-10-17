@@ -45,7 +45,7 @@ export interface TopMenu {
   items: MenuEntry[];
 }
 
-export const APP_NAME = "Git Manager";
+export const APP_NAME = "Nibtree";
 
 function item(action: MenuAction, text: string, accelerator: string | null = null): ActionEntry {
   return { kind: "action", action, text, accelerator, check: false };

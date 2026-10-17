@@ -55,7 +55,7 @@ When you stage or unstage the selected file, the selection follows it to its new
 
 ## Discard changes
 
-Discarding throws your edits away and puts the file back as it was in the index. For an untracked file it deletes the file. Git Manager always asks first, and says how many files will be lost. This cannot be undone.
+Discarding throws your edits away and puts the file back as it was in the index. For an untracked file it deletes the file. Nibtree always asks first, and says how many files will be lost. This cannot be undone.
 
 ## Right-click menus
 
@@ -79,7 +79,7 @@ Commits run through your own git, so commit hooks and commit signing work as usu
 
 ### Several repositories
 
-With more than one repository, the box starts with **Commit to**, a list of the repositories that have changes (with their staged count, such as **storefront, 1 staged**), and the branch. It follows the repository you last worked in (for example where you last selected or staged a file), or the active one. The message box says **Message for storefront** so you know where the commit goes. Each repository keeps its own draft message. To give every repository its own commit box instead, like VS Code, see [Commit Box Layout](Commit-Box-Layout.md).
+With more than one repository, the box starts with **Commit to**, a list of the repositories that have changes (with their staged count, such as **storefront, 1 staged**), and the branch. It follows the repository you last worked in (for example where you last selected or staged a file), or the active one. The message box says **Message for storefront** so you know where the commit goes. Each repository keeps its own draft message. To give every repository its own commit box instead, see [Commit Box Layout](Commit-Box-Layout.md).
 
 ### Amend the last commit
 

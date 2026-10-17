@@ -2,8 +2,8 @@
 <script lang="ts">
   import { commandKeys } from "$lib/commands/commandRuntime";
   import { settings } from "$lib/stores/settings.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { set } from "./settingsShared";
 

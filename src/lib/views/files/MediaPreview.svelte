@@ -4,8 +4,8 @@
   the element and MediaView frees the picture or document. PDFs use WebKit's own viewer.
 -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import MediaView from "@git-manager/ui/components/MediaView.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import MediaView from "@nibtree/ui/components/MediaView.svelte";
   import { revealItemInDir } from "@tauri-apps/plugin-opener";
   import { onDestroy, untrack } from "svelte";
   import { errorMessage } from "$lib/api";

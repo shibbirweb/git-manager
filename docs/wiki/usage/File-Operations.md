@@ -1,6 +1,6 @@
 # File Operations
 
-You can create, rename, copy, move and delete files and folders right in the [Files panel](Files-Panel.md), like in VS Code or a JetBrains IDE. These are plain file changes on your disk. Git notices them by itself, so a moved file shows up in [Changes](Changes-and-Commits.md) as deleted in one place and new in the other (or as renamed, once you stage both sides).
+You can create, rename, copy, move and delete files and folders right in the [Files panel](Files-Panel.md). These are plain file changes on your disk. Git notices them by itself, so a moved file shows up in [Changes](Changes-and-Commits.md) as deleted in one place and new in the other (or as renamed, once you stage both sides).
 
 ![File operations in the Files panel menu](../images/file-ops-menu.png)
 
@@ -30,7 +30,7 @@ With several rows selected, the menu has **Cut**, **Copy**, **Paste**, **Move to
 
 A top-level workspace folder (see [Workspaces](Workspaces.md)) offers only **New File...**, **New Folder...** and **Paste**: it cannot be renamed, moved or trashed from here. Right-click the empty space below the rows, or an empty folder, to create or paste into the workspace folder itself.
 
-When a name is taken, a copy gets a new one, as in VS Code: `cart copy.ts`, then `cart copy 2.ts`. A move or a new name never replaces a file that is already there: you see a message such as "cart.ts already exists in src" and nothing changes.
+When a name is taken, a copy gets a new one: `cart copy.ts`, then `cart copy 2.ts`. A move or a new name never replaces a file that is already there: you see a message such as "cart.ts already exists in src" and nothing changes.
 
 ![Renaming a file](../images/file-ops-rename.png)
 
@@ -72,10 +72,10 @@ A move asks first ("Move cart.ts into src/lib?"). When the folder already has a 
 
 ## AI agents and the CLI
 
-AI tools connected through the [MCP server](MCP-and-CLI.md), and the `git-manager cli` command, can do the same with `create_file`, `create_folder`, `copy_paths`, `rename_path`, `move_paths` and `trash_paths`. They follow the same rules as the panel: only your workspace folders, no replaced files, tabs follow along and files with unsaved edits are refused. Rename, move and trash start off; turn them on in **Help > Available MCP Tools...**. For example:
+AI tools connected through the [MCP server](MCP-and-CLI.md), and the `nibtree cli` command, can do the same with `create_file`, `create_folder`, `copy_paths`, `rename_path`, `move_paths` and `trash_paths`. They follow the same rules as the panel: only your workspace folders, no replaced files, tabs follow along and files with unsaved edits are refused. Rename, move and trash start off; turn them on in **Help > Available MCP Tools...**. For example:
 
 ```sh
-git-manager cli call rename_path entryPath=/Users/me/shop/src/cart.ts newName=basket.ts
+nibtree cli call rename_path entryPath=/Users/me/shop/src/cart.ts newName=basket.ts
 ```
 
 ## Good to know

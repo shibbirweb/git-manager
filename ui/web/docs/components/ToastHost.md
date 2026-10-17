@@ -4,7 +4,7 @@ Draws toasts as Notification balloons in the bottom right corner, above the stat
 bar.
 
 ```ts
-import ToastHost from "@git-manager/ui/components/ToastHost.svelte";
+import ToastHost from "@nibtree/ui/components/ToastHost.svelte";
 ```
 
 Group: Overlays. Also known as: Toast, Sonner, Snackbar, Balloon.

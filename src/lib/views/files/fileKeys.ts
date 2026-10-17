@@ -2,7 +2,7 @@
 import type { Extension } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
 import { usesDefaultKeys } from "$lib/commands/commandRuntime";
-import { toggleInline, toggleLink } from "@git-manager/ui/markdown/format";
+import { toggleInline, toggleLink } from "@nibtree/ui/markdown/format";
 
 export interface FileKeyActions {
   save: () => void;

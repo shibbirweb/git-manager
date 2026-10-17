@@ -80,7 +80,7 @@ function labels(items: MenuItem[]): string[] {
 }
 
 describe("branch decorations", () => {
-  it("marks unstaged, staged and conflicted files like VS Code", () => {
+  it("marks unstaged, staged and conflicted files", () => {
     expect(branchDecorations(groups())).toBe("");
     expect(branchDecorations(groups({ unstaged: [file("a")] }))).toBe("*");
     expect(branchDecorations(groups({ staged: [file("a")] }))).toBe("+");
@@ -184,7 +184,7 @@ describe("commit dropdown", () => {
     expect(commitChoiceSpec("amend")).toEqual({ amend: true, followUp: "none" });
   });
 
-  it("lists the VS Code entries and runs the picked one", () => {
+  it("lists the menu entries and runs the picked one", () => {
     const run = vi.fn();
     const items = commitDropdownItems(ready, run);
     expect(labels(items)).toEqual(["Commit", "Commit & Push", "Commit & Sync", "---", "Commit (Amend)"]);
@@ -217,7 +217,7 @@ describe("commit dropdown", () => {
 });
 
 describe("repository menu", () => {
-  it("has VS Code's groups as submenus, then Show Log", () => {
+  it("has the groups as submenus, then Show Log", () => {
     const items = repoMenuItems(state(), handlers());
     expect(labels(items)).toEqual(["Commit", "Changes", "Pull, Push", "Branch", "Stash", "Tags", "---", "Show Log"]);
     const submenu = (label: string) => {

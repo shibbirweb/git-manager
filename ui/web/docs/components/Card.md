@@ -3,7 +3,7 @@
 A bordered box that groups rows, like a worktree card in the AI panel.
 
 ```ts
-import Card from "@git-manager/ui/components/Card.svelte";
+import Card from "@nibtree/ui/components/Card.svelte";
 ```
 
 Group: Layout. Also known as: Card, Panel.

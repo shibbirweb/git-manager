@@ -1,6 +1,6 @@
 # Interactive Rebase
 
-An **interactive rebase** lets you tidy up your recent commits before you share them: put them in another order, fix a message, melt a small fix into the commit it belongs to, or drop a commit. Git Manager shows the commits as a list you edit, like JetBrains IDEs, so you never touch git's text "todo" file.
+An **interactive rebase** lets you tidy up your recent commits before you share them: put them in another order, fix a message, melt a small fix into the commit it belongs to, or drop a commit. Nibtree shows the commits as a list you edit, so you never touch git's text "todo" file.
 
 A rebase writes new commits, with new hashes, in place of the old ones. That is fine for commits only you have. For commits you already pushed, you will need a force push afterwards, and the app warns you.
 

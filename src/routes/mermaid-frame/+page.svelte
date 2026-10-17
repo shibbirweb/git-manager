@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { drawDiagram, type FrameRequest, type FrameResponse } from "@git-manager/ui/markdown/mermaidFrame";
+  import { drawDiagram, type FrameRequest, type FrameResponse } from "@nibtree/ui/markdown/mermaidFrame";
 
   onMount(() => {
     const parentWindow = window.parent;

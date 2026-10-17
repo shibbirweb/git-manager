@@ -1,5 +1,5 @@
 // The window's title bar on macOS: the windows hide the system title strip (titleBarStyle Overlay), so the close,
-// minimize and zoom buttons sit at the left of the app's own top bar, like JetBrains IDEs. That bar then leaves room
+// minimize and zoom buttons sit at the left of the app's own top bar. That bar then leaves room
 // for them and moves the window. In full screen macOS hides the buttons, so the room goes too.
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { currentPlatform } from "$lib/commands/commandRuntime";

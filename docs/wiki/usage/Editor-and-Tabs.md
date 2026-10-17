@@ -1,6 +1,6 @@
 # Editor and Tabs
 
-Git Manager has a light code editor. Open files in tabs, edit and save them, and jump to the lines you changed since the last commit.
+Nibtree has a light code editor. Open files in tabs, edit and save them, and jump to the lines you changed since the last commit.
 
 ![Editor tabs and the path bar](../images/editor-tabs.png)
 
@@ -62,7 +62,7 @@ They close like any other tab; closing a terminal tab stops its shell.
 
 ## The path bar
 
-One slim bar sits between the tabs and the code, like in JetBrains editors.
+One slim bar sits between the tabs and the code.
 
 On the left are the **breadcrumbs**: the workspace folder, then each folder down to the file. Repository folders are marked with a git icon. Hover it to see it in full; click it, or press Cmd+Up, to browse: see [Navigation Bar](Navigation-Bar.md).
 
@@ -99,7 +99,7 @@ Saving is in the **File** menu:
 
 *A green bar beside the new lines, ticks beside the scrollbar, and 2 changes in the path bar.*
 
-While you edit, Git Manager compares the text with the last commit:
+While you edit, Nibtree compares the text with the last commit:
 
 - A thin colored bar next to the line numbers marks added and modified lines, a small mark deleted ones. Click a bar to [revert its change](Revert-a-Change.md).
 - The strip beside the scrollbar has a tick for every change and conflict. Click a tick to jump there. Hover it to see the kind of change and the line.

@@ -6,7 +6,7 @@
 import { type Chunk, getChunks, mergeViewSiblings } from "@codemirror/merge";
 import { type EditorState, type Extension, Facet, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
-import { scales } from "@git-manager/ui/tokens";
+import { scales } from "@nibtree/ui/tokens";
 import { type FoldEdge, type FoldRange, FOLD_STEP, foldEdges, foldRanges, revealFold } from "./foldModel";
 import { scopeLabelAt } from "./foldScope";
 import { iconSvg } from "./mergeExtensions";
@@ -71,7 +71,7 @@ function edgeButton(view: EditorView, element: HTMLElement, edge: "top" | "botto
 }
 
 /**
- * A fold names the code after it, like JetBrains IDEs ("Api > DistrictController > store()"), over a wavy line;
+ * A fold names the code after it ("Api > DistrictController > store()"), over a wavy line;
  * code outside any declaration shows the count. `labelLine` is the line the name is read at.
  */
 class FoldWidget extends WidgetType {

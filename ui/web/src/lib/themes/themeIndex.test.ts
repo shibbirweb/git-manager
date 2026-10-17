@@ -28,8 +28,8 @@ describe("THEME_INDEX", () => {
   });
 
   it("keeps the built-ins as the defaults", () => {
-    expect(themeInfo(DEFAULT_LIGHT_THEME)?.name).toBe("Git Manager Light");
-    expect(themeInfo(DEFAULT_DARK_THEME)?.name).toBe("Git Manager Dark");
+    expect(themeInfo(DEFAULT_LIGHT_THEME)?.name).toBe("Nibtree Light");
+    expect(themeInfo(DEFAULT_DARK_THEME)?.name).toBe("Nibtree Dark");
     expect(defaultThemeFor("light")).toBe(DEFAULT_LIGHT_THEME);
     expect(defaultThemeFor("dark")).toBe(DEFAULT_DARK_THEME);
   });

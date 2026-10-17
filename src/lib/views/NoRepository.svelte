@@ -1,9 +1,9 @@
 <!-- Shown where a view needs a git repository but the workspace has none. -->
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
 
   let { compact = false }: { compact?: boolean } = $props();
 </script>

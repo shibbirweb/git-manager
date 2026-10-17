@@ -177,7 +177,7 @@ fn token_sign_in_verifies_then_keeps_the_token_only_in_the_keychain() {
     assert_eq!(requests[0].method, Method::Get);
     assert_eq!(requests[0].url, "https://api.github.com/user");
     assert_eq!(requests[0].authorization.as_deref(), Some(format!("Bearer {TOKEN}").as_str()));
-    assert!(requests[0].user_agent.as_deref().unwrap_or_default().starts_with("GitManager/"));
+    assert!(requests[0].user_agent.as_deref().unwrap_or_default().starts_with("Nibtree/"));
     assert_eq!(fixture.secrets.get("github.com").as_deref(), Some(TOKEN));
     let file = fixture.account_file();
     assert!(file.contains("octocat"));
@@ -533,7 +533,7 @@ fn ureq_transport_reaches_https_without_panicking() {
             let _ = stream.write_all(b"HTTP/1.1 400 Bad Request\r\n\r\n");
         }
     });
-    let transport = UreqTransport::new("git-manager-test");
+    let transport = UreqTransport::new("nibtree-test");
     let request = HttpRequest {
         method: Method::Get,
         url: format!("https://127.0.0.1:{port}/"),
@@ -577,7 +577,7 @@ fn ureq_transport_sends_headers_and_body_and_returns_error_statuses() {
         (head, String::from_utf8(body).unwrap())
     });
 
-    let transport = UreqTransport::new("GitManager/test");
+    let transport = UreqTransport::new("Nibtree/test");
     let client_request = HttpRequest {
         method: Method::Post,
         url: format!("http://127.0.0.1:{port}/user/repos"),
@@ -596,7 +596,7 @@ fn ureq_transport_sends_headers_and_body_and_returns_error_statuses() {
     assert!(head[0].starts_with("POST /user/repos HTTP/1.1"));
     let has = |wanted: &str| head.iter().any(|line| line.to_ascii_lowercase().starts_with(wanted));
     assert!(has("authorization: bearer local"));
-    assert!(has("user-agent: gitmanager/test"));
+    assert!(has("user-agent: nibtree/test"));
     assert_eq!(body, r#"{"name":"x"}"#);
 }
 
@@ -606,7 +606,7 @@ fn ureq_transport_reports_a_refused_connection() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         listener.local_addr().unwrap().port()
     };
-    let transport = UreqTransport::new("GitManager/test");
+    let transport = UreqTransport::new("Nibtree/test");
     let request = HttpRequest {
         method: Method::Get,
         url: format!("http://127.0.0.1:{port}/user"),

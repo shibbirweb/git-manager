@@ -3,7 +3,7 @@
 An editable code view in the app's editor look: line numbers, active line, selection, syntax colors.
 
 ```ts
-import CodeEditor from "@git-manager/ui/components/CodeEditor.svelte";
+import CodeEditor from "@nibtree/ui/components/CodeEditor.svelte";
 ```
 
 Group: Editor. Also known as: Editor, Code editor, CodeMirror.

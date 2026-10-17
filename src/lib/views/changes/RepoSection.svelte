@@ -1,16 +1,16 @@
 <script lang="ts">
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { FileStatus } from "$lib/types";
-  import Badge from "@git-manager/ui/components/Badge.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Collapsible from "@git-manager/ui/components/Collapsible.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Pill from "@git-manager/ui/components/Pill.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Badge from "@nibtree/ui/components/Badge.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Collapsible from "@nibtree/ui/components/Collapsible.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Pill from "@nibtree/ui/components/Pill.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { contextMenu, type MenuItem } from "$lib/ui/menu.svelte";
   import CommitBox from "./CommitBox.svelte";
   import FileRow from "./FileRow.svelte";

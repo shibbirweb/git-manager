@@ -1,6 +1,6 @@
 # Settings Reference
 
-Every key in `~/.gitmanager/settings.json` and `state.json`, with its default, what `parsePreferences` or `parseState` accepts (in `src/lib/stores/settingsData.ts`), and where it is used. How loading and saving work is in [How Settings Work](How-Settings-Work.md); the user side is in [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md).
+Every key in `~/.nibtree/settings.json` and `state.json`, with its default, what `parsePreferences` or `parseState` accepts (in `src/lib/stores/settingsData.ts`), and where it is used. How loading and saving work is in [How Settings Work](How-Settings-Work.md); the user side is in [Settings](../usage/Settings.md) and [Settings Files](../usage/Settings-Files.md).
 
 Validators: `pickBoolean` (a boolean, else the default), `pickNumber` (a finite number, clamped), `pickInteger` (rounded, then clamped), `pickTenths` (rounded to 0.1, then clamped), `pickOneOf` (one of a list), `pickThemeId` (a known theme of the right mode).
 

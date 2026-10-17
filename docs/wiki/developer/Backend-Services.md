@@ -44,7 +44,7 @@ All search shares one file list, so it follows one set of walker rules (`.gitign
 ## Git features beyond the basics
 
 - **`git_console.rs`** records every command `git/cli.rs` runs (at most 500, with 16 KB of output each and 4 MB in all), masking tokens and passwords first. It starts off and records nothing until the Git Console setting is on. See [How the Git Console Works](How-the-Git-Console-Works.md).
-- **`shelf/`** keeps shelved changes as `<id>.patch` and `<id>.json` in `<git dir>/gitmanager-shelf/`, so they stay with the repository and are never committed. See [How the Shelf Works](How-the-Shelf-Works.md).
+- **`shelf/`** keeps shelved changes as `<id>.patch` and `<id>.json` in `<git dir>/nibtree-shelf/`, so they stay with the repository and are never committed. See [How the Shelf Works](How-the-Shelf-Works.md).
 - **`git/worktree.rs`, `git/submodule.rs`, `git/lfs.rs`** read with git2 where it can (submodules, LFS patterns) and change everything through the git CLI. See [How Worktrees Work](How-Worktrees-Work.md), [How Submodules Work](How-Submodules-Work.md) and [How Git LFS Works](How-Git-LFS-Works.md).
 - **`git/history.rs`** runs `git log --follow` and `git log -L` for file and line history, which libgit2 cannot do.
 - **`git/cancel.rs`** runs a long command (clone) in its own process group under a cancel id, so Cancel stops git and its helpers together.
@@ -52,22 +52,22 @@ All search shares one file list, so it follows one set of walker rules (`.gitign
 
 ## GitHub: `github/`
 
-The token lives only in the system keychain (`secrets.rs`, the `keyring` crate) or comes from `gh auth token` when needed (`gh.rs`); `~/.gitmanager/github.json` keeps only the login. The REST client uses a blocking `ureq` agent on the system TLS stack, so no async runtime or bundled certificates enter the binary. Network, keychain and `gh` sit behind traits, so the tests use fakes. See [How GitHub Works](How-GitHub-Works.md).
+The token lives only in the system keychain (`secrets.rs`, the `keyring` crate) or comes from `gh auth token` when needed (`gh.rs`); `~/.nibtree/github.json` keeps only the login. The REST client uses a blocking `ureq` agent on the system TLS stack, so no async runtime or bundled certificates enter the binary. Network, keychain and `gh` sit behind traits, so the tests use fakes. See [How GitHub Works](How-GitHub-Works.md).
 
 ## MCP server and command line tool: `mcp/`
 
-A local MCP (Model Context Protocol) server lets AI tools and `git-manager cli` use the app. It is off by default; while both switches are off nothing listens and no thread runs.
+A local MCP (Model Context Protocol) server lets AI tools and `nibtree cli` use the app. It is off by default; while both switches are off nothing listens and no thread runs.
 
 - `http.rs` serves Streamable HTTP on `127.0.0.1` only, with our own loop around `httparse`, at most 8 connections and 1 MB bodies, so it can stop every thread when switched off.
-- `token.rs` keeps the bearer token in `~/.gitmanager/mcp.json`, readable by you only; `paths.rs` limits tools to the workspace folders open in the app.
+- `token.rs` keeps the bearer token in `~/.nibtree/mcp.json`, readable by you only; `paths.rs` limits tools to the workspace folders open in the app.
 - `tools/` holds the backend tools, which call the same Rust functions as the app's own commands. `bridge.rs` sends tools the window must run as `mcp-ui-request` events and waits up to 30 seconds for `mcp_ui_respond`.
-- `mcp::cli` is the command line client, its own crate in `src-tauri/cli`: `lib.rs` hands `git-manager cli ...` to it before any window opens. `install.rs` links it into `~/.local/bin` (a `git-manager.cmd` on Windows).
+- `mcp::cli` is the command line client, its own crate in `src-tauri/cli`: `lib.rs` hands `nibtree cli ...` to it before any window opens. `install.rs` links it into `~/.local/bin` (a `nibtree.cmd` on Windows).
 
 See [How MCP and CLI Work](How-MCP-and-CLI-Work.md).
 
 ## Small helpers
 
-- **`memory_log.rs`**: the debug memory log (Settings > Automation). While on, a thread writes a line to `~/.gitmanager/logs/memory.log` when memory changes by the threshold, plus the UI events the window reports; past 5 MB it keeps the old file as `memory.log.1`. See [Debugging](Debugging.md).
+- **`memory_log.rs`**: the debug memory log (Settings > Automation). While on, a thread writes a line to `~/.nibtree/logs/memory.log` when memory changes by the threshold, plus the UI events the window reports; past 5 MB it keeps the old file as `memory.log.1`. See [Debugging](Debugging.md).
 - **`images.rs`**: local images for the Markdown preview as data URLs, only from the document's workspace folder. See [How the Markdown Editor Works](How-the-Markdown-Editor-Works.md).
 - **`preview_scheme.rs`** and **`media.rs`**: the `gmpreview` URL scheme that streams images and PDFs to the previews, only from the open workspace folders, idle until a preview asks. See [How the Preview Scheme Works](How-the-Preview-Scheme-Works.md).
 - **`memory.rs`**: the memory readout of the status bar, also used by the memory log and the MCP performance tools.

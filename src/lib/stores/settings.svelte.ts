@@ -1,6 +1,6 @@
 // User preferences and UI state, stored in the home folder:
-//   ~/.gitmanager/settings.json   preferences shown in the Settings dialog
-//   ~/.gitmanager/state.json      recent folders, panel sizes and similar
+//   ~/.nibtree/settings.json   preferences shown in the Settings dialog
+//   ~/.nibtree/state.json      recent folders, panel sizes and similar
 // Values are validated on load so a hand-edited file can never break the app,
 // and unknown keys are preserved on save. A file that fails to parse only
 // affects itself and is never overwritten automatically. The pure parts live
@@ -17,7 +17,7 @@ import { api, errorMessage, onConfigChanged } from "$lib/api";
 import { pushRecentCommand } from "$lib/commands/recentCommands";
 import type { ShortcutOverrides } from "$lib/commands/registry";
 import { applyColorTheme } from "$lib/themes/apply";
-import { type ColorMode, effectiveMode, pickThemeId } from "@git-manager/ui/themes/themeIndex";
+import { type ColorMode, effectiveMode, pickThemeId } from "@nibtree/ui/themes/themeIndex";
 import { toast } from "$lib/ui/toast.svelte";
 import { type RecentFile, withRecentFiles } from "./recentFiles";
 import { type SavedTabSession, withTabSession } from "./tabSession";
@@ -144,7 +144,7 @@ export type {
 } from "./settingsData";
 
 const SAVE_DELAY_MS = 200;
-/** Where settings lived before ~/.gitmanager existed; migrated once. */
+/** Where settings lived before ~/.nibtree existed; migrated once. */
 const LEGACY_STORAGE_KEY = "git-merger:settings";
 
 const initialPreferences = parsePreferences({}).preferences;
@@ -328,7 +328,7 @@ class SettingsStore {
   /** Section the Settings dialog opens on. */
   dialogSection = $state<SettingsSection>("appearance");
 
-  /** The ~/.gitmanager folder, once known. */
+  /** The ~/.nibtree folder, once known. */
   configDir = $state<string | null>(null);
   /** Set when settings.json could not be read, e.g. after a hand edit with a typo. */
   loadError = $state<string | null>(null);

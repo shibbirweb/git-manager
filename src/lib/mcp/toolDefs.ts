@@ -91,7 +91,7 @@ export const UI_TOOLS: McpUiToolDef[] = [
     "Get App State",
     "App",
     { readOnly: true },
-    "Describes what the Git Manager window shows now: workspace folders, repositories, the active repository with its branch and change counts, open tabs, panels, terminals, theme and any open dialog. Call it first to see where things stand.",
+    "Describes what the Nibtree window shows now: workspace folders, repositories, the active repository with its branch and change counts, open tabs, panels, terminals, theme and any open dialog. Call it first to see where things stand.",
   ),
   tool(
     "list_menu_commands",

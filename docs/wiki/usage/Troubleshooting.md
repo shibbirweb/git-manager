@@ -6,13 +6,13 @@ Common problems with the app and how to fix them. Problems with git itself (git 
 
 Builds are not signed by Apple yet, so the first launch shows an "unidentified developer" warning.
 
-1. In Applications, right-click (or Control-click) **Git Manager** and choose **Open**.
+1. In Applications, right-click (or Control-click) **Nibtree** and choose **Open**.
 2. Click **Open** in the warning.
 
 On newer macOS versions this may not offer Open. Then try to open the app once, go to **System Settings, Privacy and Security**, scroll down and click **Open Anyway**. As a last resort, this Terminal command removes the download mark:
 
 ```sh
-xattr -dr com.apple.quarantine "/Applications/Git Manager.app"
+xattr -dr com.apple.quarantine "/Applications/Nibtree.app"
 ```
 
 You only need to do this once per download.
@@ -30,7 +30,7 @@ The folder scan goes six levels deep and skips folders such as `node_modules`, `
 
 ## Changes do not show up
 
-Git Manager watches your folders and refreshes on its own. If you see "File watching is unavailable for" and a folder name, use the refresh buttons in Changes, the Files panel and the Log.
+Nibtree watches your folders and refreshes on its own. If you see "File watching is unavailable for" and a folder name, use the refresh buttons in Changes, the Files panel and the Log.
 
 ## A file will not open
 
@@ -38,9 +38,9 @@ Files over 4 MB and binary files are not opened in the editor. Folders with more
 
 ## Settings were reset, or are not saved
 
-- **"settings.json could not be read"** at the top of Settings means the file has a mistake, such as a missing comma. Git Manager uses the defaults and does not overwrite your file. Fix it and click **Try Again**, or click **Reset to Defaults**.
+- **"settings.json could not be read"** at the top of Settings means the file has a mistake, such as a missing comma. Nibtree uses the defaults and does not overwrite your file. Fix it and click **Try Again**, or click **Reset to Defaults**.
 - **"state.json could not be read"** means recent folders, the last session and panel sizes could not be loaded. The file is not overwritten. Fix it and click **Try Again**, or click **Reset** in that banner to start a fresh one.
-- **"Could not save settings"** usually means `~/.gitmanager` (`C:\Users\<you>\.gitmanager` on Windows) is not writable. Check its permissions.
+- **"Could not save settings"** usually means `~/.nibtree` (`C:\Users\<you>\.nibtree` on Windows) is not writable. Check its permissions.
 
 See [Settings](Settings.md).
 
@@ -48,32 +48,32 @@ See [Settings](Settings.md).
 
 Automatic checks fail quietly when you are offline. **Check Now** in Settings, Updates shows the reason, such as "GitHub rate limit reached, try again later" (wait a while) or "The update check timed out" (the network is slow or blocked). See [Updates](Updates.md).
 
-## git mergetool does not open Git Manager
+## git mergetool does not open Nibtree
 
 Check the command git uses:
 
 ```sh
-git config --global --get mergetool.gitmanager.cmd
+git config --global --get mergetool.nibtree.cmd
 ```
 
-The path must point to `Contents/MacOS/git-manager` inside the app on a Mac, or to `git-manager.exe` in `AppData/Local/Git Manager` on Windows. See [Git Mergetool](Git-Mergetool.md).
+The path must point to `Contents/MacOS/nibtree` inside the app on a Mac, or to `nibtree.exe` in `AppData/Local/Nibtree` on Windows. See [Git Mergetool](Git-Mergetool.md).
 
-## An AI tool or git-manager cannot connect
+## An AI tool or nibtree cannot connect
 
 See [MCP Server and Command Line Tool](MCP-and-CLI.md) for the setup. Common messages:
 
-- **"Git Manager is not running, or its MCP server and command line tool are both off."** Start the app and turn on **Command line tool** (or **MCP server**) in Settings, Automation.
-- **"The command line tool is turned off in Git Manager settings"** or **"The MCP server is turned off..."**: each kind of client needs its own switch.
+- **"Nibtree is not running, or its MCP server and command line tool are both off."** Start the app and turn on **Command line tool** (or **MCP server**) in Settings, Automation.
+- **"The command line tool is turned off in Nibtree settings"** or **"The MCP server is turned off..."**: each kind of client needs its own switch.
 - **"Missing or wrong bearer token"**: the token changed, for example after **New Token**. Copy the connect command again.
 - The **Status** line says the port is in use: another program has it. Pick another **Port**, then copy the connect command again.
-- **`git-manager: command not found`**: click **Install in ~/.local/bin** (**Install** on Windows), add the line Settings shows to `~/.zshrc` on a Mac, and open a new terminal.
-- **"This tool is turned off in Git Manager (Help > Available MCP Tools)."**: turn it on there.
+- **`nibtree: command not found`**: click **Install in ~/.local/bin** (**Install** on Windows), add the line Settings shows to `~/.zshrc` on a Mac, and open a new terminal.
+- **"This tool is turned off in Nibtree (Help > Available MCP Tools)."**: turn it on there.
 - **"Not inside an open workspace folder"**: tools only reach the folders open in the app. Open that folder first.
-- A screenshot fails: allow Git Manager in **System Settings, Privacy and Security, Screen Recording**.
+- A screenshot fails: allow Nibtree in **System Settings, Privacy and Security, Screen Recording**.
 
 ## Memory keeps growing
 
-Turn on **Log memory changes** in Settings, Automation, Memory log, do what makes it grow, then turn it off. Attach `~/.gitmanager/logs/memory.log` (**Reveal in Finder**, or **Reveal in File Explorer** on Windows, shows it) to your bug report: it shows each change next to what was on screen. See [Status Bar and Help](Status-Bar-and-Help.md).
+Turn on **Log memory changes** in Settings, Automation, Memory log, do what makes it grow, then turn it off. Attach `~/.nibtree/logs/memory.log` (**Reveal in Finder**, or **Reveal in File Explorer** on Windows, shows it) to your bug report: it shows each change next to what was on screen. See [Status Bar and Help](Status-Bar-and-Help.md).
 
 ## The memory number looks different
 

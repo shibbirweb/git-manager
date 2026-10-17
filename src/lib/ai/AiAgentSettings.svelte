@@ -2,16 +2,16 @@
      the full-autonomy flags, how it takes a first prompt and extra arguments, with a preview and Reset. A provider
      that renames a command or a flag needs only a change here (ai/agentConfig.ts). -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Card from "@git-manager/ui/components/Card.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Card from "@nibtree/ui/components/Card.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { onMount } from "svelte";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { settings } from "$lib/stores/settings.svelte";

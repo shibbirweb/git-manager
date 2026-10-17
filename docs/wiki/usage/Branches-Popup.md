@@ -1,6 +1,6 @@
 # Branches Popup
 
-The Branches popup is the quick way to work with the branches of one repository, as in JetBrains IDEs. Pick a branch, and a submenu shows everything you can do with it: check it out, compare it, merge it, update or push it, and more.
+The Branches popup is the quick way to work with the branches of one repository. Pick a branch, and a submenu shows everything you can do with it: check it out, compare it, merge it, update or push it, and more.
 
 ## Open it
 

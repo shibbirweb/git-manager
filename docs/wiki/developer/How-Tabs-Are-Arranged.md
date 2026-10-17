@@ -4,9 +4,9 @@ This chapter explains how a tab is dragged to a new place, how pinned tabs stay 
 
 ## Why we need it
 
-With many files open, the order of the tabs matters. JetBrains IDEs and VS Code let you drag a tab to a new place and pin the tabs you always need, and the user asked for both. Pin Tab already existed, but it only kept a tab safe from the tab limit: the tab stayed wherever it was and Close All still closed it.
+With many files open, the order of the tabs matters. Code editors let you drag a tab to a new place and pin the tabs you always need, and the user asked for both. Pin Tab already existed, but it only kept a tab safe from the tab limit: the tab stayed wherever it was and Close All still closed it.
 
-A long row of tabs also hides most of them behind a sideways scroll. VS Code has `workbench.editor.wrapTabs` to show every tab on more rows, so we added the same switch.
+A long row of tabs also hides most of them behind a sideways scroll. Wrapping tabs shows every tab on more rows, so we added a switch for it.
 
 ## How it works
 
@@ -91,15 +91,15 @@ A pinned tab's close button becomes an unpin button with the `pin` icon, always 
 
 ## Design decisions
 
-**Pinned tabs always first.** JetBrains IDEs and VS Code both do this. A tab is pinned exactly when it sits in the pinned part of the strip.
+**Pinned tabs always first.** A tab is pinned exactly when it sits in the pinned part of the strip.
 
 **A drag only reorders.** Pinning is a choice you make with Pin Tab or the pin button. A drag that changed it would pin tabs you only wanted to move (see "Bugs we fixed"), so each tab stays on its own side of the line.
 
-**Bulk closes keep pinned tabs.** Pinning says "I want this one". Close Others, Close to the Right and Close All skip them, as in VS Code; closing one tab on purpose still works.
+**Bulk closes keep pinned tabs.** Pinning says "I want this one". Close Others, Close to the Right and Close All skip them; closing one tab on purpose still works.
 
 **Move inside a group only.** Dragging to another group would need a shared drag between strips. The tab menu already moves a tab to another group ([How the split editor works](How-the-Split-Editor-Works.md)).
 
-**The dragged tab becomes active.** JetBrains selects a tab when you press on it. Activating it on the drop gives the same result without changing the tab on screen for a plain press.
+**The dragged tab becomes active.** Pressing on a tab selects it. Activating it on the drop gives the same result without changing the tab on screen for a plain press.
 
 ## Bugs we fixed
 

@@ -1,6 +1,6 @@
 # CodeMirror Patterns
 
-Every text pane in Git Manager is a CodeMirror 6 view: the file editor, both sides of every diff, the three merge tool panes and the Markdown source. They share their setup in `src/lib/editor/setup.ts`, where `languageFor(path)` loads a grammar with a dynamic `import()` only when a file needs it. This page collects the patterns that keep those views fast, correct and cheap. Read it before you add an extension. The editor feature itself is in [How the Editor Works](How-the-Editor-Works.md), and the rest of the UI in [Frontend](Frontend.md).
+Every text pane in Nibtree is a CodeMirror 6 view: the file editor, both sides of every diff, the three merge tool panes and the Markdown source. They share their setup in `src/lib/editor/setup.ts`, where `languageFor(path)` loads a grammar with a dynamic `import()` only when a file needs it. This page collects the patterns that keep those views fast, correct and cheap. Read it before you add an extension. The editor feature itself is in [How the Editor Works](How-the-Editor-Works.md), and the rest of the UI in [Frontend](Frontend.md).
 
 ```mermaid
 flowchart LR
@@ -28,7 +28,7 @@ flowchart LR
 
 **Block widgets come from state, not from a `ViewPlugin`.** Widgets that change line heights, like the "Accept Current | Accept Incoming" row above a conflict, come from `EditorView.decorations.compute([conflictField], ...)`, because CodeMirror needs block decorations before layout. `ViewPlugin`s are fine for things that do not move lines: the inline blame note, the scrollbar markers, diff chunk classes, measuring the conflict row width (`barWidth`).
 
-**A layer drawn behind the text can be hidden.** CodeMirror draws the selection behind the text, so an opaque line background covers it. That is why `editor/activeLine.ts` highlights the current line only while nothing is selected, like VS Code and JetBrains.
+**A layer drawn behind the text can be hidden.** CodeMirror draws the selection behind the text, so an opaque line background covers it. That is why `editor/activeLine.ts` highlights the current line only while nothing is selected.
 
 ## Keys and panels
 

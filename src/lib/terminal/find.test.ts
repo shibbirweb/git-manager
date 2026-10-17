@@ -69,7 +69,7 @@ describe("findCounterText", () => {
 });
 
 describe("findBarKey", () => {
-  it("goes up with Enter and down with Shift+Enter, like VS Code's terminal", () => {
+  it("goes up with Enter and down with Shift+Enter", () => {
     expect(findBarKey(key("Enter", "Enter"))).toBe("previous");
     expect(findBarKey(key("Enter", "Enter", { shiftKey: true }))).toBe("next");
     expect(findBarKey(key("Escape", "Escape"))).toBe("close");

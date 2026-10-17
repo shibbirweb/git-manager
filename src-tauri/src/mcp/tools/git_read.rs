@@ -167,7 +167,7 @@ pub const TOOLS: &[BackendTool] = &[
     BackendTool {
         name: "git_console_entries",
         title: "Git Console entries",
-        description: "The git commands Git Manager ran recently (the Git Console), with arguments, exit codes, timing and the start of their output. Empty unless the Git Console is turned on in Settings.",
+        description: "The git commands Nibtree ran recently (the Git Console), with arguments, exit codes, timing and the start of their output. Empty unless the Git Console is turned on in Settings.",
         category: GIT,
         read_only: true,
         destructive: false,
@@ -445,7 +445,7 @@ fn git_console_entries(ctx: &ToolCtx, args: &Args) -> ToolResult {
         return json_out(json!({
             "enabled": false,
             "entries": [],
-            "note": "The Git Console is off. Turn it on in Git Manager's Settings to record git commands.",
+            "note": "The Git Console is off. Turn it on in Nibtree's Settings to record git commands.",
         }));
     }
     let repo_filter = match args.opt_str("repoPath")? {

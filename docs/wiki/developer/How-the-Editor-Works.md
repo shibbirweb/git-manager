@@ -4,7 +4,7 @@ Every file you open gets a tab with a CodeMirror 6 editor, with change markers a
 
 ## Why we need it
 
-Fixing a conflict or a typo should not mean switching editors. People expect VS Code and JetBrains tabs: a single click previews, a double click or an edit keeps the tab, and every tab remembers its cursor, undo history and unsaved text. CodeMirror 6 is small, renders only visible lines and loads languages on demand.
+Fixing a conflict or a typo should not mean switching editors. People expect editor tabs where a single click previews, a double click or an edit keeps the tab, and every tab remembers its cursor, undo history and unsaved text. CodeMirror 6 is small, renders only visible lines and loads languages on demand.
 
 ## How it works
 
@@ -31,7 +31,7 @@ A tab can also hold a commit, a terminal, a Git history or compare view, a shelv
 
 `EditorTabs.svelte` draws the strip: the Diff tab (while a change is selected), then the tabs. `EditorGroupContent.svelte` renders one `FileView` per file tab and hides the inactive ones ([unused ones sleep](How-Unloading-Hidden-Tabs-Works.md)).
 
-Right under the strip, each `FileView` draws one slim bar, like JetBrains: the breadcrumbs and badges, then icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch. How it collapses when narrow, and why it replaced two rows, is in [How the path bar works](How-the-Path-Bar-Works.md).
+Right under the strip, each `FileView` draws one slim bar: the breadcrumbs and badges, then icon buttons for the change arrows, Blame, Copy relative path and the Markdown view switch. How it collapses when narrow, and why it replaced two rows, is in [How the path bar works](How-the-Path-Bar-Works.md).
 
 ### Opening a file and its markers
 
@@ -106,7 +106,7 @@ Saving writes through `writeWorktreeFile` with the remembered `eol` and refreshe
 **A selection inside one line was invisible.**
 - **The issue:** selecting text inside one line showed no selection at all.
 - **Why it happened:** CodeMirror draws the selection behind the text, and the opaque current line background on the cursor's line covered it.
-- **The fix and why we chose it:** `activeLine.ts` highlights the current line only while nothing is selected, like VS Code and JetBrains, tested in `activeLine.test.ts`. It was found with the MCP `inspect_elements` tool in the real app.
+- **The fix and why we chose it:** `activeLine.ts` highlights the current line only while nothing is selected, tested in `activeLine.test.ts`. It was found with the MCP `inspect_elements` tool in the real app.
 
 The toolbar and breadcrumb bugs moved with the bar to [How the path bar works](How-the-Path-Bar-Works.md#bugs-we-fixed).
 

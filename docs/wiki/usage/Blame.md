@@ -45,7 +45,7 @@ Hold Cmd (Ctrl on Windows and Linux) and click the blame note, or click a block 
 - On a committed line, the [Log](History-and-Log.md) opens with that commit selected and the same file's diff shown, scrolled to the line you clicked as it was in that commit.
 - On an uncommitted line, the Changes sidebar opens, where your change is waiting.
 
-Cmd+Option-click on the note, or Option-click in the gutter, instead copies the full commit hash to the clipboard. The note never pushes the code, like GitLens and Zed: it always follows the end of the line. On a long line with word wrap off it runs past the edge, so scroll right to read it; with word wrap on it is cut short with "..." when the last row is nearly full.
+Cmd+Option-click on the note, or Option-click in the gutter, instead copies the full commit hash to the clipboard. The note never pushes the code: it always follows the end of the line. On a long line with word wrap off it runs past the edge, so scroll right to read it; with word wrap on it is cut short with "..." when the last row is nearly full.
 
 The Back button (or Ctrl+-) returns you to the exact line you clicked from. See [Navigation](Navigation.md).
 

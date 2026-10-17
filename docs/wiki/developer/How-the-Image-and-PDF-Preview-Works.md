@@ -93,7 +93,7 @@ How the viewers look and that memory goes down after closing a tab need a check 
 - Keep the extension list in `mediaPreview.ts` and `preview_mime` in `media.rs` the same.
 - When a new diff view is added, give it `previewSides` and add it to the table above.
 - Update [Image and PDF Preview](../usage/Image-and-PDF-Preview.md) and retake `media-preview-image.png`, `media-preview-pdf.png` and `diff-binary-image.png` when the viewers change. `diff-binary-image.png` uses `extras/brand-kit` of the demo, where the logo is replaced by a bigger one.
-- `media-preview-pdf.png` is taken by hand, since Playwright's WebKit has no PDF viewer and `scripts/screenshots.ts` would get an empty frame. Open `notes/lorem-ipsum.pdf` of the demo (`scripts/make-docs-demo.sh`, made by `scripts/make-demo-pdf.ts`) in the real app, capture the window (`git-manager cli screenshot`, or Cmd+Shift+4 then Space) and crop it to the document, so no tooltip or real path shows.
+- `media-preview-pdf.png` is taken by hand, since Playwright's WebKit has no PDF viewer and `scripts/screenshots.ts` would get an empty frame. Open `notes/lorem-ipsum.pdf` of the demo (`scripts/make-docs-demo.sh`, made by `scripts/make-demo-pdf.ts`) in the real app, capture the window (`nibtree cli screenshot`, or Cmd+Shift+4 then Space) and crop it to the document, so no tooltip or real path shows.
 
 ## Bugs we fixed
 

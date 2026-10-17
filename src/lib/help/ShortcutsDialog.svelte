@@ -1,16 +1,16 @@
 <!-- Help > Keyboard Shortcuts: every shortcut, from the menu bar's own definition plus the ones no
      menu shows (shortcuts.ts). Lazy-loaded by App.svelte and mounted only while open. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Kbd from "@git-manager/ui/components/Kbd.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Kbd from "@nibtree/ui/components/Kbd.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { settings } from "$lib/stores/settings.svelte";
   import { SHORTCUTS_URL } from "$lib/update/releases";

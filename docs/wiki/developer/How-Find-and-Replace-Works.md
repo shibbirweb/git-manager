@@ -4,7 +4,7 @@ There are two tools: the find and replace bar inside every CodeMirror editor, an
 
 ## Why we need it
 
-CodeMirror's own search panel has no counter, no Exclude and no Select All Occurrences, and does not match the app. JetBrains users expect Cmd+R, Option+C, W, X and a "3/12" counter. Replace in Files renames a word across a project without leaving the app.
+CodeMirror's own search panel has no counter, no Exclude and no Select All Occurrences, and does not match the app. People expect Cmd+R, Option+C, W, X and a "3/12" counter. Replace in Files renames a word across a project without leaving the app.
 
 ## How it works
 
@@ -81,7 +81,7 @@ After a write, `repoStore.filesWritten` refreshes the status of the touched repo
 
 **Keep CodeMirror's search, replace its panel.** Matching and replace are well tested in `@codemirror/search`; `createPanel` swaps only the UI, without a fork.
 
-**Literal by default.** JetBrains treats the field as plain text unless Regex is on, so `\n` and `$1` mean nothing until you ask for them.
+**Literal by default.** The field is plain text unless Regex is on, so `\n` and `$1` mean nothing until you ask for them.
 
 **The editor's Replace All does not ask, Replace in Files does.** Replace All only changes the editor buffer, and Cmd+Z undoes it. Replace in Files writes to disk and has no undo, so it confirms with `danger: true`, as the project rules ask for destructive actions.
 

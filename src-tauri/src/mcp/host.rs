@@ -101,7 +101,7 @@ mod screenshot {
         static NEXT: AtomicU64 = AtomicU64::new(1);
         let number = window_number(app, window_label)?;
         let file = std::env::temp_dir().join(format!(
-            "git-manager-screenshot-{}-{}.png",
+            "nibtree-screenshot-{}-{}.png",
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));
@@ -119,7 +119,7 @@ mod screenshot {
                 let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
                 let reason = if stderr.is_empty() { "no image was made".to_string() } else { stderr };
                 Err(format!(
-                    "The screenshot failed ({reason}). Allow Git Manager in System Settings > Privacy & Security > Screen Recording."
+                    "The screenshot failed ({reason}). Allow Nibtree in System Settings > Privacy & Security > Screen Recording."
                 ))
             }
         }

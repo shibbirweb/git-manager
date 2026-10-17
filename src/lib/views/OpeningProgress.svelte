@@ -1,7 +1,7 @@
 <!-- Progress while a folder opens: the scan for repositories can take a while in a big folder, and there is
      nothing else to show yet. -->
 <script lang="ts">
-  import LoadingOverlay from "@git-manager/ui/components/LoadingOverlay.svelte";
+  import LoadingOverlay from "@nibtree/ui/components/LoadingOverlay.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
 
   /** Shown only for slow opens, so a quick one does not flash. */

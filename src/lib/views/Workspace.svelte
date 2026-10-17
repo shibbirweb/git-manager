@@ -3,11 +3,11 @@
 <script lang="ts">
   import { runWorkspace } from "./workspaceLife.svelte";
   import EditorGroupContent from "./EditorGroupContent.svelte";
-  import AppShell from "@git-manager/ui/components/AppShell.svelte";
+  import AppShell from "@nibtree/ui/components/AppShell.svelte";
   import { windowChrome } from "$lib/stores/windowChrome.svelte";
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
-  import SplitGrid from "@git-manager/ui/components/SplitGrid.svelte";
-  import type { GridSplitter } from "@git-manager/ui/logic/splitGrid";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
+  import SplitGrid from "@nibtree/ui/components/SplitGrid.svelte";
+  import type { GridSplitter } from "@nibtree/ui/logic/splitGrid";
   import ConflictsDialog from "$lib/merge/ConflictsDialog.svelte";
   import MergeView from "$lib/merge/MergeView.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -20,7 +20,7 @@
   import { fileSearch } from "$lib/search/fileSearchStore.svelte";
   import { recentFilesStore } from "$lib/recentFiles/recentFilesStore.svelte";
   import { navBarStore } from "$lib/navBar/navBarStore.svelte";
-  import ResizeHandle from "@git-manager/ui/components/ResizeHandle.svelte";
+  import ResizeHandle from "@nibtree/ui/components/ResizeHandle.svelte";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { navTarget } from "$lib/navBar/navTarget.svelte";
   import ActivityBar from "./ActivityBar.svelte";

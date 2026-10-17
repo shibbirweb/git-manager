@@ -16,7 +16,7 @@ pub async fn find_agent_programs(programs: Vec<String>, fresh: bool) -> AppResul
 #[tauri::command]
 pub async fn ai_usage(fresh: bool, hidden: Vec<String>) -> AppResult<Vec<ProviderUsage>> {
     blocking(move || {
-        let transport = UreqTransport::new(concat!("git-manager/", env!("CARGO_PKG_VERSION")));
+        let transport = UreqTransport::new(concat!("nibtree/", env!("CARGO_PKG_VERSION")));
         Ok(ai_usage::read_all(&transport, fresh, &hidden))
     })
     .await

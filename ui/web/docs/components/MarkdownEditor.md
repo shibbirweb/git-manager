@@ -3,7 +3,7 @@
 A Markdown file edited like a document (TipTap): edits go into the source text block by block.
 
 ```ts
-import MarkdownEditor from "@git-manager/ui/components/MarkdownEditor.svelte";
+import MarkdownEditor from "@nibtree/ui/components/MarkdownEditor.svelte";
 ```
 
 Group: Editor. Also known as: Rich editor, WYSIWYG, Markdown.

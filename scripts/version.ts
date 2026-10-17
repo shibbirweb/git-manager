@@ -45,7 +45,7 @@ const CARGO_TOML = join(ROOT, "src-tauri", "Cargo.toml");
 const CARGO_LOCK = join(ROOT, "src-tauri", "Cargo.lock");
 const PACKAGE_JSON = join(ROOT, "package.json");
 const CHANGELOG = join(ROOT, "CHANGELOG.md");
-const CRATE = "git-manager";
+const CRATE = "nibtree";
 /** The ticket key release commits use, like `chore:[GM-12] release 0.2.0`. */
 const TICKET_KEY = "GM";
 

@@ -3,12 +3,12 @@
   import { tick, untrack } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { settings } from "$lib/stores/settings.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import ListRegion from "@git-manager/ui/components/ListRegion.svelte";
-  import PanelHeader from "@git-manager/ui/components/PanelHeader.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import ListRegion from "@nibtree/ui/components/ListRegion.svelte";
+  import PanelHeader from "@nibtree/ui/components/PanelHeader.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import CleanRepoList from "./changes/CleanRepoList.svelte";
   import CommitBox from "./changes/CommitBox.svelte";
   import { commitDraft } from "./changes/commitDraft.svelte";

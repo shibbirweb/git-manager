@@ -1,6 +1,6 @@
 # Repository Actions
 
-Every repository in the [Changes](Changes-and-Commits.md) sidebar has its own row of buttons, like the repositories in VS Code's Source Control. They always act on that repository, not on the active one, so you can pull one project and commit in another without switching.
+Every repository in the [Changes](Changes-and-Commits.md) sidebar has its own row of buttons. They always act on that repository, not on the active one, so you can pull one project and commit in another without switching.
 
 ![A repository row](../images/repo-actions-row.png)
 
@@ -10,7 +10,7 @@ With several repositories the buttons sit on each repository header. With one re
 
 ## The branch button
 
-The first button shows the branch you are on, such as **main**. A detached HEAD (no branch, for example after checking out a tag) is shown in italics. Marks after the name tell you what is going on, as in VS Code:
+The first button shows the branch you are on, such as **main**. A detached HEAD (no branch, for example after checking out a tag) is shown in italics. Marks after the name tell you what is going on:
 
 - `*` there are changes you have not staged (new files count too).
 - `+` there are staged changes.
@@ -36,7 +36,7 @@ The same **Sync Changes** or **Publish Branch** button also appears under the co
 
 ## Commit, Refresh and ...
 
-- **Commit** (the check mark) commits this repository with its message from the commit box. With no message yet, it puts the caret in the box. With nothing staged but changed tracked files, it asks **Commit All** first: stage all changes to tracked files and commit them, as VS Code does. New untracked files are never committed this way; stage them first.
+- **Commit** (the check mark) commits this repository with its message from the commit box. With no message yet, it puts the caret in the box. With nothing staged but changed tracked files, it asks **Commit All** first: stage all changes to tracked files and commit them. New untracked files are never committed this way; stage them first.
 - **Refresh** reads the repository's status again (and its branches, when it is the active one).
 - **...** opens the menu below. Right-clicking the repository header opens it too.
 

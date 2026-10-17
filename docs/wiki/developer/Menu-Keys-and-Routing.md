@@ -1,6 +1,6 @@
 # Menu Keys and Routing
 
-Most keys in Git Manager exist twice: as a handler in the page (the editor's keymaps, the window shortcuts) and as an accelerator on a native menu item. This page explains how one key press ends up running exactly one of them. The menu bar itself is in [How the menus work](How-the-Menus-Work.md).
+Most keys in Nibtree exist twice: as a handler in the page (the editor's keymaps, the window shortcuts) and as an accelerator on a native menu item. This page explains how one key press ends up running exactly one of them. The menu bar itself is in [How the menus work](How-the-Menus-Work.md).
 
 ## The page first, the menu second
 
@@ -78,7 +78,7 @@ Menu rows are read from the menu bar's own data, so they cannot drift from the r
 
 **Double Shift is not a menu key.** Menus cannot show it, so the label reads "Search Everywhere (Double Shift)".
 
-**Left out on purpose.** JetBrains keys that clash with macOS or the editor, such as Cmd+Backspace for Delete Line (it deletes to the line start on macOS) and Cmd+- and Cmd+= for folding (they zoom the editor font).
+**Left out on purpose.** IDE keys that clash with macOS or the editor, such as Cmd+Backspace for Delete Line (it deletes to the line start on macOS) and Cmd+- and Cmd+= for folding (they zoom the editor font).
 
 **One list for the shortcuts window.** Help > Keyboard Shortcuts builds its menu sections from `menuSpec`, so a menu key is always listed as the menu has it. The keys no menu shows are written by hand in `src/lib/help/shortcuts.ts` and must be kept in step with their handlers; keys that differ by platform (Next Tab, Previous Tab) follow the Window menu, and `shortcuts.test.ts` checks that.
 

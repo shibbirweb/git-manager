@@ -1,6 +1,6 @@
 <!-- A small "more memory" mark beside a setting's name, with the measured cost (memoryCost.ts). -->
 <script lang="ts">
-  import Pill from "@git-manager/ui/components/Pill.svelte";
+  import Pill from "@nibtree/ui/components/Pill.svelte";
   import type { Preferences } from "$lib/stores/settings.svelte";
   import { memoryCost, memoryFlagTitle } from "./memoryCost";
 

@@ -23,7 +23,7 @@ describe("indent guides", () => {
     expect(levelsFor(8, 2)).toBe(4);
   });
 
-  it("carries guides through blank lines inside a block, like VS Code", () => {
+  it("carries guides through blank lines inside a block", () => {
     expect(blankLevels(2, 2)).toBe(2);
     expect(blankLevels(0, 1)).toBe(1);
     expect(blankLevels(1, 0)).toBe(1);

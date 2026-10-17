@@ -97,7 +97,7 @@ async function waitUntil(check: () => boolean, timeoutMs: number): Promise<boole
 
 function requireWorkspace(): void {
   if (!repoStore.workspace) {
-    throw new ToolArgError("No folder is open in Git Manager");
+    throw new ToolArgError("No folder is open in Nibtree");
   }
 }
 
@@ -659,7 +659,7 @@ export async function handleUiRequest(request: McpUiRequest): Promise<McpUiResul
     return result(false, `Unknown UI tool "${request.tool}"`);
   }
   if (!toolEnabled(definition, settings.mcpTools)) {
-    return result(false, "This tool is turned off in Git Manager (Help > Available MCP Tools).");
+    return result(false, "This tool is turned off in Nibtree (Help > Available MCP Tools).");
   }
   try {
     const structured = await handler(toolArgs(request.arguments));

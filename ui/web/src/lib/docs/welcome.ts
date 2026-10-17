@@ -13,7 +13,7 @@ export const welcomeDocs: ComponentDoc[] = [
       prop("size", '"normal" | "medium" | "large" | "soft"', "40, 48 (About) or 72 px, or a 56 px tinted tile.", {
         default: '"normal"',
       }),
-      prop("label", "string", "Read by screen readers.", { default: '"Git Manager"' }),
+      prop("label", "string", "Read by screen readers.", { default: '"Nibtree"' }),
     ],
     examples: [{ title: "Greeting", code: '<Logo size="large" />' }],
     replaces: [".logo in Welcome.svelte", ".about-logo in SettingsDialog.svelte"],

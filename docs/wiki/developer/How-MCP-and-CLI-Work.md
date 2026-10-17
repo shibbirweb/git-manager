@@ -1,6 +1,6 @@
 # How MCP and the CLI Work
 
-Git Manager has a built-in MCP server (Model Context Protocol) and a command line client of that server, `git-manager cli`. AI harnesses and scripts use them to read and change the open repositories, drive the window and measure memory. The user side is in [MCP Server and Command Line Tool](../usage/MCP-and-CLI.md).
+Nibtree has a built-in MCP server (Model Context Protocol) and a command line client of that server, `nibtree cli`. AI harnesses and scripts use them to read and change the open repositories, drive the window and measure memory. The user side is in [MCP Server and Command Line Tool](../usage/MCP-and-CLI.md).
 
 ## Why we need it
 
@@ -14,7 +14,7 @@ The server speaks MCP's Streamable HTTP transport with JSON answers only (every 
 
 ```mermaid
 sequenceDiagram
-  participant C as MCP client or git-manager cli
+  participant C as MCP client or nibtree cli
   participant H as http.rs
   participant P as protocol.rs
   participant T as tools/*.rs
@@ -44,16 +44,16 @@ sequenceDiagram
 
 1. Any `Origin` header: 403. Browsers send it and harnesses do not, so this blocks web pages and DNS rebinding.
 2. A missing or wrong `Authorization: Bearer` token: 401. The token is 32 random bytes in hex, compared in constant time.
-3. The wrong switch: requests with `X-Git-Manager-Client: cli` need `cliEnabled`, all others need `mcpEnabled` (403).
+3. The wrong switch: requests with `X-Nibtree-Client: cli` need `cliEnabled`, all others need `mcpEnabled` (403).
 4. A path other than `/mcp` (404), a method other than POST (405), no `Content-Length` (411), or a body over 1 MB (413).
 
-At most 8 connections are open at once (503 after that) and idle ones close after 60 seconds. A tool that takes a `repoPath`, `filePath` or `folderPath` resolves it (symlinks included, `..` refused) and must land inside a workspace folder the window pushed with `mcp_set_workspace` (`paths.rs`). UI tools check the same with `folderFor`. A tool that is off is left out of `tools/list` and a call to it fails with "This tool is turned off in Git Manager (Help > Available MCP Tools)."
+At most 8 connections are open at once (503 after that) and idle ones close after 60 seconds. A tool that takes a `repoPath`, `filePath` or `folderPath` resolves it (symlinks included, `..` refused) and must land inside a workspace folder the window pushed with `mcp_set_workspace` (`paths.rs`). UI tools check the same with `folderFor`. A tool that is off is left out of `tools/list` and a call to it fails with "This tool is turned off in Nibtree (Help > Available MCP Tools)."
 
-The token lives in `~/.gitmanager/mcp.json` with mode 0600, never in settings.json, events or logs. While the server runs, the file also holds `port` and `pid`, which is how the CLI finds it.
+The token lives in `~/.nibtree/mcp.json` with mode 0600, never in settings.json, events or logs. While the server runs, the file also holds `port` and `pid`, which is how the CLI finds it.
 
 ### The CLI
 
-`lib.rs` checks for `cli` as the first argument before Tauri starts, so `git-manager cli ...` never opens a window. The tool is its own crate, `src-tauri/cli` ([why](Windows-MCP-and-CLI.md#the-command-line-tool)). It reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. Commands: `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (one line per `get_memory_usage` sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/git-manager` to the running binary, never with sudo.
+`lib.rs` checks for `cli` as the first argument before Tauri starts, so `nibtree cli ...` never opens a window. The tool is its own crate, `src-tauri/cli` ([why](Windows-MCP-and-CLI.md#the-command-line-tool)). It reads `mcp.json`, sends MCP requests to 127.0.0.1 with the CLI header, and prints results. Commands: `status`, `tools`, `describe`, `call`, `clone`, `screenshot` and `memory` (one line per `get_memory_usage` sample). `clone` calls `clone_repository` with the current folder as `parentPath` (`clone_arguments`), with a one hour limit instead of 150 seconds. Exit codes: 0 ok, 1 tool error, 2 unreachable, switched off or bad usage. `install.rs` links `~/.local/bin/nibtree` to the running binary, never with sudo.
 
 ### The memory recorder
 

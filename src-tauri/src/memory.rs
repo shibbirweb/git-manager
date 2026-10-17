@@ -29,7 +29,7 @@ pub struct MemoryUsage {
 /// The app's own row.
 #[cfg(any(target_os = "macos", windows, test))]
 fn label_for_app() -> String {
-    "Git Manager (app)".to_string()
+    "Nibtree (app)".to_string()
 }
 
 #[cfg(any(target_os = "macos", test))]
@@ -358,7 +358,7 @@ mod platform {
             .iter()
             .find(|(pid, _, _)| *pid == own)
             .map(|(_, _, name)| name.clone())
-            .unwrap_or_else(|| "git-manager.exe".to_string());
+            .unwrap_or_else(|| "nibtree.exe".to_string());
         let mut processes = vec![ProcessMemory {
             pid: own as i32,
             name: own_name,
@@ -482,7 +482,7 @@ mod tests {
     #[test]
     fn names_webview2_processes_by_their_type() {
         let exe = r#""C:\Program Files (x86)\Microsoft\EdgeWebView\Application\140.0\msedgewebview2.exe""#;
-        assert_eq!(webview_label(&format!("{exe} --embedded-browser-webview=1 --webview-exe-name=git-manager.exe")), "WebView2 (browser)");
+        assert_eq!(webview_label(&format!("{exe} --embedded-browser-webview=1 --webview-exe-name=nibtree.exe")), "WebView2 (browser)");
         assert_eq!(webview_label(&format!("{exe} --type=renderer --lang=en-US")), "Web content (UI)");
         assert_eq!(webview_label(&format!("{exe} --type=gpu-process --gpu-preferences=x")), "Graphics");
         assert_eq!(
@@ -499,7 +499,7 @@ mod tests {
         let process = |pid: u32, parent: u32, name: &str| (pid, parent, name.to_string());
         let all = vec![
             process(100, 1, "explorer.exe"),
-            process(200, 100, "git-manager.exe"),
+            process(200, 100, "nibtree.exe"),
             process(300, 200, "msedgewebview2.exe"),
             process(301, 300, "msedgewebview2.exe"),
             process(302, 300, "MSEdgeWebView2.exe"),
@@ -520,7 +520,7 @@ mod tests {
         assert_eq!(label_for("com.apple.WebKit.WebContent", false), "Web content (UI)");
         assert_eq!(label_for("com.apple.WebKit.GPU", false), "Graphics");
         assert_eq!(label_for("com.apple.WebKit.Networking", false), "Networking");
-        assert_eq!(label_for("anything", true), "Git Manager (app)");
+        assert_eq!(label_for("anything", true), "Nibtree (app)");
     }
 
     #[cfg(any(target_os = "macos", windows))]

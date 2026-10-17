@@ -26,7 +26,7 @@ Files show one plain icon by default. To see an icon for each file type, pick **
 
 ## Status letters and colors
 
-Each changed file has a letter on the right and a matching color, like in VS Code: blue for changed, green for new, red for deleted or conflicted. Hover the letter to read the full state, for example "Modified (staged), modified (not staged)".
+Each changed file has a letter on the right and a matching color: blue for changed, green for new, red for deleted or conflicted. Hover the letter to read the full state, for example "Modified (staged), modified (not staged)".
 
 | Letter | Meaning |
 | --- | --- |

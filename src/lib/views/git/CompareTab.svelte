@@ -8,9 +8,9 @@
   import { revisionLabel } from "$lib/stores/gitTabs";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { RevisionDiff } from "$lib/types";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
 
   interface Props {
     repoRoot: string;

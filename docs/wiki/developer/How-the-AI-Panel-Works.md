@@ -4,7 +4,7 @@ The AI panel lists the workspace's projects, their worktrees and the AI agents r
 
 ## Why we need it
 
-People run coding agents (Claude Code, Codex...) beside their editor, often several at once, each in its own git worktree so they never edit the same files. The panel follows that shape: projects, worktrees under them, agent tabs under those, and a status for each agent. Git Manager already had worktrees and terminals in editor tabs, so the panel ties them together.
+People run coding agents (Claude Code, Codex...) beside their editor, often several at once, each in its own git worktree so they never edit the same files. The panel follows that shape: projects, worktrees under them, agent tabs under those, and a status for each agent. Nibtree already had worktrees and terminals in editor tabs, so the panel ties them together.
 
 ## How it works
 

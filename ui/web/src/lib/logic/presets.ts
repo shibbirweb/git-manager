@@ -15,7 +15,7 @@ export type RowHeight = keyof typeof scales.rowHeight;
 export type TextRows = keyof typeof scales.textRows;
 export type PanelPreset = keyof typeof scales.panelMin;
 export type CodeHeight = keyof typeof scales.codeHeight | "none";
-/** A project's color (its Welcome tile): a glow at the window's top left, like JetBrains IDEs. */
+/** A project's color (its Welcome tile): a glow at the window's top left. */
 export type ProjectTint = "none" | "blue" | "green" | "magenta" | "cyan" | "red";
 export type GridColumns = "auto" | "two" | "three" | "four" | "six";
 export type LabelColumn = keyof typeof scales.labelColumn;

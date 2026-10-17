@@ -1,10 +1,10 @@
 # How the Git dialogs work
 
-The Git menu opens JetBrains-style dialogs for Push, Pull, Update Project, Merge, Rebase, Reset HEAD, Rollback, Manage Remotes and Clone. This chapter explains how they are shown, where their rules live and how a clone can be cancelled. The user side is in [Git Dialogs](../usage/Git-Dialogs.md); the menu that opens them is in [How the Git menu works](How-the-Git-Menu-Works.md).
+The Git menu opens dialogs for Push, Pull, Update Project, Merge, Rebase, Reset HEAD, Rollback, Manage Remotes and Clone. This chapter explains how they are shown, where their rules live and how a clone can be cancelled. The user side is in [Git Dialogs](../usage/Git-Dialogs.md); the menu that opens them is in [How the Git menu works](How-the-Git-Menu-Works.md).
 
 ## Why we need it
 
-One-click buttons are fine for a plain push or pull, but git has options people need now and then: push to another branch, pull with rebase, merge with `--no-ff`, reset in Keep mode. JetBrains shows those in small dialogs, with the commits that will move. We do the same, and add a preview of the exact git command, which also teaches git.
+One-click buttons are fine for a plain push or pull, but git has options people need now and then: push to another branch, pull with rebase, merge with `--no-ff`, reset in Keep mode. We show those in small dialogs, with the commits that will move and a preview of the exact git command, which also teaches git.
 
 ## How it works
 

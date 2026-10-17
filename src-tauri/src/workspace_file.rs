@@ -100,9 +100,12 @@ pub fn relative_path(base: &Path, target: &Path) -> Option<String> {
     Some(if parts.is_empty() { ".".to_string() } else { parts.join("/") })
 }
 
+/// Workspace files the app opens: its own, the ones saved while it was called Git Manager, and VS Code's.
+pub const WORKSPACE_SUFFIXES: [&str; 3] = [".nibtree-workspace", ".gitmanager-workspace", ".code-workspace"];
+
 fn name_of(file: &Path) -> String {
     let name = file.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
-    for suffix in [".gitmanager-workspace", ".code-workspace"] {
+    for suffix in WORKSPACE_SUFFIXES {
         if let Some(stem) = name.strip_suffix(suffix) {
             return stem.to_string();
         }
@@ -422,7 +425,7 @@ mod tests {
         let api = dir.path().join("apps/api");
         std::fs::create_dir_all(&web).unwrap();
         std::fs::create_dir_all(&api).unwrap();
-        let file = dir.path().join("team.gitmanager-workspace");
+        let file = dir.path().join("team.nibtree-workspace");
         std::fs::write(&file, "{ \"settings\": { \"editor.tabSize\": 2 }, // keep me\n \"extensions\": {} }").unwrap();
 
         write(&file, &[canonical(&web), canonical(&api)]).unwrap();
@@ -452,7 +455,7 @@ mod tests {
     #[test]
     fn invalid_files_are_errors() {
         let dir = tempfile::TempDir::new().unwrap();
-        let file = dir.path().join("bad.gitmanager-workspace");
+        let file = dir.path().join("bad.nibtree-workspace");
         std::fs::write(&file, "{ folders: nope").unwrap();
         assert!(matches!(read(&file), Err(AppError::Invalid(_))));
         // A file that does not parse is never overwritten.
@@ -511,7 +514,7 @@ mod tests {
         assert_eq!(value["folders"], json!([{ "path": "web" }]));
         assert!(value.get("extensions").is_some());
 
-        let fresh = dir.path().join("nested/new.gitmanager-workspace");
+        let fresh = dir.path().join("nested/new.nibtree-workspace");
         write(&fresh, &[canonical(&web)]).unwrap();
         let value: Value = serde_json::from_str(&std::fs::read_to_string(&fresh).unwrap()).unwrap();
         assert_eq!(value, json!({ "folders": [{ "path": "../web" }], "settings": {} }));

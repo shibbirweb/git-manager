@@ -2,17 +2,17 @@
      agents. The panel keeps the keys and the selection; these rows only draw it and report clicks. -->
 <script lang="ts">
   import { terminalTabPath } from "$lib/terminal/terminalTabs";
-  import Card from "@git-manager/ui/components/Card.svelte";
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import Badge from "@git-manager/ui/components/Badge.svelte";
-  import Mark from "@git-manager/ui/components/Mark.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SectionTitle from "@git-manager/ui/components/SectionTitle.svelte";
-  import Spacer from "@git-manager/ui/components/Spacer.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Tag from "@git-manager/ui/components/Tag.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Card from "@nibtree/ui/components/Card.svelte";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import Badge from "@nibtree/ui/components/Badge.svelte";
+  import Mark from "@nibtree/ui/components/Mark.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SectionTitle from "@nibtree/ui/components/SectionTitle.svelte";
+  import Spacer from "@nibtree/ui/components/Spacer.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Tag from "@nibtree/ui/components/Tag.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import AgentStateIcon from "./AgentStateIcon.svelte";
   import { stateLabel } from "./agentStatus";
   import { agentById } from "./agents";

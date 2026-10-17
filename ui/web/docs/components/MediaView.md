@@ -3,7 +3,7 @@
 A file that is not text: an image with zoom controls, a PDF, or a card for any other file.
 
 ```ts
-import MediaView from "@git-manager/ui/components/MediaView.svelte";
+import MediaView from "@nibtree/ui/components/MediaView.svelte";
 ```
 
 Group: Editor. Also known as: Image, Preview, Binary.

@@ -1,4 +1,4 @@
-<!-- Settings dialog. Every change is applied immediately and saved to ~/.gitmanager/settings.json. Each section is
+<!-- Settings dialog. Every change is applied immediately and saved to ~/.nibtree/settings.json. Each section is
      its own file under settings/; this one holds the frame, the section list, the search and the load errors. -->
 <script lang="ts">
   import { untrack } from "svelte";
@@ -7,13 +7,13 @@
   import { settings, type SettingsSection } from "$lib/stores/settings.svelte";
   import { dialogs } from "$lib/ui/dialog.svelte";
   import { toast } from "$lib/ui/toast.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Notice from "@git-manager/ui/components/Notice.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import SideNav from "@git-manager/ui/components/SideNav.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Notice from "@nibtree/ui/components/Notice.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import SideNav from "@nibtree/ui/components/SideNav.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import SettingsSectionView from "./settings/SettingsSectionView.svelte";
   import { searchWords, textMatches } from "./settings/settingsSearch";
   import { provideSettingsSearch, SettingsSearchView } from "./settings/settingsSearchView.svelte";

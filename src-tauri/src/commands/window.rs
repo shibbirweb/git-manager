@@ -25,7 +25,7 @@ const MIN_SIZE: (f64, f64) = (960.0, 600.0);
 /// Where the window buttons go (macOS), the same as `trafficLightPosition` in tauri.conf.json.
 #[cfg(target_os = "macos")]
 const TRAFFIC_LIGHTS: (f64, f64) = (14.0, 23.5);
-const DEFAULT_TITLE: &str = "Git Manager";
+const DEFAULT_TITLE: &str = "Nibtree";
 
 /// A logical (x, y) position or (width, height) size.
 type Pair = (f64, f64);
@@ -212,7 +212,7 @@ fn create_window(
 }
 
 /// Like the main window in tauri.conf.json: no system title strip on macOS, so the close, minimize and zoom buttons
-/// sit at the left of the app's own top bar, centered on its back arrow, like JetBrains IDEs.
+/// sit at the left of the app's own top bar, centered on its back arrow.
 #[cfg(target_os = "macos")]
 fn mac_title_bar<'a, R: tauri::Runtime, M: tauri::Manager<R>>(
     builder: WebviewWindowBuilder<'a, R, M>,

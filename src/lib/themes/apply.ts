@@ -1,16 +1,10 @@
-// Puts a color theme on the document. The built-in Git Manager themes are the
+// Puts a color theme on the document. The built-in Nibtree themes are the
 // sets in the UI library's styles/colors.css and need nothing else; any other theme is one generated
 // <style> element with that theme's variables. The <html> attributes change
 // only after the new variables are in place, so watchers (the UI library's logic/themeWatch.ts)
 // that copy colors out of CSS read the new ones.
 
-import {
-  type ColorMode,
-  defaultThemeFor,
-  isHighContrast,
-  pickThemeId,
-  themeInfo,
-} from "@git-manager/ui/themes/themeIndex";
+import { type ColorMode, defaultThemeFor, isHighContrast, pickThemeId, themeInfo } from "@nibtree/ui/themes/themeIndex";
 
 const STYLE_ID = "gm-color-theme";
 
@@ -81,7 +75,7 @@ export function applyColorTheme(mode: ColorMode, themeId: string): Promise<void>
     commit(attributes, null);
     return Promise.resolve();
   }
-  return import("@git-manager/ui/themes/catalog")
+  return import("@nibtree/ui/themes/catalog")
     .then((catalog) => {
       if (current !== request) {
         return;

@@ -1,7 +1,7 @@
 <!-- One setting: the library SettingRow, hidden while a search leaves it out and with the search's words marked. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import SettingRow from "@git-manager/ui/components/SettingRow.svelte";
+  import SettingRow from "@nibtree/ui/components/SettingRow.svelte";
   import { useSettingsGroup, useSettingsSearch } from "./settingsSearchView.svelte";
 
   interface Props {

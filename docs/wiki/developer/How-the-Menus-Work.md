@@ -1,10 +1,10 @@
 # How the menus work
 
-Git Manager builds its own native menu bar: Git Manager, File, Edit, View, Code, Git, Window and Help, with the right layout per platform and a reduced one for the mergetool window. The user side is in [Menus](../usage/Menus.md). How keys reach the page or the menu is in [Menu Keys and Routing](Menu-Keys-and-Routing.md), and the Git menu's items in [How the Git menu works](How-the-Git-Menu-Works.md).
+Nibtree builds its own native menu bar: Nibtree, File, Edit, View, Code, Git, Window and Help, with the right layout per platform and a reduced one for the mergetool window. The user side is in [Menus](../usage/Menus.md). How keys reach the page or the menu is in [Menu Keys and Routing](Menu-Keys-and-Routing.md), and the Git menu's items in [How the Git menu works](How-the-Git-Menu-Works.md).
 
 ## Why we need it
 
-Mac users look for commands, and their keys, in the menu bar. Tauri's default menu had only the basics, and its Cmd+W closed the whole window. JetBrains and VS Code users also expect File, Edit, Code and Git menus with the keys they know.
+Mac users look for commands, and their keys, in the menu bar. Tauri's default menu had only the basics, and its Cmd+W closed the whole window. Users also expect File, Edit, Code and Git menus with the keys they know.
 
 The menu is built from the **frontend** with `@tauri-apps/api/menu`, because the items, their actions and their state all live in the Svelte stores.
 
@@ -61,7 +61,7 @@ The system ticks a check item on click, so `onAction` syncs it again at once to 
 - `git(...)`: also needs an active repository that is not busy.
 - `shortcut(name)`: runs the same `runWorkspaceShortcut` as the key handler.
 
-Undo, Redo, Delete and Select All have no guard, so they work in dialog fields; the Help links (Git Manager Help, Release Notes, Report a Bug, Request a Feature, Star on GitHub) have none either. A handler that throws shows "The menu command failed". The MCP tools `list_menu_commands` and `run_menu_command` reuse the same spec, state and handlers (`src/lib/mcp/menuCommands.ts`), see [How MCP and the CLI work](How-MCP-and-CLI-Work.md).
+Undo, Redo, Delete and Select All have no guard, so they work in dialog fields; the Help links (Nibtree Help, Release Notes, Report a Bug, Request a Feature, Star on GitHub) have none either. A handler that throws shows "The menu command failed". The MCP tools `list_menu_commands` and `run_menu_command` reuse the same spec, state and handlers (`src/lib/mcp/menuCommands.ts`), see [How MCP and the CLI work](How-MCP-and-CLI-Work.md).
 
 ## Where the code lives
 
@@ -81,14 +81,14 @@ Undo, Redo, Delete and Select All have no guard, so they work in dialog fields; 
 
 **Send only changes, after a pause.** Store changes come in bursts (focus moves, status refreshes, edits). The pause and the diff keep IPC traffic small.
 
-**Hide items that do not apply, like JetBrains.** Continue Merge or Skip Commit appear only during an operation; grey items there would be noise.
+**Hide items that do not apply.** Continue Merge or Skip Commit appear only during an operation; grey items there would be noise.
 
 **Same functions as the buttons.** Handlers call what the views already use (`gitActions.ts`, `fileCommands`), so a menu item and its button never drift apart.
 
 ## Bugs we fixed
 
 **Settings... and About did nothing when clicked.**
-- **The issue:** Git Manager > Settings..., About Git Manager and the Open Recent entries did nothing on click, while View > Scripts worked.
+- **The issue:** Nibtree > Settings..., About Nibtree and the Open Recent entries did nothing on click, while View > Scripts worked.
 - **Why it happened:** Tauri routes a click to the handler registered for the item's id, and freeing any menu item removes the handler of its id. An item passed as options inside `Submenu.new` gets a handle that Tauri frees right away, so its handler was gone. Only items created with `MenuItem.new` and kept by the page (the ones with a state, like View > Scripts) still fired.
 - **The fix and why we chose it:** every clickable item is now created with `MenuItem.new` and kept: `itemOptions` stores them in `kept`, and `fillRecent` keeps the Open Recent entries in `recentItems` until the list changes. Ids also get a per-page-load suffix (`BUILD_ID`), because after a reload the old menu is still being freed, and with the same ids that would remove the new items' handlers. Holding the handles is cheap and is how Tauri expects menus to be kept. Found with temporary `console.warn` logs.
 

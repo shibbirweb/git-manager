@@ -3,7 +3,7 @@
 A button that stays on or off, such as Collapse unchanged in the diff or the merge editor's options.
 
 ```ts
-import ToggleButton from "@git-manager/ui/components/ToggleButton.svelte";
+import ToggleButton from "@nibtree/ui/components/ToggleButton.svelte";
 ```
 
 Group: Actions. Also known as: Toggle, Pressed button.

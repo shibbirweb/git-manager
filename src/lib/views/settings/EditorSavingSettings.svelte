@@ -8,9 +8,9 @@
   import type { AutoSaveMode } from "$lib/stores/settingsData";
   import type { LocalHistoryUsage } from "$lib/types";
   import { dialogs } from "$lib/ui/dialog.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
   import MemoryFlag from "./MemoryFlag.svelte";
   import NumberSetting from "./NumberSetting.svelte";
   import { SAVE_CLEANUP_ROWS } from "./settingsRows";
@@ -146,7 +146,7 @@
       onchange={(sizeMb) => set("localHistorySizeMb", Number(sizeMb))}
     />
   </SettingsRow>
-  <SettingsRow title="Stored" hint={usageText(historyUsage) || "In ~/.gitmanager/local-history."} nested>
+  <SettingsRow title="Stored" hint={usageText(historyUsage) || "In ~/.nibtree/local-history."} nested>
     <Button
       size="small"
       variant="danger"

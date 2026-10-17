@@ -168,7 +168,7 @@ export const feedbackDocs: ComponentDoc[] = [
     name: "Notification",
     group: "Feedback",
     summary:
-      "One notification like the JetBrains IDEs draw it: the kind's icon, a bold title, where it came from, the " +
+      "One notification: the kind's icon, a bold title, where it came from, the " +
       "detail and an action link.",
     usage:
       "ToastHost draws each toast as a balloon; a notification list draws each message as a row with its time. " +

@@ -7,15 +7,15 @@
   import { api, errorMessage, onGitCommand } from "$lib/api";
   import { repoStore } from "$lib/stores/repo.svelte";
   import type { GitCommandEntry } from "$lib/types";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import EmptyState from "@git-manager/ui/components/EmptyState.svelte";
-  import List from "@git-manager/ui/components/List.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SearchField from "@git-manager/ui/components/SearchField.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusDot from "@git-manager/ui/components/StatusDot.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import EmptyState from "@nibtree/ui/components/EmptyState.svelte";
+  import List from "@nibtree/ui/components/List.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SearchField from "@nibtree/ui/components/SearchField.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import StatusDot from "@nibtree/ui/components/StatusDot.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { contextMenu } from "$lib/ui/menu.svelte";
   import { toast } from "$lib/ui/toast.svelte";
   import {

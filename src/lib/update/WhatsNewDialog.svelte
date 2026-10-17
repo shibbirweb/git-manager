@@ -1,10 +1,10 @@
 <!-- What's New: the changelog built into this version, so it works offline. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import changelogText from "../../../CHANGELOG.md?raw";
   import { entryFor, releasedEntries } from "./changelog";
   import ReleaseNotes from "./ReleaseNotes.svelte";
@@ -34,7 +34,7 @@
 <Dialog
   open
   variant="panel"
-  title="What's New in Git Manager {updates.current ?? ''}"
+  title="What's New in Nibtree {updates.current ?? ''}"
   subtitle={isBetaBuild
     ? "A beta build: these changes are still being tested."
     : "Here is what changed in this version."}

@@ -3,7 +3,7 @@
 A large row that opens something to read or do: icon, title and a line of description.
 
 ```ts
-import ResourceLink from "@git-manager/ui/components/ResourceLink.svelte";
+import ResourceLink from "@nibtree/ui/components/ResourceLink.svelte";
 ```
 
 Group: Navigation. Also known as: Link card, Learn.

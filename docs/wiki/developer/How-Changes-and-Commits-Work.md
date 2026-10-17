@@ -4,7 +4,7 @@ The Changes sidebar lists what changed in every repository of the workspace (Con
 
 ## Why we need it
 
-This is the daily loop of any git client, so it must be quick and predictable. Like VS Code's Source Control, it is grouped by repository, so one window manages many projects.
+This is the daily loop of any git client, so it must be quick and predictable. It is grouped by repository, so one window manages many projects.
 
 Two rules shape the code:
 
@@ -93,7 +93,7 @@ Arrow keys move across all expanded sections, Space or Enter stages or unstages 
 
 **Selecting a file does not change the active repository.** Switching reloads branches and history, too heavy for every click. Set as active, opening a conflict and Resolve do switch it.
 
-**Repository actions on the row, not on hover.** Hover-only buttons were hard to find and to reach from the keyboard. VS Code's always visible row shrinks through container queries instead.
+**Repository actions on the row, not on hover.** Hover-only buttons were hard to find and to reach from the keyboard. An always visible row shrinks through container queries instead.
 
 **Commit messages go through stdin.** `-F -` keeps the text exact, with no quoting or length limits, and `GIT_EDITOR=true` in `cli.rs` means git never waits for an editor.
 

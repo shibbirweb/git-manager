@@ -1,11 +1,11 @@
 <!-- Settings > About: the version and links to star, report a bug, request a feature and read the release notes. -->
 <script lang="ts">
   import { updates } from "$lib/update/updates.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
-  import Logo from "@git-manager/ui/components/Logo.svelte";
-  import ResourceLink from "@git-manager/ui/components/ResourceLink.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
+  import Logo from "@nibtree/ui/components/Logo.svelte";
+  import ResourceLink from "@nibtree/ui/components/ResourceLink.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { useSettingsSearch } from "./settingsSearchView.svelte";
 
   const search = useSettingsSearch();
@@ -13,7 +13,7 @@
     {
       icon: "star",
       title: "Star on GitHub",
-      description: "Like Git Manager? A star helps other people find it.",
+      description: "Like Nibtree? A star helps other people find it.",
       open: () => void updates.openRepository(),
     },
     {
@@ -41,7 +41,7 @@
   <Stack direction="row" gap="lg" align="center">
     <Logo size="medium" />
     <Stack gap="xxs">
-      <Text variant="title">Git Manager</Text>
+      <Text variant="title">Nibtree</Text>
       <Text tone="dim">Version {updates.current ?? "unknown"} &middot; {updates.channel} channel</Text>
     </Stack>
   </Stack>

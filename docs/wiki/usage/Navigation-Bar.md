@@ -1,6 +1,6 @@
 # Navigation Bar
 
-The Navigation Bar lets you move around your project from the keyboard, like the **Navigation Bar** in JetBrains IDEs such as PhpStorm. It is the path above the code: every folder in it opens a small list of what that folder holds, and you can type to search that list.
+The Navigation Bar lets you move around your project from the keyboard. It is the path above the code: every folder in it opens a small list of what that folder holds, and you can type to search that list.
 
 ![The Navigation Bar with the src folder open](../images/navigation-bar.png)
 
@@ -19,7 +19,7 @@ The Navigation Bar is part of each file's toolbar, the slim bar with the path, t
 
 - **Top** (the default): above the code. The welcome screen shows the bar at its top.
 - **Bottom**: the whole toolbar moves under the code: the path, the badges and the buttons. On the welcome screen the bar moves to the foot. The lists open upward.
-- **Hidden**: no toolbar. Cmd+Up (or the menu) shows the bar floating at the top left of the editor you are in, with the list already open, like JetBrains does when its Navigation Bar is hidden. It goes away again when you open a file, press Esc or click elsewhere.
+- **Hidden**: no toolbar. Cmd+Up (or the menu) shows the bar floating at the top left of the editor you are in, with the list already open. It goes away again when you open a file, press Esc or click elsewhere.
 
 Under it, a switch for each part, all on at first:
 
@@ -39,7 +39,7 @@ With every part off, the toolbar goes away. The conflict buttons are not part of
 
 [TODO:navigation-bar-hidden.png]
 
-In the code editor, Cmd+Up now opens the Navigation Bar, as in JetBrains IDEs. To go to the start of the file, press **Cmd+Home** (Fn+Cmd+Left on a laptop keyboard). In a plain text field, such as the commit message, Cmd+Up still moves the caret.
+In the code editor, Cmd+Up now opens the Navigation Bar. To go to the start of the file, press **Cmd+Home** (Fn+Cmd+Left on a laptop keyboard). In a plain text field, such as the commit message, Cmd+Up still moves the caret.
 
 ## Move around
 

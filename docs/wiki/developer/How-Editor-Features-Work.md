@@ -1,6 +1,6 @@
 # How Editor Features Work
 
-The editor has the IDE features people expect from JetBrains and VS Code: auto-close brackets, code completion, fold arrows, indent guides, the word at the cursor highlighted, scrolling past the end, column selection and a right margin line. Each one has a switch in Settings. This page also covers the languages the editor colors. The user side is in [Editing Code](../usage/Editing-Code.md#ide-features).
+The editor has the IDE features people expect: auto-close brackets, code completion, fold arrows, indent guides, the word at the cursor highlighted, scrolling past the end, column selection and a right margin line. Each one has a switch in Settings. This page also covers the languages the editor colors. The user side is in [Editing Code](../usage/Editing-Code.md#ide-features).
 
 ## Why we need it
 
@@ -49,8 +49,8 @@ sequenceDiagram
 | Column selection | `rectangularSelection` with Option, `crosshairCursor` | all |
 | Right margin line | `ruler.ts`, a layer | all |
 
-- **Completion.** The language packages bring their own sources (JavaScript keywords and local names, CSS properties, HTML tags) through language data. A word source adds the words of the file through `completeAnyWord`, which scans near the cursor and caches per document. Words have no type, so a word that is also a keyword is listed once. In Markdown and plain text the word source only answers Ctrl+Space (`wordsWhileTyping`). Our keymap is CodeMirror's minus Option+backtick and Option+I, which type characters on a Mac, plus Tab to accept. The popup is themed with tokens and letter badges like JetBrains.
-- **Indent guides.** `guideLevels` counts the indent levels of the lines on screen; a blank line takes them from the code around it, like VS Code. `guideRuns` joins touching lines into one run per level, and each run is one `RectangleMarker` in a layer above the text. A wrapped line gets guides on its first row only, because CodeMirror starts the later rows at column 0.
+- **Completion.** The language packages bring their own sources (JavaScript keywords and local names, CSS properties, HTML tags) through language data. A word source adds the words of the file through `completeAnyWord`, which scans near the cursor and caches per document. Words have no type, so a word that is also a keyword is listed once. In Markdown and plain text the word source only answers Ctrl+Space (`wordsWhileTyping`). Our keymap is CodeMirror's minus Option+backtick and Option+I, which type characters on a Mac, plus Tab to accept. The popup is themed with tokens and letter badges.
+- **Indent guides.** `guideLevels` counts the indent levels of the lines on screen; a blank line takes them from the code around it. `guideRuns` joins touching lines into one run per level, and each run is one `RectangleMarker` in a layer above the text. A wrapped line gets guides on its first row only, because CodeMirror starts the later rows at column 0.
 - **Margin line.** One marker at `column * defaultCharacterWidth` from the start of the text, as tall as the drawn lines (`rulerSpan`), not the whole document. `layerGeometry.ts` finds that start for both layers.
 - **Word highlight off** keeps plain `highlightSelectionMatches()`, so a selection still marks its other matches, as before.
 - **Column selection.** Option+drag selects a rectangle. Option+Shift+click keeps adding a cursor through `clickAddsSelectionRange`, because the rectangle filter skips Shift.
@@ -81,7 +81,7 @@ sequenceDiagram
 
 **Layers for guides and the margin line.** Line backgrounds are already used by the active line and by diff and merge chunks, which would hide guides drawn as a line background. A layer above the text is never covered, and the guides only cross indentation, which is blank.
 
-**JetBrains defaults.** All features start on except the margin line; turning it on picks column 120. Line spacing 1.25, 13 px and JetBrains Mono (falling back to Menlo) match JetBrains. Saved settings keep their values, because the store writes every key.
+**IDE defaults.** All features start on except the margin line; turning it on picks column 120. Line spacing 1.25, 13 px and JetBrains Mono (falling back to Menlo) are common IDE defaults. Saved settings keep their values, because the store writes every key.
 
 ## Tests
 

@@ -7,7 +7,7 @@
     label?: string;
   }
 
-  let { size = "normal", label = "Git Manager" }: Props = $props();
+  let { size = "normal", label = "Nibtree" }: Props = $props();
 </script>
 
 <div class="logo {size}" role="img" aria-label={label}>

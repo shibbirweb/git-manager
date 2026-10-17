@@ -1,6 +1,6 @@
 # Terminal Features
 
-The terminal does more than run a shell. You can split it, search its output, Cmd+click file paths, drop files on it and rename it, much like the terminals in VS Code and JetBrains IDEs. The basics (opening, the header, several terminals, editor tabs) are on [Terminal](Terminal.md).
+The terminal does more than run a shell. You can split it, search its output, Cmd+click file paths, drop files on it and rename it. The basics (opening, the header, several terminals, editor tabs) are on [Terminal](Terminal.md).
 
 Every optional part has a switch in Settings, Terminal. A part that is off is not loaded at all, so it uses no memory. See [Terminal, GitHub and Automation Settings](Settings-Terminal-and-Automation.md#terminal).
 
@@ -66,7 +66,7 @@ Right-click inside a terminal for **Copy**, **Paste**, **Select All**, **Clear**
 - **Split Terminal**: only in the panel.
 - **Rename...**
 - **Move Terminal into Editor Area** or **Move Terminal into Panel**.
-- **Kill Terminal**: closes at once, without asking, like VS Code.
+- **Kill Terminal**: closes at once, without asking.
 
 A row in the terminal list, and the name in the header, have the same terminal items.
 

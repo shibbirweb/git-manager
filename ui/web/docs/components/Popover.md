@@ -3,7 +3,7 @@
 A panel anchored to its trigger, like the AI usage panel; Esc or an outside click closes it.
 
 ```ts
-import Popover from "@git-manager/ui/components/Popover.svelte";
+import Popover from "@nibtree/ui/components/Popover.svelte";
 ```
 
 Group: Overlays. Also known as: Popover, Dropdown panel.

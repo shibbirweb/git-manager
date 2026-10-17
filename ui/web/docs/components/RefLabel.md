@@ -3,7 +3,7 @@
 A ref chip in the log: HEAD, local and remote branches, tags, bisect marks and a +N chip.
 
 ```ts
-import RefLabel from "@git-manager/ui/components/RefLabel.svelte";
+import RefLabel from "@nibtree/ui/components/RefLabel.svelte";
 ```
 
 Group: Feedback.

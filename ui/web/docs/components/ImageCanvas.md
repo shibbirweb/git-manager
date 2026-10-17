@@ -3,7 +3,7 @@
 An image on a checkerboard, centered and scrollable, drawn at a scale of its real size.
 
 ```ts
-import ImageCanvas from "@git-manager/ui/components/ImageCanvas.svelte";
+import ImageCanvas from "@nibtree/ui/components/ImageCanvas.svelte";
 ```
 
 Group: Editor. Also known as: Image, Checkerboard.

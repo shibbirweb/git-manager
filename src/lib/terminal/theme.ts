@@ -84,4 +84,4 @@ export function currentTerminalTheme(): Partial<TerminalTheme> {
 
 // The terminal, the Markdown preview and anything else that copies colors out
 // of CSS listen through this one watcher.
-export { watchTheme } from "@git-manager/ui/logic/themeWatch";
+export { watchTheme } from "@nibtree/ui/logic/themeWatch";

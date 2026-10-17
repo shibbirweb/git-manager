@@ -5,7 +5,7 @@
 
 const PREFIX = "untitled:";
 const ID_PATTERN = /^[a-z0-9]{1,32}$/i;
-/** A tab title is the first line of the text, like Sublime Text, cut to this many characters. */
+/** A tab title is the first line of the text, cut to this many characters. */
 const MAX_TITLE = 32;
 const MAX_FILE_NAME = 48;
 export const UNTITLED_TITLE = "Untitled";

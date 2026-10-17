@@ -4,7 +4,7 @@ This chapter covers what happens inside a CodeMirror editor once a file is open:
 
 ## Why we need it
 
-People move between Git Manager and their IDE all day. If Cmd+/ comments a line there, it must comment a line here too, and the menu bar should list the commands so they can be found. Most users come from JetBrains or VS Code, so the keys follow JetBrains where the two differ, and VS Code where JetBrains has no answer.
+People move between Nibtree and their IDE all day. If Cmd+/ comments a line there, it must comment a line here too, and the menu bar should list the commands so they can be found. The keys follow the conventions most code editors share, and the macOS ones where they differ.
 
 ## How it works
 
@@ -61,7 +61,7 @@ Most commands are CodeMirror's own (`toggleComment`, `deleteLine`, `moveLineUp`,
 
 **One table, two users.** The editor keymaps and the menu accelerators come from `EDITOR_SHORTCUTS`, and a test checks that each key is bound to the menu item's own command. A menu can never show a key that does something else.
 
-**JetBrains keys where they clash.** Cmd+D adds the next occurrence, as in VS Code, so Duplicate takes Shift+Cmd+D. Cmd+L is Go to Line, as in JetBrains (CodeMirror's select line is Ctrl+L on macOS and stays). The fold keys use Option+Cmd+] and [ because Cmd+= and Cmd+- stay with zoom.
+**Editor keys where they clash.** Cmd+D adds the next occurrence, so Duplicate takes Shift+Cmd+D. Cmd+L is Go to Line (CodeMirror's select line is Ctrl+L on macOS and stays). The fold keys use Option+Cmd+] and [ because Cmd+= and Cmd+- stay with zoom.
 
 ## Tests
 

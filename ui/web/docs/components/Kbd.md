@@ -3,7 +3,7 @@
 A keyboard shortcut drawn as a key cap.
 
 ```ts
-import Kbd from "@git-manager/ui/components/Kbd.svelte";
+import Kbd from "@nibtree/ui/components/Kbd.svelte";
 ```
 
 Group: Feedback. Also known as: Kbd, Shortcut.

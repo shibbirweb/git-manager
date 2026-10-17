@@ -22,7 +22,7 @@ A saved shell that is gone says **(not found, the login shell is used)**. The ar
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Font family | A comma-separated list, like VS Code's `terminal.integrated.fontFamily`. Leave it empty to use the editor font. **Use the Editor Font** clears it. Click a font name below the box to use it. | Empty (the editor font) |
+| Font family | A comma-separated list of fonts. Leave it empty to use the editor font. **Use the Editor Font** clears it. Click a font name below the box to use it. | Empty (the editor font) |
 | Font size | 9 to 24 px in half steps. | 13 px (a size you saved earlier stays) |
 | Line height | A multiple of the font's own line height, 1.0 to 2.0. | 1.2 |
 | Letter spacing | Extra pixels between characters, 0 to 5. | 0 px |
@@ -67,17 +67,17 @@ Every switch applies to open terminals at once. What each part does is on [Termi
 The **GitHub account** is used by **Git > GitHub**: Share Project on GitHub, Sync Fork and Create Gist. Pushing and pulling keep using git's own credentials. You can sign in in two ways:
 
 - **Sign in with a token**: paste a classic personal access token with the `repo` and `gist` scopes and click **Sign In**. It is checked with GitHub, then kept only in the system keychain, never in `settings.json`.
-- **Use GitHub CLI**: if the `gh` tool is installed and signed in, Git Manager asks it for its login each time and stores nothing.
+- **Use GitHub CLI**: if the `gh` tool is installed and signed in, Nibtree asks it for its login each time and stores nothing.
 
 Once signed in, the section shows your account and a **Sign Out** button. See [GitHub](GitHub.md).
 
 ## Automation
 
-Automation lets other programs use Git Manager. Everything here is off by default.
+Automation lets other programs use Nibtree. Everything here is off by default.
 
 **MCP server**
 
-MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor read what Git Manager shows and use its features.
+MCP (Model Context Protocol) lets AI tools such as Claude Code or Cursor read what Nibtree shows and use its features.
 
 | Setting | What it does | Default |
 | --- | --- | --- |
@@ -91,8 +91,8 @@ While the server runs you also see the **Secret token** (**Show**, **Copy**, **N
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Command line tool | Lets scripts and AI agents in a terminal use the same tools, for example `git-manager cli tools`. Git Manager must be running. | Off |
-| Install | **Install in ~/.local/bin** (**Install** on Windows) adds the `git-manager` command; **Remove** takes it away. If that folder is not on your PATH, a line to add to `~/.zshrc` is shown (on Windows, the folder to add to your PATH). | |
+| Command line tool | Lets scripts and AI agents in a terminal use the same tools, for example `nibtree cli tools`. Nibtree must be running. | Off |
+| Install | **Install in ~/.local/bin** (**Install** on Windows) adds the `nibtree` command; **Remove** takes it away. If that folder is not on your PATH, a line to add to `~/.zshrc` is shown (on Windows, the folder to add to your PATH). | |
 
 The tool switches in **Help > Available MCP Tools...** apply here too. See [MCP and CLI](MCP-and-CLI.md).
 
@@ -105,7 +105,7 @@ A debugging aid: it writes a line whenever the app's memory changes, next to wha
 | Log memory changes | Turns the log on. AI tools can read it with `read_memory_log`. | Off |
 | Read memory every | **250 ms**, **500 ms**, **1 s** or **2 s**. | 500 ms |
 | Write a line when it changes by | **0 MB** (every reading), **1 MB**, **5 MB** or **20 MB**. | 5 MB |
-| Log file | Where the log is, `~/.gitmanager/logs/memory.log`, with **Reveal in Finder** (**Reveal in File Explorer** on Windows). | |
+| Log file | Where the log is, `~/.nibtree/logs/memory.log`, with **Reveal in Finder** (**Reveal in File Explorer** on Windows). | |
 
 The log starts over when it passes 5 MB, and the previous one is kept as `memory.log.1`. See [Debugging](../developer/Debugging.md).
 

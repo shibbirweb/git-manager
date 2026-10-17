@@ -9,10 +9,10 @@
     type AiUsagePosition,
     type ComputerAwakeMode,
   } from "$lib/stores/settingsData";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Select from "@git-manager/ui/components/Select.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Select from "@nibtree/ui/components/Select.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { set } from "./settingsShared";
 
@@ -79,7 +79,7 @@
 <SettingsRow title="Usage in status bar">
   {#snippet hintContent()}
     How much of Claude Code's and Codex's limits you used, like Orca. Claude Code's comes from Anthropic with Claude
-    Code's own sign-in (macOS asks once to let Git Manager read it from the Keychain), Codex's from its session files.
+    Code's own sign-in (macOS asks once to let Nibtree read it from the Keychain), Codex's from its session files.
   {/snippet}
   <Select
     label="Usage in status bar"

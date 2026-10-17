@@ -10,8 +10,8 @@
     TAB_LIMIT_RANGE,
   } from "$lib/stores/tabLimit";
   import { UNLOAD_TAB_MINUTES } from "$lib/stores/tabSleep";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
   import MemoryFlag from "./MemoryFlag.svelte";
   import NumberSetting from "./NumberSetting.svelte";
   import { EDITOR_FEATURE_ROWS } from "./settingsRows";

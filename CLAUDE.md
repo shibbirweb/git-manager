@@ -1,6 +1,6 @@
-# Git Manager
+# Nibtree
 
-Native macOS Git client (Tauri 2) with a JetBrains-style 3-way merge tool, VS Code-style workspaces, tabs, blame and history. Rust backend in `src-tauri/`, Svelte 5 + TypeScript UI in `src/`, CodeMirror 6 for every text pane.
+Native macOS Git client (Tauri 2) with a 3-way merge tool, workspaces, tabs, blame and history. Rust backend in `src-tauri/`, Svelte 5 + TypeScript UI in `src/`, CodeMirror 6 for every text pane.
 
 ## Commands
 
@@ -34,13 +34,13 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
 - **Commands** live in `src-tauri/src/commands/*.rs`, are registered in `src-tauri/src/lib.rs`, and run blocking work through `commands::blocking`. Args are camelCase in JS, snake_case in Rust. Errors are `AppError` serialized as `{ kind, message }`.
 - **Frontend bridge**: every command has a typed wrapper in `src/lib/api.ts`; DTO mirrors live in `src/lib/types.ts`. Keep both in sync with Rust (serde `rename_all = "camelCase"`).
 - **State**: `src/lib/stores/repo.svelte.ts` (`repoStore`) owns the workspace (one or more folders), repositories, per-repo statuses, the active repo, tabs and views. Mutations go through `repoStore.run(label, work, { success, repoPath })` / `runOp(...)` so busy state, error toasts and refreshes stay consistent.
-- **Settings** persist in `~/.gitmanager/settings.json` (preferences) and `state.json` (recent folders, layout) via `src/lib/stores/settings.svelte.ts`. Validate every loaded value; never overwrite a settings.json that failed to parse.
+- **Settings** persist in `~/.nibtree/settings.json` (preferences) and `state.json` (recent folders, layout) via `src/lib/stores/settings.svelte.ts`. Validate every loaded value; never overwrite a settings.json that failed to parse.
 - **Paths**: file tabs, the Files panel, Back/Forward and breadcrumbs use **absolute paths**. Git operations use **repo-relative paths** with the repo root. Convert with `src/lib/stores/workspacePaths.ts` (`folderFor`, `locateAbsolute`, `relativeTo`, `joinPath`); never concatenate strings by hand. Absolute paths use `/` on Windows too (`C:/Users/me`): in Rust, real paths come from `paths::real` / `RealPath::real_path` (clippy forbids `canonicalize`) and every absolute path sent to the page goes through `paths::to_ui`; on the page, dialog and drop paths go through `fromNativePath`, and absolute checks use `isAbsolutePath`, never `startsWith("/")`.
 - **Merge tool**: pure logic in `src/lib/merge/model.ts` (tested), CodeMirror glue in `extensions.ts`, UI in `MergeEditor.svelte`. The Rust engine is `src-tauri/src/merge/engine.rs`, checked against `git merge-file`.
 - **UI library and design system**: `ui/web/` is the Svelte component library (components, tested logic, one
   doc per component, the showcase); `ui/design-tokens/` holds colors, sizes and component measurements that
   generate CSS, Swift (macOS), XAML (Windows) and GTK CSS (Linux) for future native apps. AI agents read
-  `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `git-manager-ui` MCP server
+  `ui/web/COMPONENTS.md` and `ui/web/docs/components/<Name>.md`, or ask the `nibtree-ui` MCP server
   (`ui/mcp/`, registered in `.mcp.json`: list, search and get components, tokens, icons and rules). Tests keep
   docs equal to each component's `$props()`, generated files fresh, and the generated `colors.css` equal to the
   theme catalog's built-in themes.
@@ -108,7 +108,7 @@ Both refuse non-empty targets. The Rust tests run the conflict script and assert
   - Bug fix: add an entry to "Bugs we fixed" in the feature's developer chapter: the issue (what the user saw), why it happened, and the fix and why it was chosen.
   - Platform changes (build, CI, releases, versioning, testing, architecture) update the matching page in `docs/wiki/developer/`.
 - Writing: simple, friendly English; short sentences; explain git terms on first use; pages of about 300 to 1000 words (split rather than grow); relative links (`Merge-Tool.md`, `../developer/How-Blame-Works.md`, `../images/x.png`); verify every label, setting and shortcut in the code.
-- Screenshots come from the real app through the dev-only IPC bridge (`src/lib/dev/ipcBridge.ts`, relayed by Vite only with `GM_IPC_BRIDGE=1`) and the demo built by `scripts/make-docs-demo.sh`. Never point the bridge at a real repository or the user's `~/.gitmanager`.
+- Screenshots come from the real app through the dev-only IPC bridge (`src/lib/dev/ipcBridge.ts`, relayed by Vite only with `GM_IPC_BRIDGE=1`) and the demo built by `scripts/make-docs-demo.sh`. Never point the bridge at a real repository or the user's `~/.nibtree`.
 - A screenshot that cannot be taken yet is written as `[TODO:name.png]` in the usage page where the image goes (still listed in `features.json` and defined in `scripts/screenshots.ts`). The wiki check accepts it and lists every pending shot; replace the marker with the image once it is taken.
 
 ## Gotchas

@@ -1,6 +1,6 @@
 # Project color and title bar
 
-Like PhpStorm, Git Manager tints each window in its project's color, the same color as the project's tile on the [Welcome screen](How-the-Welcome-Screen-Works.md). On macOS the window buttons sit in the app's own top bar, so the color can start at the window's top left corner.
+Nibtree tints each window in its project's color, the same color as the project's tile on the [Welcome screen](How-the-Welcome-Screen-Works.md). On macOS the window buttons sit in the app's own top bar, so the color can start at the window's top left corner.
 
 ## Why we need it
 

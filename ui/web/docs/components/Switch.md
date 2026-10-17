@@ -3,7 +3,7 @@
 An on/off switch for a setting that applies at once.
 
 ```ts
-import Switch from "@git-manager/ui/components/Switch.svelte";
+import Switch from "@nibtree/ui/components/Switch.svelte";
 ```
 
 Group: Forms. Also known as: Switch, Toggle switch.

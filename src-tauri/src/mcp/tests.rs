@@ -79,7 +79,7 @@ impl Fixture {
 
     fn with_states(mcp_on: bool, cli_on: bool, tool_states: HashMap<String, bool>) -> Fixture {
         let home = TempDir::new().unwrap();
-        let config_dir = home.path().real_path().unwrap().join(".gitmanager");
+        let config_dir = home.path().real_path().unwrap().join(".nibtree");
         let mcp = Mcp::for_test(config_dir.clone(), Duration::from_millis(300));
         let host = Arc::new(TestHost {
             ready: true,
@@ -172,7 +172,7 @@ fn strings(values: &[&str]) -> Vec<String> {
 
 fn offline_mcp() -> (TempDir, Mcp) {
     let home = TempDir::new().unwrap();
-    let mcp = Mcp::for_test(home.path().join(".gitmanager"), Duration::from_millis(200));
+    let mcp = Mcp::for_test(home.path().join(".nibtree"), Duration::from_millis(200));
     (home, mcp)
 }
 
@@ -189,7 +189,7 @@ fn initialize_negotiates_the_protocol_version() {
     };
     let known = request("2025-03-26");
     assert_eq!(known["result"]["protocolVersion"], "2025-03-26");
-    assert_eq!(known["result"]["serverInfo"]["name"], "git-manager");
+    assert_eq!(known["result"]["serverInfo"]["name"], "nibtree");
     assert_eq!(known["result"]["serverInfo"]["version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(known["result"]["capabilities"]["tools"]["listChanged"], false);
     assert!(known["result"]["instructions"].as_str().unwrap().contains("list_workspace"));
@@ -277,7 +277,7 @@ fn tools_list_hides_turned_off_tools_and_calls_to_them_fail() {
     assert_eq!(push["annotations"]["readOnlyHint"], false);
     assert_eq!(push["inputSchema"]["required"], json!(["repoPath"]));
 
-    let everything = r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"gitManager/includeDisabled":true}}}"#;
+    let everything = r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"nibtree/includeDisabled":true}}}"#;
     assert!(listed_names(&handle(&mcp, everything).1.unwrap()).contains(&"git_status".to_string()));
 
     let call = r#"{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"git_status","arguments":{"repoPath":"/x"}}}"#;
@@ -363,7 +363,7 @@ fn the_cli_header_needs_the_cli_switch_and_mcp_clients_need_the_mcp_switch() {
     let ping = r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#;
     let mcp_only = Fixture::new(true, false);
     let auth = mcp_only.auth();
-    let cli_headers = [("Authorization", auth.as_str()), ("X-Git-Manager-Client", "cli")];
+    let cli_headers = [("Authorization", auth.as_str()), ("X-Nibtree-Client", "cli")];
     let (status, body) = send(mcp_only.port, "POST", "/mcp", &cli_headers, ping);
     assert_eq!(status, 403);
     assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["error"], CLI_OFF);
@@ -373,7 +373,7 @@ fn the_cli_header_needs_the_cli_switch_and_mcp_clients_need_the_mcp_switch() {
     let (status, body) = send(cli_only.port, "POST", "/mcp", &[("Authorization", auth.as_str())], ping);
     assert_eq!(status, 403);
     assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["error"], MCP_OFF);
-    let cli_headers = [("Authorization", auth.as_str()), ("X-Git-Manager-Client", "cli")];
+    let cli_headers = [("Authorization", auth.as_str()), ("X-Nibtree-Client", "cli")];
     assert_eq!(send(cli_only.port, "POST", "/mcp", &cli_headers, ping).0, 200);
 }
 

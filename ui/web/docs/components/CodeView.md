@@ -3,7 +3,7 @@
 Read-only, highlighted code with line numbers and a Copy button, in CodeMirror like the editors.
 
 ```ts
-import CodeView from "@git-manager/ui/components/CodeView.svelte";
+import CodeView from "@nibtree/ui/components/CodeView.svelte";
 ```
 
 Group: Editor. Also known as: Code block, Code.

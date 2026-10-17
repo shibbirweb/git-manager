@@ -88,7 +88,7 @@ async fn stop_watcher(previous: Option<crate::state::RepoWatcher>) {
     }
 }
 
-/// Reads a `.gitmanager-workspace` or `.code-workspace` file.
+/// Reads a `.nibtree-workspace` or `.code-workspace` file.
 #[tauri::command]
 pub async fn read_workspace_file(file_path: String) -> AppResult<crate::workspace_file::WorkspaceFile> {
     blocking(move || crate::workspace_file::read(std::path::Path::new(&file_path))).await

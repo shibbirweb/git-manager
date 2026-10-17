@@ -1,10 +1,10 @@
 # How color themes work
 
-Git Manager has 41 color themes: the built-in Git Manager Light and Dark, 12 more light, 22 more dark and 5 high contrast themes. The user picks one for light mode and one for dark mode. For the user side, see [Color Themes](../usage/Color-Themes.md).
+Nibtree has 41 color themes: the built-in Nibtree Light and Dark, 12 more light, 22 more dark and 5 high contrast themes. The user picks one for light mode and one for dark mode. For the user side, see [Color Themes](../usage/Color-Themes.md).
 
 ## Why we need it
 
-People spend hours a day in an editor, and they care a lot about its colors. Most already have a favorite theme from VS Code or JetBrains, and a git client that looks different from their editor feels foreign. High contrast themes also matter for people with low vision. Picking one theme per mode, like VS Code's "preferred light and dark color theme", keeps the app right when macOS switches appearance at sunset.
+People spend hours a day in an editor, and they care a lot about its colors. Most already have a favorite theme from their editor, and a git client that looks different from their editor feels foreign. High contrast themes also matter for people with low vision. Picking one theme per mode keeps the app right when macOS switches appearance at sunset.
 
 ## How it works
 
@@ -94,7 +94,7 @@ Most of the app reads the variables directly, so it follows at once: panels, Cod
 
 **The defaults cost nothing.** The built-in themes live in `colors.css`, so the catalog chunk loads only for another theme or when Settings > Editor shows.
 
-**Colors come from the theme's own files.** Islands Light and Dark use JetBrains' `ManyIslandsLight.theme.json`, `ManyIslandsDark.theme.json` and their editor schemes in intellij-community (selection and console colors inherited from the parent schemes). VS Code Light+ and Dark+ use `light_plus.json` and `dark_plus.json` in microsoft/vscode plus VS Code's built-in workbench defaults. Islands' rounded panels are a layout setting: see [How Rounded Panels Work](How-Rounded-Panels-Work.md). Its `--frame` token is derived here by `frameColor()`.
+**Colors come from the theme's own files.** Islet Light and Dark use JetBrains' `ManyIslandsLight.theme.json`, `ManyIslandsDark.theme.json` and their editor schemes in intellij-community (selection and console colors inherited from the parent schemes). Light+ and Dark+ use `light_plus.json` and `dark_plus.json` in microsoft/vscode plus its built-in workbench defaults. Rounded panels are a layout setting: see [How Rounded Panels Work](How-Rounded-Panels-Work.md). Its `--frame` token is derived here by `frameColor()`.
 
 **Contrast is tested, not hoped for.** Every theme must pass the same checks as the built-ins.
 

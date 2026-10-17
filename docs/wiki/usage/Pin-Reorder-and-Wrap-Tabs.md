@@ -4,7 +4,7 @@ Keep the files you always need at the front of the tab strip, put tabs in the or
 
 ## Move a tab
 
-Drag a tab left or right, like in JetBrains IDEs:
+Drag a tab left or right:
 
 - Press on a tab and move the mouse a little. The tab lifts and follows the pointer, and the other tabs slide aside to show where it will land.
 - Let go to drop it there. The tab you dragged becomes the tab on screen.
@@ -33,7 +33,7 @@ Pinning a preview tab (the one in italics) also keeps it open. Pinned tabs stay 
 
 ## Wrap tabs
 
-By default, tabs that do not fit stay in one row and you scroll through them with the mouse wheel. Turn on **Settings > Editor > Wrap tabs** to show them on more rows instead, like VS Code:
+By default, tabs that do not fit stay in one row and you scroll through them with the mouse wheel. Turn on **Settings > Editor > Wrap tabs** to show them on more rows instead:
 
 [TODO:tabs-wrapped.png]
 

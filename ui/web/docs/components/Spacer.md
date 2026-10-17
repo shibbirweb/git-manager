@@ -3,7 +3,7 @@
 Takes the free room in a row, so what comes after it sits at the far end.
 
 ```ts
-import Spacer from "@git-manager/ui/components/Spacer.svelte";
+import Spacer from "@nibtree/ui/components/Spacer.svelte";
 ```
 
 Group: Layout. Also known as: Spacer, Flex fill.

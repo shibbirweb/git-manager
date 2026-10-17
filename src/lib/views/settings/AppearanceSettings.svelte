@@ -10,10 +10,10 @@
     type SettingsSection,
     type ThemeSetting,
   } from "$lib/stores/settings.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Slider from "@git-manager/ui/components/Slider.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Slider from "@nibtree/ui/components/Slider.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
   import MemoryFlag from "./MemoryFlag.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { set } from "./settingsShared";

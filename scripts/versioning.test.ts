@@ -14,7 +14,7 @@ import {
 } from "./versioning";
 
 const cargoToml = `[package]
-name = "git-manager"
+name = "nibtree"
 version = "0.3.1"
 
 [dependencies]
@@ -30,15 +30,15 @@ describe("Cargo files", () => {
   });
 
   it("finds the crate in Cargo.lock", () => {
-    const lock = `[[package]]\nname = "serde"\nversion = "1.0.0"\n\n[[package]]\nname = "git-manager"\nversion = "0.3.1"\n`;
-    expect(cargoLockVersion(lock, "git-manager")).toBe("0.3.1");
+    const lock = `[[package]]\nname = "serde"\nversion = "1.0.0"\n\n[[package]]\nname = "nibtree"\nversion = "0.3.1"\n`;
+    expect(cargoLockVersion(lock, "nibtree")).toBe("0.3.1");
     expect(cargoLockVersion(lock, "missing")).toBeNull();
   });
 
   it("rewrites only the crate's own Cargo.lock entry", () => {
-    const lock = `[[package]]\nname = "git-manager"\nversion = "0.3.1"\ndependencies = [\n "serde",\n]\n\n[[package]]\nname = "serde"\nversion = "0.3.1"\n`;
-    const updated = setCargoLockVersion(lock, "git-manager", "0.4.0-beta.1") ?? "";
-    expect(cargoLockVersion(updated, "git-manager")).toBe("0.4.0-beta.1");
+    const lock = `[[package]]\nname = "nibtree"\nversion = "0.3.1"\ndependencies = [\n "serde",\n]\n\n[[package]]\nname = "serde"\nversion = "0.3.1"\n`;
+    const updated = setCargoLockVersion(lock, "nibtree", "0.4.0-beta.1") ?? "";
+    expect(cargoLockVersion(updated, "nibtree")).toBe("0.4.0-beta.1");
     expect(cargoLockVersion(updated, "serde")).toBe("0.3.1");
     expect(setCargoLockVersion(lock, "missing", "1.0.0")).toBeNull();
   });

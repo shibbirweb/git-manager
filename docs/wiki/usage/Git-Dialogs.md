@@ -1,6 +1,6 @@
 # Git Dialogs
 
-Several items of the [Git Menu](Git-Menu.md) open a dialog, like their counterparts in JetBrains IDEs. They all work the same way:
+Several items of the [Git Menu](Git-Menu.md) open a dialog. They all work the same way:
 
 - **Esc** cancels and **Cmd+Enter** runs the main button.
 - Most of them show, at the bottom, the git command they will run. You can select and copy it, and it is a good way to learn git.
@@ -131,7 +131,7 @@ Paste the **Repository URL**. **Clone into folder** starts next to the open fold
 
 While it clones you see git's progress. **Cancel** stops git and removes the folder it was creating. When the clone is done, choose **Open in This Window**, **Add to Workspace** (only when a folder is open) or **Not Now**.
 
-Scripts and AI tools can clone too, with `git-manager cli clone` or the `clone_repository` tool. See [MCP Server and Command Line Tool](MCP-and-CLI.md).
+Scripts and AI tools can clone too, with `nibtree cli clone` or the `clone_repository` tool. See [MCP Server and Command Line Tool](MCP-and-CLI.md).
 
 ## Related
 

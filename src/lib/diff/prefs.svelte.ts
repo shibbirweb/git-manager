@@ -1,7 +1,7 @@
 // Diff view preferences shared by every DiffView instance, kept in localStorage. The pane counts live in settings.json
 // (settings.changesDiffPanes, settings.mergeDiffPanes) because Settings > Git shows them.
 
-const STORAGE_KEY = "git-manager:diff";
+const STORAGE_KEY = "nibtree:diff";
 
 interface DiffPrefsData {
   collapseUnchanged: boolean;

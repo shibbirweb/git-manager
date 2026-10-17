@@ -2,12 +2,12 @@
 <script lang="ts">
   import { settings } from "$lib/stores/settings.svelte";
   import { updates } from "$lib/update/updates.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import CodeBlock from "@git-manager/ui/components/CodeBlock.svelte";
-  import Segmented from "@git-manager/ui/components/Segmented.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Switch from "@git-manager/ui/components/Switch.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import CodeBlock from "@nibtree/ui/components/CodeBlock.svelte";
+  import Segmented from "@nibtree/ui/components/Segmented.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Switch from "@nibtree/ui/components/Switch.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { set } from "./settingsShared";
 

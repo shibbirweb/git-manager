@@ -7,7 +7,7 @@ import type { ChangeMark } from "$lib/editor/lineDiff";
 import { sectionTarget } from "$lib/editor/navigation";
 import { reloadChange } from "$lib/editor/reloadChange";
 import { languageName } from "$lib/editor/setup";
-import { editorTopLine } from "@git-manager/ui/markdown/editorScroll";
+import { editorTopLine } from "@nibtree/ui/markdown/editorScroll";
 import type { EditorInfo } from "$lib/stores/editorStatus.svelte";
 import type { Eol } from "$lib/types";
 

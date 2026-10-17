@@ -3,7 +3,7 @@
 Match Case, Words and Regex toggles inside a search field.
 
 ```ts
-import SearchToggles from "@git-manager/ui/components/SearchToggles.svelte";
+import SearchToggles from "@nibtree/ui/components/SearchToggles.svelte";
 ```
 
 Group: Editor. Also known as: Toggle group.

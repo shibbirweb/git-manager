@@ -3,7 +3,7 @@
 The editor area split into groups placed by fractions, with lines (or rounded gaps) between them.
 
 ```ts
-import SplitGrid from "@git-manager/ui/components/SplitGrid.svelte";
+import SplitGrid from "@nibtree/ui/components/SplitGrid.svelte";
 ```
 
 Group: Layout. Also known as: Editor groups, Split view.

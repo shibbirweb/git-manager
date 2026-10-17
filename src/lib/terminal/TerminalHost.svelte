@@ -7,7 +7,7 @@
   on a terminal, while there is a terminal and the setting is on.
 -->
 <script lang="ts">
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
   import { getCurrentWebview, type DragDropEvent } from "@tauri-apps/api/webview";
   import { platformFromUserAgent } from "$lib/menu/menuSpec";
   import { settings } from "$lib/stores/settings.svelte";

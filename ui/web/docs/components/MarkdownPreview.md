@@ -3,7 +3,7 @@
 The live preview of a Markdown file: highlighted code, mermaid diagrams, local images and task boxes.
 
 ```ts
-import MarkdownPreview from "@git-manager/ui/components/MarkdownPreview.svelte";
+import MarkdownPreview from "@nibtree/ui/components/MarkdownPreview.svelte";
 ```
 
 Group: Editor. Also known as: Markdown, Preview, Rendered Markdown.

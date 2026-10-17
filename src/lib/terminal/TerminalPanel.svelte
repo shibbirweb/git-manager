@@ -4,18 +4,18 @@
   TerminalHost and moved into their panes; Workspace gives the panel its frame and height.
 -->
 <script lang="ts">
-  import Divider from "@git-manager/ui/components/Divider.svelte";
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
-  import IconButton from "@git-manager/ui/components/IconButton.svelte";
-  import PaneRow from "@git-manager/ui/components/PaneRow.svelte";
-  import RenameField from "@git-manager/ui/components/RenameField.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import SplitPane from "@git-manager/ui/components/SplitPane.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import StatusDot from "@git-manager/ui/components/StatusDot.svelte";
-  import Tabs from "@git-manager/ui/components/Tabs.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
+  import Divider from "@nibtree/ui/components/Divider.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
+  import IconButton from "@nibtree/ui/components/IconButton.svelte";
+  import PaneRow from "@nibtree/ui/components/PaneRow.svelte";
+  import RenameField from "@nibtree/ui/components/RenameField.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import SplitPane from "@nibtree/ui/components/SplitPane.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import StatusDot from "@nibtree/ui/components/StatusDot.svelte";
+  import Tabs from "@nibtree/ui/components/Tabs.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
   import { untrack } from "svelte";
   import { localKeys, withCommandKeys } from "$lib/commands/commandRuntime";
   import ShelfPanel from "$lib/shelf/ShelfPanel.svelte";

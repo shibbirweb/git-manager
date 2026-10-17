@@ -1,4 +1,4 @@
-// The label of a fold in a diff, like JetBrains IDEs: the declarations around the code after the fold, such as
+// The label of a fold in a diff: the declarations around the code after the fold, such as
 // "\App\Http\Controllers\Api > DistrictController > store()", read from the first line of each enclosing block.
 // Blocks that declare nothing (if, for, a bare object) are left out.
 

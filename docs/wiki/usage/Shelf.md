@@ -1,10 +1,10 @@
 # Shelf
 
-The shelf puts uncommitted changes aside without committing them, like the Shelf in JetBrains IDEs. You pick the files, give the change a name, and Git Manager saves it as a patch and takes it out of your files. Later you bring it back, all of it or only some files.
+The shelf puts uncommitted changes aside without committing them. You pick the files, give the change a name, and Nibtree saves it as a patch and takes it out of your files. Later you bring it back, all of it or only some files.
 
 ## Shelf or stash?
 
-Both put work aside. A **stash** is git's own feature (see [Stashes](Stashes.md)): git saves your changes as special commits and you get them back with apply or pop. The **shelf** is Git Manager's: each shelved change is a patch file (a text file that lists the changed lines) kept inside your repository's `.git` folder.
+Both put work aside. A **stash** is git's own feature (see [Stashes](Stashes.md)): git saves your changes as special commits and you get them back with apply or pop. The **shelf** is Nibtree's: each shelved change is a patch file (a text file that lists the changed lines) kept inside your repository's `.git` folder.
 
 Use the shelf when you want to:
 
@@ -58,7 +58,7 @@ You then choose:
 - **Unshelve**: apply the changes, then remove the applied files from the shelf. When every file is applied, the shelved change goes away.
 - **Unshelve and Keep on Shelf**: apply the changes and keep them shelved, for example to apply them on another branch too.
 
-The changes come back into your files, unstaged: stage them again if you need to. New files show as untracked again. If the files changed since you shelved, Git Manager tries a three-way merge: it compares your file and the shelved one with the version they both came from. When the same lines changed on both sides, you get conflicts: the Conflicts dialog opens and the shelved change stays on the shelf, so nothing is lost. See [Resolving Conflicts](Resolving-Conflicts.md).
+The changes come back into your files, unstaged: stage them again if you need to. New files show as untracked again. If the files changed since you shelved, Nibtree tries a three-way merge: it compares your file and the shelved one with the version they both came from. When the same lines changed on both sides, you get conflicts: the Conflicts dialog opens and the shelved change stays on the shelf, so nothing is lost. See [Resolving Conflicts](Resolving-Conflicts.md).
 
 ## Rename and delete
 

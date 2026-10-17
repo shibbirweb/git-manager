@@ -1,6 +1,6 @@
 # Staging View
 
-The staging view shows a changed file in three panes, like PhpStorm: **HEAD** (the last commit) on the left, the **Index (staged)** in the middle and the **Working Tree** (the file on disk) on the right. You see at a glance what is already staged for the next commit and what is not, and you stage or unstage single changes from the bands between the panes.
+The staging view shows a changed file in three panes: **HEAD** (the last commit) on the left, the **Index (staged)** in the middle and the **Working Tree** (the file on disk) on the right. You see at a glance what is already staged for the next commit and what is not, and you stage or unstage single changes from the bands between the panes.
 
 ![Staging view](../images/diff-staging-view.png)
 
@@ -8,7 +8,7 @@ The staging view shows a changed file in three panes, like PhpStorm: **HEAD** (t
 
 ## Turn it on
 
-Open a file from [Changes](Changes-and-Commits.md), or from the Changes tab that **N changes** in the status bar opens, then click the **Three panes** button among the layout buttons of the diff toolbar. Both places share the setting. Click **Side by side** or **Inline** to go back to the usual two-pane diff. Git Manager remembers your choice for the next file. You can also pick it in Settings > Git: **Side by side in Changes** is **2 columns** or **3 columns**.
+Open a file from [Changes](Changes-and-Commits.md), or from the Changes tab that **N changes** in the status bar opens, then click the **Three panes** button among the layout buttons of the diff toolbar. Both places share the setting. Click **Side by side** or **Inline** to go back to the usual two-pane diff. Nibtree remembers your choice for the next file. You can also pick it in Settings > Git: **Side by side in Changes** is **2 columns** or **3 columns**.
 
 The staging view is offered for files that are modified, in the index, the working tree or both. New, deleted, renamed, conflicted and binary files keep the two-pane diff.
 
@@ -16,7 +16,7 @@ The staging view is offered for files that are modified, in the index, the worki
 
 - The bands on the **left** join HEAD to the index: the changes you have staged.
 - The bands on the **right** join the index to the working tree: the changes you have not staged yet.
-- Like VS Code, each change is red on its older side and green on its newer side: a staged change is red in HEAD and green in the index, and an unstaged change red in the index and green in the working tree.
+- Each change is red on its older side and green on its newer side: a staged change is red in HEAD and green in the index, and an unstaged change red in the index and green in the working tree.
 
 The toolbar is the same as in every diff. **Blame** shows who wrote each line of the working tree pane.
 

@@ -3,7 +3,7 @@
 A menu of one-of choices in a Popover: a title with its status, then radio choices and descriptions.
 
 ```ts
-import ChoiceMenu from "@git-manager/ui/components/ChoiceMenu.svelte";
+import ChoiceMenu from "@nibtree/ui/components/ChoiceMenu.svelte";
 ```
 
 Group: Overlays. Also known as: Radio menu, Mode picker.

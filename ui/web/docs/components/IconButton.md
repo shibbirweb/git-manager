@@ -3,7 +3,7 @@
 A borderless icon button, optionally with text after the icon; `label` is its name and tooltip.
 
 ```ts
-import IconButton from "@git-manager/ui/components/IconButton.svelte";
+import IconButton from "@nibtree/ui/components/IconButton.svelte";
 ```
 
 Group: Actions. Also known as: Toggle.

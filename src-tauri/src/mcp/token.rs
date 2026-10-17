@@ -1,4 +1,4 @@
-//! `~/.gitmanager/mcp.json`: the bearer token, plus the port and process id while the
+//! `~/.nibtree/mcp.json`: the bearer token, plus the port and process id while the
 //! server runs so the command line tool can find it. Readable by the user only.
 
 use std::io::Write;
@@ -6,7 +6,7 @@ use std::path::Path;
 
 use crate::error::{AppError, AppResult};
 
-pub use git_manager_cli::server_file::{file_in, read_in, McpFile, FILE_NAME, TOKEN_BYTES};
+pub use nibtree_cli::server_file::{file_in, read_in, McpFile, FILE_NAME, TOKEN_BYTES};
 
 /// Writes atomically with mode 0600 from the start, so the token is never readable by others.
 pub fn write_in(config_dir: &Path, file: &McpFile) -> AppResult<()> {
@@ -50,7 +50,7 @@ pub fn tokens_match(expected: &str, given: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use git_manager_cli::server_file::is_valid_token;
+    use nibtree_cli::server_file::is_valid_token;
 
     #[test]
     fn tokens_are_random_hex_and_compare_exactly() {
@@ -67,7 +67,7 @@ mod tests {
     #[test]
     fn the_file_round_trips_with_user_only_permissions() {
         let dir = tempfile::TempDir::new().unwrap();
-        let config_dir = dir.path().join(".gitmanager");
+        let config_dir = dir.path().join(".nibtree");
         assert_eq!(read_in(&config_dir), None);
         let file = McpFile {
             token: new_token().unwrap(),

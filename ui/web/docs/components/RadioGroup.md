@@ -3,7 +3,7 @@
 Native radio buttons for one choice among a few, each with an optional description.
 
 ```ts
-import RadioGroup from "@git-manager/ui/components/RadioGroup.svelte";
+import RadioGroup from "@nibtree/ui/components/RadioGroup.svelte";
 ```
 
 Group: Forms. Also known as: Radio group.

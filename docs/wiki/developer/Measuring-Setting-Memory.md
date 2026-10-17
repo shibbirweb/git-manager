@@ -1,10 +1,10 @@
 # Measuring Setting Memory
 
-Some settings make Git Manager use clearly more memory when they are on. Settings shows a small mark beside each of them, such as **+70 MB**, and its tooltip says when the memory is used. This page explains where those numbers come from and how to measure them again. The user side is in [Memory Use](../usage/Memory-Use.md#settings-that-use-more-memory).
+Some settings make Nibtree use clearly more memory when they are on. Settings shows a small mark beside each of them, such as **+70 MB**, and its tooltip says when the memory is used. This page explains where those numbers come from and how to measure them again. The user side is in [Memory Use](../usage/Memory-Use.md#settings-that-use-more-memory).
 
 ## Why we need it
 
-Memory is a feature of Git Manager (see [Architecture](Architecture.md)), but most settings cost almost nothing. A user who wants to save memory should know which few switches matter and roughly how much, without guessing. Hints written from a guess were wrong before: GPU acceleration said "a few MB per terminal" while it costs about 70 MB.
+Memory is a feature of Nibtree (see [Architecture](Architecture.md)), but most settings cost almost nothing. A user who wants to save memory should know which few switches matter and roughly how much, without guessing. Hints written from a guess were wrong before: GPU acceleration said "a few MB per terminal" while it costs about 70 MB.
 
 ## How a number is measured
 
@@ -13,14 +13,14 @@ Each setting is measured as an A/B pair on the release app, with nothing else ch
 ```mermaid
 flowchart TD
   S["write settings.json:<br/>defaults + one variant"] --> L["cold start the release app<br/>with an isolated HOME and a demo clone"]
-  L --> D["drive the same scenario<br/>with git-manager cli call"]
+  L --> D["drive the same scenario<br/>with nibtree cli call"]
   D --> W["wait 15 s to settle"]
-  W --> M["git-manager cli memory<br/>every 500 ms for 10 s, keep the median"]
+  W --> M["nibtree cli memory<br/>every 500 ms for 10 s, keep the median"]
   M --> Q["quit, next variant"]
   Q --> S
 ```
 
-- **Cold start every run.** Settings are written before launch, so every run starts from the same state. `HOME` points at a scratch folder, so the user's `~/.gitmanager` is never touched.
+- **Cold start every run.** Settings are written before launch, so every run starts from the same state. `HOME` points at a scratch folder, so the user's `~/.nibtree` is never touched.
 - **The same scenario.** The main scenario opens `SettingsDialog.svelte` at line 1500, scrolls the editor with `scroll_view`, opens a terminal with `new_terminal` and prints `seq 1 120000` in it. Markdown runs open a Markdown file instead, and terminal runs open one or three terminals.
 - **Round robin, three rounds.** Variants take turns, so a slow drift over time hits all of them alike. The result is the median of three runs, compared with the baseline of the same scenario.
 - **Two numbers.** The script records the total and the **Web content** process. The Graphics process swings by 100 MB or more between runs on the built-in display, so a difference counts only when the total and Web content agree, or when it repeats in every round.
@@ -79,4 +79,4 @@ Everything else stayed within about 10 MB in both directions, which is the noise
 
 - Measure again after a change that can move memory: a new renderer, a new addon, a CodeMirror upgrade or a new view. Update `memoryCost.ts`, this table, the hints in the section files under `views/settings/`, [Memory Use](../usage/Memory-Use.md) and the settings usage pages together.
 - A new setting that might cost memory needs its own A/B pair before it gets a mark.
-- See [How Memory Is Measured](How-Memory-Is-Measured.md) for the readout and `git-manager cli memory`.
+- See [How Memory Is Measured](How-Memory-Is-Measured.md) for the readout and `nibtree cli memory`.

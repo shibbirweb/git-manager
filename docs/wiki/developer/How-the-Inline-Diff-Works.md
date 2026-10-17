@@ -38,7 +38,7 @@ Hunks that do not fit the texts (`hunkRanges` returns null), or a payload withou
 - line classes by each line's own kind (removed `--diff-removed` soft red, added `--diff-added` green) and changed-word marks from `inlineWordMarks` (`--diff-removed-word`, `--diff-added-word`), which diffs each modified block's old lines against its new lines,
 - two number gutters, old then new, that tint changed rows like the code,
 - a gutter with a Stage (+) or Unstage (-) button on the first line of each change,
-- a sign gutter right before the text: `lineSign` gives `-` for a removed line and `+` for an added one, in `--danger` red and `--success` green, like `git diff` and GitLens. Markers are shared per sign and kind,
+- a sign gutter right before the text: `lineSign` gives `-` for a removed line and `+` for an added one, in `--danger` red and `--success` green, like `git diff`. Markers are shared per sign and kind,
 - folded unchanged runs from `collapsedRuns` (3 lines of margin, at least 4 folded), drawn by `inlineFolds` from `foldField.ts`, the same folds as the side by side layout. They are block widgets in a `StateField`, as block decorations must be. A run opens 10 lines at a time from either edge, fully when its label is clicked, and fully when the cursor lands in it, so a Find match or a reveal is never hidden.
 
 ### Mapping back to the two versions
@@ -68,7 +68,7 @@ Everything outside the editor speaks in new-text lines or old and new lines, so 
 
 **Our own document, not CodeMirror's unified view.** `unifiedMergeView` from `@codemirror/merge` draws removed lines as widgets. Widgets have no line numbers, cannot be selected and are not searched, which is why the first version had all three limits. Putting both versions into the text fixes them at once and keeps one source of line facts for every feature.
 
-**Red and green per line, like GitLens.** One column puts old and new lines next to each other, so each line shows its own side: soft red removed, green added, even inside a modified block. Side by side keeps the JetBrains colors (grey removed, blue modified), where the pane already says which side a line is on. Every color theme derives the red tints from its danger color.
+**Red and green per line.** One column puts old and new lines next to each other, so each line shows its own side: soft red removed, green added, even inside a modified block. Side by side keeps its own colors (grey removed, blue modified), where the pane already says which side a line is on. Every color theme derives the red tints from its danger color.
 
 **Exact selections.** Side by side, a selection on one side also takes the facing lines of the other. Inline, both are on screen, so a selection takes only what it covers.
 

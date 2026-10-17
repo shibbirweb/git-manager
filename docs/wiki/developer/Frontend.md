@@ -10,7 +10,7 @@ SvelteKit builds the UI with `@sveltejs/adapter-static` and an `index.html` fall
 
 On start, `App.svelte`:
 
-1. loads settings from `~/.gitmanager` (`settings.init()`) and starts the update check;
+1. loads settings from `~/.nibtree` (`settings.init()`) and starts the update check;
 2. asks Rust for the launch mode (`api.getLaunchMode()`) and builds the native menu bar (`appMenu`);
 3. in mergetool mode shows `MergeToolApp`; otherwise opens the folder or workspace file passed on the command line, or restores the last session (`sessionSteps`).
 
@@ -91,7 +91,7 @@ Window-level key handlers must skip when `dialogs.active` is set or `event.defau
 
 ## Colors and themes
 
-All colors are CSS tokens in the UI library's `styles/colors.css` (generated from `ui/design-tokens/colors.json`): `--bg`, `--panel`, `--text`, `--accent`, `--danger`, the `--diff-*`, `--tok-*` and terminal families, and more. The Git Manager Light and Dark themes are the sets in `colors.css`; any other color theme is one generated `<style>` element (`themes/apply.ts`) with values from the lazy catalog. `settings.svelte.ts` sets `data-theme` and `data-color-theme` on `<html>`, and code that copies colors out of CSS (xterm, mermaid) rereads them through `themes/watch.ts`. Components never hard-code a color. A new token goes in `colors.json` (then `bun run ui:tokens`) and the UI library's `themes/colorTokens.ts` and `themes/derive.ts`. The page and code rules (scrollbars, selectable text, syntax colors) are the library's `styles/base.css` and `styles/code.css`. See [How Color Themes Work](How-Color-Themes-Work.md).
+All colors are CSS tokens in the UI library's `styles/colors.css` (generated from `ui/design-tokens/colors.json`): `--bg`, `--panel`, `--text`, `--accent`, `--danger`, the `--diff-*`, `--tok-*` and terminal families, and more. The Nibtree Light and Dark themes are the sets in `colors.css`; any other color theme is one generated `<style>` element (`themes/apply.ts`) with values from the lazy catalog. `settings.svelte.ts` sets `data-theme` and `data-color-theme` on `<html>`, and code that copies colors out of CSS (xterm, mermaid) rereads them through `themes/watch.ts`. Components never hard-code a color. A new token goes in `colors.json` (then `bun run ui:tokens`) and the UI library's `themes/colorTokens.ts` and `themes/derive.ts`. The page and code rules (scrollbars, selectable text, syntax colors) are the library's `styles/base.css` and `styles/code.css`. See [How Color Themes Work](How-Color-Themes-Work.md).
 
 ## Lessons learned
 

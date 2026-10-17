@@ -4,7 +4,7 @@ This chapter explains how the three levels of file icons are loaded, matched and
 
 ## Why we need it
 
-PhpStorm and VS Code show an icon for each file type, and the user asked for the same in the Files panel and the file lists. Memory is a feature of Git Manager (see [Architecture](Architecture.md)), so the icons had to cost nothing when they are off, and only one set may be in memory at a time. That is why the setting has three levels instead of a switch: **No icons**, **Minimal** (simple shapes colored by theme tokens) and **Material Icons** (the colored icons of Material Icon Theme).
+Code editors show an icon for each file type, and the user asked for the same in the Files panel and the file lists. Memory is a feature of Nibtree (see [Architecture](Architecture.md)), so the icons had to cost nothing when they are off, and only one set may be in memory at a time. That is why the setting has three levels instead of a switch: **No icons**, **Minimal** (simple shapes colored by theme tokens) and **Material Icons** (the colored icons of Material Icon Theme).
 
 ## How it works
 
@@ -44,7 +44,7 @@ flowchart LR
 
 ### Matching a file name
 
-`iconFor(map, fileName, light)` in `iconMatch.ts` follows VS Code: the whole name in lowercase first (`names`, or `lightNames` in a light theme), then every extension from the longest (`app.spec.ts` tries `spec.ts`, then `ts`), and `map.file` when nothing matches. Lookups use `Object.hasOwn`, so a file called `constructor` never reads `Object.prototype`. `normalizeIconMap` defaults every part of a fetched map, so a damaged file gives plain icons instead of errors.
+`iconFor(map, fileName, light)` in `iconMatch.ts` follows the icon theme's own rules: the whole name in lowercase first (`names`, or `lightNames` in a light theme), then every extension from the longest (`app.spec.ts` tries `spec.ts`, then `ts`), and `map.file` when nothing matches. Lookups use `Object.hasOwn`, so a file called `constructor` never reads `Object.prototype`. `normalizeIconMap` defaults every part of a fetched map, so a damaged file gives plain icons instead of errors.
 
 ### Drawing a row
 
@@ -86,7 +86,7 @@ The CSP in `tauri.conf.json` has `'self'` in `connect-src` so the app may fetch 
 
 **Fetch, not import.** An imported module cannot be unloaded. A fetched map is ordinary data that the garbage collector frees when the resolver is replaced, and a removed stylesheet frees its rules.
 
-**Material Icon Theme for the real icons.** It is MIT licensed, covers over 1,000 types and ships a type map we can reuse. JetBrains' own icons are not published with such a map.
+**Material Icon Theme for the real icons.** It is MIT licensed, covers over 1,000 types and ships a type map we can reuse. Other icon sets are not published with such a map.
 
 **Masks for Minimal, images for Material.** Minimal glyphs are one color, so a mask lets theme tokens color them. Material icons have their own colors, so they are plain images.
 
@@ -96,7 +96,7 @@ The CSP in `tauri.conf.json` has `'self'` in `connect-src` so the app may fetch 
 - `minimalSource.test.ts`: the committed `minimal/` folder matches the source, every map value is a known glyph and tone, and every tone is a token in `colors.css`.
 - `settingsData.test.ts` and `menuState.test.ts`: the setting and the View menu ticks.
 
-The memory of each level was measured in the real app with `git-manager cli memory` and `run_menu_command` on a repository with 2,400 changed files, three rounds of No icons, Minimal and Material Icons: Minimal added 2 to 10 MB of web content memory and Material Icons 10 to 15 MB more. Most of it is the extra row element per file in the Changes list and the decoded pictures. See [How Memory Is Measured](How-Memory-Is-Measured.md).
+The memory of each level was measured in the real app with `nibtree cli memory` and `run_menu_command` on a repository with 2,400 changed files, three rounds of No icons, Minimal and Material Icons: Minimal added 2 to 10 MB of web content memory and Material Icons 10 to 15 MB more. Most of it is the extra row element per file in the Changes list and the decoded pictures. See [How Memory Is Measured](How-Memory-Is-Measured.md).
 
 ## Keeping in sync
 

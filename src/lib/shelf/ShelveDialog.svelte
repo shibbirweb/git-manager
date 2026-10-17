@@ -2,14 +2,14 @@
      files) and "Keep changes in the working tree". The changes are saved as a patch on the shelf,
      then taken out of the work tree unless kept. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import FileRow from "@git-manager/ui/components/FileRow.svelte";
-  import ListBox from "@git-manager/ui/components/ListBox.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import FileRow from "@nibtree/ui/components/FileRow.svelte";
+  import ListBox from "@nibtree/ui/components/ListBox.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
   import { untrack } from "svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
   import { rowKind, splitPath, stagingNote } from "$lib/views/changes/fileStatus";

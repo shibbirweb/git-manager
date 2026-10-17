@@ -3,7 +3,7 @@
 A 1px line between groups: horizontal by default, vertical in toolbars.
 
 ```ts
-import Divider from "@git-manager/ui/components/Divider.svelte";
+import Divider from "@nibtree/ui/components/Divider.svelte";
 ```
 
 Group: Layout. Also known as: Separator.

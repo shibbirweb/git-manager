@@ -1,6 +1,6 @@
 # How Git LFS Works
 
-Git Manager detects Git LFS use per repository, tags LFS files in the Changes sidebar and the Files panel, shows sizes instead of pointer text in diffs, and runs `git lfs` commands through the git CLI. For the user side, see [Git LFS](../usage/Git-LFS.md).
+Nibtree detects Git LFS use per repository, tags LFS files in the Changes sidebar and the Files panel, shows sizes instead of pointer text in diffs, and runs `git lfs` commands through the git CLI. For the user side, see [Git LFS](../usage/Git-LFS.md).
 
 ## Why we need it
 
@@ -74,7 +74,7 @@ Patterns are trimmed and refused when empty, starting with `-` or containing a l
 
 `lfsActions.ts` holds the actions for **Git > LFS** and the **LFS** submenu that `repoExtras.ts` adds to a repository row's **...** menu. Every action first calls `requireLfs`, which refreshes the status and, without `git-lfs`, shows "Git LFS Is Not Installed" with **Get Git LFS** (opens `https://git-lfs.com`) instead of running. Track uses a prompt validated by `validateLfsPattern`; Untrack picks from `patterns`; Prune asks with a danger confirm.
 
-The one-time notice is separate: when a status says used but not installed, `offerInstall` waits until no other dialog is open, shows "Git LFS Is Not Installed" with **Get Git LFS** and **Not Now**, and remembers it in `localStorage` (`git-manager.lfs.installNoticeShown`), so it shows once ever per install.
+The one-time notice is separate: when a status says used but not installed, `offerInstall` waits until no other dialog is open, shows "Git LFS Is Not Installed" with **Get Git LFS** and **Not Now**, and remembers it in `localStorage` (`nibtree.lfs.installNoticeShown`), so it shows once ever per install.
 
 ```mermaid
 stateDiagram-v2

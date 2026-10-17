@@ -2,7 +2,7 @@
 // scroll_view walk. Nothing runs until an agent calls a tool; the long task observer starts on
 // the first get_ui_performance call and reports what it saw since the previous one.
 
-import { mermaidLoaded } from "@git-manager/ui/markdown/mermaid";
+import { mermaidLoaded } from "@nibtree/ui/markdown/mermaid";
 import { repoStore } from "$lib/stores/repo.svelte";
 import { terminalStore } from "$lib/terminal/terminalStore.svelte";
 import { FRAME_MS, frameStats, type FrameStats, largest, nextScroll, type ScrollWalk } from "./perfModel";

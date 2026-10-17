@@ -3,7 +3,7 @@
 A small spinning ring for work in progress.
 
 ```ts
-import Spinner from "@git-manager/ui/components/Spinner.svelte";
+import Spinner from "@nibtree/ui/components/Spinner.svelte";
 ```
 
 Group: Feedback. Also known as: Spinner, Loader.

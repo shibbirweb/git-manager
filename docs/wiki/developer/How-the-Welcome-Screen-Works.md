@@ -4,7 +4,7 @@ This chapter explains the welcome screen: its pages, the recent project list and
 
 ## Why we need it
 
-The first welcome screen was a small card with an Open Folder button, a row of links and two plain lists of recent workspaces and folders. People who come from JetBrains IDEs know a richer screen: a sidebar with Projects, Customize and Learn, a search over recent projects, and a colored badge per project that is quicker to spot than a path. The user asked for that layout.
+The first welcome screen was a small card with an Open Folder button, a row of links and two plain lists of recent workspaces and folders. A richer screen is more helpful: a sidebar with Projects, Customize and Learn, a search over recent projects, and a colored badge per project that is quicker to spot than a path. The user asked for that layout.
 
 ## How it works
 
@@ -24,7 +24,7 @@ flowchart LR
 
 The list is the same one the header's folder menu and File > Open Recent use: `recentEntries` in `recentEntries.ts` merges workspace files, multi-folder workspaces and single folders into `RecentEntry` values. Nothing is open on this screen, so it passes `null` for the open workspace and every entry is listed.
 
-The sizes follow the JetBrains screen: a 240 px sidebar with 36 px items, 32 px search field and buttons, and 56 px project rows with 36 px badges. Text sizes are relative to `--ui-size`, so Interface font size still scales the screen.
+The sizes: a 240 px sidebar with 36 px items, 32 px search field and buttons, and 56 px project rows with 36 px badges. Text sizes are relative to `--ui-size`, so Interface font size still scales the screen.
 
 The pure helpers live in `welcomeModel.ts`:
 
@@ -36,7 +36,7 @@ The pure helpers live in `welcomeModel.ts`:
 
 The search field keeps the keyboard focus. Its key handler moves the selection (Home and End only while the query is empty, so they still move the text cursor), opens on Enter (Cmd+Enter for a new window), clears on Esc and removes on Delete. Hovering a row picks it too, so the keyboard and the mouse share one selection.
 
-The badges are solid like JetBrains' ones: a gradient from the theme's bright to its normal terminal color (`--term-bright-blue` to `--term-blue` and so on), darkened a little towards `--term-black`, with `--accent-text` letters. Every color theme defines those tokens, so the badges match the theme. Yellow is left out, since white letters do not read on it.
+The badges are solid: a gradient from the theme's bright to its normal terminal color (`--term-bright-blue` to `--term-blue` and so on), darkened a little towards `--term-black`, with `--accent-text` letters. Every color theme defines those tokens, so the badges match the theme. Yellow is left out, since white letters do not read on it.
 
 With no recent projects (and no state.json error to report), Projects shows a centered greeting with three large buttons instead of an empty list.
 
@@ -59,11 +59,11 @@ Customize calls the same settings methods as the Settings window (`setTheme`, `s
 
 ## Design decisions
 
-**One list, not two.** JetBrains shows one list of recent projects. Workspaces and folders are both "a project" to the user, and one list makes search and the arrow keys simple.
+**One list, not two.** One list of recent projects is simpler. Workspaces and folders are both "a project" to the user, and one list makes search and the arrow keys simple.
 
 **Theme colors, not fixed ones.** Fixed badge colors would clash with some of the many color themes. The terminal palette is defined by every theme and already chosen to work on its background.
 
-**Search keeps the focus.** As in JetBrains, you can type a name and press Enter without touching the mouse.
+**Search keeps the focus.** You can type a name and press Enter without touching the mouse.
 
 **Customize is a short list.** It holds what people change before their first folder. Everything else stays in Settings, one click away through All settings.
 
@@ -72,10 +72,10 @@ Customize calls the same settings methods as the Settings window (`setTheme`, `s
 **The welcome screen did not fit a short window.**
 - **The issue:** in a short window the old card was cut off at the top and bottom.
 - **Why it happened:** `align-items: center` on a `100vh` screen with `overflow: hidden` pushes a taller card past both edges.
-- **The fix and why we chose it:** the card centered with `margin: auto` and let its lists scroll. The JetBrains layout keeps the idea: the screen is the window's height, and only the project list and the Customize and Learn pages scroll.
+- **The fix and why we chose it:** the card centered with `margin: auto` and let its lists scroll. The new layout keeps the idea: the screen is the window's height, and only the project list and the Customize and Learn pages scroll.
 
 **The project badges had dark letters on dark tiles.**
-- **The issue:** in Islands Light the initials on the colored tiles were black and hard to read.
+- **The issue:** in Islet Light the initials on the colored tiles were black and hard to read.
 - **Why it happened:** `Avatar` used `--accent-text`, which a theme picks for its accent color. A light accent gets black text, but the tiles are their own deep palette colors.
 - **The fix and why we chose it:** a new `--avatar-text` token. Each theme picks white or black, whichever reads better on the worst of its five tile colors (`themes/catalog.ts`); the default themes use white. One color per theme keeps the CSS simple, and a test checks it on every theme.
 

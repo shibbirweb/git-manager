@@ -1,6 +1,6 @@
 # Find and Replace
 
-Git Manager has two ways to find and replace text: a find bar inside one file, and **Replace in Files** for the whole workspace. Both work like their JetBrains counterparts.
+Nibtree has two ways to find and replace text: a find bar inside one file, and **Replace in Files** for the whole workspace.
 
 ## The find bar
 
@@ -80,7 +80,7 @@ Replace in Files changes text in many files at once, straight on disk. Open it w
 1. Type what to find. The results list every matching line, grouped by file.
 2. Type the replacement in **Replace with**. Leave it empty to delete the matches.
 3. Click **Replace All** to replace in every file, or the **Replace** button on one file's heading to replace only there.
-4. A dialog says how many matches in how many files will change, and asks you to confirm. Files are written right away, and this cannot be undone in Git Manager. (Git can still show you the change in [Changes](Changes-and-Commits.md), and you can roll it back there.)
+4. A dialog says how many matches in how many files will change, and asks you to confirm. Files are written right away, and this cannot be undone in Nibtree. (Git can still show you the change in [Changes](Changes-and-Commits.md), and you can roll it back there.)
 5. A message such as **Replaced 12 matches in 4 files** confirms it, and the results refresh.
 
 While it counts or writes, the button reads **Stop**. Stopping keeps the files already done; every file is either fully replaced or not touched at all.

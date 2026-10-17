@@ -80,7 +80,7 @@ The tab shows the short hash; hover it for the message. Opening the same commit 
 - **Interactively Rebase from Here...** opens the [Interactive Rebase](Interactive-Rebase.md) dialog for this commit and the ones after it, to reorder, squash, reword or drop them.
 - **Reset Current Branch to Here...** moves your current branch back (or forward) to this commit.
 
-Cherry-Pick, Revert and Interactive Rebase are disabled for merge commits (the menu says **merge commit**). Interactive Rebase also needs a branch and no other operation in progress. Everything except Copy is disabled while another operation runs. If Cherry-Pick or Revert stops on conflicts, Git Manager opens the Conflicts dialog; see [Resolving Conflicts](Resolving-Conflicts.md).
+Cherry-Pick, Revert and Interactive Rebase are disabled for merge commits (the menu says **merge commit**). Interactive Rebase also needs a branch and no other operation in progress. Everything except Copy is disabled while another operation runs. If Cherry-Pick or Revert stops on conflicts, Nibtree opens the Conflicts dialog; see [Resolving Conflicts](Resolving-Conflicts.md).
 
 ### Reset modes
 
@@ -88,7 +88,7 @@ Reset opens a dialog such as **Reset main to a9f492b** that asks how to treat th
 
 - **Soft**: move the branch only. Those changes stay staged.
 - **Mixed**: move the branch and reset the index (the staging area). The changes stay in your files, unstaged.
-- **Hard**: move the branch and throw away all changes in the index and your files. Git Manager asks once more (**Hard Reset**), because this cannot be undone.
+- **Hard**: move the branch and throw away all changes in the index and your files. Nibtree asks once more (**Hard Reset**), because this cannot be undone.
 - **Keep**: move the branch and update the files the move changes, but keep your uncommitted changes. For example, an uncommitted fix in `README.md` stays while the branch moves back. Git refuses if one of your changed files would be overwritten.
 
 **Git > Reset HEAD...** resets to any revision you type, with the same modes. The Reset HEAD dialog is described in [Git Dialogs](Git-Dialogs.md#reset-head). With a commit selected in the Log, **Git > Patch > Create Patch from Commit...** saves it as a patch file (see [Git Menu](Git-Menu.md)).

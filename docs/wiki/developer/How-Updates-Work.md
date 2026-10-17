@@ -1,6 +1,6 @@
 # How updates work
 
-Git Manager checks GitHub for newer releases and tells you when one is out. It never downloads or installs anything by itself. After you update, it shows What's New from the changelog built into the app. For the user side, see [Updates](../usage/Updates.md).
+Nibtree checks GitHub for newer releases and tells you when one is out. It never downloads or installs anything by itself. After you update, it shows What's New from the changelog built into the app. For the user side, see [Updates](../usage/Updates.md).
 
 ## Why we need it
 
@@ -42,7 +42,7 @@ sequenceDiagram
     participant GH as api.github.com
     participant R as releases.ts
     participant SB as StatusBar
-    U->>GH: GET /repos/shibbirweb/git-manager/releases?per_page=30
+    U->>GH: GET /repos/shibbirweb/nibtree/releases?per_page=30
     Note over U,GH: 20 s timeout with AbortController
     GH-->>U: JSON list, or 403 or 404
     U->>R: parseReleases(json, platform)
@@ -52,7 +52,7 @@ sequenceDiagram
     U->>SB: available is newer[0] unless it or a newer version was skipped
 ```
 
-`check(manual)` uses the web view's `fetch`. The CSP in `tauri.conf.json` allows it with `connect-src ... https://api.github.com`. A 403 becomes "GitHub rate limit reached". An automatic check that fails stays quiet: it only sets `updates.error`, which Settings, Updates shows as "Last check failed". A manual check shows a toast or opens the dialog. Check Now and the menu item Git Manager > Check for Updates... (`app.checkForUpdates` in `menu/menuActions.ts`) both call `updates.check(true)`; Help > What's New sets `updates.whatsNewOpen`.
+`check(manual)` uses the web view's `fetch`. The CSP in `tauri.conf.json` allows it with `connect-src ... https://api.github.com`. A 403 becomes "GitHub rate limit reached". An automatic check that fails stays quiet: it only sets `updates.error`, which Settings, Updates shows as "Last check failed". A manual check shows a toast or opens the dialog. Check Now and the menu item Nibtree > Check for Updates... (`app.checkForUpdates` in `menu/menuActions.ts`) both call `updates.check(true)`; Help > What's New sets `updates.whatsNewOpen`.
 
 ### Channels
 

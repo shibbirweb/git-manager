@@ -3,7 +3,7 @@
 A strip of running sessions: state icon in its color, name and close; the selected one underlined.
 
 ```ts
-import SessionTabs from "@git-manager/ui/components/SessionTabs.svelte";
+import SessionTabs from "@nibtree/ui/components/SessionTabs.svelte";
 ```
 
 Group: Navigation. Also known as: Runs, Session strip.

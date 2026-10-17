@@ -1,7 +1,7 @@
 <!-- One editor group's content: its tabs, the first group's diff, Log or start screen, and every tab's editor, kept
      mounted while another tab of the group shows (ElementHost hidden), so unsaved edits, cursor and scroll survive. -->
 <script lang="ts">
-  import ElementHost from "@git-manager/ui/components/ElementHost.svelte";
+  import ElementHost from "@nibtree/ui/components/ElementHost.svelte";
   import FileCompareTab from "$lib/compare/FileCompareTab.svelte";
   import { isCompareTab } from "$lib/compare/compareTabs";
   import CommitTab from "$lib/log/CommitTab.svelte";

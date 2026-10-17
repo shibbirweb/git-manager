@@ -3,8 +3,8 @@
 // its center line through the changes to the others, and the connectors' bands join each side's changes to it.
 import { EditorState, type Extension, Text } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
-import type { MergeFrameParts } from "@git-manager/ui/components/MergeFrame.svelte";
+import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
+import type { MergeFrameParts } from "@nibtree/ui/components/MergeFrame.svelte";
 import { changeMarkField, scrollMarkers, setChangeMarks } from "$lib/editor/scrollMarkers";
 import { baseExtensions, editorLanguage } from "$lib/editor/setup";
 import { type LineMark, setSideMarks, sideExtensions } from "$lib/merge/extensions";

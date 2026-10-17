@@ -1,8 +1,8 @@
-// The changes of the side by side diff as lines, like JetBrains IDEs draw them: each side keeps its own lines (no
+// The changes of the side by side diff as lines: each side keeps its own lines (no
 // padding), a band joins a change's lines on both sides, and scrolling maps lines through the changes.
 import type { Chunk } from "@codemirror/merge";
 import type { Text } from "@codemirror/state";
-import type { ConnectorRibbon } from "@git-manager/ui/components/MergeConnector.svelte";
+import type { ConnectorRibbon } from "@nibtree/ui/components/MergeConnector.svelte";
 import type { Anchor } from "$lib/merge/model";
 
 /** Lines [start, end) of one side, 0-based; an empty range is the gap before line `start`. */

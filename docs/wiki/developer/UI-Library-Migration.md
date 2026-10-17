@@ -10,14 +10,14 @@ Before the migration each screen drew its own buttons, rows and fields with its 
 
 ### The library is a local package
 
-`ui/web` is a package named `@git-manager/ui` (`ui/web/package.json`). The root `package.json` lists it as a Bun workspace and depends on it with `"@git-manager/ui": "workspace:*"`, so `bun install` links it into `node_modules`. The app imports it by name, like any package:
+`ui/web` is a package named `@nibtree/ui` (`ui/web/package.json`). The root `package.json` lists it as a Bun workspace and depends on it with `"@nibtree/ui": "workspace:*"`, so `bun install` links it into `node_modules`. The app imports it by name, like any package:
 
 ```ts
-import Button from "@git-manager/ui/components/Button.svelte";
-import { icons } from "@git-manager/ui/icons";
+import Button from "@nibtree/ui/components/Button.svelte";
+import { icons } from "@nibtree/ui/icons";
 ```
 
-The package exports its components, logic, editor helpers, token CSS, icons and toasts. CodeMirror, xterm.js, markdown-it and Svelte are peer dependencies, so the app and the library share one copy of each. `src/routes/+layout.svelte` loads `@git-manager/ui/styles/tokens.css`, `base.css` and `code.css`; the app has no CSS file of its own. The icon set lives in the package; the app has no copy.
+The package exports its components, logic, editor helpers, token CSS, icons and toasts. CodeMirror, xterm.js, markdown-it and Svelte are peer dependencies, so the app and the library share one copy of each. `src/routes/+layout.svelte` loads `@nibtree/ui/styles/tokens.css`, `base.css` and `code.css`; the app has no CSS file of its own. The icon set lives in the package; the app has no copy.
 
 ### Progress is a number that reaches zero
 

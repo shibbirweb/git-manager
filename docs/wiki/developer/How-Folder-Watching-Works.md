@@ -1,10 +1,10 @@
 # How Folder Watching Works
 
-Git Manager notices changes on its own: an edit in another editor, a commit in the terminal, a new repository after `git clone`. One file watcher per workspace folder sorts every file event into "this repository changed" or "the folder changed". The rest of the workspace is in [How workspaces work](How-Workspaces-Work.md).
+Nibtree notices changes on its own: an edit in another editor, a commit in the terminal, a new repository after `git clone`. One file watcher per workspace folder sorts every file event into "this repository changed" or "the folder changed". The rest of the workspace is in [How workspaces work](How-Workspaces-Work.md).
 
 ## Why we need it
 
-- **No refresh button hunting.** Changes, the Files panel, the Log and the branch names should follow what happens on disk, like VS Code.
+- **No refresh button hunting.** Changes, the Files panel, the Log and the branch names should follow what happens on disk.
 - **No polling.** Asking git for every status every few seconds costs CPU and memory in big workspaces. The operating system's file events are free until something changes.
 - **Only the right repository refreshes.** In a folder with fifty repositories, an edit in one must not reread the other forty-nine.
 

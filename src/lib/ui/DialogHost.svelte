@@ -2,15 +2,15 @@
      from a filterable list, and choose one of a few answers, drawn with the UI library's Dialog. Esc cancels, Enter
      confirms; a prompt's text is selected (or the given range) when it opens. -->
 <script lang="ts">
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Checkbox from "@git-manager/ui/components/Checkbox.svelte";
-  import ChoiceList from "@git-manager/ui/components/ChoiceList.svelte";
-  import Dialog from "@git-manager/ui/components/Dialog.svelte";
-  import Field from "@git-manager/ui/components/Field.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import PickList from "@git-manager/ui/components/PickList.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import TextArea from "@git-manager/ui/components/TextArea.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Checkbox from "@nibtree/ui/components/Checkbox.svelte";
+  import ChoiceList from "@nibtree/ui/components/ChoiceList.svelte";
+  import Dialog from "@nibtree/ui/components/Dialog.svelte";
+  import Field from "@nibtree/ui/components/Field.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import PickList from "@nibtree/ui/components/PickList.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import TextArea from "@nibtree/ui/components/TextArea.svelte";
   import { tick } from "svelte";
   import { dialogs } from "./dialog.svelte";
 

@@ -1,6 +1,6 @@
 # Git Console
 
-Git Manager does its work by running git commands, the same ones you would type in a terminal. The Git Console shows them: every command, the repository it ran in, how long it took, whether it worked, and what git printed. It is like the Console tab of the Git tool window in JetBrains IDEs.
+Nibtree does its work by running git commands, the same ones you would type in a terminal. The Git Console shows them: every command, the repository it ran in, how long it took, whether it worked, and what git printed.
 
 Use it when something surprises you. If a push fails or a pull does something odd, the console shows the exact command and git's own message, so you can repeat it in a terminal or paste it into a bug report.
 
@@ -38,11 +38,11 @@ Each row is one git command, oldest at the top and newest at the bottom:
 - how long it took, like `120 ms` or `2.35 s`;
 - a status dot: green when git finished with exit code 0 (the number git hands back when all went well), red when it failed, and pulsing while it still runs. Hover the dot to read "Exit code 0" or the reason it failed.
 
-Click a row to open it. Below the row you see what git printed: normal output first, then error output, then the reason when git could not start at all. Long output scrolls inside its box. Git Manager keeps only the start of a very long output and says so with a note like "(output cut: only the start is kept)". Click the row again to close it.
+Click a row to open it. Below the row you see what git printed: normal output first, then error output, then the reason when git could not start at all. Long output scrolls inside its box. Nibtree keeps only the start of a very long output and says so with a note like "(output cut: only the start is kept)". Click the row again to close it.
 
 The list follows new commands as they arrive. Scroll up to read older ones and it stays where you are; scroll back to the bottom to follow again.
 
-Only real git commands show up. Git Manager reads most things (status, the log) directly from the repository without running git, so those never appear here.
+Only real git commands show up. Nibtree reads most things (status, the log) directly from the repository without running git, so those never appear here.
 
 ## Filter, copy and clear
 
@@ -52,7 +52,7 @@ Only real git commands show up. Git Manager reads most things (status, the log) 
 
 ## Your secrets stay hidden
 
-Commands and output can contain passwords or tokens, for example in a remote URL like `https://user:password@host/repo.git`. Git Manager masks them with `***` before anything is stored: passwords in URLs, tokens used as a URL user name, values of options such as `http.extraheader`, `Bearer` and `Basic` headers, and GitHub and GitLab tokens (`ghp_...`, `github_pat_...`, `glpat-...`). The list lives only in memory and is gone when you quit.
+Commands and output can contain passwords or tokens, for example in a remote URL like `https://user:password@host/repo.git`. Nibtree masks them with `***` before anything is stored: passwords in URLs, tokens used as a URL user name, values of options such as `http.extraheader`, `Bearer` and `Basic` headers, and GitHub and GitLab tokens (`ghp_...`, `github_pat_...`, `glpat-...`). The list lives only in memory and is gone when you quit.
 
 ## Limits
 

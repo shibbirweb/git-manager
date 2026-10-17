@@ -1,4 +1,4 @@
-// Selections drawn like PhpStorm's: soft rounded corners on the outside of the shape only. CodeMirror draws a
+// Selections drawn: soft rounded corners on the outside of the shape only. CodeMirror draws a
 // selection as up to three boxes (the first line, the full lines between, the last line); rounding every box would
 // cut notches where they meet, so a corner is rounded only when no neighbouring box carries on past it.
 import type { Extension } from "@codemirror/state";

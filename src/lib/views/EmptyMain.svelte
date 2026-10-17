@@ -1,12 +1,12 @@
 <!-- Main area when no diff, file or Log is open: the Navigation Bar on top, then ways to start. -->
 <script lang="ts">
-  import Icon from "@git-manager/ui/components/Icon.svelte";
-  import Logo from "@git-manager/ui/components/Logo.svelte";
-  import Row from "@git-manager/ui/components/Row.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
-  import Text from "@git-manager/ui/components/Text.svelte";
-  import Toolbar from "@git-manager/ui/components/Toolbar.svelte";
-  import type { IconName } from "@git-manager/ui/icons";
+  import Icon from "@nibtree/ui/components/Icon.svelte";
+  import Logo from "@nibtree/ui/components/Logo.svelte";
+  import Row from "@nibtree/ui/components/Row.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
+  import Text from "@nibtree/ui/components/Text.svelte";
+  import Toolbar from "@nibtree/ui/components/Toolbar.svelte";
+  import type { IconName } from "@nibtree/ui/icons";
   import { commandKeys, currentPlatform } from "$lib/commands/commandRuntime";
   import NavigationBar from "$lib/navBar/NavigationBar.svelte";
   import { repoStore } from "$lib/stores/repo.svelte";
@@ -78,7 +78,7 @@
   {/if}
   <Stack grow align="center" justify="center" gap="mdPlus" padding="xl" label="Start">
     <Logo size="soft" />
-    <Text variant="title">{repoStore.workspace?.name ?? "Git Manager"}</Text>
+    <Text variant="title">{repoStore.workspace?.name ?? "Nibtree"}</Text>
     <Stack gap="xs">
       {#each actions as action (action.label)}
         <Row size="entry" disabled={action.disabled} onclick={action.run}>

@@ -7,12 +7,12 @@
     settings,
     type SettingsSection,
   } from "$lib/stores/settings.svelte";
-  import Button from "@git-manager/ui/components/Button.svelte";
-  import Chip from "@git-manager/ui/components/Chip.svelte";
-  import FontSample from "@git-manager/ui/components/FontSample.svelte";
-  import Input from "@git-manager/ui/components/Input.svelte";
-  import Link from "@git-manager/ui/components/Link.svelte";
-  import Stack from "@git-manager/ui/components/Stack.svelte";
+  import Button from "@nibtree/ui/components/Button.svelte";
+  import Chip from "@nibtree/ui/components/Chip.svelte";
+  import FontSample from "@nibtree/ui/components/FontSample.svelte";
+  import Input from "@nibtree/ui/components/Input.svelte";
+  import Link from "@nibtree/ui/components/Link.svelte";
+  import Stack from "@nibtree/ui/components/Stack.svelte";
   import ColorThemePicker from "./ColorThemePicker.svelte";
   import SettingsRow from "./SettingsRow.svelte";
   import { set } from "./settingsShared";

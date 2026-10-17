@@ -1,18 +1,18 @@
 {
-  "name": "git-manager",
+  "name": "nibtree",
   "version": "0.1.0-beta.10",
-  "description": "Native Git GUI with a JetBrains-style 3-way merge tool",
+  "description": "Native Git GUI with a 3-way merge tool",
   "author": {
     "name": "MD. Shibbir Ahmed",
     "url": "https://github.com/shibbirweb"
   },
-  "homepage": "https://github.com/shibbirweb/git-manager",
+  "homepage": "https://github.com/shibbirweb/nibtree",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shibbirweb/git-manager.git"
+    "url": "git+https://github.com/shibbirweb/nibtree.git"
   },
   "bugs": {
-    "url": "https://github.com/shibbirweb/git-manager/issues"
+    "url": "https://github.com/shibbirweb/nibtree/issues"
   },
   "type": "module",
   "workspaces": [
@@ -39,7 +39,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@git-manager/ui": "workspace:*",
+    "@nibtree/ui": "workspace:*",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-cpp": "^6.0.3",

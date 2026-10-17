@@ -3,7 +3,7 @@
 The bottom status bar: StatusItems on the left (repository, branch) and on the right.
 
 ```ts
-import StatusBar from "@git-manager/ui/components/StatusBar.svelte";
+import StatusBar from "@nibtree/ui/components/StatusBar.svelte";
 ```
 
 Group: Layout.

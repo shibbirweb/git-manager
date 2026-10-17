@@ -1,7 +1,7 @@
 //! Puts the command line tool on the PATH, never with sudo and never in /usr/local.
-//! macOS and Linux: a `git-manager` link in `~/.local/bin` to the running binary.
-//! Windows: a `git-manager.cmd` in `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on
-//! every user's PATH, running the console program `git-manager-cli.exe` next to the app (the
+//! macOS and Linux: a `nibtree` link in `~/.local/bin` to the running binary.
+//! Windows: a `nibtree.cmd` in `%LOCALAPPDATA%\Microsoft\WindowsApps`, which Windows puts on
+//! every user's PATH, running the console program `nibtree-cli.exe` next to the app (the
 //! app itself is a GUI program there, without a console).
 
 use crate::paths::RealPath;
@@ -10,13 +10,13 @@ use std::path::{Path, PathBuf};
 use crate::error::{AppError, AppResult};
 
 #[cfg(not(windows))]
-pub const LINK_NAME: &str = "git-manager";
+pub const LINK_NAME: &str = "nibtree";
 #[cfg(windows)]
-pub const LINK_NAME: &str = "git-manager.cmd";
+pub const LINK_NAME: &str = "nibtree.cmd";
 /// The console program the Windows installer puts next to the app (src-tauri/cli).
-pub const CONSOLE_NAME: &str = "git-manager-cli.exe";
-/// The line that marks a `git-manager.cmd` as ours.
-const SHIM_MARK: &str = "rem Git Manager command line tool";
+pub const CONSOLE_NAME: &str = "nibtree-cli.exe";
+/// The line that marks a `nibtree.cmd` as ours.
+const SHIM_MARK: &str = "rem Nibtree command line tool";
 
 /// Windows: the default `%LOCALAPPDATA%` below the home folder, so tests can use a temporary home.
 pub fn bin_dir_in(home: &Path) -> PathBuf {
@@ -72,12 +72,12 @@ fn install_shim(shim: &Path, exe: &Path) -> AppResult<PathBuf> {
     let console = exe.with_file_name(CONSOLE_NAME);
     if !console.is_file() {
         return Err(AppError::invalid(format!(
-            "{} is missing next to Git Manager. It comes with the installer: reinstall Git Manager.",
+            "{} is missing next to Nibtree. It comes with the installer: reinstall Nibtree.",
             console.display()
         )));
     }
     if shim.exists() && !is_our_shim(shim) {
-        return Err(AppError::invalid(format!("{} already exists and is not Git Manager's. Remove it first.", shim.display())));
+        return Err(AppError::invalid(format!("{} already exists and is not Nibtree's. Remove it first.", shim.display())));
     }
     if let Some(folder) = shim.parent() {
         std::fs::create_dir_all(folder)?;
@@ -92,7 +92,7 @@ fn uninstall_shim(shim: &Path) -> AppResult<()> {
         return Ok(());
     }
     if !is_our_shim(shim) {
-        return Err(AppError::invalid(format!("{} is not Git Manager's, so it was left alone.", shim.display())));
+        return Err(AppError::invalid(format!("{} is not Nibtree's, so it was left alone.", shim.display())));
     }
     std::fs::remove_file(shim)?;
     Ok(())
@@ -114,7 +114,7 @@ pub fn install_in(home: &Path, exe: &Path) -> AppResult<PathBuf> {
     if link.symlink_metadata().is_ok() {
         if !is_ours(&link, exe) {
             return Err(AppError::invalid(format!(
-                "{} already exists and is not Git Manager's link. Remove it first.",
+                "{} already exists and is not Nibtree's link. Remove it first.",
                 link.display()
             )));
         }
@@ -132,7 +132,7 @@ pub fn uninstall_in(home: &Path, exe: &Path) -> AppResult<()> {
         return Ok(());
     }
     if !is_ours(&link, exe) {
-        return Err(AppError::invalid(format!("{} is not Git Manager's link, so it was left alone.", link.display())));
+        return Err(AppError::invalid(format!("{} is not Nibtree's link, so it was left alone.", link.display())));
     }
     std::fs::remove_file(&link)?;
     Ok(())
@@ -162,10 +162,10 @@ mod shim_tests {
     #[test]
     fn the_windows_shim_runs_the_console_program_and_is_removed_only_when_ours() {
         let dir = tempfile::TempDir::new().unwrap();
-        let exe = dir.path().join("app/git-manager.exe");
+        let exe = dir.path().join("app/nibtree.exe");
         std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
         std::fs::write(&exe, "app").unwrap();
-        let shim = dir.path().join("WindowsApps/git-manager.cmd");
+        let shim = dir.path().join("WindowsApps/nibtree.cmd");
 
         assert!(install_shim(&shim, &exe).unwrap_err().to_string().contains(CONSOLE_NAME), "the console program is missing");
         std::fs::write(exe.with_file_name(CONSOLE_NAME), "console").unwrap();
@@ -194,7 +194,7 @@ mod tests {
     fn installs_and_removes_only_our_link() {
         let home = tempfile::TempDir::new().unwrap();
         let home = home.path();
-        let exe = home.join("app/git-manager");
+        let exe = home.join("app/nibtree");
         std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
         std::fs::write(&exe, "binary").unwrap();
 

@@ -1,5 +1,5 @@
 // CodeMirror glue for the inline diff (the document and its logic live in inlineDoc.ts): each
-// line colored by its own change like GitLens (removed lines soft red, added lines green), changed words, the old and new number columns, a Stage or Unstage
+// line colored by its own change (removed lines soft red, added lines green), changed words, the old and new number columns, a Stage or Unstage
 // button per change (with Revert next to Stage), a - or + before each removed or added line, and
 // folded runs of unchanged lines.
 
@@ -8,7 +8,7 @@ import { Decoration, type DecorationSet, EditorView, GutterMarker, gutter } from
 import { inlineFolds } from "./foldField";
 import { FOLD_MARGIN, FOLD_MIN_SIZE } from "./foldModel";
 import { collapsedRuns, type InlineBlock, type InlineDoc, inlineWordMarks, lineSign } from "./inlineDoc";
-import type { IconName } from "@git-manager/ui/icons";
+import type { IconName } from "@nibtree/ui/icons";
 import { inlineTheme } from "./inlineTheme";
 import { revertButton } from "./mergeExtensions";
 
@@ -117,7 +117,7 @@ class SignMarker extends GutterMarker {
 }
 
 /**
- * The - and + column right before the text, like git and GitLens print them, so removed and added lines stay apart
+ * The - and + column right before the text, like `git diff` prints them, so removed and added lines stay apart
  * where a modified change colors them alike. Its band continues the number columns' change colors.
  */
 function signGutter(doc: InlineDoc, kinds: readonly (LineTint | null)[]): Extension {

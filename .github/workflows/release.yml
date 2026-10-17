@@ -191,9 +191,9 @@ jobs:
       - name: Build the command line program
         shell: bash
         run: |
-          cargo build --release --locked -p git-manager-cli --manifest-path src-tauri/Cargo.toml
+          cargo build --release --locked -p nibtree-cli --manifest-path src-tauri/Cargo.toml
           mkdir -p src-tauri/binaries
-          cp src-tauri/target/release/git-manager-cli.exe src-tauri/binaries/git-manager-cli-x86_64-pc-windows-msvc.exe
+          cp src-tauri/target/release/nibtree-cli.exe src-tauri/binaries/nibtree-cli-x86_64-pc-windows-msvc.exe
 
       # tauri.windows.conf.json makes this an NSIS installer (x64) and tauri.windows-release.conf.json adds the
       # command line program; files are uploaded to the release that started this.

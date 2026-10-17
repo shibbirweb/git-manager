@@ -3,7 +3,7 @@
 Panel tabs in small capitals with an accent underline, like Terminal / Run / Git Console.
 
 ```ts
-import Tabs from "@git-manager/ui/components/Tabs.svelte";
+import Tabs from "@nibtree/ui/components/Tabs.svelte";
 ```
 
 Group: Navigation. Also known as: Tabs.
